@@ -31,9 +31,10 @@
 
 * { box-sizing: border-box; }
 
-/* Smooth transitions on everything */
-*, *::before, *::after {
-  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+/* Smooth transitions only on interactive elements */
+a, button, input, select, textarea,
+[class*="btn-"], [class*="glass-card"], [class*="glow-"] {
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s, color 0.2s;
 }
 
 body {
@@ -41,6 +42,8 @@ body {
   color: var(--text-primary);
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-overflow-scrolling: touch;
 }
 
 h1, h2, h3 { font-family: Georgia, Palatino, serif; }
@@ -195,8 +198,15 @@ h1, h2, h3 { font-family: Georgia, Palatino, serif; }
   transition: width 0.5s ease;
 }
 
-/* Prevent horizontal scroll */
-html, body { overflow-x: hidden; width: 100%; }
+/* Prevent horizontal scroll + hide scrollbar globally */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar { display: none; }
 
 /* Prevent iOS zoom on input focus (needs font-size >= 16px) */
 input, select, textarea { font-size: 16px !important; }

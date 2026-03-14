@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const rank = getRank(completed.length);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12 animate-page-enter">
+    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
       <h1 className="text-3xl font-bold text-[#FFD166] mb-8" style={{ fontFamily: 'Georgia, serif' }}>
         Observer Profile
       </h1>

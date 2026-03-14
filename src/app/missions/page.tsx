@@ -14,7 +14,7 @@ export default function MissionsPage() {
 
   if (!clubDone) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 animate-page-enter">
+      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
         <div className="relative">
           <div className="filter blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
             <div className="grid grid-cols-3 gap-3 mb-6">
@@ -51,7 +51,7 @@ export default function MissionsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 animate-page-enter">
+    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[#38F0FF] flex items-center gap-3" style={{ fontFamily: 'Georgia, serif' }}>
           <Satellite size={26} strokeWidth={1.5} className="text-[#38F0FF]" />

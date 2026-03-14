@@ -47,7 +47,7 @@ export default function ClubPage() {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12 animate-page-enter">
+    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
       <div className="mb-6 text-center">
         <h1 className="text-3xl font-bold text-[#FFD166]">AstroClub</h1>
         <p className="text-[var(--text-secondary)] mt-2 text-sm">Three steps to start your observation journey</p>

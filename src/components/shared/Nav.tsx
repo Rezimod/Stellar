@@ -96,6 +96,18 @@ export default function Nav() {
             ))}
           </div>
 
+          {/* Mobile wallet pill */}
+          {state.walletConnected && (
+            <button
+              onClick={handleLogout}
+              className="flex sm:hidden items-center gap-1.5 text-[#34d399] font-hash bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.2)] px-2 py-1 rounded-lg text-[10px] flex-shrink-0"
+              title="Tap to sign out"
+            >
+              <span>{pollinetIcon}</span>
+              <span>{walletShort}</span>
+            </button>
+          )}
+
           {/* Desktop wallet */}
           <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
             <span
@@ -126,21 +138,6 @@ export default function Nav() {
           </div>
         </div>
 
-        {/* Mobile second row — wallet only when connected */}
-        {state.walletConnected && (
-          <div className="flex sm:hidden items-center justify-between w-full pb-2 pt-0 border-t border-white/5">
-            <span
-              className="text-xs text-[var(--text-dim)] cursor-help"
-              title="Network Status: Online — Direct to Solana"
-            >
-              {pollinetIcon}
-            </span>
-            <span className="text-xs text-[#34d399] font-hash">{walletShort}</span>
-            <button onClick={handleLogout} className="text-xs text-[var(--text-dim)] hover:text-red-400 transition-colors">
-              Logout
-            </button>
-          </div>
-        )}
       </div>
     </nav>
   );

@@ -208,8 +208,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#070B14]/95 overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="fixed inset-0 z-50 bg-[#070B14]/95 overflow-y-auto scrollbar-hide">
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{mission.emoji}</span>
