@@ -21,15 +21,17 @@ export default function Verification({ photo, farmhawk, pollinet, stars, timesta
     <div className="flex flex-col gap-3">
       <img src={photo} alt="Captured observation" className="w-full max-w-md max-h-[35vh] object-cover mx-auto rounded-xl border-2 border-[#34d399]" />
 
-      <Card glow="emerald">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 size={18} className="text-[#34d399]" />
-          <p className="text-[#34d399] font-semibold">Observation Verified!</p>
-        </div>
-        <p className="text-[var(--text-secondary)] text-sm mt-1">
-          {new Date(timestamp).toLocaleString()} · {latitude.toFixed(4)}°N {longitude.toFixed(4)}°E
-        </p>
-      </Card>
+      <div className="elite-border">
+        <Card glow="emerald">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={18} className="text-[#34d399]" />
+            <p className="text-[#34d399] font-semibold">Observation Verified!</p>
+          </div>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">
+            {new Date(timestamp).toLocaleString()} · {latitude.toFixed(4)}°N {longitude.toFixed(4)}°E
+          </p>
+        </Card>
+      </div>
 
       {/* FarmHawk card */}
       <div className="glass-card border border-[#38F0FF]/30 p-3.5 sm:p-5 glow-cyan">

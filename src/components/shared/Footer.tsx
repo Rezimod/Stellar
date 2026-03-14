@@ -3,7 +3,7 @@ import AstroLogo from './AstroLogo';
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 border-t border-white/5 bg-black/20 backdrop-blur-sm mt-auto">
+    <footer className="relative z-10 bg-black/20 backdrop-blur-sm mt-auto" style={{ borderTop: '1px solid transparent', borderImage: 'linear-gradient(to right, transparent, rgba(255,209,102,0.3), rgba(56,240,255,0.3), rgba(255,209,102,0.3), transparent) 1' }}>
       <div className="flex flex-col items-center gap-1.5 py-4 px-4">
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--text-dim)]">
           <span>Powered by</span>

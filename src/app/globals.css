@@ -247,6 +247,43 @@ input, select, textarea { font-size: 16px !important; }
   }
 }
 
+/* Ornamental border lines */
+.ornament-line {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 209, 102, 0.18) 20%,
+    rgba(56, 240, 255, 0.35) 45%,
+    rgba(255, 209, 102, 0.35) 55%,
+    rgba(56, 240, 255, 0.18) 80%,
+    transparent 100%
+  );
+}
+.ornament-line::before {
+  content: '◆';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 7px;
+  color: rgba(255, 209, 102, 0.55);
+  background: #070B14;
+  padding: 0 10px;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* Elite gradient border wrapper */
+.elite-border {
+  background:
+    linear-gradient(#070B14, #070B14) padding-box,
+    linear-gradient(135deg, rgba(52, 211, 153, 0.6), rgba(255, 209, 102, 0.5), rgba(56, 240, 255, 0.6)) border-box;
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
 /* Wallet adapter */
 .wallet-adapter-button {
   font-family: inherit !important;

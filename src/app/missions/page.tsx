@@ -52,10 +52,12 @@ export default function MissionsPage() {
         <p className="text-slate-400 mt-0.5 text-sm">Observe. Verify. Collect.</p>
       </div>
 
+      <div className="ornament-line mb-4 mt-1" />
       <StatsBar />
       <MissionList />
       <RewardsSection />
       <ObservationLog />
+      <div className="ornament-line mt-6 mb-2" />
     </div>
   );
 }
