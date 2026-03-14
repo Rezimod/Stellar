@@ -6,7 +6,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useAppState } from '@/hooks/useAppState';
 import { getPollinetStatus } from '@/lib/pollinet';
 import { useEffect, useState, useCallback } from 'react';
-import { Lock, Telescope, Satellite, ImageIcon, User } from 'lucide-react';
+import { Telescope, Satellite, ImageIcon, User } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 
 export default function Nav() {
@@ -16,7 +16,6 @@ export default function Nav() {
   const { state, pendingCount, reset } = useAppState();
   const [pollinetIcon, setPollinetIcon] = useState('🟢');
   const [showLogout, setShowLogout] = useState(false);
-  const clubDone = state.walletConnected && state.membershipMinted && !!state.telescope;
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,9 +49,9 @@ export default function Nav() {
 
   const tabs = [
     { href: '/club', label: 'Club', icon: <Telescope size={17} /> },
-    { href: '/missions', label: 'Missions', icon: <Satellite size={17} />, locked: !clubDone },
-    { href: '/proof', label: 'Gallery', icon: <ImageIcon size={17} />, locked: !clubDone },
-    { href: '/profile', label: 'Profile', icon: <User size={17} />, locked: !clubDone },
+    { href: '/missions', label: 'Missions', icon: <Satellite size={17} /> },
+    { href: '/proof', label: 'Gallery', icon: <ImageIcon size={17} /> },
+    { href: '/profile', label: 'Profile', icon: <User size={17} /> },
   ];
 
   const walletShort = state.walletAddress
@@ -74,28 +73,18 @@ export default function Nav() {
           <div className="hidden sm:flex items-center overflow-x-auto scrollbar-hide gap-0.5">
             {tabs.map(tab => (
               <div key={tab.href}>
-                {tab.locked ? (
-                  <span
-                    title={tab.label}
-                    className="px-3 py-2 text-[var(--text-dim)] text-sm flex items-center gap-1.5 cursor-not-allowed"
-                  >
-                    <Lock size={13} />
-                    <span>{tab.label}</span>
-                  </span>
-                ) : (
-                  <Link
-                    href={tab.href}
-                    title={tab.label}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
-                      pathname === tab.href
-                        ? 'text-[#FFD166] bg-[rgba(255,209,102,0.1)] border-b-2 border-[#FFD166]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
-                    }`}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </Link>
-                )}
+                <Link
+                  href={tab.href}
+                  title={tab.label}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                    pathname === tab.href
+                      ? 'text-[#FFD166] bg-[rgba(255,209,102,0.1)] border-b-2 border-[#FFD166]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </Link>
               </div>
             ))}
           </div>

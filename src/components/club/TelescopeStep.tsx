@@ -32,7 +32,7 @@ export default function TelescopeStep() {
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-white">Register Telescope</h3>
-          <p className="text-slate-400 text-sm mb-4">Register your equipment to start observing</p>
+          <p className="text-slate-400 text-sm mb-3">Tell us what you observe with. This gets recorded on-chain with your observations.</p>
           {done ? (
             <div className="bg-[#0F1F3D] border border-[#38F0FF]/40 rounded-lg p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-[#38F0FF]/10 border border-[#38F0FF]/20 flex items-center justify-center">
@@ -45,13 +45,16 @@ export default function TelescopeStep() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
+              <label className="text-xs text-[var(--text-secondary)] -mb-1.5">Telescope Brand</label>
               <select value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
                 className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] rounded-lg px-3 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-[#38F0FF]">
                 {TELESCOPE_BRANDS.map(b => <option key={b}>{b}</option>)}
               </select>
+              <label className="text-xs text-[var(--text-secondary)] -mb-1.5">Model</label>
               <input value={form.model} onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
                 placeholder="Model (e.g. NexStar 8SE)"
                 className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] rounded-lg px-3 py-2.5 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-[#38F0FF]" />
+              <label className="text-xs text-[var(--text-secondary)] -mb-1.5">Aperture</label>
               <input value={form.aperture} onChange={e => setForm(f => ({ ...f, aperture: e.target.value }))}
                 placeholder="Aperture (e.g. 203mm)"
                 className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] rounded-lg px-3 py-2.5 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-[#38F0FF]" />

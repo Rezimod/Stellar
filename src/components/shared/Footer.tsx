@@ -16,8 +16,8 @@ export default function Footer() {
           <span className="text-white/10">·</span>
           <a href="https://scriptonia.xyz" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent-gold)] transition-colors">Scriptonia</a>
         </div>
-        <p className="text-[10px] text-[var(--text-dim)]/60">
-          Vibecoding From 0 · March 14–15, 2026
+        <p className="text-[9px] text-[var(--text-dim)]/40 mt-0.5">
+          Built at Vibecoding From 0 Hackathon
         </p>
       </div>
     </footer>

@@ -28,8 +28,9 @@ export default function MembershipStep() {
           {done ? '✓' : '2'}
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">Club Membership</h3>
-          <p className="text-slate-400 text-sm mb-4">Join the Stellar observer network</p>
+          <h3 className="text-lg font-semibold text-white">Mint Membership</h3>
+          <p className="text-slate-400 text-sm mb-1">Mint your free membership NFT to unlock sky missions and earn rewards.</p>
+          <p className="text-[#34d399] text-xs mb-3">Free — no SOL required</p>
           {done ? (
             <div className="bg-[#0F1F3D] border border-[#FFD166]/40 rounded-lg p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-[#FFD166]/10 border border-[#FFD166]/20 flex items-center justify-center">
@@ -42,7 +43,7 @@ export default function MembershipStep() {
             </div>
           ) : (
             <Button variant="brass" onClick={handleJoin} disabled={!unlocked || joining} className="w-full sm:w-auto">
-              {joining ? 'Joining...' : 'Join Club ✦'}
+              {joining ? 'Minting...' : 'Mint Free Membership ✦'}
             </Button>
           )}
         </div>

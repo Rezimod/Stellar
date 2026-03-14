@@ -208,9 +208,12 @@ export default function WalletStep() {
 
               {/* Email */}
               <div className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] rounded-xl p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <Mail size={16} className="text-[var(--text-secondary)]" />
-                  <p className="text-[var(--text-primary)] text-sm font-medium">Continue with Email</p>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} className="text-[var(--text-secondary)]" />
+                    <p className="text-[var(--text-primary)] text-sm font-medium">No Wallet? Use Email Instead</p>
+                  </div>
+                  <p className="text-slate-500 text-xs ml-6">We create a Solana wallet for you automatically. No app needed.</p>
                 </div>
                 <input
                   type="email"
@@ -222,10 +225,9 @@ export default function WalletStep() {
                 />
                 {emailError && <p className="text-red-400 text-xs">{emailError}</p>}
                 <Button variant="brass" onClick={handleEmailWallet} className="w-full min-h-[44px]">
-                  Create Wallet &amp; Sign In →
+                  Continue with Email →
                 </Button>
-                <p className="text-slate-600 text-xs text-center">No wallet? No problem. We&apos;ll create one for you automatically.</p>
-                <p className="text-slate-600 text-xs text-center">A real Solana keypair is generated and stored locally in your browser.</p>
+                <p className="text-slate-600 text-xs text-center">Your wallet stays in your browser. Free to use.</p>
               </div>
             </div>
           )}

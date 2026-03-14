@@ -1,6 +1,6 @@
 'use client';
 
-import { Telescope, Star, Trophy, Award } from 'lucide-react';
+import { Telescope, Star, Trophy, Award, User } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
 import Link from 'next/link';
@@ -11,15 +11,25 @@ export default function ProfilePage() {
 
   if (!clubDone) {
     return (
-      <div className="max-w-md mx-auto px-4 py-24 text-center animate-page-enter">
-        <p className="text-4xl mb-4">🔒</p>
-        <h2 className="text-2xl font-bold text-[#FFD166] mb-3" style={{ fontFamily: 'Georgia, serif' }}>
-          Join Stellar Club First
-        </h2>
-        <p className="text-slate-400 mb-6 text-sm">Complete setup to view your profile.</p>
-        <Link href="/club" className="px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg transition-all duration-200">
-          Join Club ✦
-        </Link>
+      <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20 animate-page-enter text-center">
+        <div className="glass-card p-6 sm:p-8 max-w-md mx-auto">
+          <User size={32} className="text-[#7A5FFF] mx-auto mb-4" />
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+            Observer Profile
+          </h2>
+          <p className="text-[var(--text-secondary)] text-sm mb-6">
+            Track your observations, rank, rewards, and registered telescope.
+          </p>
+          {!state.walletConnected ? (
+            <Link href="/club" className="inline-block px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg transition-all duration-200">
+              Connect Wallet to Start →
+            </Link>
+          ) : (
+            <Link href="/club" className="inline-block px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg transition-all duration-200">
+              Complete Setup →
+            </Link>
+          )}
+        </div>
       </div>
     );
   }

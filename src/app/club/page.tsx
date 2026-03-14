@@ -41,16 +41,22 @@ export default function ClubPage() {
   const allDone = state.walletConnected && state.membershipMinted && !!state.telescope;
 
   const steps = [
-    { label: 'Connect', done: state.walletConnected, active: !state.walletConnected },
-    { label: 'Mint', done: state.membershipMinted, active: state.walletConnected && !state.membershipMinted },
-    { label: 'Register', done: !!state.telescope, active: state.membershipMinted && !state.telescope },
+    { label: 'Wallet', done: state.walletConnected, active: !state.walletConnected },
+    { label: 'Membership', done: state.membershipMinted, active: state.walletConnected && !state.membershipMinted },
+    { label: 'Telescope', done: !!state.telescope, active: state.membershipMinted && !state.telescope },
   ];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
       <div className="mb-6 text-center">
-        <h1 className="text-3xl font-bold text-[#FFD166]">AstroClub</h1>
-        <p className="text-[var(--text-secondary)] mt-2 text-sm">Three steps to start your observation journey</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#FFD166]">Join Stellar Club</h1>
+        <p className="text-[var(--text-primary)] mt-2 text-sm sm:text-base">
+          Observe the night sky, earn real rewards from{' '}
+          <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer" className="text-[#38F0FF] hover:underline">astroman.ge</a>
+        </p>
+        <p className="text-[var(--text-dim)] mt-1 text-xs">
+          Connect → Mint your free membership → Register your telescope → Start earning
+        </p>
       </div>
 
       <StepProgress steps={steps} />
@@ -66,8 +72,8 @@ export default function ClubPage() {
           <CheckCircle2 size={32} className="text-[#34d399] mx-auto mb-3" />
           <h2 className="text-xl font-bold text-[#34d399] mb-4">You&apos;re ready to observe!</h2>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/sky" className="btn-primary px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2">
-              Mission Control →
+            <Link href="/missions" className="btn-primary px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2">
+              Start Missions →
             </Link>
             <a
               href={ECOSYSTEM.store}
