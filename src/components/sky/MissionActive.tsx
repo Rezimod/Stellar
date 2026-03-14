@@ -13,7 +13,8 @@ import CameraCapture from './CameraCapture';
 import Verification from './Verification';
 import MintAnimation from '@/components/shared/MintAnimation';
 import Button from '@/components/shared/Button';
-import { Copy, Check, Telescope, Satellite } from 'lucide-react';
+import { Copy, Check, Telescope, Satellite, Award } from 'lucide-react';
+import RewardIcon from '@/components/shared/RewardIcon';
 
 interface MissionActiveProps {
   mission: Mission;
@@ -165,27 +166,29 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   // Reward unlock modal
   if (newRewards.length > 0) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#070B14]/95 overflow-y-auto flex items-center justify-center p-4">
-        <div className="glass-card glow-emerald max-w-sm w-full p-8 flex flex-col gap-6 text-center">
-          <p className="text-4xl">🎉</p>
+      <div className="fixed inset-0 z-[60] bg-[#070B14]/95 overflow-y-auto flex items-start sm:items-center justify-center p-4 pt-12 sm:pt-4">
+        <div className="glass-card glow-emerald max-w-sm w-full p-5 flex flex-col gap-3 text-center">
+          <div className="w-14 h-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center mx-auto">
+            <Award size={28} className="text-[#34d399]" />
+          </div>
           <h2 className="text-xl font-bold text-[#34d399]">Reward Unlocked!</h2>
           {newRewards.map(r => (
-            <div key={r.name} className="bg-[#0F1F3D] border border-[#34d399]/30 rounded-xl p-5 text-left flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{r.icon}</span>
+            <div key={r.name} className="bg-[#070B14] border border-[#34d399]/20 rounded-xl p-4 text-left flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <RewardIcon emoji={r.icon} />
                 <div>
-                  <p className="font-semibold text-white">{r.name}</p>
-                  <p className="text-slate-400 text-sm">{r.description}</p>
+                  <p className="font-semibold text-white text-sm">{r.name}</p>
+                  <p className="text-slate-400 text-xs">{r.description}</p>
                 </div>
               </div>
               {r.code && (
-                <div className="mt-2">
-                  <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wider mb-1.5">Your Code</p>
+                <div className="mt-1">
+                  <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wider mb-1">Your Code</p>
                   <div className="flex items-center gap-2">
-                    <code className="bg-[#070B14] border border-[#FFD166]/30 px-4 py-2.5 rounded-lg text-sm text-[#FFD166] font-mono flex-1 tracking-wide">
+                    <code className="bg-[#070B14] border border-[#FFD166]/25 px-3 py-2 rounded-lg text-sm text-[#FFD166] font-mono flex-1 tracking-wide">
                       {r.code}
                     </code>
-                    <button onClick={() => copyCode(r.code!)} className="p-2.5 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] rounded-lg text-slate-400 hover:text-[#38F0FF] transition-all">
+                    <button onClick={() => copyCode(r.code!)} className="p-2 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] rounded-lg text-slate-400 hover:text-[#38F0FF] transition-all flex-shrink-0">
                       {copiedCode === r.code ? <Check size={14} className="text-[#34d399]" /> : <Copy size={14} />}
                     </button>
                   </div>
@@ -193,13 +196,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               )}
             </div>
           ))}
-          <div className="flex gap-4">
+          <div className="flex gap-3 mt-1">
             <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer"
-              className="flex-1 text-center text-xs py-3 px-3 border border-[#FFD166]/50 text-[#FFD166] rounded hover:bg-[#FFD166]/10 transition-all">
+              className="flex-1 text-center text-xs py-2.5 px-3 border border-[#FFD166]/30 text-[#FFD166] rounded-lg hover:bg-[#FFD166]/10 transition-all">
               Visit astroman.ge →
             </a>
             <button onClick={() => { setStep('done'); onClose(); }}
-              className="flex-1 text-xs py-3 px-3 bg-[#34d399]/10 border border-[#34d399]/50 text-[#34d399] rounded hover:bg-[#34d399]/20 transition-all">
+              className="flex-1 text-xs py-2.5 px-3 bg-[#34d399]/10 border border-[#34d399]/30 text-[#34d399] rounded-lg hover:bg-[#34d399]/20 transition-all">
               Continue
             </button>
           </div>

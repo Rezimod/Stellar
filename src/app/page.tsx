@@ -3,6 +3,15 @@ import Link from 'next/link';
 import { ECOSYSTEM, MISSIONS } from '@/lib/constants';
 import AstroLogo from '@/components/shared/AstroLogo';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
+import { Telescope, Camera, Satellite, Link2 } from 'lucide-react';
+import RewardIcon from '@/components/shared/RewardIcon';
+
+const howItWorksSteps = [
+  { step: 1, icon: <Telescope size={24} />, color: 'text-[#FFD166]', bg: 'bg-[#FFD166]/10 border-[#FFD166]/20', title: 'Observe', desc: "Point your telescope at tonight's target" },
+  { step: 2, icon: <Camera size={24} />, color: 'text-[#38F0FF]', bg: 'bg-[#38F0FF]/10 border-[#38F0FF]/20', title: 'Capture', desc: 'Photograph through the eyepiece' },
+  { step: 3, icon: <Satellite size={24} />, color: 'text-[#38F0FF]', bg: 'bg-[#38F0FF]/10 border-[#38F0FF]/20', title: 'Verify', desc: 'Satellite confirms clear sky conditions' },
+  { step: 4, icon: <Link2 size={24} />, color: 'text-[#7A5FFF]', bg: 'bg-[#7A5FFF]/10 border-[#7A5FFF]/20', title: 'Mint', desc: 'Proof sealed on Solana as your NFT' },
+];
 
 const ecoCards = [
   { icon: '🛒', title: 'astroman.ge', subtitle: 'Main Store', desc: 'Browse telescopes', href: ECOSYSTEM.store, ext: true },
@@ -49,17 +58,14 @@ export default function HomePage() {
       <div id="how-it-works" className="w-full">
         <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— How It Works —</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { step: 1, emoji: '🔭', title: 'Observe', desc: 'Point your telescope at tonight\'s target' },
-            { step: 2, emoji: '📸', title: 'Capture', desc: 'Photograph through the eyepiece' },
-            { step: 3, emoji: '🛰️', title: 'Verify', desc: 'Satellite confirms clear sky conditions' },
-            { step: 4, emoji: '⛓️', title: 'Mint', desc: 'Proof sealed on Solana as your NFT' },
-          ].map((item, i) => (
+          {howItWorksSteps.map((item, i) => (
             <div key={item.step} className="glass-card p-4 relative text-center animate-word" style={{ animationDelay: `${i * 100 + 400}ms` }}>
               <span className="absolute top-2 left-3 text-[10px] font-bold text-[#FFD166] bg-[#FFD166]/10 px-1.5 py-0.5 rounded-full">
                 {item.step}
               </span>
-              <p className="text-3xl mb-2 mt-2">{item.emoji}</p>
+              <div className={`w-12 h-12 rounded-full ${item.bg} border flex items-center justify-center mb-2 mt-2 mx-auto ${item.color}`}>
+                {item.icon}
+              </div>
               <p className="text-white font-semibold text-sm mb-1">{item.title}</p>
               <p className="text-[var(--text-secondary)] text-xs leading-relaxed">{item.desc}</p>
             </div>
@@ -159,15 +165,15 @@ export default function HomePage() {
           <p className="text-slate-300 text-center">Complete missions to unlock real rewards from the Astroman store.</p>
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center gap-3 text-sm">
-              <span className="text-base">🎫</span>
+              <RewardIcon emoji="🎫" size={16} />
               <span className="text-slate-300">Discounts up to 20% on telescopes</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <span className="text-base">🌕</span>
+              <RewardIcon emoji="🌕" size={16} />
               <span className="text-slate-300">Free Moon Lamp for your first lunar observation</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <span className="text-base">🏆</span>
+              <RewardIcon emoji="🏆" size={16} />
               <span className="text-slate-300">Free Custom Star Map for completing all 5 missions</span>
             </div>
           </div>

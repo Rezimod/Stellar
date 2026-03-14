@@ -5,6 +5,7 @@ import { useAppState } from '@/hooks/useAppState';
 import { getUnlockedRewards, getRank, type Reward } from '@/lib/rewards';
 import { MISSIONS } from '@/lib/constants';
 import { Copy, Check, ExternalLink } from 'lucide-react';
+import RewardIcon from '@/components/shared/RewardIcon';
 
 type RewardWithStatus = Reward & { unlocked: boolean; progress: number };
 
@@ -39,7 +40,7 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
     <div className={`glass-card border ${borderColor} ${reward.unlocked ? 'glow-emerald' : ''} p-5 flex flex-col gap-4 ${!reward.unlocked && reward.progress === 0 ? 'opacity-50' : ''}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{reward.icon}</span>
+          <RewardIcon emoji={reward.icon} />
           <div>
             <p className="font-semibold text-white text-sm">{reward.name}</p>
             <p className="text-slate-400 text-xs">{reward.description}</p>
