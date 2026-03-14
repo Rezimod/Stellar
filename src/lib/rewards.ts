@@ -40,7 +40,7 @@ export const REWARDS: Reward[] = [
   },
   {
     id: 'complete-all',
-    name: 'Cosmos Master',
+    name: 'Celestial',
     description: 'Complete all 5 missions → Free Custom Star Map (framed, 180 GEL value)',
     type: 'product',
     value: '180 GEL',
@@ -48,12 +48,12 @@ export const REWARDS: Reward[] = [
     requiredMissions: ['moon', 'jupiter', 'orion', 'saturn', 'pleiades'],
     icon: '🏆',
     claimed: false,
-    code: 'COSMOS-MASTER',
+    code: 'CELESTIAL',
   },
 ];
 
 export function getRank(sightings: number): { name: string; icon: string } {
-  if (sightings >= 5) return { name: 'Cosmos Master', icon: '🌌' };
+  if (sightings >= 5) return { name: 'Celestial', icon: '🌌' };
   if (sightings >= 3) return { name: 'Pathfinder', icon: '🧭' };
   if (sightings >= 1) return { name: 'Observer', icon: '⭐' };
   return { name: 'Stargazer', icon: '👁️' };
@@ -84,7 +84,7 @@ export function getUnlockedRewards(
     }
 
     if (reward.requirement === 'rank') {
-      const rankOrder = ['Stargazer', 'Observer', 'Pathfinder', 'Cosmos Master'];
+      const rankOrder = ['Stargazer', 'Observer', 'Pathfinder', 'Celestial'];
       const currentRankIndex = rankOrder.indexOf(rank);
       const requiredRankIndex = rankOrder.indexOf(reward.requiredRank || '');
       unlocked = currentRankIndex >= requiredRankIndex;
@@ -98,8 +98,8 @@ export function getUnlockedRewards(
 // Get mission IDs that feed into a specific reward
 export const MISSION_REWARD_HINTS: Record<string, string> = {
   moon: 'Unlocks: Free Moon Lamp',
-  jupiter: 'Part of: Cosmos Master (Free Star Map)',
-  orion: 'Part of: Cosmos Master (Free Star Map)',
-  saturn: 'Part of: Cosmos Master (Free Star Map)',
-  pleiades: 'Part of: Cosmos Master (Free Star Map)',
+  jupiter: 'Part of: Celestial (Free Star Map)',
+  orion: 'Part of: Celestial (Free Star Map)',
+  saturn: 'Part of: Celestial (Free Star Map)',
+  pleiades: 'Part of: Celestial (Free Star Map)',
 };

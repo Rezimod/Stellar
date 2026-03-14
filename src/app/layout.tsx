@@ -5,6 +5,7 @@ import { AppStateProvider } from '@/hooks/useAppState';
 import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
+import BottomNav from '@/components/shared/BottomNav';
 
 export const metadata: Metadata = {
   title: 'STELLAR — Verified Sky Observations',
@@ -23,8 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AppStateProvider>
             <StarField />
             <Nav />
-            <main className="relative z-10 flex-1">{children}</main>
+            <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>
             <Footer />
+            <BottomNav />
           </AppStateProvider>
         </SolanaWalletProvider>
       </body>

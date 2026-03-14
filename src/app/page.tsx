@@ -12,12 +12,12 @@ const ecoCards = [
 
 export default function HomePage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16 flex flex-col items-center gap-12 animate-page-enter">
+    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-16 flex flex-col items-center gap-8 sm:gap-12 animate-page-enter">
 
       {/* Hero */}
       <div className="text-center flex flex-col items-center gap-5">
         <AstroLogo heightClass="h-14" />
-        <p className="text-[#FFD166] text-sm tracking-widest uppercase font-mono">✦ STELLAR</p>
+        <p className="text-[#FFD166] text-sm tracking-widest uppercase font-mono">✦ STELLAR ✦</p>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold" style={{ fontFamily: 'Georgia, serif' }}>
           {['Observe.', 'Verify.', 'Collect.'].map((word, i) => (
             <span key={word} className="animate-word inline-block mr-2" style={{ animationDelay: `${i * 150 + 200}ms` }}>
@@ -91,7 +91,7 @@ export default function HomePage() {
 
       {/* Top Astronomers */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Top Astronomers —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Leaderboard —</p>
         <div className="glass-card overflow-hidden">
           {[
             { rank: 1, name: 'AstroHunter', points: 1280, verified: true },

@@ -67,7 +67,7 @@ export default function Nav() {
           </Link>
 
           {/* Tabs */}
-          <div className="flex items-center overflow-x-auto scrollbar-hide gap-0.5">
+          <div className="hidden sm:flex items-center overflow-x-auto scrollbar-hide gap-0.5">
             {tabs.map(tab => (
               <div key={tab.href}>
                 {tab.locked ? (
