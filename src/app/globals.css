@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05080f;
+  --foreground: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-void: #05080f;
+  --color-cosmos: #0a1020;
+  --color-nebula: #0f1a2e;
+  --color-panel: #111c30;
+  --color-border-dark: #1a2d4d;
+  --color-brass: #c9a84c;
+  --color-solana-purple: #9945FF;
+  --color-solana-green: #14F195;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: #05080f;
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: Georgia, Palatino, serif;
+}
+
+/* Star animation */
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--duration, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  pointer-events: none;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.4); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mint-success {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(201,168,76,0.4); }
+  50% { border-color: rgba(201,168,76,1); }
+}
+
+.animate-slide-up { animation: slide-up 0.4s ease-out forwards; }
+.animate-mint-success { animation: mint-success 0.5s ease-out forwards; }
+.animate-spin-slow { animation: spin-slow 2s linear infinite; }
+.animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
+
+.glow-brass { box-shadow: 0 0 20px rgba(201,168,76,0.35); }
+.glow-emerald { box-shadow: 0 0 20px rgba(52,211,153,0.35); }
+.glow-cyan { box-shadow: 0 0 20px rgba(34,211,238,0.35); }
+.glow-solana { box-shadow: 0 0 20px rgba(153,69,255,0.35); }
+
+/* Wallet adapter */
+.wallet-adapter-button {
+  font-family: inherit !important;
+  border-radius: 8px !important;
+}
