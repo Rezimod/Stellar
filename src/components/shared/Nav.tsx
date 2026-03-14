@@ -17,7 +17,11 @@ export default function Nav() {
   const [pollinetIcon, setPollinetIcon] = useState('🟢');
   const [showLogout, setShowLogout] = useState(false);
   const clubDone = state.walletConnected && state.membershipMinted && !!state.telescope;
-  const email = typeof window !== 'undefined' ? localStorage.getItem('stellar_wallet_email') : null;
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEmail(localStorage.getItem('stellar_wallet_email'));
+  }, [state.walletConnected]);
 
   const updatePollinet = useCallback(() => {
     const s = getPollinetStatus();

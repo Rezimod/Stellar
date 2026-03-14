@@ -1,8 +1,19 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 export default function StarField() {
-  const stars = useMemo(() => Array.from({ length: 140 }, (_, i) => ({
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 640);
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  const starCount = isMobile ? 40 : 140;
+
+  const stars = useMemo(() => Array.from({ length: starCount }, (_, i) => ({
     id: i,
     top: Math.random() * 100,
     left: Math.random() * 100,
@@ -10,7 +21,7 @@ export default function StarField() {
     duration: Math.random() * 5 + 4,
     delay: Math.random() * 8,
     drift: Math.random() * 20 - 10,
-  })), []);
+  })), [starCount]);
 
   const shootingStars = useMemo(() => [
     { top: 15, left: 10, delay: 0, duration: 12 },
@@ -35,7 +46,7 @@ export default function StarField() {
           } as React.CSSProperties}
         />
       ))}
-      {shootingStars.map((ss, i) => (
+      {!isMobile && shootingStars.map((ss, i) => (
         <div
           key={`shoot-${i}`}
           className="shooting-star"

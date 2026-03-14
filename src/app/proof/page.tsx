@@ -56,6 +56,19 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
         )}
 
         <div className="flex gap-2 mt-auto pt-2">
+          {typeof navigator !== 'undefined' && 'share' in navigator && (
+            <button
+              onClick={() => navigator.share({
+                title: `${mission.emoji} ${mission.name} — STELLAR`,
+                text: `I observed ${mission.name} and earned +${displayStars} stars on Solana ✦`,
+                url: window.location.href,
+              }).catch(() => {})}
+              className="text-xs px-2 py-1.5 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] text-slate-400 hover:text-[#38F0FF] rounded transition-all flex items-center justify-center gap-1"
+              title="Share observation"
+            >
+              ↗ Share
+            </button>
+          )}
           <button
             onClick={() => openExplorer(mission)}
             className={`flex-1 text-center text-xs px-2 py-1.5 border rounded transition-all flex items-center justify-center gap-1 ${

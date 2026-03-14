@@ -37,6 +37,8 @@ a, button, input, select, textarea,
   transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s, color 0.2s;
 }
 
+html { background: #070B14; }
+
 body {
   background: var(--bg-void);
   color: var(--text-primary);
@@ -44,6 +46,7 @@ body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 h1, h2, h3 { font-family: Georgia, Palatino, serif; }
@@ -66,6 +69,12 @@ h1, h2, h3 { font-family: Georgia, Palatino, serif; }
   background: rgba(20, 40, 75, 0.6);
   border-color: rgba(56, 240, 255, 0.15);
   transform: translateY(-1px);
+}
+.glass-card:active {
+  background: rgba(20, 40, 75, 0.7);
+  border-color: rgba(56, 240, 255, 0.25);
+  transform: scale(0.985);
+  transition-duration: 0.1s;
 }
 
 /* Glass nav */
@@ -215,6 +224,20 @@ input, select, textarea { font-size: 16px !important; }
 @media (max-width: 640px) {
   body { font-size: 14px; }
   button, a[role="button"], select, input { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-word,
+  .animate-page-enter,
+  .animate-slide-up,
+  .animate-mint-success {
+    opacity: 1;
+    animation: none !important;
+  }
+  .star, .shooting-star {
+    animation: none !important;
+    opacity: 0.15;
+  }
 }
 
 /* Wallet adapter */
