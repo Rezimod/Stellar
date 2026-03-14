@@ -45,10 +45,10 @@ export default function Nav() {
   };
 
   const tabs = [
-    { href: '/club', label: 'Club', icon: <Telescope size={15} /> },
-    { href: '/missions', label: 'Missions', icon: <Satellite size={15} />, locked: !clubDone },
-    { href: '/proof', label: 'Gallery', icon: <ImageIcon size={15} />, locked: !clubDone },
-    { href: '/profile', label: 'Profile', icon: <User size={15} />, locked: !clubDone },
+    { href: '/club', label: 'Club', icon: <Telescope size={17} /> },
+    { href: '/missions', label: 'Missions', icon: <Satellite size={17} />, locked: !clubDone },
+    { href: '/proof', label: 'Gallery', icon: <ImageIcon size={17} />, locked: !clubDone },
+    { href: '/profile', label: 'Profile', icon: <User size={17} />, locked: !clubDone },
   ];
 
   const walletShort = state.walletAddress
@@ -61,7 +61,7 @@ export default function Nav() {
       <div className="max-w-5xl mx-auto px-3 sm:px-4">
 
         {/* Main row */}
-        <div className="h-14 flex items-center justify-between gap-2">
+        <div className="h-16 flex items-center justify-between gap-2">
           <Link href="/" className="flex-shrink-0" title="Stellar">
             <AstroLogo heightClass="h-7" />
           </Link>
@@ -73,23 +73,23 @@ export default function Nav() {
                 {tab.locked ? (
                   <span
                     title={tab.label}
-                    className="px-1.5 py-1 text-[var(--text-dim)] text-xs flex items-center gap-0.5 cursor-not-allowed"
+                    className="px-3 py-2 text-[var(--text-dim)] text-sm flex items-center gap-1.5 cursor-not-allowed"
                   >
-                    <Lock size={10} />
-                    <span className="hidden sm:inline ml-1">{tab.label}</span>
+                    <Lock size={13} />
+                    <span>{tab.label}</span>
                   </span>
                 ) : (
                   <Link
                     href={tab.href}
                     title={tab.label}
-                    className={`px-2 py-1.5 rounded-lg text-xs flex items-center gap-1 transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
                       pathname === tab.href
                         ? 'text-[#FFD166] bg-[rgba(255,209,102,0.1)] border-b-2 border-[#FFD166]'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
                     }`}
                   >
                     {tab.icon}
-                    <span className="hidden sm:inline ml-1">{tab.label}</span>
+                    <span>{tab.label}</span>
                   </Link>
                 )}
               </div>
