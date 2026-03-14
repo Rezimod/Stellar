@@ -26,8 +26,8 @@ async function ensureDevnetSol(publicKey: PublicKey) {
 
 function createWalletFromEmail(email: string) {
   const keypair = Keypair.generate();
-  localStorage.setItem('poo_wallet_email', email);
-  localStorage.setItem('poo_wallet_address', keypair.publicKey.toString());
+  localStorage.setItem('stellar_wallet_email', email);
+  localStorage.setItem('stellar_wallet_address', keypair.publicKey.toString());
   console.log('[Wallet] Created from email:', email, keypair.publicKey.toString());
   return keypair.publicKey.toString();
 }
@@ -51,8 +51,8 @@ export default function WalletStep() {
   // Restore email wallet on mount
   useEffect(() => {
     if (!state.walletConnected) {
-      const saved = localStorage.getItem('poo_wallet_address');
-      const savedEmail = localStorage.getItem('poo_wallet_email');
+      const saved = localStorage.getItem('stellar_wallet_address');
+      const savedEmail = localStorage.getItem('stellar_wallet_email');
       if (saved && savedEmail) setWallet(saved);
     }
   }, []);
@@ -68,10 +68,10 @@ export default function WalletStep() {
   };
 
   return (
-    <Card glow={done ? 'emerald' : null}>
+    <Card glow={done ? 'emerald' : null} className={done ? 'animate-pulse-success' : ''}>
       <div className="flex items-start gap-4">
         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 ${
-          done ? 'bg-[#34d399] border-[#34d399] text-black' : 'border-[#c9a84c] text-[#c9a84c]'
+          done ? 'bg-[#34d399] border-[#34d399] text-black' : 'border-[#FFD166] text-[#FFD166]'
         }`}>
           {done ? '✓' : '1'}
         </div>
@@ -86,15 +86,15 @@ export default function WalletStep() {
               <p className="font-hash text-xs text-[var(--text-secondary)] ml-5">
                 {state.walletAddress.slice(0, 8)}...{state.walletAddress.slice(-8)}
               </p>
-              {localStorage.getItem('poo_wallet_email') && (
+              {localStorage.getItem('stellar_wallet_email') && (
                 <p className="text-xs text-[var(--text-dim)] ml-5">
-                  Signed in as {localStorage.getItem('poo_wallet_email')}
+                  Signed in as {localStorage.getItem('stellar_wallet_email')}
                 </p>
               )}
               <a
                 href={`https://explorer.solana.com/address/${state.walletAddress}?cluster=devnet`}
                 target="_blank" rel="noopener noreferrer"
-                className="text-xs text-[var(--text-dim)] hover:text-[#c9a84c] ml-5 transition-colors"
+                className="text-xs text-[var(--text-dim)] hover:text-[#FFD166] ml-5 transition-colors"
               >
                 View on Solana Explorer ↗
               </a>
@@ -108,13 +108,13 @@ export default function WalletStep() {
 
               {/* Divider */}
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-[#1a2d4d]" />
+                <div className="flex-1 h-px bg-[rgba(56, 240, 255, 0.12)]" />
                 <span className="text-slate-600 text-xs">or</span>
-                <div className="flex-1 h-px bg-[#1a2d4d]" />
+                <div className="flex-1 h-px bg-[rgba(56, 240, 255, 0.12)]" />
               </div>
 
               {/* Email */}
-              <div className="bg-[#0f1a2e] border border-[#1a2d4d] rounded-xl p-4 flex flex-col gap-3">
+              <div className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] rounded-xl p-4 flex flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <Mail size={16} className="text-[var(--text-secondary)]" />
                   <p className="text-[var(--text-primary)] text-sm font-medium">Continue with Email</p>
@@ -125,7 +125,7 @@ export default function WalletStep() {
                   onChange={e => { setEmail(e.target.value); setEmailError(''); }}
                   placeholder="your@email.com"
                   onKeyDown={e => e.key === 'Enter' && handleEmailWallet()}
-                  className="w-full bg-[#05080f] border border-[#1a2d4d] rounded-lg px-3 py-2.5 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-[#c9a84c] min-h-[44px]"
+                  className="w-full bg-[#070B14] border border-[rgba(56, 240, 255, 0.12)] rounded-lg px-3 py-2.5 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-[#FFD166] min-h-[44px]"
                 />
                 {emailError && <p className="text-red-400 text-xs">{emailError}</p>}
                 <Button variant="brass" onClick={handleEmailWallet} className="w-full min-h-[44px]">

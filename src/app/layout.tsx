@@ -7,8 +7,8 @@ import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 
 export const metadata: Metadata = {
-  title: 'Skyproof — Proof of Observation',
-  description: 'Observe the night sky. Capture. Verify. Collect. Every observation verified by satellite and sealed on Solana.',
+  title: 'STELLAR — Verified Sky Observations',
+  description: 'Observe. Verify. Collect. Stargazing verified by satellite and sealed on Solana.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
-      <body className="bg-void text-slate-200 min-h-screen font-sans flex flex-col">
+      <body className="bg-void text-slate-200 min-h-screen font-sans flex flex-col"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <SolanaWalletProvider>
           <AppStateProvider>
             <StarField />

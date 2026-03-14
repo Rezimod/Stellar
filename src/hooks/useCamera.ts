@@ -71,7 +71,7 @@ export function useCamera() {
 
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.fillRect(0, 440, 640, 40);
-      ctx.fillStyle = '#c9a84c';
+      ctx.fillStyle = '#FFD166';
       ctx.font = '12px monospace';
       ctx.fillText(`ASTROMAN · ${missionName} · ${new Date().toISOString()}`, 8, 460);
       return canvas.toDataURL('image/jpeg', 0.85);
@@ -91,7 +91,7 @@ export function generateSimPhoto(name: string): string {
   // Dark sky background
   const grad = ctx.createRadialGradient(320, 240, 20, 320, 240, 320);
   grad.addColorStop(0, '#0d1230');
-  grad.addColorStop(1, '#05080f');
+  grad.addColorStop(1, '#070B14');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 640, 480);
 
@@ -240,7 +240,7 @@ export function generateSimPhoto(name: string): string {
   // Bottom label
   ctx.fillStyle = 'rgba(0,0,0,0.65)';
   ctx.fillRect(0, 440, 640, 40);
-  ctx.fillStyle = '#c9a84c';
+  ctx.fillStyle = '#FFD166';
   ctx.font = '11px monospace';
   ctx.fillText(`ASTROMAN · ${name} · SIMULATED · ${new Date().toLocaleTimeString()}`, 8, 460);
 

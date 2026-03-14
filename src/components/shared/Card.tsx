@@ -3,14 +3,14 @@ import { ReactNode } from 'react';
 interface CardProps {
   children: ReactNode;
   className?: string;
-  glow?: 'brass' | 'emerald' | 'cyan' | 'solana' | null;
+  glow?: 'gold' | 'emerald' | 'cyan' | 'purple' | null;
 }
 
 const glowMap = {
-  brass: 'border-[#c9a84c]/50 glow-brass',
+  gold: 'border-[#FFD166]/50 glow-gold',
   emerald: 'border-[#34d399]/50 glow-emerald',
-  cyan: 'border-[#22d3ee]/50 glow-cyan',
-  solana: 'border-[#9945FF]/50 glow-solana',
+  cyan: 'border-[#38F0FF]/50 glow-cyan',
+  purple: 'border-[#7A5FFF]/50 glow-purple',
 };
 
 export default function Card({ children, className = '', glow }: CardProps) {

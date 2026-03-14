@@ -18,7 +18,7 @@ export default function ObservationLog() {
           Observation Log
         </h2>
         {all.length > 3 && (
-          <Link href="/proof" className="text-xs text-[#22d3ee] hover:underline">
+          <Link href="/proof" className="text-xs text-[#38F0FF] hover:underline">
             View all in Proof →
           </Link>
         )}
@@ -36,12 +36,12 @@ export default function ObservationLog() {
                 )}
               </div>
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <p className="text-[#c9a84c] font-bold text-sm flex-shrink-0">+{m.stars ?? (m as any).points ?? 0} ✦</p>
+              <p className="text-[#FFD166] font-bold text-sm flex-shrink-0">+{m.stars ?? (m as any).points ?? 0} ✦</p>
             </div>
           </Card>
         ))}
         {all.length > 0 && (
-          <Link href="/proof" className="text-center text-xs text-[var(--text-dim)] hover:text-[#22d3ee] transition-colors py-1">
+          <Link href="/proof" className="text-center text-xs text-[var(--text-dim)] hover:text-[#38F0FF] transition-colors py-1">
             View all in My Proof →
           </Link>
         )}

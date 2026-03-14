@@ -29,7 +29,7 @@ interface AppStateCtx {
 }
 
 const Ctx = createContext<AppStateCtx | null>(null);
-const STORAGE_KEY = 'proof_of_observation_state';
+const STORAGE_KEY = 'stellar_state';
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(defaultState);
@@ -75,7 +75,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
             // Simple notification
             const msg = document.createElement('div');
             msg.textContent = `🟢 Back online! ${pending.length} observation${pending.length > 1 ? 's' : ''} verified and minted.`;
-            msg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111c30;border:1px solid #34d399;color:#34d399;padding:12px 20px;border-radius:8px;z-index:9999;font-size:14px;';
+            msg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0F1F3D;border:1px solid #34d399;color:#34d399;padding:12px 20px;border-radius:8px;z-index:9999;font-size:14px;';
             document.body.appendChild(msg);
             setTimeout(() => msg.remove(), 4000);
           }

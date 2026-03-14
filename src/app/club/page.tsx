@@ -16,19 +16,19 @@ function StepProgress({ steps }: { steps: { label: string; done: boolean; active
           <div className="flex flex-col items-center gap-1">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
               step.done
-                ? 'bg-[#c9a84c] border-2 border-[#c9a84c] text-black'
+                ? 'bg-[#FFD166] border-2 border-[#FFD166] text-black'
                 : step.active
-                  ? 'border-2 border-[#c9a84c] text-[#c9a84c] bg-transparent'
+                  ? 'border-2 border-[#FFD166] text-[#FFD166] bg-transparent'
                   : 'border-2 border-[var(--text-dim)] text-[var(--text-dim)] bg-transparent'
             }`}>
               {step.done ? <CheckCircle2 size={16} /> : i + 1}
             </div>
-            <span className={`text-xs font-medium ${step.done ? 'text-[#c9a84c]' : step.active ? 'text-[var(--text-secondary)]' : 'text-[var(--text-dim)]'}`}>
+            <span className={`text-xs font-medium ${step.done ? 'text-[#FFD166]' : step.active ? 'text-[var(--text-secondary)]' : 'text-[var(--text-dim)]'}`}>
               {step.label}
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`w-16 sm:w-24 h-0.5 mb-5 mx-1 transition-all duration-300 ${step.done ? 'bg-[#c9a84c]' : 'bg-[var(--text-dim)]'}`} />
+            <div className={`w-16 sm:w-24 h-0.5 mb-5 mx-1 transition-all duration-300 ${step.done ? 'bg-[#FFD166]' : 'bg-[var(--text-dim)]'}`} />
           )}
         </div>
       ))}
@@ -47,9 +47,9 @@ export default function ClubPage() {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="max-w-2xl mx-auto px-4 py-12 animate-page-enter">
       <div className="mb-6 text-center">
-        <h1 className="text-3xl font-bold text-[#c9a84c]">AstroClub</h1>
+        <h1 className="text-3xl font-bold text-[#FFD166]">AstroClub</h1>
         <p className="text-[var(--text-secondary)] mt-2 text-sm">Three steps to start your observation journey</p>
       </div>
 

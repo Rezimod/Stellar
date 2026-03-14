@@ -15,8 +15,8 @@ export default function StatsBar() {
   return (
     <div className="grid grid-cols-3 gap-3 mb-6">
       {[
-        { icon: <Telescope size={15} strokeWidth={2} className="text-[#c9a84c]" />, label: 'Observations', value: <span className="text-[#c9a84c] text-xl sm:text-2xl font-bold">{count}</span> },
-        { icon: <Star size={15} strokeWidth={0} fill="#22d3ee" className="text-[#22d3ee]" />, label: 'Stars', value: <span className="text-[#22d3ee] text-xl sm:text-2xl font-bold">{total} ✦</span> },
+        { icon: <Telescope size={15} strokeWidth={2} className="text-[#FFD166]" />, label: 'Observations', value: <span className="text-[#FFD166] text-xl sm:text-2xl font-bold">{count}</span> },
+        { icon: <Star size={15} strokeWidth={0} fill="#38F0FF" className="text-[#38F0FF]" />, label: 'Stars', value: <span className="text-[#38F0FF] text-xl sm:text-2xl font-bold">{total} ✦</span> },
         { icon: <Trophy size={15} strokeWidth={2} className="text-[#a78bfa]" />, label: 'Rank', value: <div className="flex items-center gap-1.5"><span className="text-xs font-semibold text-[#a78bfa]">{rank.name}</span></div> },
       ].map(card => (
         <div key={card.label} className="glass-card p-4 text-center">

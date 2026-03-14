@@ -32,16 +32,16 @@ export default function Verification({ photo, farmhawk, pollinet, stars, timesta
       </Card>
 
       {/* FarmHawk card */}
-      <div className="glass-card border border-[#22d3ee]/30 p-5 glow-cyan">
+      <div className="glass-card border border-[#38F0FF]/30 p-5 glow-cyan">
         <div className="flex items-center gap-2 mb-4">
-          <Satellite size={16} className="text-[#22d3ee]" />
-          <p className="text-[#22d3ee] font-semibold text-sm">FarmHawk Satellite Verification</p>
+          <Satellite size={16} className="text-[#38F0FF]" />
+          <p className="text-[#38F0FF] font-semibold text-sm">FarmHawk Satellite Verification</p>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
           {[
             { icon: <Cloud size={13} />, label: 'Cloud Cover', value: `${farmhawk.cloudCover}%` },
             { icon: <Eye size={13} />, label: 'Visibility', value: farmhawk.visibility,
-              color: farmhawk.visibility === 'Excellent' ? 'text-[#34d399]' : farmhawk.visibility === 'Good' ? 'text-[#c9a84c]' : farmhawk.visibility === 'Fair' ? 'text-amber-400' : 'text-red-400' },
+              color: farmhawk.visibility === 'Excellent' ? 'text-[#34d399]' : farmhawk.visibility === 'Good' ? 'text-[#FFD166]' : farmhawk.visibility === 'Fair' ? 'text-amber-400' : 'text-red-400' },
             { icon: <Thermometer size={13} />, label: 'Temperature', value: `${farmhawk.temperature}°C` },
             { icon: <Droplets size={13} />, label: 'Humidity', value: `${farmhawk.humidity}%` },
             { icon: <Wind size={13} />, label: 'Wind', value: `${farmhawk.windSpeed} km/h` },

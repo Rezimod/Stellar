@@ -54,7 +54,7 @@ async function createOnChainProof(
   const connection = getConnection();
   try {
     const memo = JSON.stringify({
-      app: 'skyproof',
+      app: 'stellar',
       ...memoData,
       observer: publicKey.toString(),
       ts: Date.now(),
@@ -88,7 +88,7 @@ export async function mintMembership(
   publicKey: PublicKey | null
 ): Promise<MintResult> {
   if (!sendTransaction || !publicKey) return { ...simResult(), txId: 'email_' + Date.now().toString(36) };
-  return createOnChainProof(sendTransaction, publicKey, { type: 'membership', name: 'Skyproof Club Membership' });
+  return createOnChainProof(sendTransaction, publicKey, { type: 'membership', name: 'Stellar Club Membership' });
 }
 
 export async function mintTelescopePassport(

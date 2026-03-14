@@ -27,7 +27,7 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
     ? 'border-[#34d399]/40'
     : reward.progress > 0
     ? 'border-amber-500/40'
-    : 'border-[#1a2d4d]';
+    : 'border-[rgba(56, 240, 255, 0.12)]';
 
   const progressColor = reward.progress === 0
     ? 'bg-slate-600'
@@ -61,7 +61,7 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
             const m = MISSIONS.find(x => x.id === mId);
             const done = completedIds.includes(mId);
             return (
-              <span key={mId} className={`text-xs px-2 py-0.5 rounded-full border ${done ? 'border-[#34d399]/50 text-[#34d399]' : 'border-[#1a2d4d] text-slate-500'}`}>
+              <span key={mId} className={`text-xs px-2 py-0.5 rounded-full border ${done ? 'border-[#34d399]/50 text-[#34d399]' : 'border-[rgba(56, 240, 255, 0.12)] text-slate-500'}`}>
                 {m?.emoji} {m?.name} {done ? '✓' : '○'}
               </span>
             );
@@ -78,13 +78,13 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
       {/* Code + claim when unlocked */}
       {reward.unlocked && reward.code && (
         <div className="flex items-center gap-2 mt-1">
-          <code className="bg-[#0f1a2e] border border-[#1a2d4d] px-2 py-1 rounded text-xs text-[#c9a84c] font-mono flex-1">
+          <code className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] px-2 py-1 rounded text-xs text-[#FFD166] font-mono flex-1">
             {reward.code}
           </code>
-          <button onClick={copyCode} className="p-1.5 border border-[#1a2d4d] hover:border-[#22d3ee] rounded text-slate-400 hover:text-[#22d3ee] transition-all" title="Copy code">
+          <button onClick={copyCode} className="p-1.5 border border-[rgba(56, 240, 255, 0.12)] hover:border-[#38F0FF] rounded text-slate-400 hover:text-[#38F0FF] transition-all" title="Copy code">
             {copied ? <Check size={12} className="text-[#34d399]" /> : <Copy size={12} />}
           </button>
-          <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer" className="p-1.5 border border-[#1a2d4d] hover:border-[#c9a84c] rounded text-slate-400 hover:text-[#c9a84c] transition-all" title="Visit astroman.ge">
+          <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer" className="p-1.5 border border-[rgba(56, 240, 255, 0.12)] hover:border-[#FFD166] rounded text-slate-400 hover:text-[#FFD166] transition-all" title="Visit astroman.ge">
             <ExternalLink size={12} />
           </a>
         </div>

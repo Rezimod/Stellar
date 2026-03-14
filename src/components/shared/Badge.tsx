@@ -4,11 +4,11 @@ interface BadgeProps {
 }
 
 const colors = {
-  brass: 'bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/40',
+  brass: 'bg-[#FFD166]/20 text-[#FFD166] border-[#FFD166]/40',
   emerald: 'bg-[#34d399]/20 text-[#34d399] border-[#34d399]/40',
-  cyan: 'bg-[#22d3ee]/20 text-[#22d3ee] border-[#22d3ee]/40',
-  purple: 'bg-[#9945FF]/20 text-[#9945FF] border-[#9945FF]/40',
-  dim: 'bg-[#1a2d4d] text-slate-400 border-[#1a2d4d]',
+  cyan: 'bg-[#38F0FF]/20 text-[#38F0FF] border-[#38F0FF]/40',
+  purple: 'bg-[#7A5FFF]/20 text-[#7A5FFF] border-[#7A5FFF]/40',
+  dim: 'bg-[#0F1F3D] text-slate-400 border-[rgba(56,240,255,0.12)]',
 };
 
 export default function Badge({ children, color = 'dim' }: BadgeProps) {

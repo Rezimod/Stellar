@@ -37,7 +37,7 @@ export default function CameraCapture({ missionName, onCapture }: CameraCaptureP
   if (preview) {
     return (
       <div className="flex flex-col items-center gap-4">
-        <img src={preview} alt="Preview" className="w-full max-w-md rounded-lg border border-[#1a2d4d]" />
+        <img src={preview} alt="Preview" className="w-full max-w-md rounded-lg border border-[rgba(56, 240, 255, 0.12)]" />
         <div className="flex gap-4 w-full max-w-md">
           <Button variant="ghost" onClick={handleRetake} className="flex-1">
             🔄 Retake
@@ -68,9 +68,9 @@ export default function CameraCapture({ missionName, onCapture }: CameraCaptureP
       <div className="relative w-full max-w-md aspect-[4/3] bg-black rounded-lg overflow-hidden">
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-20 h-20 border border-[#c9a84c]/60 rounded-full" />
+          <div className="w-20 h-20 border border-[#FFD166]/60 rounded-full" />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-3 py-1.5 text-[10px] font-mono text-[#c9a84c]">
+        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-3 py-1.5 text-[10px] font-mono text-[#FFD166]">
           ASTROMAN · {missionName} · LIVE · {new Date().toLocaleTimeString()}
         </div>
         {/* Flip camera */}
