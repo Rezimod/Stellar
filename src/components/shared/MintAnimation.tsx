@@ -6,7 +6,7 @@ interface MintAnimationProps {
 
 export default function MintAnimation({ done }: MintAnimationProps) {
   return (
-    <div className="fixed inset-0 z-[60] bg-[#070B14]/90 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed inset-0 z-[60] bg-[#070B14]/90 backdrop-blur-sm grid place-items-center">
       <div className="flex flex-col items-center gap-6 text-center px-6">
 
         {/* Celestial orb animation */}

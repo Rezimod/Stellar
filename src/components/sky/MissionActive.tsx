@@ -150,9 +150,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
       if (justUnlocked.length > 0) {
         setNewRewards(justUnlocked.map(r => ({ icon: r.icon, name: r.name, description: r.description, code: r.code })));
+        window.scrollTo({ top: 0, behavior: 'instant' });
       } else {
         setStep('done');
         onClose();
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
     }, 1200);
   };
@@ -201,7 +203,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               className="flex-1 text-center text-xs py-2.5 px-3 border border-[#FFD166]/30 text-[#FFD166] rounded-lg hover:bg-[#FFD166]/10 transition-all">
               Visit astroman.ge →
             </a>
-            <button onClick={() => { setStep('done'); onClose(); }}
+            <button onClick={() => { setStep('done'); onClose(); window.scrollTo({ top: 0, behavior: 'instant' }); }}
               className="flex-1 text-xs py-2.5 px-3 bg-[#34d399]/10 border border-[#34d399]/30 text-[#34d399] rounded-lg hover:bg-[#34d399]/20 transition-all">
               Continue
             </button>

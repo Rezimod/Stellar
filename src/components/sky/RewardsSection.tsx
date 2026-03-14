@@ -116,7 +116,7 @@ export default function RewardsSection() {
   const rewards = getUnlockedRewards(completedIds, rank);
 
   return (
-    <div className="mt-4 sm:mt-8 mb-3 sm:mb-6">
+    <div className="mt-3 mb-3">
       <p className="text-center text-slate-500 text-sm mb-4 tracking-widest uppercase">— Rewards —</p>
       <div className="flex flex-col gap-1.5 sm:gap-3">
         {rewards.map(r => (
