@@ -67,7 +67,7 @@ export default function ClubPage() {
           <h2 className="text-xl font-bold text-[#34d399] mb-4">You&apos;re ready to observe!</h2>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/sky" className="btn-primary px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2">
-              Sky Dashboard →
+              Mission Control →
             </Link>
             <a
               href={ECOSYSTEM.store}
