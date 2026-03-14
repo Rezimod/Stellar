@@ -166,8 +166,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   // Reward unlock modal
   if (newRewards.length > 0) {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#070B14]/95 overflow-y-auto flex items-start sm:items-center justify-center p-4 pt-12 sm:pt-4">
-        <div className="glass-card glow-emerald max-w-sm w-full p-5 flex flex-col gap-3 text-center">
+      <div className="fixed inset-0 z-[60] bg-[#070B14]/95 flex items-center justify-center p-4">
+        <div className="glass-card glow-emerald max-w-sm w-full p-5 flex flex-col gap-3 text-center max-h-[85vh] overflow-y-auto">
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center mx-auto">
             <Award size={22} className="text-[#34d399]" />
           </div>

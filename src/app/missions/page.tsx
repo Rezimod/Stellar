@@ -52,7 +52,7 @@ export default function MissionsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-2 sm:mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#38F0FF] flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
           <Satellite size={22} strokeWidth={1.5} className="text-[#38F0FF]" />
           Missions

@@ -68,7 +68,11 @@ h1, h2, h3 { font-family: Georgia, Palatino, serif; }
 .glass-card:hover {
   background: rgba(20, 40, 75, 0.6);
   border-color: rgba(56, 240, 255, 0.15);
-  transform: translateY(-1px);
+}
+@media (min-width: 640px) {
+  .glass-card:hover {
+    transform: translateY(-1px);
+  }
 }
 .glass-card:active {
   background: rgba(20, 40, 75, 0.7);

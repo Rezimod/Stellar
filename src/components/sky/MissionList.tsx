@@ -46,7 +46,7 @@ export default function MissionList() {
   return (
     <>
       {active && <MissionActive mission={active} onClose={() => setActive(null)} />}
-      <div className="flex flex-col gap-2 mb-2">
+      <div className="flex flex-col gap-1.5 sm:gap-2 mb-2">
         {MISSIONS.map(mission => {
           const done = completedIds.has(mission.id);
           const pending = pendingIds.has(mission.id);
@@ -57,13 +57,13 @@ export default function MissionList() {
                   <MissionIcon id={mission.id} size={38} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white text-sm mb-1.5">{mission.name}</p>
-                  <div className="flex flex-col gap-1">
+                  <p className="font-semibold text-white text-sm mb-0.5">{mission.name}</p>
+                  <div className="flex flex-col gap-0.5">
                     <DifficultyStars level={mission.difficulty} />
                     <span className="text-[#FFD166] text-xs font-semibold">Reward: +{mission.stars} stars ✦</span>
                     <VisibilityDot difficulty={mission.difficulty} />
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge color={mission.type === 'telescope' ? 'cyan' : 'dim'}>
                       {mission.type === 'telescope' ? <><Telescope size={10} className="inline mr-0.5" /> Telescope</> : <><Eye size={10} className="inline mr-0.5" /> Naked Eye</>}
                     </Badge>

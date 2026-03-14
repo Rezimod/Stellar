@@ -12,7 +12,7 @@ export default function ObservationLog() {
   if (missions.length === 0) return null;
 
   return (
-    <div className="mt-5 sm:mt-8">
+    <div className="mt-4 sm:mt-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold text-slate-300" style={{ fontFamily: 'Georgia, serif' }}>
           Observation Log

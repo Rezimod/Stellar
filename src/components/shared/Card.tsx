@@ -16,7 +16,7 @@ const glowMap = {
 export default function Card({ children, className = '', glow }: CardProps) {
   return (
     <div className={`
-      glass-card p-5 transition-all duration-300
+      glass-card p-3 sm:p-5 transition-all duration-300
       ${glow ? glowMap[glow] : ''}
       ${className}
     `}>
