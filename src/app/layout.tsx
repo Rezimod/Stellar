@@ -6,6 +6,11 @@ import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
+import type { Metadata, Viewport } from 'next';
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'STELLAR — Verified Sky Observations',
@@ -15,9 +20,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-      </head>
+      
       <body className="bg-void text-slate-200 min-h-screen font-sans flex flex-col"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <SolanaWalletProvider>
