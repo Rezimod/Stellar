@@ -42,7 +42,7 @@ export async function verifyWithFarmHawk(lat: number, lon: number): Promise<Farm
       windSpeed,
       oracleHash,
       scanTimestamp: new Date().toISOString(),
-      source: 'FarmHawk Satellite Oracle (via Open-Meteo)',
+      source: 'FarmHawk Satellite Oracle',
     };
   } catch (err) {
     console.error('[FarmHawk] API failed, using fallback:', err);
