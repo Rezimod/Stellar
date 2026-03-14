@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useCamera, generateSimPhoto } from '@/hooks/useCamera';
+import { Camera, RefreshCw, CheckCircle2 } from 'lucide-react';
 import Button from '@/components/shared/Button';
 
 interface CameraCaptureProps {
@@ -40,10 +41,10 @@ export default function CameraCapture({ missionName, onCapture }: CameraCaptureP
         <img src={preview} alt="Preview" className="w-full max-w-md rounded-lg border border-[rgba(56, 240, 255, 0.12)]" />
         <div className="flex gap-4 w-full max-w-md">
           <Button variant="ghost" onClick={handleRetake} className="flex-1">
-            🔄 Retake
+            <RefreshCw size={16} className="inline mr-1" /> Retake
           </Button>
           <Button variant="brass" onClick={handleSubmit} className="flex-1">
-            ✅ Submit for Verification
+            <CheckCircle2 size={16} className="inline mr-1" /> Submit for Verification
           </Button>
         </div>
       </div>
@@ -57,7 +58,7 @@ export default function CameraCapture({ missionName, onCapture }: CameraCaptureP
         <p className="text-slate-400 mb-2 text-sm">Camera not available — using simulated photo</p>
         <p className="text-slate-600 text-xs mb-4 italic">You can retake before submitting</p>
         <Button variant="brass" onClick={() => setPreview(generateSimPhoto(missionName))}>
-          📸 Generate Simulated Photo
+          <Camera size={16} className="inline mr-1" /> Generate Simulated Photo
         </Button>
       </div>
     );
@@ -78,11 +79,11 @@ export default function CameraCapture({ missionName, onCapture }: CameraCaptureP
           onClick={flipCamera}
           className="absolute top-2 right-2 bg-black/60 text-white px-2 py-1 rounded text-xs hover:bg-black/80 transition-all"
         >
-          🔄 {facingMode === 'environment' ? 'Front' : 'Rear'}
+          <RefreshCw size={14} className="inline mr-1" /> {facingMode === 'environment' ? 'Front' : 'Rear'}
         </button>
       </div>
       <Button variant="brass" onClick={handleCapture} className="w-full max-w-md">
-        📸 Capture
+        <Camera size={16} className="inline mr-1" /> Capture
       </Button>
     </div>
   );

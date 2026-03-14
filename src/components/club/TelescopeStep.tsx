@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Telescope } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import { TELESCOPE_BRANDS } from '@/lib/constants';
 import Card from '@/components/shared/Card';
@@ -34,7 +35,9 @@ export default function TelescopeStep() {
           <p className="text-slate-400 text-sm mb-4">Register your equipment to start observing</p>
           {done ? (
             <div className="bg-[#0F1F3D] border border-[#38F0FF]/40 rounded-lg p-4 flex items-center gap-4">
-              <span className="text-3xl">🔭</span>
+              <div className="w-12 h-12 rounded-full bg-[#38F0FF]/10 border border-[#38F0FF]/20 flex items-center justify-center">
+                <Telescope size={22} className="text-[#38F0FF]" />
+              </div>
               <div>
                 <p className="text-[#38F0FF] font-semibold">{state.telescope!.brand} {state.telescope!.model}</p>
                 <p className="text-slate-400 text-xs">Aperture: {state.telescope!.aperture}</p>

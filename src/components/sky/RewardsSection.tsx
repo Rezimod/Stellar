@@ -36,7 +36,7 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
     : 'bg-[#34d399]';
 
   return (
-    <div className={`glass-card border ${borderColor} ${reward.unlocked ? 'glow-emerald' : ''} p-4 flex flex-col gap-3 ${!reward.unlocked && reward.progress === 0 ? 'opacity-50' : ''}`}>
+    <div className={`glass-card border ${borderColor} ${reward.unlocked ? 'glow-emerald' : ''} p-5 flex flex-col gap-4 ${!reward.unlocked && reward.progress === 0 ? 'opacity-50' : ''}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-xl">{reward.icon}</span>
@@ -56,12 +56,12 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
 
       {/* Mission progress chips */}
       {reward.requiredMissions && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {reward.requiredMissions.map(mId => {
             const m = MISSIONS.find(x => x.id === mId);
             const done = completedIds.includes(mId);
             return (
-              <span key={mId} className={`text-xs px-2 py-0.5 rounded-full border ${done ? 'border-[#34d399]/50 text-[#34d399]' : 'border-[rgba(56, 240, 255, 0.12)] text-slate-500'}`}>
+              <span key={mId} className={`text-xs px-2 py-1 rounded-full border ${done ? 'border-[#34d399]/50 text-[#34d399]' : 'border-[rgba(56, 240, 255, 0.12)] text-slate-500'}`}>
                 {m?.emoji} {m?.name} {done ? '✓' : '○'}
               </span>
             );
@@ -77,16 +77,19 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
 
       {/* Code + claim when unlocked */}
       {reward.unlocked && reward.code && (
-        <div className="flex items-center gap-2 mt-1">
-          <code className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] px-2 py-1 rounded text-xs text-[#FFD166] font-mono flex-1">
-            {reward.code}
-          </code>
-          <button onClick={copyCode} className="p-1.5 border border-[rgba(56, 240, 255, 0.12)] hover:border-[#38F0FF] rounded text-slate-400 hover:text-[#38F0FF] transition-all" title="Copy code">
-            {copied ? <Check size={12} className="text-[#34d399]" /> : <Copy size={12} />}
-          </button>
-          <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer" className="p-1.5 border border-[rgba(56, 240, 255, 0.12)] hover:border-[#FFD166] rounded text-slate-400 hover:text-[#FFD166] transition-all" title="Visit astroman.ge">
-            <ExternalLink size={12} />
-          </a>
+        <div className="mt-2">
+          <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wider mb-1.5">Your Code</p>
+          <div className="flex items-center gap-2">
+            <code className="bg-[#070B14] border border-[#FFD166]/30 px-4 py-2.5 rounded-lg text-sm text-[#FFD166] font-mono flex-1 tracking-wide">
+              {reward.code}
+            </code>
+            <button onClick={copyCode} className="p-2.5 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] rounded-lg text-slate-400 hover:text-[#38F0FF] transition-all" title="Copy code">
+              {copied ? <Check size={14} className="text-[#34d399]" /> : <Copy size={14} />}
+            </button>
+            <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer" className="p-2.5 border border-[rgba(56,240,255,0.12)] hover:border-[#FFD166] rounded-lg text-slate-400 hover:text-[#FFD166] transition-all" title="Visit astroman.ge">
+              <ExternalLink size={14} />
+            </a>
+          </div>
         </div>
       )}
 
@@ -94,7 +97,7 @@ function RewardCard({ reward, completedIds, claimed, onClaim }: {
         <button
           onClick={onClaim}
           disabled={claimed}
-          className={`text-xs py-1.5 px-3 rounded border transition-all ${claimed ? 'border-[#34d399]/30 text-[#34d399] cursor-default' : 'border-[#34d399]/50 text-[#34d399] hover:bg-[#34d399]/10'}`}
+          className={`w-full text-xs py-2.5 px-3 rounded border transition-all ${claimed ? 'border-[#34d399]/30 text-[#34d399] cursor-default' : 'border-[#34d399]/50 text-[#34d399] hover:bg-[#34d399]/10'}`}
         >
           {claimed ? 'Claimed ✓' : 'Claim →'}
         </button>

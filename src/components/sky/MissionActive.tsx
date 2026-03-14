@@ -12,7 +12,7 @@ import CameraCapture from './CameraCapture';
 import Verification from './Verification';
 import MintAnimation from '@/components/shared/MintAnimation';
 import Button from '@/components/shared/Button';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Telescope, Satellite } from 'lucide-react';
 
 interface MissionActiveProps {
   mission: Mission;
@@ -157,11 +157,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   if (newRewards.length > 0) {
     return (
       <div className="fixed inset-0 z-50 bg-[#070B14]/95 overflow-y-auto flex items-center justify-center p-4">
-        <div className="glass-card glow-emerald max-w-sm w-full p-6 flex flex-col gap-4 text-center">
+        <div className="glass-card glow-emerald max-w-sm w-full p-8 flex flex-col gap-6 text-center">
           <p className="text-4xl">🎉</p>
           <h2 className="text-xl font-bold text-[#34d399]">Reward Unlocked!</h2>
           {newRewards.map(r => (
-            <div key={r.name} className="bg-[#0F1F3D] border border-[#34d399]/30 rounded-xl p-4 text-left flex flex-col gap-2">
+            <div key={r.name} className="bg-[#0F1F3D] border border-[#34d399]/30 rounded-xl p-5 text-left flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{r.icon}</span>
                 <div>
@@ -170,22 +170,27 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 </div>
               </div>
               {r.code && (
-                <div className="flex items-center gap-2 mt-1">
-                  <code className="bg-[#070B14] border border-[rgba(56, 240, 255, 0.12)] px-2 py-1 rounded text-xs text-[#FFD166] font-mono flex-1">{r.code}</code>
-                  <button onClick={() => copyCode(r.code!)} className="p-1.5 border border-[rgba(56, 240, 255, 0.12)] hover:border-[#38F0FF] rounded text-slate-400 hover:text-[#38F0FF] transition-all">
-                    {copiedCode === r.code ? <Check size={12} className="text-[#34d399]" /> : <Copy size={12} />}
-                  </button>
+                <div className="mt-2">
+                  <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wider mb-1.5">Your Code</p>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-[#070B14] border border-[#FFD166]/30 px-4 py-2.5 rounded-lg text-sm text-[#FFD166] font-mono flex-1 tracking-wide">
+                      {r.code}
+                    </code>
+                    <button onClick={() => copyCode(r.code!)} className="p-2.5 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] rounded-lg text-slate-400 hover:text-[#38F0FF] transition-all">
+                      {copiedCode === r.code ? <Check size={14} className="text-[#34d399]" /> : <Copy size={14} />}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           ))}
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer"
-              className="flex-1 text-center text-xs py-2 px-3 border border-[#FFD166]/50 text-[#FFD166] rounded hover:bg-[#FFD166]/10 transition-all">
+              className="flex-1 text-center text-xs py-3 px-3 border border-[#FFD166]/50 text-[#FFD166] rounded hover:bg-[#FFD166]/10 transition-all">
               Visit astroman.ge →
             </a>
             <button onClick={() => { setStep('done'); onClose(); }}
-              className="flex-1 text-xs py-2 px-3 bg-[#34d399]/10 border border-[#34d399]/50 text-[#34d399] rounded hover:bg-[#34d399]/20 transition-all">
+              className="flex-1 text-xs py-3 px-3 bg-[#34d399]/10 border border-[#34d399]/50 text-[#34d399] rounded hover:bg-[#34d399]/20 transition-all">
               Continue
             </button>
           </div>
@@ -211,7 +216,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         {step === 'observing' && (
           <div className="flex flex-col gap-4">
             <div className="border-2 border-dashed border-[rgba(56, 240, 255, 0.12)] rounded-xl p-8 text-center">
-              <p className="text-4xl mb-4">🔭</p>
+              <div className="w-16 h-16 rounded-full bg-[#FFD166]/10 border border-[#FFD166]/20 flex items-center justify-center mb-4 mx-auto">
+                <Telescope size={28} className="text-[#FFD166]" />
+              </div>
               <p className="text-slate-300 mb-2">Point your telescope at <span className="text-[#FFD166]">{mission.name}</span></p>
               <p className="text-slate-500 text-sm italic">{mission.hint}</p>
             </div>
@@ -227,7 +234,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
         {step === 'verifying' && (
           <div className="text-center py-12">
-            <p className="text-4xl animate-spin-slow mb-4">🛰️</p>
+            <div className="w-16 h-16 rounded-full bg-[#38F0FF]/10 border border-[#38F0FF]/20 flex items-center justify-center mb-4 mx-auto animate-spin-slow">
+              <Satellite size={28} className="text-[#38F0FF]" />
+            </div>
             <p className="text-[#38F0FF] font-semibold">Scanning sky conditions at your location...</p>
             <p className="text-slate-400 text-sm mt-2">Verify with Satellite 🛰️</p>
           </div>

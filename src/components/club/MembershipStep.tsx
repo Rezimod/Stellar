@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Shield } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
@@ -31,7 +32,9 @@ export default function MembershipStep() {
           <p className="text-slate-400 text-sm mb-4">Join the Stellar observer network</p>
           {done ? (
             <div className="bg-[#0F1F3D] border border-[#FFD166]/40 rounded-lg p-4 flex items-center gap-4">
-              <span className="text-3xl">🏛️</span>
+              <div className="w-12 h-12 rounded-full bg-[#FFD166]/10 border border-[#FFD166]/20 flex items-center justify-center">
+                <Shield size={22} className="text-[#FFD166]" />
+              </div>
               <div>
                 <p className="text-[#FFD166] font-semibold">Stellar Club Member</p>
                 <p className="text-slate-400 text-xs">Founding Member · Observations mint on Solana</p>

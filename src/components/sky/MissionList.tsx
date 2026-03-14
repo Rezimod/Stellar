@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { Mission } from '@/lib/types';
-import { CheckCircle2, Clock } from 'lucide-react';
+import { CheckCircle2, Clock, Telescope, Eye } from 'lucide-react';
 import Badge from '@/components/shared/Badge';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
@@ -65,7 +65,7 @@ export default function MissionList() {
                   </div>
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <Badge color={mission.type === 'telescope' ? 'cyan' : 'dim'}>
-                      {mission.type === 'telescope' ? '🔭 Telescope' : '👁️ Naked Eye'}
+                      {mission.type === 'telescope' ? <><Telescope size={10} className="inline mr-0.5" /> Telescope</> : <><Eye size={10} className="inline mr-0.5" /> Naked Eye</>}
                     </Badge>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Satellite } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import StatsBar from '@/components/sky/StatsBar';
 import MissionList from '@/components/sky/MissionList';
@@ -51,10 +52,11 @@ export default function SkyPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 animate-page-enter">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#38F0FF]" style={{ fontFamily: 'Georgia, serif' }}>
-          🌌 Sky Dashboard
+        <h1 className="text-3xl font-bold text-[#38F0FF] flex items-center gap-3" style={{ fontFamily: 'Georgia, serif' }}>
+          <Satellite size={26} strokeWidth={1.5} className="text-[#38F0FF]" />
+          Missions
         </h1>
-        <p className="text-slate-400 mt-1">Tonight&apos;s observation missions</p>
+        <p className="text-slate-400 mt-1">Tonight&apos;s observation targets</p>
       </div>
 
       <StatsBar />
