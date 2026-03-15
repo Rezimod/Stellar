@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Satellite } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import StatsBar from '@/components/sky/StatsBar';
-import MissionList from '@/components/sky/MissionList';
 import ObservationLog from '@/components/sky/ObservationLog';
 import RewardsSection from '@/components/sky/RewardsSection';
 
@@ -77,23 +76,6 @@ export default function MissionsPage() {
 
         {/* Stats card — visually isolated */}
         <StatsBar />
-      </section>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3 -mt-2">
-        <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,209,102,0.2), rgba(56,240,255,0.15), transparent)' }} />
-        <span
-          className="text-[10px] uppercase tracking-[0.2em] font-medium px-3 py-1 rounded-full"
-          style={{ color: 'rgba(255,209,102,0.6)', border: '1px solid rgba(255,209,102,0.12)', background: 'rgba(255,209,102,0.04)' }}
-        >
-          Tonight&apos;s Targets
-        </span>
-        <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, rgba(255,209,102,0.2), rgba(56,240,255,0.15), transparent)' }} />
-      </div>
-
-      {/* ── Mission Cards ── */}
-      <section>
-        <MissionList />
       </section>
 
       {/* ── Rewards & Log ── */}
