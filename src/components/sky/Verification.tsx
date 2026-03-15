@@ -80,7 +80,7 @@ export default function Verification({ photo, farmhawk, pollinet, stars, timesta
       </div>
 
       {/* Data panel */}
-      <div className="px-4 pt-5 pb-4 flex flex-col gap-4">
+      <div className="px-4 pt-5 pb-4 flex flex-col gap-4 max-w-2xl mx-auto w-full">
 
         {/* Location + condition badge */}
         <div className="flex items-center justify-between">

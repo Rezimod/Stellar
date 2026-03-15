@@ -21,12 +21,15 @@ export default function MintAnimation({ done }: MintAnimationProps) {
         )}
 
         {/* Outer ring — slow spin with tick dots */}
-        <div className="absolute rounded-full" style={{
-          width: 140, height: 140,
-          border: `1px solid ${done ? 'rgba(52,211,153,0.25)' : 'rgba(255,209,102,0.14)'}`,
-          animation: done ? 'none' : 'spin 9s linear infinite',
-          transition: 'border-color 0.6s',
-        }}>
+        <div
+          className={`absolute rounded-full ${!done ? 'animate-spin' : ''}`}
+          style={{
+            width: 140, height: 140,
+            border: `1px solid ${done ? 'rgba(52,211,153,0.25)' : 'rgba(255,209,102,0.14)'}`,
+            animationDuration: '9s',
+            transition: 'border-color 0.6s',
+          }}
+        >
           {!done && [0, 45, 90, 135, 180, 225, 270, 315].map(deg => (
             <div key={deg} style={{
               position: 'absolute', width: 2, height: 2, borderRadius: '50%',
@@ -39,13 +42,16 @@ export default function MintAnimation({ done }: MintAnimationProps) {
 
         {/* Mid ring — fast conic arc */}
         {!done ? (
-          <div className="absolute rounded-full" style={{
-            width: 112, height: 112,
-            background: 'conic-gradient(from 0deg, transparent 65%, rgba(255,209,102,0.95) 83%, rgba(56,240,255,0.6) 100%)',
-            WebkitMask: 'radial-gradient(circle, transparent 51px, black 52px)',
-            mask: 'radial-gradient(circle, transparent 51px, black 52px)',
-            animation: 'spin 1.4s linear infinite',
-          }} />
+          <div
+            className="absolute rounded-full animate-spin"
+            style={{
+              width: 112, height: 112,
+              animationDuration: '1.4s',
+              background: 'conic-gradient(from 0deg, transparent 65%, rgba(255,209,102,0.95) 83%, rgba(56,240,255,0.6) 100%)',
+              WebkitMask: 'radial-gradient(circle, transparent 51px, black 52px)',
+              mask: 'radial-gradient(circle, transparent 51px, black 52px)',
+            }}
+          />
         ) : (
           <div className="absolute rounded-full" style={{
             width: 112, height: 112,
@@ -56,13 +62,17 @@ export default function MintAnimation({ done }: MintAnimationProps) {
 
         {/* Counter-spin thin ring */}
         {!done && (
-          <div className="absolute rounded-full" style={{
-            width: 90, height: 90,
-            background: 'conic-gradient(from 180deg, transparent 80%, rgba(56,240,255,0.4) 100%)',
-            WebkitMask: 'radial-gradient(circle, transparent 42px, black 43px)',
-            mask: 'radial-gradient(circle, transparent 42px, black 43px)',
-            animation: 'spin 3s linear infinite reverse',
-          }} />
+          <div
+            className="absolute rounded-full animate-spin"
+            style={{
+              width: 90, height: 90,
+              animationDuration: '3s',
+              animationDirection: 'reverse',
+              background: 'conic-gradient(from 180deg, transparent 80%, rgba(56,240,255,0.4) 100%)',
+              WebkitMask: 'radial-gradient(circle, transparent 42px, black 43px)',
+              mask: 'radial-gradient(circle, transparent 42px, black 43px)',
+            }}
+          />
         )}
 
         {/* Inner static ring */}
