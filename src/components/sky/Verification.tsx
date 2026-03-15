@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Wifi, WifiOff, Wind, Thermometer, Droplets, Eye, Cloud } from 'lucide-react';
 import type { FarmHawkResult, PollinetStatus } from '@/lib/types';
 
 interface VerificationProps {
@@ -17,16 +17,54 @@ interface VerificationProps {
 export default function Verification({ photo, farmhawk, pollinet, stars, timestamp, latitude, longitude, onMint }: VerificationProps) {
   const conditionOk = farmhawk.verified;
 
-  return (
-    <div className="flex flex-col w-full gap-4">
+  const metrics = [
+    {
+      icon: <Cloud size={14} />,
+      label: 'Cloud Cover',
+      value: `${farmhawk.cloudCover}%`,
+      bar: farmhawk.cloudCover,
+      good: farmhawk.cloudCover < 30,
+    },
+    {
+      icon: <Eye size={14} />,
+      label: 'Visibility',
+      value: farmhawk.visibility,
+      bar: null,
+      good: conditionOk,
+    },
+    {
+      icon: <Thermometer size={14} />,
+      label: 'Temperature',
+      value: `${farmhawk.temperature}°C`,
+      bar: null,
+      good: true,
+    },
+    {
+      icon: <Droplets size={14} />,
+      label: 'Humidity',
+      value: `${farmhawk.humidity}%`,
+      bar: farmhawk.humidity,
+      good: farmhawk.humidity < 70,
+    },
+    {
+      icon: <Wind size={14} />,
+      label: 'Wind Speed',
+      value: `${farmhawk.windSpeed} km/h`,
+      bar: null,
+      good: farmhawk.windSpeed < 30,
+    },
+  ];
 
-      {/* Photo */}
-      <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+  return (
+    <div className="flex flex-col w-full -mx-4 -mt-4 sm:-mx-0 sm:-mt-0">
+
+      {/* Photo header */}
+      <div className="relative bg-black" style={{ height: '38vh', minHeight: 180 }}>
         <img
           src={photo}
           alt="Observation"
-          className="w-full object-cover"
-          style={{ maxHeight: '40vh', opacity: 0.9 }}
+          className="w-full h-full object-cover"
+          style={{ opacity: 0.9 }}
         />
         {/* Verified badge overlay */}
         <div
@@ -36,17 +74,15 @@ export default function Verification({ photo, farmhawk, pollinet, stars, timesta
           <CheckCircle2 size={12} className="text-[#34d399]" />
           <span className="text-white text-xs font-medium">Observation Captured</span>
         </div>
-        <div
-          className="absolute bottom-3 right-4 text-[10px] font-mono text-white/40"
-        >
+        <div className="absolute bottom-3 right-4 text-[10px] font-mono text-white/40">
           {new Date(timestamp).toLocaleTimeString()}
         </div>
       </div>
 
       {/* Data panel */}
-      <div className="flex flex-col gap-4">
+      <div className="px-4 pt-5 pb-4 flex flex-col gap-4">
 
-        {/* Location + time */}
+        {/* Location + condition badge */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-white text-sm font-semibold">Verified</p>
@@ -55,60 +91,62 @@ export default function Verification({ photo, farmhawk, pollinet, stars, timesta
             </p>
           </div>
           <div
-            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
             style={{
               background: conditionOk ? 'rgba(52,211,153,0.08)' : 'rgba(251,191,36,0.08)',
               border: `1px solid ${conditionOk ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`,
               color: conditionOk ? '#34d399' : '#fbbf24',
             }}
           >
-            {conditionOk ? 'Clear sky' : 'Cloudy'}
-          </div>
-        </div>
-
-        {/* Weather data table */}
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-        >
-          <div
-            className="flex items-center gap-2 px-4 py-2.5"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-[#38F0FF]/60" />
-            <span className="text-[11px] text-slate-500 uppercase tracking-widest font-medium">Satellite Data</span>
-          </div>
-          {[
-            { label: 'Cloud Cover',  value: `${farmhawk.cloudCover}%` },
-            { label: 'Visibility',   value: farmhawk.visibility },
-            { label: 'Temperature',  value: `${farmhawk.temperature}°C` },
-            { label: 'Humidity',     value: `${farmhawk.humidity}%` },
-            { label: 'Wind Speed',   value: `${farmhawk.windSpeed} km/h` },
-          ].map((row, i, arr) => (
-            <div
-              key={row.label}
-              className="flex items-center justify-between px-4 py-2.5"
-              style={{
-                borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-              }}
-            >
-              <span className="text-slate-600 text-xs">{row.label}</span>
-              <span className="text-white text-xs font-medium">{row.value}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Condition verdict + hash */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
             {conditionOk
-              ? <><CheckCircle2 size={12} className="text-[#34d399]" /><span className="text-[#34d399] text-xs">Conditions verified</span></>
-              : <><AlertTriangle size={12} className="text-amber-400" /><span className="text-amber-400 text-xs">Poor — proceed at own risk</span></>
+              ? <><CheckCircle2 size={11} /> Clear sky</>
+              : <><AlertTriangle size={11} /> Cloudy</>
             }
           </div>
-          <span className="text-slate-700 text-[10px] font-mono">
-            {farmhawk.oracleHash.slice(0, 6)}…{farmhawk.oracleHash.slice(-4)}
-          </span>
+        </div>
+
+        {/* Satellite data — metric grid */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#38F0FF]/60" />
+            <span className="text-[10px] text-slate-600 uppercase tracking-widest font-medium">Satellite Data</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {metrics.map(m => (
+              <div
+                key={m.label}
+                className="rounded-xl px-3 py-2.5 flex flex-col gap-1.5"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5" style={{ color: m.good ? 'rgba(255,255,255,0.35)' : 'rgba(251,191,36,0.5)' }}>
+                    {m.icon}
+                    <span className="text-[10px] text-slate-600">{m.label}</span>
+                  </div>
+                </div>
+                <p className="text-white text-sm font-semibold">{m.value}</p>
+                {m.bar !== null && (
+                  <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(m.bar, 100)}%`,
+                        background: m.good ? 'rgba(52,211,153,0.6)' : 'rgba(251,191,36,0.6)',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            {/* Oracle hash cell */}
+            <div
+              className="rounded-xl px-3 py-2.5 flex flex-col gap-1.5"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+            >
+              <span className="text-[10px] text-slate-600">Oracle</span>
+              <p className="text-[#FFD166]/60 text-xs font-mono">{farmhawk.oracleHash.slice(0, 6)}…{farmhawk.oracleHash.slice(-4)}</p>
+            </div>
+          </div>
         </div>
 
         {/* Network */}

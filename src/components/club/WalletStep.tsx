@@ -120,36 +120,36 @@ export default function WalletStep() {
 
   return (
     <Card glow={done ? 'emerald' : null} className={done ? 'animate-pulse-success' : ''}>
-      <div className="flex items-start gap-4">
-        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 ${
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 ${
           done ? 'bg-[#34d399] border-[#34d399] text-black' : 'border-[#FFD166] text-[#FFD166]'
         }`}>
           {done ? '✓' : '1'}
         </div>
-        <div className="flex-1">
+        <div className="w-full">
           <h3 className="text-lg font-semibold text-white">Connect Wallet</h3>
           {done ? (
-            <div className="mt-2 flex flex-col gap-1">
+            <div className="mt-2 flex flex-col items-center gap-1.5">
               <div className="flex items-center gap-2 text-[#34d399]">
                 <CheckCircle2 size={15} />
                 <span className="text-sm font-medium">Solana wallet connected</span>
               </div>
-              <p className="font-hash text-xs text-[var(--text-secondary)] ml-5">
+              <p className="font-hash text-xs text-[var(--text-secondary)]">
                 {state.walletAddress.slice(0, 8)}...{state.walletAddress.slice(-8)}
               </p>
               {localStorage.getItem('stellar_wallet_email') && (
-                <p className="text-xs text-[var(--text-dim)] ml-5">
+                <p className="text-xs text-[var(--text-dim)]">
                   Signed in as {localStorage.getItem('stellar_wallet_email')}
                 </p>
               )}
               {airdropStatus === 'funding' && (
-                <p className="text-xs text-[#38F0FF] ml-5 animate-pulse">Funding wallet with devnet SOL...</p>
+                <p className="text-xs text-[#38F0FF] animate-pulse">Funding wallet with devnet SOL...</p>
               )}
               {airdropStatus === 'funded' && (
-                <p className="text-xs text-[#34d399] ml-5">✓ 1 devnet SOL funded</p>
+                <p className="text-xs text-[#34d399]">✓ 1 devnet SOL funded</p>
               )}
               {airdropStatus === 'failed' && (
-                <div className="ml-5 mt-1 flex flex-col gap-1">
+                <div className="mt-1 flex flex-col items-center gap-1">
                   <p className="text-xs text-amber-400">⚠ Airdrop rate limited — fund manually:</p>
                   <div className="flex items-center gap-2">
                     <code className="text-[10px] text-slate-400 font-mono bg-[#070B14] px-2 py-1 rounded truncate max-w-[180px]">
@@ -174,7 +174,7 @@ export default function WalletStep() {
               <a
                 href={`https://explorer.solana.com/address/${state.walletAddress}?cluster=devnet`}
                 target="_blank" rel="noopener noreferrer"
-                className="text-xs text-[var(--text-dim)] hover:text-[#FFD166] ml-5 transition-colors"
+                className="text-xs text-[var(--text-dim)] hover:text-[#FFD166] transition-colors"
               >
                 View on Solana Explorer ↗
               </a>

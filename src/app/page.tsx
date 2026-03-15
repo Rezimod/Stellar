@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { ECOSYSTEM, MISSIONS } from '@/lib/constants';
 import AstroLogo from '@/components/shared/AstroLogo';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
+import { Telescope, Camera, Satellite, Layers } from 'lucide-react';
 import RewardIcon from '@/components/shared/RewardIcon';
 
 const howItWorksSteps = [
-  { step: 1, title: 'Observe', desc: "Point your telescope at tonight's target" },
-  { step: 2, title: 'Capture', desc: 'Photograph through the eyepiece' },
-  { step: 3, title: 'Verify', desc: 'Satellite confirms clear sky conditions' },
-  { step: 4, title: 'Mint', desc: 'Proof sealed on Solana as your NFT' },
+  { step: 1, icon: Telescope, title: 'Observe', desc: "Point your telescope at tonight's target" },
+  { step: 2, icon: Camera, title: 'Capture', desc: 'Photograph through the eyepiece' },
+  { step: 3, icon: Satellite, title: 'Verify', desc: 'Satellite confirms clear sky conditions' },
+  { step: 4, icon: Layers, title: 'Mint', desc: 'Proof sealed on Solana as your NFT' },
 ];
 
 const ecoCards = [
@@ -53,23 +54,26 @@ export default function HomePage() {
       <div id="how-it-works" className="w-full">
         <p className="text-center text-[var(--text-dim)] text-xs mb-8 tracking-widest uppercase">— How It Works —</p>
         <div className="flex flex-col sm:flex-row gap-0">
-          {howItWorksSteps.map((item, i) => (
-            <div key={item.step} className="flex-1 flex flex-col items-center text-center relative px-4 py-2">
-              {/* Connector line between steps */}
-              {i < howItWorksSteps.length - 1 && (
-                <div className="hidden sm:block absolute top-[22px] left-[calc(50%+22px)] right-0 h-px"
-                  style={{ background: 'linear-gradient(to right, rgba(255,209,102,0.25), rgba(255,255,255,0.04))' }} />
-              )}
-              <div
-                className="w-11 h-11 rounded-full flex items-center justify-center mb-4 relative z-10"
-                style={{ border: '1px solid rgba(255,209,102,0.25)', background: 'rgba(255,209,102,0.04)' }}
-              >
-                <span className="text-[#FFD166]/80 font-bold text-sm" style={{ fontFamily: 'Georgia, serif' }}>{item.step}</span>
+          {howItWorksSteps.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.step} className="flex-1 flex flex-col items-center text-center relative px-4 py-2">
+                {/* Connector line between steps */}
+                {i < howItWorksSteps.length - 1 && (
+                  <div className="hidden sm:block absolute top-[22px] left-[calc(50%+24px)] right-0 h-px"
+                    style={{ background: 'linear-gradient(to right, rgba(255,209,102,0.2), rgba(255,255,255,0.03))' }} />
+                )}
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center mb-4 relative z-10"
+                  style={{ border: '1px solid rgba(255,209,102,0.2)', background: 'rgba(255,209,102,0.05)' }}
+                >
+                  <Icon size={18} className="text-[#FFD166]/70" />
+                </div>
+                <p className="text-white font-semibold text-sm mb-1.5">{item.title}</p>
+                <p className="text-slate-600 text-xs leading-relaxed max-w-[120px]">{item.desc}</p>
               </div>
-              <p className="text-white font-semibold text-sm mb-1.5">{item.title}</p>
-              <p className="text-slate-600 text-xs leading-relaxed max-w-[120px]">{item.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
