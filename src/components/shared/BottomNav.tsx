@@ -11,7 +11,7 @@ export default function BottomNav() {
   const clubDone = state.walletConnected && state.membershipMinted && !!state.telescope;
 
   const tabs = [
-    { href: '/club', label: 'Home', icon: <Telescope size={20} /> },
+    { href: '/club', label: 'Club', icon: <Telescope size={20} /> },
     { href: '/missions', label: 'Missions', icon: <Satellite size={20} />, locked: !clubDone },
     { href: '/proof', label: 'Gallery', icon: <ImageIcon size={20} />, locked: !clubDone },
     { href: '/profile', label: 'Profile', icon: <User size={20} />, locked: !clubDone },

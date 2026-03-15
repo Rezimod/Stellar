@@ -48,7 +48,7 @@ export default function Nav() {
   };
 
   const tabs = [
-    { href: '/club', label: 'Home', icon: <Telescope size={17} /> },
+    { href: '/club', label: 'Club', icon: <Telescope size={17} /> },
     { href: '/missions', label: 'Missions', icon: <Satellite size={17} /> },
     { href: '/proof', label: 'Gallery', icon: <ImageIcon size={17} /> },
     { href: '/profile', label: 'Profile', icon: <User size={17} /> },
