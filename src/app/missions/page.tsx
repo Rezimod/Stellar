@@ -52,40 +52,43 @@ export default function MissionsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 animate-page-enter">
+    <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 animate-page-enter flex flex-col gap-6">
 
-      {/* Page header */}
-      <div className="mb-5">
-        <div className="flex items-center gap-2 mb-1">
-          <Satellite size={18} strokeWidth={1.5} className="text-[#38F0FF]" />
-          <h1
-            className="text-xl sm:text-2xl font-bold text-white"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
+      {/* ── Observer Dashboard ── */}
+      <section>
+        {/* Section header */}
+        <div className="flex items-center gap-2 mb-4">
+          <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
             Missions
           </h1>
+          <span className="ml-auto text-[10px] text-slate-700 uppercase tracking-widest">Devnet</span>
         </div>
-        <p className="text-slate-600 text-xs tracking-wide">Observe · Verify · Collect</p>
+
+        {/* Stats card — visually isolated */}
+        <StatsBar />
+      </section>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3 -mt-2">
+        <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,209,102,0.2), rgba(56,240,255,0.15), transparent)' }} />
+        <span
+          className="text-[10px] uppercase tracking-[0.2em] font-medium px-3 py-1 rounded-full"
+          style={{ color: 'rgba(255,209,102,0.6)', border: '1px solid rgba(255,209,102,0.12)', background: 'rgba(255,209,102,0.04)' }}
+        >
+          Tonight&apos;s Targets
+        </span>
+        <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, rgba(255,209,102,0.2), rgba(56,240,255,0.15), transparent)' }} />
       </div>
 
-      <div className="ornament-line mb-5" />
+      {/* ── Mission Cards ── */}
+      <section>
+        <MissionList />
+      </section>
 
-      <StatsBar />
-
-      {/* Missions section label */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="ornament-line flex-1" />
-        <span className="text-[10px] text-slate-600 uppercase tracking-widest font-medium whitespace-nowrap">Tonight&apos;s Targets</span>
-        <div className="ornament-line flex-1" />
-      </div>
-
-      <MissionList />
-
+      {/* ── Rewards & Log ── */}
       <RewardsSection />
-
       <ObservationLog />
-
-      <div className="ornament-line mt-2 mb-3" />
     </div>
   );
 }

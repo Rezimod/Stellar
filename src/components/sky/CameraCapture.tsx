@@ -143,6 +143,31 @@ export default function CameraCapture({ missionName, onCapture }: CameraCaptureP
           <div className="w-11 h-11 rounded-full" style={{ background: '#fff' }} />
         </button>
       </div>
+
+      {/* Capture guide */}
+      <div
+        className="rounded-xl px-4 py-3"
+        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-2.5 font-medium">How to capture</p>
+        <div className="flex flex-col gap-2">
+          {[
+            { n: '1', text: 'Point your telescope at the target object' },
+            { n: '2', text: 'Hold your phone camera to the eyepiece' },
+            { n: '3', text: 'Center the object in the reticle, then press the shutter' },
+          ].map(tip => (
+            <div key={tip.n} className="flex items-start gap-2.5">
+              <span
+                className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"
+                style={{ background: 'rgba(255,209,102,0.1)', color: '#FFD166', border: '1px solid rgba(255,209,102,0.2)' }}
+              >
+                {tip.n}
+              </span>
+              <p className="text-slate-500 text-xs leading-relaxed">{tip.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
