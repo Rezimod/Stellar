@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Satellite } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import StatsBar from '@/components/sky/StatsBar';
+import MissionList from '@/components/sky/MissionList';
 import ObservationLog from '@/components/sky/ObservationLog';
 import RewardsSection from '@/components/sky/RewardsSection';
 
@@ -51,12 +52,11 @@ export default function MissionsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 animate-page-enter flex flex-col gap-6">
+    <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 animate-page-enter flex flex-col gap-4">
 
       {/* ── Observer Dashboard ── */}
       <section>
-        {/* Section header */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
           <h1 className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
             Missions
@@ -64,8 +64,7 @@ export default function MissionsPage() {
           <span className="ml-auto text-[10px] text-slate-700 uppercase tracking-widest">Devnet</span>
         </div>
 
-        {/* Live sky status */}
-        <div className="flex items-center gap-2 mt-1 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <div className="w-1.5 h-1.5 rounded-full bg-[#34d399] animate-pulse" />
           <span className="text-[11px] text-slate-600">
             {new Date().getHours() >= 18 || new Date().getHours() < 5
@@ -74,8 +73,12 @@ export default function MissionsPage() {
           </span>
         </div>
 
-        {/* Stats card — visually isolated */}
         <StatsBar />
+      </section>
+
+      {/* ── Mission Cards ── */}
+      <section>
+        <MissionList />
       </section>
 
       {/* ── Rewards & Log ── */}

@@ -18,7 +18,7 @@ export default function MissionList() {
     <>
       {active && <MissionActive mission={active} onClose={() => setActive(null)} />}
 
-      <div className="grid grid-cols-2 gap-2.5 mb-6">
+      <div className="grid grid-cols-2 gap-2.5">
         {MISSIONS.map(mission => {
           const done    = completedIds.has(mission.id);
           const pending = pendingIds.has(mission.id);
