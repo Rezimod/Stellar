@@ -264,7 +264,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       </div>
 
       {/* Content */}
-      <div className={`flex flex-col flex-1 ${fullBleed ? '' : 'px-4 py-4 max-w-2xl mx-auto w-full'}`}>
+      <div className={`flex flex-col ${fullBleed ? 'flex-1' : 'px-4 py-4 max-w-2xl mx-auto w-full'}`}>
 
         {step === 'observing' && (
           <div className="flex flex-col gap-4 mt-2">
@@ -294,7 +294,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         )}
 
         {step === 'verifying' && (
-          <div className="flex flex-col items-center justify-center flex-1 gap-4 py-12">
+          <div className="flex flex-col items-center justify-center gap-4 py-20">
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center animate-spin-slow"
               style={{ border: '1px solid rgba(255,255,255,0.1)' }}

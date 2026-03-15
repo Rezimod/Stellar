@@ -80,7 +80,7 @@ export function useCamera() {
       ctx.fillRect(0, 440, 640, 40);
       ctx.fillStyle = '#FFD166';
       ctx.font = '12px monospace';
-      ctx.fillText(`ASTROMAN · ${missionName} · ${new Date().toISOString()}`, 8, 460);
+      ctx.fillText(`STELLAR · ${missionName.toUpperCase()} · ${new Date().toLocaleTimeString()}`, 8, 460);
       return canvas.toDataURL('image/jpeg', 0.85);
     }
     return generateSimPhoto(missionName);
@@ -249,7 +249,7 @@ export function generateSimPhoto(name: string): string {
   ctx.fillRect(0, 440, 640, 40);
   ctx.fillStyle = '#FFD166';
   ctx.font = '11px monospace';
-  ctx.fillText(`ASTROMAN · ${name} · SIMULATED · ${new Date().toLocaleTimeString()}`, 8, 460);
+  ctx.fillText(`STELLAR · ${name.toUpperCase()} · ${new Date().toLocaleTimeString()}`, 8, 460);
 
   return canvas.toDataURL('image/jpeg', 0.85);
 }
