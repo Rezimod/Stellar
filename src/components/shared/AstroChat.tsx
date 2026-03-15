@@ -36,8 +36,21 @@ export default function AstroChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // On mobile: sit above the bottom nav (which is ~64px). On desktop: near the corner.
+  const btnBottom = isMobile ? '5.5rem' : '1.5rem';
+  const btnRight = isMobile ? '1rem' : '1.5rem';
+  const winBottom = isMobile ? 'calc(5.5rem + 68px)' : 'calc(1.5rem + 68px)';
 
   useEffect(() => {
     if (open && messages.length === 0) {
@@ -92,11 +105,11 @@ export default function AstroChat() {
         <div
           className="fixed z-50 flex flex-col"
           style={{
-            bottom: '5rem',
-            right: '1rem',
+            bottom: expanded ? '1rem' : winBottom,
+            right: expanded ? '1rem' : btnRight,
             left: expanded ? '1rem' : 'auto',
             width: expanded ? 'auto' : 'min(380px, calc(100vw - 2rem))',
-            height: expanded ? 'calc(100vh - 7rem)' : '500px',
+            height: expanded ? 'calc(100vh - 2rem)' : '480px',
             background: 'linear-gradient(160deg, #080e1e 0%, #060b18 100%)',
             border: '1px solid rgba(56,240,255,0.2)',
             borderRadius: '20px',
@@ -253,8 +266,8 @@ export default function AstroChat() {
         onClick={() => setOpen(o => !o)}
         className="fixed z-50 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 active:scale-95 hover:scale-105"
         style={{
-          bottom: '5.5rem',
-          right: '1rem',
+          bottom: btnBottom,
+          right: btnRight,
           background: open
             ? 'rgba(56,240,255,0.15)'
             : 'linear-gradient(135deg, rgba(56,240,255,0.9), rgba(26,143,160,0.9))',
