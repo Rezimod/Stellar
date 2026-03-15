@@ -31,9 +31,9 @@ export default function Verification({ photo, farmhawk, pollinet, stars, timesta
   return (
     <div className="flex flex-col w-full gap-4 mt-2 animate-page-enter">
 
-      {/* Photo — compact */}
-      <div className="relative rounded-2xl overflow-hidden bg-black" style={{ height: 140 }}>
-        <img src={photo} alt="Observation" className="w-full h-full object-cover" style={{ opacity: 0.9 }} />
+      {/* Photo — full 4:3 so nothing is cropped */}
+      <div className="relative rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: '4/3', maxHeight: 220 }}>
+        <img src={photo} alt="Observation" className="w-full h-full object-contain" style={{ opacity: 0.9 }} />
         <div
           className="absolute bottom-2.5 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
           style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}

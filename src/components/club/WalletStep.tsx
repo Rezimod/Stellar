@@ -4,7 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useEffect, useState } from 'react';
 import { Keypair, Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { Mail, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import { saveEmailKeypair } from '@/lib/emailWallet';
 import Card from '@/components/shared/Card';
@@ -39,7 +39,9 @@ export default function WalletStep() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [airdropStatus, setAirdropStatus] = useState<'idle' | 'funding' | 'funded' | 'failed'>('idle');
+  const [emailBalance, setEmailBalance] = useState<number | null>(null);
   const done = state.walletConnected;
+  const isEmailWallet = !!localStorage.getItem('stellar_wallet_email');
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -82,6 +84,16 @@ export default function WalletStep() {
     }
   }, [connected, publicKey]);
 
+  // Check email wallet balance on mount when done
+  useEffect(() => {
+    if (done && isEmailWallet && state.walletAddress) {
+      const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+      connection.getBalance(new PublicKey(state.walletAddress))
+        .then(bal => setEmailBalance(bal))
+        .catch(() => setEmailBalance(0));
+    }
+  }, [done, isEmailWallet, state.walletAddress]);
+
   // Restore email wallet on mount
   useEffect(() => {
     if (!state.walletConnected) {
@@ -112,9 +124,11 @@ export default function WalletStep() {
       await connection.confirmTransaction(sig, 'confirmed');
       console.log('[Wallet] Airdropped 1 SOL to email wallet');
       setAirdropStatus('funded');
+      setEmailBalance(LAMPORTS_PER_SOL);
     } catch {
       console.log('[Wallet] Airdrop rate limited');
       setAirdropStatus('failed');
+      setEmailBalance(0);
     }
   };
 
@@ -143,12 +157,35 @@ export default function WalletStep() {
                 </p>
               )}
               {airdropStatus === 'funding' && (
-                <p className="text-xs text-[#38F0FF] animate-pulse">Funding wallet with devnet SOL...</p>
+                <p className="text-xs text-[#38F0FF] animate-pulse">Activating wallet on Solana devnet…</p>
               )}
               {airdropStatus === 'funded' && (
-                <p className="text-xs text-[#34d399]">✓ 1 devnet SOL funded</p>
+                <p className="text-xs text-[#34d399]">✓ Wallet activated — 1 devnet SOL funded</p>
               )}
-              {airdropStatus === 'failed' && (
+              {/* Show activation notice if email wallet has no balance */}
+              {isEmailWallet && emailBalance === 0 && airdropStatus === 'idle' && (
+                <div className="mt-2 w-full rounded-xl p-3 text-left flex flex-col gap-2"
+                  style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)' }}>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={13} className="text-amber-400 flex-shrink-0" />
+                    <p className="text-amber-400 text-xs font-semibold">Wallet registered — needs activation</p>
+                  </div>
+                  <p className="text-slate-500 text-xs">Your Solana wallet was created. To submit on-chain proofs, top it up with free devnet SOL.</p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-[10px] text-slate-400 font-mono bg-[#070B14] px-2 py-1 rounded truncate flex-1"
+                      style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                      {state.walletAddress}
+                    </code>
+                    <button onClick={() => navigator.clipboard.writeText(state.walletAddress)}
+                      className="text-[10px] text-[#38F0FF] hover:underline whitespace-nowrap flex-shrink-0">Copy</button>
+                  </div>
+                  <a href="https://faucet.solana.com" target="_blank" rel="noopener noreferrer"
+                    className="text-xs text-amber-400 hover:text-amber-300 transition-colors text-center">
+                    Get free devnet SOL at faucet.solana.com ↗
+                  </a>
+                </div>
+              )}
+              {(airdropStatus === 'failed') && (
                 <div className="mt-1 flex flex-col items-center gap-1">
                   <p className="text-xs text-amber-400">⚠ Airdrop rate limited — fund manually:</p>
                   <div className="flex items-center gap-2">
