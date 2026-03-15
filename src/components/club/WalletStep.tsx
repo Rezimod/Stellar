@@ -40,8 +40,9 @@ export default function WalletStep() {
   const [emailError, setEmailError] = useState('');
   const [airdropStatus, setAirdropStatus] = useState<'idle' | 'funding' | 'funded' | 'failed'>('idle');
   const [emailBalance, setEmailBalance] = useState<number | null>(null);
+  const [isEmailWallet, setIsEmailWallet] = useState(false);
+  const [savedEmail, setSavedEmail] = useState('');
   const done = state.walletConnected;
-  const isEmailWallet = !!localStorage.getItem('stellar_wallet_email');
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -84,15 +85,18 @@ export default function WalletStep() {
     }
   }, [connected, publicKey]);
 
-  // Check email wallet balance on mount when done
+  // Detect email wallet + check balance (client-only)
   useEffect(() => {
-    if (done && isEmailWallet && state.walletAddress) {
+    const emailVal = localStorage.getItem('stellar_wallet_email') ?? '';
+    setIsEmailWallet(!!emailVal);
+    setSavedEmail(emailVal);
+    if (done && emailVal && state.walletAddress) {
       const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
       connection.getBalance(new PublicKey(state.walletAddress))
         .then(bal => setEmailBalance(bal))
         .catch(() => setEmailBalance(0));
     }
-  }, [done, isEmailWallet, state.walletAddress]);
+  }, [done, state.walletAddress]);
 
   // Restore email wallet on mount
   useEffect(() => {
@@ -151,9 +155,9 @@ export default function WalletStep() {
               <p className="font-hash text-xs text-[var(--text-secondary)]">
                 {state.walletAddress.slice(0, 8)}...{state.walletAddress.slice(-8)}
               </p>
-              {localStorage.getItem('stellar_wallet_email') && (
+              {savedEmail && (
                 <p className="text-xs text-[var(--text-dim)]">
-                  Signed in as {localStorage.getItem('stellar_wallet_email')}
+                  Signed in as {savedEmail}
                 </p>
               )}
               {airdropStatus === 'funding' && (
