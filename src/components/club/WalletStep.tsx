@@ -181,7 +181,39 @@ export default function WalletStep() {
             </div>
           ) : (
             <div className="mt-3 flex flex-col gap-4">
-              {/* Phantom */}
+              {/* Email — primary */}
+              <div className="bg-[#0F1F3D] rounded-xl p-4 flex flex-col gap-3" style={{ border: '1px solid rgba(255,209,102,0.2)' }}>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} className="text-[#FFD166]" />
+                    <p className="text-white text-sm font-semibold">Continue with Email</p>
+                  </div>
+                  <p className="text-slate-500 text-xs ml-6">We create a Solana wallet for you automatically. No app needed.</p>
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => { setEmail(e.target.value); setEmailError(''); }}
+                  placeholder="your@email.com"
+                  onKeyDown={e => e.key === 'Enter' && handleEmailWallet()}
+                  className="w-full bg-[#070B14] rounded-lg px-3 py-2.5 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-[#FFD166] min-h-[44px]"
+                  style={{ border: '1px solid rgba(56,240,255,0.12)' }}
+                />
+                {emailError && <p className="text-red-400 text-xs">{emailError}</p>}
+                <Button variant="brass" onClick={handleEmailWallet} className="w-full min-h-[44px]">
+                  Continue with Email →
+                </Button>
+                <p className="text-slate-600 text-xs text-center">Your wallet stays in your browser. Free to use.</p>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ background: 'rgba(56,240,255,0.12)' }} />
+                <span className="text-slate-600 text-xs">or use wallet</span>
+                <div className="flex-1 h-px" style={{ background: 'rgba(56,240,255,0.12)' }} />
+              </div>
+
+              {/* Phantom — secondary */}
               <div className="flex flex-col gap-1.5">
                 <Button variant="solana" onClick={handlePhantomClick} className="w-full min-h-[44px]">
                   👻 {inPhantomBrowser ? 'Connect Phantom' : isMobile ? 'Open Phantom App' : 'Connect Phantom Wallet'}
@@ -197,37 +229,6 @@ export default function WalletStep() {
                     </a>
                   </>
                 )}
-              </div>
-
-              {/* Divider */}
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-[rgba(56, 240, 255, 0.12)]" />
-                <span className="text-slate-600 text-xs">or</span>
-                <div className="flex-1 h-px bg-[rgba(56, 240, 255, 0.12)]" />
-              </div>
-
-              {/* Email */}
-              <div className="bg-[#0F1F3D] border border-[rgba(56, 240, 255, 0.12)] rounded-xl p-4 flex flex-col gap-3">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <Mail size={16} className="text-[var(--text-secondary)]" />
-                    <p className="text-[var(--text-primary)] text-sm font-medium">No Wallet? Use Email Instead</p>
-                  </div>
-                  <p className="text-slate-500 text-xs ml-6">We create a Solana wallet for you automatically. No app needed.</p>
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => { setEmail(e.target.value); setEmailError(''); }}
-                  placeholder="your@email.com"
-                  onKeyDown={e => e.key === 'Enter' && handleEmailWallet()}
-                  className="w-full bg-[#070B14] border border-[rgba(56, 240, 255, 0.12)] rounded-lg px-3 py-2.5 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-[#FFD166] min-h-[44px]"
-                />
-                {emailError && <p className="text-red-400 text-xs">{emailError}</p>}
-                <Button variant="brass" onClick={handleEmailWallet} className="w-full min-h-[44px]">
-                  Continue with Email →
-                </Button>
-                <p className="text-slate-600 text-xs text-center">Your wallet stays in your browser. Free to use.</p>
               </div>
             </div>
           )}

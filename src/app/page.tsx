@@ -34,8 +34,8 @@ export default function HomePage() {
             </span>
           ))}
         </h1>
-        <p className="text-slate-400 max-w-md text-lg">
-          Verified Sky Observations
+        <p className="text-slate-400 max-w-md text-base leading-relaxed">
+          Observe planets with your telescope and earn real rewards from the Astroman store.
         </p>
         <Link
           href="/club"
@@ -48,6 +48,18 @@ export default function HomePage() {
         >
           Start Observing →
         </Link>
+        {/* Trust indicators */}
+        <div className="flex items-center gap-4 text-[11px] text-slate-600 flex-wrap justify-center">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34d399]" />
+            Trusted by amateur astronomers
+          </span>
+          <span className="text-white/10">·</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166]" />
+            Real rewards from Astroman
+          </span>
+        </div>
       </div>
 
       {/* How It Works */}
@@ -104,11 +116,11 @@ export default function HomePage() {
         <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Leaderboard —</p>
         <div className="glass-card overflow-hidden">
           {[
-            { rank: 1, name: 'AstroHunter', points: 1280, verified: true },
-            { rank: 2, name: 'StarFinder', points: 940, verified: true },
-            { rank: 3, name: 'NebulaScout', points: 820, verified: false },
-            { rank: 4, name: 'CosmicEye', points: 650, verified: true },
-            { rank: 5, name: 'MoonWatcher', points: 410, verified: false },
+            { rank: 1, name: 'AstroHunter', location: 'Tbilisi', points: 1280, verified: true },
+            { rank: 2, name: 'StarFinder',  location: 'Lisbon',  points: 940,  verified: true },
+            { rank: 3, name: 'NebulaScout', location: 'Tokyo',   points: 820,  verified: false },
+            { rank: 4, name: 'CosmicEye',   location: 'Arizona', points: 650,  verified: true },
+            { rank: 5, name: 'MoonWatcher', location: 'Berlin',  points: 410,  verified: false },
           ].map((entry, i) => {
             const rankColor = entry.rank === 1 ? 'text-[#FFD166]' : entry.rank === 2 ? 'text-slate-300' : entry.rank === 3 ? 'text-amber-600' : 'text-[var(--text-dim)]';
             return (
@@ -117,7 +129,10 @@ export default function HomePage() {
                 <div className="w-8 h-8 rounded-full bg-[var(--bg-cosmos)] flex items-center justify-center text-xs">
                   {entry.name.slice(0, 2).toUpperCase()}
                 </div>
-                <span className="text-white text-sm font-medium flex-1">{entry.name}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-white text-sm font-medium">{entry.name}</span>
+                  <p className="text-slate-700 text-[10px]">{entry.location}</p>
+                </div>
                 {entry.verified && <span className="text-xs" title="Verified Observer">🔭</span>}
                 <span className="text-[#FFD166] text-sm font-semibold">{entry.points} ✦</span>
               </div>

@@ -261,26 +261,35 @@ export default function AstroChat() {
         </div>
       )}
 
-      {/* Floating toggle button */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="fixed z-50 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 active:scale-95 hover:scale-105"
-        style={{
-          bottom: btnBottom,
-          right: btnRight,
-          background: open
-            ? 'rgba(56,240,255,0.15)'
-            : 'linear-gradient(135deg, rgba(56,240,255,0.9), rgba(26,143,160,0.9))',
-          border: '1px solid rgba(56,240,255,0.4)',
-          boxShadow: open
-            ? '0 0 20px rgba(56,240,255,0.2)'
-            : '0 0 30px rgba(56,240,255,0.35), 0 8px 24px rgba(0,0,0,0.4)',
-          display: open ? 'none' : 'flex',
-        }}
-        aria-label="Open ASTRA astronomy assistant"
-      >
-        <Radio size={22} className="text-[#070B14]" />
-      </button>
+      {/* Floating toggle button + tooltip */}
+      {!open && (
+        <div className="fixed z-50 flex flex-col items-end gap-2" style={{ bottom: btnBottom, right: btnRight }}>
+          {messages.length === 0 && (
+            <div
+              className="px-3 py-2 rounded-xl text-[11px] text-[#38F0FF] max-w-[180px] text-right leading-snug"
+              style={{
+                background: 'rgba(8,14,30,0.95)',
+                border: '1px solid rgba(56,240,255,0.2)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+              }}
+            >
+              Ask me about telescopes and tonight&apos;s sky ✦
+            </div>
+          )}
+          <button
+            onClick={() => setOpen(true)}
+            className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 active:scale-95 hover:scale-105"
+            style={{
+              background: 'linear-gradient(135deg, rgba(56,240,255,0.9), rgba(26,143,160,0.9))',
+              border: '1px solid rgba(56,240,255,0.4)',
+              boxShadow: '0 0 30px rgba(56,240,255,0.35), 0 8px 24px rgba(0,0,0,0.4)',
+            }}
+            aria-label="Open ASTRA astronomy assistant"
+          >
+            <Radio size={22} className="text-[#070B14]" />
+          </button>
+        </div>
+      )}
     </>
   );
 }

@@ -23,6 +23,7 @@ export default function MissionList() {
           const done    = completedIds.has(mission.id);
           const pending = pendingIds.has(mission.id);
           const diff    = mission.difficulty === 'Beginner' ? 1 : mission.difficulty === 'Intermediate' ? 2 : 3;
+          const diffLabel = mission.difficulty === 'Beginner' ? 'Easy' : mission.difficulty === 'Intermediate' ? 'Medium' : 'Hard';
 
           return (
             <div
@@ -55,13 +56,16 @@ export default function MissionList() {
               {/* Name */}
               <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
 
-              {/* Difficulty dots */}
-              <div className="flex gap-1 justify-center mb-3">
-                {[1,2,3].map(d => (
-                  <span key={d} className="w-1 h-1 rounded-full" style={{
-                    backgroundColor: d <= diff ? 'rgba(255,209,102,0.55)' : 'rgba(255,255,255,0.1)'
-                  }} />
-                ))}
+              {/* Difficulty dots + label */}
+              <div className="flex flex-col items-center gap-1 mb-3">
+                <div className="flex gap-1 justify-center">
+                  {[1,2,3].map(d => (
+                    <span key={d} className="w-1 h-1 rounded-full" style={{
+                      backgroundColor: d <= diff ? 'rgba(255,209,102,0.55)' : 'rgba(255,255,255,0.1)'
+                    }} />
+                  ))}
+                </div>
+                <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{diffLabel}</span>
               </div>
 
               {/* Reward */}
