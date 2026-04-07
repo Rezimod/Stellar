@@ -18,8 +18,7 @@ export default function ProfilePage() {
   const [balance, setBalance] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
-  const address = embeddedWallet?.address;
+  const address = wallets[0]?.address ?? null;
 
   useEffect(() => {
     if (!address) return;
