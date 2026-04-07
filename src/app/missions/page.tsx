@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Satellite, ExternalLink, X } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
@@ -17,13 +16,12 @@ import type { Mission } from '@/lib/types';
 
 export default function MissionsPage() {
   const { state } = useAppState();
-  const { user } = usePrivy();
+  const { authenticated, login, user } = usePrivy();
   const solanaWallet = user?.linkedAccounts.find(
     (a): a is Extract<typeof a, { type: 'wallet' }> =>
       a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
   );
   const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-  const clubDone = state.walletConnected && state.membershipMinted && !!state.telescope;
   const [activeMission, setActiveMission] = useState<Mission | null>(null);
   const [syncToast, setSyncToast] = useState<{ txId: string; name: string } | null>(null);
 
@@ -53,7 +51,7 @@ export default function MissionsPage() {
     return cleanup;
   }, [solanaWallet?.address]);
 
-  if (!clubDone) {
+  if (!authenticated) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4 animate-page-enter">
         <div className="max-w-sm w-full text-center">
@@ -76,13 +74,13 @@ export default function MissionsPage() {
             <p className="text-slate-500 text-sm mb-6 leading-relaxed">
               Observe the Moon, Jupiter, Saturn, Orion Nebula and more. Earn real rewards.
             </p>
-            <Link
-              href="/club"
+            <button
+              onClick={login}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
             >
-              {!state.walletConnected ? 'Connect Wallet to Start →' : 'Complete Setup →'}
-            </Link>
+              Sign In to Start →
+            </button>
           </div>
         </div>
       </div>
