@@ -28,16 +28,16 @@ export default function PlanetCard({ planet }: Props) {
     <div className="glass-card p-4 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${DOT_COLOR[planet.key] ?? 'bg-slate-400'}`} />
-          <span className="text-white text-sm font-semibold">{t(planet.key as Parameters<typeof t>[0])}</span>
+          <span className="text-white text-sm font-semibold truncate">{t(planet.key as Parameters<typeof t>[0])}</span>
         </div>
         {planet.visible ? (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-[#34d399]/20 text-[#34d399] border-[#34d399]/40">
+          <span className="inline-flex items-center flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium border bg-[#34d399]/20 text-[#34d399] border-[#34d399]/40">
             {t('visibleNow')}
           </span>
         ) : (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(56,240,255,0.12)]">
+          <span className="inline-flex items-center flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(56,240,255,0.12)] whitespace-nowrap">
             {t('risesAt')} {hhmm(planet.rise)}
           </span>
         )}

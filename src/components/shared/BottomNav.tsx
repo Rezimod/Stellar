@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CloudSun, Bot, ShoppingBag, User } from 'lucide-react';
+import { CloudSun, Bot, ShoppingBag, Satellite, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function BottomNav() {
@@ -10,10 +10,11 @@ export default function BottomNav() {
   const t = useTranslations('nav');
 
   const tabs = [
-    { href: '/sky', label: t('sky'), icon: <CloudSun size={20} /> },
-    { href: '/chat', label: t('chat'), icon: <Bot size={20} /> },
-    { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={20} /> },
-    { href: '/profile', label: t('profile'), icon: <User size={20} /> },
+    { href: '/sky',         label: t('sky'),         icon: <CloudSun size={18} /> },
+    { href: '/chat',        label: t('chat'),        icon: <Bot size={18} /> },
+    { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={18} /> },
+    { href: '/missions',    label: t('missions'),    icon: <Satellite size={18} /> },
+    { href: '/profile',     label: t('profile'),     icon: <User size={18} /> },
   ];
 
   return (
@@ -24,14 +25,14 @@ export default function BottomNav() {
           <Link
             key={tab.href}
             href={tab.href}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors ${
               pathname === tab.href
                 ? 'text-[#FFD166]'
                 : 'text-[var(--text-secondary)] active:text-[var(--text-primary)]'
             }`}
           >
             {tab.icon}
-            <span className="text-[10px] font-medium">{tab.label}</span>
+            <span className="text-[9px] font-medium truncate max-w-full px-1">{tab.label}</span>
           </Link>
         ))}
       </div>

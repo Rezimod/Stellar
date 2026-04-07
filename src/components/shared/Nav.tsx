@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { useState } from 'react';
-import { CloudSun, Bot, ShoppingBag, User } from 'lucide-react';
+import { CloudSun, Bot, ShoppingBag, Satellite, User } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import LanguageToggle from '@/components/nav/LanguageToggle';
 import { useTranslations } from 'next-intl';
@@ -20,10 +20,11 @@ export default function Nav() {
   const t = useTranslations('nav');
 
   const tabs = [
-    { href: '/sky', label: t('sky'), icon: <CloudSun size={17} /> },
-    { href: '/chat', label: t('chat'), icon: <Bot size={17} /> },
+    { href: '/sky',         label: t('sky'),         icon: <CloudSun size={17} /> },
+    { href: '/chat',        label: t('chat'),        icon: <Bot size={17} /> },
     { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={17} /> },
-    { href: '/profile', label: t('profile'), icon: <User size={17} /> },
+    { href: '/missions',    label: t('missions'),    icon: <Satellite size={17} /> },
+    { href: '/profile',     label: t('profile'),     icon: <User size={17} /> },
   ];
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');

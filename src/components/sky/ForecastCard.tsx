@@ -76,8 +76,8 @@ export default function ForecastCard({ day, isToday }: Props) {
   return (
     <div className="glass-card p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-white text-sm font-medium">{formatDate(day.date)}</p>
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${badgeStyles[kind]}`}>
+        <p className="text-white text-sm font-medium min-w-0 truncate">{formatDate(day.date)}</p>
+        <span className={`inline-flex items-center flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium border ${badgeStyles[kind]}`}>
           {t(kind)}
         </span>
       </div>
