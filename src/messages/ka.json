@@ -84,7 +84,10 @@
     "filterAll": "ყველა",
     "filterTelescopes": "ტელესკოპები",
     "filterMoonLamps": "მთვარის ლამპები",
-    "filterDigital": "ციფრული"
+    "filterDigital": "ციფრული",
+    "contactPrompt": "დაუკავშირდი Astroman-ს შეკვეთის დასასრულებლად",
+    "solComingSoon": "SOL გადახდა მალე",
+    "errorLoad": "პროდუქტების ჩატვირთვა ვერ მოხერხდა"
   },
   "profile": {
     "title": "პროფილი",

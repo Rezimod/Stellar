@@ -84,7 +84,10 @@
     "filterAll": "All",
     "filterTelescopes": "Telescopes",
     "filterMoonLamps": "Moon Lamps",
-    "filterDigital": "Digital"
+    "filterDigital": "Digital",
+    "contactPrompt": "Contact Astroman to complete your order",
+    "solComingSoon": "SOL payment coming soon",
+    "errorLoad": "Could not load products"
   },
   "profile": {
     "title": "Profile",
