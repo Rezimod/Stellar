@@ -8,6 +8,7 @@ import { getPollinetStatus } from '@/lib/pollinet';
 import { useEffect, useState, useCallback } from 'react';
 import { Telescope, Satellite, ImageIcon, User } from 'lucide-react';
 import AstroLogo from './AstroLogo';
+import LanguageToggle from '@/components/nav/LanguageToggle';
 
 export default function Nav() {
   const pathname = usePathname();
@@ -89,6 +90,11 @@ export default function Nav() {
             ))}
           </div>
 
+          {/* Mobile lang toggle */}
+          <div className="flex sm:hidden">
+            <LanguageToggle />
+          </div>
+
           {/* Mobile wallet pill */}
           {state.walletConnected && (
             <button
@@ -103,6 +109,7 @@ export default function Nav() {
 
           {/* Desktop wallet */}
           <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+            <LanguageToggle />
             <span
               className="text-xs text-[var(--text-dim)] cursor-help"
               title="Network Status: Online — Direct to Solana"

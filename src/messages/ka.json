@@ -1,0 +1,115 @@
+{
+  "common": {
+    "appName": "STELLAR",
+    "tagline": "დაკვირვება. დადასტურება. შეგროვება.",
+    "taglineDesc": "დააკვირდი პლანეტებს ტელესკოპით და მიიღე ნამდვილი ჯილდოები Astroman-ის მაღაზიიდან.",
+    "startObserving": "დაიწყე დაკვირვება →",
+    "startEarning": "დაიწყე გამომუშავება →",
+    "visitStore": "ვიზიტი →",
+    "launch": "გაშვება →"
+  },
+  "nav": {
+    "club": "კლუბი",
+    "missions": "მისიები",
+    "gallery": "გალერეა",
+    "profile": "პროფილი",
+    "sky": "ცა",
+    "chat": "AI ჩათი",
+    "marketplace": "მარკეტი",
+    "signIn": "შესვლა",
+    "signOut": "გასვლა და წაშლა"
+  },
+  "home": {
+    "howItWorks": "როგორ მუშაობს",
+    "tonightTargets": "დღეს ღამის სამიზნეები",
+    "leaderboard": "ლიდერბორდი",
+    "explorePlatform": "პლატფორმის შესწავლა",
+    "observeEarn": "დააკვირდი და გამოიმუშავე",
+    "observeEarnDesc": "გაასრულე მისიები და განბლოკე ნამდვილი ჯილდოები Astroman-ის მაღაზიიდან.",
+    "steps": {
+      "observe": "დაკვირვება",
+      "observeDesc": "მიმართე ტელესკოპი ღამის სამიზნისკენ",
+      "capture": "გადაღება",
+      "captureDesc": "გადაიღე ოკულარის გავლით",
+      "verify": "დადასტურება",
+      "verifyDesc": "სატელიტი ადასტურებს맑ი ცის პირობებს",
+      "mint": "მინტი",
+      "mintDesc": "მტკიცებულება ილუქება Solana-ზე NFT-ად"
+    },
+    "trust": {
+      "astronomers": "სამოყვარულო ასტრონომების ნდობა",
+      "rewards": "ნამდვილი ჯილდოები Astroman-იდან"
+    }
+  },
+  "sky": {
+    "title": "ცის პროგნოზი",
+    "today": "დღეს",
+    "cloudCover": "ღრუბლიანობა",
+    "visibility": "ხილვადობა",
+    "go": "კარგია",
+    "maybe": "შეიძლება",
+    "skip": "გამოტოვე",
+    "bestHours": "საუკეთესო საათები",
+    "loadingForecast": "პროგნოზის ჩატვირთვა…",
+    "forecastError": "პროგნოზის ჩატვირთვა ვერ მოხერხდა. შეეხე განახლებისთვის.",
+    "tonightHighlight": "ღამის საუკეთესო სანახი ფანჯარა",
+    "planets": "პლანეტები ღამით"
+  },
+  "planets": {
+    "moon": "მთვარე",
+    "mercury": "მერკური",
+    "venus": "ვენერა",
+    "mars": "მარსი",
+    "jupiter": "იუპიტერი",
+    "saturn": "სატურნი",
+    "visibleNow": "ახლა ჩანს",
+    "risesAt": "ამოდის"
+  },
+  "chat": {
+    "title": "AI თანამგზავრი",
+    "welcome": "გამარჯობა! მე ვარ ASTRA, შენი პირადი ასტრონომი. მკითხე ყველაფერი ამაღამის ცის, ტელესკოპის ან ასტრონომიის შესახებ.",
+    "placeholder": "იკითხე ამაღამის ცის შესახებ…",
+    "send": "გაგზავნა",
+    "thinking": "ASTRA ფიქრობს…",
+    "clearChat": "საუბრის გასუფთავება"
+  },
+  "marketplace": {
+    "title": "მარკეტი",
+    "buyNow": "ახლავე ყიდვა",
+    "payCard": "ბარათით გადახდა",
+    "paySol": "SOL-ით გადახდა",
+    "aiPick": "AI არჩევანი",
+    "outOfStock": "არ არის მარაგში",
+    "loading": "პროდუქტების ჩატვირთვა…",
+    "filterAll": "ყველა",
+    "filterTelescopes": "ტელესკოპები",
+    "filterMoonLamps": "მთვარის ლამპები",
+    "filterDigital": "ციფრული"
+  },
+  "profile": {
+    "title": "პროფილი",
+    "signUpPrompt": "დარეგისტრირდი კოსმოსის შესასწავლად",
+    "signUpCta": "ანგარიშის შექმნა",
+    "walletAddress": "საფულის მისამართი",
+    "copyAddress": "კოპირება",
+    "copied": "დაკოპირდა!",
+    "balance": "ბალანსი",
+    "observations": "დაკვირვებები",
+    "rank": "წოდება",
+    "discoveries": "აღმოჩენები",
+    "signOut": "გასვლა",
+    "viewOnExplorer": "Solana Explorer-ზე ნახვა ↗",
+    "noDiscoveries": "ჯერ აღმოჩენები არ არის — დაიწყე დაკვირვება!"
+  },
+  "club": {
+    "title": "კლუბში გაწევრება",
+    "connectWallet": "საფულის დაკავშირება",
+    "walletConnected": "Solana საფული დაკავშირებულია",
+    "continueEmail": "ელ-ფოსტით გაგრძელება",
+    "continueEmailDesc": "ჩვენ ავტომატურად ვქმნით Solana საფულეს შენთვის. აპი არ არის საჭირო.",
+    "emailPlaceholder": "შენი@ელ-ფოსტა.com",
+    "activatingWallet": "საფულის გააქტიურება Solana devnet-ზე…",
+    "walletActivated": "საფული გააქტიურდა — 1 devnet SOL დაფინანსდა",
+    "viewOnExplorer": "Solana Explorer-ზე ნახვა ↗"
+  }
+}

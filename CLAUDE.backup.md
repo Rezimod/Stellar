@@ -22,31 +22,6 @@ Rezi (Revaz Modebadze) — founder of Astroman (astroman.ge), Georgia's first as
 - **i18n:** next-intl (English + Georgian)
 - **Deploy:** Vercel
 
-## Available skills
-
-- /planner
-- /executor
-- /reviewer
-- /qa
-
-## Default workflow
-
-For non-trivial tasks, use this order:
-1. planner
-2. executor
-3. reviewer
-4. qa
-
-## Working style
-
-- Preserve existing design and structure
-- Prefer minimal diffs
-- Reuse existing components and patterns
-- Avoid unnecessary refactors
-- Keep the app mobile-friendly
-- Optimize for demo readiness
-- Consider loading, empty, and error states
-
 ## Key Architecture Decisions
 1. **Privy, NOT wallet-adapter.** Users sign up with email → embedded Solana wallet created automatically. No Phantom download, no seed phrases. Config: `embeddedWallets: { createOnLogin: 'users-without-wallets' }`
 2. **Gasless transactions.** Server-side fee payer wallet covers all tx costs. Users never need SOL.

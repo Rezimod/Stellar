@@ -1,0 +1,115 @@
+{
+  "common": {
+    "appName": "STELLAR",
+    "tagline": "Observe. Verify. Collect.",
+    "taglineDesc": "Observe planets with your telescope and earn real rewards from the Astroman store.",
+    "startObserving": "Start Observing →",
+    "startEarning": "Start Earning →",
+    "visitStore": "Visit →",
+    "launch": "Launch →"
+  },
+  "nav": {
+    "club": "Club",
+    "missions": "Missions",
+    "gallery": "Gallery",
+    "profile": "Profile",
+    "sky": "Sky",
+    "chat": "AI Chat",
+    "marketplace": "Marketplace",
+    "signIn": "Sign In",
+    "signOut": "Sign out & clear data"
+  },
+  "home": {
+    "howItWorks": "How It Works",
+    "tonightTargets": "Tonight's Targets",
+    "leaderboard": "Leaderboard",
+    "explorePlatform": "Explore the Platform",
+    "observeEarn": "Observe & Earn",
+    "observeEarnDesc": "Complete missions to unlock real rewards from the Astroman store.",
+    "steps": {
+      "observe": "Observe",
+      "observeDesc": "Point your telescope at tonight's target",
+      "capture": "Capture",
+      "captureDesc": "Photograph through the eyepiece",
+      "verify": "Verify",
+      "verifyDesc": "Satellite confirms clear sky conditions",
+      "mint": "Mint",
+      "mintDesc": "Proof sealed on Solana as your NFT"
+    },
+    "trust": {
+      "astronomers": "Trusted by amateur astronomers",
+      "rewards": "Real rewards from Astroman"
+    }
+  },
+  "sky": {
+    "title": "Sky Forecast",
+    "today": "Today",
+    "cloudCover": "Cloud Cover",
+    "visibility": "Visibility",
+    "go": "Go",
+    "maybe": "Maybe",
+    "skip": "Skip",
+    "bestHours": "Best hours",
+    "loadingForecast": "Loading forecast…",
+    "forecastError": "Could not load forecast. Tap to retry.",
+    "tonightHighlight": "Tonight's best viewing window",
+    "planets": "Planets Tonight"
+  },
+  "planets": {
+    "moon": "Moon",
+    "mercury": "Mercury",
+    "venus": "Venus",
+    "mars": "Mars",
+    "jupiter": "Jupiter",
+    "saturn": "Saturn",
+    "visibleNow": "Visible Now",
+    "risesAt": "Rises at"
+  },
+  "chat": {
+    "title": "AI Companion",
+    "welcome": "Hello! I'm ASTRA, your personal astronomer. Ask me anything about tonight's sky, your telescope, or astronomy in general.",
+    "placeholder": "Ask about tonight's sky…",
+    "send": "Send",
+    "thinking": "ASTRA is thinking…",
+    "clearChat": "Clear conversation"
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "buyNow": "Buy Now",
+    "payCard": "Pay with Card",
+    "paySol": "Pay with SOL",
+    "aiPick": "AI Pick",
+    "outOfStock": "Out of Stock",
+    "loading": "Loading products…",
+    "filterAll": "All",
+    "filterTelescopes": "Telescopes",
+    "filterMoonLamps": "Moon Lamps",
+    "filterDigital": "Digital"
+  },
+  "profile": {
+    "title": "Profile",
+    "signUpPrompt": "Sign up to explore the cosmos",
+    "signUpCta": "Create Account",
+    "walletAddress": "Wallet Address",
+    "copyAddress": "Copy",
+    "copied": "Copied!",
+    "balance": "Balance",
+    "observations": "Observations",
+    "rank": "Rank",
+    "discoveries": "Discoveries",
+    "signOut": "Sign Out",
+    "viewOnExplorer": "View on Solana Explorer ↗",
+    "noDiscoveries": "No discoveries yet — start observing!"
+  },
+  "club": {
+    "title": "Join the Club",
+    "connectWallet": "Connect Wallet",
+    "walletConnected": "Solana wallet connected",
+    "continueEmail": "Continue with Email",
+    "continueEmailDesc": "We create a Solana wallet for you automatically. No app needed.",
+    "emailPlaceholder": "your@email.com",
+    "activatingWallet": "Activating wallet on Solana devnet…",
+    "walletActivated": "Wallet activated — 1 devnet SOL funded",
+    "viewOnExplorer": "View on Solana Explorer ↗"
+  }
+}

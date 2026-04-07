@@ -1,17 +1,11 @@
 'use client';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ECOSYSTEM, MISSIONS } from '@/lib/constants';
 import AstroLogo from '@/components/shared/AstroLogo';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
 import { Telescope, Camera, Satellite, Layers } from 'lucide-react';
 import RewardIcon from '@/components/shared/RewardIcon';
-
-const howItWorksSteps = [
-  { step: 1, icon: Telescope, title: 'Observe', desc: "Point your telescope at tonight's target" },
-  { step: 2, icon: Camera, title: 'Capture', desc: 'Photograph through the eyepiece' },
-  { step: 3, icon: Satellite, title: 'Verify', desc: 'Satellite confirms clear sky conditions' },
-  { step: 4, icon: Layers, title: 'Mint', desc: 'Proof sealed on Solana as your NFT' },
-];
 
 const ecoCards = [
   { icon: '🛒', title: 'astroman.ge', subtitle: 'Main Store', desc: 'Browse telescopes', href: ECOSYSTEM.store, ext: true },
@@ -20,6 +14,14 @@ const ecoCards = [
 ];
 
 export default function HomePage() {
+  const t = useTranslations();
+  const stepIcons = [Telescope, Camera, Satellite, Layers];
+  const howItWorksSteps = [
+    { step: 1, icon: stepIcons[0], title: t('home.steps.observe'), desc: t('home.steps.observeDesc') },
+    { step: 2, icon: stepIcons[1], title: t('home.steps.capture'), desc: t('home.steps.captureDesc') },
+    { step: 3, icon: stepIcons[2], title: t('home.steps.verify'), desc: t('home.steps.verifyDesc') },
+    { step: 4, icon: stepIcons[3], title: t('home.steps.mint'),   desc: t('home.steps.mintDesc') },
+  ];
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-16 flex flex-col items-center gap-8 sm:gap-12 animate-page-enter">
 
@@ -28,14 +30,14 @@ export default function HomePage() {
         <AstroLogo heightClass="h-14" />
         <p className="text-[#FFD166] text-sm tracking-widest uppercase font-mono">✦ STELLAR ✦</p>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold" style={{ fontFamily: 'Georgia, serif' }}>
-          {['Observe.', 'Verify.', 'Collect.'].map((word, i) => (
-            <span key={word} className="animate-word inline-block mr-2" style={{ animationDelay: `${i * 150 + 200}ms` }}>
+          {t('common.tagline').split(' ').map((word, i) => (
+            <span key={i} className="animate-word inline-block mr-2" style={{ animationDelay: `${i * 150 + 200}ms` }}>
               <span className={i === 0 ? 'text-[#FFD166]' : 'text-white'}>{word}</span>
             </span>
           ))}
         </h1>
         <p className="text-slate-400 max-w-md text-base leading-relaxed">
-          Observe planets with your telescope and earn real rewards from the Astroman store.
+          {t('common.taglineDesc')}
         </p>
         <Link
           href="/club"
@@ -46,25 +48,25 @@ export default function HomePage() {
             boxShadow: '0 0 32px rgba(255,209,102,0.3), 0 4px 20px rgba(0,0,0,0.4)',
           }}
         >
-          Start Observing →
+          {t('common.startObserving')}
         </Link>
         {/* Trust indicators */}
         <div className="flex items-center gap-4 text-[11px] text-slate-600 flex-wrap justify-center">
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#34d399]" />
-            Trusted by amateur astronomers
+            {t('home.trust.astronomers')}
           </span>
           <span className="text-white/10">·</span>
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166]" />
-            Real rewards from Astroman
+            {t('home.trust.rewards')}
           </span>
         </div>
       </div>
 
       {/* How It Works */}
       <div id="how-it-works" className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-8 tracking-widest uppercase">— How It Works —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-8 tracking-widest uppercase">— {t('home.howItWorks')} —</p>
         <div className="flex flex-col sm:flex-row gap-0">
           {howItWorksSteps.map((item, i) => {
             const Icon = item.icon;
@@ -91,7 +93,7 @@ export default function HomePage() {
 
       {/* Tonight's Targets */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Tonight&apos;s Targets —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.tonightTargets')} —</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {MISSIONS.map(m => {
             const vis = m.difficulty === 'Beginner' ? { label: 'Excellent', color: 'bg-emerald-400' } : { label: 'Good', color: 'bg-yellow-400' };
@@ -113,7 +115,7 @@ export default function HomePage() {
 
       {/* Top Astronomers */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Leaderboard —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.leaderboard')} —</p>
         <div className="glass-card overflow-hidden">
           {[
             { rank: 1, name: 'AstroHunter', location: 'Tbilisi', points: 1280, verified: true },
@@ -143,7 +145,7 @@ export default function HomePage() {
 
       {/* Ecosystem */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Explore the Platform —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.explorePlatform')} —</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {ecoCards.map(card => (
             card.ext ? (
@@ -158,7 +160,7 @@ export default function HomePage() {
                 <p className="text-[#FFD166] text-xs font-mono group-hover:underline">{card.title}</p>
                 <p className="text-slate-300 text-sm font-medium">{card.subtitle}</p>
                 <p className="text-slate-500 text-xs">{card.desc}</p>
-                <p className="text-[#FFD166] text-xs mt-auto">Visit →</p>
+                <p className="text-[#FFD166] text-xs mt-auto">{t('common.visitStore')}</p>
               </a>
             ) : (
               <Link
@@ -170,7 +172,7 @@ export default function HomePage() {
                 <p className="text-[#FFD166] text-xs font-mono">{card.title}</p>
                 <p className="text-slate-300 text-sm font-medium">{card.subtitle}</p>
                 <p className="text-slate-500 text-xs">{card.desc}</p>
-                <p className="text-[#FFD166] text-xs mt-auto">Launch →</p>
+                <p className="text-[#FFD166] text-xs mt-auto">{t('common.launch')}</p>
               </Link>
             )
           ))}
@@ -179,9 +181,9 @@ export default function HomePage() {
 
       {/* Observe & Earn */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— Observe &amp; Earn —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.observeEarn')} —</p>
         <div className="glass-card border border-[#FFD166]/20 p-6 flex flex-col gap-4 glow-gold">
-          <p className="text-slate-300 text-center">Complete missions to unlock real rewards from the Astroman store.</p>
+          <p className="text-slate-300 text-center">{t('home.observeEarnDesc')}</p>
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center gap-3 text-sm">
               <RewardIcon emoji="🎫" size={16} />
@@ -200,7 +202,7 @@ export default function HomePage() {
             href="/club"
             className="text-center px-5 py-2.5 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg hover:from-[#FFE08A] transition-all duration-200 text-sm w-full sm:w-auto"
           >
-            Start Earning →
+            {t('common.startEarning')}
           </Link>
         </div>
       </div>
