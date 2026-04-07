@@ -2,19 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAppState } from '@/hooks/useAppState';
-import { Lock, Telescope, Satellite, ImageIcon, User } from 'lucide-react';
+import { CloudSun, Bot, ShoppingBag, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { state } = useAppState();
-  const clubDone = state.walletConnected && state.membershipMinted && !!state.telescope;
+  const t = useTranslations('nav');
 
   const tabs = [
-    { href: '/club', label: 'Club', icon: <Telescope size={20} /> },
-    { href: '/missions', label: 'Missions', icon: <Satellite size={20} />, locked: !clubDone },
-    { href: '/proof', label: 'Gallery', icon: <ImageIcon size={20} />, locked: !clubDone },
-    { href: '/profile', label: 'Profile', icon: <User size={20} />, locked: !clubDone },
+    { href: '/sky', label: t('sky'), icon: <CloudSun size={20} /> },
+    { href: '/chat', label: t('chat'), icon: <Bot size={20} /> },
+    { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={20} /> },
+    { href: '/profile', label: t('profile'), icon: <User size={20} /> },
   ];
 
   return (
@@ -22,25 +21,18 @@ export default function BottomNav() {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-stretch">
         {tabs.map(tab => (
-          tab.locked ? (
-            <span key={tab.href} className="flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[var(--text-dim)] cursor-not-allowed">
-              <Lock size={18} />
-              <span className="text-[10px]">{tab.label}</span>
-            </span>
-          ) : (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors ${
-                pathname === tab.href
-                  ? 'text-[#FFD166]'
-                  : 'text-[var(--text-secondary)] active:text-[var(--text-primary)]'
-              }`}
-            >
-              {tab.icon}
-              <span className="text-[10px] font-medium">{tab.label}</span>
-            </Link>
-          )
+          <Link
+            key={tab.href}
+            href={tab.href}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-colors ${
+              pathname === tab.href
+                ? 'text-[#FFD166]'
+                : 'text-[var(--text-secondary)] active:text-[var(--text-primary)]'
+            }`}
+          >
+            {tab.icon}
+            <span className="text-[10px] font-medium">{tab.label}</span>
+          </Link>
         ))}
       </div>
     </nav>

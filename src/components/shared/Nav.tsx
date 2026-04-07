@@ -2,63 +2,42 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { getPollinetStatus } from '@/lib/pollinet';
-import { useEffect, useState, useCallback } from 'react';
-import { Telescope, Satellite, ImageIcon, User } from 'lucide-react';
+import { useState } from 'react';
+import { CloudSun, Bot, ShoppingBag, User } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import LanguageToggle from '@/components/nav/LanguageToggle';
+import { useTranslations } from 'next-intl';
 
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout, authenticated } = usePrivy();
-  const { state, pendingCount, reset } = useAppState();
-  const [pollinetIcon, setPollinetIcon] = useState('🟢');
+  const { logout, authenticated, login } = usePrivy();
+  const { wallets } = useWallets();
+  const { reset } = useAppState();
   const [showLogout, setShowLogout] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
+  const t = useTranslations('nav');
 
-  useEffect(() => {
-    setEmail(localStorage.getItem('stellar_wallet_email'));
-  }, [state.walletConnected]);
+  const tabs = [
+    { href: '/sky', label: t('sky'), icon: <CloudSun size={17} /> },
+    { href: '/chat', label: t('chat'), icon: <Bot size={17} /> },
+    { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={17} /> },
+    { href: '/profile', label: t('profile'), icon: <User size={17} /> },
+  ];
 
-  const updatePollinet = useCallback(() => {
-    const s = getPollinetStatus();
-    setPollinetIcon(s.icon + (pendingCount > 0 ? ` ${pendingCount}⏳` : ''));
-  }, [pendingCount]);
-
-  useEffect(() => {
-    updatePollinet();
-    window.addEventListener('online', updatePollinet);
-    window.addEventListener('offline', updatePollinet);
-    return () => {
-      window.removeEventListener('online', updatePollinet);
-      window.removeEventListener('offline', updatePollinet);
-    };
-  }, [updatePollinet]);
+  const solanaWallet = wallets.find(w => w.chainType === 'solana');
+  const walletShort = solanaWallet
+    ? `${solanaWallet.address.slice(0, 4)}...${solanaWallet.address.slice(-4)}`
+    : '';
 
   const handleLogout = async () => {
     if (!confirm('Log out and clear all data?')) return;
-    if (authenticated) await logout();
-    localStorage.removeItem('stellar_wallet_email');
-    localStorage.removeItem('stellar_wallet_address');
+    await logout();
     reset();
     router.push('/');
     setShowLogout(false);
   };
-
-  const tabs = [
-    { href: '/club', label: 'Club', icon: <Telescope size={17} /> },
-    { href: '/missions', label: 'Missions', icon: <Satellite size={17} /> },
-    { href: '/proof', label: 'Gallery', icon: <ImageIcon size={17} /> },
-    { href: '/profile', label: 'Profile', icon: <User size={17} /> },
-  ];
-
-  const walletShort = state.walletAddress
-    ? `${state.walletAddress.slice(0, 4)}...${state.walletAddress.slice(-4)}`
-    : '';
-  const walletLabel = email ? `✉️ ${email.split('@')[0]}` : `🟢 ${walletShort}`;
 
   return (
     <nav className="glass-nav sticky top-0 z-40">
@@ -70,70 +49,57 @@ export default function Nav() {
             <AstroLogo heightClass="h-7" />
           </Link>
 
-          {/* Tabs */}
+          {/* Desktop Tabs */}
           <div className="hidden sm:flex items-center overflow-x-auto scrollbar-hide gap-0.5">
             {tabs.map(tab => (
-              <div key={tab.href}>
-                <Link
-                  href={tab.href}
-                  title={tab.label}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
-                    pathname === tab.href
-                      ? 'text-[#FFD166] bg-[rgba(255,209,102,0.1)] border-b-2 border-[#FFD166]'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </Link>
-              </div>
+              <Link
+                key={tab.href}
+                href={tab.href}
+                title={tab.label}
+                className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                  pathname === tab.href
+                    ? 'text-[#FFD166] bg-[rgba(255,209,102,0.1)] border-b-2 border-[#FFD166]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </Link>
             ))}
           </div>
 
-          {/* Mobile lang toggle */}
-          <div className="flex sm:hidden">
+          {/* Right side */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <LanguageToggle />
-          </div>
 
-          {/* Mobile wallet pill */}
-          {state.walletConnected && (
-            <button
-              onClick={handleLogout}
-              className="flex sm:hidden items-center gap-1.5 text-[#34d399] font-hash bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.2)] px-2 py-1 rounded-lg text-[10px] flex-shrink-0"
-              title="Tap to sign out"
-            >
-              <span>{pollinetIcon}</span>
-              <span>{walletShort}</span>
-            </button>
-          )}
-
-          {/* Desktop wallet */}
-          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
-            <LanguageToggle />
-            <span
-              className="text-xs text-[var(--text-dim)] cursor-help"
-              title="Network Status: Online — Direct to Solana"
-            >
-              {pollinetIcon}
-            </span>
-            {state.walletConnected && (
+            {authenticated ? (
               <div className="relative">
                 <button
                   onClick={() => setShowLogout(v => !v)}
                   className="text-[#34d399] font-hash bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.2)] px-2 py-1 rounded-lg hover:bg-[rgba(52,211,153,0.15)] text-xs"
                 >
-                  {walletLabel}
+                  🟢 {walletShort}
                 </button>
                 {showLogout && (
-                  <div className="absolute right-0 top-full mt-2 glass-card p-3 w-52 z-50">
-                    <p className="text-[var(--text-secondary)] text-xs mb-1 truncate font-hash">{state.walletAddress.slice(0,8)}...{state.walletAddress.slice(-6)}</p>
-                    {email && <p className="text-[var(--text-dim)] text-xs mb-3">{email}</p>}
+                  <div className="absolute right-0 top-full mt-2 glass-card p-3 w-48 z-50">
+                    {solanaWallet && (
+                      <p className="text-[var(--text-secondary)] text-xs mb-3 truncate font-hash">
+                        {solanaWallet.address.slice(0, 8)}...{solanaWallet.address.slice(-6)}
+                      </p>
+                    )}
                     <button onClick={handleLogout} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded hover:bg-red-500/10 transition-all">
-                      Sign out &amp; clear data
+                      {t('signOut')}
                     </button>
                   </div>
                 )}
               </div>
+            ) : (
+              <button
+                onClick={() => login()}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#8B5CF6] hover:bg-[#7C3AED] text-white transition-colors"
+              >
+                {t('signIn')}
+              </button>
             )}
           </div>
         </div>
