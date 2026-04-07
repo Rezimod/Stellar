@@ -18,15 +18,21 @@ export default function ProfilePage() {
   const [balance, setBalance] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const address = wallets[0]?.address ?? null;
+  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
+  const address = solanaWallet?.address ?? null;
 
   useEffect(() => {
     if (!address) return;
     setBalance(null);
-    const conn = new Connection('https://api.devnet.solana.com', 'confirmed');
-    conn.getBalance(new PublicKey(address))
-      .then(bal => setBalance(bal / 1_000_000_000))
-      .catch(() => setBalance(0));
+    try {
+      const pubkey = new PublicKey(address);
+      const conn = new Connection('https://api.devnet.solana.com', 'confirmed');
+      conn.getBalance(pubkey)
+        .then(bal => setBalance(bal / 1_000_000_000))
+        .catch(() => setBalance(0));
+    } catch {
+      setBalance(0);
+    }
   }, [address]);
 
   const handleCopy = () => {
