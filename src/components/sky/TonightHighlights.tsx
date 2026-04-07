@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { SkyDay } from '@/lib/sky-data';
-import { getVisiblePlanets } from '@/lib/planets';
+import type { PlanetInfo } from "@/lib/planets";
 
 const TBILISI = { lat: 41.6941, lng: 44.8337 };
 
@@ -38,32 +38,34 @@ export default function TonightHighlights() {
   const [headline, setHeadline] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const compute = useCallback((lat: number, lng: number) => {
-    fetch(`/api/sky/forecast?lat=${lat}&lng=${lng}`)
-      .then(r => r.json() as Promise<SkyDay[]>)
-      .then(days => {
-        if (!days.length) { setLoading(false); return; }
+  const compute = useCallback(async (lat: number, lng: number) => {
+    try {
+      const r = await fetch(`/api/sky/forecast?lat=${lat}&lng=${lng}`);
+      const days = await r.json() as SkyDay[];
+      if (!days.length) { setLoading(false); return; }
 
-        const today = days[0];
-        const { cloudCover, window } = eveningBestWindow(today.hours);
+      const today = days[0];
+      const { cloudCover, window } = eveningBestWindow(today.hours);
 
-        if (cloudCover < 30) {
-          const planets = getVisiblePlanets(lat, lng, new Date());
-          const top = planets.find(p => p.visible);
-          const planetPart = top
-            ? `${pt(top.key as Parameters<typeof pt>[0])} at ${top.altitude}°`
-            : 'clear skies';
-          const timePart = window ? ` — clear skies ${window}` : '';
-          setHeadline(`Best tonight: ${planetPart}${timePart}`);
-        } else {
-          const next = nextClearDate(days);
-          setHeadline(next
-            ? `Cloudy tonight — next clear window: ${next}`
-            : 'Cloudy all week — keep checking back');
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      if (cloudCover < 30) {
+        const planetsRes = await fetch(`/api/sky/planets?lat=${lat}&lng=${lng}`);
+        const planets = await planetsRes.json() as PlanetInfo[];
+        const top = planets.find(p => p.visible);
+        const planetPart = top
+          ? `${pt(top.key as Parameters<typeof pt>[0])} at ${top.altitude}°`
+          : 'clear skies';
+        const timePart = window ? ` — clear skies ${window}` : '';
+        setHeadline(`Best tonight: ${planetPart}${timePart}`);
+      } else {
+        const next = nextClearDate(days);
+        setHeadline(next
+          ? `Cloudy tonight — next clear window: ${next}`
+          : 'Cloudy all week — keep checking back');
+      }
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
   }, [pt]);
 
   useEffect(() => {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { PlanetInfo } from '@/lib/planets';
+import type { PlanetInfo } from "@/lib/planets";
 
 interface Props {
   planet: PlanetInfo;
