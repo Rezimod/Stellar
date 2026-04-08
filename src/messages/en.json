@@ -53,7 +53,10 @@
     "loadingForecast": "Loading forecast…",
     "forecastError": "Could not load forecast. Tap to retry.",
     "tonightHighlight": "Tonight's best viewing window",
-    "planets": "Planets Tonight"
+    "planets": "Planets Tonight",
+    "sunRises": "Rises",
+    "sunSets": "Sets",
+    "moonPhase": "Moon Phase"
   },
   "planets": {
     "moon": "Moon",

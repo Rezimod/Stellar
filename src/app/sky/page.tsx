@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import TonightHighlights from '@/components/sky/TonightHighlights';
+import SunMoonBar from '@/components/sky/SunMoonBar';
 import ForecastGrid from '@/components/sky/ForecastGrid';
 import PlanetGrid from '@/components/sky/PlanetGrid';
 import EventBanner from '@/components/sky/EventBanner';
@@ -12,6 +13,7 @@ export default async function SkyPage() {
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
         <TonightHighlights />
+        <SunMoonBar />
         <ForecastGrid />
       </div>
       <div>
