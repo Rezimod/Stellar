@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { SkyDay } from '@/lib/sky-data';
 import type { PlanetInfo } from "@/lib/planets";
 
@@ -21,13 +21,13 @@ function eveningBestWindow(hours: SkyDay['hours']): { cloudCover: number; window
   return { cloudCover: best.cloudCover, window };
 }
 
-function nextClearDate(days: SkyDay[]): string {
+function nextClearDate(days: SkyDay[], locale: string): string {
   const next = days.slice(1).find(d => {
     const best = d.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b);
     return best.cloudCover < 30;
   });
   if (!next) return '';
-  return new Date(next.date + 'T12:00:00').toLocaleDateString('en-US', {
+  return new Date(next.date + 'T12:00:00').toLocaleDateString(locale, {
     weekday: 'short', month: 'short', day: 'numeric',
   });
 }
@@ -35,6 +35,7 @@ function nextClearDate(days: SkyDay[]): string {
 export default function TonightHighlights() {
   const t = useTranslations('sky');
   const pt = useTranslations('planets');
+  const locale = useLocale();
   const [headline, setHeadline] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -57,7 +58,7 @@ export default function TonightHighlights() {
         const timePart = window ? ` — clear skies ${window}` : '';
         setHeadline(`Best tonight: ${planetPart}${timePart}`);
       } else {
-        const next = nextClearDate(days);
+        const next = nextClearDate(days, locale);
         setHeadline(next
           ? `Cloudy tonight — next clear window: ${next}`
           : 'Cloudy all week — keep checking back');

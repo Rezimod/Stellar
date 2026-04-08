@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { PlanetInfo } from "@/lib/planets";
 
 interface Props {
@@ -33,9 +33,9 @@ const VIEWING_TIP: Record<string, string> = {
   saturn:  'Rings clearly visible in any telescope',
 };
 
-function hhmm(d: Date | null): string {
+function hhmm(d: Date | null, locale: string): string {
   if (!d) return '—';
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function magnitudeLabel(mag: number): string {
@@ -47,6 +47,7 @@ function magnitudeLabel(mag: number): string {
 
 export default function PlanetDetail({ planet, onClose }: Props) {
   const t = useTranslations('planets');
+  const locale = useLocale();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -80,15 +81,15 @@ export default function PlanetDetail({ planet, onClose }: Props) {
     },
     {
       label: 'Rises at',
-      value: hhmm(planet.rise),
+      value: hhmm(planet.rise, locale),
     },
     {
       label: 'Highest at',
-      value: hhmm(planet.transit),
+      value: hhmm(planet.transit, locale),
     },
     {
       label: 'Sets at',
-      value: hhmm(planet.set),
+      value: hhmm(planet.set, locale),
     },
     {
       label: 'Constellation',

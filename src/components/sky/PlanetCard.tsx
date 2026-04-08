@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { PlanetInfo } from "@/lib/planets";
 
 interface Props {
@@ -16,13 +16,14 @@ const DOT_COLOR: Record<string, string> = {
   saturn:  'bg-yellow-300',
 };
 
-function hhmm(d: Date | null): string {
+function hhmm(d: Date | null, locale: string): string {
   if (!d) return '—';
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 export default function PlanetCard({ planet }: Props) {
   const t = useTranslations('planets');
+  const locale = useLocale();
 
   return (
     <div className="glass-card p-4 flex flex-col gap-3">
@@ -38,7 +39,7 @@ export default function PlanetCard({ planet }: Props) {
           </span>
         ) : (
           <span className="inline-flex items-center flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(56,240,255,0.12)] whitespace-nowrap">
-            {t('risesAt')} {hhmm(planet.rise)}
+            {t('risesAt')} {hhmm(planet.rise, locale)}
           </span>
         )}
       </div>
@@ -55,7 +56,7 @@ export default function PlanetCard({ planet }: Props) {
         {(['rise', 'transit', 'set'] as const).map(label => (
           <div key={label}>
             <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wide">{label}</p>
-            <p className="text-white text-xs font-medium">{hhmm(planet[label])}</p>
+            <p className="text-white text-xs font-medium">{hhmm(planet[label], locale)}</p>
           </div>
         ))}
       </div>

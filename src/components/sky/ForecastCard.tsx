@@ -1,7 +1,7 @@
 'use client';
 
 import { SkyDay } from '@/lib/sky-data';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Props {
   day: SkyDay;
@@ -14,8 +14,8 @@ function badge(cloudCover: number): 'go' | 'maybe' | 'skip' {
   return 'skip';
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {
+function formatDate(dateStr: string, locale: string): string {
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString(locale, {
     weekday: 'short', month: 'short', day: 'numeric',
   });
 }
@@ -36,6 +36,7 @@ const badgeStyles = {
 
 export default function ForecastCard({ day, isToday }: Props) {
   const t = useTranslations('sky');
+  const locale = useLocale();
 
   const bestHour = day.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b);
   const kind = badge(bestHour.cloudCover);
@@ -48,7 +49,7 @@ export default function ForecastCard({ day, isToday }: Props) {
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
             <p className="text-[#38F0FF] text-xs font-medium tracking-widest uppercase mb-1">{t('today')}</p>
-            <p className="text-white text-lg font-semibold">{formatDate(day.date)}</p>
+            <p className="text-white text-lg font-semibold">{formatDate(day.date, locale)}</p>
           </div>
           <span className={`inline-flex items-center px-2.5 py-1 rounded text-sm font-semibold border ${badgeStyles[kind]}`}>
             {t(kind)}
@@ -76,7 +77,7 @@ export default function ForecastCard({ day, isToday }: Props) {
   return (
     <div className="glass-card p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-white text-sm font-medium min-w-0 truncate">{formatDate(day.date)}</p>
+        <p className="text-white text-sm font-medium min-w-0 truncate">{formatDate(day.date, locale)}</p>
         <span className={`inline-flex items-center flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium border ${badgeStyles[kind]}`}>
           {t(kind)}
         </span>
