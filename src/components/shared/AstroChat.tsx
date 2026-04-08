@@ -86,11 +86,40 @@ export default function AstroChat() {
         body: JSON.stringify({
           message: msg,
           history: newMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
+          locale: navigator.language.startsWith('ka') ? 'ka' : 'en',
         }),
       });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+
+      if (!res.ok || !res.body) throw new Error('Stream failed');
+
+      // Add empty assistant bubble to stream into
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6);
+          if (payload === '[DONE]') break;
+          if (payload === '[ERROR]') throw new Error('Stream error');
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: 'assistant',
+              content: updated[updated.length - 1].content + payload,
+            };
+            return updated;
+          });
+        }
+      }
     } catch {
       setError('Connection lost. Try again.');
     } finally {

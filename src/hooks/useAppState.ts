@@ -2,9 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, createElement } from 'react';
 import type { AppState, CompletedMission } from '@/lib/types';
-import { verifyWithFarmHawk } from '@/lib/farmhawk';
-import { mintNFT } from '@/lib/solana';
-import { initPollinetSync } from '@/lib/pollinet';
 
 const defaultState: AppState = {
   walletConnected: false,
@@ -48,21 +45,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state, loaded]);
 
-  // Process pending queue when back online via Pollinet IndexedDB sync
-  useEffect(() => {
-    const cleanup = initPollinetSync(async (m) => {
-      const fh = await verifyWithFarmHawk(m.latitude, m.longitude);
-      const result = await mintNFT(`${m.name} Observation`, 'OBS');
-      setState(prev => ({
-        ...prev,
-        completedMissions: prev.completedMissions.map(x =>
-          x.id === m.id ? { ...x, farmhawk: fh, txId: result.txId, status: 'completed' as const } : x
-        ),
-      }));
-    });
-    return cleanup;
-  }, [loaded]);
-
   const update = (patch: Partial<AppState>) => setState(s => ({ ...s, ...patch }));
 
   const ctx: AppStateCtx = {
@@ -72,7 +54,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setTelescope: (data, tx) => update({ telescope: data, telescopeTx: tx }),
     addMission: (mission) => setState(s => ({
       ...s,
-      completedMissions: [...s.completedMissions.filter(m => m.id !== mission.id), mission],
+      completedMissions: [...s.completedMissions, mission],
     })),
     removeMission: (id) => setState(s => ({
       ...s,
