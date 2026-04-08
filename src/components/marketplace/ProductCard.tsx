@@ -31,14 +31,22 @@ export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
       className={`glass-card flex flex-col overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${!product.inStock ? 'opacity-60' : ''}`}
       onClick={() => product.inStock && onSelect(product)}
     >
-      {/* Image placeholder */}
+      {/* Image area — emoji placeholder, real image overlays when loaded */}
       <div
-        className="relative w-full aspect-video flex flex-col items-center justify-center gap-2"
+        className="relative w-full aspect-video flex items-center justify-center"
         style={{ background: art.bg, borderBottom: `1px solid ${art.border}` }}
       >
         <span className="text-5xl select-none" style={{ filter: 'drop-shadow(0 0 16px rgba(255,255,255,0.15))' }}>
           {art.emoji}
         </span>
+        {product.image && (
+          <img
+            src={product.image}
+            alt={name}
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
         {product.featured && (
           <div className="absolute top-2 left-2">
             <Badge color="brass">{t('aiPick')}</Badge>

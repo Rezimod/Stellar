@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Telescope, Moon, Star, Wrench, Sparkles } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Badge from '@/components/shared/Badge';
 import Button from '@/components/shared/Button';
@@ -13,20 +13,12 @@ interface Props {
   onClose: () => void;
 }
 
-const CATEGORY_ICON: Record<string, React.ReactNode> = {
-  telescope: <Telescope size={40} className="text-[#38F0FF]/40" />,
-  moonlamp:  <Moon size={40} className="text-slate-400/40" />,
-  projector: <Star size={40} className="text-[#FFD166]/40" />,
-  accessory: <Wrench size={40} className="text-slate-500/40" />,
-  digital:   <Sparkles size={40} className="text-[#8B5CF6]/40" />,
-};
-
-const CATEGORY_GRADIENT: Record<string, string> = {
-  telescope: 'from-[#0a1628] to-[#0e2040]',
-  moonlamp:  'from-[#1a1a2e] to-[#16213e]',
-  projector: 'from-[#1a1409] to-[#2a1f05]',
-  accessory: 'from-[#0d1117] to-[#161b22]',
-  digital:   'from-[#150d2e] to-[#1e1040]',
+const CATEGORY_ART: Record<string, { emoji: string; bg: string }> = {
+  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(56,240,255,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
+  moonlamp:  { emoji: '🌕', bg: 'radial-gradient(ellipse at 60% 30%, rgba(255,209,102,0.12) 0%, rgba(26,26,46,0.95) 70%)' },
+  projector: { emoji: '✨', bg: 'radial-gradient(ellipse at 40% 60%, rgba(139,92,246,0.12) 0%, rgba(26,20,9,0.95) 70%)' },
+  accessory: { emoji: '⚙️', bg: 'radial-gradient(ellipse at 50% 50%, rgba(100,116,139,0.1) 0%, rgba(13,17,23,0.95) 70%)' },
+  digital:   { emoji: '🗺️', bg: 'radial-gradient(ellipse at 50% 30%, rgba(139,92,246,0.15) 0%, rgba(21,13,46,0.95) 70%)' },
 };
 
 export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
@@ -84,23 +76,33 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
         onClick={e => e.stopPropagation()}
       >
         {/* Image */}
-        <div className={`relative w-full aspect-video flex-shrink-0 bg-gradient-to-br ${CATEGORY_GRADIENT[product.category]} flex items-center justify-center`}>
-          <img
-            src={product.image}
-            alt={name}
-            className="w-full h-full object-cover"
-            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {CATEGORY_ICON[product.category]}
-          </div>
-          <button
-            onClick={handleClose}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-          >
-            <X size={15} />
-          </button>
-        </div>
+        {(() => {
+          const art = CATEGORY_ART[product.category] ?? CATEGORY_ART.accessory;
+          return (
+            <div
+              className="relative w-full aspect-video flex-shrink-0 flex items-center justify-center"
+              style={{ background: art.bg }}
+            >
+              <span className="text-6xl select-none" style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.15))' }}>
+                {art.emoji}
+              </span>
+              {product.image && (
+                <img
+                  src={product.image}
+                  alt={name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              )}
+              <button
+                onClick={handleClose}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          );
+        })()}
 
         {/* Content */}
         <div className="flex flex-col gap-4 p-5 overflow-y-auto flex-1">
