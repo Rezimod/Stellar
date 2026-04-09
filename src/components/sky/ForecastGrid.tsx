@@ -4,11 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { SkyDay } from '@/lib/sky-data';
 import ForecastCard from './ForecastCard';
-
-const TBILISI = { lat: 41.6941, lng: 44.8337 };
+import { useLocation } from '@/hooks/useLocation';
 
 export default function ForecastGrid() {
   const t = useTranslations('sky');
+  const { lat, lng, ready } = useLocation();
   const [days, setDays] = useState<SkyDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -25,19 +25,9 @@ export default function ForecastGrid() {
       .catch(() => { setError(true); setLoading(false); });
   }, []);
 
-  const fetchWithGeo = useCallback(() => {
-    if (!navigator.geolocation) {
-      load(TBILISI.lat, TBILISI.lng);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => load(pos.coords.latitude, pos.coords.longitude),
-      ()  => load(TBILISI.lat, TBILISI.lng),
-      { timeout: 5000 },
-    );
-  }, [load]);
-
-  useEffect(() => { fetchWithGeo(); }, [fetchWithGeo]);
+  useEffect(() => {
+    if (ready) load(lat, lng);
+  }, [ready, lat, lng, load]);
 
   if (loading) {
     return (
@@ -63,10 +53,10 @@ export default function ForecastGrid() {
       <div className="glass-card p-5 border-[#FFD166]/30 flex flex-col items-center gap-3 text-center">
         <p className="text-[#FFD166] text-sm">{t('forecastError')}</p>
         <button
-          onClick={fetchWithGeo}
+          onClick={() => load(lat, lng)}
           className="px-4 py-2 rounded-lg bg-[#FFD166]/10 border border-[#FFD166]/30 text-[#FFD166] text-sm hover:bg-[#FFD166]/20 transition-colors"
         >
-          Retry
+          {t('retry')}
         </button>
       </div>
     );

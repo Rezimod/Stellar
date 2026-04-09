@@ -5,34 +5,22 @@ import { useTranslations } from 'next-intl';
 import type { PlanetInfo } from "@/lib/planets";
 import PlanetCard from './PlanetCard';
 import PlanetDetail from './PlanetDetail';
-
-const TBILISI = { lat: 41.6941, lng: 44.8337 };
+import { useLocation } from '@/hooks/useLocation';
 
 export default function PlanetGrid() {
   const t = useTranslations('sky');
+  const { lat, lng, ready } = useLocation();
   const [planets, setPlanets] = useState<PlanetInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetInfo | null>(null);
 
   useEffect(() => {
-    function load(lat: number, lng: number) {
-      fetch(`/api/sky/planets?lat=${lat}&lng=${lng}`)
-        .then(r => r.json() as Promise<PlanetInfo[]>)
-        .then(data => { setPlanets(data); setLoading(false); })
-        .catch(() => setLoading(false));
-    }
-
-    if (!navigator.geolocation) {
-      load(TBILISI.lat, TBILISI.lng);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      pos => load(pos.coords.latitude, pos.coords.longitude),
-      ()  => load(TBILISI.lat, TBILISI.lng),
-      { timeout: 5000 },
-    );
-  }, []);
+    if (!ready) return;
+    fetch(`/api/sky/planets?lat=${lat}&lng=${lng}`)
+      .then(r => r.json() as Promise<PlanetInfo[]>)
+      .then(data => { setPlanets(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [ready, lat, lng]);
 
   if (loading) {
     return (
@@ -47,7 +35,7 @@ export default function PlanetGrid() {
   if (planets.length === 0) {
     return (
       <div className="glass-card p-5 text-center text-[var(--text-secondary)] text-sm">
-        No planet data available.
+        <p className="text-[var(--text-secondary)] text-sm">{t('noPlanets')}</p>
       </div>
     );
   }

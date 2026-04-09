@@ -34,6 +34,15 @@ const badgeStyles = {
   skip:  'bg-red-500/20 text-red-400 border-red-500/40',
 };
 
+function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div>
+      <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-white text-base font-bold" style={color ? { color } : undefined}>{value}</p>
+    </div>
+  );
+}
+
 export default function ForecastCard({ day, isToday }: Props) {
   const t = useTranslations('sky');
   const locale = useLocale();
@@ -56,23 +65,34 @@ export default function ForecastCard({ day, isToday }: Props) {
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="glass-card p-3 text-center">
-            <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wide mb-1">{t('cloudCover')}</p>
-            <p className="text-white text-xl font-bold">{bestHour.cloudCover}%</p>
-          </div>
-          <div className="glass-card p-3 text-center">
-            <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wide mb-1">{t('visibility')}</p>
-            <p className="text-white text-xl font-bold">{visKm} km</p>
-          </div>
-          <div className="glass-card p-3 text-center">
-            <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wide mb-1">{t('bestHours')}</p>
-            <p className="text-white text-sm font-bold leading-tight pt-1">{window}</p>
-          </div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-4">
+          <Stat
+            label={t('cloudCover')}
+            value={`${bestHour.cloudCover}%`}
+            color={bestHour.cloudCover < 30 ? '#34d399' : bestHour.cloudCover < 60 ? '#FFD166' : '#f87171'}
+          />
+          <Stat label={t('visibility')} value={`${visKm} km`} />
+          <Stat label="Temperature" value={`${Math.round(bestHour.temp)}°C`} />
+          <Stat label="Wind" value={`${Math.round(bestHour.wind)} km/h`} />
         </div>
+
+        {window !== '—' && (
+          <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center gap-2">
+            <span className="text-[#38F0FF] text-[10px] uppercase tracking-widest">{t('bestHours')}</span>
+            <span className="text-white text-xs font-medium">{window}</span>
+          </div>
+        )}
       </div>
     );
   }
+
+  const nightHours = day.hours.filter(h => {
+    const hr = parseInt(h.time.slice(11, 13));
+    return hr >= 20 || hr <= 4;
+  });
+  const temps = nightHours.map(h => h.temp);
+  const minTemp = temps.length ? Math.round(Math.min(...temps)) : null;
+  const maxTemp = temps.length ? Math.round(Math.max(...temps)) : null;
 
   return (
     <div className="glass-card p-4 flex flex-col gap-2">
@@ -86,6 +106,9 @@ export default function ForecastCard({ day, isToday }: Props) {
         <span>☁ {bestHour.cloudCover}%</span>
         <span>👁 {visKm} km</span>
       </div>
+      {minTemp !== null && (
+        <span className="text-xs text-slate-500">🌡 {minTemp}–{maxTemp}°C</span>
+      )}
       {window !== '—' && (
         <p className="text-[10px] text-[var(--text-dim)]">{t('bestHours')}: {window}</p>
       )}

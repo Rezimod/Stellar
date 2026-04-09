@@ -117,7 +117,7 @@ const PLANETS = [
 
 const DSO = [
   {
-    id: 'm42', emoji: '✨',
+    id: 'm42', emoji: '✨', img: '/images/dso/m42.jpg',
     name: { en: 'Orion Nebula (M42)', ka: 'ორიონის ნისლეული (M42)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
     distance: { en: '1,344 light-years', ka: '1,344 სინათლის წელი' },
@@ -127,7 +127,7 @@ const DSO = [
     color: '#7a5fff',
   },
   {
-    id: 'm31', emoji: '🌌',
+    id: 'm31', emoji: '🌌', img: '/images/dso/m31.jpg',
     name: { en: 'Andromeda Galaxy (M31)', ka: 'ანდრომედას გალაქტიკა (M31)' },
     type: { en: 'Spiral Galaxy', ka: 'სპირალური გალაქტიკა' },
     distance: { en: '2.5 million light-years', ka: '2.5 მილიონი სინათლის წელი' },
@@ -137,7 +137,7 @@ const DSO = [
     color: '#14b8a6',
   },
   {
-    id: 'm45', emoji: '💫',
+    id: 'm45', emoji: '💫', img: '/images/dso/m45.jpg',
     name: { en: 'Pleiades — Seven Sisters (M45)', ka: 'პლეიადები — შვიდი და (M45)' },
     type: { en: 'Open Cluster', ka: 'ღია გროვა' },
     distance: { en: '444 light-years', ka: '444 სინათლის წელი' },
@@ -147,7 +147,7 @@ const DSO = [
     color: '#38f0ff',
   },
   {
-    id: 'm1', emoji: '🔭',
+    id: 'm1', emoji: '🔭', img: '/images/dso/m1.jpg',
     name: { en: 'Crab Nebula (M1)', ka: 'კიბოს ნისლეული (M1)' },
     type: { en: 'Supernova Remnant', ka: 'სუპერნოვის ნარჩენი' },
     distance: { en: '6,523 light-years', ka: '6,523 სინათლის წელი' },
@@ -157,7 +157,7 @@ const DSO = [
     color: '#f59e0b',
   },
   {
-    id: 'm13', emoji: '⭐',
+    id: 'm13', emoji: '⭐', img: '/images/dso/m13.jpg',
     name: { en: 'Hercules Cluster (M13)', ka: 'ჰერკულესის გროვა (M13)' },
     type: { en: 'Globular Cluster', ka: 'გლობულარული გროვა' },
     distance: { en: '25,100 light-years', ka: '25,100 სინათლის წელი' },
@@ -167,7 +167,7 @@ const DSO = [
     color: '#ffd166',
   },
   {
-    id: 'm57', emoji: '💍',
+    id: 'm57', emoji: '💍', img: '/images/dso/m57.jpg',
     name: { en: 'Ring Nebula (M57)', ka: 'რგოლის ნისლეული (M57)' },
     type: { en: 'Planetary Nebula', ka: 'პლანეტური ნისლეული' },
     distance: { en: '2,300 light-years', ka: '2,300 სინათლის წელი' },
@@ -177,7 +177,7 @@ const DSO = [
     color: '#34d399',
   },
   {
-    id: 'm17', emoji: '🌊',
+    id: 'm17', emoji: '🌊', img: '/images/dso/m17.jpg',
     name: { en: 'Omega Nebula (M17)', ka: 'ომეგა ნისლეული (M17)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
     distance: { en: '5,500 light-years', ka: '5,500 სინათლის წელი' },
@@ -187,7 +187,7 @@ const DSO = [
     color: '#f97316',
   },
   {
-    id: 'm51', emoji: '🌀',
+    id: 'm51', emoji: '🌀', img: '/images/dso/m51.jpg',
     name: { en: 'Whirlpool Galaxy (M51)', ka: 'მოქცევის გალაქტიკა (M51)' },
     type: { en: 'Interacting Galaxies', ka: 'ურთიერთმოქმედი გალაქტიკები' },
     distance: { en: '23 million light-years', ka: '23 მილიონი სინათლის წელი' },
@@ -197,7 +197,7 @@ const DSO = [
     color: '#6366f1',
   },
   {
-    id: 'm8', emoji: '🏝️',
+    id: 'm8', emoji: '🏝️', img: '/images/dso/m8.jpg',
     name: { en: 'Lagoon Nebula (M8)', ka: 'ლაგუნა ნისლეული (M8)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
     distance: { en: '4,100 light-years', ka: '4,100 სინათლის წელი' },
@@ -207,7 +207,7 @@ const DSO = [
     color: '#ec4899',
   },
   {
-    id: 'ngc869', emoji: '💎',
+    id: 'ngc869', emoji: '💎', img: '/images/dso/ngc869.jpg',
     name: { en: 'Double Cluster (NGC 869 & 884)', ka: 'ორმაგი გროვა (NGC 869 & 884)' },
     type: { en: 'Open Cluster Pair', ka: 'ღია გროვის წყვილი' },
     distance: { en: '7,500 light-years', ka: '7,500 სინათლის წელი' },
@@ -215,6 +215,71 @@ const DSO = [
     scope: { en: 'Magnificent in binoculars — both fit in the same field of view. A telescope at low power fills the eyepiece with sparkling stars.', ka: 'ბინოკლით შთამბეჭდავია — ორივე ერთ ხედვის ველში ჩანს. ტელესკოპი ვარსკვლავებით სავსე სანახაობას გვიჩვენებს.' },
     kidsLine: { en: 'Two giant star cities sitting right next to each other in space!', ka: 'ორი გიგანტური ვარსკვლავთა ქალაქი კოსმოსში გვერდიგვერდ!' },
     color: '#38f0ff',
+  },
+];
+
+// ─── Constellations ──────────────────────────────────────────────────────────
+
+const CONSTELLATIONS = [
+  {
+    id: 'orion',
+    name: { en: 'Orion', ka: 'ორიონი' },
+    img: '/images/constellations/orion.jpg',
+    season: { en: 'Winter', ka: 'ზამთარი' },
+    stars: 7,
+    desc: { en: 'The Hunter — easiest constellation to find. Three bright stars form the famous belt.', ka: 'მონადირე — ყველაზე ადვილად მოსაძებნი. სამი კაშკაში ვარსკვლავი ქმნის სარტყელს.' },
+    highlight: { en: 'Contains the Orion Nebula (M42) and red supergiant Betelgeuse', ka: 'შეიცავს ორიონის ნისლეულს (M42) და ბეთელგეიზეს' },
+    color: '#f97316',
+  },
+  {
+    id: 'ursa-major',
+    name: { en: 'Ursa Major', ka: 'დიდი დათვი' },
+    img: '/images/constellations/ursa-major.jpg',
+    season: { en: 'Year-round (north)', ka: 'მთელი წელი (ჩრდილოეთი)' },
+    stars: 7,
+    desc: { en: 'The Great Bear — contains the Big Dipper, which points to the North Star.', ka: 'დიდი დათვი — შეიცავს "დიდ ჩარხს", რომელიც ჩრდილოეთის ვარსკვლავისკენ მიუთითებს.' },
+    highlight: { en: 'The two end stars of the Big Dipper always point toward Polaris', ka: 'ჩარხის ორი ბოლო ვარსკვლავი ყოველთვის პოლარისისკენ მიუთითებს' },
+    color: '#38f0ff',
+  },
+  {
+    id: 'cassiopeia',
+    name: { en: 'Cassiopeia', ka: 'კასიოპეა' },
+    img: '/images/constellations/cassiopeia.jpg',
+    season: { en: 'Autumn/Winter', ka: 'შემოდგომა/ზამთარი' },
+    stars: 5,
+    desc: { en: 'The Queen — W or M shape in the north sky. Never sets from Georgia.', ka: 'დედოფალი — W ან M ფორმა ჩრდილოეთ ცაზე. საქართველოდან არასოდეს ჩადის.' },
+    highlight: { en: 'Opposite Ursa Major across the pole — use it when the Dipper is low', ka: 'პოლუსის მეორე მხარეს დიდი დათვის პირდაპირ — გამოიყენე, როდესაც ჩარხი დაბლაა' },
+    color: '#8B5CF6',
+  },
+  {
+    id: 'scorpius',
+    name: { en: 'Scorpius', ka: 'მორიელი' },
+    img: '/images/constellations/scorpius.jpg',
+    season: { en: 'Summer', ka: 'ზაფხული' },
+    stars: 18,
+    desc: { en: 'The Scorpion — one of the most dramatic constellations with a curved tail dipping into the Milky Way.', ka: 'მორიელი — ერთ-ერთი ყველაზე დრამატული. მოხრილი კუდი ირმის ნახტომში ეშვება.' },
+    highlight: { en: 'Antares is a red supergiant at its heart — 700× the Sun\'s diameter', ka: 'ანტარესი წითელი ზეგიგანტია — მზის 700-ჯერ დიდი' },
+    color: '#ef4444',
+  },
+  {
+    id: 'cygnus',
+    name: { en: 'Cygnus', ka: 'გედი' },
+    img: '/images/constellations/cygnus.jpg',
+    season: { en: 'Summer/Autumn', ka: 'ზაფხული/შემოდგომა' },
+    stars: 9,
+    desc: { en: 'The Swan — forms a clear cross (Northern Cross) flying along the Milky Way.', ka: 'გედი — ნათელ ჯვარს ქმნის (ჩრდილოეთის ჯვარი) ირმის ნახტომში.' },
+    highlight: { en: 'Deneb marks the tail — one of the most luminous stars visible to the naked eye', ka: 'დენები კუდს ნიშნავს — ერთ-ერთი ყველაზე ნათელი ვარსკვლავი' },
+    color: '#FFD166',
+  },
+  {
+    id: 'leo',
+    name: { en: 'Leo', ka: 'ლომი' },
+    img: '/images/constellations/leo.jpg',
+    season: { en: 'Spring', ka: 'გაზაფხული' },
+    stars: 9,
+    desc: { en: 'The Lion — a prominent spring constellation with a backwards question-mark shape called the Sickle.', ka: 'ლომი — გაზაფხულის თვალსაჩინო თანავარსკვლავედი. კითხვის ნიშნის ფორმა "მამელს" ქმნის.' },
+    highlight: { en: 'Regulus, its brightest star, sits almost exactly on the ecliptic', ka: 'რეგულუსი, ყველაზე კაშკაში ვარსკვლავი, ეკლიპტიკაზე ზის' },
+    color: '#34d399',
   },
 ];
 
@@ -312,6 +377,31 @@ function PlanetsTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
           )}
         </button>
       ))}
+      <div className="mt-2 pt-4 border-t border-white/[0.05]">
+        <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-3">
+          {locale === 'ka' ? 'თანავარსკვლავედები' : 'Constellations'}
+        </p>
+        <div className="flex flex-col gap-3">
+          {CONSTELLATIONS.map(c => (
+            <div key={c.id} className="glass-card overflow-hidden">
+              <div className="relative w-full" style={{ height: '120px' }}>
+                <Image src={c.img} alt={c.name['en']} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(7,11,20,0.85) 40%, transparent 100%)' }} />
+                <div className="absolute inset-0 flex flex-col justify-center px-4 gap-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-white font-bold text-base">{c.name[locale]}</p>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: `${c.color}20`, color: c.color, border: `1px solid ${c.color}30` }}>
+                      {c.season[locale]}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 text-xs leading-relaxed max-w-[240px]">{c.desc[locale]}</p>
+                  <p className="text-xs mt-0.5" style={{ color: c.color }}>{c.highlight[locale]}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -332,9 +422,15 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
           className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0"
-              style={{ background: `${obj.color}18`, border: `1px solid ${obj.color}40` }}>
-              {obj.emoji}
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 relative"
+              style={{ border: `1px solid ${obj.color}40` }}>
+              <Image
+                src={obj.img}
+                alt={obj.name['en']}
+                fill
+                className="object-cover"
+                sizes="40px"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-semibold text-sm leading-snug">{obj.name[locale]}</p>
@@ -347,6 +443,17 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
           </div>
           {expanded === obj.id && (
             <div className="mt-4 flex flex-col gap-2" style={{ paddingLeft: '52px' }}>
+              <div className="relative w-full rounded-xl overflow-hidden mb-2" style={{ height: '160px' }}>
+                <Image
+                  src={obj.img}
+                  alt={obj.name[locale]}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 672px) 100vw, 672px"
+                />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.8) 0%, transparent 60%)' }} />
+                <p className="absolute bottom-2 left-3 text-white text-xs font-semibold opacity-80">{obj.name[locale]}</p>
+              </div>
               {kidsMode ? (
                 <>
                   <p className="text-slate-300 text-xs leading-relaxed">⭐ {obj.kidsLine[locale]}</p>

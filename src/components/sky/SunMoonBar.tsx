@@ -56,13 +56,22 @@ export default function SunMoonBar() {
   const t = useTranslations('sky');
   const locale = useLocale();
   const [data, setData] = useState<SunMoonData | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetch('/api/sky/sun-moon')
       .then(r => r.json())
       .then(setData)
-      .catch(() => {});
+      .catch(() => setError(true));
   }, []);
+
+  if (error) {
+    return (
+      <div className="glass-card p-3 text-xs text-slate-600 text-center">
+        Sun/moon data unavailable
+      </div>
+    );
+  }
 
   if (!data) {
     return (

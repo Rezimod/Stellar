@@ -7,13 +7,13 @@ interface Props {
   planet: PlanetInfo;
 }
 
-const DOT_COLOR: Record<string, string> = {
-  moon:    'bg-slate-400',
-  mercury: 'bg-blue-400',
-  venus:   'bg-white',
-  mars:    'bg-red-500',
-  jupiter: 'bg-amber-400',
-  saturn:  'bg-yellow-300',
+const PLANET_EMOJI: Record<string, string> = {
+  moon:    '🌕',
+  mercury: '☿',
+  venus:   '♀',
+  mars:    '♂',
+  jupiter: '♃',
+  saturn:  '♄',
 };
 
 function hhmm(d: Date | string | null, locale: string): string {
@@ -31,7 +31,7 @@ export default function PlanetCard({ planet }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${DOT_COLOR[planet.key] ?? 'bg-slate-400'}`} />
+          <span className="text-lg flex-shrink-0 leading-none">{PLANET_EMOJI[planet.key] ?? '✦'}</span>
           <span className="text-white text-sm font-semibold truncate">{t(planet.key as Parameters<typeof t>[0])}</span>
         </div>
         {planet.visible ? (
@@ -40,23 +40,36 @@ export default function PlanetCard({ planet }: Props) {
           </span>
         ) : (
           <span className="inline-flex items-center flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(56,240,255,0.12)] whitespace-nowrap">
-            {t('risesAt')} {hhmm(planet.rise, locale)}
+            {planet.rise
+              ? `${PLANET_EMOJI[planet.key] ?? ''} rises ${hhmm(planet.rise, locale)}`
+              : 'Below horizon'}
           </span>
         )}
       </div>
 
-      {/* Alt / Az */}
-      <div className="flex gap-3 text-xs text-[var(--text-secondary)]">
-        <span>{planet.altitude}° alt</span>
-        <span>{planet.azimuth}° {planet.azimuthDir}</span>
-        <span>mag {planet.magnitude}</span>
+      {/* Altitude bar */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1 rounded-full bg-white/[0.06]">
+          <div
+            className="h-1 rounded-full transition-all"
+            style={{
+              width: `${Math.min(100, Math.max(0, (planet.altitude / 90) * 100))}%`,
+              background: planet.altitude > 30
+                ? 'linear-gradient(90deg, #34d399, #38F0FF)'
+                : planet.altitude > 10
+                ? 'linear-gradient(90deg, #FFD166, #F59E0B)'
+                : 'rgba(255,255,255,0.2)',
+            }}
+          />
+        </div>
+        <span className="text-[11px] text-slate-400 flex-shrink-0">{planet.altitude}°</span>
       </div>
 
       {/* Rise / Transit / Set */}
       <div className="grid grid-cols-3 gap-1 text-center">
         {(['rise', 'transit', 'set'] as const).map(label => (
           <div key={label}>
-            <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wide">{label}</p>
+            <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wide">{t(label as Parameters<typeof t>[0])}</p>
             <p className="text-white text-xs font-medium">{hhmm(planet[label], locale)}</p>
           </div>
         ))}
