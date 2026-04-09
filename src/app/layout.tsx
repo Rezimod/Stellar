@@ -20,13 +20,30 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'STELLAR — Your AI-Powered Window to the Cosmos',
-  description: 'The all-in-one astronomy app: 7-day sky forecast, AI companion, real marketplace — powered by invisible Solana infrastructure.',
+  title: 'Stellar — Astronomy on Solana',
+  description: 'Observe the night sky, earn Stars, and seal your discoveries as compressed NFTs on Solana.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'STELLAR',
+  },
+  openGraph: {
+    title: 'Stellar — Astronomy on Solana',
+    description: 'Observe the night sky, earn Stars, and seal your discoveries as compressed NFTs on Solana.',
+    images: ['https://stellarrclub.vercel.app/api/og/sky'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Stellar — Astronomy on Solana',
+    description: 'Observe the night sky, earn Stars, and seal your discoveries as compressed NFTs on Solana.',
+    images: ['https://stellarrclub.vercel.app/api/og/sky'],
+  },
+  other: {
+    'fc:frame': 'vNext',
+    'fc:frame:image': 'https://stellarrclub.vercel.app/api/og/sky',
+    'fc:frame:button:1': 'Start Observing',
+    'fc:frame:post_url': 'https://stellarrclub.vercel.app',
   },
 };
 

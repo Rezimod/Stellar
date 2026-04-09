@@ -400,7 +400,7 @@ export default function LearnPage() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200"
+              className="px-3 py-2 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200 min-h-[36px]"
               style={tab === t.id ? {
                 background: 'rgba(255,209,102,0.12)',
                 border: '1px solid rgba(255,209,102,0.3)',

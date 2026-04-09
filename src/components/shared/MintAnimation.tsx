@@ -2,9 +2,10 @@
 
 interface MintAnimationProps {
   done: boolean;
+  slowMsg?: boolean;
 }
 
-export default function MintAnimation({ done }: MintAnimationProps) {
+export default function MintAnimation({ done, slowMsg }: MintAnimationProps) {
   return (
     <div className="fixed inset-0 z-[60] bg-[#070B14] flex flex-col items-center justify-center gap-10 px-6 text-center">
 
@@ -119,6 +120,11 @@ export default function MintAnimation({ done }: MintAnimationProps) {
                 style={{ background: 'rgba(255,209,102,0.5)', animationDelay: `${i * 180}ms` }} />
             ))}
           </div>
+        )}
+        {slowMsg && !done && (
+          <p className="text-slate-500 text-[11px] mt-3 text-center max-w-[220px] leading-relaxed">
+            Still sealing — Solana devnet can be slow. Don&apos;t close the app.
+          </p>
         )}
       </div>
 
