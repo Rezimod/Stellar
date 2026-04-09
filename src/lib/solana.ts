@@ -4,6 +4,7 @@ import {
   Transaction,
   LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
+import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
 
 const DEVNET_URL = 'https://api.devnet.solana.com';
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
@@ -127,6 +128,21 @@ export async function mintObservation(
     },
     stars: observation.stars,
   });
+}
+
+export async function getStarsBalance(walletAddress: string): Promise<number> {
+  if (!process.env.STARS_TOKEN_MINT) return 0;
+  try {
+    const connection = getConnection();
+    const ata = await getAssociatedTokenAddress(
+      new PublicKey(process.env.STARS_TOKEN_MINT),
+      new PublicKey(walletAddress)
+    );
+    const account = await getAccount(connection, ata);
+    return Number(account.amount);
+  } catch {
+    return 0;
+  }
 }
 
 // Legacy shim for old callers

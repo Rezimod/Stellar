@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "setup:bubblegum": "npx tsx scripts/setup-bubblegum.ts"
+    "setup:bubblegum": "npx tsx scripts/setup-bubblegum.ts",
+    "setup:token": "npx tsx scripts/create-stars-token.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -16,6 +17,7 @@
     "@metaplex-foundation/umi": "^1.5.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
     "@privy-io/react-auth": "^3.19.0",
+    "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "astronomy-engine": "^2.1.19",
     "bs58": "^6.0.0",

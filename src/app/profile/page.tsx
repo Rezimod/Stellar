@@ -8,6 +8,7 @@ import { Copy, Check, ExternalLink, Telescope, Star, Award, CreditCard, Wallet, 
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
+import { getStarsBalance } from '@/lib/solana';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
 
@@ -19,6 +20,7 @@ export default function ProfilePage() {
   const { state, reset } = useAppState();
 
   const [balance, setBalance] = useState<number | null>(null);
+  const [starsBalance, setStarsBalance] = useState<number>(0);
   const [copied, setCopied] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [cardMsgVisible, setCardMsgVisible] = useState(false);
@@ -38,6 +40,7 @@ export default function ProfilePage() {
     } catch {
       setBalance(0);
     }
+    getStarsBalance(address).then(setStarsBalance).catch(() => {});
   }, [address]);
 
   const handleCopy = () => {
@@ -181,7 +184,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-3 gap-3 animate-page-enter" style={{ animationDelay: '200ms' }}>
         {[
           { icon: <Telescope size={15} className="text-[#38F0FF]" />, label: t('statMissions'), value: completed.length, border: 'border-t-2 border-[#38F0FF]/30' },
-          { icon: <Star size={15} className="text-[#FFD166]" />, label: t('statStars'), value: `${totalStars} ✦`, border: 'border-t-2 border-[#FFD166]/30' },
+          { icon: <Star size={15} className="text-[#FFD166]" />, label: t('statStars'), value: `${starsBalance || totalStars} ✦`, border: 'border-t-2 border-[#FFD166]/30' },
           { icon: <Award size={15} className="text-[#7A5FFF]" />, label: t('rank'), value: rank.name, border: 'border-t-2 border-[#7A5FFF]/30' },
         ].map(s => (
           <Card key={s.label} className={`text-center !p-3 ${s.border}`}>

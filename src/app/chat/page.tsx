@@ -5,8 +5,9 @@ import { useLocale } from 'next-intl';
 import { useAppState } from '@/hooks/useAppState';
 import { QUIZZES, type QuizDef } from '@/lib/quizzes';
 import QuizActive from '@/components/sky/QuizActive';
+import TelescopesTab from '@/components/sky/TelescopesTab';
 
-type Tab = 'planets' | 'deepsky' | 'quizzes' | 'events';
+type Tab = 'planets' | 'deepsky' | 'quizzes' | 'events' | 'telescopes';
 type Locale = 'en' | 'ka';
 
 // ─── Planet data ────────────────────────────────────────────────────────────
@@ -367,10 +368,11 @@ function EventsTab({ locale }: { locale: Locale }) {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 const TAB_CONFIG: { id: Tab; en: string; ka: string }[] = [
-  { id: 'planets',  en: 'Planets',    ka: 'პლანეტები' },
-  { id: 'deepsky',  en: 'Deep Sky',   ka: 'ღრმა ცა' },
-  { id: 'quizzes',  en: 'Quizzes',    ka: 'ქვიზები' },
-  { id: 'events',   en: 'Sky Events', ka: 'ცის მოვლენები' },
+  { id: 'planets',    en: 'Planets',    ka: 'პლანეტები' },
+  { id: 'deepsky',    en: 'Deep Sky',   ka: 'ღრმა ცა' },
+  { id: 'quizzes',    en: 'Quizzes',    ka: 'ქვიზები' },
+  { id: 'events',     en: 'Sky Events', ka: 'ცის მოვლენები' },
+  { id: 'telescopes', en: 'Telescopes', ka: 'ტელესკოპები' },
 ];
 
 export default function LearnPage() {
@@ -417,10 +419,11 @@ export default function LearnPage() {
         </div>
 
         {/* Content */}
-        {tab === 'planets'  && <PlanetsTab locale={locale} />}
-        {tab === 'deepsky'  && <DeepSkyTab locale={locale} />}
-        {tab === 'quizzes'  && <QuizzesTab locale={locale} onStart={setActiveQuiz} />}
-        {tab === 'events'   && <EventsTab locale={locale} />}
+        {tab === 'planets'     && <PlanetsTab locale={locale} />}
+        {tab === 'deepsky'     && <DeepSkyTab locale={locale} />}
+        {tab === 'quizzes'     && <QuizzesTab locale={locale} onStart={setActiveQuiz} />}
+        {tab === 'events'      && <EventsTab locale={locale} />}
+        {tab === 'telescopes'  && <TelescopesTab />}
       </div>
     </>
   );
