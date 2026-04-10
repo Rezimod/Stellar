@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ExternalLink, Trash2, Clock, CheckCircle2, Cloud, ImageIcon } from 'lucide-react';
+import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
 import { getUnlockedRewards, getRank } from '@/lib/rewards';
 import type { CompletedMission } from '@/lib/types';
@@ -139,6 +140,7 @@ export default function ProofPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
+      <BackButton />
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#FFD166]" style={{ fontFamily: 'Georgia, serif' }}>

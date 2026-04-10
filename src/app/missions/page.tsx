@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Satellite, Lock } from 'lucide-react';
+import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale } from 'next-intl';
@@ -128,7 +129,7 @@ export default function MissionsPage() {
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
       <div className="max-w-2xl mx-auto px-4 py-3 sm:py-6 animate-page-enter flex flex-col gap-3">
-
+        <BackButton />
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />

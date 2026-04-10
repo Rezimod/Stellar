@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import BackButton from '@/components/shared/BackButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
@@ -882,6 +883,7 @@ export default function LearnPage() {
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
       <div className="max-w-2xl mx-auto px-4 py-6 animate-page-enter flex flex-col gap-5">
+        <BackButton />
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div>

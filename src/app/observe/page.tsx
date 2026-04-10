@@ -3,6 +3,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { Camera } from 'lucide-react';
+import BackButton from '@/components/shared/BackButton';
 import ObserveFlow from '@/components/observe/ObserveFlow';
 
 export default function ObservePage() {
@@ -18,6 +19,7 @@ export default function ObservePage() {
   if (!authenticated) {
     return (
       <div className="max-w-sm mx-auto px-4 py-8 flex flex-col gap-4">
+        <BackButton />
         {/* Header card */}
         <div className="rounded-2xl p-6 text-center"
           style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.06), rgba(15,31,61,0.6))', border: '1px solid rgba(20,184,166,0.15)' }}>

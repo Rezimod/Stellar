@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { Telescope, ExternalLink, List } from 'lucide-react';
+import BackButton from '@/components/shared/BackButton';
 import Link from 'next/link';
 
 interface ObservationRow {
@@ -124,6 +125,7 @@ export default function ObservationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 animate-page-enter flex flex-col gap-4">
+      <BackButton />
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>

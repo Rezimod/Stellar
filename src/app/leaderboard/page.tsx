@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Trophy, Star, Telescope } from 'lucide-react';
+import BackButton from '@/components/shared/BackButton';
 import Card from '@/components/shared/Card';
 
 const RANK_BADGES: Record<string, { label: string; color: string }> = {
@@ -43,7 +44,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 animate-page-enter flex flex-col gap-5">
-
+      <BackButton />
       {/* Header */}
       <div className="flex items-start gap-3">
         <div

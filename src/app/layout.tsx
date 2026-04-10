@@ -7,6 +7,7 @@ import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AppStateProvider } from '@/hooks/useAppState';
 import WalletSync from '@/components/providers/WalletSync';
+import SwipeBack from '@/components/providers/SwipeBack';
 import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
@@ -65,7 +66,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <StarField />
                 <Nav />
                 <OfflineBanner />
-                <main className="relative z-10 flex-1 pb-20 md:pb-0">{children}</main>
+                <SwipeBack>
+                  <main className="relative z-10 flex-1 pb-20 md:pb-0">{children}</main>
+                </SwipeBack>
                 <Footer />
                 <BottomNav />
               </AppStateProvider>

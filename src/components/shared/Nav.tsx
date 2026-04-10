@@ -7,17 +7,15 @@ import { useAppState } from '@/hooks/useAppState';
 import { useState } from 'react';
 import { CloudSun, Sparkles, ShoppingBag, Satellite, User, Map, Search } from 'lucide-react';
 import AstroLogo from './AstroLogo';
-import LanguageToggle from '@/components/nav/LanguageToggle';
 import { useTranslations } from 'next-intl';
 
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout, authenticated, ready, login } = usePrivy();
+  const { logout, authenticated, ready, login, user } = usePrivy();
   const { wallets } = useWallets();
-  const { reset, state } = useAppState();
-  const starsBalance = state.completedMissions.reduce((sum, m) => sum + m.stars, 0);
-  const [showLogout, setShowLogout] = useState(false);
+  const { reset } = useAppState();
+  const [showMenu, setShowMenu] = useState(false);
   const [confirmStep, setConfirmStep] = useState(false);
   const t = useTranslations('nav');
 
@@ -31,15 +29,19 @@ export default function Nav() {
   ];
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
-  const walletShort = solanaWallet
-    ? `${solanaWallet.address.slice(0, 4)}...${solanaWallet.address.slice(-4)}`
-    : '';
+
+  // Derive initial for avatar
+  const userEmail =
+    user?.email?.address ??
+    (user?.linkedAccounts?.find(a => a.type === 'email') as { address?: string } | undefined)?.address ??
+    '';
+  const initial = userEmail ? userEmail[0].toUpperCase() : solanaWallet ? 'A' : '?';
 
   const handleLogout = async () => {
     await logout();
     reset();
     router.push('/');
-    setShowLogout(false);
+    setShowMenu(false);
     setConfirmStep(false);
   };
 
@@ -72,62 +74,62 @@ export default function Nav() {
             ))}
           </div>
 
-          {/* Right side */}
+          {/* Right side: search + auth only */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <LanguageToggle />
             <button className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
               <Search size={15} />
             </button>
+
             {!ready ? (
-              <div className="w-20 h-7 rounded-lg bg-white/10 animate-pulse" />
+              <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
             ) : authenticated ? (
-              <>
-                {starsBalance > 0 && (
-                  <Link href="/profile" className="text-[#FFD166] font-semibold text-sm rounded-lg hidden sm:block"
-                    style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', padding: '4px 10px', textDecoration: 'none' }}>
-                    ✦ {starsBalance}
-                  </Link>
+              <div className="relative">
+                {/* Avatar button */}
+                <button
+                  onClick={() => { setShowMenu(v => !v); setConfirmStep(false); }}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold transition-all hover:ring-2 hover:ring-[#34d399]/50"
+                  style={{ background: 'linear-gradient(135deg, #7A5FFF, #14B8A6)' }}
+                  title="Account"
+                >
+                  {initial}
+                </button>
+
+                {/* Dropdown */}
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-2 glass-card p-3 w-44 z-50 flex flex-col gap-1">
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowMenu(false)}
+                      className="text-slate-300 hover:text-white text-xs py-1.5 px-2 rounded hover:bg-white/5 transition-all"
+                    >
+                      View profile
+                    </Link>
+                    {confirmStep ? (
+                      <button onClick={handleLogout} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded bg-red-500/10 hover:bg-red-500/20 transition-all">
+                        Confirm sign out
+                      </button>
+                    ) : (
+                      <button onClick={() => setConfirmStep(true)} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded hover:bg-red-500/10 transition-all">
+                        {t('signOut')}
+                      </button>
+                    )}
+                  </div>
                 )}
-                <div className="relative">
-                  <button
-                    onClick={() => { setShowLogout(v => !v); setConfirmStep(false); }}
-                    className="text-[#34d399] font-hash bg-[rgba(52,211,153,0.08)] border border-[rgba(52,211,153,0.2)] px-2 py-1 rounded-lg hover:bg-[rgba(52,211,153,0.15)] text-xs"
-                  >
-                    🟢 {walletShort}
-                  </button>
-                  {showLogout && (
-                    <div className="absolute right-0 top-full mt-2 glass-card p-3 w-48 z-50">
-                      {solanaWallet && (
-                        <p className="text-[var(--text-secondary)] text-xs mb-3 truncate font-hash">
-                          {solanaWallet.address.slice(0, 8)}...{solanaWallet.address.slice(-6)}
-                        </p>
-                      )}
-                      {confirmStep ? (
-                        <div>
-                          <p className="text-slate-400 text-xs mb-2">Are you sure?</p>
-                          <button onClick={handleLogout} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded bg-red-500/10 hover:bg-red-500/20 transition-all">
-                            Yes, sign out
-                          </button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setConfirmStep(true)} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded hover:bg-red-500/10 transition-all">
-                          {t('signOut')}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </>
+              </div>
             ) : (
               <>
-                <button onClick={() => login()}
+                <button
+                  onClick={() => login()}
                   className="rounded-lg font-medium text-white transition-colors hover:bg-white/10"
-                  style={{ border: '1px solid rgba(255,255,255,0.2)', fontSize: 12, padding: '5px 10px', background: 'rgba(255,255,255,0.06)' }}>
+                  style={{ border: '1px solid rgba(255,255,255,0.2)', fontSize: 12, padding: '5px 10px', background: 'rgba(255,255,255,0.06)' }}
+                >
                   Log In
                 </button>
-                <button onClick={() => login()}
+                <button
+                  onClick={() => login()}
                   className="rounded-lg font-semibold transition-colors hover:bg-[rgba(52,211,153,0.25)]"
-                  style={{ background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.35)', color: '#34d399', fontSize: 12, padding: '5px 10px' }}>
+                  style={{ background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.35)', color: '#34d399', fontSize: 12, padding: '5px 10px' }}
+                >
                   Register
                 </button>
               </>

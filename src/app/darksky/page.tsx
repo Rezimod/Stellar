@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import BackButton from '@/components/shared/BackButton';
 
 const LOCATIONS = [
   { name: 'Tbilisi', bortle: 8, cx: 516, cy: 213 },
@@ -36,7 +37,7 @@ export default function DarkSkyPage() {
       style={{ background: '#070B14', fontFamily: 'Georgia, serif' }}
     >
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
-
+        <BackButton />
         {/* Header */}
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">

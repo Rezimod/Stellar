@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import BackButton from '@/components/shared/BackButton';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { useState, useEffect } from 'react';
@@ -28,6 +29,7 @@ export default function MarketplacePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10 animate-page-enter">
+      <BackButton />
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#FFD166]" style={{ fontFamily: 'Georgia, serif' }}>
           {t('title')}

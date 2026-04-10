@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
+import BackButton from '@/components/shared/BackButton';
 import TonightHighlights from '@/components/sky/TonightHighlights';
 import SunMoonBar from '@/components/sky/SunMoonBar';
 import ForecastGrid from '@/components/sky/ForecastGrid';
@@ -11,6 +12,7 @@ export default async function SkyPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 animate-page-enter flex flex-col gap-10">
+      <BackButton />
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
         <Suspense fallback={<div className="h-[120px] rounded-xl bg-white/5 animate-pulse" />}>

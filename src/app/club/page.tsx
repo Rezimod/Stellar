@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
+import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
 import WalletStep from '@/components/club/WalletStep';
 import MembershipStep from '@/components/club/MembershipStep';
@@ -94,6 +95,7 @@ export default function ClubPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
+      <BackButton />
       <div className="mb-6 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#FFD166]">Start Your Observation Journey</h1>
         <p className="text-[var(--text-primary)] mt-2 text-sm sm:text-base">
