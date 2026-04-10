@@ -3,7 +3,7 @@
     "appName": "STELLAR",
     "tagline": "Observe. Verify. Collect.",
     "taglineDesc": "Observe planets with your telescope and earn real rewards from the Astroman store.",
-    "startObserving": "Start Observing →",
+    "startObserving": "See Tonight's Sky →",
     "startEarning": "Start Earning →",
     "visitStore": "Visit →",
     "launch": "Launch →"
@@ -11,19 +11,21 @@
   "nav": {
     "club": "Club",
     "missions": "Missions",
-    "gallery": "Gallery",
+    "gallery": "My Discoveries",
     "profile": "Profile",
     "sky": "Sky",
     "chat": "AI Chat",
-    "learn": "Learn",
+    "learn": "Ask ASTRA",
     "marketplace": "Marketplace",
+    "observe": "Observe",
     "signIn": "Sign In",
     "signOut": "Sign out & clear data"
   },
   "home": {
     "howItWorks": "How It Works",
     "tonightTargets": "Tonight's Targets",
-    "leaderboard": "Leaderboard",
+    "missions": "Missions",
+    "leaderboard": "Top Observers This Week",
     "explorePlatform": "Explore the Platform",
     "observeEarn": "Observe & Earn",
     "observeEarnDesc": "Complete missions to unlock real rewards from the Astroman store.",

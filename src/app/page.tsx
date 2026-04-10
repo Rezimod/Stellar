@@ -1,20 +1,32 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { usePrivy } from '@privy-io/react-auth';
 import { ECOSYSTEM, MISSIONS } from '@/lib/constants';
+import { useAppState } from '@/hooks/useAppState';
 import AstroLogo from '@/components/shared/AstroLogo';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
 import { Telescope, Camera, Satellite, Layers } from 'lucide-react';
 import RewardIcon from '@/components/shared/RewardIcon';
+import TonightTargets from '@/components/observe/TonightTargets';
 
 const ecoCards = [
   { icon: '🛒', title: 'astroman.ge', subtitle: 'Main Store', desc: 'Browse telescopes', href: ECOSYSTEM.store, ext: true },
   { icon: '🏛️', title: 'club.astroman.ge', subtitle: 'Loyalty Club', desc: 'Earn stars', href: ECOSYSTEM.club, ext: true },
-  { icon: '📱', title: 'Stellar', subtitle: 'This App', desc: 'NFT missions', href: '/club', ext: false },
+  { icon: '📱', title: 'Stellar', subtitle: 'This App', desc: 'Collect discoveries, earn rewards', href: '/sky', ext: false },
 ];
 
 export default function HomePage() {
   const t = useTranslations();
+  const router = useRouter();
+  const { user } = usePrivy();
+  const { state } = useAppState();
+  const walletAddress =
+    (user?.linkedAccounts.find(
+      (a): a is Extract<typeof a, { type: 'wallet' }> =>
+        a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
+    )?.address) ?? null;
   const stepIcons = [Telescope, Camera, Satellite, Layers];
   const howItWorksSteps = [
     { step: 1, icon: stepIcons[0], title: t('home.steps.observe'), desc: t('home.steps.observeDesc') },
@@ -40,7 +52,7 @@ export default function HomePage() {
           {t('common.taglineDesc')}
         </p>
         <Link
-          href="/club"
+          href="/sky"
           className="px-10 py-4 rounded-xl font-bold text-base tracking-wide transition-all duration-200 active:scale-[0.97]"
           style={{
             background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
@@ -49,6 +61,9 @@ export default function HomePage() {
           }}
         >
           {t('common.startObserving')}
+        </Link>
+        <Link href="/missions" className="text-xs text-slate-600 hover:text-slate-400 underline mt-1">
+          Already a member? Go to Missions →
         </Link>
         {/* Trust indicators */}
         <div className="flex items-center gap-4 text-[11px] text-slate-600 flex-wrap justify-center">
@@ -91,9 +106,15 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Tonight's Targets */}
+      {/* Tonight's Live Targets — heading owned by component to avoid orphan during load */}
+      <TonightTargets
+        onStartObserve={() => router.push('/observe')}
+        walletAddress={walletAddress}
+      />
+
+      {/* Mission Grid */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.tonightTargets')} —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.missions')} —</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {MISSIONS.map(m => {
             const vis = m.difficulty === 'Beginner' ? { label: 'Excellent', color: 'bg-emerald-400' } : { label: 'Good', color: 'bg-yellow-400' };
@@ -115,31 +136,43 @@ export default function HomePage() {
 
       {/* Top Astronomers */}
       <div className="w-full">
-        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">— {t('home.leaderboard')} —</p>
+        <p className="text-center text-[var(--text-dim)] text-xs mb-6 tracking-widest uppercase">
+          — {t('home.leaderboard')} —
+          <span className="text-[10px] text-slate-700 ml-2 normal-case">(demo)</span>
+        </p>
         <div className="glass-card overflow-hidden">
-          {[
-            { rank: 1, name: 'AstroHunter', location: 'Tbilisi', points: 1280, verified: true },
-            { rank: 2, name: 'StarFinder',  location: 'Lisbon',  points: 940,  verified: true },
-            { rank: 3, name: 'NebulaScout', location: 'Tokyo',   points: 820,  verified: false },
-            { rank: 4, name: 'CosmicEye',   location: 'Arizona', points: 650,  verified: true },
-            { rank: 5, name: 'MoonWatcher', location: 'Berlin',  points: 410,  verified: false },
-          ].map((entry, i) => {
-            const rankColor = entry.rank === 1 ? 'text-[#FFD166]' : entry.rank === 2 ? 'text-slate-300' : entry.rank === 3 ? 'text-amber-600' : 'text-[var(--text-dim)]';
-            return (
-              <div key={entry.rank} className={`flex items-center gap-3 px-5 py-3 ${i > 0 ? 'border-t border-white/5' : ''} ${entry.rank === 1 ? 'bg-[#FFD166]/5' : ''}`}>
-                <span className={`text-sm font-bold w-6 text-center ${rankColor}`}>#{entry.rank}</span>
-                <div className="w-8 h-8 rounded-full bg-[var(--bg-cosmos)] flex items-center justify-center text-xs">
-                  {entry.name.slice(0, 2).toUpperCase()}
+          {(() => {
+            const FALLBACK = [
+              { rank: 1, name: 'AstroHunter', location: 'Tbilisi', points: 1280, verified: true, isUser: false },
+              { rank: 2, name: 'StarFinder',  location: 'Lisbon',  points: 940,  verified: true, isUser: false },
+              { rank: 3, name: 'NebulaScout', location: 'Tokyo',   points: 820,  verified: false, isUser: false },
+              { rank: 4, name: 'CosmicEye',   location: 'Arizona', points: 650,  verified: true, isUser: false },
+              { rank: 5, name: 'MoonWatcher', location: 'Berlin',  points: 410,  verified: false, isUser: false },
+            ];
+            const userMissions = state.completedMissions ?? [];
+            const userPoints = userMissions.length * 100;
+            const entries = userPoints > 0
+              ? [...FALLBACK, { rank: FALLBACK.length + 1, name: user?.email?.address?.split('@')[0] ?? 'You', location: 'Your City', points: userPoints, verified: true, isUser: true }]
+              : FALLBACK;
+            return entries.map((entry, i) => {
+              const rankColor = entry.rank === 1 ? 'text-[#FFD166]' : entry.rank === 2 ? 'text-slate-300' : entry.rank === 3 ? 'text-amber-600' : 'text-[var(--text-dim)]';
+              return (
+                <div key={entry.rank} className={`flex items-center gap-3 px-5 py-3 ${i > 0 ? 'border-t border-white/5' : ''} ${entry.rank === 1 ? 'bg-[#FFD166]/5' : ''} ${entry.isUser ? 'bg-[#38F0FF]/5' : ''}`}>
+                  <span className={`text-sm font-bold w-6 text-center ${rankColor}`}>#{entry.rank}</span>
+                  <div className="w-8 h-8 rounded-full bg-[var(--bg-cosmos)] flex items-center justify-center text-xs">
+                    {entry.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-white text-sm font-medium">{entry.name}</span>
+                    {entry.isUser && <span className="text-[10px] text-[#FFD166] ml-1">You</span>}
+                    <p className="text-slate-700 text-[10px]">{entry.location}</p>
+                  </div>
+                  {entry.verified && <span className="text-xs" title="Verified Observer">🔭</span>}
+                  <span className="text-[#FFD166] text-sm font-semibold">{entry.points} ✦</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-white text-sm font-medium">{entry.name}</span>
-                  <p className="text-slate-700 text-[10px]">{entry.location}</p>
-                </div>
-                {entry.verified && <span className="text-xs" title="Verified Observer">🔭</span>}
-                <span className="text-[#FFD166] text-sm font-semibold">{entry.points} ✦</span>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       </div>
 

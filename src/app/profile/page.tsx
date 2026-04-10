@@ -3,14 +3,14 @@
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
-import { Connection, PublicKey } from '@solana/web3.js';
-import { Copy, Check, ExternalLink, Telescope, Star, Award, CreditCard, Wallet, ShoppingBag, ChevronRight } from 'lucide-react';
+import { Copy, Check, ExternalLink, Telescope, Star, Award, ShoppingBag, ChevronRight, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
 import { getStarsBalance } from '@/lib/solana';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
+import StarsRedemption from '@/components/shared/StarsRedemption';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
@@ -19,28 +19,34 @@ export default function ProfilePage() {
   const { wallets } = useWallets();
   const { state, reset } = useAppState();
 
-  const [balance, setBalance] = useState<number | null>(null);
   const [starsBalance, setStarsBalance] = useState<number>(0);
   const [copied, setCopied] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [cardMsgVisible, setCardMsgVisible] = useState(false);
+
+  const [obsCount, setObsCount] = useState<number | null>(null);
+  const [obsStreak, setObsStreak] = useState<number | null>(null);
+  const [recentObs, setRecentObs] = useState<{ id: string; target: string; confidence: string; stars: number; created_at: string }[]>([]);
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
   const address = solanaWallet?.address ?? state.walletAddress ?? null;
 
   useEffect(() => {
     if (!address) return;
-    setBalance(null);
-    try {
-      const pubkey = new PublicKey(address);
-      const conn = new Connection('https://api.devnet.solana.com', 'confirmed');
-      conn.getBalance(pubkey)
-        .then(bal => setBalance(bal / 1_000_000_000))
-        .catch(() => setBalance(0));
-    } catch {
-      setBalance(0);
-    }
     getStarsBalance(address).then(setStarsBalance).catch(() => {});
+
+    fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address)}`)
+      .then(r => r.json())
+      .then(d => {
+        const obs = d.observations ?? [];
+        setObsCount(obs.length);
+        setRecentObs(obs.slice(0, 3));
+      })
+      .catch(() => {});
+
+    fetch(`/api/streak?walletAddress=${encodeURIComponent(address)}`)
+      .then(r => r.json())
+      .then(d => setObsStreak(d.streak ?? 0))
+      .catch(() => {});
   }, [address]);
 
   const handleCopy = () => {
@@ -82,7 +88,7 @@ export default function ProfilePage() {
           </h2>
           <p className="text-slate-500 text-xs mb-2">{t('signInSubtitle')}</p>
           <p className="text-slate-400 text-sm mb-6">{t('noDiscoveries')}</p>
-          <Button variant="brass" onClick={login} className="w-full">{t('signUpCta')}</Button>
+          <Button variant="brass" onClick={login} className="w-full">Start Observing</Button>
         </Card>
       </div>
     );
@@ -104,36 +110,43 @@ export default function ProfilePage() {
         {t('title')}
       </h1>
 
-      {/* Balance card */}
+      {/* Stars card */}
       <div
         className="rounded-2xl p-5 flex flex-col gap-4 animate-page-enter"
         style={{
-          background: 'linear-gradient(135deg, rgba(56,240,255,0.08) 0%, rgba(15,31,61,0.6) 100%)',
-          border: '1px solid rgba(56,240,255,0.2)',
+          background: 'linear-gradient(135deg, rgba(255,209,102,0.1) 0%, rgba(15,31,61,0.6) 100%)',
+          border: '1px solid rgba(255,209,102,0.25)',
           animationDelay: '0ms',
         }}
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[var(--text-dim)] text-xs uppercase tracking-wider mb-1">{t('balance')}</p>
-            {balance === null ? (
-              <p className="text-3xl font-bold text-white/30 animate-pulse mt-0.5">···</p>
-            ) : (
-              <p className="text-3xl font-bold text-white animate-page-enter">{balance.toFixed(3)} <span className="text-[#38F0FF] text-xl">SOL</span></p>
-            )}
-            <p className="text-slate-600 text-xs mt-0.5">{t('devnet')}</p>
+            <p className="text-[var(--text-dim)] text-xs uppercase tracking-wider mb-1">Your Stars</p>
+            <p className="text-4xl font-bold text-[#FFD166]">{starsBalance || totalStars} <span className="text-2xl">✦</span></p>
+            <p className="text-slate-500 text-xs mt-1">Spend Stars for discounts at astroman.ge</p>
           </div>
-          {addrShort && (
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#38F0FF]/70 bg-[#38F0FF]/5 px-2.5 py-1.5 rounded-lg border border-[#38F0FF]/10">
-              <Wallet size={10} />
-              {addrShort}
-            </div>
-          )}
+          <div className="text-right">
+            <p className="text-[var(--text-dim)] text-xs uppercase tracking-wider mb-1">Rank</p>
+            <p className="text-white text-sm font-semibold">{rank.name}</p>
+          </div>
         </div>
+        <a
+          href="https://astroman.ge?utm_source=stellar_profile&utm_medium=app"
+          target="_blank" rel="noopener noreferrer"
+          className="w-full py-2.5 rounded-xl text-sm font-bold text-center transition-all"
+          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+        >
+          Spend Stars at astroman.ge →
+        </a>
+      </div>
 
-        {/* Wallet address row */}
-        {address && (
-          <div className="flex items-center gap-2 bg-[rgba(0,0,0,0.2)] rounded-xl px-3 py-2.5">
+      {/* Advanced — wallet details */}
+      {address && (
+        <details className="mt-2">
+          <summary className="text-xs text-slate-700 hover:text-slate-500 cursor-pointer py-1">
+            Advanced — Wallet details
+          </summary>
+          <div className="flex items-center gap-2 bg-[rgba(0,0,0,0.2)] rounded-xl px-3 py-2.5 mt-2">
             <code className="font-mono text-xs text-slate-400 flex-1 truncate">{address}</code>
             <button onClick={handleCopy} className="flex items-center gap-1 text-xs text-slate-500 hover:text-[#38F0FF] transition-all duration-300 flex-shrink-0">
               {copied ? <Check size={11} className="text-[#34d399]" /> : <Copy size={11} />}
@@ -147,28 +160,8 @@ export default function ProfilePage() {
               <ExternalLink size={11} />
             </a>
           </div>
-        )}
-
-        {/* Fund buttons */}
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
-            onClick={() => { setCardMsgVisible(true); setTimeout(() => setCardMsgVisible(false), 2500); }}
-          >
-            <CreditCard size={14} />
-            {cardMsgVisible ? 'Coming soon' : t('addViaCard')}
-          </button>
-          <button
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-300"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-            onClick={handleCopy}
-          >
-            <Wallet size={14} />
-            {t('sendCrypto')}
-          </button>
-        </div>
-      </div>
+        </details>
+      )}
 
       {/* Account info */}
       {email && (
@@ -194,6 +187,50 @@ export default function ProfilePage() {
           </Card>
         ))}
       </div>
+
+      {/* Stars redemption */}
+      <StarsRedemption starsBalance={starsBalance || totalStars} />
+
+      {/* Observation stats */}
+      {(obsCount !== null || obsStreak !== null) && (
+        <div className="grid grid-cols-2 gap-3 animate-page-enter" style={{ animationDelay: '250ms' }}>
+          <Card className="text-center !p-3 border-t-2 border-[#14B8A6]/30">
+            <div className="flex items-center justify-center mb-1"><Camera size={15} className="text-[#14B8A6]" /></div>
+            <p className="text-base font-bold text-white">{obsCount ?? '—'}</p>
+            <p className="text-[var(--text-dim)] text-xs">Observations</p>
+          </Card>
+          <Card className="text-center !p-3 border-t-2 border-[#F59E0B]/30">
+            <div className="flex items-center justify-center mb-1"><span className="text-[#F59E0B] text-sm">🔥</span></div>
+            <p className="text-base font-bold text-white">{obsStreak !== null ? `${obsStreak}d` : '—'}</p>
+            <p className="text-[var(--text-dim)] text-xs">Obs Streak</p>
+          </Card>
+        </div>
+      )}
+
+      {/* Recent observations */}
+      {recentObs.length > 0 && (
+        <div className="animate-page-enter" style={{ animationDelay: '280ms' }}>
+          <Card>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white text-sm font-semibold">Recent Observations</p>
+              <Link href="/observations" className="text-xs text-[#38F0FF] hover:underline flex items-center gap-1">
+                View All <ChevronRight size={11} />
+              </Link>
+            </div>
+            <div className="flex flex-col divide-y divide-white/5">
+              {recentObs.map(obs => (
+                <div key={obs.id} className="flex items-center gap-3 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-slate-200 text-sm font-medium truncate">{obs.target}</p>
+                    <p className="text-slate-600 text-xs capitalize">{obs.confidence} confidence</p>
+                  </div>
+                  <span className="text-[#FFD166] text-xs font-semibold flex-shrink-0">+{obs.stars} ✦</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Mission history */}
       <div className="animate-page-enter" style={{ animationDelay: '300ms' }}>

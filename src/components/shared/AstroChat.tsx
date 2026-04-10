@@ -2,18 +2,41 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Minimize2, Maximize2, Radio } from 'lucide-react';
+import { useAppState } from '@/hooks/useAppState';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-const SUGGESTIONS = [
-  'How do I find Jupiter tonight?',
-  'Best eyepiece for the Moon?',
-  'How to focus my telescope?',
-  'What is the Orion Nebula?',
-];
+const getSuggestions = (telescopeBrand?: string, completedCount?: number): string[] => {
+  const hour = new Date().getHours();
+  const isNight = hour >= 20 || hour < 5;
+  const isMorning = hour >= 5 && hour < 12;
+
+  if (isNight) {
+    return [
+      'What can I observe right now?',
+      telescopeBrand ? `How do I focus my ${telescopeBrand}?` : 'How do I set up my telescope?',
+      completedCount === 0 ? "What's the easiest target for a beginner?" : 'What should I observe next?',
+      'How do I photograph through an eyepiece?',
+    ];
+  } else if (isMorning) {
+    return [
+      'What will be visible tonight?',
+      'How do I prepare my telescope during the day?',
+      'What is the Orion Nebula?',
+      'How do I read a star map?',
+    ];
+  } else {
+    return [
+      'What planets are visible tonight?',
+      'How do I collimate a reflector telescope?',
+      'What is the Andromeda Galaxy?',
+      'How do I photograph the Moon?',
+    ];
+  }
+};
 
 function TypingDots() {
   return (
@@ -30,6 +53,11 @@ function TypingDots() {
 }
 
 export default function AstroChat() {
+  const { state } = useAppState();
+  const suggestions = getSuggestions(
+    state.telescope?.brand ?? undefined,
+    state.completedMissions?.filter(m => m.status === 'completed').length ?? 0,
+  );
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,6 +65,7 @@ export default function AstroChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [showPulse, setShowPulse] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -46,6 +75,18 @@ export default function AstroChat() {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  useEffect(() => {
+    const visits = parseInt(localStorage.getItem('astra_visits') ?? '0', 10);
+    if (visits < 3) setShowPulse(true);
+  }, []);
+
+  const handleOpen = () => {
+    setOpen(true);
+    setShowPulse(false);
+    const visits = parseInt(localStorage.getItem('astra_visits') ?? '0', 10);
+    localStorage.setItem('astra_visits', String(visits + 1));
+  };
 
   // On mobile: sit above the bottom nav (which is ~64px). On desktop: near the corner.
   const btnBottom = isMobile ? '5.5rem' : '1.5rem';
@@ -237,7 +278,7 @@ export default function AstroChat() {
           {/* Suggestion chips (only when no user messages yet) */}
           {messages.length <= 1 && (
             <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-              {SUGGESTIONS.map(s => (
+              {suggestions.map(s => (
                 <button
                   key={s}
                   onClick={() => send(s)}
@@ -293,7 +334,7 @@ export default function AstroChat() {
       {/* Floating toggle button + tooltip */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={handleOpen}
           className="fixed z-50 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 active:scale-95 hover:scale-105"
           style={{
             bottom: btnBottom,
@@ -304,6 +345,9 @@ export default function AstroChat() {
           }}
           aria-label="Open ASTRA astronomy assistant"
         >
+          {showPulse && (
+            <div className="absolute inset-0 rounded-2xl animate-ping" style={{ background: 'rgba(56,240,255,0.3)', animationDuration: '2s' }} />
+          )}
           <Radio size={22} className="text-[#070B14]" />
         </button>
       )}

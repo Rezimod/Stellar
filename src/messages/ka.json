@@ -3,7 +3,7 @@
     "appName": "STELLAR",
     "tagline": "დაკვირვება. დადასტურება. შეგროვება.",
     "taglineDesc": "დააკვირდი პლანეტებს ტელესკოპით და მიიღე ნამდვილი ჯილდოები Astroman-ის მაღაზიიდან.",
-    "startObserving": "დაიწყე დაკვირვება →",
+    "startObserving": "ნახე დღეს ღამის ცა →",
     "startEarning": "დაიწყე გამომუშავება →",
     "visitStore": "ვიზიტი →",
     "launch": "გაშვება →"
@@ -11,19 +11,21 @@
   "nav": {
     "club": "კლუბი",
     "missions": "მისიები",
-    "gallery": "გალერეა",
+    "gallery": "ჩემი აღმოჩენები",
     "profile": "პროფილი",
     "sky": "ცა",
     "chat": "AI ჩათი",
-    "learn": "სწავლა",
+    "learn": "ჰკითხე ASTRA-ს",
     "marketplace": "მარკეტი",
+    "observe": "დაკვირვება",
     "signIn": "შესვლა",
     "signOut": "გასვლა და წაშლა"
   },
   "home": {
     "howItWorks": "როგორ მუშაობს",
     "tonightTargets": "დღეს ღამის სამიზნეები",
-    "leaderboard": "ლიდერბორდი",
+    "missions": "მისიები",
+    "leaderboard": "ამ კვირის საუკეთესო დამკვირვებლები",
     "explorePlatform": "პლატფორმის შესწავლა",
     "observeEarn": "დააკვირდი და გამოიმუშავე",
     "observeEarnDesc": "გაასრულე მისიები და განბლოკე ნამდვილი ჯილდოები Astroman-ის მაღაზიიდან.",
