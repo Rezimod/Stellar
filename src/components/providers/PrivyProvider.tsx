@@ -12,15 +12,13 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
       config={{
-        loginMethods: ['email', 'sms', 'google', 'wallet'],
+        loginMethods: ['email', 'sms', 'google'],
         appearance: {
           theme: 'dark',
           accentColor: '#8B5CF6',
         },
         embeddedWallets: {
-          solana: {
-            createOnLogin: 'users-without-wallets',
-          },
+          createOnLogin: 'users-without-wallets',
         },
       }}
     >

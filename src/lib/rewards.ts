@@ -76,11 +76,20 @@ export const REWARDS: Reward[] = [
   },
 ];
 
-export function getRank(sightings: number): { name: string; icon: string } {
-  if (sightings >= 5) return { name: 'Celestial', icon: '🌌' };
-  if (sightings >= 3) return { name: 'Pathfinder', icon: '🧭' };
-  if (sightings >= 1) return { name: 'Observer', icon: '⭐' };
-  return { name: 'Stargazer', icon: '👁️' };
+const RANK_THRESHOLDS = [
+  { name: 'Stargazer', icon: '👁️', min: 0 },
+  { name: 'Observer', icon: '⭐', min: 1 },
+  { name: 'Pathfinder', icon: '🧭', min: 3 },
+  { name: 'Celestial', icon: '🌌', min: 5 },
+];
+
+export function getRank(sightings: number): { name: string; icon: string; nextRank: string | null; progressPct: number } {
+  const idx = RANK_THRESHOLDS.reduce((best, r, i) => (sightings >= r.min ? i : best), 0);
+  const current = RANK_THRESHOLDS[idx];
+  const next = RANK_THRESHOLDS[idx + 1] ?? null;
+  if (!next) return { name: current.name, icon: current.icon, nextRank: null, progressPct: 100 };
+  const progressPct = Math.round(((sightings - current.min) / (next.min - current.min)) * 100);
+  return { name: current.name, icon: current.icon, nextRank: next.name, progressPct };
 }
 
 export function getUnlockedRewards(

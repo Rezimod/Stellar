@@ -6,6 +6,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AppStateProvider } from '@/hooks/useAppState';
+import WalletSync from '@/components/providers/WalletSync';
 import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
@@ -60,6 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <NextIntlClientProvider locale={locale} messages={messages}>
             <SolanaWalletProvider>
               <AppStateProvider>
+                <WalletSync />
                 <StarField />
                 <Nav />
                 <OfflineBanner />
