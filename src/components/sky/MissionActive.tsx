@@ -165,13 +165,19 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       const nowUnlocked = getUnlockedRewards(newCompleted, newRank).filter(r => r.unlocked);
       const justUnlocked = nowUnlocked.filter(r => !prevUnlocked.includes(r.id));
 
+      const isSafePhoto = (url: string) =>
+        url.startsWith('data:image/jpeg;base64,') ||
+        url.startsWith('data:image/png;base64,') ||
+        url.startsWith('data:image/webp;base64,') ||
+        url.startsWith('blob:');
+
       addMission({
         id: mission.id,
         name: mission.name,
         emoji: mission.emoji,
         stars: mission.stars,
         txId,
-        photo,
+        photo: isSafePhoto(photo) ? photo : '',
         timestamp,
         latitude: coords.lat,
         longitude: coords.lon,

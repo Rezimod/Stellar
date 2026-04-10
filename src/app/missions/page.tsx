@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Satellite } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Satellite, Lock } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale } from 'next-intl';
@@ -12,6 +12,7 @@ import ObservationLog from '@/components/sky/ObservationLog';
 import RewardsSection from '@/components/sky/RewardsSection';
 import QuizActive from '@/components/sky/QuizActive';
 import { QUIZZES } from '@/lib/quizzes';
+import { MISSIONS } from '@/lib/constants';
 import type { Mission } from '@/lib/types';
 import type { QuizDef } from '@/lib/quizzes';
 
@@ -21,38 +22,101 @@ export default function MissionsPage() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
   const [activeMission, setActiveMission] = useState<Mission | null>(null);
+  const [skyConditions, setSkyConditions] = useState<{ cloudCover: number; visibility: string; verified: boolean } | null>(null);
+
+  useEffect(() => {
+    if (authenticated) return;
+    fetch('/api/sky/verify?lat=41.6938&lon=44.8015')
+      .then(r => r.json())
+      .then(d => setSkyConditions({ cloudCover: d.cloudCover, visibility: d.visibility, verified: d.verified }))
+      .catch(() => {});
+  }, [authenticated]);
 
   if (!authenticated) {
+    const isNight = new Date().getHours() >= 18 || new Date().getHours() < 5;
+
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4 animate-page-enter">
-        <div className="max-w-sm w-full text-center">
-          <div
-            className="rounded-2xl p-8"
-            style={{
-              background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.5))',
-              border: '1px solid rgba(56,240,255,0.1)',
-            }}
-          >
+      <div className="max-w-2xl mx-auto px-4 py-3 sm:py-6 animate-page-enter flex flex-col gap-4">
+        {/* Sign-in card */}
+        <div
+          className="rounded-2xl p-5 sm:p-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.5))',
+            border: '1px solid rgba(56,240,255,0.1)',
+          }}
+        >
+          <div className="flex items-center gap-4">
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)' }}
             >
-              <Satellite size={26} className="text-[#38F0FF]" />
+              <Satellite size={22} className="text-[#38F0FF]" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-              Sky Missions
-            </h2>
-            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
-              Observe the Moon, Jupiter, Saturn, Orion Nebula and more. Earn real rewards.
-            </p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>Sky Missions</h2>
+              <p className="text-slate-500 text-xs mt-0.5">Observe the Moon, Jupiter, Saturn and more. Earn Stars, mint NFTs.</p>
+            </div>
             <button
               onClick={login}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
+              className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-xs transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
             >
-              Sign In to Start →
+              Sign In →
             </button>
           </div>
+        </div>
+
+        {/* Preview mission list */}
+        <div>
+          <p className="text-slate-600 text-[11px] uppercase tracking-widest mb-3">Available Missions</p>
+          <div className="flex flex-col gap-2.5">
+            {MISSIONS.map(mission => (
+              <div
+                key={mission.id}
+                className="relative flex items-center gap-4 rounded-2xl px-4 py-3.5 overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                <div className="absolute inset-0 bg-[#070B14]/40 backdrop-blur-[1px] z-10 flex items-center justify-end pr-4">
+                  <Lock size={13} className="text-slate-600" />
+                </div>
+                <span className="text-2xl flex-shrink-0">{mission.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-400 text-sm font-semibold">{mission.name}</p>
+                  <p className="text-slate-600 text-xs mt-0.5 line-clamp-1">{mission.desc}</p>
+                </div>
+                <span className="text-[#FFD166]/40 text-xs font-bold flex-shrink-0">+{mission.stars} ✦</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tonight's sky */}
+        <div
+          className="rounded-2xl p-4"
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <p className="text-slate-600 text-[11px] uppercase tracking-widest mb-3">Tonight's Sky</p>
+          {skyConditions ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${skyConditions.verified ? 'bg-[#34d399] animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-white text-sm font-medium">
+                  {skyConditions.verified ? 'Good for observing tonight' : 'Cloudy tonight'}
+                </span>
+              </div>
+              <div className="flex gap-3 text-xs text-slate-500 flex-shrink-0">
+                <span>{skyConditions.cloudCover}% cloud</span>
+                <span>{skyConditions.visibility}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isNight ? 'bg-[#34d399] animate-pulse' : 'bg-slate-700'}`} />
+              <span className="text-slate-500 text-sm">
+                {isNight ? 'Loading sky conditions...' : 'Come back after sunset to observe'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );

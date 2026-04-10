@@ -11,7 +11,7 @@ export default function AstroLogo({ heightClass = 'h-8', className = '' }: Astro
   if (err) return <span className="text-2xl leading-none">🔭</span>;
   return (
     <img
-      src="https://club.astroman.ge/logo.png"
+      src="https://astroman.ge/logo.png"
       alt="Astroman"
       className={`${heightClass} w-auto object-contain ${className}`}
       onError={() => setErr(true)}

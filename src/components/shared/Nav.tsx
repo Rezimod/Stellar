@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { useState } from 'react';
-import { CloudSun, BookOpen, ShoppingBag, Satellite, User } from 'lucide-react';
+import { CloudSun, Sparkles, ShoppingBag, Satellite, User } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import LanguageToggle from '@/components/nav/LanguageToggle';
 import { useTranslations } from 'next-intl';
@@ -23,7 +23,7 @@ export default function Nav() {
 
   const tabs = [
     { href: '/sky',         label: t('sky'),         icon: <CloudSun size={17} /> },
-    { href: '/chat',        label: t('learn'),       icon: <BookOpen size={17} /> },
+    { href: '/chat',        label: t('learn'),       icon: <Sparkles size={17} /> },
     { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={17} /> },
     { href: '/missions',    label: t('missions'),    icon: <Satellite size={17} /> },
     { href: '/profile',     label: t('profile'),     icon: <User size={17} /> },

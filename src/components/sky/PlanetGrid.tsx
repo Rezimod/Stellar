@@ -46,12 +46,20 @@ export default function PlanetGrid() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, lat, lng]);
 
-  if (loading) {
+  if (!ready || loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="glass-card p-4 h-28 animate-pulse" />
-        ))}
+      <div className="flex flex-col gap-3">
+        {!ready && (
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-3 h-3 rounded-full border border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
+            <span className="text-slate-500 text-xs">Detecting your location…</span>
+          </div>
+        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass-card p-4 h-28 animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }

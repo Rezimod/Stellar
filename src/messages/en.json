@@ -15,7 +15,7 @@
     "profile": "Profile",
     "sky": "Sky",
     "chat": "AI Chat",
-    "learn": "Learn",
+    "learn": "ASTRA",
     "marketplace": "Marketplace",
     "observe": "Observe",
     "signIn": "Sign In",
@@ -36,8 +36,8 @@
       "captureDesc": "Photograph through the eyepiece",
       "verify": "Verify",
       "verifyDesc": "Satellite confirms clear sky conditions",
-      "mint": "Mint",
-      "mintDesc": "Proof sealed on Solana as your NFT"
+      "mint": "Collect",
+      "mintDesc": "Proof sealed on Solana. Stars land in your account."
     },
     "trust": {
       "astronomers": "Trusted by amateur astronomers",

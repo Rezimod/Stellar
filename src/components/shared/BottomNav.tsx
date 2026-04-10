@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CloudSun, BookOpen, Satellite, User, Home } from 'lucide-react';
+import { CloudSun, Sparkles, Satellite, User, Home } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function BottomNav() {
@@ -13,7 +13,7 @@ export default function BottomNav() {
     { href: '/sky',      label: t('sky'),      icon: <CloudSun size={18} />,  center: false },
     { href: '/missions', label: t('missions'), icon: <Satellite size={18} />, center: false },
     { href: '/',         label: 'Home',        icon: <Home size={22} />,       center: true  },
-    { href: '/chat',     label: t('learn'),    icon: <BookOpen size={18} />,  center: false },
+    { href: '/chat',     label: t('learn'),    icon: <Sparkles size={18} />, center: false },
     { href: '/profile',  label: t('profile'),  icon: <User size={18} />,      center: false },
   ];
 

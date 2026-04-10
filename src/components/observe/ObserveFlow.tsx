@@ -197,7 +197,6 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
         setMintTxId(txId);
       }
     } catch { /* fall through to done */ }
-    logObservation(verification, txId || null);
     mintingRef.current = false;
     setStep('done');
   };

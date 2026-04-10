@@ -12,6 +12,9 @@ export async function GET(req: NextRequest) {
   if (!latParam || !lonParam || !isFinite(lat) || !isFinite(lon)) {
     return NextResponse.json({ error: 'lat and lon are required finite numbers' }, { status: 400 });
   }
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json({ error: 'lat must be -90 to 90, lon must be -180 to 180' }, { status: 400 });
+  }
 
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=cloud_cover,visibility,relative_humidity_2m,temperature_2m,wind_speed_10m&timezone=auto`;
@@ -57,17 +60,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch {
-    const fallback: SkyVerification = {
-      verified: true,
-      cloudCover: 15,
-      visibility: 'Good',
-      conditions: 'API unavailable — conditions assumed favorable',
-      humidity: 50,
-      temperature: 12,
-      windSpeed: 5,
-      oracleHash: '0xfallback000000000000000000000000000000',
-      verifiedAt: new Date().toISOString(),
-    };
-    return NextResponse.json(fallback);
+    return NextResponse.json(
+      { error: 'Weather service unavailable — please try again in a moment' },
+      { status: 503 }
+    );
   }
 }

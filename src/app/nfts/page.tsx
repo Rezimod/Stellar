@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { Telescope, Satellite, ExternalLink } from 'lucide-react';
+import { Telescope, Satellite, ExternalLink, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 interface NftAttribute {
@@ -105,35 +105,76 @@ export default function NftsPage() {
   }
 
   if (!authenticated) {
+    const demoNfts = [
+      { name: 'Stellar Observation #001', target: 'Moon', date: 'Apr 9, 2026', cloudCover: '12', cloudColor: 'text-green-400', stars: '50' },
+      { name: 'Stellar Observation #002', target: 'Jupiter', date: 'Apr 8, 2026', cloudCover: '24', cloudColor: 'text-green-400', stars: '75' },
+      { name: 'Stellar Observation #003', target: 'Orion Nebula', date: 'Apr 7, 2026', cloudCover: '41', cloudColor: 'text-amber-400', stars: '100' },
+    ];
+
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4 animate-page-enter">
-        <div className="max-w-sm w-full text-center">
-          <div
-            className="rounded-2xl p-8"
-            style={{
-              background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.5))',
-              border: '1px solid rgba(56,240,255,0.1)',
-            }}
-          >
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 animate-page-enter flex flex-col gap-6">
+        {/* Sign-in card */}
+        <div
+          className="rounded-2xl p-5 sm:p-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.5))',
+            border: '1px solid rgba(56,240,255,0.1)',
+          }}
+        >
+          <div className="flex items-center gap-4">
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)' }}
             >
-              <Satellite size={26} className="text-[#38F0FF]" />
+              <Satellite size={22} className="text-[#38F0FF]" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-              My Observations
-            </h2>
-            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
-              Sign in to view your on-chain observation NFTs.
-            </p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>My Observations</h2>
+              <p className="text-slate-500 text-xs mt-0.5">Complete missions to mint on-chain observation NFTs.</p>
+            </div>
             <button
               onClick={login}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
+              className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-xs transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
             >
-              Sign In to View →
+              Sign In →
             </button>
+          </div>
+        </div>
+
+        {/* Demo NFT cards */}
+        <div>
+          <p className="text-slate-600 text-[11px] uppercase tracking-widest mb-3">Example Observations</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {demoNfts.map(nft => (
+              <div
+                key={nft.name}
+                className="relative rounded-2xl overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                {/* Overlay */}
+                <div className="absolute inset-0 z-10 backdrop-blur-[1px] bg-[#070B14]/50 flex flex-col items-center justify-center gap-1.5">
+                  <Lock size={16} className="text-slate-400" />
+                  <span className="text-slate-400 text-[11px] font-medium">Sign in to mint</span>
+                </div>
+                {/* Card content (dimmed) */}
+                <div className="p-4 select-none pointer-events-none" aria-hidden="true">
+                  <p className="text-slate-400 text-base font-semibold">{nft.name}</p>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#38F0FF]/60">{nft.target}</span>
+                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-white/30">{nft.date}</span>
+                    <span className={`bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] opacity-40 ${nft.cloudColor}`}>{nft.cloudCover}% cloud</span>
+                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#FFD166]/50">✦ {nft.stars}</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 pt-3 border-t border-white/[0.06]">
+                    <span className="text-[10px] text-white/10">Compressed NFT</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] text-[#38F0FF]/20">
+                      View on Explorer <ExternalLink size={10} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

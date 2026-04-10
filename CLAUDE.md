@@ -28,6 +28,11 @@ Rezi (Revaz Modebadze) — founder of Astroman (astroman.ge), Georgia's first as
 - /executor
 - /reviewer
 - /qa
+- /solana-blockchain — Solana dApp dev: @solana/kit v5, Anchor, Privy wallets, Helius RPC, gasless flows, on-chain programs
+- /metaplex-bubblegum — Compressed NFT minting: Bubblegum + Umi, Merkle trees, DAS API, Discovery Attestations
+- /ux-ui-design — Production UI: dark/cosmic theme, glassmorphism, WCAG 2.1 AA, mobile-first, design tokens, animations
+- /testing-debugging — Testing + debugging: Vitest, React Testing Library, Playwright, LiteSVM, hypothesis-driven debug
+- /smart-contract-security — Anchor program security: account validation, PDA seeds, arithmetic safety, CPI reentrancy, pre-launch hardening
 
 ## Default workflow
 

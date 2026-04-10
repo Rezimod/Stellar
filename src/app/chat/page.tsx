@@ -731,6 +731,33 @@ function ChatTab({ locale }: { locale: Locale }) {
             ))}
           </div>
         </div>
+
+        {/* Topic cards */}
+        <div className="pt-1">
+          <p className="text-slate-600 text-[10px] uppercase tracking-widest mb-2.5">
+            {locale === 'ka' ? 'ASTRA იცის' : 'ASTRA knows about'}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { icon: '🔭', label: locale === 'ka' ? 'ტელესკოპები' : 'Telescopes', desc: locale === 'ka' ? 'ინსტრუმენტები, კოლიმაცია, ყიდვა' : 'gear, setup, buying advice' },
+              { icon: '🪐', label: locale === 'ka' ? 'პლანეტები' : 'Planets', desc: locale === 'ka' ? 'ხილვადობა, ოპოზიცია, ფაქტები' : 'visibility, oppositions, facts' },
+              { icon: '🌌', label: locale === 'ka' ? 'ღრმა ცა' : 'Deep Sky', desc: locale === 'ka' ? 'ნისლეულები, გალაქტიკები, გროვები' : 'nebulas, galaxies, clusters' },
+              { icon: '📸', label: locale === 'ka' ? 'ასტროფოტო' : 'Astro Photo', desc: locale === 'ka' ? 'გადაღება, სტაკინგი, პროგრამები' : 'capture, stacking, software' },
+            ] as { icon: string; label: string; desc: string }[]).map(t => (
+              <button
+                key={t.label}
+                onClick={() => setChatOpen(true)}
+                className="glass-card p-3 flex flex-col gap-1 text-left hover:border-white/20"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base leading-none">{t.icon}</span>
+                  <span className="text-white text-xs font-medium">{t.label}</span>
+                </div>
+                <p className="text-slate-600 text-[10px] leading-snug">{t.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -900,8 +927,8 @@ export default function LearnPage() {
           </div>
         )}
 
-        {/* Tab bar */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+        {/* Tab bar — scroll-x ensures touch scrolling works even under overflow-x:clip body */}
+        <div className="scroll-x scrollbar-hide flex gap-1.5 pb-1">
           {TAB_CONFIG.map(t => (
             <button
               key={t.id}
@@ -924,12 +951,12 @@ export default function LearnPage() {
         </div>
 
         {/* Content */}
-        {tab === 'chat'       && <ChatTab locale={locale} />}
-        {tab === 'planets'    && <PlanetsTab locale={locale} kidsMode={kidsMode} />}
-        {tab === 'deepsky'    && <DeepSkyTab locale={locale} kidsMode={kidsMode} />}
-        {tab === 'quizzes'    && <QuizzesTab locale={locale} onStart={setActiveQuiz} />}
-        {tab === 'events'     && <EventsTab locale={locale} />}
-        {tab === 'telescopes' && <TelescopesTab />}
+        {tab === 'chat'       ? <ChatTab key="chat" locale={locale} /> : null}
+        {tab === 'planets'    ? <PlanetsTab key="planets" locale={locale} kidsMode={kidsMode} /> : null}
+        {tab === 'deepsky'    ? <DeepSkyTab key="deepsky" locale={locale} kidsMode={kidsMode} /> : null}
+        {tab === 'quizzes'    ? <QuizzesTab key="quizzes" locale={locale} onStart={setActiveQuiz} /> : null}
+        {tab === 'events'     ? <EventsTab key="events" locale={locale} /> : null}
+        {tab === 'telescopes' ? <TelescopesTab key="telescopes" /> : null}
       </div>
     </>
   );

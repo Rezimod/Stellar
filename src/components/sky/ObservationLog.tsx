@@ -57,10 +57,10 @@ export default function ObservationLog() {
 
       {all.length > 0 && (
         <Link
-          href="/proof"
+          href="/nfts"
           className="flex items-center justify-center gap-1 mt-3 text-[11px] text-slate-600 hover:text-[#38F0FF] transition-colors"
         >
-          View full gallery →
+          View all observations →
         </Link>
       )}
     </div>

@@ -12,6 +12,12 @@ function openExplorer(mission: CompletedMission) {
   window.open(`https://explorer.solana.com/tx/${mission.txId}?cluster=devnet`, '_blank', 'noopener,noreferrer');
 }
 
+const isSafePhoto = (url: string) =>
+  url.startsWith('data:image/jpeg;base64,') ||
+  url.startsWith('data:image/png;base64,') ||
+  url.startsWith('data:image/webp;base64,') ||
+  url.startsWith('blob:');
+
 function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const isPending = mission.status === 'pending';
@@ -21,7 +27,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
 
   return (
     <div className={`glass-card rounded-xl overflow-hidden flex flex-col ${isPending ? '!border-amber-500/50' : ''}`} style={isPending ? { borderColor: 'rgba(245,158,11,0.5)' } : {}}>
-      <img src={mission.photo} alt={mission.name} className="w-full aspect-[4/3] object-cover" />
+      <img src={isSafePhoto(mission.photo) ? mission.photo : '/placeholder-obs.jpg'} alt={mission.name} className="w-full aspect-[4/3] object-cover" />
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-xl">{mission.emoji}</span>

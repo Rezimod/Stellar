@@ -29,9 +29,15 @@ export default function ForecastGrid() {
     if (ready) load(lat, lng);
   }, [ready, lat, lng, load]);
 
-  if (loading) {
+  if (!ready || loading) {
     return (
       <div className="flex flex-col gap-4">
+        {!ready && (
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-3 h-3 rounded-full border border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
+            <span className="text-slate-500 text-xs">Detecting your location…</span>
+          </div>
+        )}
         <div className="glass-card p-5 animate-pulse">
           <div className="h-3 w-12 bg-white/10 rounded mb-2" />
           <div className="h-5 w-32 bg-white/10 rounded mb-4" />

@@ -105,8 +105,16 @@ export default function TonightHighlights() {
     if (ready) compute(lat, lng);
   }, [ready, lat, lng, compute]);
 
-  if (loading) {
-    return <div className="glass-card h-[120px] animate-pulse" />;
+  if (!ready || loading) {
+    return (
+      <div className="glass-card h-[120px] flex items-center justify-center gap-2"
+        style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="w-4 h-4 rounded-full border-2 border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
+        <span className="text-slate-500 text-sm">
+          {!ready ? 'Detecting your location…' : 'Loading sky data…'}
+        </span>
+      </div>
+    );
   }
   if (error || !card) {
     return (

@@ -3,7 +3,7 @@
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
-import { Copy, Check, ExternalLink, Telescope, Star, Award, ShoppingBag, ChevronRight, Camera } from 'lucide-react';
+import { Copy, Check, ExternalLink, Telescope, Star, Award, ShoppingBag, ChevronRight, Camera, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
@@ -71,25 +71,61 @@ export default function ProfilePage() {
 
   if (!authenticated) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20 animate-page-enter text-center">
-        <Card className="p-6 sm:p-8 max-w-md mx-auto">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 animate-pulse"
-            style={{
-              background: 'rgba(255,209,102,0.08)',
-              border: '1px solid rgba(255,209,102,0.15)',
-              boxShadow: '0 0 20px rgba(255,209,102,0.1)',
-            }}
-          >
-            <Telescope size={26} className="text-[#FFD166]" />
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 animate-page-enter flex flex-col gap-6">
+        {/* Sign-in card */}
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center gap-4">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)' }}
+            >
+              <Telescope size={22} className="text-[#FFD166]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>{t('signUpPrompt')}</h2>
+              <p className="text-slate-500 text-xs mt-0.5">{t('noDiscoveries')}</p>
+            </div>
+            <Button variant="brass" onClick={login} className="flex-shrink-0 !text-sm !px-4 !py-2">Sign In</Button>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-            {t('signUpPrompt')}
-          </h2>
-          <p className="text-slate-500 text-xs mb-2">{t('signInSubtitle')}</p>
-          <p className="text-slate-400 text-sm mb-6">{t('noDiscoveries')}</p>
-          <Button variant="brass" onClick={login} className="w-full">Start Observing</Button>
         </Card>
+
+        {/* Preview — blurred mock profile */}
+        <div className="relative rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="absolute inset-0 z-10 backdrop-blur-[2px] bg-[#070B14]/50 flex flex-col items-center justify-center gap-2 rounded-2xl">
+            <Lock size={18} className="text-slate-400" />
+            <span className="text-slate-400 text-xs font-medium">Sign in to unlock your profile</span>
+          </div>
+          <div className="p-5 select-none pointer-events-none" aria-hidden="true">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-slate-700 text-xs uppercase tracking-wider mb-1">Your Stars</p>
+                <p className="text-3xl font-bold text-[#FFD166]/20">— <span className="text-xl">✦</span></p>
+              </div>
+              <div className="text-right">
+                <p className="text-slate-700 text-xs uppercase tracking-wider mb-1">Rank</p>
+                <p className="text-slate-600 text-sm font-semibold">Stargazer</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {(['Observations', 'Stars ✦', 'NFTs'] as const).map(label => (
+                <div key={label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <p className="text-slate-700 text-base font-bold">??</p>
+                  <p className="text-slate-800 text-xs">{label}</p>
+                </div>
+              ))}
+            </div>
+            <div>
+              <p className="text-slate-700 text-[11px] uppercase tracking-wider mb-2">Recent Missions</p>
+              {[{ name: 'The Moon', stars: 50 }, { name: 'Jupiter', stars: 75 }, { name: 'Orion Nebula', stars: 100 }].map(m => (
+                <div key={m.name} className="flex items-center gap-3 py-2 border-b border-white/[0.03]">
+                  <Lock size={10} className="text-slate-800 flex-shrink-0" />
+                  <p className="text-slate-700 text-sm flex-1">{m.name}</p>
+                  <span className="text-slate-800 text-xs">+{m.stars} ✦</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

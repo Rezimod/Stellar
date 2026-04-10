@@ -2,10 +2,11 @@
 // Sections: Hero → Sky Preview → Missions + Leaderboard → How It Works → ASTRA → Rewards → Footer
 // Colors: #070B14 bg · #34d399 teal · #FFD166 gold · #38F0FF blue
 'use client';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 
 import { useTranslations } from 'next-intl';
+import HomeSkyPreview from '@/components/home/HomeSkyPreview';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { Telescope, Camera, Satellite, Layers, ChevronDown } from 'lucide-react';
@@ -380,141 +381,23 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Sky condition banner */}
-          <div style={{
-            background: 'rgba(52,211,153,0.06)',
-            border: '1px solid rgba(52,211,153,0.12)',
-            borderRadius: 12,
-            padding: '8px 16px',
-            marginBottom: 12,
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 14px' }}>
-              <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Cloud Cover: 12%</span>
-              <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>
-                Visibility: <span style={{ color: '#34d399' }}>Excellent</span>
-              </span>
-              <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Best time: 21:00–01:00</span>
+          <Suspense fallback={
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ height: 38, borderRadius: 12, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.08)' }} />
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[0,1,2,3,4].map(i => (
+                  <div key={i} style={{ minWidth: 140, height: 112, flexShrink: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16 }} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[0,1,2,3,4,5,6].map(i => (
+                  <div key={i} style={{ width: 80, height: 52, flexShrink: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10 }} />
+                ))}
+              </div>
             </div>
-            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>📍 Tbilisi, Georgia</span>
-          </div>
-
-          {/* Planet cards horizontal scroll */}
-          <div style={{
-            display: 'flex',
-            gap: 10,
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            touchAction: 'pan-x',
-            marginBottom: 12,
-            paddingBottom: 4,
-          }}>
-            {[
-              { name: 'Moon', emoji: '🌕', status: 'Excellent', time: 'Rises 18:40' },
-              { name: 'Jupiter', emoji: '🪐', status: 'Excellent', time: 'Rises 20:14' },
-              { name: 'Saturn', emoji: '🪐', status: 'Good', time: 'Rises 22:30' },
-              { name: 'Orion Nebula', emoji: '✨', status: 'Good', time: 'Visible 21:00' },
-              { name: 'Pleiades', emoji: '⭐', status: 'Excellent', time: 'Visible 20:45' },
-              { name: 'Andromeda', emoji: '🌌', status: 'Good', time: 'Visible 22:00' },
-            ].map(target => {
-              const badge =
-                target.status === 'Excellent' ? { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
-                : target.status === 'Good'    ? { bg: 'rgba(255,209,102,0.15)', color: '#FFD166' }
-                :                               { bg: 'rgba(148,163,184,0.15)', color: 'rgba(255,255,255,0.5)' };
-              return (
-                <Link
-                  key={target.name}
-                  href="/missions"
-                  style={{
-                    minWidth: 140,
-                    flexShrink: 0,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 16,
-                    padding: 16,
-                    textDecoration: 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    transition: 'border-color 0.2s, transform 0.2s',
-                  }}
-                  onMouseOver={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = 'rgba(52,211,153,0.3)';
-                    el.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseOut={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = 'rgba(255,255,255,0.08)';
-                    el.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <span style={{ fontSize: 30 }}>{target.emoji}</span>
-                  <p style={{ color: 'white', fontSize: 13, fontWeight: 600, marginTop: 8, marginBottom: 6 }}>{target.name}</p>
-                  <span style={{
-                    background: badge.bg,
-                    color: badge.color,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    padding: '2px 8px',
-                    borderRadius: 999,
-                  }}>
-                    {target.status}
-                  </span>
-                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 6, marginBottom: 0 }}>{target.time}</p>
-                </Link>
-              );
-            })}
-          </div>
-          {/* Hide scrollbar for webkit */}
-          <style>{`.sky-hscroll::-webkit-scrollbar { display: none; }`}</style>
-
-          {/* 7-day forecast ribbon */}
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', touchAction: 'pan-x' }}>
-            {([
-              { day: 'Mon', badge: 'Go' },
-              { day: 'Tue', badge: 'Go' },
-              { day: 'Wed', badge: 'Maybe' },
-              { day: 'Thu', badge: 'Skip' },
-              { day: 'Fri', badge: 'Go' },
-              { day: 'Sat', badge: 'Go' },
-              { day: 'Sun', badge: 'Maybe' },
-            ] as { day: string; badge: 'Go' | 'Maybe' | 'Skip' }[]).map((d, i) => {
-              const bs =
-                d.badge === 'Go'    ? { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
-                : d.badge === 'Maybe' ? { bg: 'rgba(255,209,102,0.12)', color: '#FFD166' }
-                :                       { bg: 'rgba(148,163,184,0.08)', color: 'rgba(148,163,184,0.7)' };
-              return (
-                <div key={d.day} style={{
-                  flex: '0 0 auto',
-                  width: 80,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${i === 0 ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.06)'}`,
-                  borderRadius: 10,
-                  padding: '8px 12px',
-                  textAlign: 'center',
-                }}>
-                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, margin: '0 0 4px 0' }}>{d.day}</p>
-                  <span style={{
-                    background: bs.bg,
-                    color: bs.color,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    padding: '2px 6px',
-                    borderRadius: 999,
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {d.badge}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          }>
+            <HomeSkyPreview />
+          </Suspense>
         </div>
 
         {/* Missions + Leaderboard — side-by-side */}
@@ -621,9 +504,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* RIGHT — Leaderboard */}
+          {/* RIGHT — First Observer CTA */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
                 Leaderboard
@@ -635,75 +517,46 @@ export default function HomePage() {
                 padding: '2px 10px',
                 borderRadius: 999,
               }}>
-                This week
+                All time
               </span>
             </div>
 
-            {/* Leaderboard card */}
             <div style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(52,211,153,0.15)',
               borderRadius: 16,
-              overflow: 'hidden',
+              padding: '32px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: 12,
+              flex: 1,
             }}>
-              {[
-                { rank: 1, name: 'AstroHunter', location: 'Tbilisi', stars: 1280 },
-                { rank: 2, name: 'StarFinder',  location: 'Lisbon',  stars: 940 },
-                { rank: 3, name: 'NebulaScout', location: 'Tokyo',   stars: 820 },
-                { rank: 4, name: 'CosmicEye',   location: 'Arizona', stars: 650 },
-                { rank: 5, name: 'MoonWatcher', location: 'Berlin',  stars: 410 },
-              ].map((entry, i) => {
-                const rankColor =
-                  entry.rank === 1 ? '#34d399'
-                  : entry.rank === 2 ? '#FFD166'
-                  : entry.rank === 3 ? 'rgba(255,180,100,0.8)'
-                  : 'rgba(255,255,255,0.3)';
-                const avatarBg = [
-                  'rgba(52,211,153,0.2)',
-                  'rgba(56,240,255,0.2)',
-                  'rgba(255,209,102,0.2)',
-                  'rgba(148,163,184,0.2)',
-                ][i % 4];
-                const isFirst = entry.rank === 1;
-                return (
-                  <div
-                    key={entry.rank}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '12px 16px',
-                      borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                      background: isFirst ? 'rgba(52,211,153,0.06)' : 'transparent',
-                      borderLeft: isFirst ? '2px solid #34d399' : '2px solid transparent',
-                    }}
-                  >
-                    <span style={{ color: rankColor, fontWeight: 700, fontSize: 13, width: 20, textAlign: 'center', flexShrink: 0 }}>
-                      {entry.rank}
-                    </span>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%',
-                      background: avatarBg,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 11, fontWeight: 700, color: 'white', flexShrink: 0,
-                    }}>
-                      {entry.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: 'white', fontSize: 13, fontWeight: 500, margin: 0 }}>{entry.name}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: 0 }}>{entry.location}</p>
-                    </div>
-                    <span style={{ color: '#FFD166', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
-                      {isFirst ? '🔭 ' : ''}{entry.stars} ✦
-                    </span>
-                  </div>
-                );
-              })}
+              <span style={{ fontSize: 40 }}>🌌</span>
+              <p style={{ color: 'white', fontWeight: 600, fontSize: 15, margin: 0 }}>
+                Be among the first observers
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, lineHeight: 1.6, margin: 0 }}>
+                The leaderboard is empty. Complete your first telescope observation to claim the #1 spot and earn the Early Observer badge.
+              </p>
+              <Link href="/missions" style={{
+                marginTop: 4,
+                background: 'linear-gradient(135deg, #34d399, #14B8A6)',
+                color: '#070B14',
+                fontWeight: 700,
+                fontSize: 13,
+                padding: '10px 24px',
+                borderRadius: 10,
+                textDecoration: 'none',
+                display: 'inline-block',
+              }}>
+                Start Observing →
+              </Link>
             </div>
 
-            {/* NFT count */}
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, textAlign: 'center', margin: 0 }}>
-              47 observations sealed on Solana this week
+              Observations sealed as NFTs on Solana
             </p>
           </div>
         </div>

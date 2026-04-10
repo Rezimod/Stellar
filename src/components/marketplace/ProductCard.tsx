@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import Badge from '@/components/shared/Badge';
 import Button from '@/components/shared/Button';
@@ -22,6 +23,7 @@ const CATEGORY_ART: Record<string, { emoji: string; label: string; bg: string; b
 export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
   const t = useTranslations('marketplace');
   const locale = useLocale();
+  const [imgLoaded, setImgLoaded] = useState(false);
   const name = locale === 'ka' ? product.name.ka : product.name.en;
   const solPrice = (product.priceGEL * solPerGEL).toFixed(3);
   const art = CATEGORY_ART[product.category] ?? CATEGORY_ART.accessory;
@@ -31,11 +33,15 @@ export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
       className={`glass-card flex flex-col overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${!product.inStock ? 'opacity-60' : ''}`}
       onClick={() => product.inStock && onSelect(product)}
     >
-      {/* Image area — full square image */}
+      {/* Image area — explicit 3:4 aspect ratio so height is always defined */}
       <div
-        className="relative w-full aspect-square flex items-center justify-center"
-        style={{ background: art.bg }}
+        className="relative w-full flex items-center justify-center"
+        style={{ background: art.bg, aspectRatio: '3 / 4' }}
       >
+        {/* Shimmer skeleton while image loads */}
+        {product.image && !imgLoaded && (
+          <div className="absolute inset-0 animate-shimmer" />
+        )}
         <span className="text-6xl select-none" style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.15))' }}>
           {art.emoji}
         </span>
@@ -43,7 +49,8 @@ export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
           <img
             src={product.image}
             alt={name}
-            className="absolute inset-0 w-full h-full object-cover"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImgLoaded(true)}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         )}
