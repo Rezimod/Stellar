@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { observationLog } from '@/lib/schema'
 import { and, eq, gte, sum } from 'drizzle-orm'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
@@ -15,7 +15,7 @@ const MAX_STARS_BY_CONFIDENCE: Record<string, number> = {
 }
 const DAILY_STARS_CAP = 500
 
-async function awardStarsOnChain(
+export async function awardStarsOnChain(
   recipientAddress: string,
   amount: number,
   reason: string
@@ -56,16 +56,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ logged: false })
   }
 
-  if (!process.env.DATABASE_URL) {
+  const db = getDb()
+  if (!db) {
     return NextResponse.json({ logged: false })
   }
 
-  const wallet = body.wallet ?? ''
-  const confidence = body.confidence ?? 'unknown'
+  // Validate wallet
+  let wallet: string;
+  try {
+    wallet = new PublicKey(body.wallet ?? '').toString();
+  } catch {
+    return NextResponse.json({ logged: false });
+  }
+
+  // Validate confidence
+  const VALID_CONFIDENCE = ['high', 'medium', 'low', 'rejected'] as const;
+  const confidence = VALID_CONFIDENCE.includes(body.confidence as typeof VALID_CONFIDENCE[number])
+    ? (body.confidence as string)
+    : 'unknown';
+
+  // Validate stars: integer, 0–500
+  const rawStars = body.stars ?? 0;
+  const validatedStars = (Number.isInteger(rawStars) && rawStars >= 0 && rawStars <= 500) ? rawStars : 0;
 
   // Server-side cap: clamp claimed stars to the max allowed for this confidence level
   const maxAllowed = MAX_STARS_BY_CONFIDENCE[confidence] ?? 0
-  const stars = Math.min(Math.max(body.stars ?? 0, 0), maxAllowed)
+  const stars = Math.min(validatedStars, maxAllowed)
 
   try {
     // Rate limit: check total stars awarded to this wallet today
