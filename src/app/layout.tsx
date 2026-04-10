@@ -63,7 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <StarField />
                 <Nav />
                 <OfflineBanner />
-                <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>
+                <main className="relative z-10 flex-1 pb-20 md:pb-0">{children}</main>
                 <Footer />
                 <BottomNav />
               </AppStateProvider>

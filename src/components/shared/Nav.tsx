@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { useState } from 'react';
-import { CloudSun, BookOpen, ShoppingBag, Satellite, User } from 'lucide-react';
+import { CloudSun, BookOpen, ShoppingBag, Satellite, User, Home } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import LanguageToggle from '@/components/nav/LanguageToggle';
 import { useTranslations } from 'next-intl';
@@ -15,12 +15,14 @@ export default function Nav() {
   const router = useRouter();
   const { logout, authenticated, ready, login } = usePrivy();
   const { wallets } = useWallets();
-  const { reset } = useAppState();
+  const { reset, state } = useAppState();
+  const starsBalance = state.completedMissions.reduce((sum, m) => sum + m.stars, 0);
   const [showLogout, setShowLogout] = useState(false);
   const [confirmStep, setConfirmStep] = useState(false);
   const t = useTranslations('nav');
 
   const tabs = [
+    { href: '/',            label: 'Home',           icon: <Home size={17} /> },
     { href: '/sky',         label: t('sky'),         icon: <CloudSun size={17} /> },
     { href: '/chat',        label: t('learn'),       icon: <BookOpen size={17} /> },
     { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={17} /> },
@@ -60,8 +62,8 @@ export default function Nav() {
                 title={tab.label}
                 className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
                   pathname === tab.href
-                    ? 'text-[#FFD166] bg-[rgba(255,209,102,0.1)] border-b-2 border-[#FFD166]'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
+                    ? 'text-white border-b-2 border-[#34d399]'
+                    : 'text-[rgba(255,255,255,0.5)] hover:text-white hover:bg-white/5'
                 }`}
               >
                 {tab.icon}
@@ -73,6 +75,20 @@ export default function Nav() {
           {/* Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <LanguageToggle />
+            {authenticated && (
+              <Link
+                href="/profile"
+                className="text-[#FFD166] font-semibold text-sm rounded-lg hidden sm:block"
+                style={{
+                  background: 'rgba(255,209,102,0.1)',
+                  border: '1px solid rgba(255,209,102,0.2)',
+                  padding: '4px 12px',
+                  textDecoration: 'none',
+                }}
+              >
+                ✦ {starsBalance}
+              </Link>
+            )}
 
             {!ready ? (
               <div className="w-20 h-7 rounded-lg bg-white/10 animate-pulse" />
