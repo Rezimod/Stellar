@@ -3,7 +3,7 @@ import { mintCompressedNFT } from '@/lib/mint-nft';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
-import { awardStarsOnChain } from '../observe/log/route';
+import { awardStarsOnChain } from '@/lib/stars';
 
 export async function POST(req: NextRequest) {
   const secret = process.env.INTERNAL_API_SECRET;

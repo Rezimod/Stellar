@@ -83,7 +83,7 @@ async function createOnChainProof(
     if (msg.includes('rejected') || msg.includes('User rejected')) {
       return { success: false, txId: '', method: 'simulated', error: 'Transaction cancelled' };
     }
-    return { ...simResult(), error: msg };
+    return { success: false, txId: '', method: 'simulated', error: msg };
   }
 }
 

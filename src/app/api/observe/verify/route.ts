@@ -95,7 +95,11 @@ export async function POST(req: NextRequest) {
 
   // Base64 for Claude
   const base64 = buffer.toString('base64');
-  const mediaType = file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  const rawType = file.type;
+  const mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' =
+    rawType === 'image/heic' || rawType === 'image/heif' || isHeic
+      ? 'image/jpeg'
+      : (rawType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp');
 
   // Optional second frame (double capture anti-cheat)
   const file2 = formData.get('file2') as File | null;
@@ -195,16 +199,20 @@ Return ONLY valid JSON, no markdown, no preamble:
   }
 
   // Fetch real-time cloud cover from Open-Meteo oracle
-  let cloudCover = 15; // safe default
+  let cloudCover: number | null = null;
   try {
     const skyUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=cloud_cover&timezone=auto`;
     const skyRes = await fetch(skyUrl, { signal: AbortSignal.timeout(5000) });
     if (skyRes.ok) {
       const skyData = await skyRes.json();
-      cloudCover = skyData?.current?.cloud_cover ?? 15;
+      cloudCover = skyData?.current?.cloud_cover ?? null;
     }
   } catch {
-    // non-fatal — use default
+    // non-fatal
+  }
+
+  if (cloudCover === null) {
+    return NextResponse.json({ error: 'Sky conditions unavailable — try again shortly' }, { status: 503 });
   }
 
   // Astronomy cross-check
