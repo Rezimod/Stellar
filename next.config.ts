@@ -11,12 +11,12 @@ const nextConfig: NextConfig = {
   async headers() {
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://auth.privy.io https://*.privy.io",
+      "style-src 'self' 'unsafe-inline' https://auth.privy.io",
       "img-src 'self' data: blob: https:",
-      "font-src 'self'",
-      "connect-src 'self' https://api.devnet.solana.com wss://api.devnet.solana.com https://api.open-meteo.com https://api.coingecko.com https://mainnet.helius-rpc.com https://*.helius-rpc.com",
-      "frame-src 'none'",
+      "font-src 'self' data: https://auth.privy.io",
+      "connect-src 'self' https://api.devnet.solana.com wss://api.devnet.solana.com https://api.open-meteo.com https://api.coingecko.com https://mainnet.helius-rpc.com https://*.helius-rpc.com https://auth.privy.io https://api.privy.io https://*.privy.io https://*.rpc.privy.systems wss://relay.walletconnect.com wss://relay.walletconnect.org https://pulse.walletconnect.com https://verify.walletconnect.com https://verify.walletconnect.org",
+      "frame-src https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org",
       "frame-ancestors 'none'",
     ].join('; ');
 
