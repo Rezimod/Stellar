@@ -3,18 +3,32 @@
 import { useState } from 'react';
 
 const REWARDS_TIERS = [
-  { stars: 250, label: 'Free Moon Lamp', desc: 'With your next telescope order', code: 'MOONLAMP25' },
-  { stars: 500, label: '10% Telescope Discount', desc: 'On any telescope at astroman.ge', code: 'STELLAR10' },
-  { stars: 1000, label: '20% Telescope Discount', desc: 'On any telescope at astroman.ge', code: 'STELLAR20' },
+  { stars: 250, label: 'Free Moon Lamp', desc: 'With your next telescope order' },
+  { stars: 500, label: '10% Telescope Discount', desc: 'On any telescope at astroman.ge' },
+  { stars: 1000, label: '20% Telescope Discount', desc: 'On any telescope at astroman.ge' },
 ];
 
-export default function StarsRedemption({ starsBalance }: { starsBalance: number }) {
+export default function StarsRedemption({ starsBalance, walletAddress }: { starsBalance: number; walletAddress?: string }) {
   const [open, setOpen] = useState(false);
-  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [revealedCodes, setRevealedCodes] = useState<Record<string, string>>({});
+  const [claiming, setClaiming] = useState<Record<string, boolean>>({});
 
-  const handleClaim = (code: string) => {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setRevealed(prev => ({ ...prev, [code]: true }));
+  const handleClaim = async (label: string) => {
+    if (!walletAddress) return;
+    setClaiming(prev => ({ ...prev, [label]: true }));
+    try {
+      const res = await fetch('/api/redeem-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: label, walletAddress }),
+      });
+      if (!res.ok) return;
+      const { code } = await res.json();
+      navigator.clipboard.writeText(code).catch(() => {});
+      setRevealedCodes(prev => ({ ...prev, [label]: code }));
+    } finally {
+      setClaiming(prev => ({ ...prev, [label]: false }));
+    }
   };
 
   return (
@@ -36,9 +50,10 @@ export default function StarsRedemption({ starsBalance }: { starsBalance: number
       {REWARDS_TIERS.map(tier => {
         const progress = Math.min((starsBalance / tier.stars) * 100, 100);
         const unlocked = starsBalance >= tier.stars;
+        const revealedCode = revealedCodes[tier.label];
         return (
           <div
-            key={tier.code}
+            key={tier.label}
             className="glass-card p-4 flex flex-col gap-2"
             style={{ border: unlocked ? '1px solid rgba(255,209,102,0.3)' : '1px solid rgba(255,255,255,0.06)' }}
           >
@@ -56,17 +71,18 @@ export default function StarsRedemption({ starsBalance }: { starsBalance: number
               />
             </div>
             {unlocked ? (
-              revealed[tier.code] ? (
+              revealedCode ? (
                 <p className="text-[#34d399] text-xs font-mono text-center py-1">
-                  Code copied: <strong>{tier.code}</strong>
+                  Code copied: <strong>{revealedCode}</strong>
                 </p>
               ) : (
                 <button
-                  onClick={() => handleClaim(tier.code)}
-                  className="w-full py-2 rounded-lg text-xs font-bold transition-all"
+                  onClick={() => handleClaim(tier.label)}
+                  disabled={claiming[tier.label]}
+                  className="w-full py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-60"
                   style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
                 >
-                  Claim Discount Code
+                  {claiming[tier.label] ? 'Claiming...' : 'Claim Discount Code'}
                 </button>
               )
             ) : (

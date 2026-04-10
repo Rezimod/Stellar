@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { getStarsBalance } from '@/lib/solana';
 import { useState, useEffect } from 'react';
 import ProductGrid from '@/components/marketplace/ProductGrid';
 import StarsRedemption from '@/components/shared/StarsRedemption';
@@ -20,7 +19,8 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     if (!address) return;
-    getStarsBalance(address).then(setStarsBalance).catch(() => {});
+    fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
+      .then(r => r.json()).then(d => setStarsBalance(d.balance)).catch(() => {});
   }, [address]);
 
   const completed = state.completedMissions.filter(m => m.status === 'completed');
@@ -43,7 +43,7 @@ export default function MarketplacePage() {
       </div>
       {authenticated && (
         <div className="mb-4">
-          <StarsRedemption starsBalance={starsBalance || totalStars} />
+          <StarsRedemption starsBalance={starsBalance || totalStars} walletAddress={address ?? undefined} />
         </div>
       )}
       <ProductGrid />

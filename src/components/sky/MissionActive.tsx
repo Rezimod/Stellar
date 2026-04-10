@@ -75,10 +75,20 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     }
 
     setStep('verifying');
-    const res = await fetch(`/api/sky/verify?lat=${lat}&lon=${lon}`);
-    const skyData: SkyVerification = await res.json();
-    setSky(skyData);
-    setStep('verified');
+    try {
+      const res = await fetch(`/api/sky/verify?lat=${lat}&lon=${lon}`);
+      if (!res.ok) {
+        setMintError('Sky check failed — please try again in a moment');
+        setStep('camera');
+        return;
+      }
+      const skyData: SkyVerification = await res.json();
+      setSky(skyData);
+      setStep('verified');
+    } catch {
+      setMintError('Sky check offline — please try again in a moment');
+      setStep('camera');
+    }
   };
 
   const handleMint = async () => {
@@ -132,14 +142,23 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       return;
     }
 
-    fetch('/api/award-stars', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipientAddress: solanaWallet?.address, amount: mission.stars, reason: mission.name }),
-    }).catch(() => {});
-
     setMintTxId(txId);
     setMintDone(true);
+
+    // Award stars with idempotency key to prevent double-award on retry
+    if (solanaWallet?.address) {
+      fetch('/api/award-stars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientAddress: solanaWallet.address,
+          amount: mission.stars,
+          reason: `mission:${mission.id}`,
+          idempotencyKey: `${solanaWallet.address}_${mission.id}_v1`,
+        }),
+      }).catch(() => {});
+    }
+
     setTimeout(() => {
       const newCompleted = [...prevCompleted, mission.id];
       const newRank = getRank(newCompleted.length).name;

@@ -2,24 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import bs58 from 'bs58';
+import { getDb } from '@/lib/db';
+import { observationLog } from '@/lib/schema';
+import { and, eq } from 'drizzle-orm';
 
 const DEVNET_URL = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
 
 export async function POST(req: NextRequest) {
   // Restrict to server-to-server calls only
   const secret = process.env.INTERNAL_API_SECRET;
-  if (secret && req.headers.get('x-internal-secret') !== secret) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const authHeader = req.headers.get('authorization');
+  if (secret && authHeader !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown };
+  let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown; idempotencyKey?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { recipientAddress, amount, reason } = body;
+  const { recipientAddress, amount, reason, idempotencyKey } = body;
 
   // Validate recipientAddress
   let recipientPublicKey: PublicKey;
@@ -42,6 +46,31 @@ export async function POST(req: NextRequest) {
   // Validate reason
   if (typeof reason !== 'string' || reason.trim().length === 0) {
     return NextResponse.json({ error: 'reason must be a non-empty string' }, { status: 400 });
+  }
+
+  // Idempotency check
+  if (typeof idempotencyKey === 'string' && idempotencyKey.length > 0) {
+    const db = getDb();
+    if (db) {
+      try {
+        const existing = await db
+          .select({ id: observationLog.id, mintTx: observationLog.mintTx })
+          .from(observationLog)
+          .where(
+            and(
+              eq(observationLog.wallet, recipientAddress as string),
+              eq(observationLog.mintTx, idempotencyKey)
+            )
+          )
+          .limit(1);
+
+        if (existing.length > 0) {
+          return NextResponse.json({ success: true, txId: 'already_awarded', cached: true });
+        }
+      } catch {
+        // DB check failure is non-fatal — proceed with award
+      }
+    }
   }
 
   const mintAddress = process.env.STARS_TOKEN_MINT;
@@ -76,6 +105,20 @@ export async function POST(req: NextRequest) {
     );
 
     console.log('[Stars] Awarded', amount, 'to', recipientAddress, 'for', reason);
+
+    // Record idempotency key so retries return the cached result
+    if (typeof idempotencyKey === 'string' && idempotencyKey.length > 0) {
+      const db = getDb();
+      if (db) {
+        db.insert(observationLog).values({
+          wallet: recipientAddress as string,
+          target: reason as string,
+          stars: amount as number,
+          confidence: 'mission',
+          mintTx: idempotencyKey,
+        }).catch(err => console.error('[award-stars] idempotency insert failed:', err));
+      }
+    }
 
     return NextResponse.json({
       success: true,

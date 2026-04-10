@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { Telescope, Satellite, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
-import { getStarsBalance } from '@/lib/solana';
 
 interface NftAttribute {
   trait_type: string;
@@ -93,7 +92,8 @@ export default function NftsPage() {
   useEffect(() => {
     if (!authenticated || !address) return;
     fetchNfts();
-    getStarsBalance(address).then(setStarsBalance).catch(() => {});
+    fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
+      .then(r => r.json()).then(d => setStarsBalance(d.balance)).catch(() => {});
   }, [authenticated, address, fetchNfts]);
 
   if (!ready) {

@@ -7,7 +7,6 @@ import { Copy, Check, ExternalLink, Telescope, Star, Award, ShoppingBag, Chevron
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
-import { getStarsBalance } from '@/lib/solana';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
 import StarsRedemption from '@/components/shared/StarsRedemption';
@@ -32,7 +31,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!address) return;
-    getStarsBalance(address).then(setStarsBalance).catch(() => {});
+    fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
+      .then(r => r.json()).then(d => setStarsBalance(d.balance)).catch(() => {});
 
     fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address)}`)
       .then(r => r.json())
@@ -189,7 +189,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Stars redemption */}
-      <StarsRedemption starsBalance={starsBalance || totalStars} />
+      <StarsRedemption starsBalance={starsBalance || totalStars} walletAddress={address ?? undefined} />
 
       {/* Observation stats */}
       {(obsCount !== null || obsStreak !== null) && (
