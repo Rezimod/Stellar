@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "setup:bubblegum": "npx tsx scripts/setup-bubblegum.ts",
-    "setup:token": "npx tsx scripts/create-stars-token.ts"
+    "setup:token": "npx tsx scripts/create-stars-token.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -16,11 +18,13 @@
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
     "@metaplex-foundation/umi": "^1.5.1",
     "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
+    "@neondatabase/serverless": "^1.0.2",
     "@privy-io/react-auth": "^3.19.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "astronomy-engine": "^2.1.19",
     "bs58": "^6.0.0",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-intl": "^4.9.0",
@@ -33,6 +37,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
