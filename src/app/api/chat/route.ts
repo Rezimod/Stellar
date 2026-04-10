@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
   const sanitizedLocale = VALID_LOCALES.includes(locale as typeof VALID_LOCALES[number]) ? locale : 'en';
   const systemPrompt = `${SYSTEM_PROMPT}\nUSER LANGUAGE: ${sanitizedLocale}`;
 
-  const safeHistory = (body.history ?? [])
+  const safeHistory = (history ?? [])
     .filter(h => h.role === 'user' || h.role === 'assistant')
     .filter(h => typeof h.content === 'string' && h.content.length > 0 && h.content.length <= 4000)
     .slice(-8);
