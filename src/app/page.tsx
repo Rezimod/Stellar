@@ -261,10 +261,10 @@ export default function HomePage() {
             flexWrap: 'wrap',
           }}>
             {[
-              { href: '/sky',         icon: '☁', label: 'Sky',      sub: "Tonight's forecast", color: '#38F0FF' },
-              { href: '/missions',    icon: '🔭', label: 'Missions', sub: 'Earn Stars + NFTs',  color: '#34d399' },
-              { href: '/chat',        icon: '✦',  label: 'ASTRA',   sub: 'AI companion',       color: '#8B5CF6' },
-              { href: '/marketplace', icon: '🛒', label: 'Shop',     sub: 'Astroman store',     color: '#FFD166' },
+              { href: '/sky',         icon: '☁',  label: 'Sky',      sub: "Tonight's forecast",  color: '#38F0FF' },
+              { href: '/darksky',     icon: '🗺️', label: 'Dark Sky', sub: 'Light pollution map', color: '#34d399' },
+              { href: '/chat',        icon: '✦',  label: 'Learn',   sub: 'AI + knowledge',      color: '#8B5CF6' },
+              { href: '/marketplace', icon: '🛒', label: 'Shop',     sub: 'Astroman store',      color: '#FFD166' },
             ].map(item => (
               <Link
                 key={item.href}

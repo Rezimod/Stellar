@@ -860,18 +860,18 @@ function ChatTab({ locale }: { locale: Locale }) {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 const TAB_CONFIG: { id: Tab; icon: string; en: string; ka: string }[] = [
-  { id: 'chat',        icon: '💬', en: 'ASTRA',    ka: 'ASTRA' },
-  { id: 'planets',     icon: '🪐', en: 'Planets',  ka: 'პლანეტები' },
-  { id: 'deepsky',     icon: '🌌', en: 'Deep Sky', ka: 'ღრმა ცა' },
-  { id: 'telescopes',  icon: '🔭', en: 'Scopes',   ka: 'ტელესკოპები' },
-  { id: 'quizzes',     icon: '🧠', en: 'Quizzes',  ka: 'ქვიზები' },
-  { id: 'events',      icon: '📅', en: 'Events',   ka: 'მოვლენები' },
+  { id: 'planets',    icon: '🪐', en: 'Planets',  ka: 'პლანეტები' },
+  { id: 'deepsky',    icon: '🌌', en: 'Deep Sky', ka: 'ღრმა ცა' },
+  { id: 'telescopes', icon: '🔭', en: 'Scopes',   ka: 'ტელესკოპები' },
+  { id: 'quizzes',    icon: '🧠', en: 'Quizzes',  ka: 'ქვიზები' },
+  { id: 'events',     icon: '📅', en: 'Events',   ka: 'მოვლენები' },
+  { id: 'chat',       icon: '✦',  en: 'ASTRA AI', ka: 'ASTRA AI' },
 ];
 
 export default function LearnPage() {
   const rawLocale = useLocale();
   const locale: Locale = rawLocale === 'ka' ? 'ka' : 'en';
-  const [tab, setTab] = useState<Tab>('chat');
+  const [tab, setTab] = useState<Tab>('planets');
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
   const [kidsMode, setKidsMode] = useState(false);
   const { state } = useAppState();

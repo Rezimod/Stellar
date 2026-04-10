@@ -22,12 +22,18 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
 
-  const [obsCount, setObsCount] = useState<number | null>(null);
-  const [obsStreak, setObsStreak] = useState<number | null>(null);
+  const [obsCount, setObsCount] = useState<number>(0);
+  const [obsStreak, setObsStreak] = useState<number>(0);
+  const [timedOut, setTimedOut] = useState(false);
   const [recentObs, setRecentObs] = useState<{ id: string; target: string; confidence: string; stars: number; created_at: string }[]>([]);
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
   const address = solanaWallet?.address ?? state.walletAddress ?? null;
+
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!address) return;
@@ -61,7 +67,7 @@ export default function ProfilePage() {
     reset();
   };
 
-  if (!ready) {
+  if (!ready && !timedOut) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 flex items-center justify-center">
         <div className="w-6 h-6 rounded-full border-2 border-[#FFD166] border-t-transparent animate-spin" />
