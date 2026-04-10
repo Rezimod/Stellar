@@ -12,6 +12,8 @@ export interface Mission {
   desc: string;
   hint: string;
   context?: string; // Scriptonia context tag
+  target?: string | null; // null = free observation (any sky photo)
+  repeatable?: boolean;   // true = always visible, never hidden after completion
 }
 
 export interface SkyVerification {

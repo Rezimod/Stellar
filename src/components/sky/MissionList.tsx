@@ -15,12 +15,20 @@ export default function MissionList({ onStart }: MissionListProps) {
   const completedIds = new Set(state.completedMissions.filter(m => m.status === 'completed').map(m => m.id));
   const pendingIds   = new Set(state.completedMissions.filter(m => m.status === 'pending').map(m => m.id));
 
+  function completedTodayId(id: string): boolean {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    return state.completedMissions.some(
+      m => m.id === id && m.status === 'completed' && new Date(m.timestamp).getTime() > cutoff
+    );
+  }
+
   return (
     <>
-
       <div className="grid grid-cols-2 gap-2.5">
         {MISSIONS.map(mission => {
-          const done    = completedIds.has(mission.id);
+          const isRepeatable = mission.repeatable === true;
+          const done    = completedIds.has(mission.id) && !isRepeatable;
+          const doneToday = isRepeatable && completedTodayId(mission.id);
           const pending = pendingIds.has(mission.id);
           const diff    = mission.difficulty === 'Beginner' ? 1 : mission.difficulty === 'Intermediate' ? 2 : mission.difficulty === 'Advanced' ? 3 : mission.difficulty === 'Hard' ? 4 : 5;
           const diffLabel = mission.difficulty === 'Beginner' ? 'Easy' : mission.difficulty === 'Intermediate' ? 'Medium' : mission.difficulty === 'Advanced' ? 'Hard' : mission.difficulty === 'Hard' ? 'Hard+' : 'Expert';
@@ -39,7 +47,7 @@ export default function MissionList({ onStart }: MissionListProps) {
               onMouseLeave={e => { e.currentTarget.style.borderColor = done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               {/* Status badge */}
-              {(done || pending) && (
+              {(done || pending) && !isRepeatable && (
                 <div className="absolute top-2.5 right-2.5">
                   {done
                     ? <CheckCircle2 size={13} className="text-slate-600" />
@@ -56,8 +64,8 @@ export default function MissionList({ onStart }: MissionListProps) {
               {/* Name */}
               <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
 
-              {/* Difficulty dots + label */}
-              <div className="flex flex-col items-center gap-1 mb-3">
+              {/* Difficulty dots + label + always-available badge */}
+              <div className="flex flex-col items-center gap-1 mb-2">
                 <div className="flex gap-1 justify-center">
                   {[1,2,3,4,5].map(d => (
                     <span key={d} className="w-1 h-1 rounded-full" style={{
@@ -68,7 +76,20 @@ export default function MissionList({ onStart }: MissionListProps) {
                   ))}
                 </div>
                 <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{diffLabel}</span>
+                {isRepeatable && (
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399' }}
+                  >
+                    Always Available
+                  </span>
+                )}
               </div>
+
+              {/* Completed today badge */}
+              {doneToday && (
+                <p className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>✓ Completed today</p>
+              )}
 
               {/* Reward */}
               <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.stars} ✦</p>

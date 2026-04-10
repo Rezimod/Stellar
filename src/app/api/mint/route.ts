@@ -3,7 +3,6 @@ import { mintCompressedNFT } from '@/lib/mint-nft';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
-import { awardStarsOnChain } from '@/lib/stars';
 
 export async function POST(req: NextRequest) {
   const secret = process.env.INTERNAL_API_SECRET;
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
   try {
     const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars });
 
-    // Server-side log + award (non-blocking)
+    // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
     if (db && userAddress) {
       db.insert(observationLog).values({
         wallet: userAddress,
@@ -74,10 +73,6 @@ export async function POST(req: NextRequest) {
         confidence: 'minted',
         mintTx: txId,
       }).catch(err => console.error('[mint] db.insert failed:', err));
-
-      awardStarsOnChain(userAddress, stars, target).catch(err =>
-        console.error('[mint] award-stars failed:', err)
-      );
     }
 
     return NextResponse.json({ txId, explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=devnet` });

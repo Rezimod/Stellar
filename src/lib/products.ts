@@ -102,7 +102,7 @@ export const PRODUCTS: Product[] = [
     id: 'scope-celestron-70az',
     name: { en: 'Celestron AstroMaster 70AZ', ka: 'Celestron AstroMaster 70AZ' },
     description: {
-      en: 'Celestron\'s popular 70mm refractor on alt-az mount. Crystal-clear views of Moon and planets right out of the box.',
+      en: "Celestron's popular 70mm refractor on alt-az mount. Crystal-clear views of Moon and planets right out of the box.",
       ka: 'Celestron-ის პოპულარული 70 მმ რეფრაქტორი alt-az სამაგრზე. მკაფიო ხედები ყუთიდანვე.',
     },
     category: 'telescope',
@@ -243,3 +243,13 @@ export function getProducts(category?: ProductCategory): Product[] {
   if (!category) return PRODUCTS;
   return PRODUCTS.filter(p => p.category === category);
 }
+
+// Dealer-based exports (G2) — import types directly from '@/lib/dealers'
+export {
+  getDealersByRegion,
+  getProductsByRegion,
+  getDealerById,
+  getProductsByDealer,
+  getAllDealers,
+} from './dealers'
+export type { Dealer } from './dealers'

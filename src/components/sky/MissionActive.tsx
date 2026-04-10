@@ -84,6 +84,10 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       }
       const skyData: SkyVerification = await res.json();
       setSky(skyData);
+      // Free observation: never block on cloudy sky
+      if (mission.id === 'free-observation' && !skyData.verified) {
+        setMintError('Cloudy tonight — your observation still counts! ☁️');
+      }
       setStep('verified');
     } catch {
       setMintError('Sky check offline — please try again in a moment');
@@ -115,7 +119,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userAddress: solanaWallet?.address ?? null,
-          target: mission.name,
+          target: mission.target === null ? 'Night Sky' : mission.name,
           timestampMs: new Date(timestamp).getTime(),
           lat: coords.lat,
           lon: coords.lon,
@@ -282,9 +286,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
 
           <h2 className="text-2xl text-white mt-6 tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>
-            Discovery Sealed
+            {mission.id === 'free-observation' ? 'Observation Sealed' : 'Discovery Sealed'}
           </h2>
-          <p className="text-slate-400 text-sm mt-2">{mission.emoji} {mission.name}</p>
+          <p className="text-slate-400 text-sm mt-2">
+            {mission.emoji} {mission.id === 'free-observation' ? "Tonight's Sky" : mission.name}
+          </p>
           <p className="text-[#FFD166] text-lg font-bold mt-3"
             style={{ animation: 'starShimmer 2s ease-in-out infinite' }}>
             +{mission.stars} ✦
@@ -327,7 +333,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  const text = encodeURIComponent(`I just observed ${mission.name} through my telescope ✦ Verified with Stellar by Astroman\n\nstellarrclub.vercel.app`);
+                  const text = encodeURIComponent(`I just observed ${mission.id === 'free-observation' ? "Tonight's Sky" : mission.name} ✦ Verified with Stellar\n\nstellarrclub.vercel.app`);
                   window.open(`https://warpcast.com/~/compose?text=${text}`, '_blank');
                 }}
                 className="flex-1 py-2.5 rounded-xl text-xs font-medium bg-[rgba(132,101,203,0.08)] border border-[rgba(132,101,203,0.2)] text-[#8465CB] hover:bg-[rgba(132,101,203,0.15)] transition-colors"
@@ -336,7 +342,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               </button>
               <button
                 onClick={() => {
-                  const text = encodeURIComponent(`Just observed ${mission.name} through my telescope and logged my discovery ✦\n\n@AstromanGe stellarrclub.vercel.app`);
+                  const text = encodeURIComponent(`Just observed ${mission.id === 'free-observation' ? "Tonight's Sky" : mission.name} and logged my discovery ✦\n\n@AstromanGe stellarrclub.vercel.app`);
                   window.open(`https://x.com/intent/tweet?text=${text}`, '_blank');
                 }}
                 className="flex-1 py-2.5 rounded-xl text-xs font-medium bg-[rgba(255,255,255,0.04)] border border-white/[0.08] text-white/60 hover:bg-white/[0.08] transition-colors"

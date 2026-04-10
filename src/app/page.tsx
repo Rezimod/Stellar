@@ -10,6 +10,8 @@ import HomeSkyPreview from '@/components/home/HomeSkyPreview';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { Telescope, Camera, Satellite, Layers } from 'lucide-react';
+import LocationPicker from '@/components/LocationPicker';
+import { useLocation } from '@/lib/location';
 
 export default function HomePage() {
   const t = useTranslations();
@@ -17,6 +19,8 @@ export default function HomePage() {
   const { state } = useAppState();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
+
+  const { location } = useLocation();
 
   const walletAddress =
     (user?.linkedAccounts.find(
@@ -174,7 +178,7 @@ export default function HomePage() {
             margin: 0,
           }}>
             <span className="hero-line-1" style={{ display: 'block', color: 'rgba(255,255,255,0.9)' }}>
-              Observe the
+              Observe the sky.
             </span>
             <span className="hero-line-2" style={{
               display: 'block',
@@ -183,17 +187,7 @@ export default function HomePage() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-              Night Sky.
-            </span>
-            <span className="hero-line-3" style={{
-              display: 'block',
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: '0.38em',
-              letterSpacing: '0.25em',
-              textTransform: 'uppercase',
-              marginTop: 12,
-            }}>
-              Earn your place.
+              Earn on Solana.
             </span>
           </h1>
 
@@ -205,8 +199,10 @@ export default function HomePage() {
             fontSize: 14,
             margin: 0,
           }}>
-            Complete telescope observations. Earn Stars tokens. Collect verified NFTs. Shop with real discounts from Georgia&apos;s first astronomy store.
+            Photograph celestial objects from anywhere in the world. Earn Stars tokens, collect discovery NFTs, and shop telescopes at your local dealer.
           </p>
+
+          <LocationPicker compact />
 
           {/* CTA row */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
@@ -264,7 +260,7 @@ export default function HomePage() {
               { href: '/sky',         icon: '☁',  label: 'Sky',      sub: "Tonight's forecast",  color: '#38F0FF' },
               { href: '/darksky',     icon: '🗺️', label: 'Dark Sky', sub: 'Light pollution map', color: '#34d399' },
               { href: '/chat',        icon: '✦',  label: 'Learn',   sub: 'AI + knowledge',      color: '#8B5CF6' },
-              { href: '/marketplace', icon: '🛒', label: 'Shop',     sub: 'Astroman store',      color: '#FFD166' },
+              { href: '/marketplace', icon: '🛒', label: 'Shop',     sub: 'Partner stores',      color: '#FFD166' },
             ].map(item => (
               <Link
                 key={item.href}
@@ -673,7 +669,7 @@ export default function HomePage() {
           {/* Prompt pills */}
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 12 }}>
             {[
-              "What's visible tonight in Tbilisi?",
+              "What's visible tonight?",
               'Telescope recommendations for beginners',
               "Explain Jupiter's Red Spot",
             ].map(pill => (
@@ -707,7 +703,7 @@ export default function HomePage() {
               Earn Stars. Spend Real Rewards.
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.6 }}>
-              Complete missions → earn Stars tokens → redeem for Astroman gear.
+              Complete missions → earn Stars tokens → redeem at partner stores worldwide.
             </p>
           </div>
 
@@ -834,6 +830,80 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Partner Stores */}
+        <div style={{ width: '100%' }}>
+          <p style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: '0 0 6px' }}>
+            Partner Telescope Stores
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', margin: '0 0 24px' }}>
+            Earn Stars anywhere. Spend them at your local dealer.
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 16,
+            maxWidth: 512,
+            margin: '0 auto',
+          }} className="partner-grid">
+            <style>{`@media (max-width: 480px) { .partner-grid { grid-template-columns: 1fr !important; } }`}</style>
+
+            {/* Astroman */}
+            <div style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 20,
+              padding: 20,
+            }}>
+              <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: '0 0 4px' }}>🔭 Astroman</p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>
+                Georgia&apos;s first astronomy store
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 8px' }}>
+                Ships to: 🇬🇪 🇦🇲 🇦🇿 🇹🇷
+              </p>
+              <a
+                href="https://astroman.ge"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#34d399', fontSize: 12, textDecoration: 'none' }}
+              >
+                Visit store →
+              </a>
+            </div>
+
+            {/* High Point Scientific */}
+            <div style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 20,
+              padding: 20,
+            }}>
+              <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: '0 0 4px' }}>🔭 High Point Scientific</p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>
+                America&apos;s trusted telescope retailer
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 8px' }}>
+                Ships to: 🇺🇸 🇨🇦
+              </p>
+              <a
+                href="https://www.highpointscientific.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#34d399', fontSize: 12, textDecoration: 'none' }}
+              >
+                Visit store →
+              </a>
+            </div>
+          </div>
+
+          <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', marginTop: 16 }}>
+            Want to sell on Stellar?{' '}
+            <a href="mailto:rezi@astroman.ge" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>
+              Contact us →
+            </a>
+          </p>
         </div>
 
       </div>

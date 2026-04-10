@@ -134,10 +134,25 @@ FEE_PAYER_PRIVATE_KEY=           # Server wallet for gasless txs (devnet)
 - Every new page/component gets a commit with descriptive message
 - Keep components small — one file per component, max ~150 lines
 
+## Globalization Roadmap
+See `GLOBAL_PROMPTS.md` in the project root for Phase 2 prompts (G1–G6).
+
+Phase 2 repositions Stellar from Georgia-focused to global. Adds:
+- `src/lib/location.tsx` — GPS region detection (caucasus / north_america / global)
+- `src/lib/dealers.ts` — multi-dealer product system (Astroman + High Point Scientific)
+- `src/components/LocationPicker.tsx` — region selector pill/modal
+- Location-aware marketplace (G3), Free Observation mission (G4), global copy (G5), README (G6)
+
+**Prerequisite:** Phase 1 on-chain core (LATEST_PROMPTS.md, prompts 1–6) must be working on devnet first.
+
+**Conflicts to watch:**
+- `src/hooks/useLocation.ts` (current, lat/lng only) vs new `src/lib/location.tsx` (region-aware) — both can coexist; sky data keeps using the hook, marketplace uses the new context
+- `src/lib/products.ts` shape changes in G2 — `priceGEL` + bilingual names → `price` + `currency` + `dealerId` — marketplace components will need updates
+
 ## Current Status
 - Hackathon started April 6, 2026
 - Project registered on arena.colosseum.org
-- Existing codebase has: basic Next.js shell, some Solana wallet integration (needs replacement with Privy)
+- Phase 1 (on-chain core) largely implemented: mint-nft, award-stars, sky verify, NFT gallery
 - Solo builder currently — searching for frontend developer to join
 - Need daily GitHub commits for Colosseum activity tracking
 

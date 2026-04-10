@@ -14,6 +14,18 @@ export const SPONSORS = {
 };
 
 export const MISSIONS: Mission[] = [
+  {
+    id: 'free-observation',
+    name: "Tonight's Sky",
+    emoji: '🌌',
+    difficulty: 'Beginner',
+    stars: 25,
+    type: 'naked_eye',
+    desc: 'Photograph any part of the night sky. No telescope needed — just look up.',
+    hint: 'Find a spot away from bright lights. Point your camera straight up or at the brightest thing you see.',
+    target: null,
+    repeatable: true,
+  },
   { id: 'moon', name: 'The Moon', emoji: '🌕', difficulty: 'Beginner',
     stars: 50, type: 'naked_eye',
     desc: 'Observe the lunar surface. Identify at least 3 craters.',
@@ -56,7 +68,7 @@ export const TELESCOPE_BRANDS = ['Celestron', 'National Geographic', 'Meade', 'S
 export const AGENT_META = {
   name: 'STELLAR Observer Agent',
   version: '1.0.0',
-  description: 'Autonomous sky observation verification agent',
+  description: 'The global astronomy app — observe anywhere, earn Stars, collect discovery NFTs on Solana. You serve astronomers worldwide, not just in Georgia.',
   capabilities: ['capture', 'verify', 'mint'],
   oracle: 'open-meteo-v1',
   network: 'solana_devnet',

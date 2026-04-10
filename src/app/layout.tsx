@@ -4,6 +4,7 @@ import './globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
+import { LocationProvider } from '@/lib/location';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AppStateProvider } from '@/hooks/useAppState';
 import WalletSync from '@/components/providers/WalletSync';
@@ -21,8 +22,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Stellar — Astronomy on Solana',
-  description: 'Observe the night sky, earn Stars, and seal your discoveries as compressed NFTs on Solana.',
+  title: 'Stellar — Observe the Sky, Earn on Solana',
+  description: 'The global astronomy app that brings telescope owners on-chain. Verify observations, earn Stars tokens, collect NFT proofs, and shop at local dealers.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -30,14 +31,14 @@ export const metadata: Metadata = {
     title: 'STELLAR',
   },
   openGraph: {
-    title: 'Stellar — Astronomy on Solana',
-    description: 'Observe the night sky, earn Stars, and seal your discoveries as compressed NFTs on Solana.',
+    title: 'Stellar — Observe the Sky, Earn on Solana',
+    description: 'Photograph the night sky from anywhere in the world. Earn Stars. Collect discovery NFTs. Shop telescopes at your local dealer.',
     images: ['https://stellarrclub.vercel.app/api/og/sky'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Stellar — Astronomy on Solana',
-    description: 'Observe the night sky, earn Stars, and seal your discoveries as compressed NFTs on Solana.',
+    title: 'Stellar — Observe the Sky, Earn on Solana',
+    description: 'Photograph the night sky from anywhere in the world. Earn Stars. Collect discovery NFTs. Shop telescopes at your local dealer.',
     images: ['https://stellarrclub.vercel.app/api/og/sky'],
   },
   other: {
@@ -61,6 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ErrorBoundary>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <SolanaWalletProvider>
+              <LocationProvider>
               <AppStateProvider>
                 <WalletSync />
                 <StarField />
@@ -72,6 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Footer />
                 <BottomNav />
               </AppStateProvider>
+              </LocationProvider>
             </SolanaWalletProvider>
           </NextIntlClientProvider>
         </ErrorBoundary>
