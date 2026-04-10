@@ -18,7 +18,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
           accentColor: '#8B5CF6',
         },
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
+          solana: { createOnLogin: 'users-without-wallets' },
         },
       }}
     >
