@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
+import { Send, Radio } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import { QUIZZES, type QuizDef } from '@/lib/quizzes';
 import QuizActive from '@/components/sky/QuizActive';
 import TelescopesTab from '@/components/sky/TelescopesTab';
 
-type Tab = 'planets' | 'deepsky' | 'quizzes' | 'events' | 'telescopes';
+type Tab = 'planets' | 'deepsky' | 'quizzes' | 'events' | 'telescopes' | 'chat';
 type Locale = 'en' | 'ka';
 
 // ─── Planet data ────────────────────────────────────────────────────────────
@@ -614,20 +615,198 @@ function EventsTab({ locale }: { locale: Locale }) {
   );
 }
 
+// ─── Chat tab ────────────────────────────────────────────────────────────────
+
+interface ChatMessage { role: 'user' | 'assistant'; content: string; }
+
+function ChatTab({ locale }: { locale: Locale }) {
+  const { state } = useAppState();
+  const [messages, setMessages] = useState<ChatMessage[]>([{
+    role: 'assistant',
+    content: "Hello, Observer. I'm ASTRA — your astronomy assistant. Ask me anything about telescopes, tonight's sky, or the cosmos. ✦",
+  }]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const hour = new Date().getHours();
+  const isNight = hour >= 20 || hour < 5;
+  const suggestions = isNight
+    ? ['What can I observe right now?', 'How do I find Saturn tonight?', "What's the best beginner target?", 'How do I photograph the Moon?']
+    : ['What will be visible tonight?', 'How do I collimate a reflector?', 'What is the Orion Nebula?', 'How do I read a star map?'];
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+
+  const send = async (text?: string) => {
+    const msg = (text ?? input).trim();
+    if (!msg || loading) return;
+    setInput('');
+    setError('');
+    const newMessages: ChatMessage[] = [...messages, { role: 'user', content: msg }];
+    setMessages(newMessages);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          history: newMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
+          locale,
+        }),
+      });
+      if (!res.ok || !res.body) throw new Error('Stream failed');
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6);
+          if (payload === '[DONE]') break;
+          if (payload === '[ERROR]') throw new Error('Stream error');
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = { role: 'assistant', content: updated[updated.length - 1].content + payload };
+            return updated;
+          });
+        }
+      }
+    } catch {
+      setError(locale === 'ka' ? 'კავშირი დაიკარგა. სცადე ისევ.' : 'Connection lost. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* ASTRA header */}
+      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+        style={{ background: 'rgba(56,240,255,0.04)', border: '1px solid rgba(56,240,255,0.12)' }}>
+        <div className="relative flex-shrink-0">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
+            <Radio size={16} className="text-[#38F0FF]" />
+          </div>
+          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2 border-[#080e1e]" />
+        </div>
+        <div>
+          <p className="text-white text-sm font-semibold">ASTRA</p>
+          <p className="text-[#38F0FF]/50 text-[10px] font-mono">MISSION CONTROL · ONLINE</p>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex flex-col gap-3 min-h-[320px] max-h-[480px] overflow-y-auto px-1 scrollbar-hide">
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            {m.role === 'assistant' && (
+              <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5"
+                style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
+                <span className="text-[8px] font-bold text-[#38F0FF]">AI</span>
+              </div>
+            )}
+            <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed"
+              style={m.role === 'user' ? {
+                background: 'linear-gradient(135deg, rgba(255,209,102,0.15), rgba(204,154,51,0.1))',
+                border: '1px solid rgba(255,209,102,0.2)',
+                color: '#f5e8b8',
+                borderBottomRightRadius: '6px',
+              } : {
+                background: 'rgba(56,240,255,0.05)',
+                border: '1px solid rgba(56,240,255,0.1)',
+                color: '#cbd5e1',
+                borderBottomLeftRadius: '6px',
+              }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5"
+              style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
+              <span className="text-[8px] font-bold text-[#38F0FF]">AI</span>
+            </div>
+            <div className="rounded-2xl rounded-bl-md px-4 py-3"
+              style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.1)' }}>
+              <div className="flex items-center gap-1">
+                {[0,1,2].map(i => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#38F0FF]/60 animate-bounce"
+                    style={{ animationDelay: `${i * 150}ms` }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {error && <p className="text-center text-xs text-amber-400/60">{error}</p>}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Suggestion chips */}
+      {messages.length <= 1 && (
+        <div className="flex flex-wrap gap-1.5">
+          {suggestions.map(s => (
+            <button key={s} onClick={() => send(s)}
+              className="text-[11px] px-3 py-1.5 rounded-full transition-all hover:border-[#38F0FF]/40"
+              style={{ background: 'rgba(56,240,255,0.04)', border: '1px solid rgba(56,240,255,0.12)', color: 'rgba(56,240,255,0.7)' }}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-2 pt-1" style={{ borderTop: '1px solid rgba(56,240,255,0.07)' }}>
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+          placeholder={locale === 'ka' ? 'ჰკითხე ტელესკოპების, სამიზნეების, ტექნიკის შესახებ…' : 'Ask about telescopes, targets, technique…'}
+          className="flex-1 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none transition-colors"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(56,240,255,0.1)' }}
+          onFocus={e => (e.target.style.borderColor = 'rgba(56,240,255,0.3)')}
+          onBlur={e => (e.target.style.borderColor = 'rgba(56,240,255,0.1)')}
+          autoFocus
+        />
+        <button onClick={() => send()} disabled={!input.trim() || loading}
+          className="w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
+          style={{
+            background: input.trim() && !loading ? 'linear-gradient(135deg, #38F0FF, #1a8fa0)' : 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(56,240,255,0.2)',
+          }}>
+          <Send size={14} className={input.trim() && !loading ? 'text-[#070B14]' : 'text-slate-600'} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 const TAB_CONFIG: { id: Tab; icon: string; en: string; ka: string }[] = [
-  { id: 'planets',    icon: '🪐', en: 'Planets',    ka: 'პლანეტები' },
-  { id: 'deepsky',    icon: '🌌', en: 'Deep Sky',   ka: 'ღრმა ცა' },
-  { id: 'telescopes', icon: '🔭', en: 'Telescopes', ka: 'ტელესკოპები' },
-  { id: 'quizzes',    icon: '🧠', en: 'Quizzes',    ka: 'ქვიზები' },
-  { id: 'events',     icon: '📅', en: 'Sky Events', ka: 'ცის მოვლენები' },
+  { id: 'chat',        icon: '💬', en: 'Ask ASTRA',  ka: 'ASTRA ჩათი' },
+  { id: 'planets',     icon: '🪐', en: 'Planets',    ka: 'პლანეტები' },
+  { id: 'deepsky',     icon: '🌌', en: 'Deep Sky',   ka: 'ღრმა ცა' },
+  { id: 'telescopes',  icon: '🔭', en: 'Telescopes', ka: 'ტელესკოპები' },
+  { id: 'quizzes',     icon: '🧠', en: 'Quizzes',    ka: 'ქვიზები' },
+  { id: 'events',      icon: '📅', en: 'Sky Events', ka: 'ცის მოვლენები' },
 ];
 
 export default function LearnPage() {
   const rawLocale = useLocale();
   const locale: Locale = rawLocale === 'ka' ? 'ka' : 'en';
-  const [tab, setTab] = useState<Tab>('planets');
+  const [tab, setTab] = useState<Tab>('chat');
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
   const [kidsMode, setKidsMode] = useState(false);
   const { state } = useAppState();
@@ -639,57 +818,49 @@ export default function LearnPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 animate-page-enter flex flex-col gap-5">
         {/* Header */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
-                {locale === 'ka' ? 'ჰკითხე ASTRA-ს' : 'Ask ASTRA'}
-              </h1>
-              <p className="text-slate-500 text-sm mt-0.5">
-                {locale === 'ka' ? 'შენი პირადი ასტრონომიული გიდი.' : 'Your personal astronomy guide. Ask about tonight\'s sky, your telescope, or the cosmos.'}
-              </p>
-            </div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+              {locale === 'ka' ? 'სწავლა' : 'Learn'}
+            </h1>
+            <p className="text-slate-500 text-sm mt-0.5">
+              {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
+            </p>
           </div>
-          {completedQuizzes.length > 0 && (
-            <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 text-slate-500">
-                <span style={{ color: '#34d399' }}>✓</span>
-                {completedQuizzes.length} {locale === 'ka' ? 'ქვიზი დასრულებული' : 'quizzes completed'}
-              </span>
-              <span className="text-white/10">·</span>
-              <span style={{ color: '#FFD166' }}>
-                ✦ {completedQuizzes.reduce((sum, r) => sum + r.stars, 0)} earned
-              </span>
-            </div>
+          {tab !== 'chat' && (
+            <button
+              onClick={() => setKidsMode(k => !k)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0"
+              style={kidsMode ? {
+                background: 'rgba(255,209,102,0.15)',
+                border: '1px solid rgba(255,209,102,0.4)',
+                color: '#FFD166',
+              } : {
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: '#64748b',
+              }}
+            >
+              <span>{kidsMode ? '⭐' : '🌙'}</span>
+              <span className="hidden sm:inline">{kidsMode
+                ? (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode ON')
+                : (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode')}</span>
+            </button>
           )}
-          <button
-            onClick={() => setKidsMode(k => !k)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all self-start"
-            style={kidsMode ? {
-              background: 'rgba(255,209,102,0.15)',
-              border: '1px solid rgba(255,209,102,0.4)',
-              color: '#FFD166',
-            } : {
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#64748b',
-            }}
-          >
-            <span>{kidsMode ? '⭐' : '🌙'}</span>
-            {kidsMode
-              ? (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode ON')
-              : (locale === 'ka' ? 'ჩართე ბავშვების რეჟიმი' : 'Kids Mode')}
-          </button>
         </div>
 
-        {/* Open ASTRA */}
-        <button
-          onClick={() => (document.querySelector('[aria-label="Open ASTRA astronomy assistant"]') as HTMLButtonElement | null)?.click()}
-          className="w-full py-4 rounded-2xl text-sm font-bold mb-2 transition-all"
-          style={{ background: 'linear-gradient(135deg, rgba(56,240,255,0.15), rgba(26,143,160,0.1))', border: '1px solid rgba(56,240,255,0.25)', color: '#38F0FF' }}
-        >
-          {locale === 'ka' ? '💬 გახსენი ASTRA ჩათი →' : '💬 Open ASTRA Chat →'}
-        </button>
+        {completedQuizzes.length > 0 && (
+          <div className="flex items-center gap-3 text-xs -mt-3">
+            <span className="flex items-center gap-1.5 text-slate-500">
+              <span style={{ color: '#34d399' }}>✓</span>
+              {completedQuizzes.length} {locale === 'ka' ? 'ქვიზი დასრულებული' : 'quizzes completed'}
+            </span>
+            <span className="text-white/10">·</span>
+            <span style={{ color: '#FFD166' }}>
+              ✦ {completedQuizzes.reduce((sum, r) => sum + r.stars, 0)} earned
+            </span>
+          </div>
+        )}
 
         {/* Tab bar */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
@@ -715,11 +886,12 @@ export default function LearnPage() {
         </div>
 
         {/* Content */}
-        {tab === 'planets'     && <PlanetsTab locale={locale} kidsMode={kidsMode} />}
-        {tab === 'deepsky'     && <DeepSkyTab locale={locale} kidsMode={kidsMode} />}
-        {tab === 'quizzes'     && <QuizzesTab locale={locale} onStart={setActiveQuiz} />}
-        {tab === 'events'      && <EventsTab locale={locale} />}
-        {tab === 'telescopes'  && <TelescopesTab />}
+        {tab === 'chat'       && <ChatTab locale={locale} />}
+        {tab === 'planets'    && <PlanetsTab locale={locale} kidsMode={kidsMode} />}
+        {tab === 'deepsky'    && <DeepSkyTab locale={locale} kidsMode={kidsMode} />}
+        {tab === 'quizzes'    && <QuizzesTab locale={locale} onStart={setActiveQuiz} />}
+        {tab === 'events'     && <EventsTab locale={locale} />}
+        {tab === 'telescopes' && <TelescopesTab />}
       </div>
     </>
   );

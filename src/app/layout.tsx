@@ -11,7 +11,6 @@ import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
 import OfflineBanner from '@/components/shared/OfflineBanner';
-import AstroChat from '@/components/shared/AstroChat';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -67,7 +66,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <main className="relative z-10 flex-1 pb-20 sm:pb-0">{children}</main>
                 <Footer />
                 <BottomNav />
-                <AstroChat />
               </AppStateProvider>
             </SolanaWalletProvider>
           </NextIntlClientProvider>

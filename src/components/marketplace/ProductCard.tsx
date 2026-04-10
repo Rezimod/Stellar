@@ -28,15 +28,15 @@ export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
 
   return (
     <div
-      className={`glass-card flex flex-col overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${!product.inStock ? 'opacity-60' : ''}`}
+      className={`glass-card flex flex-col overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${!product.inStock ? 'opacity-60' : ''}`}
       onClick={() => product.inStock && onSelect(product)}
     >
-      {/* Image area — emoji placeholder, real image overlays when loaded */}
+      {/* Image area — full square image */}
       <div
-        className="relative w-full aspect-video flex items-center justify-center"
-        style={{ background: art.bg, borderBottom: `1px solid ${art.border}` }}
+        className="relative w-full aspect-square flex items-center justify-center"
+        style={{ background: art.bg }}
       >
-        <span className="text-5xl select-none" style={{ filter: 'drop-shadow(0 0 16px rgba(255,255,255,0.15))' }}>
+        <span className="text-6xl select-none" style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.15))' }}>
           {art.emoji}
         </span>
         {product.image && (
@@ -47,6 +47,9 @@ export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         )}
+        {/* Gradient overlay at bottom for readability */}
+        <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, rgba(10,14,26,0.85) 0%, transparent 100%)' }} />
         {product.featured && (
           <div className="absolute top-2 left-2">
             <Badge color="brass">{t('aiPick')}</Badge>
@@ -60,23 +63,18 @@ export default function ProductCard({ product, solPerGEL, onSelect }: Props) {
       </div>
 
       {/* Body */}
-      <div className="flex flex-col gap-2 p-3 flex-1">
+      <div className="flex flex-col gap-1.5 p-3 flex-1" style={{ borderTop: `1px solid ${art.border}` }}>
         <p className="text-white text-sm font-semibold leading-snug line-clamp-2">{name}</p>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge color="dim">{product.category}</Badge>
-          {product.aiRecommendFor?.length ? <Badge color="cyan">{t('aiPick')}</Badge> : null}
-        </div>
-
-        {/* Price */}
-        <div className="mt-auto pt-2">
-          <p className="text-white font-bold">{product.priceGEL} ₾</p>
+        {/* Price row */}
+        <div className="flex items-baseline gap-2 mt-0.5">
+          <p className="text-[#FFD166] font-bold text-base">{product.priceGEL} ₾</p>
           <p className="text-slate-500 text-xs">≈ {solPrice} SOL</p>
         </div>
 
         <Button
           variant="brass"
-          className="w-full text-xs py-2 mt-1"
+          className="w-full text-xs py-2 mt-auto"
           disabled={!product.inStock}
           onClick={e => { e.stopPropagation(); onSelect(product); }}
         >

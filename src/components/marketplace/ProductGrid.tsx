@@ -61,10 +61,10 @@ export default function ProductGrid() {
           ))}
         </div>
         {/* Card skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="glass-card overflow-hidden">
-              <div className="w-full aspect-video bg-white/5" />
+              <div className="w-full aspect-square bg-white/5" />
               <div className="p-3 flex flex-col gap-2">
                 <div className="h-3 w-3/4 bg-white/10 rounded" />
                 <div className="h-3 w-1/2 bg-white/5 rounded" />
@@ -87,8 +87,8 @@ export default function ProductGrid() {
           Browse all 200+ telescopes at astroman.ge →
         </a>
         <p className="text-sm text-slate-400 mb-2">Earn Stars on missions to unlock exclusive member discounts</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {PRODUCTS.slice(0, 6).map(p => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {PRODUCTS.slice(0, 8).map(p => (
             <ProductCard key={p.id} product={p} solPerGEL={solPerGEL} onSelect={setSelected} />
           ))}
         </div>
@@ -120,7 +120,7 @@ export default function ProductGrid() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {visible.map(p => (
           <ProductCard
             key={p.id}
