@@ -15,7 +15,7 @@ export default function Nav() {
   const router = useRouter();
   const { logout, authenticated, ready, login, user } = usePrivy();
   const { wallets } = useWallets();
-  const { reset } = useAppState();
+  const { setWallet } = useAppState();
   const [showMenu, setShowMenu] = useState(false);
   const [confirmStep, setConfirmStep] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function Nav() {
 
   const handleLogout = async () => {
     await logout();
-    reset();
+    setWallet('');
     router.push('/');
     setShowMenu(false);
     setConfirmStep(false);
