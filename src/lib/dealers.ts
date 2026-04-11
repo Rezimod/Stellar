@@ -23,7 +23,7 @@ export interface Product {
   currency: string
   currencySymbol: string
   starsPrice: number
-  category: 'telescope' | 'accessory' | 'gadget' | 'digital' | 'mount'
+  category: 'telescope' | 'accessory'
   description: string
   image: string
   externalUrl: string
@@ -190,71 +190,6 @@ const PRODUCTS: Product[] = [
     category: 'telescope',
     description: '150mm Newtonian with smartphone star-finding technology. Point your phone at the sky to locate objects.',
     image: 'https://astroman.ge/wp-content/uploads/2025/09/%E1%83%91%E1%83%94%E1%83%A5%E1%83%98-02.jpg',
-    externalUrl: 'https://astroman.ge/teleskopi/',
-  },
-  {
-    id: 'acc-phone',
-    dealerId: 'astroman',
-    name: 'Smartphone Telescope Adapter',
-    price: 59,
-    currency: 'GEL',
-    currencySymbol: '₾',
-    starsPrice: 590,
-    category: 'accessory',
-    description: 'Universal phone clip adapter for afocal astrophotography through any eyepiece.',
-    image: 'https://astroman.ge/wp-content/uploads/2022/09/%E1%83%90%E1%83%93%E1%83%90%E1%83%9E%E1%83%A2%E1%83%94%E1%83%A0%E1%83%98.jpg',
-    externalUrl: 'https://astroman.ge/teleskopi/',
-  },
-  {
-    id: 'acc-eyepiece',
-    dealerId: 'astroman',
-    name: 'Premium 8mm Eyepiece',
-    price: 179,
-    currency: 'GEL',
-    currencySymbol: '₾',
-    starsPrice: 1790,
-    category: 'accessory',
-    description: '8mm wide-field eyepiece (66° AFOV). Excellent for planetary detail and tight clusters.',
-    image: 'https://astroman.ge/wp-content/uploads/2022/09/%E1%83%90%E1%83%93%E1%83%90%E1%83%9E%E1%83%A2%E1%83%94%E1%83%A0%E1%83%98.jpg',
-    externalUrl: 'https://astroman.ge/teleskopi/',
-  },
-  {
-    id: 'dig-starmap',
-    dealerId: 'astroman',
-    name: 'Custom Star Map',
-    price: 29,
-    currency: 'GEL',
-    currencySymbol: '₾',
-    starsPrice: 290,
-    category: 'digital',
-    description: 'High-resolution star map for any date, time, and location. Print-ready PDF delivered instantly.',
-    image: '',
-    externalUrl: 'https://astroman.ge/teleskopi/',
-  },
-  {
-    id: 'dig-guide',
-    dealerId: 'astroman',
-    name: 'Georgian Night Sky Guide PDF',
-    price: 24,
-    currency: 'GEL',
-    currencySymbol: '₾',
-    starsPrice: 240,
-    category: 'digital',
-    description: "Complete observer's guide to the Georgian night sky: seasonal charts, object list, observing tips.",
-    image: '',
-    externalUrl: 'https://astroman.ge/teleskopi/',
-  },
-  {
-    id: 'dig-ai',
-    dealerId: 'astroman',
-    name: 'ASTRA Premium (1 month)',
-    price: 49,
-    currency: 'GEL',
-    currencySymbol: '₾',
-    starsPrice: 490,
-    category: 'digital',
-    description: "Unlock ASTRA's full capabilities: personalized observation plans, equipment advice, sky alerts.",
-    image: '',
     externalUrl: 'https://astroman.ge/teleskopi/',
   },
   // Celestron (US) products — real data from celestron.com/collections/telescopes

@@ -12,14 +12,12 @@ import BackButton from '@/components/shared/BackButton';
 import { ExternalLink } from 'lucide-react';
 import { useEffect } from 'react';
 
-type CategoryFilter = 'all' | 'telescope' | 'accessory' | 'gadget' | 'digital';
+type CategoryFilter = 'all' | 'telescope' | 'accessory';
 
 const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'telescope', label: 'Telescopes' },
   { key: 'accessory', label: 'Accessories' },
-  { key: 'gadget', label: 'Gadgets' },
-  { key: 'digital', label: 'Digital' },
 ];
 
 const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
