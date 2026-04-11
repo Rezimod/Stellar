@@ -28,7 +28,7 @@ Stellar is built by [Astroman](https://astroman.ge), Georgia's first astronomy e
 
 - **Immediate warm audience** of active telescope buyers
 - **Real product rewards** — not speculative token utility, but actual telescopes and gear
-- **Regional dealer network** — Astroman (Caucasus), High Point Scientific (US), with more partners onboarding
+- **Regional dealer network** — Astroman (Caucasus), Celestron (US), with more partners onboarding
 
 No other project on any chain targets amateur astronomy. Zero direct competition.
 
@@ -54,7 +54,7 @@ No other project on any chain targets amateur astronomy. Zero direct competition
 ## How to Run Locally
 
 ```bash
-git clone https://github.com/Morningbriefrezi/Stellar.git
+git clone https://github.com/Rezimod/Stellar.git
 cd Stellar
 npm install
 cp .env.example .env.local
@@ -95,14 +95,14 @@ NEXT_PUBLIC_APP_URL=https://stellarrclub.vercel.app
 
 1. **Sign up with email** — embedded wallet created invisibly (20s)
 2. **Location detected** — "You're in Tbilisi" → marketplace shows Astroman products (10s)
-3. **Switch to New York** — marketplace updates to High Point Scientific / Celestron products (10s)
+3. **Switch to New York** — marketplace updates to Celestron products (10s)
 4. **Tonight's Sky** — planet visibility + 7-day forecast for current location (20s)
 5. **Start "Tonight's Sky" mission** — free observation, any sky photo (15s)
 6. **Take photo** → sky oracle verifies → NFT minted on Solana (40s)
 7. **View NFT in gallery** with Solana Explorer link (15s)
 8. **Ask ASTRA** "What can I see tonight with a 70mm refractor?" → live tool-calling response (20s)
 9. **Show Stars balance** — real SPL token in profile (10s)
-10. **Show partner stores** — "Astroman ships to Caucasus, High Point to US" (10s)
+10. **Show partner stores** — "Astroman ships to Caucasus, Celestron to US" (10s)
 
 ## Project Structure
 

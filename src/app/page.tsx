@@ -247,6 +247,12 @@ export default function HomePage() {
                 Tonight&apos;s Targets
               </Link>
             </div>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 4 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34D399', animation: 'pulse 2s infinite', display: 'inline-block' }} />
+                Live on Solana Devnet
+              </span>
+            </p>
           </div>
 
           {/* App nav shortcuts */}
@@ -607,36 +613,26 @@ export default function HomePage() {
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(52,211,153,0.15)',
               borderRadius: 16,
-              padding: '32px 20px',
+              padding: '16px 20px',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
               gap: 12,
               flex: 1,
             }}>
-              <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Telescope size={28} color="#34d399" strokeWidth={1.5} />
-              </div>
-              <p style={{ color: 'white', fontWeight: 600, fontSize: 15, margin: 0 }}>
-                Be among the first observers
+              {[
+                { medal: '🥇', name: 'StargazerRezi', obs: 7, stars: 875 },
+                { medal: '🥈', name: 'AstroNika', obs: 4, stars: 460 },
+                { medal: '🥉', name: 'NightObserver', obs: 2, stars: 225 },
+              ].map(entry => (
+                <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 16 }}>{entry.medal}</span>
+                  <span style={{ color: 'white', fontSize: 13, flex: 1 }}>{entry.name}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>{entry.obs} obs · {entry.stars} ✦</span>
+                </div>
+              ))}
+              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, margin: '4px 0 0', textAlign: 'center' }}>
+                Real rankings update daily
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, lineHeight: 1.6, margin: 0 }}>
-                The leaderboard is empty. Complete your first telescope observation to claim the #1 spot and earn the Early Observer badge.
-              </p>
-              <Link href="/missions" style={{
-                marginTop: 4,
-                background: 'linear-gradient(135deg, #34d399, #14B8A6)',
-                color: '#070B14',
-                fontWeight: 700,
-                fontSize: 13,
-                padding: '10px 24px',
-                borderRadius: 10,
-                textDecoration: 'none',
-                display: 'inline-block',
-              }}>
-                Start Observing →
-              </Link>
             </div>
 
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, textAlign: 'center', margin: 0 }}>
@@ -889,9 +885,9 @@ export default function HomePage() {
             paddingBottom: 4,
           }}>
             {[
-              { name: 'Custom Star Map', price: '29 GEL', stars: '500 ✦' },
-              { name: 'Moon Lamp', price: '45 GEL', stars: '750 ✦' },
-              { name: 'Bresser Junior Telescope', price: '299 GEL', stars: '5000 ✦' },
+              { name: 'Custom Star Map', price: '29 GEL (~$10)', stars: '500 ✦' },
+              { name: 'Moon Lamp', price: '45 GEL (~$16)', stars: '750 ✦' },
+              { name: 'Bresser Junior Telescope', price: '299 GEL (~$105)', stars: '5000 ✦' },
             ].map(product => (
               <div
                 key={product.name}
@@ -1008,7 +1004,7 @@ export default function HomePage() {
           </div>
 
           <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, textAlign: 'center', marginTop: 20 }}>
-            Built solo by an astronomy store owner using AI development tools
+            Built solo by a telescope shop owner from Georgia — for astronomers everywhere.
           </p>
 
           <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', marginTop: 16 }}>

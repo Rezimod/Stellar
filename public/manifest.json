@@ -1,7 +1,7 @@
 {
-  "name": "STELLAR — Your AI-Powered Window to the Cosmos",
-  "short_name": "STELLAR",
-  "description": "7-day sky forecast, AI companion, real marketplace — powered by invisible Solana.",
+  "name": "Stellar",
+  "short_name": "Stellar",
+  "description": "Observe the night sky. Earn Stars tokens. Collect discovery NFTs on Solana.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#070B14",
