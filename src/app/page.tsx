@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import HomeSkyPreview from '@/components/home/HomeSkyPreview';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { Telescope, Camera, Star, ShoppingBag, CloudSun, Satellite, Sparkles } from 'lucide-react';
+import { Telescope, Camera, Star, ShoppingBag, CloudSun, Satellite, Sparkles, Moon, Lock, Orbit } from 'lucide-react';
 import LocationPicker from '@/components/LocationPicker';
 import { useLocation } from '@/lib/location';
 
@@ -128,11 +128,13 @@ export default function HomePage() {
         }
         .hiw-arrow { display: none; }
         @media (min-width: 768px) { .hiw-arrow { display: flex !important; } }
+        @media (max-width: 639px) { .hero-section { min-height: auto !important; } }
       `}</style>
 
       {/* Hero — full viewport */}
       <section
         ref={heroRef}
+        className="hero-section"
         style={{
           position: 'relative',
           minHeight: 'calc(100dvh - 64px)',
@@ -289,7 +291,7 @@ export default function HomePage() {
       </section>
 
       {/* Remaining sections */}
-      <div className="max-w-3xl w-full mx-auto px-4 py-4 sm:py-8 flex flex-col items-center gap-5 sm:gap-8 animate-page-enter overflow-x-hidden">
+      <div className="max-w-3xl w-full mx-auto px-4 pt-1 pb-4 sm:pb-8 flex flex-col items-center gap-5 sm:gap-8 animate-page-enter overflow-x-hidden">
 
         {/* How It Works — interactive stepper */}
         <div id="how-it-works" className="w-full"
@@ -482,7 +484,9 @@ export default function HomePage() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 22 }}>🌌</span>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <CloudSun size={18} color="#34d399" strokeWidth={1.5} />
+                </div>
                 <span style={{ color: 'white', fontWeight: 600, fontSize: 13, flex: 1 }}>Tonight&apos;s Sky</span>
                 <span style={{
                   background: 'rgba(52,211,153,0.15)',
@@ -503,9 +507,9 @@ export default function HomePage() {
 
             {/* Mission cards */}
             {[
-              { emoji: '🌕', name: 'Lunar Observation', difficulty: 'Beginner' as const, stars: 50, desc: 'Observe and photograph the Moon\'s craters through your telescope.', progress: 0 },
-              { emoji: '🪐', name: 'Jupiter\'s Moons', difficulty: 'Advanced' as const, stars: 120, desc: 'Track the four Galilean moons over a single evening.', progress: 35 },
-              { emoji: '✨', name: 'Deep Sky Survey', difficulty: 'Expert' as const, stars: 200, desc: 'Locate and capture 5 Messier objects in one night.', progress: 0 },
+              { icon: Moon, iconBg: 'rgba(245,158,11,0.12)', iconColor: '#F59E0B', name: 'Lunar Observation', difficulty: 'Beginner' as const, stars: 50, desc: 'Observe and photograph the Moon\'s craters through your telescope.', progress: 0 },
+              { icon: Orbit, iconBg: 'rgba(56,240,255,0.12)', iconColor: '#38F0FF', name: 'Jupiter\'s Moons', difficulty: 'Advanced' as const, stars: 120, desc: 'Track the four Galilean moons over a single evening.', progress: 35 },
+              { icon: Sparkles, iconBg: 'rgba(255,100,100,0.12)', iconColor: '#ff6464', name: 'Deep Sky Survey', difficulty: 'Expert' as const, stars: 200, desc: 'Locate and capture 5 Messier objects in one night.', progress: 0 },
             ].map(m => {
               const diff = m.difficulty === 'Beginner'
                 ? { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
@@ -540,7 +544,9 @@ export default function HomePage() {
                 >
                   {/* Top row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>{m.emoji}</span>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: m.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <m.icon size={18} color={m.iconColor} strokeWidth={1.5} />
+                    </div>
                     <span style={{ color: 'white', fontWeight: 600, fontSize: 13, flex: 1 }}>{m.name}</span>
                     <span style={{
                       background: diff.bg,
@@ -618,7 +624,9 @@ export default function HomePage() {
               gap: 12,
               flex: 1,
             }}>
-              <span style={{ fontSize: 40 }}>🌌</span>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Telescope size={28} color="#34d399" strokeWidth={1.5} />
+              </div>
               <p style={{ color: 'white', fontWeight: 600, fontSize: 15, margin: 0 }}>
                 Be among the first observers
               </p>
@@ -647,7 +655,7 @@ export default function HomePage() {
         </div>
 
         {/* ASTRA AI Teaser */}
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', background: 'linear-gradient(180deg, rgba(139,92,246,0.04) 0%, transparent 100%)', borderRadius: 20, padding: '28px 20px', border: '1px solid rgba(139,92,246,0.05)' }}>
           {/* Section header */}
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
@@ -801,7 +809,7 @@ export default function HomePage() {
         </div>
 
         {/* Earn Stars. Spend Stars. */}
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', background: 'linear-gradient(180deg, rgba(255,209,102,0.03) 0%, transparent 100%)', borderRadius: 20, padding: '28px 20px', border: '1px solid rgba(255,209,102,0.04)' }}>
           {/* Section header */}
           <div style={{ marginBottom: 20 }}>
             <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
@@ -817,9 +825,9 @@ export default function HomePage() {
             <style>{`@media (max-width: 639px) { .rewards-grid { grid-template-columns: 1fr !important; } }`}</style>
 
             {[
-              { emoji: '🌙', title: 'First Observation', reward: 'Free Moon Lamp for your first lunar observation', stars: '50 ✦', progress: 0 },
-              { emoji: '⭐', title: 'Mission Complete', reward: 'Free Custom Star Map for completing all 5 missions', stars: '500 ✦', progress: 0 },
-              { emoji: '🔭', title: 'Power Observer', reward: 'Discounts up to 20% on telescopes at partner stores', stars: '1000 ✦', progress: 0 },
+              { icon: Moon, iconBg: 'rgba(52,211,153,0.1)', iconColor: '#34d399', title: 'First Observation', reward: 'Free Moon Lamp for your first lunar observation', stars: '50 ✦', progress: 0 },
+              { icon: Star, iconBg: 'rgba(255,209,102,0.1)', iconColor: '#FFD166', title: 'Mission Complete', reward: 'Free Custom Star Map for completing all 5 missions', stars: '500 ✦', progress: 0 },
+              { icon: Telescope, iconBg: 'rgba(56,240,255,0.1)', iconColor: '#38F0FF', title: 'Power Observer', reward: 'Discounts up to 20% on telescopes at partner stores', stars: '1000 ✦', progress: 0 },
             ].map(card => (
               <div
                 key={card.title}
@@ -834,7 +842,9 @@ export default function HomePage() {
                   gap: 6,
                 }}
               >
-                <span style={{ fontSize: 30 }}>{card.emoji}</span>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: card.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <card.icon size={22} color={card.iconColor} strokeWidth={1.5} />
+                </div>
                 <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>{card.title}</p>
                 <p style={{ color: '#FFD166', fontWeight: 700, fontSize: 13, margin: 0 }}>{card.reward}</p>
                 <p style={{ color: '#34d399', fontSize: 12, margin: 0 }}>{card.stars}</p>
@@ -843,10 +853,7 @@ export default function HomePage() {
                   <div style={{ width: `${card.progress}%`, height: '100%', background: '#34d399', borderRadius: 999 }} />
                 </div>
                 {/* Lock icon */}
-                <span style={{
-                  position: 'absolute', bottom: 14, right: 14,
-                  color: 'rgba(255,255,255,0.2)', fontSize: 14,
-                }}>🔒</span>
+                <Lock size={14} style={{ position: 'absolute', bottom: 14, right: 14, color: 'rgba(255,255,255,0.15)' }} />
               </div>
             ))}
           </div>
@@ -887,7 +894,7 @@ export default function HomePage() {
             gap: 12,
             overflowX: 'auto',
             scrollbarWidth: 'none',
-            touchAction: 'pan-x',
+            WebkitOverflowScrolling: 'touch',
             paddingBottom: 4,
           }}>
             {[
@@ -961,7 +968,10 @@ export default function HomePage() {
               borderRadius: 20,
               padding: 20,
             }}>
-              <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: '0 0 4px' }}>🔭 Astroman</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <Telescope size={16} color="#34d399" strokeWidth={1.5} />
+                <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>Astroman</p>
+              </div>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>
                 Georgia&apos;s first astronomy store
               </p>
@@ -985,7 +995,10 @@ export default function HomePage() {
               borderRadius: 20,
               padding: 20,
             }}>
-              <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: '0 0 4px' }}>🔭 High Point Scientific</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <Telescope size={16} color="#34d399" strokeWidth={1.5} />
+                <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>High Point Scientific</p>
+              </div>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>
                 America&apos;s trusted telescope retailer
               </p>

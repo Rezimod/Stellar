@@ -2,16 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Moon, Circle, Sparkles, Orbit, Globe } from 'lucide-react';
 import type { SkyDay } from '@/lib/sky-data';
 import type { PlanetInfo } from '@/lib/planets';
+import type { LucideIcon } from 'lucide-react';
 
-const PLANET_META: Record<string, { name: string; emoji: string }> = {
-  moon:    { name: 'Moon',    emoji: '🌕' },
-  mercury: { name: 'Mercury', emoji: '🔮' },
-  venus:   { name: 'Venus',   emoji: '⭐' },
-  mars:    { name: 'Mars',    emoji: '🔴' },
-  jupiter: { name: 'Jupiter', emoji: '🪐' },
-  saturn:  { name: 'Saturn',  emoji: '🪐' },
+const PLANET_META: Record<string, { name: string; icon: LucideIcon; color: string }> = {
+  moon:    { name: 'Moon',    icon: Moon,     color: '#F59E0B' },
+  mercury: { name: 'Mercury', icon: Circle,   color: '#94a3b8' },
+  venus:   { name: 'Venus',   icon: Sparkles, color: '#FFD166' },
+  mars:    { name: 'Mars',    icon: Circle,   color: '#ef4444' },
+  jupiter: { name: 'Jupiter', icon: Orbit,    color: '#38F0FF' },
+  saturn:  { name: 'Saturn',  icon: Globe,    color: '#a78bfa' },
 };
 
 function planetStatus(alt: number): 'Excellent' | 'Good' | 'Poor' {
@@ -181,7 +183,7 @@ export default function HomeSkyPreview() {
         paddingBottom: 4,
       }}>
         {visiblePlanets.map(planet => {
-          const meta = PLANET_META[planet.key] ?? { name: planet.key, emoji: '🌟' };
+          const meta = PLANET_META[planet.key] ?? { name: planet.key, icon: Sparkles, color: '#FFD166' };
           const status = planetStatus(planet.altitude);
           const riseTime = fmtRiseTime(planet.rise);
           const badge =
@@ -220,7 +222,9 @@ export default function HomeSkyPreview() {
                 el.style.transform = 'translateY(0)';
               }}
             >
-              <span style={{ fontSize: 30 }}>{meta.emoji}</span>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: `${meta.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <meta.icon size={20} color={meta.color} strokeWidth={1.5} />
+              </div>
               <p style={{ color: 'white', fontSize: 13, fontWeight: 600, marginTop: 8, marginBottom: 6 }}>{meta.name}</p>
               <span style={{
                 background: badge.bg,
