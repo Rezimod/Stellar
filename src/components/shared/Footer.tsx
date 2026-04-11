@@ -19,12 +19,13 @@ export default function Footer() {
         {/* Nav links */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', alignItems: 'center' }}>
           {[
-            { href: '/sky',         label: 'Sky' },
-            { href: '/darksky',     label: 'Dark Sky Map' },
-            { href: '/missions',    label: 'Missions' },
-            { href: '/chat',        label: 'ASTRA AI' },
-            { href: '/marketplace', label: 'Marketplace' },
+            { href: '/sky',          label: 'Sky Forecast' },
+            { href: '/missions',     label: 'Missions' },
+            { href: '/chat',         label: 'ASTRA AI' },
+            { href: '/marketplace',  label: 'Marketplace' },
+            { href: '/profile',      label: 'Profile' },
             { href: ECOSYSTEM.store, label: 'Astroman ↗', external: true },
+            { href: 'https://github.com/Morningbriefrezi/Stellar', label: 'GitHub ↗', external: true },
           ].map(link =>
             link.external ? (
               <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
@@ -44,7 +45,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, margin: 0 }}>
-          © 2026 Astroman · Built on Solana
+          © 2026 Stellar · Built on Solana
         </p>
       </div>
     </footer>

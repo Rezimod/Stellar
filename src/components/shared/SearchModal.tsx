@@ -17,7 +17,6 @@ const STATIC_ITEMS: SearchItem[] = [
   // Sky pages
   { type: 'page', label: 'Sky Forecast', sub: '7-day cloud cover and seeing', href: '/sky', icon: '🌤' },
   { type: 'page', label: 'Planet Tracker', sub: 'Mercury to Saturn + Moon', href: '/sky', icon: '🪐' },
-  { type: 'page', label: 'Dark Sky Map', sub: 'Find dark observation sites', href: '/darksky', icon: '🌑' },
   { type: 'page', label: 'ASTRA AI', sub: 'Chat with your AI astronomer', href: '/chat', icon: '✦' },
   { type: 'page', label: 'NFT Gallery', sub: 'Your discovery attestations', href: '/nfts', icon: '🖼' },
   // Celestial objects

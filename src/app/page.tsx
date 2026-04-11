@@ -258,8 +258,8 @@ export default function HomePage() {
           }}>
             {[
               { href: '/sky',         icon: '☁',  label: 'Sky',      sub: "Tonight's forecast",  color: '#38F0FF' },
-              { href: '/darksky',     icon: '🗺️', label: 'Dark Sky', sub: 'Light pollution map', color: '#34d399' },
-              { href: '/chat',        icon: '✦',  label: 'Learn',   sub: 'AI + knowledge',      color: '#8B5CF6' },
+              { href: '/missions',    icon: '🛰️', label: 'Missions', sub: 'Earn Stars tokens',   color: '#34d399' },
+              { href: '/chat',        icon: '✦',  label: 'ASTRA',   sub: 'AI astronomer',        color: '#8B5CF6' },
               { href: '/marketplace', icon: '🛒', label: 'Shop',     sub: 'Partner stores',      color: '#FFD166' },
             ].map(item => (
               <Link
