@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react'
 
-export type Region = 'caucasus' | 'north_america' | 'global'
+export type Region = 'caucasus' | 'north_america' | 'europe' | 'global'
 
 export interface UserLocation {
   region: Region
@@ -17,6 +17,10 @@ const COUNTRY_TO_REGION: Record<string, Region> = {
   GE: 'caucasus', AM: 'caucasus', AZ: 'caucasus',
   TR: 'caucasus',
   US: 'north_america', CA: 'north_america', MX: 'north_america',
+  DE: 'europe', AT: 'europe', CH: 'europe', FR: 'europe',
+  IT: 'europe', NL: 'europe', BE: 'europe', PL: 'europe',
+  ES: 'europe', PT: 'europe', SE: 'europe', NO: 'europe',
+  DK: 'europe', FI: 'europe', CZ: 'europe', HU: 'europe',
 }
 
 function getRegionForCountry(countryCode: string): Region {

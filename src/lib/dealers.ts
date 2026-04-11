@@ -3,6 +3,8 @@ import type { Region } from '@/lib/location'
 export interface Dealer {
   id: string
   name: string
+  tagline?: string
+  flag?: string
   region: Region
   country: string
   website: string
@@ -21,7 +23,7 @@ export interface Product {
   currency: string
   currencySymbol: string
   starsPrice: number
-  category: 'telescope' | 'accessory' | 'gadget' | 'digital'
+  category: 'telescope' | 'accessory' | 'gadget' | 'digital' | 'mount'
   description: string
   image: string
   externalUrl: string
@@ -33,6 +35,8 @@ const DEALERS: Dealer[] = [
   {
     id: 'astroman',
     name: 'Astroman',
+    tagline: "Georgia's first astronomy store",
+    flag: '🇬🇪',
     region: 'caucasus',
     country: 'GE',
     website: 'https://astroman.ge',
@@ -42,15 +46,30 @@ const DEALERS: Dealer[] = [
     currencySymbol: '₾',
   },
   {
-    id: 'highpoint-us',
-    name: 'High Point Scientific',
+    id: 'celestron-us',
+    name: 'Celestron',
+    tagline: "World's #1 telescope brand",
+    flag: '🇺🇸',
     region: 'north_america',
     country: 'US',
-    website: 'https://www.highpointscientific.com',
-    description: 'Trusted US telescope retailer — expert advice + fast shipping',
+    website: 'https://celestron.com',
+    description: "World's #1 telescope brand — trusted by astronomers since 1960",
     shipsTo: ['US', 'CA'],
     currency: 'USD',
     currencySymbol: '$',
+  },
+  {
+    id: 'bresser-eu',
+    name: 'Bresser',
+    tagline: "Germany's leading optics manufacturer",
+    flag: '🇩🇪',
+    region: 'europe',
+    country: 'DE',
+    website: 'https://bresser.de',
+    description: "Germany's leading optics manufacturer — precision telescopes since 1957",
+    shipsTo: ['DE', 'AT', 'CH', 'FR', 'IT', 'NL', 'BE', 'PL'],
+    currency: 'EUR',
+    currencySymbol: '€',
   },
 ]
 
@@ -238,89 +257,185 @@ const PRODUCTS: Product[] = [
     image: '',
     externalUrl: 'https://astroman.ge',
   },
-  // High Point Scientific products
+  // Celestron (US) products
   {
-    id: 'hp-celestron-nexstar-8se',
-    dealerId: 'highpoint-us',
-    name: 'Celestron NexStar 8SE',
-    price: 1399,
+    id: 'cel-nexstar6se',
+    dealerId: 'celestron-us',
+    name: 'Celestron NexStar 6SE',
+    price: 849,
     currency: 'USD',
     currencySymbol: '$',
-    starsPrice: 14000,
+    starsPrice: 8490,
     category: 'telescope',
-    description: '8-inch Schmidt-Cassegrain with fully automated GoTo mount. The most popular telescope in America.',
-    image: '/products/celestron-8se.jpg',
-    externalUrl: 'https://www.highpointscientific.com/celestron-nexstar-8se-computerized-telescope-11069',
+    description: '6-inch Schmidt-Cassegrain with fully automated GoTo mount. 4,000+ object database, auto-align.',
+    image: 'https://www.celestron.com/cdn/shop/files/11068-1.jpg',
+    externalUrl: 'https://celestron.com',
     badge: 'Best Seller',
-    specs: { aperture: '203mm', focal: '2032mm', mount: 'GoTo Alt-Az' },
+    specs: { aperture: '150mm', focal: '1500mm', mount: 'GoTo Alt-Az' },
   },
   {
-    id: 'hp-celestron-starsense-dx102',
-    dealerId: 'highpoint-us',
-    name: 'Celestron StarSense Explorer DX 102AZ',
-    price: 399,
+    id: 'cel-astromaster70',
+    dealerId: 'celestron-us',
+    name: 'Celestron AstroMaster 70AZ',
+    price: 109,
     currency: 'USD',
     currencySymbol: '$',
-    starsPrice: 4000,
+    starsPrice: 1090,
+    category: 'telescope',
+    description: "Celestron's popular 70mm refractor on alt-az mount. Great views of Moon and planets out of the box.",
+    image: 'https://www.celestron.com/cdn/shop/files/21061_1.jpg',
+    externalUrl: 'https://celestron.com',
+    specs: { aperture: '70mm', focal: '900mm', mount: 'Manual Alt-Az' },
+  },
+  {
+    id: 'cel-starsense',
+    dealerId: 'celestron-us',
+    name: 'Celestron StarSense Explorer 100AZ',
+    price: 229,
+    currency: 'USD',
+    currencySymbol: '$',
+    starsPrice: 2290,
     category: 'telescope',
     description: 'Phone-guided refractor — app tells you exactly where to point. Perfect first telescope.',
-    image: '/products/celestron-starsense.jpg',
-    externalUrl: 'https://www.highpointscientific.com/celestron-starsense-explorer-dx-102az',
+    image: 'https://www.celestron.com/cdn/shop/files/22460_1.jpg',
+    externalUrl: 'https://celestron.com',
     badge: 'Popular',
+    specs: { aperture: '100mm', focal: '660mm', mount: 'Manual Alt-Az' },
+  },
+  {
+    id: 'cel-powerseeker',
+    dealerId: 'celestron-us',
+    name: 'Celestron PowerSeeker 60AZ',
+    price: 59,
+    currency: 'USD',
+    currencySymbol: '$',
+    starsPrice: 590,
+    category: 'telescope',
+    description: '60mm refractor — affordable entry-level telescope. Great for learning the night sky.',
+    image: 'https://www.celestron.com/cdn/shop/files/21041-2.jpg',
+    externalUrl: 'https://celestron.com',
+    specs: { aperture: '60mm', focal: '700mm', mount: 'Manual Alt-Az' },
+  },
+  {
+    id: 'cel-omni102',
+    dealerId: 'celestron-us',
+    name: 'Celestron Omni XLT 102AZ',
+    price: 349,
+    currency: 'USD',
+    currencySymbol: '$',
+    starsPrice: 3490,
+    category: 'telescope',
+    description: '102mm refractor with XLT optical coatings. Excellent contrast for planets and lunar detail.',
+    image: 'https://www.celestron.com/cdn/shop/files/21086_1.jpg',
+    externalUrl: 'https://celestron.com',
     specs: { aperture: '102mm', focal: '660mm', mount: 'Manual Alt-Az' },
   },
   {
-    id: 'hp-skywatcher-classic-200p',
-    dealerId: 'highpoint-us',
-    name: 'Sky-Watcher Classic 200P',
-    price: 499,
-    currency: 'USD',
-    currencySymbol: '$',
-    starsPrice: 5000,
-    category: 'telescope',
-    description: '8-inch Dobsonian — best bang for buck in deep sky. See galaxies and nebulae from your backyard.',
-    image: '/products/skywatcher-200p.jpg',
-    externalUrl: 'https://www.highpointscientific.com/sky-watcher-classic-200p-8-dobsonian',
-    specs: { aperture: '200mm', focal: '1200mm', mount: 'Dobsonian' },
-  },
-  {
-    id: 'hp-zwo-asi533mc',
-    dealerId: 'highpoint-us',
-    name: 'ZWO ASI533MC Pro Camera',
-    price: 599,
-    currency: 'USD',
-    currencySymbol: '$',
-    starsPrice: 6000,
-    category: 'accessory',
-    description: 'Cooled astrophotography camera — zero amp glow, square sensor. Plug into any telescope.',
-    image: '/products/zwo-asi533.jpg',
-    externalUrl: 'https://www.highpointscientific.com/zwo-asi533mc-pro',
-    specs: { sensor: 'IMX533', resolution: '3008x3008', cooling: '-35°C' },
-  },
-  {
-    id: 'hp-moon-filter-set',
-    dealerId: 'highpoint-us',
+    id: 'cel-eyepiece',
+    dealerId: 'celestron-us',
     name: 'Celestron Eyepiece & Filter Kit',
-    price: 99,
+    price: 49,
     currency: 'USD',
     currencySymbol: '$',
-    starsPrice: 1000,
+    starsPrice: 490,
     category: 'accessory',
     description: '14-piece set — moon filter, color filters, eyepieces. Essential upgrade for any telescope.',
-    image: '/products/celestron-filter-kit.jpg',
-    externalUrl: 'https://www.highpointscientific.com/celestron-eyepiece-filter-kit',
-    badge: 'New',
+    image: 'https://www.celestron.com/cdn/shop/files/94303_1.jpg',
+    externalUrl: 'https://celestron.com',
+  },
+  // Bresser (Europe) products
+  {
+    id: 'bre-junior70',
+    dealerId: 'bresser-eu',
+    name: 'Bresser Junior Telescope 70/700',
+    price: 79,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 790,
+    category: 'telescope',
+    description: '70mm refractor, 700mm focal length. Compact and lightweight — ideal for beginners.',
+    image: 'https://images.bresser.de/images/product/main/1700940_1.jpg',
+    externalUrl: 'https://bresser.de',
+  },
+  {
+    id: 'bre-messier80',
+    dealerId: 'bresser-eu',
+    name: 'Bresser Messier AR-80/400',
+    price: 199,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 1990,
+    category: 'telescope',
+    description: '80mm short-tube refractor, 400mm focal length. Wide-field views of nebulae and star clusters.',
+    image: 'https://images.bresser.de/images/product/main/4827604_1.jpg',
+    externalUrl: 'https://bresser.de',
+    badge: 'Popular',
+    specs: { aperture: '80mm', focal: '400mm', mount: 'Manual Alt-Az' },
+  },
+  {
+    id: 'bre-pollux90',
+    dealerId: 'bresser-eu',
+    name: 'Bresser Pollux 90/1260 EQ3',
+    price: 349,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 3490,
+    category: 'telescope',
+    description: '90mm refractor on equatorial mount. Excellent for tracking planets and lunar observing.',
+    image: 'https://images.bresser.de/images/product/main/4662900_1.jpg',
+    externalUrl: 'https://bresser.de',
+    specs: { aperture: '90mm', focal: '1260mm', mount: 'EQ3' },
+  },
+  {
+    id: 'bre-exos2',
+    dealerId: 'bresser-eu',
+    name: 'Bresser Exos-2 Mount',
+    price: 599,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 5990,
+    category: 'mount',
+    description: 'Sturdy equatorial mount with motorized dual-axis tracking. Compatible with most OTAs up to 10kg.',
+    image: 'https://images.bresser.de/images/product/main/4851040_1.jpg',
+    externalUrl: 'https://bresser.de',
+    badge: 'Best Seller',
+  },
+  {
+    id: 'bre-binoculars',
+    dealerId: 'bresser-eu',
+    name: 'Bresser Corvette 8×42 Binoculars',
+    price: 149,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 1490,
+    category: 'accessory',
+    description: 'Waterproof 8×42 binoculars with phase-corrected prisms. Great for stargazing and daytime use.',
+    image: 'https://images.bresser.de/images/product/main/1830842_1.jpg',
+    externalUrl: 'https://bresser.de',
+  },
+  {
+    id: 'bre-eyepiece',
+    dealerId: 'bresser-eu',
+    name: 'Bresser Eyepiece Zoom 8-24mm',
+    price: 59,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 590,
+    category: 'accessory',
+    description: 'Variable zoom eyepiece from 8mm to 24mm. One eyepiece replaces four — ideal starter upgrade.',
+    image: 'https://images.bresser.de/images/product/main/4920112_1.jpg',
+    externalUrl: 'https://bresser.de',
   },
 ]
 
-// Global fallback: 3 cheapest from each dealer
+// Global fallback: 3 from Astroman + 3 from Celestron (no Bresser for global)
 function buildGlobalFallback(): Product[] {
-  const byDealer = DEALERS.map((d) =>
-    PRODUCTS.filter((p) => p.dealerId === d.id)
+  const globalDealerIds = ['astroman', 'celestron-us']
+  return globalDealerIds.flatMap((id) =>
+    PRODUCTS.filter((p) => p.dealerId === id)
       .sort((a, b) => a.price - b.price)
       .slice(0, 3)
   )
-  return byDealer.flat()
 }
 
 const GLOBAL_FALLBACK = buildGlobalFallback()

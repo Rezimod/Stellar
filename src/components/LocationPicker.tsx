@@ -7,6 +7,7 @@ import { useLocation, type UserLocation } from '@/lib/location'
 const REGION_LABELS = {
   caucasus: 'Caucasus',
   north_america: 'Americas',
+  europe: 'Europe',
   global: 'Global',
 }
 
@@ -14,7 +15,7 @@ const PRESETS: (UserLocation & { flag: string })[] = [
   { region: 'caucasus',      country: 'GE', city: 'Tbilisi',     lat: 41.7151,  lon: 44.8271,   source: 'manual', flag: '🇬🇪' },
   { region: 'north_america', country: 'US', city: 'New York',    lat: 40.7128,  lon: -74.006,   source: 'manual', flag: '🇺🇸' },
   { region: 'north_america', country: 'US', city: 'Los Angeles', lat: 34.0522,  lon: -118.2437, source: 'manual', flag: '🇺🇸' },
-  { region: 'global',        country: 'DE', city: 'Berlin',      lat: 52.52,    lon: 13.405,    source: 'manual', flag: '🇩🇪' },
+  { region: 'europe',        country: 'DE', city: 'Berlin',      lat: 52.52,    lon: 13.405,    source: 'manual', flag: '🇩🇪' },
 ]
 
 export default function LocationPicker({ compact = false }: { compact?: boolean }) {

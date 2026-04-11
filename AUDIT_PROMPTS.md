@@ -153,7 +153,7 @@ MissionActive.tsx does NOT need to send an auth header — the fix is purely on 
 
 ---
 
-### CONTENT-1 — Fix "How It Works" Jargon + USD Prices + Builder Line
+### ✅ CONTENT-1 — Fix "How It Works" Jargon + USD Prices + Builder Line
 
 ```
 I'm building Stellar. Several text strings on the homepage use crypto jargon or are unclear to non-crypto judges. Fix them all in one pass.
@@ -194,7 +194,7 @@ Do not change any animations, star field, card layout, or other sections.
 
 ---
 
-### CONTENT-2 — Fix README + Manifest
+### ✅ CONTENT-2 — Fix README + Manifest
 
 ```
 I'm building Stellar. Two files have outdated content.
@@ -218,7 +218,7 @@ Do not add icons — that's handled in PWA-1. Only update the text fields.
 
 ---
 
-### CONTENT-3 — Fix Leaderboard Empty State on Homepage
+### ✅ CONTENT-3 — Fix Leaderboard Empty State on Homepage
 
 ```
 I'm building Stellar. The homepage shows a leaderboard section that's completely empty, which hurts credibility with judges.
@@ -248,7 +248,7 @@ Pick Option B if the leaderboard section has a visible card. Pick Option A if it
 
 ---
 
-### MARKET-1 — Add Celestron US + Bresser EU Dealers
+### ✅ MARKET-1 — Add Celestron US + Bresser EU Dealers
 
 ```
 I'm building Stellar. The marketplace currently only has Astroman (Georgia) and High Point Scientific (US). I need to replace High Point with Celestron and add Bresser for European users.

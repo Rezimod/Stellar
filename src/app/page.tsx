@@ -941,12 +941,12 @@ export default function HomePage() {
           </p>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
+            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 16,
-            maxWidth: 512,
+            maxWidth: 600,
             margin: '0 auto',
           }} className="partner-grid">
-            <style>{`@media (max-width: 480px) { .partner-grid { grid-template-columns: 1fr !important; } }`}</style>
+            <style>{`@media (max-width: 560px) { .partner-grid { grid-template-columns: 1fr !important; } }`}</style>
 
             {/* Astroman */}
             <div style={{
@@ -975,7 +975,7 @@ export default function HomePage() {
               </a>
             </div>
 
-            {/* High Point Scientific */}
+            {/* Celestron */}
             <div style={{
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.07)',
@@ -984,16 +984,43 @@ export default function HomePage() {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <Telescope size={16} color="#34d399" strokeWidth={1.5} />
-                <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>High Point Scientific</p>
+                <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>Celestron</p>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>
-                America&apos;s trusted telescope retailer
+                World&apos;s #1 telescope brand
               </p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 8px' }}>
                 Ships to: 🇺🇸 🇨🇦
               </p>
               <a
-                href="https://www.highpointscientific.com"
+                href="https://celestron.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#34d399', fontSize: 12, textDecoration: 'none' }}
+              >
+                Visit store →
+              </a>
+            </div>
+
+            {/* Bresser */}
+            <div style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 20,
+              padding: 20,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <Telescope size={16} color="#34d399" strokeWidth={1.5} />
+                <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>Bresser</p>
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 8px', lineHeight: 1.5 }}>
+                Germany&apos;s leading optics manufacturer
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 8px' }}>
+                Ships to: 🇩🇪 🇦🇹 🇨🇭 + EU
+              </p>
+              <a
+                href="https://bresser.de"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: '#34d399', fontSize: 12, textDecoration: 'none' }}
