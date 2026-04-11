@@ -110,16 +110,17 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
         {/* CTA */}
         <button
           onClick={onMint}
-          className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98]"
+          className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.97] hover:opacity-90"
           style={{
             background: stars > 0
               ? 'linear-gradient(135deg, #FFD166, #CC9A33)'
-              : 'linear-gradient(135deg, #4B5563, #374151)',
-            color: '#070B14',
-            boxShadow: stars > 0 ? '0 0 24px rgba(255,209,102,0.2)' : 'none',
+              : 'linear-gradient(135deg, rgba(56,240,255,0.12), rgba(20,184,166,0.12))',
+            color: stars > 0 ? '#070B14' : '#38F0FF',
+            border: stars > 0 ? 'none' : '1px solid rgba(56,240,255,0.25)',
+            boxShadow: stars > 0 ? '0 0 24px rgba(255,209,102,0.2)' : '0 0 16px rgba(56,240,255,0.08)',
           }}
         >
-          {stars > 0 ? `Seal on Solana  ✦ +${stars}` : 'Log Observation  ✦ +0 (cloudy)'}
+          {stars > 0 ? `Seal on Solana  ✦ +${stars}` : '☁  Log Cloudy Observation'}
         </button>
       </div>
     </div>

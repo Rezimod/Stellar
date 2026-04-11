@@ -133,7 +133,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Mint failed' }));
-        setMintError(err.error ?? 'Mint failed');
+        const raw = err.error ?? 'Mint failed';
+        const friendly = raw.includes('not set') || raw.includes('PRIVATE_KEY') || raw.includes('MERKLE') || raw.includes('COLLECTION')
+          ? 'Mint service unavailable — check back soon'
+          : raw;
+        setMintError(friendly);
         setStep('verified');
         return;
       }
