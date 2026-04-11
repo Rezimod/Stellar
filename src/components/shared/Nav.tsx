@@ -17,7 +17,6 @@ export default function Nav() {
   const { wallets } = useWallets();
   const { setWallet } = useAppState();
   const [showMenu, setShowMenu] = useState(false);
-  const [confirmStep, setConfirmStep] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const t = useTranslations('nav');
 
@@ -55,7 +54,6 @@ export default function Nav() {
     setWallet('');
     router.push('/');
     setShowMenu(false);
-    setConfirmStep(false);
   };
 
   return (
@@ -102,7 +100,7 @@ export default function Nav() {
               <div className="relative">
                 {/* Avatar button */}
                 <button
-                  onClick={() => { setShowMenu(v => !v); setConfirmStep(false); }}
+                  onClick={() => setShowMenu(v => !v)}
                   title="Account"
                   style={{
                     height: 32,
@@ -127,23 +125,21 @@ export default function Nav() {
 
                 {/* Dropdown */}
                 {showMenu && (
-                  <div className="absolute right-0 top-full mt-2 glass-card p-3 w-44 z-50 flex flex-col gap-1">
+                  <div className="absolute right-0 top-full mt-2 glass-card p-2 w-40 z-50 flex flex-col gap-0.5">
                     <Link
                       href="/profile"
                       onClick={() => setShowMenu(false)}
-                      className="text-slate-300 hover:text-white text-xs py-1.5 px-2 rounded hover:bg-white/5 transition-all"
+                      className="text-slate-300 hover:text-white text-xs py-2 px-3 rounded-lg hover:bg-white/5 transition-all"
                     >
                       View profile
                     </Link>
-                    {confirmStep ? (
-                      <button onClick={handleLogout} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded bg-red-500/10 hover:bg-red-500/20 transition-all">
-                        Confirm sign out
-                      </button>
-                    ) : (
-                      <button onClick={() => setConfirmStep(true)} className="w-full text-left text-red-400 hover:text-red-300 text-xs py-1.5 px-2 rounded hover:bg-red-500/10 transition-all">
-                        {t('signOut')}
-                      </button>
-                    )}
+                    <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left text-red-400 hover:text-red-300 text-xs py-2 px-3 rounded-lg hover:bg-red-500/10 transition-all"
+                    >
+                      Sign out
+                    </button>
                   </div>
                 )}
               </div>
