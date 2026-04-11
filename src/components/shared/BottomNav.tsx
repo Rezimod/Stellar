@@ -2,19 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CloudSun, Map, Sparkles, User, Home } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
+import { CloudSun, Satellite, Home, ShoppingBag, User } from 'lucide-react';
 export default function BottomNav() {
   const pathname = usePathname();
-  const t = useTranslations('nav');
 
   const tabs = [
-    { href: '/sky',     label: t('sky'),     icon: <CloudSun size={18} />, center: false },
-    { href: '/darksky', label: 'Dark Sky',   icon: <Map size={18} />,      center: false },
-    { href: '/',        label: 'Home',       icon: <Home size={22} />,      center: true  },
-    { href: '/chat',    label: t('learn'),   icon: <Sparkles size={18} />, center: false },
-    { href: '/profile', label: t('profile'), icon: <User size={18} />,     center: false },
+    { href: '/sky',         label: 'Sky',      icon: <CloudSun size={18} />,   center: false },
+    { href: '/missions',    label: 'Missions', icon: <Satellite size={18} />,  center: false },
+    { href: '/',            label: 'Home',     icon: <Home size={22} />,        center: true  },
+    { href: '/marketplace', label: 'Shop',     icon: <ShoppingBag size={18} />, center: false },
+    { href: '/profile',     label: 'Profile',  icon: <User size={18} />,        center: false },
   ];
 
   return (

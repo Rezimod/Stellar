@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { MapPin, ChevronDown } from 'lucide-react'
 import { useLocation, type UserLocation } from '@/lib/location'
 
 const REGION_LABELS = {
@@ -142,18 +143,43 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '4px',
-          fontSize: '0.75rem',
-          color: 'rgba(255,255,255,0.4)',
-          background: 'none',
-          border: 'none',
+          gap: 8,
+          borderRadius: '9999px',
+          padding: compact ? '6px 12px' : '6px 14px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.1)',
           cursor: 'pointer',
-          padding: compact ? '2px 6px' : '4px 8px',
+          transition: 'border-color 0.2s, background 0.2s',
         }}
-        onMouseEnter={(e) => ((e.target as HTMLElement).style.color = 'rgba(255,255,255,0.6)')}
-        onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'rgba(255,255,255,0.4)')}
+        onMouseEnter={(e) => {
+          const el = e.currentTarget as HTMLElement;
+          el.style.borderColor = 'rgba(52,211,153,0.3)';
+          el.style.background = 'rgba(52,211,153,0.06)';
+        }}
+        onMouseLeave={(e) => {
+          const el = e.currentTarget as HTMLElement;
+          el.style.borderColor = 'rgba(255,255,255,0.1)';
+          el.style.background = 'rgba(255,255,255,0.04)';
+        }}
       >
-        📍 {label} ▾
+        <div style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          background: 'rgba(52,211,153,0.12)',
+          border: '1px solid rgba(52,211,153,0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <MapPin
+            size={16}
+            color={location.city ? '#34d399' : 'rgba(255,255,255,0.4)'}
+          />
+        </div>
+        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>{label}</span>
+        <ChevronDown size={12} color="rgba(255,255,255,0.3)" />
       </button>
       {open && dropdown}
     </div>

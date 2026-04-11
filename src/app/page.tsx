@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import HomeSkyPreview from '@/components/home/HomeSkyPreview';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { Telescope, Camera, Satellite, Layers } from 'lucide-react';
+import { Telescope, Camera, Star, ShoppingBag } from 'lucide-react';
 import LocationPicker from '@/components/LocationPicker';
 import { useLocation } from '@/lib/location';
 
@@ -81,7 +81,7 @@ export default function HomePage() {
     };
   }, []);
 
-  const stepIcons = [Telescope, Camera, Satellite, Layers];
+  const stepIcons = [Telescope, Camera, Star, ShoppingBag];
   const howItWorksSteps = [
     { step: 1, icon: stepIcons[0], title: t('home.steps.observe'), desc: t('home.steps.observeDesc') },
     { step: 2, icon: stepIcons[1], title: t('home.steps.capture'), desc: t('home.steps.captureDesc') },
@@ -199,7 +199,7 @@ export default function HomePage() {
             fontSize: 14,
             margin: 0,
           }}>
-            Photograph celestial objects from anywhere in the world. Earn Stars tokens, collect discovery NFTs, and shop telescopes at your local dealer.
+            Photograph the night sky. Get AI-verified. Earn Stars tokens on Solana.
           </p>
 
           <LocationPicker compact />
@@ -208,7 +208,7 @@ export default function HomePage() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               <Link
-                href="/sky"
+                href="/missions"
                 style={{
                   background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
                   color: '#070B14',
@@ -243,7 +243,7 @@ export default function HomePage() {
               </Link>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, margin: 0 }}>
-              Free to join · No seed phrase required
+              Free to join · No wallet needed · Powered by Solana
             </p>
           </div>
 
@@ -286,7 +286,7 @@ export default function HomePage() {
       </section>
 
       {/* Remaining sections */}
-      <div className="max-w-3xl mx-auto px-4 py-8 sm:py-16 flex flex-col items-center gap-8 sm:gap-12 animate-page-enter">
+      <div className="max-w-3xl w-full mx-auto px-4 py-8 sm:py-16 flex flex-col items-center gap-6 sm:gap-12 animate-page-enter">
 
         {/* How It Works */}
         <div id="how-it-works" className="w-full">
@@ -317,21 +317,17 @@ export default function HomePage() {
                     <span style={{ color: 'rgba(52,211,153,0.4)', fontSize: 10, lineHeight: 1, marginLeft: 1 }}>▶</span>
                   </div>
                 )}
-                {/* Step number circle */}
+                {/* Step icon */}
                 <div style={{
-                  width: 40, height: 40,
-                  borderRadius: '50%',
+                  width: 48, height: 48,
+                  borderRadius: 12,
                   background: 'rgba(52,211,153,0.08)',
                   border: '1px solid rgba(52,211,153,0.15)',
-                  color: 'rgba(52,211,153,0.6)',
-                  fontFamily: 'monospace',
-                  fontSize: 11,
-                  fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                  {String(item.step).padStart(2, '0')}
+                  <item.icon size={22} color="#34d399" />
                 </div>
                 <p style={{ color: 'white', fontWeight: 600, fontSize: 13, marginTop: 12, marginBottom: 4 }}>{item.title}</p>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, lineHeight: 1.6, margin: 0 }}>{item.desc}</p>

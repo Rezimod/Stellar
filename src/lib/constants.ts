@@ -2,13 +2,11 @@ import type { Mission } from './types';
 
 export const ECOSYSTEM = {
   store: 'https://astroman.ge',
-  club: 'https://club.astroman.ge',
   sky: 'https://sky.astroman.ge',
   app: '/',
 };
 
 export const SPONSORS = {
-  scriptonia: 'https://scriptonia.xyz',
   superteam: 'https://superteam.fun',
   solana: 'https://solana.com',
 };

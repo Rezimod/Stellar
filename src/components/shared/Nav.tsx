@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CloudSun, Sparkles, ShoppingBag, Satellite, User, Map, Search } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import { useTranslations } from 'next-intl';
+import SearchModal from './SearchModal';
 
 export default function Nav() {
   const pathname = usePathname();
@@ -17,15 +18,20 @@ export default function Nav() {
   const { reset } = useAppState();
   const [showMenu, setShowMenu] = useState(false);
   const [confirmStep, setConfirmStep] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const t = useTranslations('nav');
 
+  useEffect(() => {
+    setSearchOpen(false);
+  }, [pathname]);
+
   const tabs = [
-    { href: '/sky',         label: t('sky'),         icon: <CloudSun size={17} /> },
-    { href: '/darksky',     label: 'Dark Sky',       icon: <Map size={17} /> },
-    { href: '/chat',        label: t('learn'),       icon: <Sparkles size={17} /> },
-    { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={17} /> },
-    { href: '/missions',    label: t('missions'),    icon: <Satellite size={17} /> },
-    { href: '/profile',     label: t('profile'),     icon: <User size={17} /> },
+    { href: '/sky',         label: t('sky'),         icon: <CloudSun size={16} /> },
+    { href: '/darksky',     label: 'Dark Sky',       icon: <Map size={16} /> },
+    { href: '/chat',        label: t('learn'),       icon: <Sparkles size={16} /> },
+    { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={16} /> },
+    { href: '/missions',    label: t('missions'),    icon: <Satellite size={16} /> },
+    { href: '/profile',     label: t('profile'),     icon: <User size={16} /> },
   ];
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
@@ -76,22 +82,44 @@ export default function Nav() {
 
           {/* Right side: search + auth only */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <button className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
-              <Search size={15} />
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <Search size={16} />
             </button>
 
             {!ready ? (
               <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
             ) : authenticated ? (
               <div className="relative">
-                {/* Avatar button */}
+                {/* Avatar button — gradient ring effect */}
                 <button
                   onClick={() => { setShowMenu(v => !v); setConfirmStep(false); }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold transition-all hover:ring-2 hover:ring-[#34d399]/50"
-                  style={{ background: 'linear-gradient(135deg, #7A5FFF, #14B8A6)' }}
+                  className="transition-all hover:ring-2 hover:ring-[#14B8A6]/40 rounded-full"
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '50%',
+                    background: 'conic-gradient(from 0deg, #8B5CF6, #14B8A6, #8B5CF6)',
+                    padding: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                   title="Account"
                 >
-                  {initial}
+                  <div style={{
+                    width: 31,
+                    height: 31,
+                    borderRadius: '50%',
+                    background: '#0D1321',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'white' }}>{initial}</span>
+                  </div>
                 </button>
 
                 {/* Dropdown */}
@@ -138,6 +166,7 @@ export default function Nav() {
         </div>
 
       </div>
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );
 }

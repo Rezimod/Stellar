@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import BackButton from '@/components/shared/BackButton';
+import { Eye } from 'lucide-react';
 
 const LOCATIONS = [
   { name: 'Tbilisi', bortle: 8, cx: 516, cy: 213 },
@@ -40,9 +41,12 @@ export default function DarkSkyPage() {
         <BackButton />
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            Dark Sky Network
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Eye size={20} color="#34d399" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              Dark Sky Network
+            </h1>
+          </div>
           <p className="text-slate-500 text-sm">
             Community light pollution map — powered by Stellar observers
           </p>
