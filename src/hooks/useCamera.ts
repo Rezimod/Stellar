@@ -24,7 +24,6 @@ export function useCamera() {
 
     // Guard: mediaDevices not available (WebView, HTTP, old browser)
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.log('[Camera] mediaDevices unavailable, using simulation');
       setError('permission_denied');
       return;
     }
@@ -40,7 +39,6 @@ export function useCamera() {
           video: { facingMode: facing },
         });
       } catch {
-        console.log('[Camera] Permission denied or unavailable, using simulation');
         setError('permission_denied');
         return;
       }
@@ -50,7 +48,6 @@ export function useCamera() {
     setFacingMode(facing);
     if (videoRef.current) videoRef.current.srcObject = s;
     setError(null);
-    console.log('[Camera] Started, facing:', facing);
   }, [stream]);
 
   const flipCamera = useCallback(() => {
@@ -72,7 +69,6 @@ export function useCamera() {
       ctx.drawImage(videoRef.current, 0, 0, 640, 480);
 
       if (isImageBlack(canvas)) {
-        console.log('[Camera] Black frame detected, using sim photo');
         return generateSimPhoto(missionName);
       }
 

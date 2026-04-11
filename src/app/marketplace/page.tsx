@@ -49,6 +49,7 @@ function ProductCard({ product, showDealer, dealerName }: {
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover"
+            loading="lazy"
             onError={() => setImgError(true)}
           />
         ) : (

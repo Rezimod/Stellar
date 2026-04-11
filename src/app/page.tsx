@@ -51,7 +51,10 @@ export default function HomePage() {
     }));
 
     let raf: number;
+    let visible = true;
+
     const draw = () => {
+      if (!visible) return;
       ctx.clearRect(0, 0, w, h);
       for (const s of stars) {
         ctx.beginPath();
@@ -68,6 +71,18 @@ export default function HomePage() {
     };
     draw();
 
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) {
+          cancelAnimationFrame(raf);
+          draw();
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(hero);
+
     const handleResize = () => {
       w = hero.offsetWidth;
       h = hero.offsetHeight;
@@ -77,6 +92,7 @@ export default function HomePage() {
     window.addEventListener('resize', handleResize);
     return () => {
       cancelAnimationFrame(raf);
+      observer.disconnect();
       window.removeEventListener('resize', handleResize);
     };
   }, []);
@@ -178,9 +194,12 @@ export default function HomePage() {
             margin: 0,
           }}>
             <span className="hero-line-1" style={{ display: 'block', color: 'rgba(255,255,255,0.9)' }}>
-              Observe the sky.
+              Observe the
             </span>
-            <span className="hero-line-2" style={{
+            <span className="hero-line-2" style={{ display: 'block', color: '#34d399' }}>
+              Night Sky.
+            </span>
+            <span className="hero-line-3" style={{
               display: 'block',
               background: 'linear-gradient(135deg, #34d399, #38F0FF)',
               WebkitBackgroundClip: 'text',
@@ -199,7 +218,7 @@ export default function HomePage() {
             fontSize: 14,
             margin: 0,
           }}>
-            Photograph the night sky. Get AI-verified. Earn Stars tokens on Solana.
+            Photograph celestial objects from anywhere in the world. Earn Stars tokens, collect discovery NFTs, and shop telescopes at your local dealer.
           </p>
 
           <LocationPicker compact />
@@ -393,6 +412,51 @@ export default function HomePage() {
                 All missions →
               </Link>
             </div>
+
+            {/* Tonight's Sky card */}
+            <Link
+              href="/sky"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(52,211,153,0.2)',
+                borderRadius: 16,
+                padding: 16,
+                textDecoration: 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                transition: 'border-color 0.2s, transform 0.2s',
+              }}
+              onMouseOver={e => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = 'rgba(52,211,153,0.4)';
+                el.style.transform = 'translateY(-1px)';
+              }}
+              onMouseOut={e => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = 'rgba(52,211,153,0.2)';
+                el.style.transform = 'translateY(0)';
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 22 }}>🌌</span>
+                <span style={{ color: 'white', fontWeight: 600, fontSize: 13, flex: 1 }}>Tonight&apos;s Sky</span>
+                <span style={{
+                  background: 'rgba(52,211,153,0.15)',
+                  color: '#34d399',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  whiteSpace: 'nowrap',
+                }}>
+                  Free · Always Available
+                </span>
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>
+                Check tonight&apos;s forecast, planet positions, and best observation windows.
+              </p>
+            </Link>
 
             {/* Mission cards */}
             {[
@@ -699,7 +763,7 @@ export default function HomePage() {
               Earn Stars. Spend Real Rewards.
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.6 }}>
-              Complete missions → earn Stars tokens → redeem at partner stores worldwide.
+              Complete sky missions to earn Stars tokens and compressed NFTs on Solana. Redeem Stars at partner telescope stores worldwide.
             </p>
           </div>
 
@@ -708,9 +772,9 @@ export default function HomePage() {
             <style>{`@media (max-width: 639px) { .rewards-grid { grid-template-columns: 1fr !important; } }`}</style>
 
             {[
-              { emoji: '🌙', title: 'First Observation', reward: 'Free Moon Lamp', stars: '50 ✦', progress: 0 },
-              { emoji: '⭐', title: 'Mission Complete', reward: 'Custom Star Map PDF', stars: '500 ✦', progress: 0 },
-              { emoji: '🔭', title: 'Power Observer', reward: '20% telescope discount', stars: '1000 ✦', progress: 0 },
+              { emoji: '🌙', title: 'First Observation', reward: 'Free Moon Lamp for your first lunar observation', stars: '50 ✦', progress: 0 },
+              { emoji: '⭐', title: 'Mission Complete', reward: 'Free Custom Star Map for completing all 5 missions', stars: '500 ✦', progress: 0 },
+              { emoji: '🔭', title: 'Power Observer', reward: 'Discounts up to 20% on telescopes at partner stores', stars: '1000 ✦', progress: 0 },
             ].map(card => (
               <div
                 key={card.title}
@@ -893,6 +957,10 @@ export default function HomePage() {
               </a>
             </div>
           </div>
+
+          <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, textAlign: 'center', marginTop: 20 }}>
+            Built solo by an astronomy store owner using AI development tools
+          </p>
 
           <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', marginTop: 16 }}>
             Want to sell on Stellar?{' '}

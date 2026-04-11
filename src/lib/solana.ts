@@ -32,13 +32,10 @@ export async function ensureBalance(publicKey: PublicKey): Promise<void> {
   const connection = getConnection();
   try {
     const balance = await connection.getBalance(publicKey);
-    console.log(`[Solana] Balance: ${(balance / LAMPORTS_PER_SOL).toFixed(3)} SOL`);
     if (balance < 0.01 * LAMPORTS_PER_SOL) {
-      console.log('[Solana] Low balance, airdropping (devnet only)...');
       const sig = await connection.requestAirdrop(publicKey, LAMPORTS_PER_SOL);
       const latestBlockhash = await connection.getLatestBlockhash();
       await connection.confirmTransaction({ signature: sig, ...latestBlockhash }, 'confirmed');
-      console.log('[Solana] Airdrop done');
     }
   } catch (e) {
     console.warn('[Solana] Airdrop failed (rate limited):', e);
@@ -55,14 +52,11 @@ async function createOnChainProof(
   try {
     const memo = JSON.stringify({
       app: 'stellar',
-      agent: 'cyreneai/stellar-observer',
+      agent: 'stellar/observer',
       ...memoData,
       observer: publicKey.toString(),
       ts: Date.now(),
     });
-
-    console.log('%c[CyreneAI Agent] 🤖 Submitting observation proof', 'color: #7A5FFF; font-weight: bold');
-    console.log('[CyreneAI Agent] Memo:', memo);
 
     const transaction = new Transaction().add({
       keys: [{ pubkey: publicKey, isSigner: true, isWritable: false }],
@@ -74,8 +68,6 @@ async function createOnChainProof(
     const latestBlockhash = await connection.getLatestBlockhash();
     await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
 
-    console.log('[Solana] ✅ Confirmed:', signature);
-    console.log(`[Solana] 🔗 https://explorer.solana.com/tx/${signature}?cluster=devnet`);
     return { success: true, txId: signature, method: 'onchain' };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
