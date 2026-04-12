@@ -15,6 +15,7 @@ import LoadingRing from '@/components/ui/LoadingRing';
 import ScoreRing from '@/components/ui/ScoreRing';
 import { calculateSkyScore, visibilityToMeters, type SkyScoreResult } from '@/lib/sky-score';
 import { Copy, Check, Telescope, Award, ExternalLink } from 'lucide-react';
+import { buildTwitterShareUrl, buildFarcasterShareUrl, buildShareImageUrl } from '@/lib/share';
 import RewardIcon from '@/components/shared/RewardIcon';
 
 const MISSION_STEPS = [
@@ -282,9 +283,17 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   }
 
   if (step === 'done') {
-    const tweet = `Just confirmed my ${mission.name} observation with @StellarApp ✦ Verified on Solana.\n\nDiscover the night sky → stellarrclub.vercel.app`;
     const isOnChain = mintTxId && !mintTxId.startsWith('sim');
     const starsEarned = sky?.verified ? mission.stars : 0;
+    const appUrl = 'https://stellarrclub.vercel.app';
+    const ogImageUrl = skyScore ? buildShareImageUrl({
+      target: mission.name,
+      score: skyScore.score,
+      grade: skyScore.grade,
+      stars: starsEarned,
+      date: new Date().toISOString().slice(0, 10),
+      emoji: skyScore.emoji,
+    }) : undefined;
     const confettiColors = ['var(--accent)', 'var(--stars)', 'var(--success)', '#A855F7', '#F87171'];
 
     return (
@@ -382,18 +391,30 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           {/* Share buttons */}
           <div className="flex gap-3 justify-center animate-fade-in stagger-5">
             <button
-              onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`, '_blank')}
+              onClick={() => window.open(buildTwitterShareUrl({
+                target: mission.name,
+                score: skyScore?.score ?? 0,
+                grade: skyScore?.grade ?? 'Good',
+                stars: starsEarned,
+                appUrl,
+                ogImageUrl,
+              }), '_blank')}
               className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm text-white"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
               <span>𝕏</span> Share on X
             </button>
             <button
-              onClick={() => window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(tweet)}`, '_blank')}
+              onClick={() => window.open(buildFarcasterShareUrl({
+                target: mission.name,
+                score: skyScore?.score ?? 0,
+                stars: starsEarned,
+                appUrl,
+              }), '_blank')}
               className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm"
               style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', color: '#A855F7' }}
             >
-              Cast
+              ⬡ Farcaster
             </button>
           </div>
 

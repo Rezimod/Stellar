@@ -15,6 +15,9 @@ import LocationPicker from '@/components/LocationPicker';
 import { useLocation } from '@/lib/location';
 import OnboardingOverlay from '@/components/shared/OnboardingOverlay';
 import PageTransition from '@/components/ui/PageTransition';
+import LoadingRing from '@/components/ui/LoadingRing';
+import OnboardingGate from '@/components/onboarding/OnboardingGate';
+import Dashboard from '@/components/dashboard/Dashboard';
 
 function EmailSubscribe() {
   const [email, setEmail] = useState('');
@@ -83,7 +86,7 @@ function EmailSubscribe() {
 
 export default function HomePage() {
   const t = useTranslations();
-  const { user } = usePrivy();
+  const { user, ready, authenticated } = usePrivy();
   const { state } = useAppState();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -185,6 +188,18 @@ export default function HomePage() {
     { step: 3, icon: stepIcons[2], title: t('home.steps.verify'), desc: t('home.steps.verifyDesc') },
     { step: 4, icon: stepIcons[3], title: t('home.steps.mint'),   desc: t('home.steps.mintDesc') },
   ];
+
+  if (!ready) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingRing />
+      </div>
+    );
+  }
+
+  if (authenticated) {
+    return <OnboardingGate><Dashboard /></OnboardingGate>;
+  }
 
   return (
     <>

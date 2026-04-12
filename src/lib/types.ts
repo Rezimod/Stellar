@@ -111,3 +111,11 @@ export interface SkyScore {
   emoji: string
   color: string
 }
+
+export interface AstronomerProfile {
+  equipment: 'naked-eye' | 'binoculars' | 'small-telescope' | 'large-telescope'
+  environment: 'city' | 'suburb' | 'rural' | 'remote'
+  interests: Array<'planets' | 'moon' | 'deep-sky' | 'astrophotography' | 'learning'>
+  location: { lat: number; lon: number } | null
+  completedAt: string
+}
