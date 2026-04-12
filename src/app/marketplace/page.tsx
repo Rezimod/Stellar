@@ -29,6 +29,13 @@ const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
   'Popular': { bg: 'rgba(56,240,255,0.15)', color: '#38F0FF' },
 };
 
+const CATEGORY_FALLBACK: Record<string, { icon: string; label: string; bg: string }> = {
+  telescope: { icon: '🔭', label: 'Telescope', bg: 'rgba(122,95,255,0.07)' },
+  eyepiece:  { icon: '🔬', label: 'Eyepiece',  bg: 'rgba(56,240,255,0.06)' },
+  binocular: { icon: '🌌', label: 'Binoculars', bg: 'rgba(20,184,166,0.07)' },
+  accessory: { icon: '🔧', label: 'Accessory', bg: 'rgba(245,158,11,0.07)' },
+};
+
 function ProductCard({ product, showDealer, dealerName }: {
   product: Product;
   showDealer: boolean;
@@ -36,30 +43,32 @@ function ProductCard({ product, showDealer, dealerName }: {
 }) {
   const [imgError, setImgError] = useState(false);
   const badgeStyle = product.badge ? BADGE_STYLES[product.badge] : null;
-  const specEntries = product.specs ? Object.entries(product.specs).slice(0, 2) : [];
+  const fallback = CATEGORY_FALLBACK[product.category] ?? CATEGORY_FALLBACK.telescope;
+  const firstSpec = product.specs ? Object.values(product.specs)[0] : null;
+  const showImg = !!product.image && !imgError;
 
   return (
     <div
       className="flex flex-col rounded-2xl overflow-hidden"
       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
     >
-      {/* Image */}
-      <div className="relative" style={{ aspectRatio: '4/3', background: 'rgba(255,255,255,0.03)' }}>
-        {product.image && !imgError ? (
+      {/* Image — fixed height so all cards align */}
+      <div className="relative flex-shrink-0" style={{ height: 140, background: showImg ? 'rgba(0,0,0,0.2)' : fallback.bg }}>
+        {showImg ? (
           <Image
             src={product.image}
             alt={product.name}
-            width={300}
-            height={200}
-            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-            unoptimized={!product.image.startsWith('https://')}
+            fill
+            sizes="(max-width: 768px) 50vw, 300px"
+            style={{ objectFit: 'cover' }}
+            unoptimized
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-            <span className="text-3xl">🔭</span>
-            <p className="text-[10px] text-center px-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              {product.name}
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">
+            <span className="text-4xl leading-none">{fallback.icon}</span>
+            <p className="text-[10px] font-medium tracking-wide uppercase" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              {fallback.label}
             </p>
           </div>
         )}
@@ -73,31 +82,26 @@ function ProductCard({ product, showDealer, dealerName }: {
         )}
       </div>
 
-      {/* Info */}
-      <div className="flex flex-col flex-1 pt-2 pb-1">
-        <p className="text-white text-[13px] font-semibold px-2 leading-snug line-clamp-2">{product.name}</p>
-        <p className="text-[11px] mt-1 px-2 line-clamp-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      {/* Info — fixed layout, no flex-1 stretching */}
+      <div className="flex flex-col p-2 gap-1">
+        <p className="text-white text-[12px] font-semibold leading-snug line-clamp-2">{product.name}</p>
+        <p className="text-[10px] line-clamp-2 leading-snug" style={{ color: 'rgba(255,255,255,0.35)' }}>
           {product.description}
         </p>
 
-        {specEntries.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1 px-2">
-            {specEntries.slice(0, 1).map(([k, v]) => (
-              <span
-                key={k}
-                className="text-[10px] px-1.5 py-0.5 rounded"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)' }}
-              >
-                {v}
-              </span>
-            ))}
-          </div>
+        {firstSpec && (
+          <span
+            className="self-start text-[10px] px-1.5 py-0.5 rounded mt-0.5"
+            style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)' }}
+          >
+            {firstSpec}
+          </span>
         )}
 
         {/* Price row */}
-        <div className="flex items-end justify-between px-2 mt-2 pb-2">
+        <div className="flex items-center justify-between mt-1">
           <div>
-            <p className="text-white font-bold text-base leading-none">
+            <p className="text-white font-bold text-sm leading-none">
               {product.currencySymbol}{product.price % 1 !== 0 ? product.price.toFixed(2) : product.price.toLocaleString()}
             </p>
             <p className="text-[10px] mt-0.5" style={{ color: '#14B8A6' }}>
@@ -108,7 +112,7 @@ function ProductCard({ product, showDealer, dealerName }: {
             href={product.externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] px-2.5 py-1.5 rounded-lg transition-colors"
+            className="text-[11px] px-2.5 py-1.5 rounded-lg transition-colors flex-shrink-0"
             style={{
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.1)',
@@ -121,7 +125,7 @@ function ProductCard({ product, showDealer, dealerName }: {
         </div>
 
         {showDealer && (
-          <p className="px-2 pb-2 text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
             via {dealerName}
           </p>
         )}
