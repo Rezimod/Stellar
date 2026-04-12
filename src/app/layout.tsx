@@ -34,6 +34,7 @@ import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
 import OfflineBanner from '@/components/shared/OfflineBanner';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -90,6 +91,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <StarField />
                 <Nav />
                 <OfflineBanner />
+                <PullToRefresh />
                 <SwipeBack>
                   <main className="relative z-10 flex-1 pb-20 md:pb-0">{children}</main>
                 </SwipeBack>
