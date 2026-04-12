@@ -348,7 +348,7 @@ Keep the same card styling. Just update the data.
 
 ---
 
-### SHARE-1 — Full-Screen Shareable Success Overlay
+### ✅ SHARE-1 — Full-Screen Shareable Success Overlay
 
 ```
 I'm building Stellar. When a user completes an observation mission and the NFT is minted, they see a done screen inside MissionActive.tsx. This screen is currently basic. I need to replace it with a full-screen shareable overlay that looks impressive for demos.
@@ -429,7 +429,7 @@ Pass it down or lift from wherever the mint response is handled.
 
 ---
 
-### DARKSKY-1 — Replace Static SVG with Interactive Leaflet Map
+### ✅ DARKSKY-1 — Replace Static SVG with Interactive Leaflet Map
 
 ```
 I'm building Stellar. The dark sky page (/darksky) currently shows a static SVG map with 6 hardcoded Georgian locations. I need to replace it with an interactive Leaflet map with a NASA light pollution tile layer.

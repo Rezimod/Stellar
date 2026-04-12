@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'STELLAR',
+    title: 'Stellar',
   },
   openGraph: {
     title: 'Stellar — Observe the Sky, Earn on Solana',

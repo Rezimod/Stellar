@@ -22,14 +22,17 @@
     "@privy-io/react-auth": "^3.19.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
+    "@types/leaflet": "^1.9.21",
     "astronomy-engine": "^2.1.19",
     "bs58": "^6.0.0",
     "drizzle-orm": "^0.45.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-intl": "^4.9.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

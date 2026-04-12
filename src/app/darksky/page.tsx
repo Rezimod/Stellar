@@ -1,14 +1,23 @@
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import BackButton from '@/components/shared/BackButton';
 import { Eye } from 'lucide-react';
 
+const DarkSkyMap = dynamic(
+  () => import('@/components/darksky/DarkSkyMap'),
+  { ssr: false, loading: () => <div style={{ height: 400, background: '#0D1321', borderRadius: 0 }} /> }
+);
+
 const LOCATIONS = [
-  { name: 'Tbilisi', bortle: 8, cx: 516, cy: 213 },
-  { name: 'Kazbegi', bortle: 2, cx: 518, cy: 207 },
-  { name: 'Mestia', bortle: 3, cx: 511, cy: 210 },
-  { name: 'Kutaisi', bortle: 6, cx: 512, cy: 213 },
-  { name: 'Batumi', bortle: 7, cx: 509, cy: 215 },
-  { name: 'Borjomi', bortle: 4, cx: 514, cy: 214 },
+  { name: 'Kazbegi National Park', bortle: 2, region: 'Georgia' },
+  { name: 'Mestia / Svaneti', bortle: 2, region: 'Georgia' },
+  { name: 'Borjomi Gorge', bortle: 3, region: 'Georgia' },
+  { name: 'Kutaisi Outskirts', bortle: 4, region: 'Georgia' },
+  { name: 'Batumi Foothills', bortle: 5, region: 'Georgia' },
+  { name: 'Tbilisi', bortle: 8, region: 'Georgia' },
+  { name: 'Cherry Springs, Pennsylvania', bortle: 2, region: 'USA' },
+  { name: 'La Palma, Canary Islands', bortle: 1, region: 'Spain' },
+  { name: 'Atacama Desert, Chile', bortle: 1, region: 'Chile' },
 ];
 
 function bortleColor(b: number): string {
@@ -26,9 +35,9 @@ function bortleLabel(b: number): string {
 }
 
 const STATS = [
-  { label: 'Total Readings', value: '6' },
-  { label: 'Dark Sites (Bortle ≤3)', value: '2' },
-  { label: 'Countries', value: '1' },
+  { label: 'Sites Mapped', value: '9' },
+  { label: 'Dark Sites (Bortle ≤3)', value: '5' },
+  { label: 'Countries', value: '3' },
 ];
 
 export default function DarkSkyPage() {
@@ -78,136 +87,11 @@ export default function DarkSkyPage() {
           }}
         >
           <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-            <span className="text-white font-semibold text-sm">Georgia — Light Pollution Readings</span>
-            <span className="text-[11px] text-slate-600">6 observer reports</span>
+            <span className="text-white font-semibold text-sm">Global — Light Pollution Readings</span>
+            <span className="text-[11px] text-slate-600">9 observer reports</span>
           </div>
 
-          {/* SVG world map — simplified continent outlines */}
-          <div className="relative w-full" style={{ paddingBottom: '50%' }}>
-            <svg
-              viewBox="0 0 1000 500"
-              className="absolute inset-0 w-full h-full"
-              style={{ background: 'rgba(7,11,20,0.8)' }}
-              aria-label="World map with dark sky readings"
-            >
-              {/* Grid lines */}
-              {[100, 200, 300, 400].map(y => (
-                <line key={y} x1="0" y1={y} x2="1000" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-              ))}
-              {[100, 200, 300, 400, 500, 600, 700, 800, 900].map(x => (
-                <line key={x} x1={x} y1="0" x2={x} y2="500" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-              ))}
-
-              {/* North America */}
-              <path
-                d="M80,60 L160,55 L200,70 L220,100 L230,140 L210,180 L190,220 L170,260 L150,280 L130,270 L110,240 L100,200 L90,160 L70,130 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Central America */}
-              <path
-                d="M170,260 L190,270 L185,295 L170,300 L160,280 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* South America */}
-              <path
-                d="M185,295 L210,290 L240,310 L260,360 L250,420 L220,450 L190,440 L170,400 L165,350 L170,310 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Europe */}
-              <path
-                d="M440,60 L490,55 L510,70 L520,90 L510,110 L500,130 L480,140 L460,135 L445,120 L435,100 L435,80 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Scandinavia */}
-              <path
-                d="M460,40 L480,35 L490,55 L470,60 L455,55 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Africa */}
-              <path
-                d="M445,140 L490,135 L530,150 L550,190 L555,240 L545,290 L520,330 L490,350 L460,340 L435,310 L420,270 L415,220 L420,170 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Asia */}
-              <path
-                d="M510,60 L600,50 L700,55 L780,70 L820,100 L840,140 L820,180 L780,200 L720,210 L660,220 L600,210 L560,200 L530,180 L510,150 L505,120 L505,90 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Indian subcontinent */}
-              <path
-                d="M620,180 L650,175 L670,200 L665,240 L645,260 L625,245 L610,210 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Southeast Asia */}
-              <path
-                d="M720,180 L760,175 L790,190 L800,210 L780,225 L750,220 L720,210 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Australia */}
-              <path
-                d="M750,300 L820,290 L870,310 L890,360 L870,400 L820,420 L760,415 L720,390 L710,350 L720,320 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-              {/* Middle East */}
-              <path
-                d="M530,130 L580,125 L600,145 L590,170 L560,175 L535,160 Z"
-                fill="rgba(56,240,255,0.06)"
-                stroke="rgba(56,240,255,0.15)"
-                strokeWidth="1"
-              />
-
-              {/* Georgia highlight region */}
-              <circle cx="514" cy="211" r="18" fill="rgba(56,240,255,0.04)" stroke="rgba(56,240,255,0.2)" strokeWidth="1" />
-
-              {/* Location dots */}
-              {LOCATIONS.map(loc => {
-                const color = bortleColor(loc.bortle);
-                return (
-                  <g key={loc.name}>
-                    <circle
-                      cx={loc.cx}
-                      cy={loc.cy}
-                      r="5"
-                      fill={color}
-                      fillOpacity="0.25"
-                      stroke={color}
-                      strokeWidth="1"
-                    />
-                    <circle cx={loc.cx} cy={loc.cy} r="2.5" fill={color} />
-                    <text
-                      x={loc.cx + 7}
-                      y={loc.cy + 4}
-                      fontSize="6"
-                      fill="rgba(255,255,255,0.7)"
-                      style={{ fontFamily: 'sans-serif' }}
-                    >
-                      {loc.name}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
+          <DarkSkyMap />
 
           {/* Legend */}
           <div className="px-5 pb-5 pt-3 flex flex-wrap gap-x-5 gap-y-2">
@@ -247,7 +131,7 @@ export default function DarkSkyPage() {
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color }} />
                 <div className="flex-1">
                   <span className="text-white text-sm font-semibold">{loc.name}</span>
-                  <span className="text-slate-600 text-xs ml-2">Georgia</span>
+                  <span className="text-slate-600 text-xs ml-2">{loc.region}</span>
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-bold" style={{ color }}>
