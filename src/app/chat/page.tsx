@@ -3,14 +3,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale } from 'next-intl';
-import { Send } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 
 interface Msg { role: 'user' | 'assistant'; content: string; }
 
-const SUGGESTIONS = {
-  night: ["What can I see tonight?", "How do I find Saturn tonight?", "What's the best beginner target?"],
-  day:   ["What will be visible tonight?", "How do I collimate a reflector?", "What is the Orion Nebula?"],
-};
+const SUGGESTIONS = [
+  "What's visible tonight? 🌙",
+  "Best telescope for beginners? 🔭",
+  "Explain the Bortle scale",
+  "Why is the sky dark at night?",
+];
 
 export default function ChatPage() {
   const { authenticated, login } = usePrivy();
@@ -29,13 +31,10 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const hour = new Date().getHours();
-  const suggestions = hour >= 20 || hour < 5 ? SUGGESTIONS.night : SUGGESTIONS.day;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
+  useEffect(() => { setTimeout(() => textareaRef.current?.focus(), 200); }, []);
   useEffect(() => {
     fetch('/api/sky/verify?lat=41.6938&lon=44.8015')
       .then(r => r.json())
@@ -43,10 +42,21 @@ export default function ChatPage() {
       .catch(() => {});
   }, []);
 
+  // Auto-resize textarea
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  };
+
   const send = async (text?: string) => {
     const msg = (text ?? input).trim();
     if (!msg || loading) return;
     setInput('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
     setError('');
     const next: Msg[] = [...messages, { role: 'user', content: msg }];
     setMessages(next);
@@ -92,53 +102,83 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100dvh - 64px)' }}>
+      <style>{`
+        @keyframes cursorBlink { 0%,100% { opacity:1 } 50% { opacity:0 } }
+        .streaming-cursor { animation: cursorBlink 0.7s ease-in-out infinite; color: var(--accent); }
+      `}</style>
 
-      {/* Accessible page title */}
       <h1 className="sr-only">ASTRA — AI Space Companion</h1>
 
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]">
-        <div className="relative">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
-            <span className="text-[#38F0FF] text-sm font-bold">✦</span>
-          </div>
-          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2 border-[#070B14]" />
+      <div style={{
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 16px',
+        borderBottom: '1px solid var(--border-subtle)',
+        background: 'rgba(7,11,20,0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        {/* ASTRA avatar */}
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%',
+          background: 'var(--accent-dim)',
+          border: '1px solid var(--accent-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <span style={{ color: 'var(--accent)', fontSize: 14, fontFamily: 'var(--font-mono)' }}>✦</span>
         </div>
+
+        {/* Name + subtitle */}
         <div>
-          <p className="text-white font-bold text-sm" style={{ fontFamily: 'Georgia, serif' }}>ASTRA</p>
-          <p className="text-[#38F0FF]/50 text-[10px] font-mono">
-            {locale === 'ka' ? 'შენი AI ასტრონომი' : 'Your AI Astronomer'}
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>ASTRA</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>
+            {locale === 'ka' ? 'AI ასტრონომი · Claude-ით' : 'AI Astronomer · Powered by Claude'}
           </p>
+        </div>
+
+        {/* Online indicator */}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span className="live-dot" />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--success)' }}>Online</span>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
 
-        {/* Empty state: sky card + suggestions — show when only the greeting is present */}
+        {/* Sky card + suggestions — show when only greeting present */}
         {messages.length === 1 && (
-          <div className="flex flex-col gap-2 mb-2">
+          <div className="flex flex-col gap-3 mb-2">
             {skySummary && (
-              <div className="rounded-xl p-3" style={{
-                background: skySummary.verified ? 'rgba(52,211,153,0.06)' : 'rgba(255,209,102,0.06)',
-                border: `1px solid ${skySummary.verified ? 'rgba(52,211,153,0.15)' : 'rgba(255,209,102,0.15)'}`,
-              }}>
-                <p className="text-xs font-semibold mb-0.5" style={{ color: skySummary.verified ? '#34d399' : '#FFD166' }}>
+              <div className="card-base p-3">
+                <p style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  color: skySummary.verified ? 'var(--success)' : 'var(--warning)',
+                  margin: '0 0 2px',
+                }}>
                   {skySummary.verified ? '✦ Good conditions tonight' : '◑ Cloudy tonight'}
                 </p>
-                <p className="text-slate-500 text-xs">
+                <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: 0 }}>
                   {skySummary.cloudCover}% cloud · {skySummary.visibility} · Ask me what to observe
                 </p>
               </div>
             )}
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map(s => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {SUGGESTIONS.map(s => (
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-xs px-3 py-2 rounded-xl transition-all hover:border-[#38F0FF]/40 text-left"
-                  style={{ background: 'rgba(56,240,255,0.04)', border: '1px solid rgba(56,240,255,0.1)', color: 'rgba(56,240,255,0.75)' }}
+                  className="btn-ghost"
+                  style={{ fontSize: 11, padding: '6px 12px', minHeight: 'auto' }}
                 >
                   {s}
                 </button>
@@ -147,34 +187,56 @@ export default function ChatPage() {
           </div>
         )}
 
-        <style>{`
-          @keyframes cursorBlink { 0%,100% { opacity:1 } 50% { opacity:0 } }
-          .streaming-cursor { animation: cursorBlink 0.7s ease-in-out infinite; color: #38F0FF; }
-        `}</style>
-
         {messages.map((m, i) => {
           const isStreamingThis = loading && m.role === 'assistant' && i === messages.length - 1;
-          return (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              {m.role === 'assistant' && (
-                <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5"
-                  style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
-                  <span className="text-[8px] font-bold text-[#38F0FF]">AI</span>
+          if (m.role === 'user') {
+            return (
+              <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div
+                  className="animate-slide-up"
+                  style={{
+                    maxWidth: '78%',
+                    background: 'var(--accent-dim)',
+                    border: '1px solid var(--accent-border)',
+                    borderRadius: '16px 16px 4px 16px',
+                    padding: '10px 16px',
+                    fontSize: 14,
+                    fontFamily: 'var(--font-body)',
+                    color: 'var(--text-primary)',
+                    lineHeight: 1.5,
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {m.content}
                 </div>
-              )}
+              </div>
+            );
+          }
+
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+              {/* ASTRA avatar */}
+              <div style={{
+                width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--accent-dim)',
+                border: '1px solid var(--accent-border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ color: 'var(--accent)', fontSize: 10 }}>✦</span>
+              </div>
               <div
-                className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap"
-                style={m.role === 'user' ? {
-                  background: 'linear-gradient(135deg, rgba(255,209,102,0.15), rgba(204,154,51,0.1))',
-                  border: '1px solid rgba(255,209,102,0.2)',
-                  color: '#f5e8b8',
-                  borderBottomRightRadius: 6,
-                } : {
-                  background: 'rgba(56,240,255,0.05)',
-                  border: '1px solid rgba(56,240,255,0.1)',
-                  borderLeft: '3px solid rgba(56,240,255,0.35)',
-                  color: '#cbd5e1',
-                  borderBottomLeftRadius: 6,
+                className="animate-fade-in"
+                style={{
+                  maxWidth: '85%',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: '16px 16px 16px 4px',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  fontFamily: 'var(--font-body)',
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.6,
+                  whiteSpace: 'pre-wrap',
                 }}
               >
                 {m.content}
@@ -184,25 +246,41 @@ export default function ChatPage() {
           );
         })}
 
+        {/* Typing indicator */}
         {loading && messages[messages.length - 1]?.content === '' && (
-          <div className="flex justify-start">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5"
-              style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
-              <span className="text-[8px] font-bold text-[#38F0FF]">AI</span>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+            <div style={{
+              width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+              background: 'var(--accent-dim)',
+              border: '1px solid var(--accent-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ color: 'var(--accent)', fontSize: 10 }}>✦</span>
             </div>
-            <div className="rounded-2xl rounded-bl-md px-4 py-3"
-              style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.1)', borderLeft: '3px solid rgba(56,240,255,0.35)' }}>
-              <div className="flex items-center gap-1">
-                {[0, 1, 2].map(i => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#38F0FF]/60 animate-bounce"
-                    style={{ animationDelay: `${i * 150}ms` }} />
-                ))}
-              </div>
+            <div style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--border-default)',
+              borderRadius: '16px 16px 16px 4px',
+              padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              {[0, 1, 2].map(n => (
+                <span
+                  key={n}
+                  className="animate-bounce-dot"
+                  style={{
+                    display: 'inline-block',
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.3)',
+                    animationDelay: `${n * 0.15}s`,
+                  }}
+                />
+              ))}
             </div>
           </div>
         )}
 
-        {error && <p className="text-center text-xs text-amber-400/60">{error}</p>}
+        {error && <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--warning)' }}>{error}</p>}
         <div ref={bottomRef} />
       </div>
 
@@ -210,14 +288,10 @@ export default function ChatPage() {
       {!authenticated && (
         <div className="absolute inset-0 top-[113px] flex items-end justify-center pb-32 pointer-events-none">
           <div className="pointer-events-auto flex flex-col items-center gap-3 px-6 py-5 rounded-2xl text-center mx-4"
-            style={{ background: 'rgba(7,11,20,0.95)', border: '1px solid rgba(56,240,255,0.15)', backdropFilter: 'blur(12px)' }}>
-            <p className="text-white text-sm font-semibold">Sign in to chat with ASTRA</p>
-            <p className="text-slate-500 text-xs">Free forever · No wallet needed</p>
-            <button
-              onClick={() => login()}
-              className="px-6 py-2.5 rounded-xl text-sm font-bold"
-              style={{ background: 'linear-gradient(135deg, #38F0FF, #1a8fa0)', color: '#070B14' }}
-            >
+            style={{ background: 'rgba(7,11,20,0.95)', border: '1px solid var(--accent-border)', backdropFilter: 'blur(12px)' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', margin: 0 }}>Sign in to chat with ASTRA</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: 0 }}>Free forever · No wallet needed</p>
+            <button onClick={() => login()} className="btn-primary" style={{ padding: '8px 24px', fontSize: 13, minHeight: 40 }}>
               Sign In →
             </button>
           </div>
@@ -225,33 +299,64 @@ export default function ChatPage() {
       )}
 
       {/* Input bar */}
-      <div className="flex-shrink-0 px-4 py-3 border-t border-white/[0.06]"
-        style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-        <div className="flex gap-2 max-w-2xl mx-auto">
-          <input
-            ref={inputRef}
+      <div style={{
+        flexShrink: 0,
+        padding: '12px 16px',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        borderTop: '1px solid var(--border-subtle)',
+        background: 'rgba(7,11,20,0.9)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, maxWidth: 672, margin: '0 auto' }}>
+          <textarea
+            ref={textareaRef}
             value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+            onChange={handleInputChange}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
             placeholder={locale === 'ka' ? 'ჰკითხე ASTRA-ს ნებისმიერი რამ…' : 'Ask ASTRA anything about the sky…'}
             aria-label={locale === 'ka' ? 'შეტყობინება ASTRA-სთვის' : 'Message ASTRA'}
             disabled={!authenticated}
-            className="flex-1 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none transition-colors disabled:opacity-40"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(56,240,255,0.1)' }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'rgba(56,240,255,0.3)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'rgba(56,240,255,0.1)')}
+            rows={1}
+            style={{
+              flex: 1,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 12,
+              padding: '10px 16px',
+              fontSize: 14,
+              fontFamily: 'var(--font-body)',
+              color: 'var(--text-primary)',
+              resize: 'none',
+              minHeight: 44,
+              maxHeight: 160,
+              outline: 'none',
+              transition: 'border-color 0.15s',
+              opacity: !authenticated ? 0.4 : 1,
+            }}
+            onFocus={e => (e.currentTarget.style.borderColor = 'var(--accent-border)')}
+            onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-default)')}
           />
           <button
             onClick={() => send()}
             disabled={!input.trim() || loading || !authenticated}
             aria-label={locale === 'ka' ? 'გაგზავნა' : 'Send message'}
-            className="w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0 disabled:opacity-40"
             style={{
-              background: input.trim() && !loading ? 'linear-gradient(135deg, #38F0FF, #1a8fa0)' : 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(56,240,255,0.2)',
+              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+              background: input.trim() && !loading && authenticated ? 'var(--gradient-accent)' : 'rgba(255,255,255,0.04)',
+              border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: input.trim() && !loading && authenticated ? 'pointer' : 'not-allowed',
+              opacity: !input.trim() || loading || !authenticated ? 0.35 : 1,
+              transition: 'background 0.15s, opacity 0.15s',
             }}
           >
-            <Send size={14} className={input.trim() && !loading ? 'text-[#070B14]' : 'text-slate-600'} />
+            <ArrowUp size={18} color={input.trim() && !loading && authenticated ? '#070B14' : 'var(--text-muted)'} />
           </button>
         </div>
       </div>

@@ -3,12 +3,29 @@
 import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { Mission } from '@/lib/types';
-import { CheckCircle2, Clock } from 'lucide-react';
-import { MissionIcon } from '@/components/shared/PlanetIcons';
+import StaggerChildren from '@/components/ui/StaggerChildren';
 
 interface MissionListProps {
   onStart: (mission: Mission) => void;
 }
+
+const DIFF_STRIP: Record<string, string> = {
+  Beginner:     'var(--success)',
+  Intermediate: 'var(--accent)',
+  Advanced:     'var(--accent)',
+  Hard:         '#A855F7',
+  Expert:       'var(--stars)',
+}
+
+const DIFF_BADGE: Record<string, string> = {
+  Beginner:     'badge-pill badge-success',
+  Intermediate: 'badge-pill badge-accent',
+  Advanced:     'badge-pill badge-accent',
+  Hard:         'badge-pill',
+  Expert:       'badge-pill badge-stars',
+}
+
+const HARD_BADGE_STYLE = { background: 'rgba(168,85,247,0.12)', color: '#A855F7', border: '1px solid rgba(168,85,247,0.25)' }
 
 export default function MissionList({ onStart }: MissionListProps) {
   const { state } = useAppState();
@@ -23,101 +40,121 @@ export default function MissionList({ onStart }: MissionListProps) {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-2.5" style={{ gridAutoRows: '1fr' }}>
-        {MISSIONS.map(mission => {
-          const isRepeatable = mission.repeatable === true;
-          const done    = completedIds.has(mission.id) && !isRepeatable;
-          const doneToday = isRepeatable && completedTodayId(mission.id);
-          const pending = pendingIds.has(mission.id);
-          const diff    = mission.difficulty === 'Beginner' ? 1 : mission.difficulty === 'Intermediate' ? 2 : mission.difficulty === 'Advanced' ? 3 : mission.difficulty === 'Hard' ? 4 : 5;
-          const diffLabel = mission.difficulty === 'Beginner' ? 'Easy' : mission.difficulty === 'Intermediate' ? 'Medium' : mission.difficulty === 'Advanced' ? 'Hard' : mission.difficulty === 'Hard' ? 'Hard+' : 'Expert';
+    <StaggerChildren stagger={50} className="flex flex-col gap-2.5">
+      {MISSIONS.map(mission => {
+        const isRepeatable = mission.repeatable === true;
+        const done     = completedIds.has(mission.id) && !isRepeatable;
+        const doneToday = isRepeatable && completedTodayId(mission.id);
+        const pending  = pendingIds.has(mission.id);
 
-          return (
+        const stripColor = DIFF_STRIP[mission.difficulty] ?? 'var(--accent)'
+        const badgeClass = DIFF_BADGE[mission.difficulty] ?? 'badge-pill badge-accent'
+        const isHardBadge = mission.difficulty === 'Hard'
+
+        return (
+          <div
+            key={mission.id}
+            className="card-base overflow-hidden flex flex-row p-0"
+            style={{ opacity: done ? 0.5 : 1, cursor: done ? 'default' : undefined }}
+          >
+            {/* Left color strip */}
             <div
-              key={mission.id}
-              className="relative flex flex-col items-center text-center rounded-2xl px-3 pt-5 pb-4 transition-all duration-200 h-full justify-between"
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: `1px solid ${done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
-                opacity: done ? 0.45 : 1,
-                transition: 'border-color 0.2s, box-shadow 0.2s',
+                width: 6,
+                flexShrink: 0,
+                background: stripColor,
+                boxShadow: done ? `1px 0 8px rgba(52,211,153,0.4)` : undefined,
               }}
-              onMouseEnter={e => { if (!done) { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,209,102,0.08)'; }}}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              {/* Status badge */}
-              {(done || pending) && !isRepeatable && (
-                <div className="absolute top-2.5 right-2.5">
-                  {done
-                    ? <CheckCircle2 size={13} className="text-slate-600" />
-                    : <Clock size={13} className="text-amber-400/50" />
-                  }
-                </div>
-              )}
+            />
 
-              {/* Planet */}
-              <div className="mb-3">
-                <MissionIcon id={mission.id} size={44} />
+            {/* Content */}
+            <div style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Row 1: emoji + name + difficulty badge */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>{mission.emoji}</span>
+                  <span
+                    style={{
+                      color: 'var(--text-primary)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-display)',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {mission.name}
+                  </span>
+                </div>
+                <span
+                  className={badgeClass}
+                  style={{
+                    fontSize: 10,
+                    flexShrink: 0,
+                    ...(isHardBadge ? HARD_BADGE_STYLE : {}),
+                  }}
+                >
+                  {mission.difficulty}
+                </span>
               </div>
 
-              {/* Name */}
-              <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
+              {/* Row 2: description */}
+              <p
+                style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: 11,
+                  fontFamily: 'var(--font-body)',
+                  margin: 0,
+                  lineHeight: 1.6,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {mission.desc}
+              </p>
 
-              {/* Difficulty dots + label + always-available badge */}
-              <div className="flex flex-col items-center gap-1 mb-2">
-                <div className="flex gap-1 justify-center">
-                  {[1,2,3,4,5].map(d => (
-                    <span key={d} className="w-1 h-1 rounded-full" style={{
-                      backgroundColor: d <= diff
-                        ? diff >= 5 ? 'rgba(239,68,68,0.8)' : diff >= 4 ? 'rgba(251,113,133,0.7)' : 'rgba(255,209,102,0.55)'
-                        : 'rgba(255,255,255,0.1)'
-                    }} />
-                  ))}
-                </div>
-                <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{diffLabel}</span>
-                {isRepeatable && (
-                  <span
-                    className="text-[10px] px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399' }}
+              {/* Row 3: stars + CTA */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                <span
+                  style={{
+                    color: 'var(--stars)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  ✦ +{mission.stars}
+                </span>
+
+                {done ? (
+                  <span className="badge-pill badge-success" style={{ fontSize: 11 }}>✓ Completed</span>
+                ) : doneToday ? (
+                  <span className="badge-pill badge-success" style={{ fontSize: 11 }}>✓ Done today</span>
+                ) : pending ? (
+                  <span className="badge-pill badge-warning" style={{ fontSize: 11 }}>Pending</span>
+                ) : isRepeatable ? (
+                  <button
+                    onClick={() => onStart(mission)}
+                    className="btn-primary"
+                    style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}
                   >
-                    Always Available
-                  </span>
+                    Start →
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onStart(mission)}
+                    className="btn-primary"
+                    style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}
+                  >
+                    Start →
+                  </button>
                 )}
               </div>
-
-              {/* Completed today badge */}
-              {doneToday && (
-                <p className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>✓ Completed today</p>
-              )}
-
-              {/* Reward */}
-              <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.stars} ✦</p>
-
-              {/* CTA */}
-              {done ? (
-                <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center"
-                  style={{ background: 'rgba(255,255,255,0.02)' }}>
-                  Complete
-                </div>
-              ) : pending ? (
-                <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center"
-                  style={{ background: 'rgba(251,191,36,0.04)' }}>
-                  Pending
-                </div>
-              ) : (
-                <button
-                  onClick={() => onStart(mission)}
-                  className="w-full py-2.5 min-h-[44px] rounded-lg text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
-                >
-                  Begin →
-                </button>
-              )}
             </div>
-          );
-        })}
-      </div>
-    </>
+          </div>
+        );
+      })}
+    </StaggerChildren>
   );
 }

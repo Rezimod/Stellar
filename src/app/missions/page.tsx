@@ -150,7 +150,7 @@ export default function MissionsPage() {
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className="text-xl sm:text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               Missions
             </h1>
           </div>
@@ -184,7 +184,7 @@ export default function MissionsPage() {
 
         {/* Quiz Missions */}
         <section>
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-3">Knowledge Quizzes</h2>
+          <h2 className="text-[11px] uppercase tracking-widest mb-3 mt-6" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>Knowledge Quizzes</h2>
           <div className="flex flex-col gap-2.5">
             {QUIZZES.map(quiz => {
               const bestResult = [...(state.completedQuizzes ?? [])]

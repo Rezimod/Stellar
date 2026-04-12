@@ -21,12 +21,12 @@
 | U2 | Core UI Components | No reusable component system | Foundation for all pages | ✅ Done |
 | U3 | Skeleton Loading + Card System | Spinners look amateur | Instant polish | ✅ Done |
 | U4 | Page Transitions | Jarring, static page loads | App feels native | ✅ Done |
-| U5 | Sky Score Engine | No hero metric for the app | Data-driven credibility | — |
-| U6 | Landing Page Polish | First thing judges see | First impression | — |
-| U7 | Mission Cards | Flat list, no visual hierarchy | Core engagement visual | — |
-| U8 | NFT Gallery | No images, just text metadata | Proof of on-chain substance | — |
-| U9 | Profile Page | No rank badge, no progress ring | Core gamification visual | — |
-| U10 | ASTRA Chat Polish | Generic text box, no personality | AI feature quality | — |
+| U5 | Sky Score Engine | No hero metric for the app | Data-driven credibility | ✅ Done |
+| U6 | Landing Page Polish | First thing judges see | First impression | ✅ Done |
+| U7 | Mission Cards | Flat list, no visual hierarchy | Core engagement visual | ✅ Done |
+| U8 | NFT Gallery | No images, just text metadata | Proof of on-chain substance | ✅ Done |
+| U9 | Profile Page | No rank badge, no progress ring | Core gamification visual | ✅ Done |
+| U10 | ASTRA Chat Polish | Generic text box, no personality | AI feature quality | ✅ Done |
 | U11 | Onboarding Quiz | New users see everything at once | Personalization + retention | — |
 | U12 | Authenticated Dashboard | No personalized home screen | App-like experience | — |
 | U13 | Mission Flow Visuals | Spinner-only minting flow | Critical path polish | — |
@@ -881,7 +881,7 @@ Do NOT add any new packages. Do NOT change content, data fetching, or business l
 
 ---
 
-## PHASE 1 — SKY INTELLIGENCE ENGINE
+## PHASE 1 — SKY INTELLIGENCE ENGINE ✅ COMPLETE (2026-04-12)
 
 ---
 
@@ -1018,7 +1018,7 @@ Verify:
 
 ---
 
-## PHASE 2 — PAGE OVERHAULS (Highest judge impact — run these before demos)
+## PHASE 2 — PAGE OVERHAULS ✅ COMPLETE (2026-04-12)
 
 ---
 

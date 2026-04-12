@@ -194,54 +194,66 @@ export default function ProfilePage() {
       {/* 1 — IDENTITY HEADER (social-style) */}
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-2xl"
-            style={{ background: 'linear-gradient(135deg, #7A5FFF, #14B8A6)' }}
-          >
-            {initial}
+          {/* Avatar with rank ring */}
+          <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              padding: 2,
+              background: rank.name === 'Celestial'
+                ? 'linear-gradient(135deg, #FFD166, #F59E0B)'
+                : rank.name === 'Pathfinder'
+                ? 'linear-gradient(135deg, #A855F7, #6366F1)'
+                : rank.name === 'Observer'
+                ? 'linear-gradient(135deg, #38F0FF, #0EA5E9)'
+                : 'rgba(255,255,255,0.08)',
+            }}>
+              <div style={{
+                width: '100%', height: '100%', borderRadius: '50%',
+                background: 'var(--bg-surface)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 24, color: 'var(--text-primary)' }}>
+                  {initial}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Name + meta */}
           <div className="flex-1 min-w-0 pt-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-white font-bold text-lg leading-tight truncate" style={{ fontFamily: 'Georgia, serif' }}>{displayName}</p>
-              {(() => {
-                const n = starsDisplay;
-                const label = n >= 1000 ? 'Astronomer' : n >= 500 ? 'Navigator' : n >= 100 ? 'Observer' : 'Cadet';
-                const color = n >= 1000 ? '#9945FF' : n >= 500 ? '#14B8A6' : n >= 100 ? '#FFD166' : 'rgba(255,255,255,0.3)';
-                return (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                    style={{ background: `${color}22`, border: `1px solid ${color}44`, color }}>
-                    {label}
-                  </span>
-                );
-              })()}
+              <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>{displayName}</p>
+              <span
+                className="badge-pill badge-accent"
+                style={{ fontSize: 10, flexShrink: 0 }}
+              >
+                {rank.icon} {rank.name}
+              </span>
             </div>
-            <p className="text-slate-400 text-sm mt-0.5">
-              {rank.icon} {rank.name}{joinDate ? ` · Joined ${joinDate}` : ''}
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: '4px 0 0' }}>
+              {joinDate ? `Joined ${joinDate}` : 'Astronomer'}
             </p>
           </div>
         </div>
 
-        {/* Stats row — social style */}
+        {/* Stats row */}
         <div className="grid grid-cols-4 gap-2 text-center">
           {[
-            { value: completed.length, label: 'Missions', loading: false, color: undefined },
-            { value: obsCount, label: 'Obs', loading: !profileLoaded, color: undefined },
-            { value: `✦ ${starsDisplay}`, label: 'Stars', loading: !profileLoaded, color: '#F59E0B' },
-            { value: obsStreak > 0 ? `${obsStreak}d` : '—', label: 'Streak', loading: !profileLoaded, color: undefined },
+            { value: String(completed.length), label: 'Missions', loading: false, color: 'var(--text-primary)' },
+            { value: String(obsCount), label: 'Obs', loading: !profileLoaded, color: 'var(--accent)' },
+            { value: `✦ ${starsDisplay}`, label: 'Stars', loading: !profileLoaded, color: 'var(--stars)' },
+            { value: obsStreak > 0 ? `${obsStreak}d` : '—', label: 'Streak', loading: !profileLoaded, color: 'var(--success)' },
           ].map(s => (
-            <div key={s.label} className="flex flex-col items-center gap-0.5">
+            <div key={s.label} className="card-base flex flex-col items-center gap-0.5 py-3">
               {s.loading ? (
                 <div
-                  className="w-16 h-5 rounded-md"
-                  style={{ background: 'rgba(255,255,255,0.06)', animation: 'nft-pulse 1.5s ease-in-out infinite' }}
+                  className="w-10 h-5 rounded-md"
+                  style={{ background: 'var(--border-default)', animation: 'nft-pulse 1.5s ease-in-out infinite' }}
                 />
               ) : (
-                <p className="font-bold text-base leading-tight" style={{ color: s.color ?? 'white' }}>{s.value}</p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 16, color: s.color, margin: 0, lineHeight: 1.2 }}>{s.value}</p>
               )}
-              <p className="text-slate-500 text-xs">{s.label}</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 10, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -252,10 +264,10 @@ export default function ProfilePage() {
             <span className="text-slate-400 text-xs">{rank.name}</span>
             {rank.nextRank && <span className="text-slate-600 text-xs">{rank.nextRank}</span>}
           </div>
-          <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${Math.max(rank.progressPct, 4)}%`, background: 'linear-gradient(90deg, #7A5FFF, #14B8A6)' }}
+              style={{ width: `${Math.max(rank.progressPct, 4)}%`, background: 'var(--gradient-accent)' }}
             />
           </div>
           {rank.nextRank && (() => {
@@ -270,22 +282,21 @@ export default function ProfilePage() {
         {/* Wallet row — subtle, secondary */}
         {addrShort && (
           <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+            className="card-base flex items-center gap-2 px-3 py-2"
           >
-            <Wallet size={12} className="text-slate-600 flex-shrink-0" />
-            <span className="text-slate-600 text-xs font-mono flex-1 truncate">{addrShort}</span>
+            <Wallet size={12} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+            <span style={{ color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{addrShort}</span>
             <button
               onClick={handleCopy}
-              className="text-slate-600 hover:text-slate-400 transition-colors flex-shrink-0"
+              style={{ color: 'var(--text-muted)', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}
               title="Copy address"
             >
-              {copied ? <Check size={11} className="text-[#34d399]" /> : <Copy size={11} />}
+              {copied ? <Check size={11} color="var(--success)" /> : <Copy size={11} />}
             </button>
             <a
               href={`https://explorer.solana.com/address/${address}?cluster=devnet`}
               target="_blank" rel="noopener noreferrer"
-              className="text-slate-700 hover:text-slate-500 transition-colors flex-shrink-0"
+              style={{ color: 'var(--text-muted)', flexShrink: 0 }}
               title="View on explorer"
             >
               <ExternalLink size={11} />

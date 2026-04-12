@@ -244,12 +244,18 @@ export default function HomePage() {
           ref={canvasRef}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         />
-        {/* Radial gradient overlay */}
+        {/* Radial glow orb — teal brand color */}
         <div style={{
           position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(52,211,153,0.06) 0%, transparent 70%)',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 500,
+          height: 500,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(56,240,255,0.06) 0%, transparent 70%)',
           pointerEvents: 'none',
+          zIndex: 0,
         }} />
 
         {/* Hero content */}
@@ -267,9 +273,9 @@ export default function HomePage() {
         }}>
           {/* Headline */}
           <h1 style={{
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-display)',
             fontSize: 'clamp(2.2rem, 6vw, 4rem)',
-            fontWeight: 700,
+            fontWeight: 800,
             lineHeight: 1.1,
             margin: 0,
           }}>
@@ -318,51 +324,17 @@ export default function HomePage() {
           {/* CTA row */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Link
-                href="/missions"
-                style={{
-                  background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
-                  color: '#070B14',
-                  padding: '12px 24px',
-                  borderRadius: 12,
-                  fontWeight: 700,
-                  fontSize: 14,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  minHeight: 44,
-                  boxShadow: '0 0 32px rgba(255,209,102,0.3), 0 4px 20px rgba(0,0,0,0.4)',
-                }}
-              >
+              <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none' }}>
                 Start Observing →
               </Link>
-              <Link
-                href="/sky"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'white',
-                  padding: '12px 24px',
-                  borderRadius: 12,
-                  fontSize: 14,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  minHeight: 44,
-                  transition: 'background 0.2s',
-                }}
-                onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; }}
-                onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
-              >
+              <Link href="/sky" className="btn-ghost" style={{ textDecoration: 'none' }}>
                 Tonight&apos;s Sky →
               </Link>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 4 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34D399', animation: 'pulse 2s infinite', display: 'inline-block' }} />
-                Live on Solana Devnet
-              </span>
-            </p>
+            <span className="badge-pill badge-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+              <span className="live-dot" />
+              Live on Solana Devnet
+            </span>
           </div>
 
           {/* App nav shortcuts */}
@@ -375,19 +347,17 @@ export default function HomePage() {
             flexWrap: 'wrap',
           }}>
             {[
-              { href: '/sky',         Icon: CloudSun,    label: 'Sky',      sub: "Tonight's forecast",  color: '#38F0FF' },
-              { href: '/missions',    Icon: Satellite,   label: 'Missions', sub: 'Earn Stars tokens',   color: '#34d399' },
-              { href: '/chat',        Icon: Sparkles,    label: 'ASTRA',    sub: 'AI astronomer',       color: '#8B5CF6' },
-              { href: '/marketplace', Icon: ShoppingBag, label: 'Shop',     sub: 'Partner stores',      color: '#FFD166' },
+              { href: '/sky',         Icon: CloudSun,    label: 'Sky',      sub: "Tonight's forecast",  color: 'var(--accent)' },
+              { href: '/missions',    Icon: Satellite,   label: 'Missions', sub: 'Earn Stars tokens',   color: 'var(--success)' },
+              { href: '/chat',        Icon: Sparkles,    label: 'ASTRA',    sub: 'AI astronomer',       color: '#A855F7' },
+              { href: '/marketplace', Icon: ShoppingBag, label: 'Shop',     sub: 'Partner stores',      color: 'var(--stars)' },
             ].map(item => (
               <Link
                 key={item.href}
                 href={item.href}
+                className="card-base"
                 style={{
                   flex: '1 1 80px',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 16,
                   padding: '14px 12px',
                   textAlign: 'center',
                   textDecoration: 'none',
@@ -399,8 +369,8 @@ export default function HomePage() {
                 }}
               >
                 <item.Icon size={20} color={item.color} strokeWidth={1.5} />
-                <p style={{ color: item.color, fontSize: 12, fontWeight: 600, margin: 0 }}>{item.label}</p>
-                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, margin: 0 }}>{item.sub}</p>
+                <p style={{ color: item.color, fontSize: 12, fontWeight: 600, margin: 0, fontFamily: 'var(--font-display)' }}>{item.label}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 10, margin: 0 }}>{item.sub}</p>
               </Link>
             ))}
           </div>
@@ -443,14 +413,21 @@ export default function HomePage() {
                     transition: 'all 0.25s',
                   }}
                 >
-                  <span style={{
-                    fontSize: 9,
-                    fontFamily: 'monospace',
-                    fontWeight: 700,
-                    color: active ? '#34d399' : 'rgba(255,255,255,0.25)',
+                  <div style={{
+                    width: 28, height: 28, borderRadius: '50%',
+                    background: active ? 'var(--accent-dim)' : 'rgba(255,255,255,0.04)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.25s',
                   }}>
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
+                    <span style={{
+                      fontSize: 11,
+                      fontFamily: 'var(--font-display)',
+                      fontWeight: 700,
+                      color: active ? 'var(--accent)' : 'rgba(255,255,255,0.25)',
+                    }}>
+                      {i + 1}
+                    </span>
+                  </div>
                   <item.icon
                     size={18}
                     color={active ? '#34d399' : 'rgba(255,255,255,0.25)'}
@@ -466,10 +443,7 @@ export default function HomePage() {
             const step = howItWorksSteps[activeStep];
             const StepIcon = step.icon;
             return (
-              <div style={{
-                background: 'rgba(52,211,153,0.04)',
-                border: '1px solid rgba(52,211,153,0.15)',
-                borderRadius: 16,
+              <div className="card-base" style={{
                 padding: '18px 16px',
                 display: 'flex',
                 alignItems: 'center',
@@ -478,13 +452,13 @@ export default function HomePage() {
                 <div style={{
                   width: 52, height: 52, flexShrink: 0,
                   borderRadius: 14,
-                  background: 'rgba(52,211,153,0.1)',
-                  border: '1px solid rgba(52,211,153,0.2)',
+                  background: 'var(--accent-dim)',
+                  border: '1px solid var(--accent-border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                  <StepIcon size={24} color="#34d399" strokeWidth={1.5} />
+                  <StepIcon size={24} color="var(--accent)" strokeWidth={1.5} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: 'white', fontWeight: 700, fontSize: 14, margin: '0 0 4px' }}>
@@ -522,18 +496,15 @@ export default function HomePage() {
           {/* Section header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+              <h2 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
                 Tonight&apos;s Sky
               </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span className="pulse-dot" style={{
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: 'rgba(52,211,153,0.8)',
-                }} />
-                <span style={{ color: 'rgba(52,211,153,0.8)', fontSize: 11 }}>Live</span>
-              </div>
+              <span className="badge-pill badge-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10 }}>
+                <span className="live-dot" />
+                Live
+              </span>
             </div>
-            <Link href="/sky" style={{ color: '#34d399', fontSize: 13, textDecoration: 'none' }}>
+            <Link href="/sky" style={{ color: 'var(--accent)', fontSize: 13, textDecoration: 'none', fontFamily: 'var(--font-display)', fontWeight: 500 }}>
               View full forecast →
             </Link>
           </div>
@@ -567,11 +538,11 @@ export default function HomePage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+              <h2 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
                 Active Missions
               </h2>
-              <Link href="/missions" style={{ color: '#34d399', fontSize: 13, textDecoration: 'none' }}>
-                All missions →
+              <Link href="/missions" style={{ color: 'var(--accent)', fontSize: 13, textDecoration: 'none', fontFamily: 'var(--font-display)', fontWeight: 500 }}>
+                View all missions →
               </Link>
             </div>
 
@@ -624,60 +595,36 @@ export default function HomePage() {
 
             {/* Mission cards */}
             {MISSIONS.slice(0, 4).map(m => {
-              const diff = m.difficulty === 'Beginner'
-                ? { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
+              const diffClass = m.difficulty === 'Beginner'
+                ? 'badge-pill badge-success'
                 : m.difficulty === 'Intermediate'
-                ? { bg: 'rgba(56,240,255,0.12)', color: '#38F0FF' }
+                ? 'badge-pill badge-accent'
                 : m.difficulty === 'Hard'
-                ? { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B' }
-                : { bg: 'rgba(255,100,100,0.12)', color: '#ff6464' };
+                ? 'badge-pill badge-warning'
+                : 'badge-pill badge-error';
+              const iconBg = m.difficulty === 'Beginner'
+                ? 'var(--success-dim)'
+                : m.difficulty === 'Intermediate'
+                ? 'var(--accent-dim)'
+                : m.difficulty === 'Hard'
+                ? 'var(--warning-dim)'
+                : 'var(--error-dim)';
               return (
                 <Link
                   key={m.id}
                   href="/missions"
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 16,
-                    padding: 16,
-                    textDecoration: 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
-                    transition: 'border-color 0.2s, transform 0.2s',
-                  }}
-                  onMouseOver={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = 'rgba(255,255,255,0.15)';
-                    el.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseOut={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = 'rgba(255,255,255,0.08)';
-                    el.style.transform = 'translateY(0)';
-                  }}
+                  className="card-base"
+                  style={{ padding: 16, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}
                 >
-                  {/* Top row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: diff.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18 }}>
                       {m.emoji}
                     </div>
-                    <span style={{ color: 'white', fontWeight: 600, fontSize: 13, flex: 1 }}>{m.name}</span>
-                    <span style={{
-                      background: diff.bg,
-                      color: diff.color,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      padding: '2px 8px',
-                      borderRadius: 999,
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {m.difficulty}
-                    </span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13, flex: 1, fontFamily: 'var(--font-display)' }}>{m.name}</span>
+                    <span className={diffClass} style={{ fontSize: 10, whiteSpace: 'nowrap' }}>{m.difficulty}</span>
                   </div>
-                  {/* Description */}
                   <p style={{
-                    color: 'rgba(255,255,255,0.45)',
+                    color: 'var(--text-muted)',
                     fontSize: 11,
                     margin: 0,
                     lineHeight: 1.5,
@@ -688,9 +635,8 @@ export default function HomePage() {
                   }}>
                     {m.desc}
                   </p>
-                  {/* Bottom row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#FFD166', fontWeight: 700, fontSize: 13 }}>✦ +{m.stars}</span>
+                    <span className="badge-pill badge-stars" style={{ fontSize: 12 }}>✦ +{m.stars}</span>
                   </div>
                 </Link>
               );
@@ -755,10 +701,10 @@ export default function HomePage() {
         <div style={{ width: '100%', background: 'linear-gradient(180deg, rgba(139,92,246,0.04) 0%, transparent 100%)', borderRadius: 20, padding: '28px 20px', border: '1px solid rgba(139,92,246,0.05)' }}>
           {/* Section header */}
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
+            <h2 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
               Meet ASTRA
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 4, marginBottom: 0 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4, marginBottom: 0 }}>
               Your AI astronomer. Available 24/7.
             </p>
           </div>
@@ -777,9 +723,9 @@ export default function HomePage() {
             {/* Bubble 1 — user */}
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <div style={{
-                background: 'rgba(56,240,255,0.12)',
-                border: '1px solid rgba(56,240,255,0.2)',
-                color: 'white',
+                background: 'var(--accent-dim)',
+                border: '1px solid var(--accent-border)',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 borderRadius: '16px 16px 2px 16px',
                 padding: '8px 16px',
@@ -791,11 +737,11 @@ export default function HomePage() {
 
             {/* Bubble 2 — ASTRA */}
             <div style={{ marginTop: 12 }}>
-              <p style={{ color: '#34d399', fontSize: 11, margin: '0 0 4px 0' }}>ASTRA ✦</p>
+              <p style={{ color: 'var(--accent)', fontSize: 11, margin: '0 0 4px 0', fontFamily: 'var(--font-display)', fontWeight: 600 }}>ASTRA ✦</p>
               <div style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.85)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--border-default)',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 borderRadius: '16px 16px 16px 2px',
                 padding: '8px 16px',
@@ -809,9 +755,9 @@ export default function HomePage() {
             {/* Bubble 3 — user */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
               <div style={{
-                background: 'rgba(56,240,255,0.12)',
-                border: '1px solid rgba(56,240,255,0.2)',
-                color: 'white',
+                background: 'var(--accent-dim)',
+                border: '1px solid var(--accent-border)',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 borderRadius: '16px 16px 2px 16px',
                 padding: '8px 16px',
@@ -824,8 +770,8 @@ export default function HomePage() {
             {/* Typing indicator */}
             <div style={{ marginTop: 12 }}>
               <div style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--border-default)',
                 borderRadius: '16px 16px 16px 2px',
                 padding: '8px 16px',
                 display: 'inline-flex',
@@ -837,11 +783,11 @@ export default function HomePage() {
                     <div
                       key={n}
                       className={`typing-dot-${n}`}
-                      style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }}
+                      style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }}
                     />
                   ))}
                 </div>
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>ASTRA is thinking...</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>ASTRA is thinking...</span>
               </div>
             </div>
           </div>
@@ -909,10 +855,10 @@ export default function HomePage() {
         <div style={{ width: '100%', background: 'linear-gradient(180deg, rgba(255,209,102,0.03) 0%, transparent 100%)', borderRadius: 20, padding: '28px 20px', border: '1px solid rgba(255,209,102,0.04)' }}>
           {/* Section header */}
           <div style={{ marginBottom: 20 }}>
-            <h2 style={{ color: 'white', fontFamily: 'Georgia, serif', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
+            <h2 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
               Earn Stars. Spend Real Rewards.
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 6, marginBottom: 0, lineHeight: 1.6 }}>
               Complete sky missions to earn Stars tokens and compressed NFTs on Solana. Redeem Stars at partner telescope stores worldwide.
             </p>
           </div>
@@ -942,9 +888,9 @@ export default function HomePage() {
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: card.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <card.icon size={22} color={card.iconColor} strokeWidth={1.5} />
                 </div>
-                <p style={{ color: 'white', fontWeight: 600, fontSize: 14, margin: 0 }}>{card.title}</p>
-                <p style={{ color: '#FFD166', fontWeight: 700, fontSize: 13, margin: 0 }}>{card.reward}</p>
-                <p style={{ color: '#34d399', fontSize: 12, margin: 0 }}>{card.stars}</p>
+                <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 14, margin: 0, fontFamily: 'var(--font-display)' }}>{card.title}</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>{card.reward}</p>
+                <p style={{ color: 'var(--stars)', fontSize: 12, margin: 0, fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{card.stars}</p>
                 {/* Progress bar */}
                 <div style={{ width: '100%', height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 999, marginTop: 4 }}>
                   <div style={{ width: `${card.progress}%`, height: '100%', background: '#34d399', borderRadius: 999 }} />
@@ -969,8 +915,8 @@ export default function HomePage() {
             marginBottom: 20,
           }}>
             <div>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: '0 0 4px 0' }}>Your Stars</p>
-              <p style={{ color: '#FFD166', fontWeight: 700, fontSize: 24, margin: 0 }}>0 ✦</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 12, margin: '0 0 4px 0' }}>Your Stars</p>
+              <p style={{ color: 'var(--stars)', fontWeight: 700, fontSize: 24, margin: 0, fontFamily: 'var(--font-mono)' }}>0 ✦</p>
             </div>
             <div style={{ flex: 1, minWidth: 160, maxWidth: 280 }}>
               <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: '0 0 6px 0' }}>Next reward at 50 ✦</p>

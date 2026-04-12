@@ -6,6 +6,8 @@ import { Telescope, Satellite, ExternalLink, Lock } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import Link from 'next/link';
 import PageTransition from '@/components/ui/PageTransition';
+import StaggerChildren from '@/components/ui/StaggerChildren';
+import { SkeletonGrid } from '@/components/ui/Skeleton';
 
 interface NftAttribute {
   trait_type: string;
@@ -27,14 +29,6 @@ function getAttr(attrs: NftAttribute[] | undefined, key: string): string {
   return String(attrs?.find(a => a.trait_type === key)?.value ?? '');
 }
 
-function cloudCoverColor(val: string): string {
-  const n = parseFloat(val);
-  if (isNaN(n)) return 'text-white/50';
-  if (n < 30) return 'text-green-400';
-  if (n <= 60) return 'text-amber-400';
-  return 'text-red-400';
-}
-
 export default function NftsPage() {
   const { authenticated, ready, login } = usePrivy();
   const { wallets } = useWallets();
@@ -42,6 +36,7 @@ export default function NftsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [starsBalance, setStarsBalance] = useState<number>(0);
+  const [sort, setSort] = useState<'recent' | 'stars'>('recent');
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
   const address = solanaWallet?.address ?? null;
@@ -100,71 +95,43 @@ export default function NftsPage() {
 
   if (!ready || !authenticated) {
     const demoNfts = [
-      { name: 'Stellar Observation #001', target: 'Moon', date: 'Apr 9, 2026', cloudCover: '12', cloudColor: 'text-green-400', stars: '50' },
-      { name: 'Stellar Observation #002', target: 'Jupiter', date: 'Apr 8, 2026', cloudCover: '24', cloudColor: 'text-green-400', stars: '75' },
-      { name: 'Stellar Observation #003', target: 'Orion Nebula', date: 'Apr 7, 2026', cloudCover: '41', cloudColor: 'text-amber-400', stars: '100' },
+      { name: 'Stellar Observation #001', target: 'Moon', date: 'Apr 9, 2026', cloudCover: '12', stars: '50' },
+      { name: 'Stellar Observation #002', target: 'Jupiter', date: 'Apr 8, 2026', cloudCover: '24', stars: '75' },
+      { name: 'Stellar Observation #003', target: 'Orion Nebula', date: 'Apr 7, 2026', cloudCover: '41', stars: '100' },
     ];
 
     return (
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 animate-page-enter flex flex-col gap-6">
-        {/* Sign-in card */}
-        <div
-          className="rounded-2xl p-5 sm:p-6"
-          style={{
-            background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.5))',
-            border: '1px solid rgba(56,240,255,0.1)',
-          }}
-        >
+        <div className="card-base p-5 sm:p-6">
           <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)' }}
-            >
-              <Satellite size={22} className="text-[#38F0FF]" />
+            <div style={{ width: 48, height: 48, borderRadius: 16, background: 'var(--accent-dim)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Satellite size={22} color="var(--accent)" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>My Observations</h2>
-              <p className="text-slate-500 text-xs mt-0.5">Complete missions to mint on-chain observation NFTs.</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, margin: 0 }}>My Observations</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: '2px 0 0' }}>Complete missions to mint on-chain observation NFTs.</p>
             </div>
-            <button
-              onClick={login}
-              className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-xs transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
-            >
+            <button onClick={login} className="btn-primary" style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}>
               Sign In →
             </button>
           </div>
         </div>
 
-        {/* Demo NFT cards */}
         <div>
-          <p className="text-slate-600 text-[11px] uppercase tracking-widest mb-3">Example Observations</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <p style={{ color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, fontFamily: 'var(--font-display)' }}>Example Observations</p>
+          <div className="grid grid-cols-2 gap-3">
             {demoNfts.map(nft => (
-              <div
-                key={nft.name}
-                className="relative rounded-2xl overflow-hidden"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                {/* Overlay */}
-                <div className="absolute inset-0 z-10 backdrop-blur-[1px] bg-[#070B14]/50 flex flex-col items-center justify-center gap-1.5">
-                  <Lock size={16} className="text-slate-400" />
-                  <span className="text-slate-400 text-[11px] font-medium">Sign in to mint</span>
+              <div key={nft.name} className="card-base overflow-hidden p-0 relative">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1" style={{ backdropFilter: 'blur(2px)', background: 'rgba(7,11,20,0.5)' }}>
+                  <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>Sign in to mint</span>
                 </div>
-                {/* Card content (dimmed) */}
-                <div className="p-4 select-none pointer-events-none" aria-hidden="true">
-                  <p className="text-slate-400 text-base font-semibold">{nft.name}</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#38F0FF]/60">{nft.target}</span>
-                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-white/30">{nft.date}</span>
-                    <span className={`bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] opacity-40 ${nft.cloudColor}`}>{nft.cloudCover}% cloud</span>
-                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#FFD166]/50">✦ {nft.stars}</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-4 pt-3 border-t border-white/[0.06]">
-                    <span className="text-[10px] text-white/10">Compressed NFT</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[#38F0FF]/20">
-                      View on Explorer <ExternalLink size={10} />
-                    </span>
+                <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(56,240,255,0.06), rgba(122,95,255,0.08))' }} />
+                <div className="p-3 select-none" aria-hidden="true">
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, margin: 0, fontFamily: 'var(--font-display)' }}>{nft.name}</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    <span className="badge-pill badge-accent" style={{ fontSize: 10 }}>{nft.target}</span>
+                    <span className="badge-pill badge-stars" style={{ fontSize: 10 }}>✦ {nft.stars}</span>
                   </div>
                 </div>
               </div>
@@ -175,104 +142,114 @@ export default function NftsPage() {
     );
   }
 
+  const sortedNfts = [...nfts].sort((a, b) => {
+    if (sort === 'stars') {
+      const aStars = parseInt(getAttr(a.content?.metadata?.attributes, 'Stars Earned') || getAttr(a.content?.metadata?.attributes, 'Stars') || '0');
+      const bStars = parseInt(getAttr(b.content?.metadata?.attributes, 'Stars Earned') || getAttr(b.content?.metadata?.attributes, 'Stars') || '0');
+      return bStars - aStars;
+    }
+    return 0; // keep API order for recent
+  });
+
+  const totalStarsEarned = nfts.reduce((sum, item) => {
+    const s = parseInt(getAttr(item.content?.metadata?.attributes, 'Stars Earned') || getAttr(item.content?.metadata?.attributes, 'Stars') || '0');
+    return sum + s;
+  }, 0);
+
+  const bestCloud = nfts.reduce((best, item) => {
+    const cc = parseFloat(getAttr(item.content?.metadata?.attributes, 'Cloud Cover').replace('%', '') || '100');
+    return cc < best ? cc : best;
+  }, 100);
+
   return (
     <PageTransition>
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-6">
       <BackButton />
+
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--text-primary)', margin: 0 }}>
           My Observations
         </h1>
         {!loading && (
-          <span className="bg-white/[0.06] px-2 py-0.5 rounded-full text-xs text-white/50">
-            {nfts.length}
-          </span>
+          <span className="badge-pill badge-muted">{nfts.length} NFTs</span>
         )}
-        {starsBalance > 0 && (
-          <span className="ml-auto text-[#FFD166] text-sm font-semibold">
-            ✦ {starsBalance} Stars
-          </span>
+        {/* Sort toggle */}
+        {nfts.length > 1 && (
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+            {(['recent', 'stars'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setSort(s)}
+                className={sort === s ? 'badge-pill badge-accent' : 'badge-pill badge-muted'}
+                style={{ fontSize: 11, cursor: 'pointer', border: 'none', fontFamily: 'var(--font-display)' }}
+              >
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Loading — skeleton grid */}
-      {loading && (
-        <>
-          <style>{`
-            @keyframes nft-pulse { 0%,100% { opacity: 0.5 } 50% { opacity: 1 } }
-          `}</style>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[0, 1, 2].map(i => (
-              <div
-                key={i}
-                className="rounded-2xl h-48"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  animation: 'nft-pulse 1.5s ease-in-out infinite',
-                  animationDelay: `${i * 0.15}s`,
-                }}
-              />
-            ))}
-          </div>
-        </>
+      {/* Stats bar */}
+      {!loading && nfts.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          {[
+            { label: 'Total NFTs', value: String(nfts.length) },
+            { label: 'Stars Earned', value: `✦ ${totalStarsEarned}`, gold: true },
+            { label: 'Best Night', value: bestCloud < 30 ? 'Clear' : `${Math.round(bestCloud)}%`, clear: bestCloud < 30 },
+          ].map(stat => (
+            <div key={stat.label} className="card-base p-3 text-center">
+              <p style={{
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                fontSize: 18,
+                color: stat.gold ? 'var(--stars)' : stat.clear ? 'var(--success)' : 'var(--text-primary)',
+                margin: 0,
+              }}>
+                {stat.value}
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 10, margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-body)' }}>
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
       )}
+
+      {/* Loading */}
+      {loading && <SkeletonGrid cols={2} count={4} />}
 
       {/* Error */}
       {error && !loading && (
-        <div className="flex flex-col items-center justify-center py-16 gap-4">
-          <p className="text-slate-400 text-sm">Couldn&apos;t load NFTs</p>
-          <button
-            onClick={fetchNfts}
-            className="px-4 py-2 min-h-[44px] rounded-xl text-sm font-semibold text-white transition-all hover:opacity-80"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-          >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 16 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Couldn&apos;t load NFTs</p>
+          <button onClick={fetchNfts} className="btn-ghost" style={{ padding: '8px 20px', minHeight: 40, fontSize: 13 }}>
             Retry
           </button>
         </div>
       )}
 
-      {/* Empty */}
+      {/* Empty state */}
       {!loading && !error && nfts.length === 0 && (
-        <div className="flex flex-col items-center gap-5">
-          {/* Demo card with overlay */}
-          <div className="relative w-full rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            {/* Overlay */}
-            <div className="absolute inset-0 z-10 backdrop-blur-[2px] bg-[#070B14]/60 flex flex-col items-center justify-center gap-2 text-center px-6">
-              <Telescope size={28} className="text-[#38F0FF]/70" />
-              <p className="text-white text-sm font-semibold">Complete your first observation</p>
-              <p className="text-slate-400 text-xs">to earn a Discovery Attestation NFT</p>
-              <Link
-                href="/missions"
-                className="mt-1 inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl font-bold text-sm transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
-              >
-                Go to Missions →
-              </Link>
-            </div>
-            {/* Dimmed demo card */}
-            <div className="p-4 select-none pointer-events-none" aria-hidden="true">
-              <div style={{ width: '100%', aspectRatio: '1', background: 'linear-gradient(135deg, rgba(56,240,255,0.06), rgba(122,95,255,0.08))', borderRadius: 8 }} />
-              <p className="text-slate-400 text-base font-semibold mt-3">Stellar Observation #001</p>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#38F0FF]/60">Moon</span>
-                <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-white/30">Apr 12, 2026</span>
-                <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-green-400/50">12% cloud</span>
-                <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#FFD166]/50">✦ 50</span>
-              </div>
-              <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/[0.06]">
-                <span className="text-[10px] text-white/10">Compressed NFT</span>
-                <span className="inline-flex items-center gap-1 text-[10px] text-[#38F0FF]/20">View on Explorer <ExternalLink size={10} /></span>
-              </div>
-            </div>
-          </div>
+        <div style={{ padding: '64px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}>
+          <span style={{ fontSize: 60 }}>🔭</span>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 20, color: 'var(--text-primary)', margin: 0 }}>
+            No observations yet
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: 0, maxWidth: 280 }}>
+            Complete a sky mission to seal your first discovery on Solana
+          </p>
+          <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none', marginTop: 8 }}>
+            Start Observing →
+          </Link>
         </div>
       )}
 
       {/* NFT Grid */}
-      {!loading && !error && nfts.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {nfts.map(item => {
+      {!loading && !error && sortedNfts.length > 0 && (
+        <StaggerChildren stagger={50} className="grid grid-cols-2 gap-3">
+          {sortedNfts.map(item => {
             const name = item.content?.metadata?.name ?? 'Stellar Observation';
             const attrs = item.content?.metadata?.attributes;
             const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || 'Unknown';
@@ -284,67 +261,89 @@ export default function NftsPage() {
             const cc = cloudCover.replace('%', '') || '0';
             const ts = date ? new Date(date).getTime() : Date.now();
             const nftImageUrl = `/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat ?? 0}&lon=${lon ?? 0}&cc=${cc}&stars=${stars || 0}`;
+            const ccNum = parseFloat(cc);
 
             return (
               <div
                 key={item.id}
-                className="rounded-2xl overflow-hidden transition-all hover:border-white/[0.12]"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                className="card-base overflow-hidden p-0"
+                style={{ transition: 'transform 0.15s, box-shadow 0.15s' }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
+                  (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-glow-accent)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '';
                 }}
               >
+                {/* Star map image */}
                 <img
                   src={nftImageUrl}
                   alt={target}
-                  style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }}
+                  style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
                   loading="lazy"
                 />
-                <div className="p-4">
-                <p className="text-white text-base font-semibold">{name}</p>
 
-                {/* Attribute pills */}
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {target && (
-                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#38F0FF]">
-                      {target}
-                    </span>
-                  )}
-                  {date && (
-                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-white/50">
-                      {date}
-                    </span>
-                  )}
-                  {cloudCover && (
-                    <span className={`bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] ${cloudCoverColor(cloudCover)}`}>
-                      {cloudCover}% cloud
-                    </span>
-                  )}
-                  {stars && (
-                    <span className="bg-white/[0.04] px-2.5 py-1 rounded-full text-[11px] text-[#FFD166]">
-                      ✦ {stars}
-                    </span>
-                  )}
-                </div>
+                {/* Card content */}
+                <div style={{ padding: 12 }}>
+                  <p style={{
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-display)',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {name}
+                  </p>
 
-                {/* Footer */}
-                <div className="flex justify-between items-center mt-4 pt-3 border-t border-white/[0.06]">
-                  <span className="text-[10px] text-white/20">Compressed NFT</span>
+                  {/* Attribute pills */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                    {target && <span className="badge-pill badge-accent" style={{ fontSize: 10 }}>{target}</span>}
+                    {cloudCover && (
+                      <span
+                        className={`badge-pill ${ccNum < 20 ? 'badge-success' : ccNum < 50 ? 'badge-warning' : 'badge-error'}`}
+                        style={{ fontSize: 10 }}
+                      >
+                        {ccNum < 20 ? 'Clear' : ccNum < 50 ? 'Partial' : 'Cloudy'}
+                      </span>
+                    )}
+                    {stars && <span className="badge-pill badge-stars" style={{ fontSize: 10 }}>✦ {stars}</span>}
+                  </div>
+
+                  {/* Explorer link */}
                   <a
                     href={`https://explorer.solana.com/address/${item.id}?cluster=devnet`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-[#38F0FF] hover:opacity-80 transition-opacity"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginTop: 8,
+                      fontSize: 10,
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--accent)',
+                      textDecoration: 'none',
+                    }}
                   >
-                    View on Explorer
-                    <ExternalLink size={10} />
+                    <ExternalLink size={12} />
+                    Explorer
                   </a>
-                </div>
                 </div>
               </div>
             );
           })}
-        </div>
+        </StaggerChildren>
+      )}
+
+      {starsBalance > 0 && (
+        <p style={{ textAlign: 'center', color: 'var(--stars)', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 14 }}>
+          Total balance: ✦ {starsBalance} Stars
+        </p>
       )}
     </div>
     </PageTransition>
