@@ -245,20 +245,32 @@ export default function NftsPage() {
           {nfts.map(item => {
             const name = item.content?.metadata?.name ?? 'Stellar Observation';
             const attrs = item.content?.metadata?.attributes;
-            const target = getAttr(attrs, 'Target');
+            const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || 'Unknown';
             const date = getAttr(attrs, 'Date');
             const cloudCover = getAttr(attrs, 'Cloud Cover');
-            const stars = getAttr(attrs, 'Stars');
+            const stars = getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars');
+            const loc = getAttr(attrs, 'Location') || '0, 0';
+            const [lat, lon] = loc.split(',').map((s: string) => s.trim());
+            const cc = cloudCover.replace('%', '') || '0';
+            const ts = date ? new Date(date).getTime() : Date.now();
+            const nftImageUrl = `/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat ?? 0}&lon=${lon ?? 0}&cc=${cc}&stars=${stars || 0}`;
 
             return (
               <div
                 key={item.id}
-                className="rounded-2xl p-4 transition-all hover:border-white/[0.12]"
+                className="rounded-2xl overflow-hidden transition-all hover:border-white/[0.12]"
                 style={{
                   background: 'rgba(255,255,255,0.03)',
                   border: '1px solid rgba(255,255,255,0.06)',
                 }}
               >
+                <img
+                  src={nftImageUrl}
+                  alt={target}
+                  style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }}
+                  loading="lazy"
+                />
+                <div className="p-4">
                 <p className="text-white text-base font-semibold">{name}</p>
 
                 {/* Attribute pills */}
@@ -297,6 +309,7 @@ export default function NftsPage() {
                     View on Explorer
                     <ExternalLink size={10} />
                   </a>
+                </div>
                 </div>
               </div>
             );

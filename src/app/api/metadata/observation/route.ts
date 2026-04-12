@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     name: `Stellar: ${target}`,
     description: `Verified observation of ${target}. Cloud cover ${cc}%, oracle hash ${hash}. Sealed on Solana.`,
-    image: 'https://stellarrclub.vercel.app/observation-nft.png',
+    image: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'}/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat}&lon=${lon}&cc=${cc}&stars=${stars}`,
     external_url: 'https://stellarrclub.vercel.app',
     attributes: [
       { trait_type: 'Target', value: target },
