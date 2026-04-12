@@ -47,6 +47,10 @@ No other project on any chain targets amateur astronomy. Zero direct competition
 | Database | Neon serverless Postgres via Drizzle ORM |
 | Deploy | Vercel |
 
+## Screenshots
+
+> Screenshots will be added before final submission.
+
 ## Live Demo
 
 **[stellarrclub.vercel.app](https://stellarrclub.vercel.app)**
@@ -89,6 +93,7 @@ STARS_TOKEN_MINT=
 NEXT_PUBLIC_COLLECTION_MINT_ADDRESS=
 NEXT_PUBLIC_HELIUS_RPC_URL=
 NEXT_PUBLIC_APP_URL=https://stellarrclub.vercel.app
+INTERNAL_API_SECRET=             # Optional: used for server-to-server route authorization
 ```
 
 ## Demo Script (3 minutes)

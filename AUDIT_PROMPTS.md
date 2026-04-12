@@ -675,7 +675,7 @@ The overlay manages its own visibility via localStorage — no props needed from
 
 ---
 
-### DESIGN-1 — Typography + Color CSS Variables
+### ✅ DESIGN-1 — Typography + Color CSS Variables
 
 See full prompt in STELLAR_DESIGN_PROMPTS.md → PROMPT D1.
 
@@ -688,7 +688,7 @@ Summary of changes:
 
 ---
 
-### DESIGN-2 — ScoreRing + StatCard + LoadingRing Components
+### ✅ DESIGN-2 — ScoreRing + StatCard + LoadingRing Components
 
 See full prompt in STELLAR_DESIGN_PROMPTS.md → PROMPT D2.
 
@@ -699,7 +699,7 @@ Summary of changes:
 
 ---
 
-### DESIGN-3 — Sky Page Visual Upgrade
+### ✅ DESIGN-3 — Sky Page Visual Upgrade
 
 ```
 I'm building Stellar. The sky page (/sky) is functional but looks plain. I want to apply the new design system to make it feel premium.
@@ -1006,12 +1006,12 @@ In src/app/darksky/page.tsx:
 
 ---
 
-## PHASE 9 — Hackathon Differentiators
+## PHASE 9 — Hackathon Differentiators ✅ DONE
 ### May 5–8
 
 ---
 
-### FARCASTER-1 — Farcaster Frame Meta Tags
+### FARCASTER-1 — Farcaster Frame Meta Tags ✅ DONE
 
 ```
 I'm building Stellar. Superfan (Colosseum runner-up) used Farcaster Frames. Adding basic Frame meta tags to our OG image route costs almost nothing and signals current-gen Solana ecosystem awareness to judges.
@@ -1065,7 +1065,7 @@ If it doesn't exist → create a minimal one:
 
 ---
 
-### LEADERBOARD-1 — Wire Real Leaderboard from Database
+### LEADERBOARD-1 — Wire Real Leaderboard from Database ✅ DONE
 
 ```
 I'm building Stellar. The leaderboard page shows static mock data. For the hackathon demo, it needs to show real data from the observation_log database.
@@ -1113,12 +1113,12 @@ In src/app/leaderboard/page.tsx:
 
 ---
 
-## PHASE 10 — Final Submission Prep
+## PHASE 10 — Final Submission Prep ✅ DONE
 ### May 8–10
 
 ---
 
-### SUBMIT-1 — Pre-Submission Checklist Execution
+### SUBMIT-1 — Pre-Submission Checklist Execution ✅ DONE
 
 ```
 I'm building Stellar. Hackathon deadline is May 10. I need to do a final pass to make sure everything is ready for judge review.

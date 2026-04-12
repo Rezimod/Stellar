@@ -35,5 +35,4 @@ export async function awardStarsOnChain(
     recipientKey
   )
   await mintTo(connection, feePayerKeypair, mintKey, ata.address, feePayerKeypair, BigInt(amount))
-  console.log('[stars] Awarded', amount, 'stars to', recipientAddress, 'for', reason)
 }

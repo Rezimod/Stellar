@@ -54,7 +54,6 @@ export async function POST(req: NextRequest) {
     const signature = await connection.sendRawTransaction(transaction.serialize());
     await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
 
-    console.log('[club/activate] Membership recorded for', userKey.toString(), ':', signature);
     return NextResponse.json({
       txId: signature,
       explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=devnet`,

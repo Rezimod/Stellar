@@ -106,8 +106,6 @@ export async function POST(req: NextRequest) {
       BigInt(amount)
     );
 
-    console.log('[Stars] Awarded', amount, 'to', recipientAddress, 'for', reason);
-
     // Record idempotency key so retries return the cached result
     if (typeof idempotencyKey === 'string' && idempotencyKey.length > 0) {
       const db = getDb();

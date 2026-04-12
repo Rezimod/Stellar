@@ -42,8 +42,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Stellar — Observe the Sky, Earn on Solana',
-  description: 'The global astronomy app that brings telescope owners on-chain. Verify observations, earn Stars tokens, collect NFT proofs, and shop at local dealers.',
+  title: 'Stellar — Observe the Night Sky',
+  description: 'Photograph the night sky. Get AI-verified. Earn Stars tokens on Solana. Shop telescopes from your local dealer.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -51,21 +51,23 @@ export const metadata: Metadata = {
     title: 'Stellar',
   },
   openGraph: {
-    title: 'Stellar — Observe the Sky, Earn on Solana',
-    description: 'Photograph the night sky from anywhere in the world. Earn Stars. Collect discovery NFTs. Shop telescopes at your local dealer.',
+    title: 'Stellar — Observe the Night Sky',
+    description: 'Photograph the night sky. Get AI-verified. Earn Stars tokens on Solana. Shop telescopes from your local dealer.',
     images: ['https://stellarrclub.vercel.app/api/og/sky'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Stellar — Observe the Sky, Earn on Solana',
-    description: 'Photograph the night sky from anywhere in the world. Earn Stars. Collect discovery NFTs. Shop telescopes at your local dealer.',
+    title: 'Stellar — Observe the Night Sky',
+    description: 'Photograph the night sky. Get AI-verified. Earn Stars tokens on Solana. Shop telescopes from your local dealer.',
     images: ['https://stellarrclub.vercel.app/api/og/sky'],
   },
   other: {
     'fc:frame': 'vNext',
     'fc:frame:image': 'https://stellarrclub.vercel.app/api/og/sky',
-    'fc:frame:button:1': 'Start Observing',
-    'fc:frame:post_url': 'https://stellarrclub.vercel.app',
+    'fc:frame:image:aspect_ratio': '1.91:1',
+    'fc:frame:button:1': "Tonight's Sky →",
+    'fc:frame:button:1:action': 'link',
+    'fc:frame:button:1:target': 'https://stellarrclub.vercel.app',
   },
 };
 
