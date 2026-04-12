@@ -65,7 +65,7 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 min-h-[44px] transition-colors"
               style={{ color: isActive ? activeColor : inactiveColor, textDecoration: 'none' }}
             >
               {tab.icon}

@@ -85,6 +85,9 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col" style={{ height: 'calc(100dvh - 64px)' }}>
 
+      {/* Accessible page title */}
+      <h1 className="sr-only">ASTRA — AI Space Companion</h1>
+
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]">
         <div className="relative">
@@ -198,6 +201,7 @@ export default function ChatPage() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
             placeholder={locale === 'ka' ? 'ჰკითხე ASTRA-ს ნებისმიერი რამ…' : 'Ask ASTRA anything about the sky…'}
+            aria-label={locale === 'ka' ? 'შეტყობინება ASTRA-სთვის' : 'Message ASTRA'}
             disabled={!authenticated}
             className="flex-1 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none transition-colors disabled:opacity-40"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(56,240,255,0.1)' }}
@@ -207,6 +211,7 @@ export default function ChatPage() {
           <button
             onClick={() => send()}
             disabled={!input.trim() || loading || !authenticated}
+            aria-label={locale === 'ka' ? 'გაგზავნა' : 'Send message'}
             className="w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0 disabled:opacity-40"
             style={{
               background: input.trim() && !loading ? 'linear-gradient(135deg, #38F0FF, #1a8fa0)' : 'rgba(255,255,255,0.04)',

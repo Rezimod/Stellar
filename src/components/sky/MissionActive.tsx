@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Mission, SkyVerification, MissionState } from '@/lib/types';
 import { usePrivy } from '@privy-io/react-auth';
@@ -134,8 +135,18 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       if (res.ok) {
         const data = await res.json();
         txId = data.txId;
+      } else if (res.status === 400) {
+        const errData = await res.json().catch(() => ({}));
+        const msg: string = errData?.error ?? '';
+        if (msg.toLowerCase().includes('cloud cover') || msg.toLowerCase().includes('sky conditions')) {
+          setMintError('The sky is too cloudy to verify tonight. Check back when cloud cover drops below 70%.');
+          setStep('verified');
+          setMintDone(false);
+          return;
+        }
+        // Other 400 errors: fall through to sim_ path
       }
-      // On any API error: txId stays as sim_… and observation is saved as pending
+      // On other API errors: txId stays as sim_… and observation is saved as pending
     } catch {
       // Network / timeout: txId stays as sim_… — observation saved as pending
     }
@@ -495,7 +506,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               onMint={handleMint}
             />
             {mintError && (
-              <p className="mt-2 text-center text-xs text-amber-400">{mintError}</p>
+              <div className="mt-2 text-center">
+                <p className="text-xs text-amber-400">{mintError}</p>
+                {mintError.includes('cloudy') && (
+                  <Link href="/sky" className="text-xs text-[#38F0FF] underline mt-1 inline-block">
+                    Check sky forecast →
+                  </Link>
+                )}
+              </div>
             )}
           </>
         )}

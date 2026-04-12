@@ -215,7 +215,7 @@ export default function MissionsPage() {
                     )}
                     <button
                       onClick={() => setActiveQuiz(quiz)}
-                      className="px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
+                      className="px-3.5 py-2 min-h-[44px] rounded-xl text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
                       style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
                     >
                       {bestResult ? 'Retry' : 'Start'}

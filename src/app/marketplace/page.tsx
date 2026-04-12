@@ -112,7 +112,7 @@ function ProductCard({ product, showDealer, dealerName }: {
             href={product.externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] px-2.5 py-1.5 rounded-lg transition-colors flex-shrink-0"
+            className="text-[11px] px-2.5 py-1.5 rounded-lg transition-colors flex-shrink-0 min-h-[44px] flex items-center"
             style={{
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.1)',

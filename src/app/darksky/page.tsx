@@ -4,23 +4,12 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import BackButton from '@/components/shared/BackButton';
 import { Eye } from 'lucide-react';
+import { LOCATIONS } from '@/lib/darksky-locations';
 
 const DarkSkyMap = dynamic(
   () => import('@/components/darksky/DarkSkyMap'),
   { ssr: false, loading: () => <div style={{ height: 400, background: '#0D1321', borderRadius: 0 }} /> }
 );
-
-const LOCATIONS = [
-  { name: 'Kazbegi National Park', bortle: 2, region: 'Georgia' },
-  { name: 'Mestia / Svaneti', bortle: 2, region: 'Georgia' },
-  { name: 'Borjomi Gorge', bortle: 3, region: 'Georgia' },
-  { name: 'Kutaisi Outskirts', bortle: 4, region: 'Georgia' },
-  { name: 'Batumi Foothills', bortle: 5, region: 'Georgia' },
-  { name: 'Tbilisi', bortle: 8, region: 'Georgia' },
-  { name: 'Cherry Springs, Pennsylvania', bortle: 2, region: 'USA' },
-  { name: 'La Palma, Canary Islands', bortle: 1, region: 'Spain' },
-  { name: 'Atacama Desert, Chile', bortle: 1, region: 'Chile' },
-];
 
 function bortleColor(b: number): string {
   if (b <= 2) return '#34d399';

@@ -314,7 +314,9 @@ export default function HomePage() {
                   fontWeight: 700,
                   fontSize: 14,
                   textDecoration: 'none',
-                  display: 'inline-block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  minHeight: 44,
                   boxShadow: '0 0 32px rgba(255,209,102,0.3), 0 4px 20px rgba(0,0,0,0.4)',
                 }}
               >
@@ -330,7 +332,9 @@ export default function HomePage() {
                   borderRadius: 12,
                   fontSize: 14,
                   textDecoration: 'none',
-                  display: 'inline-block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  minHeight: 44,
                   transition: 'background 0.2s',
                 }}
                 onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; }}
