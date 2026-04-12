@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ECOSYSTEM } from '@/lib/constants';
 
 export default function Footer() {
   return (
@@ -19,29 +18,19 @@ export default function Footer() {
         {/* Nav links */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', alignItems: 'center' }}>
           {[
-            { href: '/sky',          label: 'Sky Forecast' },
-            { href: '/missions',     label: 'Missions' },
-            { href: '/chat',         label: 'ASTRA AI' },
-            { href: '/marketplace',  label: 'Marketplace' },
-            { href: '/profile',      label: 'Profile' },
-            { href: '/learn',        label: 'Learn' },
-            { href: ECOSYSTEM.store, label: 'Astroman ↗', external: true },
-            { href: 'https://github.com/Rezimod/Stellar', label: 'GitHub ↗', external: true },
-          ].map(link =>
-            link.external ? (
-              <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
-                className="hover:text-white transition-colors"
-                style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, textDecoration: 'none' }}>
-                {link.label}
-              </a>
-            ) : (
-              <Link key={link.label} href={link.href}
-                className="hover:text-white transition-colors"
-                style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, textDecoration: 'none' }}>
-                {link.label}
-              </Link>
-            )
-          )}
+            { href: '/sky',         label: 'Sky Forecast' },
+            { href: '/missions',    label: 'Missions' },
+            { href: '/learn',       label: 'Learn' },
+            { href: '/darksky',     label: 'Dark Sky Map' },
+            { href: '/marketplace', label: 'Marketplace' },
+            { href: '/profile',     label: 'Profile' },
+          ].map(link => (
+            <Link key={link.label} href={link.href}
+              className="hover:text-white transition-colors"
+              style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, textDecoration: 'none' }}>
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         {/* Copyright */}

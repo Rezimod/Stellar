@@ -15,6 +15,71 @@ import LocationPicker from '@/components/LocationPicker';
 import { useLocation } from '@/lib/location';
 import OnboardingOverlay from '@/components/shared/OnboardingOverlay';
 
+function EmailSubscribe() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'sent' | 'error'>('idle');
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.includes('@')) { setStatus('error'); return; }
+    // Store in localStorage as a lightweight demo; replace with real API call when ready
+    try {
+      const existing = JSON.parse(localStorage.getItem('stellar_subscribers') ?? '[]') as string[];
+      localStorage.setItem('stellar_subscribers', JSON.stringify([...existing, email]));
+    } catch {}
+    setStatus('sent');
+    setEmail('');
+  }
+
+  return (
+    <div style={{
+      marginTop: 32,
+      padding: '24px 20px',
+      borderRadius: 16,
+      background: 'rgba(52,211,153,0.04)',
+      border: '1px solid rgba(52,211,153,0.12)',
+      textAlign: 'center',
+    }}>
+      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600, margin: '0 0 4px' }}>
+        Get sky alerts &amp; telescope tips
+      </p>
+      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, margin: '0 0 16px' }}>
+        We&apos;ll notify you when conditions are perfect in your area.
+      </p>
+      {status === 'sent' ? (
+        <p style={{ color: '#34d399', fontSize: 13, fontWeight: 600 }}>✦ You&apos;re on the list — clear skies ahead!</p>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, maxWidth: 360, margin: '0 auto' }}>
+          <input
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setStatus('idle'); }}
+            style={{
+              flex: 1, padding: '8px 12px', borderRadius: 10, fontSize: 13,
+              background: 'rgba(255,255,255,0.05)',
+              border: `1px solid ${status === 'error' ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}`,
+              color: 'white', outline: 'none',
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              background: 'rgba(52,211,153,0.15)',
+              border: '1px solid rgba(52,211,153,0.3)',
+              color: '#34d399',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Notify me
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
 export default function HomePage() {
   const t = useTranslations();
   const { user } = usePrivy();
@@ -1057,16 +1122,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, textAlign: 'center', marginTop: 20 }}>
-            Built solo by a telescope shop owner from Georgia — for astronomers everywhere.
-          </p>
-
-          <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', marginTop: 16 }}>
-            Want to sell on Stellar?{' '}
-            <a href="mailto:rezi@astroman.ge" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>
-              Contact us →
-            </a>
-          </p>
+          <EmailSubscribe />
         </div>
 
       </div>

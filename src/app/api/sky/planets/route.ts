@@ -10,7 +10,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const planets = getVisiblePlanets(lat, lng, new Date());
+    const dateParam = req.nextUrl.searchParams.get('date');
+    const date = dateParam ? new Date(dateParam) : new Date();
+    const planets = getVisiblePlanets(lat, lng, isNaN(date.getTime()) ? new Date() : date);
     return NextResponse.json(planets, {
       headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
     });
