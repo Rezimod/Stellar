@@ -5,10 +5,20 @@ import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { useState, useEffect } from 'react';
-import { CloudSun, BookOpen, ShoppingBag, Satellite, User, Search, Map } from 'lucide-react';
+import { CloudSun, BookOpen, ShoppingBag, Satellite, User, Search, Map, AlignLeft, X, ExternalLink } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import { useTranslations } from 'next-intl';
 import SearchModal from './SearchModal';
+
+const NAV_LINKS = [
+  { href: '/sky',         label: 'Sky Forecast',  desc: "Tonight's conditions" },
+  { href: '/missions',    label: 'Missions',       desc: 'Observe & earn Stars' },
+  { href: '/chat',        label: 'ASTRA AI',       desc: 'Your AI astronomer' },
+  { href: '/darksky',     label: 'Dark Sky Map',   desc: 'Find dark sky sites' },
+  { href: '/marketplace', label: 'Marketplace',    desc: 'Shop telescopes' },
+  { href: '/nfts',        label: 'Discoveries',    desc: 'Your on-chain NFTs' },
+  { href: '/profile',     label: 'Profile',        desc: 'Account & stats' },
+];
 
 export default function Nav() {
   const pathname = usePathname();
@@ -18,6 +28,7 @@ export default function Nav() {
   const { setWallet } = useAppState();
   const [showMenu, setShowMenu] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const t = useTranslations('nav');
 
   useEffect(() => {
@@ -58,11 +69,82 @@ export default function Nav() {
   };
 
   return (
+    <>
+      <style>{`
+        @keyframes slideInLeft {
+          from { transform: translateX(-100%); }
+          to   { transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+      `}</style>
+
+      {/* Sidebar drawer */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-[60]" onClick={() => setDrawerOpen(false)}>
+          <div className="absolute inset-0" style={{ background: 'rgba(7,11,20,0.75)', backdropFilter: 'blur(4px)', animation: 'fadeIn 0.2s ease' }} />
+          <div
+            className="absolute top-0 left-0 h-full flex flex-col"
+            style={{
+              width: 'min(300px, 85vw)',
+              background: 'rgba(10,14,26,0.98)',
+              borderRight: '1px solid rgba(255,255,255,0.08)',
+              animation: 'slideInLeft 0.22s cubic-bezier(0.22,1,0.36,1)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ color: '#FFD166', fontSize: 14, letterSpacing: '0.18em', fontWeight: 800, fontFamily: 'monospace' }}>✦ STELLAR</span>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                <X size={13} />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: 'none' }}>
+              {NAV_LINKS.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setDrawerOpen(false)}
+                  className="flex flex-col px-4 py-3 rounded-xl mb-0.5 transition-all"
+                  style={{ textDecoration: 'none', background: 'transparent' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                >
+                  <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.85)' }}>{link.label}</span>
+                  <span className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{link.desc}</span>
+                </Link>
+              ))}
+            </nav>
+            <div className="px-5 py-4 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <a href="https://stellarrclub.vercel.app" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mb-2" style={{ color: '#34d399', fontSize: 11, textDecoration: 'none' }}>
+                stellarrclub.vercel.app <ExternalLink size={9} />
+              </a>
+              <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, margin: 0 }}>© 2026 Stellar · Built on Solana Devnet</p>
+            </div>
+          </div>
+        </div>
+      )}
+
     <nav className="glass-nav sticky top-0 z-40">
       <div className="max-w-5xl mx-auto px-3 sm:px-4">
 
         {/* Main row */}
         <div className="h-16 flex items-center justify-between gap-2">
+          {/* Hamburger */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors flex-shrink-0"
+            aria-label="Open navigation"
+          >
+            <AlignLeft size={18} />
+          </button>
+
           <Link href="/" className="flex-shrink-0" title="Stellar">
             <AstroLogo heightClass="h-7" />
           </Link>
@@ -168,5 +250,6 @@ export default function Nav() {
       </div>
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
+    </>
   );
 }
