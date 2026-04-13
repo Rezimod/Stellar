@@ -41,7 +41,6 @@ export default function Nav() {
     { href: '/learn',       label: 'Learn',          icon: <BookOpen size={16} /> },
     { href: '/darksky',     label: 'Dark Sky',       icon: <Map size={16} /> },
     { href: '/marketplace', label: t('marketplace'), icon: <ShoppingBag size={16} /> },
-    { href: '/profile',     label: t('profile'),     icon: <User size={16} /> },
   ];
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
