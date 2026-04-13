@@ -136,8 +136,8 @@ export default function Nav() {
         {/* ── Main row ── */}
         <div className="h-14 flex items-center relative">
 
-          {/* LEFT — hamburger + search (always visible here on mobile) */}
-          <div className="flex items-center gap-1 z-10 flex-shrink-0">
+          {/* ── MOBILE LEFT: hamburger + search ── */}
+          <div className="flex sm:hidden items-center gap-1 z-10 flex-shrink-0">
             <button
               onClick={() => setDrawerOpen(true)}
               className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
@@ -154,21 +154,28 @@ export default function Nav() {
             </button>
           </div>
 
-          {/* CENTER — logo, absolutely centered so it ignores left/right widths */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {/* ── MOBILE CENTER: logo absolutely centered ── */}
+          <div className="sm:hidden absolute inset-0 flex items-center justify-center pointer-events-none">
             <Link href="/" className="pointer-events-auto flex-shrink-0" title="Stellar">
               <AstroLogo heightClass="h-7" />
             </Link>
           </div>
 
-          {/* Desktop tabs — only show on sm+, pushed to center-right */}
-          <div className="hidden sm:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2 pointer-events-none" style={{ paddingLeft: 100 }}>
+          {/* ── DESKTOP LEFT: logo ── */}
+          <div className="hidden sm:flex items-center flex-shrink-0 mr-6">
+            <Link href="/" title="Stellar">
+              <AstroLogo heightClass="h-7" />
+            </Link>
+          </div>
+
+          {/* ── DESKTOP CENTER: tabs ── */}
+          <div className="hidden sm:flex flex-1 items-center justify-center gap-0.5">
             {tabs.map(tab => (
               <Link
                 key={tab.href}
                 href={tab.href}
                 title={tab.label}
-                className={`pointer-events-auto px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
                   pathname === tab.href
                     ? 'text-white'
                     : 'text-[rgba(255,255,255,0.45)] hover:text-white hover:bg-white/5'
@@ -181,8 +188,8 @@ export default function Nav() {
             ))}
           </div>
 
-          {/* RIGHT — stars balance + auth */}
-          <div className="ml-auto flex items-center gap-2 z-10 flex-shrink-0">
+          {/* ── RIGHT: stars + auth ── */}
+          <div className="ml-auto sm:ml-0 flex items-center gap-2 z-10 flex-shrink-0">
             {authenticated && (
               <Link
                 href="/profile"
@@ -261,42 +268,23 @@ export default function Nav() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-1.5" style={{ marginLeft: 12 }}>
-                <button
-                  onClick={() => login()}
-                  style={{
-                    height: 30,
-                    borderRadius: 9999,
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.14)',
-                    color: 'rgba(255,255,255,0.75)',
-                    padding: '0 11px',
-                    fontSize: 11,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => login()}
-                  style={{
-                    height: 30,
-                    borderRadius: 9999,
-                    background: 'linear-gradient(135deg, #14F195 0%, #9945FF 100%)',
-                    border: 'none',
-                    color: '#070B14',
-                    padding: '0 11px',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Register
-                </button>
-              </div>
+              <button
+                onClick={() => login()}
+                style={{
+                  height: 30,
+                  borderRadius: 9999,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  color: 'rgba(255,255,255,0.75)',
+                  padding: '0 14px',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Log In
+              </button>
             )}
           </div>
         </div>
