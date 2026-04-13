@@ -98,14 +98,7 @@
   100% { transform: translateX(200px) translateY(120px); opacity: 0; }
 }
 
-.animate-pulse-glow  { animation: pulse-glow  2s ease-in-out infinite; }
-
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
-  50%       { box-shadow: 0 0 16px 4px rgba(52,211,153,0.18); }
-}
-
-.animate-pulse-green { animation: pulse-green 2s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .animate-float      { animation: float    3s ease-in-out infinite; }
 .animate-breathe    { animation: breathe  4s ease-in-out infinite; }
 .animate-orbit      { animation: orbit   60s linear infinite; }

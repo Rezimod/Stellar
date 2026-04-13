@@ -3,27 +3,16 @@
 import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { Mission } from '@/lib/types';
-import { CheckCircle2, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 
 interface MissionListProps {
   onStart: (mission: Mission) => void;
 }
 
-const difficultyVariant: Record<string, 'green' | 'teal' | 'amber' | 'red' | 'default'> = {
-  Beginner:     'green',
-  Intermediate: 'teal',
-  Advanced:     'amber',
-  Hard:         'amber',
-  Expert:       'red',
-};
-
 export default function MissionList({ onStart }: MissionListProps) {
   const { state } = useAppState();
-  const completedEntries = state.completedMissions.filter(m => m.status === 'completed');
-  const completedIds = new Set(completedEntries.map(m => m.id));
+  const completedIds = new Set(state.completedMissions.filter(m => m.status === 'completed').map(m => m.id));
   const pendingIds   = new Set(state.completedMissions.filter(m => m.status === 'pending').map(m => m.id));
 
   function completedTodayId(id: string): boolean {
@@ -33,105 +22,102 @@ export default function MissionList({ onStart }: MissionListProps) {
     );
   }
 
-  function getOnChainTx(id: string): string | undefined {
-    return completedEntries.find(m => m.id === id && m.txId && !m.txId.startsWith('sim'))?.txId;
-  }
-
   return (
-    <div className="flex flex-col gap-2 stagger-children">
-      {MISSIONS.map((mission, idx) => {
-        const isRepeatable = mission.repeatable === true;
-        const done      = completedIds.has(mission.id) && !isRepeatable;
-        const doneToday = isRepeatable && completedTodayId(mission.id);
-        const pending   = pendingIds.has(mission.id);
-        const txId      = getOnChainTx(mission.id);
-        const canStart  = !done && !doneToday && !pending;
+    <>
+      <div className="grid grid-cols-2 gap-2.5" style={{ gridAutoRows: '1fr' }}>
+        {MISSIONS.map(mission => {
+          const isRepeatable = mission.repeatable === true;
+          const done    = completedIds.has(mission.id) && !isRepeatable;
+          const doneToday = isRepeatable && completedTodayId(mission.id);
+          const pending = pendingIds.has(mission.id);
+          const diff    = mission.difficulty === 'Beginner' ? 1 : mission.difficulty === 'Intermediate' ? 2 : mission.difficulty === 'Advanced' ? 3 : mission.difficulty === 'Hard' ? 4 : 5;
+          const diffLabel = mission.difficulty === 'Beginner' ? 'Easy' : mission.difficulty === 'Intermediate' ? 'Medium' : mission.difficulty === 'Advanced' ? 'Hard' : mission.difficulty === 'Hard' ? 'Hard+' : 'Expert';
 
-        const leftBorder = done
-          ? '3px solid var(--color-aurora-green, #34D399)'
-          : '3px solid var(--color-nebula-teal, #38F0FF)';
-
-        return (
-          <div
-            key={mission.id}
-            className="animate-fade-in-up flex items-center gap-3 px-4 py-3"
-            style={{
-              background: done ? 'rgba(255,255,255,0.015)' : 'var(--color-card-surface, #0F1D32)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderLeft: leftBorder,
-              borderRadius: 12,
-              opacity: done ? 0.58 : 1,
-              boxShadow: done ? 'none' : 'var(--shadow-card)',
-              animationDelay: `${idx * 55}ms`,
-            }}
-          >
-            {/* Left: emoji circle */}
+          return (
             <div
-              className="flex-shrink-0 flex items-center justify-center rounded-full"
+              key={mission.id}
+              className="relative flex flex-col items-center text-center rounded-2xl px-3 pt-5 pb-4 transition-all duration-200 h-full justify-between"
               style={{
-                width: 40,
-                height: 40,
-                background: done
-                  ? 'rgba(52,211,153,0.07)'
-                  : 'rgba(56,240,255,0.06)',
-                border: `1px solid ${done ? 'rgba(52,211,153,0.15)' : 'rgba(56,240,255,0.1)'}`,
+                background: 'rgba(255,255,255,0.03)',
+                border: `1px solid ${done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
+                opacity: done ? 0.45 : 1,
+                transition: 'border-color 0.2s, box-shadow 0.2s',
               }}
+              onMouseEnter={e => { if (!done) { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,209,102,0.08)'; }}}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <MissionIcon id={mission.id} size={24} />
-            </div>
+              {/* Status badge */}
+              {(done || pending) && !isRepeatable && (
+                <div className="absolute top-2.5 right-2.5">
+                  {done
+                    ? <CheckCircle2 size={13} className="text-slate-600" />
+                    : <Clock size={13} className="text-amber-400/50" />
+                  }
+                </div>
+              )}
 
-            {/* Center */}
-            <div className="flex-1 min-w-0">
-              <p style={{ color: 'var(--color-text-primary)', fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.3 }}
-                className="truncate">
-                {mission.name}
-              </p>
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                <Badge variant={mission.type === 'naked_eye' ? 'teal' : 'oracle'} size="sm">
-                  {mission.type === 'naked_eye' ? 'Naked Eye' : 'Telescope'}
-                </Badge>
-                <Badge variant={difficultyVariant[mission.difficulty] ?? 'default'} size="sm">
-                  {mission.difficulty}
-                </Badge>
+              {/* Planet */}
+              <div className="mb-3">
+                <MissionIcon id={mission.id} size={44} />
               </div>
-              <p style={{ color: 'var(--color-star-gold, #FFD166)', fontSize: '0.6875rem', fontWeight: 700, marginTop: 4 }}>
-                ✦ {mission.stars} Stars
-              </p>
-            </div>
 
-            {/* Right: status */}
-            <div className="flex-shrink-0 flex flex-col items-end gap-1">
+              {/* Name */}
+              <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
+
+              {/* Difficulty dots + label + always-available badge */}
+              <div className="flex flex-col items-center gap-1 mb-2">
+                <div className="flex gap-1 justify-center">
+                  {[1,2,3,4,5].map(d => (
+                    <span key={d} className="w-1 h-1 rounded-full" style={{
+                      backgroundColor: d <= diff
+                        ? diff >= 5 ? 'rgba(239,68,68,0.8)' : diff >= 4 ? 'rgba(251,113,133,0.7)' : 'rgba(255,209,102,0.55)'
+                        : 'rgba(255,255,255,0.1)'
+                    }} />
+                  ))}
+                </div>
+                <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{diffLabel}</span>
+                {isRepeatable && (
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399' }}
+                  >
+                    Always Available
+                  </span>
+                )}
+              </div>
+
+              {/* Completed today badge */}
+              {doneToday && (
+                <p className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>✓ Completed today</p>
+              )}
+
+              {/* Reward */}
+              <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.stars} ✦</p>
+
+              {/* CTA */}
               {done ? (
-                <>
-                  <div className="flex items-center gap-1" style={{ color: 'var(--color-aurora-green, #34D399)', fontSize: '0.6875rem', fontWeight: 600 }}>
-                    <CheckCircle2 size={12} />
-                    <span>Sealed ✓</span>
-                  </div>
-                  {txId && (
-                    <a
-                      href={`https://explorer.solana.com/tx/${txId}?cluster=devnet`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: 'rgba(255,255,255,0.2)' }}
-                      aria-label="View on Solana Explorer"
-                    >
-                      <ExternalLink size={11} />
-                    </a>
-                  )}
-                </>
-              ) : doneToday ? (
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.6875rem' }}>✓ Today</span>
+                <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center"
+                  style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  Complete
+                </div>
               ) : pending ? (
-                <span style={{ color: '#F59E0B', fontSize: '0.6875rem' }}>Pending</span>
-              ) : canStart ? (
-                <Button variant="primary" size="sm" onClick={() => onStart(mission)}>
-                  Start
-                </Button>
-              ) : null}
+                <div className="w-full py-2 rounded-lg text-[11px] text-amber-400/50 text-center"
+                  style={{ background: 'rgba(251,191,36,0.04)' }}>
+                  Pending
+                </div>
+              ) : (
+                <button
+                  onClick={() => onStart(mission)}
+                  className="w-full py-2.5 min-h-[44px] rounded-lg text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+                >
+                  Begin →
+                </button>
+              )}
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
