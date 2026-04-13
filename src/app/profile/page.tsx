@@ -29,6 +29,15 @@ export default function ProfilePage() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<{ photo: string; name: string } | null>(null);
 
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPhoto(null);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectedPhoto]);
+
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
   const address = solanaWallet?.address ?? state.walletAddress ?? null;
 

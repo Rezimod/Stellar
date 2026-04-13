@@ -6,6 +6,7 @@ import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale } from 'next-intl';
+import { useLocation } from '@/lib/location';
 import StatsBar from '@/components/sky/StatsBar';
 import MissionList from '@/components/sky/MissionList';
 import MissionActive from '@/components/sky/MissionActive';
@@ -24,6 +25,7 @@ export default function MissionsPage() {
   const { state } = useAppState();
   const { authenticated, login } = usePrivy();
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
+  const { location } = useLocation();
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
   const [activeMission, setActiveMission] = useState<Mission | null>(null);
   const [skyConditions, setSkyConditions] = useState<{ cloudCover: number; visibility: string; verified: boolean } | null>(null);
@@ -45,11 +47,13 @@ export default function MissionsPage() {
 
   useEffect(() => {
     if (authenticated) return;
-    fetch('/api/sky/verify?lat=41.6938&lon=44.8015')
+    const lat = location.lat !== 0 ? location.lat : 41.6938;
+    const lon = location.lon !== 0 ? location.lon : 44.8015;
+    fetch(`/api/sky/verify?lat=${lat}&lon=${lon}`)
       .then(r => r.json())
       .then(d => setSkyConditions({ cloudCover: d.cloudCover, visibility: d.visibility, verified: d.verified }))
       .catch(() => {});
-  }, [authenticated]);
+  }, [authenticated, location.lat, location.lon]);
 
   if (!authenticated) {
     return (

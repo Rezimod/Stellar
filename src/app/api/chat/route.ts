@@ -38,9 +38,9 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-async function runTool(name: string, input: Record<string, unknown>): Promise<string> {
-  const lat = typeof input.lat === 'number' ? input.lat : DEFAULT_LAT;
-  const lon = typeof input.lon === 'number' ? input.lon : DEFAULT_LON;
+async function runTool(name: string, input: Record<string, unknown>, fallbackLat = DEFAULT_LAT, fallbackLon = DEFAULT_LON): Promise<string> {
+  const lat = typeof input.lat === 'number' ? input.lat : fallbackLat;
+  const lon = typeof input.lon === 'number' ? input.lon : fallbackLon;
 
   if (name === 'get_planet_positions') {
     const planets = getVisiblePlanets(lat, lon, new Date());
@@ -89,15 +89,21 @@ export async function POST(req: NextRequest) {
   let history: { role: 'user' | 'assistant'; content: string }[];
   let locale: string;
 
+  let userLat: number = DEFAULT_LAT;
+  let userLon: number = DEFAULT_LON;
   try {
     const body = await req.json() as {
       message: string;
       history: { role: 'user' | 'assistant'; content: string }[];
       locale?: string;
+      lat?: number;
+      lon?: number;
     };
     message = body.message;
     history = body.history ?? [];
     locale = body.locale ?? 'en';
+    if (typeof body.lat === 'number') userLat = body.lat;
+    if (typeof body.lon === 'number') userLon = body.lon;
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid request body' }), { status: 400 });
   }
@@ -156,7 +162,7 @@ export async function POST(req: NextRequest) {
   for (const block of toolUseBlocks) {
     let result: string;
     try {
-      result = await runTool(block.name, block.input as Record<string, unknown>);
+      result = await runTool(block.name, block.input as Record<string, unknown>, userLat, userLon);
     } catch (err) {
       console.error(`[AstroChat] Tool ${block.name} failed:`, err);
       result = JSON.stringify({ error: 'Tool execution failed, answer generally.' });

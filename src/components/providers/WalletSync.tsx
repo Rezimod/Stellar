@@ -11,7 +11,7 @@ export default function WalletSync() {
 
   useEffect(() => {
     if (solWallet?.address) setWallet(solWallet.address);
-  }, [solWallet?.address]);
+  }, [solWallet?.address, setWallet]);
 
   return null;
 }

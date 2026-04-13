@@ -2,11 +2,13 @@
 
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Camera } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import ObserveFlow from '@/components/observe/ObserveFlow';
 
 export default function ObservePage() {
+  const t = useTranslations('observe');
   const router = useRouter();
   const { authenticated, login, user } = usePrivy();
 
@@ -28,17 +30,17 @@ export default function ObservePage() {
             <Camera size={26} className="text-[#14B8A6]" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-            Observe &amp; Earn
+            {t('hero')}
           </h2>
           <p className="text-slate-400 text-sm leading-relaxed mb-5">
-            Photograph the night sky through your telescope. Every verified observation earns real rewards from Georgia&apos;s first astronomy store.
+            {t('heroDesc')}
           </p>
           <button onClick={login}
             className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
             style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}>
-            Sign In to Start Observing →
+            {t('signIn')}
           </button>
-          <p className="text-slate-600 text-xs mt-3">Free forever · No seed phrase required</p>
+          <p className="text-slate-600 text-xs mt-3">{t('signInSub')}</p>
         </div>
 
         {/* Reward breakdown */}

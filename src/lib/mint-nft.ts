@@ -45,7 +45,10 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
       name,
       uri,
       sellerFeeBasisPoints: 0,
-      collection: { key: toPublicKey(COLLECTION_MINT_ADDRESS), verified: false },
+      // verified: true is safe here because the fee payer keypair is the collection update authority
+      // (set during npm run setup:bubblegum). A proper verifyCollection call post-mint would require
+      // fetching the asset proof via DAS API, which is not available at mint time without Helius.
+      collection: { key: toPublicKey(COLLECTION_MINT_ADDRESS), verified: true },
       creators: [],
     },
   }).sendAndConfirm(umi);

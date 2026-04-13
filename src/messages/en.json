@@ -139,6 +139,12 @@
     "goToMissions": "Go to Missions",
     "signInSubtitle": "Your cosmic identity awaits"
   },
+  "observe": {
+    "hero": "Observe & Earn",
+    "heroDesc": "Photograph the night sky through your telescope. Every verified observation earns real rewards from your local astronomy partner.",
+    "signIn": "Sign In to Start Observing →",
+    "signInSub": "Free forever · No seed phrase required"
+  },
   "club": {
     "title": "Join the Club",
     "connectWallet": "Connect Wallet",

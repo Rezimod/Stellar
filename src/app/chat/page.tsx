@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale } from 'next-intl';
 import { ArrowUp } from 'lucide-react';
+import { useLocation } from '@/lib/location';
 
 interface Msg { role: 'user' | 'assistant'; content: string; }
 
@@ -18,6 +19,7 @@ export default function ChatPage() {
   const { authenticated, login } = usePrivy();
   const rawLocale = useLocale();
   const locale = rawLocale === 'ka' ? 'ka' : 'en';
+  const { location } = useLocation();
 
   const [skySummary, setSkySummary] = useState<{ verified: boolean; cloudCover: number; visibility: string } | null>(null);
 
@@ -36,11 +38,13 @@ export default function ChatPage() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
   useEffect(() => { setTimeout(() => textareaRef.current?.focus(), 200); }, []);
   useEffect(() => {
-    fetch('/api/sky/verify?lat=41.6938&lon=44.8015')
+    const lat = location.lat !== 0 ? location.lat : 41.6938;
+    const lon = location.lon !== 0 ? location.lon : 44.8015;
+    fetch(`/api/sky/verify?lat=${lat}&lon=${lon}`)
       .then(r => r.json())
       .then(d => setSkySummary({ verified: d.verified, cloudCover: d.cloudCover, visibility: d.visibility }))
       .catch(() => {});
-  }, []);
+  }, [location.lat, location.lon]);
 
   // Auto-resize textarea
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -69,6 +73,8 @@ export default function ChatPage() {
           message: msg,
           history: next.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
           locale,
+          lat: location.lat !== 0 ? location.lat : 41.6938,
+          lon: location.lon !== 0 ? location.lon : 44.8015,
         }),
       });
       if (!res.ok || !res.body) throw new Error('Stream failed');
