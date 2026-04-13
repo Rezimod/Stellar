@@ -109,6 +109,7 @@ export default function HomePage() {
     let initialized = false;
     let w = 0, h = 0;
     let handleResize: () => void;
+    let raf = 0;
 
     const init = () => {
       if (initialized) return;
@@ -121,21 +122,27 @@ export default function HomePage() {
       canvas.width = w;
       canvas.height = h;
 
-      const stars = Array.from({ length: 120 }, () => ({
+      const stars = Array.from({ length: 160 }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: 0.5 + Math.random() * 0.7,
-        o: 0.2 + Math.random() * 0.5,
+        r: 0.3 + Math.random() * 0.9,
+        baseO: 0.15 + Math.random() * 0.45,
+        speed: 0.2 + Math.random() * 0.8,
+        phase: Math.random() * Math.PI * 2,
       }));
 
+      let t = 0;
       const draw = () => {
         ctx.clearRect(0, 0, w, h);
+        t += 0.008;
         for (const s of stars) {
+          const o = s.baseO + Math.sin(t * s.speed + s.phase) * 0.18;
           ctx.beginPath();
           ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,255,255,${s.o})`;
+          ctx.fillStyle = `rgba(255,255,255,${Math.max(0, Math.min(1, o))})`;
           ctx.fill();
         }
+        raf = requestAnimationFrame(draw);
       };
       draw();
 
@@ -160,11 +167,13 @@ export default function HomePage() {
       return () => {
         observer.disconnect();
         if (handleResize) window.removeEventListener('resize', handleResize);
+        if (raf) cancelAnimationFrame(raf);
       };
     } else {
       init();
       return () => {
         if (handleResize) window.removeEventListener('resize', handleResize);
+        if (raf) cancelAnimationFrame(raf);
       };
     }
   }, []);
@@ -223,10 +232,69 @@ export default function HomePage() {
           .typing-dot-1 { animation: typingDot 1.2s ease-in-out 0s infinite; }
           .typing-dot-2 { animation: typingDot 1.2s ease-in-out 0.3s infinite; }
           .typing-dot-3 { animation: typingDot 1.2s ease-in-out 0.6s infinite; }
+
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          .earn-rewards-text {
+            background: linear-gradient(135deg, #34d399, #38F0FF, #a78bfa, #34d399);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 6s ease infinite;
+          }
+          @keyframes twinkleStar {
+            0%, 100% { opacity: 0.25; transform: scale(0.7); }
+            50% { opacity: 1; transform: scale(1.3); }
+          }
+          .tagline-star-1 { display: inline-block; animation: twinkleStar 2.1s ease-in-out 0s infinite; }
+          .tagline-star-2 { display: inline-block; animation: twinkleStar 2.1s ease-in-out 0.7s infinite; }
+          .tagline-star-3 { display: inline-block; animation: twinkleStar 2.1s ease-in-out 1.4s infinite; }
+          @keyframes cosmicGlowPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0), 0 0 12px rgba(52,211,153,0.05); }
+            50% { box-shadow: 0 0 0 6px rgba(52,211,153,0.06), 0 0 28px rgba(52,211,153,0.2); }
+          }
+          .step-card-active { animation: cosmicGlowPulse 2.5s ease-in-out infinite; }
+          @keyframes stepContentEnter {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .step-content-enter { animation: stepContentEnter 0.3s ease-out forwards; }
+          @keyframes iconGlow {
+            0%, 100% { filter: drop-shadow(0 0 0px rgba(52,211,153,0)); }
+            50% { filter: drop-shadow(0 0 6px rgba(52,211,153,0.7)); }
+          }
+          .step-icon-active { animation: iconGlow 2s ease-in-out infinite; }
+          @keyframes orbitRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes locationGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0), 0 0 0 1px rgba(52,211,153,0.15); }
+            50% { box-shadow: 0 0 8px 2px rgba(52,211,153,0.12), 0 0 0 1px rgba(52,211,153,0.35); }
+          }
+          .location-pill-anim { animation: locationGlow 3s ease-in-out infinite; }
+          @keyframes nightSkyHover {
+            0% { text-shadow: 0 0 0px rgba(52,211,153,0); }
+            100% { text-shadow: 0 0 20px rgba(52,211,153,0.4), 0 0 40px rgba(52,211,153,0.15); }
+          }
+          .night-sky-text:hover {
+            color: #5eead4 !important;
+            transition: color 0.3s ease;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .hero-line-1, .hero-line-2, .hero-line-3 { opacity: 1; }
           .typing-dot-1, .typing-dot-2, .typing-dot-3 { opacity: 0.6; }
+          .earn-rewards-text {
+            background: linear-gradient(135deg, #34d399, #38F0FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
         }
         .hiw-arrow { display: none; }
         @media (min-width: 768px) { .hiw-arrow { display: flex !important; } }
@@ -251,18 +319,25 @@ export default function HomePage() {
           ref={canvasRef}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         />
-        {/* Radial glow orb — teal brand color */}
+        {/* Deep glow orbs */}
         <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
+          position: 'absolute', top: '40%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 500,
-          height: 500,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(56,240,255,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          zIndex: 0,
+          width: 600, height: 600, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(52,211,153,0.05) 0%, rgba(56,240,255,0.03) 30%, transparent 70%)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+        <div style={{
+          position: 'absolute', top: '60%', left: '30%',
+          width: 400, height: 400, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 65%)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+        <div style={{
+          position: 'absolute', top: '30%', left: '70%',
+          width: 300, height: 300, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(56,240,255,0.04) 0%, transparent 65%)',
+          pointerEvents: 'none', zIndex: 0,
         }} />
 
         {/* Hero content */}
@@ -289,16 +364,10 @@ export default function HomePage() {
             <span className="hero-line-1" style={{ display: 'block', color: 'rgba(255,255,255,0.9)' }}>
               Observe the
             </span>
-            <span className="hero-line-2" style={{ display: 'block', color: '#34d399' }}>
+            <span className="hero-line-2 night-sky-text" style={{ display: 'block', color: '#34d399', cursor: 'default', transition: 'color 0.3s ease' }}>
               Night Sky.
             </span>
-            <span className="hero-line-3" style={{
-              display: 'block',
-              background: 'linear-gradient(135deg, #34d399, #38F0FF)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
+            <span className="hero-line-3 earn-rewards-text" style={{ display: 'block' }}>
               Earn rewards.
             </span>
           </h1>
@@ -312,7 +381,7 @@ export default function HomePage() {
             margin: '-8px 0 0',
             textTransform: 'uppercase',
           }}>
-            Observe · Verify · Earn Stars
+            Observe <span className="tagline-star-1" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Verify <span className="tagline-star-2" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Earn Stars <span className="tagline-star-3" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span>
           </p>
 
           {/* Sub-copy */}
@@ -385,16 +454,23 @@ export default function HomePage() {
 
         {/* How It Works — interactive stepper */}
         <div id="how-it-works" className="w-full"
+          style={{ position: 'relative' }}
           onMouseEnter={() => { stepPausedRef.current = true; }}
           onMouseLeave={() => { stepPausedRef.current = false; }}
           onTouchStart={() => { stepPausedRef.current = true; }}
         >
-          <p className="text-center text-xs mb-4 tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          {/* Cosmic nebula bg */}
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: 20, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at 15% 50%, rgba(52,211,153,0.04) 0%, transparent 55%), radial-gradient(ellipse at 85% 50%, rgba(139,92,246,0.04) 0%, transparent 55%)',
+          }} />
+
+          <p className="text-center text-xs mb-5 tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)', position: 'relative' }}>
             — {t('home.howItWorks')} —
           </p>
 
           {/* Step selector tabs */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 14, position: 'relative' }}>
             {howItWorksSteps.map((item, i) => {
               const active = activeStep === i;
               return (
@@ -403,38 +479,60 @@ export default function HomePage() {
                   onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
                   style={{
                     flex: 1,
-                    padding: '10px 0',
-                    borderRadius: 12,
-                    border: 'none',
-                    borderBottom: `2px solid ${active ? '#34d399' : 'transparent'}`,
-                    background: active ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.03)',
+                    padding: '12px 0 10px',
+                    borderRadius: 14,
+                    border: `1px solid ${active ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.04)'}`,
+                    background: active
+                      ? 'linear-gradient(180deg, rgba(52,211,153,0.1) 0%, rgba(52,211,153,0.04) 100%)'
+                      : 'rgba(255,255,255,0.02)',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: 6,
-                    transition: 'all 0.25s',
+                    gap: 8,
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
                 >
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%',
-                    background: active ? 'var(--accent-dim)' : 'rgba(255,255,255,0.04)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'background 0.25s',
-                  }}>
-                    <span style={{
-                      fontSize: 11,
-                      fontFamily: 'var(--font-display)',
-                      fontWeight: 700,
-                      color: active ? 'var(--accent)' : 'rgba(255,255,255,0.25)',
+                  {active && (
+                    <div style={{
+                      position: 'absolute', inset: 0, borderRadius: 14,
+                      background: 'radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.12) 0%, transparent 70%)',
+                      pointerEvents: 'none',
+                    }} />
+                  )}
+                  {/* Orbit ring behind number */}
+                  <div style={{ position: 'relative', width: 30, height: 30 }}>
+                    {active && (
+                      <div style={{
+                        position: 'absolute', inset: -3, borderRadius: '50%',
+                        border: '1px dashed rgba(52,211,153,0.3)',
+                        animation: 'orbitRing 6s linear infinite',
+                      }} />
+                    )}
+                    <div style={{
+                      width: 30, height: 30, borderRadius: '50%',
+                      background: active ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.04)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.3s',
+                      position: 'relative',
                     }}>
-                      {i + 1}
-                    </span>
+                      <span style={{
+                        fontSize: 11,
+                        fontFamily: 'var(--font-display)',
+                        fontWeight: 700,
+                        color: active ? '#34d399' : 'rgba(255,255,255,0.25)',
+                      }}>
+                        {i + 1}
+                      </span>
+                    </div>
                   </div>
                   <item.icon
-                    size={18}
-                    color={active ? '#34d399' : 'rgba(255,255,255,0.25)'}
+                    size={17}
+                    color={active ? '#34d399' : 'rgba(255,255,255,0.2)'}
                     strokeWidth={active ? 2 : 1.5}
+                    className={active ? 'step-icon-active' : ''}
                   />
                 </button>
               );
@@ -446,28 +544,43 @@ export default function HomePage() {
             const step = howItWorksSteps[activeStep];
             const StepIcon = step.icon;
             return (
-              <div className="card-base" style={{
-                padding: '18px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-              }}>
+              <div
+                key={activeStep}
+                className="card-base step-content-enter step-card-active"
+                style={{
+                  padding: '20px 18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  border: '1px solid rgba(52,211,153,0.2)',
+                  background: 'linear-gradient(135deg, rgba(52,211,153,0.04) 0%, rgba(15,20,35,0.8) 100%)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Corner star */}
                 <div style={{
-                  width: 52, height: 52, flexShrink: 0,
-                  borderRadius: 14,
-                  background: 'var(--accent-dim)',
-                  border: '1px solid var(--accent-border)',
+                  position: 'absolute', top: 10, right: 12,
+                  color: 'rgba(52,211,153,0.2)', fontSize: 10, fontWeight: 700,
+                }}>✦</div>
+                <div style={{
+                  width: 56, height: 56, flexShrink: 0,
+                  borderRadius: 16,
+                  background: 'radial-gradient(circle at 30% 30%, rgba(52,211,153,0.2), rgba(52,211,153,0.06))',
+                  border: '1px solid rgba(52,211,153,0.3)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  position: 'relative',
                 }}>
-                  <StepIcon size={24} color="var(--accent)" strokeWidth={1.5} />
+                  <StepIcon size={26} color="#34d399" strokeWidth={1.5} className="step-icon-active" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ color: 'white', fontWeight: 700, fontSize: 14, margin: '0 0 4px' }}>
+                  <p style={{ color: 'white', fontWeight: 700, fontSize: 14, margin: '0 0 5px', fontFamily: 'var(--font-display)' }}>
+                    <span style={{ color: 'rgba(52,211,153,0.5)', fontSize: 11, fontWeight: 500, marginRight: 8 }}>0{activeStep + 1}</span>
                     {step.title}
                   </p>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.65, margin: 0 }}>
                     {step.desc}
                   </p>
                 </div>
@@ -475,21 +588,32 @@ export default function HomePage() {
             );
           })()}
 
-          {/* Progress dots */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 10 }}>
+          {/* Progress indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginTop: 12 }}>
             {howItWorksSteps.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
-                style={{
-                  width: activeStep === i ? 20 : 5,
-                  height: 4,
-                  borderRadius: 2,
-                  background: activeStep === i ? '#34d399' : 'rgba(255,255,255,0.15)',
-                  transition: 'all 0.3s',
-                  cursor: 'pointer',
-                }}
-              />
+              <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+                <div
+                  onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
+                  style={{
+                    width: activeStep === i ? 24 : 6,
+                    height: 4,
+                    borderRadius: 2,
+                    background: activeStep === i
+                      ? 'linear-gradient(90deg, #34d399, #38F0FF)'
+                      : 'rgba(255,255,255,0.12)',
+                    transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
+                    cursor: 'pointer',
+                  }}
+                />
+                {i < howItWorksSteps.length - 1 && (
+                  <div style={{
+                    width: 16, height: 1,
+                    background: i < activeStep ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.06)',
+                    transition: 'background 0.35s',
+                    margin: '0 2px',
+                  }} />
+                )}
+              </div>
             ))}
           </div>
         </div>

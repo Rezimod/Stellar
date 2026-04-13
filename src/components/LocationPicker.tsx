@@ -68,49 +68,90 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
 
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <style>{`
+        @keyframes locationGlow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+          50% { box-shadow: 0 0 10px 2px rgba(52,211,153,0.12), 0 0 0 1px rgba(52,211,153,0.2); }
+        }
+        @keyframes pingRing {
+          0% { transform: scale(0.6); opacity: 0.7; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+        @keyframes dropdownEnter {
+          from { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.97); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        .location-pill {
+          animation: locationGlow 3s ease-in-out infinite;
+        }
+        .location-pill:hover {
+          background: rgba(52,211,153,0.1) !important;
+          border-color: rgba(52,211,153,0.4) !important;
+          transform: translateY(-1px);
+        }
+      `}</style>
+
       {/* Trigger pill */}
       <button
         onClick={() => setOpen(v => !v)}
+        className="location-pill"
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
+          display: 'inline-flex', alignItems: 'center', gap: 7,
           borderRadius: 9999,
-          padding: compact ? '5px 10px' : '5px 12px',
-          background: open ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${open ? 'rgba(52,211,153,0.35)' : 'rgba(255,255,255,0.1)'}`,
+          padding: compact ? '6px 12px' : '7px 14px',
+          background: open ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${open ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.18)'}`,
           cursor: 'pointer',
-          transition: 'all 0.2s',
+          transition: 'all 0.25s ease',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          animation: open ? 'none' : undefined,
         }}
       >
-        <MapPin size={13} color={location.source === 'gps' ? '#34d399' : 'rgba(255,255,255,0.45)'} />
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{label}</span>
-        <ChevronDown size={11} color="rgba(255,255,255,0.3)"
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+        {/* MapPin with ping ring */}
+        <div style={{ position: 'relative', width: 14, height: 14, flexShrink: 0 }}>
+          {!open && (
+            <div style={{
+              position: 'absolute', inset: -3, borderRadius: '50%',
+              background: 'rgba(52,211,153,0.3)',
+              animation: 'pingRing 2.5s ease-out infinite',
+              pointerEvents: 'none',
+            }} />
+          )}
+          <MapPin size={14} color={location.source === 'gps' ? '#34d399' : 'rgba(52,211,153,0.7)'} style={{ position: 'relative', zIndex: 1 }} />
+        </div>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600, letterSpacing: '0.02em' }}>{label}</span>
+        <ChevronDown size={11} color="rgba(52,211,153,0.5)"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s ease' }} />
       </button>
 
       {/* Dropdown */}
       {open && (
         <div style={{
           position: 'absolute',
-          top: 'calc(100% + 8px)',
+          top: 'calc(100% + 10px)',
           left: '50%',
-          transform: 'translateX(-50%)',
           zIndex: 100,
-          minWidth: 240,
-          background: 'rgba(10,14,28,0.97)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 16,
-          padding: 14,
-          boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(52,211,153,0.06)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          minWidth: 248,
+          background: 'rgba(8,12,24,0.98)',
+          border: '1px solid rgba(52,211,153,0.2)',
+          borderRadius: 18,
+          padding: 16,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(52,211,153,0.06), inset 0 1px 0 rgba(52,211,153,0.08)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          animation: 'dropdownEnter 0.2s ease-out forwards',
         }}>
           {/* Header */}
-          <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: 600, margin: '0 0 2px' }}>
-            Sky location
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: '0 0 12px' }}>
-            Affects sky data and marketplace
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <MapPin size={13} color="#34d399" />
+            </div>
+            <div>
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: 600, margin: 0 }}>Sky location</p>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, margin: 0 }}>Affects sky data and marketplace</p>
+            </div>
+          </div>
 
           {/* Presets */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
