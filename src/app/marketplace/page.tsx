@@ -9,7 +9,6 @@ import { getProductsByRegion, getDealersByRegion, GLOBAL_FALLBACK } from '@/lib/
 import type { Product } from '@/lib/dealers';
 import StarsRedemption from '@/components/shared/StarsRedemption';
 import BackButton from '@/components/shared/BackButton';
-import { ExternalLink } from 'lucide-react';
 import { useEffect } from 'react';
 import Image from 'next/image';
 
@@ -31,19 +30,19 @@ const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
 
 const SKILL_BADGE_STYLES: Record<string, { background: string; color: string; border: string }> = {
   beginner: {
-    background: 'rgba(52,211,153,0.15)',
+    background: 'rgba(52,211,153,0.28)',
     color: '#34d399',
-    border: '1px solid rgba(52,211,153,0.3)',
+    border: '1px solid rgba(52,211,153,0.55)',
   },
   intermediate: {
-    background: 'rgba(245,158,11,0.15)',
+    background: 'rgba(245,158,11,0.28)',
     color: '#F59E0B',
-    border: '1px solid rgba(245,158,11,0.3)',
+    border: '1px solid rgba(245,158,11,0.55)',
   },
   advanced: {
-    background: 'rgba(139,92,246,0.15)',
-    color: '#8B5CF6',
-    border: '1px solid rgba(139,92,246,0.3)',
+    background: 'rgba(139,92,246,0.28)',
+    color: '#a78bfa',
+    border: '1px solid rgba(139,92,246,0.55)',
   },
 };
 
@@ -67,9 +66,13 @@ function ProductCard({ product, showDealer, dealerName }: {
   return (
     <div
       className="flex flex-col rounded-2xl overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(8px)',
+      }}
     >
-      {/* Square image container — always shows full telescope */}
+      {/* Square image container — always shows full product */}
       <div className="relative flex-shrink-0" style={{
         aspectRatio: '1 / 1',
         background: showImg ? 'rgba(0,0,0,0.3)' : fallback.bg,
@@ -93,20 +96,20 @@ function ProductCard({ product, showDealer, dealerName }: {
             </p>
           </div>
         )}
-        {/* Skill badge — top left */}
+        {/* Product badge — top left */}
+        {badgeStyle && (
+          <span className="absolute top-2 left-2 text-[8px] px-1.5 py-0.5 rounded-full font-semibold"
+            style={{ background: badgeStyle.bg, color: badgeStyle.color }}>
+            {product.badge}
+          </span>
+        )}
+        {/* Skill badge — top right, always visible */}
         {product.skillLevel && (
           <span
-            className="absolute top-2 left-2 text-[9px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide"
+            className="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
             style={SKILL_BADGE_STYLES[product.skillLevel]}
           >
             {product.skillLevel === 'intermediate' ? 'Mid' : product.skillLevel}
-          </span>
-        )}
-        {/* Product badge — top right */}
-        {badgeStyle && !product.skillLevel && (
-          <span className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full"
-            style={{ background: badgeStyle.bg, color: badgeStyle.color }}>
-            {product.badge}
           </span>
         )}
       </div>
@@ -209,67 +212,57 @@ export default function MarketplacePage() {
       <BackButton />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
           Marketplace
         </h1>
         <LocationPicker compact />
       </div>
 
-      {/* Dealer branding */}
-      <div className="mb-5">
-        {dealers.length === 1 ? (
-          <a
-            href={dealers[0].website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1"
-            style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}
-          >
-            Powered by {dealers[0].name} <ExternalLink size={11} />
-          </a>
-        ) : (
-          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>
-            Showing picks from {dealers.length} partner stores
-          </p>
-        )}
-      </div>
-
       {/* Stars redemption */}
       {authenticated && (
-        <div className="mb-5">
+        <div className="mb-4">
           <StarsRedemption starsBalance={starsBalance || totalStars} walletAddress={address ?? undefined} />
         </div>
       )}
 
-      {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1 mb-3 scrollbar-hide">
-        {CATEGORY_FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
-            style={
-              filter === f.key
-                ? { background: 'rgba(52,211,153,0.15)', borderColor: 'rgba(52,211,153,0.3)', color: '#34d399' }
-                : { background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
-            }
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Category filter — glassy pill container */}
+      <div
+        className="mb-3 p-1 rounded-2xl"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}
+      >
+        <div className="flex overflow-x-auto scrollbar-hide gap-1">
+          {CATEGORY_FILTERS.map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className="flex-shrink-0 flex-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-center min-w-[60px]"
+              style={
+                filter === f.key
+                  ? { background: 'rgba(52,211,153,0.18)', color: '#34d399', boxShadow: 'inset 0 0 0 1px rgba(52,211,153,0.3)' }
+                  : { color: 'rgba(255,255,255,0.4)' }
+              }
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Tier shortcut links — only for telescope/all views */}
+      {/* Tier shortcut pills — small, only for telescope/all views */}
       {isTelescopeView && (
-        <div className="flex gap-2 mb-5">
-          <a href="#tier-beginner" className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(52,211,153,0.08)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}>
+        <div className="flex gap-1.5 mb-5">
+          <a href="#tier-beginner" className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide" style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)' }}>
             Beginner
           </a>
-          <a href="#tier-intermediate" className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(245,158,11,0.08)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.2)' }}>
-            Intermediate
+          <a href="#tier-intermediate" className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide" style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' }}>
+            Mid
           </a>
-          <a href="#tier-advanced" className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(139,92,246,0.08)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)' }}>
+          <a href="#tier-advanced" className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide" style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.25)' }}>
             Advanced
           </a>
         </div>
