@@ -1,6 +1,6 @@
 # Stellar — Observe the Sky, Earn on Solana
 
-> The global astronomy app that brings telescope owners and sky lovers on-chain.
+> The astronomy app that turns every telescope session into a verified on-chain discovery.
 
 ## What It Does
 
@@ -12,25 +12,17 @@ Stellar turns every telescope session into a verified on-chain discovery. Astron
 4. **Earn** — Receive Stars (SPL token) and a compressed NFT proof sealed on Solana
 5. **Spend** — Redeem Stars at partner telescope stores in your region
 
-No wallets. No seed phrases. No crypto jargon. Users sign up with email and start observing.
+No wallets. No seed phrases. No crypto jargon. Users sign up with email and start observing. The Solana layer is invisible until we show them.
 
 ## Why Solana
 
 - **Compressed NFTs** via Metaplex Bubblegum — each observation proof costs ~$0.000005 to mint
-- **SPL tokens** — Stars are real, tradeable tokens on Solana, not a database counter
-- **Gasless UX** — server-side fee payer covers everything. Users never need SOL
-- **Privy embedded wallets** — every user gets a Solana wallet invisibly on signup
-- **Speed** — mint completes in <2 seconds. No waiting for block confirmations
+- **SPL tokens** — Stars are real, verifiable on-chain rewards, not a database counter
+- **Privy embedded wallets** — email signup, zero friction, no Phantom download required
 
-## The Distribution Advantage
+## Founder-Market Fit
 
-Stellar is built by [Astroman](https://astroman.ge), Georgia's first astronomy e-commerce store with 60,000+ social media followers and a physical retail location. This gives Stellar:
-
-- **Immediate warm audience** of active telescope buyers
-- **Real product rewards** — not speculative token utility, but actual telescopes and gear
-- **Regional dealer network** — Astroman (Caucasus), Celestron (US), with more partners onboarding
-
-No other project on any chain targets amateur astronomy. Zero direct competition.
+Built by Rezi Modebadze, founder of [Astroman.ge](https://astroman.ge) — Georgia's first astronomy e-commerce store with 60,000+ social media followers and a physical retail location in Tbilisi. Stellar's first distribution channel is a warm audience of active telescope buyers who are already spending real money on gear.
 
 ## Tech Stack
 
@@ -38,18 +30,14 @@ No other project on any chain targets amateur astronomy. Zero direct competition
 |---|---|
 | Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS 4 |
 | Auth | Privy (email, Google, SMS → embedded Solana wallet) |
-| AI | Claude API — ASTRA companion with tool calling (live planet data + forecast) |
-| AI Vision | Claude multimodal — photo verification + Bortle dark-sky classification |
+| AI | Claude API (claude-sonnet-4-6) — ASTRA companion + photo verification |
 | NFTs | Metaplex Bubblegum compressed NFTs via Umi |
-| Token | Custom STARS SPL token (devnet) |
-| Weather | Open-Meteo API (free, no key) |
+| Token | Custom STARS SPL token |
+| Weather | Open-Meteo API |
 | Astronomy | astronomy-engine (local JS calculations) |
 | Database | Neon serverless Postgres via Drizzle ORM |
+| Dealers | Astroman (Caucasus/Asia), Celestron (Americas), Levenhuk (Europe) |
 | Deploy | Vercel |
-
-## Screenshots
-
-> Screenshots will be added before final submission.
 
 ## Live Demo
 
@@ -62,7 +50,7 @@ git clone https://github.com/Rezimod/Stellar.git
 cd Stellar
 npm install
 cp .env.example .env.local
-# Fill in env vars (see below)
+# Fill in env vars (see .env.example)
 npm run dev
 ```
 
@@ -79,35 +67,18 @@ npm run setup:bubblegum
 npm run setup:token
 ```
 
-### Required Environment Variables
-
-```
-NEXT_PUBLIC_PRIVY_APP_ID=
-ANTHROPIC_API_KEY=
-DATABASE_URL=
-SOLANA_RPC_URL=https://api.devnet.solana.com
-FEE_PAYER_PRIVATE_KEY=
-MERKLE_TREE_ADDRESS=
-COLLECTION_MINT_ADDRESS=
-STARS_TOKEN_MINT=
-NEXT_PUBLIC_COLLECTION_MINT_ADDRESS=
-NEXT_PUBLIC_HELIUS_RPC_URL=
-NEXT_PUBLIC_APP_URL=https://stellarrclub.vercel.app
-INTERNAL_API_SECRET=             # Optional: used for server-to-server route authorization
-```
-
 ## Demo Script (3 minutes)
 
 1. **Sign up with email** — embedded wallet created invisibly (20s)
-2. **Location detected** — "You're in Tbilisi" → marketplace shows Astroman products (10s)
+2. **Location detected** — marketplace shows Astroman products for Caucasus (10s)
 3. **Switch to New York** — marketplace updates to Celestron products (10s)
 4. **Tonight's Sky** — planet visibility + 7-day forecast for current location (20s)
 5. **Start "Tonight's Sky" mission** — free observation, any sky photo (15s)
 6. **Take photo** → sky oracle verifies → NFT minted on Solana (40s)
 7. **View NFT in gallery** with Solana Explorer link (15s)
-8. **Ask ASTRA** "What can I see tonight with a 70mm refractor?" → live tool-calling response (20s)
+8. **Ask ASTRA** "What can I see tonight with a 70mm refractor?" → live response (20s)
 9. **Show Stars balance** — real SPL token in profile (10s)
-10. **Show partner stores** — "Astroman ships to Caucasus, Celestron to US" (10s)
+10. **Show partner stores** — Astroman (Caucasus), Celestron (Americas), Levenhuk (Europe) (10s)
 
 ## Project Structure
 
@@ -123,18 +94,17 @@ src/
     profile/              — User profile + Stars balance
     darksky/              — Light pollution map
     api/
-      chat/               — Claude streaming + tool calling
+      chat/               — Claude streaming
       sky/verify/         — Sky oracle (Open-Meteo + hash)
       mint/               — Compressed NFT minting
       award-stars/        — SPL token minting
-      metadata/           — NFT metadata JSON
-      observe/            — Photo verification
-      darksky/            — Bortle analysis + GeoJSON data
+      observe/            — Photo verification (Claude Vision)
+      leaderboard/        — Real DB leaderboard
   lib/
     location.tsx          — GPS + region detection
     dealers.ts            — Dealer network + products
-    solana.ts             — Solana helpers
     mint-nft.ts           — Bubblegum minting (server)
+    stars.ts              — Stars SPL token helpers
     sky-data.ts           — Weather + forecast
     planets.ts            — Planet positions
   components/
@@ -142,11 +112,24 @@ src/
     sky/                  — Observation flow components
 ```
 
+## Environment Variables
+
+See `.env.example` for the full list. Key variables:
+
+```
+NEXT_PUBLIC_PRIVY_APP_ID=       # Privy dashboard
+ANTHROPIC_API_KEY=              # Anthropic console
+DATABASE_URL=                   # Neon dashboard
+FEE_PAYER_PRIVATE_KEY=          # Base58 — run setup:bubblegum
+MERKLE_TREE_ADDRESS=            # Set by: npm run setup:bubblegum
+COLLECTION_MINT_ADDRESS=        # Set by: npm run setup:bubblegum
+STARS_TOKEN_MINT=               # Set by: npm run setup:token
+```
+
 ## Hackathon
 
 - **Colosseum Frontier 2026** — Consumer Track
-- **Builder:** Rezi (Revaz Modebadze) — [@astroman_geo](https://instagram.com/astroman_geo)
-- **Previous:** 2nd place, Superteam Georgia Hackathon 2025
+- **Builder:** Rezi (Revaz Modebadze) — founder of Astroman.ge
 
 ## License
 

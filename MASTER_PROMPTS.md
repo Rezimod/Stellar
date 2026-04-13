@@ -1350,34 +1350,34 @@ Update status after each fix session.
 
 | ID | Issue | Status |
 |----|-------|--------|
-| FIX-01 | Turbopack Noto Georgian crash | ⬜ Open |
-| FIX-02 | sim_ txId shown as "Sealed on Solana" | ⬜ Open |
-| FIX-03 | Reward codes in source | ⬜ Open |
-| FIX-04 | /api/users/upsert no auth | ⬜ Open |
-| FIX-05 | Remove @metaplex-foundation/js | ⬜ Open |
-| FIX-06 | Fix Next.js 16.1.6 → 15.x | ⬜ Open |
-| FIX-07 | FALLBACK_ANALYSIS accepts on failure | ⬜ Open |
+| FIX-01 | Turbopack Noto Georgian crash | ✅ Done |
+| FIX-02 | sim_ txId shown as "Sealed on Solana" | ✅ Done |
+| FIX-03 | Reward codes in source | ✅ Done |
+| FIX-04 | /api/users/upsert no auth | ✅ Done |
+| FIX-05 | Remove @metaplex-foundation/js | ✅ Done |
+| FIX-06 | Fix Next.js 16.1.6 → 15.x | ✅ Done |
+| FIX-07 | FALLBACK_ANALYSIS accepts on failure | ✅ Done |
 
 ## Phase 2 — Location
 
 | ID | Issue | Status |
 |----|-------|--------|
-| FIX-08 | Location picker scrollable + all cities | ⬜ Open |
-| FIX-09 | dealers.ts — Levenhuk + Asia region | ⬜ Open |
+| FIX-08 | Location picker scrollable + all cities | ✅ Done |
+| FIX-09 | dealers.ts — Levenhuk + Asia region | ✅ Done |
 
 ## Phase 3 — Marketplace
 
 | ID | Issue | Status |
 |----|-------|--------|
-| FIX-10 | Square images + skill tier sections + SOL price removed | ⬜ Open |
+| FIX-10 | Square images + skill tier sections + SOL price removed | ✅ Done |
 
 ## Phase 4 — Data Integrity
 
 | ID | Issue | Status |
 |----|-------|--------|
-| FIX-11 | Real leaderboard wired to DB | ⬜ Open |
-| FIX-12 | Stars award atomicity | ⬜ Open |
-| FIX-13 | DB schema — lat/lon/stars_awarded columns | ⬜ Open |
+| FIX-11 | Real leaderboard wired to DB | ✅ Done |
+| FIX-12 | Stars award atomicity | ✅ Done |
+| FIX-13 | DB schema — lat/lon/stars_awarded columns | ⚠️ Code done · run `npm run db:push` |
 
 ## Phase 5 — Security
 
