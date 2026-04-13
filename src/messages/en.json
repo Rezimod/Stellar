@@ -29,32 +29,6 @@
     "explorePlatform": "Explore the Platform",
     "observeEarn": "Observe & Earn",
     "observeEarnDesc": "Complete missions to unlock real rewards from the Astroman store.",
-    "hero": {
-      "subtitle": "Observe the night sky. Seal your discoveries on Solana.",
-      "ctaObserve": "Start Observing",
-      "ctaSky": "Tonight's Sky"
-    },
-    "tonight": {
-      "title": "Tonight"
-    },
-    "hiw": {
-      "verifyDesc": "Sky oracle confirms your viewing conditions",
-      "earn": "Earn",
-      "earnDesc": "Receive Stars tokens and discovery NFTs",
-      "spend": "Spend",
-      "spendDesc": "Redeem at Georgia's first astronomy store"
-    },
-    "astra": {
-      "title": "Meet ASTRA",
-      "subtitle": "Your AI astronomer — ask anything about tonight's sky",
-      "cta": "Ask ASTRA",
-      "mockQ": "What's visible tonight around 10pm?",
-      "mockA": "Jupiter is high in the south at 45° — perfect for viewing. Saturn rises after midnight. The Moon sets early so you'll have dark skies."
-    },
-    "market": {
-      "title": "From Astroman",
-      "browse": "Browse All"
-    },
     "steps": {
       "observe": "Observe",
       "observeDesc": "Point your telescope at tonight's target",
