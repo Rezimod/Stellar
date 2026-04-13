@@ -8,23 +8,23 @@ export default function AstroLogo({ heightClass = 'h-8', className = '' }: Astro
     <div className={`flex items-center gap-2 ${className}`}>
       <svg viewBox="0 0 40 40" fill="none" className={heightClass} style={{ width: 'auto' }}>
         <defs>
-          <radialGradient id="planet" cx="45%" cy="40%" r="55%">
+          <radialGradient id="astro-logo-planet" cx="45%" cy="40%" r="55%">
             <stop offset="0%" stopColor="#f97316" />
             <stop offset="40%" stopColor="#a855f7" />
             <stop offset="100%" stopColor="#3b0764" />
           </radialGradient>
-          <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id="astro-logo-ring" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
             <stop offset="50%" stopColor="#e0f2fe" stopOpacity="0.6" />
             <stop offset="100%" stopColor="#f97316" stopOpacity="0.9" />
           </linearGradient>
         </defs>
         {/* Ring back half */}
-        <ellipse cx="20" cy="22" rx="17" ry="5" stroke="url(#ring)" strokeWidth="1.5" fill="none" opacity="0.5" />
+        <ellipse cx="20" cy="22" rx="17" ry="5" stroke="url(#astro-logo-ring)" strokeWidth="1.5" fill="none" opacity="0.5" />
         {/* Planet */}
-        <circle cx="20" cy="18" r="11" fill="url(#planet)" />
+        <circle cx="20" cy="18" r="11" fill="url(#astro-logo-planet)" />
         {/* Ring front half */}
-        <ellipse cx="20" cy="22" rx="17" ry="5" stroke="url(#ring)" strokeWidth="1.5" fill="none"
+        <ellipse cx="20" cy="22" rx="17" ry="5" stroke="url(#astro-logo-ring)" strokeWidth="1.5" fill="none"
           strokeDasharray="27 27" strokeDashoffset="0" />
         {/* Sparkles */}
         <path d="M6 8 L6.5 9.5 L8 10 L6.5 10.5 L6 12 L5.5 10.5 L4 10 L5.5 9.5Z" fill="#38bdf8" opacity="0.9" />

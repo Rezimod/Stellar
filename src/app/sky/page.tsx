@@ -14,26 +14,6 @@ export default async function SkyPage() {
     <div className="max-w-3xl mx-auto px-4 pt-4 pb-8 animate-page-enter flex flex-col gap-10">
       <BackButton />
 
-      {/* Page header */}
-      <div className="flex flex-col items-center gap-1 text-center -mt-6">
-        <h1
-          className="text-4xl tracking-tight"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontWeight: 400,
-            background: 'linear-gradient(135deg, #ffffff 0%, #38F0FF 50%, #8B5CF6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          Tonight&apos;s Sky
-        </h1>
-        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          Real-time conditions · 7-day forecast · Planet tracker
-        </p>
-      </div>
-
       {/* Summary card */}
       <div className="flex flex-col gap-3">
         <Suspense fallback={<div className="h-[180px] rounded-xl bg-white/5 animate-pulse" />}>
@@ -45,17 +25,9 @@ export default async function SkyPage() {
       </div>
 
       {/* 7-day forecast */}
-      <div className="flex flex-col gap-3">
-        <h2
-          className="text-lg font-semibold text-white"
-          style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}
-        >
-          7-Day Forecast
-        </h2>
-        <Suspense fallback={<div className="h-48 rounded-xl bg-white/5 animate-pulse" />}>
-          <ForecastGrid />
-        </Suspense>
-      </div>
+      <Suspense fallback={<div className="h-48 rounded-xl bg-white/5 animate-pulse" />}>
+        <ForecastGrid />
+      </Suspense>
 
       {/* Planet tracker */}
       <div className="flex flex-col gap-3">

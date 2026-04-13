@@ -233,31 +233,31 @@ export default function PlanetCard({ planet }: Props) {
       style={{ borderLeft: `2px solid ${accentColor}40`, paddingLeft: 14 }}
     >
       {/* Header: planet icon + name + status */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex-shrink-0" style={{ width: isSaturn ? 52 : 32, height: 32, display: 'flex', alignItems: 'center' }}>
-            <PlanetIcon planetKey={planet.key} size={32} />
-          </div>
-          <span className="font-semibold text-white text-sm truncate" style={{ fontFamily: 'var(--font-display)' }}>
+      <div className="flex items-start gap-2.5">
+        <div className="flex-shrink-0" style={{ width: isSaturn ? 52 : 32, height: 32, display: 'flex', alignItems: 'center' }}>
+          <PlanetIcon planetKey={planet.key} size={32} />
+        </div>
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="font-semibold text-white text-sm leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
             {t(planet.key as Parameters<typeof t>[0])}
           </span>
+          {planet.visible ? (
+            <span
+              className="inline-flex items-center self-start px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
+              style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: '#34D399' }}
+            >
+              <span className="w-1 h-1 rounded-full bg-[#34D399] mr-1 animate-pulse" />
+              {t('visibleNow')}
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center self-start text-[9px] font-medium"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              {planet.rise ? `rises ${hhmm(planet.rise, locale)}` : 'Below horizon'}
+            </span>
+          )}
         </div>
-        {planet.visible ? (
-          <span
-            className="inline-flex items-center flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', color: '#34D399' }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] mr-1.5 animate-pulse" />
-            {t('visibleNow')}
-          </span>
-        ) : (
-          <span
-            className="inline-flex items-center flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-muted)' }}
-          >
-            {planet.rise ? `rises ${hhmm(planet.rise, locale)}` : 'Below horizon'}
-          </span>
-        )}
       </div>
 
       {/* Altitude arc + value */}
