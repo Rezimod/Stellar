@@ -103,10 +103,10 @@ export default function PlanetGrid() {
               <button
                 onClick={handleObserve}
                 className="px-3 py-1.5 text-xs font-semibold rounded-lg mt-2"
-                style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
-              >
-                Observe This 🔭
-              </button>
+              style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
+            >
+              Observe This
+            </button>
             </div>
           ))}
         </div>
@@ -127,7 +127,7 @@ export default function PlanetGrid() {
               className="px-3 py-1.5 text-xs font-semibold rounded-lg w-full"
               style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
             >
-              Observe This 🔭
+              Observe This
             </button>
           </div>
         ))}

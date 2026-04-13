@@ -1,5 +1,6 @@
 'use client';
 
+import { Cloud, Stars, CloudMoon, CloudRain, Wind, Eye, Thermometer, Clock } from 'lucide-react';
 import { SkyDay } from '@/lib/sky-data';
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -8,43 +9,61 @@ interface Props {
   isToday: boolean;
 }
 
-function badge(cloudCover: number): 'go' | 'maybe' | 'skip' {
+type SkyKind = 'go' | 'maybe' | 'skip';
+
+function badge(cloudCover: number): SkyKind {
   if (cloudCover < 30) return 'go';
   if (cloudCover <= 60) return 'maybe';
   return 'skip';
 }
 
-function formatDate(dateStr: string, locale: string): string {
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString(locale, {
-    weekday: 'short', month: 'short', day: 'numeric',
-  });
+function formatDate(dateStr: string, locale: string, short = false): string {
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString(locale, short
+    ? { weekday: 'short', day: 'numeric' }
+    : { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 function observationWindow(hours: SkyDay['hours']): string {
   const good = hours.filter(h => h.cloudCover < 30);
-  if (good.length === 0) return '—';
+  if (good.length === 0) return '';
   const first = good[0].time.slice(11, 16);
   const last = good[good.length - 1].time.slice(11, 16);
   return first === last ? first : `${first}–${last}`;
 }
 
-const badgeStyles = {
-  go:    '',
-  maybe: '',
-  skip:  '',
+const kindConfig: Record<SkyKind, {
+  badge: { bg: string; border: string; color: string; label: string };
+  border: string;
+  barColor: string;
+}> = {
+  go:    {
+    badge:   { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.3)', color: '#34D399', label: 'GO' },
+    border:  'rgba(52,211,153,0.2)',
+    barColor: '#34D399',
+  },
+  maybe: {
+    badge:   { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', color: '#F59E0B', label: 'MAYBE' },
+    border:  'rgba(245,158,11,0.15)',
+    barColor: '#F59E0B',
+  },
+  skip:  {
+    badge:   { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)', color: '#EF4444', label: 'SKIP' },
+    border:  'rgba(255,255,255,0.06)',
+    barColor: '#EF4444',
+  },
 };
 
-const badgeInlineStyles = {
-  go:    { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34D399' },
-  maybe: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' },
-  skip:  { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444' },
-};
+function SkyIcon({ kind, size = 20 }: { kind: SkyKind; size?: number }) {
+  if (kind === 'go') return <Stars size={size} color="#34D399" strokeWidth={1.5} />;
+  if (kind === 'maybe') return <CloudMoon size={size} color="#F59E0B" strokeWidth={1.5} />;
+  return <Cloud size={size} color="#94A3B8" strokeWidth={1.5} />;
+}
 
-function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+function StatRow({ icon, value }: { icon: React.ReactNode; value: string }) {
   return (
-    <div>
-      <p className="text-[var(--text-dim)] text-[10px] uppercase tracking-wide mb-0.5">{label}</p>
-      <p className="text-white text-base font-bold" style={color ? { color } : undefined}>{value}</p>
+    <div className="flex items-center gap-1.5" style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>
+      {icon}
+      <span>{value}</span>
     </div>
   );
 }
@@ -55,82 +74,140 @@ export default function ForecastCard({ day, isToday }: Props) {
 
   const bestHour = day.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b);
   const kind = badge(bestHour.cloudCover);
+  const cfg = kindConfig[kind];
   const visKm = Math.round(bestHour.visibility / 1000);
   const window = observationWindow(day.hours);
-
-  if (isToday) {
-    return (
-      <div className="card-base p-5 sm:p-6" style={{ borderColor: 'rgba(56,240,255,0.2)', transition: 'transform 0.2s ease' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)'; }}
-      >
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div>
-            <p className="text-[#38F0FF] text-xs font-medium tracking-widest uppercase mb-1">{t('today')}</p>
-            <p className="text-white text-lg font-semibold">{formatDate(day.date, locale)}</p>
-          </div>
-          <span
-            className="inline-flex items-center px-2.5 py-1 rounded text-sm font-semibold"
-            style={badgeInlineStyles[kind]}
-          >
-            {t(kind)}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-4">
-          <Stat
-            label={t('cloudCover')}
-            value={`${bestHour.cloudCover}%`}
-            color={bestHour.cloudCover < 30 ? '#34d399' : bestHour.cloudCover < 60 ? '#FFD166' : '#f87171'}
-          />
-          <Stat label={t('visibility')} value={`${visKm} km`} />
-          <Stat label="Temperature" value={`${Math.round(bestHour.temp)}°C`} />
-          <Stat label="Wind" value={`${Math.round(bestHour.wind)} km/h`} />
-        </div>
-
-        {window !== '—' && (
-          <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center gap-2">
-            <span className="text-[#38F0FF] text-[10px] uppercase tracking-widest">{t('bestHours')}</span>
-            <span className="text-white text-xs font-medium">{window}</span>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   const nightHours = day.hours.filter(h => {
     const hr = parseInt(h.time.slice(11, 13));
     return hr >= 20 || hr <= 4;
   });
   const temps = nightHours.map(h => h.temp);
-  const minTemp = temps.length ? Math.round(Math.min(...temps)) : null;
-  const maxTemp = temps.length ? Math.round(Math.max(...temps)) : null;
+  const minTemp = temps.length ? Math.round(Math.min(...temps)) : Math.round(bestHour.temp);
+  const maxTemp = temps.length ? Math.round(Math.max(...temps)) : Math.round(bestHour.temp);
 
+  if (isToday) {
+    return (
+      <div
+        className="card-base p-5"
+        style={{
+          borderColor: `rgba(56,240,255,0.25)`,
+          boxShadow: '0 0 0 1px rgba(56,240,255,0.06), 0 4px 16px rgba(0,0,0,0.3)',
+          transition: 'transform 200ms ease-out',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; }}
+      >
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'var(--color-nebula-teal)' }}>
+              {t('today')}
+            </p>
+            <p className="text-white text-base font-semibold">{formatDate(day.date, locale)}</p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <SkyIcon kind={kind} size={22} />
+            <span
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold tracking-wide"
+              style={{ background: cfg.badge.bg, border: `1px solid ${cfg.badge.border}`, color: cfg.badge.color }}
+            >
+              {cfg.badge.label}
+            </span>
+          </div>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>{t('cloudCover')}</p>
+            <p className="text-white text-xl font-bold font-mono" style={{ color: cfg.badge.color }}>{bestHour.cloudCover}%</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>{t('visibility')}</p>
+            <p className="text-white text-xl font-bold font-mono">{visKm} km</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Thermometer size={13} color="var(--color-text-muted)" strokeWidth={1.5} />
+            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{minTemp}–{maxTemp}°C</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Wind size={13} color="var(--color-text-muted)" strokeWidth={1.5} />
+            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{Math.round(bestHour.wind)} km/h</span>
+          </div>
+        </div>
+
+        {/* Cloud cover bar */}
+        <div className="mb-3">
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${bestHour.cloudCover}%`,
+                background: `linear-gradient(90deg, ${cfg.barColor}99, ${cfg.barColor})`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Best window */}
+        {window && (
+          <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+            <Clock size={11} color="var(--color-nebula-teal)" strokeWidth={2} />
+            <span className="text-[11px] uppercase tracking-widest font-medium" style={{ color: 'var(--color-nebula-teal)' }}>
+              {t('bestHours')}
+            </span>
+            <span className="text-xs font-mono text-white ml-1">{window}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Non-today compact card
   return (
     <div
-      className="card-base p-4 flex flex-col gap-2"
-      style={{ transition: 'transform 0.2s ease' }}
+      className="card-base p-3.5 flex flex-col gap-2.5 flex-shrink-0"
+      style={{
+        borderColor: cfg.border,
+        minWidth: 120,
+        transition: 'transform 200ms ease-out, border-color 200ms',
+      }}
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)'; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; }}
     >
+      {/* Day + date */}
+      <p className="text-white text-xs font-semibold truncate">{formatDate(day.date, locale, true)}</p>
+
+      {/* Sky icon centered */}
       <div className="flex items-center justify-between gap-2">
-        <p className="text-white text-sm font-medium min-w-0 truncate">{formatDate(day.date, locale)}</p>
+        <SkyIcon kind={kind} size={18} />
         <span
-          className="inline-flex items-center flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium"
-          style={badgeInlineStyles[kind]}
+          className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide"
+          style={{ background: cfg.badge.bg, border: `1px solid ${cfg.badge.border}`, color: cfg.badge.color }}
         >
-          {t(kind)}
+          {cfg.badge.label}
         </span>
       </div>
-      <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
-        <span>☁ {bestHour.cloudCover}%</span>
-        <span>👁 {visKm} km</span>
+
+      {/* Mini stats */}
+      <StatRow icon={<Cloud size={11} strokeWidth={1.5} />} value={`${bestHour.cloudCover}%`} />
+      <StatRow icon={<Eye size={11} strokeWidth={1.5} />} value={`${visKm} km`} />
+
+      {/* Cloud cover bar */}
+      <div className="h-1 rounded-full overflow-hidden mt-auto" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${bestHour.cloudCover}%`,
+            background: cfg.barColor,
+            opacity: 0.7,
+          }}
+        />
       </div>
-      {minTemp !== null && (
-        <span className="text-xs text-slate-500">🌡 {minTemp}–{maxTemp}°C</span>
-      )}
-      {window !== '—' && (
-        <p className="text-[10px] text-[var(--text-dim)]">{t('bestHours')}: {window}</p>
+
+      {window && (
+        <p className="text-[10px] font-mono" style={{ color: 'var(--color-nebula-teal)', opacity: 0.8 }}>{window}</p>
       )}
     </div>
   );
