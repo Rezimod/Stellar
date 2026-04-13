@@ -85,9 +85,11 @@
   --radius-full: 9999px;
 
   /* Typography */
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display:  'DM Sans', system-ui, sans-serif;
+  --font-body:     'DM Sans', system-ui, sans-serif;
+  --font-serif:    'Instrument Serif', Georgia, serif;
+  --font-mono:     'JetBrains Mono', ui-monospace, monospace;
+  --font-georgian: 'Noto Sans Georgian', system-ui, sans-serif;
 
   /* Motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -124,9 +126,11 @@
   --color-success: #34D399;
   --color-warning: #FBBF24;
   --color-error: #F87171;
-  --font-display: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
-  --font-body: var(--font-body, 'DM Sans', system-ui, sans-serif);
-  --font-mono: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  --font-display:  var(--font-display, 'DM Sans', system-ui, sans-serif);
+  --font-body:     var(--font-body, 'DM Sans', system-ui, sans-serif);
+  --font-serif:    var(--font-serif, 'Instrument Serif', Georgia, serif);
+  --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }
 
 * { box-sizing: border-box; }
@@ -207,8 +211,10 @@ code, pre, .mono {
 }
 
 /* Typography utilities */
-.font-display { font-family: var(--font-display); }
-.font-body { font-family: var(--font-body); }
+.font-display  { font-family: var(--font-display); }
+.font-body     { font-family: var(--font-body); }
+.font-serif    { font-family: var(--font-serif); }
+.font-georgian { font-family: var(--font-georgian); }
 
 /* Card base */
 .card-base {

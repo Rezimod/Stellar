@@ -2,7 +2,10 @@
 
 interface SkeletonProps {
   className?: string;
-  variant?: 'text' | 'circular' | 'rectangular';
+  variant?: 'text' | 'circular' | 'rectangular' | 'bar' | 'custom';
+  width?: number | string;
+  height?: number | string;
+  lines?: number;
 }
 
 const shimmerStyle: React.CSSProperties = {
@@ -11,13 +14,35 @@ const shimmerStyle: React.CSSProperties = {
   animation: 'shimmer 1.8s ease-in-out infinite',
 };
 
-export function Skeleton({ className = '', variant = 'text' }: SkeletonProps) {
+export function Skeleton({ className = '', variant = 'text', width, height, lines }: SkeletonProps) {
+  if (variant === 'text' && lines && lines > 1) {
+    return (
+      <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {Array.from({ length: lines }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              ...shimmerStyle,
+              borderRadius: 6,
+              height: height ?? 14,
+              width: i === lines - 1 ? '60%' : (width ?? '100%'),
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
   const variantStyle: React.CSSProperties =
     variant === 'circular'
-      ? { borderRadius: '50%' }
+      ? { borderRadius: '50%', width: width ?? 40, height: height ?? 40 }
       : variant === 'rectangular'
-      ? { borderRadius: 12 }
-      : { borderRadius: 6, height: 16, width: '100%' };
+      ? { borderRadius: 12, width: width ?? '100%', height: height ?? 80 }
+      : variant === 'bar'
+      ? { borderRadius: 4, height: height ?? 6, width: width ?? '100%' }
+      : variant === 'custom'
+      ? { borderRadius: 8, width: width ?? '100%', height: height ?? 40 }
+      : { borderRadius: 6, height: height ?? 16, width: width ?? '100%' };
 
   return <div style={{ ...shimmerStyle, ...variantStyle }} className={className} />;
 }

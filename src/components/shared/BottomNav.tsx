@@ -16,17 +16,17 @@ export default function BottomNav() {
     { href: '/profile',     label: 'Profile',  icon: <User size={18} />,         center: false },
   ];
 
-  const activeColor   = '#34d399';
+  const activeColor   = '#38F0FF';
   const inactiveColor = 'rgba(255,255,255,0.35)';
 
   return (
     <nav
       className="sm:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: 'rgba(7,11,20,0.94)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(5,10,18,0.94)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
         paddingBottom: 'env(safe-area-inset-bottom)',
         willChange: 'transform',
       }}
@@ -54,23 +54,26 @@ export default function BottomNav() {
               >
                 <div
                   style={{
-                    width: 48,
-                    height: 48,
+                    width: 52,
+                    height: 52,
                     borderRadius: '50%',
-                    background: isActive ? 'rgba(52,211,153,0.18)' : 'rgba(52,211,153,0.1)',
-                    border: `1px solid ${isActive ? 'rgba(52,211,153,0.55)' : 'rgba(52,211,153,0.25)'}`,
+                    background: isActive
+                      ? 'linear-gradient(135deg, rgba(56,240,255,0.25) 0%, rgba(14,165,233,0.2) 100%)'
+                      : 'linear-gradient(135deg, rgba(56,240,255,0.12) 0%, rgba(14,165,233,0.08) 100%)',
+                    border: `1px solid ${isActive ? 'rgba(56,240,255,0.5)' : 'rgba(56,240,255,0.2)'}`,
+                    boxShadow: isActive ? '0 0 16px rgba(56,240,255,0.2)' : undefined,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginTop: -12,
+                    marginTop: -14,
                     color: isActive ? activeColor : 'rgba(255,255,255,0.5)',
-                    transition: 'background 0.15s, border-color 0.15s',
+                    transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
                     willChange: 'transform',
                   }}
                 >
                   {tab.icon}
                 </div>
-                <span style={{ fontSize: 9, fontWeight: 500, marginTop: 2, color }}>{tab.label}</span>
+                <span style={{ fontSize: 9, fontWeight: 500, marginTop: 3, color, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{tab.label}</span>
               </button>
             );
           }
@@ -83,7 +86,7 @@ export default function BottomNav() {
               style={{ color, textDecoration: 'none', WebkitTapHighlightColor: 'transparent' }}
             >
               {tab.icon}
-              <span className="text-[9px] font-medium truncate max-w-full px-1">{tab.label}</span>
+              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{tab.label}</span>
             </Link>
           );
         })}

@@ -1,24 +1,33 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Plus_Jakarta_Sans, DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { Instrument_Serif, DM_Sans, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
 import './globals.css';
+import '../styles/design-tokens.css';
+import '../styles/animations.css';
 
-const jakarta = Plus_Jakarta_Sans({
+const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['500', '600', '700', '800'],
+  variable: '--font-serif',
+  weight: '400',
+  style: ['normal', 'italic'],
   display: 'swap',
 });
 const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-body',
-  weight: ['400', '500', '600'],
+  variable: '--font-display',
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   weight: ['400', '500'],
+  display: 'swap',
+});
+const notoGeorgian = Noto_Sans_Georgian({
+  subsets: ['georgian'],
+  variable: '--font-georgian',
+  weight: ['400', '500', '600'],
   display: 'swap',
 });
 import { NextIntlClientProvider } from 'next-intl';
@@ -77,7 +86,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${jakarta.variable} ${dmSans.variable} ${jetbrains.variable}`}>
+    <html lang={locale} className={`${instrumentSerif.variable} ${dmSans.variable} ${jetbrains.variable} ${notoGeorgian.variable}`}>
       <head>
       </head>
       <body className="bg-void text-slate-200 min-h-screen font-sans flex flex-col"

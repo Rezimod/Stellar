@@ -1,0 +1,93 @@
+/*
+  Stellar Design Tokens — extends globals.css
+  Named per the visual redesign spec. Reference these in components.
+*/
+
+:root {
+  /* Background layers */
+  --color-space-black:  #050A12;
+  --color-panel-dark:   #0A1628;
+  --color-card-surface: #0F1D32;
+  --color-card-hover:   #142440;
+  --color-surface-mid:  #1A2D4D;
+
+  /* Text scale */
+  --color-text-primary:   rgba(255, 255, 255, 0.92);
+  --color-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-text-muted:     rgba(255, 255, 255, 0.25);
+  --color-text-disabled:  rgba(255, 255, 255, 0.12);
+
+  /* Brand: Nebula Teal */
+  --color-nebula-teal:         #38F0FF;
+  --color-nebula-teal-hover:   #5CF4FF;
+  --color-nebula-teal-pressed: #2AD4E0;
+  --color-nebula-teal-glow:    rgba(56, 240, 255, 0.15);
+
+  /* Brand: Star Gold */
+  --color-star-gold:      #FFD166;
+  --color-star-gold-hover:#FFD98A;
+  --color-star-gold-glow: rgba(255, 209, 102, 0.15);
+
+  /* Status */
+  --color-aurora-green:     #34D399;
+  --color-aurora-green-glow:rgba(52, 211, 153, 0.12);
+  --color-solar-amber:      #F59E0B;
+  --color-mars-red:         #EF4444;
+  --color-oracle-blue:      #818CF8;
+
+  /* Sky condition semantic */
+  --color-sky-go:    #34D399;
+  --color-sky-maybe: #F59E0B;
+  --color-sky-skip:  #EF4444;
+
+  /* Bortle scale 1–9 */
+  --color-bortle-1: #00FF88;
+  --color-bortle-2: #44FF77;
+  --color-bortle-3: #88FF44;
+  --color-bortle-4: #CCDD00;
+  --color-bortle-5: #FFDD00;
+  --color-bortle-6: #FFAA00;
+  --color-bortle-7: #FF7700;
+  --color-bortle-8: #FF4400;
+  --color-bortle-9: #FF0000;
+
+  /* Glass surface */
+  --glass-bg:     rgba(15, 29, 50, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur:   16px;
+
+  /* Fonts */
+  --font-serif:    'Instrument Serif', Georgia, serif;
+  --font-georgian: 'Noto Sans Georgian', system-ui, sans-serif;
+
+  /* Type scale (rem) */
+  --text-xs:   0.6875rem;  /* 11px */
+  --text-sm:   0.8125rem;  /* 13px */
+  --text-base: 0.9375rem;  /* 15px */
+  --text-lg:   1.125rem;   /* 18px */
+  --text-xl:   1.5rem;     /* 24px */
+  --text-2xl:  2rem;       /* 32px */
+  --text-hero: 2.75rem;    /* 44px */
+
+  /* Shadows */
+  --shadow-card:      0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-card-hover:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,240,255,0.08);
+  --shadow-glow-teal: 0 0 20px rgba(56,240,255,0.15), 0 0 60px rgba(56,240,255,0.05);
+  --shadow-glow-gold: 0 0 20px rgba(255,209,102,0.15), 0 0 60px rgba(255,209,102,0.05);
+  --shadow-inner:     inset 0 1px 0 rgba(255,255,255,0.04);
+
+  /* Transitions */
+  --transition-fast:   120ms ease-out;
+  --transition-default:200ms ease-out;
+  --transition-slow:   350ms ease-out;
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Z-index scale */
+  --z-base:    0;
+  --z-card:    10;
+  --z-sticky:  20;
+  --z-nav:     30;
+  --z-overlay: 40;
+  --z-modal:   50;
+  --z-toast:   60;
+}

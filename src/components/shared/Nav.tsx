@@ -25,7 +25,7 @@ export default function Nav() {
   const router = useRouter();
   const { logout, authenticated, ready, login, user } = usePrivy();
   const { wallets } = useWallets();
-  const { setWallet } = useAppState();
+  const { setWallet, state } = useAppState();
   const [showMenu, setShowMenu] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -157,7 +157,7 @@ export default function Nav() {
                 title={tab.label}
                 className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 ${
                   pathname === tab.href
-                    ? 'text-white border-b-2 border-[#34d399]'
+                    ? 'text-white border-b-2 border-[#38F0FF]'
                     : 'text-[rgba(255,255,255,0.5)] hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -167,8 +167,30 @@ export default function Nav() {
             ))}
           </div>
 
-          {/* Right side: search + auth only */}
+          {/* Right side: stars + search + auth */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            {authenticated && (
+              <Link
+                href="/profile"
+                title="Stars balance"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '3px 9px',
+                  borderRadius: 9999,
+                  background: 'rgba(255,209,102,0.08)',
+                  border: '1px solid rgba(255,209,102,0.18)',
+                  color: '#FFD166',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                <span style={{ fontSize: 10 }}>✦</span>
+                <span>{(state.completedMissions.length * 50).toLocaleString()}</span>
+              </Link>
+            )}
             <button
               onClick={() => setSearchOpen(true)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
