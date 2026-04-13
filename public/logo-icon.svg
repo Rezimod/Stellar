@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="planet" cx="38%" cy="32%" r="65%">
+      <stop offset="0%" stop-color="#FFF0B0"/>
+      <stop offset="18%" stop-color="#FBBF24"/>
+      <stop offset="42%" stop-color="#F97316"/>
+      <stop offset="70%" stop-color="#C026D3"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.1"/>
+      <stop offset="25%" stop-color="#7DD3FC" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#E0F2FE" stop-opacity="1"/>
+      <stop offset="75%" stop-color="#38BDF8" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.1"/>
+    </linearGradient>
+    <filter id="planetBloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="ringGlow" x="-20%" y="-80%" width="140%" height="260%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Ambient glow behind planet -->
+  <circle cx="100" cy="96" r="70" fill="url(#glow)"/>
+
+  <!-- Ring back half (behind planet) -->
+  <ellipse cx="100" cy="104" rx="72" ry="16" fill="none" stroke="url(#ring)" stroke-width="5" opacity="0.45" filter="url(#ringGlow)"/>
+
+  <!-- Planet body -->
+  <circle cx="100" cy="92" r="52" fill="url(#planet)" filter="url(#planetBloom)"/>
+
+  <!-- Planet surface bands (subtle) -->
+  <ellipse cx="100" cy="80" rx="38" ry="7" fill="rgba(255,255,255,0.07)"/>
+  <ellipse cx="100" cy="100" rx="42" ry="5" fill="rgba(0,0,0,0.1)"/>
+
+  <!-- Ring front half (over planet bottom) -->
+  <ellipse cx="100" cy="104" rx="72" ry="16" fill="none" stroke="url(#ring)" stroke-width="5"
+    stroke-dasharray="226 226" stroke-dashoffset="-1" filter="url(#ringGlow)"/>
+
+  <!-- Sparkle stars -->
+  <!-- Large 4-point star top-left -->
+  <path d="M32 34 L33.6 39.2 L38.8 40.8 L33.6 42.4 L32 47.6 L30.4 42.4 L25.2 40.8 L30.4 39.2Z" fill="#FCD34D" opacity="0.9"/>
+  <!-- Small star top-right -->
+  <path d="M162 22 L163 25 L166 26 L163 27 L162 30 L161 27 L158 26 L161 25Z" fill="#F9A8D4" opacity="0.85"/>
+  <!-- Tiny dot stars -->
+  <circle cx="55" cy="22" r="2" fill="white" opacity="0.6"/>
+  <circle cx="148" cy="38" r="1.4" fill="white" opacity="0.5"/>
+  <circle cx="170" cy="68" r="1.6" fill="#7DD3FC" opacity="0.7"/>
+  <circle cx="28" cy="130" r="1.3" fill="white" opacity="0.4"/>
+  <circle cx="172" cy="145" r="1.2" fill="#FCD34D" opacity="0.5"/>
+</svg>

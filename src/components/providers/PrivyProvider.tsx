@@ -26,7 +26,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
         appearance: {
           theme: 'dark',
           accentColor: '#34d399',
-          logo: '/logo.svg',
+          logo: '/logo.png',
           loginMessage: 'Sign in to Stellar',
           showWalletLoginFirst: false,
         },
