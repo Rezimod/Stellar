@@ -2,27 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Trophy, Star, Telescope } from 'lucide-react';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { Telescope } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
-import Card from '@/components/shared/Card';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 
-const RANK_BADGES: Record<string, { label: string; color: string }> = {
-  Celestial:  { label: 'Celestial',   color: '#FFD166' },
-  Pathfinder: { label: 'Pathfinder',  color: '#7A5FFF' },
-  Observer:   { label: 'Observer',    color: '#38F0FF' },
-  Stargazer:  { label: 'Stargazer',   color: '#94a3b8' },
+const RANK_LABELS: Record<string, { label: string; color: string }> = {
+  Celestial:  { label: 'Celestial',  color: '#FFD166' },
+  Pathfinder: { label: 'Pathfinder', color: '#7A5FFF' },
+  Observer:   { label: 'Observer',   color: '#38F0FF' },
+  Stargazer:  { label: 'Stargazer',  color: '#94a3b8' },
 };
 
 const SEED_DATA = [
-  { handle: 'StarHunter_Giorgi', rank: 'Celestial',  observations: 47, stars: 2340 },
-  { handle: 'NightSky_Nino',     rank: 'Celestial',  observations: 41, stars: 2105 },
-  { handle: 'CosmicTea',         rank: 'Celestial',  observations: 38, stars: 1980 },
-  { handle: 'AstroLeko',         rank: 'Pathfinder', observations: 29, stars: 1450 },
-  { handle: 'DeepField_Ana',     rank: 'Pathfinder', observations: 24, stars: 1220 },
-  { handle: 'OrionSeeker',       rank: 'Observer',   observations: 11, stars:  540 },
-  { handle: 'SkyWatcher_Kote',   rank: 'Observer',   observations:  9, stars:  435 },
-  { handle: 'NebulaMari',        rank: 'Stargazer',  observations:  5, stars:  240 },
-  { handle: 'GalacticDavit',     rank: 'Stargazer',  observations:  3, stars:  140 },
+  { handle: 'StarHunter_Giorgi', wallet: '',  rank: 'Celestial',  observations: 47, stars: 2340 },
+  { handle: 'NightSky_Nino',     wallet: '',  rank: 'Celestial',  observations: 41, stars: 2105 },
+  { handle: 'CosmicTea',         wallet: '',  rank: 'Celestial',  observations: 38, stars: 1980 },
+  { handle: 'AstroLeko',         wallet: '',  rank: 'Pathfinder', observations: 29, stars: 1450 },
+  { handle: 'DeepField_Ana',     wallet: '',  rank: 'Pathfinder', observations: 24, stars: 1220 },
+  { handle: 'OrionSeeker',       wallet: '',  rank: 'Observer',   observations: 11, stars:  540 },
+  { handle: 'SkyWatcher_Kote',   wallet: '',  rank: 'Observer',   observations:  9, stars:  435 },
+  { handle: 'NebulaMari',        wallet: '',  rank: 'Stargazer',  observations:  5, stars:  240 },
+  { handle: 'GalacticDavit',     wallet: '',  rank: 'Stargazer',  observations:  3, stars:  140 },
 ];
 
 interface LiveEntry {
@@ -33,17 +35,12 @@ interface LiveEntry {
 
 interface DisplayEntry {
   handle: string;
+  wallet: string;
   rank: string;
   observations: number;
   stars: number;
   isDemo?: boolean;
 }
-
-const PODIUM_COLORS = [
-  { border: 'rgba(255,209,102,0.4)',  bg: 'rgba(255,209,102,0.08)',  label: '#FFD166', medal: '🥇', size: 'text-2xl', order: 1 },
-  { border: 'rgba(192,192,192,0.35)', bg: 'rgba(192,192,192,0.06)',  label: '#C0C0C0', medal: '🥈', size: 'text-xl',  order: 2 },
-  { border: 'rgba(205,127,50,0.35)',  bg: 'rgba(205,127,50,0.06)',   label: '#CD7F32', medal: '🥉', size: 'text-xl',  order: 3 },
-];
 
 const TIME_TABS = ['This Week', 'This Month', 'All Time'] as const;
 
@@ -59,12 +56,37 @@ function shortWallet(wallet: string): string {
   return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
 }
 
+function AvatarCircle({ name, size = 40, color }: { name: string; size?: number; color?: string }) {
+  const initial = name[0]?.toUpperCase() ?? '?';
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: color ? `${color}18` : 'rgba(255,255,255,0.06)',
+        border: `1px solid ${color ? `${color}35` : 'rgba(255,255,255,0.1)'}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size * 0.4,
+        fontWeight: 700,
+        color: color ?? 'rgba(255,255,255,0.7)',
+        flexShrink: 0,
+      }}
+    >
+      {initial}
+    </div>
+  );
+}
+
 function ShimmerRow() {
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 animate-pulse">
       <div className="w-6 h-4 rounded bg-white/5 flex-shrink-0" />
+      <div className="w-8 h-8 rounded-full bg-white/5 flex-shrink-0" />
       <div className="flex-1 space-y-1.5">
-        <div className="h-3.5 w-32 rounded bg-white/5" />
+        <div className="h-3.5 w-28 rounded bg-white/5" />
         <div className="h-2.5 w-16 rounded bg-white/5" />
       </div>
       <div className="h-3 w-8 rounded bg-white/5" />
@@ -73,14 +95,56 @@ function ShimmerRow() {
   );
 }
 
+const PODIUM_CONFIG = [
+  {
+    rankNum: 2,
+    rankColor: '#C0C0C0',
+    border: 'rgba(192,192,192,0.25)',
+    bg: 'rgba(192,192,192,0.05)',
+    padTop: 32,
+    avatarSize: 40,
+    rankFontSize: '1.75rem',
+    slideFrom: '-40px',
+  },
+  {
+    rankNum: 1,
+    rankColor: '#FFD166',
+    border: 'rgba(255,209,102,0.4)',
+    bg: 'rgba(255,209,102,0.07)',
+    padTop: 0,
+    avatarSize: 48,
+    rankFontSize: '2.25rem',
+    slideFrom: '0px',
+    glow: '0 0 30px rgba(255,209,102,0.2), 0 0 60px rgba(255,209,102,0.08)',
+    scale: 'scale(1.04)',
+    crown: true,
+  },
+  {
+    rankNum: 3,
+    rankColor: '#CD7F32',
+    border: 'rgba(205,127,50,0.25)',
+    bg: 'rgba(205,127,50,0.05)',
+    padTop: 56,
+    avatarSize: 36,
+    rankFontSize: '1.5rem',
+    slideFrom: '40px',
+  },
+];
+
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<typeof TIME_TABS[number]>('This Month');
   const [entries, setEntries] = useState<DisplayEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [podiumVisible, setPodiumVisible] = useState(false);
+
+  const { user } = usePrivy();
+  const { wallets } = useWallets();
+  const currentWallet = wallets.find(w => w.walletClientType === 'privy')?.address ?? '';
 
   useEffect(() => {
     setLoading(true);
+    setPodiumVisible(false);
     fetch('/api/leaderboard')
       .then(r => r.json())
       .then((data: { leaderboard: LiveEntry[] }) => {
@@ -91,6 +155,7 @@ export default function LeaderboardPage() {
           setEntries(
             data.leaderboard.map(e => ({
               handle: shortWallet(e.wallet),
+              wallet: e.wallet,
               rank: rankFromStars(e.total_stars),
               observations: e.observations,
               stars: e.total_stars,
@@ -103,34 +168,47 @@ export default function LeaderboardPage() {
         setEntries(SEED_DATA.map(e => ({ ...e, isDemo: true })));
         setIsDemo(true);
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        setLoading(false);
+        setTimeout(() => setPodiumVisible(true), 50);
+      });
+  }, [activeTab]);
 
-  const top3 = entries.slice(0, 3);
+  const top3  = entries.slice(0, 3);
   const rest  = entries.slice(3);
+
+  const currentUserIndex = currentWallet
+    ? entries.findIndex(e => e.wallet.toLowerCase() === currentWallet.toLowerCase())
+    : -1;
+  const currentUserInTop20 = currentUserIndex >= 0 && currentUserIndex < 20;
+  const currentUserNotShown = currentUserIndex >= 20;
+
+  const isEmpty = !loading && entries.length === 0;
+
+  // Podium display order: [2nd, 1st, 3rd]
+  const podiumSlots = [
+    { entry: top3[1], cfg: PODIUM_CONFIG[0] },
+    { entry: top3[0], cfg: PODIUM_CONFIG[1] },
+    { entry: top3[2], cfg: PODIUM_CONFIG[2] },
+  ];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 animate-page-enter flex flex-col gap-5">
       <BackButton />
+
       {/* Header */}
-      <div className="flex items-start gap-3">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-          style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)' }}
+      <div>
+        <h1
+          className="text-2xl text-white/90"
+          style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}
         >
-          <Trophy size={18} className="text-[#FFD166]" />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#FFD166]" style={{ fontFamily: 'Georgia, serif' }}>
-            Observer Leaderboard
-          </h1>
-          <p className="text-slate-500 text-sm mt-0.5">
-            Top astronomers by Stars earned this month
-            {isDemo && !loading && (
-              <span className="ml-2 text-slate-600">(demo data)</span>
-            )}
+          Leaderboard
+        </h1>
+        {isDemo && !loading && (
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            demo data · no live observations yet
           </p>
-        </div>
+        )}
       </div>
 
       {/* Time filter tabs */}
@@ -145,8 +223,8 @@ export default function LeaderboardPage() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
             style={
               activeTab === tab
-                ? { background: 'rgba(255,209,102,0.15)', color: '#FFD166', border: '1px solid rgba(255,209,102,0.25)' }
-                : { color: '#64748b' }
+                ? { background: 'rgba(255,209,102,0.12)', color: '#FFD166', border: '1px solid rgba(255,209,102,0.22)' }
+                : { color: 'var(--color-text-secondary)' }
             }
           >
             {tab}
@@ -154,114 +232,226 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
-      {/* Podium — top 3 */}
-      {loading ? (
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {[0, 1, 2].map(i => (
-            <div
-              key={i}
-              className="rounded-2xl p-4 flex flex-col items-center gap-2 animate-pulse"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div className="w-8 h-8 rounded-full bg-white/5" />
-              <div className="h-3 w-20 rounded bg-white/5" />
-              <div className="h-2.5 w-14 rounded bg-white/5" />
-              <div className="h-4 w-16 rounded bg-white/5" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {top3.map((entry, i) => {
-            const p = PODIUM_COLORS[i];
-            const badge = RANK_BADGES[entry.rank] ?? RANK_BADGES['Stargazer'];
-            return (
-              <div
-                key={entry.handle}
-                className="rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center gap-1.5 transition-all"
-                style={{ background: p.bg, border: `1px solid ${p.border}` }}
-              >
-                <span className={`${p.size} leading-none`}>{p.medal}</span>
-                <p className="text-white font-bold text-xs sm:text-sm leading-tight line-clamp-2">{entry.handle}</p>
-                <div
-                  className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  style={{ background: `${badge.color}18`, color: badge.color, border: `1px solid ${badge.color}30` }}
-                >
-                  {badge.label}
-                </div>
-                <p className="text-[#FFD166] font-bold text-sm">
-                  {entry.stars.toLocaleString()} <span className="text-xs">✦</span>
-                </p>
-                <p className="text-slate-600 text-[10px]">{entry.observations} obs</p>
-              </div>
-            );
-          })}
+      {/* Empty state */}
+      {isEmpty && (
+        <div
+          className="rounded-2xl p-10 text-center flex flex-col items-center gap-4"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)' }}
+          >
+            <span style={{ fontSize: 28 }}>🏆</span>
+          </div>
+          <div>
+            <p className="text-white/80 font-semibold text-sm">Rankings update daily</p>
+            <p className="text-white/40 text-xs mt-1">Complete observations to appear on the leaderboard</p>
+          </div>
+          <Link
+            href="/missions"
+            className="mt-1 px-5 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
+            style={{ background: 'rgba(56,240,255,0.12)', color: '#38F0FF', border: '1px solid rgba(56,240,255,0.2)' }}
+          >
+            Be the first observer →
+          </Link>
         </div>
       )}
 
-      {/* Full ranked list */}
-      <Card className="!p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-          <Star size={13} className="text-[#FFD166]" />
-          <span className="text-white text-sm font-semibold">Rankings</span>
-        </div>
+      {/* Podium — top 3 */}
+      {!isEmpty && (
+        <>
+          {loading ? (
+            <div className="flex items-end gap-2 sm:gap-3">
+              {[{ h: 140 }, { h: 180 }, { h: 120 }].map((s, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-2xl animate-pulse"
+                  style={{ height: s.h, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-end gap-2 sm:gap-3">
+              {podiumSlots.map(({ entry, cfg }, slotIndex) => {
+                if (!entry) return <div key={slotIndex} className="flex-1" />;
+                const rankLabel = RANK_LABELS[entry.rank] ?? RANK_LABELS['Stargazer'];
 
-        {loading ? (
-          Array.from({ length: 7 }).map((_, i) => <ShimmerRow key={i} />)
-        ) : (
-          entries.map((entry, i) => {
-            const badge = RANK_BADGES[entry.rank] ?? RANK_BADGES['Stargazer'];
-            return (
-              <div
-                key={`${entry.handle}-${i}`}
-                className="flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 transition-colors"
-              >
-                <span
-                  className="w-6 text-center text-sm font-bold flex-shrink-0"
-                  style={{ color: i === 0 ? '#FFD166' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : '#475569' }}
-                >
-                  {i + 1}
-                </span>
+                // #1 animates first (delay 0), #2 and #3 animate after (delay 180ms)
+                const animDelay = cfg.rankNum === 1 ? 0 : 180;
+                const isFirst = cfg.rankNum === 1;
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate text-slate-200">{entry.handle}</p>
+                return (
                   <div
-                    className="inline-block mt-0.5 px-1.5 py-px rounded text-[10px] font-medium"
-                    style={{ background: `${badge.color}15`, color: badge.color }}
+                    key={cfg.rankNum}
+                    className="flex-1 rounded-2xl p-3 flex flex-col items-center text-center gap-2"
+                    style={{
+                      paddingTop: `${(cfg.padTop ?? 0) + 12}px`,
+                      background: cfg.bg,
+                      border: `1px solid ${cfg.border}`,
+                      boxShadow: cfg.glow ?? 'none',
+                      transform: podiumVisible
+                        ? (isFirst ? 'scale(1.04)' : 'translateX(0) scale(1)')
+                        : (isFirst ? 'scale(0.92)' : `translateX(${cfg.slideFrom}) scale(0.95)`),
+                      opacity: podiumVisible ? 1 : 0,
+                      transition: `transform 420ms cubic-bezier(0.34,1.56,0.64,1) ${animDelay}ms, opacity 300ms ease-out ${animDelay}ms`,
+                    }}
                   >
-                    {badge.label}
+                    {cfg.crown && (
+                      <span className="text-lg leading-none" style={{ marginBottom: -4 }}>👑</span>
+                    )}
+
+                    <span
+                      className="font-bold leading-none"
+                      style={{ fontSize: cfg.rankFontSize, color: cfg.rankColor }}
+                    >
+                      {cfg.rankNum}
+                    </span>
+
+                    <AvatarCircle name={entry.handle} size={cfg.avatarSize} color={cfg.rankColor} />
+
+                    <p
+                      className="font-mono leading-tight w-full truncate"
+                      style={{ fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.7)' }}
+                    >
+                      {entry.handle}
+                    </p>
+
+                    <div className="flex flex-col items-center gap-1">
+                      <span
+                        className="font-bold"
+                        style={{ fontSize: isFirst ? '0.9rem' : '0.8rem', color: '#FFD166' }}
+                      >
+                        {entry.stars.toLocaleString()} ✦
+                      </span>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                        {entry.observations} obs
+                      </span>
+                    </div>
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          )}
 
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Telescope size={11} className="text-slate-600" />
-                  <span className="text-slate-500 text-xs">{entry.observations}</span>
-                </div>
+          {/* Full ranking list */}
+          <Card variant="default" padding="none" hover={false}>
+            <div
+              className="px-4 py-3 border-b flex items-center gap-2"
+              style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+            >
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                Rankings
+              </span>
+            </div>
 
-                <span className="text-[#FFD166] text-sm font-bold flex-shrink-0">
-                  {entry.stars.toLocaleString()} <span className="text-xs font-normal">✦</span>
-                </span>
-              </div>
-            );
-          })
-        )}
-      </Card>
+            {loading
+              ? Array.from({ length: 7 }).map((_, i) => <ShimmerRow key={i} />)
+              : entries.map((entry, i) => {
+                  const rankLabel = RANK_LABELS[entry.rank] ?? RANK_LABELS['Stargazer'];
+                  const isCurrentUser = currentWallet && entry.wallet.toLowerCase() === currentWallet.toLowerCase();
+                  const rankNumColor = i === 0 ? '#FFD166' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--color-text-muted)';
+                  const rowBg = i % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent';
 
-      {/* Updated every 5 min note */}
-      <p className="text-center text-slate-700 text-xs">
+                  return (
+                    <div
+                      key={`${entry.handle}-${i}`}
+                      className="flex items-center gap-3 px-4 py-3 border-b last:border-0 transition-colors"
+                      style={{
+                        borderColor: 'rgba(255,255,255,0.05)',
+                        background: rowBg,
+                        borderLeft: isCurrentUser ? '3px solid #38F0FF' : undefined,
+                        paddingLeft: isCurrentUser ? '13px' : undefined,
+                      }}
+                    >
+                      <span
+                        className="w-6 text-center font-bold flex-shrink-0"
+                        style={{ fontSize: 'var(--text-sm)', color: rankNumColor }}
+                      >
+                        {i + 1}
+                      </span>
+
+                      <AvatarCircle name={entry.handle} size={30} color={rankNumColor} />
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <p
+                            className="font-mono truncate"
+                            style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)', fontWeight: 500 }}
+                          >
+                            {entry.handle}
+                          </p>
+                          {isCurrentUser && (
+                            <Badge variant="teal" size="sm">You</Badge>
+                          )}
+                        </div>
+                        <div
+                          className="mt-0.5 inline-block px-1.5 py-px rounded text-[10px] font-medium"
+                          style={{ background: `${rankLabel.color}15`, color: rankLabel.color }}
+                        >
+                          {rankLabel.label}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Telescope size={11} style={{ color: 'var(--color-text-muted)' }} />
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                          {entry.observations}
+                        </span>
+                      </div>
+
+                      <span
+                        className="font-bold flex-shrink-0"
+                        style={{ fontSize: 'var(--text-sm)', color: '#FFD166' }}
+                      >
+                        {entry.stars.toLocaleString()} <span className="font-normal text-[10px]">✦</span>
+                      </span>
+                    </div>
+                  );
+                })}
+          </Card>
+
+          {/* Current user outside top 20 */}
+          {!loading && currentUserNotShown && currentUserIndex >= 0 && (
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-xl"
+              style={{
+                background: 'rgba(56,240,255,0.05)',
+                border: '1px solid rgba(56,240,255,0.15)',
+                borderLeft: '3px solid #38F0FF',
+              }}
+            >
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                Your Rank: #{currentUserIndex + 1}
+              </span>
+              <div className="flex-1" />
+              <span style={{ fontSize: 'var(--text-xs)', color: '#38F0FF' }}>
+                {entries[currentUserIndex]?.stars.toLocaleString()} ✦
+              </span>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Footer note */}
+      <p className="text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
         Updated every 5 minutes · Observations sealed as NFTs on Solana
       </p>
 
       {/* CTA */}
       <div
         className="rounded-2xl p-5 text-center"
-        style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.15)' }}
+        style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.14)' }}
       >
-        <p className="text-white font-semibold text-sm mb-1">Complete missions to climb the leaderboard</p>
-        <p className="text-slate-500 text-xs mb-4">Each verified observation earns Stars and moves you up the ranks</p>
+        <p className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>
+          Complete missions to climb the leaderboard
+        </p>
+        <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+          Each verified observation earns Stars and moves you up the ranks
+        </p>
         <Link
           href="/missions"
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, #34d399, #14B8A6)', color: '#070B14' }}
         >
           Start Observing →
