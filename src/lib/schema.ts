@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, timestamp, doublePrecision } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -17,5 +17,10 @@ export const observationLog = pgTable('observation_log', {
   stars: integer('stars').notNull().default(0),
   confidence: text('confidence').notNull(),
   mintTx: text('mint_tx'),
+  lat: doublePrecision('lat'),
+  lon: doublePrecision('lon'),
+  identifiedObject: text('identified_object'),
+  starsAwarded: integer('stars_awarded'),
+  oracleHash: text('oracle_hash'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })

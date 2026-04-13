@@ -15,18 +15,6 @@ const RANK_LABELS: Record<string, { label: string; color: string }> = {
   Stargazer:  { label: 'Stargazer',  color: '#94a3b8' },
 };
 
-const SEED_DATA = [
-  { handle: 'StarHunter_Giorgi', wallet: '',  rank: 'Celestial',  observations: 47, stars: 2340 },
-  { handle: 'NightSky_Nino',     wallet: '',  rank: 'Celestial',  observations: 41, stars: 2105 },
-  { handle: 'CosmicTea',         wallet: '',  rank: 'Celestial',  observations: 38, stars: 1980 },
-  { handle: 'AstroLeko',         wallet: '',  rank: 'Pathfinder', observations: 29, stars: 1450 },
-  { handle: 'DeepField_Ana',     wallet: '',  rank: 'Pathfinder', observations: 24, stars: 1220 },
-  { handle: 'OrionSeeker',       wallet: '',  rank: 'Observer',   observations: 11, stars:  540 },
-  { handle: 'SkyWatcher_Kote',   wallet: '',  rank: 'Observer',   observations:  9, stars:  435 },
-  { handle: 'NebulaMari',        wallet: '',  rank: 'Stargazer',  observations:  5, stars:  240 },
-  { handle: 'GalacticDavit',     wallet: '',  rank: 'Stargazer',  observations:  3, stars:  140 },
-];
-
 interface LiveEntry {
   wallet: string;
   observations: number;
@@ -39,7 +27,6 @@ interface DisplayEntry {
   rank: string;
   observations: number;
   stars: number;
-  isDemo?: boolean;
 }
 
 const TIME_TABS = ['This Week', 'This Month', 'All Time'] as const;
@@ -135,7 +122,6 @@ export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<typeof TIME_TABS[number]>('This Month');
   const [entries, setEntries] = useState<DisplayEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
   const [podiumVisible, setPodiumVisible] = useState(false);
 
   const { user } = usePrivy();
@@ -145,28 +131,22 @@ export default function LeaderboardPage() {
   useEffect(() => {
     setLoading(true);
     setPodiumVisible(false);
-    fetch('/api/leaderboard')
+    const period = activeTab === 'This Week' ? 'week' : activeTab === 'All Time' ? 'all' : 'month';
+    fetch(`/api/leaderboard?period=${period}`)
       .then(r => r.json())
       .then((data: { leaderboard: LiveEntry[] }) => {
-        if (data.leaderboard.length === 0) {
-          setEntries(SEED_DATA.map(e => ({ ...e, isDemo: true })));
-          setIsDemo(true);
-        } else {
-          setEntries(
-            data.leaderboard.map(e => ({
-              handle: shortWallet(e.wallet),
-              wallet: e.wallet,
-              rank: rankFromStars(e.total_stars),
-              observations: e.observations,
-              stars: e.total_stars,
-            }))
-          );
-          setIsDemo(false);
-        }
+        setEntries(
+          data.leaderboard.map(e => ({
+            handle: shortWallet(e.wallet),
+            wallet: e.wallet,
+            rank: rankFromStars(e.total_stars),
+            observations: e.observations,
+            stars: e.total_stars,
+          }))
+        );
       })
       .catch(() => {
-        setEntries(SEED_DATA.map(e => ({ ...e, isDemo: true })));
-        setIsDemo(true);
+        setEntries([]);
       })
       .finally(() => {
         setLoading(false);
@@ -204,11 +184,6 @@ export default function LeaderboardPage() {
         >
           Leaderboard
         </h1>
-        {isDemo && !loading && (
-          <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            demo data · no live observations yet
-          </p>
-        )}
       </div>
 
       {/* Time filter tabs */}

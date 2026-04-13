@@ -279,7 +279,7 @@ Return ONLY valid JSON, no markdown, no preamble:
       hasNightSkyCharacteristics: analysis.hasNightSkyCharacteristics,
       sharpness: analysis.sharpness,
     },
-    starsAwarded,
+    starsEstimate: starsAwarded,
     metadata: {
       fileHash,
       capturedAt: capturedAt || new Date().toISOString(),

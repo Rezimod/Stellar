@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
     stars?: number
     confidence?: string
     mintTx?: string | null
+    lat?: number
+    lon?: number
+    identifiedObject?: string
+    oracleHash?: string
   }
   try {
     body = await req.json()
@@ -47,6 +51,23 @@ export async function POST(req: NextRequest) {
   const stars = Math.min(validatedStars, maxAllowed)
 
   try {
+    // Idempotency: reject duplicate submissions within 60s
+    const sixtySecondsAgo = new Date(Date.now() - 60_000)
+    const existing = await db
+      .select({ id: observationLog.id })
+      .from(observationLog)
+      .where(
+        and(
+          eq(observationLog.wallet, wallet),
+          eq(observationLog.target, body.target ?? ''),
+          gte(observationLog.createdAt, sixtySecondsAgo)
+        )
+      )
+      .limit(1)
+    if (existing.length > 0) {
+      return NextResponse.json({ logged: true, starsAwarded: 0, duplicate: true })
+    }
+
     // Rate limit: check total stars awarded to this wallet today
     let todayStars = 0
     if (wallet) {
@@ -75,6 +96,11 @@ export async function POST(req: NextRequest) {
       stars: starsToAward,
       confidence,
       mintTx: body.mintTx ?? null,
+      lat: typeof body.lat === 'number' ? body.lat : null,
+      lon: typeof body.lon === 'number' ? body.lon : null,
+      identifiedObject: body.identifiedObject ?? body.target ?? null,
+      starsAwarded: starsToAward,
+      oracleHash: body.oracleHash ?? null,
     })
 
     // Award tokens on-chain (non-blocking — log still succeeds even if this fails)
@@ -84,7 +110,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ logged: true, starsAwarded: starsToAward })
+    return NextResponse.json({ logged: true, starsAwarded: starsToAward, starsMinted: true })
   } catch (err) {
     console.error('[observe/log]', err)
     return NextResponse.json({ logged: false })

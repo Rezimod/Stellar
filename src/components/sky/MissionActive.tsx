@@ -178,16 +178,20 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     setMintTxId(txId);
     setMintDone(true);
 
-    // Award stars only for confirmed on-chain mints
-    if (!txId.startsWith('sim') && solanaWallet?.address && effectiveStars > 0) {
-      fetch('/api/award-stars', {
+    // Log observation + award stars atomically via observe/log
+    if (solanaWallet?.address) {
+      fetch('/api/observe/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipientAddress: solanaWallet.address,
-          amount: effectiveStars,
-          reason: `mission:${mission.id}`,
-          idempotencyKey: `${solanaWallet.address}_${mission.id}_v1`,
+          wallet: solanaWallet.address,
+          target: mission.target === null ? 'Night Sky' : mission.name,
+          stars: effectiveStars,
+          confidence: sky?.verified ? 'high' : 'low',
+          mintTx: txId,
+          lat: coords.lat,
+          lon: coords.lon,
+          oracleHash: sky?.oracleHash ?? null,
         }),
       }).catch(() => {});
     }

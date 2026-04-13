@@ -164,7 +164,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
       body: JSON.stringify({
         wallet: walletAddress,
         target: v.identifiedObject,
-        stars: v.starsAwarded,
+        stars: v.starsEstimate,
         confidence: v.confidence,
         mintTx: mintTx || null,
       }),
@@ -188,7 +188,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
           lon: verification.metadata.lon,
           cloudCover: verification.metadata.cloudCover,
           oracleHash: verification.metadata.fileHash,
-          stars: verification.starsAwarded,
+          stars: verification.starsEstimate,
         }),
       });
       if (res.ok) {
@@ -266,7 +266,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
           {mintTxId ? 'Discovery Sealed' : 'Stars Collected'}
         </h2>
         <p className="text-slate-400 text-sm">{verification.identifiedObject}</p>
-        <p className="text-2xl font-bold" style={{ color: '#FFD166' }}>+{verification.starsAwarded} ✦</p>
+        <p className="text-2xl font-bold" style={{ color: '#FFD166' }}>+{verification.starsEstimate} ✦</p>
         {mintTxId && !mintTxId.startsWith('sim') && (
           <a href={`https://explorer.solana.com/tx/${mintTxId}?cluster=devnet`}
             target="_blank" rel="noopener noreferrer"
@@ -329,7 +329,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
           <div className="text-center mt-1">
             {verification.accepted ? (
               <>
-                <p className="text-2xl font-bold" style={{ color: '#FFD166' }}>+{verification.starsAwarded} ✦</p>
+                <p className="text-2xl font-bold" style={{ color: '#FFD166' }}>+{verification.starsEstimate} ✦</p>
                 <p className="text-slate-500 text-xs mt-1">Stars earned for this observation</p>
               </>
             ) : (

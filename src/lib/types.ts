@@ -84,7 +84,7 @@ export interface PhotoVerificationResult {
     hasNightSkyCharacteristics: boolean
     sharpness: 'high' | 'medium' | 'low'
   }
-  starsAwarded: number
+  starsEstimate: number
   verificationFailed?: boolean
   metadata: {
     fileHash: string
