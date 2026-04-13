@@ -39,18 +39,17 @@ export default function MissionList({ onStart }: MissionListProps) {
               className="relative flex flex-col items-center text-center rounded-2xl px-3 pt-5 pb-4 transition-all duration-200 h-full justify-between"
               style={{
                 background: 'rgba(255,255,255,0.03)',
-                border: `1px solid ${done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'}`,
-                opacity: done ? 0.45 : 1,
+                border: `1px solid ${done ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.08)'}`,
                 transition: 'border-color 0.2s, box-shadow 0.2s',
               }}
-              onMouseEnter={e => { if (!done) { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,209,102,0.08)'; }}}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = done ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,209,102,0.08)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               {/* Status badge */}
               {(done || pending) && !isRepeatable && (
                 <div className="absolute top-2.5 right-2.5">
                   {done
-                    ? <CheckCircle2 size={13} className="text-slate-600" />
+                    ? <CheckCircle2 size={13} className="text-emerald-400" />
                     : <Clock size={13} className="text-amber-400/50" />
                   }
                 </div>
