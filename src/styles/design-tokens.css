@@ -90,4 +90,34 @@
   --z-overlay: 40;
   --z-modal:   50;
   --z-toast:   60;
+
+  /* Night vision mode (red-shift for telescope sessions) */
+  --color-night-accent:      #CC2200;
+  --color-night-accent-glow: rgba(204, 34, 0, 0.15);
+  --color-night-text:        rgba(255, 100, 80, 0.85);
+}
+
+/* Ensure app dark theme is never overridden by system light mode */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-space-black:  #050A12;
+    --color-panel-dark:   #0A1628;
+    --color-card-surface: #0F1D32;
+    --color-card-hover:   #142440;
+    --color-surface-mid:  #1A2D4D;
+    --color-text-primary:   rgba(255, 255, 255, 0.92);
+    --color-text-secondary: rgba(255, 255, 255, 0.55);
+    --color-text-muted:     rgba(255, 255, 255, 0.25);
+    --color-text-disabled:  rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Night vision mode toggle — add class="night-vision" to <html> */
+.night-vision {
+  --color-nebula-teal:         var(--color-night-accent);
+  --color-nebula-teal-hover:   #DD3311;
+  --color-nebula-teal-pressed: #BB1F00;
+  --color-nebula-teal-glow:    var(--color-night-accent-glow);
+  --color-text-primary:        var(--color-night-text);
+  --color-text-secondary:      rgba(255, 80, 60, 0.60);
 }

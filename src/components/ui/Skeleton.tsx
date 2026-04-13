@@ -2,14 +2,14 @@
 
 interface SkeletonProps {
   className?: string;
-  variant?: 'text' | 'circular' | 'rectangular' | 'bar' | 'custom';
+  variant?: 'text' | 'circular' | 'rectangular' | 'bar' | 'custom' | 'planet' | 'forecast';
   width?: number | string;
   height?: number | string;
   lines?: number;
 }
 
 const shimmerStyle: React.CSSProperties = {
-  background: 'linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%)',
+  background: 'linear-gradient(90deg, var(--color-card-surface, #0F1D32) 0%, var(--color-surface-mid, #1A2D4D) 50%, var(--color-card-surface, #0F1D32) 100%)',
   backgroundSize: '200% 100%',
   animation: 'shimmer 1.8s ease-in-out infinite',
 };
@@ -29,6 +29,28 @@ export function Skeleton({ className = '', variant = 'text', width, height, line
             }}
           />
         ))}
+      </div>
+    );
+  }
+
+  if (variant === 'planet') {
+    const size = (width ?? height ?? 40) as number | string;
+    return (
+      <div style={{ ...shimmerStyle, borderRadius: '50%', width: size, height: size, flexShrink: 0 }} className={className} />
+    );
+  }
+
+  if (variant === 'forecast') {
+    return (
+      <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: 6, width: width ?? '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ ...shimmerStyle, width: 36, height: 36, borderRadius: 8, flexShrink: 0 }} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ ...shimmerStyle, height: 12, width: '50%', borderRadius: 4 }} />
+            <div style={{ ...shimmerStyle, height: 10, width: '70%', borderRadius: 4 }} />
+          </div>
+        </div>
+        <div style={{ ...shimmerStyle, height: 6, width: '100%', borderRadius: 4 }} />
       </div>
     );
   }

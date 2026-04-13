@@ -44,6 +44,8 @@ import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
 import OfflineBanner from '@/components/shared/OfflineBanner';
 import PullToRefresh from '@/components/shared/PullToRefresh';
+import PageTransition from '@/components/layout/PageTransition';
+import { Toaster } from '@/components/ui/Toast';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -102,10 +104,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <OfflineBanner />
                 <PullToRefresh />
                 <SwipeBack>
-                  <main className="relative z-10 flex-1 pb-20 md:pb-0">{children}</main>
+                  <main className="relative z-10 flex-1 pb-20 md:pb-0">
+                    <PageTransition>{children}</PageTransition>
+                  </main>
                 </SwipeBack>
                 <Footer />
                 <BottomNav />
+                <Toaster />
               </AppStateProvider>
               </LocationProvider>
             </SolanaWalletProvider>
