@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react'
 
-export type Region = 'caucasus' | 'north_america' | 'europe' | 'global'
+export type Region = 'caucasus' | 'north_america' | 'europe' | 'asia' | 'south_america' | 'global'
 
 export interface UserLocation {
   region: Region
@@ -14,16 +14,34 @@ export interface UserLocation {
 }
 
 const COUNTRY_TO_REGION: Record<string, Region> = {
-  GE: 'caucasus', AM: 'caucasus', AZ: 'caucasus',
-  TR: 'caucasus',
+  // Caucasus + Middle East
+  GE: 'caucasus', AM: 'caucasus', AZ: 'caucasus', TR: 'caucasus',
+  IL: 'caucasus', JO: 'caucasus', LB: 'caucasus', IQ: 'caucasus',
+  // North America
   US: 'north_america', CA: 'north_america', MX: 'north_america',
+  // South America
+  BR: 'south_america', AR: 'south_america', CL: 'south_america',
+  CO: 'south_america', PE: 'south_america', VE: 'south_america',
+  // Europe
   DE: 'europe', AT: 'europe', CH: 'europe', FR: 'europe',
   IT: 'europe', NL: 'europe', BE: 'europe', PL: 'europe',
   ES: 'europe', PT: 'europe', SE: 'europe', NO: 'europe',
   DK: 'europe', FI: 'europe', CZ: 'europe', HU: 'europe',
+  RO: 'europe', GR: 'europe', BG: 'europe', HR: 'europe',
+  SK: 'europe', SI: 'europe', IE: 'europe', GB: 'europe',
+  UK: 'europe', UA: 'europe', RS: 'europe', LT: 'europe',
+  LV: 'europe', EE: 'europe',
+  // Asia
+  JP: 'asia', KR: 'asia', CN: 'asia', IN: 'asia',
+  TH: 'asia', SG: 'asia', MY: 'asia', ID: 'asia',
+  PH: 'asia', VN: 'asia', PK: 'asia', BD: 'asia',
+  LK: 'asia', MM: 'asia', KZ: 'asia', UZ: 'asia',
+  TW: 'asia', HK: 'asia', MN: 'asia',
+  // Australia/Oceania
+  AU: 'global', NZ: 'global',
 }
 
-function getRegionForCountry(countryCode: string): Region {
+export function getRegionForCountry(countryCode: string): Region {
   return COUNTRY_TO_REGION[countryCode.toUpperCase()] ?? 'global'
 }
 

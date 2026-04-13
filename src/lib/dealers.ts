@@ -30,6 +30,7 @@ export interface Product {
   badge?: string
   specs?: Record<string, string>
   beginner?: boolean
+  skillLevel?: 'beginner' | 'intermediate' | 'advanced'
 }
 
 const DEALERS: Dealer[] = [
@@ -60,15 +61,15 @@ const DEALERS: Dealer[] = [
     currencySymbol: '$',
   },
   {
-    id: 'bresser-eu',
-    name: 'Bresser',
-    tagline: "Germany's leading optics manufacturer",
-    flag: '🇩🇪',
+    id: 'levenhuk-eu',
+    name: 'Levenhuk',
+    tagline: "Telescopes for curious minds",
+    flag: '🇪🇺',
     region: 'europe',
-    country: 'DE',
-    website: 'https://bresser.de',
-    description: "Germany's leading optics manufacturer — precision telescopes since 1957",
-    shipsTo: ['DE', 'AT', 'CH', 'FR', 'IT', 'NL', 'BE', 'PL'],
+    country: 'EU',
+    website: 'https://levenhukb2b.com/catalogue/telescopes/',
+    description: "European optics brand — telescopes, microscopes and accessories",
+    shipsTo: ['DE','AT','CH','FR','IT','NL','BE','PL','ES','PT','SE','NO','DK','FI','CZ','HU','RO','GR','BG','HR','GB','IE','UA','LT','LV','EE'],
     currency: 'EUR',
     currencySymbol: '€',
   },
@@ -89,6 +90,7 @@ const PRODUCTS: Product[] = [
     image: 'https://astroman.ge/wp-content/uploads/2024/11/222.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
     beginner: true,
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'scope-bresser-50-360',
@@ -103,6 +105,7 @@ const PRODUCTS: Product[] = [
     image: 'https://astroman.ge/wp-content/uploads/2022/09/22122.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
     beginner: true,
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'scope-natgeo-60-700',
@@ -116,6 +119,7 @@ const PRODUCTS: Product[] = [
     description: '60mm refractor, 700mm focal length on alt-az mount. Great for Moon, planets, and terrestrial viewing.',
     image: 'https://astroman.ge/wp-content/uploads/2025/11/%E1%83%91%E1%83%94%E1%83%A5%E1%83%98-02.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'scope-foreseen-80',
@@ -129,6 +133,7 @@ const PRODUCTS: Product[] = [
     description: '80mm aperture refractor with sharp optics. Excellent planetary views and wide star fields.',
     image: 'https://astroman.ge/wp-content/uploads/2024/08/Telescope.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'scope-natgeo-76-700',
@@ -142,6 +147,7 @@ const PRODUCTS: Product[] = [
     description: '76mm Newtonian reflector, 700mm focal length. Excellent light-gathering for deep-sky objects.',
     image: 'https://astroman.ge/wp-content/uploads/2024/08/0144181_national-geographic-114900-reflector-telescope-az_550.jpeg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'scope-bresser-venus-76-700',
@@ -155,6 +161,7 @@ const PRODUCTS: Product[] = [
     description: '76mm refractor with 700mm focal length on sturdy alt-az mount. Great all-rounder for visual observing.',
     image: 'https://astroman.ge/wp-content/uploads/2025/12/2221.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'scope-celestron-70az',
@@ -168,6 +175,7 @@ const PRODUCTS: Product[] = [
     description: "Celestron's popular 70mm refractor on alt-az mount. Crystal-clear views of Moon and planets right out of the box.",
     image: 'https://astroman.ge/wp-content/uploads/2024/11/23312.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'intermediate' as const,
   },
   {
     id: 'scope-nexstar-90slt',
@@ -181,6 +189,7 @@ const PRODUCTS: Product[] = [
     description: '90mm computerized GoTo telescope with 4,000+ object database. Auto-aligns and tracks celestial objects.',
     image: 'https://astroman.ge/wp-content/uploads/2024/11/1222.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'advanced' as const,
   },
   {
     id: 'scope-starsense-dx6',
@@ -194,6 +203,7 @@ const PRODUCTS: Product[] = [
     description: '150mm Newtonian with smartphone star-finding technology. Point your phone at the sky to locate objects.',
     image: 'https://astroman.ge/wp-content/uploads/2025/09/%E1%83%91%E1%83%94%E1%83%A5%E1%83%98-02.jpg',
     externalUrl: 'https://astroman.ge/teleskopi/',
+    skillLevel: 'advanced' as const,
   },
   // Celestron (US) products — real data from celestron.com/collections/telescopes
   {
@@ -210,6 +220,7 @@ const PRODUCTS: Product[] = [
     externalUrl: 'https://www.celestron.com/collections/telescopes',
     badge: 'Best Seller',
     specs: { aperture: '203mm', focal: '2032mm', mount: 'GoTo Alt-Az' },
+    skillLevel: 'advanced' as const,
   },
   {
     id: 'cel-nexstar6se',
@@ -224,6 +235,7 @@ const PRODUCTS: Product[] = [
     image: 'https://www.celestron.com/cdn/shop/products/050234110686_NexStar_6SE_11068_1.jpg?v=1727902053',
     externalUrl: 'https://www.celestron.com/collections/telescopes',
     specs: { aperture: '150mm', focal: '1500mm', mount: 'GoTo Alt-Az' },
+    skillLevel: 'advanced' as const,
   },
   {
     id: 'cel-starsense-dx130',
@@ -239,6 +251,7 @@ const PRODUCTS: Product[] = [
     externalUrl: 'https://www.celestron.com/collections/telescopes',
     badge: 'Popular',
     specs: { aperture: '130mm', focal: '650mm', mount: 'Manual Alt-Az' },
+    skillLevel: 'intermediate' as const,
   },
   {
     id: 'cel-starsense-dx102',
@@ -253,6 +266,7 @@ const PRODUCTS: Product[] = [
     image: 'https://www.celestron.com/cdn/shop/products/22460_StarSense_Explorer_DX_102_01.jpg?v=1727800279',
     externalUrl: 'https://www.celestron.com/collections/telescopes',
     specs: { aperture: '102mm', focal: '660mm', mount: 'Manual Alt-Az' },
+    skillLevel: 'intermediate' as const,
   },
   {
     id: 'cel-starsense-lt114',
@@ -268,6 +282,7 @@ const PRODUCTS: Product[] = [
     externalUrl: 'https://www.celestron.com/collections/telescopes',
     specs: { aperture: '114mm', focal: '1000mm', mount: 'Manual Alt-Az' },
     beginner: true,
+    skillLevel: 'beginner' as const,
   },
   {
     id: 'cel-travelscope80',
@@ -283,96 +298,151 @@ const PRODUCTS: Product[] = [
     externalUrl: 'https://www.celestron.com/collections/telescopes',
     specs: { aperture: '80mm', focal: '400mm', mount: 'Manual Alt-Az' },
     beginner: true,
+    skillLevel: 'beginner' as const,
   },
-  // Bresser (Europe) products — real data from bresser.com
+  // Levenhuk (Europe) products
   {
-    id: 'bre-sirius70',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Sirius 70/900 AZ',
-    price: 146,
+    id: 'lev-blitz50',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Blitz 50 BASE',
+    price: 59,
     currency: 'EUR',
     currencySymbol: '€',
-    starsPrice: 1460,
+    starsPrice: 590,
     category: 'telescope',
-    description: '70mm refractor, 900mm focal length with smartphone camera adapter. Great all-round beginner telescope.',
-    image: 'https://www.bresser.com/media/91/fd/b7/1772098134/4512001_M_V2019.webp?ts=1772098134',
-    externalUrl: 'https://www.bresser.com/astronomy/telescopes/telescopes-for-beginners/',
-    specs: { aperture: '70mm', focal: '900mm', mount: 'Manual Alt-Az' },
+    description: '50mm refractor on alt-az mount. Perfect first telescope — simple, lightweight, easy to set up.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Blitz-50-BASE-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    badge: 'Beginner',
+    specs: { aperture: '50mm', focal: '600mm', mount: 'Manual Alt-Az' },
     beginner: true,
+    skillLevel: 'beginner' as const,
   },
   {
-    id: 'bre-natgeo114',
-    dealerId: 'bresser-eu',
-    name: 'National Geographic 114/900 Reflector',
-    price: 159.90,
+    id: 'lev-labzz-t2',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk LabZZ T2 Telescope',
+    price: 49,
     currency: 'EUR',
     currencySymbol: '€',
-    starsPrice: 1599,
+    starsPrice: 490,
     category: 'telescope',
-    description: '114mm Newtonian reflector on alt-az mount. National Geographic quality optics with included accessories.',
-    image: 'https://www.bresser.com/media/bc/8d/1c/1763650950/9011200_M_011_2_v1125.jpg?ts=1763657831',
-    externalUrl: 'https://www.bresser.com/astronomy/telescopes/telescopes-for-beginners/',
+    description: '50mm kids telescope with compass, backpack, and book. Best astronomy gift for young astronomers.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-LabZZ-T2-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    badge: 'Beginner',
+    specs: { aperture: '50mm', focal: '360mm', mount: 'Manual Alt-Az' },
+    beginner: true,
+    skillLevel: 'beginner' as const,
+  },
+  {
+    id: 'lev-skyline-base70',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Skyline BASE 70T',
+    price: 89,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 890,
+    category: 'telescope',
+    description: '70mm tabletop refractor. Compact and sturdy — great for balconies and travel.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Skyline-BASE-70T-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    specs: { aperture: '70mm', focal: '700mm', mount: 'Tabletop Alt-Az' },
+    beginner: true,
+    skillLevel: 'beginner' as const,
+  },
+  {
+    id: 'lev-travel70',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Skyline Travel 70',
+    price: 99,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 990,
+    category: 'telescope',
+    description: '70mm portable refractor with tripod. Folds into a compact bag — ideal for dark-sky trips.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Skyline-Travel-70-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    specs: { aperture: '70mm', focal: '700mm', mount: 'Travel Alt-Az' },
+    beginner: true,
+    skillLevel: 'beginner' as const,
+  },
+  {
+    id: 'lev-travel80',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Skyline Travel 80',
+    price: 119,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 1190,
+    category: 'telescope',
+    description: '80mm portable refractor. Wider aperture than the Travel 70 — better for star clusters.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Skyline-Travel-80-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    specs: { aperture: '80mm', focal: '400mm', mount: 'Travel Alt-Az' },
+    skillLevel: 'intermediate' as const,
+  },
+  {
+    id: 'lev-base110',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Skyline BASE 110S',
+    price: 149,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 1490,
+    category: 'telescope',
+    description: '110mm reflector on simple mount. Step up from beginner scope — great light gathering.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Skyline-BASE-110S-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    specs: { aperture: '110mm', focal: '500mm', mount: 'Manual Alt-Az' },
+    skillLevel: 'intermediate' as const,
+  },
+  {
+    id: 'lev-blitz114',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Blitz 114 PLUS',
+    price: 179,
+    currency: 'EUR',
+    currencySymbol: '€',
+    starsPrice: 1790,
+    category: 'telescope',
+    description: '114mm Newtonian reflector. Excellent for planets, Moon, and bright nebulae. Good upgrade scope.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Blitz-114-PLUS-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
     badge: 'Popular',
     specs: { aperture: '114mm', focal: '900mm', mount: 'Manual Alt-Az' },
-    beginner: true,
+    skillLevel: 'intermediate' as const,
   },
   {
-    id: 'bre-solarix114',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Solarix 114/500',
-    price: 168,
+    id: 'lev-spark114',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Discovery Spark 114 EQ',
+    price: 199,
     currency: 'EUR',
     currencySymbol: '€',
-    starsPrice: 1680,
+    starsPrice: 1990,
     category: 'telescope',
-    description: '114mm reflector with solar filter included. Observe both the night sky and sunspots safely.',
-    image: 'https://www.bresser.com/media/ec/07/b6/1772097914/4614505_M_1_v0617.webp?ts=1772097914',
-    externalUrl: 'https://www.bresser.com/astronomy/telescopes/telescopes-for-beginners/',
-    specs: { aperture: '114mm', focal: '500mm', mount: 'EQ3' },
-    beginner: true,
-  },
-  {
-    id: 'bre-pluto114',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Pluto 114/500 EQ3',
-    price: 259,
-    currency: 'EUR',
-    currencySymbol: '€',
-    starsPrice: 2590,
-    category: 'telescope',
-    description: '114mm reflector on EQ3 equatorial mount with smartphone adapter and solar filter. Complete package.',
-    image: 'https://www.bresser.com/media/4c/36/5f/1772098041/4614500_M1_2019.webp?ts=1772098041',
-    externalUrl: 'https://www.bresser.com/astronomy/telescopes/telescopes-for-beginners/',
-    specs: { aperture: '114mm', focal: '500mm', mount: 'EQ3' },
-  },
-  {
-    id: 'bre-pollux150',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Pollux-II 150/1400 EQ3',
-    price: 369,
-    currency: 'EUR',
-    currencySymbol: '€',
-    starsPrice: 3690,
-    category: 'telescope',
-    description: '150mm Newtonian reflector on EQ3 with smartphone adapter and solar filter. Excellent deep-sky views.',
-    image: 'https://www.bresser.com/media/71/3e/61/1772097582/4690900_M_01_v0823.webp?ts=1772097582',
-    externalUrl: 'https://www.bresser.com/astronomy/telescopes/telescopes-for-beginners/',
+    description: '114mm reflector on equatorial mount with Discovery book. EQ mount enables serious tracking.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Discovery-Spark-114-EQ-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
     badge: 'Best Seller',
-    specs: { aperture: '150mm', focal: '1400mm', mount: 'EQ3' },
+    specs: { aperture: '114mm', focal: '900mm', mount: 'EQ' },
+    skillLevel: 'advanced' as const,
   },
   {
-    id: 'bre-messier6dobson',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Messier 6" Dobson',
-    price: 399,
+    id: 'lev-plus120',
+    dealerId: 'levenhuk-eu',
+    name: 'Levenhuk Skyline PLUS 120S',
+    price: 249,
     currency: 'EUR',
     currencySymbol: '€',
-    starsPrice: 3990,
+    starsPrice: 2490,
     category: 'telescope',
-    description: '6-inch planetary Dobsonian reflector. Best bang-for-buck for deep sky — see galaxies and nebulae.',
-    image: 'https://www.bresser.com/media/30/8c/4a/1772098361/4716416_M_1.webp?ts=1772098361',
-    externalUrl: 'https://www.bresser.com/astronomy/telescopes/telescopes-for-beginners/',
-    specs: { aperture: '152mm', focal: '1200mm', mount: 'Dobsonian' },
+    description: '120mm short-tube reflector. Excellent aperture for deep-sky objects — galaxies and nebulae.',
+    image: 'https://levenhuk.com/img/large/Levenhuk-Skyline-PLUS-120S-Telescope_01.jpg',
+    externalUrl: 'https://levenhukb2b.com/catalogue/telescopes/',
+    specs: { aperture: '120mm', focal: '600mm', mount: 'Manual Alt-Az' },
+    skillLevel: 'advanced' as const,
   },
 
   // Astroman eyepieces & binoculars
@@ -462,73 +532,15 @@ const PRODUCTS: Product[] = [
     badge: 'Best Seller',
     specs: { magnification: '25x', aperture: '70mm', prism: 'BaK-4 Porro' },
   },
-  // Bresser EU eyepieces & binoculars
-  {
-    id: 'bre-eyepiece-6mm',
-    dealerId: 'bresser-eu',
-    name: 'Bresser 6mm Planetary Eyepiece',
-    price: 34,
-    currency: 'EUR',
-    currencySymbol: '€',
-    starsPrice: 340,
-    category: 'eyepiece',
-    description: '6mm 1.25" eyepiece for high-power planetary views. 58° AFOV with fully coated optics.',
-    image: '',
-    externalUrl: 'https://www.bresser.com/astronomy/accessories/eyepieces/',
-    specs: { focal: '6mm', afov: '58°', barrel: '1.25"' },
-  },
-  {
-    id: 'bre-eyepiece-20mm',
-    dealerId: 'bresser-eu',
-    name: 'Bresser 20mm Wide-Field Eyepiece',
-    price: 34,
-    currency: 'EUR',
-    currencySymbol: '€',
-    starsPrice: 340,
-    category: 'eyepiece',
-    description: '20mm 1.25" wide-angle eyepiece for sweeping star clusters and Milky Way fields. 58° AFOV.',
-    image: '',
-    externalUrl: 'https://www.bresser.com/astronomy/accessories/eyepieces/',
-    specs: { focal: '20mm', afov: '58°', barrel: '1.25"' },
-  },
-  {
-    id: 'bre-pirsch-8x42',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Pirsch ED 8x42',
-    price: 149,
-    currency: 'EUR',
-    currencySymbol: '€',
-    starsPrice: 1490,
-    category: 'binocular',
-    description: 'ED glass binoculars with phase-corrected BaK-4 prisms. Zero chromatic aberration — perfect for both astronomy and wildlife.',
-    image: 'https://www.bresser.com/media/a2/7f/99/1772098294/1721100_M_01.webp?ts=1772098294',
-    externalUrl: 'https://www.bresser.com/binoculars/',
-    badge: 'New',
-    specs: { magnification: '8x', aperture: '42mm', prism: 'BaK-4 Roof' },
-  },
-  {
-    id: 'bre-condor-10x50',
-    dealerId: 'bresser-eu',
-    name: 'Bresser Condor 10x50',
-    price: 89,
-    currency: 'EUR',
-    currencySymbol: '€',
-    starsPrice: 890,
-    category: 'binocular',
-    description: '10x50 porro prism binoculars with large objective lens for bright views. Ideal for night sky sweeping.',
-    image: 'https://www.bresser.com/media/48/5b/7a/1772098159/2313350_M_01.webp?ts=1772098159',
-    externalUrl: 'https://www.bresser.com/binoculars/',
-    specs: { magnification: '10x', aperture: '50mm', prism: 'Porro' },
-  },
 ]
 
-// Global fallback: 3 telescopes from Astroman + 3 from Celestron (no Bresser, no digital)
+// Global fallback: 2 telescopes each from Astroman, Celestron, and Levenhuk
 function buildGlobalFallback(): Product[] {
-  const globalDealerIds = ['astroman', 'celestron-us']
-  return globalDealerIds.flatMap((id) =>
+  const ids = ['astroman', 'celestron-us', 'levenhuk-eu']
+  return ids.flatMap((id) =>
     PRODUCTS.filter((p) => p.dealerId === id && p.category === 'telescope')
       .sort((a, b) => a.price - b.price)
-      .slice(0, 3)
+      .slice(0, 2)
   )
 }
 
@@ -536,11 +548,15 @@ export const GLOBAL_FALLBACK = buildGlobalFallback()
 
 export function getDealersByRegion(region: Region): Dealer[] {
   if (region === 'global') return DEALERS
+  if (region === 'asia') return DEALERS.filter((d) => d.id === 'astroman')
+  if (region === 'south_america') return DEALERS.filter((d) => d.id === 'celestron-us')
   return DEALERS.filter((d) => d.region === region)
 }
 
 export function getProductsByRegion(region: Region): Product[] {
   if (region === 'global') return GLOBAL_FALLBACK
+  if (region === 'asia') return PRODUCTS.filter((p) => p.dealerId === 'astroman')
+  if (region === 'south_america') return PRODUCTS.filter((p) => p.dealerId === 'celestron-us')
   const dealerIds = getDealersByRegion(region).map((d) => d.id)
   return PRODUCTS.filter((p) => dealerIds.includes(p.dealerId))
 }
