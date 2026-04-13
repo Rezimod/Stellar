@@ -5,22 +5,21 @@ import { useLocation } from '@/lib/location';
 import type { SkyDay, SkyHour } from '@/lib/sky-data';
 import type { PlanetInfo } from '@/lib/planets';
 
+// ── Data helpers ────────────────────────────────────────────────────────────
+
 const PLANET_SYMBOL: Record<string, string> = {
   moon: '☽', mercury: '☿', venus: '♀', mars: '♂', jupiter: '♃', saturn: '♄',
 };
-
 const PLANET_COLOR: Record<string, string> = {
-  moon: '#E2D5B0', mercury: '#B5B5C3', venus: '#F4D9A0',
+  moon: '#E2D5B0', mercury: '#A0A0B0', venus: '#F4D9A0',
   mars: '#E8836A', jupiter: '#C8A96E', saturn: '#D4BE8A',
 };
 
 function dayBadge(day: SkyDay): 'Go' | 'Maybe' | 'Skip' {
-  const nightHours = day.hours.filter(h => { const hr = new Date(h.time).getHours(); return hr >= 20 || hr < 4; });
-  const hours = nightHours.length > 0 ? nightHours : day.hours;
-  const avg = hours.reduce((s, h) => s + h.cloudCover, 0) / hours.length;
-  if (avg < 30) return 'Go';
-  if (avg < 60) return 'Maybe';
-  return 'Skip';
+  const nh = day.hours.filter(h => { const hr = new Date(h.time).getHours(); return hr >= 20 || hr < 4; });
+  const hrs = nh.length > 0 ? nh : day.hours;
+  const avg = hrs.reduce((s, h) => s + h.cloudCover, 0) / hrs.length;
+  return avg < 30 ? 'Go' : avg < 60 ? 'Maybe' : 'Skip';
 }
 
 function formatDay(dateStr: string, index: number): string {
@@ -29,103 +28,78 @@ function formatDay(dateStr: string, index: number): string {
   return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short' });
 }
 
-function getDayStats(day: SkyDay) {
-  const nightHours = day.hours.filter(h => { const hr = new Date(h.time).getHours(); return hr >= 20 || hr < 4; });
-  const hours = nightHours.length > 0 ? nightHours : day.hours;
-  const avgCloud = hours.length > 0
-    ? Math.round(hours.reduce((s, h) => s + h.cloudCover, 0) / hours.length)
-    : null;
-  const avgHumidity = hours.length > 0
-    ? Math.round(hours.reduce((s, h) => s + h.humidity, 0) / hours.length)
-    : null;
-  const avgWind = hours.length > 0
-    ? Math.round(hours.reduce((s, h) => s + h.wind, 0) / hours.length)
-    : null;
-  const avgTemp = hours.length > 0
-    ? Math.round(hours.reduce((s, h) => s + h.temp, 0) / hours.length)
-    : null;
-  const status: 'Go' | 'Maybe' | 'Skip' =
-    avgCloud === null ? 'Skip'
-    : avgCloud < 30 ? 'Go'
-    : avgCloud < 60 ? 'Maybe'
-    : 'Skip';
-  return { avgCloud, avgHumidity, avgWind, avgTemp, status };
+function getNightStats(day: SkyDay) {
+  const nh = day.hours.filter(h => { const hr = new Date(h.time).getHours(); return hr >= 20 || hr < 4; });
+  const hrs = nh.length > 0 ? nh : day.hours;
+  const avg = (key: keyof SkyHour) => hrs.length ? Math.round(hrs.reduce((s, h) => s + (h[key] as number), 0) / hrs.length) : null;
+  const avgCloud = avg('cloudCover');
+  const status: 'Go' | 'Maybe' | 'Skip' = avgCloud === null ? 'Skip' : avgCloud < 30 ? 'Go' : avgCloud < 60 ? 'Maybe' : 'Skip';
+  return {
+    avgCloud,
+    avgHumidity: avg('humidity'),
+    avgWind: avg('wind'),
+    status,
+  };
 }
 
-// Night hours 20:00–23:00 + 00:00–04:00
 function getNightHours(day: SkyDay): SkyHour[] {
-  return day.hours.filter(h => {
-    const hr = new Date(h.time).getHours();
-    return hr >= 20 || hr < 4;
-  });
+  return day.hours.filter(h => { const hr = new Date(h.time).getHours(); return hr >= 20 || hr < 4; });
 }
 
-function cloudColor(cover: number): string {
-  if (cover < 25) return '#34d399';
-  if (cover < 50) return '#86efac';
-  if (cover < 70) return '#FFD166';
-  return 'rgba(148,163,184,0.25)';
-}
-
-// Simple moon illumination from date (0–1)
 function moonIllumination(date: Date): number {
-  const knownNewMoon = new Date('2000-01-06').getTime();
-  const synodicPeriod = 29.53058867 * 86400000;
-  const phase = ((date.getTime() - knownNewMoon) % synodicPeriod + synodicPeriod) % synodicPeriod;
-  return (1 - Math.cos((phase / synodicPeriod) * 2 * Math.PI)) / 2;
+  const phase = ((date.getTime() - new Date('2000-01-06').getTime()) % (29.53058867 * 86400000) + 29.53058867 * 86400000) % (29.53058867 * 86400000);
+  return (1 - Math.cos((phase / (29.53058867 * 86400000)) * 2 * Math.PI)) / 2;
 }
 
 function moonPhaseName(illum: number): string {
-  if (illum < 0.05) return 'New';
+  if (illum < 0.05) return 'New Moon';
   if (illum < 0.45) return 'Crescent';
   if (illum < 0.55) return 'Quarter';
   if (illum < 0.95) return 'Gibbous';
-  return 'Full';
+  return 'Full Moon';
 }
 
 function fmtTime(d: Date | string | null): string {
   if (!d) return '—';
-  const date = typeof d === 'string' ? new Date(d) : d;
-  if (isNaN(date.getTime())) return '—';
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  const dt = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dt.getTime())) return '—';
+  return `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}`;
 }
 
-// Night timeline: 8 bars for 20–23 + 00–03
-function NightTimeline({ hours }: { hours: SkyHour[] }) {
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: string }) {
   const slots = [20, 21, 22, 23, 0, 1, 2, 3];
   const byHour: Record<number, number> = {};
-  for (const h of hours) {
-    byHour[new Date(h.time).getHours()] = h.cloudCover;
-  }
+  for (const h of hours) byHour[new Date(h.time).getHours()] = h.cloudCover;
+  const nowHour = new Date().getHours();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 9.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        Night window (8pm – 4am)
+    <div>
+      <span style={{ display: 'block', color: 'rgba(255,255,255,0.22)', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+        Night window  8pm – 4am
       </span>
-      <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: 40 }}>
+      <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 48 }}>
         {slots.map(hr => {
           const cover = byHour[hr] ?? 100;
-          const barH = Math.max(4, Math.round((1 - cover / 100) * 36));
-          const color = cloudColor(cover);
+          const clear = Math.max(0, 1 - cover / 100);
+          const barH = Math.max(4, Math.round(clear * 42));
+          const isNow = hr === nowHour;
+          const color = cover < 25 ? '#34d399' : cover < 55 ? '#86efac' : cover < 75 ? '#FFD166' : 'rgba(148,163,184,0.2)';
           const label = hr === 0 ? '12a' : hr < 4 ? `${hr}a` : `${hr}p`;
           return (
-            <div key={hr} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-              <div style={{
-                width: '100%', height: 36,
-                display: 'flex', alignItems: 'flex-end',
-                background: 'rgba(255,255,255,0.03)', borderRadius: 4,
-              }}>
+            <div key={hr} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: '100%', height: 42, display: 'flex', alignItems: 'flex-end', borderRadius: 4, background: 'rgba(255,255,255,0.03)', overflow: 'hidden', position: 'relative' }}>
+                {isNow && <div style={{ position: 'absolute', inset: 0, border: `1px solid ${statusColor}40`, borderRadius: 4 }} />}
                 <div style={{
                   width: '100%', height: barH,
-                  background: color,
-                  borderRadius: 4,
-                  opacity: cover < 70 ? 1 : 0.4,
-                  transition: 'height 0.8s cubic-bezier(0.22,1,0.36,1)',
-                  boxShadow: cover < 50 ? `0 0 6px ${color}55` : 'none',
+                  background: cover < 55 ? `linear-gradient(to top, ${color}, ${color}99)` : color,
+                  borderRadius: '2px 2px 0 0',
+                  boxShadow: cover < 55 ? `0 0 8px ${color}60` : 'none',
+                  transition: 'height 1s cubic-bezier(0.22,1,0.36,1)',
                 }} />
               </div>
-              <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontWeight: 500 }}>{label}</span>
+              <span style={{ color: isNow ? statusColor : 'rgba(255,255,255,0.18)', fontSize: 7.5, fontWeight: isNow ? 700 : 500 }}>{label}</span>
             </div>
           );
         })}
@@ -134,65 +108,26 @@ function NightTimeline({ hours }: { hours: SkyHour[] }) {
   );
 }
 
-// Planet row in the list
-function PlanetRow({ planet, index }: { planet: PlanetInfo; index: number }) {
-  const quality = planet.altitude > 30 ? 'good' : planet.altitude > 10 ? 'ok' : 'low';
-  const color = PLANET_COLOR[planet.key] ?? 'rgba(255,255,255,0.5)';
-  const dimmed = quality === 'low';
-  const symbol = PLANET_SYMBOL[planet.key] ?? '✦';
-  const name = planet.key.charAt(0).toUpperCase() + planet.key.slice(1);
-
+function StatCard({ label, value, sub, warn, icon }: { label: string; value: string; sub?: string; warn?: boolean; icon: string }) {
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: '9px 12px',
-      background: index % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent',
-      borderRadius: 10,
-      opacity: dimmed ? 0.45 : 1,
-      transition: 'opacity 0.2s',
+      padding: '11px 12px',
+      borderRadius: 12,
+      background: warn ? 'rgba(255,180,0,0.04)' : 'rgba(255,255,255,0.03)',
+      border: `1px solid ${warn ? 'rgba(255,180,0,0.18)' : 'rgba(255,255,255,0.07)'}`,
+      display: 'flex', flexDirection: 'column', gap: 3,
     }}>
-      {/* Symbol + name */}
-      <div style={{ width: 22, textAlign: 'center', fontSize: 16, color, flexShrink: 0 }}>
-        {symbol}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+        <span style={{ fontSize: 11, opacity: 0.5 }}>{icon}</span>
+        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 8.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
       </div>
-      <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, minWidth: 54 }}>{name}</span>
-
-      {/* Altitude bar */}
-      <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
-        <div style={{
-          height: '100%',
-          width: `${Math.max(2, Math.min(100, (planet.altitude / 90) * 100))}%`,
-          background: quality === 'good' ? '#34d399' : quality === 'ok' ? '#FFD166' : 'rgba(148,163,184,0.3)',
-          borderRadius: 2,
-          transition: 'width 1s cubic-bezier(0.22,1,0.36,1)',
-        }} />
-      </div>
-
-      {/* Alt value */}
-      <span style={{
-        color: quality === 'good' ? '#34d399' : quality === 'ok' ? '#FFD166' : 'rgba(148,163,184,0.4)',
-        fontSize: 11, fontWeight: 700, fontFamily: 'monospace', minWidth: 30, textAlign: 'right',
-      }}>
-        {Math.round(planet.altitude)}°
-      </span>
-
-      {/* Rise / Set */}
-      <div style={{ display: 'flex', gap: 6, marginLeft: 4 }}>
-        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, fontFamily: 'monospace' }}>
-          ↑{fmtTime(planet.rise)}
-        </span>
-        <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 10, fontFamily: 'monospace' }}>
-          ↓{fmtTime(planet.set)}
-        </span>
-      </div>
-
-      {/* Direction */}
-      <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: 9.5, minWidth: 20, textAlign: 'right', fontWeight: 600 }}>
-        {planet.azimuthDir}
-      </span>
+      <span style={{ color: warn ? '#FFD166' : 'rgba(255,255,255,0.88)', fontSize: 17, fontWeight: 800, fontFamily: 'monospace', lineHeight: 1 }}>{value}</span>
+      {sub && <span style={{ color: warn ? 'rgba(255,180,0,0.5)' : 'rgba(255,255,255,0.2)', fontSize: 9 }}>{sub}</span>}
     </div>
   );
 }
+
+// ── Main component ───────────────────────────────────────────────────────────
 
 export default function HomeSkyPreview() {
   const { location } = useLocation();
@@ -204,23 +139,16 @@ export default function HomeSkyPreview() {
   useEffect(() => {
     const lat = location.lat || 41.6941;
     const lng = location.lon || 44.8337;
-    setForecast(null);
-    setPlanets(null);
-    setSelectedDay(0);
+    setForecast(null); setPlanets(null); setSelectedDay(0);
     fetch(`/api/sky/forecast?lat=${lat}&lng=${lng}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => setForecast(d))
-      .catch(() => setForecast([]));
+      .then(r => r.ok ? r.json() : null).then(setForecast).catch(() => setForecast([]));
     fetch(`/api/sky/planets?lat=${lat}&lng=${lng}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => setPlanets(d))
-      .catch(() => setPlanets([]));
+      .then(r => r.ok ? r.json() : null).then(setPlanets).catch(() => setPlanets([]));
   }, [location.lat, location.lon]);
 
   function selectDay(index: number, dateStr: string) {
     setSelectedDay(index);
-    const lat = location.lat || 41.6941;
-    const lng = location.lon || 44.8337;
+    const lat = location.lat || 41.6941; const lng = location.lon || 44.8337;
     setPlanetsLoading(true);
     const date = index === 0 ? new Date().toISOString() : `${dateStr}T21:00:00`;
     fetch(`/api/sky/planets?lat=${lat}&lng=${lng}&date=${encodeURIComponent(date)}`)
@@ -231,197 +159,177 @@ export default function HomeSkyPreview() {
 
   if (forecast === null || planets === null) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {[130, 100, 52].map((h, i) => (
-          <div key={i} style={{
-            height: h, borderRadius: 16,
-            background: 'rgba(255,255,255,0.02)',
-            animation: 'pulse 2s ease-in-out infinite',
-          }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[160, 120, 52].map((h, i) => (
+          <div key={i} style={{ height: h, borderRadius: 18, background: 'rgba(255,255,255,0.025)', animation: 'pulse 2s ease-in-out infinite' }} />
         ))}
       </div>
     );
   }
 
-  const selectedForecast = forecast?.[selectedDay];
-  const { avgCloud, avgHumidity, avgWind, status } = selectedForecast
-    ? getDayStats(selectedForecast)
-    : { avgCloud: null, avgHumidity: null, avgWind: null, status: 'Skip' as const };
+  const sel = forecast?.[selectedDay];
+  const { avgCloud, avgHumidity, avgWind, status } = sel ? getNightStats(sel) : { avgCloud: null, avgHumidity: null, avgWind: null, status: 'Skip' as const };
+  const nightHours = sel ? getNightHours(sel) : [];
 
-  const nightHours = selectedForecast ? getNightHours(selectedForecast) : [];
+  const allPlanets = [...(planets ?? [])].filter(p => p.altitude > -5).sort((a, b) => b.altitude - a.altitude);
+  const moon = allPlanets.find(p => p.key === 'moon');
+  const visiblePlanets = allPlanets.filter(p => p.key !== 'moon').slice(0, 5);
 
-  const visiblePlanets = [...(planets ?? [])]
-    .filter(p => p.altitude > -5)
-    .sort((a, b) => b.altitude - a.altitude)
-    .slice(0, 6);
-
-  const moon = visiblePlanets.find(p => p.key === 'moon');
-  const planetsNoMoon = visiblePlanets.filter(p => p.key !== 'moon');
-
-  const locationLabel = location.city
-    ? `${location.city}${location.country ? `, ${location.country}` : ''}`
-    : 'Global';
-
-  const selectedDate = selectedDay === 0
-    ? new Date()
-    : new Date(`${forecast[selectedDay]?.date ?? ''}T21:00:00`);
-  const moonIllum = moonIllumination(selectedDate);
+  const locationLabel = location.city ? `${location.city}${location.country ? `, ${location.country}` : ''}` : 'Global';
+  const selDate = selectedDay === 0 ? new Date() : new Date(`${forecast[selectedDay]?.date ?? ''}T21:00:00`);
+  const moonIllum = moonIllumination(selDate);
   const moonPct = Math.round(moonIllum * 100);
-  const moonName = moonPhaseName(moonIllum);
+  const moonWarn = moonIllum > 0.7 && status !== 'Skip';
 
-  const STATUS_STYLE = {
-    Go:    { color: '#34d399', border: 'rgba(52,211,153,0.25)',  bg: 'rgba(52,211,153,0.08)',  label: 'Go' },
-    Maybe: { color: '#FFD166', border: 'rgba(255,209,102,0.22)', bg: 'rgba(255,209,102,0.07)', label: 'Maybe' },
-    Skip:  { color: 'rgba(148,163,184,0.6)', border: 'rgba(255,255,255,0.08)', bg: 'rgba(255,255,255,0.02)', label: 'Skip' },
+  const SC = {
+    Go:    { color: '#34d399', border: 'rgba(52,211,153,0.22)',   bg: 'rgba(52,211,153,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(52,211,153,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(56,240,255,0.06) 0%, transparent 55%)' },
+    Maybe: { color: '#FFD166', border: 'rgba(255,209,102,0.2)',   bg: 'rgba(255,209,102,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255,209,102,0.10) 0%, transparent 55%)' },
+    Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(255,255,255,0.07)', bg: 'transparent', nebula: 'none' },
   }[status];
 
-  const moonWarning = moonIllum > 0.7 && status !== 'Skip';
+  const dayLabel = selectedDay === 0 ? 'Tonight' : selectedDay === 1 ? 'Tomorrow' : formatDay(forecast[selectedDay]?.date ?? '', selectedDay);
 
-  const stats: { label: string; value: string; sub?: string; warn?: boolean }[] = [
-    { label: 'Cloud', value: avgCloud !== null ? `${avgCloud}%` : '—', warn: (avgCloud ?? 0) > 60 },
-    { label: 'Humidity', value: avgHumidity !== null ? `${avgHumidity}%` : '—', warn: (avgHumidity ?? 0) > 85 },
-    { label: 'Wind', value: avgWind !== null ? `${avgWind}km/h` : '—', warn: (avgWind ?? 0) > 25 },
-    { label: 'Moon', value: `${moonPct}%`, sub: moonName, warn: moonWarning },
+  const stats = [
+    { label: 'Cloud', icon: '☁', value: avgCloud !== null ? `${avgCloud}%` : '—', sub: avgCloud !== null ? (avgCloud < 30 ? 'Clear' : avgCloud < 60 ? 'Partly' : 'Overcast') : undefined, warn: (avgCloud ?? 0) > 60 },
+    { label: 'Humidity', icon: '💧', value: avgHumidity !== null ? `${avgHumidity}%` : '—', sub: (avgHumidity ?? 0) > 85 ? 'Dew risk' : undefined, warn: (avgHumidity ?? 0) > 85 },
+    { label: 'Wind', icon: '💨', value: avgWind !== null ? `${avgWind}km/h` : '—', sub: (avgWind ?? 0) > 25 ? 'Turbulent' : undefined, warn: (avgWind ?? 0) > 25 },
+    { label: 'Moon', icon: '☽', value: `${moonPct}%`, sub: moonPhaseName(moonIllum), warn: moonWarn },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes skyEnter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes statusGlow { 0%,100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 12px 2px ${SC.color}22; } }
       `}</style>
 
-      {/* ── MAIN CONDITIONS CARD ── */}
+      {/* ── MAIN CARD ── */}
       <div style={{
-        borderRadius: 18,
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        padding: '16px 16px 14px',
-        display: 'flex', flexDirection: 'column', gap: 14,
-        animation: 'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both',
+        position: 'relative', overflow: 'hidden',
+        borderRadius: 20,
+        background: `linear-gradient(160deg, rgba(10,14,24,0.95) 0%, rgba(7,11,20,1) 100%)`,
+        border: `1px solid ${SC.border}`,
+        padding: '18px 16px 16px',
+        animation: 'skyEnter 0.45s cubic-bezier(0.22,1,0.36,1) both, statusGlow 4s ease-in-out 1s infinite',
       }}>
+        {/* Nebula bg */}
+        <div style={{ position: 'absolute', inset: 0, background: SC.nebula, pointerEvents: 'none' }} />
 
-        {/* Header row: status + location */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.05em',
-              padding: '3px 10px', borderRadius: 999,
-              background: STATUS_STYLE.bg,
-              border: `1px solid ${STATUS_STYLE.border}`,
-              color: STATUS_STYLE.color,
-            }}>
-              {STATUS_STYLE.label.toUpperCase()}
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>
-              {selectedDay === 0 ? 'Tonight' : selectedDay === 1 ? 'Tomorrow' : formatDay(forecast[selectedDay]?.date ?? '', selectedDay)}
-            </span>
-          </div>
-          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
-            <span style={{ fontSize: 9 }}>📍</span>{locationLabel}
-          </span>
-        </div>
+        {/* Subtle star dots */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.4, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px)', backgroundSize: '32px 32px', pointerEvents: 'none' }} />
 
-        {/* Night timeline */}
-        {nightHours.length > 0 && <NightTimeline hours={nightHours} />}
-
-        {/* Condition pills */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-          {stats.map(s => (
-            <div key={s.label} style={{
-              padding: '8px 6px',
-              borderRadius: 10,
-              background: s.warn ? 'rgba(255,180,0,0.05)' : 'rgba(255,255,255,0.025)',
-              border: `1px solid ${s.warn ? 'rgba(255,180,0,0.18)' : 'rgba(255,255,255,0.06)'}`,
-              textAlign: 'center',
-              display: 'flex', flexDirection: 'column', gap: 2,
-            }}>
-              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 8.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                {s.label}
-              </span>
+        <div style={{ position: 'relative' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{
-                color: s.warn ? '#FFD166' : 'rgba(255,255,255,0.8)',
-                fontSize: 13, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1,
-              }}>
-                {s.value}
-              </span>
-              {s.sub && (
-                <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8.5 }}>{s.sub}</span>
-              )}
+                fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+                padding: '3px 10px', borderRadius: 999,
+                background: SC.bg, border: `1px solid ${SC.border}`,
+                color: SC.color,
+                boxShadow: `0 0 10px ${SC.color}30`,
+              }}>{status.toUpperCase()}</span>
+              <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 500 }}>{dayLabel}</span>
             </div>
-          ))}
-        </div>
-
-        {/* Moon warning */}
-        {moonWarning && (
-          <div style={{
-            padding: '7px 11px',
-            borderRadius: 9,
-            background: 'rgba(255,209,102,0.05)',
-            border: '1px solid rgba(255,209,102,0.15)',
-            fontSize: 11, color: 'rgba(255,209,102,0.75)',
-          }}>
-            Bright moon ({moonPct}%) — faint deep-sky objects will be washed out
+            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <span>📍</span>{locationLabel}
+            </span>
           </div>
-        )}
+
+          {/* Night timeline */}
+          {nightHours.length > 0 && <NightTimeline hours={nightHours} statusColor={SC.color} />}
+
+          {/* Condition stats 2x2 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 }}>
+            {stats.map(s => <StatCard key={s.label} {...s} />)}
+          </div>
+
+          {/* Moon warning strip */}
+          {moonWarn && (
+            <div style={{
+              marginTop: 10, padding: '8px 12px', borderRadius: 10,
+              background: 'rgba(255,209,102,0.05)', border: '1px solid rgba(255,209,102,0.18)',
+              color: 'rgba(255,209,102,0.7)', fontSize: 11, lineHeight: 1.4,
+            }}>
+              ☽ Full moon ({moonPct}%) — faint deep-sky targets will be washed out
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ── PLANET LIST ── */}
-      {(planetsNoMoon.length > 0 || planetsLoading) && (
+      {/* ── PLANETS CARD ── */}
+      {(visiblePlanets.length > 0 || moon || planetsLoading) && (
         <div style={{
           borderRadius: 18,
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'linear-gradient(160deg, rgba(10,14,24,0.9) 0%, rgba(7,11,20,1) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
           overflow: 'hidden',
-          animation: 'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.06s both',
+          animation: 'skyEnter 0.45s cubic-bezier(0.22,1,0.36,1) 0.08s both',
         }}>
-          {/* Header */}
           <div style={{
-            padding: '10px 12px 8px',
-            borderBottom: '1px solid rgba(255,255,255,0.04)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '11px 14px 9px',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 9.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Planets tonight
-            </span>
-            <div style={{ display: 'flex', gap: 10, fontSize: 8.5, color: 'rgba(255,255,255,0.15)', fontWeight: 500 }}>
-              <span>Alt</span><span>Rise / Set</span><span>Dir</span>
-            </div>
+            <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Planets tonight</span>
+            <span style={{ color: 'rgba(255,255,255,0.14)', fontSize: 8.5, fontWeight: 600, letterSpacing: '0.06em' }}>Alt · Rise · Set · Dir</span>
           </div>
 
           {planetsLoading ? (
-            <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.02)', animation: 'pulse 2s ease-in-out infinite' }} />
-              ))}
+            <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {[0, 1, 2].map(i => <div key={i} style={{ height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.02)', animation: 'pulse 2s ease-in-out infinite' }} />)}
             </div>
           ) : (
-            <div style={{ padding: '4px 4px' }}>
-              {/* Moon row at top if visible */}
-              {moon && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '9px 12px',
-                  borderBottom: '1px solid rgba(255,255,255,0.03)',
-                }}>
-                  <span style={{ fontSize: 16, color: '#E2D5B0', width: 22, textAlign: 'center', flexShrink: 0 }}>☽</span>
-                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, minWidth: 54 }}>Moon</span>
-                  <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
-                    <div style={{ height: '100%', width: `${Math.max(2, Math.min(100, (moon.altitude / 90) * 100))}%`, background: '#E2D5B0', borderRadius: 2 }} />
+            <div style={{ padding: '4px 0' }}>
+              {[moon, ...visiblePlanets].filter(Boolean).map((p, i) => {
+                if (!p) return null;
+                const quality = p.altitude > 30 ? 'good' : p.altitude > 10 ? 'ok' : 'low';
+                const pColor = PLANET_COLOR[p.key] ?? 'rgba(255,255,255,0.4)';
+                const altColor = quality === 'good' ? '#34d399' : quality === 'ok' ? '#FFD166' : 'rgba(148,163,184,0.35)';
+                return (
+                  <div key={p.key} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '9px 14px',
+                    opacity: quality === 'low' ? 0.4 : 1,
+                    borderBottom: i < visiblePlanets.length ? '1px solid rgba(255,255,255,0.03)' : 'none',
+                    transition: 'opacity 0.2s',
+                  }}>
+                    {/* Planet symbol with glow */}
+                    <div style={{
+                      width: 28, height: 28, flexShrink: 0, borderRadius: 8,
+                      background: `${pColor}10`, border: `1px solid ${pColor}25`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, color: pColor,
+                    }}>
+                      {PLANET_SYMBOL[p.key] ?? '✦'}
+                    </div>
+                    {/* Name */}
+                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, minWidth: 52 }}>
+                      {p.key.charAt(0).toUpperCase() + p.key.slice(1)}
+                    </span>
+                    {/* Altitude bar */}
+                    <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+                      <div style={{
+                        height: '100%', width: `${Math.max(2, Math.min(100, (p.altitude / 90) * 100))}%`,
+                        background: altColor, borderRadius: 2,
+                        boxShadow: quality !== 'low' ? `0 0 4px ${altColor}80` : 'none',
+                        transition: 'width 1s cubic-bezier(0.22,1,0.36,1)',
+                      }} />
+                    </div>
+                    {/* Alt */}
+                    <span style={{ color: altColor, fontSize: 11, fontWeight: 700, fontFamily: 'monospace', minWidth: 28, textAlign: 'right' }}>
+                      {Math.round(p.altitude)}°
+                    </span>
+                    {/* Rise/Set */}
+                    <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9.5, fontFamily: 'monospace' }}>↑{fmtTime(p.rise)}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.14)', fontSize: 9.5, fontFamily: 'monospace' }}>↓{fmtTime(p.set)}</span>
+                    </div>
+                    {/* Direction */}
+                    <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: 700, minWidth: 18, textAlign: 'right' }}>{p.azimuthDir}</span>
                   </div>
-                  <span style={{ color: '#E2D5B0', fontSize: 11, fontWeight: 700, fontFamily: 'monospace', minWidth: 30, textAlign: 'right' }}>
-                    {Math.round(moon.altitude)}°
-                  </span>
-                  <div style={{ display: 'flex', gap: 6, marginLeft: 4 }}>
-                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, fontFamily: 'monospace' }}>↑{fmtTime(moon.rise)}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 10, fontFamily: 'monospace' }}>↓{fmtTime(moon.set)}</span>
-                  </div>
-                  <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: 9.5, minWidth: 20, textAlign: 'right', fontWeight: 600 }}>{moon.azimuthDir}</span>
-                </div>
-              )}
-              {planetsNoMoon.map((p, i) => <PlanetRow key={p.key} planet={p} index={i} />)}
+                );
+              })}
             </div>
           )}
         </div>
@@ -433,57 +341,39 @@ export default function HomeSkyPreview() {
           display: 'flex', gap: 5,
           overflowX: 'auto', scrollbarWidth: 'none',
           WebkitOverflowScrolling: 'touch',
-          animation: 'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.12s both',
+          animation: 'skyEnter 0.45s cubic-bezier(0.22,1,0.36,1) 0.14s both',
         }}>
           {forecast.slice(0, 7).map((day, i) => {
             const badge = dayBadge(day);
-            const { avgCloud: dc } = getDayStats(day);
-            const isSelected = i === selectedDay;
-            const bs =
-              badge === 'Go'    ? { color: '#34d399',              border: 'rgba(52,211,153,0.3)',   activeBg: 'rgba(52,211,153,0.08)' }
-            : badge === 'Maybe' ? { color: '#FFD166',              border: 'rgba(255,209,102,0.25)', activeBg: 'rgba(255,209,102,0.07)' }
-            :                     { color: 'rgba(148,163,184,0.5)', border: 'rgba(255,255,255,0.07)', activeBg: 'rgba(255,255,255,0.03)' };
-
+            const { avgCloud: dc } = getNightStats(day);
+            const sel2 = i === selectedDay;
+            const bs = badge === 'Go'    ? { color: '#34d399',               border: 'rgba(52,211,153,0.3)',   bg: 'rgba(52,211,153,0.07)' }
+                      : badge === 'Maybe' ? { color: '#FFD166',               border: 'rgba(255,209,102,0.25)', bg: 'rgba(255,209,102,0.06)' }
+                      :                     { color: 'rgba(148,163,184,0.45)', border: 'rgba(255,255,255,0.07)', bg: 'rgba(255,255,255,0.02)' };
             return (
-              <button
-                key={day.date}
-                onClick={() => selectDay(i, day.date)}
-                style={{
-                  flex: '0 0 auto', minWidth: 56, cursor: 'pointer',
-                  background: isSelected ? bs.activeBg : 'rgba(255,255,255,0.015)',
-                  border: `1px solid ${isSelected ? bs.border : 'rgba(255,255,255,0.05)'}`,
-                  borderRadius: 13,
-                  padding: '10px 6px 9px',
-                  textAlign: 'center',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                  outline: 'none',
-                  boxShadow: isSelected ? `0 0 14px ${bs.color}22` : 'none',
-                  transition: 'all 0.22s ease',
-                }}
-              >
-                <span style={{
-                  color: isSelected ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.3)',
-                  fontSize: 10, fontWeight: 600,
-                }}>
+              <button key={day.date} onClick={() => selectDay(i, day.date)} style={{
+                flex: '0 0 auto', minWidth: 54, cursor: 'pointer',
+                background: sel2 ? bs.bg : 'rgba(255,255,255,0.015)',
+                border: `1px solid ${sel2 ? bs.border : 'rgba(255,255,255,0.05)'}`,
+                borderRadius: 12, padding: '9px 5px 8px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                outline: 'none', transition: 'all 0.22s ease',
+                boxShadow: sel2 ? `0 0 12px ${bs.color}22` : 'none',
+              }}>
+                <span style={{ color: sel2 ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.28)', fontSize: 9.5, fontWeight: 600 }}>
                   {formatDay(day.date, i)}
                 </span>
                 {dc !== null && (
-                  <div style={{ width: '75%', height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.06)' }}>
-                    <div style={{
-                      height: '100%', width: `${Math.round(100 - dc)}%`, borderRadius: 1,
-                      background: bs.color, transition: 'width 0.6s ease',
-                    }} />
+                  <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.06)' }}>
+                    <div style={{ height: '100%', width: `${Math.round(100 - dc)}%`, borderRadius: 1, background: bs.color, transition: 'width 0.6s ease' }} />
                   </div>
                 )}
                 <span style={{
-                  color: bs.color, fontSize: 10, fontWeight: 700,
-                  background: isSelected ? `${bs.color}18` : 'transparent',
-                  border: `1px solid ${isSelected ? bs.border : 'transparent'}`,
-                  padding: '2px 7px', borderRadius: 999,
-                  transition: 'all 0.2s',
-                }}>
-                  {badge}
-                </span>
+                  color: bs.color, fontSize: 9.5, fontWeight: 700,
+                  background: sel2 ? `${bs.color}18` : 'transparent',
+                  border: `1px solid ${sel2 ? bs.border : 'transparent'}`,
+                  padding: '2px 6px', borderRadius: 999, transition: 'all 0.2s',
+                }}>{badge}</span>
               </button>
             );
           })}

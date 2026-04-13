@@ -452,160 +452,117 @@ export default function HomePage() {
       {/* Remaining sections */}
       <div className="max-w-3xl w-full mx-auto px-4 pt-1 pb-4 sm:pb-8 flex flex-col items-center gap-5 sm:gap-8 animate-page-enter overflow-x-hidden">
 
-        {/* How It Works — interactive stepper */}
+        {/* How It Works — 4 step cards */}
         <div id="how-it-works" className="w-full"
-          style={{ position: 'relative' }}
           onMouseEnter={() => { stepPausedRef.current = true; }}
           onMouseLeave={() => { stepPausedRef.current = false; }}
           onTouchStart={() => { stepPausedRef.current = true; }}
         >
-          {/* Cosmic nebula bg */}
-          <div style={{
-            position: 'absolute', inset: 0, borderRadius: 20, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at 15% 50%, rgba(52,211,153,0.04) 0%, transparent 55%), radial-gradient(ellipse at 85% 50%, rgba(139,92,246,0.04) 0%, transparent 55%)',
-          }} />
-
-          <p className="text-center text-xs mb-5 tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)', position: 'relative' }}>
+          <p className="text-center text-xs mb-5 tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.25)' }}>
             — {t('home.howItWorks')} —
           </p>
 
-          {/* Step selector tabs */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 14, position: 'relative' }}>
+          {/* 4 cards — 2×2 on mobile, 4-in-a-row on md+ */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }} className="hiw-grid">
+            <style>{`
+              @media (min-width: 640px) { .hiw-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+              @keyframes hiwCardEnter {
+                from { opacity: 0; transform: translateY(12px) scale(0.97); }
+                to   { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              @keyframes hiwIconFloat {
+                0%, 100% { transform: translateY(0px); }
+                50%       { transform: translateY(-3px); }
+              }
+            `}</style>
             {howItWorksSteps.map((item, i) => {
               const active = activeStep === i;
+              const STEP_COLORS = ['#34d399', '#38F0FF', '#A855F7', '#FFD166'];
+              const color = active ? STEP_COLORS[i] : 'rgba(255,255,255,0.18)';
               return (
                 <button
                   key={i}
                   onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
                   style={{
-                    flex: 1,
-                    padding: '14px 0',
-                    borderRadius: 14,
-                    border: `1px solid ${active ? 'rgba(52,211,153,0.28)' : 'rgba(255,255,255,0.05)'}`,
+                    position: 'relative', overflow: 'hidden',
+                    padding: '18px 14px 16px',
+                    borderRadius: 18,
                     background: active
-                      ? 'linear-gradient(180deg, rgba(52,211,153,0.1) 0%, rgba(52,211,153,0.03) 100%)'
+                      ? `linear-gradient(160deg, rgba(${i===0?'52,211,153':i===1?'56,240,255':i===2?'168,85,247':'255,209,102'},0.07) 0%, rgba(7,11,20,0.95) 100%)`
                       : 'rgba(255,255,255,0.025)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 0,
-                    transition: 'all 0.3s ease',
-                    position: 'relative',
-                    overflow: 'hidden',
+                    border: `1px solid ${active ? `rgba(${i===0?'52,211,153':i===1?'56,240,255':i===2?'168,85,247':'255,209,102'},0.28)` : 'rgba(255,255,255,0.06)'}`,
+                    cursor: 'pointer', textAlign: 'left',
+                    display: 'flex', flexDirection: 'column', gap: 10,
+                    transition: 'all 0.35s cubic-bezier(0.22,1,0.36,1)',
+                    transform: active ? 'translateY(-2px)' : 'translateY(0)',
+                    boxShadow: active ? `0 8px 32px rgba(${i===0?'52,211,153':i===1?'56,240,255':i===2?'168,85,247':'255,209,102'},0.1)` : 'none',
+                    animation: `hiwCardEnter 0.4s cubic-bezier(0.22,1,0.36,1) ${i * 0.07}s both`,
                   }}
                 >
-                  {/* Active top glow */}
+                  {/* Nebula corner glow */}
                   {active && (
                     <div style={{
-                      position: 'absolute', inset: 0, borderRadius: 14,
-                      background: 'radial-gradient(ellipse at 50% 10%, rgba(52,211,153,0.18) 0%, transparent 65%)',
+                      position: 'absolute', top: -20, right: -20, width: 80, height: 80,
+                      borderRadius: '50%',
+                      background: `radial-gradient(circle, rgba(${i===0?'52,211,153':i===1?'56,240,255':i===2?'168,85,247':'255,209,102'},0.18) 0%, transparent 70%)`,
                       pointerEvents: 'none',
                     }} />
                   )}
-                  {/* Icon with orbit ring */}
-                  <div style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {active && (
-                      <>
-                        <div style={{
-                          position: 'absolute', inset: -5, borderRadius: '50%',
-                          border: '1px dashed rgba(52,211,153,0.4)',
-                          animation: 'orbitRing 4s linear infinite',
-                        }} />
-                        <div style={{
-                          position: 'absolute', inset: 0, borderRadius: '50%',
-                          background: 'radial-gradient(circle, rgba(52,211,153,0.18) 0%, transparent 70%)',
-                        }} />
-                      </>
-                    )}
-                    <item.icon
-                      size={active ? 20 : 17}
-                      color={active ? '#34d399' : 'rgba(255,255,255,0.22)'}
-                      strokeWidth={active ? 2 : 1.5}
-                      className={active ? 'step-icon-active' : ''}
-                      style={{ position: 'relative', zIndex: 1, transition: 'all 0.3s ease' }}
-                    />
+
+                  {/* Step number + icon row */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <span style={{
+                      color: active ? color : 'rgba(255,255,255,0.12)',
+                      fontSize: 9.5, fontWeight: 800, letterSpacing: '0.1em',
+                      fontFamily: 'monospace',
+                    }}>0{i + 1}</span>
+                    <div style={{
+                      width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+                      background: active ? `rgba(${i===0?'52,211,153':i===1?'56,240,255':i===2?'168,85,247':'255,209,102'},0.12)` : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${active ? `rgba(${i===0?'52,211,153':i===1?'56,240,255':i===2?'168,85,247':'255,209,102'},0.3)` : 'rgba(255,255,255,0.07)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      animation: active ? 'hiwIconFloat 2.4s ease-in-out infinite' : 'none',
+                    }}>
+                      <item.icon
+                        size={18}
+                        color={color}
+                        strokeWidth={active ? 2 : 1.5}
+                        className={active ? 'step-icon-active' : ''}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Text */}
+                  <div>
+                    <p style={{
+                      color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.45)',
+                      fontWeight: 700, fontSize: 13, margin: '0 0 4px',
+                      fontFamily: 'var(--font-display)',
+                      transition: 'color 0.3s',
+                    }}>{item.title}</p>
+                    <p style={{
+                      color: active ? 'rgba(255,255,255,0.42)' : 'rgba(255,255,255,0.2)',
+                      fontSize: 10.5, lineHeight: 1.55, margin: 0,
+                      transition: 'color 0.3s',
+                    }}>{item.desc}</p>
                   </div>
                 </button>
               );
             })}
           </div>
 
-          {/* Active step detail card */}
-          {(() => {
-            const step = howItWorksSteps[activeStep];
-            const StepIcon = step.icon;
-            return (
-              <div
-                key={activeStep}
-                className="card-base step-content-enter step-card-active"
-                style={{
-                  padding: '20px 18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  border: '1px solid rgba(52,211,153,0.2)',
-                  background: 'linear-gradient(135deg, rgba(52,211,153,0.04) 0%, rgba(15,20,35,0.8) 100%)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Corner star */}
-                <div style={{
-                  position: 'absolute', top: 10, right: 12,
-                  color: 'rgba(52,211,153,0.2)', fontSize: 10, fontWeight: 700,
-                }}>✦</div>
-                <div style={{
-                  width: 56, height: 56, flexShrink: 0,
-                  borderRadius: 16,
-                  background: 'radial-gradient(circle at 30% 30%, rgba(52,211,153,0.2), rgba(52,211,153,0.06))',
-                  border: '1px solid rgba(52,211,153,0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}>
-                  <StepIcon size={26} color="#34d399" strokeWidth={1.5} className="step-icon-active" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ color: 'white', fontWeight: 700, fontSize: 15, margin: '0 0 5px', fontFamily: 'var(--font-display)' }}>
-                    {step.title}
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.65, margin: 0 }}>
-                    {step.desc}
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Progress indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginTop: 12 }}>
+          {/* Progress dots */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14 }}>
             {howItWorksSteps.map((_, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
-                <div
-                  onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
-                  style={{
-                    width: activeStep === i ? 24 : 6,
-                    height: 4,
-                    borderRadius: 2,
-                    background: activeStep === i
-                      ? 'linear-gradient(90deg, #34d399, #38F0FF)'
-                      : 'rgba(255,255,255,0.12)',
-                    transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                    cursor: 'pointer',
-                  }}
-                />
-                {i < howItWorksSteps.length - 1 && (
-                  <div style={{
-                    width: 16, height: 1,
-                    background: i < activeStep ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.06)',
-                    transition: 'background 0.35s',
-                    margin: '0 2px',
-                  }} />
-                )}
-              </div>
+              <div
+                key={i}
+                onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
+                style={{
+                  width: activeStep === i ? 20 : 5, height: 4, borderRadius: 2, cursor: 'pointer',
+                  background: activeStep === i ? 'linear-gradient(90deg, #34d399, #38F0FF)' : 'rgba(255,255,255,0.1)',
+                  transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
+                }}
+              />
             ))}
           </div>
         </div>
