@@ -299,7 +299,7 @@ export default function HomePage() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-              Earn on Solana.
+              Earn rewards.
             </span>
           </h1>
 
@@ -338,10 +338,6 @@ export default function HomePage() {
                 Tonight&apos;s Sky →
               </Link>
             </div>
-            <span className="badge-pill badge-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <span className="live-dot" />
-              Live on Solana Devnet
-            </span>
           </div>
 
           {/* App nav shortcuts */}
