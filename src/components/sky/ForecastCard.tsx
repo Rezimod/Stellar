@@ -184,6 +184,14 @@ export default function ForecastCard({ day, isToday }: Props) {
                   const hr = parseInt(h.time.slice(11, 13));
                   return hr >= 19 || hr <= 5;
                 })
+                .sort((a, b) => {
+                  const ha = parseInt(a.time.slice(11, 13));
+                  const hb = parseInt(b.time.slice(11, 13));
+                  // Evening first (19-23), then post-midnight (0-5)
+                  const ia = ha >= 19 ? ha - 19 : ha + 5;
+                  const ib = hb >= 19 ? hb - 19 : hb + 5;
+                  return ia - ib;
+                })
                 .map(h => {
                   const hr = h.time.slice(11, 16);
                   const cc = h.cloudCover;
