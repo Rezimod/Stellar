@@ -1,134 +1,249 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CheckCircle2 } from 'lucide-react';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { Telescope, Check, ExternalLink } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
-import { useAppState } from '@/hooks/useAppState';
-import WalletStep from '@/components/club/WalletStep';
-import MembershipStep from '@/components/club/MembershipStep';
-import TelescopeStep from '@/components/club/TelescopeStep';
+import Card from '@/components/shared/Card';
+import Button from '@/components/shared/Button';
+import { TELESCOPE_BRANDS } from '@/lib/constants';
 
-function StepProgress({ current, steps }: { current: number; steps: { label: string; done: boolean }[] }) {
-  return (
-    <div className="flex items-center justify-center mb-8">
-      {steps.map((step, i) => (
-        <div key={step.label} className="flex items-center">
-          <div className="flex flex-col items-center gap-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-              step.done
-                ? 'bg-[#FFD166] border-2 border-[#FFD166] text-black'
-                : i + 1 === current
-                  ? 'border-2 border-[#FFD166] text-[#FFD166] bg-transparent'
-                  : 'border-2 border-[var(--text-dim)] text-[var(--text-dim)] bg-transparent'
-            }`}>
-              {step.done ? <CheckCircle2 size={16} /> : i + 1}
-            </div>
-            <span className={`text-xs font-medium ${step.done ? 'text-[#FFD166]' : i + 1 === current ? 'text-[var(--text-secondary)]' : 'text-[var(--text-dim)]'}`}>
-              {step.label}
-            </span>
-          </div>
-          {i < steps.length - 1 && (
-            <div className={`w-16 sm:w-24 h-0.5 mb-5 mx-1 transition-all duration-300 ${step.done ? 'bg-[#FFD166]' : 'bg-[var(--text-dim)]'}`} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
+const TELESCOPE_TYPES = ['Refractor', 'Reflector', 'Cassegrain', 'Dobsonian', 'Binoculars', 'Other'];
+
+interface TelescopeRecord {
+  brand: string;
+  model: string;
+  aperture: string;
+  type: string | null;
+  starsAwarded: boolean;
+  createdAt: string;
 }
 
 export default function ClubPage() {
-  const { state } = useAppState();
-  const router = useRouter();
+  const { authenticated, login, user, getAccessToken } = usePrivy();
+  const { wallets } = useWallets();
+  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
 
-  // Initialize current step from saved state
-  const getInitialStep = () => {
-    if (!state.walletConnected) return 1;
-    if (!state.membershipMinted) return 2;
-    if (!state.telescope) return 3;
-    return 3;
+  const [telescope, setTelescope] = useState<TelescopeRecord | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [saved, setSaved] = useState(false);
+  const [starsEarned, setStarsEarned] = useState(0);
+  const [error, setError] = useState('');
+
+  const [form, setForm] = useState({
+    brand: 'Celestron',
+    model: '',
+    aperture: '',
+    type: 'Reflector',
+  });
+
+  // Load existing telescope on auth
+  useEffect(() => {
+    if (!authenticated) { setFetching(false); return; }
+    getAccessToken().then(token => {
+      if (!token) { setFetching(false); return; }
+      fetch('/api/telescopes', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (d.telescope) {
+            setTelescope(d.telescope);
+            setForm({
+              brand: d.telescope.brand,
+              model: d.telescope.model,
+              aperture: d.telescope.aperture,
+              type: d.telescope.type ?? 'Reflector',
+            });
+          }
+        })
+        .catch(() => {})
+        .finally(() => setFetching(false));
+    }).catch(() => setFetching(false));
+  }, [authenticated, getAccessToken]);
+
+  const handleSave = async () => {
+    if (!form.model.trim() || !form.aperture.trim()) return;
+    setLoading(true);
+    setError('');
+    try {
+      const token = await getAccessToken();
+      const res = await fetch('/api/telescopes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...form,
+          walletAddress: solanaWallet?.address ?? null,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? 'Save failed');
+        return;
+      }
+      const d = await res.json();
+      setTelescope(d.telescope);
+      setStarsEarned(d.starsAwarded ?? 0);
+      setSaved(true);
+    } catch {
+      setError('Network error — please try again');
+    } finally {
+      setLoading(false);
+    }
   };
-  const [currentStep, setCurrentStep] = useState(getInitialStep);
-  const [transitioning, setTransitioning] = useState(false);
 
-  // Auto-advance: wallet connected → step 2
-  useEffect(() => {
-    if (state.walletConnected && currentStep === 1) {
-      setTransitioning(true);
-      setTimeout(() => {
-        setCurrentStep(2);
-        setTransitioning(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 700);
-    }
-  }, [state.walletConnected]);
+  if (!authenticated) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <BackButton />
+        <Card className="p-6 mt-4 flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)' }}>
+            <Telescope size={26} className="text-[#38F0FF]" />
+          </div>
+          <div>
+            <h2 className="text-white font-bold text-lg mb-1">Register Your Telescope</h2>
+            <p className="text-slate-400 text-sm">Sign in to register your telescope and earn 50 ✦ Stars.</p>
+          </div>
+          <Button variant="cyan" onClick={login} className="w-full">Sign In to Continue</Button>
+        </Card>
+      </div>
+    );
+  }
 
-  // Auto-advance: membership claimed → step 3
-  useEffect(() => {
-    if (state.membershipMinted && currentStep === 2) {
-      setTransitioning(true);
-      setTimeout(() => {
-        setCurrentStep(3);
-        setTransitioning(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 700);
-    }
-  }, [state.membershipMinted]);
+  if (fetching) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <BackButton />
+        <div className="mt-8 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full border-2 border-[#38F0FF] border-t-transparent animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
-  // Auto-advance: telescope registered → missions
-  useEffect(() => {
-    if (state.telescope && currentStep === 3) {
-      setTransitioning(true);
-      setTimeout(() => {
-        router.push('/missions');
-      }, 900);
-    }
-  }, [state.telescope]);
-
-  const steps = [
-    { label: 'Join', done: state.walletConnected },
-    { label: 'Start', done: state.membershipMinted },
-    { label: 'Telescope', done: !!state.telescope },
-  ];
-
-  const stepTitles = ['Create Your Account', 'Activate Observer Status', 'Register Your Telescope'];
+  if (saved || (telescope && !loading)) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <BackButton />
+        <div className="mt-4">
+          {starsEarned > 0 && (
+            <div
+              className="mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
+              style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.2)' }}
+            >
+              <span className="text-[#FFD166] text-xl">✦</span>
+              <div>
+                <p className="text-[#FFD166] font-bold text-sm">+{starsEarned} Stars earned</p>
+                <p className="text-slate-400 text-xs">First telescope registration bonus</p>
+              </div>
+            </div>
+          )}
+          <Card glow="cyan" className="p-6">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.2)' }}>
+                <Telescope size={22} className="text-[#38F0FF]" />
+              </div>
+              <div>
+                <p className="text-white font-bold">{telescope?.brand} {telescope?.model}</p>
+                <p className="text-slate-400 text-sm">{telescope?.aperture} · {telescope?.type ?? 'Telescope'}</p>
+              </div>
+              <div className="ml-auto w-7 h-7 rounded-full bg-[#38F0FF]/10 border border-[#38F0FF]/30 flex items-center justify-center flex-shrink-0">
+                <Check size={14} className="text-[#38F0FF]" />
+              </div>
+            </div>
+            <p className="text-slate-500 text-xs mb-4">Your telescope is registered on Stellar. It will be linked to your observations and NFTs.</p>
+            <Button
+              variant="ghost"
+              onClick={() => { setSaved(false); }}
+              className="w-full text-sm"
+            >
+              Update Telescope
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
+    <div className="max-w-lg mx-auto px-4 py-8">
       <BackButton />
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#FFD166]">Start Your Observation Journey</h1>
-        <p className="text-[var(--text-primary)] mt-2 text-sm sm:text-base">
-          Join thousands of astronomers. Free forever.
-        </p>
+      <div className="mt-4">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)' }}>
+            <Telescope size={20} className="text-[#38F0FF]" />
+          </div>
+          <div>
+            <h1 className="text-white font-bold text-lg leading-tight">Register Your Telescope</h1>
+            <p className="text-slate-400 text-xs">Earn 50 ✦ Stars on first registration</p>
+          </div>
+        </div>
+
+        <Card className="p-5 flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-slate-400 font-medium">Brand</label>
+            <select
+              value={form.brand}
+              onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
+              className="rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#38F0FF]"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              {TELESCOPE_BRANDS.map(b => <option key={b}>{b}</option>)}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-slate-400 font-medium">Model</label>
+            <input
+              value={form.model}
+              onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
+              placeholder="e.g. NexStar 8SE"
+              className="rounded-xl px-3 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-[#38F0FF]"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-slate-400 font-medium">Aperture</label>
+            <input
+              value={form.aperture}
+              onChange={e => setForm(f => ({ ...f, aperture: e.target.value }))}
+              placeholder="e.g. 203mm"
+              className="rounded-xl px-3 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-[#38F0FF]"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-slate-400 font-medium">Type</label>
+            <select
+              value={form.type}
+              onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
+              className="rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#38F0FF]"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              {TELESCOPE_TYPES.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-xs px-1">{error}</p>
+          )}
+
+          <Button
+            variant="cyan"
+            onClick={handleSave}
+            disabled={!form.model.trim() || !form.aperture.trim() || loading}
+            className="w-full mt-1"
+          >
+            {loading ? 'Saving...' : telescope ? 'Update Telescope' : 'Register Telescope — Earn 50 ✦'}
+          </Button>
+        </Card>
       </div>
-
-      <StepProgress current={currentStep} steps={steps} />
-
-      {/* Step label */}
-      <p className="text-center text-[var(--text-dim)] text-xs mb-4 tracking-widest uppercase">
-        Step {currentStep} of 3 — {stepTitles[currentStep - 1]}
-      </p>
-
-      {/* Single step view with fade transition */}
-      <div
-        className="transition-all duration-300"
-        style={{ opacity: transitioning ? 0 : 1, transform: transitioning ? 'translateY(8px)' : 'translateY(0)' }}
-      >
-        {currentStep === 1 && <WalletStep />}
-        {currentStep === 2 && <MembershipStep />}
-        {currentStep === 3 && <TelescopeStep />}
-      </div>
-
-      {/* Back link if not on step 1 */}
-      {currentStep > 1 && !transitioning && (
-        <button
-          onClick={() => setCurrentStep(s => s - 1)}
-          className="mt-4 w-full text-center text-xs text-slate-600 hover:text-slate-400 transition-colors py-2"
-        >
-          ← Back
-        </button>
-      )}
     </div>
   );
 }

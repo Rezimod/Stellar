@@ -47,7 +47,7 @@ interface NewReward {
 export default function MissionActive({ mission, onClose }: MissionActiveProps) {
   const router = useRouter();
   const { state, addMission } = useAppState();
-  const { user } = usePrivy();
+  const { user, getAccessToken } = usePrivy();
   const solanaWallet = user?.linkedAccounts.find(
     (a): a is Extract<typeof a, { type: 'wallet' }> =>
       a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
@@ -205,12 +205,16 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
     let txId = 'sim_' + Date.now().toString(36);
     try {
+      const authToken = await getAccessToken().catch(() => null);
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 60000);
       const res = await fetch('/api/mint', {
         method: 'POST',
         signal: ctrl.signal,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({
           userAddress: solanaWallet?.address ?? null,
           target: mission.target === null ? 'Night Sky' : mission.name,

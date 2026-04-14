@@ -2,13 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { mintCompressedNFT } from '@/lib/mint-nft';
 
 export const maxDuration = 60; // Solana devnet confirmations can take 15-30s
+import { PrivyClient } from '@privy-io/server-auth';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
 
+const privy = new PrivyClient(
+  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
+  process.env.PRIVY_APP_SECRET!,
+);
+
 export async function POST(req: NextRequest) {
-  // Devnet: no auth required. Rate limiting + wallet validation provide sufficient protection.
-  // TODO: Add Privy JWT verification before mainnet launch.
+  const authHeader = req.headers.get('authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  try {
+    await privy.verifyAuthToken(token);
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const body = await req.json();
   const { userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars } = body;

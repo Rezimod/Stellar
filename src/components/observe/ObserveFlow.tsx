@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePrivy } from '@privy-io/react-auth';
 import { Camera, ImagePlus, ArrowLeft, ExternalLink } from 'lucide-react';
 import type { PhotoVerificationResult } from '@/lib/types';
 
@@ -25,6 +26,7 @@ const CONFIDENCE_BADGE: Record<string, { cls: string; label: string }> = {
 
 export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps) {
   const router = useRouter();
+  const { getAccessToken } = usePrivy();
   const [step, setStep] = useState<'capture' | 'uploading' | 'result' | 'minting' | 'done'>('capture');
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -180,9 +182,13 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     setStep('minting');
     let txId = '';
     try {
+      const authToken = await getAccessToken().catch(() => null);
       const res = await fetch('/api/mint', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({
           userAddress: walletAddress,
           target: verification.identifiedObject,

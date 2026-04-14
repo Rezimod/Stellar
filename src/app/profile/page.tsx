@@ -16,7 +16,7 @@ import PageTransition from '@/components/ui/PageTransition';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
-  const { authenticated, user, login, logout } = usePrivy();
+  const { authenticated, user, login, logout, getAccessToken } = usePrivy();
   const { wallets } = useWallets();
   const { state, reset } = useAppState();
 
@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [recentObs, setRecentObs] = useState<{ id: string; target: string; confidence: string; stars: number; created_at: string }[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<{ photo: string; name: string } | null>(null);
+  const [telescope, setTelescope] = useState<{ brand: string; model: string; aperture: string; type: string | null } | null>(null);
 
   useEffect(() => {
     if (!selectedPhoto) return;
@@ -59,6 +60,17 @@ export default function ProfilePage() {
         .then(d => setObsStreak(d.streak ?? 0)),
     ]).finally(() => setProfileLoaded(true));
   }, [address]);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    getAccessToken().then(token => {
+      if (!token) return;
+      fetch('/api/telescopes', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(d => { if (d.telescope) setTelescope(d.telescope); })
+        .catch(() => {});
+    }).catch(() => {});
+  }, [authenticated, getAccessToken]);
 
   const handleCopy = () => {
     if (!address) return;
@@ -319,6 +331,35 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* 1.5 — TELESCOPE */}
+      <Link href="/club" style={{ textDecoration: 'none' }}>
+        <div
+          className="card-base flex items-center gap-3 px-4 py-3 transition-all"
+          style={{ cursor: 'pointer' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(56,240,255,0.25)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = ''; }}
+        >
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(56,240,255,0.07)', border: '1px solid rgba(56,240,255,0.15)' }}
+          >
+            <Telescope size={15} className="text-[#38F0FF]" />
+          </div>
+          {telescope ? (
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-semibold truncate">{telescope.brand} {telescope.model}</p>
+              <p className="text-slate-500 text-xs">{telescope.aperture}{telescope.type ? ` · ${telescope.type}` : ''}</p>
+            </div>
+          ) : (
+            <div className="flex-1 min-w-0">
+              <p className="text-slate-400 text-sm">Register your telescope</p>
+              <p className="text-slate-600 text-xs">Earn 50 ✦ Stars</p>
+            </div>
+          )}
+          <ChevronRight size={13} className="text-slate-600 flex-shrink-0" />
+        </div>
+      </Link>
 
       {/* 2 — DISCOVERIES */}
       <Card className="!p-5">

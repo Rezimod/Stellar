@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import type { QuizDef } from '@/lib/quizzes';
 
@@ -13,6 +14,9 @@ interface Props {
 export default function QuizActive({ quiz, onClose }: Props) {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { addQuizResult } = useAppState();
+  const { getAccessToken } = usePrivy();
+  const { wallets } = useWallets();
+  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
 
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -24,6 +28,28 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const q = quiz.questions[idx];
   const total = quiz.questions.length;
   const stars = score * quiz.starsPerCorrect;
+
+  const awardQuizStarsOnChain = async (earnedStars: number) => {
+    if (earnedStars <= 0 || !solanaWallet?.address) return;
+    try {
+      const token = await getAccessToken().catch(() => null);
+      await fetch('/api/award-stars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          recipientAddress: solanaWallet.address,
+          amount: Math.min(earnedStars, 1000),
+          reason: `quiz:${quiz.id}`,
+          idempotencyKey: `quiz:${quiz.id}:${solanaWallet.address}:${new Date().toISOString().slice(0, 10)}`,
+        }),
+      });
+    } catch {
+      // Non-blocking — local state is already saved
+    }
+  };
 
   const pick = (i: number) => {
     if (phase !== 'question') return;
@@ -40,6 +66,8 @@ export default function QuizActive({ quiz, onClose }: Props) {
         setPhase('question');
       } else {
         setPhase('result');
+        const finalStars = (correct ? score + 1 : score) * quiz.starsPerCorrect;
+        awardQuizStarsOnChain(finalStars);
       }
     }, 2500);
   };

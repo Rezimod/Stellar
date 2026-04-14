@@ -1,7 +1,21 @@
-import { pgTable, uuid, text, integer, timestamp, doublePrecision } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, timestamp, doublePrecision, boolean } from 'drizzle-orm/pg-core'
 // FIX-15: To prevent double-awards, run this once on the DB:
 // CREATE UNIQUE INDEX obs_daily_unique ON observation_log (wallet, target, DATE(created_at AT TIME ZONE 'UTC'));
 // Drizzle schema DSL cannot express DATE() function-based unique indexes; this must be applied manually.
+
+// Run once in Neon SQL editor to create the telescopes table:
+// CREATE TABLE IF NOT EXISTS public.telescopes (
+//   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+//   privy_id text NOT NULL,
+//   wallet_address text,
+//   brand text NOT NULL,
+//   model text NOT NULL,
+//   aperture text NOT NULL,
+//   type text,
+//   stars_awarded boolean DEFAULT false,
+//   created_at timestamptz DEFAULT now()
+// );
+// CREATE UNIQUE INDEX telescopes_privy_id_unique ON telescopes (privy_id);
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -11,6 +25,18 @@ export const users = pgTable('users', {
   username: text('username'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+export const telescopes = pgTable('telescopes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  privyId: text('privy_id').notNull(),
+  walletAddress: text('wallet_address'),
+  brand: text('brand').notNull(),
+  model: text('model').notNull(),
+  aperture: text('aperture').notNull(),
+  type: text('type'),
+  starsAwarded: boolean('stars_awarded').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 
 export const observationLog = pgTable('observation_log', {
