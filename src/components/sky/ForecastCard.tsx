@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Cloud, Stars, CloudMoon, CloudRain, Wind, Eye, Thermometer, Clock } from 'lucide-react';
 import { SkyDay } from '@/lib/sky-data';
 import { useTranslations, useLocale } from 'next-intl';
@@ -71,6 +72,7 @@ function StatRow({ icon, value }: { icon: React.ReactNode; value: string }) {
 export default function ForecastCard({ day, isToday }: Props) {
   const t = useTranslations('sky');
   const locale = useLocale();
+  const [expanded, setExpanded] = useState(false);
 
   const bestHour = day.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b);
   const kind = badge(bestHour.cloudCover);
@@ -158,6 +160,52 @@ export default function ForecastCard({ day, isToday }: Props) {
               {t('bestHours')}
             </span>
             <span className="text-xs font-mono text-white ml-1">{window}</span>
+          </div>
+        )}
+
+        {/* Hourly detail toggle */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest mt-2 transition-colors"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <span>{expanded ? '▲' : '▼'}</span>
+          {expanded ? 'Hide hourly detail' : 'Show hourly detail'}
+        </button>
+
+        {expanded && (
+          <div className="mt-3 pt-3 flex flex-col gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
+              Evening · hour by hour
+            </p>
+            <div className="flex flex-col gap-1">
+              {day.hours
+                .filter(h => {
+                  const hr = parseInt(h.time.slice(11, 13));
+                  return hr >= 19 || hr <= 5;
+                })
+                .map(h => {
+                  const hr = h.time.slice(11, 16);
+                  const cc = h.cloudCover;
+                  const barColor = cc < 30 ? '#34D399' : cc < 60 ? '#F59E0B' : '#EF4444';
+                  return (
+                    <div key={h.time} className="flex items-center gap-3">
+                      <span className="text-xs font-mono w-10 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }}>
+                        {hr}
+                      </span>
+                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <div className="h-full rounded-full" style={{ width: `${cc}%`, background: barColor, opacity: 0.7 }} />
+                      </div>
+                      <span className="text-[10px] w-8 text-right font-mono" style={{ color: barColor }}>
+                        {cc}%
+                      </span>
+                      <span className="text-[10px] w-12 text-right" style={{ color: 'var(--color-text-muted)' }}>
+                        {Math.round(h.temp)}°C
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
         )}
       </div>

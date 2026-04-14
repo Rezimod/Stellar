@@ -6,6 +6,9 @@ import { Cloud, Wind, Eye, Droplets } from 'lucide-react';
 import { SkyDay, SkyHour } from '@/lib/sky-data';
 import type { PlanetInfo } from "@/lib/planets";
 import { useLocation } from '@/lib/location';
+import ScoreRing from '@/components/ui/ScoreRing';
+import type { SkyScoreResult } from '@/lib/sky-score';
+import { LOCATIONS } from '@/lib/darksky-locations';
 
 // ── Moon Phase SVG ────────────────────────────────────────────────────────────
 
@@ -255,9 +258,22 @@ function ObservingWindowBar({
       </div>
       {/* Labels */}
       <div className="flex justify-between text-[10px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
-        <span>{sunSet ? formatSunTime(sunSet) : '18:00'}</span>
+        <span style={{ color: 'rgba(245,158,11,0.6)' }}>↓ {sunSet ? formatSunTime(sunSet) : '18:00'}</span>
         <span style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}>00:00</span>
-        <span>{sunRise ? formatSunTime(sunRise) : '06:00'}</span>
+        <span style={{ color: 'rgba(245,158,11,0.6)' }}>{sunRise ? formatSunTime(sunRise) : '06:00'} ↑</span>
+      </div>
+      {/* Legend */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 2 }}>
+        {[
+          { color: '#34D399', label: 'Clear' },
+          { color: '#F59E0B', label: 'Partly cloudy' },
+          { color: '#EF4444', label: 'Overcast' },
+        ].map(item => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <div style={{ width: 6, height: 6, borderRadius: 2, background: item.color, opacity: 0.7 }} />
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>{item.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -282,6 +298,54 @@ interface CardData {
   nextClear: string;
   planets: PlanetInfo[];
   today: SkyDay;
+  skyScore: SkyScoreResult | null;
+}
+
+function gradeColor(grade: string): string {
+  if (grade === 'Exceptional' || grade === 'Excellent') return '#34d399';
+  if (grade === 'Good') return '#FFD166';
+  if (grade === 'Fair') return '#F59E0B';
+  return '#EF4444';
+}
+
+function scoreSummary(grade: string): string {
+  if (grade === 'Exceptional' || grade === 'Excellent') return 'Perfect night for astronomy';
+  if (grade === 'Good') return 'Good conditions for planets and bright objects';
+  if (grade === 'Fair') return 'Limited visibility — Moon and planets only';
+  return 'Not ideal — check back tomorrow';
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function estimateBortle(lat: number, lon: number): number {
+  let minDist = Infinity;
+  let nearestBortle = 5;
+  for (const loc of LOCATIONS) {
+    const d = haversineKm(lat, lon, loc.lat, loc.lon);
+    if (d < minDist) { minDist = d; nearestBortle = loc.bortle; }
+  }
+  return minDist <= 50 ? nearestBortle : 5;
+}
+
+function bortleColor(b: number): string {
+  if (b <= 2) return '#34d399';
+  if (b <= 4) return '#FFD166';
+  if (b <= 6) return '#f97316';
+  return '#ef4444';
+}
+
+function bortleLabel(b: number): string {
+  if (b <= 2) return 'Pristine dark sky';
+  if (b <= 4) return 'Rural sky';
+  if (b <= 6) return 'Suburban sky';
+  return 'City sky';
 }
 
 // ── Border / badge config ─────────────────────────────────────────────────────
@@ -313,15 +377,22 @@ export default function TonightHighlights() {
 
   const compute = useCallback(async (lat: number, lng: number) => {
     try {
-      const [forecastRes, planetsRes, moonRes] = await Promise.all([
+      const [forecastRes, planetsRes, moonRes, scoreRes] = await Promise.all([
         fetch(`/api/sky/forecast?lat=${lat}&lng=${lng}`),
         fetch(`/api/sky/planets?lat=${lat}&lng=${lng}`),
         fetch(`/api/sky/sun-moon?lat=${lat}&lng=${lng}`),
+        fetch(`/api/sky/score?lat=${lat}&lon=${lng}`),
       ]);
       const days = await forecastRes.json() as SkyDay[];
       const planets = await planetsRes.json() as PlanetInfo[];
       const moon = await moonRes.json() as SunMoonData;
       if (!days.length) { setError(true); setLoading(false); return; }
+
+      let skyScore: SkyScoreResult | null = null;
+      if (scoreRes.ok) {
+        const scoreData = await scoreRes.json() as SkyScoreResult;
+        if (typeof scoreData.score === 'number') skyScore = scoreData;
+      }
 
       const today = days[0];
       const { best, window, state } = eveningStats(today.hours);
@@ -335,6 +406,7 @@ export default function TonightHighlights() {
         window,
         nextClear: nextClearDate(days, locale),
         planets: planets.filter(p => p.visible).sort((a, b) => b.altitude - a.altitude).slice(0, 3),
+        skyScore,
       });
       setMoonData(moon);
       setLoading(false);
@@ -378,32 +450,85 @@ export default function TonightHighlights() {
     );
   }
 
-  const { state, cloudCover, humidity, wind, window, nextClear, planets, today } = card;
+  const { state, cloudCover, humidity, wind, window: obsWindow, nextClear, planets, today, skyScore } = card;
   const badge = badgeStyle[state];
   const visKm = Math.round(card.today.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b).visibility / 1000);
 
   return (
     <div className="glass-card p-5" style={cardBorder[state]}>
-      {/* Top row: label + badge */}
+      {/* Top row: label + badge + share */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <span className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: 'var(--color-text-muted)' }}>
           {t('tonightHighlight')}
         </span>
-        <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-          style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color }}
-        >
+        <div className="flex items-center gap-2">
           <span
-            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-            style={{
-              background: badge.color,
-              animation: state === 'go' ? 'breathe 2s ease-in-out infinite' : undefined,
-              boxShadow: state === 'go' ? `0 0 6px ${badge.color}` : undefined,
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+            style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color }}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              style={{
+                background: badge.color,
+                animation: state === 'go' ? 'breathe 2s ease-in-out infinite' : undefined,
+                boxShadow: state === 'go' ? `0 0 6px ${badge.color}` : undefined,
+              }}
+            />
+            {badge.label}
+          </span>
+          <button
+            onClick={() => {
+              const visibleCount = card.planets.length;
+              const text = `Tonight's sky: Score ${skyScore?.score ?? '?'}/100 (${skyScore?.grade ?? 'checking'}) · ${visibleCount} planet${visibleCount !== 1 ? 's' : ''} visible · Cloud cover ${cloudCover}%\n\nCheck yours: stellarrclub.vercel.app/sky\n\n@StellarClub26 #Astronomy`;
+              window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
             }}
-          />
-          {badge.label}
-        </span>
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-white/5"
+            style={{ color: 'var(--color-text-muted)' }}
+            title="Share tonight's sky"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Sky Score hero */}
+      {skyScore && (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          gap: 6, paddingTop: 16, paddingBottom: 16,
+          borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: 16,
+        }}>
+          <div style={{ boxShadow: `0 0 24px ${gradeColor(skyScore.grade)}30` }}>
+            <ScoreRing size={100} value={skyScore.score} color="gradient" label="Sky Score" sublabel={skyScore.grade} />
+          </div>
+          <p className="text-sm font-semibold" style={{ color: gradeColor(skyScore.grade) }}>
+            {skyScore.grade}
+          </p>
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {scoreSummary(skyScore.grade)}
+          </p>
+          {/* Factor badges */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 4 }}>
+            {skyScore.factors.slice(0, 5).map(f => {
+              const fc = f.value > 70 ? '#34d399' : f.value > 40 ? '#F59E0B' : '#EF4444';
+              return (
+                <span key={f.label} style={{
+                  fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '3px 8px', borderRadius: 8,
+                  background: f.value > 70 ? 'rgba(52,211,153,0.06)' : f.value > 40 ? 'rgba(245,158,11,0.06)' : 'rgba(239,68,68,0.06)',
+                  border: `1px solid ${fc}25`, color: fc,
+                }}>
+                  {f.label}: {f.value}%
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 3-column body */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -432,12 +557,12 @@ export default function TonightHighlights() {
             sunSet={moonData?.sunSet ?? null}
             sunRise={moonData?.sunRise ?? null}
           />
-          {state !== 'skip' && window ? (
+          {state !== 'skip' && obsWindow ? (
             <div>
               <p className="text-[10px] uppercase tracking-wider font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>
                 Best Hours
               </p>
-              <p className="text-sm font-mono font-bold" style={{ color: 'var(--color-nebula-teal)' }}>{window}</p>
+              <p className="text-sm font-mono font-bold" style={{ color: 'var(--color-nebula-teal)' }}>{obsWindow}</p>
             </div>
           ) : state === 'skip' && nextClear ? (
             <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -484,6 +609,19 @@ export default function TonightHighlights() {
           ))}
         </div>
       </div>
+
+      {/* Bortle context */}
+      {(() => {
+        const bortle = estimateBortle(lat, lng);
+        return (
+          <div className="flex items-center gap-2 pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: bortleColor(bortle) }} />
+            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+              Your sky: Bortle {bortle} · {bortleLabel(bortle)}
+            </span>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
@@ -12,6 +13,7 @@ import { MISSIONS } from '@/lib/constants';
 
 const PLANET_MISSION_IDS = ['moon', 'jupiter', 'saturn', 'mars'];
 const STATIC_PLANETS = MISSIONS.filter(m => PLANET_MISSION_IDS.includes(m.id));
+const MISSION_PLANETS = new Set(['moon', 'jupiter', 'saturn']);
 
 export default function PlanetGrid() {
   const t = useTranslations('sky');
@@ -124,13 +126,32 @@ export default function PlanetGrid() {
             <button className="text-left" onClick={() => setSelectedPlanet(p)}>
               <PlanetCard planet={p} />
             </button>
-            <button
-              onClick={handleObserve}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg w-full"
-              style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
-            >
-              Observe This
-            </button>
+            {p.altitude < 0 ? (
+              <span className="px-3 py-1.5 text-xs rounded-lg w-full text-center block"
+                style={{ background: 'rgba(255,255,255,0.02)', color: 'var(--color-text-muted)' }}>
+                Below horizon
+              </span>
+            ) : MISSION_PLANETS.has(p.key) ? (
+              <button
+                onClick={handleObserve}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg w-full"
+                style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
+              >
+                Start {p.key.charAt(0).toUpperCase() + p.key.slice(1)} Mission →
+              </button>
+            ) : (
+              <Link
+                href="/learn"
+                className="px-3 py-1.5 text-xs font-medium rounded-lg w-full text-center block"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                Learn about {p.key.charAt(0).toUpperCase() + p.key.slice(1)} →
+              </Link>
+            )}
           </div>
         ))}
       </div>

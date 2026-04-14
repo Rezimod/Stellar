@@ -215,6 +215,15 @@ const PLANET_ACCENT: Record<string, string> = {
   saturn:  '#FDE68A',
 };
 
+const PLANET_EQUIPMENT: Record<string, { icon: string; label: string; detail: string; color: string }> = {
+  moon:    { icon: '👁', label: 'Naked Eye', detail: 'Craters visible with binoculars', color: '#34d399' },
+  mercury: { icon: '👁', label: 'Naked Eye', detail: 'Low on horizon at dusk/dawn', color: '#34d399' },
+  venus:   { icon: '👁', label: 'Naked Eye', detail: 'Phases visible in small telescope', color: '#34d399' },
+  mars:    { icon: '🔭', label: 'Telescope', detail: 'Surface detail at opposition', color: '#38F0FF' },
+  jupiter: { icon: '🔭', label: 'Binoculars+', detail: '4 moons in binoculars, bands in scope', color: '#FFD166' },
+  saturn:  { icon: '🔭', label: 'Telescope', detail: 'Rings visible at 40× magnification', color: '#38F0FF' },
+};
+
 function hhmm(d: Date | string | null, locale: string): string {
   if (!d) return '—';
   const date = d instanceof Date ? d : new Date(d);
@@ -275,6 +284,26 @@ export default function PlanetCard({ planet }: Props) {
           </p>
         </div>
       </div>
+
+      {/* Equipment badge */}
+      {(() => {
+        const eq = PLANET_EQUIPMENT[planet.key];
+        if (!eq) return null;
+        return (
+          <div className="flex items-center gap-2" style={{ paddingTop: 4 }}>
+            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{
+              background: `${eq.color}10`,
+              border: `1px solid ${eq.color}25`,
+              color: eq.color,
+            }}>
+              {eq.icon} {eq.label}
+            </span>
+            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+              {eq.detail}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Rise / Transit / Set */}
       <div className="grid grid-cols-3 gap-1 text-center pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
