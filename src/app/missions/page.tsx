@@ -46,12 +46,11 @@ export default function MissionsPage() {
   }, [authenticated, state.walletAddress]);
 
   useEffect(() => {
-    if (authenticated) return;
     fetch(`/api/sky/verify?lat=${location.lat}&lon=${location.lon}`)
       .then(r => r.json())
       .then(d => setSkyConditions({ cloudCover: d.cloudCover, visibility: d.visibility, verified: d.verified }))
       .catch(() => {});
-  }, [authenticated, location.lat, location.lon]);
+  }, [location.lat, location.lon]);
 
   if (!authenticated) {
     return (
@@ -178,12 +177,23 @@ export default function MissionsPage() {
           </div>
 
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#34d399] animate-pulse" />
-            <span className="text-[11px] text-slate-600">
-              {isNight
-                ? '🟢 Sky conditions: Good for observing tonight'
-                : '☀️ Daytime — come back after sunset'}
-            </span>
+            {skyConditions ? (
+              <>
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${skyConditions.verified ? 'bg-[#34d399] animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-[11px] text-slate-500">
+                  {skyConditions.verified
+                    ? `Clear sky tonight · ${skyConditions.cloudCover}% cloud · ${skyConditions.visibility}`
+                    : `Cloudy tonight · ${skyConditions.cloudCover}% cloud cover`}
+                </span>
+              </>
+            ) : (
+              <>
+                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isNight ? 'bg-[#34d399] animate-pulse' : 'bg-slate-700'}`} />
+                <span className="text-[11px] text-slate-600">
+                  {isNight ? 'Checking sky conditions…' : 'Daytime — come back after sunset'}
+                </span>
+              </>
+            )}
           </div>
 
           {streak > 0 && (
