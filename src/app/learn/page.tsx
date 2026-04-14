@@ -12,7 +12,7 @@ import TelescopesTab from '@/components/sky/TelescopesTab';
 import TonightsBanner from '@/components/learn/TonightsBanner';
 import { PLANETS, DSO, CONSTELLATIONS, ALL_EVENTS, daysFromNow, type Locale } from '@/lib/learn-data';
 
-type Tab = 'planets' | 'deepsky' | 'quizzes' | 'guide' | 'telescopes';
+type Tab = 'planets' | 'deepsky' | 'quizzes' | 'guide' | 'telescopes' | 'astrophoto';
 
 // ─── Tab content components ───────────────────────────────────────────────────
 
@@ -589,6 +589,146 @@ function GuideTab({ locale }: { locale: Locale }) {
   );
 }
 
+// ─── Astrophotography guide ───────────────────────────────────────────────────
+
+const ASTRO_PHOTO_CARDS: {
+  step: number;
+  title: { en: string; ka: string };
+  body: { en: string; ka: string };
+  tip: { en: string; ka: string };
+  link?: { en: string; ka: string; href: string };
+}[] = [
+  {
+    step: 1,
+    title: { en: 'What is afocal photography?', ka: 'რა არის ოკულარული ფოტოგრაფია?' },
+    body: {
+      en: 'Hold your phone camera directly against the telescope eyepiece. The eyepiece projects the magnified image — your phone camera captures it. This is how most Stellar observation photos are taken. No adapters needed to start, though a phone holder makes it much easier.',
+      ka: 'ტელეფონი პირდაპირ ოკულართან მიეჭირე. ოკულარი გადიდებულ სურათს პროეცირებს — ტელეფონი კი იჭერს. ეს არის ყველაზე გავრცელებული მეთოდი Stellar-ის დაკვირვებების ფოტოებისთვის.',
+    },
+    tip: {
+      en: 'Use your lowest-power eyepiece (25mm) first. Higher magnification = harder to align.',
+      ka: 'პირველად ყველაზე სუსტი ოკულარი გამოიყენე (25მმ). მეტი გადიდება = გასწორება უფრო რთულია.',
+    },
+  },
+  {
+    step: 2,
+    title: { en: 'Camera settings for night sky', ka: 'კამერის პარამეტრები ღამის ცისთვის' },
+    body: {
+      en: 'Open your phone\'s camera. If you have a Pro/Manual mode, use it. Settings: ISO 800–1600 (higher = brighter but grainier). Shutter speed: 1/30s for Moon, 1–4 seconds for deep sky. Focus: tap and hold on the Moon or brightest star to lock focus, then switch to manual focus if available. Turn OFF flash — it does nothing for the sky and ruins your night vision.',
+      ka: 'გახსენი Pro/Manual რეჟიმი. ISO: 800–1600. ჩამკეტის სიჩქარე: 1/30 წმ მთვარისთვის, 1–4 წმ ღრმა ცისთვის. ჩახშე ფლეში — ცისთვის უსარგებლოა და ღამის ხედვას გიფუჭებს.',
+    },
+    tip: {
+      en: 'iPhone: use the built-in Night Mode. Android: try Google Camera\'s Night Sight or the dedicated astrophotography mode.',
+      ka: 'iPhone: Night Mode. Android: Google Camera-ს Night Sight ან ასტროფოტო რეჟიმი.',
+    },
+  },
+  {
+    step: 3,
+    title: { en: 'Steady your shot', ka: 'გამოსახულების სტაბილიზაცია' },
+    body: {
+      en: 'Camera shake is the #1 enemy. Options from free to cheap: lean your phone against the eyepiece and hold your breath (free). Use a 2-second timer delay so pressing the shutter doesn\'t shake it. Buy a phone-to-telescope adapter mount ($15-30) — this is the single best upgrade for phone astrophotography. Rest your elbows on something solid.',
+      ka: 'კამერის ბრჟოლა მთავარი მტერია. გამოსავლები: 2-წამიანი ტაიმერი ჩართე. შეიძინე ადაპტერი ($15-30) — ეს ყველაზე ეფექტური გაუმჯობესებაა ტელეფონის ასტროფოტოგრაფიაში.',
+    },
+    tip: {
+      en: 'A cheap phone adapter holder from Astroman costs less than a dinner out and dramatically improves every photo.',
+      ka: 'Astroman-ის ადაპტერი სასადილოზე ნაკლები ღირს და ყოველ ფოტოს მნიშვნელოვნად აუმჯობესებს.',
+    },
+    link: { en: 'Browse phone adapters →', ka: 'ნახე ადაპტერები →', href: '/marketplace' },
+  },
+  {
+    step: 4,
+    title: { en: 'Moon photography', ka: 'მთვარის ფოტოგრაფია' },
+    body: {
+      en: 'The Moon is the easiest and most rewarding target. It\'s bright enough for your phone\'s auto mode to handle. Tips: shoot during First Quarter or Last Quarter (not Full Moon) for dramatic crater shadows. Zoom to 2-3× digital zoom to fill the frame. Take 20+ photos and keep the sharpest 2-3. The terminator line (shadow boundary) is where the best detail lives.',
+      ka: 'მთვარე ყველაზე მარტივი და ამაჯილდოებელი სამიზნეა. პირველ ან ბოლო მეოთხედში გადაიღე — კრატერების ჩრდილები დრამატულია. 20+ ფოტო გადაიღე და 2-3 საუკეთესო დაიტოვე.',
+    },
+    tip: {
+      en: 'The terminator line (day/night boundary on the Moon) shows the most dramatic crater detail — always aim there first.',
+      ka: 'ტერმინატორი (დღე/ღამის საზღვარი) ყველაზე ეფექტურ კრატერის დეტალებს გვიჩვენებს.',
+    },
+    link: { en: 'Start Moon Mission →', ka: 'მთვარის მისიის დაწყება →', href: '/missions' },
+  },
+  {
+    step: 5,
+    title: { en: 'Planet photography', ka: 'პლანეტების ფოტოგრაფია' },
+    body: {
+      en: 'Jupiter and Saturn appear as tiny bright dots to the naked eye, but through a telescope eyepiece they show real detail. For planets: set your phone to record VIDEO at the highest resolution, hold it to the eyepiece for 30-60 seconds, then extract the sharpest single frame later. This is what professional planetary imagers do — just with better cameras. Jupiter: look for the cloud bands. Saturn: the rings should be visible as tiny "ears" on either side.',
+      ka: 'იუპიტერი და სატურნი შიშველი თვალით მხოლოდ კაშკაში წერტილია, მაგრამ ოკულარის მეშვეობით — ნამდვილი დეტალები ჩანს. VIDEO ჩაწერე 30-60 წმ-ის განმავლობაში, შემდეგ ამოიღე ყველაზე მკაფიო კადრი.',
+    },
+    tip: {
+      en: 'Video + frame extraction beats single shots for planets — you get dozens of chances to catch a moment of steady atmosphere.',
+      ka: 'ვიდეო + კადრის ამოღება ერთ ფოტოზე უკეთესია — ათობით შანსი გაქვს ატმოსფეროს სტაბილური მომენტი დაიჭირო.',
+    },
+    link: { en: 'Start Jupiter Mission →', ka: 'იუპიტერის მისიის დაწყება →', href: '/missions' },
+  },
+  {
+    step: 6,
+    title: { en: 'Getting verified on Stellar', ka: 'Stellar-ზე ვერიფიკაცია' },
+    body: {
+      en: 'When you submit a photo through a Stellar mission, AI verifies it\'s a real night sky photo (not a screenshot or AI-generated image). Tips for higher confidence scores: shoot in real-time through the camera (don\'t upload old photos). Make sure your GPS is enabled for location verification. A slightly blurry real photo always scores higher than a perfect fake — we check for natural camera noise and atmospheric effects.',
+      ka: 'Stellar-ის მისიაში ფოტოს წარდგენისას AI ამოწმებს — ნამდვილი ღამის ცის ფოტოა თუ ყალბი. რეალური დროის კამერით გადაიღე. GPS ჩართე. ოდნავ ბუნდოვანი ნამდვილი ფოტო ყოველთვის ჯობია ყალბ სრულყოფილ სურათს.',
+    },
+    tip: {
+      en: 'The double-capture feature (two photos 3 seconds apart) gives you an automatic confidence boost — the AI compares both frames to confirm you\'re live.',
+      ka: 'ორმაგი გადაღება (2 ფოტო 3 წამის ინტერვალით) ავტომატურად ზრდის კონფიდენს ქულას.',
+    },
+  },
+];
+
+function AstroPhotoTab({ locale }: { locale: Locale }) {
+  const [expanded, setExpanded] = useState<number | null>(null);
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-slate-500 text-xs leading-relaxed">
+        {locale === 'ka'
+          ? 'ისწავლე, როგორ გადაიღო ღამის ცის ფოტოები ტელეფონით — ოკულარულ მეთოდიდან Stellar-ის ვერიფიკაციამდე.'
+          : 'Learn how to take night sky photos with your phone — from the afocal method to getting verified on Stellar.'}
+      </p>
+      {ASTRO_PHOTO_CARDS.map(card => (
+        <button
+          key={card.step}
+          onClick={() => setExpanded(expanded === card.step ? null : card.step)}
+          className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+              style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: '#FFD166' }}
+            >
+              {card.step}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-sm">{card.title[locale]}</p>
+            </div>
+            <span className="text-slate-600 text-xs ml-2">{expanded === card.step ? '▲' : '▼'}</span>
+          </div>
+          {expanded === card.step && (
+            <div className="mt-3 flex flex-col gap-2" style={{ paddingLeft: '44px' }}>
+              <p className="text-slate-400 text-xs leading-relaxed">{card.body[locale]}</p>
+              <div
+                className="rounded-lg p-3 text-xs"
+                style={{ background: 'rgba(255,209,102,0.04)', border: '1px solid rgba(255,209,102,0.1)', color: 'rgba(255,209,102,0.8)' }}
+              >
+                📸 {card.tip[locale]}
+              </div>
+              {card.link && (
+                <Link
+                  href={card.link.href}
+                  onClick={e => e.stopPropagation()}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
+                  style={{ color: '#FFD166' }}
+                >
+                  {card.link[locale]}
+                </Link>
+              )}
+            </div>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── ASTRA promo ─────────────────────────────────────────────────────────────
 
 function AstraPromo({ locale }: { locale: Locale }) {
@@ -618,11 +758,12 @@ function AstraPromo({ locale }: { locale: Locale }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const TAB_CONFIG: { id: Tab; icon: string; en: string; ka: string }[] = [
-  { id: 'planets',    icon: '🪐', en: 'Planets',  ka: 'პლანეტები' },
-  { id: 'deepsky',    icon: '🌌', en: 'Deep Sky', ka: 'ღრმა ცა' },
-  { id: 'telescopes', icon: '🔭', en: 'Scopes',   ka: 'ტელესკოპები' },
-  { id: 'quizzes',    icon: '🧠', en: 'Quizzes',  ka: 'ქვიზები' },
-  { id: 'guide',      icon: '📖', en: 'Guide',    ka: 'გზამკვლევი' },
+  { id: 'planets',    icon: '🪐', en: 'Planets',    ka: 'პლანეტები' },
+  { id: 'deepsky',    icon: '🌌', en: 'Deep Sky',   ka: 'ღრმა ცა' },
+  { id: 'telescopes', icon: '🔭', en: 'Scopes',     ka: 'ტელესკოპები' },
+  { id: 'astrophoto', icon: '📸', en: 'Photo Guide', ka: 'ფოტო გზამკვლევი' },
+  { id: 'quizzes',    icon: '🧠', en: 'Quizzes',    ka: 'ქვიზები' },
+  { id: 'guide',      icon: '📖', en: 'Guide',      ka: 'გზამკვლევი' },
 ];
 
 export default function LearnPage() {
@@ -714,9 +855,10 @@ export default function LearnPage() {
         {/* Content */}
         {tab === 'planets'    ? <PlanetsTab key="planets" locale={locale} kidsMode={kidsMode} /> : null}
         {tab === 'deepsky'    ? <DeepSkyTab key="deepsky" locale={locale} kidsMode={kidsMode} /> : null}
+        {tab === 'telescopes' ? <TelescopesTab key="telescopes" /> : null}
+        {tab === 'astrophoto' ? <AstroPhotoTab key="astrophoto" locale={locale} /> : null}
         {tab === 'quizzes'    ? <QuizzesTab key="quizzes" locale={locale} onStart={setActiveQuiz} /> : null}
         {tab === 'guide'      ? <GuideTab key="guide" locale={locale} /> : null}
-        {tab === 'telescopes' ? <TelescopesTab key="telescopes" /> : null}
 
         <AstraPromo locale={locale} />
       </div>
