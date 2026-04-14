@@ -45,52 +45,38 @@ export default function BottomNav() {
               className="flex-1 flex flex-col items-center py-2"
               style={{ textDecoration: 'none', position: 'relative', WebkitTapHighlightColor: 'transparent' }}
             >
-              {/* Active top bar */}
+              {/* Active pill background */}
               {isActive && (
                 <div style={{
                   position: 'absolute',
-                  top: -1,
-                  left: '20%',
-                  right: '20%',
-                  height: 2.5,
-                  borderRadius: '0 0 4px 4px',
-                  background: 'linear-gradient(90deg, rgba(52,211,153,0.4), #34d399, rgba(52,211,153,0.4))',
-                  boxShadow: '0 0 8px rgba(52,211,153,0.3)',
+                  top: 6,
+                  left: '12%',
+                  right: '12%',
+                  bottom: 6,
+                  borderRadius: 14,
+                  background: 'rgba(52,211,153,0.1)',
+                  border: '1px solid rgba(52,211,153,0.18)',
                 }} />
               )}
 
-              {/* Icon container */}
-              <div style={{
-                width: 40,
-                height: 34,
-                borderRadius: 12,
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08))'
-                  : 'transparent',
-                border: isActive
-                  ? '1px solid rgba(52,211,153,0.15)'
-                  : '1px solid transparent',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease',
-              }}>
+              {/* Icon */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
                 <Icon
-                  size={19}
+                  size={20}
                   strokeWidth={isActive ? 2.2 : 1.5}
-                  color={isActive ? '#34d399' : 'rgba(255,255,255,0.3)'}
-                  style={{ transition: 'color 0.2s' }}
+                  color={isActive ? '#fff' : 'rgba(255,255,255,0.4)'}
                 />
               </div>
 
               {/* Label */}
               <span style={{
-                fontSize: 9.5,
+                position: 'relative',
+                zIndex: 1,
+                fontSize: 10,
                 fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#34d399' : 'rgba(255,255,255,0.3)',
+                color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
                 marginTop: 3,
-                letterSpacing: isActive ? '0.04em' : '0.02em',
-                transition: 'all 0.2s ease',
+                letterSpacing: '0.02em',
               }}>
                 {tab.label}
               </span>
