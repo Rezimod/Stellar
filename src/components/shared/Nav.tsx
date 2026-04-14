@@ -152,16 +152,11 @@ export default function Nav() {
       <nav
         className="fixed top-0 left-0 right-0 z-40"
         style={{
-          background: 'rgba(5, 8, 18, 0.88)',
+          background: 'rgba(5, 8, 18, 0.95)',
           backdropFilter: 'blur(32px)',
           WebkitBackdropFilter: 'blur(32px)',
-          borderBottom: '1px solid rgba(124,58,237,0.22)',
-          boxShadow: '0 1px 0 rgba(56,240,255,0.06), 0 8px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03)',
         }}
       >
-        {/* Top accent line */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.9) 20%, rgba(56,240,255,1) 50%, rgba(124,58,237,0.9) 80%, transparent 100%)', pointerEvents: 'none', animation: 'navGlow 3s ease-in-out infinite' }} />
-
         <div className="max-w-6xl mx-auto px-4">
           <div className="h-14 flex items-center gap-3">
 
@@ -175,10 +170,13 @@ export default function Nav() {
               <span>Search...</span>
             </button>
 
-            {/* Mobile: hamburger */}
+            {/* Mobile: hamburger + search */}
             <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
               <button onClick={() => setDrawerOpen(true)} className="w-9 h-9 flex items-center justify-center rounded-xl transition-colors" style={{ color: 'rgba(255,255,255,0.6)' }} aria-label="Open navigation">
                 <AlignLeft size={18} />
+              </button>
+              <button onClick={() => setSearchOpen(true)} className="w-9 h-9 flex items-center justify-center rounded-xl" style={{ color: 'rgba(255,255,255,0.55)' }} aria-label="Search">
+                <Search size={16} />
               </button>
             </div>
 
@@ -229,11 +227,6 @@ export default function Nav() {
 
             {/* Right: stars + auth */}
             <div className="ml-auto sm:ml-0 flex items-center gap-2 flex-shrink-0 z-10">
-
-              {/* Mobile search */}
-              <button onClick={() => setSearchOpen(true)} className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl" style={{ color: 'rgba(255,255,255,0.55)' }} aria-label="Search">
-                <Search size={16} />
-              </button>
 
               {authenticated && (
                 <Link href="/profile" title="Stars balance" style={{

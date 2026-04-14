@@ -284,10 +284,9 @@ code, pre, .mono {
 
 /* Glass nav */
 .glass-nav {
-  background: rgba(7, 11, 20, 0.88);
+  background: rgba(7, 11, 20, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(56, 240, 255, 0.06);
 }
 
 /* Button styles */
