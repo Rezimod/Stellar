@@ -127,6 +127,7 @@ export const PLANETS = [
 export const DSO = [
   {
     id: 'm42', emoji: '✨', img: '/images/dso/m42.jpg',
+    equipment: 'naked_eye' as const,
     name: { en: 'Orion Nebula (M42)', ka: 'ორიონის ნისლეული (M42)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
     distance: { en: '1,344 light-years', ka: '1,344 სინათლის წელი' },
@@ -138,6 +139,7 @@ export const DSO = [
   },
   {
     id: 'm31', emoji: '🌌', img: '/images/dso/m31.jpg',
+    equipment: 'naked_eye' as const,
     name: { en: 'Andromeda Galaxy (M31)', ka: 'ანდრომედას გალაქტიკა (M31)' },
     type: { en: 'Spiral Galaxy', ka: 'სპირალური გალაქტიკა' },
     distance: { en: '2.5 million light-years', ka: '2.5 მილიონი სინათლის წელი' },
@@ -149,6 +151,7 @@ export const DSO = [
   },
   {
     id: 'm45', emoji: '💫', img: '/images/dso/m45.jpg',
+    equipment: 'naked_eye' as const,
     name: { en: 'Pleiades — Seven Sisters (M45)', ka: 'პლეიადები — შვიდი და (M45)' },
     type: { en: 'Open Cluster', ka: 'ღია გროვა' },
     distance: { en: '444 light-years', ka: '444 სინათლის წელი' },
@@ -160,6 +163,7 @@ export const DSO = [
   },
   {
     id: 'm1', emoji: '🔭', img: '/images/dso/m1.jpg',
+    equipment: 'large_scope' as const,
     name: { en: 'Crab Nebula (M1)', ka: 'კიბოს ნისლეული (M1)' },
     type: { en: 'Supernova Remnant', ka: 'სუპერნოვის ნარჩენი' },
     distance: { en: '6,523 light-years', ka: '6,523 სინათლის წელი' },
@@ -171,6 +175,7 @@ export const DSO = [
   },
   {
     id: 'm13', emoji: '⭐', img: '/images/dso/m13.jpg',
+    equipment: 'binoculars' as const,
     name: { en: 'Hercules Cluster (M13)', ka: 'ჰერკულესის გროვა (M13)' },
     type: { en: 'Globular Cluster', ka: 'გლობულარული გროვა' },
     distance: { en: '25,100 light-years', ka: '25,100 სინათლის წელი' },
@@ -181,6 +186,7 @@ export const DSO = [
   },
   {
     id: 'm57', emoji: '💍', img: '/images/dso/m57.jpg',
+    equipment: 'small_scope' as const,
     name: { en: 'Ring Nebula (M57)', ka: 'რგოლის ნისლეული (M57)' },
     type: { en: 'Planetary Nebula', ka: 'პლანეტური ნისლეული' },
     distance: { en: '2,300 light-years', ka: '2,300 სინათლის წელი' },
@@ -191,6 +197,7 @@ export const DSO = [
   },
   {
     id: 'm17', emoji: '🌊', img: '/images/dso/m17.jpg',
+    equipment: 'binoculars' as const,
     name: { en: 'Omega Nebula (M17)', ka: 'ომეგა ნისლეული (M17)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
     distance: { en: '5,500 light-years', ka: '5,500 სინათლის წელი' },
@@ -201,6 +208,7 @@ export const DSO = [
   },
   {
     id: 'm51', emoji: '🌀', img: '/images/dso/m51.jpg',
+    equipment: 'small_scope' as const,
     name: { en: 'Whirlpool Galaxy (M51)', ka: 'მოქცევის გალაქტიკა (M51)' },
     type: { en: 'Interacting Galaxies', ka: 'ურთიერთმოქმედი გალაქტიკები' },
     distance: { en: '23 million light-years', ka: '23 მილიონი სინათლის წელი' },
@@ -211,6 +219,7 @@ export const DSO = [
   },
   {
     id: 'm8', emoji: '🏝️', img: '/images/dso/m8.jpg',
+    equipment: 'naked_eye' as const,
     name: { en: 'Lagoon Nebula (M8)', ka: 'ლაგუნა ნისლეული (M8)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
     distance: { en: '4,100 light-years', ka: '4,100 სინათლის წელი' },
@@ -221,6 +230,7 @@ export const DSO = [
   },
   {
     id: 'ngc869', emoji: '💎', img: '/images/dso/ngc869.jpg',
+    equipment: 'binoculars' as const,
     name: { en: 'Double Cluster (NGC 869 & 884)', ka: 'ორმაგი გროვა (NGC 869 & 884)' },
     type: { en: 'Open Cluster Pair', ka: 'ღია გროვის წყვილი' },
     distance: { en: '7,500 light-years', ka: '7,500 სინათლის წელი' },
