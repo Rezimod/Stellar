@@ -29,7 +29,6 @@ export default function Nav() {
   const [showMenu, setShowMenu] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [starsBalance, setStarsBalance] = useState<number | null>(null);
   const t = useTranslations('nav');
 
   useEffect(() => { setSearchOpen(false); }, [pathname]);
@@ -45,14 +44,6 @@ export default function Nav() {
   const solanaWallet = wallets.find(
     w => w.walletClientType === 'privy' && (w as { chainType?: string }).chainType === 'solana'
   );
-
-  useEffect(() => {
-    if (!authenticated || !solanaWallet?.address) { setStarsBalance(null); return; }
-    fetch(`/api/stars-balance?address=${encodeURIComponent(solanaWallet.address)}`)
-      .then(r => r.json())
-      .then(d => setStarsBalance(d.balance ?? 0))
-      .catch(() => setStarsBalance(0));
-  }, [authenticated, solanaWallet?.address]);
 
   const userEmail =
     user?.email?.address ??
@@ -225,26 +216,8 @@ export default function Nav() {
               })}
             </div>
 
-            {/* Right: stars + auth */}
+            {/* Right: auth */}
             <div className="ml-auto sm:ml-0 flex items-center gap-2 flex-shrink-0 z-10">
-
-              {authenticated && (
-                <Link href="/profile" title="Stars balance" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                  padding: '4px 10px', borderRadius: 9999,
-                  background: 'rgba(255,209,102,0.08)',
-                  border: '1px solid rgba(255,209,102,0.3)',
-                  color: '#FFD166', fontSize: 11, fontWeight: 700,
-                  textDecoration: 'none',
-                  animation: 'starPulse 3s ease-in-out infinite',
-                  letterSpacing: '0.02em',
-                }}>
-                  <span style={{ fontSize: 9 }}>✦</span>
-                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-                    {starsBalance === null ? '—' : starsBalance.toLocaleString()}
-                  </span>
-                </Link>
-              )}
 
               {!ready ? (
                 <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />

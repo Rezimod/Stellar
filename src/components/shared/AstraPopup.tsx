@@ -203,7 +203,7 @@ export default function AstraPopup() {
         style={{
           bottom: 'calc(env(safe-area-inset-bottom) + 76px)',
           right: open ? 'calc(min(360px, calc(100vw - 32px)) - 44px + 20px)' : 20,
-          width: 52, height: 52, borderRadius: '50%',
+          width: 44, height: 44, borderRadius: '50%',
           background: open
             ? 'rgba(124,58,237,0.25)'
             : 'linear-gradient(135deg, #7c3aed 0%, #0891b2 100%)',
@@ -217,7 +217,7 @@ export default function AstraPopup() {
         }}
         aria-label={open ? 'Close ASTRA' : 'Open ASTRA AI'}
       >
-        {open ? <X size={20} color="rgba(255,255,255,0.7)" /> : <Sparkles size={22} color="#fff" />}
+        {open ? <X size={18} color="rgba(255,255,255,0.7)" /> : <Sparkles size={18} color="#fff" />}
       </button>
     </>
   );
