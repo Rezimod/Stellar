@@ -43,6 +43,7 @@ import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
+import AstraPopup from '@/components/shared/AstraPopup';
 import OfflineBanner from '@/components/shared/OfflineBanner';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 import PageTransition from '@/components/layout/PageTransition';
@@ -105,12 +106,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <OfflineBanner />
                 <PullToRefresh />
                 <SwipeBack>
-                  <main className="relative z-10 flex-1 pb-20 md:pb-0">
+                  <main className="relative z-10 flex-1 pt-14 pb-24 sm:pb-0">
                     <PageTransition>{children}</PageTransition>
                   </main>
                 </SwipeBack>
                 <Footer />
                 <BottomNav />
+                <AstraPopup />
                 <Toaster />
               </AppStateProvider>
               </LocationProvider>
