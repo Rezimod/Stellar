@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BackButton from '@/components/shared/BackButton';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -27,25 +27,36 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
   kidsMode: boolean;
   onClose: () => void;
 }) {
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   return (
     <>
+      {/* Full-screen backdrop — z-[60] to sit above BottomNav (z-50) and Nav (z-40) */}
       <div
-        className="fixed inset-0 z-50"
-        style={{ background: 'rgba(3,6,14,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+        className="fixed inset-0 z-[60]"
+        style={{ background: 'rgba(3,6,14,0.88)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
         onClick={onClose}
       />
+
+      {/* Modal — centered vertically in viewport */}
       <div
-        className="fixed inset-x-4 z-50 rounded-2xl overflow-hidden flex flex-col"
+        className="fixed inset-x-4 z-[61] rounded-2xl overflow-hidden flex flex-col"
         style={{
-          top: '8%',
-          maxHeight: '84vh',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          maxHeight: '82vh',
           background: '#0d1220',
           border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.9)',
         }}
       >
         {/* Square hero image */}
-        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '1 / 1', maxHeight: '40vh' }}>
+        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '1 / 1', maxHeight: '38vh' }}>
           <Image
             src={planet.img}
             alt={planet.name[locale]}
@@ -55,11 +66,11 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
             priority
           />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #0d1220 0%, rgba(13,18,32,0.2) 60%, transparent 100%)' }} />
-          {/* Close button */}
+          {/* Close */}
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)' }}
+            style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)' }}
             aria-label="Close"
           >
             <X size={14} color="rgba(255,255,255,0.8)" />
@@ -79,12 +90,11 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
               {planet.name[locale]}
             </p>
           </div>
-          {/* Color accent line */}
           <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: planet.color, opacity: 0.6 }} />
         </div>
 
-        {/* Scrollable content */}
-        <div className="overflow-y-auto flex-1 px-4 py-4 flex flex-col gap-3" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+        {/* Content — scrollable only if needed */}
+        <div className="overflow-y-auto flex-1 px-4 py-3 flex flex-col gap-3" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
           {kidsMode ? (
             <div className="flex flex-col gap-2">
               <p className="text-slate-300 text-sm leading-relaxed flex items-start gap-2">
@@ -94,10 +104,10 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
               <p className="text-slate-400 text-xs leading-relaxed">{planet.kidsFact[locale]}</p>
             </div>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-1.5">
               {planet.facts[locale].map((f, i) => (
-                <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
-                  <span style={{ color: planet.color, flexShrink: 0, marginTop: 2, fontSize: 10 }}>●</span>
+                <li key={i} className="text-slate-300 text-xs flex items-start gap-2">
+                  <span style={{ color: planet.color, flexShrink: 0, marginTop: 2, fontSize: 8 }}>●</span>
                   {f}
                 </li>
               ))}
@@ -109,8 +119,8 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
             className="rounded-xl p-3 flex items-start gap-2 text-xs"
             style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.12)', color: 'rgba(56,240,255,0.8)' }}
           >
-            <Telescope size={13} style={{ flexShrink: 0, marginTop: 1 }} />
-            <span>{kidsMode ? planet.tip[locale].split('.')[0] + '.' : planet.tip[locale]}</span>
+            <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{planet.tip[locale].split('.')[0]}.</span>
           </div>
 
           {/* Links */}
