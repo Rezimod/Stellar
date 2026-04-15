@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import HomeSkyPreview from '@/components/home/HomeSkyPreview';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { Telescope, Camera, Star, ShoppingBag, CloudSun, Sparkles, Moon, Lock, Orbit } from 'lucide-react';
+import { Telescope, Camera, Star, ShoppingBag, CloudSun, Moon, Lock, Orbit } from 'lucide-react';
 import { MISSIONS } from '@/lib/constants';
 import LocationPicker from '@/components/LocationPicker';
 import { useLocation } from '@/lib/location';
@@ -93,8 +93,7 @@ export default function HomePage() {
   const { state } = useAppState();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const [activeStep, setActiveStep] = useState(0);
-  const stepPausedRef = useRef(false);
+  const [flippedCards, setFlippedCards] = useState([false, false, false, false]);
   const [liveLeaders, setLiveLeaders] = useState<{ handle: string; observations: number; stars: number }[]>([]);
   const [leadersLoading, setLeadersLoading] = useState(true);
   const [homeStars, setHomeStars] = useState(0);
@@ -190,15 +189,6 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (!stepPausedRef.current) {
-        setActiveStep(s => (s + 1) % 4);
-      }
-    }, 3500);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     fetch('/api/leaderboard?period=all&limit=3')
       .then(r => r.json())
       .then(data => {
@@ -231,14 +221,6 @@ export default function HomePage() {
       .then(d => { if (d?.score != null) setHeroSkyScore(d); })
       .catch(() => {});
   }, [location.lat, location.lon]);
-
-  const stepIcons = [Telescope, Camera, Star, ShoppingBag];
-  const howItWorksSteps = [
-    { step: 1, icon: stepIcons[0], title: t('home.steps.observe'), desc: t('home.steps.observeDesc') },
-    { step: 2, icon: stepIcons[1], title: t('home.steps.capture'), desc: t('home.steps.captureDesc') },
-    { step: 3, icon: stepIcons[2], title: t('home.steps.verify'), desc: t('home.steps.verifyDesc') },
-    { step: 4, icon: stepIcons[3], title: t('home.steps.mint'),   desc: t('home.steps.mintDesc') },
-  ];
 
   if (!ready) {
     return (
@@ -344,6 +326,61 @@ export default function HomePage() {
         .hiw-arrow { display: none; }
         @media (min-width: 768px) { .hiw-arrow { display: flex !important; } }
         @media (max-width: 639px) { .hero-section { min-height: auto !important; } }
+
+        /* ── Flip cards ── */
+        .flip-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        @media (min-width: 640px) {
+          .flip-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        }
+        .flip-card {
+          perspective: 900px;
+          height: 190px;
+          cursor: pointer;
+        }
+        .flip-card-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+          transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+          transform: rotateY(180deg);
+        }
+        @media (hover: hover) {
+          .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+          }
+        }
+        .flip-card-front,
+        .flip-card-back {
+          position: absolute;
+          inset: 0;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: 16px;
+          padding: 20px 16px;
+          display: flex;
+          flex-direction: column;
+        }
+        .flip-card-back {
+          transform: rotateY(180deg);
+          justify-content: center;
+          gap: 10px;
+        }
+        @keyframes flipCardIn {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .flip-card { opacity: 0; animation: flipCardIn 0.5s ease forwards; }
+        .flip-card:nth-child(1) { animation-delay: 0.05s; }
+        .flip-card:nth-child(2) { animation-delay: 0.13s; }
+        .flip-card:nth-child(3) { animation-delay: 0.21s; }
+        .flip-card:nth-child(4) { animation-delay: 0.29s; }
       `}</style>
 
       {/* Hero — full viewport */}
@@ -453,14 +490,6 @@ export default function HomePage() {
               </span>
             </h1>
 
-            {/* Tagline */}
-            <p className="hero-tagline-center" style={{
-              fontSize: 13, fontWeight: 600, letterSpacing: '0.12em',
-              color: 'rgba(52,211,153,0.7)', margin: '-8px 0 0', textTransform: 'uppercase',
-            }}>
-              Observe <span className="tagline-star-1" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Verify <span className="tagline-star-2" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Earn Stars <span className="tagline-star-3" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span>
-            </p>
-
             {/* Sub-copy */}
             <p style={{ maxWidth: 480, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: 0 }}>
               Observe the night sky. Get AI-verified by ASTRA. Earn Stars tokens and compressed NFTs sealed on Solana — redeemable for real telescopes at Astroman.ge and partner stores worldwide.
@@ -550,175 +579,33 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Sky Score pill — mobile/tablet only */}
-          {heroSkyScore && (
-            <div className="lg:hidden" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 12,
-              padding: '10px 20px', borderRadius: 999,
-              background: heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.08)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.08)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.2)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.2)' : 'rgba(255,255,255,0.08)'}`,
-            }}>
-              <span style={{ fontSize: 16 }}>{heroSkyScore.emoji}</span>
-              <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.5)', fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{heroSkyScore.score}</span>
-              <div>
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600 }}>{heroSkyScore.grade} sky tonight</div>
-                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>Sky Score · Your location</div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
+      {/* Sky score strip — clean bar between hero and content */}
+      {heroSkyScore && (
+        <div style={{
+          background: heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.06)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.06)' : 'rgba(255,255,255,0.03)',
+          borderBottom: `1px solid ${heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.12)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.12)' : 'rgba(255,255,255,0.06)'}`,
+        }}>
+          <div style={{ maxWidth: 720, margin: '0 auto', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 18 }}>{heroSkyScore.emoji}</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.45)', fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{heroSkyScore.score}</span>
+                <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>/100</span>
+              </div>
+              <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 600 }}>{heroSkyScore.grade} sky tonight</span>
+            </div>
+            <Link href="/sky" style={{ color: 'rgba(56,240,255,0.7)', fontSize: 12, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              Full forecast →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Remaining sections */}
       <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-6 pb-8 sm:pb-12 flex flex-col gap-6 sm:gap-8 animate-page-enter" style={{ overflowX: 'clip' }}>
-
-        {/* How It Works — 4 step cards */}
-        <div id="how-it-works" className="w-full"
-          onMouseEnter={() => { stepPausedRef.current = true; }}
-          onMouseLeave={() => { stepPausedRef.current = false; }}
-          onTouchStart={() => { stepPausedRef.current = true; }}
-        >
-          {/* Section header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
-            <div style={{ width: 32, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15))' }} />
-            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 500, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-              {t('home.howItWorks')}
-            </span>
-            <div style={{ width: 32, height: 1, background: 'linear-gradient(90deg, rgba(255,255,255,0.15), transparent)' }} />
-          </div>
-
-          {/* 4 cards — horizontal scroll snap on mobile, 4-in-a-row on sm+ */}
-          <style>{`
-            .hiw-scroll {
-              display: flex;
-              gap: 10px;
-              overflow-x: auto;
-              scroll-snap-type: x mandatory;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: none;
-              padding-bottom: 4px;
-            }
-            .hiw-scroll::-webkit-scrollbar { display: none; }
-            @keyframes hiwSlideUp {
-              from { opacity: 0; transform: translateY(16px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-            .hiw-card {
-              flex: 0 0 72%;
-              scroll-snap-align: center;
-              min-height: 172px;
-            }
-            @media (min-width: 640px) {
-              .hiw-scroll {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                overflow-x: visible;
-                scroll-snap-type: none;
-              }
-              .hiw-card { flex: none; }
-            }
-          `}</style>
-
-          <div className="hiw-scroll">
-            {howItWorksSteps.map((item, i) => {
-              const active = activeStep === i;
-              return (
-                <button
-                  key={i}
-                  className="hiw-card"
-                  onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
-                  style={{
-                    position: 'relative',
-                    padding: '22px 18px 24px',
-                    borderRadius: 16,
-                    background: 'rgba(12, 18, 33, 0.6)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    border: `1px solid ${active ? 'rgba(56, 240, 255, 0.25)' : 'var(--stellar-border)'}`,
-                    boxShadow: active
-                      ? 'inset 0 1px 0 rgba(255,255,255,0.03), 0 0 20px rgba(56,240,255,0.06), 0 0 40px rgba(56,240,255,0.03)'
-                      : 'inset 0 1px 0 rgba(255,255,255,0.03)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0,
-                    transition: 'border-color 0.5s, box-shadow 0.5s, transform 0.3s ease',
-                    transform: active ? 'translateY(-2px)' : 'translateY(0)',
-                    opacity: 0,
-                    animation: `hiwSlideUp 0.6s ease forwards`,
-                    animationDelay: `${i * 0.12}s`,
-                  }}
-                >
-                  {/* Step badge */}
-                  <span style={{
-                    display: 'inline-block',
-                    fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
-                    padding: '2px 8px', borderRadius: 6,
-                    background: 'linear-gradient(135deg, rgba(153,69,255,0.15), rgba(56,240,255,0.15))',
-                    color: 'rgba(255,255,255,0.75)',
-                    marginBottom: 14,
-                    alignSelf: 'flex-start',
-                  }}>
-                    0{i + 1}
-                  </span>
-
-                  {/* Icon circle */}
-                  <div style={{
-                    width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                    background: 'radial-gradient(circle, rgba(56,240,255,0.08) 0%, transparent 70%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginBottom: 14,
-                    transition: 'background 0.4s ease',
-                  }}>
-                    <item.icon
-                      size={20}
-                      color={active ? 'rgba(56,240,255,1)' : 'rgba(56,240,255,0.5)'}
-                      strokeWidth={1.5}
-                      style={{ transition: 'color 0.4s ease' }}
-                    />
-                  </div>
-
-                  {/* Text */}
-                  <p style={{
-                    color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.6)',
-                    fontWeight: 600, fontSize: 14, margin: '0 0 6px',
-                    fontFamily: 'var(--font-display)',
-                    transition: 'color 0.3s',
-                  }}>{item.title}</p>
-                  <p style={{
-                    color: 'rgba(255,255,255,0.35)',
-                    fontSize: 12, lineHeight: 1.55, margin: 0,
-                  }}>{item.desc}</p>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Progress dots */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16 }}>
-            {howItWorksSteps.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => { setActiveStep(i); stepPausedRef.current = true; }}
-                style={{
-                  width: activeStep === i ? 20 : 8,
-                  height: 8,
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  background: activeStep === i ? 'var(--stellar-teal)' : 'rgba(255,255,255,0.15)',
-                  transition: 'width 0.3s ease, background 0.3s ease',
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Section separator */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, margin: '-4px 0' }}>
-          <div style={{ width: 1, height: 32, background: 'linear-gradient(to bottom, transparent, rgba(56,240,255,0.15), transparent)' }} />
-        </div>
 
         {/* Tonight's Sky Preview Strip */}
         <div style={{
@@ -970,6 +857,95 @@ export default function HomePage() {
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, textAlign: 'center', margin: 0 }}>
               Observations sealed as NFTs on Solana
             </p>
+          </div>
+        </div>
+
+        {/* How It Works — 4 flip cards */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ width: 32, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12))' }} />
+            <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 11, fontWeight: 500, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+              {t('home.howItWorks')}
+            </span>
+            <div style={{ width: 32, height: 1, background: 'linear-gradient(90deg, rgba(255,255,255,0.12), transparent)' }} />
+          </div>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 12, margin: '0 0 18px', letterSpacing: '0.01em' }}>
+            Hover or tap a card to learn more
+          </p>
+
+          <div className="flip-grid">
+            {([
+              {
+                step: '01', Icon: Telescope, title: 'Observe', color: '#34d399',
+                back: 'Point your scope at any planet, cluster, or nebula. ASTRA guides you to tonight\'s best targets for your location.',
+              },
+              {
+                step: '02', Icon: Camera, title: 'Capture', color: '#38F0FF',
+                back: 'Photograph through the app. ASTRA identifies the object and verifies your sky conditions in seconds.',
+              },
+              {
+                step: '03', Icon: Orbit, title: 'Seal on Solana', color: '#a78bfa',
+                back: 'Your verified observation is minted as a compressed NFT on Solana — a permanent on-chain proof of your discovery.',
+              },
+              {
+                step: '04', Icon: ShoppingBag, title: 'Earn & Redeem', color: '#FFD166',
+                back: 'Stars tokens hit your wallet instantly. Spend them on real telescopes at Astroman.ge and partner stores worldwide.',
+              },
+            ] as const).map(({ step, Icon, title, color, back }, i) => (
+              <div
+                key={step}
+                className={`flip-card${flippedCards[i] ? ' flipped' : ''}`}
+                onClick={() => setFlippedCards(prev => prev.map((v, j) => j === i ? !v : v))}
+              >
+                <div className="flip-card-inner">
+                  {/* Front */}
+                  <div
+                    className="flip-card-front"
+                    style={{
+                      background: 'rgba(12,18,33,0.7)',
+                      border: `1px solid ${color}22`,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.03)`,
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: 14, left: 16,
+                      fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+                      color: 'rgba(255,255,255,0.2)',
+                    }}>{step}</span>
+                    <div style={{
+                      position: 'absolute', top: '50%', left: '50%',
+                      transform: 'translate(-50%, -55%)',
+                      width: 56, height: 56, borderRadius: '50%',
+                      background: `radial-gradient(circle, ${color}18 0%, transparent 70%)`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Icon size={26} color={color} strokeWidth={1.4} />
+                    </div>
+                    <p style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600, fontSize: 14, margin: 0, textAlign: 'center' }}>{title}</p>
+                    <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, margin: '4px 0 0', textAlign: 'center', letterSpacing: '0.05em' }}>tap to flip</p>
+                  </div>
+
+                  {/* Back */}
+                  <div
+                    className="flip-card-back"
+                    style={{
+                      background: `linear-gradient(135deg, ${color}0f 0%, rgba(12,18,33,0.9) 60%)`,
+                      border: `1px solid ${color}30`,
+                    }}
+                  >
+                    <span style={{
+                      display: 'inline-block', alignSelf: 'flex-start',
+                      fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+                      padding: '2px 8px', borderRadius: 6,
+                      background: `${color}18`, color,
+                    }}>{step}</span>
+                    <p style={{ color, fontWeight: 700, fontSize: 14, margin: 0 }}>{title}</p>
+                    <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, lineHeight: 1.6, margin: 0 }}>{back}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
