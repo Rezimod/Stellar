@@ -160,6 +160,7 @@ export default function Nav() {
           background: 'rgba(5, 8, 18, 0.95)',
           backdropFilter: 'blur(32px)',
           WebkitBackdropFilter: 'blur(32px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}
       >
         <div className="max-w-6xl mx-auto px-3">

@@ -6,33 +6,34 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import {
   CloudSun, Satellite, ShoppingBag, User, BookOpen,
-  Trophy, Map, MessageCircle, Telescope, LogOut, Settings,
+  Trophy, Map, MessageCircle, Telescope, LogOut, Settings, ChevronRight,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import AstroLogo from './AstroLogo';
 
-const NAV_SECTIONS = [
+const SECTIONS = [
   {
     label: 'Explore',
     links: [
-      { href: '/sky',         label: 'Sky Forecast',   icon: CloudSun,       desc: "Tonight's conditions" },
-      { href: '/missions',    label: 'Missions',        icon: Satellite,      desc: 'Observe & earn Stars' },
-      { href: '/learn',       label: 'Learning',        icon: BookOpen,       desc: 'Planets, quizzes & more' },
-      { href: '/darksky',     label: 'Dark Sky Map',    icon: Map,            desc: 'Find dark sky sites' },
-      { href: '/chat',        label: 'ASTRA AI',        icon: MessageCircle,  desc: 'AI space companion' },
+      { href: '/sky',         label: 'Sky Forecast',  icon: CloudSun },
+      { href: '/missions',    label: 'Missions',       icon: Satellite },
+      { href: '/learn',       label: 'Learning',       icon: BookOpen },
+      { href: '/darksky',     label: 'Dark Sky Map',   icon: Map },
+      { href: '/chat',        label: 'ASTRA AI',       icon: MessageCircle },
     ],
   },
   {
     label: 'Community',
     links: [
-      { href: '/leaderboard', label: 'Leaderboard',    icon: Trophy,         desc: 'Top observers' },
-      { href: '/nfts',        label: 'Discoveries',    icon: Satellite,      desc: 'On-chain NFTs' },
-      { href: '/club',        label: 'My Telescope',   icon: Telescope,      desc: 'Register your scope' },
+      { href: '/leaderboard', label: 'Leaderboard',   icon: Trophy },
+      { href: '/nfts',        label: 'Discoveries',   icon: Satellite },
+      { href: '/club',        label: 'My Telescope',  icon: Telescope },
     ],
   },
   {
     label: 'Shop',
     links: [
-      { href: '/marketplace', label: 'Marketplace',    icon: ShoppingBag,    desc: 'Shop telescopes' },
+      { href: '/marketplace', label: 'Marketplace',   icon: ShoppingBag },
     ],
   },
 ];
@@ -42,12 +43,22 @@ export default function DesktopSidebar() {
   const router = useRouter();
   const { authenticated, ready, login, logout, user } = usePrivy();
   const { setWallet } = useAppState();
+  const [collapsed, setCollapsed] = useState(true);
 
   const userEmail =
     user?.email?.address ??
     (user?.linkedAccounts?.find(a => a.type === 'email') as { address?: string } | undefined)?.address ??
     '';
   const username = userEmail ? userEmail.split('@')[0] : '';
+
+  useEffect(() => {
+    if (collapsed) {
+      document.body.classList.add('sidebar-collapsed');
+    } else {
+      document.body.classList.remove('sidebar-collapsed');
+    }
+    return () => { document.body.classList.remove('sidebar-collapsed'); };
+  }, [collapsed]);
 
   const handleLogout = async () => {
     await logout();
@@ -57,128 +68,238 @@ export default function DesktopSidebar() {
 
   return (
     <aside
-      className="hidden lg:flex flex-col fixed left-0 top-14 h-[calc(100vh-56px)] z-30 overflow-y-auto"
+      className="hidden lg:flex flex-col fixed left-0 top-14 h-[calc(100vh-56px)] z-30 overflow-hidden"
       style={{
-        width: 232,
-        background: 'rgba(5, 8, 18, 0.97)',
-        borderRight: '1px solid rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        scrollbarWidth: 'none',
+        width: collapsed ? 52 : 216,
+        transition: 'width 0.22s cubic-bezier(0.16,1,0.3,1)',
+        background: 'rgba(4, 6, 14, 0.98)',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
       }}
     >
       <style>{`
-        .sidebar-link { transition: background 0.15s ease, color 0.15s ease; border-left: 2px solid transparent; }
-        .sidebar-link:hover:not(.sidebar-link-active) {
-          background: rgba(56,240,255,0.04) !important;
-          border-left-color: rgba(56,240,255,0.25) !important;
-          color: rgba(255,255,255,0.85) !important;
+        .sb-link {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border-radius: 10px;
+          text-decoration: none;
+          transition: background 0.15s ease, color 0.15s ease;
+          white-space: nowrap;
+          overflow: hidden;
+          position: relative;
         }
-        .sidebar-link-active {
-          background: rgba(56,240,255,0.08) !important;
-          border-left-color: rgba(56,240,255,0.7) !important;
+        .sb-link:hover:not(.sb-link-active) {
+          background: rgba(56,240,255,0.06);
+        }
+        .sb-link-active {
+          background: rgba(56,240,255,0.1);
+        }
+        .sb-link-active .sb-icon {
           color: #38F0FF !important;
         }
-        .sidebar-section-label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.2);
-          padding: 0 16px;
-          margin: 16px 0 6px;
+        .sb-link-active .sb-label {
+          color: #38F0FF !important;
+        }
+        .sb-section {
+          border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 12px;
+          overflow: hidden;
+          background: rgba(255,255,255,0.015);
+        }
+        .sb-toggle {
+          transition: background 0.15s ease;
+          border-radius: 10px;
+          flex-shrink: 0;
+        }
+        .sb-toggle:hover {
+          background: rgba(255,255,255,0.06);
         }
       `}</style>
 
+      {/* Toggle button */}
+      <div style={{ padding: collapsed ? '10px 8px' : '10px 10px', flexShrink: 0 }}>
+        <button
+          onClick={() => setCollapsed(v => !v)}
+          className="sb-toggle w-full flex items-center gap-2.5"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: collapsed ? '6px 6px' : '6px 8px',
+            height: 36,
+            justifyContent: collapsed ? 'center' : 'space-between',
+          }}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {!collapsed && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ filter: 'drop-shadow(0 0 6px rgba(56,240,255,0.4))' }}>
+                <AstroLogo heightClass="h-5" />
+              </div>
+            </div>
+          )}
+          {/* Lines icon when collapsed, chevron when expanded */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: 3.5, flexShrink: 0,
+            alignItems: 'center', justifyContent: 'center',
+            width: 18,
+          }}>
+            {collapsed ? (
+              <>
+                <span style={{ display: 'block', width: 16, height: 1.5, borderRadius: 2, background: 'rgba(255,255,255,0.45)' }} />
+                <span style={{ display: 'block', width: 11, height: 1.5, borderRadius: 2, background: 'rgba(56,240,255,0.6)' }} />
+                <span style={{ display: 'block', width: 14, height: 1.5, borderRadius: 2, background: 'rgba(255,255,255,0.45)' }} />
+              </>
+            ) : (
+              <ChevronRight
+                size={14}
+                style={{ color: 'rgba(255,255,255,0.35)', transform: 'rotate(180deg)' }}
+              />
+            )}
+          </div>
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', flexShrink: 0, margin: '0 8px' }} />
+
       {/* Nav sections */}
-      <nav className="flex-1 py-3">
-        {NAV_SECTIONS.map(section => (
-          <div key={section.label}>
-            <p className="sidebar-section-label">{section.label}</p>
-            {section.links.map(link => {
-              const Icon = link.icon;
-              const isActive = link.href === '/'
-                ? pathname === '/'
-                : pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`sidebar-link flex items-center gap-3 px-4 py-2.5 mx-2 rounded-r-xl ${isActive ? 'sidebar-link-active' : ''}`}
-                  style={{ textDecoration: 'none' }}
-                >
-                  <Icon
-                    size={15}
-                    style={{ color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.35)', flexShrink: 0 }}
-                  />
-                  <div className="min-w-0">
-                    <p style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.75)',
-                      margin: 0,
-                      lineHeight: 1.2,
-                    }}>
-                      {link.label}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+      <nav
+        className="flex-1 overflow-y-auto"
+        style={{
+          padding: collapsed ? '10px 6px' : '10px 8px',
+          display: 'flex', flexDirection: 'column', gap: 8,
+          scrollbarWidth: 'none',
+        }}
+      >
+        {SECTIONS.map(section => (
+          <div key={section.label} className="sb-section">
+            {/* Section label — only when expanded */}
+            {!collapsed && (
+              <div style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)',
+                padding: '8px 10px 4px',
+              }}>
+                {section.label}
+              </div>
+            )}
+            <div style={{ padding: collapsed ? '4px' : '4px 4px' }}>
+              {section.links.map(link => {
+                const Icon = link.icon;
+                const isActive = pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`sb-link ${isActive ? 'sb-link-active' : ''}`}
+                    style={{
+                      padding: collapsed ? '8px 6px' : '7px 8px',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      marginBottom: 1,
+                    }}
+                    title={collapsed ? link.label : undefined}
+                  >
+                    <Icon
+                      size={15}
+                      className="sb-icon"
+                      style={{
+                        color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.38)',
+                        flexShrink: 0,
+                        transition: 'color 0.15s',
+                      }}
+                    />
+                    {!collapsed && (
+                      <span
+                        className="sb-label"
+                        style={{
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.68)',
+                          transition: 'color 0.15s',
+                          letterSpacing: '0.01em',
+                        }}
+                      >
+                        {link.label}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         ))}
       </nav>
 
-      {/* Bottom: auth */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 8px' }}>
+      {/* Bottom auth */}
+      <div style={{
+        flexShrink: 0,
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        padding: collapsed ? '8px 6px' : '8px 8px',
+      }}>
         {!ready ? null : authenticated ? (
-          <>
+          <div className="sb-section" style={{ padding: collapsed ? '4px' : '4px' }}>
             <Link
               href="/profile"
-              className="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl"
-              style={{ textDecoration: 'none' }}
+              className="sb-link"
+              style={{
+                padding: collapsed ? '7px 6px' : '7px 8px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                marginBottom: 1,
+              }}
+              title={collapsed ? (username || 'Profile') : undefined}
             >
               <User size={14} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.65)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {username || 'Profile'}
-              </span>
+              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username || 'Profile'}</span>}
             </Link>
             <Link
               href="/profile?tab=settings"
-              className="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl"
-              style={{ textDecoration: 'none' }}
+              className="sb-link"
+              style={{
+                padding: collapsed ? '7px 6px' : '7px 8px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                marginBottom: 1,
+              }}
+              title={collapsed ? 'Settings' : undefined}
             >
               <Settings size={14} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>Settings</span>
+              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>Settings</span>}
             </Link>
             <button
               onClick={handleLogout}
-              className="sidebar-link w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+              className="sb-link w-full"
+              style={{
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: collapsed ? '7px 6px' : '7px 8px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+              }}
+              title={collapsed ? 'Sign out' : undefined}
             >
-              <LogOut size={14} style={{ color: 'rgba(248,113,113,0.6)', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(248,113,113,0.7)' }}>Sign out</span>
+              <LogOut size={14} style={{ color: 'rgba(248,113,113,0.55)', flexShrink: 0 }} />
+              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(248,113,113,0.65)' }}>Sign out</span>}
             </button>
-          </>
+          </div>
         ) : (
           <button
             onClick={() => login()}
-            className="w-full"
             style={{
-              padding: '9px 16px', borderRadius: 10, cursor: 'pointer',
-              background: 'rgba(124,58,237,0.15)',
-              border: '1px solid rgba(124,58,237,0.45)',
+              width: '100%',
+              padding: collapsed ? '8px 4px' : '8px 12px',
+              borderRadius: 10, cursor: 'pointer',
+              background: 'rgba(124,58,237,0.14)',
+              border: '1px solid rgba(124,58,237,0.4)',
               color: '#c4b5fd',
-              fontSize: 13, fontWeight: 700,
+              fontSize: 12, fontWeight: 700,
               letterSpacing: '0.04em',
+              whiteSpace: 'nowrap', overflow: 'hidden',
             }}
+            title={collapsed ? 'Log In' : undefined}
           >
-            Log In
+            {collapsed ? (
+              <User size={14} style={{ display: 'block', margin: '0 auto', color: '#c4b5fd' }} />
+            ) : 'Log In'}
           </button>
         )}
-        <p style={{ color: 'rgba(255,255,255,0.12)', fontSize: 10, textAlign: 'center', marginTop: 10, letterSpacing: '0.04em' }}>
-          © 2026 Stellar · Built on Solana
-        </p>
       </div>
     </aside>
   );

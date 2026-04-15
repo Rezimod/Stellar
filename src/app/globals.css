@@ -716,3 +716,14 @@ input, select, textarea { font-size: 16px !important; }
 
 /* --- Selection color --- */
 ::selection { background: var(--accent-dim); color: var(--accent); }
+
+/* --- Desktop sidebar offset --- */
+@media (min-width: 1024px) {
+  .sidebar-main-offset {
+    margin-left: 216px;
+    transition: margin-left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  body.sidebar-collapsed .sidebar-main-offset {
+    margin-left: 52px;
+  }
+}

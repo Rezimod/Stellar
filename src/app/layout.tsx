@@ -108,7 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <PullToRefresh />
                 <DesktopSidebar />
                 <SwipeBack>
-                  <main className="relative z-10 flex-1 pt-14 pb-24 sm:pb-0 lg:ml-[232px]">
+                  <main className="relative z-10 flex-1 pt-14 pb-24 sm:pb-0 sidebar-main-offset">
                     <PageTransition>{children}</PageTransition>
                   </main>
                 </SwipeBack>

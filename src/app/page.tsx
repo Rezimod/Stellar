@@ -7,7 +7,6 @@ import Link from 'next/link';
 
 import { useTranslations } from 'next-intl';
 import HomeSkyPreview from '@/components/home/HomeSkyPreview';
-import LiveStatsBar from '@/components/home/LiveStatsBar';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { Telescope, Camera, Star, ShoppingBag, CloudSun, Sparkles, Moon, Lock, Orbit } from 'lucide-react';
@@ -352,11 +351,12 @@ export default function HomePage() {
         className="hero-section"
         style={{
           position: 'relative',
-          minHeight: 'calc(100dvh - 64px)',
+          minHeight: 'calc(100dvh - 56px)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           background: '#070B14',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
         }}
       >
         {/* Canvas starfield */}
@@ -539,10 +539,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <LiveStatsBar />
 
       {/* Remaining sections */}
-      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-1 pb-4 sm:pb-8 flex flex-col items-center gap-5 sm:gap-8 animate-page-enter overflow-x-hidden">
+      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-6 pb-8 sm:pb-12 flex flex-col gap-6 sm:gap-8 animate-page-enter" style={{ overflowX: 'clip' }}>
 
         {/* How It Works — 4 step cards */}
         <div id="how-it-works" className="w-full"
