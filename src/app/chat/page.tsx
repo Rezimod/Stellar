@@ -138,7 +138,7 @@ export default function ChatPage() {
         <div>
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>ASTRA</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>
-            {locale === 'ka' ? 'AI ასტრონომი · Claude-ით' : 'AI Astronomer · Powered by Claude'}
+            {locale === 'ka' ? 'AI ასტრონომი · ონლაინ' : 'AI Astronomer · Online'}
           </p>
         </div>
 

@@ -90,6 +90,8 @@ export default function HomePage() {
   const heroRef = useRef<HTMLElement>(null);
   const [activeStep, setActiveStep] = useState(0);
   const stepPausedRef = useRef(false);
+  const [liveLeaders, setLiveLeaders] = useState<{ handle: string; observations: number; stars: number }[]>([]);
+  const [leadersLoading, setLeadersLoading] = useState(true);
 
   const { location } = useLocation();
 
@@ -186,6 +188,21 @@ export default function HomePage() {
       }
     }, 3500);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/leaderboard?period=all&limit=3')
+      .then(r => r.json())
+      .then(data => {
+        const entries = (data.leaderboard ?? []).slice(0, 3).map((e: { wallet: string; observations: number; total_stars: number }) => ({
+          handle: e.wallet.length > 8 ? `${e.wallet.slice(0, 4)}…${e.wallet.slice(-4)}` : e.wallet,
+          observations: e.observations,
+          stars: e.total_stars,
+        }));
+        setLiveLeaders(entries);
+      })
+      .catch(() => setLiveLeaders([]))
+      .finally(() => setLeadersLoading(false));
   }, []);
 
   const stepIcons = [Telescope, Camera, Star, ShoppingBag];
@@ -817,20 +834,30 @@ export default function HomePage() {
               gap: 12,
               flex: 1,
             }}>
-              {[
-                { medal: '🥇', name: 'AstroNova', obs: 12, stars: 1240 },
-                { medal: '🥈', name: 'CosmicRezi', obs: 8, stars: 890 },
-                { medal: '🥉', name: 'StarGazer_GE', obs: 5, stars: 620 },
-              ].map(entry => (
-                <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 16 }}>{entry.medal}</span>
-                  <span style={{ color: 'white', fontSize: 13, flex: 1 }}>{entry.name}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>{entry.obs} obs · {entry.stars} ✦</span>
+              {leadersLoading ? (
+                [0,1,2].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                    <div style={{ width: 20, height: 14, borderRadius: 4, background: 'rgba(255,255,255,0.05)', animation: 'pulse 2s ease-in-out infinite' }} />
+                    <div style={{ flex: 1, height: 13, borderRadius: 4, background: 'rgba(255,255,255,0.04)', animation: 'pulse 2s ease-in-out infinite' }} />
+                    <div style={{ width: 60, height: 11, borderRadius: 4, background: 'rgba(255,255,255,0.03)', animation: 'pulse 2s ease-in-out infinite' }} />
+                  </div>
+                ))
+              ) : liveLeaders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+                  No observers yet — be the first!
                 </div>
-              ))}
-              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, margin: '4px 0 0', textAlign: 'center' }}>
-                Real rankings update daily
-              </p>
+              ) : (
+                liveLeaders.map((entry, i) => {
+                  const medals = ['🥇', '🥈', '🥉'];
+                  return (
+                    <div key={entry.handle} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 16 }}>{medals[i]}</span>
+                      <span style={{ color: 'white', fontSize: 13, flex: 1, fontFamily: 'var(--font-mono)' }}>{entry.handle}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>{entry.observations} obs · {entry.stars} ✦</span>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, textAlign: 'center', margin: 0 }}>
