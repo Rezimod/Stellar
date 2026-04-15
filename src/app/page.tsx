@@ -385,102 +385,164 @@ export default function HomePage() {
           pointerEvents: 'none', zIndex: 0,
         }} />
 
-        {/* Hero content */}
-        <div style={{
-          position: 'relative',
-          zIndex: 1,
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          gap: 24,
-          padding: '16px 16px 32px',
-        }}>
-          {/* Headline */}
-          <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(2.2rem, 6vw, 4rem)',
-            fontWeight: 800,
-            lineHeight: 1.1,
-            margin: 0,
-          }}>
-            <span className="hero-line-1" style={{ display: 'block', color: 'rgba(255,255,255,0.9)' }}>
-              Observe the
-            </span>
-            <span className="hero-line-2 night-sky-text" style={{ display: 'block', color: '#34d399', cursor: 'default', transition: 'color 0.3s ease' }}>
-              Night Sky.
-            </span>
-            <span className="hero-line-3 earn-rewards-text" style={{ display: 'block' }}>
-              Earn rewards.
-            </span>
-          </h1>
+        {/* Hero content — mobile: centered column | lg: two-column */}
+        <div className="hero-inner" style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', alignItems: 'center', padding: '16px 16px 32px' }}>
+          <style>{`
+            .hero-inner { flex-direction: column; text-align: center; justify-content: center; gap: 24px; }
+            @media (min-width: 1024px) {
+              .hero-inner { flex-direction: row; text-align: left; justify-content: center; gap: 0; max-width: 1000px; margin: 0 auto; width: 100%; padding: 48px 48px 56px; }
+              .hero-left { flex: 1; display: flex; flex-direction: column; gap: 22px; align-items: flex-start; padding-right: 56px; }
+              .hero-right { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+              .hero-tagline-center { align-self: flex-start !important; }
+              .hero-cta-row { justify-content: flex-start !important; }
+            }
+            @media (max-width: 1023px) {
+              .hero-left { display: contents; }
+              .hero-right { display: none; }
+            }
+          `}</style>
 
-          {/* Tagline */}
-          <p style={{
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: '0.12em',
-            color: 'rgba(52,211,153,0.7)',
-            margin: '-8px 0 0',
-            textTransform: 'uppercase',
-          }}>
-            Observe <span className="tagline-star-1" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Verify <span className="tagline-star-2" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Earn Stars <span className="tagline-star-3" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span>
-          </p>
+          {/* Left: text content */}
+          <div className="hero-left">
+            {/* Headline */}
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(2.2rem, 5vw, 3.6rem)',
+              fontWeight: 800,
+              lineHeight: 1.1,
+              margin: 0,
+            }}>
+              <span className="hero-line-1" style={{ display: 'block', color: 'rgba(255,255,255,0.9)' }}>
+                Observe the
+              </span>
+              <span className="hero-line-2 night-sky-text" style={{ display: 'block', color: '#34d399', cursor: 'default', transition: 'color 0.3s ease' }}>
+                Night Sky.
+              </span>
+              <span className="hero-line-3 earn-rewards-text" style={{ display: 'block' }}>
+                Earn rewards.
+              </span>
+            </h1>
 
-          {/* Sky Score pill */}
+            {/* Tagline */}
+            <p className="hero-tagline-center" style={{
+              fontSize: 13, fontWeight: 600, letterSpacing: '0.12em',
+              color: 'rgba(52,211,153,0.7)', margin: '-8px 0 0', textTransform: 'uppercase',
+            }}>
+              Observe <span className="tagline-star-1" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Verify <span className="tagline-star-2" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span> Earn Stars <span className="tagline-star-3" style={{ color: '#38F0FF', margin: '0 2px' }}>✦</span>
+            </p>
+
+            {/* Sub-copy */}
+            <p style={{ maxWidth: 480, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: 0 }}>
+              Observe the night sky. Get AI-verified by ASTRA. Earn Stars tokens and compressed NFTs sealed on Solana — redeemable for real telescopes at Astroman.ge and partner stores worldwide.
+            </p>
+
+            <LocationPicker compact />
+
+            {/* CTA row */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <div className="hero-cta-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none' }}>
+                  Start Observing →
+                </Link>
+                <Link href="/sky" className="btn-ghost" style={{ textDecoration: 'none' }}>
+                  Tonight&apos;s Sky →
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: live stats panel — desktop only */}
+          <div className="hero-right">
+            {/* Sky score */}
+            {heroSkyScore && (
+              <div style={{
+                padding: '20px 24px', borderRadius: 20,
+                background: 'rgba(12,18,33,0.7)',
+                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                border: `1px solid ${heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.2)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                display: 'flex', flexDirection: 'column', gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 28 }}>{heroSkyScore.emoji}</span>
+                  <div>
+                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Sky Score Tonight</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.5)', fontSize: 36, fontWeight: 700, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{heroSkyScore.score}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>/100</span>
+                    </div>
+                    <div style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 600 }}>{heroSkyScore.grade} conditions</div>
+                  </div>
+                </div>
+                <Link href="/sky" style={{ display: 'block', textAlign: 'center', padding: '8px', borderRadius: 10, background: 'rgba(56,240,255,0.06)', border: '1px solid rgba(56,240,255,0.15)', color: '#38F0FF', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                  Full forecast →
+                </Link>
+              </div>
+            )}
+
+            {/* Top observers */}
+            {liveLeaders.length > 0 && (
+              <div style={{
+                padding: '18px 20px', borderRadius: 20,
+                background: 'rgba(12,18,33,0.7)',
+                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', flexDirection: 'column', gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Top Observers</span>
+                  <Link href="/leaderboard" style={{ color: 'rgba(56,240,255,0.7)', fontSize: 11, textDecoration: 'none' }}>View all →</Link>
+                </div>
+                {liveLeaders.map((leader, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ color: i === 0 ? '#FFD166' : 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: 700, width: 16, textAlign: 'center' }}>{i + 1}</span>
+                    <span style={{ flex: 1, color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{leader.handle}</span>
+                    <span style={{ color: '#FFD166', fontSize: 12, fontWeight: 700 }}>{leader.stars.toLocaleString()} ✦</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ASTRA quick link */}
+            <Link href="/chat" style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderRadius: 16,
+              background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)',
+              textDecoration: 'none', transition: 'border-color 0.2s',
+            }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,58,237,0.4)'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,58,237,0.2)'; }}
+            >
+              <span style={{ fontSize: 22 }}>🤖</span>
+              <div>
+                <div style={{ color: '#c4b5fd', fontSize: 13, fontWeight: 700 }}>Ask ASTRA</div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>AI space companion</div>
+              </div>
+              <span style={{ marginLeft: 'auto', color: 'rgba(124,58,237,0.6)', fontSize: 16 }}>→</span>
+            </Link>
+          </div>
+
+          {/* Sky Score pill — mobile/tablet only */}
           {heroSkyScore && (
-            <div style={{
+            <div className="lg:hidden" style={{
               display: 'inline-flex', alignItems: 'center', gap: 12,
               padding: '10px 20px', borderRadius: 999,
               background: heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.08)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.08)' : 'rgba(255,255,255,0.04)',
               border: `1px solid ${heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.2)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.2)' : 'rgba(255,255,255,0.08)'}`,
             }}>
               <span style={{ fontSize: 16 }}>{heroSkyScore.emoji}</span>
-              <span style={{
-                color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.5)',
-                fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', lineHeight: 1,
-              }}>{heroSkyScore.score}</span>
+              <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.5)', fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{heroSkyScore.score}</span>
               <div>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600 }}>{heroSkyScore.grade} sky tonight</div>
                 <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>Sky Score · Your location</div>
               </div>
             </div>
           )}
-
-          {/* Sub-copy */}
-          <p style={{
-            maxWidth: 480,
-            lineHeight: 1.7,
-            color: 'rgba(255,255,255,0.55)',
-            fontSize: 14,
-            margin: 0,
-          }}>
-            Observe the night sky. Get AI-verified by ASTRA. Earn Stars tokens and compressed NFTs sealed on Solana — redeemable for real telescopes at Astroman.ge and partner stores worldwide.
-          </p>
-
-          <LocationPicker compact />
-
-          {/* CTA row */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none' }}>
-                Start Observing →
-              </Link>
-              <Link href="/sky" className="btn-ghost" style={{ textDecoration: 'none' }}>
-                Tonight&apos;s Sky →
-              </Link>
-            </div>
-          </div>
-
         </div>
       </section>
 
       <LiveStatsBar />
 
       {/* Remaining sections */}
-      <div className="max-w-3xl w-full mx-auto px-4 pt-1 pb-4 sm:pb-8 flex flex-col items-center gap-5 sm:gap-8 animate-page-enter overflow-x-hidden">
+      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-1 pb-4 sm:pb-8 flex flex-col items-center gap-5 sm:gap-8 animate-page-enter overflow-x-hidden">
 
         {/* How It Works — 4 step cards */}
         <div id="how-it-works" className="w-full"

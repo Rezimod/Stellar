@@ -165,10 +165,10 @@ export default function Nav() {
         <div className="max-w-6xl mx-auto px-3">
           <div className="h-14 flex items-center gap-2">
 
-            {/* Hamburger — always visible */}
+            {/* Hamburger — mobile + tablet only */}
             <button
               onClick={() => setDrawerOpen(true)}
-              className="nav-icon-btn w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0"
+              className="nav-icon-btn lg:hidden w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0"
               style={{ color: 'rgba(255,255,255,0.55)', background: 'transparent' }}
               aria-label="Open navigation"
             >
@@ -191,18 +191,18 @@ export default function Nav() {
               </Link>
             </div>
 
-            {/* Search icon — right of logo */}
+            {/* Search icon — mobile/tablet only (desktop search is in right cluster) */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="nav-icon-btn w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0"
+              className="nav-icon-btn lg:hidden w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0"
               style={{ color: 'rgba(255,255,255,0.5)', background: 'transparent' }}
               aria-label="Search"
             >
               <Search size={16} />
             </button>
 
-            {/* Nav tabs — desktop only, centered */}
-            <div className="hidden sm:flex flex-1 items-center justify-center gap-1">
+            {/* Nav tabs — sm/md only (lg+ uses sidebar) */}
+            <div className="hidden sm:flex lg:hidden flex-1 items-center justify-center gap-1">
               {tabs.map(tab => {
                 const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
                 return (
@@ -230,8 +230,17 @@ export default function Nav() {
               })}
             </div>
 
-            {/* Right: profile / login */}
-            <div className="ml-auto sm:ml-0 flex items-center flex-shrink-0 z-10">
+            {/* Right: search (desktop) + profile / login */}
+            <div className="ml-auto flex items-center gap-1 flex-shrink-0 z-10">
+              {/* Search — desktop only */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="nav-icon-btn hidden lg:flex w-9 h-9 items-center justify-center rounded-xl"
+                style={{ color: 'rgba(255,255,255,0.5)', background: 'transparent' }}
+                aria-label="Search"
+              >
+                <Search size={16} />
+              </button>
               {!ready ? (
                 <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
               ) : authenticated ? (

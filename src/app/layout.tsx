@@ -40,6 +40,7 @@ import { AppStateProvider } from '@/hooks/useAppState';
 import WalletSync from '@/components/providers/WalletSync';
 import SwipeBack from '@/components/providers/SwipeBack';
 import Nav from '@/components/shared/Nav';
+import DesktopSidebar from '@/components/shared/DesktopSidebar';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
@@ -105,8 +106,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Nav />
                 <OfflineBanner />
                 <PullToRefresh />
+                <DesktopSidebar />
                 <SwipeBack>
-                  <main className="relative z-10 flex-1 pt-14 pb-24 sm:pb-0">
+                  <main className="relative z-10 flex-1 pt-14 pb-24 sm:pb-0 lg:ml-[232px]">
                     <PageTransition>{children}</PageTransition>
                   </main>
                 </SwipeBack>

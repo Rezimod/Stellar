@@ -46,7 +46,7 @@ export default function Footer() {
       }}
     >
       {/* Desktop — 4-column */}
-      <div className="hidden sm:block max-w-5xl mx-auto px-6 py-12">
+      <div className="hidden sm:block max-w-5xl mx-auto px-6 py-12 lg:ml-[232px] lg:mx-0 lg:max-w-none lg:pr-12">
         <div className="grid grid-cols-4 gap-8 mb-10">
           {columns.map(col => (
             <div key={col.title}>
