@@ -849,6 +849,27 @@ const TAB_CONFIG: { id: Tab; Icon: React.FC<{ size?: number }>; en: string; ka: 
   { id: 'guide',      Icon: BookOpen,   en: 'Guide',       ka: 'გზამკვლევი' },
 ];
 
+// ─── Hero star positions (fixed to avoid hydration mismatch) ─────────────────
+
+const HERO_STARS = [
+  { x:  8, y: 12, size: 1.5, dur: 3.2, delay: 0.0  },
+  { x: 22, y: 28, size: 1.0, dur: 2.8, delay: 0.5  },
+  { x: 38, y:  8, size: 2.0, dur: 4.1, delay: 1.1  },
+  { x: 55, y: 18, size: 1.0, dur: 3.5, delay: 0.7  },
+  { x: 72, y: 10, size: 1.5, dur: 2.6, delay: 1.9  },
+  { x: 87, y: 22, size: 1.0, dur: 3.8, delay: 0.3  },
+  { x: 93, y:  5, size: 1.5, dur: 4.5, delay: 2.1  },
+  { x: 14, y: 55, size: 1.0, dur: 3.1, delay: 1.4  },
+  { x: 48, y: 72, size: 1.5, dur: 2.9, delay: 0.8  },
+  { x: 78, y: 65, size: 1.0, dur: 3.7, delay: 1.6  },
+  { x: 62, y: 85, size: 2.0, dur: 4.2, delay: 0.4  },
+  { x: 30, y: 90, size: 1.0, dur: 3.3, delay: 2.0  },
+  { x:  5, y: 80, size: 1.5, dur: 2.7, delay: 1.2  },
+  { x: 96, y: 75, size: 1.0, dur: 4.0, delay: 0.6  },
+  { x: 50, y: 45, size: 1.5, dur: 3.6, delay: 1.8  },
+  { x: 25, y: 40, size: 1.0, dur: 2.5, delay: 0.9  },
+];
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function LearnPage() {
@@ -876,50 +897,200 @@ export default function LearnPage() {
       <div className="max-w-2xl mx-auto px-4 py-6 animate-page-enter flex flex-col gap-5">
         <BackButton />
 
-        {/* Header — centered */}
-        <div className="relative flex flex-col items-center text-center gap-1 py-2">
-          <h1
-            className="text-3xl font-bold text-white"
-            style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 40px rgba(56,240,255,0.15)' }}
-          >
-            {locale === 'ka' ? 'სწავლა' : 'Learn'}
-          </h1>
-          <p className="text-slate-500 text-sm">
-            {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
-          </p>
-          {/* Kids mode button — absolute top-right */}
+        {/* ── Premium animated hero ── */}
+        <style>{`
+          @keyframes learnOrb1 {
+            0%,100% { transform:translate(0,0) scale(1); opacity:.7; }
+            33%      { transform:translate(14px,-10px) scale(1.06); opacity:.9; }
+            66%      { transform:translate(-8px,12px) scale(.96); opacity:.75; }
+          }
+          @keyframes learnOrb2 {
+            0%,100% { transform:translate(0,0) scale(1); opacity:.55; }
+            40%      { transform:translate(-12px,9px) scale(1.04); opacity:.75; }
+            70%      { transform:translate(10px,-14px) scale(.97); opacity:.6; }
+          }
+          @keyframes learnOrb3 {
+            0%,100% { transform:translate(0,0) scale(1); }
+            50%      { transform:translate(8px,-6px) scale(1.08); }
+          }
+          @keyframes starTwinkle {
+            0%,100% { opacity:.3; transform:scale(1); }
+            50%      { opacity:1; transform:scale(1.5); }
+          }
+          @keyframes heroShimmer {
+            from { background-position:-200% 0; }
+            to   { background-position:200% 0; }
+          }
+          @keyframes liveRing {
+            0%   { transform:scale(1);   opacity:.8; }
+            100% { transform:scale(2.2); opacity:0; }
+          }
+          @keyframes hIn0 { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+          @keyframes hIn1 { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
+          @keyframes hIn2 { from{opacity:0;transform:translateY(8px);}  to{opacity:1;transform:translateY(0);} }
+          @keyframes hIn3 { from{opacity:0;}                             to{opacity:1;} }
+        `}</style>
+
+        <div
+          className="relative overflow-hidden rounded-2xl"
+          style={{
+            background: 'linear-gradient(155deg, #0c1122 0%, #080b1a 55%, #0b0a1f 100%)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            boxShadow: '0 0 0 1px rgba(124,58,237,0.07), 0 24px 56px rgba(0,0,0,0.7)',
+            minHeight: '192px',
+            padding: '20px 20px 28px',
+          }}
+        >
+          {/* Top shimmer seam */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.55) 30%, rgba(56,240,255,0.55) 70%, transparent 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'heroShimmer 3.5s linear infinite',
+          }} />
+
+          {/* Violet orb — top-left */}
+          <div style={{
+            position: 'absolute', top: '-50px', left: '-50px',
+            width: '240px', height: '240px',
+            background: 'radial-gradient(circle, rgba(124,58,237,0.24) 0%, transparent 65%)',
+            filter: 'blur(30px)',
+            animation: 'learnOrb1 9s ease-in-out infinite',
+            pointerEvents: 'none',
+          }} />
+          {/* Cyan orb — bottom-right */}
+          <div style={{
+            position: 'absolute', bottom: '-55px', right: '-35px',
+            width: '260px', height: '200px',
+            background: 'radial-gradient(circle, rgba(56,240,255,0.15) 0%, transparent 65%)',
+            filter: 'blur(34px)',
+            animation: 'learnOrb2 11s ease-in-out infinite',
+            pointerEvents: 'none',
+          }} />
+          {/* Lavender accent orb — center-right */}
+          <div style={{
+            position: 'absolute', top: '15%', right: '12%',
+            width: '110px', height: '110px',
+            background: 'radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%)',
+            filter: 'blur(22px)',
+            animation: 'learnOrb3 7s ease-in-out infinite 2s',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Stars */}
+          {HERO_STARS.map((s, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              left: `${s.x}%`, top: `${s.y}%`,
+              width: `${s.size}px`, height: `${s.size}px`,
+              borderRadius: '50%',
+              background: i % 3 === 0 ? '#a78bfa' : i % 3 === 1 ? '#38F0FF' : '#ffffff',
+              animation: `starTwinkle ${s.dur}s ease-in-out infinite ${s.delay}s`,
+              pointerEvents: 'none',
+            }} />
+          ))}
+
+          {/* Kids mode toggle */}
           <button
             onClick={() => setKidsMode(k => !k)}
-            className="absolute right-0 top-1 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-            style={kidsMode ? {
-              background: 'rgba(255,209,102,0.15)',
-              border: '1px solid rgba(255,209,102,0.4)',
-              color: '#FFD166',
-            } : {
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#64748b',
+            className="absolute right-4 top-4 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-medium transition-all"
+            style={{
+              background: kidsMode ? 'rgba(255,209,102,0.12)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${kidsMode ? 'rgba(255,209,102,0.35)' : 'rgba(255,255,255,0.1)'}`,
+              color: kidsMode ? '#FFD166' : '#4b5563',
+              zIndex: 2,
             }}
           >
-            {kidsMode ? <Star size={12} /> : <Moon size={12} />}
-            <span className="hidden sm:inline">{kidsMode
-              ? (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode ON')
-              : (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode')}</span>
+            {kidsMode ? <Star size={11} /> : <Moon size={11} />}
+            <span className="hidden sm:inline">
+              {kidsMode
+                ? (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode ON')
+                : (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode')}
+            </span>
           </button>
-        </div>
 
-        {completedQuizzes.length > 0 && (
-          <div className="flex items-center justify-center gap-3 text-xs -mt-3">
-            <span className="flex items-center gap-1.5 text-slate-500">
-              <span style={{ color: '#34d399' }}>✓</span>
-              {completedQuizzes.length} {locale === 'ka' ? 'ქვიზი დასრულებული' : 'quizzes completed'}
-            </span>
-            <span className="text-white/10">·</span>
-            <span style={{ color: '#FFD166' }}>
-              ✦ {completedQuizzes.reduce((sum, r) => sum + r.stars, 0)} earned
-            </span>
+          {/* Main content */}
+          <div className="relative flex flex-col items-center text-center" style={{ zIndex: 1, paddingTop: '2px' }}>
+            {/* Eyebrow pill */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '7px',
+              padding: '3px 13px', borderRadius: '999px', marginBottom: '14px',
+              background: 'rgba(56,240,255,0.07)',
+              border: '1px solid rgba(56,240,255,0.18)',
+              animation: 'hIn0 0.5s cubic-bezier(0.16,1,0.3,1) both',
+            }}>
+              <span style={{
+                width: '6px', height: '6px', borderRadius: '50%',
+                background: '#38F0FF',
+                display: 'inline-block',
+                boxShadow: '0 0 7px rgba(56,240,255,0.9)',
+              }} />
+              <span style={{
+                fontSize: '10px', color: 'rgba(56,240,255,0.78)',
+                letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
+              }}>
+                {locale === 'ka' ? 'სასწავლო ცენტრი' : 'Astronomy Academy'}
+              </span>
+            </div>
+
+            {/* Title */}
+            <h1 style={{
+              fontSize: 'clamp(2.1rem, 9vw, 2.75rem)',
+              fontWeight: 800,
+              fontFamily: 'Georgia, serif',
+              background: 'linear-gradient(135deg, #ffffff 15%, #c4b5fd 52%, #38F0FF 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              lineHeight: 1.05,
+              marginBottom: '9px',
+              letterSpacing: '-0.01em',
+              animation: 'hIn1 0.55s cubic-bezier(0.16,1,0.3,1) 0.07s both',
+            }}>
+              {locale === 'ka' ? 'სწავლა' : 'Learn'}
+            </h1>
+
+            {/* Subtitle */}
+            <p style={{
+              color: '#3f4f66',
+              fontSize: '13px',
+              lineHeight: 1.5,
+              animation: 'hIn2 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s both',
+            }}>
+              {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
+            </p>
+
+            {/* Stats pills */}
+            {completedQuizzes.length > 0 && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginTop: '16px',
+                animation: 'hIn3 0.65s ease-out 0.3s both',
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '5px',
+                  padding: '4px 10px', borderRadius: '999px',
+                  background: 'rgba(52,211,153,0.08)',
+                  border: '1px solid rgba(52,211,153,0.2)',
+                  fontSize: '11px', color: '#34d399', fontWeight: 500,
+                }}>
+                  <span>✓</span>
+                  <span>{completedQuizzes.length} {locale === 'ka' ? 'ქვიზი' : 'quizzes'}</span>
+                </div>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '5px',
+                  padding: '4px 10px', borderRadius: '999px',
+                  background: 'rgba(255,209,102,0.08)',
+                  border: '1px solid rgba(255,209,102,0.2)',
+                  fontSize: '11px', color: '#FFD166', fontWeight: 500,
+                }}>
+                  <span>✦</span>
+                  <span>{completedQuizzes.reduce((s, r) => s + r.stars, 0)} {locale === 'ka' ? 'ვარსკვლავი' : 'earned'}</span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         <TonightsBanner locale={locale} />
 
