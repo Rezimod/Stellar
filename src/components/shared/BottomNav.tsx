@@ -24,13 +24,13 @@ export default function BottomNav() {
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 10px)',
       }}
     >
       <div
         style={{
           display: 'flex',
-          height: 60,
+          height: 68,
         }}
       >
         {TABS.map(tab => {
@@ -72,13 +72,13 @@ export default function BottomNav() {
               )}
 
               <Icon
-                size={22}
+                size={26}
                 strokeWidth={isActive ? 2 : 1.5}
                 color={isActive ? '#34d399' : 'rgba(255,255,255,0.38)'}
               />
 
               <span style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: isActive ? 600 : 400,
                 color: isActive ? '#ffffff' : 'rgba(255,255,255,0.38)',
                 letterSpacing: '0.01em',
