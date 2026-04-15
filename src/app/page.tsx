@@ -570,7 +570,9 @@ export default function HomePage() {
               onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,58,237,0.4)'; }}
               onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,58,237,0.2)'; }}
             >
-              <span style={{ fontSize: 22 }}>🤖</span>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,58,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <MessageCircle size={18} color="#c4b5fd" strokeWidth={1.5} />
+              </div>
               <div>
                 <div style={{ color: '#c4b5fd', fontSize: 13, fontWeight: 700 }}>Ask ASTRA</div>
                 <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>AI space companion</div>
@@ -582,30 +584,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Sky score strip — clean bar between hero and content */}
-      {heroSkyScore && (
-        <div style={{
-          background: heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.06)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.06)' : 'rgba(255,255,255,0.03)',
-          borderBottom: `1px solid ${heroSkyScore.score >= 70 ? 'rgba(52,211,153,0.12)' : heroSkyScore.score >= 50 ? 'rgba(255,209,102,0.12)' : 'rgba(255,255,255,0.06)'}`,
-        }}>
-          <div style={{ maxWidth: 720, margin: '0 auto', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 18 }}>{heroSkyScore.emoji}</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.45)', fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{heroSkyScore.score}</span>
-                <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>/100</span>
-              </div>
-              <span style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 600 }}>{heroSkyScore.grade} sky tonight</span>
-            </div>
-            <Link href="/sky" style={{ color: 'rgba(56,240,255,0.7)', fontSize: 12, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
-              Full forecast →
-            </Link>
-          </div>
-        </div>
-      )}
-
       {/* Remaining sections */}
-      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-6 pb-8 sm:pb-12 flex flex-col gap-6 sm:gap-8 animate-page-enter" style={{ overflowX: 'clip' }}>
+      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-4 pb-8 sm:pb-12 flex flex-col gap-4 animate-page-enter" style={{ overflowX: 'clip', overflow: 'hidden' }}>
 
         {/* Tonight's Sky Preview Strip */}
         <div style={{
@@ -1255,7 +1235,7 @@ export default function HomePage() {
             maxWidth: 560,
             margin: '0 auto',
           }}>
-            <span style={{ fontSize: 24 }}>🔭</span>
+            <Telescope size={20} color="rgba(56,240,255,0.5)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, margin: 0, flex: 1 }}>
               Shop telescopes from partner stores worldwide
             </p>
