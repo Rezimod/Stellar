@@ -6,6 +6,7 @@ import { PrivyClient } from '@privy-io/server-auth';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
+import { mintRateLimit, checkRateLimit } from '@/lib/rate-limit';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -16,10 +17,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, demo } = body;
 
-  // demo missions: skip auth, skip rate-limit, fall back to mock txId on Solana failure
-  const isDemoMint = demo === true || target === 'Demo Observation';
+  // Dev-only demo bypass — never active on Vercel production
+  const isDemoMint = process.env.NODE_ENV === 'development' && demo === true;
 
-  // Auth check — skipped for demo observations so the demo flow always works
+  // Auth required for all requests; dev demo mode is the only exception
   if (!isDemoMint) {
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -58,9 +59,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Rate limit: one NFT per wallet+target per hour — skipped for demo
+  // Upstash rate limit: 2 mints per wallet per hour
+  if (userAddress) {
+    const { success, remaining } = await checkRateLimit(mintRateLimit, userAddress);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait before trying again.' },
+        { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
+      );
+    }
+  }
+
+  // DB rate limit: one NFT per wallet+target per hour
   const db = getDb();
-  if (!isDemoMint && db && userAddress) {
+  if (db && userAddress) {
     try {
       const oneHourAgo = new Date(Date.now() - 3600_000);
       const recent = await db

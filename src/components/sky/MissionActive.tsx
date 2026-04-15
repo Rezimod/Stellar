@@ -164,7 +164,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                     body: JSON.stringify({
                       wallet: solanaWallet.address,
                       target: mission.name,
-                      stars: 0,
                       confidence: 'rejected',
                       mintTx: null,
                       lat,
@@ -285,7 +284,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         body: JSON.stringify({
           wallet: solanaWallet.address,
           target: mission.target === null ? 'Night Sky' : mission.name,
-          stars: effectiveStars,
+          identifiedObject: photoVerification?.identifiedObject ?? (mission.target === null ? 'Night Sky' : mission.name),
+          verificationToken: photoVerification?.verificationToken ?? null,
+          capturedAt: photoVerification?.metadata?.capturedAt ?? new Date().toISOString(),
           confidence: photoVerification?.confidence ?? (sky?.verified ? 'medium' : 'low'),
           mintTx: txId,
           lat: coords.lat,

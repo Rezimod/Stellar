@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { createHash } from 'crypto';
+import { createHash, createHmac } from 'crypto';
+import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { CLAUDE_MODEL } from '@/lib/ai-config';
 import type { PhotoVerificationResult, ObservationTarget, VerificationConfidence } from '@/lib/types';
 import { checkObjectVisibility } from '@/lib/astronomy-check';
@@ -47,6 +48,15 @@ function parseClaudeResponse(text: string): { analysis: ClaudeAnalysis; isFallba
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
+  const { success, remaining } = await checkRateLimit(verifyRateLimit, ip);
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
+    );
+  }
+
   let formData: FormData;
   try {
     formData = await req.formData();
@@ -214,8 +224,9 @@ Return ONLY valid JSON, no markdown, no preamble:
     // non-fatal
   }
 
+  let weatherUnavailable = false;
   if (cloudCover === null) {
-    return NextResponse.json({ error: 'Sky conditions unavailable — try again shortly' }, { status: 503 });
+    weatherUnavailable = true;
   }
 
   // Astronomy cross-check
@@ -243,6 +254,14 @@ Return ONLY valid JSON, no markdown, no preamble:
     confidence = 'low';
   }
 
+  // Weather unavailable: reduce confidence one level
+  if (weatherUnavailable && confidence !== 'rejected') {
+    const DOWNGRADE: Record<VerificationConfidence, VerificationConfidence> = {
+      high: 'medium', medium: 'low', low: 'low', rejected: 'rejected',
+    };
+    confidence = DOWNGRADE[confidence];
+  }
+
   // Double-capture boost: live capture confirmation bumps confidence one level
   if (isDoubleCapture && analysis.liveCaptureConfirmed && confidence !== 'rejected') {
     const BOOST: Record<VerificationConfidence, VerificationConfidence> = {
@@ -265,13 +284,24 @@ Return ONLY valid JSON, no markdown, no preamble:
   const reward = REWARD_TABLE[confidence];
   const starsAwarded = reward.base + (isRare ? reward.rare_bonus : 0);
 
+  // Generate verification token — signs identifiedObject + confidence so log route
+  // can verify confidence was set server-side (prevents clients claiming arbitrary stars)
+  const tokenData = `${analysis.identifiedObject}:${confidence}:${capturedAt}`;
+  const verificationToken = createHmac('sha256', process.env.ANTHROPIC_API_KEY ?? '')
+    .update(tokenData)
+    .digest('hex');
+
   const result: PhotoVerificationResult = {
     accepted: confidence !== 'rejected',
     confidence,
+    verificationToken,
     ...(verificationFailed ? { verificationFailed: true } : {}),
+    ...(weatherUnavailable ? { weatherUnavailable: true } : {}),
     target: analysis.target,
     identifiedObject: analysis.identifiedObject,
-    reason: analysis.reason,
+    reason: weatherUnavailable
+      ? analysis.reason + ' (weather data unavailable — confidence reduced)'
+      : analysis.reason,
     astronomyCheck: astroCheck,
     imageAnalysis: {
       isScreenshot: analysis.isScreenshot,
@@ -285,7 +315,7 @@ Return ONLY valid JSON, no markdown, no preamble:
       capturedAt: capturedAt || new Date().toISOString(),
       lat,
       lon,
-      cloudCover,
+      cloudCover: cloudCover ?? 0,
       ...(isDoubleCapture && analysis.liveCaptureConfirmed ? { doubleCaptureVerified: true } : {}),
     },
   };

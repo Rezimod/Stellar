@@ -168,7 +168,9 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
       body: JSON.stringify({
         wallet: walletAddress,
         target: v.identifiedObject,
-        stars: v.starsEstimate,
+        identifiedObject: v.identifiedObject,
+        verificationToken: v.verificationToken,
+        capturedAt: v.metadata.capturedAt,
         confidence: v.confidence,
         mintTx: mintTx || null,
       }),

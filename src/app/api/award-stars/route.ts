@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 60; // Solana devnet token mint can take 15-30s
 import { PrivyClient } from '@privy-io/server-auth';
+import { awardStarsRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import bs58 from 'bs58';
@@ -43,6 +44,14 @@ export async function POST(req: NextRequest) {
     recipientPublicKey = new PublicKey(recipientAddress as string);
   } catch {
     return NextResponse.json({ error: 'Invalid recipientAddress' }, { status: 400 });
+  }
+
+  const { success, remaining } = await checkRateLimit(awardStarsRateLimit, recipientAddress as string);
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
+    );
   }
 
   // Validate amount

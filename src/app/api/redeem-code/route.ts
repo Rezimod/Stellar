@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStarsBalance } from '@/lib/solana';
+import { redeemRateLimit, checkRateLimit } from '@/lib/rate-limit';
 
 const TIER_CODES: Record<string, { minStars: number; code: string | undefined }> = {
   'Free Moon Lamp': { minStars: 250, code: process.env.REWARD_CODE_MOONLAMP },
@@ -19,6 +20,14 @@ export async function POST(req: NextRequest) {
 
   if (typeof tier !== 'string' || typeof walletAddress !== 'string') {
     return NextResponse.json({ error: 'tier and walletAddress are required' }, { status: 400 });
+  }
+
+  const { success, remaining } = await checkRateLimit(redeemRateLimit, walletAddress);
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
+    );
   }
 
   const tierConfig = TIER_CODES[tier];

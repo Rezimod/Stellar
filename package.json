@@ -25,6 +25,8 @@
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "@types/leaflet": "^1.9.21",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
     "astronomy-engine": "^2.1.19",
     "bs58": "^6.0.0",
     "drizzle-orm": "^0.45.2",

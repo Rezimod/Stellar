@@ -4,6 +4,7 @@ import { PrivyClient } from '@privy-io/server-auth';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import { getVisiblePlanets } from '@/lib/planets';
 import { CLAUDE_MODEL } from '@/lib/ai-config';
+import { chatRateLimit, checkRateLimit } from '@/lib/rate-limit';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -82,10 +83,20 @@ export async function POST(req: NextRequest) {
   if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  let userId: string;
   try {
-    await privy.verifyAuthToken(token);
+    const claims = await privy.verifyAuthToken(token);
+    userId = claims.userId;
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { success, remaining } = await checkRateLimit(chatRateLimit, userId);
+  if (!success) {
+    return NextResponse.json(
+      { error: 'You\'re chatting a lot! Take a quick break and come back in a minute.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
+    );
   }
   let message: string;
   let history: { role: 'user' | 'assistant'; content: string }[];

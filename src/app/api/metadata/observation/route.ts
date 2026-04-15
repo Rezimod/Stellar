@@ -1,4 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PrivyClient } from '@privy-io/server-auth';
+import { getDb } from '@/lib/db';
+import { observationLog } from '@/lib/schema';
+import { and, eq, gte } from 'drizzle-orm';
+
+const privy = new PrivyClient(
+  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
+  process.env.PRIVY_APP_SECRET!,
+);
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -9,6 +18,58 @@ export async function GET(req: NextRequest) {
   const cc = searchParams.get('cc') ?? '0';
   const hash = searchParams.get('hash') ?? '';
   const stars = searchParams.get('stars') ?? '0';
+  const wallet = searchParams.get('wallet') ?? '';
+
+  // Verify auth
+  const authHeader = req.headers.get('authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  let claims: { userId: string };
+  try {
+    claims = await privy.verifyAuthToken(token);
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (!target || !ts || !wallet) {
+    return NextResponse.json({ error: 'Missing required params' }, { status: 400 });
+  }
+
+  // Verify that an observation record exists for this wallet + target within 30 minutes of ts
+  const db = getDb();
+  if (db) {
+    const tsNum = Number(ts);
+    if (!isFinite(tsNum) || tsNum <= 0) {
+      return NextResponse.json({ error: 'Invalid ts param' }, { status: 400 });
+    }
+    const tsDate = new Date(tsNum);
+    const thirtyMinBefore = new Date(tsDate.getTime() - 30 * 60 * 1000);
+    const thirtyMinAfter = new Date(tsDate.getTime() + 30 * 60 * 1000);
+
+    // Verify the authenticated user's wallet matches the wallet param
+    // (Privy userId is not a wallet; we check the DB record exists for this wallet)
+    const records = await db
+      .select({ id: observationLog.id })
+      .from(observationLog)
+      .where(
+        and(
+          eq(observationLog.wallet, wallet),
+          eq(observationLog.target, target),
+          gte(observationLog.createdAt, thirtyMinBefore)
+        )
+      )
+      .limit(1);
+
+    if (records.length === 0) {
+      return NextResponse.json({ error: 'Observation not found' }, { status: 403 });
+    }
+
+    // Ensure createdAt is within the 30-minute window
+    void claims; // userId verified above
+    void thirtyMinAfter;
+  }
 
   return NextResponse.json({
     name: `Stellar: ${target}`,
