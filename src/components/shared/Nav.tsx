@@ -85,8 +85,8 @@ export default function Nav() {
       <style>{`
         @keyframes fadeInBackdrop { from { opacity: 0; } to { opacity: 1; } }
         @keyframes dropIn {
-          from { opacity: 0; transform: translateY(-12px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .nav-icon-btn { transition: color 0.15s ease, background 0.15s ease; }
         .nav-icon-btn:hover { background: rgba(255,255,255,0.07) !important; color: rgba(255,255,255,0.9) !important; }
@@ -98,7 +98,7 @@ export default function Nav() {
         .hamburger-bar { display: block; height: 1.5px; border-radius: 2px; transition: all 0.22s cubic-bezier(0.22,1,0.36,1); transform-origin: center; }
       `}</style>
 
-      {/* Compact left-anchored dropdown */}
+      {/* Dropdown embedded with header */}
       {dropdownOpen && (
         <>
           <div
@@ -108,17 +108,18 @@ export default function Nav() {
           <div
             className="fixed z-[56]"
             style={{
-              top: 52,
-              left: 8,
-              width: 200,
-              animation: 'dropIn 0.18s cubic-bezier(0.22,1,0.36,1)',
-              background: 'rgba(8,12,24,0.97)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 12,
-              boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
-              padding: '6px',
+              top: 56,
+              left: 0,
+              width: 196,
+              animation: 'dropIn 0.15s cubic-bezier(0.22,1,0.36,1)',
+              background: 'rgba(5,8,18,0.97)',
+              backdropFilter: 'blur(32px)',
+              WebkitBackdropFilter: 'blur(32px)',
+              borderRight: '1px solid rgba(255,255,255,0.07)',
+              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              borderBottomRightRadius: 12,
+              boxShadow: '4px 8px 24px rgba(0,0,0,0.5)',
+              padding: '8px 6px 10px',
             }}
           >
             {SECTIONS.map((section, si) => (
