@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import HomeSkyPreview from '@/components/home/HomeSkyPreview';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
-import { Telescope, Camera, Star, ShoppingBag, CloudSun, Moon, Lock, Orbit } from 'lucide-react';
+import { Telescope, Camera, Star, ShoppingBag, CloudSun, Moon, Lock, Orbit, MessageCircle } from 'lucide-react';
 import { MISSIONS } from '@/lib/constants';
 import LocationPicker from '@/components/LocationPicker';
 import { useLocation } from '@/lib/location';
