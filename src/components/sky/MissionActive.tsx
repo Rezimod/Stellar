@@ -63,6 +63,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showSlowMint, setShowSlowMint] = useState(false);
   const [skyScore, setSkyScore] = useState<SkyScoreResult | null>(null);
+  const [nftImageUrl, setNftImageUrl] = useState('');
   const [photoVerification, setPhotoVerification] = useState<PhotoVerificationResult | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -269,6 +270,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     }
 
     setMintTxId(txId);
+    const targetName = mission.target === null ? 'Night Sky' : mission.name;
+    setNftImageUrl(`/api/nft-image?target=${encodeURIComponent(targetName)}&ts=${new Date(timestamp).getTime()}&lat=${coords.lat.toFixed(4)}&lon=${coords.lon.toFixed(4)}&cc=${sky?.cloudCover ?? 0}&stars=${effectiveStars}`);
     setMintDone(true);
 
     // Log observation + award stars atomically via observe/log
@@ -382,14 +385,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     const isOnChain = mintTxId && !mintTxId.startsWith('sim');
     const starsEarned = sky?.verified ? mission.stars : 0;
     const appUrl = 'https://stellarrclub.vercel.app';
-    const ogImageUrl = skyScore ? buildShareImageUrl({
-      target: mission.name,
-      score: skyScore.score,
-      grade: skyScore.grade,
-      stars: starsEarned,
-      date: new Date().toISOString().slice(0, 10),
-      emoji: skyScore.emoji,
-    }) : undefined;
+    const ogImageUrl = nftImageUrl
+      ? `${appUrl}${nftImageUrl}`
+      : skyScore
+        ? buildShareImageUrl({ target: mission.name, score: skyScore.score, grade: skyScore.grade, stars: starsEarned, date: new Date().toISOString().slice(0, 10), emoji: skyScore.emoji })
+        : undefined;
     const confettiColors = ['var(--accent)', 'var(--stars)', 'var(--success)', '#A855F7', '#F87171'];
 
     return (
@@ -468,6 +468,25 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 ✦ Sealed on Solana
               </p>
             )
+          )}
+
+          {/* NFT image card */}
+          {nftImageUrl && (
+            <div
+              className="w-full max-w-[220px] rounded-2xl overflow-hidden animate-fade-in stagger-2"
+              style={{
+                border: '1px solid rgba(255,209,102,0.15)',
+                boxShadow: '0 0 40px rgba(255,209,102,0.06)',
+              }}
+            >
+              <img
+                src={nftImageUrl}
+                alt={`Stellar: ${mission.name}`}
+                width={220}
+                height={220}
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
+            </div>
           )}
 
           {/* Stars counter */}

@@ -9,6 +9,8 @@ import Image from 'next/image';
 import PageTransition from '@/components/ui/PageTransition';
 import StaggerChildren from '@/components/ui/StaggerChildren';
 import { SkeletonGrid } from '@/components/ui/Skeleton';
+import { REWARDS, MISSION_REWARD_HINTS } from '@/lib/rewards';
+import { MISSIONS } from '@/lib/constants';
 
 interface NftAttribute {
   trait_type: string;
@@ -30,6 +32,158 @@ function getAttr(attrs: NftAttribute[] | undefined, key: string): string {
   return String(attrs?.find(a => a.trait_type === key)?.value ?? '');
 }
 
+function NftDetailOverlay({ nft, onClose }: { nft: NftAsset; onClose: () => void }) {
+  const attrs = nft.content?.metadata?.attributes;
+  const name = nft.content?.metadata?.name ?? 'Stellar Observation';
+  const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || 'Unknown';
+  const date = getAttr(attrs, 'Date');
+  const cloudCover = getAttr(attrs, 'Cloud Cover');
+  const starCount = getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars');
+  const loc = getAttr(attrs, 'Location') || '0, 0';
+  const oracleHash = getAttr(attrs, 'Oracle Hash');
+  const [lat, lon] = loc.split(',').map((s: string) => s.trim());
+  const cc = cloudCover.replace('%', '') || '0';
+  const ccNum = parseFloat(cc);
+  const ts = date ? new Date(date).getTime() : Date.now();
+  const nftImageUrl = `/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat ?? 0}&lon=${lon ?? 0}&cc=${cc}&stars=${starCount || 0}`;
+
+  const appUrl = 'https://stellarrclub.vercel.app';
+  const fullImageUrl = `${appUrl}${nftImageUrl}`;
+  const twitterText = encodeURIComponent(`I observed ${target} and sealed it on Solana with @StellarClub26 ✦ #Astronomy #Solana`);
+  const farcasterText = encodeURIComponent(`Observed ${target} and sealed it on Solana with @StellarClub26 ✦`);
+
+  const missionMatch = MISSIONS.find(m => m.name.toLowerCase() === target.toLowerCase());
+  const rewardHint = missionMatch ? MISSION_REWARD_HINTS[missionMatch.id] : null;
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex flex-col bg-[#070B14]"
+      style={{ animation: 'slideUp 250ms ease-out' }}
+    >
+      {/* Top bar */}
+      <div
+        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+      >
+        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--text-primary)', fontSize: 14, margin: 0 }}>
+          {name}
+        </p>
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors"
+          style={{ background: 'rgba(255,255,255,0.05)', minWidth: 36, minHeight: 36 }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-4 max-w-lg mx-auto w-full">
+
+        {/* NFT image — large */}
+        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,209,102,0.12)' }}>
+          <Image
+            src={nftImageUrl}
+            alt={target}
+            width={600}
+            height={600}
+            unoptimized
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
+        </div>
+
+        {/* Attributes grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          {[
+            { label: 'Target', value: target },
+            { label: 'Date', value: date || 'Unknown' },
+            {
+              label: 'Cloud Cover',
+              value: cloudCover || '—',
+              color: ccNum < 30 ? 'var(--success)' : ccNum < 60 ? 'var(--warning)' : 'var(--error)',
+            },
+            { label: 'Stars Earned', value: starCount ? `✦ ${starCount}` : '—', color: 'var(--stars)' },
+            { label: 'Location', value: loc },
+            { label: 'Oracle Hash', value: oracleHash ? `${oracleHash.slice(0, 8)}…` : '—', mono: true },
+          ].map(attr => (
+            <div key={attr.label} className="card-base p-3">
+              <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, fontFamily: 'var(--font-body)' }}>
+                {attr.label}
+              </p>
+              <p style={{
+                color: (attr as { color?: string }).color ?? 'var(--text-primary)',
+                fontSize: 13,
+                fontWeight: 600,
+                margin: '4px 0 0',
+                fontFamily: (attr as { mono?: boolean }).mono ? 'var(--font-mono)' : 'var(--font-display)',
+                wordBreak: 'break-all',
+              }}>
+                {attr.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Share buttons */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => window.open(`https://twitter.com/intent/tweet?text=${twitterText}&url=${encodeURIComponent(fullImageUrl)}`, '_blank')}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm text-white"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 0', minHeight: 44 }}
+          >
+            𝕏 Share
+          </button>
+          <button
+            onClick={() => window.open(`https://warpcast.com/~/compose?text=${farcasterText}&embeds[]=${encodeURIComponent(appUrl)}`, '_blank')}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm"
+            style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', color: '#A855F7', padding: '12px 0', minHeight: 44 }}
+          >
+            ⬡ Farcaster
+          </button>
+        </div>
+
+        {/* Solana Explorer link */}
+        <a
+          href={`https://explorer.solana.com/address/${nft.id}?cluster=devnet`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 rounded-xl text-sm"
+          style={{
+            background: 'rgba(56,240,255,0.06)',
+            border: '1px solid rgba(56,240,255,0.15)',
+            color: '#38F0FF',
+            textDecoration: 'none',
+            padding: '12px 0',
+            minHeight: 44,
+          }}
+        >
+          <ExternalLink size={14} /> View on Solana Explorer
+        </a>
+
+        {/* Reward hint */}
+        {rewardHint && (
+          <div className="card-base p-4">
+            <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+              Reward progress
+            </p>
+            <p style={{ color: 'var(--stars)', fontSize: 13, fontWeight: 600, margin: '4px 0 0' }}>
+              {rewardHint}
+            </p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '2px 0 0' }}>
+              Redeem at astroman.ge
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function NftsPage() {
   const { authenticated, ready, login } = usePrivy();
   const { wallets } = useWallets();
@@ -38,6 +192,7 @@ export default function NftsPage() {
   const [error, setError] = useState<string | null>(null);
   const [starsBalance, setStarsBalance] = useState<number>(0);
   const [sort, setSort] = useState<'recent' | 'stars'>('recent');
+  const [selectedNft, setSelectedNft] = useState<NftAsset | null>(null);
 
   const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
   const address = solanaWallet?.address ?? null;
@@ -59,6 +214,13 @@ export default function NftsPage() {
       setLoading(false);
     }
   }, [address]);
+
+  useEffect(() => {
+    if (!selectedNft) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedNft(null); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedNft]);
 
   useEffect(() => {
     if (!authenticated || !address) return;
@@ -136,6 +298,8 @@ export default function NftsPage() {
   }, 100);
 
   return (
+    <>
+    {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} />}
     <PageTransition>
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-6">
       <BackButton />
@@ -167,6 +331,7 @@ export default function NftsPage() {
 
       {/* Stats bar */}
       {!loading && nfts.length > 0 && (
+        <>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
             { label: 'Total NFTs', value: String(nfts.length) },
@@ -189,6 +354,81 @@ export default function NftsPage() {
             </div>
           ))}
         </div>
+
+        {/* Collection progress */}
+        {(() => {
+          const ownedTargets = nfts.map(n => {
+            const t = getAttr(n.content?.metadata?.attributes, 'Target');
+            return MISSIONS.find(m => m.name.toLowerCase() === t.toLowerCase())?.id;
+          }).filter(Boolean) as string[];
+          const uniqueOwned = [...new Set(ownedTargets)];
+
+          const celestialReward = REWARDS.find(r => r.id === 'complete-all');
+          const celestialMissions = celestialReward?.requiredMissions ?? [];
+          const celestialCompleted = celestialMissions.filter(id => uniqueOwned.includes(id)).length;
+          const celestialTotal = celestialMissions.length;
+
+          if (celestialTotal === 0 || celestialCompleted === 0) return null;
+
+          return (
+            <div className="card-base p-4">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
+                    Celestial collection
+                  </p>
+                  <p style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, margin: '4px 0 0' }}>
+                    {celestialCompleted}/{celestialTotal} observations
+                  </p>
+                </div>
+                <p style={{
+                  color: celestialCompleted === celestialTotal ? 'var(--success)' : 'var(--stars)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  margin: 0,
+                }}>
+                  {celestialCompleted === celestialTotal ? '🏆 Complete!' : `${Math.round((celestialCompleted / celestialTotal) * 100)}%`}
+                </p>
+              </div>
+              <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 10, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  borderRadius: 2,
+                  width: `${(celestialCompleted / celestialTotal) * 100}%`,
+                  background: celestialCompleted === celestialTotal
+                    ? 'var(--success)'
+                    : 'linear-gradient(90deg, var(--stars), #CC9A33)',
+                  transition: 'width 0.6s ease',
+                }} />
+              </div>
+              {celestialCompleted < celestialTotal && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                  {celestialMissions.map(mId => {
+                    const m = MISSIONS.find(ms => ms.id === mId);
+                    if (!m) return null;
+                    const owned = uniqueOwned.includes(mId);
+                    return (
+                      <span
+                        key={mId}
+                        style={{
+                          fontSize: 10,
+                          padding: '2px 8px',
+                          borderRadius: 20,
+                          background: owned ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
+                          border: `1px solid ${owned ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                          color: owned ? 'var(--success)' : 'var(--text-muted)',
+                        }}
+                      >
+                        {owned ? '✓ ' : ''}{m.emoji} {m.name}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+        </>
       )}
 
       {/* Loading */}
@@ -241,7 +481,11 @@ export default function NftsPage() {
               <div
                 key={item.id}
                 className="card-base overflow-hidden p-0"
-                style={{ transition: 'transform 0.15s, box-shadow 0.15s' }}
+                style={{ transition: 'transform 0.15s, box-shadow 0.15s', cursor: 'pointer' }}
+                onClick={() => setSelectedNft(item)}
+                onKeyDown={(e) => { if (e.key === 'Enter') setSelectedNft(item); }}
+                role="button"
+                tabIndex={0}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
                   (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-glow-accent)';
@@ -325,5 +569,6 @@ export default function NftsPage() {
       )}
     </div>
     </PageTransition>
+    </>
   );
 }
