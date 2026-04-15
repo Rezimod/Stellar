@@ -11,103 +11,188 @@ import QuizActive from '@/components/sky/QuizActive';
 import TelescopesTab from '@/components/sky/TelescopesTab';
 import TonightsBanner from '@/components/learn/TonightsBanner';
 import { PLANETS, DSO, CONSTELLATIONS, ALL_EVENTS, daysFromNow, type Locale } from '@/lib/learn-data';
+import {
+  Globe, Sparkles, Brain, Camera, BookOpen, Telescope, Map, Search,
+  X, Star, Moon, Eye, ChevronDown, ChevronUp, Binoculars,
+} from 'lucide-react';
 
 type Tab = 'planets' | 'deepsky' | 'quizzes' | 'guide' | 'telescopes' | 'astrophoto';
+type Planet = typeof PLANETS[number];
 
-// ─── Tab content components ───────────────────────────────────────────────────
+// ─── Planet Modal ──────────────────────────────────────────────────────────────
 
-function PlanetsTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean }) {
-  const [expanded, setExpanded] = useState<string | null>(null);
+function PlanetModal({ planet, locale, kidsMode, onClose }: {
+  planet: Planet;
+  locale: Locale;
+  kidsMode: boolean;
+  onClose: () => void;
+}) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-slate-600 text-[10px] uppercase tracking-widest">
-          {locale === 'ka' ? '9 ობიექტი' : '9 objects'} · {locale === 'ka' ? 'შეეხე დეტალებისთვის' : 'tap to expand'}
-        </span>
-      </div>
-      {PLANETS.map(p => (
-        <button
-          key={p.key}
-          onClick={() => setExpanded(expanded === p.key ? null : p.key)}
-          className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 relative"
-              style={{ border: `1px solid ${p.color}40` }}>
-              <Image
-                src={p.img}
-                alt={p.name['en']}
-                fill
-                className="object-cover"
-                sizes="40px"
-              />
-            </div>
-            <div className="flex-1">
-              {(p.key === 'moon' || p.key === 'jupiter') && (
-                <span className="inline-block mb-0.5 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest"
-                  style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: '#FFD166' }}>
-                  ★ {locale === 'ka' ? 'საუკეთესო პირველი სამიზნე' : 'Best First Target'}
-                </span>
-              )}
-              <p className="text-white font-semibold text-sm">{p.name[locale]}</p>
-              <p className="text-slate-500 text-xs">{kidsMode ? p.kidsLine[locale] : p.facts[locale][0]}</p>
-            </div>
-            <span className="text-slate-600 text-xs ml-2">{expanded === p.key ? '▲' : '▼'}</span>
-          </div>
-          {expanded === p.key && (
-            <div className="mt-4 flex flex-col gap-3" style={{ paddingLeft: '52px' }}>
-              <div className="relative w-full rounded-xl overflow-hidden mb-2" style={{ height: '160px' }}>
-                <Image
-                  src={p.img}
-                  alt={p.name[locale]}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 672px) 100vw, 672px"
-                />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.8) 0%, transparent 60%)' }} />
-                <p className="absolute bottom-2 left-3 text-white text-xs font-semibold opacity-80">{p.name[locale]}</p>
-              </div>
-              {kidsMode ? (
-                <div className="flex flex-col gap-2">
-                  <p className="text-slate-300 text-xs leading-relaxed">⭐ {p.kidsLine[locale]}</p>
-                  <p className="text-slate-400 text-xs leading-relaxed">{p.kidsFact[locale]}</p>
-                </div>
-              ) : (
-                <ul className="flex flex-col gap-1.5">
-                  {p.facts[locale].map((f, i) => (
-                    <li key={i} className="text-slate-300 text-xs flex gap-2">
-                      <span style={{ color: p.color }}>•</span> {f}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="rounded-lg p-3 text-xs text-[#38F0FF]/80"
-                style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.1)' }}>
-                🔭 {kidsMode ? p.tip[locale].split('.')[0] + '.' : p.tip[locale]}
-              </div>
-              <Link
-                href="/sky"
-                onClick={e => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
-                style={{ color: p.color }}
+    <>
+      <div
+        className="fixed inset-0 z-50"
+        style={{ background: 'rgba(3,6,14,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+        onClick={onClose}
+      />
+      <div
+        className="fixed inset-x-4 z-50 rounded-2xl overflow-hidden flex flex-col"
+        style={{
+          top: '8%',
+          maxHeight: '84vh',
+          background: '#0d1220',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
+        }}
+      >
+        {/* Square hero image */}
+        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '1 / 1', maxHeight: '40vh' }}>
+          <Image
+            src={planet.img}
+            alt={planet.name[locale]}
+            fill
+            className="object-cover"
+            sizes="(max-width: 672px) 100vw, 672px"
+            priority
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #0d1220 0%, rgba(13,18,32,0.2) 60%, transparent 100%)' }} />
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)' }}
+            aria-label="Close"
+          >
+            <X size={14} color="rgba(255,255,255,0.8)" />
+          </button>
+          {/* Name overlay */}
+          <div className="absolute bottom-3 left-4 right-12">
+            {('missionId' in planet && (planet.key === 'moon' || planet.key === 'jupiter')) && (
+              <span
+                className="inline-flex items-center gap-1 mb-1 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest"
+                style={{ background: 'rgba(255,209,102,0.15)', border: '1px solid rgba(255,209,102,0.3)', color: '#FFD166' }}
               >
-                🔭 {locale === 'ka' ? `იხილე ${p.name[locale]} ღამის პროგნოზში →` : `See ${p.name[locale]} in tonight's forecast →`}
-              </Link>
-              {'missionId' in p && p.missionId && (
-                <Link
-                  href="/missions"
-                  onClick={e => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
-                  style={{ color: '#FFD166' }}
-                >
-                  ✦ {locale === 'ka' ? `${p.name[locale]} მისიის დაწყება →` : `Start ${p.name[locale]} Mission →`}
-                </Link>
-              )}
+                <Star size={8} />
+                {locale === 'ka' ? 'საუკეთესო პირველი სამიზნე' : 'Best First Target'}
+              </span>
+            )}
+            <p className="text-white font-bold text-xl" style={{ fontFamily: 'Georgia, serif', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+              {planet.name[locale]}
+            </p>
+          </div>
+          {/* Color accent line */}
+          <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: planet.color, opacity: 0.6 }} />
+        </div>
+
+        {/* Scrollable content */}
+        <div className="overflow-y-auto flex-1 px-4 py-4 flex flex-col gap-3" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+          {kidsMode ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-slate-300 text-sm leading-relaxed flex items-start gap-2">
+                <Star size={12} style={{ color: '#FFD166', flexShrink: 0, marginTop: 3 }} />
+                {planet.kidsLine[locale]}
+              </p>
+              <p className="text-slate-400 text-xs leading-relaxed">{planet.kidsFact[locale]}</p>
             </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {planet.facts[locale].map((f, i) => (
+                <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
+                  <span style={{ color: planet.color, flexShrink: 0, marginTop: 2, fontSize: 10 }}>●</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
           )}
-        </button>
-      ))}
-      <div className="mt-2 pt-4 border-t border-white/[0.05]">
+
+          {/* Tip callout */}
+          <div
+            className="rounded-xl p-3 flex items-start gap-2 text-xs"
+            style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.12)', color: 'rgba(56,240,255,0.8)' }}
+          >
+            <Telescope size={13} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{kidsMode ? planet.tip[locale].split('.')[0] + '.' : planet.tip[locale]}</span>
+          </div>
+
+          {/* Links */}
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/sky"
+              onClick={onClose}
+              className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
+              style={{ color: planet.color }}
+            >
+              <Telescope size={12} />
+              {locale === 'ka'
+                ? `იხილე ${planet.name[locale]} ღამის პროგნოზში →`
+                : `See ${planet.name[locale]} in tonight's forecast →`}
+            </Link>
+            {'missionId' in planet && planet.missionId && (
+              <Link
+                href="/missions"
+                onClick={onClose}
+                className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
+                style={{ color: '#FFD166' }}
+              >
+                <Sparkles size={12} />
+                {locale === 'ka' ? `${planet.name[locale]} მისიის დაწყება →` : `Start ${planet.name[locale]} Mission →`}
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Planets Tab ──────────────────────────────────────────────────────────────
+
+function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: boolean; onSelect: (p: Planet) => void }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-slate-600 text-[10px] uppercase tracking-widest">
+        {locale === 'ka' ? '9 ობიექტი · შეეხე დეტალებისთვის' : '9 objects · tap to explore'}
+      </p>
+
+      {/* Planet grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {PLANETS.map(p => (
+          <button
+            key={p.key}
+            onClick={() => onSelect(p)}
+            className="relative rounded-2xl overflow-hidden group text-left"
+            style={{ aspectRatio: '1 / 1' }}
+          >
+            <Image
+              src={p.img}
+              alt={p.name[locale]}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, 33vw"
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)' }} />
+            {/* Color accent border on hover */}
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              style={{ boxShadow: `inset 0 0 0 1.5px ${p.color}60` }} />
+            {/* Best first target badge */}
+            {(p.key === 'moon' || p.key === 'jupiter') && (
+              <div
+                className="absolute top-2 left-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] uppercase tracking-widest font-bold"
+                style={{ background: 'rgba(255,209,102,0.2)', border: '1px solid rgba(255,209,102,0.4)', color: '#FFD166', backdropFilter: 'blur(4px)' }}
+              >
+                <Star size={7} />
+                {locale === 'ka' ? 'პირველი' : 'Start here'}
+              </div>
+            )}
+            {/* Name */}
+            <p className="absolute bottom-2.5 left-3 text-white font-semibold text-sm leading-tight" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}>
+              {p.name[locale]}
+            </p>
+          </button>
+        ))}
+      </div>
+
+      {/* Constellations */}
+      <div className="mt-1 pt-4 border-t border-white/[0.05]">
         <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-3">
           {locale === 'ka' ? 'თანავარსკვლავედები' : 'Constellations'}
         </p>
@@ -136,24 +221,26 @@ function PlanetsTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
   );
 }
 
-const EQ_BADGES = {
-  naked_eye:  { label: { en: 'Naked Eye',    ka: 'შიშველი თვალი' }, icon: '👁', color: '#34d399' },
-  binoculars: { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       icon: '🔭', color: '#FFD166' },
-  small_scope:{ label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   icon: '🔭', color: '#38F0FF' },
-  large_scope:{ label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   icon: '🔭', color: '#8B5CF6' },
-} as const;
+// ─── Deep Sky Tab ─────────────────────────────────────────────────────────────
+
+const EQ_BADGES: Record<string, { label: { en: string; ka: string }; Icon: React.FC<{ size?: number; color?: string }>; color: string }> = {
+  naked_eye:   { label: { en: 'Naked Eye',    ka: 'შიშველი თვალი' }, Icon: Eye,        color: '#34d399' },
+  binoculars:  { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       Icon: Binoculars, color: '#FFD166' },
+  small_scope: { label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   Icon: Telescope,  color: '#38F0FF' },
+  large_scope: { label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   Icon: Telescope,  color: '#8B5CF6' },
+};
 
 const DSO_SEASONS: Record<string, { en: string; ka: string }> = {
-  m42:   { en: 'Winter',  ka: 'ზამთარი' },
-  m31:   { en: 'Autumn',  ka: 'შემოდგომა' },
-  m45:   { en: 'Winter',  ka: 'ზამთარი' },
-  m8:    { en: 'Summer',  ka: 'ზაფხული' },
-  m13:   { en: 'Summer',  ka: 'ზაფხული' },
-  m17:   { en: 'Summer',  ka: 'ზაფხული' },
-  ngc869:{ en: 'Autumn',  ka: 'შემოდგომა' },
-  m57:   { en: 'Summer',  ka: 'ზაფხული' },
-  m51:   { en: 'Spring',  ka: 'გაზაფხული' },
-  m1:    { en: 'Winter',  ka: 'ზამთარი' },
+  m42:    { en: 'Winter',  ka: 'ზამთარი' },
+  m31:    { en: 'Autumn',  ka: 'შემოდგომა' },
+  m45:    { en: 'Winter',  ka: 'ზამთარი' },
+  m8:     { en: 'Summer',  ka: 'ზაფხული' },
+  m13:    { en: 'Summer',  ka: 'ზაფხული' },
+  m17:    { en: 'Summer',  ka: 'ზაფხული' },
+  ngc869: { en: 'Autumn',  ka: 'შემოდგომა' },
+  m57:    { en: 'Summer',  ka: 'ზაფხული' },
+  m51:    { en: 'Spring',  ka: 'გაზაფხული' },
+  m1:     { en: 'Winter',  ka: 'ზამთარი' },
 };
 
 type EqFilter = 'all' | 'naked_eye' | 'binoculars' | 'small_scope' | 'large_scope';
@@ -164,12 +251,12 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
 
   const filtered = eqFilter === 'all' ? DSO : DSO.filter(d => d.equipment === eqFilter);
 
-  const filterOptions: { id: EqFilter; label: string; icon: string }[] = [
-    { id: 'all',        label: locale === 'ka' ? 'ყველა' : 'All',         icon: '✦' },
-    { id: 'naked_eye',  label: EQ_BADGES.naked_eye.label[locale],          icon: EQ_BADGES.naked_eye.icon },
-    { id: 'binoculars', label: EQ_BADGES.binoculars.label[locale],         icon: EQ_BADGES.binoculars.icon },
-    { id: 'small_scope',label: EQ_BADGES.small_scope.label[locale],        icon: EQ_BADGES.small_scope.icon },
-    { id: 'large_scope',label: EQ_BADGES.large_scope.label[locale],        icon: EQ_BADGES.large_scope.icon },
+  const filterOptions: { id: EqFilter; label: string; Icon: React.FC<{ size?: number; color?: string }> | null }[] = [
+    { id: 'all',         label: locale === 'ka' ? 'ყველა' : 'All',   Icon: null },
+    { id: 'naked_eye',   label: EQ_BADGES.naked_eye.label[locale],    Icon: Eye },
+    { id: 'binoculars',  label: EQ_BADGES.binoculars.label[locale],   Icon: Binoculars },
+    { id: 'small_scope', label: EQ_BADGES.small_scope.label[locale],  Icon: Telescope },
+    { id: 'large_scope', label: EQ_BADGES.large_scope.label[locale],  Icon: Telescope },
   ];
 
   const countFor = (id: EqFilter) =>
@@ -179,87 +266,82 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
     <div className="flex flex-col gap-3">
       {/* Filter bar */}
       <div className="scroll-x scrollbar-hide flex gap-1.5 pb-1">
-        {filterOptions.map(opt => (
-          <button
-            key={opt.id}
-            onClick={() => setEqFilter(opt.id)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex-shrink-0 transition-all duration-200"
-            style={eqFilter === opt.id ? {
-              background: 'rgba(255,209,102,0.12)',
-              border: '1px solid rgba(255,209,102,0.3)',
-              color: '#FFD166',
-            } : {
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#64748b',
-            }}
-          >
-            <span>{opt.icon}</span>
-            <span>{opt.label}</span>
-            <span className="opacity-50">({countFor(opt.id)})</span>
-          </button>
-        ))}
+        {filterOptions.map(opt => {
+          const active = eqFilter === opt.id;
+          return (
+            <button
+              key={opt.id}
+              onClick={() => setEqFilter(opt.id)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex-shrink-0 transition-all duration-200"
+              style={active ? {
+                background: 'rgba(255,209,102,0.12)',
+                border: '1px solid rgba(255,209,102,0.3)',
+                color: '#FFD166',
+              } : {
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: '#64748b',
+              }}
+            >
+              {opt.Icon ? <opt.Icon size={11} /> : <Sparkles size={10} />}
+              <span>{opt.label}</span>
+              <span className="opacity-50">({countFor(opt.id)})</span>
+            </button>
+          );
+        })}
       </div>
 
       {filtered.map(obj => {
         const eqBadge = EQ_BADGES[obj.equipment];
         const season = DSO_SEASONS[obj.id];
+        const isExp = expanded === obj.id;
         return (
           <button
             key={obj.id}
-            onClick={() => setExpanded(expanded === obj.id ? null : obj.id)}
+            onClick={() => setExpanded(isExp ? null : obj.id)}
             className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 relative"
                 style={{ border: `1px solid ${obj.color}40` }}>
-                <Image
-                  src={obj.img}
-                  alt={obj.name['en']}
-                  fill
-                  className="object-cover"
-                  sizes="40px"
-                />
+                <Image src={obj.img} alt={obj.name['en']} fill className="object-cover" sizes="40px" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-sm leading-snug">{obj.name[locale]}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: `${obj.color}20`, color: obj.color }}>{obj.type[locale]}</span>
-                  <span className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: `${eqBadge.color}18`, color: eqBadge.color, border: `1px solid ${eqBadge.color}25` }}>
-                    {eqBadge.icon} {eqBadge.label[locale]}
+                  <span className="text-[11px] px-1.5 py-0.5 rounded inline-flex items-center gap-1" style={{ background: `${eqBadge.color}18`, color: eqBadge.color, border: `1px solid ${eqBadge.color}25` }}>
+                    <eqBadge.Icon size={10} /> {eqBadge.label[locale]}
                   </span>
                 </div>
               </div>
-              <span className="text-slate-600 text-xs ml-2">{expanded === obj.id ? '▲' : '▼'}</span>
+              {isExp ? <ChevronUp size={14} className="text-slate-600 flex-shrink-0" /> : <ChevronDown size={14} className="text-slate-600 flex-shrink-0" />}
             </div>
-            {expanded === obj.id && (
+            {isExp && (
               <div className="mt-4 flex flex-col gap-2" style={{ paddingLeft: '52px' }}>
                 <div className="relative w-full rounded-xl overflow-hidden mb-2" style={{ height: '160px' }}>
-                  <Image
-                    src={obj.img}
-                    alt={obj.name[locale]}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 672px) 100vw, 672px"
-                  />
+                  <Image src={obj.img} alt={obj.name[locale]} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.8) 0%, transparent 60%)' }} />
                   <p className="absolute bottom-2 left-3 text-white text-xs font-semibold opacity-80">{obj.name[locale]}</p>
                 </div>
                 {kidsMode ? (
                   <>
-                    <p className="text-slate-300 text-xs leading-relaxed">⭐ {obj.kidsLine[locale]}</p>
-                    <div className="rounded-lg p-3 text-xs text-[#38F0FF]/80"
+                    <p className="text-slate-300 text-xs leading-relaxed flex items-start gap-1.5">
+                      <Star size={11} style={{ color: '#FFD166', flexShrink: 0, marginTop: 1 }} />
+                      {obj.kidsLine[locale]}
+                    </p>
+                    <div className="rounded-lg p-3 text-xs text-[#38F0FF]/80 flex items-start gap-2"
                       style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.1)' }}>
-                      🔭 {locale === 'ka' ? 'საჭირო ინსტრუმენტი: ' : 'Scope needed: '}{obj.scope[locale].split('.')[0]}.
+                      <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
+                      {locale === 'ka' ? 'საჭირო ინსტრუმენტი: ' : 'Scope needed: '}{obj.scope[locale].split('.')[0]}.
                     </div>
                   </>
                 ) : (
                   <>
                     <p className="text-slate-300 text-xs leading-relaxed">{obj.desc[locale]}</p>
-                    {/* Info row: equipment + distance + season */}
                     <div className="flex gap-2 flex-wrap">
-                      <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: `${eqBadge.color}18`, color: eqBadge.color, border: `1px solid ${eqBadge.color}25` }}>
-                        {eqBadge.icon} {eqBadge.label[locale]}
+                      <span className="text-[10px] px-2 py-0.5 rounded inline-flex items-center gap-1" style={{ background: `${eqBadge.color}18`, color: eqBadge.color, border: `1px solid ${eqBadge.color}25` }}>
+                        <eqBadge.Icon size={9} /> {eqBadge.label[locale]}
                       </span>
                       <span className="text-[10px] text-slate-500">{obj.distance[locale]}</span>
                       {season && (
@@ -268,9 +350,10 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                         </span>
                       )}
                     </div>
-                    <div className="rounded-lg p-3 text-xs text-[#38F0FF]/80"
+                    <div className="rounded-lg p-3 text-xs text-[#38F0FF]/80 flex items-start gap-2"
                       style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.1)' }}>
-                      🔭 {obj.scope[locale]}
+                      <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
+                      {obj.scope[locale]}
                     </div>
                   </>
                 )}
@@ -281,7 +364,8 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                     className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80 mt-1"
                     style={{ color: '#FFD166' }}
                   >
-                    ✦ {locale === 'ka' ? `${obj.name[locale]} მისიის დაწყება →` : `Start ${obj.name[locale]} Mission →`}
+                    <Sparkles size={12} />
+                    {locale === 'ka' ? `${obj.name[locale]} მისიის დაწყება →` : `Start ${obj.name[locale]} Mission →`}
                   </Link>
                 )}
               </div>
@@ -292,6 +376,8 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
     </div>
   );
 }
+
+// ─── Quizzes Tab ──────────────────────────────────────────────────────────────
 
 function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef) => void }) {
   const { state } = useAppState();
@@ -342,6 +428,8 @@ function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef)
   );
 }
 
+// ─── Guide Tab ────────────────────────────────────────────────────────────────
+
 const GLOSSARY_TERMS = [
   { term: 'Aperture', termKa: 'აპერტურა', def: 'The diameter of the telescope\'s main lens or mirror. Bigger aperture = more light gathered = fainter objects visible. The single most important telescope spec.', defKa: 'ტელესკოპის მთავარი ლინზის ან სარკის დიამეტრი. მეტი აპერტურა = მეტი სინათლე.' },
   { term: 'Focal length', termKa: 'ფოკუსური მანძილი', def: 'The distance from the lens/mirror to where light focuses. Longer focal length = higher magnification with the same eyepiece. Measured in mm.', defKa: 'მანძილი ლინზიდან/სარკიდან ფოკუსამდე. მმ-ში იზომება.' },
@@ -371,7 +459,6 @@ function GuideTab({ locale }: { locale: Locale }) {
   const [eventsOpen, setEventsOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  // Events state
   const now = Date.now();
   const upcoming = ALL_EVENTS.filter(e => new Date(e.date + 'T12:00:00').getTime() >= now);
   const past = ALL_EVENTS.filter(e => new Date(e.date + 'T12:00:00').getTime() < now);
@@ -403,13 +490,9 @@ function GuideTab({ locale }: { locale: Locale }) {
 
   return (
     <div className="flex flex-col gap-3">
-
-      {/* Section A: Glossary */}
+      {/* Glossary */}
       <div className="glass-card overflow-hidden">
-        <button
-          onClick={() => setGlossaryOpen(o => !o)}
-          className="w-full flex items-center justify-between p-4 text-left"
-        >
+        <button onClick={() => setGlossaryOpen(o => !o)} className="w-full flex items-center justify-between p-4 text-left">
           <div>
             <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
               {locale === 'ka' ? 'ასტრონომიის გლოსარი' : 'Astronomy Glossary'}
@@ -418,12 +501,12 @@ function GuideTab({ locale }: { locale: Locale }) {
               {locale === 'ka' ? `${GLOSSARY_TERMS.length} ტერმინი` : `${GLOSSARY_TERMS.length} terms`}
             </p>
           </div>
-          <span className="text-slate-600 text-xs">{glossaryOpen ? '▲' : '▼'}</span>
+          {glossaryOpen ? <ChevronUp size={14} className="text-slate-600" /> : <ChevronDown size={14} className="text-slate-600" />}
         </button>
         {glossaryOpen && (
           <div className="px-4 pb-4 flex flex-col gap-3">
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
                 type="text"
                 value={search}
@@ -449,12 +532,9 @@ function GuideTab({ locale }: { locale: Locale }) {
         )}
       </div>
 
-      {/* Section B: Light Pollution */}
+      {/* Light Pollution */}
       <div className="glass-card overflow-hidden">
-        <button
-          onClick={() => setPollutionOpen(o => !o)}
-          className="w-full flex items-center justify-between p-4 text-left"
-        >
+        <button onClick={() => setPollutionOpen(o => !o)} className="w-full flex items-center justify-between p-4 text-left">
           <div>
             <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
               {locale === 'ka' ? 'სინათლის დაბინძურება' : 'Understanding Light Pollution'}
@@ -463,7 +543,7 @@ function GuideTab({ locale }: { locale: Locale }) {
               {locale === 'ka' ? 'ბორტლის სკალა' : 'Bortle scale explained'}
             </p>
           </div>
-          <span className="text-slate-600 text-xs">{pollutionOpen ? '▲' : '▼'}</span>
+          {pollutionOpen ? <ChevronUp size={14} className="text-slate-600" /> : <ChevronDown size={14} className="text-slate-600" />}
         </button>
         {pollutionOpen && (
           <div className="px-4 pb-4 flex flex-col gap-4">
@@ -472,7 +552,6 @@ function GuideTab({ locale }: { locale: Locale }) {
                 ? 'სინათლის დაბინძურება — ხელოვნური განათება, რომელიც ღამის ცაში ვრცელდება. ის ბნავს სუსტ ვარსკვლავებს, ნისლეულებს და ირმის ნახტომს. ბორტლის სკალა 1-დან 9-მდე ცის სიბნელეს ზომავს.'
                 : 'Light pollution is artificial light scattered into the night sky. It washes out faint stars, nebulas, and the Milky Way. The Bortle scale measures sky darkness from 1 (pristine) to 9 (inner city).'}
             </p>
-            {/* Bortle bar */}
             <div className="flex flex-col gap-3">
               {BORTLE_SEGMENTS.map(seg => (
                 <div key={seg.range} className="flex gap-3 items-start">
@@ -492,18 +571,16 @@ function GuideTab({ locale }: { locale: Locale }) {
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-medium transition-all hover:opacity-80"
               style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.2)', color: '#14B8A6' }}
             >
-              🗺 {locale === 'ka' ? 'იპოვე ბნელი ცა შენ მახლობლად →' : 'Find dark skies near you →'}
+              <Map size={13} />
+              {locale === 'ka' ? 'იპოვე ბნელი ცა შენ მახლობლად →' : 'Find dark skies near you →'}
             </Link>
           </div>
         )}
       </div>
 
-      {/* Section C: Events */}
+      {/* Events */}
       <div className="glass-card overflow-hidden">
-        <button
-          onClick={() => setEventsOpen(o => !o)}
-          className="w-full flex items-center justify-between p-4 text-left"
-        >
+        <button onClick={() => setEventsOpen(o => !o)} className="w-full flex items-center justify-between p-4 text-left">
           <div>
             <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
               {locale === 'ka' ? '2026 — ასტრონომიული მოვლენები' : '2026 Astronomical Events'}
@@ -512,7 +589,7 @@ function GuideTab({ locale }: { locale: Locale }) {
               {upcoming.length} {locale === 'ka' ? 'მომდევნო' : 'upcoming'}
             </p>
           </div>
-          <span className="text-slate-600 text-xs">{eventsOpen ? '▲' : '▼'}</span>
+          {eventsOpen ? <ChevronUp size={14} className="text-slate-600" /> : <ChevronDown size={14} className="text-slate-600" />}
         </button>
         {eventsOpen && (
           <div className="px-4 pb-4 flex flex-col gap-3">
@@ -562,7 +639,7 @@ function GuideTab({ locale }: { locale: Locale }) {
                 onClick={() => setShowPast(s => !s)}
                 className="text-xs text-slate-600 flex items-center gap-1.5 hover:text-slate-400 transition-colors self-start"
               >
-                <span>{showPast ? '▲' : '▼'}</span>
+                {showPast ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                 {past.length} {locale === 'ka' ? 'გასული მოვლენა' : `past event${past.length !== 1 ? 's' : ''}`}
               </button>
             )}
@@ -589,7 +666,7 @@ function GuideTab({ locale }: { locale: Locale }) {
   );
 }
 
-// ─── Astrophotography guide ───────────────────────────────────────────────────
+// ─── Astrophotography Tab ─────────────────────────────────────────────────────
 
 const ASTRO_PHOTO_CARDS: {
   step: number;
@@ -684,52 +761,56 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
           ? 'ისწავლე, როგორ გადაიღო ღამის ცის ფოტოები ტელეფონით — ოკულარულ მეთოდიდან Stellar-ის ვერიფიკაციამდე.'
           : 'Learn how to take night sky photos with your phone — from the afocal method to getting verified on Stellar.'}
       </p>
-      {ASTRO_PHOTO_CARDS.map(card => (
-        <button
-          key={card.step}
-          onClick={() => setExpanded(expanded === card.step ? null : card.step)}
-          className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: '#FFD166' }}
-            >
-              {card.step}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm">{card.title[locale]}</p>
-            </div>
-            <span className="text-slate-600 text-xs ml-2">{expanded === card.step ? '▲' : '▼'}</span>
-          </div>
-          {expanded === card.step && (
-            <div className="mt-3 flex flex-col gap-2" style={{ paddingLeft: '44px' }}>
-              <p className="text-slate-400 text-xs leading-relaxed">{card.body[locale]}</p>
+      {ASTRO_PHOTO_CARDS.map(card => {
+        const isExp = expanded === card.step;
+        return (
+          <button
+            key={card.step}
+            onClick={() => setExpanded(isExp ? null : card.step)}
+            className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
+          >
+            <div className="flex items-center gap-3">
               <div
-                className="rounded-lg p-3 text-xs"
-                style={{ background: 'rgba(255,209,102,0.04)', border: '1px solid rgba(255,209,102,0.1)', color: 'rgba(255,209,102,0.8)' }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: '#FFD166' }}
               >
-                📸 {card.tip[locale]}
+                {card.step}
               </div>
-              {card.link && (
-                <Link
-                  href={card.link.href}
-                  onClick={e => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
-                  style={{ color: '#FFD166' }}
-                >
-                  {card.link[locale]}
-                </Link>
-              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-sm">{card.title[locale]}</p>
+              </div>
+              {isExp ? <ChevronUp size={14} className="text-slate-600 flex-shrink-0" /> : <ChevronDown size={14} className="text-slate-600 flex-shrink-0" />}
             </div>
-          )}
-        </button>
-      ))}
+            {isExp && (
+              <div className="mt-3 flex flex-col gap-2" style={{ paddingLeft: '44px' }}>
+                <p className="text-slate-400 text-xs leading-relaxed">{card.body[locale]}</p>
+                <div
+                  className="rounded-lg p-3 text-xs flex items-start gap-2"
+                  style={{ background: 'rgba(255,209,102,0.04)', border: '1px solid rgba(255,209,102,0.1)', color: 'rgba(255,209,102,0.8)' }}
+                >
+                  <Camera size={12} style={{ flexShrink: 0, marginTop: 1 }} />
+                  {card.tip[locale]}
+                </div>
+                {card.link && (
+                  <Link
+                    href={card.link.href}
+                    onClick={e => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
+                    style={{ color: '#FFD166' }}
+                  >
+                    {card.link[locale]}
+                  </Link>
+                )}
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-// ─── ASTRA promo ─────────────────────────────────────────────────────────────
+// ─── ASTRA Promo ──────────────────────────────────────────────────────────────
 
 function AstraPromo({ locale }: { locale: Locale }) {
   return (
@@ -741,7 +822,7 @@ function AstraPromo({ locale }: { locale: Locale }) {
       <div className="relative flex-shrink-0">
         <div className="w-11 h-11 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(56,240,255,0.12)', border: '1px solid rgba(56,240,255,0.25)' }}>
-          <span className="text-[#38F0FF] text-lg">✦</span>
+          <Sparkles size={18} color="#38F0FF" />
         </div>
         <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2 border-[#080e1e]" />
       </div>
@@ -755,16 +836,18 @@ function AstraPromo({ locale }: { locale: Locale }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Tab config with Lucide icons ─────────────────────────────────────────────
 
-const TAB_CONFIG: { id: Tab; icon: string; en: string; ka: string }[] = [
-  { id: 'planets',    icon: '🪐', en: 'Planets',    ka: 'პლანეტები' },
-  { id: 'deepsky',    icon: '🌌', en: 'Deep Sky',   ka: 'ღრმა ცა' },
-  { id: 'telescopes', icon: '🔭', en: 'Scopes',     ka: 'ტელესკოპები' },
-  { id: 'astrophoto', icon: '📸', en: 'Photo Guide', ka: 'ფოტო გზამკვლევი' },
-  { id: 'quizzes',    icon: '🧠', en: 'Quizzes',    ka: 'ქვიზები' },
-  { id: 'guide',      icon: '📖', en: 'Guide',      ka: 'გზამკვლევი' },
+const TAB_CONFIG: { id: Tab; Icon: React.FC<{ size?: number }>; en: string; ka: string }[] = [
+  { id: 'planets',    Icon: Globe,      en: 'Planets',     ka: 'პლანეტები' },
+  { id: 'deepsky',    Icon: Sparkles,   en: 'Deep Sky',    ka: 'ღრმა ცა' },
+  { id: 'telescopes', Icon: Telescope,  en: 'Scopes',      ka: 'ტელესკოპები' },
+  { id: 'astrophoto', Icon: Camera,     en: 'Photo Guide', ka: 'ფოტო გზამკვლევი' },
+  { id: 'quizzes',    Icon: Brain,      en: 'Quizzes',     ka: 'ქვიზები' },
+  { id: 'guide',      Icon: BookOpen,   en: 'Guide',       ka: 'გზამკვლევი' },
 ];
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function LearnPage() {
   const rawLocale = useLocale();
@@ -772,49 +855,59 @@ export default function LearnPage() {
   const [tab, setTab] = useState<Tab>('planets');
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
   const [kidsMode, setKidsMode] = useState(false);
+  const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
   const { state } = useAppState();
   const completedQuizzes = state.completedQuizzes ?? [];
 
   return (
     <>
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
+      {selectedPlanet && (
+        <PlanetModal
+          planet={selectedPlanet}
+          locale={locale}
+          kidsMode={kidsMode}
+          onClose={() => setSelectedPlanet(null)}
+        />
+      )}
 
       <div className="max-w-2xl mx-auto px-4 py-6 animate-page-enter flex flex-col gap-5">
         <BackButton />
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
-              {locale === 'ka' ? 'სწავლა' : 'Learn'}
-            </h1>
-            <p className="text-slate-500 text-sm mt-0.5">
-              {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
-            </p>
-          </div>
-          {(
-            <button
-              onClick={() => setKidsMode(k => !k)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0"
-              style={kidsMode ? {
-                background: 'rgba(255,209,102,0.15)',
-                border: '1px solid rgba(255,209,102,0.4)',
-                color: '#FFD166',
-              } : {
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#64748b',
-              }}
-            >
-              <span>{kidsMode ? '⭐' : '🌙'}</span>
-              <span className="hidden sm:inline">{kidsMode
-                ? (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode ON')
-                : (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode')}</span>
-            </button>
-          )}
+
+        {/* Header — centered */}
+        <div className="relative flex flex-col items-center text-center gap-1 py-2">
+          <h1
+            className="text-3xl font-bold text-white"
+            style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 40px rgba(56,240,255,0.15)' }}
+          >
+            {locale === 'ka' ? 'სწავლა' : 'Learn'}
+          </h1>
+          <p className="text-slate-500 text-sm">
+            {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
+          </p>
+          {/* Kids mode button — absolute top-right */}
+          <button
+            onClick={() => setKidsMode(k => !k)}
+            className="absolute right-0 top-1 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+            style={kidsMode ? {
+              background: 'rgba(255,209,102,0.15)',
+              border: '1px solid rgba(255,209,102,0.4)',
+              color: '#FFD166',
+            } : {
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: '#64748b',
+            }}
+          >
+            {kidsMode ? <Star size={12} /> : <Moon size={12} />}
+            <span className="hidden sm:inline">{kidsMode
+              ? (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode ON')
+              : (locale === 'ka' ? 'ბავშვების რეჟიმი' : 'Kids Mode')}</span>
+          </button>
         </div>
 
         {completedQuizzes.length > 0 && (
-          <div className="flex items-center gap-3 text-xs -mt-3">
+          <div className="flex items-center justify-center gap-3 text-xs -mt-3">
             <span className="flex items-center gap-1.5 text-slate-500">
               <span style={{ color: '#34d399' }}>✓</span>
               {completedQuizzes.length} {locale === 'ka' ? 'ქვიზი დასრულებული' : 'quizzes completed'}
@@ -826,34 +919,36 @@ export default function LearnPage() {
           </div>
         )}
 
-        {/* Tonight's Banner */}
         <TonightsBanner locale={locale} />
 
-        {/* Tab bar — scroll-x ensures touch scrolling works even under overflow-x:clip body */}
+        {/* Tab bar */}
         <div className="scroll-x scrollbar-hide flex gap-1.5 pb-1">
-          {TAB_CONFIG.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200 min-h-[36px]"
-              style={tab === t.id ? {
-                background: 'rgba(255,209,102,0.12)',
-                border: '1px solid rgba(255,209,102,0.3)',
-                color: '#FFD166',
-              } : {
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#64748b',
-              }}
-            >
-              <span>{t.icon}</span>
-              <span>{t[locale]}</span>
-            </button>
-          ))}
+          {TAB_CONFIG.map(t => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200 min-h-[36px]"
+                style={active ? {
+                  background: 'rgba(255,209,102,0.12)',
+                  border: '1px solid rgba(255,209,102,0.3)',
+                  color: '#FFD166',
+                } : {
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#64748b',
+                }}
+              >
+                <t.Icon size={13} />
+                <span>{t[locale]}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Content */}
-        {tab === 'planets'    ? <PlanetsTab key="planets" locale={locale} kidsMode={kidsMode} /> : null}
+        {tab === 'planets'    ? <PlanetsTab key="planets" locale={locale} kidsMode={kidsMode} onSelect={setSelectedPlanet} /> : null}
         {tab === 'deepsky'    ? <DeepSkyTab key="deepsky" locale={locale} kidsMode={kidsMode} /> : null}
         {tab === 'telescopes' ? <TelescopesTab key="telescopes" /> : null}
         {tab === 'astrophoto' ? <AstroPhotoTab key="astrophoto" locale={locale} /> : null}
