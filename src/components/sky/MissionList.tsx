@@ -14,9 +14,17 @@ export default function MissionList({ onStart }: MissionListProps) {
   const { state } = useAppState();
   const completedIds = new Set(state.completedMissions.filter(m => m.status === 'completed').map(m => m.id));
   const pendingIds   = new Set(state.completedMissions.filter(m => m.status === 'pending').map(m => m.id));
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  function attemptsToday(id: string): number {
+    const cutoff = Date.now() - DAY_MS;
+    return state.completedMissions.filter(
+      m => m.id === id && new Date(m.timestamp).getTime() > cutoff
+    ).length;
+  }
 
   function completedTodayId(id: string): boolean {
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const cutoff = Date.now() - DAY_MS;
     return state.completedMissions.some(
       m => m.id === id && m.status === 'completed' && new Date(m.timestamp).getTime() > cutoff
     );
@@ -29,7 +37,8 @@ export default function MissionList({ onStart }: MissionListProps) {
           const isRepeatable = mission.repeatable === true;
           const done    = completedIds.has(mission.id) && !isRepeatable;
           const doneToday = isRepeatable && completedTodayId(mission.id);
-          const pending = pendingIds.has(mission.id);
+          // Repeatable missions: lock only after 3 attempts today; non-repeatable: lock if any pending
+          const pending = isRepeatable ? attemptsToday(mission.id) >= 3 : pendingIds.has(mission.id);
           const diff    = mission.difficulty === 'Beginner' ? 1 : mission.difficulty === 'Intermediate' ? 2 : mission.difficulty === 'Advanced' ? 3 : mission.difficulty === 'Hard' ? 4 : 5;
           const diffLabel = mission.difficulty === 'Beginner' ? 'Easy' : mission.difficulty === 'Intermediate' ? 'Medium' : mission.difficulty === 'Advanced' ? 'Hard' : mission.difficulty === 'Hard' ? 'Hard+' : 'Expert';
 

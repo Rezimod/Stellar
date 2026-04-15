@@ -21,7 +21,7 @@ interface AppStateCtx {
   setMembership: (tx: string) => void;
   setTelescope: (data: { brand: string; model: string; aperture: string }, tx: string) => void;
   addMission: (mission: CompletedMission) => void;
-  removeMission: (id: string) => void;
+  removeMission: (txId: string) => void;
   claimReward: (id: string) => void;
   addQuizResult: (r: QuizResult) => void;
   pendingCount: number;
@@ -58,9 +58,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       ...s,
       completedMissions: [...s.completedMissions, mission],
     })),
-    removeMission: (id) => setState(s => ({
+    removeMission: (txId) => setState(s => ({
       ...s,
-      completedMissions: s.completedMissions.filter(m => m.id !== id),
+      completedMissions: s.completedMissions.filter(m => m.txId !== txId),
     })),
     claimReward: (id) => setState(s => ({
       ...s,

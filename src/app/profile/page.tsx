@@ -450,13 +450,19 @@ export default function ProfilePage() {
       {/* 4 — STARS REDEMPTION */}
       <StarsRedemption starsBalance={starsDisplay} walletAddress={address ?? undefined} />
 
-      {/* SIGN OUT */}
+      {/* RESET + SIGN OUT */}
       <div>
         <div className="flex items-center gap-3 my-1">
           <div className="flex-1 h-px bg-white/5" />
           <span className="text-slate-700 text-xs tracking-widest">⋯</span>
           <div className="flex-1 h-px bg-white/5" />
         </div>
+        <button
+          onClick={() => { if (window.confirm('Reset all local missions and observations? This cannot be undone.')) reset(); }}
+          className="w-full py-2.5 rounded-xl text-sm border border-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-white/[0.03] transition-all mb-2"
+        >
+          Reset observations
+        </button>
         <button
           onClick={confirmSignOut ? handleSignOut : () => setConfirmSignOut(true)}
           className={`w-full py-2.5 rounded-xl text-sm border transition-all ${

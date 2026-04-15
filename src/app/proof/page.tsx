@@ -179,7 +179,7 @@ export default function ProofPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {proofs.map((m, index) => (
             <div key={m.txId} className="animate-slide-up opacity-0" style={{ animationDelay: `${index * 80}ms`, animationFillMode: 'forwards' }}>
-              <ProofCard mission={m} onDelete={() => removeMission(m.id)} />
+              <ProofCard mission={m} onDelete={() => removeMission(m.txId)} />
             </div>
           ))}
         </div>

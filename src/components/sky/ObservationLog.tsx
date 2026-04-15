@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
-import { Clock } from 'lucide-react';
+import { Clock, Trash2 } from 'lucide-react';
 
 export default function ObservationLog() {
-  const { state } = useAppState();
+  const { state, removeMission } = useAppState();
   const all = [...state.completedMissions].reverse();
   const missions = all.slice(0, 3);
 
@@ -24,7 +24,7 @@ export default function ObservationLog() {
         {missions.map((m, i) => (
           <div
             key={m.txId}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group"
             style={{
               background: 'rgba(15,31,61,0.35)',
               border: '1px solid rgba(255,255,255,0.04)',
@@ -43,13 +43,23 @@ export default function ObservationLog() {
                 {new Date(m.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
-            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <span className="text-sm font-bold text-[#FFD166]">+{m.stars ?? (m as any).points ?? 0} ✦</span>
-              {m.status === 'pending'
-                ? <span className="text-[10px] text-amber-400 flex items-center gap-0.5"><Clock size={9} /> Pending</span>
-                : <span className="text-[10px] text-[#34d399]">Verified</span>
-              }
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-col items-end gap-0.5">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <span className="text-sm font-bold text-[#FFD166]">+{m.stars ?? (m as any).points ?? 0} ✦</span>
+                {m.status === 'pending'
+                  ? <span className="text-[10px] text-amber-400 flex items-center gap-0.5"><Clock size={9} /> Pending</span>
+                  : <span className="text-[10px] text-[#34d399]">Verified</span>
+                }
+              </div>
+              <button
+                onClick={() => removeMission(m.txId)}
+                className="opacity-0 group-hover:opacity-100 w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}
+                title="Delete observation"
+              >
+                <Trash2 size={12} className="text-red-400" />
+              </button>
             </div>
           </div>
         ))}
