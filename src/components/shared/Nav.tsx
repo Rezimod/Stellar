@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { useState, useEffect } from 'react';
-import { CloudSun, ShoppingBag, Satellite, User, Search, AlignLeft, X, ExternalLink, BookOpen } from 'lucide-react';
+import { CloudSun, ShoppingBag, Satellite, User, Search, AlignLeft, ExternalLink, BookOpen } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import { useTranslations } from 'next-intl';
 import SearchModal from './SearchModal';
@@ -30,7 +30,14 @@ export default function Nav() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const t = useTranslations('nav');
 
-  useEffect(() => { setSearchOpen(false); }, [pathname]);
+  useEffect(() => { setSearchOpen(false); setDrawerOpen(false); }, [pathname]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [drawerOpen]);
 
   const tabs = [
     { href: '/sky',         label: t('sky'),      icon: <CloudSun size={15} /> },
@@ -57,9 +64,13 @@ export default function Nav() {
     <>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideInLeft {
-          from { transform: translateX(-100%); opacity: 0; }
-          to   { transform: translateX(0); opacity: 1; }
+        @keyframes dropdownOpen {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes dropdownClose {
+          from { opacity: 1; transform: translateY(0); }
+          to   { opacity: 0; transform: translateY(-8px); }
         }
         .nav-tab {
           position: relative;
@@ -70,14 +81,6 @@ export default function Nav() {
           background: rgba(255,255,255,0.06);
           color: rgba(255,255,255,0.9) !important;
         }
-        .drawer-nav-link {
-          border-left: 2px solid transparent;
-          transition: all 0.15s ease;
-        }
-        .drawer-nav-link:hover {
-          background: rgba(56,240,255,0.05) !important;
-          border-left-color: rgba(56,240,255,0.5) !important;
-        }
         .nav-icon-btn { transition: color 0.15s ease, background 0.15s ease; }
         .nav-icon-btn:hover { background: rgba(255,255,255,0.06) !important; color: rgba(255,255,255,0.9) !important; }
         .nav-login-btn:hover {
@@ -86,67 +89,117 @@ export default function Nav() {
         }
       `}</style>
 
-      {/* Drawer */}
+      {/* Dropdown */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-[60]" onClick={() => setDrawerOpen(false)}>
-          <div className="absolute inset-0" style={{ background: 'rgba(4,7,15,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', animation: 'fadeIn 0.18s ease' }} />
+        <>
+          {/* Backdrop */}
           <div
-            className="absolute top-0 left-0 h-full flex flex-col"
-            style={{ width: 'min(280px, 80vw)', background: 'linear-gradient(180deg, #070C1A 0%, #060A15 100%)', borderRight: '1px solid rgba(124,58,237,0.2)', boxShadow: '4px 0 48px rgba(0,0,0,0.8)', animation: 'slideInLeft 0.22s cubic-bezier(0.22,1,0.36,1)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Drawer top accent */}
-            <div style={{ height: 2, background: 'linear-gradient(90deg, rgba(124,58,237,0.9) 0%, rgba(56,240,255,1) 60%, transparent 100%)', flexShrink: 0 }} />
+            className="fixed inset-0 z-[55]"
+            onClick={() => setDrawerOpen(false)}
+            style={{ background: 'rgba(4,7,15,0.6)', animation: 'fadeIn 0.15s ease' }}
+          />
 
-            {/* Drawer header */}
-            <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(124,58,237,0.1)' }}>
-              <div className="flex items-center gap-2.5">
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'radial-gradient(circle, #a78bfa, #38F0FF)', boxShadow: '0 0 12px rgba(167,139,250,0.9)', display: 'inline-block' }} />
-                <span style={{ color: '#fff', fontSize: 13, letterSpacing: '0.22em', fontWeight: 700, fontFamily: 'Georgia, serif' }}>STELLAR</span>
-              </div>
-              <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>
-                <X size={13} />
-              </button>
+          {/* Dropdown panel — positioned below navbar */}
+          <div
+            className="fixed left-0 right-0 z-[56]"
+            style={{
+              top: 56,
+              animation: 'dropdownOpen 0.2s cubic-bezier(0.22,1,0.36,1)',
+              background: 'rgba(7,11,20,0.98)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+              maxHeight: 'calc(100vh - 56px - 80px)',
+              overflowY: 'auto',
+            }}
+          >
+            {/* Accent line at top */}
+            <div style={{
+              height: 1,
+              background: 'linear-gradient(90deg, transparent, rgba(56,240,255,0.3) 30%, rgba(255,209,102,0.25) 70%, transparent)',
+            }} />
+
+            {/* Nav links */}
+            <div style={{ padding: '8px 12px' }}>
+              {NAV_LINKS.map((link, i) => {
+                const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 rounded-xl"
+                    style={{
+                      textDecoration: 'none',
+                      background: isActive ? 'rgba(56,240,255,0.06)' : 'transparent',
+                      borderLeft: isActive ? '2px solid #38F0FF' : '2px solid transparent',
+                      animation: `dropdownOpen 0.2s cubic-bezier(0.22,1,0.36,1) ${i * 30}ms both`,
+                      transition: 'background 0.15s ease',
+                    }}
+                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  >
+                    <div>
+                      <p style={{
+                        margin: 0,
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.85)',
+                        fontFamily: 'var(--font-display)',
+                      }}>
+                        {link.label}
+                      </p>
+                      <p style={{
+                        margin: '2px 0 0',
+                        fontSize: 11,
+                        color: isActive ? 'rgba(56,240,255,0.5)' : 'rgba(255,255,255,0.3)',
+                      }}>
+                        {link.desc}
+                      </p>
+                    </div>
+                    {isActive && (
+                      <div style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: '#38F0FF',
+                        boxShadow: '0 0 8px rgba(56,240,255,0.6)',
+                        flexShrink: 0,
+                      }} />
+                    )}
+                  </Link>
+                );
+              })}
             </div>
 
-            {/* Drawer nav links */}
-            <nav className="flex-1 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: 'none' }}>
-              {NAV_LINKS.map(link => (
-                <Link key={link.href} href={link.href} onClick={() => setDrawerOpen(false)} className="drawer-nav-link flex flex-col px-4 py-2.5 rounded-xl mb-0.5" style={{ textDecoration: 'none', background: 'transparent' }}>
-                  <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.88)' }}>{link.label}</span>
-                  <span className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{link.desc}</span>
-                </Link>
-              ))}
-            </nav>
-
-            {/* Drawer footer: settings + logout */}
-            <div className="px-3 pb-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              {authenticated && (
-                <>
-                  <Link href="/profile" onClick={() => setDrawerOpen(false)} className="drawer-nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl mt-2" style={{ textDecoration: 'none' }}>
-                    <User size={14} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
-                    <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                      {username || 'Profile'}
-                    </span>
-                  </Link>
-                  <Link href="/profile?tab=settings" onClick={() => setDrawerOpen(false)} className="drawer-nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl" style={{ textDecoration: 'none' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, flexShrink: 0 }}>⚙</span>
-                    <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>Settings</span>
-                  </Link>
-                  <button
-                    onClick={() => { handleLogout(); setDrawerOpen(false); }}
-                    className="drawer-nav-link w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left"
-                    style={{ background: 'transparent', border: 'none' }}
-                  >
-                    <span style={{ color: 'rgba(248,113,113,0.7)', fontSize: 14, flexShrink: 0 }}>→</span>
-                    <span className="text-sm font-semibold" style={{ color: 'rgba(248,113,113,0.8)' }}>Sign out</span>
-                  </button>
-                </>
-              )}
-              <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 10, margin: '8px 16px 0', letterSpacing: '0.04em' }}>© 2026 Stellar · Built on Solana</p>
+            {/* Footer */}
+            <div style={{
+              padding: '10px 16px 14px',
+              borderTop: '1px solid rgba(255,255,255,0.04)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <p style={{ color: 'rgba(255,255,255,0.18)', fontSize: 11, margin: 0 }}>
+                © 2026 Stellar · Solana
+              </p>
+              <a
+                href="https://astroman.ge"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'rgba(255,209,102,0.5)',
+                  fontSize: 11,
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                astroman.ge <ExternalLink size={9} />
+              </a>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       <nav
