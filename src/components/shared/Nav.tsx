@@ -7,7 +7,7 @@ import { useAppState } from '@/hooks/useAppState';
 import { useState, useEffect } from 'react';
 import {
   CloudSun, ShoppingBag, Satellite, User, Search, BookOpen,
-  Trophy, Map, MessageCircle, Telescope, LogOut, Settings, Gem, X,
+  Trophy, Map, MessageCircle, Telescope, LogOut, Settings, Gem,
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import { useTranslations } from 'next-intl';
@@ -88,10 +88,6 @@ export default function Nav() {
           from { opacity: 0; transform: translateY(-12px) scale(0.98); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes itemSlide {
-          from { opacity: 0; transform: translateX(-6px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
         .nav-icon-btn { transition: color 0.15s ease, background 0.15s ease; }
         .nav-icon-btn:hover { background: rgba(255,255,255,0.07) !important; color: rgba(255,255,255,0.9) !important; }
         .nav-tab { position: relative; transition: all 0.18s ease; border-radius: 9999px; }
@@ -102,124 +98,66 @@ export default function Nav() {
         .hamburger-bar { display: block; height: 1.5px; border-radius: 2px; transition: all 0.22s cubic-bezier(0.22,1,0.36,1); transform-origin: center; }
       `}</style>
 
-      {/* Animated dropdown */}
+      {/* Compact left-anchored dropdown */}
       {dropdownOpen && (
         <>
           <div
             className="fixed inset-0 z-[55]"
             onClick={() => setDropdownOpen(false)}
-            style={{ background: 'rgba(3,5,12,0.7)', animation: 'fadeInBackdrop 0.18s ease', backdropFilter: 'blur(2px)' }}
           />
-
           <div
-            className="fixed left-0 right-0 z-[56]"
+            className="fixed z-[56]"
             style={{
-              top: 56,
-              animation: 'dropIn 0.25s cubic-bezier(0.22,1,0.36,1)',
-              background: 'linear-gradient(180deg, rgba(8,12,26,0.99) 0%, rgba(6,9,20,0.99) 100%)',
-              backdropFilter: 'blur(32px)',
-              WebkitBackdropFilter: 'blur(32px)',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(56,240,255,0.04)',
+              top: 52,
+              left: 8,
+              width: 200,
+              animation: 'dropIn 0.18s cubic-bezier(0.22,1,0.36,1)',
+              background: 'rgba(8,12,24,0.97)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 12,
+              boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+              padding: '6px',
             }}
           >
-            {/* Accent gradient line */}
-            <div style={{
-              height: 1,
-              background: 'linear-gradient(90deg, transparent 0%, rgba(56,240,255,0.5) 30%, rgba(139,92,246,0.4) 60%, rgba(255,209,102,0.3) 85%, transparent 100%)',
-            }} />
-
-            <div style={{ maxWidth: 960, margin: '0 auto', padding: '14px 16px 10px' }}>
-              {/* Section grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                {SECTIONS.map((section, si) => (
-                  <div key={section.label}>
-                    <p style={{
-                      fontSize: 9, fontWeight: 700, letterSpacing: '0.16em',
-                      textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)',
-                      margin: '0 0 6px 4px',
-                      animation: `itemSlide 0.2s ease ${si * 40}ms both`,
-                    }}>
-                      {section.label}
-                    </p>
-                    <div style={{
-                      background: 'rgba(255,255,255,0.02)',
-                      border: '1px solid rgba(255,255,255,0.05)',
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                      animation: `dropIn 0.22s cubic-bezier(0.22,1,0.36,1) ${si * 40}ms both`,
-                    }}>
-                      {section.links.map((link, li) => {
-                        const Icon = link.icon;
-                        const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
-                        return (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setDropdownOpen(false)}
-                            className="dd-link flex items-center gap-3 px-3 py-2.5"
-                            style={{
-                              textDecoration: 'none',
-                              background: isActive ? 'rgba(56,240,255,0.08)' : 'transparent',
-                              borderLeft: isActive ? '2px solid rgba(56,240,255,0.7)' : '2px solid transparent',
-                              animation: `itemSlide 0.2s ease ${si * 40 + li * 25}ms both`,
-                            }}
-                          >
-                            <Icon
-                              size={14}
-                              style={{ color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.35)', flexShrink: 0 }}
-                            />
-                            <div style={{ minWidth: 0 }}>
-                              <p style={{
-                                margin: 0, fontSize: 12.5, fontWeight: 600,
-                                color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.82)',
-                                fontFamily: 'var(--font-display)',
-                                lineHeight: 1.2,
-                              }}>
-                                {link.label}
-                              </p>
-                              <p style={{
-                                margin: '1px 0 0', fontSize: 10,
-                                color: isActive ? 'rgba(56,240,255,0.45)' : 'rgba(255,255,255,0.25)',
-                                lineHeight: 1.2,
-                              }}>
-                                {link.desc}
-                              </p>
-                            </div>
-                            {isActive && (
-                              <div style={{
-                                marginLeft: 'auto', width: 5, height: 5, borderRadius: '50%',
-                                background: '#38F0FF', flexShrink: 0,
-                                boxShadow: '0 0 8px rgba(56,240,255,0.7)',
-                              }} />
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Footer row */}
-              <div style={{
-                marginTop: 10, paddingTop: 8,
-                borderTop: '1px solid rgba(255,255,255,0.04)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 10, margin: 0 }}>
-                  © 2026 Stellar · Built on Solana
+            {SECTIONS.map((section, si) => (
+              <div key={section.label}>
+                {si > 0 && <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 2px' }} />}
+                <p style={{
+                  fontSize: 9, fontWeight: 700, letterSpacing: '0.14em',
+                  textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)',
+                  padding: '4px 8px 2px', margin: 0,
+                }}>
+                  {section.label}
                 </p>
-                <a
-                  href="https://astroman.ge"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: 'rgba(255,209,102,0.4)', fontSize: 10, textDecoration: 'none' }}
-                >
-                  astroman.ge ↗
-                </a>
+                {section.links.map(link => {
+                  const Icon = link.icon;
+                  const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setDropdownOpen(false)}
+                      className="dd-link flex items-center gap-2.5 px-2.5 py-2 rounded-lg"
+                      style={{
+                        textDecoration: 'none',
+                        background: isActive ? 'rgba(56,240,255,0.08)' : 'transparent',
+                      }}
+                    >
+                      <Icon size={13} style={{ color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+                      <span style={{
+                        fontSize: 12.5, fontWeight: 600,
+                        color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.8)',
+                        fontFamily: 'var(--font-display)',
+                      }}>
+                        {link.label}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
-            </div>
+            ))}
           </div>
         </>
       )}
