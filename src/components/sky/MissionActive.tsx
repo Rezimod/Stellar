@@ -8,7 +8,6 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { getUnlockedRewards, getRank } from '@/lib/rewards';
 import CameraCapture from './CameraCapture';
-import { generateSimPhoto } from '@/hooks/useCamera';
 import Verification from './Verification';
 import MintAnimation from '@/components/shared/MintAnimation';
 import Button from '@/components/shared/Button';
@@ -70,6 +69,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
     window.scrollTo({ top: 0, behavior: 'instant' });
+    if (step === 'done') {
+      document.getElementById('mission-done-overlay')?.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }, [step]);
 
   useEffect(() => {
@@ -122,14 +124,16 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         };
         setMintError('Sky data unavailable — proceeding with estimated conditions.');
       }
-      setSky(skyData);
+      // Demo missions always treat sky as verified — weather data still shown for context
+      const effectiveSky = mission.demo ? { ...skyData, verified: true } : skyData;
+      setSky(effectiveSky);
       setSkyScore(calculateSkyScore({
         cloudCover: skyData.cloudCover,
         visibility: visibilityToMeters(skyData.visibility),
         humidity: skyData.humidity ?? 50,
         windSpeed: skyData.windSpeed ?? 5,
       }));
-      if (!skyData.verified) {
+      if (!skyData.verified && !mission.demo) {
         setMintError('Cloudy sky — observation logged with 0 stars. You can still mint.');
       }
 
@@ -390,7 +394,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
     return (
       <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto pt-20 pb-12 px-6"
+        id="mission-done-overlay"
+        className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto pt-8 pb-12 px-6"
         style={{
           background: 'radial-gradient(ellipse at center, rgba(56,240,255,0.05) 0%, transparent 60%), var(--bg-base)',
         }}
@@ -688,24 +693,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
         )}
 
-        {step === 'camera' && mission.demo && (
-          <div className="flex flex-col items-center gap-5 py-8 text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)' }}>
-              <span style={{ fontSize: 28 }}>🎯</span>
-            </div>
-            <div>
-              <p className="text-white text-sm font-semibold">Demo Mode</p>
-              <p className="text-slate-500 text-xs mt-1 max-w-xs mx-auto leading-relaxed">
-                Generates a simulated sky photo and mints a real NFT on devnet. Stars are awarded.
-              </p>
-            </div>
-            <Button variant="brass" onClick={() => handleCapture(generateSimPhoto(mission.name), 'camera')} className="w-full">
-              Generate Demo Observation →
-            </Button>
-          </div>
-        )}
-
-        {step === 'camera' && !mission.demo && (
+        {step === 'camera' && (
           <CameraCapture
             missionName={mission.name}
             onCapture={(p) => handleCapture(p, 'camera')}

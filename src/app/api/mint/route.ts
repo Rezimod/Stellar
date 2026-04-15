@@ -36,12 +36,6 @@ export async function POST(req: NextRequest) {
   if (typeof cloudCover !== 'number' || cloudCover < 0 || cloudCover > 100) {
     return NextResponse.json({ error: 'cloudCover must be 0–100' }, { status: 400 });
   }
-  if (cloudCover > 70) {
-    return NextResponse.json(
-      { error: 'Sky conditions too poor to verify observation. Cloud cover must be under 70%.' },
-      { status: 400 }
-    );
-  }
   if (typeof lat !== 'number' || !isFinite(lat) || lat < -90 || lat > 90) {
     return NextResponse.json({ error: 'lat must be -90 to 90' }, { status: 400 });
   }

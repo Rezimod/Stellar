@@ -32,6 +32,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
         },
         embeddedWallets: {
           solana: { createOnLogin: 'users-without-wallets' },
+          showWalletUIs: false,
         },
       }}
     >
