@@ -398,7 +398,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     return (
       <div
         id="mission-done-overlay"
-        className="fixed inset-0 z-50 overflow-hidden"
+        className="fixed inset-0 z-50 overflow-hidden flex flex-col"
         style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(56,240,255,0.07) 0%, transparent 55%), var(--bg-base)' }}
       >
         {/* Confetti burst */}
@@ -424,7 +424,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         ))}
 
         {/* Layout — single column, no scroll */}
-        <div className="relative z-10 flex flex-col gap-2.5 px-4 pt-3 pb-3 max-w-sm mx-auto h-full">
+        <div className="relative z-10 flex flex-col gap-2.5 px-4 pt-3 pb-3 max-w-sm mx-auto w-full flex-1 min-h-0">
 
           {/* Header row: checkmark + title inline */}
           <div className="flex items-center gap-3 animate-slide-up">
@@ -485,12 +485,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
 
           {/* Middle row: NFT image + score + explorer */}
-          <div className="grid grid-cols-2 gap-2.5 animate-fade-in stagger-2">
+          <div className="grid grid-cols-2 gap-2.5 animate-fade-in stagger-2 flex-1 min-h-0">
             {/* NFT visual */}
             <div
               className="rounded-xl overflow-hidden"
               style={{
-                aspectRatio: '1 / 1',
                 border: '1px solid rgba(255,209,102,0.15)',
                 boxShadow: '0 0 24px rgba(255,209,102,0.06)',
                 background: 'rgba(255,255,255,0.02)',
