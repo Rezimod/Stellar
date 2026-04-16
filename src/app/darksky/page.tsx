@@ -45,7 +45,7 @@ export default function DarkSkyPage() {
 
   return (
     <div
-      className="min-h-screen px-4 py-8 sm:py-12"
+      className="px-4 py-4 sm:py-6"
       style={{ background: '#070B14', fontFamily: 'Georgia, serif' }}
     >
       <div className="max-w-3xl mx-auto flex flex-col gap-6">

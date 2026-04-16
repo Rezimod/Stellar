@@ -14,8 +14,8 @@ import Button from '@/components/shared/Button';
 import LoadingRing from '@/components/ui/LoadingRing';
 import ScoreRing from '@/components/ui/ScoreRing';
 import { calculateSkyScore, visibilityToMeters, type SkyScoreResult } from '@/lib/sky-score';
-import { Copy, Check, Telescope, Award, ExternalLink, Camera, X } from 'lucide-react';
-import { MissionIcon } from '@/components/shared/PlanetIcons';
+import { Copy, Check, Award, ExternalLink, Camera, X } from 'lucide-react';
+import { getMissionImage } from '@/lib/mission-icons';
 import { buildTwitterShareUrl, buildFarcasterShareUrl, buildShareImageUrl } from '@/lib/share';
 import RewardIcon from '@/components/shared/RewardIcon';
 import { getStarlight, consumeStarlight } from '@/lib/starlight';
@@ -302,6 +302,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       if (res.ok) {
         const data = await res.json();
         txId = data.txId;
+        console.log('[mint] On-chain success, txId:', data.txId);
       } else {
         const errData = await res.json().catch(() => ({}));
         const msg: string = errData?.error ?? '';
@@ -312,6 +313,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           setMintDone(false);
           return;
         }
+        setMintError('NFT mint failed — your observation is saved locally. You can retry from your NFTs page.');
       }
     } catch (err) {
       console.error('[mint] Network/timeout error:', err);
@@ -444,14 +446,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   // Reward unlock modal
   if (newRewards.length > 0) {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#070B14] overflow-y-auto px-4 pt-4 pb-6">
-        <div className="glass-card glow-emerald max-w-sm w-full mx-auto p-5 flex flex-col gap-3 text-center">
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden px-4" style={{ background: 'rgba(7,11,20,0.97)', backdropFilter: 'blur(12px)' }}>
+        <div className="max-w-sm w-full mx-auto flex flex-col gap-3 text-center p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center mx-auto">
             <Award size={22} className="text-[#34d399]" />
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-[#34d399]">Reward Unlocked!</h2>
+          <div className="overflow-y-auto flex flex-col gap-2" style={{ maxHeight: '45vh' }}>
           {newRewards.map(r => (
-            <div key={r.name} className="bg-[#070B14] border border-[#34d399]/20 rounded-xl p-3 sm:p-4 text-left flex flex-col gap-1.5">
+            <div key={r.name} className="rounded-xl p-3 text-left flex flex-col gap-1.5" style={{ background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)' }}>
               <div className="flex items-center gap-3">
                 <RewardIcon emoji={r.icon} />
                 <div>
@@ -474,6 +477,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               )}
             </div>
           ))}
+          </div>
           <div className="flex gap-2 sm:gap-3">
             <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer"
               className="flex-1 text-center text-xs py-2.5 px-3 border border-[#FFD166]/30 text-[#FFD166] rounded-lg hover:bg-[#FFD166]/10 transition-all">
@@ -599,7 +603,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         )}
 
         {/* Layout — single column, no scroll */}
-        <div className="relative z-10 flex flex-col gap-2 px-4 pt-3 pb-4 max-w-sm mx-auto w-full flex-1 min-h-0">
+        <div className="relative z-10 flex flex-col gap-1.5 px-4 pt-3 pb-4 max-w-sm mx-auto w-full flex-1 min-h-0">
 
           {/* Header row */}
           <div className="flex items-center gap-3 animate-slide-up flex-shrink-0">
@@ -617,7 +621,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  <MissionIcon id={mission.id} size={12} /> {mission.name}
+                  <img src={getMissionImage(mission.id)} alt="" className="w-3 h-3 rounded object-cover flex-shrink-0" />
+                  {mission.name}
                 </span>
                 {isOnChain && (
                   <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.1)', color: 'var(--success)', border: '1px solid rgba(52,211,153,0.2)' }}>
@@ -630,7 +635,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
           {/* Stars hero */}
           <div
-            className="rounded-2xl py-3 px-5 text-center relative overflow-hidden animate-scale-in flex-shrink-0"
+            className="rounded-2xl py-2 px-5 text-center relative overflow-hidden animate-scale-in flex-shrink-0"
             style={{
               background: 'linear-gradient(135deg, rgba(255,209,102,0.08) 0%, rgba(255,180,50,0.04) 100%)',
               border: '1px solid rgba(255,209,102,0.3)',
@@ -649,7 +654,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
             <p
               className="relative font-black leading-none"
-              style={{ fontSize: 48, color: '#FFD166', fontFamily: 'monospace', textShadow: '0 0 24px rgba(255,209,102,0.8), 0 0 48px rgba(255,209,102,0.4)', letterSpacing: '-0.02em' }}
+              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "#FFD166", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255,209,102,0.8), 0 0 48px rgba(255,209,102,0.4)', letterSpacing: '-0.02em' }}
             >
               +{starsEarned}
             </p>
@@ -674,6 +679,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                   ? `0 0 24px ${mintRarity.color}40`
                   : '0 0 20px rgba(56,240,255,0.08)',
               background: '#0a0e1a',
+              minHeight: 120,
+              maxHeight: '40vh',
             }}
           >
             <img
@@ -720,14 +727,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="grid grid-cols-2 gap-2 animate-fade-in flex-shrink-0">
             <button
               onClick={() => window.open(buildTwitterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, grade: skyScore?.grade ?? 'Good', stars: starsEarned, appUrl, ogImageUrl }), '_blank')}
-              className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs text-white"
+              className="flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-white"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
               <span style={{ fontSize: 13 }}>𝕏</span> Share
             </button>
             <button
               onClick={() => window.open(buildFarcasterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, stars: starsEarned, appUrl }), '_blank')}
-              className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs"
+              className="flex items-center justify-center gap-2 rounded-xl py-2 text-xs"
               style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', color: '#A855F7' }}
             >
               ⬡ Farcaster
@@ -738,14 +745,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="grid grid-cols-2 gap-2 animate-slide-up flex-shrink-0">
             <button
               onClick={() => { onClose(); router.push('/nfts'); }}
-              className="py-3 rounded-xl font-semibold text-sm"
+              className="py-2.5 rounded-xl font-semibold text-sm"
               style={{ background: 'var(--gradient-accent)', color: 'var(--bg-base)' }}
             >
               View NFTs →
             </button>
             <button
               onClick={onClose}
-              className="py-3 rounded-xl text-sm"
+              className="py-2.5 rounded-xl text-sm"
               style={{ background: 'transparent', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}
             >
               Continue
@@ -758,43 +765,47 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
   if (step === 'gallery-saved') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#070B14] overflow-y-auto flex flex-col">
+      <div className="fixed inset-0 z-50 bg-[#070B14] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-2">
-            <MissionIcon id={mission.id} size={22} />
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+              <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
+            </div>
             <p className="text-white text-sm font-semibold">{mission.name}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
             <X size={14} />
           </button>
         </div>
-        <div className="flex flex-col items-center gap-4 px-6 py-8 max-w-sm mx-auto w-full text-center">
-          {photo && (
-            <div className="w-full rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: '4/3', maxHeight: 200 }}>
-              <img src={photo} alt="Uploaded observation" className="w-full h-full object-contain" style={{ opacity: 0.85 }} />
+        <div className="flex flex-col justify-between flex-1 min-h-0 px-6 py-5 max-w-sm mx-auto w-full text-center gap-4">
+          <div className="flex flex-col items-center gap-3">
+            {photo && (
+              <div className="w-full rounded-xl overflow-hidden bg-black" style={{ maxHeight: '30vh', aspectRatio: '1/1', objectFit: 'cover', borderRadius: 12 }}>
+                <img src={photo} alt="Uploaded observation" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
+              </div>
+            )}
+            <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)' }}>
+              <Camera size={20} className="text-slate-400" />
             </div>
-          )}
-          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)' }}>
-            <Camera size={22} className="text-slate-400" />
+            <div>
+              <h3 className="text-white font-semibold text-base mb-1">Photo Saved</h3>
+              <p className="text-slate-400 text-sm leading-snug">
+                {photoVerification?.reason ?? "Your photo didn't pass AI verification."}
+              </p>
+              <p className="text-slate-600 text-xs mt-1.5">No Stars earned · Not minted as NFT</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-white font-semibold text-base mb-1">Photo Saved</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              {photoVerification?.reason ?? "Your photo didn't pass AI verification."}
-            </p>
-            <p className="text-slate-600 text-xs mt-2">No Stars earned · Not minted as NFT</p>
-          </div>
-          <div className="flex gap-3 w-full mt-2">
+          <div className="flex gap-3 w-full flex-shrink-0">
             <button
               onClick={() => { setStep('camera'); setPhotoVerification(null); }}
-              className="flex-1 py-3 rounded-xl text-sm"
+              className="flex-1 py-2.5 rounded-xl text-sm"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
             >
               Try Again
             </button>
             <button
               onClick={onClose}
-              className="flex-1 py-3 rounded-xl text-sm font-semibold"
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.2)', color: '#38F0FF' }}
             >
               Done
@@ -808,13 +819,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const fullBleed = false;
 
   return (
-    <div ref={containerRef} className={`fixed inset-0 z-50 bg-[#070B14] ${step === 'minting' ? 'overflow-hidden' : 'overflow-y-auto scrollbar-hide'} flex flex-col`}>
+    <div ref={containerRef} className="fixed inset-0 z-50 bg-[#070B14] overflow-hidden flex flex-col">
 
       {/* Step progress indicator */}
       {(() => {
         const current = getCurrentStepIndex(step);
         return (
-          <div className="flex-shrink-0 flex flex-col items-center pt-5 pb-3 px-6">
+          <div className="flex-shrink-0 flex flex-col items-center pt-4 pb-2 px-6">
             <div className="flex items-center justify-center gap-0">
               {MISSION_STEPS.map((s, i) => (
                 <React.Fragment key={s.label}>
@@ -849,7 +860,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
       {/* Top bar */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-4 py-3 z-10"
+        className="flex-shrink-0 flex items-center justify-between px-4 py-2 z-10"
         style={{
           borderBottom: fullBleed ? 'none' : '1px solid rgba(255,255,255,0.05)',
           position: fullBleed ? 'absolute' : 'relative',
@@ -858,7 +869,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         }}
       >
         <div className="flex items-center gap-2">
-          <MissionIcon id={mission.id} size={22} animate/>
+          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+            <img
+              src={getMissionImage(mission.id)}
+              alt={mission.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
           <div>
             <p className="text-white text-sm font-semibold leading-tight">{mission.name}</p>
             {!fullBleed && <p className="text-slate-600 text-[11px]">{mission.desc}</p>}
@@ -874,48 +891,62 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       </div>
 
       {/* Content */}
-      <div className={`flex flex-col ${fullBleed ? 'flex-1' : 'px-4 py-4 max-w-2xl mx-auto w-full'}`}>
+      <div className={`flex flex-col flex-1 min-h-0 overflow-hidden ${fullBleed ? '' : 'px-4 py-3 max-w-2xl mx-auto w-full'}`}>
 
         {step === 'observing' && (
-          <div className="flex flex-col gap-4 mt-2">
+          <div className="flex flex-col gap-3 flex-1 min-h-0 justify-center">
             <div
-              className="rounded-xl p-6 text-center"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+              className="rounded-2xl p-5 text-center"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
             >
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto"
-                style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)' }}
+                className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-3"
+                style={{ border: '1px solid rgba(255,209,102,0.2)', boxShadow: '0 0 20px rgba(255,209,102,0.08)' }}
               >
-                <Telescope size={22} className="text-[#FFD166]" />
+                <img
+                  src={getMissionImage(mission.id)}
+                  alt={mission.name}
+                  className="w-full h-full object-cover"
+                  style={{ display: 'block' }}
+                />
               </div>
-              <p className="text-white text-sm font-medium mb-2">
+              <p className="text-white text-sm font-medium mb-1.5">
                 Point your telescope at <span className="text-[#FFD166]">{mission.name}</span>
               </p>
-              <p className="text-slate-600 text-xs leading-relaxed">{mission.hint}</p>
+              <p className="text-slate-600 text-xs leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const }}>
+                {mission.hint}
+              </p>
             </div>
-            <Button variant="brass" onClick={() => { setMintError(''); if (mission.demo) { handleCapture(mission.demoPhoto ?? '/images/planets/saturn.jpg'); } else { setStep('camera'); } }} className="w-full">
+            <Button variant="brass" onClick={() => { setMintError(''); if (mission.demo) { handleCapture(mission.demoPhoto ?? '/images/planets/saturn.jpg'); } else { setStep('camera'); } }} className="w-full flex-shrink-0">
               Begin Observation →
             </Button>
           </div>
         )}
 
         {step === 'camera' && (
-          <CameraCapture
-            missionName={mission.name}
-            onCapture={(p) => handleCapture(p, 'camera')}
-            onUpload={(p) => handleCapture(p, 'upload')}
-          />
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <CameraCapture
+              missionName={mission.name}
+              onCapture={(p) => handleCapture(p, 'camera')}
+              onUpload={(p) => handleCapture(p, 'upload')}
+            />
+          </div>
         )}
 
         {step === 'verifying' && (
-          <div className="flex flex-col items-center gap-4 py-8">
-            <LoadingRing size={72} message="Analyzing sky + photo..." facts={[]} />
-            <p className="text-[11px] font-body mt-2" style={{ color: 'var(--text-muted)' }}>This may take a moment</p>
+          <div className="flex flex-col flex-1 min-h-0 items-center justify-center gap-4">
+            <div
+              className="flex flex-col items-center gap-4 p-8 rounded-2xl"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
+            >
+              <LoadingRing size={64} message="Analyzing sky + photo..." facts={[]} />
+              <p className="text-[11px] font-body" style={{ color: 'var(--text-muted)' }}>This may take a moment</p>
+            </div>
           </div>
         )}
 
         {step === 'verified' && sky && (
-          <>
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <Verification
               photo={photo}
               sky={sky}
@@ -924,6 +955,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               latitude={coords.lat}
               longitude={coords.lon}
               onMint={handleMint}
+              compact={true}
             />
             {photoVerification && (
               <div className="mt-2 text-center">
@@ -946,7 +978,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
 
         {step === 'minting' && (

@@ -359,6 +359,7 @@ code, pre, .mono {
   animation: twinkle var(--duration, 5s) ease-in-out infinite;
   animation-delay: var(--delay, 0s);
   pointer-events: none;
+  will-change: opacity;
 }
 
 @keyframes twinkle {

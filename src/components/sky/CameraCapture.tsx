@@ -61,8 +61,8 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   // Preview screen
   if (preview) {
     return (
-      <div className="flex flex-col gap-3 w-full">
-        <div className="relative rounded-2xl overflow-hidden bg-black" style={{ height: 'clamp(220px, 42vh, 340px)' }}>
+      <div className="flex flex-col gap-2.5 w-full flex-1 min-h-0 overflow-hidden">
+        <div className="relative rounded-2xl overflow-hidden bg-black flex-1 min-h-0" style={{ minHeight: 180 }}>
           <img src={preview} alt="Observation preview" className="w-full h-full object-cover" />
           <div className="absolute bottom-0 left-0 right-0 px-3 py-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
             <p className="text-[#FFD166] text-[10px] font-mono tracking-widest">
@@ -72,14 +72,14 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         </div>
         <button
           onClick={() => isUploadPreview ? (onUpload ?? onCapture)(preview) : onCapture(preview)}
-          className="w-full py-4 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98]"
+          className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98] flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
         >
           Submit for Verification →
         </button>
         <button
           onClick={handleRetake}
-          className="w-full py-3 rounded-xl text-sm text-slate-400 flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-xl text-sm text-slate-400 flex items-center justify-center gap-2 flex-shrink-0"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
           <RotateCcw size={14} /> Retake
@@ -91,8 +91,8 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   // Camera permission denied
   if (error === 'permission_denied') {
     return (
-      <div className="text-center p-6">
-        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto" style={{ background: 'rgba(255,209,102,0.06)', border: '1px solid rgba(255,209,102,0.15)' }}>
+      <div className="flex flex-col items-center justify-center flex-1 min-h-0 text-center p-6">
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255,209,102,0.06)', border: '1px solid rgba(255,209,102,0.15)' }}>
           <Camera size={22} className="text-[#FFD166]/60" />
         </div>
         <p className="text-amber-400 text-sm mb-2">Camera access required</p>
@@ -110,9 +110,9 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
 
   // Live viewfinder
   return (
-    <div className="flex flex-col gap-3 w-full">
+    <div className="flex flex-col gap-2.5 w-full flex-1 min-h-0 overflow-hidden">
       {/* Viewfinder */}
-      <div className="relative rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: '4/3', maxHeight: 'clamp(220px, 42vh, 340px)' }}>
+      <div className="relative rounded-2xl overflow-hidden bg-black flex-1 min-h-0" style={{ minHeight: 180 }}>
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
         {flash && <div className="absolute inset-0 bg-white/30 pointer-events-none" />}
 
@@ -139,7 +139,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         </div>
 
         {/* Top HUD */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2.5" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)' }}>
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)' }}>
           <span className="text-[#FFD166] text-[10px] font-mono tracking-widest uppercase">STELLAR · {missionName}</span>
           <span className="text-white/40 text-[10px] font-mono" suppressHydrationWarning>{new Date().toLocaleTimeString()}</span>
         </div>
@@ -156,52 +156,52 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
 
       {/* Capture error */}
       {captureError && (
-        <p className="text-amber-400 text-xs text-center px-4">{captureError}</p>
+        <p className="text-amber-400 text-xs text-center px-4 flex-shrink-0">{captureError}</p>
       )}
 
       {/* Shutter + Upload row */}
-      <div className="flex items-center justify-center gap-5 py-2">
+      <div className="flex items-center justify-center gap-5 py-1 flex-shrink-0">
         <button
           onClick={handleCapture}
-          className="w-16 h-16 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+          className="w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-transform"
           style={{
             background: 'rgba(255,255,255,0.08)',
             border: '2px solid rgba(255,255,255,0.3)',
-            boxShadow: '0 0 0 6px rgba(255,255,255,0.04)',
+            boxShadow: '0 0 0 5px rgba(255,255,255,0.04)',
           }}
         >
-          <div className="w-11 h-11 rounded-full" style={{ background: '#fff' }} />
+          <div className="w-10 h-10 rounded-full" style={{ background: '#fff' }} />
         </button>
         <label
-          className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+          className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
           title="Upload from device"
         >
-          <Upload size={16} className="text-slate-400" />
+          <Upload size={15} className="text-slate-400" />
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
         </label>
       </div>
 
       {/* Capture guide */}
       <div
-        className="rounded-xl px-4 py-3"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+        className="rounded-xl px-3 py-2.5 flex-shrink-0"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
       >
-        <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-2.5 font-medium">How to capture</p>
-        <div className="flex flex-col gap-2">
+        <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-1.5 font-medium">How to capture</p>
+        <div className="flex flex-col gap-1.5">
           {[
             { n: '1', text: 'Point your telescope at the target object' },
             { n: '2', text: 'Hold your phone camera to the eyepiece' },
-            { n: '3', text: 'Center the object in the reticle, then press the shutter — or tap ↑ to upload a saved photo' },
+            { n: '3', text: 'Center the object and press shutter — or tap the upload icon' },
           ].map(tip => (
-            <div key={tip.n} className="flex items-start gap-2.5">
+            <div key={tip.n} className="flex items-start gap-2">
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"
                 style={{ background: 'rgba(255,209,102,0.1)', color: '#FFD166', border: '1px solid rgba(255,209,102,0.2)' }}
               >
                 {tip.n}
               </span>
-              <p className="text-slate-500 text-xs leading-relaxed">{tip.text}</p>
+              <p className="text-slate-500 text-xs leading-snug">{tip.text}</p>
             </div>
           ))}
         </div>

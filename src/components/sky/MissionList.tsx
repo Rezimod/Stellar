@@ -4,7 +4,7 @@ import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { Mission } from '@/lib/types';
 import { CheckCircle2 } from 'lucide-react';
-import { MissionIcon } from '@/components/shared/PlanetIcons';
+import { getMissionImage } from '@/lib/mission-icons';
 import { useState, useEffect } from 'react';
 import { getStarlight, MAX_STARLIGHT_VALUE } from '@/lib/starlight';
 
@@ -65,7 +65,14 @@ export default function MissionList({ onStart }: MissionListProps) {
               </div>
             )}
 
-            <div className="mb-3"><MissionIcon id={mission.id} size={44} /></div>
+            <div className="relative w-full overflow-hidden rounded-xl mb-3" style={{ aspectRatio: '1 / 1', maxHeight: '160px' }}>
+              <img
+                src={getMissionImage(mission.id)}
+                alt={mission.name}
+                className="w-full h-full object-cover"
+                style={{ display: 'block' }}
+              />
+            </div>
 
             <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
 

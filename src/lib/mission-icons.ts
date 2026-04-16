@@ -40,6 +40,24 @@ export function getMissionIconKeyById(missionId: string): string {
   return MISSION_ICON_IDS_BY_ID[missionId] ?? 'telescope';
 }
 
+const MISSION_IMAGES: Record<string, string> = {
+  'demo':             '/images/planets/saturn.jpg',
+  'free-observation': '/images/planets/earth.jpg',
+  'moon':             '/images/planets/moon.jpg',
+  'jupiter':          '/images/planets/jupiter.jpg',
+  'quick-jupiter':    '/images/planets/jupiter.jpg',
+  'saturn':           '/images/planets/saturn.jpg',
+  'quick-saturn':     '/images/planets/saturn.jpg',
+  'orion':            '/images/dso/m42.jpg',
+  'pleiades':         '/images/dso/m45.jpg',
+  'andromeda':        '/images/dso/m31.jpg',
+  'crab':             '/images/dso/m1.jpg',
+};
+
+export function getMissionImage(id: string): string {
+  return MISSION_IMAGES[id] ?? '/images/planets/earth.jpg';
+}
+
 // Glow color per mission for hover effects
 export const MISSION_GLOW: Record<string, string> = {
   'moon':             'rgba(232,224,208,0.1)',

@@ -624,7 +624,7 @@ export default function HomePage() {
       </section>
 
       {/* Remaining sections */}
-      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-4 pb-8 sm:pb-12 flex flex-col gap-4 animate-page-enter" style={{ overflowX: 'clip', overflow: 'hidden' }}>
+      <div className="max-w-3xl lg:max-w-5xl w-full mx-auto px-4 lg:px-8 pt-4 pb-8 sm:pb-12 flex flex-col gap-4 animate-page-enter" style={{ overflowX: 'clip' }}>
 
         {/* Tonight's Sky Preview Strip */}
         <div style={{

@@ -22,9 +22,18 @@ export interface ObservationMintParams {
 
 export async function mintCompressedNFT(params: ObservationMintParams): Promise<{ txId: string }> {
   const { FEE_PAYER_PRIVATE_KEY, MERKLE_TREE_ADDRESS, COLLECTION_MINT_ADDRESS } = process.env;
-  if (!FEE_PAYER_PRIVATE_KEY) throw new Error('FEE_PAYER_PRIVATE_KEY not set');
-  if (!MERKLE_TREE_ADDRESS) throw new Error('MERKLE_TREE_ADDRESS not set');
-  if (!COLLECTION_MINT_ADDRESS) throw new Error('COLLECTION_MINT_ADDRESS not set');
+  if (!FEE_PAYER_PRIVATE_KEY) {
+    console.error('[mint-nft] Missing env var:', 'FEE_PAYER_PRIVATE_KEY');
+    throw new Error('FEE_PAYER_PRIVATE_KEY not set');
+  }
+  if (!MERKLE_TREE_ADDRESS) {
+    console.error('[mint-nft] Missing env var:', 'MERKLE_TREE_ADDRESS');
+    throw new Error('MERKLE_TREE_ADDRESS not set');
+  }
+  if (!COLLECTION_MINT_ADDRESS) {
+    console.error('[mint-nft] Missing env var:', 'COLLECTION_MINT_ADDRESS');
+    throw new Error('COLLECTION_MINT_ADDRESS not set');
+  }
 
   // Prefer Helius RPC (faster, more reliable) over public devnet
   const rpcUrl =
@@ -76,7 +85,7 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
       commitment: 'confirmed',
     });
   } catch {
-    throw new Error('NFT mint confirmed on-chain failed — check RPC connection');
+    throw new Error('NFT mint transaction not confirmed — check devnet RPC');
   }
 
   const txId = bs58.encode(Buffer.from(signature));

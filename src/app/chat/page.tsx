@@ -136,7 +136,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100dvh - 56px)' }}>
+    <div className="flex flex-col -mb-24 sm:mb-0" style={{ height: 'calc(100dvh - 56px)' }}>
       <style>{`
         @keyframes cursorBlink { 0%,100% { opacity:1 } 50% { opacity:0 } }
         .streaming-cursor { animation: cursorBlink 0.7s ease-in-out infinite; color: var(--accent); }

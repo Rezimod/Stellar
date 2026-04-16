@@ -95,13 +95,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // If no wallet and this is a demo, skip the real mint entirely
+  if (!userAddress && isDemoMint) {
+    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
+    const mockTxId = Array.from({ length: 87 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    console.log('[mint] No wallet + demo — returning sim txId');
+    return NextResponse.json({ txId: mockTxId, explorerUrl: `https://explorer.solana.com/tx/${mockTxId}?cluster=devnet` });
+  }
+
   try {
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target);
     const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity: typeof rarity === 'string' ? rarity : 'Common' });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
-    if (db && userAddress) {
+    // Skip DB log for demo mints to avoid polluting production records
+    if (db && userAddress && !isDemoMint) {
       db.insert(observationLog).values({
         wallet: userAddress,
         target,
@@ -114,16 +123,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ txId, explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=devnet` });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('[mint] Error:', message);
-
-    // For demo observations, return a mock devnet-style txId so the demo always completes
-    if (isDemoMint) {
-      const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
-      const mockTxId = Array.from({ length: 87 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-      return NextResponse.json({ txId: mockTxId, explorerUrl: `https://explorer.solana.com/tx/${mockTxId}?cluster=devnet` });
-    }
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[mint] Bubblegum mint failed:', err);
+    return NextResponse.json({ error: 'NFT minting failed — check server logs', txId: null }, { status: 500 });
   }
 }
