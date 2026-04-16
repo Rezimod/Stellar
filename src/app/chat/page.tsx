@@ -1,12 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowUp } from 'lucide-react';
 import { useLocation } from '@/lib/location';
 
 interface Msg { role: 'user' | 'assistant'; content: string; }
+
+const DEMO_MESSAGES: Msg[] = [
+  { role: 'user', content: "What can I see tonight?" },
+  { role: 'assistant', content: "Tonight looks great for stargazing! Jupiter is rising in the east around 9 PM at 35° altitude. The Moon is at 40% illumination — minimal interference. Saturn follows at 10 PM. Want me to check cloud cover for your location?" },
+];
 
 export default function ChatPage() {
   const { authenticated, login, getAccessToken } = usePrivy();
@@ -30,6 +35,7 @@ export default function ChatPage() {
   const [error, setError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastSentRef = useRef('');
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
   useEffect(() => { setTimeout(() => textareaRef.current?.focus(), 200); }, []);
@@ -48,9 +54,10 @@ export default function ChatPage() {
     el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   };
 
-  const send = async (text?: string) => {
+  const send = useCallback(async (text?: string) => {
     const msg = (text ?? input).trim();
     if (!msg || loading) return;
+    lastSentRef.current = msg;
     setInput('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -60,6 +67,8 @@ export default function ChatPage() {
     setMessages(next);
     setLoading(true);
     setStreamingMsgIdx(next.length);
+    const abortController = new AbortController();
+    const streamTimeout = setTimeout(() => abortController.abort(), 5 * 60 * 1000);
     try {
       const accessToken = await getAccessToken();
       if (!accessToken) { login(); return; }
@@ -73,6 +82,7 @@ export default function ChatPage() {
           lat: location.lat,
           lon: location.lon,
         }),
+        signal: abortController.signal,
       });
       if (!res.ok || !res.body) throw new Error('Stream failed');
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
@@ -98,13 +108,31 @@ export default function ChatPage() {
           });
         }
       }
-    } catch {
+    } catch (err) {
       setStreamingMsgIdx(null);
-      setError(locale === 'ka' ? 'კავშირი დაიკარგა. სცადე ისევ.' : 'Connection lost. Try again.');
+      const isTimeout = err instanceof Error && err.name === 'AbortError';
+      setError(isTimeout
+        ? (locale === 'ka' ? 'კავშირის ვადა გავიდა. სცადე ისევ.' : 'Connection timed out. Please try again.')
+        : (locale === 'ka' ? 'კავშირი დაიკარგა. სცადე ისევ.' : 'Connection lost. Try again.'));
     } finally {
+      clearTimeout(streamTimeout);
       setStreamingMsgIdx(null);
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input, loading, messages, locale, location.lat, location.lon, getAccessToken, login]);
+
+  const displayMessages = authenticated ? messages : [messages[0], ...DEMO_MESSAGES];
+
+  const retryLastMessage = () => {
+    const msg = lastSentRef.current;
+    if (!msg) return;
+    setMessages(prev => {
+      const lastUserIdx = [...prev].map(m => m.role).lastIndexOf('user');
+      return lastUserIdx >= 0 ? prev.slice(0, lastUserIdx) : prev;
+    });
+    setError('');
+    setTimeout(() => send(msg), 50);
   };
 
   return (
@@ -160,41 +188,25 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
 
-        {/* Sky card + suggestions — show when only greeting present */}
-        {messages.length === 1 && (
-          <div className="flex flex-col gap-3 mb-2">
-            {skySummary && (
-              <div className="card-base p-3">
-                <p style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 600,
-                  fontSize: 12,
-                  color: skySummary.verified ? 'var(--success)' : 'var(--warning)',
-                  margin: '0 0 2px',
-                }}>
-                  {skySummary.verified ? '✦ Good conditions tonight' : '◑ Cloudy tonight'}
-                </p>
-                <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: 0 }}>
-                  {skySummary.cloudCover}% cloud · {skySummary.visibility} · Ask me what to observe
-                </p>
-              </div>
-            )}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="btn-ghost"
-                  style={{ fontSize: 11, padding: '6px 12px', minHeight: 'auto' }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+        {/* Sky card — show when only greeting present */}
+        {messages.length === 1 && skySummary && (
+          <div className="card-base p-3 mb-2">
+            <p style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 600,
+              fontSize: 12,
+              color: skySummary.verified ? 'var(--success)' : 'var(--warning)',
+              margin: '0 0 2px',
+            }}>
+              {skySummary.verified ? '✦ Good conditions tonight' : '◑ Cloudy tonight'}
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: 0 }}>
+              {skySummary.cloudCover}% cloud · {skySummary.visibility} · Ask me what to observe
+            </p>
           </div>
         )}
 
-        {messages.map((m, i) => {
+        {displayMessages.map((m, i) => {
           const isStreamingThis = streamingMsgIdx === i && m.role === 'assistant';
           if (m.role === 'user') {
             return (
@@ -287,25 +299,55 @@ export default function ChatPage() {
           </div>
         )}
 
-        {error && <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--warning)' }}>{error}</p>}
+        {/* Suggestion pills — show after every assistant response when not loading */}
+        {displayMessages[displayMessages.length - 1]?.role === 'assistant' && !loading && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+            {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
+              <button
+                key={s}
+                onClick={() => authenticated ? send(s) : login()}
+                className="btn-ghost"
+                style={{ fontSize: 11, padding: '6px 12px', minHeight: 'auto' }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--warning)', marginBottom: 8 }}>{error}</p>
+            {lastSentRef.current && (
+              <button
+                onClick={retryLastMessage}
+                style={{ fontSize: 12, color: '#38F0FF', background: 'none', border: '1px solid rgba(56,240,255,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
-      {/* Auth gate overlay */}
+      {/* Input bar */}
+      <div style={{ position: 'relative' }}>
       {!authenticated && (
-        <div className="absolute inset-0 top-[113px] flex items-end justify-center pb-32 pointer-events-none">
-          <div className="pointer-events-auto flex flex-col items-center gap-3 px-6 py-5 rounded-2xl text-center mx-4"
-            style={{ background: 'rgba(7,11,20,0.95)', border: '1px solid var(--accent-border)', backdropFilter: 'blur(12px)' }}>
-            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', margin: 0 }}>Sign in to chat with ASTRA</p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: 0 }}>Free forever · No crypto knowledge needed</p>
-            <button onClick={() => login()} className="btn-primary" style={{ padding: '8px 24px', fontSize: 13, minHeight: 40 }}>
-              Sign In →
-            </button>
-          </div>
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+          background: 'rgba(7,11,20,0.95)',
+          backdropFilter: 'blur(12px)',
+          borderTop: '1px solid var(--border-subtle)',
+          padding: '12px 16px',
+        }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, flex: 1 }}>Sign in to chat with ASTRA</p>
+          <button onClick={() => login()} className="btn-primary" style={{ padding: '8px 20px', fontSize: 13, minHeight: 40, flexShrink: 0 }}>
+            Sign In →
+          </button>
         </div>
       )}
-
-      {/* Input bar */}
       <div style={{
         flexShrink: 0,
         padding: '12px 16px',
@@ -366,6 +408,7 @@ export default function ChatPage() {
             <ArrowUp size={18} color={input.trim() && !loading && authenticated ? '#070B14' : 'var(--text-muted)'} />
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
