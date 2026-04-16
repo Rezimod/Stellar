@@ -10,7 +10,8 @@
     "setup:token": "npx tsx scripts/create-stars-token.ts",
     "seed:demo": "npx tsx scripts/seed-demo-data.ts",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "setup:stars": "npx tsx scripts/import-star-catalog.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

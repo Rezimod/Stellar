@@ -80,6 +80,17 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const [challengeVisible, setChallengeVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Name a Star state
+  const [nearestStar, setNearestStar] = useState<{
+    catalogId: string; ra: number; dec: number; mag: number;
+    constellation: string | null; properName: string | null;
+  } | null>(null);
+  const [starName, setStarName] = useState('');
+  const [starClaiming, setStarClaiming] = useState(false);
+  const [starClaimed, setStarClaimed] = useState<{ chosenName: string; proofUrl: string } | null>(null);
+  const [starError, setStarError] = useState('');
+  const [starSkipped, setStarSkipped] = useState(false);
+
   useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -105,6 +116,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     const t = setTimeout(() => setChallengeVisible(false), 3300);
     return () => clearTimeout(t);
   }, [challengeVisible]);
+
+  useEffect(() => {
+    if (step !== 'done' || !mintTxId) return;
+    fetch(`/api/star/nearest-unclaimed?lat=${coords.lat}&lon=${coords.lon}&target=${encodeURIComponent(mission.name)}`)
+      .then(r => r.json())
+      .then(data => { if (!data.error) setNearestStar(data); })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, mintTxId]);
 
   const handleCapture = async (p: string, source: 'camera' | 'upload' = 'camera') => {
     setPhoto(p);
@@ -437,6 +457,34 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     }, 1200);
   };
 
+  const handleStarClaim = async () => {
+    if (!starName.trim() || !nearestStar || !mintTxId) return;
+    setStarClaiming(true);
+    setStarError('');
+    try {
+      const res = await fetch('/api/star/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          catalogId: nearestStar.catalogId,
+          chosenName: starName.trim(),
+          walletAddress: solanaWallet?.address ?? '',
+          nftAddress: mintTxId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStarError(data.error ?? 'Could not claim star');
+        return;
+      }
+      setStarClaimed({ chosenName: data.chosenName, proofUrl: data.proofUrl });
+    } catch {
+      setStarError('Could not claim star');
+    } finally {
+      setStarClaiming(false);
+    }
+  };
+
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code).catch(() => {});
     setCopiedCode(code);
@@ -602,8 +650,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
         )}
 
-        {/* Layout — single column, no scroll */}
-        <div className="relative z-10 flex flex-col gap-1.5 px-4 pt-3 pb-4 max-w-sm mx-auto w-full flex-1 min-h-0">
+        {/* Layout — single column, scrollable when star section is active */}
+        <div className={`relative z-10 flex flex-col gap-1.5 px-4 pt-3 pb-4 max-w-sm mx-auto w-full flex-1 min-h-0 ${nearestStar && !starSkipped ? 'overflow-y-auto' : ''}`}>
 
           {/* Header row */}
           <div className="flex items-center gap-3 animate-slide-up flex-shrink-0">
@@ -758,6 +806,114 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               Continue
             </button>
           </div>
+
+          {/* Name a Star */}
+          {!starSkipped && (
+            <div
+              className="flex-shrink-0 pt-5"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 4 }}
+            >
+              {!starClaimed ? (
+                nearestStar === null ? (
+                  <div className="flex items-center justify-center gap-2 py-2">
+                    <div
+                      className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+                      style={{ borderColor: 'rgba(148,163,184,0.4)', borderTopColor: 'transparent' }}
+                    />
+                    <span className="text-xs" style={{ color: 'rgba(148,163,184,0.5)' }}>
+                      Finding your star...
+                    </span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span style={{ fontSize: 14, color: '#FFD166', lineHeight: 1 }}>★</span>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        Name a star
+                      </span>
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(148,163,184,0.6)' }}>
+                      {nearestStar.catalogId}
+                      {nearestStar.constellation ? ` in ${nearestStar.constellation}` : ''} · magnitude {nearestStar.mag.toFixed(1)}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(100,116,139,0.7)' }}>
+                      Your name will be inscribed on your NFT.
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="e.g. Nino's Star, Tbilisi"
+                      maxLength={30}
+                      value={starName}
+                      onChange={e => setStarName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleStarClaim(); }}
+                      className="mt-3 w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'var(--text-primary)',
+                      }}
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={handleStarClaim}
+                        disabled={!starName.trim() || starClaiming}
+                        className="flex-1 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5"
+                        style={{
+                          background: !starName.trim() || starClaiming
+                            ? 'rgba(255,209,102,0.15)'
+                            : 'rgba(255,209,102,0.2)',
+                          border: '1px solid rgba(255,209,102,0.35)',
+                          color: '#FFD166',
+                          opacity: !starName.trim() || starClaiming ? 0.5 : 1,
+                          cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {starClaiming && (
+                          <div
+                            className="w-3 h-3 rounded-full border-2 animate-spin"
+                            style={{ borderColor: 'rgba(255,209,102,0.4)', borderTopColor: '#FFD166' }}
+                          />
+                        )}
+                        Inscribe
+                      </button>
+                      <button
+                        onClick={() => setStarSkipped(true)}
+                        className="px-4 py-2 rounded-xl text-xs"
+                        style={{
+                          background: 'transparent',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          color: 'rgba(148,163,184,0.5)',
+                        }}
+                      >
+                        Skip
+                      </button>
+                    </div>
+                    {starError && (
+                      <p className="text-xs mt-2" style={{ color: '#FBBF24' }}>{starError}</p>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <span style={{ fontSize: 14, color: '#FFD166' }}>★</span>
+                    <span className="text-base font-semibold" style={{ color: '#FFD166' }}>
+                      {starClaimed.chosenName}
+                    </span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(148,163,184,0.6)' }}>Your star is named.</p>
+                  <a
+                    href={starClaimed.proofUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#38F0FF', fontSize: 12, textDecoration: 'none' }}
+                  >
+                    View proof page →
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
