@@ -111,7 +111,7 @@ export default function PlanetDetail({ planet, onClose }: Props) {
         className={`
           w-full sm:max-w-sm sm:mx-auto sm:rounded-2xl
           bg-[#0F1827]
-          border-t sm:border border-[#38F0FF]/10
+          border-t sm:border border-[#818cf8]/10
           transition-transform duration-300
           ${visible ? 'translate-y-0' : 'translate-y-full sm:translate-y-4'}
           rounded-t-2xl sm:rounded-2xl

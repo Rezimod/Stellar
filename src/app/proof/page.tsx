@@ -72,7 +72,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
                 text: `I observed ${mission.name} and earned +${displayStars} stars on Solana ✦`,
                 url: window.location.href,
               }).catch(() => {})}
-              className="text-xs px-2 py-1.5 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] text-slate-400 hover:text-[#38F0FF] rounded transition-all flex items-center justify-center gap-1"
+              className="text-xs px-2 py-1.5 border border-[rgba(99,102,241,0.12)] hover:border-[#818cf8] text-slate-400 hover:text-[#818cf8] rounded transition-all flex items-center justify-center gap-1"
               title="Share observation"
             >
               ↗ Share
@@ -84,8 +84,8 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             title={isRealTx ? 'View on Solana Explorer' : 'Transaction not yet confirmed on-chain'}
             className={`flex-1 text-center text-xs px-2 py-1.5 border rounded transition-all flex items-center justify-center gap-1 ${
               isRealTx
-                ? 'border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] text-slate-400 hover:text-[#38F0FF] btn-glow-cyan'
-                : 'border-[rgba(56,240,255,0.12)] text-slate-600 opacity-50 cursor-not-allowed'
+                ? 'border-[rgba(99,102,241,0.12)] hover:border-[#818cf8] text-slate-400 hover:text-[#818cf8] btn-glow-cyan'
+                : 'border-[rgba(99,102,241,0.12)] text-slate-600 opacity-50 cursor-not-allowed'
             }`}
           >
             <ExternalLink size={12} /> {isRealTx ? 'Explorer →' : 'Local only'}
@@ -94,14 +94,14 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               onClick={() => setConfirming(true)}
               className="flex-1 text-xs px-2 py-1.5 hover:border-red-500 text-slate-400 hover:text-red-400 rounded transition-all flex items-center justify-center gap-1"
-              style={{ border: '1px solid rgba(56,240,255,0.12)' }}
+              style={{ border: '1px solid rgba(99,102,241,0.12)' }}
             >
               <Trash2 size={12} /> Delete
             </button>
           ) : (
             <div className="flex-1 flex gap-1">
               <button onClick={onDelete} className="flex-1 text-xs px-2 py-1.5 bg-red-500/20 border border-red-500 text-red-400 rounded">Confirm</button>
-              <button onClick={() => setConfirming(false)} className="flex-1 text-xs px-2 py-1.5 text-slate-400 rounded" style={{ border: '1px solid rgba(56,240,255,0.12)' }}>Cancel</button>
+              <button onClick={() => setConfirming(false)} className="flex-1 text-xs px-2 py-1.5 text-slate-400 rounded" style={{ border: '1px solid rgba(99,102,241,0.12)' }}>Cancel</button>
             </div>
           )}
         </div>
@@ -151,7 +151,7 @@ export default function ProofPage() {
           <p className="text-slate-400 mt-1">{proofs.length} observation{proofs.length !== 1 ? 's' : ''} sealed on Solana</p>
         </div>
         {proofs.length > 0 && (
-          <Link href="/missions" className="text-sm text-[#38F0FF] hover:underline">
+          <Link href="/missions" className="text-sm text-[#818cf8] hover:underline">
             + Add more →
           </Link>
         )}
@@ -170,14 +170,14 @@ export default function ProofPage() {
             Observe {nextReward.requiredMissions.filter(id => !completedIds.includes(id)).join(', ')} to unlock
           </p>
         )}
-        <Link href="/missions" className="text-[#38F0FF] text-xs hover:underline">
+        <Link href="/missions" className="text-[#818cf8] text-xs hover:underline">
           View All Rewards →
         </Link>
       </div>
 
       {proofs.length === 0 ? (
-        <div className="text-center py-20 rounded-xl" style={{ border: '1px dashed rgba(56,240,255,0.12)' }}>
-          <Telescope size={36} className="text-[#38F0FF]/30 mx-auto mb-4" />
+        <div className="text-center py-20 rounded-xl" style={{ border: '1px dashed rgba(99,102,241,0.12)' }}>
+          <Telescope size={36} className="text-[#818cf8]/30 mx-auto mb-4" />
           <p className="text-slate-400 mb-4">No observations minted yet</p>
           <Link href="/missions" className="px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg">
             Begin Observation →

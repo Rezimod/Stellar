@@ -56,10 +56,10 @@ export default function BestTargets() {
         {targets.map(target => {
           const eqColor = target.equipment === 'naked_eye' ? '#34d399'
             : target.equipment === 'binoculars' ? '#FFD166'
-            : '#38F0FF';
+            : '#818cf8';
           const eqBg = target.equipment === 'naked_eye' ? 'rgba(52,211,153,0.1)'
             : target.equipment === 'binoculars' ? 'rgba(255,209,102,0.1)'
-            : 'rgba(56,240,255,0.1)';
+            : 'rgba(99,102,241,0.1)';
           const eqLabel = target.equipment === 'naked_eye' ? '👁 Naked Eye'
             : target.equipment === 'binoculars' ? '🔭 Binoculars'
             : '🔭 Telescope';

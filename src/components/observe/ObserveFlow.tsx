@@ -245,7 +245,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
         {photo && <img src={photo} alt="" className="rounded-xl max-h-48 object-cover opacity-60" />}
         <div className="flex justify-center gap-1.5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[#38F0FF]/40"
+            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[#818cf8]/40"
               style={{ animationDelay: `${i * 180}ms` }} />
           ))}
         </div>
@@ -261,7 +261,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
       <div className="fixed inset-0 z-[60] bg-[#070B14] flex flex-col items-center justify-center gap-4">
         <div className="flex gap-1.5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[#38F0FF]/40"
+            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[#818cf8]/40"
               style={{ animationDelay: `${i * 180}ms` }} />
           ))}
         </div>

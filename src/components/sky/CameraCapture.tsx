@@ -73,7 +73,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <button
           onClick={() => isUploadPreview ? (onUpload ?? onCapture)(preview) : onCapture(preview)}
           className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98] flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
         >
           Submit for Verification →
         </button>
@@ -99,7 +99,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <p className="text-slate-500 text-xs mb-5">Allow camera access in your browser settings, or upload a saved sky photo.</p>
         <label
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
         >
           <Upload size={15} /> Upload from Device
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />

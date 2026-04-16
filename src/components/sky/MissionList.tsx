@@ -99,7 +99,7 @@ export default function MissionList({ onStart }: MissionListProps) {
             )}
 
             {mission.demo && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full mb-1" style={{ background: 'rgba(56,240,255,0.08)', color: '#38F0FF', border: '1px solid rgba(56,240,255,0.15)' }}>
+              <span className="text-[10px] px-2 py-0.5 rounded-full mb-1" style={{ background: 'rgba(99,102,241,0.08)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.15)' }}>
                 Demo
               </span>
             )}
@@ -124,7 +124,7 @@ export default function MissionList({ onStart }: MissionListProps) {
               <button
                 onClick={() => onStart(mission)}
                 className="w-full py-2.5 min-h-[44px] rounded-lg text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
               >
                 Begin →
               </button>

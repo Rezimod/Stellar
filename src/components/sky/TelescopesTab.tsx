@@ -17,7 +17,7 @@ interface GuideCard {
 const LEVEL_CONFIG: { id: Level; label: string; badge: string; color: string; subtitle: string }[] = [
   { id: 'beginner',     label: 'Beginner',     badge: '🌱', color: '#34d399', subtitle: 'First Light' },
   { id: 'intermediate', label: 'Intermediate', badge: '🔭', color: '#FFD166', subtitle: 'Going Deeper' },
-  { id: 'advanced',     label: 'Advanced',     badge: '⚡', color: '#38F0FF', subtitle: 'Serious Observer' },
+  { id: 'advanced',     label: 'Advanced',     badge: '⚡', color: '#818cf8', subtitle: 'Serious Observer' },
   { id: 'pro',          label: 'Pro',          badge: '🚀', color: '#8B5CF6', subtitle: 'Observatory Level' },
 ];
 
@@ -207,7 +207,7 @@ export default function TelescopesTab() {
       {/* Level selector — sticky */}
       <div
         className="flex gap-2 pb-1 overflow-x-auto scrollbar-hide"
-        style={{ position: 'sticky', top: 0, zIndex: 10, background: '#070B14', paddingTop: '4px' }}
+        style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0a', paddingTop: '4px' }}
       >
         {LEVEL_CONFIG.map(l => (
           <button
@@ -216,7 +216,7 @@ export default function TelescopesTab() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium flex-shrink-0 transition-all duration-200"
             style={level === l.id ? {
               background: l.color,
-              color: '#070B14',
+              color: '#0a0a0a',
               border: 'none',
             } : {
               background: 'rgba(255,255,255,0.04)',

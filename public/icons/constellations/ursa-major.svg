@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260" width="300" height="260" aria-label="Ursa Major (Big Dipper) constellation">
+  <!-- Constellation lines -->
+  <g stroke="rgba(129,140,248,0.45)" stroke-width="1" fill="none">
+    <!-- Handle: Alkaid - Mizar - Alioth - Megrez -->
+    <line x1="260" y1="68" x2="228" y2="108"/>
+    <line x1="228" y1="108" x2="192" y2="132"/>
+    <line x1="192" y1="132" x2="158" y2="148"/>
+    <!-- Bowl: Megrez - Dubhe - Merak - Phecda - Megrez -->
+    <line x1="158" y1="148" x2="112" y2="128"/>
+    <line x1="112" y1="128" x2="96" y2="168"/>
+    <line x1="96" y1="168" x2="138" y2="186"/>
+    <line x1="138" y1="186" x2="158" y2="148"/>
+  </g>
+
+  <!-- Stars (Big Dipper — 7 main stars) -->
+  <!-- Alkaid (η) — end of handle -->
+  <circle cx="260" cy="68" r="2.4" fill="#c8d8ff" opacity="0.82"/>
+  <!-- Mizar (ζ) — handle -->
+  <circle cx="228" cy="108" r="2.6" fill="#c8d8ff" opacity="0.82"/>
+  <!-- Alioth (ε) — handle -->
+  <circle cx="192" cy="132" r="3.0" fill="#c8d8ff" opacity="0.88"/>
+  <!-- Megrez (δ) — handle/bowl junction -->
+  <circle cx="158" cy="148" r="2.2" fill="#c8d8ff" opacity="0.75"/>
+  <!-- Dubhe (α) — bowl, pointer to north -->
+  <circle cx="112" cy="128" r="3.2" fill="#d0e0ff" opacity="0.90"/>
+  <!-- Merak (β) — bowl, pointer to north -->
+  <circle cx="96" cy="168" r="3.0" fill="#d0e0ff" opacity="0.88"/>
+  <!-- Phecda (γ) — bowl -->
+  <circle cx="138" cy="186" r="2.6" fill="#c8d8ff" opacity="0.82"/>
+
+  <!-- Labels -->
+  <g fill="rgba(255,255,255,0.35)" font-size="9" font-family="system-ui,sans-serif">
+    <text x="264" y="64">Alkaid</text>
+    <text x="100" y="122">Dubhe</text>
+    <text x="80" y="180">Merak</text>
+  </g>
+
+  <!-- Title -->
+  <text x="150" y="228" text-anchor="middle" fill="rgba(255,255,255,0.50)" font-size="11" font-family="system-ui,sans-serif" letter-spacing="0.12em">URSA MAJOR</text>
+</svg>

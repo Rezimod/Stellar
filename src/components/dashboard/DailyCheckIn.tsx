@@ -140,9 +140,9 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
           100% { background-position: 200% center; }
         }
         @keyframes pulse-ring {
-          0% { box-shadow: 0 0 0 0 rgba(56,240,255,0.4); }
-          70% { box-shadow: 0 0 0 8px rgba(56,240,255,0); }
-          100% { box-shadow: 0 0 0 0 rgba(56,240,255,0); }
+          0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
+          70% { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
+          100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
         }
         @keyframes checkin-float {
           0%, 100% { transform: translateY(0px); }
@@ -179,15 +179,15 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
               width: 30,
               height: 30,
               borderRadius: '50%',
-              background: 'rgba(56,240,255,0.06)',
-              border: '1px solid rgba(56,240,255,0.15)',
+              background: 'rgba(99,102,241,0.06)',
+              border: '1px solid rgba(99,102,241,0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <Telescope size={14} color="rgba(56,240,255,0.7)" />
+            <Telescope size={14} color="rgba(99,102,241,0.7)" />
           </div>
           <div>
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', display: 'block', lineHeight: 1.2 }}>
@@ -218,8 +218,8 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
             flexShrink: 0,
             backgroundSize: '200% auto',
             backgroundImage: loading
-              ? 'linear-gradient(135deg, rgba(56,240,255,0.5), rgba(56,200,220,0.5))'
-              : 'linear-gradient(135deg, #38F0FF 0%, #00D4FF 40%, #38F0FF 60%, #7BFAFF 100%)',
+              ? 'linear-gradient(135deg, rgba(99,102,241,0.5), rgba(56,200,220,0.5))'
+              : 'linear-gradient(135deg, #818cf8 0%, #00D4FF 40%, #818cf8 60%, #7BFAFF 100%)',
             animation: loading ? 'none' : 'pulse-ring 2s ease infinite, checkin-float 3s ease infinite, shimmer 2.5s linear infinite',
           }}
         >

@@ -60,7 +60,7 @@ export default function StatsBar() {
     <div
       className="rounded-2xl overflow-hidden mb-6 animate-page-enter"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,209,102,0.06) 0%, rgba(15,20,40,0.8) 60%, rgba(56,240,255,0.04) 100%)',
+        background: 'linear-gradient(135deg, rgba(255,209,102,0.06) 0%, rgba(15,20,40,0.8) 60%, rgba(99,102,241,0.04) 100%)',
         border: '1px solid rgba(255,209,102,0.15)',
         boxShadow: '0 0 40px rgba(255,209,102,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}

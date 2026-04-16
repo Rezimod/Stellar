@@ -21,9 +21,9 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
     border: '1px solid rgba(255,255,255,0.08)',
   },
   teal: {
-    background: 'rgba(56,240,255,0.1)',
-    color: '#38F0FF',
-    border: '1px solid rgba(56,240,255,0.2)',
+    background: 'rgba(99,102,241,0.1)',
+    color: '#818cf8',
+    border: '1px solid rgba(99,102,241,0.2)',
   },
   gold: {
     background: 'rgba(255,209,102,0.1)',
@@ -54,7 +54,7 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
 
 const dotColors: Record<BadgeVariant, string> = {
   default: 'rgba(255,255,255,0.4)',
-  teal:    '#38F0FF',
+  teal:    '#818cf8',
   gold:    '#FFD166',
   green:   '#34D399',
   amber:   '#F59E0B',

@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
           height: '630px',
           display: 'flex',
           flexDirection: 'column',
-          background: '#070B14',
+          background: '#0a0a0a',
           position: 'relative',
           overflow: 'hidden',
         }}

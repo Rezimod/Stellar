@@ -17,7 +17,7 @@ function TypingDots() {
       {[0, 1, 2].map(i => (
         <div
           key={i}
-          className="w-1.5 h-1.5 rounded-full bg-[#38F0FF]/60 animate-bounce"
+          className="w-1.5 h-1.5 rounded-full bg-[#818cf8]/60 animate-bounce"
           style={{ animationDelay: `${i * 150}ms` }}
         />
       ))}
@@ -173,41 +173,41 @@ export default function AstroChat() {
             width: expanded ? 'auto' : 'min(380px, calc(100vw - 2rem))',
             height: expanded ? 'calc(100vh - 2rem)' : '480px',
             background: 'linear-gradient(160deg, #080e1e 0%, #060b18 100%)',
-            border: '1px solid rgba(56,240,255,0.2)',
+            border: '1px solid rgba(99,102,241,0.2)',
             borderRadius: '20px',
-            boxShadow: '0 0 60px rgba(56,240,255,0.08), 0 20px 60px rgba(0,0,0,0.6)',
+            boxShadow: '0 0 60px rgba(99,102,241,0.08), 0 20px 60px rgba(0,0,0,0.6)',
           }}
         >
           {/* Header */}
           <div
             className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
             style={{
-              borderBottom: '1px solid rgba(56,240,255,0.1)',
-              background: 'rgba(56,240,255,0.03)',
+              borderBottom: '1px solid rgba(99,102,241,0.1)',
+              background: 'rgba(99,102,241,0.03)',
               borderRadius: '20px 20px 0 0',
             }}
           >
             {/* Status indicator */}
             <div className="relative flex-shrink-0">
               <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.2)' }}>
-                <Radio size={14} className="text-[#38F0FF]" />
+                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                <Radio size={14} className="text-[#818cf8]" />
               </div>
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2"
                 style={{ borderColor: '#080e1e' }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-semibold leading-none">ASTRA</p>
-              <p className="text-[#38F0FF]/50 text-[10px] font-mono mt-0.5">MISSION CONTROL · ONLINE</p>
+              <p className="text-[#818cf8]/50 text-[10px] font-mono mt-0.5">MISSION CONTROL · ONLINE</p>
             </div>
             {/* Scan line decoration */}
             <div className="flex items-center gap-1 mr-1">
               {[3,5,4,6,3].map((h,i) => (
-                <div key={i} className="w-0.5 rounded-full bg-[#38F0FF]/20" style={{ height: `${h * 2}px` }} />
+                <div key={i} className="w-0.5 rounded-full bg-[#818cf8]/20" style={{ height: `${h * 2}px` }} />
               ))}
             </div>
             <button onClick={() => setExpanded(e => !e)}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-[#38F0FF] transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-[#818cf8] transition-colors"
               style={{ background: 'rgba(255,255,255,0.04)' }}>
               {expanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
             </button>
@@ -224,8 +224,8 @@ export default function AstroChat() {
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
                   <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5"
-                    style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
-                    <span className="text-[8px] font-bold text-[#38F0FF]">AI</span>
+                    style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                    <span className="text-[8px] font-bold text-[#818cf8]">AI</span>
                   </div>
                 )}
                 <div
@@ -236,8 +236,8 @@ export default function AstroChat() {
                     color: '#f5e8b8',
                     borderBottomRightRadius: '6px',
                   } : {
-                    background: 'rgba(56,240,255,0.05)',
-                    border: '1px solid rgba(56,240,255,0.1)',
+                    background: 'rgba(99,102,241,0.05)',
+                    border: '1px solid rgba(99,102,241,0.1)',
                     color: '#cbd5e1',
                     borderBottomLeftRadius: '6px',
                   }}
@@ -250,11 +250,11 @@ export default function AstroChat() {
             {loading && (
               <div className="flex justify-start">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-2 mt-0.5"
-                  style={{ background: 'rgba(56,240,255,0.1)', border: '1px solid rgba(56,240,255,0.2)' }}>
-                  <span className="text-[8px] font-bold text-[#38F0FF]">AI</span>
+                  style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                  <span className="text-[8px] font-bold text-[#818cf8]">AI</span>
                 </div>
                 <div className="rounded-2xl rounded-bl-md"
-                  style={{ background: 'rgba(56,240,255,0.05)', border: '1px solid rgba(56,240,255,0.1)' }}>
+                  style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}>
                   <TypingDots />
                 </div>
               </div>
@@ -274,11 +274,11 @@ export default function AstroChat() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-[10px] px-2.5 py-1.5 rounded-full transition-all hover:border-[#38F0FF]/40"
+                  className="text-[10px] px-2.5 py-1.5 rounded-full transition-all hover:border-[#818cf8]/40"
                   style={{
-                    background: 'rgba(56,240,255,0.04)',
-                    border: '1px solid rgba(56,240,255,0.12)',
-                    color: 'rgba(56,240,255,0.7)',
+                    background: 'rgba(99,102,241,0.04)',
+                    border: '1px solid rgba(99,102,241,0.12)',
+                    color: 'rgba(99,102,241,0.7)',
                   }}
                 >
                   {s}
@@ -290,7 +290,7 @@ export default function AstroChat() {
           {/* Input */}
           <div
             className="px-3 pb-3 pt-2 flex gap-2 flex-shrink-0"
-            style={{ borderTop: '1px solid rgba(56,240,255,0.07)' }}
+            style={{ borderTop: '1px solid rgba(99,102,241,0.07)' }}
           >
             <input
               ref={inputRef}
@@ -301,10 +301,10 @@ export default function AstroChat() {
               className="flex-1 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none transition-colors"
               style={{
                 background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(56,240,255,0.1)',
+                border: '1px solid rgba(99,102,241,0.1)',
               }}
-              onFocus={e => (e.target.style.borderColor = 'rgba(56,240,255,0.3)')}
-              onBlur={e => (e.target.style.borderColor = 'rgba(56,240,255,0.1)')}
+              onFocus={e => (e.target.style.borderColor = 'rgba(99,102,241,0.3)')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(99,102,241,0.1)')}
             />
             <button
               onClick={() => send()}
@@ -312,9 +312,9 @@ export default function AstroChat() {
               className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
               style={{
                 background: input.trim() && !loading
-                  ? 'linear-gradient(135deg, #38F0FF, #1a8fa0)'
+                  ? 'linear-gradient(135deg, #818cf8, #1a8fa0)'
                   : 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(56,240,255,0.2)',
+                border: '1px solid rgba(99,102,241,0.2)',
               }}
             >
               <Send size={14} className={input.trim() && !loading ? 'text-[#070B14]' : 'text-slate-600'} />
@@ -331,14 +331,14 @@ export default function AstroChat() {
           style={{
             bottom: btnBottom,
             right: btnRight,
-            background: 'linear-gradient(135deg, rgba(56,240,255,0.9), rgba(26,143,160,0.9))',
-            border: '1px solid rgba(56,240,255,0.4)',
-            boxShadow: '0 0 30px rgba(56,240,255,0.35), 0 8px 24px rgba(0,0,0,0.4)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.9), rgba(26,143,160,0.9))',
+            border: '1px solid rgba(99,102,241,0.4)',
+            boxShadow: '0 0 30px rgba(99,102,241,0.35), 0 8px 24px rgba(0,0,0,0.4)',
           }}
           aria-label="Open ASTRA astronomy assistant"
         >
           {showPulse && (
-            <div className="absolute inset-0 rounded-2xl animate-ping" style={{ background: 'rgba(56,240,255,0.3)', animationDuration: '2s' }} />
+            <div className="absolute inset-0 rounded-2xl animate-ping" style={{ background: 'rgba(99,102,241,0.3)', animationDuration: '2s' }} />
           )}
           <Radio size={22} className="text-[#070B14]" />
         </button>

@@ -123,7 +123,7 @@ export default async function StarProofPage({
       <div
         style={{
           minHeight: '100vh',
-          background: '#070B14',
+          background: '#0a0a0a',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -134,7 +134,7 @@ export default async function StarProofPage({
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 16 }}>
           Star not found or not yet named.
         </p>
-        <Link href="/" style={{ color: '#38F0FF', fontSize: 13, textDecoration: 'none' }}>
+        <Link href="/" style={{ color: '#818cf8', fontSize: 13, textDecoration: 'none' }}>
           ← Back to Stellar
         </Link>
       </div>
@@ -149,7 +149,7 @@ export default async function StarProofPage({
     <div
       style={{
         minHeight: '100vh',
-        background: '#070B14',
+        background: '#0a0a0a',
         color: '#fff',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
@@ -257,7 +257,7 @@ export default async function StarProofPage({
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                color: '#38F0FF',
+                color: '#818cf8',
                 fontSize: 12,
                 textDecoration: 'none',
                 display: 'inline-flex',

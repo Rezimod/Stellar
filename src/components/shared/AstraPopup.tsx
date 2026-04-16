@@ -79,8 +79,8 @@ export default function AstraPopup() {
     <>
       <style>{`
         @keyframes astraOrb {
-          0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.5), 0 0 40px rgba(56,240,255,0.2); }
-          50%       { box-shadow: 0 0 30px rgba(124,58,237,0.75), 0 0 60px rgba(56,240,255,0.35); }
+          0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.5), 0 0 40px rgba(99,102,241,0.2); }
+          50%       { box-shadow: 0 0 30px rgba(124,58,237,0.75), 0 0 60px rgba(99,102,241,0.35); }
         }
         @keyframes astraSlide {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }

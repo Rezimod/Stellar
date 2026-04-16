@@ -150,8 +150,8 @@ export default function RewardsSection() {
                         onClick={() => copyCode(r.id, r.code!)}
                         className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
                         style={{
-                          background: 'rgba(56,240,255,0.06)',
-                          border: '1px solid rgba(56,240,255,0.15)',
+                          background: 'rgba(99,102,241,0.06)',
+                          border: '1px solid rgba(99,102,241,0.15)',
                           color: copied === r.id ? '#34d399' : '#64748b',
                         }}
                       >

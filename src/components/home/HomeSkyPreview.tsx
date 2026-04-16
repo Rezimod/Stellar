@@ -208,7 +208,7 @@ export default function HomeSkyPreview() {
   const moonWarn = moonIllum > 0.7 && status !== 'Skip';
 
   const SC = {
-    Go:    { color: '#34d399', border: 'rgba(52,211,153,0.22)',   bg: 'rgba(52,211,153,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(52,211,153,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(56,240,255,0.06) 0%, transparent 55%)' },
+    Go:    { color: '#34d399', border: 'rgba(52,211,153,0.22)',   bg: 'rgba(52,211,153,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(52,211,153,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(99,102,241,0.06) 0%, transparent 55%)' },
     Maybe: { color: '#FFD166', border: 'rgba(255,209,102,0.2)',   bg: 'rgba(255,209,102,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255,209,102,0.10) 0%, transparent 55%)' },
     Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(255,255,255,0.07)', bg: 'transparent', nebula: 'none' },
   }[status];
@@ -398,7 +398,7 @@ export default function HomeSkyPreview() {
                         <div style={{
                           height: '100%',
                           width: `${Math.max(2, Math.min(100, (p.altitude / 90) * 100))}%`,
-                          background: `linear-gradient(to right, rgba(56,240,255,0.4), rgba(56,240,255,0.8))`,
+                          background: `linear-gradient(to right, rgba(99,102,241,0.4), rgba(99,102,241,0.8))`,
                           borderRadius: 2,
                           transition: 'width 0.8s ease-out',
                         }} />

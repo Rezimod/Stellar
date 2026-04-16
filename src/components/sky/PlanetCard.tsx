@@ -151,8 +151,8 @@ function PlanetIcon({ planetKey, size = 36 }: { planetKey: string; size?: number
     default: {
       return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
-          <circle cx={r} cy={r} r={R} fill="rgba(56,240,255,0.2)" stroke="rgba(56,240,255,0.4)" strokeWidth="1" />
-          <circle cx={r} cy={r} r={R * 0.4} fill="rgba(56,240,255,0.5)" />
+          <circle cx={r} cy={r} r={R} fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.4)" strokeWidth="1" />
+          <circle cx={r} cy={r} r={R * 0.4} fill="rgba(99,102,241,0.5)" />
         </svg>
       );
     }
@@ -219,9 +219,9 @@ const PLANET_EQUIPMENT: Record<string, { icon: string; label: string; detail: st
   moon:    { icon: '👁', label: 'Naked Eye', detail: 'Craters visible with binoculars', color: '#34d399' },
   mercury: { icon: '👁', label: 'Naked Eye', detail: 'Low on horizon at dusk/dawn', color: '#34d399' },
   venus:   { icon: '👁', label: 'Naked Eye', detail: 'Phases visible in small telescope', color: '#34d399' },
-  mars:    { icon: '🔭', label: 'Telescope', detail: 'Surface detail at opposition', color: '#38F0FF' },
+  mars:    { icon: '🔭', label: 'Telescope', detail: 'Surface detail at opposition', color: '#818cf8' },
   jupiter: { icon: '🔭', label: 'Binoculars+', detail: '4 moons in binoculars, bands in scope', color: '#FFD166' },
-  saturn:  { icon: '🔭', label: 'Telescope', detail: 'Rings visible at 40× magnification', color: '#38F0FF' },
+  saturn:  { icon: '🔭', label: 'Telescope', detail: 'Rings visible at 40× magnification', color: '#818cf8' },
 };
 
 function hhmm(d: Date | string | null, locale: string): string {

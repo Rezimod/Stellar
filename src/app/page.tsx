@@ -1,6 +1,6 @@
 // STELLAR Homepage v2.0 — Redesigned for Colosseum Frontier Hackathon 2026
 // Sections: Hero → Sky Preview → Missions + Leaderboard → How It Works → ASTRA → Rewards → Footer
-// Colors: #070B14 bg · #34d399 teal · #FFD166 gold · #38F0FF blue
+// Colors: #070B14 bg · #34d399 teal · #FFD166 gold · #818cf8 blue
 'use client';
 import { useRef, useEffect, Suspense, useState } from 'react';
 import Link from 'next/link';
@@ -282,7 +282,7 @@ export default function HomePage() {
             100% { background-position: 0% 50%; }
           }
           .earn-rewards-text {
-            background: linear-gradient(135deg, #34d399, #38F0FF, #a78bfa, #34d399);
+            background: linear-gradient(135deg, #34d399, #818cf8, #a78bfa, #34d399);
             background-size: 300% 300%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -333,7 +333,7 @@ export default function HomePage() {
           .hero-line-1, .hero-line-2, .hero-line-3 { opacity: 1; }
           .typing-dot-1, .typing-dot-2, .typing-dot-3 { opacity: 0.6; }
           .earn-rewards-text {
-            background: linear-gradient(135deg, #34d399, #38F0FF);
+            background: linear-gradient(135deg, #34d399, #818cf8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -409,7 +409,7 @@ export default function HomePage() {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          background: '#070B14',
+          background: '#0a0a0a',
           borderBottom: '1px solid rgba(255,255,255,0.05)',
         }}
       >
@@ -423,7 +423,7 @@ export default function HomePage() {
           position: 'absolute', top: '40%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: 600, height: 600, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(52,211,153,0.05) 0%, rgba(56,240,255,0.03) 30%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(52,211,153,0.05) 0%, rgba(99,102,241,0.03) 30%, transparent 70%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
         <div style={{
@@ -435,7 +435,7 @@ export default function HomePage() {
         <div style={{
           position: 'absolute', top: '30%', left: '70%',
           width: 300, height: 300, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(56,240,255,0.04) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.04) 0%, transparent 65%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
 
@@ -548,7 +548,7 @@ export default function HomePage() {
                     <div style={{ color: heroSkyScore.score >= 70 ? '#34d399' : heroSkyScore.score >= 50 ? '#FFD166' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 600 }}>{heroSkyScore.grade} conditions</div>
                   </div>
                 </div>
-                <Link href="/sky" style={{ display: 'block', textAlign: 'center', padding: '8px', borderRadius: 10, background: 'rgba(56,240,255,0.06)', border: '1px solid rgba(56,240,255,0.15)', color: '#38F0FF', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                <Link href="/sky" style={{ display: 'block', textAlign: 'center', padding: '8px', borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', color: '#818cf8', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                   Full forecast →
                 </Link>
               </div>
@@ -571,7 +571,7 @@ export default function HomePage() {
                     <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Forecast unavailable</div>
                   </div>
                 </div>
-                <Link href="/sky" style={{ display: 'block', textAlign: 'center', padding: '8px', borderRadius: 10, background: 'rgba(56,240,255,0.06)', border: '1px solid rgba(56,240,255,0.15)', color: '#38F0FF', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                <Link href="/sky" style={{ display: 'block', textAlign: 'center', padding: '8px', borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', color: '#818cf8', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
                   Full forecast →
                 </Link>
               </div>
@@ -588,7 +588,7 @@ export default function HomePage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Top Observers</span>
-                  <Link href="/leaderboard" style={{ color: 'rgba(56,240,255,0.7)', fontSize: 11, textDecoration: 'none' }}>View all →</Link>
+                  <Link href="/leaderboard" style={{ color: 'rgba(99,102,241,0.7)', fontSize: 11, textDecoration: 'none' }}>View all →</Link>
                 </div>
                 {liveLeaders.map((leader, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -647,7 +647,7 @@ export default function HomePage() {
           }} />
           <div style={{
             position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%',
-            background: 'radial-gradient(circle at 30% 40%, rgba(56,240,255,0.02) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(153,69,255,0.015) 0%, transparent 50%)',
+            background: 'radial-gradient(circle at 30% 40%, rgba(99,102,241,0.02) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(153,69,255,0.015) 0%, transparent 50%)',
             pointerEvents: 'none', zIndex: 0,
           }} />
 
@@ -881,7 +881,7 @@ export default function HomePage() {
               ) : leadersError ? (
                 <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
                   <p style={{ margin: '0 0 6px' }}>Couldn&apos;t load leaderboard.</p>
-                  <button onClick={() => window.location.reload()} style={{ color: '#38F0FF', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Refresh</button>
+                  <button onClick={() => window.location.reload()} style={{ color: '#818cf8', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Refresh</button>
                 </div>
               ) : liveLeaders.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
@@ -927,7 +927,7 @@ export default function HomePage() {
                 back: 'Point your scope at any planet, cluster, or nebula. ASTRA guides you to tonight\'s best targets for your location.',
               },
               {
-                step: '02', Icon: Camera, title: 'Capture', color: '#38F0FF',
+                step: '02', Icon: Camera, title: 'Capture', color: '#818cf8',
                 back: 'Photograph through the app. ASTRA identifies the object and verifies your sky conditions in seconds.',
               },
               {
@@ -1097,7 +1097,7 @@ export default function HomePage() {
               href="/chat"
               style={{
                 display: 'inline-block',
-                background: 'linear-gradient(135deg, rgba(56,240,255,0.15), rgba(52,211,153,0.15))',
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(52,211,153,0.15))',
                 border: '1px solid rgba(52,211,153,0.3)',
                 color: 'white',
                 borderRadius: 12,
@@ -1109,12 +1109,12 @@ export default function HomePage() {
               onMouseOver={e => {
                 const el = e.currentTarget as HTMLElement;
                 el.style.borderColor = 'rgba(52,211,153,0.6)';
-                el.style.background = 'linear-gradient(135deg, rgba(56,240,255,0.22), rgba(52,211,153,0.22))';
+                el.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.22), rgba(52,211,153,0.22))';
               }}
               onMouseOut={e => {
                 const el = e.currentTarget as HTMLElement;
                 el.style.borderColor = 'rgba(52,211,153,0.3)';
-                el.style.background = 'linear-gradient(135deg, rgba(56,240,255,0.15), rgba(52,211,153,0.15))';
+                el.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(52,211,153,0.15))';
               }}
             >
               Ask ASTRA anything →
@@ -1169,7 +1169,7 @@ export default function HomePage() {
             {[
               { icon: Moon, iconBg: 'rgba(52,211,153,0.1)', iconColor: '#34d399', title: 'First Observation', reward: 'Free Moon Lamp for your first lunar observation', stars: '50 ✦', progress: Math.min(100, Math.round((homeStars / 50) * 100)) },
               { icon: Star, iconBg: 'rgba(255,209,102,0.1)', iconColor: '#FFD166', title: 'Mission Complete', reward: 'Free Custom Star Map for completing all 5 missions', stars: '500 ✦', progress: Math.min(100, Math.round((homeStars / 500) * 100)) },
-              { icon: Telescope, iconBg: 'rgba(56,240,255,0.1)', iconColor: '#38F0FF', title: 'Power Observer', reward: 'Discounts up to 20% on telescopes at partner stores', stars: '1000 ✦', progress: Math.min(100, Math.round((homeStars / 1000) * 100)) },
+              { icon: Telescope, iconBg: 'rgba(99,102,241,0.1)', iconColor: '#818cf8', title: 'Power Observer', reward: 'Discounts up to 20% on telescopes at partner stores', stars: '1000 ✦', progress: Math.min(100, Math.round((homeStars / 1000) * 100)) },
             ].map(card => (
               <div
                 key={card.title}
@@ -1302,7 +1302,7 @@ export default function HomePage() {
             maxWidth: 560,
             margin: '0 auto',
           }}>
-            <Telescope size={20} color="rgba(56,240,255,0.5)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+            <Telescope size={20} color="rgba(99,102,241,0.5)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, margin: 0, flex: 1 }}>
               Shop telescopes from partner stores worldwide
             </p>

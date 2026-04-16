@@ -321,7 +321,7 @@ export default function ChatPage() {
             {lastSentRef.current && (
               <button
                 onClick={retryLastMessage}
-                style={{ fontSize: 12, color: '#38F0FF', background: 'none', border: '1px solid rgba(56,240,255,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
+                style={{ fontSize: 12, color: '#818cf8', background: 'none', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
               >
                 Retry
               </button>
@@ -405,7 +405,7 @@ export default function ChatPage() {
               transition: 'background 0.15s, opacity 0.15s',
             }}
           >
-            <ArrowUp size={18} color={input.trim() && !loading && authenticated ? '#070B14' : 'var(--text-muted)'} />
+            <ArrowUp size={18} color={input.trim() && !loading && authenticated ? '#0a0a0a' : 'var(--text-muted)'} />
           </button>
         </div>
       </div>

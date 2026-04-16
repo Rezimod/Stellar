@@ -101,7 +101,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
           className="h-full transition-all duration-500"
           style={{
             width: phase === 'result' ? '100%' : `${(idx / total) * 100}%`,
-            background: 'linear-gradient(90deg, #FFD166, #38F0FF)',
+            background: 'linear-gradient(90deg, #FFD166, #818cf8)',
           }}
         />
       </div>
@@ -171,7 +171,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
               <button
                 onClick={handleClose}
                 className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
-                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
               >
                 Done
               </button>

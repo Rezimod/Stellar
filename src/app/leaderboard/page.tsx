@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 const RANK_LABELS: Record<string, { label: string; color: string }> = {
   Celestial:  { label: 'Celestial',  color: '#FFD166' },
   Pathfinder: { label: 'Pathfinder', color: '#7A5FFF' },
-  Observer:   { label: 'Observer',   color: '#38F0FF' },
+  Observer:   { label: 'Observer',   color: '#818cf8' },
   Stargazer:  { label: 'Stargazer',  color: '#94a3b8' },
 };
 
@@ -205,12 +205,12 @@ export default function LeaderboardPage() {
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
         style={{
-          background: 'rgba(56,240,255,0.05)',
-          border: '1px solid rgba(56,240,255,0.12)',
-          color: 'rgba(56,240,255,0.7)',
+          background: 'rgba(99,102,241,0.05)',
+          border: '1px solid rgba(99,102,241,0.12)',
+          color: 'rgba(99,102,241,0.7)',
         }}
       >
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#38F0FF', flexShrink: 0, opacity: 0.7, display: 'inline-block' }} />
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#818cf8', flexShrink: 0, opacity: 0.7, display: 'inline-block' }} />
         Leaderboard updates with real observer data as missions are completed on-chain
       </div>
 
@@ -243,7 +243,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => { setLeaderError(false); setActiveTab(t => t); }}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(56,240,255,0.12)', color: '#38F0FF', border: '1px solid rgba(56,240,255,0.2)' }}
+            style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
           >
             Try again
           </button>
@@ -269,7 +269,7 @@ export default function LeaderboardPage() {
           <Link
             href="/missions"
             className="mt-1 px-5 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(56,240,255,0.12)', color: '#38F0FF', border: '1px solid rgba(56,240,255,0.2)' }}
+            style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
           >
             Go to Missions →
           </Link>
@@ -379,7 +379,7 @@ export default function LeaderboardPage() {
                       style={{
                         borderColor: 'rgba(255,255,255,0.05)',
                         background: rowBg,
-                        borderLeft: isCurrentUser ? '3px solid #38F0FF' : undefined,
+                        borderLeft: isCurrentUser ? '3px solid #818cf8' : undefined,
                         paddingLeft: isCurrentUser ? '13px' : undefined,
                       }}
                     >
@@ -435,16 +435,16 @@ export default function LeaderboardPage() {
             <div
               className="flex items-center gap-3 px-4 py-3 rounded-xl"
               style={{
-                background: 'rgba(56,240,255,0.05)',
-                border: '1px solid rgba(56,240,255,0.15)',
-                borderLeft: '3px solid #38F0FF',
+                background: 'rgba(99,102,241,0.05)',
+                border: '1px solid rgba(99,102,241,0.15)',
+                borderLeft: '3px solid #818cf8',
               }}
             >
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
                 Your Rank: #{currentUserIndex + 1}
               </span>
               <div className="flex-1" />
-              <span style={{ fontSize: 'var(--text-xs)', color: '#38F0FF' }}>
+              <span style={{ fontSize: 'var(--text-xs)', color: '#818cf8' }}>
                 {entries[currentUserIndex]?.stars.toLocaleString()} ✦
               </span>
             </div>
@@ -471,7 +471,7 @@ export default function LeaderboardPage() {
         <Link
           href="/missions"
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #34d399, #14B8A6)', color: '#070B14' }}
+          style={{ background: 'linear-gradient(135deg, #34d399, #14B8A6)', color: '#0a0a0a' }}
         >
           Start Observing →
         </Link>

@@ -5,11 +5,11 @@
 
 :root {
   /* Background layers */
-  --color-space-black:  #050A12;
-  --color-panel-dark:   #0A1628;
-  --color-card-surface: #0F1D32;
-  --color-card-hover:   #142440;
-  --color-surface-mid:  #1A2D4D;
+  --color-space-black:  #050505;
+  --color-panel-dark:   #0a0a0a;
+  --color-card-surface: rgba(255, 255, 255, 0.02);
+  --color-card-hover:   rgba(255, 255, 255, 0.04);
+  --color-surface-mid:  rgba(255, 255, 255, 0.05);
 
   /* Text scale */
   --color-text-primary:   rgba(255, 255, 255, 0.92);
@@ -17,11 +17,11 @@
   --color-text-muted:     rgba(255, 255, 255, 0.25);
   --color-text-disabled:  rgba(255, 255, 255, 0.12);
 
-  /* Brand: Nebula Teal */
-  --color-nebula-teal:         #38F0FF;
-  --color-nebula-teal-hover:   #5CF4FF;
-  --color-nebula-teal-pressed: #2AD4E0;
-  --color-nebula-teal-glow:    rgba(56, 240, 255, 0.15);
+  /* Brand: Nebula Indigo */
+  --color-nebula-teal:         #818cf8;
+  --color-nebula-teal-hover:   #a5b4fc;
+  --color-nebula-teal-pressed: #6366f1;
+  --color-nebula-teal-glow:    rgba(99, 102, 241, 0.15);
 
   /* Brand: Star Gold */
   --color-star-gold:      #FFD166;
@@ -52,8 +52,8 @@
   --color-bortle-9: #FF0000;
 
   /* Glass surface */
-  --glass-bg:     rgba(15, 29, 50, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-bg:     rgba(10, 10, 10, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.05);
   --glass-blur:   16px;
 
   /* Fonts */
@@ -71,8 +71,8 @@
 
   /* Shadows */
   --shadow-card:      0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-card-hover:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,240,255,0.08);
-  --shadow-glow-teal: 0 0 20px rgba(56,240,255,0.15), 0 0 60px rgba(56,240,255,0.05);
+  --shadow-card-hover:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.12);
+  --shadow-glow-teal: 0 0 20px rgba(99,102,241,0.20), 0 0 60px rgba(99,102,241,0.06);
   --shadow-glow-gold: 0 0 20px rgba(255,209,102,0.15), 0 0 60px rgba(255,209,102,0.05);
   --shadow-inner:     inset 0 1px 0 rgba(255,255,255,0.04);
 
@@ -100,11 +100,11 @@
 /* Ensure app dark theme is never overridden by system light mode */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-space-black:  #050A12;
-    --color-panel-dark:   #0A1628;
-    --color-card-surface: #0F1D32;
-    --color-card-hover:   #142440;
-    --color-surface-mid:  #1A2D4D;
+    --color-space-black:  #050505;
+    --color-panel-dark:   #0a0a0a;
+    --color-card-surface: rgba(255, 255, 255, 0.02);
+    --color-card-hover:   rgba(255, 255, 255, 0.04);
+    --color-surface-mid:  rgba(255, 255, 255, 0.05);
     --color-text-primary:   rgba(255, 255, 255, 0.92);
     --color-text-secondary: rgba(255, 255, 255, 0.55);
     --color-text-muted:     rgba(255, 255, 255, 0.25);

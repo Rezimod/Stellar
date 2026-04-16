@@ -72,14 +72,14 @@ export default function MissionsPage() {
         <div
           className="rounded-2xl p-5 sm:p-6"
           style={{
-            background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.5))',
-            border: '1px solid rgba(56,240,255,0.1)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.05), rgba(15,31,61,0.5))',
+            border: '1px solid rgba(99,102,241,0.1)',
           }}
         >
           <div className="flex items-center gap-4">
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 relative"
-              style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)' }}
+              style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' }}
             >
               <TelescopeIcon size={28} animate />
               <span
@@ -94,7 +94,7 @@ export default function MissionsPage() {
             <button
               onClick={login}
               className="flex-shrink-0 px-4 py-2 rounded-xl font-bold text-xs transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+              style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
             >
               {t('signIn')}
             </button>
@@ -190,7 +190,7 @@ export default function MissionsPage() {
         <DailyCheckIn lat={location.lat ?? 41.6941} lon={location.lon ?? 44.8337} />
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Satellite size={16} strokeWidth={1.5} className="text-[#38F0FF]" />
+            <Satellite size={16} strokeWidth={1.5} className="text-[#818cf8]" />
             <h1 className="text-xl sm:text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               {t('title')}
             </h1>
@@ -277,7 +277,7 @@ export default function MissionsPage() {
             </div>
             <div className="flex-shrink-0 text-right">
               {chProgress.completed && !chProgress.claimed ? (
-                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}>
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}>
                   Claim +{activeChallenge.bonusStars}
                 </span>
               ) : chProgress.claimed ? (
@@ -326,7 +326,7 @@ export default function MissionsPage() {
                     <button
                       onClick={() => setActiveQuiz(quiz)}
                       className="px-3.5 py-2 min-h-[44px] rounded-xl text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
-                      style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+                      style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
                     >
                       {bestResult ? 'Retry' : 'Start'}
                     </button>

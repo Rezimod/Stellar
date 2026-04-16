@@ -204,9 +204,9 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-xl text-sm"
             style={{
-              background: 'rgba(56,240,255,0.06)',
-              border: '1px solid rgba(56,240,255,0.15)',
-              color: '#38F0FF',
+              background: 'rgba(99,102,241,0.06)',
+              border: '1px solid rgba(99,102,241,0.15)',
+              color: '#818cf8',
               textDecoration: 'none',
               padding: '12px 0',
               minHeight: 44,
@@ -357,7 +357,7 @@ export default function NftsPage() {
                   <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
                   <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>Sign in to mint</span>
                 </div>
-                <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(56,240,255,0.06), rgba(122,95,255,0.08))' }} />
+                <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(122,95,255,0.08))' }} />
                 <div className="p-3 select-none" aria-hidden="true">
                   <p style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, margin: 0, fontFamily: 'var(--font-display)' }}>{nft.name}</p>
                   <div className="flex flex-wrap gap-1 mt-2">

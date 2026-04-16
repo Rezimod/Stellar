@@ -48,7 +48,7 @@ export default function MintAnimation({ done, slowMsg }: MintAnimationProps) {
             style={{
               width: 112, height: 112,
               animationDuration: '1.4s',
-              background: 'conic-gradient(from 0deg, transparent 65%, rgba(255,209,102,0.95) 83%, rgba(56,240,255,0.6) 100%)',
+              background: 'conic-gradient(from 0deg, transparent 65%, rgba(255,209,102,0.95) 83%, rgba(99,102,241,0.6) 100%)',
               WebkitMask: 'radial-gradient(circle, transparent 51px, black 52px)',
               mask: 'radial-gradient(circle, transparent 51px, black 52px)',
             }}
@@ -69,7 +69,7 @@ export default function MintAnimation({ done, slowMsg }: MintAnimationProps) {
               width: 90, height: 90,
               animationDuration: '3s',
               animationDirection: 'reverse',
-              background: 'conic-gradient(from 180deg, transparent 80%, rgba(56,240,255,0.4) 100%)',
+              background: 'conic-gradient(from 180deg, transparent 80%, rgba(99,102,241,0.4) 100%)',
               WebkitMask: 'radial-gradient(circle, transparent 42px, black 43px)',
               mask: 'radial-gradient(circle, transparent 42px, black 43px)',
             }}

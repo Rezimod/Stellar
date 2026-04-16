@@ -67,7 +67,7 @@ export default function SolanaPayModal({
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center px-4"
       onClick={onClose}>
       <div className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
-        style={{ background: '#0F1827', border: '1px solid rgba(56,240,255,0.15)' }}
+        style={{ background: '#0F1827', border: '1px solid rgba(99,102,241,0.15)' }}
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export default function SolanaPayModal({
 
         {step === 'loading' && (
           <div className="flex justify-center py-8">
-            <div className="w-5 h-5 rounded-full border-2 border-[#38F0FF] border-t-transparent animate-spin" />
+            <div className="w-5 h-5 rounded-full border-2 border-[#818cf8] border-t-transparent animate-spin" />
           </div>
         )}
 
@@ -140,7 +140,7 @@ export default function SolanaPayModal({
             href={payUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 text-xs text-[#38F0FF]"
+            className="inline-flex items-center justify-center gap-1.5 text-xs text-[#818cf8]"
           >
             Open in wallet app <ExternalLink size={11} />
           </a>

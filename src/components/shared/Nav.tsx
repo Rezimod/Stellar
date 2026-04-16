@@ -95,7 +95,7 @@ export default function Nav() {
         .nav-tab:hover:not(.nav-tab-active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9) !important; }
         .nav-login-btn:hover { background: rgba(124,58,237,0.2) !important; border-color: rgba(124,58,237,0.6) !important; }
         .dd-link { transition: background 0.15s ease, transform 0.15s ease; }
-        .dd-link:hover { background: rgba(56,240,255,0.07) !important; }
+        .dd-link:hover { background: rgba(99,102,241,0.07) !important; }
         .hamburger-bar { display: block; height: 1.5px; border-radius: 2px; transition: all 0.22s cubic-bezier(0.22,1,0.36,1); transform-origin: center; }
       `}</style>
 
@@ -144,13 +144,13 @@ export default function Nav() {
                       className="dd-link flex items-center gap-2.5 px-2.5 py-2 rounded-lg"
                       style={{
                         textDecoration: 'none',
-                        background: isActive ? 'rgba(56,240,255,0.08)' : 'transparent',
+                        background: isActive ? 'rgba(99,102,241,0.08)' : 'transparent',
                       }}
                     >
-                      <Icon size={13} style={{ color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+                      <Icon size={13} style={{ color: isActive ? '#818cf8' : 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
                       <span style={{
                         fontSize: 12.5, fontWeight: 600,
-                        color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.8)',
+                        color: isActive ? '#818cf8' : 'rgba(255,255,255,0.8)',
                         fontFamily: 'var(--font-display)',
                       }}>
                         {link.label}
@@ -186,18 +186,18 @@ export default function Nav() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', justifyContent: 'center', width: 18 }}>
                 <span className="hamburger-bar" style={{
                   width: dropdownOpen ? 16 : 16,
-                  background: dropdownOpen ? 'rgba(56,240,255,0.8)' : 'rgba(255,255,255,0.6)',
+                  background: dropdownOpen ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.6)',
                   transform: dropdownOpen ? 'translateY(5.5px) rotate(45deg)' : 'none',
                 }} />
                 <span className="hamburger-bar" style={{
                   width: 11,
-                  background: 'rgba(56,240,255,0.7)',
+                  background: 'rgba(99,102,241,0.7)',
                   opacity: dropdownOpen ? 0 : 1,
                   transform: dropdownOpen ? 'scaleX(0)' : 'none',
                 }} />
                 <span className="hamburger-bar" style={{
                   width: dropdownOpen ? 16 : 14,
-                  background: dropdownOpen ? 'rgba(56,240,255,0.8)' : 'rgba(255,255,255,0.6)',
+                  background: dropdownOpen ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.6)',
                   transform: dropdownOpen ? 'translateY(-5.5px) rotate(-45deg)' : 'none',
                 }} />
               </div>
@@ -206,14 +206,14 @@ export default function Nav() {
             {/* Logo — mobile: absolutely centered; sm+: in flow */}
             <div className="sm:hidden absolute left-0 right-0 flex justify-center pointer-events-none">
               <Link href="/" className="pointer-events-auto" title="Stellar">
-                <div style={{ filter: 'drop-shadow(0 0 18px rgba(56,240,255,0.6)) drop-shadow(0 0 36px rgba(56,240,255,0.25))' }}>
+                <div style={{ filter: 'drop-shadow(0 0 18px rgba(99,102,241,0.6)) drop-shadow(0 0 36px rgba(99,102,241,0.25))' }}>
                   <AstroLogo heightClass="h-8" size={30} />
                 </div>
               </Link>
             </div>
             <div ref={logoRef} className="hidden sm:flex items-center flex-shrink-0">
               <Link href="/" title="Stellar">
-                <div style={{ filter: 'drop-shadow(0 0 18px rgba(56,240,255,0.6)) drop-shadow(0 0 36px rgba(56,240,255,0.25))' }}>
+                <div style={{ filter: 'drop-shadow(0 0 18px rgba(99,102,241,0.6)) drop-shadow(0 0 36px rgba(99,102,241,0.25))' }}>
                   <AstroLogo heightClass="h-8" size={30} />
                 </div>
               </Link>
@@ -230,12 +230,12 @@ export default function Nav() {
                     href={tab.href}
                     className={`nav-tab px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 ${isActive ? 'nav-tab-active' : ''}`}
                     style={isActive ? {
-                      background: 'linear-gradient(135deg, rgba(124,58,237,0.3) 0%, rgba(56,240,255,0.18) 100%)',
-                      border: '1px solid rgba(56,240,255,0.3)',
+                      background: 'linear-gradient(135deg, rgba(124,58,237,0.3) 0%, rgba(99,102,241,0.18) 100%)',
+                      border: '1px solid rgba(99,102,241,0.3)',
                       color: '#67e8f9',
                       textDecoration: 'none',
-                      boxShadow: '0 0 16px rgba(56,240,255,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
-                      textShadow: '0 0 10px rgba(56,240,255,0.5)',
+                      boxShadow: '0 0 16px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
+                      textShadow: '0 0 10px rgba(99,102,241,0.5)',
                     } : {
                       color: 'rgba(255,255,255,0.6)',
                       border: '1px solid transparent',

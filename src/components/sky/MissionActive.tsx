@@ -517,7 +517,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                     <code className="bg-[#070B14] border border-[#FFD166]/25 px-3 py-2 rounded-lg text-sm text-[#FFD166] font-mono flex-1 tracking-wide">
                       {r.code}
                     </code>
-                    <button onClick={() => copyCode(r.code!)} className="p-2 border border-[rgba(56,240,255,0.12)] hover:border-[#38F0FF] rounded-lg text-slate-400 hover:text-[#38F0FF] transition-all flex-shrink-0">
+                    <button onClick={() => copyCode(r.code!)} className="p-2 border border-[rgba(99,102,241,0.12)] hover:border-[#818cf8] rounded-lg text-slate-400 hover:text-[#818cf8] transition-all flex-shrink-0">
                       {copiedCode === r.code ? <Check size={14} className="text-[#34d399]" /> : <Copy size={14} />}
                     </button>
                   </div>
@@ -569,7 +569,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       <div
         id="mission-done-overlay"
         className="fixed inset-0 z-50 overflow-hidden flex flex-col"
-        style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(56,240,255,0.07) 0%, transparent 55%), var(--bg-base)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 55%), var(--bg-base)' }}
       >
         {/* Confetti burst */}
         {Array.from({ length: 16 }).map((_, i) => (
@@ -657,7 +657,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="flex items-center gap-3 animate-slide-up flex-shrink-0">
             <div
               className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
-              style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(56,240,255,0.25)' }}
+              style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(99,102,241,0.25)' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M6 12 l4 4 l8-8" stroke="var(--accent)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
@@ -720,12 +720,12 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div
             className={`relative rounded-2xl overflow-hidden flex-1 min-h-0 animate-fade-in ${mintRarity?.rarity === 'Celestial' ? 'animate-rarity-pulse' : ''}`}
             style={{
-              border: `2px solid ${mintRarity?.color ?? 'rgba(56,240,255,0.15)'}`,
+              border: `2px solid ${mintRarity?.color ?? 'rgba(99,102,241,0.15)'}`,
               boxShadow: mintRarity?.rarity === 'Celestial'
                 ? `0 0 32px ${mintRarity.color}55`
                 : mintRarity?.rarity === 'Astral'
                   ? `0 0 24px ${mintRarity.color}40`
-                  : '0 0 20px rgba(56,240,255,0.08)',
+                  : '0 0 20px rgba(99,102,241,0.08)',
               background: '#0a0e1a',
               minHeight: 120,
               maxHeight: '40vh',
@@ -764,7 +764,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-3 left-3 flex items-center gap-1 text-[11px]"
-                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '3px 7px', backdropFilter: 'blur(6px)', border: '1px solid rgba(56,240,255,0.15)' }}
+                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '3px 7px', backdropFilter: 'blur(6px)', border: '1px solid rgba(99,102,241,0.15)' }}
               >
                 Explorer <ExternalLink size={9} />
               </a>
@@ -906,7 +906,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                     href={starClaimed.proofUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#38F0FF', fontSize: 12, textDecoration: 'none' }}
+                    style={{ color: '#818cf8', fontSize: 12, textDecoration: 'none' }}
                   >
                     View proof page →
                   </a>
@@ -962,7 +962,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <button
               onClick={onClose}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.2)', color: '#38F0FF' }}
+              style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}
             >
               Done
             </button>
@@ -1000,7 +1000,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                       className="flex-1 h-px mx-1"
                       style={{
                         width: 24,
-                        background: i < current ? 'rgba(56,240,255,0.5)' : 'var(--border-subtle)',
+                        background: i < current ? 'rgba(99,102,241,0.5)' : 'var(--border-subtle)',
                       }}
                     />
                   )}
@@ -1021,7 +1021,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           borderBottom: fullBleed ? 'none' : '1px solid rgba(255,255,255,0.05)',
           position: fullBleed ? 'absolute' : 'relative',
           top: 0, left: 0, right: 0,
-          background: fullBleed ? 'linear-gradient(to bottom, rgba(7,11,20,0.9), transparent)' : '#070B14',
+          background: fullBleed ? 'linear-gradient(to bottom, rgba(7,11,20,0.9), transparent)' : '#0a0a0a',
         }}
       >
         <div className="flex items-center gap-2">
@@ -1128,7 +1128,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               <div className="mt-2 text-center">
                 <p className="text-xs text-amber-400">{mintError}</p>
                 {mintError.includes('cloudy') && (
-                  <Link href="/sky" className="text-xs text-[#38F0FF] underline mt-1 inline-block">
+                  <Link href="/sky" className="text-xs text-[#818cf8] underline mt-1 inline-block">
                     Check sky forecast →
                   </Link>
                 )}

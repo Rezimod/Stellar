@@ -67,5 +67,5 @@ export const MISSION_GLOW: Record<string, string> = {
   'pleiades':         'rgba(147,197,253,0.1)',
   'andromeda':        'rgba(255,248,231,0.1)',
   'crab':             'rgba(239,68,68,0.1)',
-  'free-observation': 'rgba(56,240,255,0.1)',
+  'free-observation': 'rgba(99,102,241,0.1)',
 };

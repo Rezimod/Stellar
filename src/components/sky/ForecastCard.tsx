@@ -93,8 +93,8 @@ export default function ForecastCard({ day, isToday }: Props) {
       <div
         className="card-base p-5"
         style={{
-          borderColor: `rgba(56,240,255,0.25)`,
-          boxShadow: '0 0 0 1px rgba(56,240,255,0.06), 0 4px 16px rgba(0,0,0,0.3)',
+          borderColor: `rgba(99,102,241,0.25)`,
+          boxShadow: '0 0 0 1px rgba(99,102,241,0.06), 0 4px 16px rgba(0,0,0,0.3)',
           transition: 'transform 200ms ease-out',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)'; }}

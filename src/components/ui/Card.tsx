@@ -54,14 +54,14 @@ const variantStyles: Record<CardVariant, React.CSSProperties> = {
   mission: {
     background: 'var(--bg-card)',
     border: '1px solid rgba(255,255,255,0.06)',
-    borderLeft: '3px solid var(--color-nebula-teal, #38F0FF)',
+    borderLeft: '3px solid var(--color-nebula-teal, #818cf8)',
     borderRadius: 'var(--radius-lg)',
     boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04)',
   },
 };
 
 const glowMap: Record<string, string> = {
-  teal:   '0 0 20px rgba(56,240,255,0.15)',
+  teal:   '0 0 20px rgba(99,102,241,0.15)',
   gold:   '0 0 20px rgba(255,209,102,0.15)',
   green:  '0 0 20px rgba(52,211,153,0.15)',
   accent: 'var(--shadow-glow-accent)',
@@ -99,7 +99,7 @@ export function Card({
           const el = e.currentTarget as HTMLElement;
           el.style.transform = 'scale(1.02)';
           el.style.boxShadow = 'var(--shadow-card-hover), inset 0 1px 0 rgba(255,255,255,0.04)';
-          el.style.borderColor = 'rgba(56,240,255,0.1)';
+          el.style.borderColor = 'rgba(99,102,241,0.1)';
           el.style.background = 'var(--bg-card-hover)';
         }
       : undefined,

@@ -76,8 +76,8 @@ export default function TonightsBanner({ locale }: Props) {
         href="/sky"
         className="group flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
         style={{
-          background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(20,184,166,0.02))',
-          border: '1px solid rgba(56,240,255,0.1)',
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.05), rgba(20,184,166,0.02))',
+          border: '1px solid rgba(99,102,241,0.1)',
         }}
       >
         <span className="text-xl">🌙</span>
@@ -92,7 +92,7 @@ export default function TonightsBanner({ locale }: Props) {
 
   // Live planet banner
   const img = (planetEntry as { img?: string }).img;
-  const color = (planetEntry as { color?: string }).color ?? '#38F0FF';
+  const color = (planetEntry as { color?: string }).color ?? '#818cf8';
 
   return (
     <>
@@ -202,6 +202,6 @@ function hexToRgb(hex: string): string {
   const r = parseInt(h.substring(0, 2), 16);
   const g = parseInt(h.substring(2, 4), 16);
   const b = parseInt(h.substring(4, 6), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return '56,240,255';
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return '99,102,241';
   return `${r},${g},${b}`;
 }

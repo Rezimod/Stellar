@@ -89,7 +89,7 @@ export function generateSimPhoto(name: string): string {
   // Dark sky background
   const grad = ctx.createRadialGradient(320, 240, 20, 320, 240, 320);
   grad.addColorStop(0, '#0d1230');
-  grad.addColorStop(1, '#070B14');
+  grad.addColorStop(1, '#0a0a0a');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 640, 480);
 

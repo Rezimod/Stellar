@@ -28,7 +28,7 @@ export default function ObserveCTA() {
   if (score >= 50) {
     return (
       <div className="rounded-2xl p-5 text-center" style={{
-        background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(56,240,255,0.04))',
+        background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(99,102,241,0.04))',
         border: '1px solid rgba(52,211,153,0.2)',
       }}>
         <p className="text-white font-semibold text-sm mb-1">Clear skies tonight</p>
@@ -38,7 +38,7 @@ export default function ObserveCTA() {
         <Link
           href="/missions"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm"
-          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
         >
           Start Observing →
         </Link>
@@ -57,7 +57,7 @@ export default function ObserveCTA() {
       <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
         You can still observe the Moon and bright planets
       </p>
-      <Link href="/missions" className="text-xs font-medium hover:underline" style={{ color: '#38F0FF' }}>
+      <Link href="/missions" className="text-xs font-medium hover:underline" style={{ color: '#818cf8' }}>
         Browse missions →
       </Link>
     </div>

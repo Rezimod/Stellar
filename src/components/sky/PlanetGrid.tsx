@@ -91,7 +91,7 @@ export default function PlanetGrid() {
                   <span className="text-lg">{m.emoji}</span>
                   <span className="text-white text-sm font-semibold">{m.name}</span>
                 </div>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(56,240,255,0.12)]">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(99,102,241,0.12)]">
                   Check tonight
                 </span>
               </div>

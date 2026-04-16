@@ -15,7 +15,7 @@ interface Props {
 }
 
 const CATEGORY_ART: Record<string, { emoji: string; bg: string }> = {
-  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(56,240,255,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
+  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(99,102,241,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
   moonlamp:  { emoji: '🌕', bg: 'radial-gradient(ellipse at 60% 30%, rgba(255,209,102,0.12) 0%, rgba(26,26,46,0.95) 70%)' },
   projector: { emoji: '✨', bg: 'radial-gradient(ellipse at 40% 60%, rgba(139,92,246,0.12) 0%, rgba(26,20,9,0.95) 70%)' },
   accessory: { emoji: '⚙️', bg: 'radial-gradient(ellipse at 50% 50%, rgba(100,116,139,0.1) 0%, rgba(13,17,23,0.95) 70%)' },
@@ -81,7 +81,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
         className={`
           w-full sm:w-96 sm:h-full
           bg-[#0F1827]
-          border-t sm:border-t-0 sm:border-l border-[#38F0FF]/10
+          border-t sm:border-t-0 sm:border-l border-[#818cf8]/10
           flex flex-col
           transition-transform duration-300
           rounded-t-2xl sm:rounded-none
@@ -140,7 +140,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
 
           {/* AI recommendations */}
           {product.aiRecommendFor?.length ? (
-            <p className="text-[#38F0FF] text-xs">
+            <p className="text-[#818cf8] text-xs">
               ASTRA recommends for: {product.aiRecommendFor.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
             </p>
           ) : null}

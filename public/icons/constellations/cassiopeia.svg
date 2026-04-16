@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 180" width="300" height="180" aria-label="Cassiopeia constellation">
+  <!-- Constellation lines — W shape -->
+  <g stroke="rgba(129,140,248,0.45)" stroke-width="1" fill="none">
+    <line x1="48" y1="108" x2="92" y2="72"/>
+    <line x1="92" y1="72" x2="148" y2="98"/>
+    <line x1="148" y1="98" x2="200" y2="62"/>
+    <line x1="200" y1="62" x2="248" y2="82"/>
+  </g>
+
+  <!-- Stars -->
+  <!-- Caph (β) — left end -->
+  <circle cx="48" cy="108" r="2.6" fill="#c8d8ff" opacity="0.82"/>
+  <!-- Schedar (α) — second, brightest -->
+  <circle cx="92" cy="72" r="3.4" fill="#ffcf9e" opacity="0.90"/>
+  <!-- Gamma Cas — center, brightest overall -->
+  <circle cx="148" cy="98" r="3.0" fill="#dce8ff" opacity="0.88"/>
+  <!-- Ruchbah (δ) — fourth -->
+  <circle cx="200" cy="62" r="2.8" fill="#c8d8ff" opacity="0.84"/>
+  <!-- Segin (ε) — right end -->
+  <circle cx="248" cy="82" r="2.4" fill="#c8d8ff" opacity="0.80"/>
+
+  <!-- Labels -->
+  <g fill="rgba(255,255,255,0.35)" font-size="9" font-family="system-ui,sans-serif">
+    <text x="34" y="122">Caph</text>
+    <text x="76" y="65">Schedar</text>
+    <text x="152" y="92">γ</text>
+    <text x="203" y="56">Ruchbah</text>
+    <text x="251" y="77">Segin</text>
+  </g>
+
+  <!-- Title -->
+  <text x="150" y="150" text-anchor="middle" fill="rgba(255,255,255,0.50)" font-size="11" font-family="system-ui,sans-serif" letter-spacing="0.12em">CASSIOPEIA</text>
+</svg>

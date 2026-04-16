@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 
         {/* Top bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '32px 48px 0' }}>
-          <span style={{ fontSize: 44, fontWeight: 800, color: '#38F0FF', letterSpacing: '-1px' }}>
+          <span style={{ fontSize: 44, fontWeight: 800, color: '#818cf8', letterSpacing: '-1px' }}>
             STELLAR
           </span>
           <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.35)' }}>
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
           </div>
 
           {/* Divider */}
-          <div style={{ width: 1, height: 200, background: 'rgba(56,240,255,0.15)' }} />
+          <div style={{ width: 1, height: 200, background: 'rgba(99,102,241,0.15)' }} />
 
           {/* Right — score ring + grade */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
@@ -79,17 +79,17 @@ export async function GET(req: NextRequest) {
                 width: 120,
                 height: 120,
                 borderRadius: '50%',
-                border: '6px solid #38F0FF',
+                border: '6px solid #818cf8',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'rgba(56,240,255,0.06)',
-                boxShadow: '0 0 32px rgba(56,240,255,0.25)',
+                background: 'rgba(99,102,241,0.06)',
+                boxShadow: '0 0 32px rgba(99,102,241,0.25)',
               }}
             >
-              <span style={{ fontSize: 36, fontWeight: 700, color: '#38F0FF', lineHeight: 1 }}>{score}</span>
-              <span style={{ fontSize: 13, color: 'rgba(56,240,255,0.7)', marginTop: 2 }}>/ 100</span>
+              <span style={{ fontSize: 36, fontWeight: 700, color: '#818cf8', lineHeight: 1 }}>{score}</span>
+              <span style={{ fontSize: 13, color: 'rgba(99,102,241,0.7)', marginTop: 2 }}>/ 100</span>
             </div>
             <span style={{ fontSize: 26, fontWeight: 600, color: '#34D399' }}>{grade}</span>
           </div>

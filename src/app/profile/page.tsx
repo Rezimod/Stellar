@@ -77,7 +77,7 @@ export default function ProfilePage() {
         }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #8B5CF6, #38F0FF)',
+            background: 'linear-gradient(135deg, #8B5CF6, #818cf8)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <Lock size={24} color="white" />
@@ -156,7 +156,7 @@ export default function ProfilePage() {
                 ? 'linear-gradient(135deg,#FFD166,#F59E0B)'
                 : rank.name === 'Pathfinder'
                 ? 'linear-gradient(135deg,#A855F7,#6366F1)'
-                : 'linear-gradient(135deg,#38F0FF,#8B5CF6)',
+                : 'linear-gradient(135deg,#818cf8,#8B5CF6)',
             }}>
               <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#0F1623', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontWeight: 800, fontSize: 26, color: 'white', fontFamily: 'Georgia, serif' }}>{initial}</span>
@@ -194,7 +194,7 @@ export default function ProfilePage() {
           {[
             { value: `★ ${starsDisplay.toLocaleString()}`, label: 'Stars Earned', color: '#FFD166' },
             { value: String(completed.length), label: 'Missions Done', color: '#34d399' },
-            { value: starsDisplay > 0 ? `~${gelWorth}₾` : String(obsCount), label: starsDisplay > 0 ? 'Store Value' : 'NFTs Minted', color: '#38F0FF' },
+            { value: starsDisplay > 0 ? `~${gelWorth}₾` : String(obsCount), label: starsDisplay > 0 ? 'Store Value' : 'NFTs Minted', color: '#818cf8' },
           ].map(s => (
             <div key={s.label} style={{
               borderRadius: 16, padding: '14px 10px', textAlign: 'center',
@@ -286,8 +286,8 @@ export default function ProfilePage() {
           </div>
           <div style={{ borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border-default)', background: 'var(--bg-card)' }}>
             <Link href="/settings#language" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14, padding: '15px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(56,240,255,0.08)', border: '1px solid rgba(56,240,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Globe size={16} color="#38F0FF" />
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Globe size={16} color="#818cf8" />
               </div>
               <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 500, margin: 0, flex: 1 }}>Language</p>
               <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>EN / KA</span>

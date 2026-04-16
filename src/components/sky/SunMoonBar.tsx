@@ -62,7 +62,7 @@ function NowMarker({ percent }: { percent: number }) {
           width: 12,
           height: 12,
           borderRadius: '50%',
-          border: '1.5px solid rgba(56,240,255,0.4)',
+          border: '1.5px solid rgba(99,102,241,0.4)',
           animation: 'pulse-glow 2s ease-in-out infinite',
           position: 'absolute',
           inset: -3,
@@ -74,8 +74,8 @@ function NowMarker({ percent }: { percent: number }) {
           width: 6,
           height: 6,
           borderRadius: '50%',
-          background: 'var(--color-nebula-teal, #38F0FF)',
-          boxShadow: '0 0 6px rgba(56,240,255,0.6)',
+          background: 'var(--color-nebula-teal, #818cf8)',
+          boxShadow: '0 0 6px rgba(99,102,241,0.6)',
           position: 'relative',
         }}
       />

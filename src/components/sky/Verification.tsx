@@ -84,7 +84,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
         >
           <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="w-1 h-1 rounded-full bg-[#38F0FF]/60" />
+            <div className="w-1 h-1 rounded-full bg-[#818cf8]/60" />
             <span className="text-[9px] text-slate-600 uppercase tracking-widest font-medium">Sky Data</span>
           </div>
           <div className="grid grid-cols-3 gap-1">
@@ -133,10 +133,10 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             padding: compact ? '10px 0' : '14px 0',
             background: stars > 0
               ? 'linear-gradient(135deg, #FFD166, #CC9A33)'
-              : 'linear-gradient(135deg, rgba(56,240,255,0.12), rgba(20,184,166,0.12))',
-            color: stars > 0 ? '#070B14' : '#38F0FF',
-            border: stars > 0 ? 'none' : '1px solid rgba(56,240,255,0.25)',
-            boxShadow: stars > 0 ? '0 0 24px rgba(255,209,102,0.2)' : '0 0 16px rgba(56,240,255,0.08)',
+              : 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(20,184,166,0.12))',
+            color: stars > 0 ? '#0a0a0a' : '#818cf8',
+            border: stars > 0 ? 'none' : '1px solid rgba(99,102,241,0.25)',
+            boxShadow: stars > 0 ? '0 0 24px rgba(255,209,102,0.2)' : '0 0 16px rgba(99,102,241,0.08)',
           }}
         >
           {stars > 0 ? `Seal on Solana  +${stars} Stars` : 'Log Cloudy Observation'}

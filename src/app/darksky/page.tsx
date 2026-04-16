@@ -12,7 +12,7 @@ const DarkSkyMap = dynamic(
     ssr: false,
     loading: () => (
       <div style={{ height: 400, background: '#0D1321', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-        <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid #38F0FF', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid #818cf8', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
         <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Loading map...</span>
       </div>
     ),
@@ -46,7 +46,7 @@ export default function DarkSkyPage() {
   return (
     <div
       className="px-4 py-4 sm:py-6"
-      style={{ background: '#070B14', fontFamily: 'Georgia, serif' }}
+      style={{ background: '#0a0a0a', fontFamily: 'Georgia, serif' }}
     >
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
         <BackButton />
@@ -74,7 +74,7 @@ export default function DarkSkyPage() {
                 border: '1px solid rgba(255,255,255,0.08)',
               }}
             >
-              <p className="text-xl sm:text-2xl font-bold text-[#38F0FF]">{s.value}</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#818cf8]">{s.value}</p>
               <p className="text-[11px] text-slate-500 mt-1 leading-snug">{s.label}</p>
             </div>
           ))}
@@ -150,8 +150,8 @@ export default function DarkSkyPage() {
         <div
           className="rounded-2xl p-6 text-center"
           style={{
-            background: 'linear-gradient(135deg, rgba(56,240,255,0.05), rgba(15,31,61,0.4))',
-            border: '1px solid rgba(56,240,255,0.1)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.05), rgba(15,31,61,0.4))',
+            border: '1px solid rgba(99,102,241,0.1)',
           }}
         >
           <p className="text-white font-semibold mb-1.5">Contribute to the map</p>
@@ -161,7 +161,7 @@ export default function DarkSkyPage() {
           <Link
             href="/missions"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #38F0FF, #0ea5e9)', color: '#070B14' }}
+            style={{ background: 'linear-gradient(135deg, #818cf8, #0ea5e9)', color: '#0a0a0a' }}
           >
             Start a Mission →
           </Link>

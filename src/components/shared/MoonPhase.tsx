@@ -45,7 +45,7 @@ export default function MoonPhase({ phase, size = 18, glow = false }: Props) {
       ) : (
         <g clipPath={`url(#moon-clip-${uid})`}>
           <circle cx="10" cy="10" r="9" fill={fill} />
-          <circle cx={10 + offset} cy="10" r="9" fill="#070B14" />
+          <circle cx={10 + offset} cy="10" r="9" fill="#0a0a0a" />
         </g>
       )}
     </svg>

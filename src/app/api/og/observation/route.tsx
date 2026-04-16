@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
         style={{
           width: 600,
           height: 600,
-          background: '#070B14',
+          background: '#0a0a0a',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',

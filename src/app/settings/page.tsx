@@ -179,8 +179,8 @@ export default function SettingsPage() {
         {/* Email */}
         <Row
           icon={<Mail size={15} />}
-          iconBg="rgba(56,240,255,0.08)"
-          iconColor="#38F0FF"
+          iconBg="rgba(99,102,241,0.08)"
+          iconColor="#818cf8"
           label={email ? email : 'Add Email'}
           sublabel={email ? 'Primary email' : 'Link an email address'}
           onClick={email ? undefined : () => linkEmail()}
@@ -246,7 +246,7 @@ export default function SettingsPage() {
             {[
               { value: `✦ ${totalStars.toLocaleString()}`, label: 'Stars Balance', color: '#FFD166' },
               { value: `~${gelWorth} ₾`, label: 'Store Value', color: '#34d399' },
-              { value: availableRewards.length.toString(), label: 'Rewards Ready', color: '#38F0FF' },
+              { value: availableRewards.length.toString(), label: 'Rewards Ready', color: '#818cf8' },
             ].map(s => (
               <div key={s.label} style={{ borderRadius: 12, padding: '12px 8px', textAlign: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
                 <p style={{ color: s.color, fontWeight: 800, fontSize: 15, margin: '0 0 2px', fontFamily: 'monospace' }}>{s.value}</p>
@@ -262,7 +262,7 @@ export default function SettingsPage() {
               {rank.nextRank && <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{rank.nextRank} →</span>}
             </div>
             <div style={{ height: 6, borderRadius: 3, background: 'var(--border-default)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 3, width: `${Math.max(rank.progressPct, 4)}%`, background: 'linear-gradient(90deg, #38F0FF, #8B5CF6)', transition: 'width 0.7s' }} />
+              <div style={{ height: '100%', borderRadius: 3, width: `${Math.max(rank.progressPct, 4)}%`, background: 'linear-gradient(90deg, #818cf8, #8B5CF6)', transition: 'width 0.7s' }} />
             </div>
           </div>
 

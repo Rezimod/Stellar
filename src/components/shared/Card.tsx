@@ -9,7 +9,7 @@ interface CardProps {
 const glowMap = {
   gold: 'border-[#FFD166]/50 glow-gold',
   emerald: 'border-[#34d399]/50 glow-emerald',
-  cyan: 'border-[#38F0FF]/50 glow-cyan',
+  cyan: 'border-[#818cf8]/50 glow-cyan',
   purple: 'border-[#7A5FFF]/50 glow-purple',
 };
 

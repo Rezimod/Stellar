@@ -84,7 +84,7 @@ export default function StarsRedemption({ starsBalance, walletAddress }: { stars
                   onClick={() => handleClaim(tier.label)}
                   disabled={claiming[tier.label]}
                   className="w-full py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-60"
-                  style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}
+                  style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
                 >
                   {claiming[tier.label] ? 'Claiming...' : 'Claim Discount Code'}
                 </button>

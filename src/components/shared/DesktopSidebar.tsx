@@ -95,16 +95,16 @@ export default function DesktopSidebar() {
           position: relative;
         }
         .sb-link:hover:not(.sb-link-active) {
-          background: rgba(56,240,255,0.06);
+          background: rgba(99,102,241,0.06);
         }
         .sb-link-active {
-          background: rgba(56,240,255,0.1);
+          background: rgba(99,102,241,0.1);
         }
         .sb-link-active .sb-icon {
-          color: #38F0FF !important;
+          color: #818cf8 !important;
         }
         .sb-link-active .sb-label {
-          color: #38F0FF !important;
+          color: #818cf8 !important;
         }
         .sb-section {
           border: 1px solid rgba(255,255,255,0.05);
@@ -178,7 +178,7 @@ export default function DesktopSidebar() {
                       size={15}
                       className="sb-icon"
                       style={{
-                        color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.38)',
+                        color: isActive ? '#818cf8' : 'rgba(255,255,255,0.38)',
                         flexShrink: 0,
                         transition: 'color 0.15s',
                       }}
@@ -189,7 +189,7 @@ export default function DesktopSidebar() {
                         style={{
                           fontSize: 12.5,
                           fontWeight: 600,
-                          color: isActive ? '#38F0FF' : 'rgba(255,255,255,0.68)',
+                          color: isActive ? '#818cf8' : 'rgba(255,255,255,0.68)',
                           transition: 'color 0.15s',
                           letterSpacing: '0.01em',
                         }}

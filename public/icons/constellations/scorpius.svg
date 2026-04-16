@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 340" width="300" height="340" aria-label="Scorpius constellation">
+  <!-- Constellation lines -->
+  <g stroke="rgba(129,140,248,0.45)" stroke-width="1" fill="none">
+    <!-- Head: Graffias - Dschubba - Pi Sco -->
+    <line x1="88" y1="68" x2="128" y2="74"/>
+    <line x1="128" y1="74" x2="162" y2="82"/>
+    <!-- Neck to heart -->
+    <line x1="88" y1="68" x2="108" y2="102"/>
+    <line x1="128" y1="74" x2="108" y2="102"/>
+    <line x1="108" y1="102" x2="118" y2="132"/>
+    <!-- Antares — heart -->
+    <line x1="118" y1="132" x2="108" y2="162"/>
+    <!-- Tail curve -->
+    <line x1="108" y1="162" x2="148" y2="182"/>
+    <line x1="148" y1="182" x2="172" y2="210"/>
+    <line x1="172" y1="210" x2="192" y2="240"/>
+    <line x1="192" y1="240" x2="188" y2="272"/>
+    <!-- Stinger -->
+    <line x1="188" y1="272" x2="162" y2="292"/>
+    <line x1="162" y1="292" x2="148" y2="308"/>
+  </g>
+
+  <!-- Stars -->
+  <!-- Graffias (β) — head -->
+  <circle cx="88" cy="68" r="2.6" fill="#c8d8ff" opacity="0.82"/>
+  <!-- Dschubba (δ) — head -->
+  <circle cx="128" cy="74" r="2.8" fill="#c8d8ff" opacity="0.84"/>
+  <!-- Pi Sco (π) — head -->
+  <circle cx="162" cy="82" r="2.2" fill="#c8d8ff" opacity="0.76"/>
+  <!-- Alniyat (σ) -->
+  <circle cx="108" cy="102" r="2.4" fill="#c8d8ff" opacity="0.78"/>
+  <!-- Tau Sco -->
+  <circle cx="118" cy="132" r="2.4" fill="#c8d8ff" opacity="0.78"/>
+  <!-- Antares (α) — heart, brightest, red supergiant -->
+  <circle cx="108" cy="162" r="5" fill="#ff6b35" opacity="0.92"/>
+  <!-- Epsilon -->
+  <circle cx="148" cy="182" r="2.4" fill="#c8d8ff" opacity="0.80"/>
+  <!-- Mu -->
+  <circle cx="172" cy="210" r="2.6" fill="#c8d8ff" opacity="0.82"/>
+  <!-- Zeta -->
+  <circle cx="192" cy="240" r="2.8" fill="#c8d8ff" opacity="0.84"/>
+  <!-- Eta -->
+  <circle cx="188" cy="272" r="2.4" fill="#c8d8ff" opacity="0.78"/>
+  <!-- Shaula (λ) — stinger, bright -->
+  <circle cx="162" cy="292" r="3.4" fill="#d0e4ff" opacity="0.90"/>
+  <!-- Lesath (υ) — stinger -->
+  <circle cx="148" cy="308" r="2.8" fill="#c8d8ff" opacity="0.84"/>
+
+  <!-- Labels -->
+  <g fill="rgba(255,255,255,0.35)" font-size="9" font-family="system-ui,sans-serif">
+    <text x="94" y="158">Antares</text>
+    <text x="164" y="290">Shaula</text>
+  </g>
+
+  <!-- Title -->
+  <text x="150" y="332" text-anchor="middle" fill="rgba(255,255,255,0.50)" font-size="11" font-family="system-ui,sans-serif" letter-spacing="0.12em">SCORPIUS</text>
+</svg>

@@ -362,7 +362,7 @@ export function TelescopeIcon({ size = 48, className, animate }: CelestialIconPr
         {/* Solana gradient — purple → teal → green */}
         <linearGradient id={`tg${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%"   stopColor="#9945FF"/>
-          <stop offset="55%"  stopColor="#38F0FF"/>
+          <stop offset="55%"  stopColor="#818cf8"/>
           <stop offset="100%" stopColor="#14F195"/>
         </linearGradient>
         <linearGradient id={`tb${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -405,7 +405,7 @@ export function TelescopeIcon({ size = 48, className, animate }: CelestialIconPr
       {/* wide outer ring */}
       <circle cx="36" cy="15" r="5.5" fill={`url(#tb${id})`} stroke={`url(#tg${id})`} strokeWidth="1.4"/>
       {/* lens glass inner */}
-      <circle cx="36" cy="15" r="3.8" fill="rgba(153,69,255,0.18)" stroke="rgba(56,240,255,0.5)" strokeWidth="0.8"/>
+      <circle cx="36" cy="15" r="3.8" fill="rgba(153,69,255,0.18)" stroke="rgba(99,102,241,0.5)" strokeWidth="0.8"/>
       {/* glass reflex */}
       <circle cx="36" cy="15" r="2.2" fill="rgba(20,241,149,0.12)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5"/>
       <circle cx="34.8" cy="13.8" r="0.8" fill="rgba(255,255,255,0.35)"/>
@@ -459,7 +459,7 @@ export function DifficultyDots({ level }: { level: 1 | 2 | 3 | 4 }) {
   const color =
     level === 4 ? 'rgba(239,68,68,0.85)'
     : level === 3 ? 'rgba(245,158,11,0.8)'
-    : 'rgba(56,240,255,0.7)';
+    : 'rgba(99,102,241,0.7)';
   const glow = level === 4 ? '0 0 4px rgba(239,68,68,0.6)' : 'none';
   return (
     <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>

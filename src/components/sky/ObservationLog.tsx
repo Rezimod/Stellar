@@ -23,7 +23,7 @@ export default function ObservationLog() {
         <div className="rounded-xl px-4 py-5 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <p className="text-slate-500 text-sm">Your completed observations will appear here.</p>
           <p className="text-slate-600 text-xs mt-1">
-            <Link href="/missions" className="text-[#38F0FF] hover:underline">Complete your first mission →</Link>
+            <Link href="/missions" className="text-[#818cf8] hover:underline">Complete your first mission →</Link>
           </p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function ObservationLog() {
       {all.length > 0 && (
         <Link
           href="/nfts"
-          className="flex items-center justify-center gap-1 mt-3 text-[11px] text-slate-600 hover:text-[#38F0FF] transition-colors"
+          className="flex items-center justify-center gap-1 mt-3 text-[11px] text-slate-600 hover:text-[#818cf8] transition-colors"
         >
           View all observations →
         </Link>

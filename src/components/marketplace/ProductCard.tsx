@@ -13,7 +13,7 @@ interface Props {
 const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
   'Best Seller': { bg: 'rgba(255,209,102,0.15)', color: '#FFD166' },
   'New': { bg: 'rgba(52,211,153,0.15)', color: '#34d399' },
-  'Popular': { bg: 'rgba(56,240,255,0.15)', color: '#38F0FF' },
+  'Popular': { bg: 'rgba(99,102,241,0.15)', color: '#818cf8' },
 };
 
 const SKILL_BADGE_STYLES: Record<string, { background: string; color: string; border: string }> = {
@@ -24,7 +24,7 @@ const SKILL_BADGE_STYLES: Record<string, { background: string; color: string; bo
 
 const CATEGORY_FALLBACK: Record<string, { icon: string; label: string; bg: string }> = {
   telescope: { icon: '🔭', label: 'Telescope', bg: 'rgba(122,95,255,0.07)' },
-  eyepiece:  { icon: '🔬', label: 'Eyepiece',  bg: 'rgba(56,240,255,0.06)' },
+  eyepiece:  { icon: '🔬', label: 'Eyepiece',  bg: 'rgba(99,102,241,0.06)' },
   binocular: { icon: '🌌', label: 'Binoculars', bg: 'rgba(20,184,166,0.07)' },
   accessory: { icon: '🔧', label: 'Accessory', bg: 'rgba(245,158,11,0.07)' },
 };

@@ -30,7 +30,7 @@ function getRarityBorder(rarity: string): { color: string; glow: string } {
   switch (rarity) {
     case 'Celestial': return { color: '#FFD166', glow: 'rgba(255,209,102,0.45)' };
     case 'Astral':    return { color: '#A855F7', glow: 'rgba(168,85,247,0.40)' };
-    case 'Stellar':   return { color: '#38F0FF', glow: 'rgba(56,240,255,0.35)' };
+    case 'Stellar':   return { color: '#818cf8', glow: 'rgba(99,102,241,0.35)' };
     default:          return { color: 'rgba(255,255,255,0.08)', glow: 'rgba(0,0,0,0)' };
   }
 }
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
         style={{
           width: 600,
           height: 600,
-          background: '#070B14',
+          background: '#0a0a0a',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -204,7 +204,7 @@ export async function GET(req: NextRequest) {
               left: 0,
               right: 0,
               height: 3,
-              background: '#38F0FF',
+              background: '#818cf8',
               display: 'flex',
             }}
           />
