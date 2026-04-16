@@ -2,13 +2,14 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Cloud, Wind, Eye, Droplets } from 'lucide-react';
+import { Cloud, Wind, Eye, Droplets, Clock, Circle } from 'lucide-react';
 import { SkyDay, SkyHour } from '@/lib/sky-data';
 import type { PlanetInfo } from "@/lib/planets";
 import { useLocation } from '@/lib/location';
 import ScoreRing from '@/components/ui/ScoreRing';
 import type { SkyScoreResult } from '@/lib/sky-score';
 import { LOCATIONS } from '@/lib/darksky-locations';
+import LocationPicker from '@/components/LocationPicker';
 
 // ── Moon Phase SVG ────────────────────────────────────────────────────────────
 
@@ -17,9 +18,7 @@ function MoonPhaseSVG({ phaseDeg, size = 56 }: { phaseDeg: number; size?: number
   const R = r - 2;
   const id = `mp-${size}-${Math.round(phaseDeg)}`;
 
-  // illuminated fraction 0 → 1 as phase goes 0 → 360
   const illum = (1 - Math.cos(phaseDeg * Math.PI / 180)) / 2;
-  // terminatorRx: -R (new moon) → 0 (quarter) → +R (full moon)
   const terminatorRx = R * (2 * illum - 1);
   const isWaxing = phaseDeg <= 180;
 
@@ -56,35 +55,22 @@ function MoonPhaseSVG({ phaseDeg, size = 56 }: { phaseDeg: number; size?: number
           <circle cx={r} cy={r} r={R} />
         </clipPath>
       </defs>
-      {/* Dark background */}
       <circle cx={r} cy={r} r={R} fill={darkFill} />
-      {/* Lit hemisphere + terminator */}
       <g clipPath={`url(#clip-${id})`}>
         {isWaxing ? (
           <>
-            {/* Right half always lit for waxing */}
             <rect x={r} y={r - R} width={R} height={R * 2} fill={litFill} />
-            {/* Terminator ellipse: negative terminatorRx removes lit area (crescent), positive adds (gibbous) */}
-            <ellipse
-              cx={r} cy={r}
-              rx={Math.abs(terminatorRx)} ry={R}
-              fill={terminatorRx > 0 ? litFill : darkFill}
-            />
+            <ellipse cx={r} cy={r} rx={Math.abs(terminatorRx)} ry={R}
+              fill={terminatorRx > 0 ? litFill : darkFill} />
           </>
         ) : (
           <>
-            {/* Left half always lit for waning */}
             <rect x={r - R} y={r - R} width={R} height={R * 2} fill={litFill} />
-            {/* Terminator ellipse */}
-            <ellipse
-              cx={r} cy={r}
-              rx={Math.abs(terminatorRx)} ry={R}
-              fill={terminatorRx > 0 ? litFill : darkFill}
-            />
+            <ellipse cx={r} cy={r} rx={Math.abs(terminatorRx)} ry={R}
+              fill={terminatorRx > 0 ? litFill : darkFill} />
           </>
         )}
       </g>
-      {/* Border */}
       <circle cx={r} cy={r} r={R} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="0.75" />
     </svg>
   );
@@ -161,9 +147,8 @@ function ObservingWindowBar({
   sunSet: string | null;
   sunRise: string | null;
 }) {
-  // Show a 12-hour window: 18:00 to 06:00 (evening through dawn)
-  const START_H = 18; // 6 PM
-  const TOTAL_H = 12; // 12-hour window
+  const START_H = 18;
+  const TOTAL_H = 12;
 
   function toPercent(isoOrHHMM: string | null): number | null {
     if (!isoOrHHMM) return null;
@@ -175,20 +160,17 @@ function ObservingWindowBar({
     } else {
       [h, m] = isoOrHHMM.split(':').map(Number);
     }
-    // Normalize to 0-12h window starting at START_H
     const hourOffset = ((h - START_H + 24) % 24);
     const minuteDecimal = m / 60;
     return Math.max(0, Math.min(100, ((hourOffset + minuteDecimal) / TOTAL_H) * 100));
   }
 
   const setPercent  = toPercent(sunSet);
-  const risePercent = toPercent(sunRise); // next morning
-  // After midnight, rise is in range 0-6 → offset 6-12h in window
+  const risePercent = toPercent(sunRise);
   const riseAdjusted = risePercent !== null && risePercent < 50
-    ? risePercent + ((6 / TOTAL_H) * 100) // rough correction: add 6h in percent
+    ? risePercent + ((6 / TOTAL_H) * 100)
     : risePercent;
 
-  // Build hourly cloud cover for 18:00–06:00
   const windowHours = hours.filter(h => {
     const hr = parseInt(h.time.slice(11, 13));
     return hr >= 18 || hr <= 6;
@@ -200,17 +182,10 @@ function ObservingWindowBar({
     const alpha = cover < 30 ? 0.05 : cover < 60 ? 0.25 : 0.5;
     const color = cover < 30 ? '#34D399' : cover < 60 ? '#F59E0B' : '#EF4444';
     return (
-      <div
-        key={i}
-        style={{
-          position: 'absolute',
-          left: `${i * pct}%`,
-          width: `${pct}%`,
-          top: 0, bottom: 0,
-          background: color,
-          opacity: alpha,
-        }}
-      />
+      <div key={i} style={{
+        position: 'absolute', left: `${i * pct}%`, width: `${pct}%`,
+        top: 0, bottom: 0, background: color, opacity: alpha,
+      }} />
     );
   });
 
@@ -221,57 +196,33 @@ function ObservingWindowBar({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-[10px] uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>
+    <div className="flex flex-col gap-1.5">
+      <p className="text-[9px] uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>
         Observing Window
       </p>
-      {/* Bar */}
-      <div className="relative h-5 rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* Cloud cover segments */}
+      <div className="relative h-4 rounded-md overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
         {segments}
-        {/* Sunset marker */}
         {setPercent !== null && (
-          <div
-            style={{
-              position: 'absolute',
-              left: `${setPercent}%`,
-              top: 0,
-              bottom: 0,
-              width: 1.5,
-              background: 'rgba(245,158,11,0.7)',
-            }}
-          />
+          <div style={{ position: 'absolute', left: `${setPercent}%`, top: 0, bottom: 0, width: 1.5, background: 'rgba(245,158,11,0.7)' }} />
         )}
-        {/* Sunrise marker */}
         {riseAdjusted !== null && riseAdjusted < 98 && (
-          <div
-            style={{
-              position: 'absolute',
-              left: `${riseAdjusted}%`,
-              top: 0,
-              bottom: 0,
-              width: 1.5,
-              background: 'rgba(245,158,11,0.7)',
-            }}
-          />
+          <div style={{ position: 'absolute', left: `${riseAdjusted}%`, top: 0, bottom: 0, width: 1.5, background: 'rgba(245,158,11,0.7)' }} />
         )}
       </div>
-      {/* Labels */}
-      <div className="flex justify-between text-[10px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
-        <span style={{ color: 'rgba(245,158,11,0.6)' }}>↓ {sunSet ? formatSunTime(sunSet) : '18:00'}</span>
-        <span style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}>00:00</span>
-        <span style={{ color: 'rgba(245,158,11,0.6)' }}>{sunRise ? formatSunTime(sunRise) : '06:00'} ↑</span>
+      <div className="flex justify-between text-[9px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
+        <span style={{ color: 'rgba(245,158,11,0.6)' }}>{sunSet ? formatSunTime(sunSet) : '18:00'}</span>
+        <span style={{ opacity: 0.4 }}>00:00</span>
+        <span style={{ color: 'rgba(245,158,11,0.6)' }}>{sunRise ? formatSunTime(sunRise) : '06:00'}</span>
       </div>
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 2 }}>
+      <div className="flex items-center gap-2.5">
         {[
           { color: '#34D399', label: 'Clear' },
-          { color: '#F59E0B', label: 'Partly cloudy' },
+          { color: '#F59E0B', label: 'Partial' },
           { color: '#EF4444', label: 'Overcast' },
         ].map(item => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <div style={{ width: 6, height: 6, borderRadius: 2, background: item.color, opacity: 0.7 }} />
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>{item.label}</span>
+          <div key={item.label} className="flex items-center gap-1">
+            <div style={{ width: 5, height: 5, borderRadius: 1.5, background: item.color, opacity: 0.7, flexShrink: 0 }} />
+            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.22)' }}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -309,10 +260,10 @@ function gradeColor(grade: string): string {
 }
 
 function scoreSummary(grade: string): string {
-  if (grade === 'Exceptional' || grade === 'Excellent') return 'Perfect night for astronomy';
-  if (grade === 'Good') return 'Good conditions for planets and bright objects';
-  if (grade === 'Fair') return 'Limited visibility — Moon and planets only';
-  return 'Not ideal — check back tomorrow';
+  if (grade === 'Exceptional' || grade === 'Excellent') return 'Perfect for astronomy';
+  if (grade === 'Good') return 'Good for planets';
+  if (grade === 'Fair') return 'Moon & planets only';
+  return 'Check back tomorrow';
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -357,10 +308,36 @@ const cardBorder = {
 };
 
 const badgeStyle = {
-  go:    { bg: 'rgba(52,211,153,0.15)', border: 'rgba(52,211,153,0.4)', color: '#34D399', label: 'Clear Sky' },
-  maybe: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.35)', color: '#F59E0B', label: 'Partly Cloudy' },
-  skip:  { bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.2)',   color: '#EF4444', label: 'Overcast' },
+  go:    { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.35)', color: '#34D399', label: 'Clear Sky' },
+  maybe: { bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.30)', color: '#F59E0B', label: 'Partly Cloudy' },
+  skip:  { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.2)',   color: '#EF4444', label: 'Overcast' },
 };
+
+// ── Stat cell ─────────────────────────────────────────────────────────────────
+
+function StatCell({ icon: Icon, label, value, color }: {
+  icon: React.ElementType; label: string; value: string; color: string;
+}) {
+  return (
+    <div
+      className="flex items-center gap-2 rounded-xl px-2.5 py-2"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+    >
+      <div
+        className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: 'rgba(255,255,255,0.05)' }}
+      >
+        <Icon size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-muted)' }} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[9px] uppercase tracking-wide leading-none mb-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          {label}
+        </p>
+        <p className="text-[13px] font-bold font-mono leading-none" style={{ color }}>{value}</p>
+      </div>
+    </div>
+  );
+}
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -422,10 +399,8 @@ export default function TonightHighlights() {
 
   if (!ready || loading) {
     return (
-      <div
-        className="glass-card p-5 h-[180px] flex items-center justify-center gap-2"
-        style={{ border: '1px solid rgba(255,255,255,0.08)' }}
-      >
+      <div className="glass-card p-4 h-[200px] flex items-center justify-center gap-2"
+        style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
         <div className="w-4 h-4 rounded-full border-2 border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
         <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
           {!ready ? 'Detecting your location…' : 'Loading sky data…'}
@@ -436,7 +411,7 @@ export default function TonightHighlights() {
 
   if (error || !card) {
     return (
-      <div className="glass-card p-5 flex flex-col items-center gap-3 text-center"
+      <div className="glass-card p-4 flex flex-col items-center gap-3 text-center"
         style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{t('forecastError')}</p>
         <button
@@ -453,24 +428,32 @@ export default function TonightHighlights() {
   const { state, cloudCover, humidity, wind, window: obsWindow, nextClear, planets, today, skyScore } = card;
   const badge = badgeStyle[state];
   const visKm = Math.round(card.today.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b).visibility / 1000);
+  const bortle = estimateBortle(lat, lng);
+
+  const stats = [
+    { icon: Cloud,    label: 'Cloud Cover', value: `${cloudCover}%`, color: cloudCover < 30 ? '#34D399' : cloudCover < 60 ? '#F59E0B' : '#EF4444' },
+    { icon: Eye,      label: 'Visibility',  value: visibilityLabel(visKm), color: visKm >= 10 ? '#34D399' : visKm >= 5 ? '#F59E0B' : '#EF4444' },
+    { icon: Droplets, label: 'Humidity',    value: `${humidity}%`,   color: (humidity ?? 50) < 70 ? 'var(--color-text-primary)' : '#F59E0B' },
+    { icon: Wind,     label: 'Wind',        value: `${wind} km/h`,   color: (wind ?? 0) < 30 ? 'var(--color-text-primary)' : '#F59E0B' },
+  ];
 
   return (
-    <div className="glass-card p-5" style={cardBorder[state]}>
-      {/* Top row: label + badge + share */}
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: 'var(--color-text-muted)' }}>
+    <div className="glass-card p-4" style={cardBorder[state]}>
+
+      {/* ── Header ────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        {/* Left: label + location picker */}
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--color-text-muted)' }}>
             {t('tonightHighlight')}
           </span>
-          {location.city && (
-            <span className="text-[10px] font-mono" style={{ color: 'var(--color-text-muted)', opacity: 0.6 }}>
-              📍 {location.city}{location.country ? `, ${location.country}` : ''}
-            </span>
-          )}
+          <LocationPicker compact />
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Right: condition badge + share */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
             style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color }}
           >
             <span
@@ -493,7 +476,7 @@ export default function TonightHighlights() {
             style={{ color: 'var(--color-text-muted)' }}
             title="Share tonight's sky"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
               <polyline points="16 6 12 2 8 6"/>
               <line x1="12" y1="2" x2="12" y2="15"/>
@@ -502,133 +485,113 @@ export default function TonightHighlights() {
         </div>
       </div>
 
-      {/* Sky Score hero */}
-      {skyScore && (
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          gap: 6, paddingTop: 16, paddingBottom: 16,
-          borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: 16,
-        }}>
-          <div style={{ boxShadow: `0 0 24px ${gradeColor(skyScore.grade)}30` }}>
-            <ScoreRing size={100} value={skyScore.score} color="gradient" label="Sky Score" sublabel={skyScore.grade} />
-          </div>
-          <p className="text-sm font-semibold" style={{ color: gradeColor(skyScore.grade) }}>
-            {skyScore.grade}
-          </p>
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {scoreSummary(skyScore.grade)}
-          </p>
-          {/* Factor badges */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 4 }}>
-            {skyScore.factors.slice(0, 5).map(f => {
-              const fc = f.value > 70 ? '#34d399' : f.value > 40 ? '#F59E0B' : '#EF4444';
-              return (
-                <span key={f.label} style={{
-                  fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 4,
-                  padding: '3px 8px', borderRadius: 8,
-                  background: f.value > 70 ? 'rgba(52,211,153,0.06)' : f.value > 40 ? 'rgba(245,158,11,0.06)' : 'rgba(239,68,68,0.06)',
-                  border: `1px solid ${fc}25`, color: fc,
-                }}>
-                  {f.label}: {f.value}%
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 3-column body */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-        {/* Column 1: Moon Phase */}
-        <div className="flex flex-col items-center gap-2 sm:border-r sm:border-white/[0.05] sm:pr-4">
-          {moonData ? (
+      {/* ── Row 1: Score ring + Weather stats ─────────── */}
+      <div
+        className="flex gap-3 pb-3 mb-3"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        {/* Score ring */}
+        <div
+          className="flex flex-col items-center gap-1 flex-shrink-0"
+          style={{ width: 88 }}
+        >
+          {skyScore ? (
             <>
-              <MoonPhaseSVG phaseDeg={moonData.moonPhaseDeg} size={56} />
-              <div className="text-center">
-                <p className="text-white text-sm font-semibold">{phaseName(moonData.moonPhaseDeg, locale)}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {moonData.illuminationPct}% illuminated
-                </p>
+              <div style={{ boxShadow: `0 0 20px ${gradeColor(skyScore.grade)}22` }}>
+                <ScoreRing size={68} value={skyScore.score} color="gradient" sublabel={skyScore.grade} />
               </div>
+              <p className="text-[11px] font-bold text-center" style={{ color: gradeColor(skyScore.grade) }}>
+                {skyScore.grade}
+              </p>
+              <p className="text-[9px] text-center leading-snug" style={{ color: 'var(--color-text-muted)' }}>
+                {scoreSummary(skyScore.grade)}
+              </p>
             </>
           ) : (
-            <div className="w-14 h-14 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
+            <div className="w-[68px] h-[68px] rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
           )}
         </div>
 
-        {/* Column 2: Observing Window */}
-        <div className="flex flex-col gap-3 sm:border-r sm:border-white/[0.05] sm:pr-4">
+        {/* Stats 2×2 */}
+        <div className="grid grid-cols-2 gap-1.5 flex-1">
+          {stats.map(s => (
+            <StatCell key={s.label} icon={s.icon} label={s.label} value={s.value} color={s.color} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Row 2: Moon + Observing window ────────────── */}
+      <div
+        className="flex gap-3 pb-3 mb-3"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        {/* Moon */}
+        <div
+          className="flex flex-col items-center gap-1 flex-shrink-0"
+          style={{ width: 88 }}
+        >
+          {moonData ? (
+            <>
+              <MoonPhaseSVG phaseDeg={moonData.moonPhaseDeg} size={44} />
+              <p className="text-[11px] font-semibold text-center leading-tight text-white">
+                {phaseName(moonData.moonPhaseDeg, locale)}
+              </p>
+              <p className="text-[9px] text-center" style={{ color: 'var(--color-text-muted)' }}>
+                {moonData.illuminationPct}% illuminated
+              </p>
+            </>
+          ) : (
+            <div className="w-11 h-11 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
+          )}
+        </div>
+
+        {/* Observing window + best hours + planets */}
+        <div className="flex-1 flex flex-col gap-2">
           <ObservingWindowBar
             hours={today.hours}
             sunSet={moonData?.sunSet ?? null}
             sunRise={moonData?.sunRise ?? null}
           />
+
           {state !== 'skip' && obsWindow ? (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                Best Hours
-              </p>
-              <p className="text-sm font-mono font-bold" style={{ color: 'var(--color-nebula-teal)' }}>{obsWindow}</p>
+            <div className="flex items-center gap-1.5">
+              <Clock size={10} strokeWidth={1.5} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+              <span className="text-[9px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Best</span>
+              <span className="text-[11px] font-mono font-bold" style={{ color: 'var(--color-nebula-teal)' }}>
+                {obsWindow}
+              </span>
             </div>
           ) : state === 'skip' && nextClear ? (
-            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
               Next clear: {nextClear}
             </p>
           ) : null}
 
-          {/* Visible planets row */}
           {planets.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-auto">
+            <div className="flex flex-wrap gap-1">
               {planets.map(p => (
                 <span
                   key={p.key}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                  style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399' }}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium"
+                  style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', color: '#34D399' }}
                 >
-                  <span className="w-1 h-1 rounded-full bg-[#34D399]" />
+                  <Circle size={4} fill="#34D399" strokeWidth={0} />
                   {p.key.charAt(0).toUpperCase() + p.key.slice(1)} {p.altitude}°
                 </span>
               ))}
             </div>
           )}
         </div>
-
-        {/* Column 3: Key Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
-          {[
-            { icon: <Cloud size={13} strokeWidth={1.5} />, label: 'Cloud Cover', value: `${cloudCover}%`,
-              color: cloudCover < 30 ? '#34D399' : cloudCover < 60 ? '#F59E0B' : '#EF4444' },
-            { icon: <Droplets size={13} strokeWidth={1.5} />, label: 'Humidity', value: `${humidity}%`,
-              color: 'var(--color-text-primary)' },
-            { icon: <Eye size={13} strokeWidth={1.5} />, label: 'Visibility', value: visibilityLabel(visKm),
-              color: visKm >= 10 ? '#34D399' : visKm >= 5 ? '#F59E0B' : '#EF4444' },
-            { icon: <Wind size={13} strokeWidth={1.5} />, label: 'Wind', value: `${wind} km/h`,
-              color: 'var(--color-text-primary)' },
-          ].map(({ icon, label, value, color }) => (
-            <div key={label} className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
-                {icon}
-                <span className="text-[10px] uppercase tracking-wide">{label}</span>
-              </div>
-              <p className="text-sm font-semibold font-mono" style={{ color }}>{value}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
-      {/* Bortle context */}
-      {(() => {
-        const bortle = estimateBortle(lat, lng);
-        return (
-          <div className="flex items-center gap-2 pt-3 mt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: bortleColor(bortle) }} />
-            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-              Your sky: Bortle {bortle} · {bortleLabel(bortle)}
-            </span>
-          </div>
-        );
-      })()}
+      {/* ── Footer: Bortle ────────────────────────────── */}
+      <div className="flex items-center gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: bortleColor(bortle) }} />
+        <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>
+          Bortle {bortle} · {bortleLabel(bortle)}
+        </span>
+      </div>
+
     </div>
   );
 }

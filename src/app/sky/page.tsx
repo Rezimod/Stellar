@@ -35,7 +35,7 @@ export default async function SkyPage() {
   const t = await getTranslations('sky');
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-4 pb-8 animate-page-enter flex flex-col gap-10">
+    <div className="max-w-3xl mx-auto px-4 pt-4 pb-8 animate-page-enter flex flex-col gap-6">
       <BackButton />
 
       {/* Summary card */}
