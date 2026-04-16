@@ -727,3 +727,68 @@ input, select, textarea { font-size: 16px !important; }
     margin-left: 216px;
   }
 }
+
+/* ===== Game mechanics animations ===== */
+
+@keyframes starlightFlicker {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 4px rgba(255,209,102,0.5); }
+  50%      { opacity: 0.85; box-shadow: 0 0 10px rgba(255,209,102,0.85), 0 0 18px rgba(255,209,102,0.25); }
+}
+
+@keyframes rarityShimmer {
+  0%   { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+
+@keyframes cosmicReveal {
+  0%   { opacity: 0; transform: scale(0.85) translateY(6px); }
+  55%  { opacity: 1; transform: scale(1.06) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+@keyframes rarityPulseBorder {
+  0%, 100% { box-shadow: 0 0 20px var(--rarity-glow-weak),  0 0 0 0 var(--rarity-glow-weak); }
+  50%      { box-shadow: 0 0 32px var(--rarity-glow-strong), 0 0 0 2px var(--rarity-glow-weak); }
+}
+
+@keyframes challengePulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+
+@keyframes multiplierRise {
+  0%   { opacity: 0; transform: translateY(4px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+@keyframes moonFill {
+  0%   { clip-path: inset(100% 0 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+.animate-starlight        { animation: starlightFlicker 2.2s ease-in-out infinite; }
+.animate-rarity-shimmer   {
+  background-size: 200% 100%;
+  animation: rarityShimmer 2.8s linear infinite;
+}
+.animate-cosmic-reveal    { animation: cosmicReveal 520ms var(--ease-out-expo) forwards; }
+.animate-rarity-pulse     { animation: rarityPulseBorder 2.4s ease-in-out infinite; }
+.animate-challenge-pulse  { animation: challengePulse 2s ease-in-out infinite; }
+.animate-multiplier-rise  { animation: multiplierRise 400ms var(--ease-out-expo) forwards; }
+.animate-moon-fill        { animation: moonFill 500ms var(--ease-out-expo) forwards; }
+
+/* Extend stagger */
+.stagger-7 { animation-delay: 360ms; }
+.stagger-8 { animation-delay: 420ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-starlight,
+  .animate-rarity-shimmer,
+  .animate-cosmic-reveal,
+  .animate-rarity-pulse,
+  .animate-challenge-pulse,
+  .animate-multiplier-rise,
+  .animate-moon-fill {
+    animation: none;
+  }
+}

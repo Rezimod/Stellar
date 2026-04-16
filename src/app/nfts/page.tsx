@@ -13,6 +13,7 @@ import { REWARDS, MISSION_REWARD_HINTS } from '@/lib/rewards';
 import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { CompletedMission } from '@/lib/types';
+import { getRarityInfo } from '@/lib/nft-rarity';
 
 interface NftAttribute {
   trait_type: string;
@@ -569,12 +570,19 @@ export default function NftsPage() {
             const ts = date ? new Date(date).getTime() : Date.now();
             const nftImageUrl = `/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat ?? 0}&lon=${lon ?? 0}&cc=${cc}&stars=${stars || 0}`;
             const ccNum = parseFloat(cc);
+            const rarityStr = getAttr(attrs, 'Rarity') || 'Common';
+            const rarity = getRarityInfo(rarityStr);
 
             return (
               <div
                 key={item.id}
                 className="card-base overflow-hidden p-0"
-                style={{ transition: 'transform 0.15s, box-shadow 0.15s', cursor: 'pointer' }}
+                style={{
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  cursor: 'pointer',
+                  border: rarity.rarity === 'Common' ? undefined : `1px solid ${rarity.color}40`,
+                  boxShadow: rarity.rarity === 'Celestial' ? `0 0 24px ${rarity.color}20` : undefined,
+                }}
                 onClick={() => setSelectedNft(item)}
                 onKeyDown={(e) => { if (e.key === 'Enter') setSelectedNft(item); }}
                 role="button"
@@ -611,8 +619,29 @@ export default function NftsPage() {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
                   }}>
-                    {name}
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{name}</span>
+                    {rarity.rarity !== 'Common' && (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: 9999,
+                          background: `${rarity.color}15`,
+                          border: `1px solid ${rarity.color}40`,
+                          color: rarity.color,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {rarity.glyph} {rarity.label}
+                      </span>
+                    )}
                   </p>
 
                   {/* Attribute pills */}

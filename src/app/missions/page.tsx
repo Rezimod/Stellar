@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { getActiveChallenge, getChallengeProgress, claimChallengeReward } from '@/lib/celestial-challenges';
 import { Satellite, Lock } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
@@ -35,6 +36,9 @@ export default function MissionsPage() {
   const [skyConditions, setSkyConditions] = useState<{ cloudCover: number; visibility: string; verified: boolean } | null>(null);
   const [streak, setStreak] = useState<number>(0);
   const [isNight, setIsNight] = useState(false);
+  const [activeChallenge] = useState(() => getActiveChallenge());
+  const [chProgress, setChProgress] = useState(() => getChallengeProgress());
+  const prevAuthRef = useRef(false);
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -167,7 +171,7 @@ export default function MissionsPage() {
   return (
     <PageTransition>
       <>
-      {activeMission && <MissionActive mission={activeMission} onClose={() => setActiveMission(null)} />}
+      {activeMission && <MissionActive mission={activeMission} onClose={() => { setActiveMission(null); setChProgress(getChallengeProgress()); }} />}
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
       <div className="max-w-2xl mx-auto px-4 py-3 sm:py-6 flex flex-col gap-3">
@@ -207,19 +211,70 @@ export default function MissionsPage() {
             )}
           </div>
 
-          {streak > 0 && (
-            <div
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-3"
-              style={{
-                background: 'rgba(245,158,11,0.12)',
-                border: '1px solid rgba(245,158,11,0.25)',
-                color: '#F59E0B',
-              }}
-            >
-              <span className="text-xs">🔥</span>
-              <span className="text-xs font-medium">{streak} day streak</span>
+          {/* Weekly challenge strip */}
+          <button
+            onClick={() => {
+              if (chProgress.completed && !chProgress.claimed) {
+                const bonus = claimChallengeReward();
+                if (bonus > 0 && state.walletAddress) {
+                  fetch('/api/award-stars', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipientAddress: state.walletAddress, amount: bonus, reason: 'weekly_challenge' }),
+                  }).catch(() => {});
+                }
+                setChProgress(getChallengeProgress());
+              }
+            }}
+            disabled={!(chProgress.completed && !chProgress.claimed)}
+            className={`w-full text-left rounded-xl flex items-center gap-3 px-3.5 py-3 mb-3 ${chProgress.completed && !chProgress.claimed ? 'animate-challenge-pulse cursor-pointer' : ''}`}
+            style={{
+              background: chProgress.claimed
+                ? 'rgba(52,211,153,0.04)'
+                : 'linear-gradient(90deg, rgba(168,85,247,0.08) 0%, rgba(168,85,247,0.02) 100%)',
+              border: chProgress.claimed
+                ? '1px solid rgba(52,211,153,0.15)'
+                : '1px solid rgba(168,85,247,0.2)',
+              borderLeft: `3px solid ${chProgress.claimed ? '#34d399' : '#A855F7'}`,
+            }}
+          >
+            <span style={{ fontSize: 18, color: chProgress.claimed ? '#34d399' : '#A855F7' }}>
+              {chProgress.claimed ? '✓' : activeChallenge.glyph}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] uppercase tracking-widest font-semibold" style={{ color: chProgress.claimed ? '#34d399' : '#A855F7' }}>
+                  This Week
+                </span>
+                <span className="text-xs font-semibold text-white truncate">{activeChallenge.name}</span>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, (chProgress.progress / activeChallenge.goal) * 100)}%`,
+                      background: chProgress.completed ? '#34d399' : 'linear-gradient(90deg, #A855F7, #FFD166)',
+                    }}
+                  />
+                </div>
+                <span className="text-[10px] font-mono flex-shrink-0" style={{ color: chProgress.completed ? '#34d399' : 'rgba(255,255,255,0.4)' }}>
+                  {chProgress.progress}/{activeChallenge.goal}
+                </span>
+              </div>
             </div>
-          )}
+            <div className="flex-shrink-0 text-right">
+              {chProgress.completed && !chProgress.claimed ? (
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#070B14' }}>
+                  Claim +{activeChallenge.bonusStars}
+                </span>
+              ) : chProgress.claimed ? (
+                <span className="text-[10px] text-[#34d399]">Claimed</span>
+              ) : (
+                <span className="text-[10px] text-slate-500">+{activeChallenge.bonusStars} ✦</span>
+              )}
+            </div>
+          </button>
           <StatsBar />
         </section>
 

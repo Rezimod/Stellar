@@ -15,7 +15,7 @@ const privy = new PrivyClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, demo } = body;
+  const { userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo } = body;
 
   // Dev-only demo bypass — never active on Vercel production
   const isDemoMint = process.env.NODE_ENV === 'development' && demo === true;
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 
   try {
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target);
-    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars });
+    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity: typeof rarity === 'string' ? rarity : 'Common' });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency

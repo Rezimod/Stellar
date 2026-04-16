@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Telescope, Check, Flame } from 'lucide-react'
+import { Telescope, Check } from 'lucide-react'
 import { hasCheckedInToday, saveCheckIn, getStreakDays } from '@/lib/daily-checkin'
+import { getTierForStreak } from '@/lib/constellation-streak'
+import MoonPhase from '@/components/shared/MoonPhase'
 import type { SkyScoreResult } from '@/lib/sky-score'
 
 interface DailyCheckInProps {
@@ -107,15 +109,22 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
                 gap: 4,
                 padding: '3px 8px',
                 borderRadius: 9999,
-                background: 'rgba(251,146,60,0.1)',
-                border: '1px solid rgba(251,146,60,0.25)',
+                background: 'rgba(255,209,102,0.08)',
+                border: '1px solid rgba(255,209,102,0.2)',
                 flexShrink: 0,
               }}
             >
-              <Flame size={10} color="#FB923C" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#FB923C', fontFamily: 'var(--font-display)' }}>
-                {streak}d
-              </span>
+              {(() => {
+                const tier = getTierForStreak(streak);
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <MoonPhase phase={tier.phase} size={12} glow />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#FFD166', fontFamily: 'var(--font-display)' }}>
+                      {tier.streak > 0 ? `${tier.name} · ${tier.multiplier}×` : `${streak} day streak`}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

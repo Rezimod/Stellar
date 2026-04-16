@@ -26,6 +26,15 @@ function getEmoji(target: string): string {
   return '⭐';
 }
 
+function getRarityBorder(rarity: string): { color: string; glow: string } {
+  switch (rarity) {
+    case 'Celestial': return { color: '#FFD166', glow: 'rgba(255,209,102,0.45)' };
+    case 'Astral':    return { color: '#A855F7', glow: 'rgba(168,85,247,0.40)' };
+    case 'Stellar':   return { color: '#38F0FF', glow: 'rgba(56,240,255,0.35)' };
+    default:          return { color: 'rgba(255,255,255,0.08)', glow: 'rgba(0,0,0,0)' };
+  }
+}
+
 function getGlowColor(target: string): string {
   if (/moon|lunar/i.test(target)) return 'rgba(255, 241, 200, 0.12)';
   if (/jupiter/i.test(target)) return 'rgba(255, 180, 100, 0.10)';
@@ -44,11 +53,13 @@ export async function GET(req: NextRequest) {
   const lon = searchParams.get('lon') ?? '0';
   const cc = searchParams.get('cc') ?? '0';
   const stars = searchParams.get('stars') ?? '0';
+  const rarity = searchParams.get('rarity') ?? 'Common';
 
   if (!target) {
     return new NextResponse('Missing target parameter', { status: 400 });
   }
 
+  const rarityBorder = getRarityBorder(rarity);
   const rand = seededRandom(target + ts);
   const dots = Array.from({ length: 35 }, (_, i) => ({
     key: i,
@@ -83,6 +94,10 @@ export async function GET(req: NextRequest) {
           justifyContent: 'center',
           position: 'relative',
           overflow: 'hidden',
+          border: `6px solid ${rarityBorder.color}`,
+          boxShadow: rarity === 'Celestial' || rarity === 'Astral'
+            ? `inset 0 0 60px ${rarityBorder.glow}`
+            : 'none',
         }}
       >
         {/* Star field */}
@@ -100,6 +115,26 @@ export async function GET(req: NextRequest) {
             }}
           />
         ))}
+
+        {/* Rarity pill — top right */}
+        {rarity !== 'Common' && (
+          <div style={{
+            position: 'absolute',
+            top: 22, right: 22,
+            padding: '5px 12px',
+            borderRadius: 20,
+            background: 'rgba(7,11,20,0.75)',
+            border: `1.5px solid ${rarityBorder.color}`,
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            color: rarityBorder.color,
+            display: 'flex',
+          }}>
+            {rarity}
+          </div>
+        )}
 
         {/* Glow behind emoji */}
         <div

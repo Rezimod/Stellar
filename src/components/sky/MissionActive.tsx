@@ -18,6 +18,12 @@ import { Copy, Check, Telescope, Award, ExternalLink, Camera, X } from 'lucide-r
 import { MissionIcon } from '@/components/shared/PlanetIcons';
 import { buildTwitterShareUrl, buildFarcasterShareUrl, buildShareImageUrl } from '@/lib/share';
 import RewardIcon from '@/components/shared/RewardIcon';
+import { getStarlight, consumeStarlight } from '@/lib/starlight';
+import { getTierForStreak, type StreakTier } from '@/lib/constellation-streak';
+import { calculateRarity, type RarityInfo } from '@/lib/nft-rarity';
+import { rollCosmicBonus, type CosmicBonus } from '@/lib/cosmic-bonus';
+import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
+import MoonPhase from '@/components/shared/MoonPhase';
 
 const MISSION_STEPS = [
   { label: 'Brief', keys: ['observing'] },
@@ -65,6 +71,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const [skyScore, setSkyScore] = useState<SkyScoreResult | null>(null);
   const [nftImageUrl, setNftImageUrl] = useState('');
   const [photoVerification, setPhotoVerification] = useState<PhotoVerificationResult | null>(null);
+  const [mintTier, setMintTier] = useState<StreakTier | null>(null);
+  const [mintRarity, setMintRarity] = useState<RarityInfo | null>(null);
+  const [cosmicBonus, setCosmicBonus] = useState<CosmicBonus | null>(null);
+  const [totalStarsEarned, setTotalStarsEarned] = useState<number>(0);
+  const [challengeCompleted, setChallengeCompleted] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -213,7 +224,27 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const handleMint = async () => {
     setStep('minting');
 
-    const effectiveStars = sky?.verified ? mission.stars : 0;
+    // --- Fetch server-authoritative streak (single source of truth) ---
+    let streakCount = 0;
+    if (solanaWallet?.address) {
+      try {
+        const r = await fetch(`/api/streak?walletAddress=${encodeURIComponent(solanaWallet.address)}`);
+        const d = await r.json();
+        streakCount = d.streak ?? 0;
+      } catch {
+        streakCount = 0;
+      }
+    }
+    const tier = getTierForStreak(streakCount);
+    setMintTier(tier);
+
+    // --- Compute effective stars with multiplier ---
+    const baseStars = sky?.verified ? mission.stars : 0;
+    const effectiveStars = Math.round(baseStars * tier.multiplier);
+
+    // --- Compute rarity from sky score + streak ---
+    const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);
+    setMintRarity(rarityInfo);
 
     const prevCompleted = state.completedMissions
       .filter(m => m.status === 'completed')
@@ -225,6 +256,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
     setMintError('');
 
+    // --- Mint the NFT, passing rarity through ---
     let txId = 'sim_' + Date.now().toString(36);
     try {
       const authToken = await getAccessToken().catch(() => null);
@@ -246,6 +278,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           cloudCover: sky?.cloudCover ?? 0,
           oracleHash: sky?.oracleHash ?? 'sim',
           stars: effectiveStars,
+          rarity: rarityInfo.rarity,
           demo: mission.demo === true,
         }),
       });
@@ -264,27 +297,81 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           setMintDone(false);
           return;
         }
-        // Other errors: fall through to sim_ path
       }
     } catch (err) {
       console.error('[mint] Network/timeout error:', err);
-      // Network / timeout: txId stays as sim_… — observation saved as pending
     }
 
     setMintTxId(txId);
+
+    // --- Build NFT image URL with rarity ---
     const targetName = mission.target === null ? 'Night Sky' : mission.name;
-    setNftImageUrl(`/api/nft-image?target=${encodeURIComponent(targetName)}&ts=${new Date(timestamp).getTime()}&lat=${coords.lat.toFixed(4)}&lon=${coords.lon.toFixed(4)}&cc=${sky?.cloudCover ?? 0}&stars=${effectiveStars}`);
+    const nftUrl = `/api/nft-image?target=${encodeURIComponent(targetName)}&ts=${new Date(timestamp).getTime()}&lat=${coords.lat.toFixed(4)}&lon=${coords.lon.toFixed(4)}&cc=${sky?.cloudCover ?? 0}&stars=${effectiveStars}&rarity=${rarityInfo.rarity}`;
+    setNftImageUrl(nftUrl);
+
+    // --- Roll cosmic bonus (deterministic from oracle hash) ---
+    const bonus = rollCosmicBonus(rarityInfo.rarity, sky?.oracleHash ?? 'sim');
+    setCosmicBonus(bonus);
+
+    // --- Compute TRUE total stars including bonus ---
+    const totalStars = effectiveStars + (bonus.triggered ? bonus.amount : 0);
+    setTotalStarsEarned(totalStars);
+
+    // --- Award cosmic bonus Stars via /api/award-stars (fire-and-forget, idempotent) ---
+    if (bonus.triggered && solanaWallet?.address) {
+      const authToken = await getAccessToken().catch(() => null);
+      fetch('/api/award-stars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({
+          recipientAddress: solanaWallet.address,
+          amount: bonus.amount,
+          reason: `cosmic_bonus:${targetName}`,
+          idempotencyKey: `cosmic:${txId}`,
+        }),
+      }).catch(() => {});
+    }
+
+    // --- Consume Starlight (skip demo) ---
+    if (!mission.demo) consumeStarlight();
+
+    // --- Track weekly challenge progress ---
+    const chResult = recordChallengeProgress(skyScore?.score ?? 0, targetName);
+    if (chResult.justCompleted) {
+      setChallengeCompleted(true);
+      const cb = claimChallengeReward();
+      if (cb > 0 && solanaWallet?.address) {
+        const authToken = await getAccessToken().catch(() => null);
+        fetch('/api/award-stars', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            recipientAddress: solanaWallet.address,
+            amount: cb,
+            reason: 'weekly_challenge',
+            idempotencyKey: `challenge:${getActiveChallenge().id}:${solanaWallet.address}`,
+          }),
+        }).catch(() => {});
+      }
+    }
+
     setMintDone(true);
 
-    // Log observation + award stars atomically via observe/log
+    // --- Log observation (use TOTAL stars so server records the full amount) ---
     if (solanaWallet?.address) {
       fetch('/api/observe/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           wallet: solanaWallet.address,
-          target: mission.target === null ? 'Night Sky' : mission.name,
-          identifiedObject: photoVerification?.identifiedObject ?? (mission.target === null ? 'Night Sky' : mission.name),
+          target: targetName,
+          identifiedObject: photoVerification?.identifiedObject ?? targetName,
           verificationToken: photoVerification?.verificationToken ?? null,
           capturedAt: photoVerification?.metadata?.capturedAt ?? new Date().toISOString(),
           confidence: photoVerification?.confidence ?? (sky?.verified ? 'medium' : 'low'),
@@ -312,7 +399,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         id: mission.id,
         name: mission.name,
         emoji: mission.emoji,
-        stars: effectiveStars,
+        stars: totalStars,
         txId,
         photo: isSafePhoto(photo) ? photo : '',
         timestamp,
@@ -387,7 +474,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
   if (step === 'done') {
     const isOnChain = mintTxId && !mintTxId.startsWith('sim');
-    const starsEarned = sky?.verified ? mission.stars : 0;
+    const starsEarned = totalStarsEarned || (sky?.verified ? mission.stars : 0);
     const appUrl = 'https://stellarrclub.vercel.app';
     const ogImageUrl = nftImageUrl
       ? `${appUrl}${nftImageUrl}`
@@ -423,6 +510,69 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             }}
           />
         ))}
+
+        {/* Cosmic bonus overlay — appears briefly on top of done screen */}
+        {cosmicBonus?.triggered && (
+          <div
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-20 animate-cosmic-reveal"
+            style={{
+              pointerEvents: 'none',
+              animation: 'cosmicReveal 520ms var(--ease-out-expo) forwards, fadeIn 400ms ease 2400ms reverse forwards',
+            }}
+          >
+            <div
+              className="flex items-center gap-3 px-5 py-3 rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.95) 0%, rgba(99,102,241,0.95) 100%)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 16px 40px rgba(168,85,247,0.5), 0 0 80px rgba(168,85,247,0.2)',
+                backdropFilter: 'blur(12px)',
+              }}
+            >
+              <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 8px white)' }}>✦</span>
+              <div>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-white/80 m-0" style={{ textTransform: 'uppercase' }}>
+                  Cosmic Bonus
+                </p>
+                <p className="text-xl font-black text-white m-0 leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                  +{cosmicBonus.amount} ✦
+                </p>
+                <p className="text-[10px] text-white/85 m-0 italic mt-0.5">{cosmicBonus.message}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Weekly challenge complete — appears briefly, lower position */}
+        {challengeCompleted && (
+          <div
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-20 animate-cosmic-reveal"
+            style={{
+              pointerEvents: 'none',
+              animation: 'cosmicReveal 520ms var(--ease-out-expo) 500ms both, fadeIn 400ms ease 2900ms reverse forwards',
+            }}
+          >
+            <div
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(52,211,153,0.95) 0%, rgba(16,185,129,0.95) 100%)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 12px 32px rgba(52,211,153,0.4)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>✓</span>
+              <div>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-white/90 m-0" style={{ textTransform: 'uppercase' }}>
+                  Weekly Challenge
+                </p>
+                <p className="text-sm font-bold text-white m-0">
+                  +{getActiveChallenge().bonusStars} ✦ Claimed
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Layout — single column, no scroll */}
         <div className="relative z-10 flex flex-col gap-2.5 px-4 pt-3 pb-3 max-w-sm mx-auto w-full flex-1 min-h-0">
@@ -468,6 +618,22 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           >
             {/* Glow behind number */}
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(255,209,102,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            {/* Multiplier badge — top-left corner of stars hero */}
+            {mintTier && mintTier.multiplier > 1 && (
+              <div
+                className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full animate-multiplier-rise"
+                style={{
+                  background: 'rgba(7,11,20,0.6)',
+                  border: '1px solid rgba(255,209,102,0.25)',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: '#FFD166',
+                }}
+              >
+                <MoonPhase phase={mintTier.phase} size={11} />
+                <span>{mintTier.multiplier}×</span>
+              </div>
+            )}
             <p
               className="relative font-black leading-none"
               style={{
@@ -489,11 +655,21 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="grid grid-cols-2 gap-2.5 animate-fade-in stagger-2 flex-1 min-h-0">
             {/* NFT visual */}
             <div
-              className="rounded-xl overflow-hidden"
+              className={`rounded-xl overflow-hidden relative ${mintRarity?.rarity === 'Celestial' ? 'animate-rarity-pulse' : ''}`}
               style={{
-                border: '1px solid rgba(255,209,102,0.15)',
-                boxShadow: '0 0 24px rgba(255,209,102,0.06)',
+                border: `2px solid ${mintRarity?.color ?? 'rgba(255,209,102,0.15)'}`,
+                boxShadow: mintRarity?.rarity === 'Celestial'
+                  ? `0 0 32px ${mintRarity.color}55, 0 0 8px ${mintRarity.color}44`
+                  : mintRarity?.rarity === 'Astral'
+                    ? `0 0 24px ${mintRarity.color}40, 0 0 8px ${mintRarity.color}33`
+                    : mintRarity?.rarity === 'Stellar'
+                      ? `0 0 20px ${mintRarity.color}30`
+                      : '0 0 24px rgba(255,209,102,0.06)',
                 background: 'rgba(255,255,255,0.02)',
+                position: 'relative',
+                // @ts-expect-error custom property for keyframe
+                '--rarity-glow-weak': mintRarity ? `${mintRarity.color}30` : 'rgba(255,209,102,0.15)',
+                '--rarity-glow-strong': mintRarity ? `${mintRarity.color}60` : 'rgba(255,209,102,0.25)',
               }}
             >
               {nftImageUrl ? (
@@ -501,6 +677,24 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <MissionIcon id={mission.id} size={44} />
+                </div>
+              )}
+              {mintRarity && mintRarity.rarity !== 'Common' && (
+                <div
+                  className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md flex items-center gap-1 animate-cosmic-reveal"
+                  style={{
+                    background: 'rgba(7,11,20,0.7)',
+                    border: `1px solid ${mintRarity.color}60`,
+                    backdropFilter: 'blur(4px)',
+                    fontSize: 8,
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: mintRarity.color,
+                  }}
+                >
+                  <span style={{ fontSize: 9 }}>{mintRarity.glyph}</span>
+                  <span>{mintRarity.rarity}</span>
                 </div>
               )}
             </div>
