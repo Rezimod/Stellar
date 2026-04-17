@@ -978,8 +978,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     );
   }
 
-  const fullBleed = false;
-
   return (
     <div
       className="fixed inset-0 z-[58] flex items-stretch justify-center"
@@ -987,7 +985,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     >
     <div
       ref={containerRef}
-      className="w-full max-w-2xl h-full bg-[#070B14] overflow-hidden flex flex-col"
+      className="relative w-full max-w-2xl h-full bg-[#070B14] overflow-hidden flex flex-col"
       style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
     >
 
@@ -1028,91 +1026,130 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         );
       })()}
 
-      {/* Top bar */}
-      <div
-        className="flex-shrink-0 flex items-center justify-between px-4 py-2 z-10"
-        style={{
-          borderBottom: fullBleed ? 'none' : '1px solid rgba(255,255,255,0.05)',
-          position: fullBleed ? 'absolute' : 'relative',
-          top: 0, left: 0, right: 0,
-          background: fullBleed ? 'linear-gradient(to bottom, rgba(7,11,20,0.9), transparent)' : '#0a0a0a',
-        }}
+      {/* Floating close — visible on all steps */}
+      <button
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
       >
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-            <img
-              src={getMissionImage(mission.id)}
-              alt={mission.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <p className="text-white text-sm font-semibold leading-tight">{mission.name}</p>
-            {!fullBleed && <p className="text-slate-600 text-[11px]">{mission.desc}</p>}
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
-        >
-          <X size={14} />
-        </button>
-      </div>
+        <X size={14} />
+      </button>
 
       {/* Content */}
-      <div className={`flex flex-col flex-1 min-h-0 overflow-y-auto ${fullBleed ? '' : 'px-4 py-4 max-w-xl mx-auto w-full'}`}>
+      <div className={`flex flex-col flex-1 min-h-0 ${step === 'observing' ? 'overflow-hidden pb-4 pt-1 px-4 max-w-xl mx-auto w-full' : 'overflow-y-auto px-4 py-4 max-w-xl mx-auto w-full'}`}>
 
         {step === 'observing' && (
-          <div className="flex flex-col gap-5 pt-4">
+          <div className="relative flex flex-col flex-1 min-h-0 px-2 pt-1 pb-2">
+            {/* Ambient backdrop — radial nebula wash */}
             <div
-              className="rounded-2xl p-6 text-center"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
-            >
-              <div
-                className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4"
-                style={{ border: '1px solid rgba(255,209,102,0.25)', boxShadow: '0 0 24px rgba(255,209,102,0.1)' }}
-              >
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: [
+                  'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(255,209,102,0.10) 0%, transparent 60%)',
+                  'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(132,101,203,0.10) 0%, transparent 65%)',
+                  'radial-gradient(ellipse 320px 240px at 80% 75%, rgba(56,155,240,0.08) 0%, transparent 65%)',
+                ].join(', '),
+              }}
+            />
+
+            {/* Kicker strip */}
+            <div className="relative flex items-center justify-center gap-2 pt-2 pb-1 flex-shrink-0">
+              <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--stl-gold)' }}>
+                Tonight's Target
+              </span>
+              <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
+            </div>
+
+            {/* Planet hero + editorial title */}
+            <div className="relative flex-1 min-h-0 flex flex-col items-center justify-center text-center">
+              {/* Planet with ambient halo */}
+              <div className="relative" style={{ width: 'min(42vw, 170px)', aspectRatio: '1 / 1' }}>
+                <div
+                  aria-hidden
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255,209,102,0.28) 0%, rgba(255,209,102,0.06) 45%, transparent 70%)',
+                    filter: 'blur(18px)',
+                    transform: 'scale(1.55)',
+                  }}
+                />
+                <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
+                <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
                 <img
                   src={getMissionImage(mission.id)}
                   alt={mission.name}
-                  className="w-full h-full object-cover"
-                  style={{ display: 'block' }}
+                  className="relative w-full h-full rounded-full object-cover stl-chart-in"
+                  style={{
+                    boxShadow: '0 0 60px rgba(255,209,102,0.22), inset 0 0 0 1px rgba(255,209,102,0.15)',
+                  }}
                 />
               </div>
-              <p className="text-white text-base font-semibold mb-2">
-                Point your telescope at <span className="text-[#FFD166]">{mission.name}</span>
-              </p>
-              <p className="text-slate-400 text-sm leading-relaxed">
+
+              <h1
+                className="stl-chart-in mt-4"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 500,
+                  fontSize: 'clamp(40px, 11vw, 64px)',
+                  lineHeight: 0.95,
+                  letterSpacing: '-0.015em',
+                  color: 'var(--stl-text-bright)',
+                  animationDelay: '120ms',
+                }}
+              >
+                {mission.name}
+              </h1>
+
+              <p
+                className="stl-chart-in mt-1.5"
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                  fontSize: 'clamp(13px, 3.6vw, 16px)',
+                  lineHeight: 1.35,
+                  color: 'var(--stl-text-muted)',
+                  maxWidth: 300,
+                  animationDelay: '220ms',
+                }}
+              >
                 {mission.hint}
               </p>
-              {mission.demo && (
-                <p className="text-amber-400 text-xs mt-3 opacity-70">
-                  Demo mode — upload any photo; mints a real NFT on Solana
-                </p>
-              )}
             </div>
+
+            {/* Stats strip — inline, minimal */}
+            <div className="relative flex items-center justify-center gap-3 flex-shrink-0 pb-3">
+              <div className="flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
+                <span style={{ color: 'var(--stl-gold)', fontWeight: 600 }}>+{mission.stars}</span>
+                <span style={{ color: 'var(--stl-gold)' }}>✦</span>
+              </div>
+              <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
+                {mission.difficulty || 'Beginner'}
+              </span>
+              <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
+                {mission.target || mission.name}
+              </span>
+            </div>
+
+            {/* CTA */}
             <Button
               variant="brass"
               onClick={() => { setMintError(''); setStep('camera'); }}
-              className="w-full"
+              className="relative w-full flex-shrink-0"
             >
               Begin Observation →
             </Button>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <p className="text-[10px] font-semibold tracking-[0.12em] text-slate-500 uppercase">Reward</p>
-                <p className="text-[#FFD166] font-bold text-sm mt-1">{mission.stars} ✦</p>
-              </div>
-              <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <p className="text-[10px] font-semibold tracking-[0.12em] text-slate-500 uppercase">Difficulty</p>
-                <p className="text-white font-semibold text-sm mt-1 capitalize">{mission.difficulty || 'Beginner'}</p>
-              </div>
-              <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <p className="text-[10px] font-semibold tracking-[0.12em] text-slate-500 uppercase">Target</p>
-                <p className="text-white font-semibold text-sm mt-1">{mission.target || mission.name}</p>
-              </div>
-            </div>
+
+            {mission.demo && (
+              <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: '#F59E0B' }}>
+                Demo mode — upload any photo; mints a real NFT on Solana
+              </p>
+            )}
           </div>
         )}
 
