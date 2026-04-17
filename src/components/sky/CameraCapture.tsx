@@ -61,8 +61,8 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   // Preview screen
   if (preview) {
     return (
-      <div className="flex flex-col gap-2.5 w-full flex-1 min-h-0 overflow-hidden">
-        <div className="relative rounded-2xl overflow-hidden bg-black flex-1 min-h-0" style={{ minHeight: 180 }}>
+      <div className="flex flex-col gap-2.5 w-full">
+        <div className="relative rounded-2xl overflow-hidden bg-black w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
           <img src={preview} alt="Observation preview" className="w-full h-full object-cover" />
           <div className="absolute bottom-0 left-0 right-0 px-3 py-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
             <p className="text-[#FFD166] text-[10px] font-mono tracking-widest">
@@ -110,9 +110,9 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
 
   // Live viewfinder
   return (
-    <div className="flex flex-col gap-2.5 w-full flex-1 min-h-0 overflow-hidden">
-      {/* Viewfinder */}
-      <div className="relative rounded-2xl overflow-hidden bg-black flex-1 min-h-0" style={{ minHeight: 180 }}>
+    <div className="flex flex-col gap-2.5 w-full">
+      {/* Viewfinder — square, fits in screen without scrolling */}
+      <div className="relative rounded-2xl overflow-hidden bg-black w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
         {flash && <div className="absolute inset-0 bg-white/30 pointer-events-none" />}
 

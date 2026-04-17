@@ -181,13 +181,14 @@ export default function MissionsPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-3 sm:py-6 flex flex-col gap-3">
         <BackButton />
-        {location.source === 'default' && (
-          <div className="flex items-center justify-between px-3 py-2 rounded-xl text-xs" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: 'var(--warning)' }}>
-            <span>{t('approximateLocation')}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0">
             <LocationPicker compact />
           </div>
-        )}
-        <DailyCheckIn lat={location.lat ?? 41.6941} lon={location.lon ?? 44.8337} />
+          <div className="flex-1 min-w-0">
+            <DailyCheckIn lat={location.lat ?? 41.6941} lon={location.lon ?? 44.8337} />
+          </div>
+        </div>
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Satellite size={16} strokeWidth={1.5} className="text-[#818cf8]" />

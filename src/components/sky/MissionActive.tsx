@@ -988,7 +988,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const fullBleed = false;
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-50 bg-[#070B14] overflow-hidden flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-stretch justify-center"
+      style={{ background: 'rgba(7,11,20,0.96)', backdropFilter: 'blur(6px)' }}
+    >
+    <div
+      ref={containerRef}
+      className="w-full max-w-2xl h-full bg-[#070B14] overflow-hidden flex flex-col"
+      style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+    >
 
       {/* Step progress indicator */}
       {(() => {
@@ -1177,6 +1185,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <MintAnimation done={mintDone} slowMsg={showSlowMint} />
         )}
       </div>
+    </div>
     </div>
   );
 }

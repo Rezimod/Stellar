@@ -34,102 +34,74 @@ export default function MissionList({ onStart }: MissionListProps) {
   const outOfStarlight = starlight <= 0;
 
   return (
-    <div className="grid grid-cols-2 gap-2.5" style={{ gridAutoRows: '1fr' }}>
+    <div className="flex flex-col gap-2">
       {MISSIONS.map(mission => {
         const isRepeatable = mission.repeatable === true;
         const done = completedIds.has(mission.id) && !isRepeatable;
         const doneToday = isRepeatable && completedTodayId(mission.id);
-        const diff = mission.difficulty === 'Beginner' ? 1 : mission.difficulty === 'Intermediate' ? 2 : mission.difficulty === 'Advanced' ? 3 : mission.difficulty === 'Hard' ? 4 : 5;
         const diffLabel = mission.difficulty === 'Beginner' ? 'Easy' : mission.difficulty === 'Intermediate' ? 'Medium' : mission.difficulty === 'Advanced' ? 'Hard' : mission.difficulty === 'Hard' ? 'Hard+' : 'Expert';
 
-        // Starlight gating: non-demo missions disabled when Starlight = 0
         const locked = !mission.demo && outOfStarlight;
+        const disabled = done || locked;
+
+        const handleClick = () => { if (!disabled) onStart(mission); };
 
         return (
-          <div
+          <button
             key={mission.id}
-            className="relative flex flex-col items-center text-center rounded-2xl px-3 pt-5 pb-4 transition-all duration-200 h-full justify-between"
+            onClick={handleClick}
+            disabled={disabled}
+            className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 w-full text-left transition-all active:scale-[0.99]"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
+              background: done
+                ? 'rgba(52,211,153,0.04)'
+                : locked
+                ? 'rgba(255,255,255,0.02)'
+                : 'rgba(255,255,255,0.035)',
+              border: done
+                ? '1px solid rgba(52,211,153,0.2)'
+                : '1px solid rgba(255,255,255,0.08)',
               opacity: locked ? 0.55 : 1,
+              cursor: disabled ? 'default' : 'pointer',
             }}
-            onMouseEnter={e => { if (!locked) { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,209,102,0.08)'; } }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
+            onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.35)'; } }}
+            onMouseLeave={e => { if (!done) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; } }}
           >
-            {/* Completion badge */}
-            {done && !isRepeatable && (
-              <div className="absolute top-2.5 right-2.5">
-                <CheckCircle2 size={13} className="text-emerald-400" />
-              </div>
-            )}
-
-            <div className="relative w-full overflow-hidden rounded-xl mb-3" style={{ aspectRatio: '1 / 1', maxHeight: '160px' }}>
-              <img
-                src={getMissionImage(mission.id)}
-                alt={mission.name}
-                className="w-full h-full object-cover"
-                style={{ display: 'block' }}
-              />
+            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+              <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
             </div>
 
-            <p className="text-white font-semibold text-[13px] leading-snug mb-1.5">{mission.name}</p>
-
-            <div className="flex flex-col items-center gap-1 mb-2">
-              <div className="flex gap-1 justify-center">
-                {[1,2,3,4,5].map(d => (
-                  <span key={d} className="w-1 h-1 rounded-full" style={{
-                    backgroundColor: d <= diff
-                      ? diff >= 5 ? 'rgba(239,68,68,0.8)' : diff >= 4 ? 'rgba(251,113,133,0.7)' : 'rgba(255,209,102,0.55)'
-                      : 'rgba(255,255,255,0.1)'
-                  }} />
-                ))}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="text-white font-semibold text-[13px] leading-tight truncate">{mission.name}</p>
+                {mission.demo && (
+                  <span className="text-[9px] px-1.5 py-0 rounded-full flex-shrink-0" style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8' }}>
+                    Demo
+                  </span>
+                )}
               </div>
-              <span className="text-[9px] text-slate-600 font-medium tracking-wide uppercase">{diffLabel}</span>
-              {isRepeatable && !mission.demo && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399' }}>
-                  Always Available
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wide">{diffLabel}</span>
+                {doneToday && <span className="text-[10px] text-slate-500">· ✓ today</span>}
+                {isRepeatable && !mission.demo && !doneToday && (
+                  <span className="text-[10px] text-[#34d399]">· Always available</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+              <span className="text-[#FFD166] text-[12px] font-bold">+{mission.stars} ✦</span>
+              {done ? (
+                <span className="flex items-center gap-1 text-[10px] text-[#34d399]">
+                  <CheckCircle2 size={11} /> Done
                 </span>
+              ) : locked ? (
+                <span className="text-[9px] text-amber-400/70">No Starlight</span>
+              ) : (
+                <span className="text-[10px] text-[#FFD166]/70 font-semibold">Begin →</span>
               )}
             </div>
-
-            {doneToday && (
-              <p className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>✓ Completed today</p>
-            )}
-
-            {mission.demo && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full mb-1" style={{ background: 'rgba(99,102,241,0.08)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.15)' }}>
-                Demo
-              </span>
-            )}
-
-            <p className="text-[#FFD166] text-[11px] font-bold mb-3">+{mission.stars} ✦</p>
-
-            {done ? (
-              <div className="w-full py-2 rounded-lg text-[11px] text-slate-700 text-center" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                Complete
-              </div>
-            ) : locked ? (
-              <div
-                className="w-full py-2 rounded-lg text-[10px] text-center flex flex-col items-center gap-0.5"
-                style={{ background: 'rgba(255,209,102,0.04)', border: '1px solid rgba(255,209,102,0.1)', color: 'rgba(255,209,102,0.5)' }}
-              >
-                <span className="font-semibold">No Starlight</span>
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>
-                  {new Date().getHours() < 19 ? 'Resets at 19:00' : 'Resets tomorrow at 19:00'}
-                </span>
-              </div>
-            ) : (
-              <button
-                onClick={() => onStart(mission)}
-                className="w-full py-2.5 min-h-[44px] rounded-lg text-[12px] font-bold transition-all active:scale-95 hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
-              >
-                Begin →
-              </button>
-            )}
-          </div>
+          </button>
         );
       })}
     </div>
