@@ -17,11 +17,11 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo } = body;
 
-  // Dev-only demo bypass — never active on Vercel production
-  const isDemoMint = process.env.NODE_ENV === 'development' && demo === true;
+  const isDemoMint = demo === true;
 
-  // Auth required for all requests; dev demo mode is the only exception
-  if (!isDemoMint) {
+  // Auth required for all requests; unauthenticated dev demo without wallet is the only exception
+  const isDevNoWallet = process.env.NODE_ENV === 'development' && isDemoMint && !body.userAddress;
+  if (!isDevNoWallet) {
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) {
@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Upstash rate limit: 2 mints per wallet per hour
-  if (userAddress) {
+  // Upstash rate limit: 2 mints per wallet per hour — skipped for demo missions
+  if (!isDemoMint && userAddress) {
     const { success, remaining } = await checkRateLimit(mintRateLimit, userAddress);
     if (!success) {
       return NextResponse.json(
@@ -74,9 +74,9 @@ export async function POST(req: NextRequest) {
   const VALID_RARITIES = ['Common', 'Stellar', 'Astral', 'Celestial'] as const;
   const rarityVal = VALID_RARITIES.includes(rarity as typeof VALID_RARITIES[number]) ? (rarity as string) : 'Common';
 
-  // DB rate limit: one NFT per wallet+target per hour — fail closed if DB unavailable
+  // DB rate limit: one NFT per wallet+target per hour — skipped for demo missions
   const db = getDb();
-  if (db && userAddress) {
+  if (!isDemoMint && db && userAddress) {
     try {
       const oneHourAgo = new Date(Date.now() - 3600_000);
       const recent = await db
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // If no wallet and this is a demo, skip the real mint entirely
+  // No wallet + demo → return a plausible-looking txId (no real on-chain mint)
   if (!userAddress && isDemoMint) {
     const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
     const mockTxId = Array.from({ length: 87 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
