@@ -1040,7 +1040,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       <div className={`flex flex-col flex-1 min-h-0 ${step === 'observing' ? 'overflow-hidden pb-4 pt-1 px-4 max-w-xl mx-auto w-full' : 'overflow-y-auto px-4 py-4 max-w-xl mx-auto w-full'}`}>
 
         {step === 'observing' && (
-          <div className="relative flex flex-col flex-1 min-h-0 px-2 pt-1 pb-2">
+          <div className="relative flex flex-col items-center flex-1 min-h-0 px-2 pt-2 pb-3 text-center">
             {/* Ambient backdrop — radial nebula wash */}
             <div
               aria-hidden
@@ -1055,7 +1055,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             />
 
             {/* Kicker strip */}
-            <div className="relative flex items-center justify-center gap-2 pt-2 pb-1 flex-shrink-0">
+            <div className="relative flex items-center justify-center gap-2 flex-shrink-0 mb-3">
               <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--stl-gold)' }}>
                 Tonight's Target
@@ -1063,65 +1063,62 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
             </div>
 
-            {/* Planet hero + editorial title */}
-            <div className="relative flex-1 min-h-0 flex flex-col items-center justify-center text-center">
-              {/* Planet with ambient halo */}
-              <div className="relative" style={{ width: 'min(42vw, 170px)', aspectRatio: '1 / 1' }}>
-                <div
-                  aria-hidden
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255,209,102,0.28) 0%, rgba(255,209,102,0.06) 45%, transparent 70%)',
-                    filter: 'blur(18px)',
-                    transform: 'scale(1.55)',
-                  }}
-                />
-                <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
-                <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
-                <img
-                  src={getMissionImage(mission.id)}
-                  alt={mission.name}
-                  className="relative w-full h-full rounded-full object-cover stl-chart-in"
-                  style={{
-                    boxShadow: '0 0 60px rgba(255,209,102,0.22), inset 0 0 0 1px rgba(255,209,102,0.15)',
-                  }}
-                />
-              </div>
-
-              <h1
-                className="stl-chart-in mt-4"
+            {/* Planet with ambient halo */}
+            <div className="relative flex-shrink-0" style={{ width: 'min(30vw, 120px)', aspectRatio: '1 / 1' }}>
+              <div
+                aria-hidden
+                className="absolute inset-0 rounded-full"
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontWeight: 500,
-                  fontSize: 'clamp(40px, 11vw, 64px)',
-                  lineHeight: 0.95,
-                  letterSpacing: '-0.015em',
-                  color: 'var(--stl-text-bright)',
-                  animationDelay: '120ms',
+                  background: 'radial-gradient(circle, rgba(255,209,102,0.28) 0%, rgba(255,209,102,0.06) 45%, transparent 70%)',
+                  filter: 'blur(18px)',
+                  transform: 'scale(1.55)',
                 }}
-              >
-                {mission.name}
-              </h1>
-
-              <p
-                className="stl-chart-in mt-1.5"
+              />
+              <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
+              <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
+              <img
+                src={getMissionImage(mission.id)}
+                alt={mission.name}
+                className="relative w-full h-full rounded-full object-cover stl-chart-in"
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontStyle: 'italic',
-                  fontWeight: 400,
-                  fontSize: 'clamp(13px, 3.6vw, 16px)',
-                  lineHeight: 1.35,
-                  color: 'var(--stl-text-muted)',
-                  maxWidth: 300,
-                  animationDelay: '220ms',
+                  boxShadow: '0 0 60px rgba(255,209,102,0.22), inset 0 0 0 1px rgba(255,209,102,0.15)',
                 }}
-              >
-                {mission.hint}
-              </p>
+              />
             </div>
 
+            <h1
+              className="stl-chart-in mt-3 flex-shrink-0"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 500,
+                fontSize: 'clamp(28px, 7vw, 40px)',
+                lineHeight: 0.95,
+                letterSpacing: '-0.015em',
+                color: 'var(--stl-text-bright)',
+                animationDelay: '120ms',
+              }}
+            >
+              {mission.name}
+            </h1>
+
+            <p
+              className="stl-chart-in mt-1 flex-shrink-0"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                fontSize: 'clamp(12px, 3vw, 14px)',
+                lineHeight: 1.35,
+                color: 'var(--stl-text-muted)',
+                maxWidth: 300,
+                animationDelay: '220ms',
+              }}
+            >
+              {mission.hint}
+            </p>
+
             {/* Stats strip — inline, minimal */}
-            <div className="relative flex items-center justify-center gap-3 flex-shrink-0 pb-3">
+            <div className="relative flex items-center justify-center gap-3 flex-shrink-0 mt-3 mb-3">
               <div className="flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
                 <span style={{ color: 'var(--stl-gold)', fontWeight: 600 }}>+{mission.stars}</span>
                 <span style={{ color: 'var(--stl-gold)' }}>✦</span>
@@ -1135,6 +1132,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 {mission.target || mission.name}
               </span>
             </div>
+
+            {/* Spacer pushes CTA to bottom */}
+            <div className="flex-1 min-h-0" />
 
             {/* CTA */}
             <Button
