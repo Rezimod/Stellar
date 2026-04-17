@@ -584,7 +584,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     return (
       <div
         id="mission-done-overlay"
-        className="fixed inset-0 z-50 overflow-hidden flex flex-col"
+        className="fixed inset-0 z-[58] overflow-hidden flex flex-col"
         style={{ background: 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 55%), var(--bg-base)' }}
       >
         {/* Confetti burst */}
@@ -946,7 +946,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
   if (step === 'gallery-saved') {
     return (
-      <div className="fixed inset-0 z-50 bg-[#070B14] overflow-hidden flex flex-col">
+      <div className="fixed inset-0 z-[58] bg-[#070B14] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
@@ -1001,7 +1001,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch justify-center"
+      className="fixed inset-0 z-[58] flex items-stretch justify-center"
       style={{ background: 'rgba(7,11,20,0.96)', backdropFilter: 'blur(6px)' }}
     >
     <div
