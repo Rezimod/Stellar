@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { MapPin, ChevronDown, Navigation, Check, X, Search } from 'lucide-react'
+import { MapPin, ChevronDown, Navigation, Check, Search } from 'lucide-react'
 import { useLocation, getRegionForCountry, type UserLocation, type Region } from '@/lib/location'
 
 const REGION_LABELS: Record<Region, string> = {
@@ -77,18 +77,22 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
   const [open, setOpen] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
   const [search, setSearch] = useState('')
+  const wrapRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
-  // Lock body scroll when open on mobile
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-      setTimeout(() => searchRef.current?.focus(), 100)
-    } else {
-      document.body.style.overflow = ''
-      setSearch('')
+    if (!open) { setSearch(''); return }
+    setTimeout(() => searchRef.current?.focus(), 60)
+    const onDocClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
     }
-    return () => { document.body.style.overflow = '' }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [open])
 
   const handleGPS = useCallback(() => {
@@ -131,19 +135,15 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
   const isActive = (p: UserLocation) => p.city === location.city && p.country === location.country
 
   return (
-    <>
+    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-block' }}>
       <style>{`
         @keyframes loc-ping {
           0% { transform: scale(0.7); opacity: 0.6; }
           100% { transform: scale(2.4); opacity: 0; }
         }
-        @keyframes loc-panel-in {
-          from { opacity: 0; transform: translateY(16px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes loc-overlay-in {
-          from { opacity: 0; }
-          to   { opacity: 1; }
+        @keyframes loc-dropdown-in {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .loc-pill {
           display: inline-flex;
@@ -154,24 +154,22 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           background: rgba(20, 184, 166, 0.08);
           border: 1.5px solid rgba(20, 184, 166, 0.35);
           cursor: pointer;
-          transition: background 0.2s, border-color 0.2s, transform 0.15s;
+          transition: background 0.2s, border-color 0.2s;
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
         }
         .loc-pill:hover {
           background: rgba(20, 184, 166, 0.14);
           border-color: rgba(20, 184, 166, 0.6);
-          transform: translateY(-1px);
         }
-        .loc-pill:active { transform: translateY(0); }
         .loc-city-btn {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 10px 12px;
+          padding: 8px 10px;
           background: transparent;
-          border: 1.5px solid transparent;
-          border-radius: 12px;
+          border: 1px solid transparent;
+          border-radius: 10px;
           cursor: pointer;
           width: 100%;
           text-align: left;
@@ -188,16 +186,15 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           justify-content: center;
           gap: 8px;
           width: 100%;
-          padding: 11px 16px;
+          padding: 9px 12px;
           background: rgba(20, 184, 166, 0.08);
-          border: 1.5px solid rgba(20, 184, 166, 0.3);
-          border-radius: 12px;
+          border: 1px solid rgba(20, 184, 166, 0.3);
+          border-radius: 10px;
           color: #14b8a6;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 600;
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
-          letter-spacing: 0.01em;
         }
         .loc-gps-btn:hover:not(:disabled) {
           background: rgba(20, 184, 166, 0.15);
@@ -206,19 +203,17 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         .loc-gps-btn:disabled { opacity: 0.5; cursor: default; }
         .loc-search-input {
           width: 100%;
-          padding: 10px 14px 10px 38px;
+          padding: 8px 12px 8px 32px;
           background: rgba(255,255,255,0.05);
-          border: 1.5px solid rgba(255,255,255,0.1);
-          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 10px;
           color: rgba(255,255,255,0.9);
-          font-size: 14px;
+          font-size: 13px;
           box-sizing: border-box;
           outline: none;
           transition: border-color 0.15s;
         }
-        .loc-search-input:focus {
-          border-color: rgba(20, 184, 166, 0.5);
-        }
+        .loc-search-input:focus { border-color: rgba(20, 184, 166, 0.5); }
         .loc-search-input::placeholder { color: rgba(255,255,255,0.3); }
         .loc-city-list::-webkit-scrollbar { width: 4px; }
         .loc-city-list::-webkit-scrollbar-track { background: transparent; }
@@ -227,8 +222,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
       `}</style>
 
-      {/* Trigger pill */}
-      <button className="loc-pill" onClick={() => setOpen(true)}>
+      <button className="loc-pill" onClick={() => setOpen(v => !v)}>
         <div style={{ position: 'relative', width: 16, height: 16, flexShrink: 0 }}>
           <div style={{
             position: 'absolute', inset: -2, borderRadius: '50%',
@@ -245,153 +239,90 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
 
-      {/* Full-screen overlay + panel */}
       {open && (
         <div
           style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '16px',
-            animation: 'loc-overlay-in 0.18s ease-out forwards',
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            zIndex: 50,
+            width: 280,
+            maxWidth: 'calc(100vw - 32px)',
+            background: 'linear-gradient(160deg, rgba(15,20,40,0.98) 0%, rgba(10,14,30,0.99) 100%)',
+            border: '1px solid rgba(20,184,166,0.25)',
+            borderRadius: 14,
+            boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
+            display: 'flex', flexDirection: 'column',
+            overflow: 'hidden',
+            animation: 'loc-dropdown-in 0.15s ease-out',
           }}
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          {/* Backdrop blur */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'rgba(5, 8, 20, 0.75)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }} />
-
-          {/* Panel */}
-          <div
-            style={{
-              position: 'relative', zIndex: 1,
-              width: '100%', maxWidth: 400,
-              maxHeight: 'calc(100vh - 64px)',
-              background: 'linear-gradient(160deg, rgba(15,20,40,0.98) 0%, rgba(10,14,30,0.99) 100%)',
-              border: '1.5px solid rgba(20,184,166,0.25)',
-              borderRadius: 20,
-              boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(20,184,166,0.08), inset 0 1px 0 rgba(20,184,166,0.1)',
-              display: 'flex', flexDirection: 'column',
-              overflow: 'hidden',
-              animation: 'loc-panel-in 0.22s cubic-bezier(0.34,1.4,0.64,1) forwards',
-            }}
-          >
-            {/* Header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '18px 20px 14px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-              flexShrink: 0,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 34, height: 34, borderRadius: 10,
-                  background: 'rgba(20,184,166,0.12)',
-                  border: '1.5px solid rgba(20,184,166,0.25)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
-                }}>
-                  <MapPin size={15} color="#14b8a6" />
-                </div>
-                <div>
-                  <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: 15, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
-                    Sky location
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: 0, marginTop: 2 }}>
-                    Affects forecasts and marketplace
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setOpen(false)}
-                style={{
-                  width: 30, height: 30, borderRadius: 8,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', flexShrink: 0,
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-              >
-                <X size={14} color="rgba(255,255,255,0.5)" />
-              </button>
+          <div style={{ padding: '10px 10px 6px', flexShrink: 0 }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={13} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              <input
+                ref={searchRef}
+                className="loc-search-input"
+                type="text"
+                placeholder="Search city…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
             </div>
+          </div>
 
-            {/* Search */}
-            <div style={{ padding: '14px 16px 10px', flexShrink: 0 }}>
-              <div style={{ position: 'relative' }}>
-                <Search size={15} color="rgba(255,255,255,0.3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input
-                  ref={searchRef}
-                  className="loc-search-input"
-                  type="text"
-                  placeholder="Search city…"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* City list */}
-            <div className="loc-city-list" style={{ flex: 1, overflowY: 'auto', padding: '0 16px', minHeight: 0 }}>
-              {filtered.length === 0 ? (
-                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center', padding: '24px 0', margin: 0 }}>
-                  No cities found
-                </p>
-              ) : (
-                filtered.map(group => (
-                  <div key={group.label} style={{ marginBottom: 8 }}>
-                    <p style={{
-                      color: 'rgba(20,184,166,0.6)', fontSize: 10, fontWeight: 700,
-                      letterSpacing: '0.1em', textTransform: 'uppercase',
-                      margin: '12px 4px 4px',
-                    }}>
-                      {group.label}
-                    </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {group.cities.map(p => {
-                        const active = isActive(p)
-                        return (
-                          <button
-                            key={`${p.city}-${p.country}`}
-                            className={`loc-city-btn${active ? ' active' : ''}`}
-                            onClick={() => handlePreset(p)}
-                          >
-                            <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{p.flag}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ color: active ? '#14b8a6' : 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: 500 }}>
-                                {p.city}
-                              </span>
-                              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginLeft: 8 }}>
-                                {p.country}
-                              </span>
-                            </div>
-                            {active && <Check size={14} color="#14b8a6" style={{ flexShrink: 0 }} />}
-                          </button>
-                        )
-                      })}
-                    </div>
+          <div className="loc-city-list" style={{ maxHeight: 260, overflowY: 'auto', padding: '0 10px', minHeight: 0 }}>
+            {filtered.length === 0 ? (
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, textAlign: 'center', padding: '20px 0', margin: 0 }}>
+                No cities found
+              </p>
+            ) : (
+              filtered.map(group => (
+                <div key={group.label} style={{ marginBottom: 6 }}>
+                  <p style={{
+                    color: 'rgba(20,184,166,0.6)', fontSize: 9, fontWeight: 700,
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    margin: '8px 4px 2px',
+                  }}>
+                    {group.label}
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {group.cities.map(p => {
+                      const active = isActive(p)
+                      return (
+                        <button
+                          key={`${p.city}-${p.country}`}
+                          className={`loc-city-btn${active ? ' active' : ''}`}
+                          onClick={() => handlePreset(p)}
+                        >
+                          <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{p.flag}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ color: active ? '#14b8a6' : 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500 }}>
+                              {p.city}
+                            </span>
+                            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginLeft: 6 }}>
+                              {p.country}
+                            </span>
+                          </div>
+                          {active && <Check size={13} color="#14b8a6" style={{ flexShrink: 0 }} />}
+                        </button>
+                      )
+                    })}
                   </div>
-                ))
-              )}
-              <div style={{ height: 8 }} />
-            </div>
+                </div>
+              ))
+            )}
+            <div style={{ height: 6 }} />
+          </div>
 
-            {/* GPS button */}
-            <div style={{ padding: '10px 16px 18px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-              <button className="loc-gps-btn" onClick={handleGPS} disabled={gpsLoading}>
-                <Navigation size={14} className={gpsLoading ? 'loc-spinning' : ''} />
-                {gpsLoading ? 'Detecting location…' : 'Use my GPS location'}
-              </button>
-            </div>
+          <div style={{ padding: '8px 10px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+            <button className="loc-gps-btn" onClick={handleGPS} disabled={gpsLoading}>
+              <Navigation size={13} className={gpsLoading ? 'loc-spinning' : ''} />
+              {gpsLoading ? 'Detecting…' : 'Use my GPS location'}
+            </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
