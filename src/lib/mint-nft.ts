@@ -54,7 +54,14 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   const recipient = params.userAddress ? toPublicKey(params.userAddress) : keypair.publicKey;
 
   const name = `Stellar: ${params.target}`;
-  const uri = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'}/api/metadata/observation?target=${encodeURIComponent(params.target)}&ts=${params.timestampMs}&lat=${params.lat.toFixed(4)}&lon=${params.lon.toFixed(4)}&cc=${params.cloudCover}&hash=${params.oracleHash}&stars=${params.stars}&rarity=${encodeURIComponent(params.rarity ?? 'Common')}&multiplier=${params.multiplier ?? 1}`;
+  // Metaplex URI limit is 200 bytes — use short keys, short path, truncated hash.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
+  const shortHash = (params.oracleHash ?? '').slice(0, 10);
+  const uri = `${appUrl}/m/o?t=${encodeURIComponent(params.target)}&d=${params.timestampMs}&la=${params.lat.toFixed(4)}&lo=${params.lon.toFixed(4)}&cc=${params.cloudCover}&h=${shortHash}&s=${params.stars}&r=${encodeURIComponent(params.rarity ?? 'Common')}&m=${params.multiplier ?? 1}`;
+  if (uri.length > 200) {
+    console.error('[mint-nft] URI exceeds 200 bytes:', uri.length, uri);
+    throw new Error('Metadata URI too long');
+  }
 
   // 'processed' commitment returns in ~1-2s vs 15-30s for 'confirmed'.
   // Route has maxDuration=60, so give the mint enough headroom for slow devnet ticks.
