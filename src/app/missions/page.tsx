@@ -9,14 +9,22 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import StatsBar from '@/components/sky/StatsBar';
-import MissionList from '@/components/sky/MissionList';
+import MissionsHero from '@/components/sky/MissionsHero';
+import SecondaryMissionsRail from '@/components/sky/SecondaryMissionsRail';
 import MissionActive from '@/components/sky/MissionActive';
 import ObservationLog from '@/components/sky/ObservationLog';
 import RewardsSection from '@/components/sky/RewardsSection';
 import QuizActive from '@/components/sky/QuizActive';
 import { QUIZZES } from '@/lib/quizzes';
 import { MISSIONS } from '@/lib/constants';
-import type { Mission } from '@/lib/types';
+import type { Mission, CompletedMission } from '@/lib/types';
+
+function getHeroId(completed: CompletedMission[]): string {
+  const completedIds = new Set(completed.filter(m => m.status === 'completed').map(m => m.id));
+  const incomplete = MISSIONS.filter(m => m.repeatable || !completedIds.has(m.id));
+  const demo = incomplete.find(m => m.demo && m.id !== 'free-observation');
+  return (demo ?? incomplete[0] ?? MISSIONS[0]).id;
+}
 import type { QuizDef } from '@/lib/quizzes';
 import PageTransition from '@/components/ui/PageTransition';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
@@ -222,7 +230,11 @@ export default function MissionsPage() {
             )}
           </div>
 
-          <MissionList onStart={setActiveMission} />
+          <MissionsHero onStart={setActiveMission} />
+          <SecondaryMissionsRail
+            heroId={getHeroId(state.completedMissions)}
+            onStart={setActiveMission}
+          />
 
           {/* Weekly challenge strip */}
           <button
