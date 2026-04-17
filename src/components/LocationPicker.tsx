@@ -77,23 +77,37 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
   const [open, setOpen] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
   const [search, setSearch] = useState('')
-  const wrapRef = useRef<HTMLDivElement>(null)
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+
+  const updateAnchor = useCallback(() => {
+    const r = btnRef.current?.getBoundingClientRect()
+    if (r) setAnchor({ top: r.bottom + 6, left: r.left + r.width / 2 })
+  }, [])
 
   useEffect(() => {
     if (!open) { setSearch(''); return }
+    updateAnchor()
     setTimeout(() => searchRef.current?.focus(), 60)
     const onDocClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (panelRef.current?.contains(t) || btnRef.current?.contains(t)) return
+      setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('scroll', updateAnchor, true)
+    window.addEventListener('resize', updateAnchor)
     document.addEventListener('mousedown', onDocClick)
     document.addEventListener('keydown', onKey)
     return () => {
+      window.removeEventListener('scroll', updateAnchor, true)
+      window.removeEventListener('resize', updateAnchor)
       document.removeEventListener('mousedown', onDocClick)
       document.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [open, updateAnchor])
 
   const handleGPS = useCallback(() => {
     if (!navigator.geolocation || gpsLoading) return
@@ -135,15 +149,15 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
   const isActive = (p: UserLocation) => p.city === location.city && p.country === location.country
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ display: 'inline-block' }}>
       <style>{`
         @keyframes loc-ping {
           0% { transform: scale(0.7); opacity: 0.6; }
           100% { transform: scale(2.4); opacity: 0; }
         }
         @keyframes loc-dropdown-in {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         .loc-pill {
           display: inline-flex;
@@ -222,7 +236,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
       `}</style>
 
-      <button className="loc-pill" onClick={() => setOpen(v => !v)}>
+      <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
         <div style={{ position: 'relative', width: 16, height: 16, flexShrink: 0 }}>
           <div style={{
             position: 'absolute', inset: -2, borderRadius: '50%',
@@ -239,13 +253,15 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
 
-      {open && (
+      {open && anchor && (
         <div
+          ref={panelRef}
           style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            left: 0,
-            zIndex: 50,
+            position: 'fixed',
+            top: anchor.top,
+            left: anchor.left,
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
             width: 280,
             maxWidth: 'calc(100vw - 32px)',
             background: 'linear-gradient(160deg, rgba(15,20,40,0.98) 0%, rgba(10,14,30,0.99) 100%)',
