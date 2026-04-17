@@ -501,7 +501,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   // Reward unlock modal
   if (newRewards.length > 0) {
     return (
-      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden px-4" style={{ background: 'rgba(7,11,20,0.97)', backdropFilter: 'blur(12px)' }}>
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-start pt-14 overflow-y-auto px-4 pb-8" style={{ background: 'rgba(7,11,20,0.97)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-sm w-full mx-auto flex flex-col gap-3 text-center p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center mx-auto">
             <Award size={22} className="text-[#34d399]" />
@@ -657,8 +657,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
         )}
 
-        {/* Layout — single column, scrollable when star section is active */}
-        <div className={`relative z-10 flex flex-col gap-1.5 px-4 pt-3 pb-4 max-w-sm mx-auto w-full flex-1 min-h-0 ${nearestStar && !starSkipped ? 'overflow-y-auto' : ''}`}>
+        {/* Layout — single column, top-aligned, always scrollable */}
+        <div className="relative z-10 flex flex-col gap-2 px-4 pt-3 pb-8 max-w-sm mx-auto w-full overflow-y-auto">
 
           {/* Header row */}
           <div className="flex items-center gap-3 animate-slide-up flex-shrink-0">
@@ -723,9 +723,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
           </div>
 
-          {/* Photo card — fills remaining space */}
+          {/* Photo card */}
           <div
-            className={`relative rounded-2xl overflow-hidden flex-1 min-h-0 animate-fade-in ${mintRarity?.rarity === 'Celestial' ? 'animate-rarity-pulse' : ''}`}
+            className={`relative rounded-2xl overflow-hidden animate-fade-in ${mintRarity?.rarity === 'Celestial' ? 'animate-rarity-pulse' : ''}`}
             style={{
               border: `2px solid ${mintRarity?.color ?? 'rgba(99,102,241,0.15)'}`,
               boxShadow: mintRarity?.rarity === 'Celestial'
@@ -734,8 +734,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                   ? `0 0 24px ${mintRarity.color}40`
                   : '0 0 20px rgba(99,102,241,0.08)',
               background: '#0a0e1a',
-              minHeight: 120,
-              maxHeight: '40vh',
+              height: 220,
             }}
           >
             <img
@@ -786,7 +785,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
 
           {/* Share row */}
-          <div className="grid grid-cols-2 gap-2 animate-fade-in flex-shrink-0">
+          <div className="grid grid-cols-2 gap-2 animate-fade-in">
             <button
               onClick={() => window.open(buildTwitterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, grade: skyScore?.grade ?? 'Good', stars: starsEarned, appUrl, ogImageUrl }), '_blank')}
               className="flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-white"
@@ -804,7 +803,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
 
           {/* Action buttons */}
-          <div className="grid grid-cols-2 gap-2 animate-slide-up flex-shrink-0">
+          <div className="grid grid-cols-2 gap-2 animate-slide-up">
             <button
               onClick={() => { onClose(); router.push('/nfts'); }}
               className="py-2.5 rounded-xl font-semibold text-sm"

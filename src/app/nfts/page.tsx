@@ -671,20 +671,8 @@ export default function NftsPage() {
                     {stars && <span className="badge-pill badge-stars" style={{ fontSize: 10 }}>✦ {stars}</span>}
                   </div>
 
-                  {/* Explorer link / pending badge */}
-                  {item.id.startsWith('sim') ? (
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      marginTop: 8,
-                      fontSize: 10,
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--warning)',
-                    }}>
-                      ⏳ Pending
-                    </span>
-                  ) : (
+                  {/* Explorer link — only shown when on-chain */}
+                  {!item.id.startsWith('sim') && (
                     <a
                       href={`https://explorer.solana.com/address/${item.id}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`}
                       target="_blank"
