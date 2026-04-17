@@ -92,6 +92,41 @@
 @keyframes stl-tw { 0%,100% { opacity: 0.3 } 50% { opacity: 0.95 } }
 .stl-tw { animation: stl-tw 3.5s ease-in-out infinite; }
 
+/* Per-star twinkle — very subtle, runs infinitely, varies per element via delay */
+@keyframes stl-star-twinkle {
+  0%, 100% { opacity: var(--stl-star-op, 0.7); }
+  50%      { opacity: calc(var(--stl-star-op, 0.7) * 0.35); }
+}
+.stl-star-tw { animation: stl-star-twinkle 4.2s ease-in-out infinite; }
+
+/* Chart-wide fade-in on first mount */
+@keyframes stl-chart-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.stl-chart-in { animation: stl-chart-in 600ms ease-out both; }
+
+/* Constellation line stroke-draw — draws itself in on mount */
+@keyframes stl-stroke-draw {
+  from { stroke-dashoffset: 600; opacity: 0; }
+  to   { stroke-dashoffset: 0;   opacity: 0.55; }
+}
+.stl-stroke-draw {
+  stroke-dasharray: 600;
+  animation: stl-stroke-draw 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Mission node entry — stagger via --stl-delay inline. Scale only, no translate,
+   so parent can own the absolute positioning translate(-50%,-50%). */
+@keyframes stl-node-in {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.stl-node-in {
+  animation: stl-node-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--stl-delay, 0ms);
+}
+
 /* Prime target pulse ring */
 @keyframes stl-prime-pulse {
   0%   { transform: scale(1);    opacity: 0.65 }
@@ -103,4 +138,16 @@
   border: 2px solid var(--stl-gold);
   animation: stl-prime-pulse 2.4s ease-out infinite;
   pointer-events: none;
+}
+
+/* Text shadow for legibility over chart starfield */
+.stl-chart-label {
+  text-shadow: 0 1px 6px rgba(3, 6, 18, 0.85), 0 0 2px rgba(3, 6, 18, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stl-star-tw,
+  .stl-chart-in,
+  .stl-stroke-draw,
+  .stl-node-in { animation: none !important; }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { Mission } from '@/lib/types';
 import {
   getChartStars,
@@ -64,8 +64,6 @@ const MISSION_NODE: Record<string, React.ComponentType<{ size?: number }>> = {
 };
 
 export default function SkyChart({ lat, lon, date, missions, completedIds, primeId, onSelect }: Props) {
-  const [, setHoverId] = useState<string | null>(null);
-
   const stars: ChartStar[] = useMemo(
     () => getChartStars(lat, lon, date, CX, CY, CHART_R, 3.2),
     [lat, lon, date]
@@ -102,12 +100,16 @@ export default function SkyChart({ lat, lon, date, missions, completedIds, prime
   }, [missions, planets, deepSky]);
 
   return (
-    <div className="relative w-full overflow-hidden" style={{
-      aspectRatio: '1 / 1.05',
-      background: 'var(--stl-bg-chart)',
-      border: '1px solid var(--stl-border-regular)',
-      borderRadius: 'var(--stl-r-xl)',
-    }}>
+    <div
+      className="relative w-full overflow-hidden mx-auto stl-chart-in"
+      style={{
+        maxWidth: 'min(100%, 520px)',
+        aspectRatio: '1 / 1.05',
+        background: 'var(--stl-bg-chart)',
+        border: '1px solid var(--stl-border-regular)',
+        borderRadius: 'var(--stl-r-xl)',
+      }}
+    >
       <svg viewBox={`0 0 ${SIZE} ${SIZE + 20}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="stl-milky" cx="0.5" cy="0.5" r="0.5">
@@ -126,13 +128,38 @@ export default function SkyChart({ lat, lon, date, missions, completedIds, prime
           const pts = c.ids.map(id => starByName.get(id)).filter(Boolean) as ChartStar[];
           if (pts.length < 2) return null;
           const d = pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-          return <path key={i} d={d} fill="none" stroke="rgba(184,212,255,0.2)" strokeWidth="0.6" strokeLinejoin="round" />;
+          return (
+            <path
+              key={i}
+              d={d}
+              fill="none"
+              stroke="rgba(184,212,255,0.55)"
+              strokeWidth="0.6"
+              strokeLinejoin="round"
+              className="stl-stroke-draw"
+              style={{ animationDelay: `${400 + i * 280}ms` }}
+            />
+          );
         })}
 
         {stars.map((s, i) => {
           const r = Math.max(0.4, (3.5 - s.mag) * 0.55);
           const fill = s.tone === 'hot' ? 'var(--stl-star-hot)' : s.tone === 'warm' ? 'var(--stl-star-warm)' : 'var(--stl-star-cool)';
-          return <circle key={i} cx={s.x} cy={s.y} r={r} fill={fill} opacity={s.aboveHorizon ? Math.min(1, 0.35 + (2.5 - s.mag) * 0.2) : 0.15} />;
+          const op = s.aboveHorizon ? Math.min(1, 0.35 + (2.5 - s.mag) * 0.2) : 0.15;
+          return (
+            <circle
+              key={i}
+              cx={s.x}
+              cy={s.y}
+              r={r}
+              fill={fill}
+              className="stl-star-tw"
+              style={{
+                ['--stl-star-op' as string]: op,
+                animationDelay: `${(i % 12) * 320}ms`,
+              }}
+            />
+          );
         })}
 
         <circle cx={CX} cy={CY} r={CHART_R} fill="none" stroke="rgba(56,240,255,0.22)" strokeWidth="0.8" strokeDasharray="3 3" />
@@ -143,48 +170,71 @@ export default function SkyChart({ lat, lon, date, missions, completedIds, prime
         <text x={CX} y={CY + CHART_R + 16} fill="rgba(56,240,255,0.45)" fontSize="9" fontFamily="var(--font-mono)" textAnchor="middle" letterSpacing="2">S · HORIZON</text>
       </svg>
 
-      <div className="absolute top-3 left-3 flex items-center gap-2">
+      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
         <span className="stl-mono-kicker" style={{ color: 'var(--stl-text-dim)' }}>
           {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · TONIGHT
         </span>
       </div>
 
-      {plotted.map(({ mission, x, y, aboveHorizon, Node }) => {
+      {plotted.map(({ mission, x, y, aboveHorizon, Node }, i) => {
         const isPrime = mission.id === primeId;
         const isDone = completedIds.has(mission.id);
         const leftPct = (x / SIZE) * 100;
         const topPct = (y / (SIZE + 20)) * 100;
         return (
-          <button
+          <div
             key={mission.id}
-            onClick={() => onSelect(mission)}
-            onMouseEnter={() => setHoverId(mission.id)}
-            onMouseLeave={() => setHoverId(null)}
-            className="absolute flex flex-col items-center transition-transform active:scale-95 hover:scale-105"
+            className="absolute"
             style={{
               left: `${leftPct}%`,
               top: `${topPct}%`,
               transform: 'translate(-50%, -50%)',
-              opacity: aboveHorizon ? (isDone ? 0.55 : 1) : 0.3,
-              cursor: 'pointer',
               zIndex: isPrime ? 3 : 2,
             }}
-            aria-label={`Start ${mission.name} mission`}
           >
-            <div className="relative">
-              {isPrime && aboveHorizon && <span className="stl-prime-ring" />}
-              <Node size={isPrime ? 38 : 30} />
-            </div>
-            <div className="mt-1 text-center whitespace-nowrap" style={{ pointerEvents: 'none' }}>
-              <div className="stl-display-sm" style={{ color: aboveHorizon ? 'var(--stl-text-bright)' : 'var(--stl-text-dim)' }}>
-                {mission.name}
+            <button
+              onClick={() => onSelect(mission)}
+              className="stl-node-in flex flex-col items-center transition-transform duration-200 active:scale-95 hover:scale-110"
+              style={{
+                opacity: aboveHorizon ? (isDone ? 0.55 : 1) : 0.3,
+                cursor: 'pointer',
+                ['--stl-delay' as string]: `${700 + i * 90}ms`,
+              }}
+              aria-label={`Start ${mission.name} mission`}
+            >
+              <div className="relative">
+                {isPrime && aboveHorizon && <span className="stl-prime-ring" />}
+                <Node size={isPrime ? 32 : 24} />
               </div>
-              <div className="text-[10px] mt-0.5" style={{ color: aboveHorizon ? 'var(--stl-gold)' : 'rgba(255,209,102,0.4)' }}>
-                +{mission.stars} ✦
+              <div className="mt-1 text-center whitespace-nowrap pointer-events-none">
+                <div
+                  className="stl-chart-label"
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontStyle: 'italic',
+                    fontWeight: 400,
+                    fontSize: 12,
+                    lineHeight: 1.1,
+                    color: aboveHorizon ? 'var(--stl-text-bright)' : 'var(--stl-text-dim)',
+                  }}
+                >
+                  {mission.name}
+                </div>
+                <div
+                  className="stl-chart-label mt-0.5"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 9,
+                    letterSpacing: '0.08em',
+                    color: aboveHorizon ? 'var(--stl-gold)' : 'rgba(255,209,102,0.4)',
+                  }}
+                >
+                  +{mission.stars} ✦
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          </div>
         );
       })}
     </div>
