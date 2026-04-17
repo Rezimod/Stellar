@@ -411,7 +411,7 @@ export default function NftsPage() {
 
   return (
     <>
-    {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} onRetryMint={selectedNft.id.startsWith('sim') ? handleRetryMint : undefined} retrying={retrying} />}
+    {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} onRetryMint={(selectedNft.id.startsWith('sim') || state.completedMissions.some(m => m.txId === selectedNft.id && m.status !== 'gallery')) ? handleRetryMint : undefined} retrying={retrying} />}
     <PageTransition>
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-6">
       <BackButton />
