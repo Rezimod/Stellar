@@ -390,7 +390,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
                 <button onClick={handleMintObservation}
                   className="w-full py-3 rounded-xl text-black text-sm font-semibold"
                   style={{ background: 'linear-gradient(to right, #FFD166, #E8B84A)' }}>
-                  Seal on Solana ✦
+                  Create NFT ✦
                 </button>
                 <button onClick={handleCollectOnly}
                   className="w-full py-3 rounded-xl text-slate-400 text-sm"

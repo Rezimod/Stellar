@@ -1173,7 +1173,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         )}
 
         {step === 'verified' && sky && (
-          <div className="flex flex-col flex-1 min-h-0 overflow-hidden justify-center">
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <Verification
               photo={photo}
               sky={sky}

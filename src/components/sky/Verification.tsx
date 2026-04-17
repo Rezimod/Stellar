@@ -35,12 +35,11 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
   ];
 
   return (
-    <div className="flex flex-col w-full overflow-hidden animate-page-enter" style={{ gap: compact ? 8 : 12 }}>
+    <div className="flex flex-col w-full h-full overflow-hidden animate-page-enter" style={{ gap: compact ? 8 : 12 }}>
 
       {/* Photo */}
       <div
-        className="relative rounded-xl overflow-hidden bg-black flex-shrink-0"
-        style={{ maxHeight: compact ? '30vh' : '35vh', aspectRatio: '4/3' }}
+        className="relative rounded-xl overflow-hidden bg-black flex-1 min-h-0"
       >
         <img src={photo} alt="Observation" className="w-full h-full object-contain" style={{ opacity: 0.9 }} />
         <div
