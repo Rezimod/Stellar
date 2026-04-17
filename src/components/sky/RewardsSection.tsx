@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppState } from '@/hooks/useAppState';
 import { getUnlockedRewards, getRank } from '@/lib/rewards';
 import { MISSIONS } from '@/lib/constants';
-import { Copy, Check, Lock, Unlock, ChevronDown } from 'lucide-react';
+import { Copy, Check, Lock, Unlock } from 'lucide-react';
 
 export default function RewardsSection() {
   const { state, claimReward } = useAppState();
@@ -32,7 +32,7 @@ export default function RewardsSection() {
         <div className="ornament-line flex-1" />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="grid grid-cols-2 gap-2">
         {rewards.map(r => {
           const isOpen = expanded === r.id;
           const claimed = state.claimedRewards.includes(r.id);
@@ -47,7 +47,7 @@ export default function RewardsSection() {
           return (
             <div
               key={r.id}
-              className="rounded-xl overflow-hidden transition-all duration-200"
+              className={`rounded-2xl overflow-hidden transition-all duration-200 ${isOpen ? 'col-span-2' : ''}`}
               style={{
                 background: r.unlocked
                   ? 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(15,31,61,0.4))'
@@ -58,44 +58,66 @@ export default function RewardsSection() {
                 opacity: !r.unlocked && r.progress === 0 ? 0.5 : 1,
               }}
             >
-              {/* Row */}
+              {/* Tile (collapsed header) */}
               <button
-                className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                className="relative w-full flex flex-col justify-between text-left p-3"
+                style={{ minHeight: '120px' }}
                 onClick={() => setExpanded(isOpen ? null : r.id)}
               >
-                {/* Icon */}
-                <span className="text-base flex-shrink-0">{r.icon}</span>
-
-                {/* Name + desc */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`text-sm font-semibold ${r.unlocked ? 'text-white' : 'text-slate-400'}`}>
-                      {r.name}
+                {/* Top-right badges */}
+                <div className="absolute top-2 right-2 flex items-center gap-1">
+                  {r.unlocked && !claimed && (
+                    <span className="text-[8px] font-bold text-[#34d399] bg-[#34d399]/10 border border-[#34d399]/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                      Unlocked
                     </span>
-                    {r.unlocked && !claimed && (
-                      <span className="text-[9px] font-bold text-[#34d399] bg-[#34d399]/10 border border-[#34d399]/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                        Unlocked
-                      </span>
-                    )}
-                    {claimed && (
-                      <span className="text-[9px] font-bold text-slate-500 bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                        Claimed
-                      </span>
-                    )}
+                  )}
+                  {claimed && (
+                    <span className="text-[8px] font-bold text-slate-500 bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                      Claimed
+                    </span>
+                  )}
+                  {r.unlocked
+                    ? <Unlock size={11} className="text-[#34d399] opacity-60" />
+                    : <Lock size={11} className="text-slate-600" />
+                  }
+                </div>
+
+                {/* Top: icon + name */}
+                <div className="flex flex-col gap-2">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-2xl"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    {r.icon}
                   </div>
-                  {/* Progress bar */}
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, backgroundColor: progressColor }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-slate-600 flex-shrink-0 w-6 text-right">{pct}%</span>
+                  <div className={`text-[13px] font-semibold leading-tight truncate ${r.unlocked ? 'text-white' : 'text-slate-400'}`}>
+                    {r.name}
                   </div>
-                  {/* Required missions chips */}
+                </div>
+
+                {/* Bottom: progress bar + pct */}
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex-1 h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, backgroundColor: progressColor }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-600 flex-shrink-0">{pct}%</span>
+                </div>
+              </button>
+
+              {/* Expanded panel */}
+              {isOpen && (
+                <div className="px-4 pb-4 pt-0 border-t border-white/5">
+                  <p className="text-slate-500 text-xs mb-3 mt-3">{r.description}</p>
+
+                  {/* Required missions chips (shown when locked) */}
                   {!r.unlocked && r.requiredMissions && (
-                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                    <div className="flex gap-1 mb-3 flex-wrap">
                       {r.requiredMissions.map(mId => {
                         const m = MISSIONS.find(x => x.id === mId);
                         const done = completedIds.includes(mId);
@@ -114,27 +136,8 @@ export default function RewardsSection() {
                       })}
                     </div>
                   )}
-                </div>
 
-                {/* Lock / chevron */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {r.unlocked
-                    ? <Unlock size={12} className="text-[#34d399] opacity-60" />
-                    : <Lock size={12} className="text-slate-600" />
-                  }
-                  <ChevronDown
-                    size={14}
-                    className="text-slate-600 transition-transform duration-200"
-                    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                  />
-                </div>
-              </button>
-
-              {/* Expanded code panel */}
-              {isOpen && r.unlocked && (
-                <div className="px-4 pb-4 pt-0 border-t border-white/5">
-                  <p className="text-slate-500 text-xs mb-3 mt-3">{r.description}</p>
-                  {r.code && (
+                  {r.unlocked && r.code && (
                     <div className="flex items-center gap-2">
                       <code
                         className="flex-1 px-3 py-2.5 rounded-xl text-sm font-mono tracking-widest"
@@ -172,7 +175,7 @@ export default function RewardsSection() {
                       </a>
                     </div>
                   )}
-                  {!claimed && (
+                  {r.unlocked && !claimed && (
                     <button
                       onClick={() => claimReward(r.id)}
                       className="w-full mt-2 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"

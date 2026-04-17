@@ -31,26 +31,15 @@ export default function PrimeHeroCard({ mission, altitude, peakTime, tagline, on
 
   return (
     <div
-      className="relative flex items-stretch gap-3.5 p-3.5 overflow-hidden"
+      className="relative flex items-stretch gap-3 p-3 overflow-hidden"
       style={{
         background: 'linear-gradient(135deg, rgba(255,209,102,0.08), rgba(255,209,102,0.01) 60%, transparent)',
         border: '1px solid rgba(255,209,102,0.28)',
         borderRadius: 16,
       }}
     >
-      <div className="relative flex-shrink-0 w-[88px] h-[88px] flex items-center justify-center">
-        <div className="relative stl-prime-container">
-          <Node size={72} />
-          <span
-            className="absolute pointer-events-none"
-            style={{
-              inset: -3,
-              borderRadius: '50%',
-              border: '1.5px solid #FFD166',
-              animation: 'stl-prime-pulse 2.4s ease-out infinite',
-            }}
-          />
-        </div>
+      <div className="relative flex-shrink-0 w-[64px] h-[64px] flex items-center justify-center">
+        <Node size={56} />
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
@@ -75,7 +64,7 @@ export default function PrimeHeroCard({ mission, altitude, peakTime, tagline, on
           <h1
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 34,
+              fontSize: 26,
               color: '#F2F0EA',
               fontWeight: 600,
               margin: 0,
@@ -88,18 +77,18 @@ export default function PrimeHeroCard({ mission, altitude, peakTime, tagline, on
           <div
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 13,
+              fontSize: 12,
               color: 'rgba(255,255,255,0.6)',
               fontStyle: 'italic',
               fontWeight: 400,
-              marginTop: 3,
+              marginTop: 2,
               lineHeight: 1.25,
             }}
           >
             {tagline}
           </div>
         </div>
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between mt-1.5">
           <span
             style={{
               fontFamily: 'var(--font-mono)',
@@ -115,12 +104,12 @@ export default function PrimeHeroCard({ mission, altitude, peakTime, tagline, on
             onClick={onStart}
             className="transition-all active:scale-[0.97] hover:opacity-90"
             style={{
-              padding: '8px 14px',
+              padding: '6px 12px',
               background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
               color: '#0a0a0a',
               border: 'none',
-              borderRadius: 10,
-              fontSize: 12,
+              borderRadius: 8,
+              fontSize: 11,
               fontWeight: 600,
               fontFamily: 'var(--font-display)',
               whiteSpace: 'nowrap',

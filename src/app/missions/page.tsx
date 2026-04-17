@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, type ComponentType } from 'react';
-import { getActiveChallenge, getChallengeProgress, claimChallengeReward } from '@/lib/celestial-challenges';
 import { Lock } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
@@ -48,8 +47,6 @@ export default function MissionsPage() {
   const [streak, setStreak] = useState<number>(0);
   const [isNight, setIsNight] = useState(false);
   const [skyTimeout, setSkyTimeout] = useState(false);
-  const [activeChallenge] = useState(() => getActiveChallenge());
-  const [chProgress, setChProgress] = useState(() => getChallengeProgress());
   useEffect(() => {
     const h = new Date().getHours();
     setIsNight(h >= 18 || h < 5);
@@ -188,7 +185,7 @@ export default function MissionsPage() {
   return (
     <PageTransition>
       <>
-      {activeMission && <MissionActive mission={activeMission} onClose={() => { setActiveMission(null); setChProgress(getChallengeProgress()); }} />}
+      {activeMission && <MissionActive mission={activeMission} onClose={() => setActiveMission(null)} />}
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
       <div className="max-w-2xl mx-auto px-4 py-2 flex flex-col gap-3" style={{ fontFamily: 'var(--font-display)' }}>
@@ -197,71 +194,6 @@ export default function MissionsPage() {
         <ChartSection onStart={setActiveMission} />
 
         <StatsBar />
-
-        {/* Weekly challenge strip */}
-        <button
-          onClick={() => {
-            if (chProgress.completed && !chProgress.claimed) {
-              const bonus = claimChallengeReward();
-              if (bonus > 0 && state.walletAddress) {
-                fetch('/api/award-stars', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ recipientAddress: state.walletAddress, amount: bonus, reason: 'weekly_challenge' }),
-                }).catch(() => {});
-              }
-              setChProgress(getChallengeProgress());
-            }
-          }}
-          disabled={!(chProgress.completed && !chProgress.claimed)}
-          className={`w-full text-left rounded-xl flex items-center gap-3 px-3.5 py-3 ${chProgress.completed && !chProgress.claimed ? 'animate-challenge-pulse cursor-pointer' : ''}`}
-          style={{
-            background: chProgress.claimed
-              ? 'rgba(52,211,153,0.04)'
-              : 'linear-gradient(90deg, rgba(255,209,102,0.06), rgba(255,209,102,0.015))',
-            border: chProgress.claimed
-              ? '1px solid rgba(52,211,153,0.15)'
-              : '1px solid var(--stl-border-gold)',
-            borderLeft: `3px solid ${chProgress.claimed ? 'var(--stl-green)' : 'var(--stl-gold)'}`,
-          }}
-        >
-          <span style={{ fontSize: 18, color: chProgress.claimed ? 'var(--stl-green)' : 'var(--stl-gold)' }}>
-            {chProgress.claimed ? '✓' : activeChallenge.glyph}
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] uppercase tracking-widest font-semibold" style={{ color: chProgress.claimed ? 'var(--stl-green)' : 'var(--stl-gold)' }}>
-                This Week
-              </span>
-              <span className="text-xs font-semibold truncate" style={{ color: 'var(--stl-text-bright)' }}>{activeChallenge.name}</span>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min(100, (chProgress.progress / activeChallenge.goal) * 100)}%`,
-                    background: chProgress.completed ? 'var(--stl-green)' : 'linear-gradient(90deg, var(--stl-gold), var(--stl-gold-dim))',
-                  }}
-                />
-              </div>
-              <span className="text-[10px] flex-shrink-0" style={{ color: chProgress.completed ? 'var(--stl-green)' : 'var(--stl-text-dim)' }}>
-                {chProgress.progress}/{activeChallenge.goal}
-              </span>
-            </div>
-          </div>
-          <div className="flex-shrink-0 text-right">
-            {chProgress.completed && !chProgress.claimed ? (
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg, var(--stl-gold), var(--stl-gold-dim))', color: '#0a0a0a' }}>
-                Claim +{activeChallenge.bonusStars}
-              </span>
-            ) : chProgress.claimed ? (
-              <span className="text-[10px]" style={{ color: 'var(--stl-green)' }}>Claimed</span>
-            ) : (
-              <span className="text-[10px]" style={{ color: 'var(--stl-text-dim)' }}>+{activeChallenge.bonusStars} ✦</span>
-            )}
-          </div>
-        </button>
 
         {/* Quiz Missions */}
         <section>
@@ -278,13 +210,21 @@ export default function MissionsPage() {
                   key={quiz.id}
                   className="flex items-center gap-4 rounded-2xl px-4 py-3.5"
                   style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'linear-gradient(135deg, rgba(255,209,102,0.04), rgba(15,20,31,0.5) 60%, rgba(15,20,31,0.2))',
+                    border: '1px solid rgba(255,209,102,0.12)',
                   }}
                 >
-                  <span className="text-2xl flex-shrink-0">{quiz.emoji}</span>
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: 'radial-gradient(circle at 30% 30%, rgba(255,209,102,0.18), rgba(255,209,102,0.04) 60%, transparent)',
+                      border: '1px solid rgba(255,209,102,0.22)',
+                    }}
+                  >
+                    <span className="text-xl">{quiz.emoji}</span>
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-semibold leading-snug">{quiz.title[locale]}</p>
+                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: '#F2F0EA', fontWeight: 600, lineHeight: 1.15 }}>{quiz.title[locale]}</p>
                     <p className="text-slate-500 text-xs mt-0.5 leading-snug line-clamp-1">{quiz.description[locale]}</p>
                     {bestResult && (
                       <p className="text-[#FFD166] text-[11px] font-bold mt-1">
@@ -545,7 +485,7 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
                 key={m.id}
                 mission={m}
                 Art={Art}
-                metaLine={LIST_META[m.id] ?? ''}
+                metaLine={statusById[m.id]?.metaLine ?? LIST_META[m.id] ?? ''}
                 badge={badge}
                 isPrime={isPrime}
                 disabled={disabled}
