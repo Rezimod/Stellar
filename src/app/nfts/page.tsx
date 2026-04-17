@@ -45,15 +45,13 @@ function buildExplorerUrl(id: string): string {
 }
 
 function localToNftAsset(m: CompletedMission): NftAsset {
-  // Demo missions always produce a mock txId that Solana Explorer won't resolve —
-  // detect them from the MISSIONS catalog so older completions (saved before the
-  // method flag was tracked) are still treated as simulated.
-  const isDemoMission = MISSIONS.find(mi => mi.id === m.id)?.demo === true;
-  const fallbackMethod = m.method ?? (m.txId.startsWith('sim') ? 'simulated' : 'onchain');
+  // Trust the stored method flag; fall back to txId shape for older completions.
+  // Demo missions now produce real on-chain signatures, so they're treated like any other mint.
+  const fallbackMethod = m.method ?? (m.txId.startsWith('sim') || m.txId.startsWith('gallery_') ? 'simulated' : 'onchain');
   return {
     id: m.txId,
     photo: m.photo,
-    _method: isDemoMission ? 'simulated' : fallbackMethod,
+    _method: fallbackMethod,
     content: {
       metadata: {
         name: `Stellar: ${m.name}`,

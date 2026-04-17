@@ -56,9 +56,9 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   const name = `Stellar: ${params.target}`;
   const uri = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'}/api/metadata/observation?target=${encodeURIComponent(params.target)}&ts=${params.timestampMs}&lat=${params.lat.toFixed(4)}&lon=${params.lon.toFixed(4)}&cc=${params.cloudCover}&hash=${params.oracleHash}&stars=${params.stars}&rarity=${encodeURIComponent(params.rarity ?? 'Common')}&multiplier=${params.multiplier ?? 1}`;
 
-  // 'processed' commitment returns in ~1-2s vs 15-30s for 'confirmed',
-  // keeping us well within Vercel's 10s function limit.
-  const TIMEOUT_MS = 9000;
+  // 'processed' commitment returns in ~1-2s vs 15-30s for 'confirmed'.
+  // Route has maxDuration=60, so give the mint enough headroom for slow devnet ticks.
+  const TIMEOUT_MS = 50000;
 
   const mintPromise = mintV1(umi, {
     leafOwner: recipient,

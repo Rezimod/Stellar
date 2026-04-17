@@ -1089,13 +1089,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               </p>
               {mission.demo && (
                 <p className="text-amber-400 text-xs mt-3 opacity-70">
-                  Demo mode — mints immediately without real photo
+                  Demo mode — upload any photo; mints a real NFT on Solana
                 </p>
               )}
             </div>
             <Button
               variant="brass"
-              onClick={() => { setMintError(''); if (mission.demo) { handleCapture(mission.demoPhoto ?? '/images/planets/jupiter.jpg'); } else { setStep('camera'); } }}
+              onClick={() => { setMintError(''); setStep('camera'); }}
               className="w-full"
             >
               Begin Observation →

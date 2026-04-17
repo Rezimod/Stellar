@@ -100,16 +100,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Demo missions → instant local proof, no Bubblegum call (devnet is too slow for Vercel's 10s limit)
-  if (isDemoMint) {
-    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
-    const mockTxId = Array.from({ length: 87 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    console.log('[mint] Demo mint — returning instant proof for', target);
-    return NextResponse.json({ txId: mockTxId, explorerUrl: `https://explorer.solana.com/tx/${mockTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}` });
-  }
-
   try {
-    console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target);
+    console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target, isDemoMint ? '(demo)' : '');
     const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity: rarityVal });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
