@@ -100,7 +100,7 @@
   /* Typography */
   --font-display:  'Geist', system-ui, sans-serif;
   --font-body:     'Geist', system-ui, sans-serif;
-  --font-serif:    'Fraunces', Georgia, serif;
+  --font-serif:    'Cormorant Garamond', Georgia, serif;
   --font-mono:     'JetBrains Mono', ui-monospace, monospace;
   --font-georgian: 'Noto Sans Georgian', system-ui, sans-serif;
 
@@ -213,7 +213,7 @@
   --color-error: #F87171;
   --font-display:  var(--font-display, 'Geist', system-ui, sans-serif);
   --font-body:     var(--font-body, 'Geist', system-ui, sans-serif);
-  --font-serif:    var(--font-serif, 'Fraunces', Georgia, serif);
+  --font-serif:    var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }

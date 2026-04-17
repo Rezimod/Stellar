@@ -107,7 +107,13 @@ export default function SkyChart({ lat, lon, date, missions, completedIds, prime
       className="relative w-full overflow-hidden stl-chart-in stl-chart"
       style={{
         fontFamily: 'var(--font-display)',
-        background: 'var(--stl-bg-chart)',
+        background: [
+          'radial-gradient(ellipse 420px 320px at 75% 35%, rgba(132,101,203,0.18) 0%, transparent 55%)',
+          'radial-gradient(ellipse 360px 260px at 25% 65%, rgba(56,155,240,0.12) 0%, transparent 60%)',
+          'radial-gradient(ellipse 280px 220px at 50% 20%, rgba(255,143,184,0.08) 0%, transparent 60%)',
+          'radial-gradient(ellipse 500px 400px at 50% 100%, rgba(255,209,102,0.05) 0%, transparent 70%)',
+          'radial-gradient(ellipse at 50% 50%, #0A1428 0%, #050A1C 50%, #010206 100%)',
+        ].join(', '),
         border: '1px solid var(--stl-border-regular)',
         borderRadius: 'var(--stl-r-xl)',
       }}
@@ -119,17 +125,38 @@ export default function SkyChart({ lat, lon, date, missions, completedIds, prime
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <radialGradient id="stl-milky" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0" stopColor="#B5C5FF" stopOpacity="0.08" />
-            <stop offset="1" stopColor="#B5C5FF" stopOpacity="0" />
+          <radialGradient id="stl-mw-core" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stopColor="#FFE8C4" stopOpacity="0.12" />
+            <stop offset="0.3" stopColor="#B8C5FF" stopOpacity="0.08" />
+            <stop offset="1" stopColor="transparent" />
+          </radialGradient>
+          <linearGradient id="stl-dust-lane" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#030612" stopOpacity="0" />
+            <stop offset="0.3" stopColor="#030612" stopOpacity="0.35" />
+            <stop offset="0.7" stopColor="#030612" stopOpacity="0.35" />
+            <stop offset="1" stopColor="#030612" stopOpacity="0" />
+          </linearGradient>
+          <radialGradient id="stl-nebula-purple" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stopColor="#A78BE8" stopOpacity="0.22" />
+            <stop offset="0.5" stopColor="#5B4191" stopOpacity="0.08" />
+            <stop offset="1" stopColor="transparent" />
+          </radialGradient>
+          <radialGradient id="stl-nebula-rose" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stopColor="#FF8FB8" stopOpacity="0.12" />
+            <stop offset="1" stopColor="transparent" />
           </radialGradient>
         </defs>
 
-        <ellipse cx={CX} cy={CY} rx={460} ry={70} fill="url(#stl-milky)" transform={`rotate(-22 ${CX} ${CY})`} />
+        {/* Layered nebula clouds inside SVG (amplify the CSS layers) */}
+        <ellipse cx={CX + 95} cy={CY - 70} rx="140" ry="100" fill="url(#stl-nebula-purple)" />
+        <ellipse cx={CX - 80} cy={CY + 50} rx="130" ry="110" fill="url(#stl-nebula-purple)" opacity="0.6" />
+        <ellipse cx={CX + 20} cy={CY - 130} rx="100" ry="70" fill="url(#stl-nebula-rose)" />
 
-        <circle cx={CX} cy={CY} r={CHART_R}        fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-        <circle cx={CX} cy={CY} r={CHART_R * 0.66} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" strokeDasharray="1 4" />
-        <circle cx={CX} cy={CY} r={CHART_R * 0.33} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" strokeDasharray="1 4" />
+        {/* Milky Way diagonal band with dust lane */}
+        <g transform={`rotate(-28 ${CX} ${CY})`}>
+          <ellipse cx={CX} cy={CY} rx="420" ry="60" fill="url(#stl-mw-core)" />
+          <ellipse cx={CX} cy={CY} rx="420" ry="14" fill="url(#stl-dust-lane)" opacity="0.8" />
+        </g>
 
         {CONSTELLATION_LINES.map((c, i) => {
           const pts = c.ids.map(id => starByName.get(id)).filter(Boolean) as ChartStar[];
@@ -169,12 +196,33 @@ export default function SkyChart({ lat, lon, date, missions, completedIds, prime
           );
         })}
 
-        <circle cx={CX} cy={CY} r={CHART_R} fill="none" stroke="rgba(56,240,255,0.22)" strokeWidth="0.8" strokeDasharray="3 3" />
+        {/* Diffraction spikes — only for the brightest 6-8 stars */}
+        <g stroke="#fff" strokeWidth="0.3" opacity="0.4">
+          {stars
+            .filter(s => s.mag < 1.0 && s.aboveHorizon)
+            .slice(0, 8)
+            .map((s, i) => (
+              <g key={`spike-${i}`}>
+                <line x1={s.x} y1={s.y - 4} x2={s.x} y2={s.y + 4} />
+                <line x1={s.x - 4} y1={s.y} x2={s.x + 4} y2={s.y} />
+              </g>
+            ))}
+        </g>
 
-        <text x={CX} y={CY - CHART_R - 6}  fill="rgba(255,255,255,0.55)" fontSize="11" fontFamily="var(--font-display)" fontWeight="600" textAnchor="middle" letterSpacing="0.2em">N</text>
-        <text x={CX + CHART_R + 10} y={CY + 4} fill="rgba(255,255,255,0.55)" fontSize="11" fontFamily="var(--font-display)" fontWeight="600" letterSpacing="0.2em">E</text>
-        <text x={CX - CHART_R - 10} y={CY + 4} fill="rgba(255,255,255,0.55)" fontSize="11" fontFamily="var(--font-display)" fontWeight="600" textAnchor="end" letterSpacing="0.2em">W</text>
-        <text x={CX} y={CY + CHART_R + 18} fill="rgba(56,240,255,0.55)" fontSize="10" fontFamily="var(--font-display)" fontWeight="500" textAnchor="middle" letterSpacing="0.25em">S · HORIZON</text>
+        {/* Amber galactic core stars — small accent for warmth */}
+        <g fill="#FFDDB8">
+          <circle cx={CX} cy={CY + 10} r="0.5" opacity="0.4" />
+          <circle cx={CX + 50} cy={CY} r="0.4" opacity="0.35" />
+          <circle cx={CX - 30} cy={CY + 30} r="0.5" opacity="0.4" />
+          <circle cx={CX + 90} cy={CY - 30} r="0.4" opacity="0.35" />
+        </g>
+
+        <g fontFamily="var(--font-mono)" fill="rgba(255,255,255,0.2)" fontSize="9" fontWeight="500">
+          <text x={CX} y={18} textAnchor="middle">N</text>
+          <text x={CX} y={H - 10} textAnchor="middle">S</text>
+          <text x={W - 8} y={CY + 4} textAnchor="end">E</text>
+          <text x={8} y={CY + 4}>W</text>
+        </g>
       </svg>
 
       {plotted.map(({ mission, x, y, aboveHorizon, Node }, i) => {
