@@ -1037,10 +1037,10 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       </button>
 
       {/* Content */}
-      <div className={`flex flex-col flex-1 min-h-0 ${step === 'observing' ? 'overflow-hidden pb-4 pt-1 px-4 max-w-xl mx-auto w-full' : 'overflow-y-auto px-4 py-4 max-w-xl mx-auto w-full'}`}>
+      <div className={`flex flex-col flex-1 min-h-0 ${step === 'observing' ? 'overflow-hidden justify-center pb-4 pt-1 px-4 max-w-xl mx-auto w-full' : 'overflow-y-auto px-4 py-4 max-w-xl mx-auto w-full'}`}>
 
         {step === 'observing' && (
-          <div className="relative flex flex-col items-center justify-center flex-1 min-h-0 px-2 py-3 text-center gap-3">
+          <div className="relative flex flex-col items-center px-2 py-3 text-center gap-3">
             {/* Ambient backdrop — radial nebula wash */}
             <div
               aria-hidden

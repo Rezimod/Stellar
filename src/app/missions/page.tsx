@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, type ComponentType } from 'react';
+import { useRouter } from 'next/navigation';
 import { Lock } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
@@ -21,7 +22,6 @@ import PleiadesNode from '@/components/sky/chart-nodes/PleiadesNode';
 import OrionNode from '@/components/sky/chart-nodes/OrionNode';
 import AndromedaNode from '@/components/sky/chart-nodes/AndromedaNode';
 import CrabNode from '@/components/sky/chart-nodes/CrabNode';
-import MissionActive from '@/components/sky/MissionActive';
 import ObservationLog from '@/components/sky/ObservationLog';
 import RewardsSection from '@/components/sky/RewardsSection';
 import QuizActive from '@/components/sky/QuizActive';
@@ -36,13 +36,13 @@ import { MissionIcon } from '@/components/shared/PlanetIcons';
 import { TelescopeIcon, StarTokenIcon, DifficultyDots } from '@/components/icons/CelestialIcons';
 
 export default function MissionsPage() {
+  const router = useRouter();
   const { state } = useAppState();
   const { authenticated, login } = usePrivy();
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const t = useTranslations('missions');
   const { location } = useLocation();
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
-  const [activeMission, setActiveMission] = useState<Mission | null>(null);
   const [skyConditions, setSkyConditions] = useState<{ cloudCover: number; visibility: string; verified: boolean } | null>(null);
   const [streak, setStreak] = useState<number>(0);
   const [isNight, setIsNight] = useState(false);
@@ -185,13 +185,12 @@ export default function MissionsPage() {
   return (
     <PageTransition>
       <>
-      {activeMission && <MissionActive mission={activeMission} onClose={() => setActiveMission(null)} />}
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
       <div className="max-w-2xl mx-auto px-4 py-2 flex flex-col gap-3" style={{ fontFamily: 'var(--font-display)' }}>
         <BackButton />
 
-        <ChartSection onStart={setActiveMission} />
+        <ChartSection onStart={(m) => router.push(`/observe/${m.id}`)} />
 
         <StatsBar />
 
