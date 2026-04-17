@@ -503,7 +503,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   if (newRewards.length > 0) {
     return (
       <div className="fixed inset-0 z-[60] flex flex-col items-center justify-start pt-14 overflow-y-auto px-4 pb-8" style={{ background: 'rgba(7,11,20,0.97)', backdropFilter: 'blur(12px)' }}>
-        <div className="max-w-sm w-full mx-auto flex flex-col gap-3 text-center p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
+        <div className="relative max-w-sm w-full mx-auto flex flex-col gap-3 text-center p-5 pt-10 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
+          <button
+            onClick={() => setNewRewards([])}
+            aria-label="Close"
+            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <X size={14} />
+          </button>
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center mx-auto">
             <Award size={22} className="text-[#34d399]" />
           </div>
@@ -539,7 +547,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               className="flex-1 text-center text-xs py-2.5 px-3 border border-[#FFD166]/30 text-[#FFD166] rounded-lg hover:bg-[#FFD166]/10 transition-all">
               Visit astroman.ge →
             </a>
-            <button onClick={() => { setStep('done'); onClose(); }}
+            <button onClick={() => setNewRewards([])}
               className="flex-1 text-xs py-2.5 px-3 bg-[#34d399]/10 border border-[#34d399]/30 text-[#34d399] rounded-lg hover:bg-[#34d399]/20 transition-all">
               Continue
             </button>
@@ -661,8 +669,18 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         {/* Layout — single column, top-aligned, always scrollable */}
         <div className="relative z-10 flex flex-col gap-2 px-4 pt-3 pb-8 max-w-sm mx-auto w-full overflow-y-auto">
 
+          {/* Close button — top-right, inside content column */}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-2 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors z-20"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <X size={14} />
+          </button>
+
           {/* Header row */}
-          <div className="flex items-center gap-3 animate-slide-up flex-shrink-0">
+          <div className="flex items-center gap-3 animate-slide-up flex-shrink-0 pr-10">
             <div
               className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
               style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(99,102,241,0.25)' }}
