@@ -97,10 +97,10 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
           ) : (
             <button
               disabled
-              title="Demo mission — no on-chain transaction"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(251,191,36,0.2)] text-amber-400/70 opacity-70 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
+              title="Observation saved locally"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(99,102,241,0.12)] text-slate-600 opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
             >
-              <ExternalLink size={12} /> Demo
+              <ExternalLink size={12} /> Local
             </button>
           )}
           {!confirming ? (

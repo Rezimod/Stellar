@@ -119,6 +119,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
   useEffect(() => {
     if (step !== 'done' || !mintTxId) return;
+    if (mission.demo || mintTxId.startsWith('sim')) return;
     fetch(`/api/star/nearest-unclaimed?lat=${coords.lat}&lon=${coords.lon}&target=${encodeURIComponent(mission.name)}`)
       .then(r => r.json())
       .then(data => { if (!data.error) setNearestStar(data); })
@@ -310,7 +311,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         },
         body: JSON.stringify({
           userAddress: solanaWallet?.address ?? null,
-          target: mission.target === null ? 'Night Sky' : mission.name,
+          target: mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name),
           timestampMs: new Date(timestamp).getTime(),
           lat: coords.lat,
           lon: coords.lon,
@@ -347,7 +348,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     setMintTxId(txId);
 
     // --- Build NFT image URL with rarity ---
-    const targetName = mission.target === null ? 'Night Sky' : mission.name;
+    const targetName = mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name);
     const nftUrl = `/api/nft-image?target=${encodeURIComponent(targetName)}&ts=${new Date(timestamp).getTime()}&lat=${coords.lat.toFixed(4)}&lon=${coords.lon.toFixed(4)}&cc=${sky?.cloudCover ?? 0}&stars=${effectiveStars}&rarity=${rarityInfo.rarity}`;
     setNftImageUrl(nftUrl);
 
@@ -452,7 +453,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         longitude: coords.lon,
         sky: sky!,
         status: txId.startsWith('sim') ? 'pending' : 'completed',
-        method: mission.demo === true || txId.startsWith('sim') ? 'simulated' : 'onchain',
+        method: txId.startsWith('sim') ? 'simulated' : 'onchain',
       });
 
       setStep('done');
@@ -764,24 +765,17 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
 
             {/* Explorer link — bottom-left */}
-            {mission.demo ? (
-              <div
-                className="absolute bottom-3 left-3 flex items-center gap-1 text-[11px]"
-                style={{ color: 'rgba(251,191,36,0.85)', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '3px 7px', backdropFilter: 'blur(6px)', border: '1px solid rgba(251,191,36,0.2)' }}
-              >
-                Demo · local proof
-              </div>
-            ) : isOnChain ? (
+            {isOnChain && (
               <a
                 href={`https://explorer.solana.com/tx/${mintTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-3 left-3 flex items-center gap-1 text-[11px]"
-                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '3px 7px', backdropFilter: 'blur(6px)', border: '1px solid rgba(99,102,241,0.15)' }}
+                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '4px 9px', backdropFilter: 'blur(6px)', border: '1px solid rgba(99,102,241,0.25)' }}
               >
-                Explorer <ExternalLink size={9} />
+                View on Solana <ExternalLink size={10} />
               </a>
-            ) : null}
+            )}
           </div>
 
           {/* Share row */}
@@ -821,7 +815,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
 
           {/* Name a Star */}
-          {!starSkipped && (
+          {!mission.demo && !mintTxId.startsWith('sim') && !starSkipped && (
             <div
               className="flex-shrink-0 pt-5"
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 4 }}

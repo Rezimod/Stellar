@@ -21,7 +21,7 @@ export const MISSIONS: Mission[] = [
     type: 'naked_eye',
     desc: 'See the full Stellar flow — simulates an observation and mints a real NFT on devnet.',
     hint: 'Uses a pre-generated sky photo. Perfect for demos and presentations.',
-    target: null,
+    target: 'Jupiter',
     repeatable: true,
     demo: true,
   },
