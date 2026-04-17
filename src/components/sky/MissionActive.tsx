@@ -443,7 +443,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
       addMission({
         id: mission.id,
-        name: mission.name,
+        name: mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name),
         emoji: mission.emoji,
         stars: totalStars,
         txId,

@@ -100,16 +100,14 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
-      style={{ background: 'rgba(3,6,14,0.75)', backdropFilter: 'blur(6px)', animation: 'fadeIn 180ms ease-out' }}
+      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto p-4 sm:p-8"
+      style={{ background: 'rgba(3,6,14,0.85)', backdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="rounded-2xl overflow-hidden flex flex-col w-full"
+        className="relative rounded-2xl overflow-hidden flex flex-col w-full max-w-lg my-8"
         style={{
-          maxWidth: 520,
-          maxHeight: '92vh',
           background: '#0B0E17',
           border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
