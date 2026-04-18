@@ -16,7 +16,7 @@ import ScoreRing from '@/components/ui/ScoreRing';
 import { calculateSkyScore, visibilityToMeters, type SkyScoreResult } from '@/lib/sky-score';
 import { Copy, Check, Award, ExternalLink, Camera, X } from 'lucide-react';
 import { getMissionImage } from '@/lib/mission-icons';
-import { buildTwitterShareUrl, buildFarcasterShareUrl, buildShareImageUrl } from '@/lib/share';
+import { buildTwitterShareUrl, buildShareImageUrl } from '@/lib/share';
 import RewardIcon from '@/components/shared/RewardIcon';
 import { getStarlight, consumeStarlight } from '@/lib/starlight';
 import { getTierForStreak, type StreakTier } from '@/lib/constellation-streak';
@@ -794,20 +794,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="flex flex-col gap-3 lg:col-start-2 lg:row-start-2">
 
           {/* Share row */}
-          <div className="grid grid-cols-2 gap-2 animate-fade-in">
+          <div className="animate-fade-in">
             <button
               onClick={() => window.open(buildTwitterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, grade: skyScore?.grade ?? 'Good', stars: starsEarned, appUrl, ogImageUrl }), '_blank')}
-              className="flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-white"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-white"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
               <span style={{ fontSize: 13 }}>𝕏</span> Share
-            </button>
-            <button
-              onClick={() => window.open(buildFarcasterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, stars: starsEarned, appUrl }), '_blank')}
-              className="flex items-center justify-center gap-2 rounded-xl py-2 text-xs"
-              style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', color: '#A855F7' }}
-            >
-              ⬡ Farcaster
             </button>
           </div>
 
