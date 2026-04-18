@@ -335,24 +335,76 @@ const TAGLINES: Record<string, string> = {
 };
 
 const LIST_META: Record<string, string> = {
-  jupiter:   'SE · GAS GIANT · MAG −2.4',
-  saturn:    'SE · RINGS WIDE OPEN',
-  moon:      'WANING GIBBOUS · 73%',
-  venus:     'SW · EVENING STAR',
-  mars:      'E · RED PLANET',
-  mercury:   'LOW · MAG +0.4',
-  pleiades:  'M45 · SEVEN SISTERS',
-  orion:     'M42 · NEBULA',
-  andromeda: 'M31 · 2.5M LY AWAY',
-  crab:      'M1 · SUPERNOVA REMNANT',
+  jupiter:   'Gas giant · Naked eye',
+  saturn:    'Rings wide open · Telescope',
+  moon:      'Easy — look up',
+  venus:     'Evening star · Naked eye',
+  mars:      'Red planet · Naked eye',
+  mercury:   'Tricky — twilight only',
+  pleiades:  'Naked eye',
+  orion:     'Naked eye',
+  andromeda: 'Binoculars help',
+  crab:      'Telescope needed',
 };
+
+const DIR_NAMES: Record<string, string> = {
+  N: 'north', NE: 'northeast', E: 'east', SE: 'southeast',
+  S: 'south', SW: 'southwest', W: 'west', NW: 'northwest',
+};
+const AZ_DIR_LIST = ['N','NE','E','SE','S','SW','W','NW'] as const;
+function azToDirName(az: number): string {
+  return DIR_NAMES[AZ_DIR_LIST[Math.round(az / 45) % 8]] ?? '';
+}
+
+function friendlyMeta({
+  aboveHorizon, altitude, dirName, peakDate, riseDate, now, hint,
+}: {
+  aboveHorizon: boolean;
+  altitude: number;
+  dirName: string;
+  peakDate: Date | null;
+  riseDate: Date | null;
+  now: Date;
+  hint?: string;
+}): string {
+  if (!aboveHorizon) {
+    if (riseDate) {
+      const diffH = (riseDate.getTime() - now.getTime()) / 3_600_000;
+      const riseStr = riseDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      if (diffH > 0 && diffH < 8) return `Rises at ${riseStr}`;
+      return 'Back tomorrow night';
+    }
+    return 'Below horizon';
+  }
+  let where: string;
+  if (altitude >= 60) where = 'High overhead';
+  else if (altitude >= 30) where = dirName ? `High in the ${dirName}` : 'Well placed';
+  else if (altitude >= 10) where = dirName ? `Low in the ${dirName}` : 'Low on horizon';
+  else where = dirName ? `Skimming the ${dirName} horizon` : 'Barely up';
+
+  const tail: string[] = [];
+  if (peakDate && peakDate.getTime() > now.getTime()) {
+    const peakStr = peakDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    tail.push(`Best at ${peakStr}`);
+  } else if (hint) {
+    tail.push(hint);
+  }
+  return [where, ...tail].join(' · ');
+}
 
 function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
   const { state } = useAppState();
   const { location } = useLocation();
-  const now = useMemo(() => new Date(), []);
+  const [now, setNow] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
   const lat = location.lat ?? 41.7151;
   const lon = location.lon ?? 44.8271;
+  const cityLabel = location.city || (location.country === 'GE' ? 'Tbilisi' : location.country);
+  const liveTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const liveDateStr = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
 
   const completedIds = useMemo(
     () => new Set(state.completedMissions.filter(m => m.status === 'completed').map(m => m.id)),
@@ -375,24 +427,38 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
     const planets = getVisiblePlanets(lat, lon, now);
     for (const p of planets) {
       const aboveHorizon = p.altitude > 0;
-      const peakTime = p.transit
-        ? (p.transit instanceof Date ? p.transit : new Date(p.transit))
-            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : null;
-      const riseStr = p.rise
-        ? (p.rise instanceof Date ? p.rise : new Date(p.rise))
-            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : '';
-      const metaLine = aboveHorizon
-        ? `ALT ${Math.round(p.altitude)}° · ${p.azimuthDir}${peakTime ? ` · PEAKS ${peakTime}` : ''}`
-        : riseStr ? `RISES ${riseStr}` : 'BELOW HORIZON';
-      out[p.key] = { aboveHorizon, altitude: p.altitude, azDir: p.azimuthDir, peakTime, metaLine };
+      const peakDate = p.transit ? (p.transit instanceof Date ? p.transit : new Date(p.transit)) : null;
+      const riseDate = p.rise    ? (p.rise    instanceof Date ? p.rise    : new Date(p.rise))    : null;
+      const dirName = DIR_NAMES[p.azimuthDir] ?? '';
+      const metaLine = friendlyMeta({
+        aboveHorizon,
+        altitude: p.altitude,
+        dirName,
+        peakDate,
+        riseDate,
+        now,
+        hint: LIST_META[p.key],
+      });
+      out[p.key] = {
+        aboveHorizon,
+        altitude: p.altitude,
+        azDir: p.azimuthDir,
+        peakTime: peakDate ? peakDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : null,
+        metaLine,
+      };
     }
     const ds = getChartDeepSky(lat, lon, now, 200, 100, 180);
     for (const d of ds) {
-      const metaLine = d.aboveHorizon
-        ? `ALT ${Math.round(d.altitude)}° · DEEP SKY`
-        : 'BELOW HORIZON';
+      const dirName = azToDirName(d.azimuth);
+      const metaLine = friendlyMeta({
+        aboveHorizon: d.aboveHorizon,
+        altitude: d.altitude,
+        dirName,
+        peakDate: null,
+        riseDate: null,
+        now,
+        hint: LIST_META[d.id],
+      });
       out[d.id] = {
         aboveHorizon: d.aboveHorizon,
         altitude: d.altitude,
@@ -414,6 +480,10 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
   }, [chartableMissions, completedIds, statusById]);
 
   const [filter, setFilter] = useState<'visible' | 'all'>('visible');
+  const visibleCount = useMemo(
+    () => chartableMissions.filter(m => statusById[m.id]?.aboveHorizon).length,
+    [chartableMissions, statusById]
+  );
   const sortedMissions = useMemo(() => {
     let pool = chartableMissions.filter(m => m.id !== primeMission?.id);
     if (filter === 'visible') {
@@ -423,10 +493,18 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
     return primeMission ? [primeMission, ...pool] : pool;
   }, [chartableMissions, primeMission, filter, statusById]);
 
+  const railMissions = useMemo(() => {
+    const visible = chartableMissions
+      .filter(m => m.id !== primeMission?.id && statusById[m.id]?.aboveHorizon);
+    visible.sort((a, b) => (statusById[b.id]?.altitude ?? -100) - (statusById[a.id]?.altitude ?? -100));
+    return visible.slice(0, 6);
+  }, [chartableMissions, primeMission, statusById]);
+
   return (
     <div className="flex flex-col gap-0">
-      {primeMission && (
-        <div className="mb-4">
+      {/* Top area: prime card + missions mini-rail (desktop) */}
+      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 lg:gap-4">
+        {primeMission && (
           <PrimeHeroCard
             mission={primeMission}
             altitude={statusById[primeMission.id]?.altitude ?? null}
@@ -434,8 +512,15 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
             tagline={TAGLINES[primeMission.id] ?? primeMission.desc}
             onStart={() => onStart(primeMission)}
           />
+        )}
+        <div className="hidden lg:block">
+          <MissionMiniRail
+            missions={railMissions}
+            statusById={statusById}
+            onSelect={onStart}
+          />
         </div>
-      )}
+      </div>
 
       <div className="mb-4">
         <div className="flex items-baseline justify-between mb-2">
@@ -458,7 +543,7 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
               letterSpacing: '0.15em',
             }}
           >
-            LIVE · TBILISI
+            LIVE · {liveTimeStr} · {liveDateStr} · {cityLabel.toUpperCase()}
           </span>
         </div>
         <SkyChart
@@ -467,19 +552,13 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
           date={now}
           missions={chartableMissions.filter(m => statusById[m.id]?.aboveHorizon)}
           primeId={primeMission?.id ?? null}
+          city={cityLabel}
           onSelect={onStart}
         />
       </div>
 
-      <div
-        style={{
-          height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
-          margin: '4px 0 16px',
-        }}
-      />
-
-      <div>
+      {/* Missions list — mobile only; desktop uses mini-rail above */}
+      <div className="lg:hidden">
         <div className="flex items-baseline justify-between mb-3">
           <h2
             style={{
@@ -499,21 +578,34 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            {(['visible','all'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className="px-2.5 py-1 rounded transition-colors"
-                style={{
-                  fontSize: 10.5,
-                  fontWeight: 600,
-                  background: filter === f ? '#F2F0EA' : 'transparent',
-                  color: filter === f ? '#0a0a0a' : 'rgba(255,255,255,0.55)',
-                }}
-              >
-                {f === 'visible' ? 'Visible' : 'All'}
-              </button>
-            ))}
+            {(['visible','all'] as const).map(f => {
+              const count = f === 'visible' ? visibleCount : chartableMissions.length;
+              return (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className="px-2.5 py-1 rounded transition-colors flex items-center gap-1"
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    background: filter === f ? '#F2F0EA' : 'transparent',
+                    color: filter === f ? '#0a0a0a' : 'rgba(255,255,255,0.55)',
+                  }}
+                >
+                  <span>{f === 'visible' ? 'Up now' : 'All'}</span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 9,
+                      opacity: 0.6,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -550,5 +642,115 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function MissionMiniRail({
+  missions,
+  statusById,
+  onSelect,
+}: {
+  missions: Mission[];
+  statusById: Record<string, { aboveHorizon: boolean; altitude: number; azDir: string; peakTime: string | null; metaLine: string }>;
+  onSelect: (m: Mission) => void;
+}) {
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-baseline justify-between mb-2">
+        <h2
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 18,
+            color: '#F2F0EA',
+            fontWeight: 600,
+            margin: 0,
+          }}
+        >
+          Missions tonight
+        </h2>
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 9,
+            color: 'rgba(255,255,255,0.4)',
+            letterSpacing: '0.15em',
+          }}
+        >
+          {String(missions.length).padStart(2, '0')} VISIBLE
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 flex-1">
+        {missions.map(m => {
+          const Art = NODE_MAP_FOR_LIST[m.id];
+          if (!Art) return null;
+          const meta = statusById[m.id];
+          return <MiniCard key={m.id} mission={m} Art={Art} meta={meta} onClick={() => onSelect(m)} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MiniCard({
+  mission,
+  Art,
+  meta,
+  onClick,
+}: {
+  mission: Mission;
+  Art: ComponentType<{ size?: number }>;
+  meta?: { aboveHorizon: boolean; altitude: number; azDir: string; peakTime: string | null; metaLine: string };
+  onClick: () => void;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="relative overflow-hidden rounded-xl transition-all duration-200 ease-out"
+      style={{
+        background: hover ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
+        border: `1px solid ${hover ? 'rgba(255,209,102,0.35)' : 'rgba(255,255,255,0.08)'}`,
+        transform: hover ? 'translateY(-2px) scale(1.04)' : 'none',
+        boxShadow: hover ? '0 8px 24px rgba(0,0,0,0.35)' : 'none',
+        padding: '10px 8px',
+        cursor: 'pointer',
+        minHeight: 86,
+      }}
+    >
+      <div className="flex items-center justify-center" style={{ height: 40 }}>
+        <Art size={hover ? 44 : 38} />
+      </div>
+      <div
+        className="mt-1 text-center"
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 12,
+          color: '#F2F0EA',
+          fontWeight: 600,
+          lineHeight: 1.1,
+          opacity: hover ? 1 : 0,
+          transform: hover ? 'translateY(0)' : 'translateY(3px)',
+          transition: 'opacity 180ms ease-out, transform 180ms ease-out',
+        }}
+      >
+        {mission.name}
+      </div>
+      <div
+        className="text-center"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 8.5,
+          color: 'rgba(255,255,255,0.45)',
+          letterSpacing: '0.1em',
+          marginTop: 2,
+          opacity: hover ? 1 : 0,
+          transition: 'opacity 180ms ease-out',
+        }}
+      >
+        {meta?.aboveHorizon ? `ALT ${Math.round(meta.altitude)}°` : 'HIDDEN'}
+      </div>
+    </button>
   );
 }

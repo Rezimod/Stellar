@@ -167,3 +167,63 @@
   .stl-stroke-draw,
   .stl-node-in { animation: none !important; }
 }
+
+/* ===== DISCOVERY SEALED — Cosmic animations ===== */
+
+@keyframes stl-particle-drift {
+  0%   { transform: translateY(100vh) translateX(0); opacity: 0 }
+  10%  { opacity: 0.6 }
+  90%  { opacity: 0.6 }
+  100% { transform: translateY(-10vh) translateX(var(--stl-drift, 0)); opacity: 0 }
+}
+.stl-particle {
+  position: absolute; bottom: 0;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: var(--stl-gold);
+  animation: stl-particle-drift var(--stl-dur, 14s) linear infinite;
+  animation-delay: var(--stl-delay, 0s);
+  pointer-events: none;
+}
+
+@keyframes stl-seal-rotate { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+.stl-seal-ring { animation: stl-seal-rotate 40s linear infinite; transform-origin: center; }
+
+@keyframes stl-seal-glow {
+  0%,100% { opacity: 0.5; transform: scale(1) }
+  50%     { opacity: 0.85; transform: scale(1.05) }
+}
+.stl-seal-glow { animation: stl-seal-glow 3.2s ease-in-out infinite; }
+
+@keyframes stl-star-reveal {
+  0%   { transform: scale(0.5); opacity: 0 }
+  50%  { transform: scale(1.15); opacity: 1 }
+  100% { transform: scale(1); opacity: 1 }
+}
+.stl-star-reveal { animation: stl-star-reveal 900ms cubic-bezier(.34,1.56,.64,1) both; }
+
+@keyframes stl-check-draw { from { stroke-dashoffset: 40 } to { stroke-dashoffset: 0 } }
+.stl-check-path { stroke-dasharray: 40; animation: stl-check-draw 700ms ease-out 200ms both; }
+
+@keyframes stl-shoot {
+  0%   { transform: translate(0,0); opacity: 0 }
+  10%  { opacity: 1 }
+  70%  { opacity: 1 }
+  100% { transform: translate(300px, 150px); opacity: 0 }
+}
+.stl-shoot {
+  position: absolute;
+  width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, #fff 60%, #fff);
+  animation: stl-shoot 6s ease-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stl-particle,
+  .stl-seal-ring,
+  .stl-seal-glow,
+  .stl-star-reveal,
+  .stl-check-path,
+  .stl-shoot { animation: none !important; }
+}
