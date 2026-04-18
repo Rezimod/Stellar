@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   compress: true,
   experimental: {
     reactCompiler: true,
+    optimizePackageImports: ['lucide-react'],
   },
   images: {
     formats: ['image/avif', 'image/webp'],
