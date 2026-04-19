@@ -74,7 +74,7 @@ export default function PullToRefresh() {
       <div
         style={{
           position: 'fixed',
-          top: '45vh',
+          top: '18vh',
           left: '50%',
           transform: `translate(-50%, -50%) translateY(${drift}px) scale(${scale})`,
           zIndex: 200,

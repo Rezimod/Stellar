@@ -30,7 +30,8 @@ export default function BottomNav() {
       <div
         style={{
           display: 'flex',
-          height: 68,
+          height: 70,
+          padding: '6px 4px 0',
         }}
       >
         {TABS.map(tab => {
@@ -51,39 +52,68 @@ export default function BottomNav() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
                 gap: 4,
+                paddingTop: 6,
                 textDecoration: 'none',
                 WebkitTapHighlightColor: 'transparent',
                 position: 'relative',
               }}
             >
-              {/* Active top indicator */}
-              {isActive && (
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '28%',
-                  right: '28%',
-                  height: 2,
-                  borderRadius: '0 0 2px 2px',
-                  background: '#34d399',
-                }} />
-              )}
+              {/* Active pill — filled tab background behind icon */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: 44,
+                  height: 30,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 12,
+                  background: isActive
+                    ? 'radial-gradient(ellipse at 50% 55%, rgba(255,209,102,0.22) 0%, rgba(255,209,102,0.05) 55%, transparent 75%)'
+                    : 'transparent',
+                  transition: 'background 0.2s ease',
+                }}
+              >
+                {isActive && (
+                  <span
+                    aria-hidden
+                    style={{
+                      position: 'absolute',
+                      top: -6,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 20,
+                      height: 2,
+                      borderRadius: 2,
+                      background: '#FFD166',
+                      boxShadow: '0 0 10px rgba(255,209,102,0.8)',
+                    }}
+                  />
+                )}
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 2.2 : 1.7}
+                  color={isActive ? '#FFD166' : 'rgba(255,255,255,0.42)'}
+                  style={{
+                    filter: isActive ? 'drop-shadow(0 0 6px rgba(255,209,102,0.45))' : 'none',
+                    transition: 'color 0.2s ease, filter 0.2s ease',
+                  }}
+                />
+              </div>
 
-              <Icon
-                size={26}
-                strokeWidth={isActive ? 2 : 1.5}
-                color={isActive ? '#34d399' : 'rgba(255,255,255,0.38)'}
-              />
-
-              <span style={{
-                fontSize: 11,
-                fontWeight: isActive ? 600 : 400,
-                color: isActive ? '#ffffff' : 'rgba(255,255,255,0.38)',
-                letterSpacing: '0.01em',
-                lineHeight: 1,
-              }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 10.5,
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? '#F2F0EA' : 'rgba(255,255,255,0.42)',
+                  letterSpacing: '0.01em',
+                  lineHeight: 1,
+                  transition: 'color 0.2s ease',
+                }}
+              >
                 {tab.label}
               </span>
             </Link>

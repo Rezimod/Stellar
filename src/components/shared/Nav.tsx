@@ -97,7 +97,6 @@ export default function Nav() {
         .dd-link { transition: background 0.15s ease, transform 0.15s ease; }
         .dd-link:hover { background: rgba(99,102,241,0.07) !important; }
         .hamburger-hline { display: block; height: 1.5px; width: 18px; border-radius: 2px; background: #FFFFFF; transition: all 0.22s cubic-bezier(0.22,1,0.36,1); transform-origin: center; }
-        .nav-search-pill:hover { background: rgba(255,255,255,0.08) !important; border-color: rgba(255,255,255,0.14) !important; }
       `}</style>
 
       {/* Dropdown embedded with header */}
@@ -198,31 +197,21 @@ export default function Nav() {
               </div>
             </button>
 
-            {/* Search — left cluster, next to hamburger */}
+            {/* Search — icon-only button, matched in weight to the hamburger */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="nav-search-pill flex-shrink-0 flex items-center gap-1.5 rounded-full"
+              className="nav-icon-btn w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0"
               style={{
-                height: 32,
-                padding: '0 10px 0 9px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.55)',
+                background: 'transparent',
+                border: 'none',
+                color: '#FFFFFF',
                 cursor: 'pointer',
+                padding: 0,
                 transition: 'all 0.18s ease',
               }}
               aria-label="Search"
             >
-              <Search size={13} strokeWidth={2} />
-              <span className="hidden sm:inline" style={{
-                fontSize: 11,
-                fontWeight: 500,
-                letterSpacing: '0.02em',
-                color: 'rgba(255,255,255,0.45)',
-                fontFamily: 'var(--font-display)',
-              }}>
-                Search
-              </span>
+              <Search size={17} strokeWidth={1.9} />
             </button>
 
             {/* Logo — mobile: absolutely centered; sm+: in flow */}
