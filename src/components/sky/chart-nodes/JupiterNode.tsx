@@ -1,28 +1,27 @@
 export default function JupiterNode({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <radialGradient id="jn-body" cx="0.38" cy="0.35" r="0.72">
+        <radialGradient id="jn-body" cx="0.38" cy="0.32" r="0.82">
           <stop offset="0" stopColor="#FBE6BC" />
-          <stop offset="0.35" stopColor="#E5B578" />
-          <stop offset="0.75" stopColor="#9A6438" />
-          <stop offset="1" stopColor="#3D1F10" />
+          <stop offset="0.55" stopColor="#E0B07A" />
+          <stop offset="1" stopColor="#9C7348" />
         </radialGradient>
-        <radialGradient id="jn-spot" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#D94A2A" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#7A2410" stopOpacity="0" />
-        </radialGradient>
-        <clipPath id="jn-clip"><circle cx="18" cy="18" r="14" /></clipPath>
+        <clipPath id="jn-clip"><circle cx="16" cy="16" r="11" /></clipPath>
       </defs>
-      <circle cx="18" cy="18" r="14" fill="url(#jn-body)" />
-      <g clipPath="url(#jn-clip)" opacity="0.85">
-        <path d="M 4 13 Q 18 11.5 32 13.5" stroke="#C99663" strokeWidth="0.9" fill="none" opacity="0.55" />
-        <path d="M 4 16 Q 18 14.4 32 16.5" stroke="#7F4A22" strokeWidth="1.2" fill="none" opacity="0.75" />
-        <path d="M 4 20 Q 18 18.6 32 20.5" stroke="#8A5028" strokeWidth="1.4" fill="none" opacity="0.7" />
-        <path d="M 4 23 Q 18 21.6 32 23.5" stroke="#6A3818" strokeWidth="1" fill="none" opacity="0.55" />
-        <ellipse cx="13" cy="20.5" rx="3" ry="1.3" fill="url(#jn-spot)" />
+      {/* body */}
+      <circle cx="16" cy="16" r="11" fill="url(#jn-body)" />
+      {/* cloud bands */}
+      <g clipPath="url(#jn-clip)">
+        <rect x="5" y="10.5" width="22" height="1.4" fill="#B98856" opacity="0.55" />
+        <rect x="5" y="13.5" width="22" height="1.7" fill="#8A5A2E" opacity="0.55" />
+        <rect x="5" y="17" width="22" height="2" fill="#9A6436" opacity="0.55" />
+        <rect x="5" y="20.6" width="22" height="1.3" fill="#A0724A" opacity="0.5" />
+        {/* Great Red Spot */}
+        <ellipse cx="11" cy="18" rx="2.4" ry="1.1" fill="#C44828" opacity="0.8" />
       </g>
-      <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="0.5" />
+      {/* crisp edge */}
+      <circle cx="16" cy="16" r="11" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="0.4" />
     </svg>
   );
 }

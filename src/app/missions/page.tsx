@@ -674,96 +674,96 @@ function MissionGridCard({
       style={{
         background: isPrime
           ? 'radial-gradient(ellipse at 75% 20%, rgba(255,209,102,0.14) 0%, transparent 55%), linear-gradient(135deg, rgba(10,12,22,0.85), rgba(6,8,16,0.95))'
-          : 'linear-gradient(145deg, rgba(16,20,36,0.65), rgba(6,8,16,0.95))',
+          : 'linear-gradient(145deg, rgba(20,24,40,0.75), rgba(8,10,20,0.95))',
         border: isPrime
           ? '1px solid rgba(255,209,102,0.3)'
           : '1px solid rgba(255,255,255,0.06)',
-        borderRadius: 12,
-        padding: isPrime ? '14px 14px 12px' : '12px 12px 10px',
-        minHeight: isPrime ? 118 : 138,
+        borderRadius: 10,
+        padding: '8px 10px',
+        minHeight: isPrime ? 72 : 64,
       }}
     >
-      {/* Corner badge */}
-      {badge && (
-        <span
-          className="absolute top-2 right-2"
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 8,
-            color: badge.color,
-            letterSpacing: '0.15em',
-            background: badge.bg,
-            padding: '2px 6px',
-            borderRadius: 3,
-            fontWeight: 500,
-          }}
-        >
-          {badge.label}
-        </span>
-      )}
-
-      <div className={`flex ${isPrime ? 'flex-row items-center gap-4' : 'flex-col items-center gap-2'}`}>
+      <div className="flex items-center gap-2.5">
         {/* Planet illustration with soft halo */}
         <div
           className="relative flex items-center justify-center flex-shrink-0"
-          style={{ width: isPrime ? 72 : 64, height: isPrime ? 72 : 64 }}
+          style={{ width: isPrime ? 52 : 44, height: isPrime ? 52 : 44 }}
         >
           <div
             aria-hidden
             className="absolute inset-0 rounded-full"
             style={{
               background: disabled
-                ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 62%)'
+                ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 62%)'
                 : isPrime
-                ? 'radial-gradient(circle at 50% 50%, rgba(255,209,102,0.18) 0%, transparent 62%)'
-                : 'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.08) 0%, transparent 62%)',
-              filter: 'blur(3px)',
+                ? 'radial-gradient(circle at 50% 50%, rgba(255,209,102,0.16) 0%, transparent 65%)'
+                : 'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.08) 0%, transparent 65%)',
+              filter: 'blur(2px)',
             }}
           />
-          <Art size={isPrime ? 60 : 54} />
+          <Art size={isPrime ? 48 : 40} />
         </div>
 
         {/* Text block */}
-        <div className={`min-w-0 ${isPrime ? 'flex-1' : 'w-full text-center'}`}>
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: isPrime ? 19 : 15.5,
-              color: '#F2F0EA',
-              fontWeight: 600,
-              lineHeight: 1.1,
-              letterSpacing: '-0.005em',
-            }}
-          >
-            {mission.name}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: isPrime ? 16 : 14,
+                color: '#F2F0EA',
+                fontWeight: 600,
+                lineHeight: 1.1,
+                letterSpacing: '-0.005em',
+              }}
+            >
+              {mission.name}
+            </span>
+            {badge && (
+              <span
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 7.5,
+                  color: badge.color,
+                  letterSpacing: '0.15em',
+                  background: badge.bg,
+                  padding: '1.5px 4px',
+                  borderRadius: 3,
+                  fontWeight: 500,
+                }}
+              >
+                {badge.label}
+              </span>
+            )}
           </div>
           <div
-            className={`${isPrime ? '' : 'truncate'} mt-1`}
+            className="truncate mt-0.5"
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: isPrime ? 11.5 : 10.5,
+              fontSize: 10.5,
               color: 'rgba(255,255,255,0.5)',
               fontStyle: 'italic',
               fontWeight: 400,
-              lineHeight: 1.25,
+              lineHeight: 1.2,
             }}
           >
             {metaLine}
           </div>
-          <div className={`flex items-center gap-1.5 mt-2 ${isPrime ? 'justify-start' : 'justify-center'}`}>
-            <span
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 12,
-                color: 'var(--stl-gold)',
-                fontWeight: 700,
-                letterSpacing: '0.01em',
-              }}
-            >
-              +{mission.stars} ✦
-            </span>
-          </div>
         </div>
+
+        {/* Stars pill */}
+        <span
+          className="flex-shrink-0"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 12,
+            color: 'var(--stl-gold)',
+            fontWeight: 700,
+            letterSpacing: '0.01em',
+          }}
+        >
+          +{mission.stars} ✦
+        </span>
       </div>
     </button>
   );
