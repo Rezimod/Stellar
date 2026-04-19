@@ -47,7 +47,7 @@ export default function RewardsSection() {
           return (
             <div
               key={r.id}
-              className={`rounded-2xl overflow-hidden transition-all duration-200 ${isOpen ? 'col-span-2' : ''}`}
+              className={`rounded-xl overflow-hidden transition-all duration-200 ${isOpen ? 'col-span-2' : ''}`}
               style={{
                 background: r.unlocked
                   ? 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(15,31,61,0.4))'
@@ -60,32 +60,32 @@ export default function RewardsSection() {
             >
               {/* Tile (collapsed header) */}
               <button
-                className="relative w-full flex flex-col justify-between text-left p-3"
-                style={{ minHeight: '120px' }}
+                className="relative w-full flex flex-col justify-between text-left p-2.5"
+                style={{ minHeight: '88px' }}
                 onClick={() => setExpanded(isOpen ? null : r.id)}
               >
                 {/* Top-right badges */}
-                <div className="absolute top-2 right-2 flex items-center gap-1">
+                <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
                   {r.unlocked && !claimed && (
-                    <span className="text-[8px] font-bold text-[#34d399] bg-[#34d399]/10 border border-[#34d399]/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[7.5px] font-bold text-[#34d399] bg-[#34d399]/10 border border-[#34d399]/20 px-1 py-0.5 rounded-full uppercase tracking-wider">
                       Unlocked
                     </span>
                   )}
                   {claimed && (
-                    <span className="text-[8px] font-bold text-slate-500 bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[7.5px] font-bold text-slate-500 bg-slate-500/10 border border-slate-500/20 px-1 py-0.5 rounded-full uppercase tracking-wider">
                       Claimed
                     </span>
                   )}
                   {r.unlocked
-                    ? <Unlock size={11} className="text-[#34d399] opacity-60" />
-                    : <Lock size={11} className="text-slate-600" />
+                    ? <Unlock size={9} className="text-[#34d399] opacity-60" />
+                    : <Lock size={9} className="text-slate-600" />
                   }
                 </div>
 
                 {/* Top: icon + name */}
-                <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-2xl"
+                    className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-base"
                     style={{
                       background: 'rgba(255,255,255,0.04)',
                       border: '1px solid rgba(255,255,255,0.06)',
@@ -93,7 +93,7 @@ export default function RewardsSection() {
                   >
                     {r.icon}
                   </div>
-                  <div className={`text-[13px] font-semibold leading-tight truncate ${r.unlocked ? 'text-white' : 'text-slate-400'}`}>
+                  <div className={`text-[11.5px] font-semibold leading-tight truncate ${r.unlocked ? 'text-white' : 'text-slate-400'}`}>
                     {r.name}
                   </div>
                 </div>
@@ -106,7 +106,7 @@ export default function RewardsSection() {
                       style={{ width: `${pct}%`, backgroundColor: progressColor }}
                     />
                   </div>
-                  <span className="text-[10px] text-slate-600 flex-shrink-0">{pct}%</span>
+                  <span className="text-[9px] text-slate-600 flex-shrink-0">{pct}%</span>
                 </div>
               </button>
 

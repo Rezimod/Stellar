@@ -28,8 +28,21 @@ export default function MissionListRow({ mission, Art, metaLine, badge, isPrime,
         />
       )}
 
-      <div className="flex-shrink-0 w-11 h-11 flex items-center justify-center">
-        <Art size={40} />
+      <div
+        className="flex-shrink-0 relative flex items-center justify-center"
+        style={{ width: 56, height: 56 }}
+      >
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: disabled
+              ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 62%)'
+              : 'radial-gradient(circle at 50% 50%, rgba(255,209,102,0.09) 0%, transparent 62%)',
+            filter: 'blur(2px)',
+          }}
+        />
+        <Art size={54} />
       </div>
 
       <div className="flex-1 min-w-0">

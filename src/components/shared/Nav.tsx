@@ -96,7 +96,8 @@ export default function Nav() {
         .nav-login-btn:hover { background: rgba(124,58,237,0.2) !important; border-color: rgba(124,58,237,0.6) !important; }
         .dd-link { transition: background 0.15s ease, transform 0.15s ease; }
         .dd-link:hover { background: rgba(99,102,241,0.07) !important; }
-        .hamburger-bar { display: block; height: 1.5px; border-radius: 2px; transition: all 0.22s cubic-bezier(0.22,1,0.36,1); transform-origin: center; }
+        .hamburger-vline { display: block; width: 1.5px; border-radius: 2px; background: #FFFFFF; transition: all 0.22s cubic-bezier(0.22,1,0.36,1); transform-origin: center; }
+        .nav-search-pill:hover { background: rgba(255,255,255,0.08) !important; border-color: rgba(255,255,255,0.14) !important; }
       `}</style>
 
       {/* Dropdown embedded with header */}
@@ -176,31 +177,56 @@ export default function Nav() {
         <div className="max-w-6xl mx-auto px-3">
           <div className="h-14 flex items-center gap-2">
 
-            {/* Hamburger — all screen sizes */}
+            {/* Hamburger — three vertical white lines */}
             <button
               onClick={() => setDropdownOpen(v => !v)}
               className="nav-icon-btn w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0"
-              style={{ color: 'rgba(255,255,255,0.6)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
               aria-label={dropdownOpen ? 'Close navigation' : 'Open navigation'}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', justifyContent: 'center', width: 18 }}>
-                <span className="hamburger-bar" style={{
-                  width: dropdownOpen ? 16 : 16,
-                  background: dropdownOpen ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.6)',
-                  transform: dropdownOpen ? 'translateY(5.5px) rotate(45deg)' : 'none',
-                }} />
-                <span className="hamburger-bar" style={{
-                  width: 11,
-                  background: 'rgba(99,102,241,0.7)',
+              <div style={{ display: 'flex', flexDirection: 'row', gap: 3.5, alignItems: 'center', justifyContent: 'center', height: 16 }}>
+                <span className="hamburger-vline" style={{
+                  height: 16,
                   opacity: dropdownOpen ? 0 : 1,
-                  transform: dropdownOpen ? 'scaleX(0)' : 'none',
+                  transform: dropdownOpen ? 'rotate(45deg) translateX(3px)' : 'none',
                 }} />
-                <span className="hamburger-bar" style={{
-                  width: dropdownOpen ? 16 : 14,
-                  background: dropdownOpen ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.6)',
-                  transform: dropdownOpen ? 'translateY(-5.5px) rotate(-45deg)' : 'none',
+                <span className="hamburger-vline" style={{
+                  height: 16,
+                  opacity: dropdownOpen ? 0 : 0.85,
+                }} />
+                <span className="hamburger-vline" style={{
+                  height: 16,
+                  opacity: dropdownOpen ? 0 : 1,
+                  transform: dropdownOpen ? 'rotate(-45deg) translateX(-3px)' : 'none',
                 }} />
               </div>
+            </button>
+
+            {/* Search — left cluster, next to hamburger */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="nav-search-pill flex-shrink-0 flex items-center gap-1.5 rounded-full"
+              style={{
+                height: 32,
+                padding: '0 10px 0 9px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(255,255,255,0.55)',
+                cursor: 'pointer',
+                transition: 'all 0.18s ease',
+              }}
+              aria-label="Search"
+            >
+              <Search size={13} strokeWidth={2} />
+              <span className="hidden sm:inline" style={{
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: '0.02em',
+                color: 'rgba(255,255,255,0.45)',
+                fontFamily: 'var(--font-display)',
+              }}>
+                Search
+              </span>
             </button>
 
             {/* Logo — mobile: absolutely centered; sm+: in flow */}
@@ -249,17 +275,8 @@ export default function Nav() {
               })}
             </div>
 
-            {/* Right cluster: search + profile/login */}
+            {/* Right cluster: profile/login */}
             <div className="ml-auto flex items-center gap-1 flex-shrink-0 z-10">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="nav-icon-btn w-9 h-9 flex items-center justify-center rounded-xl"
-                style={{ color: 'rgba(255,255,255,0.5)', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                aria-label="Search"
-              >
-                <Search size={16} />
-              </button>
-
               {!ready ? (
                 <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
               ) : authenticated ? (

@@ -33,32 +33,29 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
 
   return (
     <div
-      className="relative flex items-center gap-3 p-3 lg:p-3.5 overflow-hidden"
+      className="relative flex items-center gap-2.5 p-2.5 lg:p-3 overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,209,102,0.08), rgba(255,209,102,0.01) 60%, transparent)',
-        border: '1px solid rgba(255,209,102,0.28)',
-        borderRadius: 14,
+        background: 'linear-gradient(135deg, rgba(255,209,102,0.06), rgba(255,209,102,0.01) 60%, transparent)',
+        border: '1px solid rgba(255,209,102,0.22)',
+        borderRadius: 12,
       }}
     >
       {/* Shimmer sheen */}
       <div className="stl-sheen" />
 
-      {/* Art with pulse */}
+      {/* Art — static, no pulse */}
       <div
         className="relative flex-shrink-0 flex items-center justify-center"
-        style={{ width: 58, height: 58 }}
+        style={{ width: 44, height: 44 }}
       >
-        <div className="relative" style={{ width: 50, height: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span className="stl-prime-ring" style={{ borderWidth: 1.5 }} />
-          <Node size={48} />
-        </div>
+        <Node size={40} />
       </div>
 
       {/* Text block */}
       <div className="flex-1 min-w-0 relative">
         <div className="flex items-center justify-between gap-1.5 mb-0.5">
           <div className="flex items-center gap-1.5 min-w-0">
-            <div className="stl-tw" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--stl-gold)' }} />
+            <div style={{ width: 3.5, height: 3.5, borderRadius: '50%', background: 'var(--stl-gold)' }} />
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
@@ -101,11 +98,11 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
         <h2
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 22,
+            fontSize: 18,
             color: '#F2F0EA',
             fontWeight: 600,
             margin: 0,
-            lineHeight: 1,
+            lineHeight: 1.05,
             letterSpacing: '-0.01em',
           }}
         >
@@ -114,11 +111,11 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
         <div
           style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 12,
-            color: 'rgba(255,255,255,0.55)',
+            fontSize: 11.5,
+            color: 'rgba(255,255,255,0.5)',
             fontStyle: 'italic',
             fontWeight: 400,
-            marginTop: 2,
+            marginTop: 1,
             lineHeight: 1.2,
           }}
         >
@@ -161,12 +158,12 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
         onClick={onStart}
         className="flex-shrink-0 transition-all active:scale-[0.97] hover:brightness-110"
         style={{
-          padding: '9px 12px',
+          padding: '7px 11px',
           background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
           color: '#0a0a0a',
           border: 'none',
-          borderRadius: 10,
-          fontSize: 11.5,
+          borderRadius: 9,
+          fontSize: 11,
           fontWeight: 600,
           fontFamily: 'var(--font-display)',
           whiteSpace: 'nowrap',

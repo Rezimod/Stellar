@@ -357,7 +357,7 @@ function azToDirName(az: number): string {
 }
 
 function friendlyMeta({
-  aboveHorizon, altitude, dirName, peakDate, riseDate, now, hint,
+  aboveHorizon, altitude, dirName, peakDate, riseDate, now, hint, cloudCover,
 }: {
   aboveHorizon: boolean;
   altitude: number;
@@ -366,6 +366,7 @@ function friendlyMeta({
   riseDate: Date | null;
   now: Date;
   hint?: string;
+  cloudCover?: number | null;
 }): string {
   if (!aboveHorizon) {
     if (riseDate) {
@@ -383,7 +384,9 @@ function friendlyMeta({
   else where = dirName ? `Skimming the ${dirName} horizon` : 'Barely up';
 
   const tail: string[] = [];
-  if (peakDate && peakDate.getTime() > now.getTime()) {
+  if (cloudCover != null && cloudCover >= 60) tail.push(`Cloudy ${Math.round(cloudCover)}%`);
+  else if (cloudCover != null && cloudCover >= 40) tail.push(`Hazy ${Math.round(cloudCover)}%`);
+  else if (peakDate && peakDate.getTime() > now.getTime()) {
     const peakStr = peakDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     tail.push(`Best at ${peakStr}`);
   } else if (hint) {
@@ -396,12 +399,19 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
   const { state } = useAppState();
   const { location } = useLocation();
   const [now, setNow] = useState<Date>(() => new Date());
+  const [cloudCover, setCloudCover] = useState<number | null>(null);
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
   const lat = location.lat ?? 41.7151;
   const lon = location.lon ?? 44.8271;
+  useEffect(() => {
+    fetch(`/api/sky/verify?lat=${lat}&lon=${lon}`)
+      .then(r => r.json())
+      .then(d => setCloudCover(typeof d.cloudCover === 'number' ? d.cloudCover : null))
+      .catch(() => {});
+  }, [lat, lon]);
   const cityLabel = location.city || (location.country === 'GE' ? 'Tbilisi' : location.country);
   const liveTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const liveDateStr = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
@@ -438,6 +448,7 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
         riseDate,
         now,
         hint: LIST_META[p.key],
+        cloudCover,
       });
       out[p.key] = {
         aboveHorizon,
@@ -458,6 +469,7 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
         riseDate: null,
         now,
         hint: LIST_META[d.id],
+        cloudCover,
       });
       out[d.id] = {
         aboveHorizon: d.aboveHorizon,
@@ -468,7 +480,7 @@ function ChartSection({ onStart }: { onStart: (m: Mission) => void }) {
       };
     }
     return out;
-  }, [lat, lon, now]);
+  }, [lat, lon, now, cloudCover]);
 
   const primeMission = useMemo(() => {
     const candidates = chartableMissions
