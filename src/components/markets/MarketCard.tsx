@@ -5,11 +5,22 @@ import type { Market, MarketCategory, MarketStatus } from '@/lib/markets';
 interface MarketCardProps {
   market: Market;
   onClick: () => void;
+  observerAdvantage?: boolean;
 }
 
-const CATEGORY_META: Record<
-  MarketCategory,
-  { label: string; emoji: string; color: string; bg: string; border: string }
+const DEFAULT_CATEGORY = {
+  label: 'MARKET',
+  emoji: '✦',
+  color: '#FFD166',
+  bg: 'rgba(255,209,102,0.10)',
+  border: 'rgba(255,209,102,0.22)',
+};
+
+const CATEGORY_META: Partial<
+  Record<
+    MarketCategory,
+    { label: string; emoji: string; color: string; bg: string; border: string }
+  >
 > = {
   sky_event: {
     label: 'SKY',
@@ -31,6 +42,48 @@ const CATEGORY_META: Record<
     color: '#C4B5FD',
     bg: 'rgba(196,181,253,0.10)',
     border: 'rgba(196,181,253,0.25)',
+  },
+  meteor: {
+    label: 'METEOR',
+    emoji: '☄',
+    color: '#FFD166',
+    bg: 'rgba(255,209,102,0.12)',
+    border: 'rgba(255,209,102,0.25)',
+  },
+  solar: {
+    label: 'SOLAR',
+    emoji: '☀',
+    color: '#F59E0B',
+    bg: 'rgba(245,158,11,0.10)',
+    border: 'rgba(245,158,11,0.25)',
+  },
+  mission: {
+    label: 'MISSION',
+    emoji: '🚀',
+    color: '#38F0FF',
+    bg: 'rgba(56,240,255,0.10)',
+    border: 'rgba(56,240,255,0.22)',
+  },
+  comet: {
+    label: 'COMET',
+    emoji: '🌠',
+    color: '#8465CB',
+    bg: 'rgba(132,101,203,0.12)',
+    border: 'rgba(132,101,203,0.25)',
+  },
+  discovery: {
+    label: 'DISCOVERY',
+    emoji: '🔬',
+    color: '#34D399',
+    bg: 'rgba(52,211,153,0.10)',
+    border: 'rgba(52,211,153,0.25)',
+  },
+  weather: {
+    label: 'WEATHER',
+    emoji: '🌤',
+    color: '#5EEAD4',
+    bg: 'rgba(94,234,212,0.10)',
+    border: 'rgba(94,234,212,0.25)',
   },
 };
 
@@ -61,8 +114,8 @@ function compactInt(n: number): string {
   return n.toString();
 }
 
-export default function MarketCard({ market, onClick }: MarketCardProps) {
-  const cat = CATEGORY_META[market.metadata.category];
+export default function MarketCard({ market, onClick, observerAdvantage = false }: MarketCardProps) {
+  const cat = CATEGORY_META[market.metadata.category] ?? DEFAULT_CATEGORY;
   const status = STATUS_META[market.status];
   const isResolved = market.status === 'resolved';
   const isCancelled = market.status === 'cancelled';
@@ -183,6 +236,30 @@ export default function MarketCard({ market, onClick }: MarketCardProps) {
       >
         {market.metadata.title}
       </div>
+
+      {observerAdvantage && (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            alignSelf: 'flex-start',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            color: '#FFD166',
+            background: 'rgba(255,209,102,0.10)',
+            border: '1px solid rgba(255,209,102,0.32)',
+            borderRadius: 999,
+            padding: '2.5px 7px',
+            textTransform: 'uppercase',
+            lineHeight: 1,
+          }}
+        >
+          🔭 1.5× Observer
+        </span>
+      )}
 
       {/* Description */}
       <div

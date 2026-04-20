@@ -1,6 +1,15 @@
 import { PublicKey } from "@solana/web3.js";
 
-export type MarketCategory = "sky_event" | "weather_event" | "natural_phenomenon";
+export type MarketCategory =
+  | "sky_event"
+  | "weather_event"
+  | "natural_phenomenon"
+  | "meteor"
+  | "solar"
+  | "mission"
+  | "comet"
+  | "discovery"
+  | "weather";
 export type MarketSide = "yes" | "no";
 export type MarketOutcome = "yes" | "no" | "unresolved" | "cancelled";
 export type MarketStatus = "open" | "locked" | "resolved" | "cancelled";
@@ -16,6 +25,11 @@ export interface MarketMetadata {
   yesCondition: string;
   whyInteresting: string;
   uiDescription: string;
+  emoji?: string;
+  initialYesPct?: number;
+  analysis?: string;
+  preResolved?: boolean;
+  preResolvedOutcome?: "yes" | "no";
 }
 
 export interface MarketOnChain {
@@ -80,5 +94,10 @@ export interface SeedMarketsFile {
     YES_condition: string;
     why_interesting: string;
     ui_description: string;
+    emoji?: string;
+    initial_yes_pct?: number;
+    analysis?: string;
+    pre_resolved?: boolean;
+    pre_resolved_outcome?: "yes" | "no";
   }>;
 }

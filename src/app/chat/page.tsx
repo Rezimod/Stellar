@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { Suspense, useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowUp } from 'lucide-react';
@@ -15,12 +16,23 @@ const DEMO_MESSAGES: Msg[] = [
 ];
 
 export default function ChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatPageInner />
+    </Suspense>
+  );
+}
+
+function ChatPageInner() {
   const { authenticated, login, getAccessToken } = usePrivy();
   const rawLocale = useLocale();
   const locale = rawLocale === 'ka' ? 'ka' : 'en';
   const { location } = useLocation();
   const t = useTranslations('chat');
   const ts = useTranslations('chat.suggestions');
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q');
+  const autoSentRef = useRef(false);
 
   const [skySummary, setSkySummary] = useState<{ verified: boolean; cloudCover: number; visibility: string } | null>(null);
 
@@ -122,6 +134,13 @@ export default function ChatPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, loading, messages, locale, location.lat, location.lon, getAccessToken, login]);
+
+  useEffect(() => {
+    if (!initialQuery || autoSentRef.current) return;
+    if (!authenticated || loading) return;
+    autoSentRef.current = true;
+    send(initialQuery);
+  }, [initialQuery, authenticated, loading, send]);
 
   const displayMessages = authenticated ? messages : [messages[0], ...DEMO_MESSAGES];
 

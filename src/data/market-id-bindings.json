@@ -1,1 +1,22 @@
-{}
+{
+  "sky-001-lyrids-zhr": 4,
+  "sky-002-eta-aquariids-zhr": 5,
+  "sky-003-vandenberg-april22": 6,
+  "sky-004-falcon9-cadence": 7,
+  "sky-005-mclass-flare-judging": 8,
+  "sky-006-kp5-geomagnetic": 9,
+  "sky-007-xclass-flare-window": 10,
+  "weather-001-tbilisi-warm-day": 11,
+  "weather-002-tbilisi-may-day-rain": 12,
+  "weather-003-stockholm-frost": 13,
+  "weather-004-london-heathrow-rain": 14,
+  "weather-005-tbilisi-clear-eta": 15,
+  "weather-006-tbilisi-dry-week": 16,
+  "weather-007-nyc-warm-may7": 17,
+  "natural-001-m6-judging-week": 18,
+  "natural-002-m5-near-tbilisi": 19,
+  "natural-003-new-volcanic-eruption": 20,
+  "natural-004-firms-large-wildfire-us": 21,
+  "natural-005-named-tropical-cyclone": 22,
+  "natural-006-reykjanes-swarm": 23
+}

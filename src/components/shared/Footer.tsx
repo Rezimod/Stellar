@@ -102,7 +102,7 @@ export default function Footer() {
           }}
         >
           <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>
-            Built in Tbilisi 🇬🇪 · © 2026 Stellar
+            Built in Tbilisi 🇬🇪 · Colosseum Frontier 2026 · © 2026 Stellar
           </span>
           <span style={{
             color: 'rgba(255,255,255,0.25)',

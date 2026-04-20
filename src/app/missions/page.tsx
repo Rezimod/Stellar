@@ -35,6 +35,7 @@ import PageContainer from '@/components/layout/PageContainer';
 import { MissionIcon } from '@/components/shared/PlanetIcons';
 import { TelescopeIcon, StarTokenIcon, DifficultyDots } from '@/components/icons/CelestialIcons';
 import QuizCard, { type QuizTheme } from '@/components/sky/QuizCard';
+import TonightMarkets from '@/components/markets/TonightMarkets';
 import SolarSystemIcon from '@/components/sky/quiz-icons/SolarSystemIcon';
 import ConstellationsIcon from '@/components/sky/quiz-icons/ConstellationsIcon';
 import TelescopeIconArt from '@/components/sky/quiz-icons/TelescopeIcon';
@@ -214,6 +215,8 @@ export default function MissionsPage() {
 
       <PageContainer variant="wide" className="py-2 flex flex-col gap-3" style={{ fontFamily: 'var(--font-serif)' }}>
         <BackButton />
+
+        <TonightMarkets />
 
         <ChartSection onStart={(m) => router.push(`/observe/${m.id}`)} />
 

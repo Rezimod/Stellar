@@ -20,6 +20,12 @@ import {
   type MarketMetadata,
   type Position,
 } from '@/lib/markets';
+import {
+  checkObserverAdvantage,
+  getOracleKeyForMarketId,
+  missionsToObservations,
+} from '@/lib/observer-advantage';
+import { useAppState } from '@/hooks/useAppState';
 
 const POLL_MS = 5000;
 
@@ -32,7 +38,15 @@ export default function MarketDetailPage({
   const router = useRouter();
   const program = useReadOnlyProgram();
   const signer = usePrivySigner();
+  const { state } = useAppState();
   const marketId = useMemo(() => Number(id), [id]);
+
+  const observerAdvantage = useMemo(() => {
+    if (!Number.isFinite(marketId)) return null;
+    const observations = missionsToObservations(state.completedMissions ?? []);
+    const oracleKey = getOracleKeyForMarketId(marketId);
+    return checkObserverAdvantage(oracleKey, observations);
+  }, [marketId, state.completedMissions]);
 
   const [onChain, setOnChain] = useState<MarketOnChain | null>(null);
   const [meta, setMeta] = useState<MarketMetadata | null>(null);
@@ -197,6 +211,7 @@ export default function MarketDetailPage({
             positions={positions}
             balance={balance}
             onRefresh={refresh}
+            observerAdvantage={observerAdvantage}
           />
         ) : (
           <div

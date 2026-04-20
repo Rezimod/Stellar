@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import { useTranslations } from 'next-intl';
 import HomeSkyPreview from '@/components/home/HomeSkyPreview';
+import TonightMarkets from '@/components/markets/TonightMarkets';
 import PageContainer from '@/components/layout/PageContainer';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
@@ -626,6 +627,9 @@ export default function HomePage() {
 
       {/* Remaining sections */}
       <PageContainer variant="wide" className="pt-4 pb-8 sm:pb-12 flex flex-col gap-4 animate-page-enter">
+
+        {/* Tonight's Markets */}
+        <TonightMarkets />
 
         {/* Tonight's Sky Preview Strip */}
         <div style={{

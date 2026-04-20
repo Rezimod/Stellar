@@ -1,19 +1,33 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import type { PublicKey } from '@solana/web3.js';
+import { ExternalLink, Sparkles } from 'lucide-react';
 import BetForm from './BetForm';
 import PoolStats from './PoolStats';
 import UserPositionCard from './UserPositionCard';
+import { PROGRAM_ID, marketPDA } from '@/lib/markets';
 import type {
   MarketCategory,
   MarketMetadata,
   MarketOnChain,
   Position,
 } from '@/lib/markets';
+import type { ObserverAdvantage } from '@/lib/observer-advantage';
 
-const CATEGORY_META: Record<
-  MarketCategory,
-  { label: string; emoji: string; color: string; bg: string; border: string }
+const DEFAULT_CATEGORY = {
+  label: 'MARKET',
+  emoji: '✦',
+  color: '#FFD166',
+  bg: 'rgba(255,209,102,0.10)',
+  border: 'rgba(255,209,102,0.22)',
+};
+
+const CATEGORY_META: Partial<
+  Record<
+    MarketCategory,
+    { label: string; emoji: string; color: string; bg: string; border: string }
+  >
 > = {
   sky_event: {
     label: 'SKY EVENT',
@@ -35,6 +49,48 @@ const CATEGORY_META: Record<
     color: '#C4B5FD',
     bg: 'rgba(196,181,253,0.10)',
     border: 'rgba(196,181,253,0.25)',
+  },
+  meteor: {
+    label: 'METEOR',
+    emoji: '☄',
+    color: '#FFD166',
+    bg: 'rgba(255,209,102,0.12)',
+    border: 'rgba(255,209,102,0.25)',
+  },
+  solar: {
+    label: 'SOLAR',
+    emoji: '☀',
+    color: '#F59E0B',
+    bg: 'rgba(245,158,11,0.10)',
+    border: 'rgba(245,158,11,0.25)',
+  },
+  mission: {
+    label: 'MISSION',
+    emoji: '🚀',
+    color: '#38F0FF',
+    bg: 'rgba(56,240,255,0.10)',
+    border: 'rgba(56,240,255,0.22)',
+  },
+  comet: {
+    label: 'COMET',
+    emoji: '🌠',
+    color: '#8465CB',
+    bg: 'rgba(132,101,203,0.12)',
+    border: 'rgba(132,101,203,0.25)',
+  },
+  discovery: {
+    label: 'DISCOVERY',
+    emoji: '🔬',
+    color: '#34D399',
+    bg: 'rgba(52,211,153,0.10)',
+    border: 'rgba(52,211,153,0.25)',
+  },
+  weather: {
+    label: 'WEATHER',
+    emoji: '🌤',
+    color: '#5EEAD4',
+    bg: 'rgba(94,234,212,0.10)',
+    border: 'rgba(94,234,212,0.25)',
   },
 };
 
@@ -84,6 +140,16 @@ interface MarketDetailProps {
   positions: Position[];
   balance: number | null;
   onRefresh: () => void;
+  observerAdvantage?: ObserverAdvantage | null;
+}
+
+const EXPLORER_CLUSTER =
+  (process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? '').includes('mainnet')
+    ? 'mainnet-beta'
+    : 'devnet';
+
+function explorerAddressUrl(addr: string): string {
+  return `https://explorer.solana.com/address/${addr}?cluster=${EXPLORER_CLUSTER}`;
 }
 
 export default function MarketDetail({
@@ -93,14 +159,27 @@ export default function MarketDetail({
   positions,
   balance,
   onRefresh,
+  observerAdvantage,
 }: MarketDetailProps) {
-  const cat = meta ? CATEGORY_META[meta.category] : CATEGORY_META.sky_event;
+  const router = useRouter();
+  const cat =
+    (meta && CATEGORY_META[meta.category]) ||
+    CATEGORY_META.sky_event ||
+    DEFAULT_CATEGORY;
   const title = meta?.title ?? onChain.question ?? `Market #${onChain.marketId}`;
   const description =
     meta?.uiDescription ??
     'On-chain market created without seed metadata. Curated copy lands once this market is bound to a seed entry.';
 
   const status = deriveStatus(onChain, meta, new Date());
+  const [marketAddress] = marketPDA(PROGRAM_ID, onChain.marketId);
+  const boost =
+    observerAdvantage?.hasAdvantage ? observerAdvantage.multiplier : undefined;
+
+  const askAstra = () => {
+    const q = `Should I bet YES on "${title}"? What's your analysis?`;
+    router.push(`/chat?q=${encodeURIComponent(q)}`);
+  };
 
   return (
     <>
@@ -158,6 +237,43 @@ export default function MarketDetail({
         {description}
       </p>
 
+      {/* Observer advantage banner */}
+      {observerAdvantage?.hasAdvantage && (
+        <div
+          className="rounded-xl px-4 py-3 flex items-center gap-3"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(255,209,102,0.10), rgba(168,85,247,0.08))',
+            border: '1px solid rgba(255,209,102,0.35)',
+          }}
+        >
+          <span style={{ fontSize: 22 }}>🔭</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#FFD166',
+                margin: 0,
+              }}
+            >
+              Observer advantage active — {observerAdvantage.multiplier}× payout
+            </p>
+            <p
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 12,
+                color: 'rgba(255,255,255,0.65)',
+                margin: '2px 0 0',
+              }}
+            >
+              {observerAdvantage.reason}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Status banners */}
       {status.kind === 'resolved' && (
         <Banner
@@ -214,6 +330,7 @@ export default function MarketDetail({
             balance={balance}
             locked={status.kind === 'locked'}
             onSuccess={onRefresh}
+            boostMultiplier={boost}
           />
         )}
       </div>
@@ -255,6 +372,192 @@ export default function MarketDetail({
             mono
           />
         </dl>
+      </section>
+
+      {/* Ask ASTRA */}
+      {status.kind === 'open' && (
+        <section className="flex flex-col gap-2">
+          <h3
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.45)',
+              margin: 0,
+            }}
+          >
+            Ask ASTRA
+          </h3>
+          <button
+            onClick={askAstra}
+            className="rounded-xl flex items-center gap-3 text-left"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(52,211,153,0.08))',
+              border: '1px solid rgba(124,58,237,0.3)',
+              padding: '14px 16px',
+              cursor: 'pointer',
+              width: '100%',
+              transition: 'border-color 0.18s ease, background 0.18s ease',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor =
+                'rgba(124,58,237,0.55)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor =
+                'rgba(124,58,237,0.3)';
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'rgba(124,58,237,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Sparkles size={17} color="#c4b5fd" strokeWidth={1.6} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#F2F0EA',
+                  margin: 0,
+                }}
+              >
+                Should I bet on this market?
+              </p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 12,
+                  color: 'rgba(255,255,255,0.55)',
+                  margin: '2px 0 0',
+                }}
+              >
+                Ask the AI astronomer — live sky data, historical rates, recommendation.
+              </p>
+            </div>
+            <span
+              style={{
+                color: 'rgba(196,181,253,0.8)',
+                fontSize: 18,
+                flexShrink: 0,
+              }}
+            >
+              →
+            </span>
+          </button>
+        </section>
+      )}
+
+      {/* About this market */}
+      {meta?.whyInteresting && (
+        <section className="flex flex-col gap-2">
+          <h3
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.45)',
+              margin: 0,
+            }}
+          >
+            About this market
+          </h3>
+          <p
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: 'rgba(255,255,255,0.68)',
+              margin: 0,
+            }}
+          >
+            {meta.whyInteresting}
+          </p>
+        </section>
+      )}
+
+      {/* On-chain */}
+      <section className="flex flex-col gap-2">
+        <h3
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 10,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.45)',
+            margin: 0,
+          }}
+        >
+          On-chain
+        </h3>
+        <div
+          className="rounded-xl flex items-center justify-between gap-3"
+          style={{
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            padding: '10px 12px',
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9.5,
+                fontWeight: 600,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.4)',
+              }}
+            >
+              Market account
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 12,
+                color: '#F2F0EA',
+                marginTop: 4,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {marketAddress.toBase58()}
+            </div>
+          </div>
+          <a
+            href={explorerAddressUrl(marketAddress.toBase58())}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 flex-shrink-0"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'rgba(196,181,253,0.9)',
+              textDecoration: 'none',
+              letterSpacing: '0.04em',
+              padding: '6px 10px',
+              borderRadius: 8,
+              background: 'rgba(124,58,237,0.1)',
+              border: '1px solid rgba(124,58,237,0.25)',
+            }}
+          >
+            Explorer <ExternalLink size={11} />
+          </a>
+        </div>
       </section>
     </>
   );

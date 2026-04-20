@@ -16,6 +16,7 @@ interface BetFormProps {
   balance: number | null;
   locked: boolean;
   onSuccess: () => void;
+  boostMultiplier?: number;
 }
 
 function fmtInt(n: number): string {
@@ -43,6 +44,7 @@ export default function BetForm({
   balance,
   locked,
   onSuccess,
+  boostMultiplier,
 }: BetFormProps) {
   const { authenticated, ready, login } = usePrivy();
   const program = useProgramWithPrivy();
@@ -233,8 +235,12 @@ export default function BetForm({
         <div
           className="rounded-lg"
           style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: boostMultiplier
+              ? 'rgba(255,209,102,0.06)'
+              : 'rgba(255,255,255,0.02)',
+            border: `1px solid ${
+              boostMultiplier ? 'rgba(255,209,102,0.25)' : 'rgba(255,255,255,0.06)'
+            }`,
             padding: '10px 12px',
           }}
         >
@@ -258,17 +264,25 @@ export default function BetForm({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {fmtInt(projectedPayout)} ✦
+            {fmtInt(
+              boostMultiplier
+                ? Math.round(projectedPayout * boostMultiplier)
+                : projectedPayout,
+            )}{' '}
+            ✦
           </div>
           <div
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 10,
-              color: 'rgba(255,255,255,0.4)',
+              color: boostMultiplier
+                ? 'rgba(255,209,102,0.9)'
+                : 'rgba(255,255,255,0.4)',
               marginTop: 2,
             }}
           >
             if {side.toUpperCase()} wins
+            {boostMultiplier ? ` · ${boostMultiplier}× observer bonus` : ''}
           </div>
         </div>
       )}

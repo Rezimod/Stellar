@@ -9,6 +9,7 @@
     "setup:bubblegum": "npx tsx scripts/setup-bubblegum.ts",
     "setup:token": "npx tsx scripts/create-stars-token.ts",
     "seed:demo": "npx tsx scripts/seed-demo-data.ts",
+    "seed:v2": "npx tsx scripts/seed-markets-v2.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "setup:stars": "npx tsx scripts/import-star-catalog.ts"
