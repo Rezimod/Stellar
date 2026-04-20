@@ -998,6 +998,18 @@
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+/* Polymarket-style centered shell — edges around the content column */
+.mkt-shell {
+  max-width: 1360px;
+  margin: 0 auto;
+  border-left: 1px solid var(--stl-border);
+  border-right: 1px solid var(--stl-border);
+  min-height: calc(100vh - 56px);
+}
+@media (max-width: 1400px) {
+  .mkt-shell { border-left: 0; border-right: 0; }
+}
+
 /* Stats bar — slim top row w/ counts + theme toggle */
 .mkt-stats-bar {
   display: flex;
@@ -1089,44 +1101,86 @@
 .mkt-trending-chip {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
   background: var(--stl-bg2);
   border: 1px solid var(--stl-border);
   cursor: pointer;
   color: var(--stl-text1);
-  white-space: nowrap;
   flex-shrink: 0;
-  max-width: 280px;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  width: 320px;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
 }
 .mkt-trending-chip:hover {
   border-color: var(--stl-border2);
   background: var(--stl-bg-hover);
+  transform: translateY(-1px);
 }
-.mkt-trending-icon { color: var(--stl-text2); display: flex; flex-shrink: 0; }
+.mkt-trending-icon {
+  color: var(--stl-text2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--stl-bg3);
+}
+.mkt-trending-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .mkt-trending-title {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--stl-text1);
-  line-height: 1.2;
-  max-width: 150px;
+  line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
-.mkt-trending-countdown {
-  font-size: 10px;
+.mkt-trending-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
   color: var(--stl-text3);
   font-family: var(--font-mono), monospace;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.mkt-trending-oracle { color: var(--stl-teal); font-weight: 500; }
+.mkt-trending-vol { color: var(--stl-text3); }
+.mkt-trending-odds-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
 }
 .mkt-trending-odds {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--stl-green);
+  font-size: 16px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono), monospace;
+  line-height: 1;
+}
+.mkt-trending-odds.hi { color: var(--stl-green); }
+.mkt-trending-odds.lo { color: var(--stl-red); }
+.mkt-trending-no {
+  font-size: 10px;
+  color: var(--stl-text3);
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 /* Section header "All markets" */
@@ -1462,6 +1516,65 @@
   line-height: 1.4;
 }
 
+/* Sidebar: Tonight's missions */
+.mkt-mission {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+.mkt-mission:hover { opacity: 0.85; }
+.mkt-mission-emoji {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--stl-bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+}
+.mkt-mission-body { flex: 1; min-width: 0; }
+.mkt-mission-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stl-text1);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+.mkt-mission:hover .mkt-mission-title { color: var(--stl-accent); }
+.mkt-mission-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--stl-text3);
+  margin-top: 2px;
+  line-height: 1.2;
+  font-family: var(--font-mono), monospace;
+  letter-spacing: 0.02em;
+}
+.mkt-mission-dot { opacity: 0.6; }
+.mkt-mission-reward {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--stl-amber);
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 7px;
+  background: var(--stl-amber-bg);
+  border-radius: 5px;
+  line-height: 1;
+}
+
 /* Sidebar: Space news */
 .mkt-news {
   display: flex;
@@ -1485,6 +1598,152 @@
   transition: color 0.12s ease;
 }
 .mkt-news:hover .mkt-news-text { color: var(--stl-accent); }
+
+/* ============================================================
+   MARKET DETAIL (Polymarket-style two-column, sticky trade panel)
+   Lives inside the dark-themed detail page (NOT .markets-page scope)
+   ============================================================ */
+.md-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  align-items: start;
+}
+.md-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.md-side {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+}
+
+/* Title meta row: Vol · Closes · Source */
+.md-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  margin-top: -4px;
+}
+.md-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+.md-meta-label {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.md-meta-value {
+  color: rgba(255, 255, 255, 0.82);
+  font-variant-numeric: tabular-nums;
+}
+.md-meta-source {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.md-meta-divider {
+  width: 1px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  display: inline-block;
+}
+
+/* Sticky trade card */
+.md-trade-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.md-trade-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.md-trade-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--stl-text-bright, #F4F4F6);
+}
+.md-odds-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.md-odds-side {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.md-odds-side.yes {
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.22);
+}
+.md-odds-side.no {
+  background: rgba(244, 114, 182, 0.08);
+  border-color: rgba(244, 114, 182, 0.22);
+}
+.md-odds-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.md-odds-value {
+  font-family: var(--font-mono), monospace;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.md-odds-side.yes .md-odds-value { color: var(--stl-green, #4ADE80); }
+.md-odds-side.no .md-odds-value { color: #F472B6; }
+.md-trade-closed {
+  padding: 22px 12px;
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+}
+.md-trade-terms {
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.42);
+  margin: 0;
+  text-align: center;
+}
+
+/* Mobile — stack, un-stick */
+@media (max-width: 960px) {
+  .md-grid { grid-template-columns: 1fr; gap: 16px; }
+  .md-side { position: static; }
+}
 
 /* Mobile */
 @media (max-width: 768px) {

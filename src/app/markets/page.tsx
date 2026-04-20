@@ -22,6 +22,7 @@ import {
   getCategoryIcon,
   TelescopeIcon,
 } from '@/components/icons/MarketIcons';
+import { MISSIONS } from '@/lib/constants';
 
 type CategoryFilter = 'all' | MarketCategory;
 type Theme = 'light' | 'dark';
@@ -288,11 +289,20 @@ export default function MarketsPage() {
       .slice(0, 3);
   }, []);
 
+  const sidebarMissions = useMemo(
+    () =>
+      MISSIONS
+        .filter((m) => !m.demo && m.id !== 'demo')
+        .slice(0, 4),
+    [],
+  );
+
   const activeCount = grouped.reduce((n, g) => n + g.items.length, 0);
 
   return (
     <PageTransition>
       <div className={`markets-page ${theme === 'dark' ? 'dark' : ''}`}>
+        <div className="mkt-shell">
         {/* Stats bar + theme toggle */}
         <div className="mkt-stats-bar">
           <span className="mkt-stats-text">
@@ -314,9 +324,12 @@ export default function MarketsPage() {
             {trending.map((m) => {
               const Icon = getCategoryIcon(m.metadata.category);
               const yesPct = Math.round(m.impliedYesOdds * 100);
+              const noPct = 100 - yesPct;
               const countdown = formatCountdown(
                 m.metadata.closeTime.getTime() - Date.now(),
               );
+              const oracle = oracleBadge(m.metadata.resolutionSource);
+              const vol = m.onChain.totalStaked;
               return (
                 <div
                   key={m.onChain.marketId}
@@ -324,10 +337,19 @@ export default function MarketsPage() {
                   className="mkt-trending-chip"
                   onClick={() => router.push(`/markets/${m.onChain.marketId}`)}
                 >
-                  <span className="mkt-trending-icon"><Icon size={18} /></span>
-                  <span className="mkt-trending-title">{m.metadata.title}</span>
-                  <span className="mkt-trending-countdown">{countdown}</span>
-                  <span className="mkt-trending-odds">{yesPct}%</span>
+                  <span className="mkt-trending-icon"><Icon size={22} /></span>
+                  <div className="mkt-trending-body">
+                    <div className="mkt-trending-title">{m.metadata.title}</div>
+                    <div className="mkt-trending-meta">
+                      {oracle && <span className="mkt-trending-oracle">{oracle}</span>}
+                      <span>{countdown}</span>
+                      <span className="mkt-trending-vol">{formatVolume(vol)} vol</span>
+                    </div>
+                  </div>
+                  <div className="mkt-trending-odds-col">
+                    <span className={`mkt-trending-odds ${yesPct >= 50 ? 'hi' : 'lo'}`}>{yesPct}%</span>
+                    <span className="mkt-trending-no">No {noPct}%</span>
+                  </div>
                 </div>
               );
             })}
@@ -478,6 +500,39 @@ export default function MarketsPage() {
                 </div>
               </div>
 
+              {sidebarMissions.length > 0 && (
+                <div className="mkt-side-section">
+                  <div className="mkt-side-head">
+                    <span className="mkt-side-title">Tonight&rsquo;s missions</span>
+                    <a
+                      className="mkt-side-seeall"
+                      href="/missions"
+                      onClick={(ev) => { ev.preventDefault(); router.push('/missions'); }}
+                    >
+                      See all
+                    </a>
+                  </div>
+                  {sidebarMissions.map((m) => (
+                    <div
+                      key={m.id}
+                      className="mkt-mission"
+                      onClick={() => router.push('/missions')}
+                    >
+                      <span className="mkt-mission-emoji" aria-hidden>{m.emoji}</span>
+                      <div className="mkt-mission-body">
+                        <div className="mkt-mission-title">{m.name}</div>
+                        <div className="mkt-mission-meta">
+                          <span>{m.difficulty}</span>
+                          <span className="mkt-mission-dot" aria-hidden>·</span>
+                          <span>{m.type === 'telescope' ? 'Telescope' : 'Naked eye'}</span>
+                        </div>
+                      </div>
+                      <span className="mkt-mission-reward">+{m.stars}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="mkt-side-section">
                 <div className="mkt-side-head">
                   <span className="mkt-side-title">Space news</span>
@@ -491,6 +546,7 @@ export default function MarketsPage() {
               </div>
             </div>
           </aside>
+        </div>
         </div>
       </div>
     </PageTransition>

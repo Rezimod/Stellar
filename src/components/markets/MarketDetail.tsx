@@ -105,6 +105,20 @@ function formatLocal(d: Date): string {
   });
 }
 
+function formatShortDate(d: Date): string {
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatVolumeShort(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toLocaleString();
+}
+
 type DerivedStatus =
   | { kind: 'open' }
   | { kind: 'locked'; reason: 'close_time' | 'resolution_time' }
@@ -181,163 +195,164 @@ export default function MarketDetail({
     router.push(`/chat?q=${encodeURIComponent(q)}`);
   };
 
+  const yesPct = (() => {
+    const total = onChain.yesPool + onChain.noPool;
+    if (total === 0) return 50;
+    return Math.round((onChain.yesPool / total) * 100);
+  })();
+  const noPct = 100 - yesPct;
+  const closeDate = meta?.closeTime ?? onChain.resolutionTime;
+  const canTrade = status.kind === 'open' || status.kind === 'locked';
+
   return (
-    <>
-      {/* Top row: category badge + status */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: '0.14em',
-            color: cat.color,
-            background: cat.bg,
-            border: `1px solid ${cat.border}`,
-            borderRadius: 4,
-            padding: '3px 7px',
-            textTransform: 'uppercase',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            lineHeight: 1,
-          }}
-        >
-          <span style={{ fontSize: 11 }}>{cat.emoji}</span>
-          {cat.label}
-        </span>
-        <StatusBadge status={status} />
-      </div>
-
-      {/* Title */}
-      <h1
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 30,
-          lineHeight: 1.18,
-          fontWeight: 600,
-          color: 'var(--stl-text-bright)',
-          letterSpacing: '-0.01em',
-          margin: 0,
-        }}
-      >
-        {title}
-      </h1>
-
-      {/* Description */}
-      <p
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 14,
-          lineHeight: 1.55,
-          color: 'rgba(255,255,255,0.7)',
-          margin: 0,
-        }}
-      >
-        {description}
-      </p>
-
-      {/* Observer advantage banner */}
-      {observerAdvantage?.hasAdvantage && (
-        <div
-          className="rounded-xl px-4 py-3 flex items-center gap-3"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(255,209,102,0.10), rgba(168,85,247,0.08))',
-            border: '1px solid rgba(255,209,102,0.35)',
-          }}
-        >
-          <span style={{ fontSize: 22 }}>🔭</span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 14,
-                fontWeight: 600,
-                color: 'var(--stl-gold)',
-                margin: 0,
-              }}
-            >
-              Observer advantage active — {observerAdvantage.multiplier}× payout
-            </p>
-            <p
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 12,
-                color: 'rgba(255,255,255,0.65)',
-                margin: '2px 0 0',
-              }}
-            >
-              {observerAdvantage.reason}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Status banners */}
-      {status.kind === 'resolved' && (
-        <Banner
-          tone={status.side === 'yes' ? 'emerald' : status.side === 'no' ? 'rose' : 'slate'}
-          title={
-            status.side === 'unresolved'
-              ? 'Market resolved'
-              : `Resolved: ${status.side.toUpperCase()} won`
-          }
-          subtitle="Winning positions can be claimed."
-        />
-      )}
-      {status.kind === 'cancelled' && (
-        <Banner
-          tone="slate"
-          title="Market cancelled"
-          subtitle="All positions refundable."
-        />
-      )}
-      {status.kind === 'locked' && status.reason === 'resolution_time' && (
-        <Banner
-          tone="amber"
-          title="Awaiting resolution"
-          subtitle="Oracle data arrives shortly."
-        />
-      )}
-
-      {/* Pool + Bet form grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <PoolStats onChain={onChain} />
-        {status.kind === 'resolved' || status.kind === 'cancelled' ? (
-          <div
-            className="rounded-xl"
+    <div className="md-grid">
+      <div className="md-main">
+        {/* Top row: category badge + status */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              padding: 18,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'rgba(255,255,255,0.45)',
-              letterSpacing: '0.08em',
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.14em',
+              color: cat.color,
+              background: cat.bg,
+              border: `1px solid ${cat.border}`,
+              borderRadius: 4,
+              padding: '3px 7px',
               textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              lineHeight: 1,
             }}
           >
-            Positions closed
+            <span style={{ fontSize: 11 }}>{cat.emoji}</span>
+            {cat.label}
+          </span>
+          <StatusBadge status={status} />
+        </div>
+
+        {/* Title */}
+        <h1
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 30,
+            lineHeight: 1.18,
+            fontWeight: 600,
+            color: 'var(--stl-text-bright)',
+            letterSpacing: '-0.01em',
+            margin: 0,
+          }}
+        >
+          {title}
+        </h1>
+
+        {/* Polymarket-style meta row: volume + close date */}
+        <div className="md-meta-row">
+          <span className="md-meta-item">
+            <span className="md-meta-label">Vol</span>
+            <span className="md-meta-value">{formatVolumeShort(onChain.totalStaked)}</span>
+          </span>
+          <span className="md-meta-divider" aria-hidden />
+          <span className="md-meta-item">
+            <span className="md-meta-label">Closes</span>
+            <span className="md-meta-value">{formatShortDate(closeDate)}</span>
+          </span>
+          {meta?.resolutionSource && (
+            <>
+              <span className="md-meta-divider" aria-hidden />
+              <span className="md-meta-item">
+                <span className="md-meta-label">Source</span>
+                <span className="md-meta-value md-meta-source">{meta.resolutionSource.split('—')[0].trim()}</span>
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Description */}
+        <p
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 14,
+            lineHeight: 1.55,
+            color: 'rgba(255,255,255,0.7)',
+            margin: 0,
+          }}
+        >
+          {description}
+        </p>
+
+        {/* Observer advantage banner */}
+        {observerAdvantage?.hasAdvantage && (
+          <div
+            className="rounded-xl px-4 py-3 flex items-center gap-3"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(255,209,102,0.10), rgba(168,85,247,0.08))',
+              border: '1px solid rgba(255,209,102,0.35)',
+            }}
+          >
+            <span style={{ fontSize: 22 }}>🔭</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: 'var(--stl-gold)',
+                  margin: 0,
+                }}
+              >
+                Observer advantage active — {observerAdvantage.multiplier}× payout
+              </p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 12,
+                  color: 'rgba(255,255,255,0.65)',
+                  margin: '2px 0 0',
+                }}
+              >
+                {observerAdvantage.reason}
+              </p>
+            </div>
           </div>
-        ) : (
-          <BetForm
-            onChain={onChain}
-            mint={mint}
-            balance={balance}
-            locked={status.kind === 'locked'}
-            onSuccess={onRefresh}
-            boostMultiplier={boost}
+        )}
+
+        {/* Status banners */}
+        {status.kind === 'resolved' && (
+          <Banner
+            tone={status.side === 'yes' ? 'emerald' : status.side === 'no' ? 'rose' : 'slate'}
+            title={
+              status.side === 'unresolved'
+                ? 'Market resolved'
+                : `Resolved: ${status.side.toUpperCase()} won`
+            }
+            subtitle="Winning positions can be claimed."
           />
         )}
-      </div>
+        {status.kind === 'cancelled' && (
+          <Banner
+            tone="slate"
+            title="Market cancelled"
+            subtitle="All positions refundable."
+          />
+        )}
+        {status.kind === 'locked' && status.reason === 'resolution_time' && (
+          <Banner
+            tone="amber"
+            title="Awaiting resolution"
+            subtitle="Oracle data arrives shortly."
+          />
+        )}
 
-      <UserPositionCard positions={positions} />
+        {/* Pool stats */}
+        <PoolStats onChain={onChain} />
 
-      {/* Resolution details */}
+        <UserPositionCard positions={positions} />
+
+        {/* Resolution details */}
       <section className="flex flex-col gap-2">
         <h3
           style={{
@@ -559,7 +574,42 @@ export default function MarketDetail({
           </a>
         </div>
       </section>
-    </>
+      </div>
+
+      <aside className="md-side">
+        <div className="md-trade-card">
+          <div className="md-trade-head">
+            <span className="md-trade-title">{canTrade ? 'Trade this market' : 'Market closed'}</span>
+            <StatusBadge status={status} />
+          </div>
+          <div className="md-odds-preview">
+            <div className="md-odds-side yes">
+              <span className="md-odds-label">Yes</span>
+              <span className="md-odds-value">{yesPct}%</span>
+            </div>
+            <div className="md-odds-side no">
+              <span className="md-odds-label">No</span>
+              <span className="md-odds-value">{noPct}%</span>
+            </div>
+          </div>
+          {status.kind === 'resolved' || status.kind === 'cancelled' ? (
+            <div className="md-trade-closed">Positions closed</div>
+          ) : (
+            <BetForm
+              onChain={onChain}
+              mint={mint}
+              balance={balance}
+              locked={status.kind === 'locked'}
+              onSuccess={onRefresh}
+              boostMultiplier={boost}
+            />
+          )}
+          <p className="md-trade-terms">
+            On-chain settlement on Solana devnet. Stars are testnet tokens.
+          </p>
+        </div>
+      </aside>
+    </div>
   );
 }
 
