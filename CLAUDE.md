@@ -160,3 +160,20 @@ Phase 2 repositions Stellar from Georgia-focused to global. Adds:
 - Vercel: auto-deploy from main branch
 - Current URL: stellarrclub.vercel.app
 - Devnet for all Solana transactions during hackathon
+
+## Design Context
+
+Full design context lives in `.impeccable.md` at the project root. Read that file before any design work. Summary:
+
+- **Primary user of every page: an Astroman telescope buyer asking "can I use my new scope tonight?"** Not a crypto degen, not a prediction-market trader. They spent $800 on a Dobsonian and want to aim it at something worthwhile.
+- **Brand personality: patient / precise / earned.** Opposite of hype. Every number is measured by a real instrument. No countdown timers, no "trending" theater, no gambling-skin patterns.
+- **Reference: nasa.gov.** Anti-reference: Kalshi / Polymarket / generic shadcn dashboards.
+- **Theme: dark, but not pure black.** Tinted near-black around `oklch(0.15 0.015 260)` — a night-sky color, not VSCode's. Light theme shipped for daytime planning.
+- **Font stack:** `Source Serif 4` display (headings/verdict only) + `Public Sans` body + `JetBrains Mono` numbers + `Noto Sans Georgian` for KA. **Do NOT** use Cormorant Garamond, Inter, Fraunces, Space Grotesk, or any font on Impeccable's reflex-reject list.
+- **Banned patterns:** glass-card-in-glass-card nesting, violet/indigo glow shadows, gradient text (`background-clip: text`), `border-left: 3px solid ...` accent stripes, microcopy below 12px, identical card grids repeated.
+- **Design principles:**
+  1. Verdict first, detail on demand
+  2. Numbers earn their position (no decorative stats)
+  3. No glass, no glow, no gradients
+  4. Photograph where you can, illustrate where you must
+  5. Mono for data, sans for voice, serif only for the verdict

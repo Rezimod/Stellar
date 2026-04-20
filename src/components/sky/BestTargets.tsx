@@ -44,14 +44,9 @@ export default function BestTargets() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <h2 className="text-lg text-white" style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}>
-          Best targets tonight
-        </h2>
-        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          {isDefault ? 'Showing Tbilisi — change location above' : 'Based on your location and current sky conditions'}
-        </p>
-      </div>
+      <p className="text-[13px] -mt-2 mb-1 max-w-[60ch]" style={{ color: 'oklch(0.94 0.015 80 / 0.55)' }}>
+        {isDefault ? 'Showing Tbilisi — change location above' : 'Based on your location and current sky conditions'}
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {targets.map(target => {

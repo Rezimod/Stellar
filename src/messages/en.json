@@ -62,7 +62,8 @@
     "sunRises": "Rises",
     "sunSets": "Sets",
     "moonPhase": "Moon Phase",
-    "planetHint": "Tap any planet for rise / transit / set details"
+    "planetHint": "Tap any planet for rise / transit / set details",
+    "next7": "Next 7 nights"
   },
   "planets": {
     "moon": "Moon",

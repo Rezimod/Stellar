@@ -2,11 +2,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Cloud, Wind, Eye, Droplets, Clock, Circle } from 'lucide-react';
 import { SkyDay, SkyHour } from '@/lib/sky-data';
 import type { PlanetInfo } from "@/lib/planets";
 import { useLocation } from '@/lib/location';
-import ScoreRing from '@/components/ui/ScoreRing';
 import type { SkyScoreResult } from '@/lib/sky-score';
 import { LOCATIONS } from '@/lib/darksky-locations';
 import LocationPicker from '@/components/LocationPicker';
@@ -15,7 +13,7 @@ import LocationPicker from '@/components/LocationPicker';
 
 function MoonPhaseSVG({ phaseDeg, size = 56 }: { phaseDeg: number; size?: number }) {
   const r = size / 2;
-  const R = r - 2;
+  const R = r - 1;
   const id = `mp-${size}-${Math.round(phaseDeg)}`;
 
   const illum = (1 - Math.cos(phaseDeg * Math.PI / 180)) / 2;
@@ -25,7 +23,7 @@ function MoonPhaseSVG({ phaseDeg, size = 56 }: { phaseDeg: number; size?: number
   if (illum < 0.01) {
     return (
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
-        <circle cx={r} cy={r} r={R} fill="#0a1525" stroke="rgba(255,255,255,0.12)" strokeWidth="0.75" />
+        <circle cx={r} cy={r} r={R} fill="oklch(0.18 0.012 260)" stroke="oklch(0.94 0.015 80 / 0.18)" strokeWidth="0.75" />
       </svg>
     );
   }
@@ -35,18 +33,17 @@ function MoonPhaseSVG({ phaseDeg, size = 56 }: { phaseDeg: number; size?: number
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
         <defs>
           <radialGradient id={`full-${id}`} cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="rgba(255,252,230,0.98)" />
-            <stop offset="100%" stopColor="rgba(220,210,170,0.85)" />
+            <stop offset="0%" stopColor="oklch(0.96 0.04 85)" />
+            <stop offset="100%" stopColor="oklch(0.84 0.05 80)" />
           </radialGradient>
         </defs>
         <circle cx={r} cy={r} r={R} fill={`url(#full-${id})`} />
-        <circle cx={r} cy={r} r={R} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.75" />
       </svg>
     );
   }
 
-  const litFill = 'rgba(240,235,200,0.88)';
-  const darkFill = '#0a1525';
+  const litFill = 'oklch(0.92 0.04 85)';
+  const darkFill = 'oklch(0.18 0.012 260)';
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
@@ -71,7 +68,7 @@ function MoonPhaseSVG({ phaseDeg, size = 56 }: { phaseDeg: number; size?: number
           </>
         )}
       </g>
-      <circle cx={r} cy={r} r={R} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="0.75" />
+      <circle cx={r} cy={r} r={R} fill="none" stroke="oklch(0.94 0.015 80 / 0.18)" strokeWidth="0.75" />
     </svg>
   );
 }
@@ -129,142 +126,122 @@ function phaseName(phaseDeg: number, locale: string): string {
   return names.new;
 }
 
-function visibilityLabel(km: number): string {
-  if (km >= 20) return 'Excellent';
-  if (km >= 10) return 'Good';
-  if (km >= 5)  return 'Fair';
-  return 'Poor';
-}
-
-// ── Observing Window Bar ──────────────────────────────────────────────────────
+// ── Observing window timeline bar (compact, dusk → dawn) ──────────────────────
 
 function ObservingWindowBar({
-  hours,
-  sunSet,
-  sunRise,
+  hours, sunSet, sunRise,
 }: {
-  hours: SkyDay['hours'];
-  sunSet: string | null;
-  sunRise: string | null;
+  hours: SkyDay['hours']; sunSet: string | null; sunRise: string | null;
 }) {
   const START_H = 18;
   const TOTAL_H = 12;
 
-  function toPercent(isoOrHHMM: string | null): number | null {
-    if (!isoOrHHMM) return null;
-    let h: number, m: number;
-    if (isoOrHHMM.includes('T')) {
-      const d = new Date(isoOrHHMM);
-      h = d.getHours();
-      m = d.getMinutes();
-    } else {
-      [h, m] = isoOrHHMM.split(':').map(Number);
-    }
-    const hourOffset = ((h - START_H + 24) % 24);
-    const minuteDecimal = m / 60;
-    return Math.max(0, Math.min(100, ((hourOffset + minuteDecimal) / TOTAL_H) * 100));
+  function toPercent(iso: string | null): number | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    const hourOffset = ((d.getHours() - START_H + 24) % 24);
+    return Math.max(0, Math.min(100, ((hourOffset + d.getMinutes() / 60) / TOTAL_H) * 100));
   }
 
-  const setPercent  = toPercent(sunSet);
-  const risePercent = toPercent(sunRise);
-  const riseAdjusted = risePercent !== null && risePercent < 50
-    ? risePercent + ((6 / TOTAL_H) * 100)
-    : risePercent;
+  const setPct  = toPercent(sunSet);
+  const risePct = toPercent(sunRise);
+  const riseAdjusted = risePct !== null && risePct < 50
+    ? risePct + ((6 / TOTAL_H) * 100)
+    : risePct;
 
   const windowHours = hours.filter(h => {
     const hr = parseInt(h.time.slice(11, 13));
     return hr >= 18 || hr <= 6;
   });
 
-  const segments = windowHours.map((h, i) => {
-    const cover = h.cloudCover;
-    const pct = 100 / TOTAL_H;
-    const alpha = cover < 30 ? 0.05 : cover < 60 ? 0.25 : 0.5;
-    const color = cover < 30 ? '#34D399' : cover < 60 ? '#F59E0B' : '#EF4444';
-    return (
-      <div key={i} style={{
-        position: 'absolute', left: `${i * pct}%`, width: `${pct}%`,
-        top: 0, bottom: 0, background: color, opacity: alpha,
-      }} />
-    );
-  });
-
-  function formatSunTime(iso: string | null): string {
+  function fmt(iso: string | null): string {
     if (!iso) return '';
     const d = new Date(iso);
-    return d.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <p className="text-[9px] uppercase tracking-wider font-medium" style={{ color: 'var(--color-text-muted)' }}>
-        Observing Window
-      </p>
-      <div className="relative h-4 rounded-md overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        {segments}
-        {setPercent !== null && (
-          <div style={{ position: 'absolute', left: `${setPercent}%`, top: 0, bottom: 0, width: 1.5, background: 'rgba(245,158,11,0.7)' }} />
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[11px] uppercase tracking-[0.14em] font-medium" style={{ color: 'oklch(0.94 0.015 80 / 0.45)' }}>
+          Observing window — dusk to dawn
+        </span>
+      </div>
+      <div className="relative h-2 overflow-hidden" style={{ background: 'oklch(0.94 0.015 80 / 0.04)' }}>
+        {windowHours.map((h, i) => {
+          const cover = h.cloudCover;
+          const pct = 100 / TOTAL_H;
+          const opacity = cover < 30 ? 0.85 : cover < 60 ? 0.5 : 0.25;
+          const color = cover < 30 ? 'oklch(0.78 0.15 160)' : cover < 60 ? 'oklch(0.78 0.15 75)' : 'oklch(0.62 0.18 28)';
+          return (
+            <div key={i} style={{
+              position: 'absolute', left: `${i * pct}%`, width: `${pct}%`,
+              top: 0, bottom: 0, background: color, opacity,
+            }} />
+          );
+        })}
+        {setPct !== null && (
+          <div style={{ position: 'absolute', left: `${setPct}%`, top: -2, bottom: -2, width: 1, background: 'oklch(0.78 0.15 75)' }} />
         )}
-        {riseAdjusted !== null && riseAdjusted < 98 && (
-          <div style={{ position: 'absolute', left: `${riseAdjusted}%`, top: 0, bottom: 0, width: 1.5, background: 'rgba(245,158,11,0.7)' }} />
+        {riseAdjusted !== null && riseAdjusted < 99 && (
+          <div style={{ position: 'absolute', left: `${riseAdjusted}%`, top: -2, bottom: -2, width: 1, background: 'oklch(0.78 0.15 75)' }} />
         )}
       </div>
-      <div className="flex justify-between text-[9px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
-        <span style={{ color: 'rgba(245,158,11,0.6)' }}>{sunSet ? formatSunTime(sunSet) : '18:00'}</span>
-        <span style={{ opacity: 0.4 }}>00:00</span>
-        <span style={{ color: 'rgba(245,158,11,0.6)' }}>{sunRise ? formatSunTime(sunRise) : '06:00'}</span>
-      </div>
-      <div className="flex items-center gap-2.5">
-        {[
-          { color: '#34D399', label: 'Clear' },
-          { color: '#F59E0B', label: 'Partial' },
-          { color: '#EF4444', label: 'Overcast' },
-        ].map(item => (
-          <div key={item.label} className="flex items-center gap-1">
-            <div style={{ width: 5, height: 5, borderRadius: 1.5, background: item.color, opacity: 0.7, flexShrink: 0 }} />
-            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.22)' }}>{item.label}</span>
-          </div>
-        ))}
+      <div
+        className="flex justify-between text-[11px] tabular-nums"
+        style={{ color: 'oklch(0.94 0.015 80 / 0.45)', fontFamily: 'var(--font-mono)' }}
+      >
+        <span>{sunSet ? fmt(sunSet) : '18:00'} sunset</span>
+        <span style={{ opacity: 0.5 }}>00:00</span>
+        <span>{sunRise ? fmt(sunRise) : '06:00'} sunrise</span>
       </div>
     </div>
   );
 }
 
-// ── Card data types ───────────────────────────────────────────────────────────
+// ── Data shape ────────────────────────────────────────────────────────────────
 
 interface SunMoonData {
-  sunRise: string | null;
-  sunSet: string | null;
-  illuminationPct: number;
-  moonPhaseDeg: number;
+  sunRise: string | null; sunSet: string | null;
+  illuminationPct: number; moonPhaseDeg: number;
 }
 
 interface CardData {
   state: 'go' | 'maybe' | 'skip';
-  cloudCover: number;
-  humidity: number;
-  temp: number;
-  wind: number;
-  window: string;
-  nextClear: string;
-  planets: PlanetInfo[];
-  today: SkyDay;
-  skyScore: SkyScoreResult | null;
+  cloudCover: number; humidity: number; temp: number; wind: number;
+  window: string; nextClear: string;
+  planets: PlanetInfo[]; today: SkyDay; skyScore: SkyScoreResult | null;
 }
 
-function gradeColor(grade: string): string {
-  if (grade === 'Exceptional' || grade === 'Excellent') return '#34d399';
-  if (grade === 'Good') return '#FFD166';
-  if (grade === 'Fair') return '#F59E0B';
-  return '#EF4444';
+// ── Verdict + score color (functional, not decorative) ────────────────────────
+
+const verdictColor = {
+  go:    'oklch(0.78 0.15 160)',
+  maybe: 'oklch(0.78 0.15 75)',
+  skip:  'oklch(0.62 0.18 28)',
+} as const;
+
+const verdictLabel = {
+  go:    'CLEAR',
+  maybe: 'PARTIAL',
+  skip:  'OVERCAST',
+} as const;
+
+const verdictTagline = {
+  go:    'Go observe.',
+  maybe: 'Pick your moment.',
+  skip:  'Stay in tonight.',
+} as const;
+
+function scoreCaption(grade: string): string {
+  if (grade === 'Exceptional') return 'Exceptional — best in months.';
+  if (grade === 'Excellent')   return 'Excellent — deep-sky targets accessible.';
+  if (grade === 'Good')        return 'Good — planets and bright clusters.';
+  if (grade === 'Fair')        return 'Fair — moon and bright planets only.';
+  return 'Poor — atmosphere working against you.';
 }
 
-function scoreSummary(grade: string): string {
-  if (grade === 'Exceptional' || grade === 'Excellent') return 'Perfect for astronomy';
-  if (grade === 'Good') return 'Good for planets';
-  if (grade === 'Fair') return 'Moon & planets only';
-  return 'Check back tomorrow';
-}
+// ── Bortle estimate ───────────────────────────────────────────────────────────
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -277,69 +254,22 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 
 function estimateBortle(lat: number, lon: number): number {
   let minDist = Infinity;
-  let nearestBortle = 5;
+  let nearest = 5;
   for (const loc of LOCATIONS) {
     const d = haversineKm(lat, lon, loc.lat, loc.lon);
-    if (d < minDist) { minDist = d; nearestBortle = loc.bortle; }
+    if (d < minDist) { minDist = d; nearest = loc.bortle; }
   }
-  return minDist <= 50 ? nearestBortle : 5;
-}
-
-function bortleColor(b: number): string {
-  if (b <= 2) return '#34d399';
-  if (b <= 4) return '#FFD166';
-  if (b <= 6) return '#f97316';
-  return '#ef4444';
+  return minDist <= 50 ? nearest : 5;
 }
 
 function bortleLabel(b: number): string {
-  if (b <= 2) return 'Pristine dark sky';
-  if (b <= 4) return 'Rural sky';
-  if (b <= 6) return 'Suburban sky';
-  return 'City sky';
+  if (b <= 2) return 'Pristine';
+  if (b <= 4) return 'Rural';
+  if (b <= 6) return 'Suburban';
+  return 'City';
 }
 
-// ── Border / badge config ─────────────────────────────────────────────────────
-
-const cardBorder = {
-  go:    { border: '1px solid rgba(52,211,153,0.3)',  boxShadow: '0 0 30px rgba(52,211,153,0.06)' },
-  maybe: { border: '1px solid rgba(245,158,11,0.25)', boxShadow: '0 0 20px rgba(245,158,11,0.04)' },
-  skip:  { border: '1px solid rgba(255,255,255,0.08)' },
-};
-
-const badgeStyle = {
-  go:    { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.35)', color: '#34D399', label: 'Clear Sky' },
-  maybe: { bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.30)', color: '#F59E0B', label: 'Partly Cloudy' },
-  skip:  { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.2)',   color: '#EF4444', label: 'Overcast' },
-};
-
-// ── Stat cell ─────────────────────────────────────────────────────────────────
-
-function StatCell({ icon: Icon, label, value, color }: {
-  icon: React.ElementType; label: string; value: string; color: string;
-}) {
-  return (
-    <div
-      className="flex items-center gap-2 rounded-xl px-2.5 py-2"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-    >
-      <div
-        className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ background: 'rgba(255,255,255,0.05)' }}
-      >
-        <Icon size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-muted)' }} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[9px] uppercase tracking-wide leading-none mb-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          {label}
-        </p>
-        <p className="text-[13px] font-bold font-mono leading-none" style={{ color }}>{value}</p>
-      </div>
-    </div>
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main hero ─────────────────────────────────────────────────────────────────
 
 export default function TonightHighlights() {
   const t = useTranslations('sky');
@@ -367,8 +297,8 @@ export default function TonightHighlights() {
 
       let skyScore: SkyScoreResult | null = null;
       if (scoreRes.ok) {
-        const scoreData = await scoreRes.json() as SkyScoreResult;
-        if (typeof scoreData.score === 'number') skyScore = scoreData;
+        const data = await scoreRes.json() as SkyScoreResult;
+        if (typeof data.score === 'number') skyScore = data;
       }
 
       const today = days[0];
@@ -382,7 +312,7 @@ export default function TonightHighlights() {
         wind: Math.round(best.wind),
         window,
         nextClear: nextClearDate(days, locale),
-        planets: planets.filter(p => p.visible).sort((a, b) => b.altitude - a.altitude).slice(0, 3),
+        planets: planets.filter(p => p.visible).sort((a, b) => b.altitude - a.altitude).slice(0, 4),
         skyScore,
       });
       setMoonData(moon);
@@ -393,17 +323,14 @@ export default function TonightHighlights() {
     }
   }, [locale]);
 
-  useEffect(() => {
-    if (ready) compute(lat, lng);
-  }, [ready, lat, lng, compute]);
+  useEffect(() => { if (ready) compute(lat, lng); }, [ready, lat, lng, compute]);
 
   if (!ready || loading) {
     return (
-      <div className="glass-card p-4 h-[200px] flex items-center justify-center gap-2"
-        style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="w-4 h-4 rounded-full border-2 border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
-        <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          {!ready ? 'Detecting your location…' : 'Loading sky data…'}
+      <div className="py-12 flex items-center gap-3">
+        <div className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" style={{ color: 'oklch(0.78 0.15 160)' }} />
+        <span className="text-sm" style={{ color: 'oklch(0.94 0.015 80 / 0.55)' }}>
+          {!ready ? 'Detecting your location…' : 'Reading the sky…'}
         </span>
       </div>
     );
@@ -411,13 +338,16 @@ export default function TonightHighlights() {
 
   if (error || !card) {
     return (
-      <div className="glass-card p-4 flex flex-col items-center gap-3 text-center"
-        style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{t('forecastError')}</p>
+      <div className="py-12 flex flex-col gap-3 max-w-md">
+        <p className="text-sm" style={{ color: 'oklch(0.94 0.015 80 / 0.7)' }}>{t('forecastError')}</p>
         <button
           onClick={() => { setError(false); setLoading(true); compute(lat, lng); }}
-          className="px-4 py-2 rounded-lg text-sm transition-colors"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
+          className="self-start px-4 py-2 text-sm transition-colors"
+          style={{
+            background: 'transparent',
+            border: '1px solid oklch(0.94 0.015 80 / 0.2)',
+            color: 'oklch(0.94 0.015 80 / 0.85)',
+          }}
         >
           {t('retry')}
         </button>
@@ -426,172 +356,197 @@ export default function TonightHighlights() {
   }
 
   const { state, cloudCover, humidity, wind, window: obsWindow, nextClear, planets, today, skyScore } = card;
-  const badge = badgeStyle[state];
-  const visKm = Math.round(card.today.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b).visibility / 1000);
+  const visKm = Math.round(today.hours.reduce((a, b) => a.cloudCover <= b.cloudCover ? a : b).visibility / 1000);
   const bortle = estimateBortle(lat, lng);
 
-  const stats = [
-    { icon: Cloud,    label: 'Cloud Cover', value: `${cloudCover}%`, color: cloudCover < 30 ? '#34D399' : cloudCover < 60 ? '#F59E0B' : '#EF4444' },
-    { icon: Eye,      label: 'Visibility',  value: visibilityLabel(visKm), color: visKm >= 10 ? '#34D399' : visKm >= 5 ? '#F59E0B' : '#EF4444' },
-    { icon: Droplets, label: 'Humidity',    value: `${humidity}%`,   color: (humidity ?? 50) < 70 ? 'var(--color-text-primary)' : '#F59E0B' },
-    { icon: Wind,     label: 'Wind',        value: `${wind} km/h`,   color: (wind ?? 0) < 30 ? 'var(--color-text-primary)' : '#F59E0B' },
-  ];
+  const today_date = new Date();
+  const dateLabel = today_date.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' });
+
+  // Inline sentence summary for the dusk go/no-go reader
+  const summary = state === 'go'
+    ? `Cloud ${cloudCover}% · seeing ${visKm >= 10 ? 'good' : 'fair'} · waning into clear evening${moonData ? ` · ${phaseName(moonData.moonPhaseDeg, locale).toLowerCase()} ${moonData.illuminationPct}%` : ''}.`
+    : state === 'maybe'
+    ? `Cloud ${cloudCover}% · gaps in the cover · best window narrow${nextClear ? ` · next clear night ${nextClear}` : ''}.`
+    : `Cloud ${cloudCover}% · solid overcast${nextClear ? ` · next clear night ${nextClear}` : ''}.`;
 
   return (
-    <div className="glass-card p-4" style={cardBorder[state]}>
-
-      {/* ── Header ────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        {/* Left: label + location picker */}
-        <div className="flex flex-col gap-1.5 min-w-0">
-          <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--color-text-muted)' }}>
-            {t('tonightHighlight')}
-          </span>
-          <LocationPicker compact />
+    <section className="flex flex-col gap-8 pt-2">
+      {/* ── Page slug: date / location / coords ─────────────────── */}
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+        <div className="text-[11px] uppercase tracking-[0.18em] font-semibold" style={{ color: 'oklch(0.94 0.015 80 / 0.6)' }}>
+          {dateLabel}
         </div>
+        <LocationPicker compact />
+        <div className="text-[11px] tabular-nums" style={{ color: 'oklch(0.94 0.015 80 / 0.45)', fontFamily: 'var(--font-mono)' }}>
+          {lat.toFixed(2)}°{lat >= 0 ? 'N' : 'S'} {Math.abs(lng).toFixed(2)}°{lng >= 0 ? 'E' : 'W'}
+        </div>
+        <div className="text-[11px] tabular-nums" style={{ color: 'oklch(0.94 0.015 80 / 0.45)', fontFamily: 'var(--font-mono)' }}>
+          Bortle {bortle} · {bortleLabel(bortle)}
+        </div>
+      </div>
 
-        {/* Right: condition badge + share */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-            style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+      {/* ── Verdict block ────────────────────────────────────────── */}
+      <div className="grid grid-cols-12 gap-6 items-start">
+        {/* Verdict + tagline + summary */}
+        <div className="col-span-12 md:col-span-8 flex flex-col gap-4">
+          <div className="flex items-baseline gap-4 flex-wrap">
+            <h1
+              className="leading-none tracking-tight"
               style={{
-                background: badge.color,
-                animation: state === 'go' ? 'breathe 2s ease-in-out infinite' : undefined,
-                boxShadow: state === 'go' ? `0 0 6px ${badge.color}` : undefined,
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 500,
+                fontSize: 'clamp(56px, 9vw, 96px)',
+                color: verdictColor[state],
               }}
-            />
-            {badge.label}
-          </span>
-          <button
-            onClick={() => {
-              const visibleCount = card.planets.length;
-              const text = `Tonight's sky: Score ${skyScore?.score ?? '?'}/100 (${skyScore?.grade ?? 'checking'}) · ${visibleCount} planet${visibleCount !== 1 ? 's' : ''} visible · Cloud cover ${cloudCover}%\n\nCheck yours: stellarrclub.vercel.app/sky\n\n@StellarClub26 #Astronomy`;
-              window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-            }}
-            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-white/5"
-            style={{ color: 'var(--color-text-muted)' }}
-            title="Share tonight's sky"
+            >
+              {verdictLabel[state]}
+            </h1>
+            <span
+              className="text-base sm:text-lg font-medium"
+              style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}
+            >
+              {verdictTagline[state]}
+            </span>
+          </div>
+
+          {state !== 'skip' && obsWindow && (
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <span className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'oklch(0.94 0.015 80 / 0.55)' }}>
+                Best window
+              </span>
+              <span
+                className="tabular-nums"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 'clamp(24px, 3.4vw, 32px)',
+                  fontWeight: 500,
+                  color: 'oklch(0.94 0.015 80 / 0.92)',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                {obsWindow}
+              </span>
+            </div>
+          )}
+
+          <p
+            className="text-[15px] leading-relaxed max-w-[60ch]"
+            style={{ color: 'oklch(0.94 0.015 80 / 0.7)' }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-              <polyline points="16 6 12 2 8 6"/>
-              <line x1="12" y1="2" x2="12" y2="15"/>
-            </svg>
-          </button>
+            {summary}
+          </p>
         </div>
-      </div>
 
-      {/* ── Row 1: Score ring + Weather stats ─────────── */}
-      <div
-        className="flex gap-3 pb-3 mb-3"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        {/* Score ring */}
-        <div
-          className="flex flex-col items-center gap-1 flex-shrink-0"
-          style={{ width: 88 }}
-        >
-          {skyScore ? (
-            <>
-              <div style={{ boxShadow: `0 0 20px ${gradeColor(skyScore.grade)}22` }}>
-                <ScoreRing size={68} value={skyScore.score} color="gradient" sublabel={skyScore.grade} />
+        {/* Score number — right aligned, large */}
+        <div className="col-span-12 md:col-span-4 flex md:justify-end">
+          {skyScore && (
+            <div className="flex flex-col md:items-end gap-1">
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="tabular-nums leading-none"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 'clamp(64px, 8vw, 88px)',
+                    fontWeight: 500,
+                    color: 'oklch(0.94 0.015 80 / 0.95)',
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  {skyScore.score}
+                </span>
+                <span
+                  className="text-base tabular-nums"
+                  style={{ fontFamily: 'var(--font-mono)', color: 'oklch(0.94 0.015 80 / 0.4)' }}
+                >
+                  /100
+                </span>
               </div>
-              <p className="text-[11px] font-bold text-center" style={{ color: gradeColor(skyScore.grade) }}>
-                {skyScore.grade}
+              <div className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'oklch(0.94 0.015 80 / 0.55)' }}>
+                Sky score · {skyScore.grade}
+              </div>
+              <p className="text-[12px] mt-1 max-w-[28ch] md:text-right" style={{ color: 'oklch(0.94 0.015 80 / 0.45)' }}>
+                {scoreCaption(skyScore.grade)}
               </p>
-              <p className="text-[9px] text-center leading-snug" style={{ color: 'var(--color-text-muted)' }}>
-                {scoreSummary(skyScore.grade)}
-              </p>
-            </>
-          ) : (
-            <div className="w-[68px] h-[68px] rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
+            </div>
           )}
-        </div>
-
-        {/* Stats 2×2 */}
-        <div className="grid grid-cols-2 gap-1.5 flex-1">
-          {stats.map(s => (
-            <StatCell key={s.label} icon={s.icon} label={s.label} value={s.value} color={s.color} />
-          ))}
         </div>
       </div>
 
-      {/* ── Row 2: Moon + Observing window ────────────── */}
-      <div
-        className="flex gap-3 pb-3 mb-3"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        {/* Moon */}
-        <div
-          className="flex flex-col items-center gap-1 flex-shrink-0"
-          style={{ width: 88 }}
-        >
-          {moonData ? (
-            <>
-              <MoonPhaseSVG phaseDeg={moonData.moonPhaseDeg} size={44} />
-              <p className="text-[11px] font-semibold text-center leading-tight text-white">
-                {phaseName(moonData.moonPhaseDeg, locale)}
-              </p>
-              <p className="text-[9px] text-center" style={{ color: 'var(--color-text-muted)' }}>
-                {moonData.illuminationPct}% illuminated
-              </p>
-            </>
-          ) : (
-            <div className="w-11 h-11 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
-          )}
-        </div>
+      {/* ── Hairline rule ────────────────────────────────────────── */}
+      <div style={{ height: 1, background: 'oklch(0.94 0.015 80 / 0.10)' }} />
 
-        {/* Observing window + best hours + planets */}
-        <div className="flex-1 flex flex-col gap-2">
+      {/* ── Below-the-fold detail row: window timeline + moon + planets ── */}
+      <div className="grid grid-cols-12 gap-x-8 gap-y-6">
+        {/* Window timeline — spans 7 cols on desktop */}
+        <div className="col-span-12 md:col-span-7">
           <ObservingWindowBar
             hours={today.hours}
             sunSet={moonData?.sunSet ?? null}
             sunRise={moonData?.sunRise ?? null}
           />
+        </div>
 
-          {state !== 'skip' && obsWindow ? (
-            <div className="flex items-center gap-1.5">
-              <Clock size={10} strokeWidth={1.5} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-              <span className="text-[9px] uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Best</span>
-              <span className="text-[11px] font-mono font-bold" style={{ color: 'var(--color-nebula-teal)' }}>
-                {obsWindow}
-              </span>
-            </div>
-          ) : state === 'skip' && nextClear ? (
-            <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-              Next clear: {nextClear}
-            </p>
-          ) : null}
-
-          {planets.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {planets.map(p => (
-                <span
-                  key={p.key}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium"
-                  style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)', color: '#34D399' }}
-                >
-                  <Circle size={4} fill="#34D399" strokeWidth={0} />
-                  {p.key.charAt(0).toUpperCase() + p.key.slice(1)} {p.altitude}°
+        {/* Moon block — spans 2 cols */}
+        <div className="col-span-6 md:col-span-2 flex flex-col gap-2">
+          <span className="text-[11px] uppercase tracking-[0.14em]" style={{ color: 'oklch(0.94 0.015 80 / 0.45)' }}>
+            Moon
+          </span>
+          {moonData ? (
+            <div className="flex items-center gap-3">
+              <MoonPhaseSVG phaseDeg={moonData.moonPhaseDeg} size={36} />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium" style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}>
+                  {phaseName(moonData.moonPhaseDeg, locale)}
                 </span>
-              ))}
+                <span className="text-[11px] tabular-nums" style={{ color: 'oklch(0.94 0.015 80 / 0.5)', fontFamily: 'var(--font-mono)' }}>
+                  {moonData.illuminationPct}% illuminated
+                </span>
+              </div>
             </div>
+          ) : (
+            <div className="h-9 w-9 rounded-full" style={{ background: 'oklch(0.94 0.015 80 / 0.05)' }} />
           )}
+        </div>
+
+        {/* Atmosphere stats — spans 3 cols, inline rows */}
+        <div className="col-span-6 md:col-span-3 flex flex-col gap-1">
+          <span className="text-[11px] uppercase tracking-[0.14em]" style={{ color: 'oklch(0.94 0.015 80 / 0.45)' }}>
+            Atmosphere
+          </span>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[12px] tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
+            <dt style={{ color: 'oklch(0.94 0.015 80 / 0.5)' }}>Cloud</dt>
+            <dd className="text-right" style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}>{cloudCover}%</dd>
+            <dt style={{ color: 'oklch(0.94 0.015 80 / 0.5)' }}>Humidity</dt>
+            <dd className="text-right" style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}>{humidity}%</dd>
+            <dt style={{ color: 'oklch(0.94 0.015 80 / 0.5)' }}>Wind</dt>
+            <dd className="text-right" style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}>{wind} km/h</dd>
+            <dt style={{ color: 'oklch(0.94 0.015 80 / 0.5)' }}>Visibility</dt>
+            <dd className="text-right" style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}>{visKm} km</dd>
+          </dl>
         </div>
       </div>
 
-      {/* ── Footer: Bortle ────────────────────────────── */}
-      <div className="flex items-center gap-1.5">
-        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: bortleColor(bortle) }} />
-        <span className="text-[9px]" style={{ color: 'var(--color-text-muted)' }}>
-          Bortle {bortle} · {bortleLabel(bortle)}
-        </span>
-      </div>
-
-    </div>
+      {/* ── Planet rail ─────────────────────────────────────────── */}
+      {planets.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] uppercase tracking-[0.14em]" style={{ color: 'oklch(0.94 0.015 80 / 0.45)' }}>
+            Planets up now
+          </span>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {planets.map(p => (
+              <div key={p.key} className="flex items-baseline gap-2">
+                <span className="text-[14px] font-medium" style={{ color: 'oklch(0.94 0.015 80 / 0.92)' }}>
+                  {p.key.charAt(0).toUpperCase() + p.key.slice(1)}
+                </span>
+                <span className="text-[12px] tabular-nums" style={{ color: 'oklch(0.94 0.015 80 / 0.5)', fontFamily: 'var(--font-mono)' }}>
+                  {p.altitude}° alt
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

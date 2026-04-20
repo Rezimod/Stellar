@@ -72,12 +72,6 @@ export default function ForecastGrid() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2
-        className="text-lg text-white"
-        style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}
-      >
-        7-Day Forecast
-      </h2>
       {today && <ForecastCard day={today} isToday />}
 
       {/* 6 upcoming days — horizontal scroll on mobile, wrap on sm+ */}

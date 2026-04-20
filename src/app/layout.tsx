@@ -1,22 +1,22 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Cormorant_Garamond, Geist, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
+import { Source_Serif_4, Public_Sans, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
 import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
 import '../styles/animations.css';
 
-const cormorant = Cormorant_Garamond({
+const sourceSerif = Source_Serif_4({
   subsets: ['latin'],
   variable: '--font-serif',
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   style: ['normal', 'italic'],
   display: 'swap',
 });
-const geist = Geist({
+const publicSans = Public_Sans({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
 });
 const jetbrains = JetBrains_Mono({
@@ -92,7 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${cormorant.variable} ${geist.variable} ${jetbrains.variable} ${notoGeorgian.variable}`}>
+    <html lang={locale} className={`${sourceSerif.variable} ${publicSans.variable} ${jetbrains.variable} ${notoGeorgian.variable}`}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />
