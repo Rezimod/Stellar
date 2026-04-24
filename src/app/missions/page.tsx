@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, type ComponentType } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
@@ -13,100 +13,70 @@ import { MISSIONS } from '@/lib/constants';
 import { QUIZZES } from '@/lib/quizzes';
 import { PlanetViz } from '@/components/sky/PlanetViz';
 import QuizActive from '@/components/sky/QuizActive';
-import type { Mission } from '@/lib/types';
 import type { QuizDef } from '@/lib/quizzes';
-import SolarSystemIcon from '@/components/sky/quiz-icons/SolarSystemIcon';
-import ConstellationsIcon from '@/components/sky/quiz-icons/ConstellationsIcon';
-import TelescopeIconArt from '@/components/sky/quiz-icons/TelescopeIcon';
-import CosmologyIcon from '@/components/sky/quiz-icons/CosmologyIcon';
-import ExplorationIcon from '@/components/sky/quiz-icons/ExplorationIcon';
 
 type Theme = 'light' | 'dark';
 const THEME_KEY = 'stellar-missions-theme';
 
-// Missions that appear in the grid (tied to sky-map-locatable targets).
-const GRID_MISSION_IDS = ['moon', 'jupiter', 'saturn', 'pleiades', 'orion', 'andromeda'];
+type DiffClass = 'easy' | 'med' | 'hard' | 'expert';
 
-// All targets we render on the sky map (planets + deep sky).
-const SKY_PLANET_KEYS = ['moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn'];
-const SKY_DEEP_KEYS = ['pleiades', 'orion', 'andromeda', 'crab'];
-
-const TAGLINES: Record<string, string> = {
-  moon:      'Terminator cuts sharp craters',
-  jupiter:   'Four Galilean moons visible',
-  saturn:    'Rings at their widest tilt',
-  pleiades:  'Seven sisters, one glance',
-  orion:     'Stellar nursery, 1,344 ly out',
-  andromeda: 'Trillion suns, 2.5M ly away',
-  crab:      'Ghost of a 1054 AD supernova',
-  venus:     'Brightest object in the sky',
-  mars:      'Rust-red and unmistakable',
-  mercury:   'Low and fleeting — catch it fast',
-};
-
-const EQUIPMENT_LABEL: Record<string, string> = {
-  moon:      'Naked eye',
-  jupiter:   'Naked eye',
-  saturn:    'Telescope',
-  pleiades:  'Naked eye',
-  orion:     'Telescope',
-  andromeda: 'Binoculars',
-  crab:      'Telescope',
-};
-
-type Difficulty = 'easy' | 'med' | 'hard';
-
-function diffClass(d: Mission['difficulty']): Difficulty {
-  if (d === 'Beginner') return 'easy';
-  if (d === 'Intermediate') return 'med';
-  return 'hard';
+interface GridEntry {
+  id: string;
+  name: string;
+  desc: string;
+  stars: number;
+  diff: DiffClass;
+  diffLabel: string;
+  equip: string;
+  routeId: string; // which mission id to open on click
 }
 
-function diffLabel(d: Mission['difficulty']): string {
-  if (d === 'Beginner') return 'Easy';
-  if (d === 'Intermediate') return 'Medium';
-  return 'Hard';
-}
+// Exactly 9 tiles in display order. Entries map to MISSIONS where possible;
+// venus + mars are synthetic tiles that route to the free-observation fallback.
+const GRID: GridEntry[] = [
+  { id: 'moon',      name: 'The Moon',         desc: 'Craters, seas, and the terminator line',     stars: 50,  diff: 'easy',   diffLabel: 'Easy',   equip: 'Naked eye', routeId: 'moon' },
+  { id: 'jupiter',   name: 'Jupiter',          desc: 'Spot the four Galilean moons',                stars: 75,  diff: 'easy',   diffLabel: 'Easy',   equip: 'Telescope', routeId: 'jupiter' },
+  { id: 'pleiades',  name: 'Pleiades (M45)',   desc: 'Seven sisters — naked eye showpiece',         stars: 60,  diff: 'easy',   diffLabel: 'Easy',   equip: 'Naked eye', routeId: 'pleiades' },
+  { id: 'venus',     name: 'Venus',            desc: 'Brightest planet — the evening star',         stars: 40,  diff: 'easy',   diffLabel: 'Easy',   equip: 'Naked eye', routeId: 'free-observation' },
+  { id: 'saturn',    name: 'Saturn',           desc: 'The rings are unmistakable',                  stars: 100, diff: 'med',    diffLabel: 'Medium', equip: 'Telescope', routeId: 'saturn' },
+  { id: 'mars',      name: 'Mars',             desc: 'Look for the polar ice cap',                  stars: 85,  diff: 'med',    diffLabel: 'Medium', equip: 'Telescope', routeId: 'free-observation' },
+  { id: 'orion',     name: 'Orion Nebula (M42)', desc: 'A stellar nursery — glows in any scope',     stars: 100, diff: 'med',    diffLabel: 'Medium', equip: 'Telescope', routeId: 'orion' },
+  { id: 'andromeda', name: 'Andromeda (M31)',  desc: '2.5 million light-years — nearest spiral',    stars: 175, diff: 'hard',   diffLabel: 'Hard',   equip: 'Binoculars', routeId: 'andromeda' },
+  { id: 'crab',      name: 'Crab Nebula (M1)', desc: 'Supernova remnant from 1054 AD',              stars: 250, diff: 'expert', diffLabel: 'Expert', equip: 'Telescope', routeId: 'crab' },
+];
 
-function missionTheme(id: string): string {
-  if (GRID_MISSION_IDS.includes(id)) return id;
-  return 'moon';
-}
+// Things that appear on the sky map (planets + deep sky).
+const MAP_PLANET_KEYS = ['moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn'];
+const MAP_DEEP_KEYS = ['pleiades', 'orion', 'andromeda', 'crab'];
 
-function getPlanetSize(key: string): 'small' | 'medium' {
+function getMapSize(key: string): 'small' | 'medium' {
   if (key === 'jupiter' || key === 'saturn' || key === 'moon') return 'medium';
   return 'small';
 }
 
-function getCardPlanetSize(key: string): 'small' | 'medium' {
-  if (key === 'jupiter' || key === 'saturn') return 'medium';
-  return 'medium';
-}
-
 function planetMapPosition(altitude: number, azimuth: number): { x: number; y: number } {
-  // Azimuth: 0=N, 90=E, 180=S, 270=W. Map x: 0%=W edge, 50%=center/S, 100%=E edge.
-  // Invert so north is center-top, south is center-bottom via altitude mapping.
   const x = ((azimuth + 180) % 360) / 360 * 100;
-  const y = Math.max(0, 100 - (altitude / 90) * 78) + 6;
+  const y = Math.max(5, 100 - (altitude / 90) * 85);
   return {
     x: Math.max(6, Math.min(94, x)),
-    y: Math.max(8, Math.min(86, y)),
+    y: Math.max(8, Math.min(88, y)),
   };
 }
 
-interface QuizSpec {
-  Icon: ComponentType<{ size?: number }>;
+interface QuizUi {
+  key: 'solar-system' | 'constellations' | 'telescopes' | 'universe' | 'space-exploration';
+  Icon: () => React.ReactElement;
   reward: number;
   descEn: string;
   descKa: string;
 }
 
-const QUIZ_SPECS: Record<string, QuizSpec> = {
-  'solar-system':      { Icon: SolarSystemIcon,    reward: 100, descEn: '10 questions · planets, moons, orbits',      descKa: '10 კითხვა · პლანეტები, მთვარეები, ორბიტები' },
-  'constellations':    { Icon: ConstellationsIcon, reward: 100, descEn: '10 questions · stars, myths, sky patterns',    descKa: '10 კითხვა · ვარსკვლავები, მითები, ცის ფიგურები' },
-  'telescopes':        { Icon: TelescopeIconArt,   reward: 100, descEn: '10 questions · optics, mounts, magnification', descKa: '10 კითხვა · ოპტიკა, სადგარები, გადიდება' },
-  'universe':          { Icon: CosmologyIcon,      reward: 100, descEn: '10 questions · galaxies, cosmology, time',     descKa: '10 კითხვა · გალაქტიკები, კოსმოლოგია, დრო' },
-  'space-exploration': { Icon: ExplorationIcon,    reward: 100, descEn: '10 questions · missions, probes, astronauts',  descKa: '10 კითხვა · მისიები, ზონდები, ასტრონავტები' },
+const QUIZ_UI: Record<string, QuizUi> = {
+  'solar-system':      { key: 'solar-system',      Icon: SunIcon,       reward: 100, descEn: '10 questions · planets, moons, orbits',      descKa: '10 კითხვა · პლანეტები, მთვარეები, ორბიტები' },
+  'constellations':    { key: 'constellations',    Icon: StarIcon,      reward: 100, descEn: '10 questions · stars, myths, sky patterns',    descKa: '10 კითხვა · ვარსკვლავები, მითები, ცის ფიგურები' },
+  'telescopes':        { key: 'telescopes',        Icon: TelescopeIcon, reward: 100, descEn: '10 questions · optics, mounts, magnification', descKa: '10 კითხვა · ოპტიკა, სადგარები, გადიდება' },
+  'universe':          { key: 'universe',          Icon: DeepSkyIcon,   reward: 100, descEn: '10 questions · galaxies, cosmology, time',     descKa: '10 კითხვა · გალაქტიკები, კოსმოლოგია, დრო' },
+  'space-exploration': { key: 'space-exploration', Icon: RocketIcon,    reward: 100, descEn: '10 questions · missions, probes, astronauts',  descKa: '10 კითხვა · მისიები, ზონდები, ასტრონავტები' },
 };
 
 export default function MissionsPage() {
@@ -145,7 +115,6 @@ export default function MissionsPage() {
   const lon = location.lon ?? 44.8271;
   const cityLabel = location.city || 'Tbilisi';
 
-  // Compute altitudes/azimuths for all sky targets.
   const skyPositions = useMemo(() => {
     const out: Record<string, { altitude: number; azimuth: number }> = {};
     const planets = getVisiblePlanets(lat, lon, now);
@@ -159,45 +128,34 @@ export default function MissionsPage() {
     return out;
   }, [lat, lon, now]);
 
-  const gridMissions = useMemo(
-    () => GRID_MISSION_IDS
-      .map((id) => MISSIONS.find((m) => m.id === id))
-      .filter((m): m is Mission => !!m),
-    [],
-  );
-
   const completedIds = useMemo(
     () => new Set(state.completedMissions.filter((m) => m.status === 'completed').map((m) => m.id)),
     [state.completedMissions],
   );
 
+  const completedQuizIds = useMemo(
+    () => new Map((state.completedQuizzes ?? []).map((q) => [q.quizId, q] as const)),
+    [state.completedQuizzes],
+  );
+
   const visibleCount = useMemo(
-    () => gridMissions.filter((m) => (skyPositions[m.id]?.altitude ?? -90) > 0).length,
-    [gridMissions, skyPositions],
+    () => GRID.filter((g) => (skyPositions[g.id]?.altitude ?? -90) > 0).length,
+    [skyPositions],
   );
 
   const completedCount = useMemo(
-    () => gridMissions.filter((m) => completedIds.has(m.id)).length,
-    [gridMissions, completedIds],
+    () => GRID.filter((g) => completedIds.has(g.id)).length,
+    [completedIds],
   );
 
-  const primeMission = useMemo(() => {
-    const visible = gridMissions
-      .filter((m) => !completedIds.has(m.id) || m.repeatable)
-      .filter((m) => (skyPositions[m.id]?.altitude ?? -90) > 10);
+  const primeEntry = useMemo(() => {
+    const visible = GRID
+      .filter((g) => !completedIds.has(g.id))
+      .filter((g) => (skyPositions[g.id]?.altitude ?? -90) > 10);
     if (visible.length === 0) return null;
     visible.sort((a, b) => (skyPositions[b.id]?.altitude ?? -90) - (skyPositions[a.id]?.altitude ?? -90));
     return visible[0];
-  }, [gridMissions, completedIds, skyPositions]);
-
-  const sortedGrid = useMemo(() => {
-    const withPos = gridMissions.map((m) => ({
-      mission: m,
-      altitude: skyPositions[m.id]?.altitude ?? -90,
-    }));
-    withPos.sort((a, b) => b.altitude - a.altitude);
-    return withPos;
-  }, [gridMissions, skyPositions]);
+  }, [completedIds, skyPositions]);
 
   const totalStars = useMemo(() => {
     const missionStars = state.completedMissions
@@ -218,80 +176,71 @@ export default function MissionsPage() {
   const liveTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const dateLabel = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
-  const startMission = useCallback((m: Mission) => {
-    router.push(`/observe/${m.id}`);
+  const startMission = useCallback((routeId: string) => {
+    router.push(`/observe/${routeId}`);
   }, [router]);
 
-  const scrollToMission = useCallback((id: string) => {
-    const node = document.getElementById(`mis-card-${id}`);
-    if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, []);
-
-  // ---- Map planets (visible only) ----
   const mapPlanets = useMemo(() => {
-    const items: { id: string; key: string; x: number; y: number; missionId?: string }[] = [];
-    for (const key of SKY_PLANET_KEYS) {
+    const items: { id: string; key: string; x: number; y: number; routeId?: string }[] = [];
+    for (const key of MAP_PLANET_KEYS) {
       const pos = skyPositions[key];
       if (!pos || pos.altitude <= -5) continue;
       const map = planetMapPosition(pos.altitude, pos.azimuth);
-      const mission = MISSIONS.find((m) => m.id === key);
-      items.push({
-        id: key,
-        key,
-        x: map.x,
-        y: map.y,
-        missionId: mission?.id,
-      });
-    }
-    for (const id of SKY_DEEP_KEYS) {
-      const pos = skyPositions[id];
-      if (!pos || pos.altitude <= -5) continue;
-      const map = planetMapPosition(pos.altitude, pos.azimuth);
-      const mission = MISSIONS.find((m) => m.id === id);
-      items.push({
-        id,
-        key: id,
-        x: map.x,
-        y: map.y,
-        missionId: mission?.id,
-      });
+      const entry = GRID.find((g) => g.id === key);
+      items.push({ id: key, key, x: map.x, y: map.y, routeId: entry?.routeId });
     }
     return items;
   }, [skyPositions]);
 
-  // ---- Auth gate variant ----
+  const mapDso = useMemo(() => {
+    const items: { id: string; x: number; y: number; routeId?: string }[] = [];
+    for (const id of MAP_DEEP_KEYS) {
+      const pos = skyPositions[id];
+      if (!pos || pos.altitude <= -5) continue;
+      const map = planetMapPosition(pos.altitude, pos.azimuth);
+      const entry = GRID.find((g) => g.id === id);
+      items.push({ id, x: map.x, y: map.y, routeId: entry?.routeId });
+    }
+    return items;
+  }, [skyPositions]);
+
+  // ---- Auth gate ----
   if (!authenticated) {
     return (
       <div className={`missions-page ${theme === 'dark' ? 'dark' : ''}`}>
-        <div className="mis-stats-bar">
-          <div className="mis-stats-left">
-            <h1 className="mis-stats-title">{t('title')}</h1>
-            <span className="mis-stats-meta">Sign in to start observing</span>
-          </div>
-          <div className="mis-stats-right">
-            <button
-              type="button"
-              className="mis-theme-toggle"
-              onClick={toggleTheme}
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        <div className="mis-hero">
+          <div className="mis-hero-inner">
+            <div className="mis-stats-bar">
+              <div className="mis-stats-left">
+                <h1 className="mis-stats-title">{t('title')}</h1>
+                <span className="mis-stats-meta">Sign in to start observing</span>
+              </div>
+              <div className="mis-stats-right">
+                <button
+                  type="button"
+                  className="mis-theme-toggle"
+                  onClick={toggleTheme}
+                  aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                />
+              </div>
+            </div>
+            <SkyMap
+              mapPlanets={mapPlanets}
+              mapDso={mapDso}
+              liveTime={liveTime}
+              dateLabel={dateLabel}
+              cityLabel={cityLabel}
+              onPlanetClick={() => undefined}
             />
           </div>
         </div>
-
-        <SkyMap
-          mapPlanets={mapPlanets}
-          liveTime={liveTime}
-          dateLabel={dateLabel}
-          cityLabel={cityLabel}
-          onPlanetClick={() => undefined}
-        />
 
         <div className="mis-content">
           <section className="mis-section">
             <div className="mis-auth-card">
               <h2 className="mis-auth-title">Sign in to start observing</h2>
               <p className="mis-auth-body">
-                Complete sky missions to earn Stars and mint discovery NFTs on Solana.
+                Complete sky missions, earn Stars, and mint discovery NFTs on Solana.
               </p>
               <button type="button" className="mis-auth-btn" onClick={login}>
                 Sign in with email
@@ -308,97 +257,94 @@ export default function MissionsPage() {
     <div className={`missions-page ${theme === 'dark' ? 'dark' : ''}`}>
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
-      {/* Stats bar */}
-      <div className="mis-stats-bar">
-        <div className="mis-stats-left">
-          <h1 className="mis-stats-title">Missions</h1>
-          <span className="mis-stats-meta">
-            {completedCount}/{gridMissions.length} completed · {visibleCount} visible tonight
-          </span>
-        </div>
-        <div className="mis-stats-right">
-          <span className="mis-rank-pill">{rank.name}</span>
-          <span className="mis-stars-count">✦ {totalStars}</span>
-          <button
-            type="button"
-            className="mis-theme-toggle"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      {/* Cosmic hero — always dark, full-width */}
+      <div className="mis-hero">
+        <div className="mis-hero-inner">
+          <div className="mis-stats-bar">
+            <div className="mis-stats-left">
+              <h1 className="mis-stats-title">Missions</h1>
+              <span className="mis-stats-meta">
+                {completedCount}/{GRID.length} completed · {visibleCount} visible
+              </span>
+            </div>
+            <div className="mis-stats-right">
+              <span className="mis-rank-pill">{rank.name}</span>
+              <span className="mis-stars-count">{totalStars} ✦</span>
+              <button
+                type="button"
+                className="mis-theme-toggle"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              />
+            </div>
+          </div>
+
+          {primeEntry && (
+            <PrimeCard
+              entry={primeEntry}
+              altitude={skyPositions[primeEntry.id]?.altitude ?? null}
+              onStart={() => startMission(primeEntry.routeId)}
+            />
+          )}
+
+          <SkyMap
+            mapPlanets={mapPlanets}
+            mapDso={mapDso}
+            liveTime={liveTime}
+            dateLabel={dateLabel}
+            cityLabel={cityLabel}
+            onPlanetClick={(routeId) => { if (routeId) startMission(routeId); }}
           />
         </div>
       </div>
 
-      {/* Sky map — full-width, always dark */}
-      <SkyMap
-        mapPlanets={mapPlanets}
-        liveTime={liveTime}
-        dateLabel={dateLabel}
-        cityLabel={cityLabel}
-        onPlanetClick={(missionId) => missionId && scrollToMission(missionId)}
-      />
-
-      {/* Centered content */}
       <div className="mis-content">
-        {/* Prime target */}
-        {primeMission && (
-          <section className="mis-section">
-            <PrimeCard
-              mission={primeMission}
-              altitude={skyPositions[primeMission.id]?.altitude ?? null}
-              onStart={() => startMission(primeMission)}
-            />
-          </section>
-        )}
-
-        {/* Mission grid */}
         <section className="mis-section">
           <div className="mis-section-head">
             <h2 className="mis-section-title">Missions tonight</h2>
-            <span className="mis-section-meta">{visibleCount} visible</span>
+            <span className="mis-section-meta">{visibleCount} targets visible</span>
           </div>
-          <div className="mis-grid">
-            {sortedGrid.map(({ mission, altitude }) => (
-              <MissionCard
-                key={mission.id}
-                mission={mission}
-                above={altitude > 0}
-                onClick={() => startMission(mission)}
-              />
-            ))}
+          <div className="mis-deck">
+            {GRID.map((g) => {
+              const altitude = skyPositions[g.id]?.altitude ?? -90;
+              return (
+                <MissionTile
+                  key={g.id}
+                  entry={g}
+                  above={altitude > 0}
+                  onClick={() => startMission(g.routeId)}
+                />
+              );
+            })}
           </div>
         </section>
 
-        {/* Quizzes */}
         <section className="mis-section">
           <div className="mis-section-head">
             <h2 className="mis-section-title">Knowledge quizzes</h2>
-            <span className="mis-section-meta">Earn stars while you wait for clear skies</span>
+            <span className="mis-section-meta">{QUIZZES.length} quizzes · earn while you wait</span>
           </div>
-          <div className="mis-quiz-list">
+          <div className="mis-quiz-deck">
             {QUIZZES.map((quiz) => {
-              const spec = QUIZ_SPECS[quiz.id];
-              if (!spec) return null;
+              const ui = QUIZ_UI[quiz.id];
+              if (!ui) return null;
+              const result = completedQuizIds.get(quiz.id);
+              const score = result?.score ?? 0;
+              const total = quiz.questions.length;
               const title = quiz.title[locale] ?? quiz.title.en;
-              const desc = locale === 'ka' ? spec.descKa : spec.descEn;
+              const desc = locale === 'ka' ? ui.descKa : ui.descEn;
               return (
-                <button
-                  type="button"
+                <QuizTile
                   key={quiz.id}
-                  className="mis-quiz-row"
+                  variant={ui.key}
+                  Icon={ui.Icon}
+                  title={title}
+                  meta={desc}
+                  reward={ui.reward}
+                  score={score}
+                  total={total}
                   onClick={() => setActiveQuiz(quiz)}
-                >
-                  <span className="mis-quiz-icon">
-                    <spec.Icon size={16} />
-                  </span>
-                  <div className="mis-quiz-body">
-                    <div className="mis-quiz-name">{title}</div>
-                    <div className="mis-quiz-desc">{desc}</div>
-                  </div>
-                  <span className="mis-quiz-reward">+{spec.reward}</span>
-                  <span className="mis-quiz-play" aria-hidden>
-                    <PlayIcon />
-                  </span>
-                </button>
+                />
               );
             })}
           </div>
@@ -408,28 +354,36 @@ export default function MissionsPage() {
   );
 }
 
-// ---- Sky map component ----
+// ---- Sky map ----
 
 interface MapPlanet {
   id: string;
   key: string;
   x: number;
   y: number;
-  missionId?: string;
+  routeId?: string;
+}
+interface MapDso {
+  id: string;
+  x: number;
+  y: number;
+  routeId?: string;
 }
 
 function SkyMap({
   mapPlanets,
+  mapDso,
   liveTime,
   dateLabel,
   cityLabel,
   onPlanetClick,
 }: {
   mapPlanets: MapPlanet[];
+  mapDso: MapDso[];
   liveTime: string;
   dateLabel: string;
   cityLabel: string;
-  onPlanetClick: (missionId: string | undefined) => void;
+  onPlanetClick: (routeId: string | undefined) => void;
 }) {
   return (
     <div className="mis-skymap" role="region" aria-label="Night sky map">
@@ -447,16 +401,25 @@ function SkyMap({
       </div>
       <div className="mis-skymap-date">{dateLabel} · {cityLabel}</div>
 
+      {mapDso.map((d) => (
+        <span
+          key={d.id}
+          className={`mis-skymap-dso ${d.id}`}
+          style={{ left: `${d.x}%`, top: `${d.y}%` }}
+          aria-hidden
+        />
+      ))}
+
       {mapPlanets.map((p) => (
         <button
           key={p.id}
           type="button"
           className="mis-skymap-planet"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, background: 'transparent', border: 0, padding: 0 }}
-          onClick={() => onPlanetClick(p.missionId)}
+          style={{ left: `${p.x}%`, top: `${p.y}%` }}
+          onClick={() => onPlanetClick(p.routeId)}
           aria-label={p.key}
         >
-          <PlanetViz name={p.key} size={getPlanetSize(p.key)} />
+          <PlanetViz name={p.key} size={getMapSize(p.key)} />
           <span className="mis-skymap-label">{p.key}</span>
         </button>
       ))}
@@ -467,77 +430,172 @@ function SkyMap({
 // ---- Prime target card ----
 
 function PrimeCard({
-  mission,
+  entry,
   altitude,
   onStart,
 }: {
-  mission: Mission;
+  entry: GridEntry;
   altitude: number | null;
   onStart: () => void;
 }) {
-  const tag = TAGLINES[mission.id] ?? mission.desc;
   const altTxt = altitude != null ? ` · Alt ${Math.round(altitude)}°` : '';
   return (
-    <div className="mis-prime">
+    <button type="button" className="mis-prime" onClick={onStart}>
       <div className="mis-prime-icon">
-        <PlanetViz name={mission.id} size="medium" />
+        <PlanetViz name={entry.id} size="small" />
       </div>
       <div className="mis-prime-body">
-        <div className="mis-prime-badge">Prime target tonight</div>
-        <div className="mis-prime-name">{mission.name}</div>
-        <div className="mis-prime-desc">{tag}{altTxt}</div>
+        <span className="mis-prime-badge">Prime target tonight</span>
+        <span className="mis-prime-name">{entry.name}</span>
+        <span className="mis-prime-desc">{entry.desc}{altTxt}</span>
       </div>
-      <button type="button" className="mis-prime-cta" onClick={onStart}>
-        Observe <span style={{ fontVariantNumeric: 'tabular-nums' }}>+{mission.stars}</span>
-      </button>
-    </div>
+      <span className="mis-prime-cta" aria-hidden>Observe +{entry.stars}</span>
+    </button>
   );
 }
 
-// ---- Mission card ----
+// ---- Mission tile ----
 
-function MissionCard({
-  mission,
+function MissionTile({
+  entry,
   above,
   onClick,
 }: {
-  mission: Mission;
+  entry: GridEntry;
   above: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      id={`mis-card-${mission.id}`}
-      className={`mis-card ${above ? '' : 'dim'}`}
+      id={`mis-card-${entry.id}`}
+      className={`mis-tile ${above ? '' : 'dim'}`}
       onClick={onClick}
       disabled={!above}
     >
-      <div className={`mis-card-sky theme-${missionTheme(mission.id)}`}>
-        <PlanetViz name={mission.id} size={getCardPlanetSize(mission.id)} />
+      <div className={`mis-tile-sky theme-${entry.id}`}>
+        <span className={`mis-tile-glow theme-${entry.id}`} aria-hidden />
+        <span className="mis-tile-art">
+          <PlanetViz name={entry.id} size="large" />
+        </span>
       </div>
-      <div className="mis-card-info">
-        <div className="mis-card-row">
-          <span className="mis-card-name">{mission.name}</span>
-          <span className="mis-card-stars">+{mission.stars}</span>
-        </div>
-        <div className="mis-card-meta">
-          <span className={`mis-diff ${diffClass(mission.difficulty)}`}>
-            {diffLabel(mission.difficulty)}
+      <div className="mis-tile-info">
+        <span className="mis-tile-name">{entry.name}</span>
+        <span className="mis-tile-desc">{entry.desc}</span>
+        <div className="mis-tile-foot">
+          <span className="mis-tile-foot-left">
+            <span className={`mis-diff ${entry.diff}`}>{entry.diffLabel}</span>
+            <span className="mis-tile-equip">{above ? entry.equip : 'Below horizon'}</span>
           </span>
-          <span className="mis-card-equip">
-            {above ? (EQUIPMENT_LABEL[mission.id] ?? (mission.type === 'telescope' ? 'Telescope' : 'Naked eye')) : 'Below horizon'}
-          </span>
+          <span className="mis-tile-stars">+{entry.stars}</span>
         </div>
       </div>
     </button>
   );
 }
 
+// ---- Quiz tile ----
+
+function QuizTile({
+  variant,
+  Icon,
+  title,
+  meta,
+  reward,
+  score,
+  total,
+  onClick,
+}: {
+  variant: string;
+  Icon: () => React.ReactElement;
+  title: string;
+  meta: string;
+  reward: number;
+  score: number;
+  total: number;
+  onClick: () => void;
+}) {
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const done = score > 0 && score >= total;
+  return (
+    <button type="button" className="mis-qtile" onClick={onClick}>
+      <span className="mis-qtile-play" aria-hidden>
+        <PlayIcon />
+      </span>
+      <span className={`mis-qtile-icon ${variant}`}>
+        <Icon />
+      </span>
+      <span className="mis-qtile-name">{title}</span>
+      <span className="mis-qtile-meta">{meta}</span>
+      <span className="mis-qtile-reward">+{reward} ✦</span>
+      <span className="mis-qtile-progress">
+        <span className="mis-qtile-progress-bar">
+          {score > 0 && (
+            <span
+              className={done ? 'done' : ''}
+              style={{ width: `${pct}%` }}
+            />
+          )}
+        </span>
+        <span className="mis-qtile-progress-text">{score}/{total}</span>
+      </span>
+    </button>
+  );
+}
+
+// ---- Inline SVG icons ----
+
 function PlayIcon() {
   return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
       <path d="M3 2L8 5L3 8V2Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M12 2l2.4 5.2L20 8.4l-4 4.1 1 5.8L12 15.4l-5 2.9 1-5.8-4-4.1 5.6-1.2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TelescopeIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="9" r="5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 16l5 4 5-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 14v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DeepSkyIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="0.8" opacity="0.35" strokeDasharray="2 2" />
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="0.5" opacity="0.15" strokeDasharray="1.5 2.5" />
+    </svg>
+  );
+}
+
+function RocketIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M12 2c-2 4-3 8-3 12h6c0-4-1-8-3-12z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M9 14l-2 4h2M15 14l2 4h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="10" r="1.5" stroke="currentColor" strokeWidth="1" />
     </svg>
   );
 }
