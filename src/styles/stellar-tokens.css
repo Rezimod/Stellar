@@ -1380,6 +1380,74 @@
   border-bottom: 1px solid var(--stl-border);
 }
 
+/* Stats-bar placeholder pill (replaces the "Loading on-chain state…" text) */
+.mkt-stats-skeleton {
+  display: inline-block;
+  width: 240px;
+  max-width: 60%;
+  height: 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Row-shaped skeletons that mirror .mkt-row layout */
+.mkt-row-skeleton {
+  display: grid;
+  grid-template-columns: 22px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--stl-border);
+}
+.mkt-row-skeleton > span,
+.mkt-row-skeleton .mkt-sk-content > span,
+.mkt-row-skeleton .mkt-sk-odds > span {
+  display: block;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+.mkt-sk-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% !important;
+}
+.mkt-sk-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mkt-sk-title {
+  height: 14px;
+  width: 70%;
+}
+.mkt-sk-meta {
+  height: 10px;
+  width: 45%;
+}
+.mkt-sk-odds {
+  display: flex;
+  gap: 4px;
+}
+.mkt-sk-pill {
+  width: 64px;
+  height: 26px;
+  border-radius: 6px !important;
+}
+.mkt-sk-vol {
+  width: 36px;
+  height: 12px;
+}
+@media (max-width: 768px) {
+  .mkt-row-skeleton {
+    grid-template-columns: 20px 1fr auto;
+    gap: 10px;
+  }
+  .mkt-row-skeleton .mkt-sk-vol { display: none; }
+}
+
 /* Sidebar sections */
 .mkt-sidebar-inner {
   position: relative;
@@ -2752,6 +2820,69 @@
   border-color: rgba(255,255,255,0.1);
 }
 .sky-planet-card.below { opacity: 0.45; }
+
+/* Skeleton variants for sky page */
+.sky-hero-default {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.02em;
+}
+
+.sky-score-ring-skel {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.sky-verdict-skel-head {
+  height: 18px;
+  width: 220px;
+  max-width: 70%;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.sky-verdict-skel-body {
+  height: 12px;
+  width: 300px;
+  max-width: 90%;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.sky-planet-card-skel {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+.sky-planet-viz-skel {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.sky-planet-name-skel {
+  height: 11px;
+  width: 60px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.sky-planet-meta-skel {
+  height: 9px;
+  width: 78px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
 
 .sky-planet-viz {
   width: 48px;

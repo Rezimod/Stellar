@@ -10,9 +10,22 @@ import type { NetworkObservation, NodeType } from '@/app/api/network/observation
 const NetworkMap = dynamic(() => import('@/components/network/NetworkMap'), {
   ssr: false,
   loading: () => (
-    <div style={{ height: 420, background: '#070B14', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-      <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid #818cf8', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
-      <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Loading map...</span>
+    <div
+      aria-hidden
+      className="animate-pulse"
+      style={{
+        height: 420,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 12,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+        Initializing map…
+      </span>
     </div>
   ),
 });

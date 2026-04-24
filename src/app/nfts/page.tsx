@@ -400,7 +400,7 @@ export default function NftsPage() {
             </div>
             <div className="flex-1 min-w-0">
               <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, margin: 0 }}>My Observations</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: '2px 0 0' }}>Complete missions to mint on-chain observation NFTs.</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: '2px 0 0' }}>Sign in to view your observation NFTs.</p>
             </div>
             <button onClick={login} className="btn-primary" style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}>
               Sign In →
@@ -413,9 +413,9 @@ export default function NftsPage() {
           <div className="grid grid-cols-2 gap-3">
             {demoNfts.map(nft => (
               <div key={nft.name} className="card-base overflow-hidden p-0 relative">
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1" style={{ backdropFilter: 'blur(2px)', background: 'rgba(7,11,20,0.5)' }}>
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1" style={{ backdropFilter: 'blur(3px)', background: 'rgba(7,11,20,0.55)' }}>
                   <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>Sign in to mint</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>Sign in to view</span>
                 </div>
                 <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(122,95,255,0.08))' }} />
                 <div className="p-3 select-none" aria-hidden="true">

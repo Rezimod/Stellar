@@ -305,11 +305,16 @@ export default function MarketsPage() {
         <div className="mkt-shell">
         {/* Stats bar + theme toggle */}
         <div className="mkt-stats-bar">
-          <span className="mkt-stats-text">
-            {loading
-              ? 'Loading on-chain state…'
-              : `${summary.open} open · ${summary.resolved} resolved · ${formatVolume(summary.staked)} staked`}
-          </span>
+          {loading ? (
+            <span
+              aria-hidden
+              className="mkt-stats-skeleton animate-pulse"
+            />
+          ) : (
+            <span className="mkt-stats-text">
+              {`${summary.open} open · ${summary.resolved} resolved · ${formatVolume(summary.staked)} staked`}
+            </span>
+          )}
           <button
             type="button"
             className="mkt-theme-toggle"
@@ -384,9 +389,20 @@ export default function MarketsPage() {
             </div>
 
             {loading ? (
-              <div>
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="mkt-skeleton animate-pulse" />
+              <div aria-hidden role="presentation">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="mkt-row-skeleton animate-pulse">
+                    <span className="mkt-sk-icon" />
+                    <div className="mkt-sk-content">
+                      <span className="mkt-sk-title" />
+                      <span className="mkt-sk-meta" />
+                    </div>
+                    <div className="mkt-sk-odds">
+                      <span className="mkt-sk-pill" />
+                      <span className="mkt-sk-pill" />
+                    </div>
+                    <span className="mkt-sk-vol" />
+                  </div>
                 ))}
               </div>
             ) : error ? (

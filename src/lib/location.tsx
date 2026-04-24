@@ -108,7 +108,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       () => {
         // GPS denied — Tbilisi default is already showing, nothing to do
       },
-      { timeout: 8000 }
+      { timeout: 5000 }
     )
   }, [])
 

@@ -165,7 +165,8 @@ function scoreColorClass(score: number): string {
 
 export default function SkyPage() {
   const { location } = useLocation();
-  const { lat, lon, city } = location;
+  const { lat, lon, city, source } = location;
+  const isDefaultLocation = source === 'default';
 
   const [theme, setTheme] = useState<Theme>('light');
   const [forecast, setForecast] = useState<SkyDay[] | null>(null);
@@ -336,6 +337,11 @@ export default function SkyPage() {
             <div className="sky-hero-loc">
               <span className="sky-hero-dot" />
               <span className="sky-hero-city">{city || 'Tbilisi'}</span>
+              {isDefaultLocation && (
+                <span className="sky-hero-default" aria-label="Using default location">
+                  📍 Tbilisi (default)
+                </span>
+              )}
               <span className="sky-hero-coords">
                 {fmtCoord(lat, lon)} · Bortle {bortle}
               </span>
@@ -352,15 +358,30 @@ export default function SkyPage() {
           </div>
 
           <div className="sky-verdict-row">
-            <div
-              className={`sky-score-ring ${score ? scoreColorClass(score.score) : ''}`}
-            >
-              <span className="sky-score-num">{score ? score.score : '—'}</span>
-              <span className="sky-score-sub">/100</span>
-            </div>
+            {score ? (
+              <div className={`sky-score-ring ${scoreColorClass(score.score)}`}>
+                <span className="sky-score-num">{score.score}</span>
+                <span className="sky-score-sub">/100</span>
+              </div>
+            ) : (
+              <div
+                className="sky-score-ring sky-score-ring-skel animate-pulse"
+                aria-hidden
+              />
+            )}
             <div className="sky-verdict-text">
-              <div className="sky-verdict-head">{verdictHead}</div>
-              {verdictBody && <div className="sky-verdict-body">{verdictBody}</div>}
+              {score ? (
+                <div className="sky-verdict-head">{verdictHead}</div>
+              ) : (
+                <div className="sky-verdict-skel-head animate-pulse" aria-hidden />
+              )}
+              {verdictBody ? (
+                <div className="sky-verdict-body">{verdictBody}</div>
+              ) : (
+                !score && (
+                  <div className="sky-verdict-skel-body animate-pulse" aria-hidden />
+                )
+              )}
               {error && !loading && (
                 <div className="sky-verdict-body" style={{ color: '#FB7185' }}>
                   Couldn&apos;t reach the forecast service. Showing what we have.
@@ -372,11 +393,14 @@ export default function SkyPage() {
           <div className="sky-planets" role="list">
             {loading &&
               Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="sky-planet-card" aria-hidden>
-                  <div className="sky-planet-viz" />
-                  <div className="sky-planet-name" style={{ opacity: 0.3 }}>
-                    —
-                  </div>
+                <div
+                  key={i}
+                  className="sky-planet-card sky-planet-card-skel animate-pulse"
+                  aria-hidden
+                >
+                  <div className="sky-planet-viz sky-planet-viz-skel" />
+                  <div className="sky-planet-name-skel" />
+                  <div className="sky-planet-meta-skel" />
                 </div>
               ))}
 
