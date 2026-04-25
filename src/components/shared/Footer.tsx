@@ -3,37 +3,26 @@
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 
-const columns = [
+type FooterLink = { label: string; href: string; external?: boolean };
+type FooterColumn = { title: string; links: FooterLink[] };
+
+const columns: FooterColumn[] = [
   {
-    title: 'Explore',
+    title: 'Stellar',
     links: [
-      { label: 'Sky Forecast',   href: '/sky' },
-      { label: 'Markets',        href: '/markets' },
-      { label: 'Missions',       href: '/missions' },
-      { label: 'Observer Network', href: '/network' },
-      { label: 'ASTRA AI',       href: '/chat' },
-    ],
-  },
-  {
-    title: 'Shop',
-    links: [
-      { label: 'Marketplace',    href: '/marketplace' },
-      { label: 'Astroman.ge',    href: 'https://astroman.ge', external: true },
-    ],
-  },
-  {
-    title: 'Community',
-    links: [
-      { label: 'Leaderboard',    href: '/leaderboard' },
-      { label: 'Discoveries',    href: '/nfts' },
+      { label: 'Sky',         href: '/sky' },
+      { label: 'Missions',    href: '/missions' },
+      { label: 'Markets',     href: '/markets' },
+      { label: 'Shop',        href: '/marketplace' },
     ],
   },
   {
     title: 'About',
     links: [
-      { label: 'GitHub',         href: 'https://github.com/Morningbriefrezi/Stellar', external: true },
-      { label: 'Twitter / X',    href: 'https://x.com/StellarClub26', external: true },
-      { label: 'Colosseum',      href: 'https://arena.colosseum.org', external: true },
+      { label: 'Astroman',    href: 'https://astroman.ge', external: true },
+      { label: 'GitHub',      href: 'https://github.com/Morningbriefrezi/Stellar', external: true },
+      { label: 'X',           href: 'https://x.com/StellarClub26', external: true },
+      { label: 'Colosseum',   href: 'https://arena.colosseum.org', external: true },
     ],
   },
 ];
@@ -47,9 +36,9 @@ export default function Footer() {
         borderTop: '1px solid rgba(255,255,255,0.04)',
       }}
     >
-      {/* Desktop — 4-column */}
+      {/* Desktop — 2-column */}
       <div className="hidden sm:block max-w-6xl mx-auto px-6 py-12 lg:px-8">
-        <div className="grid grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-2 gap-8 mb-10 max-w-md">
           {columns.map(col => (
             <div key={col.title}>
               <p style={{
@@ -98,22 +87,15 @@ export default function Footer() {
             borderTop: '1px solid rgba(255,255,255,0.06)',
             paddingTop: 16,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: 'column',
+            gap: 4,
           }}
         >
           <span style={{ color: 'var(--stl-text-whisper)', fontSize: 11 }}>
-            Built in Tbilisi 🇬🇪 · Colosseum Frontier 2026 · © 2026 Stellar
+            Built in Tbilisi 🇬🇪 · Colosseum Frontier 2026
           </span>
-          <span style={{
-            color: 'var(--stl-text-whisper)',
-            fontSize: 11,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
-          }}>
-            Powered by{' '}
-            <span style={{ color: '#9945FF', fontWeight: 600 }}>Solana</span>
+          <span style={{ color: 'var(--stl-text-whisper)', fontSize: 11 }}>
+            A project by Rezi — founder of Astroman.ge
           </span>
         </div>
       </div>

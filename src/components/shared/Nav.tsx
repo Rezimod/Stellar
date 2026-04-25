@@ -43,10 +43,10 @@ const SECTIONS = [
 
 const QUICK_TABS = [
   { href: '/sky',         label: 'Sky',       icon: CloudSun },
-  { href: '/markets',     label: 'Markets',   icon: TrendingUp },
   { href: '/missions',    label: 'Missions',  icon: Satellite },
-  { href: '/learn',       label: 'Learning',  icon: BookOpen },
+  { href: '/markets',     label: 'Markets',   icon: TrendingUp },
   { href: '/marketplace', label: 'Shop',      icon: ShoppingBag },
+  { href: '/profile',     label: 'Profile',   icon: User },
 ];
 
 export default function Nav() {
@@ -231,8 +231,8 @@ export default function Nav() {
               </Link>
             </div>
 
-            {/* Quick tabs — sm/md only */}
-            <div className="hidden sm:flex lg:hidden flex-1 items-center justify-center gap-1">
+            {/* Quick tabs — sm and up */}
+            <div className="hidden sm:flex flex-1 items-center justify-center gap-1">
               {QUICK_TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);

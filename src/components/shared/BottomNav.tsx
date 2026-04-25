@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CloudSun, Satellite, User, BookOpen, Home } from 'lucide-react';
+import { CloudSun, Satellite, User, TrendingUp, Home } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const TABS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/sky',      label: 'Sky',      icon: CloudSun },
   { href: '/missions', label: 'Missions', icon: Satellite },
   { href: '/',         label: 'Home',     icon: Home },
-  { href: '/learn',    label: 'Learn',    icon: BookOpen },
+  { href: '/markets',  label: 'Markets',  icon: TrendingUp },
   { href: '/profile',  label: 'Profile',  icon: User },
 ];
 
