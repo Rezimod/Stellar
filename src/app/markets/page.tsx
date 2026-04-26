@@ -409,8 +409,9 @@ export default function MarketsPage() {
             <header className="mkt-section-header">
               <h1 className="mkt-section-title">All markets</h1>
               {!loading && (
-                <span className="mkt-section-meta">
-                  {activeCount} active
+                <span className="mkt-section-meta mkt-section-live">
+                  <span className="live-led" aria-hidden />
+                  {activeCount} live markets on Solana
                 </span>
               )}
             </header>

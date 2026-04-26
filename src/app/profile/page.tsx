@@ -172,6 +172,26 @@ export default function ProfilePage() {
 
       <PageContainer variant="content" className="py-6 pb-10 flex flex-col gap-0">
 
+        {/* Copy-to-clipboard toast */}
+        {copied && (
+          <div
+            key={`toast-${copied}`}
+            className="toast-fade"
+            role="status"
+            style={{
+              position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
+              padding: '10px 18px', borderRadius: 999, zIndex: 100,
+              background: 'var(--color-bg-card-strong)',
+              border: '1px solid var(--color-border-medium)',
+              color: 'white', fontSize: 13, fontWeight: 500,
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            }}
+          >
+            Copied to clipboard
+          </div>
+        )}
+
         <PageHeader label="OBSERVATORY" title="Your profile" />
 
         {/* — HEADER: Avatar + Name + Address — */}
@@ -186,8 +206,8 @@ export default function ProfilePage() {
                 ? 'linear-gradient(135deg,#A855F7,#6366F1)'
                 : 'linear-gradient(135deg,#818cf8,#8B5CF6)',
             }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#0F1623', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontWeight: 800, fontSize: 26, color: 'white', fontFamily: 'Georgia, serif' }}>{initial}</span>
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--bg-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontWeight: 800, fontSize: 26, color: 'white', fontFamily: 'var(--font-serif)' }}>{initial}</span>
               </div>
             </div>
           </div>
@@ -217,27 +237,73 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* — STATS ROW — */}
+        {/* — STATS ROW (data cards) — */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 28 }}>
           {[
-            { value: `★ ${starsDisplay.toLocaleString()}`, label: 'Stars Earned', color: 'var(--stars)' },
-            { value: String(completed.length), label: 'Missions Done', color: 'var(--success)' },
-            { value: starsDisplay > 0 ? `~${gelWorth}₾` : String(obsCount), label: starsDisplay > 0 ? 'Store Value' : 'NFTs Minted', color: '#818cf8' },
+            { value: `✦ ${starsDisplay.toLocaleString()}`, label: 'Stars Earned', color: 'var(--color-accent-gold)' },
+            { value: String(completed.length), label: 'Missions Done', color: 'var(--color-success)' },
+            { value: starsDisplay > 0 ? `~${gelWorth}₾` : String(obsCount), label: starsDisplay > 0 ? 'Store Value' : 'NFTs Minted', color: 'var(--color-accent-teal)' },
           ].map(s => (
             <div key={s.label} style={{
-              borderRadius: 16, padding: '14px 10px', textAlign: 'center',
-              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 'var(--radius-lg)', padding: '16px 10px', textAlign: 'center',
+              background: 'var(--color-bg-card-strong)',
+              border: '1px solid var(--color-border-subtle)',
+              transition: 'border-color 0.2s ease, background 0.2s ease',
             }}>
               {!profileLoaded && s.label !== 'Missions Done' ? (
                 <Skeleton
                   className={`${s.label === 'Stars Earned' ? 'w-20' : 'w-12'} h-8 mx-auto mb-1`}
                 />
               ) : (
-                <p style={{ color: s.color, fontWeight: 800, fontSize: 17, margin: '0 0 3px', fontFamily: 'monospace' }}>{s.value}</p>
+                <p
+                  className={s.label === 'Stars Earned' ? 'stars-amount' : ''}
+                  style={{
+                    color: s.color, fontWeight: 800, fontSize: 19, margin: '0 0 4px',
+                    fontFamily: 'var(--font-mono), JetBrains Mono, monospace',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {s.value}
+                </p>
               )}
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.3 }}>{s.label}</p>
+              <p style={{
+                color: 'var(--color-text-faint)', fontSize: 11, margin: 0,
+                textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.3,
+                fontFamily: 'var(--font-mono), JetBrains Mono, monospace',
+              }}>{s.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* — RANK PROGRESSION (gold gradient bar) — */}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+            <p style={{
+              color: 'rgba(255,255,255,0.55)', fontSize: 11, margin: 0,
+              textTransform: 'uppercase', letterSpacing: '0.1em',
+              fontFamily: 'var(--font-mono), JetBrains Mono, monospace',
+            }}>
+              Rank · {rank.name}
+            </p>
+            <p style={{
+              color: 'var(--color-text-faint)', fontSize: 12, margin: 0,
+              fontFamily: 'var(--font-mono), JetBrains Mono, monospace',
+            }}>
+              {completed.length} missions
+            </p>
+          </div>
+          <div style={{
+            height: 6, borderRadius: 999, overflow: 'hidden',
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-subtle)',
+          }}>
+            <div style={{
+              width: `${Math.min(100, (completed.length / Math.max(1, completed.length + 5)) * 100)}%`,
+              height: '100%',
+              background: 'var(--gradient-gold)',
+              transition: 'width 0.4s ease',
+            }} />
+          </div>
         </div>
 
         {/* — NETWORK STATUS — */}
@@ -393,15 +459,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* — SIGN OUT — */}
+        {/* — SIGN OUT (secondary, calm) — */}
         <button
           onClick={confirmSignOut ? logout : () => setConfirmSignOut(true)}
           style={{
-            width: '100%', padding: '13px', borderRadius: 14, fontSize: 14, fontWeight: 600,
+            width: '100%', padding: '12px 20px', borderRadius: 999,
+            fontSize: 14, fontWeight: 500,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: confirmSignOut ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)',
-            border: `1px solid ${confirmSignOut ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.07)'}`,
-            color: confirmSignOut ? '#f87171' : 'rgba(255,255,255,0.4)',
+            background: 'transparent',
+            border: `1px solid ${confirmSignOut ? 'var(--color-border-strong)' : 'var(--color-border-medium)'}`,
+            color: confirmSignOut ? 'white' : 'rgb(226, 232, 240)',
             transition: 'all 0.2s',
           }}
         >

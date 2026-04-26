@@ -497,17 +497,30 @@ export default function NftsPage() {
             { label: 'Stars Earned', value: `✦ ${totalStarsEarned}`, gold: true },
             { label: 'Best Night', value: bestCloud < 30 ? 'Clear' : `${Math.round(bestCloud)}%`, clear: bestCloud < 30 },
           ].map(stat => (
-            <div key={stat.label} className="card-base p-3 text-center">
-              <p style={{
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 700,
-                fontSize: 18,
-                color: stat.gold ? 'var(--stars)' : stat.clear ? 'var(--success)' : 'var(--text-primary)',
-                margin: 0,
-              }}>
+            <div key={stat.label} style={{
+              padding: 14, textAlign: 'center',
+              background: 'var(--color-bg-card-strong)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              transition: 'border-color 0.2s ease',
+            }}>
+              <p
+                className={stat.gold ? 'stars-amount' : ''}
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  fontSize: 19,
+                  color: stat.gold ? 'var(--color-accent-gold)' : stat.clear ? 'var(--color-success)' : 'var(--text-primary)',
+                  margin: 0,
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
                 {stat.value}
               </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+              <p style={{
+                color: 'var(--color-text-faint)', fontSize: 11, margin: '4px 0 0',
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+                fontFamily: 'var(--font-mono)',
+              }}>
                 {stat.label}
               </p>
             </div>
@@ -551,14 +564,14 @@ export default function NftsPage() {
                   {celestialCompleted === celestialTotal ? '🏆 Complete!' : `${Math.round((celestialCompleted / celestialTotal) * 100)}%`}
                 </p>
               </div>
-              <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 10, overflow: 'hidden' }}>
+              <div style={{ height: 6, borderRadius: 999, background: 'var(--color-bg-card-strong)', marginTop: 10, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%',
-                  borderRadius: 2,
+                  borderRadius: 999,
                   width: `${(celestialCompleted / celestialTotal) * 100}%`,
                   background: celestialCompleted === celestialTotal
-                    ? 'var(--success)'
-                    : 'linear-gradient(90deg, var(--stars), #CC9A33)',
+                    ? 'var(--color-success)'
+                    : 'var(--gradient-gold)',
                   transition: 'width 0.6s ease',
                 }} />
               </div>
@@ -649,11 +662,15 @@ export default function NftsPage() {
             return (
               <div
                 key={item.id}
-                className="card-base overflow-hidden p-0"
+                className="nft-card overflow-hidden p-0"
                 style={{
-                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s',
                   cursor: 'pointer',
-                  border: rarity.rarity === 'Common' ? undefined : `1px solid ${rarity.color}40`,
+                  background: 'var(--color-bg-card)',
+                  borderRadius: 'var(--radius-xl)',
+                  border: rarity.rarity === 'Common'
+                    ? '1px solid var(--color-border-subtle)'
+                    : `1px solid ${rarity.color}40`,
                   boxShadow: rarity.rarity === 'Celestial' ? `0 0 24px ${rarity.color}20` : undefined,
                 }}
                 onClick={() => setSelectedNft(item)}
@@ -661,21 +678,33 @@ export default function NftsPage() {
                 role="button"
                 tabIndex={0}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-glow-accent)';
+                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                  (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-card-hover)';
+                  if (rarity.rarity === 'Common') {
+                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-medium)';
+                  }
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '';
+                  (e.currentTarget as HTMLElement).style.transform = '';
+                  (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-card)';
+                  if (rarity.rarity === 'Common') {
+                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-subtle)';
+                  }
                 }}
               >
-                {/* Star map image */}
-                <div style={{ position: 'relative', width: '100%', height: 160, background: '#0a0e1a' }}>
+                {/* Framed image area — dark inner panel with playful tilt on hover */}
+                <div style={{
+                  position: 'relative', width: 'calc(100% - 16px)', height: 160, margin: 8,
+                  background: 'var(--color-bg-card-strong)',
+                  borderRadius: 'var(--radius-lg)',
+                  overflow: 'hidden',
+                }}>
                   {item.photo ? (
                     <img
                       src={item.photo}
                       alt={target}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#0a0e1a', display: 'block' }}
+                      className="nft-planet"
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                       onError={e => { (e.currentTarget as HTMLImageElement).src = nftImageUrl; }}
                     />
                   ) : (
@@ -684,6 +713,7 @@ export default function NftsPage() {
                       alt={target}
                       fill
                       unoptimized
+                      className="nft-planet"
                       style={{ objectFit: 'contain' }}
                       loading="lazy"
                       onError={e => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder-nft.svg'; }}

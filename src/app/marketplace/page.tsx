@@ -104,18 +104,24 @@ export default function MarketplacePage() {
     <PageContainer variant="wide" className="py-5 animate-page-enter">
       <BackButton />
 
-      {/* Compact intro — Stellar voice, no Astroman branding */}
-      <header className="mt-2 mb-6 flex items-end justify-between gap-4 flex-wrap">
+      {/* Hero with subtle teal radial overlay */}
+      <header
+        className="relative mt-2 mb-6 flex items-end justify-between gap-4 flex-wrap rounded-[var(--radius-xl)] p-6 md:p-8 overflow-hidden"
+        style={{
+          background: 'var(--gradient-radial-teal), var(--color-bg-card)',
+          border: '1px solid var(--color-border-subtle)',
+        }}
+      >
         <div>
           <p
-            className="text-[10px] font-semibold tracking-[0.18em] uppercase"
-            style={{ color: ACCENT, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
+            className="text-[11px] font-semibold tracking-[0.18em] uppercase"
+            style={{ color: 'var(--color-accent-teal)', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
           >
             {t('title') || 'Shop'}
           </p>
           <h1
             className="text-3xl sm:text-4xl text-white mt-2 leading-tight"
-            style={{ fontFamily: '"Source Serif 4", Georgia, serif', fontWeight: 500 }}
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '-0.025em' }}
           >
             Real gear. Earned with Stars.
           </h1>
@@ -124,21 +130,21 @@ export default function MarketplacePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>Region</span>
+          <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>Region</span>
           <LocationPicker compact />
         </div>
       </header>
 
-      {/* Stars redemption tiers — compact 3-up */}
+      {/* Stars redemption tiers — compact 3-up, feature-card surface */}
       <section className="mb-7">
         <div className="flex items-baseline justify-between mb-3">
           <h2
-            className="text-base font-semibold text-white"
-            style={{ fontFamily: '"Source Serif 4", Georgia, serif' }}
+            className="text-base font-bold text-white"
+            style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}
           >
             Redeem Stars
           </h2>
-          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
             Codes valid 90 days
           </span>
         </div>
@@ -151,47 +157,46 @@ export default function MarketplacePage() {
             return (
               <div
                 key={tier.apiTier}
-                className="flex items-center gap-4 p-4 rounded-xl"
+                className="flex items-center gap-4 p-6 md:p-8 rounded-[var(--radius-xl)] transition-all duration-200 hover:bg-[var(--color-bg-card-hover)]"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: unlocked ? `1px solid ${ACCENT_BORDER}` : '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--color-bg-card)',
+                  border: unlocked
+                    ? '1px solid rgba(255, 209, 102, 0.30)'
+                    : '1px solid var(--color-border-subtle)',
                 }}
               >
                 <div className="flex flex-col flex-1 min-w-0">
                   <p
-                    className="text-lg text-white font-bold leading-none"
+                    className="text-2xl text-white font-bold leading-none stars-amount"
                     style={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
                   >
-                    {tier.stars.toLocaleString()}
-                    <span className="ml-1" style={{ color: ACCENT }}>✦</span>
+                    <span style={{ color: 'var(--color-accent-gold)' }}>✦</span>
+                    <span className="ml-1.5" style={{ color: 'var(--color-accent-gold)' }}>
+                      {tier.stars.toLocaleString()}
+                    </span>
                   </p>
-                  <p className="text-[13px] text-slate-300 mt-1.5 leading-snug">
+                  <p className="text-[13px] text-slate-300 mt-2 leading-snug">
                     {tier.reward}
                   </p>
                   {tier.sub && (
-                    <p className="text-[10px] text-slate-500 mt-0.5">{tier.sub}</p>
+                    <p className="text-[12px] text-slate-500 mt-1">{tier.sub}</p>
                   )}
                 </div>
                 <div className="flex-shrink-0">
                   {!authenticated ? (
                     <button
                       onClick={login}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
-                      style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'rgba(255,255,255,0.7)',
-                      }}
+                      className="px-5 py-2.5 rounded-full text-sm font-medium text-slate-200 bg-transparent border border-[var(--color-border-medium)] transition-all duration-200 hover:border-[var(--color-border-strong)] hover:text-white hover:bg-white/[0.04]"
                     >
                       Sign in
                     </button>
                   ) : code ? (
                     <span
-                      className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
+                      className="px-3 py-1.5 rounded-full text-[12px] font-bold"
                       style={{
-                        background: ACCENT_SOFT,
-                        border: `1px solid ${ACCENT_BORDER}`,
-                        color: '#C4B5FD',
+                        background: 'rgba(255, 209, 102, 0.10)',
+                        border: '1px solid rgba(255, 209, 102, 0.30)',
+                        color: 'var(--color-accent-gold)',
                         fontFamily: 'JetBrains Mono, ui-monospace, monospace',
                       }}
                     >
@@ -201,20 +206,21 @@ export default function MarketplacePage() {
                     <button
                       onClick={() => handleRedeem(tier)}
                       disabled={isClaiming}
-                      className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-60"
+                      className="px-5 py-2.5 rounded-full text-sm font-medium text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100"
                       style={{
-                        background: ACCENT,
-                        color: '#fff',
+                        background: 'var(--gradient-primary)',
+                        boxShadow: 'var(--shadow-glow-teal)',
                       }}
                     >
                       {isClaiming ? '…' : 'Redeem'}
                     </button>
                   ) : (
                     <span
-                      className="text-[10px] px-2 py-1 rounded-md"
+                      className="text-[12px] px-3 py-1.5 rounded-full"
                       style={{
-                        background: 'rgba(255,255,255,0.04)',
-                        color: 'rgba(255,255,255,0.45)',
+                        background: 'var(--color-bg-card-strong)',
+                        color: 'var(--color-text-faint)',
+                        border: '1px solid var(--color-border-subtle)',
                       }}
                     >
                       Locked
@@ -255,17 +261,17 @@ export default function MarketplacePage() {
 
       {/* Tier shortcut chips */}
       {isTelescopeView && (
-        <div className="flex gap-1.5 mb-5">
+        <div className="flex gap-2 mb-5">
           {[
-            { id: 'tier-beginner',     label: 'Beginner',     color: 'var(--success)' },
-            { id: 'tier-intermediate', label: 'Mid',          color: '#F59E0B' },
-            { id: 'tier-advanced',     label: 'Advanced',     color: '#A78BFA' },
+            { id: 'tier-beginner',     label: 'Beginner',     bg: 'rgba(52, 211, 153, 0.10)',  border: 'rgba(52, 211, 153, 0.35)',  color: 'var(--color-success)' },
+            { id: 'tier-intermediate', label: 'Mid',          bg: 'rgba(245, 158, 11, 0.10)',  border: 'rgba(245, 158, 11, 0.35)',  color: '#F59E0B' },
+            { id: 'tier-advanced',     label: 'Advanced',     bg: 'rgba(167, 139, 250, 0.10)', border: 'rgba(167, 139, 250, 0.35)', color: '#A78BFA' },
           ].map(t => (
             <a
               key={t.id}
               href={`#${t.id}`}
-              className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide"
-              style={{ background: `${t.color}1A`, color: t.color, border: `1px solid ${t.color}40` }}
+              className="text-[12px] px-3 py-1 rounded-full font-semibold uppercase tracking-wide transition-colors"
+              style={{ background: t.bg, color: t.color, border: `1px solid ${t.border}` }}
             >
               {t.label}
             </a>
@@ -356,11 +362,18 @@ function Tier({
 }: { id?: string; label: string; sub?: string; color: string; children: React.ReactNode }) {
   return (
     <div id={id}>
-      <div className="flex items-center gap-3 mb-3">
-        <div style={{ width: 3, height: 16, borderRadius: 2, background: color }} />
-        <p className="text-[13px] font-semibold" style={{ color }}>{label}</p>
+      <div className="flex items-baseline gap-3 mb-3">
+        <p
+          className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+          style={{
+            color,
+            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          }}
+        >
+          {label}
+        </p>
         {sub && (
-          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{sub}</p>
+          <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{sub}</p>
         )}
       </div>
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">

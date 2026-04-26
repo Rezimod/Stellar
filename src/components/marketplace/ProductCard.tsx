@@ -51,8 +51,8 @@ export default function ProductCard({ product, showDealer, dealerName, priority 
           className="relative"
           style={{
             aspectRatio: '1 / 1',
-            background: showImg ? 'rgba(255,255,255,0.02)' : fallback.bg,
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: showImg ? 'var(--color-bg-card-strong)' : fallback.bg,
+            border: '1px solid var(--color-border-subtle)',
             borderRadius: 16,
             overflow: 'hidden',
           }}

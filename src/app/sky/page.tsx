@@ -402,15 +402,17 @@ function AnimatedScore({ score }: AnimatedScoreProps) {
 
   return (
     <div className="sky-score-block">
-      <div
-        className="sky-score-ring2"
-        style={{
-          background: `conic-gradient(${ringColor} ${animated * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
-        }}
-      >
-        <div className="sky-score-ring2-inner">
-          <span className="sky-score-num2">{animated}</span>
-          <span className="sky-score-sub2">/100</span>
+      <div className="score-ring">
+        <div
+          className="sky-score-ring2"
+          style={{
+            background: `conic-gradient(${ringColor} ${animated * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
+          }}
+        >
+          <div className="sky-score-ring2-inner">
+            <span className="sky-score-num2">{animated}</span>
+            <span className="sky-score-sub2">/100</span>
+          </div>
         </div>
       </div>
       <span className="sky-score-tag" style={{ color: tagline.color }}>

@@ -3,7 +3,33 @@
    Imported once in layout.tsx, inherited app-wide. */
 
 :root {
-  /* Surfaces */
+  /* ── Canonical surface tokens (post-V2) ──
+     Single source of truth for cards, borders, accents. Other token names
+     in globals.css remain for backward compat; new code uses these. */
+  --color-bg-card:         rgba(255,255,255,0.025);
+  --color-bg-card-hover:   rgba(255,255,255,0.045);
+  --color-bg-card-strong:  rgba(255,255,255,0.06);
+
+  --color-border-subtle:   rgba(255,255,255,0.06);
+  --color-border-medium:   rgba(255,255,255,0.12);
+  --color-border-strong:   rgba(255,255,255,0.20);
+
+  --color-accent-teal:     #34d399;
+  --color-accent-cyan:     #5eead4;
+  --color-accent-gold:     #FFD166;
+  --color-accent-warning:  #FB7185;
+
+  --color-success:         #34D399;
+  --color-error:           #F87171;
+  --color-text-faint:      rgba(255,255,255,0.35);
+
+  --shadow-glow-teal:      0 0 24px rgba(52,211,153,0.25), 0 0 48px rgba(52,211,153,0.06);
+  --shadow-glow-gold-soft: 0 0 24px rgba(255,209,102,0.20);
+
+  --gradient-primary:      linear-gradient(135deg, #34d399 0%, #14b8a6 50%, #0ea5e9 100%);
+  --gradient-radial-teal:  radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.10) 0%, rgba(52,211,153,0.0) 60%);
+
+  /* Legacy stellar tokens */
   --stl-bg-deep:      #030612;
   --stl-bg-base:      #050810;
   --stl-bg-surface:   rgba(255,255,255,0.03);
@@ -146,6 +172,58 @@
   50%     { opacity: 1 }
 }
 .stl-badge-pulse { animation: stl-badge-pulse 2.4s ease-in-out infinite; }
+
+/* ── Polish-pass utilities (post-V3) ── */
+
+/* Score-ring breathing glow — premium, slow, low intensity */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.40); }
+  50%      { box-shadow: 0 0 0 16px rgba(52, 211, 153, 0); }
+}
+.score-ring { animation: pulse-glow 4s ease-in-out infinite; border-radius: 50%; }
+
+/* Stars amount on tier cards — subtle gold glow, no shadow blur on layout */
+.stars-amount { text-shadow: 0 0 24px rgba(255, 209, 102, 0.30); }
+
+/* Live LED — small green dot pulsing on a 2s cadence */
+@keyframes led-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); opacity: 1; }
+  50%      { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0);    opacity: 0.7; }
+}
+.live-led {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent-teal);
+  animation: led-pulse 2s ease-in-out infinite;
+}
+
+/* Toast — 2s fade in/out for clipboard copy etc. */
+@keyframes toast-in-out {
+  0%   { opacity: 0; transform: translateY(-8px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  85%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+.toast-fade { animation: toast-in-out 2s ease-in-out forwards; }
+
+/* NFT planet hover — playful, subtle 2deg tilt */
+.nft-planet { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.nft-card:hover .nft-planet { transform: rotate(2deg); }
+
+/* Typing dots for chat — teal not slate */
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-teal);
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.30s; }
 
 /* Text shadow for legibility over chart starfield */
 .stl-chart-label {
@@ -1204,6 +1282,12 @@
   font-family: var(--font-mono), monospace;
   font-variant-numeric: tabular-nums;
 }
+.mkt-section-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--stl-text2);
+}
 
 /* Category tabs */
 .mkt-tabs {
@@ -1375,15 +1459,17 @@
 .mkt-odds-readout-half.no::before  { left: auto; right: 0; }
 
 .mkt-odds-readout-half.yes {
-  --side-fill: var(--stl-green-bg);
-  color: var(--stl-green);
+  --side-fill: rgba(52, 211, 153, 0.10);
+  color: var(--color-success);
+  border-left: 1px solid rgba(52, 211, 153, 0.45);
 }
 .mkt-odds-readout-half.no {
-  --side-fill: var(--stl-red-bg);
-  color: var(--stl-red);
+  --side-fill: rgba(248, 113, 113, 0.10);
+  color: var(--color-error);
+  border-left: 1px solid rgba(248, 113, 113, 0.45);
 }
-.mkt-odds-readout-half.yes:hover { background: var(--stl-green-bg); }
-.mkt-odds-readout-half.no:hover  { background: var(--stl-red-bg); }
+.mkt-odds-readout-half.yes:hover { background: rgba(52, 211, 153, 0.16); }
+.mkt-odds-readout-half.no:hover  { background: rgba(248, 113, 113, 0.16); }
 .mkt-odds-readout-half > * { position: relative; z-index: 1; }
 
 .mkt-odds-readout-half.active {
@@ -1552,6 +1638,11 @@
 /* Resolved rows — dimmed + pill */
 .mkt-row.resolved { opacity: 0.5; cursor: pointer; }
 .mkt-row.resolved:hover { opacity: 0.75; }
+.mkt-row.resolved .mkt-row-title {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
 .mkt-row-pill {
   font-size: 11px;
   font-weight: 600;
@@ -3025,17 +3116,18 @@
   min-width: 110px;
   padding: 12px 10px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .sky-planet-card:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.1);
+  background: var(--color-bg-card-hover);
+  border-color: var(--color-border-medium);
+  transform: translateY(-2px);
 }
 .sky-planet-card.below { opacity: 0.45; }
 
@@ -3216,8 +3308,13 @@
   border: 1px solid var(--sky-bd);
   overflow: hidden;
   background: var(--sky-bg);
-  transition: border-color 0.15s ease, transform 0.15s ease;
-  cursor: default;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+.sky-night-tile:hover {
+  border-color: var(--color-border-medium);
+  background: rgba(52, 211, 153, 0.10);
+  transform: translateY(-1px);
 }
 .sky-night-tile.today { border-color: var(--sky-acc); box-shadow: 0 0 0 1px var(--sky-acc) inset; }
 .sky-night-viewport {
@@ -3731,9 +3828,13 @@
   gap: 16px;
   align-items: center;
   padding: 16px;
-  border-radius: 10px;
-  border: 1px solid var(--sky-bd);
-  background: var(--sky-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-card-strong);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.sky-reco-card:hover {
+  border-color: var(--color-border-medium);
 }
 .sky-reco-body {
   display: flex;
@@ -3793,21 +3894,24 @@
   align-items: center;
   justify-content: center;
   height: 52px;
-  padding: 0 16px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #14B8A6, #0EA5A1);
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--gradient-primary);
   color: white;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   letter-spacing: -0.005em;
-  border: 1px solid rgba(20,184,166,0.5);
+  border: 0;
   text-align: center;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: var(--shadow-glow-teal);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .sky-bottom-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(20,184,166,0.25);
+  transform: scale(1.02);
+}
+.sky-bottom-cta:active {
+  transform: scale(0.98);
 }
 
 /* === Mobile === */
@@ -4379,25 +4483,31 @@
   gap: 10px;
 }
 .mis-tile {
-  border: 1px solid rgba(255,255,255,0.04);
-  border-radius: 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  background: transparent;
+  background: var(--color-bg-card);
   cursor: pointer;
   padding: 0;
   text-align: left;
-  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   display: flex;
   flex-direction: column;
   position: relative;
 }
 .mis-tile:hover {
-  border-color: rgba(255,255,255,0.1);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border-color: rgba(52, 211, 153, 0.45);
+  background: var(--color-bg-card-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow-teal);
 }
 .mis-tile.dim { opacity: 0.5; }
-.mis-tile.dim:hover { transform: none; box-shadow: none; border-color: rgba(255,255,255,0.04); }
+.mis-tile.dim:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-border-subtle);
+  background: var(--color-bg-card);
+}
 
 .mis-tile-sky {
   position: relative;
@@ -4500,18 +4610,19 @@
   min-width: 0;
 }
 .mis-diff {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  padding: 2px 7px;
-  border-radius: 4px;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
   text-transform: uppercase;
   flex-shrink: 0;
+  border: 1px solid currentColor;
 }
-.mis-diff.easy   { color: #4ADE80; background: rgba(74,222,128,0.1); }
-.mis-diff.med    { color: #FBBF24; background: rgba(251,191,36,0.08); }
-.mis-diff.hard   { color: #A78BFA; background: rgba(167,139,250,0.08); }
-.mis-diff.expert { color: #FB7185; background: rgba(251,113,133,0.08); }
+.mis-diff.easy   { color: var(--color-accent-teal);    background: rgba(52, 211, 153, 0.10); }
+.mis-diff.med    { color: var(--color-accent-gold);    background: rgba(255, 209, 102, 0.10); }
+.mis-diff.hard   { color: var(--color-accent-warning); background: rgba(251, 113, 133, 0.10); }
+.mis-diff.expert { color: var(--color-accent-warning); background: rgba(251, 113, 133, 0.12); }
 .mis-tile-equip {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -4525,10 +4636,11 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 700;
-  color: #FBBF24;
+  color: var(--color-accent-gold);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
+.mis-tile-stars::before { content: '✦ '; }
 
 /* === Quiz tile deck === */
 .mis-quiz-deck {

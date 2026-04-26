@@ -236,8 +236,8 @@ function ChatPageInner() {
                   className="animate-slide-up"
                   style={{
                     maxWidth: '78%',
-                    background: 'var(--accent-dim)',
-                    border: '1px solid var(--accent-border)',
+                    background: 'rgba(52, 211, 153, 0.10)',
+                    border: '1px solid rgba(52, 211, 153, 0.20)',
                     borderRadius: '16px 16px 4px 16px',
                     padding: '10px 16px',
                     fontSize: 14,
@@ -258,18 +258,18 @@ function ChatPageInner() {
               {/* ASTRA avatar */}
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                background: 'var(--accent-dim)',
-                border: '1px solid var(--accent-border)',
+                background: 'rgba(52, 211, 153, 0.10)',
+                border: '1px solid rgba(52, 211, 153, 0.20)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ color: 'var(--accent)', fontSize: 10 }}>✦</span>
+                <span style={{ color: 'var(--color-accent-teal)', fontSize: 10 }}>✦</span>
               </div>
               <div
                 className="animate-fade-in"
                 style={{
                   maxWidth: '85%',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid var(--border-default)',
+                  background: 'var(--color-bg-card)',
+                  border: '1px solid var(--color-border-subtle)',
                   borderRadius: '16px 16px 16px 4px',
                   padding: '10px 16px',
                   fontSize: 14,
@@ -291,30 +291,21 @@ function ChatPageInner() {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
             <div style={{
               width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-              background: 'var(--accent-dim)',
-              border: '1px solid var(--accent-border)',
+              background: 'rgba(52, 211, 153, 0.10)',
+              border: '1px solid rgba(52, 211, 153, 0.20)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ color: 'var(--accent)', fontSize: 10 }}>✦</span>
+              <span style={{ color: 'var(--color-accent-teal)', fontSize: 10 }}>✦</span>
             </div>
             <div style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid var(--border-default)',
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-subtle)',
               borderRadius: '16px 16px 16px 4px',
               padding: '12px 16px',
               display: 'flex', alignItems: 'center', gap: 6,
             }}>
               {[0, 1, 2].map(n => (
-                <span
-                  key={n}
-                  className="animate-bounce-dot"
-                  style={{
-                    display: 'inline-block',
-                    width: 6, height: 6, borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.3)',
-                    animationDelay: `${n * 0.15}s`,
-                  }}
-                />
+                <span key={n} className="typing-dot" />
               ))}
             </div>
           </div>
@@ -395,10 +386,10 @@ function ChatPageInner() {
             rows={1}
             style={{
               flex: 1,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 12,
-              padding: '10px 16px',
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 999,
+              padding: '12px 18px',
               fontSize: 14,
               fontFamily: 'var(--font-body)',
               color: 'var(--text-primary)',
@@ -406,24 +397,31 @@ function ChatPageInner() {
               minHeight: 44,
               maxHeight: 160,
               outline: 'none',
-              transition: 'border-color 0.15s',
+              transition: 'border-color 0.2s, background 0.2s',
               opacity: !authenticated ? 0.4 : 1,
             }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'var(--accent-border)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'var(--border-default)')}
+            onFocus={e => {
+              e.currentTarget.style.borderColor = 'var(--color-accent-teal)';
+              e.currentTarget.style.background = 'var(--color-bg-card-strong)';
+            }}
+            onBlur={e => {
+              e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+              e.currentTarget.style.background = 'var(--color-bg-card)';
+            }}
           />
           <button
             onClick={() => send()}
             disabled={!input.trim() || loading || !authenticated}
             aria-label={locale === 'ka' ? 'გაგზავნა' : 'Send message'}
             style={{
-              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-              background: input.trim() && !loading && authenticated ? 'var(--gradient-accent)' : 'rgba(255,255,255,0.04)',
-              border: 'none',
+              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+              background: input.trim() && !loading && authenticated ? 'var(--gradient-primary)' : 'var(--color-bg-card)',
+              border: input.trim() && !loading && authenticated ? 'none' : '1px solid var(--color-border-subtle)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: input.trim() && !loading && authenticated ? 'pointer' : 'not-allowed',
-              opacity: !input.trim() || loading || !authenticated ? 0.35 : 1,
-              transition: 'background 0.15s, opacity 0.15s',
+              opacity: !input.trim() || loading || !authenticated ? 0.45 : 1,
+              boxShadow: input.trim() && !loading && authenticated ? 'var(--shadow-glow-teal)' : 'none',
+              transition: 'background 0.2s, opacity 0.2s, transform 0.2s, box-shadow 0.2s',
             }}
           >
             <ArrowUp size={18} color={input.trim() && !loading && authenticated ? '#0a0a0a' : 'var(--text-muted)'} />
