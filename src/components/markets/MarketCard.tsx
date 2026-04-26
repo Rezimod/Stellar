@@ -11,7 +11,7 @@ interface MarketCardProps {
 const DEFAULT_CATEGORY = {
   label: 'MARKET',
   emoji: '✦',
-  color: '#FFD166',
+  color: 'var(--stars)',
   bg: 'rgba(255,209,102,0.10)',
   border: 'rgba(255,209,102,0.22)',
 };
@@ -25,7 +25,7 @@ const CATEGORY_META: Partial<
   sky_event: {
     label: 'SKY',
     emoji: '🔭',
-    color: '#FFD166',
+    color: 'var(--stars)',
     bg: 'rgba(255,209,102,0.12)',
     border: 'rgba(255,209,102,0.25)',
   },
@@ -46,7 +46,7 @@ const CATEGORY_META: Partial<
   meteor: {
     label: 'METEOR',
     emoji: '☄',
-    color: '#FFD166',
+    color: 'var(--stars)',
     bg: 'rgba(255,209,102,0.12)',
     border: 'rgba(255,209,102,0.25)',
   },
@@ -60,7 +60,7 @@ const CATEGORY_META: Partial<
   mission: {
     label: 'MISSION',
     emoji: '🚀',
-    color: '#38F0FF',
+    color: 'var(--stl-teal)',
     bg: 'rgba(56,240,255,0.10)',
     border: 'rgba(56,240,255,0.22)',
   },
@@ -74,7 +74,7 @@ const CATEGORY_META: Partial<
   discovery: {
     label: 'DISCOVERY',
     emoji: '🔬',
-    color: '#34D399',
+    color: 'var(--success)',
     bg: 'rgba(52,211,153,0.10)',
     border: 'rgba(52,211,153,0.25)',
   },
@@ -91,9 +91,9 @@ const STATUS_META: Record<
   MarketStatus,
   { label: string; dot: string }
 > = {
-  open:      { label: 'Open',      dot: '#34D399' },
+  open:      { label: 'Open',      dot: 'var(--success)' },
   locked:    { label: 'Locked',    dot: '#FBBF24' },
-  resolved:  { label: 'Resolved',  dot: '#FFD166' },
+  resolved:  { label: 'Resolved',  dot: 'var(--stars)' },
   cancelled: { label: 'Cancelled', dot: '#94A3B8' },
 };
 
@@ -180,7 +180,7 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: '0.12em',
-              color: resolvedSide === 'YES' ? '#34D399' : '#F472B6',
+              color: resolvedSide === 'YES' ? 'var(--success)' : '#F472B6',
               background: resolvedSide === 'YES' ? 'rgba(52,211,153,0.10)' : 'rgba(244,114,182,0.10)',
               border: `1px solid ${resolvedSide === 'YES' ? 'rgba(52,211,153,0.3)' : 'rgba(244,114,182,0.3)'}`,
               borderRadius: 4,
@@ -248,7 +248,7 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
             fontSize: 9,
             fontWeight: 700,
             letterSpacing: '0.08em',
-            color: '#FFD166',
+            color: 'var(--stars)',
             background: 'rgba(255,209,102,0.10)',
             border: '1px solid rgba(255,209,102,0.32)',
             borderRadius: 999,
@@ -356,7 +356,7 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
           fontVariantNumeric: 'tabular-nums',
         }}
       >
-        <span style={{ color: '#FFD166' }}>✦ {compactInt(total)}</span>
+        <span style={{ color: 'var(--stars)' }}>✦ {compactInt(total)}</span>
         <span>
           {market.status === 'resolved' || market.status === 'cancelled'
             ? `Resolved ${formatRelative(Math.max(0, Date.now() - market.metadata.resolutionTime.getTime()))} ago`

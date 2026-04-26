@@ -43,7 +43,7 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <PoolRow label="YES pool" value={fmtInt(yes)} color="#34D399" />
+        <PoolRow label="YES pool" value={fmtInt(yes)} color="var(--success)" />
         <PoolRow label="NO pool" value={fmtInt(no)} color="#F472B6" />
         <div
           style={{

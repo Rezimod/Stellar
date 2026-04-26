@@ -151,7 +151,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                     style={{
                       background: correct ? 'rgba(52,211,153,0.15)' : 'rgba(239,68,68,0.15)',
                       border: correct ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(239,68,68,0.3)',
-                      color: correct ? '#34d399' : '#f87171',
+                      color: correct ? 'var(--success)' : '#f87171',
                     }}
                   >
                     {i + 1}
@@ -219,7 +219,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                         background: phase === 'feedback' && i === q.correct
                           ? 'rgba(52,211,153,0.3)'
                           : 'rgba(255,255,255,0.06)',
-                        color: phase === 'feedback' && i === q.correct ? '#34d399'
+                        color: phase === 'feedback' && i === q.correct ? 'var(--success)'
                           : phase === 'feedback' && i === selected ? '#ef4444'
                           : '#94a3b8',
                       }}
@@ -247,7 +247,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                   color: '#94a3b8',
                 }}
               >
-                <span className="font-semibold" style={{ color: selected === q.correct ? '#34d399' : '#f87171' }}>
+                <span className="font-semibold" style={{ color: selected === q.correct ? 'var(--success)' : '#f87171' }}>
                   {selected === q.correct ? '✓ Correct — ' : '✗ Incorrect — '}
                 </span>
                 {q.explanation[locale]}

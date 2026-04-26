@@ -197,7 +197,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
             <div key={tip.n} className="flex items-start gap-2">
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"
-                style={{ background: 'rgba(255,209,102,0.1)', color: '#FFD166', border: '1px solid rgba(255,209,102,0.2)' }}
+                style={{ background: 'rgba(255,209,102,0.1)', color: 'var(--stars)', border: '1px solid rgba(255,209,102,0.2)' }}
               >
                 {tip.n}
               </span>

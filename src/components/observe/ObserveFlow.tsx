@@ -298,7 +298,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
             <span className="text-[10px] text-slate-600">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
           </div>
           <p className="text-white font-semibold">{verification.identifiedObject}</p>
-          <p className="text-2xl font-bold" style={{ color: '#FFD166' }}>+{verification.starsEstimate} ✦</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
           {explorerUrl && (
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-[#14B8A6] truncate">
@@ -373,7 +373,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
           <div className="text-center mt-1">
             {verification.accepted ? (
               <>
-                <p className="text-2xl font-bold" style={{ color: '#FFD166' }}>+{verification.starsEstimate} ✦</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
                 <p className="text-slate-500 text-xs mt-1">Stars earned for this observation</p>
               </>
             ) : (

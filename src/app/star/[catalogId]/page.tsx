@@ -172,7 +172,7 @@ export default async function StarProofPage({
 
         {/* Hero */}
         <div style={{ textAlign: 'center', marginTop: 56 }}>
-          <div style={{ fontSize: 52, lineHeight: 1, color: '#FFD166', marginBottom: 20 }}>★</div>
+          <div style={{ fontSize: 52, lineHeight: 1, color: 'var(--stars)', marginBottom: 20 }}>★</div>
           <h1
             style={{
               fontFamily: 'Georgia, "Times New Roman", serif',

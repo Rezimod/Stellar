@@ -208,8 +208,8 @@ export default function HomeSkyPreview() {
   const moonWarn = moonIllum > 0.7 && status !== 'Skip';
 
   const SC = {
-    Go:    { color: '#34d399', border: 'rgba(52,211,153,0.22)',   bg: 'rgba(52,211,153,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(52,211,153,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(99,102,241,0.06) 0%, transparent 55%)' },
-    Maybe: { color: '#FFD166', border: 'rgba(255,209,102,0.2)',   bg: 'rgba(255,209,102,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255,209,102,0.10) 0%, transparent 55%)' },
+    Go:    { color: 'var(--success)', border: 'rgba(52,211,153,0.22)',   bg: 'rgba(52,211,153,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(52,211,153,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(99,102,241,0.06) 0%, transparent 55%)' },
+    Maybe: { color: 'var(--stars)', border: 'rgba(255,209,102,0.2)',   bg: 'rgba(255,209,102,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255,209,102,0.10) 0%, transparent 55%)' },
     Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(255,255,255,0.07)', bg: 'transparent', nebula: 'none' },
   }[status];
 
@@ -222,7 +222,7 @@ export default function HomeSkyPreview() {
     { label: 'Moon', icon: '☽', value: `${moonPct}%`, sub: moonPhaseName(moonIllum), warn: moonWarn },
   ];
 
-  const scoreColor = !skyScore ? '#94a3b8' : skyScore.score >= 70 ? '#34d399' : skyScore.score >= 50 ? '#FBBF24' : '#64748b';
+  const scoreColor = !skyScore ? '#94a3b8' : skyScore.score >= 70 ? 'var(--success)' : skyScore.score >= 50 ? '#FBBF24' : '#64748b';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -363,7 +363,7 @@ export default function HomeSkyPreview() {
                 if (!p) return null;
                 const quality = p.altitude > 30 ? 'good' : p.altitude > 10 ? 'ok' : 'low';
                 const pColor = PLANET_COLOR[p.key] ?? 'rgba(255,255,255,0.4)';
-                const altColor = quality === 'good' ? '#34d399' : quality === 'ok' ? '#FFD166' : 'rgba(148,163,184,0.35)';
+                const altColor = quality === 'good' ? 'var(--success)' : quality === 'ok' ? 'var(--stars)' : 'rgba(148,163,184,0.35)';
                 const totalRows = [moon, ...visiblePlanets].filter(Boolean).length;
                 return (
                   <div key={p.key} style={{
@@ -437,8 +437,8 @@ export default function HomeSkyPreview() {
             const badge = dayBadge(day);
             const { avgCloud: dc } = getNightStats(day);
             const sel2 = i === selectedDay;
-            const bs = badge === 'Go'    ? { color: '#34d399',               border: 'rgba(52,211,153,0.3)',   bg: 'rgba(52,211,153,0.07)' }
-                      : badge === 'Maybe' ? { color: '#FFD166',               border: 'rgba(255,209,102,0.25)', bg: 'rgba(255,209,102,0.06)' }
+            const bs = badge === 'Go'    ? { color: 'var(--success)',               border: 'rgba(52,211,153,0.3)',   bg: 'rgba(52,211,153,0.07)' }
+                      : badge === 'Maybe' ? { color: 'var(--stars)',               border: 'rgba(255,209,102,0.25)', bg: 'rgba(255,209,102,0.06)' }
                       :                     { color: 'rgba(148,163,184,0.45)', border: 'rgba(255,255,255,0.07)', bg: 'rgba(255,255,255,0.02)' };
             return (
               <button key={day.date} onClick={() => selectDay(i, day.date)} style={{

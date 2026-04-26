@@ -172,7 +172,7 @@ function AltitudeArc({ altitude, size = 44 }: { altitude: number; size?: number 
   const dotX = cx + R * Math.cos(theta);
   const dotY = cy - R * Math.sin(theta);
 
-  const dotColor = altitude > 30 ? '#34D399' : altitude > 10 ? '#F59E0B' : 'rgba(255,255,255,0.3)';
+  const dotColor = altitude > 30 ? 'var(--success)' : altitude > 10 ? '#F59E0B' : 'rgba(255,255,255,0.3)';
   const arcStroke = altitude > 30 ? 'rgba(52,211,153,0.2)' : altitude > 10 ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.08)';
 
   return (
@@ -216,11 +216,11 @@ const PLANET_ACCENT: Record<string, string> = {
 };
 
 const PLANET_EQUIPMENT: Record<string, { icon: string; label: string; detail: string; color: string }> = {
-  moon:    { icon: '👁', label: 'Naked Eye', detail: 'Craters visible with binoculars', color: '#34d399' },
-  mercury: { icon: '👁', label: 'Naked Eye', detail: 'Low on horizon at dusk/dawn', color: '#34d399' },
-  venus:   { icon: '👁', label: 'Naked Eye', detail: 'Phases visible in small telescope', color: '#34d399' },
+  moon:    { icon: '👁', label: 'Naked Eye', detail: 'Craters visible with binoculars', color: 'var(--success)' },
+  mercury: { icon: '👁', label: 'Naked Eye', detail: 'Low on horizon at dusk/dawn', color: 'var(--success)' },
+  venus:   { icon: '👁', label: 'Naked Eye', detail: 'Phases visible in small telescope', color: 'var(--success)' },
   mars:    { icon: '🔭', label: 'Telescope', detail: 'Surface detail at opposition', color: '#818cf8' },
-  jupiter: { icon: '🔭', label: 'Binoculars+', detail: '4 moons in binoculars, bands in scope', color: '#FFD166' },
+  jupiter: { icon: '🔭', label: 'Binoculars+', detail: '4 moons in binoculars, bands in scope', color: 'var(--stars)' },
   saturn:  { icon: '🔭', label: 'Telescope', detail: 'Rings visible at 40× magnification', color: '#818cf8' },
 };
 
@@ -253,7 +253,7 @@ export default function PlanetCard({ planet }: Props) {
           {planet.visible ? (
             <span
               className="inline-flex items-center self-start px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
-              style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: '#34D399' }}
+              style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: 'var(--success)' }}
             >
               <span className="w-1 h-1 rounded-full bg-[#34D399] mr-1 animate-pulse" />
               {t('visibleNow')}
@@ -277,7 +277,7 @@ export default function PlanetCard({ planet }: Props) {
           <p
             className="text-sm font-bold font-mono"
             style={{
-              color: planet.altitude > 30 ? '#34D399' : planet.altitude > 10 ? '#F59E0B' : 'rgba(255,255,255,0.3)',
+              color: planet.altitude > 30 ? 'var(--success)' : planet.altitude > 10 ? '#F59E0B' : 'rgba(255,255,255,0.3)',
             }}
           >
             {planet.altitude}°

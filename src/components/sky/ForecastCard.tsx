@@ -38,9 +38,9 @@ const kindConfig: Record<SkyKind, {
   barColor: string;
 }> = {
   go:    {
-    badge:   { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.3)', color: '#34D399', label: 'GO' },
+    badge:   { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.3)', color: 'var(--success)', label: 'GO' },
     border:  'rgba(52,211,153,0.2)',
-    barColor: '#34D399',
+    barColor: 'var(--success)',
   },
   maybe: {
     badge:   { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', color: '#F59E0B', label: 'MAYBE' },
@@ -55,7 +55,7 @@ const kindConfig: Record<SkyKind, {
 };
 
 function SkyIcon({ kind, size = 20 }: { kind: SkyKind; size?: number }) {
-  if (kind === 'go') return <Stars size={size} color="#34D399" strokeWidth={1.5} />;
+  if (kind === 'go') return <Stars size={size} color="var(--success)" strokeWidth={1.5} />;
   if (kind === 'maybe') return <CloudMoon size={size} color="#F59E0B" strokeWidth={1.5} />;
   return <Cloud size={size} color="#94A3B8" strokeWidth={1.5} />;
 }
@@ -195,7 +195,7 @@ export default function ForecastCard({ day, isToday }: Props) {
                 .map(h => {
                   const hr = h.time.slice(11, 16);
                   const cc = h.cloudCover;
-                  const barColor = cc < 30 ? '#34D399' : cc < 60 ? '#F59E0B' : '#EF4444';
+                  const barColor = cc < 30 ? 'var(--success)' : cc < 60 ? '#F59E0B' : '#EF4444';
                   return (
                     <div key={h.time} className="flex items-center gap-3">
                       <span className="text-xs font-mono w-10 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }}>

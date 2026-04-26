@@ -154,7 +154,7 @@ export default function AstraQuickAsk() {
             flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14, color: '#FFD166' }}>✦</span>
+              <span style={{ fontSize: 14, color: 'var(--stars)' }}>✦</span>
               <span style={{ color: 'white', fontWeight: 600, fontSize: 14 }}>ASTRA</span>
               <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>AI Astronomer</span>
             </div>
@@ -218,7 +218,7 @@ export default function AstraQuickAsk() {
                 {[0, 1, 2].map(i => (
                   <span key={i} style={{
                     width: 6, height: 6, borderRadius: '50%',
-                    background: '#FFD166', opacity: 0.4,
+                    background: 'var(--stars)', opacity: 0.4,
                     animation: `typingDot 1.2s ease-in-out ${i * 0.3}s infinite`,
                     display: 'inline-block',
                   }} />
@@ -252,7 +252,7 @@ export default function AstraQuickAsk() {
               style={{
                 width: 32, height: 32, borderRadius: 9, border: 'none', cursor: 'pointer',
                 background: input.trim() && !loading ? 'rgba(255,209,102,0.2)' : 'rgba(255,255,255,0.04)',
-                color: input.trim() && !loading ? '#FFD166' : 'rgba(255,255,255,0.2)',
+                color: input.trim() && !loading ? 'var(--stars)' : 'rgba(255,255,255,0.2)',
                 fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.2s, color 0.2s',
                 flexShrink: 0,

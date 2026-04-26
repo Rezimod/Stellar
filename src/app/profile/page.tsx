@@ -128,13 +128,13 @@ export default function ProfilePage() {
     if (obsCount >= 5 || completed.length >= 5) {
       return { type: 'advanced' as const, label: 'Advanced Node', emoji: '🛸',
         description: 'Telescope-grade contributions + environmental data',
-        color: 'var(--stl-gold)', reward: '100–500 ✦ per mission',
+        color: 'var(--stars)', reward: '100–500 ✦ per mission',
         upgradeHint: null };
     }
     if (completed.length >= 1 || obsCount >= 1) {
       return { type: 'observer' as const, label: 'Observer Node', emoji: '🔭',
         description: 'Verified sky observations with on-chain cNFT proofs',
-        color: '#38F0FF', reward: '50–250 ✦ per mission',
+        color: 'var(--stl-teal)', reward: '50–250 ✦ per mission',
         upgradeHint: 'Complete 5+ missions or submit a Bortle reading to become Advanced' };
     }
     return { type: 'passive' as const, label: 'Passive Node', emoji: '📱',
@@ -199,7 +199,7 @@ export default function ProfilePage() {
               >
                 <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'monospace' }}>{addrShort}</span>
                 {copied
-                  ? <Check size={12} color="#34d399" />
+                  ? <Check size={12} color="var(--success)" />
                   : <Copy size={12} color="rgba(255,255,255,0.3)" />
                 }
                 <a
@@ -217,8 +217,8 @@ export default function ProfilePage() {
         {/* — STATS ROW — */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 28 }}>
           {[
-            { value: `★ ${starsDisplay.toLocaleString()}`, label: 'Stars Earned', color: 'var(--stl-gold)' },
-            { value: String(completed.length), label: 'Missions Done', color: 'var(--stl-green)' },
+            { value: `★ ${starsDisplay.toLocaleString()}`, label: 'Stars Earned', color: 'var(--stars)' },
+            { value: String(completed.length), label: 'Missions Done', color: 'var(--success)' },
             { value: starsDisplay > 0 ? `~${gelWorth}₾` : String(obsCount), label: starsDisplay > 0 ? 'Store Value' : 'NFTs Minted', color: '#818cf8' },
           ].map(s => (
             <div key={s.label} style={{
@@ -241,7 +241,7 @@ export default function ProfilePage() {
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <p style={{ color: 'white', fontWeight: 700, fontSize: 16, margin: 0 }}>Network Status</p>
-            <Link href="/network" style={{ color: 'var(--stl-green)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Link href="/network" style={{ color: 'var(--success)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
               View network <ChevronRight size={13} />
             </Link>
           </div>
@@ -292,7 +292,7 @@ export default function ProfilePage() {
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <p style={{ color: 'white', fontWeight: 700, fontSize: 16, margin: 0 }}>My Discoveries</p>
-            <Link href="/missions" style={{ color: 'var(--stl-green)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Link href="/missions" style={{ color: 'var(--success)', fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
               View all <ChevronRight size={13} />
             </Link>
           </div>
@@ -333,7 +333,7 @@ export default function ProfilePage() {
                         style={{
                           display: 'inline-block', padding: '3px 8px', borderRadius: 20,
                           background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)',
-                          color: 'var(--stl-green)', fontSize: 10, fontWeight: 600, textDecoration: 'none',
+                          color: 'var(--success)', fontSize: 10, fontWeight: 600, textDecoration: 'none',
                         }}
                       >
                         On-chain Proof
@@ -373,7 +373,7 @@ export default function ProfilePage() {
             </Link>
             <Link href="/settings#notifications" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14, padding: '15px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Bell size={16} color="#FFD166" />
+                <Bell size={16} color="var(--stars)" />
               </div>
               <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 500, margin: 0, flex: 1 }}>Notifications</p>
               <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>On</span>

@@ -76,7 +76,7 @@ function colorForNode(market: Market): NodeColor {
 }
 
 const COLOR_MAP: Record<NodeColor, { bg: string; ring: string; label: string }> = {
-  live: { bg: '#34D399', ring: 'rgba(52,211,153,0.4)', label: 'Live' },
+  live: { bg: 'var(--success)', ring: 'rgba(52,211,153,0.4)', label: 'Live' },
   open: { bg: '#F59E0B', ring: 'rgba(245,158,11,0.32)', label: 'Open' },
   upcoming: { bg: 'rgba(56,240,255,0.55)', ring: 'rgba(56,240,255,0.25)', label: 'Upcoming' },
   resolved: { bg: 'rgba(148,163,184,0.5)', ring: 'rgba(148,163,184,0.2)', label: 'Resolved' },
@@ -327,7 +327,7 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
               >
                 {n.title}
               </span>
-              <span style={{ color: '#34D399', fontWeight: 700 }}>{n.yesPct}%</span>
+              <span style={{ color: 'var(--success)', fontWeight: 700 }}>{n.yesPct}%</span>
             </span>
           </a>
         );

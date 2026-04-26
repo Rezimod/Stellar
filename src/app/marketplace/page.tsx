@@ -34,9 +34,9 @@ const REDEEM_TIERS: RedeemTier[] = [
   { stars: 1000, reward: '20% off premium telescope', apiTier: '20% Telescope Discount' },
 ];
 
-const ACCENT = '#7C3AED';
-const ACCENT_SOFT = 'rgba(124,58,237,0.14)';
-const ACCENT_BORDER = 'rgba(124,58,237,0.32)';
+const ACCENT = 'var(--accent)';
+const ACCENT_SOFT = 'var(--accent-dim)';
+const ACCENT_BORDER = 'var(--accent-border)';
 
 export default function MarketplacePage() {
   const { authenticated, login, getAccessToken } = usePrivy();
@@ -257,7 +257,7 @@ export default function MarketplacePage() {
       {isTelescopeView && (
         <div className="flex gap-1.5 mb-5">
           {[
-            { id: 'tier-beginner',     label: 'Beginner',     color: '#34d399' },
+            { id: 'tier-beginner',     label: 'Beginner',     color: 'var(--success)' },
             { id: 'tier-intermediate', label: 'Mid',          color: '#F59E0B' },
             { id: 'tier-advanced',     label: 'Advanced',     color: '#A78BFA' },
           ].map(t => (
@@ -306,7 +306,7 @@ export default function MarketplacePage() {
       ) : isTelescopeView ? (
         <div className="flex flex-col gap-7">
           {telescopesByTier.beginner.length > 0 && (
-            <Tier id="tier-beginner" label="Beginner" sub="First telescope · Easy setup" color="#34d399">
+            <Tier id="tier-beginner" label="Beginner" sub="First telescope · Easy setup" color="var(--success)">
               {telescopesByTier.beginner.map((p, i) => (
                 <ProductCard key={p.id} product={p} showDealer={showDealer} dealerName={getDealerName(p.dealerId)} priority={i === 0} />
               ))}

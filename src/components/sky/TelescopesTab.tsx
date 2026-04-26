@@ -15,8 +15,8 @@ interface GuideCard {
 }
 
 const LEVEL_CONFIG: { id: Level; label: string; badge: string; color: string; subtitle: string }[] = [
-  { id: 'beginner',     label: 'Beginner',     badge: '🌱', color: '#34d399', subtitle: 'First Light' },
-  { id: 'intermediate', label: 'Intermediate', badge: '🔭', color: '#FFD166', subtitle: 'Going Deeper' },
+  { id: 'beginner',     label: 'Beginner',     badge: '🌱', color: 'var(--success)', subtitle: 'First Light' },
+  { id: 'intermediate', label: 'Intermediate', badge: '🔭', color: 'var(--stars)', subtitle: 'Going Deeper' },
   { id: 'advanced',     label: 'Advanced',     badge: '⚡', color: '#818cf8', subtitle: 'Serious Observer' },
   { id: 'pro',          label: 'Pro',          badge: '🚀', color: '#8B5CF6', subtitle: 'Observatory Level' },
 ];
@@ -302,7 +302,7 @@ export default function TelescopesTab() {
               <Link
                 href="/marketplace"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold transition-opacity hover:opacity-80"
-                style={{ color: '#FFD166' }}
+                style={{ color: 'var(--stars)' }}
               >
                 Browse telescopes at Astroman →
               </Link>

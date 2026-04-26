@@ -13,7 +13,7 @@ interface SkyBadgeProps {
 
 const config: Record<SkyCondition, { color: string; bg: string; border: string; defaultLabel: string }> = {
   go: {
-    color: '#34D399',
+    color: 'var(--success)',
     bg: 'rgba(52,211,153,0.1)',
     border: 'rgba(52,211,153,0.25)',
     defaultLabel: 'Clear Sky',

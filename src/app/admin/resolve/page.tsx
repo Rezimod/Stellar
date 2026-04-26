@@ -244,7 +244,7 @@ export default function AdminResolvePage() {
                           color: 'rgba(255,255,255,0.6)',
                         }}
                       >
-                        <span style={{ color: '#34D399' }}>YES if</span> {yesCond}
+                        <span style={{ color: 'var(--success)' }}>YES if</span> {yesCond}
                       </div>
                     )}
                     <div
@@ -266,7 +266,7 @@ export default function AdminResolvePage() {
                         borderRadius: 8,
                         border: '1px solid rgba(52,211,153,0.4)',
                         background: 'rgba(52,211,153,0.12)',
-                        color: '#34D399',
+                        color: 'var(--success)',
                         fontFamily: 'var(--font-mono)',
                         fontSize: 12,
                         fontWeight: 700,

@@ -87,12 +87,12 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
               flexShrink: 0,
             }}
           >
-            <Check size={13} color="#34D399" strokeWidth={2.5} />
+            <Check size={13} color="var(--success)" strokeWidth={2.5} />
           </div>
 
           {/* Text */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#34D399', fontFamily: 'var(--font-display)', display: 'block', lineHeight: 1.2 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--success)', fontFamily: 'var(--font-display)', display: 'block', lineHeight: 1.2 }}>
               Checked in today
             </span>
             <span style={{ fontSize: 10, color: 'var(--text-muted)', display: 'block', marginTop: 1 }}>
@@ -119,7 +119,7 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
                 return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <MoonPhase phase={tier.phase} size={12} glow />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#FFD166', fontFamily: 'var(--font-display)' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--stars)', fontFamily: 'var(--font-display)' }}>
                       {tier.streak > 0 ? `${tier.name} · ${tier.multiplier}×` : `${streak} day streak`}
                     </span>
                   </div>

@@ -121,7 +121,7 @@ export default function SolanaPayModal({
             <div className="w-12 h-12 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }}>
               <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M5 11l4 4 8-8" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 11l4 4 8-8" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <p className="text-[#34d399] font-semibold text-sm">Payment confirmed</p>

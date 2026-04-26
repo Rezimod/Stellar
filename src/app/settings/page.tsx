@@ -193,7 +193,7 @@ export default function SettingsPage() {
         <Row
           icon={<Phone size={15} />}
           iconBg="rgba(52,211,153,0.08)"
-          iconColor="#34d399"
+          iconColor="var(--success)"
           label={phone ? phone : 'Add Phone'}
           sublabel={phone ? 'Linked phone' : 'Add SMS login'}
           onClick={phone ? undefined : () => linkPhone()}
@@ -207,7 +207,7 @@ export default function SettingsPage() {
           <Row
             icon={<Chrome size={15} />}
             iconBg="rgba(255,209,102,0.08)"
-            iconColor="#FFD166"
+            iconColor="var(--stars)"
             label="Google Account"
             sublabel="Connected"
             last
@@ -227,7 +227,7 @@ export default function SettingsPage() {
             onClick={handleCopy}
             right={
               <div style={{ display: 'flex', gap: 10 }}>
-                {copied ? <Check size={15} color="#34d399" /> : <Copy size={15} color="var(--text-muted)" />}
+                {copied ? <Check size={15} color="var(--success)" /> : <Copy size={15} color="var(--text-muted)" />}
                 <a href={`https://explorer.solana.com/address/${address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
                   <ExternalLink size={15} color="var(--text-muted)" />
                 </a>
@@ -244,8 +244,8 @@ export default function SettingsPage() {
         <div style={{ padding: '16px 16px 0' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
             {[
-              { value: `✦ ${totalStars.toLocaleString()}`, label: 'Stars Balance', color: '#FFD166' },
-              { value: `~${gelWorth} ₾`, label: 'Store Value', color: '#34d399' },
+              { value: `✦ ${totalStars.toLocaleString()}`, label: 'Stars Balance', color: 'var(--stars)' },
+              { value: `~${gelWorth} ₾`, label: 'Store Value', color: 'var(--success)' },
               { value: availableRewards.length.toString(), label: 'Rewards Ready', color: '#818cf8' },
             ].map(s => (
               <div key={s.label} style={{ borderRadius: 12, padding: '12px 8px', textAlign: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
@@ -282,11 +282,11 @@ export default function SettingsPage() {
                 key={r.id}
                 icon={<Star size={14} />}
                 iconBg="rgba(255,209,102,0.1)"
-                iconColor="#FFD166"
+                iconColor="var(--stars)"
                 label={r.name}
                 sublabel={r.description}
                 right={
-                  <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', color: '#34d399', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', color: 'var(--success)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
                     Claim
                   </span>
                 }
@@ -363,7 +363,7 @@ export default function SettingsPage() {
         <Row
           icon={notificationsOn ? <Bell size={15} /> : <BellOff size={15} />}
           iconBg="rgba(255,209,102,0.08)"
-          iconColor="#FFD166"
+          iconColor="var(--stars)"
           label="Sky Alerts"
           sublabel="Notify when conditions are perfect"
           right={<Toggle on={notificationsOn} onToggle={() => setNotificationsOn(v => !v)} />}

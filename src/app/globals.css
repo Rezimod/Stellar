@@ -81,14 +81,10 @@
   --stellar-sol-green: rgba(20, 241, 149, 0.06);
   --stellar-gradient-sol: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, rgba(124, 58, 237, 0.06) 50%, rgba(168, 85, 247, 0.03) 100%);
 
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
-  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.15);
+  /* Shadows — globals-only. Card / hover / teal / gold live in design-tokens.css */
   --shadow-elevated: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
   --shadow-glow-accent: 0 0 20px rgba(99,102,241,0.25);
   --shadow-glow-stars: 0 0 20px rgba(255,209,102,0.20);
-  --shadow-glow-teal: 0 0 20px rgba(99,102,241,0.25);
-  --shadow-glow-gold: 0 0 20px rgba(255, 209, 102, 0.15);
 
   /* Radii */
   --radius-sm: 8px;
@@ -97,12 +93,9 @@
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Typography */
-  --font-display:  'Geist', system-ui, sans-serif;
-  --font-body:     'Geist', system-ui, sans-serif;
-  --font-serif:    'Cormorant Garamond', Georgia, serif;
-  --font-mono:     'JetBrains Mono', ui-monospace, monospace;
-  --font-georgian: 'Noto Sans Georgian', system-ui, sans-serif;
+  /* Typography — values come from next/font on <html> in layout.tsx
+     (Source Serif 4 / Public Sans / JetBrains Mono / Noto Sans Georgian).
+     Fallbacks live in the @theme block below. */
 
   /* Motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

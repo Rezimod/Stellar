@@ -12,13 +12,13 @@ interface Props {
 }
 
 const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
-  'Best Seller': { bg: 'rgba(255,209,102,0.15)', color: '#FFD166' },
-  'New': { bg: 'rgba(52,211,153,0.15)', color: '#34d399' },
+  'Best Seller': { bg: 'rgba(255,209,102,0.15)', color: 'var(--stars)' },
+  'New': { bg: 'rgba(52,211,153,0.15)', color: 'var(--success)' },
   'Popular': { bg: 'rgba(99,102,241,0.15)', color: '#818cf8' },
 };
 
 const SKILL_BADGE_STYLES: Record<string, { background: string; color: string; border: string }> = {
-  beginner: { background: 'rgba(52,211,153,0.28)', color: '#34d399', border: '1px solid rgba(52,211,153,0.55)' },
+  beginner: { background: 'rgba(52,211,153,0.28)', color: 'var(--success)', border: '1px solid rgba(52,211,153,0.55)' },
   intermediate: { background: 'rgba(245,158,11,0.28)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.55)' },
   advanced: { background: 'rgba(139,92,246,0.28)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.55)' },
 };

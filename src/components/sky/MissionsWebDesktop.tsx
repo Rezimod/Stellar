@@ -205,7 +205,7 @@ export default function MissionsWebDesktop({
                     width: 5,
                     height: 5,
                     borderRadius: 999,
-                    background: '#FFD166',
+                    background: 'var(--stars)',
                     boxShadow:
                       '0 0 0 3px rgba(255,209,102,0.14), 0 0 10px rgba(255,209,102,0.6)',
                     animation: 'stl-pulse 2.4s ease-in-out infinite',
@@ -216,7 +216,7 @@ export default function MissionsWebDesktop({
                     fontFamily: 'var(--font-mono)',
                     fontSize: 9.5,
                     letterSpacing: '0.26em',
-                    color: '#FFD166',
+                    color: 'var(--stars)',
                     fontWeight: 500,
                   }}
                 >
@@ -585,7 +585,7 @@ export default function MissionsWebDesktop({
                     width: 5,
                     height: 5,
                     borderRadius: 999,
-                    background: '#34D399',
+                    background: 'var(--success)',
                     boxShadow: '0 0 6px #34D399',
                     animation: 'stl-pulse 2.4s ease-in-out infinite',
                   }}
@@ -611,7 +611,7 @@ export default function MissionsWebDesktop({
                   }}
                 >
                   ↑ Up next ·{' '}
-                  <b style={{ color: '#FFD166', fontWeight: 500 }}>{upNextMission.m.name}</b> · {upNextMission.rise}
+                  <b style={{ color: 'var(--stars)', fontWeight: 500 }}>{upNextMission.m.name}</b> · {upNextMission.rise}
                 </div>
               )}
             </div>
@@ -647,7 +647,7 @@ export default function MissionsWebDesktop({
               zIndex: 5,
             }}
           >
-            <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FFD166', boxShadow: '0 0 6px rgba(255,209,102,0.6)' }} />}>Prime</LegendItem>
+            <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--stars)', boxShadow: '0 0 6px rgba(255,209,102,0.6)' }} />}>Prime</LegendItem>
             <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.7 }} />}>Target</LegendItem>
             <LegendItem swatch={
               <span style={{ width: 18, height: 1, background: 'repeating-linear-gradient(90deg,rgba(255,209,102,0.7) 0 4px,transparent 4px 8px)' }} />
@@ -694,7 +694,7 @@ export default function MissionsWebDesktop({
                   fontSize: 10,
                   letterSpacing: '0.22em',
                   textTransform: 'uppercase',
-                  color: '#34D399',
+                  color: 'var(--success)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 7,
@@ -702,7 +702,7 @@ export default function MissionsWebDesktop({
               >
                 <span
                   style={{
-                    width: 5, height: 5, borderRadius: 999, background: '#34D399',
+                    width: 5, height: 5, borderRadius: 999, background: 'var(--success)',
                     boxShadow: '0 0 6px #34D399',
                     animation: 'stl-pulse 2s ease-in-out infinite',
                   }}
@@ -828,13 +828,13 @@ export default function MissionsWebDesktop({
                       width: 7,
                       height: 12,
                       borderRadius: 2,
-                      background: i < 6 ? '#FFD166' : 'rgba(255,255,255,0.06)',
+                      background: i < 6 ? 'var(--stars)' : 'rgba(255,255,255,0.06)',
                       boxShadow: i < 6 ? '0 0 6px rgba(255,209,102,0.5)' : 'none',
                     }}
                   />
                 ))}
               </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#FFD166', letterSpacing: '0.1em' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--stars)', letterSpacing: '0.1em' }}>
                 6 / 9
               </span>
             </div>
@@ -992,7 +992,7 @@ export default function MissionsWebDesktop({
                     borderRadius: 5,
                     background: 'rgba(255,209,102,0.14)',
                     border: '1px solid rgba(255,209,102,0.3)',
-                    color: '#FFD166',
+                    color: 'var(--stars)',
                     marginLeft: 4,
                   }}
                 >
@@ -1020,7 +1020,7 @@ export default function MissionsWebDesktop({
                 fontSize: 9.5,
                 letterSpacing: '0.24em',
                 textTransform: 'uppercase',
-                color: '#38F0FF',
+                color: 'var(--stl-teal)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 7,
@@ -1029,7 +1029,7 @@ export default function MissionsWebDesktop({
             >
               <span
                 style={{
-                  width: 5, height: 5, borderRadius: 999, background: '#38F0FF',
+                  width: 5, height: 5, borderRadius: 999, background: 'var(--stl-teal)',
                   boxShadow: '0 0 6px #38F0FF',
                   animation: 'stl-pulse 2.4s ease-in-out infinite',
                 }}
@@ -1120,7 +1120,7 @@ export default function MissionsWebDesktop({
               >
                 Observing streak
               </h4>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#FFD166', letterSpacing: '0.12em' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--stars)', letterSpacing: '0.12em' }}>
                 {streak} nights
               </span>
             </div>
@@ -1154,7 +1154,7 @@ export default function MissionsWebDesktop({
                         justifyContent: 'center',
                         fontFamily: 'var(--font-mono)',
                         fontSize: 10,
-                        color: isToday ? '#34D399' : isOn ? '#FFD166' : 'rgba(255,255,255,0.25)',
+                        color: isToday ? 'var(--success)' : isOn ? 'var(--stars)' : 'rgba(255,255,255,0.25)',
                       }}
                     >
                       {isToday ? '●' : isOn ? '✦' : ''}

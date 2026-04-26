@@ -192,7 +192,7 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 11,
-            color: '#FFD166',
+            color: 'var(--stars)',
             textDecoration: 'none',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -258,7 +258,7 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
                       fontSize: 9,
                       fontWeight: 700,
                       letterSpacing: '0.08em',
-                      color: '#FFD166',
+                      color: 'var(--stars)',
                       background: 'rgba(255,209,102,0.10)',
                       border: '1px solid rgba(255,209,102,0.32)',
                       borderRadius: 999,
@@ -297,12 +297,12 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
                   color: 'rgba(255,255,255,0.55)',
                 }}
               >
-                <span style={{ color: '#34D399', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ color: 'var(--success)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                   YES {yesPct}%
                 </span>
                 <span
                   style={{
-                    color: urgent ? '#34D399' : 'rgba(255,255,255,0.5)',
+                    color: urgent ? 'var(--success)' : 'rgba(255,255,255,0.5)',
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
@@ -313,7 +313,7 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 10,
-                  color: '#FFD166',
+                  color: 'var(--stars)',
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                   marginTop: 2,

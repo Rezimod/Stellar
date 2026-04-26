@@ -115,7 +115,7 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
               className="flex items-center justify-between mt-3.5 pt-3"
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: '#FFD166' }}>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--stars)' }}>
                 +{mission.stars}
               </span>
               {!disabled && (

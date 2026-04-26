@@ -227,7 +227,7 @@ export default function ObserveResultPage() {
           {streakMultiplier > 1 && mintTier && (
             <div
               className="flex items-center gap-2 px-3 py-1.5 rounded-full self-start"
-              style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255,209,102,0.25)', fontSize: 10, fontWeight: 700, color: '#FFD166' }}
+              style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255,209,102,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
             >
               <MoonPhase phase={mintTier.phase} size={11} />
               <span>{mintTier.multiplier}× streak multiplier</span>
@@ -264,7 +264,7 @@ export default function ObserveResultPage() {
               nearestStar && (
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span style={{ fontSize: 14, color: '#FFD166', lineHeight: 1 }}>★</span>
+                    <span style={{ fontSize: 14, color: 'var(--stars)', lineHeight: 1 }}>★</span>
                     <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                       Name a star
                     </span>
@@ -300,7 +300,7 @@ export default function ObserveResultPage() {
                           ? 'rgba(255,209,102,0.15)'
                           : 'rgba(255,209,102,0.2)',
                         border: '1px solid rgba(255,209,102,0.35)',
-                        color: '#FFD166',
+                        color: 'var(--stars)',
                         opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                         cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
                       }}
@@ -308,7 +308,7 @@ export default function ObserveResultPage() {
                       {starClaiming && (
                         <div
                           className="w-3 h-3 rounded-full border-2 animate-spin"
-                          style={{ borderColor: 'rgba(255,209,102,0.4)', borderTopColor: '#FFD166' }}
+                          style={{ borderColor: 'rgba(255,209,102,0.4)', borderTopColor: 'var(--stars)' }}
                         />
                       )}
                       Inscribe
@@ -333,8 +333,8 @@ export default function ObserveResultPage() {
             ) : (
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1.5">
-                  <span style={{ fontSize: 14, color: '#FFD166' }}>★</span>
-                  <span className="text-base font-semibold" style={{ color: '#FFD166' }}>
+                  <span style={{ fontSize: 14, color: 'var(--stars)' }}>★</span>
+                  <span className="text-base font-semibold" style={{ color: 'var(--stars)' }}>
                     {starClaimed.chosenName}
                   </span>
                 </div>

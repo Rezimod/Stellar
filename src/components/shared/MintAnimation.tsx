@@ -111,13 +111,13 @@ export default function MintAnimation({
         <div style={{ position: 'relative', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {done ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#34d399" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+              stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
               style={{ filter: 'drop-shadow(0 0 10px rgba(52,211,153,0.9))' }}>
               <polyline points="20 6 9 17 4 12" />
             </svg>
           ) : (
             <div className="animate-pulse rounded-full" style={{
-              width: 10, height: 10, background: '#FFD166',
+              width: 10, height: 10, background: 'var(--stars)',
               boxShadow: '0 0 20px rgba(255,209,102,0.9), 0 0 40px rgba(255,209,102,0.35)',
             }} />
           )}

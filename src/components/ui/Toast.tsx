@@ -50,7 +50,7 @@ const variantStyles: Record<ToastVariant, { border: string; icon: string; bg: st
   success: {
     bg:     'rgba(15, 29, 50, 0.92)',
     border: 'rgba(52, 211, 153, 0.35)',
-    icon:   '#34D399',
+    icon:   'var(--success)',
   },
   error: {
     bg:     'rgba(15, 29, 50, 0.92)',
@@ -65,7 +65,7 @@ const variantStyles: Record<ToastVariant, { border: string; icon: string; bg: st
   reward: {
     bg:     'rgba(15, 29, 50, 0.92)',
     border: 'rgba(255, 209, 102, 0.40)',
-    icon:   '#FFD166',
+    icon:   'var(--stars)',
   },
 };
 

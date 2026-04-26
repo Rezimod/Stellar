@@ -134,7 +134,7 @@ export default function TestAdapterPage() {
               marginTop: 10,
               padding: '8px 12px',
               borderRadius: 8,
-              background: '#FFD166',
+              background: 'var(--stars)',
               color: '#0a0a0a',
               fontFamily: 'var(--font-mono)',
               fontSize: 12,

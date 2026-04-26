@@ -16,7 +16,7 @@ export default function ExplorationIcon({ size = 56 }: { size?: number }) {
       <g transform="translate(28 30) rotate(-35)">
         <path d="M -3 10 Q 0 22 0 24 Q 0 22 3 10 Z" fill="url(#ei-flame)" />
         <path d="M -3 -16 Q -3 -20 0 -20 Q 3 -20 3 -16 L 3 10 L -3 10 Z" fill="url(#ei-body)" />
-        <circle cx="0" cy="-10" r="2" fill="#38F0FF" opacity="0.85" />
+        <circle cx="0" cy="-10" r="2" fill="var(--stl-teal)" opacity="0.85" />
         <circle cx="0" cy="-10" r="2" fill="none" stroke="#2A3A52" strokeWidth="0.5" />
         <path d="M -3 6 L -7 12 L -3 10 Z" fill="#C8763A" />
         <path d="M 3 6 L 7 12 L 3 10 Z" fill="#C8763A" />

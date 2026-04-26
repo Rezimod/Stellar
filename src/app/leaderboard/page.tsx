@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import PageContainer from '@/components/layout/PageContainer';
 
 const RANK_LABELS: Record<string, { label: string; color: string }> = {
-  Celestial:  { label: 'Celestial',  color: '#FFD166' },
+  Celestial:  { label: 'Celestial',  color: 'var(--stars)' },
   Pathfinder: { label: 'Pathfinder', color: '#7A5FFF' },
   Observer:   { label: 'Observer',   color: '#818cf8' },
   Stargazer:  { label: 'Stargazer',  color: '#94a3b8' },
@@ -101,7 +101,7 @@ const PODIUM_CONFIG = [
   },
   {
     rankNum: 1,
-    rankColor: '#FFD166',
+    rankColor: 'var(--stars)',
     border: 'rgba(255,209,102,0.4)',
     bg: 'rgba(255,209,102,0.07)',
     padTop: 0,
@@ -227,7 +227,7 @@ export default function LeaderboardPage() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
             style={
               activeTab === tab
-                ? { background: 'rgba(255,209,102,0.12)', color: '#FFD166', border: '1px solid rgba(255,209,102,0.22)' }
+                ? { background: 'rgba(255,209,102,0.12)', color: 'var(--stars)', border: '1px solid rgba(255,209,102,0.22)' }
                 : { color: 'var(--color-text-secondary)' }
             }
           >
@@ -339,7 +339,7 @@ export default function LeaderboardPage() {
                     <div className="flex flex-col items-center gap-1">
                       <span
                         className="font-bold"
-                        style={{ fontSize: isFirst ? '0.9rem' : '0.8rem', color: '#FFD166' }}
+                        style={{ fontSize: isFirst ? '0.9rem' : '0.8rem', color: 'var(--stars)' }}
                       >
                         {entry.stars.toLocaleString()} ✦
                       </span>
@@ -369,7 +369,7 @@ export default function LeaderboardPage() {
               : entries.map((entry, i) => {
                   const rankLabel = RANK_LABELS[entry.rank] ?? RANK_LABELS['Stargazer'];
                   const isCurrentUser = currentWallet && entry.wallet.toLowerCase() === currentWallet.toLowerCase();
-                  const rankNumColor = i === 0 ? '#FFD166' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--color-text-muted)';
+                  const rankNumColor = i === 0 ? 'var(--stars)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--color-text-muted)';
                   const avatarColor = i < 3 ? rankNumColor : walletColor(entry.wallet);
                   const rowBg = i % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent';
 
@@ -422,7 +422,7 @@ export default function LeaderboardPage() {
 
                       <span
                         className="font-bold flex-shrink-0"
-                        style={{ fontSize: 'var(--text-sm)', color: '#FFD166' }}
+                        style={{ fontSize: 'var(--text-sm)', color: 'var(--stars)' }}
                       >
                         {entry.stars.toLocaleString()} <span className="font-normal text-[10px]">✦</span>
                       </span>

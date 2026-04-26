@@ -27,12 +27,12 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
   },
   gold: {
     background: 'rgba(255,209,102,0.1)',
-    color: '#FFD166',
+    color: 'var(--stars)',
     border: '1px solid rgba(255,209,102,0.2)',
   },
   green: {
     background: 'rgba(52,211,153,0.1)',
-    color: '#34D399',
+    color: 'var(--success)',
     border: '1px solid rgba(52,211,153,0.2)',
   },
   amber: {
@@ -55,8 +55,8 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
 const dotColors: Record<BadgeVariant, string> = {
   default: 'rgba(255,255,255,0.4)',
   teal:    '#818cf8',
-  gold:    '#FFD166',
-  green:   '#34D399',
+  gold:    'var(--stars)',
+  green:   'var(--success)',
   amber:   '#F59E0B',
   red:     '#EF4444',
   oracle:  '#818CF8',

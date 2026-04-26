@@ -78,7 +78,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
             {('missionId' in planet && (planet.key === 'moon' || planet.key === 'jupiter')) && (
               <span
                 className="inline-flex items-center gap-1 mb-1.5 px-1.5 py-0.5 rounded self-start text-[8px] uppercase tracking-widest font-bold"
-                style={{ background: 'rgba(255,209,102,0.15)', border: '1px solid rgba(255,209,102,0.3)', color: '#FFD166' }}
+                style={{ background: 'rgba(255,209,102,0.15)', border: '1px solid rgba(255,209,102,0.3)', color: 'var(--stars)' }}
               >
                 <Star size={7} /> {locale === 'ka' ? 'საუკეთესო' : 'Best target'}
               </span>
@@ -134,7 +134,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
           {'missionId' in planet && planet.missionId && (
             <Link href="/missions" onClick={onClose}
               className="inline-flex items-center gap-1 text-xs font-medium hover:opacity-80"
-              style={{ color: '#FFD166' }}>
+              style={{ color: 'var(--stars)' }}>
               <Sparkles size={11} />
               {locale === 'ka' ? 'მისია →' : 'Mission →'}
             </Link>
@@ -176,7 +176,7 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
               {(p.key === 'moon' || p.key === 'jupiter') && (
                 <div
                   className="absolute top-1 left-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[6px] uppercase tracking-wide font-bold"
-                  style={{ background: 'rgba(255,209,102,0.25)', border: '1px solid rgba(255,209,102,0.4)', color: '#FFD166', backdropFilter: 'blur(4px)' }}
+                  style={{ background: 'rgba(255,209,102,0.25)', border: '1px solid rgba(255,209,102,0.4)', color: 'var(--stars)', backdropFilter: 'blur(4px)' }}
                 >
                   <Star size={5} />
                   {locale === 'ka' ? '#1' : '#1'}
@@ -224,8 +224,8 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
 // ─── Deep Sky Tab ─────────────────────────────────────────────────────────────
 
 const EQ_BADGES: Record<string, { label: { en: string; ka: string }; Icon: React.FC<{ size?: number; color?: string }>; color: string }> = {
-  naked_eye:   { label: { en: 'Naked Eye',    ka: 'შიშველი თვალი' }, Icon: Eye,        color: '#34d399' },
-  binoculars:  { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       Icon: Binoculars, color: '#FFD166' },
+  naked_eye:   { label: { en: 'Naked Eye',    ka: 'შიშველი თვალი' }, Icon: Eye,        color: 'var(--success)' },
+  binoculars:  { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       Icon: Binoculars, color: 'var(--stars)' },
   small_scope: { label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   Icon: Telescope,  color: '#818cf8' },
   large_scope: { label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   Icon: Telescope,  color: '#8B5CF6' },
 };
@@ -276,7 +276,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
               style={active ? {
                 background: 'rgba(255,209,102,0.12)',
                 border: '1px solid rgba(255,209,102,0.3)',
-                color: '#FFD166',
+                color: 'var(--stars)',
               } : {
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
@@ -327,7 +327,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                 {kidsMode ? (
                   <>
                     <p className="text-slate-300 text-xs leading-relaxed flex items-start gap-1.5">
-                      <Star size={11} style={{ color: '#FFD166', flexShrink: 0, marginTop: 1 }} />
+                      <Star size={11} style={{ color: 'var(--stars)', flexShrink: 0, marginTop: 1 }} />
                       {obj.kidsLine[locale]}
                     </p>
                     <div className="rounded-lg p-3 text-xs text-[#818cf8]/80 flex items-start gap-2"
@@ -362,7 +362,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                     href="/missions"
                     onClick={e => e.stopPropagation()}
                     className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80 mt-1"
-                    style={{ color: '#FFD166' }}
+                    style={{ color: 'var(--stars)' }}
                   >
                     <Sparkles size={12} />
                     {locale === 'ka' ? `${obj.name[locale]} მისიის დაწყება →` : `Start ${obj.name[locale]} Mission →`}
@@ -447,8 +447,8 @@ const GLOSSARY_TERMS = [
 ];
 
 const BORTLE_SEGMENTS = [
-  { range: '1–2', color: '#34d399', label: { en: 'Pristine',  ka: 'პრისტინული'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
-  { range: '3–4', color: '#FFD166', label: { en: 'Rural',     ka: 'სოფელი'       }, desc: { en: 'Milky Way visible, 100+ stars, good for deep sky',      ka: 'ირმის ნახტომი ჩანს, 100+ ვარსკვლავი, კარგი ღრმა ცისთვის' } },
+  { range: '1–2', color: 'var(--success)', label: { en: 'Pristine',  ka: 'პრისტინული'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
+  { range: '3–4', color: 'var(--stars)', label: { en: 'Rural',     ka: 'სოფელი'       }, desc: { en: 'Milky Way visible, 100+ stars, good for deep sky',      ka: 'ირმის ნახტომი ჩანს, 100+ ვარსკვლავი, კარგი ღრმა ცისთვის' } },
   { range: '5–6', color: '#f97316', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
   { range: '7–9', color: '#ef4444', label: { en: 'City',      ka: 'ქალაქი'       }, desc: { en: 'Moon and brightest planets only',                        ka: 'მხოლოდ მთვარე და ყველაზე კაშკაში პლანეტები' } },
 ];
@@ -772,7 +772,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
             <div className="flex items-center gap-3">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: '#FFD166' }}
+                style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: 'var(--stars)' }}
               >
                 {card.step}
               </div>
@@ -796,7 +796,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
                     href={card.link.href}
                     onClick={e => e.stopPropagation()}
                     className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
-                    style={{ color: '#FFD166' }}
+                    style={{ color: 'var(--stars)' }}
                   >
                     {card.link[locale]}
                   </Link>
@@ -1056,7 +1056,7 @@ export default function LearnPage() {
                   padding: '4px 10px', borderRadius: '999px',
                   background: 'rgba(52,211,153,0.08)',
                   border: '1px solid rgba(52,211,153,0.2)',
-                  fontSize: '11px', color: '#34d399', fontWeight: 500,
+                  fontSize: '11px', color: 'var(--success)', fontWeight: 500,
                 }}>
                   <span>✓</span>
                   <span>{completedQuizzes.length} {locale === 'ka' ? 'ქვიზი' : 'quizzes'}</span>
@@ -1066,7 +1066,7 @@ export default function LearnPage() {
                   padding: '4px 10px', borderRadius: '999px',
                   background: 'rgba(255,209,102,0.08)',
                   border: '1px solid rgba(255,209,102,0.2)',
-                  fontSize: '11px', color: '#FFD166', fontWeight: 500,
+                  fontSize: '11px', color: 'var(--stars)', fontWeight: 500,
                 }}>
                   <span>✦</span>
                   <span>{completedQuizzes.reduce((s, r) => s + r.stars, 0)} {locale === 'ka' ? 'ვარსკვლავი' : 'earned'}</span>
@@ -1090,7 +1090,7 @@ export default function LearnPage() {
                 style={active ? {
                   background: 'rgba(255,209,102,0.12)',
                   border: '1px solid rgba(255,209,102,0.3)',
-                  color: '#FFD166',
+                  color: 'var(--stars)',
                 } : {
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.08)',

@@ -56,7 +56,7 @@ export default function StatsBar() {
               fontFamily: 'var(--font-serif)',
               fontSize: 13,
               fontWeight: 600,
-              color: allDone ? '#34d399' : '#FFD166',
+              color: allDone ? 'var(--success)' : 'var(--stars)',
               letterSpacing: '-0.005em',
             }}
           >

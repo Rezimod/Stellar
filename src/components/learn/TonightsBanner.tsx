@@ -148,17 +148,17 @@ export default function TonightsBanner({ locale }: Props) {
               <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7, flexShrink: 0 }}>
                 <span style={{
                   position: 'absolute', inset: 0, borderRadius: '50%',
-                  background: '#34d399',
+                  background: 'var(--success)',
                   animation: 'liveRing 1.8s ease-out infinite',
                   opacity: 0,
                 }} />
                 <span style={{
-                  position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#34d399',
+                  position: 'relative', width: 7, height: 7, borderRadius: '50%', background: 'var(--success)',
                   boxShadow: '0 0 6px #34d399',
                   display: 'block',
                 }} />
               </span>
-              <span style={{ fontSize: '9px', color: '#34d399', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>
+              <span style={{ fontSize: '9px', color: 'var(--success)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>
                 {locale === 'ka' ? 'ახლა ხილვადია' : 'Visible now'}
               </span>
             </div>

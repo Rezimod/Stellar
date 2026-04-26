@@ -39,9 +39,9 @@ export default function RewardsSection() {
           const pct = Math.round(r.progress * 100);
 
           const progressColor = r.unlocked
-            ? '#34d399'
+            ? 'var(--success)'
             : r.progress > 0
-            ? '#FFD166'
+            ? 'var(--stars)'
             : 'rgba(148,163,184,0.3)';
 
           return (
@@ -127,7 +127,7 @@ export default function RewardsSection() {
                             className="text-[9px] px-1.5 py-0.5 rounded-full border"
                             style={{
                               borderColor: done ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.06)',
-                              color: done ? '#34d399' : '#4a5568',
+                              color: done ? 'var(--success)' : '#4a5568',
                             }}
                           >
                             {m?.emoji} {done ? '✓' : '○'}
@@ -144,7 +144,7 @@ export default function RewardsSection() {
                         style={{
                           background: 'rgba(7,11,20,0.8)',
                           border: '1px solid rgba(255,209,102,0.2)',
-                          color: '#FFD166',
+                          color: 'var(--stars)',
                         }}
                       >
                         {r.code}
@@ -155,7 +155,7 @@ export default function RewardsSection() {
                         style={{
                           background: 'rgba(99,102,241,0.06)',
                           border: '1px solid rgba(99,102,241,0.15)',
-                          color: copied === r.id ? '#34d399' : '#64748b',
+                          color: copied === r.id ? 'var(--success)' : '#64748b',
                         }}
                       >
                         {copied === r.id ? <Check size={14} /> : <Copy size={14} />}
@@ -168,7 +168,7 @@ export default function RewardsSection() {
                         style={{
                           background: 'linear-gradient(135deg, rgba(255,209,102,0.15), rgba(255,209,102,0.08))',
                           border: '1px solid rgba(255,209,102,0.25)',
-                          color: '#FFD166',
+                          color: 'var(--stars)',
                         }}
                       >
                         Redeem →
@@ -182,7 +182,7 @@ export default function RewardsSection() {
                       style={{
                         background: 'rgba(52,211,153,0.08)',
                         border: '1px solid rgba(52,211,153,0.2)',
-                        color: '#34d399',
+                        color: 'var(--success)',
                       }}
                     >
                       Mark as Claimed ✓

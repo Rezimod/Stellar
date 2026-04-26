@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import type { NetworkObservation, NodeType } from '@/app/api/network/observations/route';
 
 function bortleColor(b: number): string {
-  if (b <= 2) return '#34D399';
+  if (b <= 2) return 'var(--success)';
   if (b <= 4) return '#86EFAC';
   if (b <= 6) return '#FCD34D';
   if (b <= 8) return '#F97316';
@@ -14,8 +14,8 @@ function bortleColor(b: number): string {
 
 const NODE_COLOR: Record<NodeType, string> = {
   passive: '#9CA3AF',
-  observer: '#38F0FF',
-  advanced: '#FFD166',
+  observer: 'var(--stl-teal)',
+  advanced: 'var(--stars)',
 };
 
 function formatWallet(w: string | null): string {

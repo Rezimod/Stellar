@@ -368,7 +368,7 @@ export default function DiscoverySealed({
                   cy="25"
                   r="20"
                   fill="none"
-                  stroke={skyScore >= 70 ? 'var(--stl-gold)' : skyScore >= 50 ? '#38F0FF' : '#ef4444'}
+                  stroke={skyScore >= 70 ? 'var(--stl-gold)' : skyScore >= 50 ? 'var(--stl-teal)' : '#ef4444'}
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeDasharray={scoreDash}

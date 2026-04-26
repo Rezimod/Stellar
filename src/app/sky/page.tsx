@@ -181,9 +181,9 @@ function scoreColorClass(score: number): string {
 }
 
 function scoreTagline(score: number): { text: string; color: string } {
-  if (score >= 85) return { text: 'Perfect night — set up the scope', color: '#34d399' };
-  if (score >= 65) return { text: 'Good observation window', color: '#34d399' };
-  if (score >= 45) return { text: 'Fair — pick targets carefully', color: '#FFD166' };
+  if (score >= 85) return { text: 'Perfect night — set up the scope', color: 'var(--success)' };
+  if (score >= 65) return { text: 'Good observation window', color: 'var(--success)' };
+  if (score >= 45) return { text: 'Fair — pick targets carefully', color: 'var(--stars)' };
   if (score >= 25) return { text: 'Tough night — maybe tomorrow', color: '#f97316' };
   return { text: 'Stay in. Read about telescopes.', color: '#ef4444' };
 }

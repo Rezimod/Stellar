@@ -710,7 +710,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             {mintTier && mintTier.multiplier > 1 && (
               <div
                 className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255,209,102,0.25)', fontSize: 10, fontWeight: 700, color: '#FFD166' }}
+                style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255,209,102,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
               >
                 <MoonPhase phase={mintTier.phase} size={11} />
                 <span>{mintTier.multiplier}×</span>
@@ -718,7 +718,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
             <p
               className="relative font-black leading-none"
-              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "#FFD166", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255,209,102,0.8), 0 0 48px rgba(255,209,102,0.4)', letterSpacing: '-0.02em' }}
+              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--stars)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255,209,102,0.8), 0 0 48px rgba(255,209,102,0.4)', letterSpacing: '-0.02em' }}
             >
               +{starsEarned}
             </p>
@@ -842,7 +842,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 ) : (
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span style={{ fontSize: 14, color: '#FFD166', lineHeight: 1 }}>★</span>
+                      <span style={{ fontSize: 14, color: 'var(--stars)', lineHeight: 1 }}>★</span>
                       <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                         Name a star
                       </span>
@@ -878,7 +878,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                             ? 'rgba(255,209,102,0.15)'
                             : 'rgba(255,209,102,0.2)',
                           border: '1px solid rgba(255,209,102,0.35)',
-                          color: '#FFD166',
+                          color: 'var(--stars)',
                           opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                           cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
                         }}
@@ -886,7 +886,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         {starClaiming && (
                           <div
                             className="w-3 h-3 rounded-full border-2 animate-spin"
-                            style={{ borderColor: 'rgba(255,209,102,0.4)', borderTopColor: '#FFD166' }}
+                            style={{ borderColor: 'rgba(255,209,102,0.4)', borderTopColor: 'var(--stars)' }}
                           />
                         )}
                         Inscribe
@@ -911,8 +911,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               ) : (
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-1.5">
-                    <span style={{ fontSize: 14, color: '#FFD166' }}>★</span>
-                    <span className="text-base font-semibold" style={{ color: '#FFD166' }}>
+                    <span style={{ fontSize: 14, color: 'var(--stars)' }}>★</span>
+                    <span className="text-base font-semibold" style={{ color: 'var(--stars)' }}>
                       {starClaimed.chosenName}
                     </span>
                   </div>

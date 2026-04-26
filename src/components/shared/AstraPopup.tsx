@@ -346,7 +346,7 @@ export default function AstraPopup() {
                   top: -2,
                   left: '50%',
                   width: 4, height: 4, borderRadius: '50%',
-                  background: '#FFD166',
+                  background: 'var(--stars)',
                   transform: 'translateX(-50%)',
                   boxShadow: '0 0 4px rgba(255,209,102,0.7)',
                 }}
@@ -360,7 +360,7 @@ export default function AstraPopup() {
                 position: 'absolute',
                 top: 6, right: 6,
                 width: 6, height: 6, borderRadius: '50%',
-                background: '#34D399',
+                background: 'var(--success)',
                 animation: 'astraLive 1.8s ease-in-out infinite',
               }}
             />

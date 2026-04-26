@@ -57,7 +57,7 @@ export default function RecentlyResolved({ markets }: { markets: Market[] }) {
           const badgeColor = cancelled
             ? '#94A3B8'
             : isYes
-              ? '#34D399'
+              ? 'var(--success)'
               : '#F472B6';
           const badgeBg = cancelled
             ? 'rgba(148,163,184,0.10)'

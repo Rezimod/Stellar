@@ -18,7 +18,7 @@ import type { ObserverAdvantage } from '@/lib/observer-advantage';
 const DEFAULT_CATEGORY = {
   label: 'MARKET',
   emoji: '✦',
-  color: '#FFD166',
+  color: 'var(--stars)',
   bg: 'rgba(255,209,102,0.10)',
   border: 'rgba(255,209,102,0.22)',
 };
@@ -32,7 +32,7 @@ const CATEGORY_META: Partial<
   sky_event: {
     label: 'SKY EVENT',
     emoji: '🔭',
-    color: '#FFD166',
+    color: 'var(--stars)',
     bg: 'rgba(255,209,102,0.12)',
     border: 'rgba(255,209,102,0.25)',
   },
@@ -53,7 +53,7 @@ const CATEGORY_META: Partial<
   meteor: {
     label: 'METEOR',
     emoji: '☄',
-    color: '#FFD166',
+    color: 'var(--stars)',
     bg: 'rgba(255,209,102,0.12)',
     border: 'rgba(255,209,102,0.25)',
   },
@@ -67,7 +67,7 @@ const CATEGORY_META: Partial<
   mission: {
     label: 'MISSION',
     emoji: '🚀',
-    color: '#38F0FF',
+    color: 'var(--stl-teal)',
     bg: 'rgba(56,240,255,0.10)',
     border: 'rgba(56,240,255,0.22)',
   },
@@ -81,7 +81,7 @@ const CATEGORY_META: Partial<
   discovery: {
     label: 'DISCOVERY',
     emoji: '🔬',
-    color: '#34D399',
+    color: 'var(--success)',
     bg: 'rgba(52,211,153,0.10)',
     border: 'rgba(52,211,153,0.25)',
   },

@@ -46,14 +46,14 @@ export default function LiveStatsBar() {
       }}>
         {items.map(item => (
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ color: '#34d399', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+            <span style={{ color: 'var(--success)', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
               {item.value}
             </span>
             <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>{item.label}</span>
           </div>
         ))}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
           <span style={{ color: 'rgba(52,211,153,0.6)', fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Live</span>
         </div>
       </div>

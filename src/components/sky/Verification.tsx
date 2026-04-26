@@ -65,7 +65,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
               style={{
                 background: conditionOk ? 'rgba(52,211,153,0.08)' : 'rgba(251,191,36,0.08)',
                 border: `1px solid ${conditionOk ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`,
-                color: conditionOk ? '#34d399' : '#fbbf24',
+                color: conditionOk ? 'var(--success)' : '#fbbf24',
               }}
             >
               {conditionOk ? <><CheckCircle2 size={10} /> Clear sky</> : <><AlertTriangle size={10} /> Cloudy</>}
@@ -121,7 +121,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
 
         {/* Oracle badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
           <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>
             Sky Oracle · Open-Meteo · {new Date(sky.verifiedAt).toLocaleTimeString()}
           </span>

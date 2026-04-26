@@ -35,10 +35,10 @@ const THEMES: Record<QuizTheme, {
     background:
       'radial-gradient(circle at 80% 30%, rgba(56,240,255,0.12) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(100,180,220,0.06) 0%, transparent 50%), linear-gradient(145deg, #081624 0%, #070b18 100%)',
     border: 'rgba(56,240,255,0.15)',
-    accent: '#38F0FF',
+    accent: 'var(--stl-teal)',
     buttonBg: 'rgba(56,240,255,0.1)',
     buttonBorder: 'rgba(56,240,255,0.3)',
-    buttonFill: '#38F0FF',
+    buttonFill: 'var(--stl-teal)',
   },
   cosmos: {
     background:
@@ -122,7 +122,7 @@ export default function QuizCard({
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontSize: 8,
-                color: b.variant === 'new' ? '#38F0FF'
+                color: b.variant === 'new' ? 'var(--stl-teal)'
                      : b.variant === 'done' ? '#86efac'
                      : '#A78BE8',
                 background: b.variant === 'new' ? 'rgba(56,240,255,0.14)'
@@ -180,7 +180,7 @@ export default function QuizCard({
             <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
               {totalQuestions} Q · BEST {Math.round((bestPct! / 100) * totalQuestions)}/{totalQuestions}
             </span>
-            <span style={{ fontSize: 10, color: '#FFD166', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, color: 'var(--stars)', fontWeight: 600 }}>
               +{starsEarned ?? 0} earned
             </span>
           </div>
@@ -189,7 +189,7 @@ export default function QuizCard({
             <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
               {totalQuestions} QUESTIONS
             </span>
-            <span style={{ fontSize: 10, color: '#FFD166', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, color: 'var(--stars)', fontWeight: 600 }}>
               +{reward} ✦
             </span>
           </div>

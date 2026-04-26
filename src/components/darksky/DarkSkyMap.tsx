@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { LOCATIONS } from '@/lib/darksky-locations';
 
 function bortleColor(b: number): string {
-  if (b <= 2) return '#34D399';
+  if (b <= 2) return 'var(--success)';
   if (b <= 4) return '#86EFAC';
   if (b <= 6) return '#FCD34D';
   if (b <= 8) return '#F97316';

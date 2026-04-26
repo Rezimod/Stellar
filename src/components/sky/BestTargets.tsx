@@ -50,8 +50,8 @@ export default function BestTargets() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {targets.map(target => {
-          const eqColor = target.equipment === 'naked_eye' ? '#34d399'
-            : target.equipment === 'binoculars' ? '#FFD166'
+          const eqColor = target.equipment === 'naked_eye' ? 'var(--success)'
+            : target.equipment === 'binoculars' ? 'var(--stars)'
             : '#818cf8';
           const eqBg = target.equipment === 'naked_eye' ? 'rgba(52,211,153,0.1)'
             : target.equipment === 'binoculars' ? 'rgba(255,209,102,0.1)'
@@ -90,17 +90,17 @@ export default function BestTargets() {
                     </div>
                   </div>
                 </div>
-                <span className="text-sm font-bold flex-shrink-0" style={{ color: '#FFD166' }}>
+                <span className="text-sm font-bold flex-shrink-0" style={{ color: 'var(--stars)' }}>
                   +{target.stars} ✦
                 </span>
               </div>
 
-              <p className="text-xs" style={{ color: target.visible ? '#34d399' : 'var(--color-text-muted)' }}>
+              <p className="text-xs" style={{ color: target.visible ? 'var(--success)' : 'var(--color-text-muted)' }}>
                 {target.reason}
               </p>
 
               {target.visible && (
-                <Link href="/missions" className="text-xs font-medium" style={{ color: '#FFD166' }}>
+                <Link href="/missions" className="text-xs font-medium" style={{ color: 'var(--stars)' }}>
                   Start mission →
                 </Link>
               )}

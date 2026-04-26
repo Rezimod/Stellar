@@ -104,7 +104,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
             style={{
               fontFamily: 'var(--font-mono)',
               letterSpacing: '0.2em',
-              color: '#FFD166',
+              color: 'var(--stars)',
               border: '1px solid rgba(255,209,102,0.35)',
             }}
           >
@@ -163,15 +163,15 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
             <ParamRow label="DIFFICULTY" custom={
               <div className="flex gap-[3px]">
                 {[0,1,2,3].map(i => (
-                  <div key={i} className="w-4 h-[3px] rounded-[1px]" style={{ background: i < diffDots ? '#FFD166' : 'rgba(255,255,255,0.12)' }} />
+                  <div key={i} className="w-4 h-[3px] rounded-[1px]" style={{ background: i < diffDots ? 'var(--stars)' : 'rgba(255,255,255,0.12)' }} />
                 ))}
               </div>
             } />
-            <ParamRow label="NFT RARITY" value="STELLAR · ASTRAL" mono color="#38F0FF" />
+            <ParamRow label="NFT RARITY" value="STELLAR · ASTRAL" mono color="var(--stl-teal)" />
           </div>
 
           <div className="flex items-baseline gap-3 mt-4">
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 44, color: '#FFD166', fontWeight: 400, lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 44, color: 'var(--stars)', fontWeight: 400, lineHeight: 1 }}>
               +{heroMission.stars}
             </span>
             <div>

@@ -14,9 +14,9 @@ export default function MoonPhase({ phase, size = 18, glow = false }: Props) {
   const colorByPhase: Record<StreakTier['phase'], string> = {
     new:      '#64748B',
     crescent: '#94a3b8',
-    half:     '#FFD166',
-    gibbous:  '#FFD166',
-    full:     '#FFD166',
+    half:     'var(--stars)',
+    gibbous:  'var(--stars)',
+    full:     'var(--stars)',
   };
   const fill = colorByPhase[phase];
   const filter = glow ? `drop-shadow(0 0 4px ${fill}66)` : 'none';

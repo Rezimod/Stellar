@@ -17,7 +17,7 @@ export default function TelescopeIcon({ size = 56 }: { size?: number }) {
         <rect x="-14" y="-4" width="28" height="8" rx="1" fill="url(#ti-tube)" />
         <ellipse cx="14" cy="0" rx="2.5" ry="5" fill="url(#ti-lens)" />
         <rect x="-15" y="-5" width="2" height="10" fill="#2A3A52" />
-        <rect x="-4" y="-7" width="4" height="3" rx="0.5" fill="#38F0FF" opacity="0.8" />
+        <rect x="-4" y="-7" width="4" height="3" rx="0.5" fill="var(--stl-teal)" opacity="0.8" />
         <rect x="2" y="-8" width="8" height="2.5" rx="0.5" fill="#2A3A52" />
       </g>
       <g stroke="#4A6B8A" strokeWidth="1.4" fill="none" strokeLinecap="round">

@@ -444,7 +444,7 @@ export function StarTokenIcon({ size = 12, className }: { size?: number; classNa
       <defs>
         <linearGradient id={`stg${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%"   stopColor="#FFE08A"/>
-          <stop offset="60%"  stopColor="#FFD166"/>
+          <stop offset="60%"  stopColor="var(--stars)"/>
           <stop offset="100%" stopColor="#CC9A33"/>
         </linearGradient>
       </defs>

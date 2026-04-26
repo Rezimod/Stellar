@@ -49,7 +49,7 @@ export default function UserPositionCard({ positions }: UserPositionCardProps) {
                     fontSize: 10,
                     fontWeight: 700,
                     letterSpacing: '0.14em',
-                    color: isYes ? '#34D399' : '#F472B6',
+                    color: isYes ? 'var(--success)' : '#F472B6',
                     background: isYes
                       ? 'rgba(52,211,153,0.10)'
                       : 'rgba(244,114,182,0.10)',
