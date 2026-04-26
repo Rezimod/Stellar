@@ -430,8 +430,8 @@ export default function Nav() {
             </div>
           </div>
         </div>
-        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
       </nav>
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
