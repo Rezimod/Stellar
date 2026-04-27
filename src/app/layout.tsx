@@ -45,10 +45,7 @@ import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
 import Footer from '@/components/shared/Footer';
 import BottomNav from '@/components/shared/BottomNav';
-import AstraPopup from '@/components/shared/AstraPopup';
-import CookieConsent from '@/components/shared/CookieConsent';
-import OfflineBanner from '@/components/shared/OfflineBanner';
-import PullToRefresh from '@/components/shared/PullToRefresh';
+import DeferredGlobals from '@/components/shared/DeferredGlobals';
 import PageTransition from '@/components/layout/PageTransition';
 import { Toaster } from '@/components/ui/Toast';
 
@@ -118,8 +115,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <WalletSync />
                 <StarField />
                 <Nav />
-                <OfflineBanner />
-                <PullToRefresh />
                 <SwipeBack>
                   <main className="relative z-10 flex-1 pt-14 pb-[88px]">
                     <PageTransition>{children}</PageTransition>
@@ -127,8 +122,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </SwipeBack>
                 <Footer />
                 <BottomNav />
-                <AstraPopup />
-                <CookieConsent />
+                <DeferredGlobals />
                 <Toaster />
               </AppStateProvider>
               </LocationProvider>

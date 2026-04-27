@@ -133,20 +133,8 @@ export default function AstraPopup() {
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes astraDot {
-          0%, 80%, 100% { opacity: 0.3; transform: scale(0.7); }
-          40%            { opacity: 1;   transform: scale(1); }
-        }
-        @keyframes astraOrbit {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes astraLive {
-          0%, 100% { opacity: 0.55; transform: scale(1); }
-          50%      { opacity: 1;    transform: scale(1.15); }
-        }
-        @keyframes astraReticle {
-          0%, 100% { opacity: 0.85; }
-          50%      { opacity: 1; }
+          0%, 80%, 100% { opacity: 0.3; }
+          40%            { opacity: 1;  }
         }
         .astra-fab-wrap:hover .astra-fab-label {
           opacity: 1;
@@ -154,9 +142,6 @@ export default function AstraPopup() {
         }
         .astra-fab-wrap:hover .astra-fab-disc {
           border-color: rgba(255,209,102,0.55);
-        }
-        .astra-fab-wrap:hover .astra-fab-orbit {
-          animation-duration: 4s;
         }
         .astra-dot:nth-child(1) { animation: astraDot 1.2s infinite 0s; }
         .astra-dot:nth-child(2) { animation: astraDot 1.2s infinite 0.2s; }
@@ -172,9 +157,7 @@ export default function AstraPopup() {
             right: 20,
             width: 'min(360px, calc(100vw - 32px))',
             height: 'min(520px, calc(100dvh - 140px))',
-            background: 'rgba(6, 9, 18, 0.97)',
-            backdropFilter: 'blur(32px)',
-            WebkitBackdropFilter: 'blur(32px)',
+            background: '#06091B',
             border: '1px solid rgba(124,58,237,0.3)',
             borderRadius: 20,
             boxShadow: '0 16px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03)',
@@ -343,13 +326,10 @@ export default function AstraPopup() {
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
             aria-label="Open ASTRA AI"
           >
-            {/* Reticle crosshair */}
+            {/* Reticle crosshair (static — animations dropped: ran forever on every page) */}
             <svg
               width="22" height="22" viewBox="0 0 22 22" aria-hidden
-              style={{
-                color: 'rgba(255,209,102,0.92)',
-                animation: 'astraReticle 3.2s ease-in-out infinite',
-              }}
+              style={{ color: 'rgba(255,209,102,0.92)' }}
             >
               <circle cx="11" cy="11" r="3.5" fill="none" stroke="currentColor" strokeWidth="1" />
               <circle cx="11" cy="11" r="1" fill="currentColor" />
@@ -359,32 +339,18 @@ export default function AstraPopup() {
               <line x1="16" y1="11" x2="20" y2="11" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
             </svg>
 
-            {/* Orbiting satellite ring */}
+            {/* Static orbit ring */}
             <span
-              className="astra-fab-orbit"
               aria-hidden
               style={{
                 position: 'absolute',
                 inset: -4,
                 borderRadius: '50%',
                 border: '1px dashed rgba(255,209,102,0.18)',
-                animation: 'astraOrbit 8s linear infinite',
               }}
-            >
-              <span
-                style={{
-                  position: 'absolute',
-                  top: -2,
-                  left: '50%',
-                  width: 4, height: 4, borderRadius: '50%',
-                  background: 'var(--stars)',
-                  transform: 'translateX(-50%)',
-                  boxShadow: '0 0 4px rgba(255,209,102,0.7)',
-                }}
-              />
-            </span>
+            />
 
-            {/* Live indicator */}
+            {/* Live indicator (static dot) */}
             <span
               aria-hidden
               style={{
@@ -392,7 +358,7 @@ export default function AstraPopup() {
                 top: 6, right: 6,
                 width: 6, height: 6, borderRadius: '50%',
                 background: 'var(--success)',
-                animation: 'astraLive 1.8s ease-in-out infinite',
+                opacity: 0.85,
               }}
             />
           </button>

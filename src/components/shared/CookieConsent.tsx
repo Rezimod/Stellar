@@ -40,10 +40,8 @@ export default function CookieConsent() {
       <div
         className="rounded-2xl p-4 sm:p-5 shadow-2xl"
         style={{
-          background: 'rgba(15,18,32,0.96)',
+          background: '#0F1220',
           border: '1px solid rgba(124,58,237,0.28)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
         }}
       >
         <p

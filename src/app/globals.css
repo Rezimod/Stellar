@@ -432,38 +432,25 @@ code, pre, .mono {
 }
 .btn-accent-ghost:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-1px); }
 
-/* Star animation */
+/* Star animation — opacity-only, no transform, no will-change.
+   Animating transform/will-change on 60+ elements creates a compositor layer
+   per star and pegs the GPU. Pure opacity is paint-only and ~free. */
 .star {
   position: absolute;
   background: white;
   border-radius: 50%;
-  animation: twinkle var(--duration, 5s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
+  animation: twinkle 5s ease-in-out infinite;
   pointer-events: none;
-  will-change: opacity;
+  opacity: 0.3;
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.05; transform: scale(1) translateY(0); }
-  50% { opacity: 0.5; transform: scale(1.4) translateY(var(--drift, 0px)); }
+  0%, 100% { opacity: 0.08; }
+  50%      { opacity: 0.5; }
 }
 
-@keyframes shooting-star {
-  0% { transform: translateX(0) translateY(0) rotate(-35deg); opacity: 0; width: 0; }
-  3% { opacity: 1; width: 80px; }
-  12% { opacity: 1; }
-  20% { transform: translateX(350px) translateY(200px) rotate(-35deg); opacity: 0; width: 80px; }
-  100% { opacity: 0; width: 0; }
-}
-
-.shooting-star {
-  position: absolute;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(129,140,248,0.8), rgba(124,58,237,0.3), transparent);
-  border-radius: 1px;
-  pointer-events: none;
-  opacity: 0;
-  animation: shooting-star 15s ease-in-out infinite;
+@media (prefers-reduced-motion: reduce) {
+  .star { animation: none; opacity: 0.35; }
 }
 
 @keyframes spin-slow {
@@ -657,9 +644,9 @@ input, select, textarea { font-size: 16px !important; }
     opacity: 1;
     animation: none !important;
   }
-  .star, .shooting-star {
+  .star {
     animation: none !important;
-    opacity: 0.15;
+    opacity: 0.25;
   }
 }
 

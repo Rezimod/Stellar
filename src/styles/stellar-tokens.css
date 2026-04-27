@@ -2355,9 +2355,17 @@
   max-width: 1080px;
   margin: 0 auto;
   padding: 24px 40px;
+  /* Skip layout/paint of below-fold sections until they scroll into view.
+     contain-intrinsic-size reserves space so scrollbar doesn't jump. */
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 600px;
 }
 .home-section-border {
   border-bottom: 1px solid #E2E5EC;
+}
+.home-astra-wrap {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 480px;
 }
 
 .home-col-head {

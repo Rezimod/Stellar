@@ -147,9 +147,7 @@ export default function Nav() {
       <nav
         className="fixed top-0 left-0 right-0 z-50"
         style={{
-          background: 'rgba(5, 8, 18, 0.95)',
-          backdropFilter: 'blur(32px)',
-          WebkitBackdropFilter: 'blur(32px)',
+          background: '#050812',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}
       >

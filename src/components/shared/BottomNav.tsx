@@ -20,9 +20,7 @@ export default function BottomNav() {
     <nav
       className="sm:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: 'rgba(5, 8, 18, 0.97)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: '#050812',
         borderTop: '1px solid rgba(255,255,255,0.06)',
         paddingBottom: 'max(env(safe-area-inset-bottom), 10px)',
       }}
