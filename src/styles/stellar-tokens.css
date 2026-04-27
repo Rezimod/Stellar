@@ -1021,60 +1021,110 @@
    ======================================================================== */
 
 .markets-page {
-  /* Light palette */
-  --stl-bg: #FFFFFF;
-  --stl-bg2: #F8F8FA;
-  --stl-bg3: #F0F1F3;
-  --stl-bg-hover: #F3F3F6;
-  --stl-text1: #111111;
-  --stl-text2: #5A5A5A;
-  --stl-text3: #9A9A9A;
-  --stl-border: #EBEBEB;
-  --stl-border2: #D8D8D8;
-  --stl-green: #16A34A;
-  --stl-green-bg: #DCFCE7;
-  --stl-red: #DC2626;
-  --stl-red-bg: #FEE2E2;
+  /* Light palette — twilight cosmic, not pure white */
+  --stl-bg: #F6F4FB;
+  --stl-bg2: #FBFAFE;
+  --stl-bg3: #EFEAF7;
+  --stl-bg-hover: #F1ECF9;
+  --stl-text1: #14122B;
+  --stl-text2: #4D4870;
+  --stl-text3: #847FA0;
+  --stl-border: #E5DFF1;
+  --stl-border2: #CFC6E3;
+  --stl-green: #0E9F6E;
+  --stl-green-bg: #DAF5EA;
+  --stl-red: #D6336C;
+  --stl-red-bg: #FBE0EC;
   --stl-accent: #7C3AED;
-  --stl-accent-bg: #EDE9FE;
+  --stl-accent-bg: #EDE5FE;
   --stl-teal: #0891B2;
-  --stl-teal-bg: #E0F7FA;
+  --stl-teal-bg: #DCF3F8;
   --stl-amber: #D97706;
-  --stl-amber-bg: #FEF3C7;
-  --stl-sidebar-bg: #F8F8FA;
+  --stl-amber-bg: #FEF1D6;
+  --stl-cosmic-yes: #0E9F6E;
+  --stl-cosmic-yes-glow: rgba(34, 211, 158, 0.35);
+  --stl-cosmic-no:  #D6336C;
+  --stl-cosmic-no-glow:  rgba(232, 90, 154, 0.35);
+  --stl-sidebar-bg: #F1ECF9;
+  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(124,58,237,0.10), transparent 55%),
+                     radial-gradient(720px 520px at 100% 0%, rgba(34,211,238,0.08), transparent 55%),
+                     radial-gradient(640px 480px at 50% 110%, rgba(244,114,182,0.06), transparent 60%);
+  --stl-stars: radial-gradient(1px 1px at 12% 22%, rgba(20,18,43,0.18), transparent 60%),
+               radial-gradient(1px 1px at 38% 12%, rgba(20,18,43,0.12), transparent 60%),
+               radial-gradient(1px 1px at 71% 30%, rgba(20,18,43,0.16), transparent 60%),
+               radial-gradient(1px 1px at 88% 76%, rgba(20,18,43,0.10), transparent 60%),
+               radial-gradient(1px 1px at 22% 84%, rgba(20,18,43,0.14), transparent 60%);
 }
 
 .markets-page.dark {
-  --stl-bg: #0F1012;
-  --stl-bg2: #18191D;
-  --stl-bg3: #1F2026;
-  --stl-bg-hover: #22232A;
-  --stl-text1: #EDEDEF;
-  --stl-text2: #8E919A;
-  --stl-text3: #585B66;
-  --stl-border: #27282E;
-  --stl-border2: #35363E;
-  --stl-green: #4ADE80;
-  --stl-green-bg: rgba(74,222,128,0.10);
-  --stl-red: #FB7185;
-  --stl-red-bg: rgba(251,113,133,0.08);
+  --stl-bg: #0A0B14;
+  --stl-bg2: #14152A;
+  --stl-bg3: #1C1D38;
+  --stl-bg-hover: #20223F;
+  --stl-text1: #F0EEFB;
+  --stl-text2: #A6A2C5;
+  --stl-text3: #6F6B8E;
+  --stl-border: #292B4A;
+  --stl-border2: #393B62;
+  --stl-green: #34D399;
+  --stl-green-bg: rgba(52,211,153,0.10);
+  --stl-red: #F472B6;
+  --stl-red-bg: rgba(244,114,182,0.10);
   --stl-accent: #A78BFA;
-  --stl-accent-bg: rgba(167,139,250,0.08);
+  --stl-accent-bg: rgba(167,139,250,0.10);
   --stl-teal: #22D3EE;
-  --stl-teal-bg: rgba(34,211,238,0.06);
+  --stl-teal-bg: rgba(34,211,238,0.10);
   --stl-amber: #FBBF24;
-  --stl-amber-bg: rgba(251,191,36,0.06);
-  --stl-sidebar-bg: #141518;
+  --stl-amber-bg: rgba(251,191,36,0.08);
+  --stl-cosmic-yes: #34D399;
+  --stl-cosmic-yes-glow: rgba(52,211,153,0.45);
+  --stl-cosmic-no:  #F472B6;
+  --stl-cosmic-no-glow:  rgba(244,114,182,0.45);
+  --stl-sidebar-bg: #0E0F22;
+  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(124,58,237,0.22), transparent 55%),
+                     radial-gradient(720px 520px at 100% 0%, rgba(34,211,238,0.16), transparent 55%),
+                     radial-gradient(640px 480px at 50% 110%, rgba(244,114,182,0.14), transparent 60%);
+  --stl-stars: radial-gradient(1.2px 1.2px at 12% 22%, rgba(255,255,255,0.55), transparent 60%),
+               radial-gradient(1px 1px at 38% 12%, rgba(255,255,255,0.35), transparent 60%),
+               radial-gradient(1.2px 1.2px at 71% 30%, rgba(255,255,255,0.5),  transparent 60%),
+               radial-gradient(1px 1px at 88% 76%, rgba(255,255,255,0.30), transparent 60%),
+               radial-gradient(1.2px 1.2px at 22% 84%, rgba(255,255,255,0.45), transparent 60%),
+               radial-gradient(1px 1px at 56% 56%, rgba(255,255,255,0.25), transparent 60%);
 }
 
 /* Root wrapper takes over the page background/text for scoped theming */
 .markets-page {
+  position: relative;
   background: var(--stl-bg);
   color: var(--stl-text1);
   font-family: var(--font-display), -apple-system, 'Segoe UI', sans-serif;
   min-height: calc(100vh - 56px);
   transition: background-color 0.15s ease, color 0.15s ease;
+  isolation: isolate;
+  overflow: hidden;
 }
+/* Cosmic aura — soft purple/teal/rose color washes */
+.markets-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--stl-cosmic-aura);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Faint star field — same density everywhere */
+.markets-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--stl-stars);
+  background-size: 320px 320px;
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+.markets-page > * { position: relative; z-index: 1; }
 
 /* Polymarket-style centered shell — edges around the content column */
 .mkt-shell {
@@ -1177,23 +1227,30 @@
 .mkt-trending-strip::-webkit-scrollbar { display: none; }
 
 .mkt-trending-chip {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 10px;
-  background: var(--stl-bg2);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, var(--cat-bg, transparent) 0%, transparent 60%),
+    var(--stl-bg2);
   border: 1px solid var(--stl-border);
   cursor: pointer;
   color: var(--stl-text1);
   flex-shrink: 0;
   width: 320px;
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease,
+    box-shadow 0.18s ease;
 }
 .mkt-trending-chip:hover {
-  border-color: var(--stl-border2);
-  background: var(--stl-bg-hover);
+  border-color: var(--cat-border, var(--stl-border2));
+  background:
+    linear-gradient(135deg, var(--cat-bg, transparent) 0%, transparent 70%),
+    var(--stl-bg-hover);
   transform: translateY(-1px);
+  box-shadow: 0 6px 18px -10px var(--cat-fg, rgba(124,58,237,0.4));
 }
 @keyframes mkt-trending-fade {
   from { opacity: 0; transform: translateY(3px); }
@@ -1206,15 +1263,16 @@
   .mkt-trending-chip--anim { animation: none; }
 }
 .mkt-trending-icon {
-  color: var(--stl-text2);
+  color: var(--cat-fg, var(--stl-text2));
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: var(--stl-bg3);
+  border-radius: 10px;
+  background: var(--cat-bg, var(--stl-bg3));
+  border: 1px solid var(--cat-border, transparent);
 }
 .mkt-trending-body {
   flex: 1;
@@ -1279,12 +1337,26 @@
   padding: 18px 20px 8px;
 }
 .mkt-section-title {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--stl-text1);
   line-height: 1.2;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.mkt-section-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stl-accent);
+  box-shadow:
+    0 0 10px rgba(124,58,237,0.55),
+    -10px 4px 0 -3px var(--stl-teal),
+    -16px -2px 0 -3.5px var(--stl-amber);
 }
 .mkt-section-meta {
   font-size: 11px;
@@ -1339,12 +1411,30 @@
 .mkt-list { padding: 0 20px; }
 
 .mkt-group-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 11px;
-  font-weight: 600;
-  color: var(--stl-text3);
+  font-weight: 700;
+  color: var(--cat-fg, var(--stl-text2));
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 14px 0 4px;
+  letter-spacing: 0.08em;
+  padding: 16px 0 6px;
+}
+.mkt-group-header::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cat-fg, var(--stl-accent));
+  box-shadow: 0 0 8px var(--cat-fg, var(--stl-accent));
+}
+.mkt-group-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--cat-border, var(--stl-border)) 0%, transparent 70%);
+  min-width: 40px;
 }
 
 .mkt-row {
@@ -1366,12 +1456,30 @@
 }
 
 .mkt-row-icon {
-  color: var(--stl-text3);
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--cat-bg, transparent);
+  border: 1px solid var(--cat-border, transparent);
+  color: var(--cat-fg, var(--stl-text3));
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.15s ease;
 }
-.markets-page.dark .mkt-row-icon { color: var(--stl-text2); }
+.mkt-row:hover .mkt-row-icon { transform: scale(1.06); }
+.markets-page.dark .mkt-row-icon { color: var(--cat-fg, var(--stl-text2)); }
+
+/* Category color tokens — tasteful astronomy palette */
+[data-category="meteor"]            { --cat-fg: #F59E0B; --cat-bg: rgba(245,158,11,0.12); --cat-border: rgba(245,158,11,0.30); }
+[data-category="solar"]             { --cat-fg: #F97316; --cat-bg: rgba(249,115, 22,0.12); --cat-border: rgba(249,115, 22,0.30); }
+[data-category="mission"]           { --cat-fg: #22D3EE; --cat-bg: rgba(34,211,238,0.12); --cat-border: rgba(34,211,238,0.30); }
+[data-category="comet"]             { --cat-fg: #06B6D4; --cat-bg: rgba(  6,182,212,0.12); --cat-border: rgba(  6,182,212,0.30); }
+[data-category="discovery"]         { --cat-fg: #A78BFA; --cat-bg: rgba(167,139,250,0.14); --cat-border: rgba(167,139,250,0.32); }
+[data-category="weather"]           { --cat-fg: #60A5FA; --cat-bg: rgba( 96,165,250,0.12); --cat-border: rgba( 96,165,250,0.30); }
+[data-category="weather_event"]     { --cat-fg: #38BDF8; --cat-bg: rgba( 56,189,248,0.12); --cat-border: rgba( 56,189,248,0.30); }
+[data-category="natural_phenomenon"]{ --cat-fg: #34D399; --cat-bg: rgba( 52,211,153,0.12); --cat-border: rgba( 52,211,153,0.30); }
+[data-category="sky_event"]         { --cat-fg: #C084FC; --cat-bg: rgba(192,132,252,0.14); --cat-border: rgba(192,132,252,0.32); }
 
 .mkt-row-content { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .mkt-row-title {
@@ -1409,47 +1517,55 @@
 
 .mkt-odds-pair { display: flex; align-items: center; gap: 4px; }
 
-/* Stellarr odds cells: two distinct stat-like pills, gap between, no joined bar.
-   Side-stacked label + number. Quiet by default, fills on hover/active. */
+/* Stellarr cosmic odds cells — capsule pills, soft halo, twin-orbit dots.
+   YES = aurora green-cyan. NO = nebula rose-magenta. */
 .mkt-odds-cells {
   display: flex;
-  align-items: stretch;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
 }
 
 .mkt-odds-cell {
   position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 56px;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--stl-border2);
-  border-radius: 6px;
-  background: transparent;
+  gap: 6px;
+  min-width: 78px;
+  height: 34px;
+  padding: 0 14px 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--cell-bg, transparent);
   cursor: pointer;
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
-  color: var(--stl-text2);
-  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease,
-    transform 0.12s ease;
+  letter-spacing: 0.02em;
+  color: var(--cell-fg, var(--stl-text2));
+  box-shadow:
+    0 0 0 1px var(--cell-border, var(--stl-border2)) inset,
+    0 0 0 0 var(--cell-glow, transparent);
+  transition: box-shadow 0.18s ease, background 0.18s ease, transform 0.12s ease,
+    color 0.12s ease;
 }
-.mkt-odds-cell:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.mkt-odds-cell:disabled { opacity: 0.45; cursor: not-allowed; }
+.mkt-odds-cell::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cell-fg, currentColor);
+  box-shadow: 0 0 6px var(--cell-fg, currentColor);
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 .mkt-odds-cell .cell-label {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--stl-text3);
-  line-height: 1;
-  margin-bottom: 3px;
-  transition: color 0.12s ease;
+  opacity: 0.78;
 }
 .mkt-odds-cell .cell-num {
   font-size: 13px;
@@ -1465,36 +1581,46 @@
 }
 
 .mkt-odds-cell.yes {
-  color: var(--color-success);
-  border-color: rgba(52, 211, 153, 0.32);
+  --cell-fg: var(--stl-cosmic-yes);
+  --cell-bg: linear-gradient(135deg, rgba(34,211,158,0.12), rgba(34,211,238,0.10));
+  --cell-border: rgba(34,211,158,0.45);
 }
 .mkt-odds-cell.no {
-  color: var(--color-error);
-  border-color: rgba(248, 113, 113, 0.32);
+  --cell-fg: var(--stl-cosmic-no);
+  --cell-bg: linear-gradient(135deg, rgba(244,114,182,0.12), rgba(167,139,250,0.12));
+  --cell-border: rgba(244,114,182,0.45);
 }
-.mkt-odds-cell.yes .cell-label { color: rgba(52, 211, 153, 0.72); }
-.mkt-odds-cell.no  .cell-label { color: rgba(248, 113, 113, 0.72); }
 
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  background: rgba(52, 211, 153, 0.10);
-  border-color: rgba(52, 211, 153, 0.55);
+  --cell-bg: linear-gradient(135deg, rgba(34,211,158,0.22), rgba(34,211,238,0.18));
+  --cell-border: rgba(34,211,158,0.7);
+  box-shadow:
+    0 0 0 1px var(--cell-border) inset,
+    0 0 14px var(--stl-cosmic-yes-glow);
   transform: translateY(-1px);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  background: rgba(248, 113, 113, 0.10);
-  border-color: rgba(248, 113, 113, 0.55);
+  --cell-bg: linear-gradient(135deg, rgba(244,114,182,0.22), rgba(167,139,250,0.20));
+  --cell-border: rgba(244,114,182,0.7);
+  box-shadow:
+    0 0 0 1px var(--cell-border) inset,
+    0 0 14px var(--stl-cosmic-no-glow);
   transform: translateY(-1px);
 }
 
 .mkt-odds-cell.yes.active {
-  background: rgba(52, 211, 153, 0.16);
-  border-color: rgba(52, 211, 153, 0.75);
-  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.45) inset;
+  --cell-bg: linear-gradient(135deg, rgba(34,211,158,0.28), rgba(34,211,238,0.22));
+  --cell-border: rgba(34,211,158,0.85);
+  box-shadow:
+    0 0 0 1.5px var(--cell-border) inset,
+    0 0 18px var(--stl-cosmic-yes-glow);
 }
 .mkt-odds-cell.no.active {
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(248, 113, 113, 0.75);
-  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.45) inset;
+  --cell-bg: linear-gradient(135deg, rgba(244,114,182,0.28), rgba(167,139,250,0.22));
+  --cell-border: rgba(244,114,182,0.85);
+  box-shadow:
+    0 0 0 1.5px var(--cell-border) inset,
+    0 0 18px var(--stl-cosmic-no-glow);
 }
 
 /* Inline bet panel — drop-down beneath an expanded market row */
@@ -1908,23 +2034,32 @@
   transition: opacity 0.12s ease;
 }
 .mkt-mission:hover { opacity: 0.85; }
-.mkt-mission-icon {
+.mkt-mission-thumb {
+  position: relative;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: var(--stl-bg3);
-  border: 1px solid var(--stl-border);
-  color: var(--stl-text2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    0 0 0 1px var(--stl-border2) inset,
+    0 0 0 2px var(--stl-bg) inset,
+    0 0 8px rgba(124,58,237,0.18);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
 }
-.mkt-mission:hover .mkt-mission-icon {
-  color: var(--stl-accent);
-  border-color: var(--stl-border2);
+.mkt-mission-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.mkt-mission:hover .mkt-mission-thumb {
+  transform: scale(1.04);
+  box-shadow:
+    0 0 0 1px var(--stl-accent) inset,
+    0 0 0 2px var(--stl-bg) inset,
+    0 0 14px rgba(124,58,237,0.45);
 }
 .mkt-mission-body { flex: 1; min-width: 0; }
 .mkt-mission-title {
@@ -2147,9 +2282,10 @@
   .mkt-row-title { font-size: 13px; }
   .mkt-odds-pair { gap: 3px; }
   .mkt-odds-btn { font-size: 12px; padding: 5px 8px; min-width: 44px; }
-  .mkt-odds-cells { gap: 4px; }
-  .mkt-odds-cell { min-width: 48px; height: 32px; padding: 0 6px; }
-  .mkt-odds-cell .cell-label { font-size: 8px; margin-bottom: 2px; }
+  .mkt-odds-cells { gap: 6px; }
+  .mkt-odds-cell { min-width: 64px; height: 30px; padding: 0 10px 0 8px; gap: 4px; }
+  .mkt-odds-cell::before { width: 5px; height: 5px; }
+  .mkt-odds-cell .cell-label { font-size: 9px; }
   .mkt-odds-cell .cell-num { font-size: 12px; }
   .mkt-row-volume { display: none; }
   .mkt-bet-panel {

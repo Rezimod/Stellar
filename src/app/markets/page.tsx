@@ -29,8 +29,24 @@ import {
   getCategoryIcon,
   TelescopeIcon,
 } from '@/components/icons/MarketIcons';
-import { getMissionIcon } from '@/components/icons/MissionIcons';
 import { MISSIONS } from '@/lib/constants';
+
+const MISSION_IMAGE: Record<string, string> = {
+  'demo':            '/images/planets/jupiter.jpg',
+  'quick-jupiter':   '/images/planets/jupiter.jpg',
+  'quick-saturn':    '/images/planets/saturn.jpg',
+  'free-observation':'/images/constellations/orion.jpg',
+  'moon':            '/images/planets/moon.jpg',
+  'jupiter':         '/images/planets/jupiter.jpg',
+  'saturn':          '/images/planets/saturn.jpg',
+  'orion':           '/images/dso/m42.jpg',
+  'pleiades':        '/images/dso/m45.jpg',
+  'andromeda':       '/images/dso/m31.jpg',
+  'crab':            '/images/dso/m1.jpg',
+};
+function missionImage(id: string): string {
+  return MISSION_IMAGE[id] ?? '/images/planets/jupiter.jpg';
+}
 
 type CategoryFilter = 'all' | MarketCategory;
 type Theme = 'light' | 'dark';
@@ -409,10 +425,13 @@ export default function MarketsPage() {
                 <div
                   key={`${trendingOffset}-${m.onChain.marketId}`}
                   role="listitem"
+                  data-category={m.metadata.category}
                   className="mkt-trending-chip mkt-trending-chip--anim"
                   onClick={() => router.push(`/markets/${m.onChain.marketId}`)}
                 >
-                  <span className="mkt-trending-icon"><Icon size={22} /></span>
+                  <span className="mkt-trending-icon" data-category={m.metadata.category}>
+                    <Icon size={20} />
+                  </span>
                   <div className="mkt-trending-body">
                     <div className="mkt-trending-title">{m.metadata.title}</div>
                     <div className="mkt-trending-meta">
@@ -495,8 +514,8 @@ export default function MarketsPage() {
             ) : (
               <div className="mkt-list">
                 {grouped.map(({ def, items }) => (
-                  <section key={def.key}>
-                    <div className="mkt-group-header">{def.label}</div>
+                  <section key={def.key} data-category={def.key}>
+                    <div className="mkt-group-header" data-category={def.key}>{def.label}</div>
                     {items.map((m) => (
                       <MarketRow
                         key={m.onChain.marketId}
@@ -625,29 +644,31 @@ export default function MarketsPage() {
                       See all
                     </a>
                   </div>
-                  {sidebarMissions.map((m) => {
-                    const MissionIcon = getMissionIcon(m.id);
-                    return (
-                      <div
-                        key={m.id}
-                        className="mkt-mission"
-                        onClick={() => router.push('/missions')}
-                      >
-                        <span className="mkt-mission-icon" aria-hidden>
-                          <MissionIcon size={16} />
-                        </span>
-                        <div className="mkt-mission-body">
-                          <div className="mkt-mission-title">{m.name}</div>
-                          <div className="mkt-mission-meta">
-                            <span>{m.difficulty}</span>
-                            <span className="mkt-mission-dot" aria-hidden>·</span>
-                            <span>{m.type === 'telescope' ? 'Telescope' : 'Naked eye'}</span>
-                          </div>
+                  {sidebarMissions.map((m) => (
+                    <div
+                      key={m.id}
+                      className="mkt-mission"
+                      onClick={() => router.push('/missions')}
+                    >
+                      <span className="mkt-mission-thumb" aria-hidden>
+                        <img
+                          src={missionImage(m.id)}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </span>
+                      <div className="mkt-mission-body">
+                        <div className="mkt-mission-title">{m.name}</div>
+                        <div className="mkt-mission-meta">
+                          <span>{m.difficulty}</span>
+                          <span className="mkt-mission-dot" aria-hidden>·</span>
+                          <span>{m.type === 'telescope' ? 'Telescope' : 'Naked eye'}</span>
                         </div>
-                        <span className="mkt-mission-reward">+{m.stars}</span>
                       </div>
-                    );
-                  })}
+                      <span className="mkt-mission-reward">+{m.stars}</span>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -709,6 +730,7 @@ function MarketRow({
     <div
       role="button"
       tabIndex={0}
+      data-category={market.metadata.category}
       className={`mkt-row${expanded ? ' expanded' : ''}`}
       onClick={onClick}
       onKeyDown={(e) => {
@@ -718,7 +740,9 @@ function MarketRow({
         }
       }}
     >
-      <span className="mkt-row-icon"><Icon size={18} /></span>
+      <span className="mkt-row-icon" data-category={market.metadata.category}>
+        <Icon size={16} />
+      </span>
       <div className="mkt-row-content">
         <div className="mkt-row-title">{market.metadata.title}</div>
         <div className="mkt-row-meta">
@@ -798,6 +822,7 @@ function ResolvedRow({ market, onClick }: { market: Market; onClick: () => void 
       role="button"
       tabIndex={0}
       className="mkt-row resolved"
+      data-category={market.metadata.category}
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -806,7 +831,9 @@ function ResolvedRow({ market, onClick }: { market: Market; onClick: () => void 
         }
       }}
     >
-      <span className="mkt-row-icon"><Icon size={18} /></span>
+      <span className="mkt-row-icon" data-category={market.metadata.category}>
+        <Icon size={16} />
+      </span>
       <div className="mkt-row-content">
         <div className="mkt-row-title">{market.metadata.title}</div>
         <div className="mkt-row-meta">
