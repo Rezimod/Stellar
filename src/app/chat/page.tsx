@@ -97,7 +97,23 @@ function ChatPageInner() {
         }),
         signal: abortController.signal,
       });
-      if (!res.ok || !res.body) throw new Error('Stream failed');
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError(locale === 'ka' ? 'სესია ამოიწურა. გთხოვ, თავიდან შეხვიდე.' : 'Session expired. Please sign in again.');
+          login();
+          return;
+        }
+        if (res.status === 429) {
+          setError(locale === 'ka' ? 'ცოტა მოიცადე და სცადე ისევ.' : 'Slow down — try again in a minute.');
+          return;
+        }
+        if (res.status === 503) {
+          setError(locale === 'ka' ? 'ASTRA დროებით მიუწვდომელია.' : 'ASTRA is temporarily unavailable.');
+          return;
+        }
+        throw new Error('Stream failed');
+      }
+      if (!res.body) throw new Error('Stream failed');
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();

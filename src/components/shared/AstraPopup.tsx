@@ -38,17 +38,35 @@ export default function AstraPopup() {
       login();
       return;
     }
+
+    let token: string | null = null;
+    try {
+      token = await getAccessToken();
+    } catch {
+      token = null;
+    }
+    if (!token) {
+      // Session expired or token unavailable \u2014 re-authenticate.
+      login();
+      return;
+    }
+
     setInput('');
     const next: Msg[] = [...messages, { role: 'user', content: msg }];
     setMessages(next);
     setLoading(true);
+
+    const errorMsg = (s: string) =>
+      locale === 'ka'
+        ? { 401: '\u10e1\u10d4\u10e1\u10d8\u10d0 \u10d0\u10db\u10dd\u10d8\u10ec\u10e3\u10e0\u10d0. \u10d2\u10d7\u10ee\u10dd\u10d5, \u10d7\u10d0\u10d5\u10d8\u10d3\u10d0\u10dc \u10e8\u10d4\u10ee\u10d5\u10d8\u10d3\u10d4.', 429: '\u10ea\u10dd\u10e2\u10d0 \u10db\u10dd\u10d8\u10ea\u10d0\u10d3\u10d4 \u10d3\u10d0 \u10e1\u10ea\u10d0\u10d3\u10d4 \u10d8\u10e1\u10d4\u10d5.', 503: 'ASTRA \u10d3\u10e0\u10dd\u10d4\u10d1\u10d8\u10d7 \u10db\u10d8\u10e3\u10ec\u10d5\u10d3\u10dd\u10db\u10d4\u10da\u10d8\u10d0.', net: '\u10d9\u10d0\u10d5\u10e8\u10d8\u10e0\u10d8 \u10d3\u10d0\u10d8\u10d9\u10d0\u10e0\u10d2\u10d0. \u10e1\u10ea\u10d0\u10d3\u10d4 \u10d8\u10e1\u10d4\u10d5.' }[s] ?? s
+        : { 401: 'Session expired. Please sign in again.', 429: 'Slow down \u2014 try again in a minute.', 503: 'ASTRA is temporarily unavailable.', net: 'Connection lost. Try again.' }[s] ?? s;
+
     try {
-      const token = await getAccessToken().catch(() => null);
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           message: msg,
@@ -56,13 +74,20 @@ export default function AstraPopup() {
           locale,
         }),
       });
-      if (!res.ok || !res.body) throw new Error('chat failed');
+
+      if (!res.ok || !res.body) {
+        const code = res.status === 401 ? '401' : res.status === 429 ? '429' : res.status === 503 ? '503' : 'net';
+        setMessages(m => [...m, { role: 'assistant', content: errorMsg(code) }]);
+        if (res.status === 401) login();
+        return;
+      }
 
       setMessages(m => [...m, { role: 'assistant', content: '' }]);
       const reader = res.body.getReader();
       const dec = new TextDecoder();
       let buffer = '';
-      while (true) {
+      let finished = false;
+      while (!finished) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += dec.decode(value, { stream: true });
@@ -71,7 +96,7 @@ export default function AstraPopup() {
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const payload = line.slice(6);
-          if (payload === '[DONE]') break;
+          if (payload === '[DONE]') { finished = true; break; }
           if (payload === '[ERROR]') throw new Error('stream error');
           const text = payload.replace(/\u2028/g, '\n');
           setMessages(m => {
@@ -85,7 +110,7 @@ export default function AstraPopup() {
         }
       }
     } catch {
-      setMessages(m => [...m, { role: 'assistant', content: 'Sorry, something went wrong. Try again.' }]);
+      setMessages(m => [...m, { role: 'assistant', content: errorMsg('net') }]);
     }
     setLoading(false);
   };

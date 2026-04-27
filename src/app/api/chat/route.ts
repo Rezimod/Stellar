@@ -172,11 +172,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { success, remaining } = await checkRateLimit(chatRateLimit, userId);
-  if (!success) {
+  try {
+    const { success, remaining } = await checkRateLimit(chatRateLimit, userId);
+    if (!success) {
+      return NextResponse.json(
+        { error: "You're chatting a lot! Take a quick break and come back in a minute." },
+        { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } },
+      );
+    }
+  } catch (err) {
+    // Fail-open if Upstash is unreachable — better to answer than block all chat.
+    console.error('[AstroChat] Rate limit check failed (fail-open):', err);
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('[AstroChat] OPENAI_API_KEY is not set');
     return NextResponse.json(
-      { error: "You're chatting a lot! Take a quick break and come back in a minute." },
-      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } },
+      { error: 'AI is not configured on this server.' },
+      { status: 503 },
     );
   }
 
