@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import PageTransition from '@/components/ui/PageTransition';
-import { useReadOnlyProgram, usePrivySigner } from '@/lib/markets/privy-adapter';
+import { useReadOnlyProgram, useStellarSigner } from '@/lib/markets/privy-adapter';
 import {
   getAllMarkets,
   findMetadataByMarketId,
@@ -20,7 +20,7 @@ const ADMIN = process.env.NEXT_PUBLIC_ADMIN_WALLET ?? '';
 
 export default function AdminResolvePage() {
   const program = useReadOnlyProgram();
-  const signer = usePrivySigner();
+  const signer = useStellarSigner();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Mission, SkyVerification, MissionState, PhotoVerificationResult } from '@/lib/types';
 import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import { getUnlockedRewards, getRank } from '@/lib/rewards';
 import CameraCapture from './CameraCapture';
@@ -52,11 +53,9 @@ interface NewReward {
 export default function MissionActive({ mission, onClose }: MissionActiveProps) {
   const router = useRouter();
   const { state, addMission } = useAppState();
-  const { user, getAccessToken } = usePrivy();
-  const solanaWallet = user?.linkedAccounts.find(
-    (a): a is Extract<typeof a, { type: 'wallet' }> =>
-      a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
-  );
+  const { getAccessToken } = usePrivy();
+  const { address: walletAddress } = useStellarUser();
+  const solanaWallet = walletAddress ? { address: walletAddress } : null;
   const [step, setStep] = useState<MissionState>('observing');
   const [photo, setPhoto] = useState('');
   const [sky, setSky] = useState<SkyVerification | null>(null);
@@ -353,7 +352,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     setNftImageUrl(nftUrl);
 
     // --- Roll cosmic bonus (seeded per user+date+target) ---
-    const bonus = rollCosmicBonus(rarityInfo.rarity, sky?.oracleHash ?? 'sim', user?.id ?? '', mission.id);
+    const bonus = rollCosmicBonus(rarityInfo.rarity, sky?.oracleHash ?? 'sim', walletAddress ?? '', mission.id);
     setCosmicBonus(bonus);
     setOverlayVisible(bonus.triggered);
 

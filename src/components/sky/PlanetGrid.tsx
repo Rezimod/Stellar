@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import type { PlanetInfo } from "@/lib/planets";
 import PlanetCard from './PlanetCard';
 import PlanetDetail from './PlanetDetail';
@@ -21,13 +22,14 @@ export default function PlanetGrid() {
   const { lat, lon: lng } = location;
   const ready = !locationLoading;
   const router = useRouter();
-  const { authenticated, login } = usePrivy();
+  const { authenticated } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
 
   const handleObserve = () => {
     if (authenticated) {
       router.push('/missions');
     } else {
-      login();
+      setAuthOpen(true);
     }
   };
   const [planets, setPlanets] = useState<PlanetInfo[]>([]);
@@ -158,6 +160,7 @@ export default function PlanetGrid() {
       {selectedPlanet && (
         <PlanetDetail planet={selectedPlanet} onClose={() => setSelectedPlanet(null)} />
       )}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
 }

@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
 import type { PublicKey } from '@solana/web3.js';
 import { placeBetFromUI } from '@/lib/markets';
 import {
-  useProgramWithPrivy,
-  usePrivySigner,
+  useStellarProgram,
+  useStellarSigner,
 } from '@/lib/markets/privy-adapter';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import type { MarketOnChain, MarketSide } from '@/lib/markets';
 
 interface BetFormProps {
@@ -46,14 +47,15 @@ export default function BetForm({
   onSuccess,
   boostMultiplier,
 }: BetFormProps) {
-  const { authenticated, ready, login } = usePrivy();
-  const program = useProgramWithPrivy();
-  const signer = usePrivySigner();
+  const { authenticated, ready } = useStellarUser();
+  const program = useStellarProgram();
+  const signer = useStellarSigner();
 
   const [side, setSide] = useState<MarketSide | null>(null);
   const [amountStr, setAmountStr] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
   const amount = useMemo(() => {
     const n = Number(amountStr);
@@ -288,13 +290,16 @@ export default function BetForm({
       )}
 
       {!authenticated ? (
-        <button
-          onClick={() => login()}
-          disabled={!ready}
-          style={primaryBtnStyle(false)}
-        >
-          Connect wallet to bet
-        </button>
+        <>
+          <button
+            onClick={() => setAuthOpen(true)}
+            disabled={!ready}
+            style={primaryBtnStyle(false)}
+          >
+            Sign in to bet
+          </button>
+          <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        </>
       ) : (
         <button
           onClick={handleSubmit}

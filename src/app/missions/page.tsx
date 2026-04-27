@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
-import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { getVisiblePlanets } from '@/lib/planets';
@@ -95,7 +96,8 @@ const QUIZ_UI: Record<string, QuizUi> = {
 export default function MissionsPage() {
   const router = useRouter();
   const { state } = useAppState();
-  const { authenticated, login } = usePrivy();
+  const { authenticated } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const t = useTranslations('missions');
   const { location } = useLocation();
@@ -260,13 +262,14 @@ export default function MissionsPage() {
               <p className="mis-auth-body">
                 Complete sky missions, earn Stars, and mint discovery NFTs on Solana.
               </p>
-              <button type="button" className="mis-auth-btn" onClick={login}>
-                Sign in with email
+              <button type="button" className="mis-auth-btn" onClick={() => setAuthOpen(true)}>
+                Sign in
               </button>
-              <p className="mis-auth-sub">Free · No wallet needed</p>
+              <p className="mis-auth-sub">Email or connect a Solana wallet</p>
             </div>
           </section>
         </div>
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </div>
     );
   }

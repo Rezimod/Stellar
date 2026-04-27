@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import type { PublicKey } from '@solana/web3.js';
 import PageContainer from '@/components/layout/PageContainer';
 import PageTransition from '@/components/ui/PageTransition';
 import {
   useReadOnlyProgram,
-  useProgramWithPrivy,
-  usePrivySigner,
+  useStellarProgram,
+  useStellarSigner,
 } from '@/lib/markets/privy-adapter';
 import {
   getConfig,
@@ -65,10 +67,12 @@ function bucketOf(p: Position, on: MarketOnChain | null): Bucket {
 }
 
 export default function MyPositionsPage() {
-  const { authenticated, ready, login, getAccessToken } = usePrivy();
+  const { getAccessToken } = usePrivy();
+  const { authenticated, ready } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
   const readOnly = useReadOnlyProgram();
-  const signerProgram = useProgramWithPrivy();
-  const signer = usePrivySigner();
+  const signerProgram = useStellarProgram();
+  const signer = useStellarSigner();
   const { state } = useAppState();
 
   const [mint, setMint] = useState<PublicKey | null>(null);
@@ -264,7 +268,7 @@ export default function MyPositionsPage() {
             <span style={{ fontSize: 28, opacity: 0.6 }}>✦</span>
             <p style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--stl-text-bright)', margin: 0 }}>Sign in to see your positions</p>
             <button
-              onClick={login}
+              onClick={() => setAuthOpen(true)}
               style={{
                 marginTop: 4,
                 padding: '9px 16px',
@@ -283,6 +287,7 @@ export default function MyPositionsPage() {
               Sign in
             </button>
           </div>
+          <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
         </PageContainer>
       </PageTransition>
     );

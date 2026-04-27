@@ -1,22 +1,17 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Mail, CheckCircle2 } from 'lucide-react';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
+import { AuthModal } from '@/components/auth/AuthModal';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
 
 export default function WalletStep() {
-  const { login, authenticated, ready, user } = usePrivy();
+  const { authenticated, ready, address: walletAddress } = useStellarUser();
   const { state, setWallet } = useAppState();
-
-  // Find the Solana embedded wallet from the user's linked accounts
-  const solanaWallet = user?.linkedAccounts.find(
-    (a): a is Extract<typeof a, { type: 'wallet' }> =>
-      a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
-  );
-  const walletAddress = solanaWallet?.address ?? null;
+  const [authOpen, setAuthOpen] = useState(false);
   const done = state.walletConnected;
 
   // When Privy auth completes and the embedded Solana wallet is available, sync into AppState
@@ -69,15 +64,16 @@ export default function WalletStep() {
                   </div>
                   <p className="text-slate-500 text-xs ml-6">No downloads needed. Takes 30 seconds.</p>
                 </div>
-                <Button variant="brass" onClick={() => login()} className="w-full min-h-[44px]">
+                <Button variant="brass" onClick={() => setAuthOpen(true)} className="w-full min-h-[44px]">
                   Join Stellar →
                 </Button>
-                <p className="text-slate-600 text-xs text-center">Also supports Google and SMS sign-in.</p>
+                <p className="text-slate-600 text-xs text-center">Email, Google, SMS, or connect a Solana wallet.</p>
               </div>
             </div>
           )}
         </div>
       </div>
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </Card>
   );
 }

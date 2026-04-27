@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { Telescope, Satellite, ExternalLink, Lock } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import Link from 'next/link';
@@ -297,9 +299,10 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
 }
 
 export default function NftsPage() {
-  const { authenticated, ready, login, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
+  const { getAccessToken } = usePrivy();
+  const { authenticated, ready, address: stellarAddress } = useStellarUser();
   const { state } = useAppState();
+  const [authOpen, setAuthOpen] = useState(false);
   const [nfts, setNfts] = useState<NftAsset[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -341,8 +344,7 @@ export default function NftsPage() {
     }
   };
 
-  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
-  const address = solanaWallet?.address ?? null;
+  const address = stellarAddress;
 
   const fetchNfts = useCallback(async () => {
     if (!address) return;
@@ -403,9 +405,10 @@ export default function NftsPage() {
               <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, margin: 0 }}>My Observations</h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: '2px 0 0' }}>Sign in to view your observation NFTs.</p>
             </div>
-            <button onClick={login} className="btn-primary" style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}>
+            <button onClick={() => setAuthOpen(true)} className="btn-primary" style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}>
               Sign In →
             </button>
+            <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
           </div>
         </div>
 

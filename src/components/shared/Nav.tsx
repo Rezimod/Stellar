@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { usePrivy } from '@privy-io/react-auth';
 import { useState, useEffect, useRef } from 'react';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { useStellarAuth } from '@/hooks/useStellarAuth';
+import { AuthModal } from '@/components/auth/AuthModal';
 import {
   CloudSun, ShoppingBag, Satellite, User, Search, BookOpen,
   Trophy, Globe, Sun, Target, MessageCircle, Telescope, Gem,
@@ -69,10 +71,12 @@ function getInitials(name: string | null | undefined): string {
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { authenticated, ready, login, logout, user } = usePrivy();
+  const { authenticated, ready, email, displayName: stellarDisplayName, address } = useStellarUser();
+  const { logout } = useStellarAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
   const menuWrapRef = useRef<HTMLDivElement>(null);
   const avatarWrapRef = useRef<HTMLDivElement>(null);
@@ -108,12 +112,8 @@ export default function Nav() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const email =
-    user?.email?.address ??
-    (user?.linkedAccounts.find(a => a.type === 'email') as { address?: string } | undefined)?.address ??
-    null;
-  const displayName = email ? email.split('@')[0] : 'Astronomer';
-  const initials = getInitials(email);
+  const displayName = email ? email.split('@')[0] : (stellarDisplayName ?? 'Astronomer');
+  const initials = getInitials(email ?? (address ? address.slice(0, 2) : null));
 
   const handleLogout = async () => {
     setAvatarOpen(false);
@@ -285,7 +285,7 @@ export default function Nav() {
                 <div className="w-[30px] h-[30px] rounded-full bg-white/10 animate-pulse" />
               ) : !authenticated ? (
                 <button
-                  onClick={() => login()}
+                  onClick={() => setAuthOpen(true)}
                   className="signin-btn text-xs"
                   style={{
                     padding: '6px 12px',
@@ -429,6 +429,7 @@ export default function Nav() {
         </div>
       </nav>
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>
   );
 }

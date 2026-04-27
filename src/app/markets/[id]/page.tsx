@@ -9,7 +9,7 @@ import PageTransition from '@/components/ui/PageTransition';
 import MarketDetail from '@/components/markets/MarketDetail';
 import {
   useReadOnlyProgram,
-  usePrivySigner,
+  useStellarSigner,
 } from '@/lib/markets/privy-adapter';
 import {
   getConfig,
@@ -37,7 +37,7 @@ export default function MarketDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const program = useReadOnlyProgram();
-  const signer = usePrivySigner();
+  const signer = useStellarSigner();
   const { state } = useAppState();
   const marketId = useMemo(() => Number(id), [id]);
 

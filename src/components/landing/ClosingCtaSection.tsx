@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePrivy } from '@privy-io/react-auth';
+import { useState } from 'react';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 const STARS = [
   { top: '20%', left: '15%', size: 1.5, opacity: 0.5,  gold: true,  mobile: true },
@@ -11,7 +13,8 @@ const STARS = [
 ];
 
 export default function ClosingCtaSection() {
-  const { authenticated, ready, login } = usePrivy();
+  const { authenticated, ready } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <section className="relative overflow-hidden py-20 md:py-24 px-5 md:px-7 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,209,102,0.08)_0%,transparent_70%)]">
@@ -46,13 +49,16 @@ export default function ClosingCtaSection() {
           </Link>
 
           {ready && !authenticated ? (
-            <button
-              type="button"
-              onClick={() => login()}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
-            >
-              Sign in
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setAuthOpen(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
+              >
+                Sign in
+              </button>
+              <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+            </>
           ) : (
             <Link
               href="/sky"

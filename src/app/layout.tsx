@@ -5,6 +5,7 @@ import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
 import '../styles/animations.css';
+import '../styles/wallet-adapter-overrides.css';
 
 const sourceSerif = Source_Serif_4({
   subsets: ['latin'],
@@ -35,6 +36,7 @@ const notoGeorgian = Noto_Sans_Georgian({
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { SolanaWalletProvider } from '@/components/providers/PrivyProvider';
+import { WalletAdapterProvider } from '@/components/providers/WalletAdapterProvider';
 import ThemeProvider from '@/components/providers/ThemeProvider';
 import { LocationProvider } from '@/lib/location';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
@@ -110,6 +112,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <NextIntlClientProvider locale={locale} messages={messages}>
             <ThemeProvider>
             <SolanaWalletProvider>
+            <WalletAdapterProvider>
               <LocationProvider>
               <AppStateProvider>
                 <WalletSync />
@@ -126,6 +129,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Toaster />
               </AppStateProvider>
               </LocationProvider>
+            </WalletAdapterProvider>
             </SolanaWalletProvider>
             </ThemeProvider>
           </NextIntlClientProvider>

@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePrivy } from '@privy-io/react-auth';
+import { useState } from 'react';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 const STARS = [
   { top: '18%',  left: '12%', size: 1.5, opacity: 0.55, gold: false, mobile: true },
@@ -14,12 +16,10 @@ const STARS = [
 ];
 
 export default function HeroSection() {
-  const { authenticated, ready, login, user } = usePrivy();
+  const { authenticated, ready, displayName } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
 
-  const greeting =
-    ready && authenticated
-      ? user?.email?.address || user?.google?.name || user?.twitter?.username || null
-      : null;
+  const greeting = ready && authenticated ? displayName : null;
 
   return (
     <section className="relative overflow-hidden py-20 md:py-32 px-5 md:px-7 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,209,102,0.06)_0%,transparent_60%)]">
@@ -39,7 +39,7 @@ export default function HeroSection() {
         />
       ))}
 
-      <div className="relative mx-auto flex max-w-[640px] flex-col items-center text-center">
+      <div className="relative mx-auto flex max-w-[640px] flex-col items-center text-center stagger-in">
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
           BUILT ON SOLANA · COLOSSEUM FRONTIER
         </span>
@@ -55,21 +55,31 @@ export default function HeroSection() {
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full">
-          <Link
-            href="/missions"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#FFD166] px-6 py-3 text-[13px] font-medium text-[#1a1208] transition-[filter,transform] hover:brightness-110"
-          >
-            Start observing  →
-          </Link>
+          <div className="relative w-full sm:w-auto sm:p-[6px]">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 hidden rounded-[14px] border-[0.5px] border-dashed border-[rgba(255,209,102,0.18)] sm:block"
+            />
+            <Link
+              href="/missions"
+              className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#FFD166] px-6 py-3 text-[13px] font-medium text-[#1a1208] transition-[filter,transform] hover:brightness-110"
+            >
+              <span>Start observing</span>
+              <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+            </Link>
+          </div>
 
           {ready && !authenticated ? (
-            <button
-              type="button"
-              onClick={() => login()}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
-            >
-              Sign in
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setAuthOpen(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
+              >
+                Sign in
+              </button>
+              <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+            </>
           ) : (
             <Link
               href="/profile"

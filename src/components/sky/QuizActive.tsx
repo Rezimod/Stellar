@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import type { QuizDef } from '@/lib/quizzes';
 
@@ -15,8 +16,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { addQuizResult } = useAppState();
   const { getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
-  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
+  const { address: walletAddress } = useStellarUser();
 
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -31,7 +31,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const stars = score >= passThreshold ? score * quiz.starsPerCorrect : 0;
 
   const awardQuizStarsOnChain = async (earnedStars: number) => {
-    if (earnedStars <= 0 || !solanaWallet?.address) return;
+    if (earnedStars <= 0 || !walletAddress) return;
     try {
       const token = await getAccessToken().catch(() => null);
       await fetch('/api/award-stars', {
@@ -41,10 +41,10 @@ export default function QuizActive({ quiz, onClose }: Props) {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          recipientAddress: solanaWallet.address,
+          recipientAddress: walletAddress,
           amount: Math.min(earnedStars, 1000),
           reason: `quiz:${quiz.id}`,
-          idempotencyKey: `quiz:${quiz.id}:${solanaWallet.address}:${new Date().toISOString().slice(0, 10)}`,
+          idempotencyKey: `quiz:${quiz.id}:${walletAddress}:${new Date().toISOString().slice(0, 10)}`,
         }),
       });
     } catch {

@@ -4,17 +4,17 @@ import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import PageContainer from '@/components/layout/PageContainer';
 import {
-  useProgramWithPrivy,
-  usePrivySigner,
+  useStellarProgram,
+  useStellarSigner,
   useReadOnlyProgram,
 } from '@/lib/markets/privy-adapter';
 import { buildPlaceBetTx, getConfig } from '@/lib/markets';
 
 export default function TestAdapterPage() {
   const { ready, authenticated, login } = usePrivy();
-  const program = useProgramWithPrivy();
+  const program = useStellarProgram();
   const roProgram = useReadOnlyProgram();
-  const signer = usePrivySigner();
+  const signer = useStellarSigner();
 
   const [readResult, setReadResult] = useState<string>('(not run)');
   const [buildResult, setBuildResult] = useState<string>('(not run)');

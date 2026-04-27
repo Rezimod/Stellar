@@ -1,6 +1,9 @@
 'use client';
 
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { useStellarAuth } from '@/hooks/useStellarAuth';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { Copy, Check, ExternalLink, Telescope, User, ChevronRight, Globe, Bell, Moon, LogOut, X, Settings } from 'lucide-react';
@@ -16,9 +19,11 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
-  const { authenticated, user, login, logout, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
+  const { user, getAccessToken } = usePrivy();
+  const { authenticated, address: stellarAddress, source: authSource } = useStellarUser();
+  const { logout } = useStellarAuth();
   const { state, reset } = useAppState();
+  const [authOpen, setAuthOpen] = useState(false);
 
   const [starsBalance, setStarsBalance] = useState<number>(0);
   const [solPrice, setSolPrice] = useState<number>(0);
@@ -41,8 +46,7 @@ export default function ProfilePage() {
     return () => document.removeEventListener('keydown', handler);
   }, [selectedPhoto]);
 
-  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
-  const address = solanaWallet?.address ?? state.walletAddress ?? null;
+  const address = stellarAddress ?? state.walletAddress ?? null;
 
   useEffect(() => {
     fetch('/api/price/sol').then(r => r.json()).then(d => setSolPrice(d.solPrice ?? 0)).catch(() => {});
@@ -95,8 +99,9 @@ export default function ProfilePage() {
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, margin: '0 0 24px', lineHeight: 1.5 }}>
             Sign in to view your observations, Stars balance, and rank
           </p>
-          <Button variant="brass" onClick={login}>Sign In</Button>
+          <Button variant="brass" onClick={() => setAuthOpen(true)}>Sign In</Button>
         </div>
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </PageContainer>
     );
   }

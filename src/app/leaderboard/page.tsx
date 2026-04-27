@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { Telescope } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import { Card } from '@/components/ui/Card';
@@ -131,9 +131,8 @@ export default function LeaderboardPage() {
   const [podiumVisible, setPodiumVisible] = useState(false);
   const [leaderError, setLeaderError] = useState(false);
 
-  const { user } = usePrivy();
-  const { wallets } = useWallets();
-  const currentWallet = wallets.find(w => w.walletClientType === 'privy')?.address ?? '';
+  const { address } = useStellarUser();
+  const currentWallet = address ?? '';
 
   useEffect(() => {
     setLoading(true);

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Copy, Check, Award, X } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { MISSIONS } from '@/lib/constants';
 import { REWARDS } from '@/lib/rewards';
 import { getActiveChallenge } from '@/lib/celestial-challenges';
@@ -21,11 +21,7 @@ export default function ObserveResultPage() {
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
 
-  const { user } = usePrivy();
-  const solanaWallet = user?.linkedAccounts.find(
-    (a): a is Extract<typeof a, { type: 'wallet' }> =>
-      a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
-  );
+  const { address: stellarAddress } = useStellarUser();
 
   const { state } = useAppState();
 
@@ -99,7 +95,7 @@ export default function ObserveResultPage() {
         body: JSON.stringify({
           catalogId: nearestStar.catalogId,
           chosenName: starName.trim(),
-          walletAddress: solanaWallet?.address ?? '',
+          walletAddress: stellarAddress ?? '',
           nftAddress: mintTxId,
         }),
       });

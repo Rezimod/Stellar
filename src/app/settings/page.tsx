@@ -1,6 +1,8 @@
 'use client';
 
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -94,8 +96,9 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 }
 
 export default function SettingsPage() {
-  const { authenticated, user, logout, linkEmail, linkPhone, unlinkEmail, unlinkPhone } = usePrivy();
-  const { wallets } = useWallets();
+  const { user, linkEmail, linkPhone, unlinkEmail, unlinkPhone } = usePrivy();
+  const { authenticated, address: stellarAddress } = useStellarUser();
+  const { logout } = useStellarAuth();
   const { state, reset } = useAppState();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -108,8 +111,7 @@ export default function SettingsPage() {
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
-  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
-  const address = solanaWallet?.address ?? state.walletAddress ?? null;
+  const address = stellarAddress ?? state.walletAddress ?? null;
 
   useEffect(() => {
     const c = document.cookie.split(';').find(s => s.trim().startsWith('stellar_locale='));

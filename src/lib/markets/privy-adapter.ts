@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useWallets } from '@privy-io/react-auth/solana';
+import { useWallet as useWalletAdapter } from '@solana/wallet-adapter-react';
 import bs58 from 'bs58';
 import {
   Connection,
@@ -111,6 +112,105 @@ export function useProgramWithPrivy(): StellarMarketsProgram | null {
 
 export function useReadOnlyProgram(): StellarMarketsProgram {
   return useMemo(() => getReadOnlyProgram(getConnection()), []);
+}
+
+function useWalletAdapterAnchorWallet(): AnchorWalletLike | null {
+  const adapter = useWalletAdapter();
+  return useMemo(() => {
+    if (!adapter.connected || !adapter.publicKey || !adapter.signTransaction) {
+      return null;
+    }
+    const publicKey = adapter.publicKey;
+    const signTx = adapter.signTransaction;
+    const signAll = adapter.signAllTransactions;
+
+    return {
+      publicKey,
+      async signTransaction<T extends Transaction>(tx: T): Promise<T> {
+        return (await signTx(tx as unknown as Transaction)) as unknown as T;
+      },
+      async signAllTransactions<T extends Transaction>(txs: T[]): Promise<T[]> {
+        if (signAll) {
+          return (await signAll(txs as unknown as Transaction[])) as unknown as T[];
+        }
+        const out: T[] = [];
+        for (const tx of txs) {
+          out.push((await signTx(tx as unknown as Transaction)) as unknown as T);
+        }
+        return out;
+      },
+    };
+  }, [adapter.connected, adapter.publicKey, adapter.signTransaction, adapter.signAllTransactions]);
+}
+
+export function useStellarAnchorWallet(): AnchorWalletLike | null {
+  const adapterWallet = useWalletAdapterAnchorWallet();
+  const privyWallet = usePrivyAnchorWallet();
+  return adapterWallet ?? privyWallet;
+}
+
+export function useStellarProgram(): StellarMarketsProgram | null {
+  const wallet = useStellarAnchorWallet();
+  return useMemo(() => {
+    if (!wallet) return null;
+    return getProgram(wallet, getConnection());
+  }, [wallet]);
+}
+
+export function useStellarSigner(): PrivySigner {
+  const adapter = useWalletAdapter();
+  const privySigner = usePrivySigner();
+
+  return useMemo<PrivySigner>(() => {
+    if (
+      adapter.connected &&
+      adapter.publicKey &&
+      (adapter.sendTransaction || adapter.signTransaction)
+    ) {
+      const publicKey = adapter.publicKey;
+      const sendTx = adapter.sendTransaction;
+      const signTx = adapter.signTransaction;
+
+      return {
+        publicKey,
+        isReady: true,
+        async signAndSend(tx: Transaction) {
+          const connection = getConnection();
+          if (!tx.recentBlockhash) {
+            const { blockhash } = await connection.getLatestBlockhash('confirmed');
+            tx.recentBlockhash = blockhash;
+          }
+          if (!tx.feePayer) tx.feePayer = publicKey;
+
+          let signatureBase58: string;
+          let usedPath: 'A' | 'B' = 'A';
+
+          if (sendTx) {
+            signatureBase58 = await sendTx(tx, connection);
+          } else if (signTx) {
+            const signed = await signTx(tx);
+            signatureBase58 = await connection.sendRawTransaction(signed.serialize(), {
+              skipPreflight: false,
+              preflightCommitment: 'confirmed',
+            });
+            usedPath = 'B';
+          } else {
+            throw new Error('Wallet does not support signing');
+          }
+
+          const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+          await connection.confirmTransaction(
+            { signature: signatureBase58, blockhash, lastValidBlockHeight },
+            'confirmed',
+          );
+
+          return { signature: signatureBase58, path: usedPath };
+        },
+      };
+    }
+
+    return privySigner;
+  }, [adapter.connected, adapter.publicKey, adapter.sendTransaction, adapter.signTransaction, privySigner]);
 }
 
 export function usePrivySigner(): PrivySigner {

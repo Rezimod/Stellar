@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
-import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { Clock, Trash2 } from 'lucide-react';
 
 export default function ObservationLog() {
   const { state, removeMission } = useAppState();
-  const { authenticated } = usePrivy();
+  const { authenticated } = useStellarUser();
   const all = [...state.completedMissions].reverse();
   const missions = all.slice(0, 3);
 

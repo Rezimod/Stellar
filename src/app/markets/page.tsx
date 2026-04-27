@@ -6,7 +6,7 @@ import type { PublicKey } from '@solana/web3.js';
 import PageTransition from '@/components/ui/PageTransition';
 import {
   useReadOnlyProgram,
-  usePrivySigner,
+  useStellarSigner,
 } from '@/lib/markets/privy-adapter';
 import { useAppState } from '@/hooks/useAppState';
 import InlineBetPanel from '@/components/markets/InlineBetPanel';
@@ -192,7 +192,7 @@ function oracleBadge(src: string | undefined): string | null {
 export default function MarketsPage() {
   const router = useRouter();
   const program = useReadOnlyProgram();
-  const signer = usePrivySigner();
+  const signer = useStellarSigner();
   const { state } = useAppState();
 
   const [markets, setMarkets] = useState<Market[]>([]);

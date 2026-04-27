@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 
 export default function SkyAstraCta() {
-  const { authenticated } = usePrivy();
+  const { authenticated } = useStellarUser();
 
   return (
     <Link

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Camera, X } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import { MISSIONS } from '@/lib/constants';
 import { getMissionImage } from '@/lib/mission-icons';
@@ -39,10 +40,8 @@ export default function ObserveVerifyPage() {
 
   const { state, addMission } = useAppState();
   const { user, getAccessToken } = usePrivy();
-  const solanaWallet = user?.linkedAccounts.find(
-    (a): a is Extract<typeof a, { type: 'wallet' }> =>
-      a.type === 'wallet' && 'chainType' in a && (a as { chainType?: string }).chainType === 'solana'
-  );
+  const { address: stellarAddress } = useStellarUser();
+  const solanaWallet = stellarAddress ? { address: stellarAddress } : null;
 
   const flow = useObserveFlow();
   const {
@@ -240,7 +239,7 @@ export default function ObserveVerifyPage() {
           ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         },
         body: JSON.stringify({
-          userAddress: solanaWallet?.address ?? null,
+          userAddress: stellarAddress,
           target: mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name),
           timestampMs: new Date(timestamp).getTime(),
           lat: coords.lat,

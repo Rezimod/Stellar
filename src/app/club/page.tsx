@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { Telescope, Check, ExternalLink } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import Card from '@/components/shared/Card';
@@ -20,9 +22,9 @@ interface TelescopeRecord {
 }
 
 export default function ClubPage() {
-  const { authenticated, login, user, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
-  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
+  const { getAccessToken } = usePrivy();
+  const { authenticated, address: walletAddress } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
 
   const [telescope, setTelescope] = useState<TelescopeRecord | null>(null);
   const [loading, setLoading] = useState(false);
@@ -77,7 +79,7 @@ export default function ClubPage() {
         },
         body: JSON.stringify({
           ...form,
-          walletAddress: solanaWallet?.address ?? null,
+          walletAddress: walletAddress ?? null,
         }),
       });
       if (!res.ok) {
@@ -109,8 +111,9 @@ export default function ClubPage() {
             <h2 className="text-white font-bold text-lg mb-1">Register Your Telescope</h2>
             <p className="text-slate-400 text-sm">Sign in to register your telescope and earn 50 ✦ Stars.</p>
           </div>
-          <Button variant="cyan" onClick={login} className="w-full">Sign In to Continue</Button>
+          <Button variant="cyan" onClick={() => setAuthOpen(true)} className="w-full">Sign In to Continue</Button>
         </Card>
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </div>
     );
   }

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { useAppState } from '@/hooks/useAppState';
 import { useLocation } from '@/lib/location';
 import { useTranslations } from 'next-intl';
@@ -39,9 +41,10 @@ const ACCENT_SOFT = 'var(--accent-dim)';
 const ACCENT_BORDER = 'var(--accent-border)';
 
 export default function MarketplacePage() {
-  const { authenticated, login, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
+  const { getAccessToken } = usePrivy();
+  const { authenticated, address: stellarAddress } = useStellarUser();
   const { state } = useAppState();
+  const [authOpen, setAuthOpen] = useState(false);
   const { location } = useLocation();
   const t = useTranslations('marketplace');
   const [filter, setFilter] = useState<CategoryFilter>('all');
@@ -49,8 +52,7 @@ export default function MarketplacePage() {
   const [revealedCodes, setRevealedCodes] = useState<Record<string, string>>({});
   const [claiming, setClaiming] = useState<Record<string, boolean>>({});
 
-  const solanaWallet = wallets.find(w => (w as { chainType?: string }).chainType === 'solana');
-  const address = solanaWallet?.address ?? state.walletAddress ?? null;
+  const address = stellarAddress ?? state.walletAddress ?? null;
 
   useEffect(() => {
     if (!address) return;
@@ -185,7 +187,7 @@ export default function MarketplacePage() {
                 <div className="flex-shrink-0">
                   {!authenticated ? (
                     <button
-                      onClick={login}
+                      onClick={() => setAuthOpen(true)}
                       className="px-5 py-2.5 rounded-full text-sm font-medium text-slate-200 bg-transparent border border-[var(--color-border-medium)] transition-all duration-200 hover:border-[var(--color-border-strong)] hover:text-white hover:bg-white/[0.04]"
                     >
                       Sign in
@@ -353,6 +355,7 @@ export default function MarketplacePage() {
           ))}
         </div>
       )}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </PageContainer>
   );
 }

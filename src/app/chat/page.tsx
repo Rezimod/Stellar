@@ -3,6 +3,8 @@
 import { Suspense, useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowUp } from 'lucide-react';
 import { useLocation } from '@/lib/location';
@@ -24,7 +26,9 @@ export default function ChatPage() {
 }
 
 function ChatPageInner() {
-  const { authenticated, login, getAccessToken } = usePrivy();
+  const { login, getAccessToken } = usePrivy();
+  const { authenticated } = useStellarUser();
+  const [authOpen, setAuthOpen] = useState(false);
   const rawLocale = useLocale();
   const locale = rawLocale === 'ka' ? 'ka' : 'en';
   const { location } = useLocation();
@@ -338,7 +342,7 @@ function ChatPageInner() {
             {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
               <button
                 key={s}
-                onClick={() => authenticated ? send(s) : login()}
+                onClick={() => authenticated ? send(s) : setAuthOpen(true)}
                 className="btn-ghost"
                 style={{ fontSize: 11, padding: '6px 12px', minHeight: 'auto' }}
               >
@@ -376,9 +380,10 @@ function ChatPageInner() {
           padding: '12px 16px',
         }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, flex: 1 }}>Sign in to chat with ASTRA</p>
-          <button onClick={() => login()} className="btn-primary" style={{ padding: '8px 20px', fontSize: 13, minHeight: 40, flexShrink: 0 }}>
+          <button onClick={() => setAuthOpen(true)} className="btn-primary" style={{ padding: '8px 20px', fontSize: 13, minHeight: 40, flexShrink: 0 }}>
             Sign In →
           </button>
+          <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
         </div>
       )}
       <div style={{
