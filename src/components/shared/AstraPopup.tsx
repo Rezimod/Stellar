@@ -76,8 +76,14 @@ export default function AstraPopup() {
       });
 
       if (!res.ok || !res.body) {
+        // Prefer the server's own error string when present — it's more diagnosable.
+        let serverMsg: string | null = null;
+        try {
+          const j = await res.clone().json();
+          if (typeof j?.error === 'string') serverMsg = j.error;
+        } catch { /* not JSON, fall through */ }
         const code = res.status === 401 ? '401' : res.status === 429 ? '429' : res.status === 503 ? '503' : 'net';
-        setMessages(m => [...m, { role: 'assistant', content: errorMsg(code) }]);
+        setMessages(m => [...m, { role: 'assistant', content: serverMsg ?? errorMsg(code) }]);
         if (res.status === 401) login();
         return;
       }

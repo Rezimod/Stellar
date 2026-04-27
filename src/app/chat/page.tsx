@@ -98,17 +98,22 @@ function ChatPageInner() {
         signal: abortController.signal,
       });
       if (!res.ok) {
+        let serverMsg: string | null = null;
+        try {
+          const j = await res.clone().json();
+          if (typeof j?.error === 'string') serverMsg = j.error;
+        } catch { /* not JSON */ }
         if (res.status === 401) {
-          setError(locale === 'ka' ? 'სესია ამოიწურა. გთხოვ, თავიდან შეხვიდე.' : 'Session expired. Please sign in again.');
+          setError(serverMsg ?? (locale === 'ka' ? 'სესია ამოიწურა. გთხოვ, თავიდან შეხვიდე.' : 'Session expired. Please sign in again.'));
           login();
           return;
         }
         if (res.status === 429) {
-          setError(locale === 'ka' ? 'ცოტა მოიცადე და სცადე ისევ.' : 'Slow down — try again in a minute.');
+          setError(serverMsg ?? (locale === 'ka' ? 'ცოტა მოიცადე და სცადე ისევ.' : 'Slow down — try again in a minute.'));
           return;
         }
         if (res.status === 503) {
-          setError(locale === 'ka' ? 'ASTRA დროებით მიუწვდომელია.' : 'ASTRA is temporarily unavailable.');
+          setError(serverMsg ?? (locale === 'ka' ? 'ASTRA დროებით მიუწვდომელია.' : 'ASTRA is temporarily unavailable.'));
           return;
         }
         throw new Error('Stream failed');

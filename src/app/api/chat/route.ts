@@ -186,10 +186,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    console.error('[AstroChat] OPENAI_API_KEY is not set');
+    console.error('[AstroChat] OPENAI_API_KEY is not set on this deployment');
     return NextResponse.json(
-      { error: 'AI is not configured on this server.' },
-      { status: 503 },
+      { error: 'OPENAI_API_KEY is missing on the server. Add it to Vercel Project Settings → Environment Variables and redeploy.' },
+      { status: 503, headers: { 'X-Astra-Reason': 'no-openai-key' } },
     );
   }
 
