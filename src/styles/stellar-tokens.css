@@ -1226,20 +1226,33 @@
 }
 .mkt-trending-strip::-webkit-scrollbar { display: none; }
 
-/* My active bets — surfaced above the trending strip on /markets */
+/* My active bets — surfaced above the trending strip on /markets.
+   Tinted band so it visually separates from the rest of the page and reads
+   as "your live position" rather than another card. */
 .mkt-my-bets-wrap {
-  padding: 14px 20px 0;
+  padding: 16px 20px;
+  background: var(--stl-accent-bg);
   border-bottom: 1px solid var(--stl-border);
+  position: relative;
+}
+.mkt-my-bets-wrap::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--stl-accent);
 }
 .mkt-my-bets-wrap:empty {
+  /* MyActiveBets returns null when signed-out or no active bets — hide the
+     whole band so we don't show an empty purple stripe. */
   display: none;
   border-bottom: 0;
-}
-.mkt-my-bets-wrap > section:last-child {
-  padding-bottom: 14px;
+  padding: 0;
 }
 @media (max-width: 768px) {
-  .mkt-my-bets-wrap { padding: 12px 12px 0; }
+  .mkt-my-bets-wrap { padding: 14px 12px; }
 }
 
 .mkt-trending-chip {

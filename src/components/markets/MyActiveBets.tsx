@@ -359,6 +359,8 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
       )}
 
       <style jsx>{`
+        /* Theme-aware: --stl-text1/2/3 + --stl-bg2/3 + --stl-border come from
+           .markets-page scope. Falls back to global dark tokens elsewhere. */
         .mab-section {
           display: flex;
           flex-direction: column;
@@ -372,17 +374,19 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         .mab-section-title {
           font-family: var(--font-mono);
           font-size: 11px;
+          font-weight: 700;
           letter-spacing: 0.14em;
           text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.55);
+          color: var(--stl-text2, var(--stl-accent, #a78bfa));
           margin: 0;
         }
         .mab-link {
           font-family: var(--font-mono);
           font-size: 10px;
-          color: var(--stl-gold, #ffd166);
+          color: var(--stl-accent, #a78bfa);
           text-decoration: none;
           letter-spacing: 0.06em;
+          font-weight: 600;
         }
         .mab-link:hover {
           text-decoration: underline;
@@ -390,10 +394,10 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         .mab-empty {
           font-family: var(--font-mono);
           font-size: 12px;
-          color: rgba(255, 255, 255, 0.5);
+          color: var(--stl-text2, rgba(255, 255, 255, 0.5));
           padding: 14px 12px;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--stl-bg2, rgba(255, 255, 255, 0.02));
+          border: 1px solid var(--stl-border, rgba(255, 255, 255, 0.06));
           border-radius: 10px;
         }
         .mab-list {
@@ -405,10 +409,11 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           display: flex;
           flex-direction: column;
           gap: 8px;
-          padding: 12px;
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          padding: 14px 14px 12px;
+          border-radius: 12px;
+          background: var(--stl-bg2, rgba(255, 255, 255, 0.02));
+          border: 1px solid var(--stl-border2, var(--stl-border, rgba(255, 255, 255, 0.08)));
+          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
         }
         .mab-row.cashed {
           opacity: 0.65;
@@ -422,8 +427,9 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         }
         .mab-row-title {
           font-family: var(--font-serif, serif);
-          font-size: 14.5px;
-          color: var(--stl-text-bright, #f2f0ea);
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--stl-text1, var(--stl-text-bright, #f2f0ea));
           text-decoration: none;
           line-height: 1.25;
           letter-spacing: -0.005em;
@@ -443,24 +449,27 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         }
         .mab-row-pill.yes {
           color: var(--stl-green, #34d399);
-          background: rgba(52, 211, 153, 0.1);
-          border: 1px solid rgba(52, 211, 153, 0.25);
+          background: var(--stl-green-bg, rgba(52, 211, 153, 0.1));
+          border: 1px solid var(--stl-green, rgba(52, 211, 153, 0.45));
         }
         .mab-row-pill.no {
-          color: #f472b6;
-          background: rgba(244, 114, 182, 0.1);
-          border: 1px solid rgba(244, 114, 182, 0.25);
+          color: var(--stl-red, #f472b6);
+          background: var(--stl-red-bg, rgba(244, 114, 182, 0.1));
+          border: 1px solid var(--stl-red, rgba(244, 114, 182, 0.45));
         }
         .mab-row-meta {
           font-family: var(--font-mono);
-          font-size: 11px;
-          color: rgba(255, 255, 255, 0.55);
+          font-size: 11.5px;
+          color: var(--stl-text2, rgba(255, 255, 255, 0.7));
+        }
+        .mab-row-status {
+          font-weight: 500;
         }
         .mab-row-status.cashed {
-          color: rgba(255, 209, 102, 0.85);
+          color: var(--stl-amber, rgba(255, 209, 102, 0.85));
         }
         .mab-row-status.locked {
-          color: rgba(255, 255, 255, 0.7);
+          color: var(--stl-text2, rgba(255, 255, 255, 0.7));
         }
         .mab-row-actions {
           display: flex;
@@ -473,7 +482,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           font-weight: 700;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          padding: 7px 12px;
+          padding: 8px 12px;
           border-radius: 6px;
           cursor: pointer;
           line-height: 1;
@@ -484,30 +493,31 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         }
         .mab-btn.ghost {
           background: transparent;
-          color: rgba(255, 255, 255, 0.75);
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          color: var(--stl-text1, rgba(255, 255, 255, 0.85));
+          border: 1px solid var(--stl-border2, var(--stl-border, rgba(255, 255, 255, 0.18)));
         }
         .mab-btn.ghost:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.04);
+          background: var(--stl-bg-hover, rgba(255, 255, 255, 0.04));
+          border-color: var(--stl-text2, rgba(255, 255, 255, 0.3));
         }
         .mab-btn.primary {
-          background: var(--stl-gold, #ffd166);
-          color: #0a0a0a;
-          border: 1px solid rgba(255, 209, 102, 0.5);
+          background: var(--stl-accent, #ffd166);
+          color: #fff;
+          border: 1px solid var(--stl-accent, rgba(255, 209, 102, 0.5));
         }
         .mab-btn.warn {
           background: transparent;
-          color: rgba(244, 114, 182, 0.95);
-          border: 1px solid rgba(244, 114, 182, 0.35);
+          color: var(--stl-red, rgba(244, 114, 182, 0.95));
+          border: 1px solid var(--stl-red, rgba(244, 114, 182, 0.45));
         }
         .mab-btn.warn:hover:not(:disabled) {
-          background: rgba(244, 114, 182, 0.08);
+          background: var(--stl-red-bg, rgba(244, 114, 182, 0.08));
         }
         .mab-confirm {
           padding: 10px;
           border-radius: 8px;
-          background: rgba(244, 114, 182, 0.06);
-          border: 1px solid rgba(244, 114, 182, 0.2);
+          background: var(--stl-red-bg, rgba(244, 114, 182, 0.06));
+          border: 1px solid var(--stl-red, rgba(244, 114, 182, 0.2));
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -516,7 +526,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           margin: 0;
           font-family: var(--font-mono);
           font-size: 11px;
-          color: rgba(255, 255, 255, 0.78);
+          color: var(--stl-text1, rgba(255, 255, 255, 0.85));
           line-height: 1.5;
         }
         .mab-confirm-actions {
@@ -530,7 +540,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         .mab-error {
           font-family: var(--font-mono);
           font-size: 11px;
-          color: #fca5a5;
+          color: var(--stl-red, #fca5a5);
         }
         .mab-foot {
           display: flex;

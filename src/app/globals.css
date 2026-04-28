@@ -846,3 +846,19 @@ input, select, textarea { font-size: 16px !important; }
     animation: none;
   }
 }
+
+/* Marketplace mono-magazine layout — single static cosmic overlay at top of page */
+.marketplace-page-bg { position: relative; }
+.marketplace-page-bg::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  left: -10%;
+  right: -10%;
+  height: 320px;
+  background:
+    radial-gradient(ellipse 60% 100% at 30% 0%, rgba(132,101,203,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 100% at 80% 0%, rgba(255,209,102,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
