@@ -30,7 +30,12 @@ function fmtInt(n: number): string {
 
 function friendlyError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
-  if (/insufficient.*fund|AccountNotInitialized/i.test(msg))
+  // Distinguish "no SOL for gas" from "no Stars to bet" — the wording was misleading before.
+  if (/insufficient lamports|attempt to debit|0x1$|insufficient funds for rent/i.test(msg))
+    return 'Wallet needs SOL for gas — refresh and try again';
+  if (/AccountNotInitialized|TokenAccountNotFound/i.test(msg))
+    return 'No Stars in this wallet yet';
+  if (/insufficient.*fund/i.test(msg))
     return 'Insufficient Stars';
   if (/User rejected|rejected|cancelled|canceled/i.test(msg))
     return 'Signature rejected';
@@ -93,11 +98,25 @@ export default function InlineBetPanel({
     !locked &&
     !submitting;
 
+  async function ensureGas(): Promise<void> {
+    if (!signer.publicKey) return;
+    try {
+      await fetch('/api/wallet/fund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: signer.publicKey.toBase58() }),
+      });
+    } catch {
+      // best-effort top-up; we still try the bet so the user sees a real error
+    }
+  }
+
   async function handleSubmit() {
     if (!canSubmit || !program || !mint) return;
     setSubmitting(true);
     setError(null);
     try {
+      await ensureGas();
       await placeBetFromUI(
         program,
         signer,

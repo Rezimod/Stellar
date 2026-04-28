@@ -22,7 +22,7 @@ export default function HeroSection() {
   const greeting = ready && authenticated ? displayName : null;
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-32 px-5 md:px-7 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,209,102,0.06)_0%,transparent_60%)]">
+    <section className="relative overflow-hidden py-20 md:py-32 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,209,102,0.06)_0%,transparent_60%)]">
       {STARS.map((s, i) => (
         <span
           key={i}
@@ -39,7 +39,8 @@ export default function HeroSection() {
         />
       ))}
 
-      <div className="relative mx-auto flex max-w-[640px] flex-col items-center text-center stagger-in">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center stagger-in">
+        <div className="flex flex-col items-center text-center w-full" style={{ maxWidth: 640 }}>
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
           BUILT ON SOLANA · COLOSSEUM FRONTIER
         </span>
@@ -95,6 +96,7 @@ export default function HeroSection() {
             Signed in as {greeting}
           </p>
         )}
+        </div>
       </div>
     </section>
   );

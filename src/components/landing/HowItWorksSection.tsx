@@ -20,7 +20,8 @@ export default function HowItWorksSection() {
   const goNfts = () => router.push('/nfts');
 
   return (
-    <section className="py-16 md:py-24 px-5 md:px-7 bg-[radial-gradient(ellipse_at_50%_50%,rgba(132,101,203,0.05)_0%,transparent_70%)]">
+    <section className="py-16 md:py-24 bg-[radial-gradient(ellipse_at_50%_50%,rgba(132,101,203,0.05)_0%,transparent_70%)]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <header className="mx-auto max-w-[640px] text-center mb-10 md:mb-16">
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
           02 · MECHANISM
@@ -140,6 +141,7 @@ export default function HowItWorksSection() {
             Each completed orbit mints one verified discovery, gasless.
           </text>
         </svg>
+      </div>
       </div>
     </section>
   );

@@ -16,8 +16,8 @@ const ROWS: Row[] = [
 
 export default function MissionsSection() {
   return (
-    <section className="py-16 md:py-24 px-5 md:px-7 bg-[linear-gradient(180deg,transparent_0%,rgba(56,240,255,0.025)_100%)]">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center max-w-[1100px] mx-auto">
+    <section className="py-16 md:py-24 bg-[linear-gradient(180deg,transparent_0%,rgba(56,240,255,0.025)_100%)]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#38F0FF]/70">
             03 · MISSIONS

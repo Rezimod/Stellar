@@ -75,10 +75,10 @@ export default function Footer() {
       }}
     >
       <div
+        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
         style={{
-          maxWidth: 1080,
-          margin: '0 auto',
-          padding: '48px 40px 24px',
+          paddingTop: 48,
+          paddingBottom: 24,
         }}
       >
         {/* Top: brand + columns */}

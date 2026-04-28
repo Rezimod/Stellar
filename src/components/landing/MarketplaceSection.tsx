@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 export default function MarketplaceSection() {
   return (
-    <section className="py-16 md:py-24 px-5 md:px-7">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.1fr] gap-8 md:gap-12 items-center max-w-[1100px] mx-auto">
+    <section className="py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-[1fr_1.1fr] gap-8 md:gap-12 items-center">
         <div className="md:order-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#FFD166]/70">
             04 · MARKETPLACE

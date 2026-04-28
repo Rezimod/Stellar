@@ -17,7 +17,7 @@ export default function ClosingCtaSection() {
   const [authOpen, setAuthOpen] = useState(false);
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-24 px-5 md:px-7 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,209,102,0.08)_0%,transparent_70%)]">
+    <section className="relative overflow-hidden py-20 md:py-24 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,209,102,0.08)_0%,transparent_70%)]">
       {STARS.map((s, i) => (
         <span
           key={i}
@@ -34,7 +34,9 @@ export default function ClosingCtaSection() {
         />
       ))}
 
-      <div className="relative mx-auto flex max-w-[640px] flex-col items-center text-center">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center"
+        style={{ alignItems: 'center' }}>
+        <div className="flex flex-col items-center text-center w-full" style={{ maxWidth: 640 }}>
         <h2 className="font-serif font-medium tracking-[-0.02em] leading-[1.1] text-[26px] md:text-[38px] text-[#E8E6DD]">
           <span className="block">The sky is open.</span>
           <span className="block italic text-[#FFD166]">Take your first observation.</span>
@@ -67,6 +69,7 @@ export default function ClosingCtaSection() {
               Tonight&apos;s sky
             </Link>
           )}
+        </div>
         </div>
       </div>
     </section>

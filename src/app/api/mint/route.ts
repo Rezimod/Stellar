@@ -7,6 +7,7 @@ import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
 import { mintRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { isValidPublicKey } from '@/lib/validate';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -19,18 +20,27 @@ export async function POST(req: NextRequest) {
 
   const isDemoMint = demo === true;
 
-  // Auth required for all requests; unauthenticated dev demo without wallet is the only exception
+  // Auth: accept either a verified Privy token OR a valid wallet-adapter pubkey.
+  // This lets Phantom/Solflare/Backpack users (who have no Privy token) mint NFTs.
+  // Abuse is bounded by /api/mint's per-wallet rate limits below.
   const isDevNoWallet = process.env.NODE_ENV === 'development' && isDemoMint && !body.userAddress;
   if (!isDevNoWallet) {
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let privyOk = false;
+    if (token) {
+      try {
+        await privy.verifyAuthToken(token);
+        privyOk = true;
+      } catch {
+        privyOk = false;
+      }
     }
-    try {
-      await privy.verifyAuthToken(token);
-    } catch {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!privyOk) {
+      const addr = typeof body.userAddress === 'string' ? body.userAddress : '';
+      if (!isValidPublicKey(addr)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
   }
 

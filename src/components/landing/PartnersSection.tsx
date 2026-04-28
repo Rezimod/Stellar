@@ -1,7 +1,7 @@
 export default function PartnersSection() {
   return (
-    <section className="border-y border-[rgba(232,230,221,0.06)] py-7 md:py-8 px-5 md:px-7">
-      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 md:gap-x-9">
+    <section className="border-y border-[rgba(232,230,221,0.06)] py-7 md:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 md:gap-x-9">
         <span className="font-serif text-[15px] md:text-[17px] text-[rgba(232,230,221,0.7)]">
           Astroman
         </span>

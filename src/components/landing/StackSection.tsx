@@ -13,7 +13,8 @@ const CARDS: StackCard[] = [
 
 export default function StackSection() {
   return (
-    <section className="py-16 md:py-24 px-5 md:px-7 bg-white/[0.012] border-t-[0.5px] border-[rgba(232,230,221,0.06)]">
+    <section className="py-16 md:py-24 bg-white/[0.012] border-t-[0.5px] border-[rgba(232,230,221,0.06)]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <header className="mx-auto max-w-[640px] text-center mb-8 md:mb-12">
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
           05 · THE STACK
@@ -26,7 +27,7 @@ export default function StackSection() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-[1100px] mx-auto">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {CARDS.map((c) => (
           <div
             key={c.tag}
@@ -43,6 +44,7 @@ export default function StackSection() {
             </p>
           </div>
         ))}
+      </div>
       </div>
     </section>
   );
