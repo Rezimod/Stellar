@@ -1126,15 +1126,15 @@
 }
 .markets-page > * { position: relative; z-index: 1; }
 
-/* Polymarket-style centered shell — edges around the content column */
+/* Centered shell — aligned with nav max-w-6xl */
 .mkt-shell {
-  max-width: 1360px;
+  max-width: 72rem; /* matches nav max-w-6xl */
   margin: 0 auto;
   border-left: 1px solid var(--stl-border);
   border-right: 1px solid var(--stl-border);
   min-height: calc(100vh - 56px);
 }
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .mkt-shell { border-left: 0; border-right: 0; }
 }
 
@@ -3134,13 +3134,19 @@
 }
 
 .sky-content {
-  max-width: 1080px;
+  max-width: 72rem; /* matches nav max-w-6xl */
   margin: 0 auto;
 }
 
 .sky-section {
-  padding: 20px 40px;
+  padding: 20px 32px; /* matches nav lg:px-8 */
   border-bottom: 1px solid var(--sky-bd);
+}
+@media (max-width: 1023px) {
+  .sky-section { padding-left: 24px; padding-right: 24px; }
+}
+@media (max-width: 639px) {
+  .sky-section { padding-left: 16px; padding-right: 16px; }
 }
 
 .sky-section:last-child { border-bottom: 0; }
@@ -3190,14 +3196,20 @@
     radial-gradient(0.5px 0.5px at 70% 8%, rgba(255,255,255,0.06), transparent);
 }
 .sky-hero-inner {
-  max-width: 1080px;
+  max-width: 72rem; /* matches nav max-w-6xl */
   margin: 0 auto;
-  padding: 28px 40px 36px;
+  padding: 28px 32px 36px; /* matches nav lg:px-8 */
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 22px;
+}
+@media (max-width: 1023px) {
+  .sky-hero-inner { padding-left: 24px; padding-right: 24px; }
+}
+@media (max-width: 639px) {
+  .sky-hero-inner { padding-left: 16px; padding-right: 16px; }
 }
 .sky-hero-head {
   display: flex;
@@ -4255,15 +4267,21 @@
 }
 
 .mis-content {
-  max-width: 880px;
+  max-width: 72rem; /* matches nav max-w-6xl */
   margin: 0 auto;
 }
 
 .mis-section {
-  padding: 20px 28px;
+  padding: 20px 32px; /* matches nav lg:px-8 */
   border-bottom: 1px solid var(--mis-bd);
 }
 .mis-section:last-child { border-bottom: 0; }
+@media (max-width: 1023px) {
+  .mis-section { padding-left: 24px; padding-right: 24px; }
+}
+@media (max-width: 639px) {
+  .mis-section { padding-left: 16px; padding-right: 16px; }
+}
 
 /* === Cosmic hero — always dark, full-width === */
 .mis-hero {
@@ -4303,11 +4321,17 @@
   pointer-events: none;
 }
 .mis-hero-inner {
-  max-width: 880px;
+  max-width: 72rem; /* matches nav max-w-6xl */
   margin: 0 auto;
-  padding: 16px 28px 22px;
+  padding: 16px 32px 22px; /* matches nav lg:px-8 */
   position: relative;
   z-index: 1;
+}
+@media (max-width: 1023px) {
+  .mis-hero-inner { padding-left: 24px; padding-right: 24px; }
+}
+@media (max-width: 639px) {
+  .mis-hero-inner { padding-left: 16px; padding-right: 16px; }
 }
 
 /* === Stats bar (inside hero) === */
