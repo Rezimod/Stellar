@@ -119,7 +119,7 @@ export default function NetworkPage() {
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
-      <PageContainer variant="fullscreen" className="max-w-6xl flex flex-col gap-8">
+      <PageContainer variant="wide" className="flex flex-col gap-8">
         <BackButton />
 
         {/* Header */}
