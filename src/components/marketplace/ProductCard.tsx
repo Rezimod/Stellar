@@ -1,144 +1,77 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/lib/dealers';
 
+const DIFFICULTY_TAG: Record<'beginner' | 'intermediate' | 'advanced', { bg: string; color: string; abbr: string }> = {
+  beginner:     { bg: 'rgba(52,211,153,0.12)',  color: '#34d399', abbr: 'Beg' },
+  intermediate: { bg: 'rgba(255,209,102,0.12)', color: '#FFD166', abbr: 'Mid' },
+  advanced:     { bg: 'rgba(132,101,203,0.12)', color: '#8465CB', abbr: 'Adv' },
+};
+
+const formatPrice = (p: Product): string => {
+  const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
+  return `${n} ${p.currency}`;
+};
+
 interface Props {
   product: Product;
-  showDealer: boolean;
   dealerName: string;
-  priority?: boolean;
 }
 
-const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
-  'Best Seller': { bg: 'rgba(255,209,102,0.15)', color: 'var(--stars)' },
-  'New': { bg: 'rgba(52,211,153,0.15)', color: 'var(--success)' },
-  'Popular': { bg: 'rgba(99,102,241,0.15)', color: '#818cf8' },
-};
-
-const SKILL_BADGE_STYLES: Record<string, { background: string; color: string; border: string }> = {
-  beginner: { background: 'rgba(52,211,153,0.28)', color: 'var(--success)', border: '1px solid rgba(52,211,153,0.55)' },
-  intermediate: { background: 'rgba(245,158,11,0.28)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.55)' },
-  advanced: { background: 'rgba(139,92,246,0.28)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.55)' },
-};
-
-const CATEGORY_FALLBACK: Record<string, { icon: string; label: string; bg: string }> = {
-  telescope: { icon: '🔭', label: 'Telescope', bg: 'rgba(122,95,255,0.07)' },
-  eyepiece:  { icon: '🔬', label: 'Eyepiece',  bg: 'rgba(99,102,241,0.06)' },
-  binocular: { icon: '🌌', label: 'Binoculars', bg: 'rgba(20,184,166,0.07)' },
-  accessory: { icon: '🔧', label: 'Accessory', bg: 'rgba(245,158,11,0.07)' },
-};
-
-export default function ProductCard({ product, showDealer, dealerName, priority }: Props) {
-  const [imgError, setImgError] = useState(false);
-  const badgeStyle = product.badge ? BADGE_STYLES[product.badge] : null;
-  const fallback = CATEGORY_FALLBACK[product.category] ?? CATEGORY_FALLBACK.telescope;
-  const showImg = !!product.image && !imgError;
-
+export default function ProductCard({ product, dealerName }: Props) {
+  const tag = product.skillLevel ? DIFFICULTY_TAG[product.skillLevel] : null;
   return (
-    <div
-      className="product-card flex flex-col rounded-2xl overflow-hidden"
+    <a
+      href={product.externalUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="relative block rounded-lg p-[10px] transition-colors"
       style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(8px)',
-        transition: 'transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease',
+        background: 'rgba(255,255,255,0.015)',
+        border: '0.5px solid rgba(232,230,221,0.07)',
       }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,230,221,0.07)'; }}
     >
-      <div className="p-3 pb-0">
-        <div
-          className="relative"
-          style={{
-            aspectRatio: '1 / 1',
-            background: showImg ? 'var(--color-bg-card-strong)' : fallback.bg,
-            border: '1px solid var(--color-border-subtle)',
-            borderRadius: 16,
-            overflow: 'hidden',
-          }}
+      {tag && (
+        <span
+          className="absolute top-[7px] left-[7px] z-10 px-[6px] py-[2px] rounded-[3px] text-[7px] tracking-[0.18em] uppercase font-semibold"
+          style={{ background: tag.bg, color: tag.color }}
         >
-          {showImg ? (
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 50vw, 300px"
-              style={{ objectFit: 'contain', padding: '24px' }}
-              unoptimized
-              priority={priority}
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-              <span className="text-5xl leading-none">{fallback.icon}</span>
-              <p className="text-[10px] font-medium tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.15)' }}>
-                {fallback.label}
-              </p>
-            </div>
-          )}
-          {badgeStyle && (
-            <span className="absolute top-2 left-2 text-[8px] px-1.5 py-0.5 rounded-full font-semibold"
-              style={{ background: badgeStyle.bg, color: badgeStyle.color }}>
-              {product.badge}
-            </span>
-          )}
-          {product.skillLevel && (
-            <span
-              className="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
-              style={SKILL_BADGE_STYLES[product.skillLevel]}
-            >
-              {product.skillLevel === 'intermediate' ? 'Mid' : product.skillLevel}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-col p-3 gap-1.5">
-        <p className="text-white text-[12px] font-semibold leading-snug line-clamp-2">{product.name}</p>
-
-        {product.specs && (
-          <div className="flex flex-wrap gap-1 mt-0.5">
-            {Object.entries(product.specs).slice(0, 2).map(([k, v]) => (
-              <span key={k} className="text-[9px] px-1.5 py-0.5 rounded"
-                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)' }}>
-                {v}
-              </span>
-            ))}
-          </div>
+          {tag.abbr}
+        </span>
+      )}
+      <div
+        className="relative w-full aspect-[1.3] rounded-md mb-2 overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(ellipse at 50% 50%, rgba(255,209,102,0.05) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+        }}
+      >
+        {product.image && (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 220px"
+            style={{ objectFit: 'contain', padding: '14px' }}
+            unoptimized
+          />
         )}
-
-        <p className="text-[10px] line-clamp-2 leading-snug mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          {product.description}
-        </p>
-
-        <div className="flex items-center justify-between mt-1.5">
-          <div>
-            <p className="text-white font-bold text-sm leading-none">
-              {product.currencySymbol}{product.price % 1 !== 0 ? product.price.toFixed(2) : product.price.toLocaleString()}
-            </p>
-            {showDealer && (
-              <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                via {dealerName}
-              </p>
-            )}
-          </div>
-          <a
-            href={product.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[11px] px-3 py-1.5 rounded-lg flex-shrink-0"
-            style={{
-              background: 'rgba(124,58,237,0.14)',
-              border: '1px solid rgba(124,58,237,0.32)',
-              color: '#C4B5FD',
-              textDecoration: 'none',
-              fontWeight: 600,
-            }}
-          >
-            Buy →
-          </a>
-        </div>
       </div>
-    </div>
+      <p className="text-[11px] font-medium text-[#E8E6DD] leading-[1.2] truncate mb-[2px]">
+        {product.name}
+      </p>
+      <p className="text-[8px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.4)] mb-[6px] truncate">
+        {dealerName || product.category}
+      </p>
+      <div className="flex justify-between items-center pt-[6px]" style={{ borderTop: '0.5px solid rgba(232,230,221,0.06)' }}>
+        <span className="text-[11px] font-semibold text-[#FFD166]">{formatPrice(product)}</span>
+        <span className="text-[8px] tracking-[0.14em] uppercase text-[rgba(255,209,102,0.5)]">
+          ✦ {product.starsPrice.toLocaleString()}
+        </span>
+      </div>
+    </a>
   );
 }
