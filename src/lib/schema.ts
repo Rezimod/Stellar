@@ -1,11 +1,14 @@
 import { pgTable, uuid, text, integer, timestamp, doublePrecision, boolean, uniqueIndex, index, date } from 'drizzle-orm/pg-core'
 
+// Run in Neon SQL editor if migrating an existing DB:
+//   ALTER TABLE public.users ADD COLUMN IF NOT EXISTS avatar text;
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   privyId: text('privy_id').unique().notNull(),
   email: text('email'),
   walletAddress: text('wallet_address'),
   username: text('username'),
+  avatar: text('avatar'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => [
