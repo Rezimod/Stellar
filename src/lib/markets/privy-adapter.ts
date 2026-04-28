@@ -176,10 +176,12 @@ export function useStellarSigner(): PrivySigner {
         isReady: true,
         async signAndSend(tx: Transaction) {
           const connection = getConnection();
-          if (!tx.recentBlockhash) {
-            const { blockhash } = await connection.getLatestBlockhash('confirmed');
-            tx.recentBlockhash = blockhash;
-          }
+          // Use ONE blockhash for both signing and confirmation — otherwise the
+          // confirmation strategy waits on a different validity window than the
+          // tx was signed for, causing sporadic "blockhash not found" errors.
+          const { blockhash, lastValidBlockHeight } =
+            await connection.getLatestBlockhash('confirmed');
+          if (!tx.recentBlockhash) tx.recentBlockhash = blockhash;
           if (!tx.feePayer) tx.feePayer = publicKey;
 
           let signatureBase58: string;
@@ -198,9 +200,8 @@ export function useStellarSigner(): PrivySigner {
             throw new Error('Wallet does not support signing');
           }
 
-          const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
           await connection.confirmTransaction(
-            { signature: signatureBase58, blockhash, lastValidBlockHeight },
+            { signature: signatureBase58, blockhash: tx.recentBlockhash ?? blockhash, lastValidBlockHeight },
             'confirmed',
           );
 
@@ -228,10 +229,11 @@ export function usePrivySigner(): PrivySigner {
           throw new Error('Wallet not connected');
         }
         const connection = getConnection();
-        if (!tx.recentBlockhash) {
-          const { blockhash } = await connection.getLatestBlockhash('confirmed');
-          tx.recentBlockhash = blockhash;
-        }
+        // Use ONE blockhash for both signing and confirmation. Same fix as the
+        // wallet-adapter path above.
+        const { blockhash, lastValidBlockHeight } =
+          await connection.getLatestBlockhash('confirmed');
+        if (!tx.recentBlockhash) tx.recentBlockhash = blockhash;
         if (!tx.feePayer) tx.feePayer = publicKey;
 
         const serialized = tx.serialize({
@@ -269,11 +271,10 @@ export function usePrivySigner(): PrivySigner {
           usedPath = 'B';
         }
 
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
         await connection.confirmTransaction(
           {
             signature: signatureBase58,
-            blockhash,
+            blockhash: tx.recentBlockhash ?? blockhash,
             lastValidBlockHeight,
           },
           'confirmed',
