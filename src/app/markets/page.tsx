@@ -235,6 +235,14 @@ export default function MarketsPage() {
     return () => { cancelled = true; };
   }, [signer.publicKey, retryKey]);
 
+  // Bump retryKey when WalletSync mints any missing stars to the active wallet
+  // so the balance and bet-limit update immediately.
+  useEffect(() => {
+    const handler = () => setRetryKey((k) => k + 1);
+    window.addEventListener('stellar:stars-synced', handler);
+    return () => window.removeEventListener('stellar:stars-synced', handler);
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem(THEME_KEY);
     if (saved === 'dark') setTheme('dark');

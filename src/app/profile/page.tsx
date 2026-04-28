@@ -55,6 +55,8 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!address) { setProfileLoaded(true); return; }
     setProfileLoaded(false);
+    const refresh = () => setRetryKey((k) => k + 1);
+    window.addEventListener('stellar:stars-synced', refresh);
     Promise.allSettled([
       fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
         .then(r => r.json()).then(d => setStarsBalance(d.balance)),
@@ -66,6 +68,7 @@ export default function ProfilePage() {
           setRecentObs(obs.slice(0, 6));
         }),
     ]).then(() => setProfileLoaded(true));
+    return () => window.removeEventListener('stellar:stars-synced', refresh);
   }, [address, retryKey]);
 
   const handleCopy = () => {
@@ -117,7 +120,10 @@ export default function ProfilePage() {
 
   const completed = state.completedMissions.filter(m => m.status === 'completed');
   const totalStars = completed.reduce((sum, m) => sum + (m.stars ?? 0), 0);
-  const starsDisplay = starsBalance || totalStars;
+  // Profile, marketplace, and the bet panel must agree on Stars. Use the live
+  // on-chain balance once it has loaded; while it's still null/loading, fall
+  // back to the local-state lifetime total so the page never flashes "0 ✦".
+  const starsDisplay = profileLoaded ? starsBalance : (starsBalance || totalStars);
   const STARS_TO_GEL = 0.012;
   const gelWorth = (starsDisplay * STARS_TO_GEL).toFixed(1);
   const rank = getRank(completed.length);

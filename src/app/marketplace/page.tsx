@@ -53,12 +53,20 @@ export default function MarketplacePage() {
   const [claiming, setClaiming] = useState<Record<string, boolean>>({});
 
   const address = stellarAddress ?? state.walletAddress ?? null;
+  const [balanceTick, setBalanceTick] = useState(0);
 
   useEffect(() => {
     if (!address) return;
     fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
       .then(r => r.json()).then(d => setStarsBalance(d.balance)).catch(() => {});
-  }, [address]);
+  }, [address, balanceTick]);
+
+  // Refresh after WalletSync mints missing stars to a freshly-connected wallet.
+  useEffect(() => {
+    const handler = () => setBalanceTick((t) => t + 1);
+    window.addEventListener('stellar:stars-synced', handler);
+    return () => window.removeEventListener('stellar:stars-synced', handler);
+  }, []);
 
   const dealers = getDealersByRegion(location.region);
   const allProducts = getProductsByRegion(location.region);

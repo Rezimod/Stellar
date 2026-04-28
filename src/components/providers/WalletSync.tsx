@@ -5,12 +5,15 @@ import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 
 const FUND_KEY_PREFIX = 'stellar:funded:';
+const SYNCED_KEY_PREFIX = 'stellar:synced:';
 
 export default function WalletSync() {
   const { address, source } = useStellarUser();
-  const { setWallet } = useAppState();
+  const { state, setWallet } = useAppState();
   const fundingRef = useRef<string | null>(null);
+  const syncingRef = useRef<string | null>(null);
 
+  // Keep cached state.walletAddress in sync with the live address.
   useEffect(() => {
     if (address) setWallet(address);
   }, [address, setWallet]);
@@ -41,6 +44,42 @@ export default function WalletSync() {
         console.warn('[wallet-fund] failed (will retry next session):', err);
       });
   }, [address, source]);
+
+  // Stars are minted to whichever wallet was active at the time the user
+  // completed each mission. When the user switches wallets (e.g. signs in
+  // with Phantom after earning stars on the Privy embedded wallet), the
+  // currently-connected address has fewer Stars than the user has actually
+  // earned. Top up the active wallet to match local-state lifetime total
+  // once per address — the server endpoint is a no-op if balance already
+  // meets the target.
+  useEffect(() => {
+    if (!address) return;
+    if (syncingRef.current === address) return;
+    const expected = state.completedMissions
+      .filter((m) => m.status === 'completed')
+      .reduce((sum, m) => sum + (m.stars ?? 0), 0);
+    if (expected <= 0) return;
+    try {
+      if (sessionStorage.getItem(SYNCED_KEY_PREFIX + address) === '1') return;
+    } catch {}
+    syncingRef.current = address;
+    fetch('/api/stars/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, expectedTotal: expected }),
+    })
+      .then((r) => r.json().catch(() => null))
+      .then((data) => {
+        if (data?.synced) {
+          console.log(`[stars-sync] minted ${data.minted} ✦ to ${address.slice(0, 8)}… → ${data.txId}`);
+          window.dispatchEvent(new CustomEvent('stellar:stars-synced', { detail: data }));
+        }
+        try { sessionStorage.setItem(SYNCED_KEY_PREFIX + address, '1'); } catch {}
+      })
+      .catch((err) => {
+        console.warn('[stars-sync] failed:', err);
+      });
+  }, [address, state.completedMissions]);
 
   return null;
 }

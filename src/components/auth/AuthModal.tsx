@@ -133,7 +133,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         </button>
 
         <p style={{ fontSize: 11, color: 'rgba(232,230,221,0.4)', textAlign: 'center', margin: '8px 0 0' }}>
-          Phantom, Solflare, Backpack, and more
+          Phantom, Solflare, Backpack, Glow
+        </p>
+        <p style={{ fontSize: 10, color: 'rgba(232,230,221,0.3)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.45 }}>
+          MetaMask is Ethereum-only and can&rsquo;t sign Solana transactions here.
         </p>
       </div>
     </div>
