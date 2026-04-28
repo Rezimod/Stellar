@@ -30,11 +30,13 @@ export default function WalletSync() {
     if (address) setWallet(address);
   }, [address, setWallet]);
 
-  // External wallets (Phantom, Solflare, Backpack…) start with 0 SOL on devnet,
-  // so any signed transaction would fail. Drip a tiny gas budget once per address
-  // so users can place bets, claim winnings, and otherwise sign without surprises.
+  // Both external wallets (Phantom, Solflare, Backpack…) AND fresh Privy
+  // embedded wallets start with 0 SOL on devnet, so any signed transaction
+  // would fail. Drip a tiny gas budget once per address so users can place
+  // bets, claim winnings, and otherwise sign without surprises. The endpoint
+  // is a no-op if the wallet already has ≥0.005 SOL.
   useEffect(() => {
-    if (source !== 'wallet-adapter' || !address) return;
+    if (!address || !source) return;
     if (fundingRef.current === address) return;
     try {
       if (sessionStorage.getItem(FUND_KEY_PREFIX + address) === '1') return;
