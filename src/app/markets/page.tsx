@@ -9,6 +9,7 @@ import {
   useStellarSigner,
 } from '@/lib/markets/privy-adapter';
 import { useAppState } from '@/hooks/useAppState';
+import { useStarsBalance } from '@/hooks/useStarsBalance';
 import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import InlineBetPanel from '@/components/markets/InlineBetPanel';
 import MyActiveBets from '@/components/markets/MyActiveBets';
@@ -18,9 +19,10 @@ import {
   missionsToObservations,
 } from '@/lib/observer-advantage';
 import {
-  getConfig,
-  getFullMarkets,
+  buildFullMarketsFromOnChain,
   getAllMarkets,
+  getConfig,
+  invalidateMarketsCache,
   type Market,
   type MarketCategory,
   type MarketOnChain,
@@ -204,46 +206,18 @@ export default function MarketsPage() {
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [theme, setTheme] = useState<Theme>('light');
   const [mint, setMint] = useState<PublicKey | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
+  const balance = useStarsBalance(signer.publicKey?.toBase58() ?? null);
   const [expanded, setExpanded] = useState<{
     marketId: number;
     side: MarketSide;
   } | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    getConfig(program)
-      .then((cfg) => {
-        if (cancelled) return;
-        setMint(cfg?.mint ?? null);
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [program]);
+  // Mint is filled in by the markets fetch below (config is cached, so this
+  // call piggybacks on the same RPC as `getAllMarkets`). No separate effect
+  // needed — see the consolidated load effect.
 
-  useEffect(() => {
-    if (!signer.publicKey) {
-      setBalance(null);
-      return;
-    }
-    let cancelled = false;
-    fetch(`/api/stars-balance?address=${signer.publicKey.toBase58()}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (cancelled) return;
-        setBalance(typeof d?.balance === 'number' ? d.balance : 0);
-      })
-      .catch(() => { if (!cancelled) setBalance(0); });
-    return () => { cancelled = true; };
-  }, [signer.publicKey, retryKey]);
-
-  // Bump retryKey when WalletSync mints any missing stars to the active wallet
-  // so the balance and bet-limit update immediately.
-  useEffect(() => {
-    const handler = () => setRetryKey((k) => k + 1);
-    window.addEventListener('stellar:stars-synced', handler);
-    return () => window.removeEventListener('stellar:stars-synced', handler);
-  }, []);
+  // Stars balance is provided by the shared `useStarsBalance` hook above; it
+  // already listens for `stellar:stars-synced` and re-fetches on demand.
 
   useEffect(() => {
     const saved = localStorage.getItem(THEME_KEY);
@@ -274,9 +248,14 @@ export default function MarketsPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    Promise.all([getFullMarkets(program), getAllMarkets(program)])
-      .then(([bound, allOnChain]) => {
+    // Reset the markets/config caches when the user explicitly retries so we
+    // don't serve a stale failure result.
+    if (retryKey > 0) invalidateMarketsCache();
+    Promise.all([getAllMarkets(program), getConfig(program)])
+      .then(([allOnChain, cfg]) => {
         if (cancelled) return;
+        setMint(cfg?.mint ?? null);
+        const bound = buildFullMarketsFromOnChain(allOnChain);
         const boundIds = new Set(bound.map((m) => m.onChain.marketId));
         const synthesized = allOnChain
           .filter((on) => !boundIds.has(on.marketId))
@@ -428,6 +407,12 @@ export default function MarketsPage() {
           />
         </div>
 
+        {/* My active bets — surfaced above the trending strip so live positions
+            are the first thing the user sees. Hides itself when empty. */}
+        <div className="mkt-my-bets-wrap">
+          <MyActiveBets variant="compact" title="My active bets" />
+        </div>
+
         {/* Trending strip — auto-rotates every 4.5s, pauses on hover */}
         {!loading && trending.length > 0 && (
           <div
@@ -477,9 +462,6 @@ export default function MarketsPage() {
         {/* Two-column layout */}
         <div className="mkt-layout">
           <div className="mkt-main">
-            <div className="mkt-my-bets" style={{ marginBottom: 18 }}>
-              <MyActiveBets variant="compact" title="My active bets" />
-            </div>
             <header className="mkt-section-header">
               <h1 className="mkt-section-title">All markets</h1>
               {!loading && (

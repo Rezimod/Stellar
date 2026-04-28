@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import type { PublicKey } from '@solana/web3.js';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import BetForm from './BetForm';
@@ -175,7 +174,6 @@ export default function MarketDetail({
   onRefresh,
   observerAdvantage,
 }: MarketDetailProps) {
-  const router = useRouter();
   const cat =
     (meta && CATEGORY_META[meta.category]) ||
     CATEGORY_META.sky_event ||
@@ -192,7 +190,9 @@ export default function MarketDetail({
 
   const askAstra = () => {
     const q = `Should I bet YES on "${title}"? What's your analysis?`;
-    router.push(`/chat?q=${encodeURIComponent(q)}`);
+    window.dispatchEvent(
+      new CustomEvent('stellar:astra-open', { detail: { message: q } }),
+    );
   };
 
   const yesPct = (() => {
@@ -234,19 +234,7 @@ export default function MarketDetail({
         </div>
 
         {/* Title */}
-        <h1
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 30,
-            lineHeight: 1.18,
-            fontWeight: 600,
-            color: 'var(--stl-text-bright)',
-            letterSpacing: '-0.01em',
-            margin: 0,
-          }}
-        >
-          {title}
-        </h1>
+        <h1 className="md-title">{title}</h1>
 
         {/* Polymarket-style meta row: volume + close date */}
         <div className="md-meta-row">
@@ -271,26 +259,15 @@ export default function MarketDetail({
         </div>
 
         {/* Description */}
-        <p
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 14,
-            lineHeight: 1.55,
-            color: 'rgba(255,255,255,0.7)',
-            margin: 0,
-          }}
-        >
-          {description}
-        </p>
+        <p className="md-description">{description}</p>
 
         {/* Observer advantage banner */}
         {observerAdvantage?.hasAdvantage && (
           <div
             className="rounded-xl px-4 py-3 flex items-center gap-3"
             style={{
-              background:
-                'linear-gradient(135deg, rgba(255,209,102,0.10), rgba(168,85,247,0.08))',
-              border: '1px solid rgba(255,209,102,0.35)',
+              background: 'var(--stl-amber-bg)',
+              border: '1px solid var(--stl-amber)',
             }}
           >
             <span style={{ fontSize: 22 }}>🔭</span>
@@ -300,7 +277,7 @@ export default function MarketDetail({
                   fontFamily: 'var(--font-serif)',
                   fontSize: 14,
                   fontWeight: 600,
-                  color: 'var(--stl-gold)',
+                  color: 'var(--stl-amber)',
                   margin: 0,
                 }}
               >
@@ -310,7 +287,7 @@ export default function MarketDetail({
                 style={{
                   fontFamily: 'var(--font-display)',
                   fontSize: 12,
-                  color: 'rgba(255,255,255,0.65)',
+                  color: 'var(--stl-text2)',
                   margin: '2px 0 0',
                 }}
               >
@@ -353,227 +330,86 @@ export default function MarketDetail({
         <UserPositionCard positions={positions} />
 
         {/* Resolution details */}
-      <section className="flex flex-col gap-2">
-        <h3
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 10,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.45)',
-            margin: 0,
-          }}
-        >
-          Resolution details
-        </h3>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {meta?.yesCondition && (
-            <DetailRow label="YES condition" value={meta.yesCondition} fullWidth />
-          )}
-          {meta?.resolutionSource && (
-            <DetailRow label="Resolution source" value={meta.resolutionSource} fullWidth />
-          )}
-          {meta?.closeTime && (
-            <DetailRow label="Closes" value={formatLocal(meta.closeTime)} />
-          )}
-          <DetailRow
-            label="Resolves"
-            value={formatLocal(meta?.resolutionTime ?? onChain.resolutionTime)}
-          />
-          <DetailRow label="Market ID" value={`#${onChain.marketId}`} mono />
-          <DetailRow
-            label="Pools"
-            value={`YES ${onChain.yesPool} · NO ${onChain.noPool}`}
-            mono
-          />
-        </dl>
-      </section>
-
-      {/* Ask ASTRA */}
-      {status.kind === 'open' && (
         <section className="flex flex-col gap-2">
-          <h3
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 10,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.45)',
-              margin: 0,
-            }}
-          >
-            Ask ASTRA
-          </h3>
-          <button
-            onClick={askAstra}
-            className="rounded-xl flex items-center gap-3 text-left"
-            style={{
-              background:
-                'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(52,211,153,0.08))',
-              border: '1px solid rgba(124,58,237,0.3)',
-              padding: '14px 16px',
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'border-color 0.18s ease, background 0.18s ease',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                'rgba(124,58,237,0.55)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                'rgba(124,58,237,0.3)';
-            }}
-          >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: 'rgba(124,58,237,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <Sparkles size={17} color="#c4b5fd" strokeWidth={1.6} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: 'var(--stl-text-bright)',
-                  margin: 0,
-                }}
-              >
-                Should I bet on this market?
-              </p>
-              <p
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 12,
-                  color: 'rgba(255,255,255,0.55)',
-                  margin: '2px 0 0',
-                }}
-              >
-                Ask the AI astronomer — live sky data, historical rates, recommendation.
-              </p>
-            </div>
-            <span
-              style={{
-                color: 'rgba(196,181,253,0.8)',
-                fontSize: 18,
-                flexShrink: 0,
-              }}
-            >
-              →
-            </span>
-          </button>
+          <h3 className="md-section-label">Resolution details</h3>
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {meta?.yesCondition && (
+              <DetailRow label="YES condition" value={meta.yesCondition} fullWidth />
+            )}
+            {meta?.resolutionSource && (
+              <DetailRow label="Resolution source" value={meta.resolutionSource} fullWidth />
+            )}
+            {meta?.closeTime && (
+              <DetailRow label="Closes" value={formatLocal(meta.closeTime)} />
+            )}
+            <DetailRow
+              label="Resolves"
+              value={formatLocal(meta?.resolutionTime ?? onChain.resolutionTime)}
+            />
+            <DetailRow label="Market ID" value={`#${onChain.marketId}`} mono />
+            <DetailRow
+              label="Pools"
+              value={`YES ${onChain.yesPool} · NO ${onChain.noPool}`}
+              mono
+            />
+          </dl>
         </section>
-      )}
 
-      {/* About this market */}
-      {meta?.whyInteresting && (
+        {/* Ask ASTRA */}
+        {status.kind === 'open' && (
+          <section className="flex flex-col gap-2">
+            <h3 className="md-section-label">Ask ASTRA</h3>
+            <button onClick={askAstra} className="md-astra-cta">
+              <span className="md-astra-cta-icon">
+                <Sparkles size={17} color="var(--stl-accent)" strokeWidth={1.6} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p className="md-astra-cta-title">Should I bet on this market?</p>
+                <p className="md-astra-cta-sub">
+                  Ask the AI astronomer — live sky data, historical rates, recommendation.
+                </p>
+              </div>
+              <span className="md-astra-cta-arrow">→</span>
+            </button>
+          </section>
+        )}
+
+        {/* About this market */}
+        {meta?.whyInteresting && (
+          <section className="flex flex-col gap-2">
+            <h3 className="md-section-label">About this market</h3>
+            <p
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 13,
+                lineHeight: 1.6,
+                color: 'var(--stl-text2)',
+                margin: 0,
+              }}
+            >
+              {meta.whyInteresting}
+            </p>
+          </section>
+        )}
+
+        {/* On-chain */}
         <section className="flex flex-col gap-2">
-          <h3
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 10,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.45)',
-              margin: 0,
-            }}
-          >
-            About this market
-          </h3>
-          <p
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 13,
-              lineHeight: 1.6,
-              color: 'rgba(255,255,255,0.68)',
-              margin: 0,
-            }}
-          >
-            {meta.whyInteresting}
-          </p>
-        </section>
-      )}
-
-      {/* On-chain */}
-      <section className="flex flex-col gap-2">
-        <h3
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 10,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.45)',
-            margin: 0,
-          }}
-        >
-          On-chain
-        </h3>
-        <div
-          className="rounded-xl flex items-center justify-between gap-3"
-          style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            padding: '10px 12px',
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 9.5,
-                fontWeight: 600,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.4)',
-              }}
-            >
-              Market account
+          <h3 className="md-section-label">On-chain</h3>
+          <div className="md-onchain">
+            <div style={{ minWidth: 0 }}>
+              <div className="md-onchain-label">Market account</div>
+              <div className="md-onchain-addr">{marketAddress.toBase58()}</div>
             </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12,
-                color: 'var(--stl-text-bright)',
-                marginTop: 4,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
+            <a
+              href={explorerAddressUrl(marketAddress.toBase58())}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="md-explorer"
             >
-              {marketAddress.toBase58()}
-            </div>
+              Explorer <ExternalLink size={11} />
+            </a>
           </div>
-          <a
-            href={explorerAddressUrl(marketAddress.toBase58())}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 flex-shrink-0"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'rgba(196,181,253,0.9)',
-              textDecoration: 'none',
-              letterSpacing: '0.04em',
-              padding: '6px 10px',
-              borderRadius: 8,
-              background: 'rgba(124,58,237,0.1)',
-              border: '1px solid rgba(124,58,237,0.25)',
-            }}
-          >
-            Explorer <ExternalLink size={11} />
-          </a>
-        </div>
-      </section>
+        </section>
       </div>
 
       <aside className="md-side">
@@ -616,9 +452,9 @@ export default function MarketDetail({
 function StatusBadge({ status }: { status: DerivedStatus }) {
   const meta = {
     open: { label: 'Open', dot: 'var(--stl-green)' },
-    locked: { label: 'Locked', dot: '#FBBF24' },
-    resolved: { label: 'Resolved', dot: 'var(--stl-gold)' },
-    cancelled: { label: 'Cancelled', dot: '#94A3B8' },
+    locked: { label: 'Locked', dot: 'var(--stl-amber)' },
+    resolved: { label: 'Resolved', dot: 'var(--stl-accent)' },
+    cancelled: { label: 'Cancelled', dot: 'var(--stl-text3)' },
   }[status.kind];
   return (
     <span
@@ -628,7 +464,7 @@ function StatusBadge({ status }: { status: DerivedStatus }) {
         fontSize: 9.5,
         fontWeight: 600,
         letterSpacing: '0.14em',
-        color: 'rgba(255,255,255,0.6)',
+        color: 'var(--stl-text2)',
         textTransform: 'uppercase',
         lineHeight: 1,
       }}
@@ -640,7 +476,6 @@ function StatusBadge({ status }: { status: DerivedStatus }) {
           height: 6,
           borderRadius: 9999,
           background: meta.dot,
-          boxShadow: `0 0 6px ${meta.dot}aa`,
         }}
       />
       {meta.label}
@@ -662,24 +497,24 @@ function Banner({
     { bg: string; border: string; color: string }
   > = {
     emerald: {
-      bg: 'rgba(52,211,153,0.10)',
-      border: 'rgba(52,211,153,0.3)',
+      bg: 'var(--stl-green-bg)',
+      border: 'var(--stl-green)',
       color: 'var(--stl-green)',
     },
     rose: {
-      bg: 'rgba(244,114,182,0.10)',
-      border: 'rgba(244,114,182,0.3)',
-      color: '#F472B6',
+      bg: 'var(--stl-red-bg)',
+      border: 'var(--stl-red)',
+      color: 'var(--stl-red)',
     },
     amber: {
-      bg: 'rgba(251,191,36,0.08)',
-      border: 'rgba(251,191,36,0.3)',
-      color: '#FBBF24',
+      bg: 'var(--stl-amber-bg)',
+      border: 'var(--stl-amber)',
+      color: 'var(--stl-amber)',
     },
     slate: {
-      bg: 'rgba(148,163,184,0.08)',
-      border: 'rgba(148,163,184,0.28)',
-      color: 'rgba(226,232,240,0.85)',
+      bg: 'var(--stl-bg3)',
+      border: 'var(--stl-border2)',
+      color: 'var(--stl-text1)',
     },
   };
   const t = toneStyles[tone];
@@ -707,7 +542,7 @@ function Banner({
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 12,
-            color: 'rgba(255,255,255,0.55)',
+            color: 'var(--stl-text2)',
             margin: '2px 0 0',
           }}
         >
@@ -730,40 +565,9 @@ function DetailRow({
   mono?: boolean;
 }) {
   return (
-    <div
-      className={fullWidth ? 'sm:col-span-2' : ''}
-      style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: 10,
-        padding: '10px 12px',
-      }}
-    >
-      <dt
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 9.5,
-          fontWeight: 600,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.4)',
-          margin: 0,
-        }}
-      >
-        {label}
-      </dt>
-      <dd
-        style={{
-          fontFamily: mono ? 'var(--font-mono)' : 'var(--font-display)',
-          fontSize: mono ? 12 : 13,
-          color: 'var(--stl-text-bright)',
-          margin: '4px 0 0',
-          lineHeight: 1.4,
-          fontVariantNumeric: mono ? 'tabular-nums' : undefined,
-        }}
-      >
-        {value}
-      </dd>
+    <div className={`md-detail-row ${fullWidth ? 'sm:col-span-2' : ''}`}>
+      <dt>{label}</dt>
+      <dd className={mono ? 'mono' : 'text'}>{value}</dd>
     </div>
   );
 }

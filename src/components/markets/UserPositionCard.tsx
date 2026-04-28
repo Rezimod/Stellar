@@ -21,7 +21,7 @@ export default function UserPositionCard({ positions }: UserPositionCardProps) {
           fontSize: 10,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.45)',
+          color: 'var(--stl-text3)',
           margin: 0,
         }}
       >
@@ -35,10 +35,8 @@ export default function UserPositionCard({ positions }: UserPositionCardProps) {
               key={`${p.marketId}-${p.side}`}
               className="rounded-lg flex items-center justify-between"
               style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: `1px solid ${
-                  isYes ? 'rgba(52,211,153,0.25)' : 'rgba(244,114,182,0.25)'
-                }`,
+                background: 'var(--stl-bg2)',
+                border: `1px solid ${isYes ? 'var(--stl-green)' : 'var(--stl-red)'}`,
                 padding: '10px 12px',
               }}
             >
@@ -49,10 +47,8 @@ export default function UserPositionCard({ positions }: UserPositionCardProps) {
                     fontSize: 10,
                     fontWeight: 700,
                     letterSpacing: '0.14em',
-                    color: isYes ? 'var(--success)' : '#F472B6',
-                    background: isYes
-                      ? 'rgba(52,211,153,0.10)'
-                      : 'rgba(244,114,182,0.10)',
+                    color: isYes ? 'var(--stl-green)' : 'var(--stl-red)',
+                    background: isYes ? 'var(--stl-green-bg)' : 'var(--stl-red-bg)',
                     borderRadius: 4,
                     padding: '2.5px 6px',
                   }}
@@ -63,7 +59,7 @@ export default function UserPositionCard({ positions }: UserPositionCardProps) {
                   style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 13,
-                    color: '#F2F0EA',
+                    color: 'var(--stl-text1)',
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
@@ -74,7 +70,7 @@ export default function UserPositionCard({ positions }: UserPositionCardProps) {
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 11,
-                  color: 'rgba(255,255,255,0.55)',
+                  color: 'var(--stl-text2)',
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >

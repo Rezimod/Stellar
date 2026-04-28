@@ -31,6 +31,23 @@ export default function AstraPopup() {
     }
   }, [open, messages.length]);
 
+  // Allow other components (e.g. market detail "Ask ASTRA") to open the popup
+  // and optionally seed an initial question. Using a ref so the listener
+  // always sees the latest `send` without re-binding.
+  const sendRef = useRef<(t?: string) => void>(() => {});
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setOpen(true);
+      const detail = (e as CustomEvent<{ message?: string }>).detail;
+      if (detail?.message) {
+        setTimeout(() => sendRef.current?.(detail.message), 220);
+      }
+    };
+    window.addEventListener('stellar:astra-open', handler as EventListener);
+    return () =>
+      window.removeEventListener('stellar:astra-open', handler as EventListener);
+  }, []);
+
   const send = async (text?: string) => {
     const msg = (text ?? input).trim();
     if (!msg || loading) return;
@@ -120,6 +137,10 @@ export default function AstraPopup() {
     }
     setLoading(false);
   };
+
+  // Keep the ref pointing at the latest `send` so the global event listener
+  // (for `stellar:astra-open`) can invoke it without stale closures.
+  sendRef.current = send;
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }

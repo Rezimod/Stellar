@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const date = dateParam ? new Date(dateParam) : new Date();
     const planets = getVisiblePlanets(lat, lng, isNaN(date.getTime()) ? new Date() : date);
     return NextResponse.json(planets, {
-      headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
+      headers: { 'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600' },
     });
   } catch (err) {
     console.error('[api/sky/planets] getVisiblePlanets threw:', err);

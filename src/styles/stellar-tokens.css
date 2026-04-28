@@ -1226,6 +1226,22 @@
 }
 .mkt-trending-strip::-webkit-scrollbar { display: none; }
 
+/* My active bets — surfaced above the trending strip on /markets */
+.mkt-my-bets-wrap {
+  padding: 14px 20px 0;
+  border-bottom: 1px solid var(--stl-border);
+}
+.mkt-my-bets-wrap:empty {
+  display: none;
+  border-bottom: 0;
+}
+.mkt-my-bets-wrap > section:last-child {
+  padding-bottom: 14px;
+}
+@media (max-width: 768px) {
+  .mkt-my-bets-wrap { padding: 12px 12px 0; }
+}
+
 .mkt-trending-chip {
   position: relative;
   display: flex;
@@ -2164,8 +2180,59 @@
 
 /* ============================================================
    MARKET DETAIL (Polymarket-style two-column, sticky trade panel)
-   Lives inside the dark-themed detail page (NOT .markets-page scope)
+   Theme-aware — sits inside .markets-page so it picks up light/dark
+   tokens automatically.
    ============================================================ */
+.mkt-detail-body {
+  padding: 18px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .mkt-detail-body { padding: 14px 12px 24px; }
+}
+.mkt-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--stl-text2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.04em;
+}
+.mkt-detail-back:hover { color: var(--stl-text1); }
+.mkt-detail-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--stl-text3);
+  background: transparent;
+  border: none;
+  padding: 0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.mkt-detail-refresh:disabled { cursor: wait; }
+.mkt-detail-refresh:hover:not(:disabled) { color: var(--stl-text1); }
+.mkt-detail-notice {
+  border-radius: 12px;
+  padding: 40px 16px;
+  text-align: center;
+  font-family: var(--font-display);
+  color: var(--stl-text2);
+  font-size: 13px;
+  background: var(--stl-bg2);
+  border: 1px solid var(--stl-border);
+}
+
 .md-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -2197,14 +2264,14 @@
 }
 .md-meta-item { display: inline-flex; align-items: center; gap: 6px; }
 .md-meta-label {
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--stl-text3);
   font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .md-meta-value {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--stl-text1);
   font-variant-numeric: tabular-nums;
 }
 .md-meta-source {
@@ -2217,14 +2284,14 @@
 .md-meta-divider {
   width: 1px;
   height: 10px;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--stl-border2);
   display: inline-block;
 }
 
 /* Sticky trade card */
 .md-trade-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--stl-bg2);
+  border: 1px solid var(--stl-border);
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -2241,7 +2308,7 @@
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 600;
-  color: var(--stl-text-bright, #F4F4F6);
+  color: var(--stl-text1);
 }
 .md-odds-preview {
   display: grid;
@@ -2257,12 +2324,12 @@
   border: 1px solid transparent;
 }
 .md-odds-side.yes {
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.22);
+  background: var(--stl-green-bg);
+  border-color: var(--stl-green);
 }
 .md-odds-side.no {
-  background: rgba(244, 114, 182, 0.08);
-  border-color: rgba(244, 114, 182, 0.22);
+  background: var(--stl-red-bg);
+  border-color: var(--stl-red);
 }
 .md-odds-label {
   font-family: var(--font-mono), monospace;
@@ -2270,7 +2337,7 @@
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--stl-text2);
 }
 .md-odds-value {
   font-family: var(--font-mono), monospace;
@@ -2279,8 +2346,8 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
-.md-odds-side.yes .md-odds-value { color: var(--stl-green, #4ADE80); }
-.md-odds-side.no .md-odds-value { color: #F472B6; }
+.md-odds-side.yes .md-odds-value { color: var(--stl-green); }
+.md-odds-side.no .md-odds-value { color: var(--stl-red); }
 .md-trade-closed {
   padding: 22px 12px;
   text-align: center;
@@ -2288,18 +2355,158 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--stl-text3);
+  background: var(--stl-bg3);
+  border: 1px solid var(--stl-border);
   border-radius: 10px;
 }
 .md-trade-terms {
   font-family: var(--font-display);
   font-size: 11px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.42);
+  color: var(--stl-text3);
   margin: 0;
   text-align: center;
+}
+
+/* Reusable pieces inside .md-main — theme-aware versions of what was inline */
+.md-section-label {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stl-text3);
+  margin: 0;
+}
+.md-title {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  line-height: 1.18;
+  font-weight: 600;
+  color: var(--stl-text1);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.md-description {
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--stl-text2);
+  margin: 0;
+}
+.md-detail-row {
+  background: var(--stl-bg2);
+  border: 1px solid var(--stl-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.md-detail-row dt {
+  font-family: var(--font-mono), monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stl-text3);
+  margin: 0;
+}
+.md-detail-row dd {
+  color: var(--stl-text1);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+.md-detail-row dd.mono {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.md-detail-row dd.text {
+  font-family: var(--font-display);
+  font-size: 13px;
+}
+.md-onchain {
+  background: var(--stl-bg2);
+  border: 1px solid var(--stl-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.md-onchain-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stl-text3);
+}
+.md-onchain-addr {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: var(--stl-text1);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.md-explorer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--stl-accent);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--stl-accent-bg);
+  border: 1px solid var(--stl-accent);
+}
+.md-astra-cta {
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: var(--stl-accent-bg);
+  border: 1px solid var(--stl-accent);
+  padding: 14px 16px;
+  cursor: pointer;
+  width: 100%;
+  transition: filter 0.18s ease;
+}
+.md-astra-cta:hover { filter: brightness(1.05); }
+.md-astra-cta-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--stl-bg2);
+  border: 1px solid var(--stl-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.md-astra-cta-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--stl-text1);
+  margin: 0;
+}
+.md-astra-cta-sub {
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--stl-text2);
+  margin: 2px 0 0;
+}
+.md-astra-cta-arrow {
+  color: var(--stl-accent);
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 /* Mobile — stack, un-stick */

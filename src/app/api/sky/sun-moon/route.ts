@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
 
   const sunRise = SearchRiseSet(Body.Sun, observer, +1, midnight, 1);
   const sunSet  = SearchRiseSet(Body.Sun, observer, -1, midnight, 1);
+  const moonRise = SearchRiseSet(Body.Moon, observer, +1, midnight, 1);
+  const moonSet  = SearchRiseSet(Body.Moon, observer, -1, midnight, 1);
 
   const illum = Illumination(Body.Moon, now);
   const phaseAngle = illum.phase_angle; // 0 = new, 180 = full (degrees)
@@ -22,9 +24,11 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     sunRise: sunRise ? sunRise.date.toISOString() : null,
     sunSet:  sunSet  ? sunSet.date.toISOString()  : null,
+    moonRise: moonRise ? moonRise.date.toISOString() : null,
+    moonSet:  moonSet  ? moonSet.date.toISOString()  : null,
     illuminationPct,
     moonPhaseDeg: Math.round(moonPhaseDeg),
   }, {
-    headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
+    headers: { 'Cache-Control': 'public, max-age=600, s-maxage=1800, stale-while-revalidate=3600' },
   });
 }

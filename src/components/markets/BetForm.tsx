@@ -114,8 +114,8 @@ export default function BetForm({
     <div
       className="rounded-xl"
       style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--stl-bg2)',
+        border: '1px solid var(--stl-border)',
         padding: '14px 14px 16px',
         display: 'flex',
         flexDirection: 'column',
@@ -128,7 +128,7 @@ export default function BetForm({
           fontSize: 10,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.45)',
+          color: 'var(--stl-text3)',
         }}
       >
         Place position
@@ -139,17 +139,17 @@ export default function BetForm({
           label="YES"
           active={side === 'yes'}
           color="var(--stl-green)"
-          activeBg="rgba(52,211,153,0.14)"
-          activeBorder="rgba(52,211,153,0.5)"
+          activeBg="var(--stl-green-bg)"
+          activeBorder="var(--stl-green)"
           onClick={() => setSide('yes')}
           disabled={locked || submitting}
         />
         <SideButton
           label="NO"
           active={side === 'no'}
-          color="#F472B6"
-          activeBg="rgba(244,114,182,0.14)"
-          activeBorder="rgba(244,114,182,0.5)"
+          color="var(--stl-red)"
+          activeBg="var(--stl-red-bg)"
+          activeBorder="var(--stl-red)"
           onClick={() => setSide('no')}
           disabled={locked || submitting}
         />
@@ -160,8 +160,8 @@ export default function BetForm({
         <div
           className="flex items-center"
           style={{
-            background: 'rgba(0,0,0,0.25)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--stl-bg3)',
+            border: '1px solid var(--stl-border)',
             borderRadius: 8,
             padding: '10px 12px',
           }}
@@ -178,7 +178,7 @@ export default function BetForm({
             disabled={locked || submitting}
             style={{
               background: 'transparent',
-              color: 'var(--stl-text-bright)',
+              color: 'var(--stl-text1)',
               fontFamily: 'var(--font-mono)',
               fontSize: 18,
               fontVariantNumeric: 'tabular-nums',
@@ -190,7 +190,7 @@ export default function BetForm({
           />
           <span
             style={{
-              color: 'var(--stl-gold)',
+              color: 'var(--stl-amber)',
               fontFamily: 'var(--font-mono)',
               fontSize: 14,
               marginLeft: 8,
@@ -205,7 +205,7 @@ export default function BetForm({
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 10,
-              color: 'rgba(255,255,255,0.45)',
+              color: 'var(--stl-text3)',
               marginTop: 2,
             }}
           >
@@ -218,7 +218,7 @@ export default function BetForm({
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: 'rgba(255,209,102,0.8)',
+                  color: 'var(--stl-amber)',
                   fontFamily: 'var(--font-mono)',
                   fontSize: 10,
                   cursor: 'pointer',
@@ -237,11 +237,9 @@ export default function BetForm({
         <div
           className="rounded-lg"
           style={{
-            background: boostMultiplier
-              ? 'rgba(255,209,102,0.06)'
-              : 'rgba(255,255,255,0.02)',
+            background: boostMultiplier ? 'var(--stl-amber-bg)' : 'var(--stl-bg3)',
             border: `1px solid ${
-              boostMultiplier ? 'rgba(255,209,102,0.25)' : 'rgba(255,255,255,0.06)'
+              boostMultiplier ? 'var(--stl-amber)' : 'var(--stl-border)'
             }`,
             padding: '10px 12px',
           }}
@@ -252,7 +250,7 @@ export default function BetForm({
               fontSize: 10,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.4)',
+              color: 'var(--stl-text3)',
               marginBottom: 2,
             }}
           >
@@ -262,7 +260,7 @@ export default function BetForm({
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 16,
-              color: 'var(--stl-text-bright)',
+              color: 'var(--stl-text1)',
               fontVariantNumeric: 'tabular-nums',
             }}
           >
@@ -277,9 +275,7 @@ export default function BetForm({
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 10,
-              color: boostMultiplier
-                ? 'rgba(255,209,102,0.9)'
-                : 'rgba(255,255,255,0.4)',
+              color: boostMultiplier ? 'var(--stl-amber)' : 'var(--stl-text3)',
               marginTop: 2,
             }}
           >
@@ -325,9 +321,9 @@ export default function BetForm({
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 11,
-            color: '#FBBF24',
-            background: 'rgba(251,191,36,0.08)',
-            border: '1px solid rgba(251,191,36,0.25)',
+            color: 'var(--stl-amber)',
+            background: 'var(--stl-amber-bg)',
+            border: '1px solid var(--stl-amber)',
             borderRadius: 6,
             padding: '8px 10px',
           }}
@@ -368,9 +364,9 @@ function SideButton({
         letterSpacing: '0.1em',
         padding: '12px 0',
         borderRadius: 8,
-        border: `1px solid ${active ? activeBorder : 'rgba(255,255,255,0.08)'}`,
-        background: active ? activeBg : 'rgba(255,255,255,0.02)',
-        color: active ? color : 'rgba(255,255,255,0.6)',
+        border: `1px solid ${active ? activeBorder : 'var(--stl-border)'}`,
+        background: active ? activeBg : 'var(--stl-bg3)',
+        color: active ? color : 'var(--stl-text2)',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.55 : 1,
         transition: 'all 0.12s ease',
@@ -389,7 +385,7 @@ function Label({ children }: { children: React.ReactNode }) {
         fontSize: 10,
         letterSpacing: '0.14em',
         textTransform: 'uppercase',
-        color: 'rgba(255,255,255,0.4)',
+        color: 'var(--stl-text3)',
       }}
     >
       {children}

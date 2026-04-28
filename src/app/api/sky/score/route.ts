@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { ...result, location: { lat, lon }, timestamp: new Date().toISOString() },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+      { headers: { 'Cache-Control': 'public, max-age=180, s-maxage=300, stale-while-revalidate=600' } }
     )
   } catch {
     return fallback

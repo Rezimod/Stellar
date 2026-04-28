@@ -22,8 +22,8 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
     <div
       className="rounded-xl"
       style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--stl-bg2)',
+        border: '1px solid var(--stl-border)',
         padding: '14px 14px 16px',
         display: 'flex',
         flexDirection: 'column',
@@ -36,23 +36,23 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
           fontSize: 10,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.45)',
+          color: 'var(--stl-text3)',
         }}
       >
         Pool state
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <PoolRow label="YES pool" value={fmtInt(yes)} color="var(--success)" />
-        <PoolRow label="NO pool" value={fmtInt(no)} color="#F472B6" />
+        <PoolRow label="YES pool" value={fmtInt(yes)} color="var(--stl-green)" />
+        <PoolRow label="NO pool" value={fmtInt(no)} color="var(--stl-red)" />
         <div
           style={{
             height: 1,
-            background: 'rgba(255,255,255,0.06)',
+            background: 'var(--stl-border)',
             margin: '4px 0',
           }}
         />
-        <PoolRow label="Total" value={`${fmtInt(total)} ✦`} color="#F2F0EA" />
+        <PoolRow label="Total" value={`${fmtInt(total)} ✦`} color="var(--stl-text1)" />
       </div>
 
       {empty ? (
@@ -60,13 +60,13 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 10,
-            color: 'rgba(255,255,255,0.4)',
+            color: 'var(--stl-text3)',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             padding: '10px 0',
             textAlign: 'center',
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px dashed rgba(255,255,255,0.08)',
+            background: 'var(--stl-bg3)',
+            border: '1px dashed var(--stl-border)',
             borderRadius: 6,
           }}
         >
@@ -79,7 +79,7 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
             height: 24,
             borderRadius: 6,
             overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid var(--stl-border)',
           }}
         >
           <div
@@ -144,7 +144,7 @@ function PoolRow({
     >
       <span
         style={{
-          color: 'rgba(255,255,255,0.6)',
+          color: 'var(--stl-text2)',
           letterSpacing: '0.04em',
         }}
       >

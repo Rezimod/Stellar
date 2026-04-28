@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
 import type { PublicKey } from '@solana/web3.js';
 import { useStellarUser } from '@/hooks/useStellarUser';
+import { useStarsBalance } from '@/hooks/useStarsBalance';
 import {
   useReadOnlyProgram,
   useStellarSigner,
@@ -14,6 +15,7 @@ import {
   getConfig,
   getUserPositions,
   findMetadataByMarketId,
+  invalidateMarketsCache,
   type MarketOnChain,
   type MarketSide,
   type Position,
@@ -61,7 +63,6 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
 
   const [rows, setRows] = useState<ActiveRow[]>([]);
   const [mint, setMint] = useState<PublicKey | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [doubleDownId, setDoubleDownId] = useState<number | null>(null);
@@ -70,41 +71,11 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
   const [errors, setErrors] = useState<Record<number, string>>({});
 
   const wallet = signer.publicKey?.toBase58() ?? null;
+  const balance = useStarsBalance(wallet);
 
-  // Mint config
-  useEffect(() => {
-    let cancelled = false;
-    getConfig(program)
-      .then((cfg) => {
-        if (!cancelled) setMint(cfg?.mint ?? null);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [program]);
-
-  // Stars balance
-  useEffect(() => {
-    if (!wallet) {
-      setBalance(null);
-      return;
-    }
-    let cancelled = false;
-    fetch(`/api/stars-balance?address=${wallet}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (!cancelled) setBalance(typeof d?.balance === 'number' ? d.balance : 0);
-      })
-      .catch(() => {
-        if (!cancelled) setBalance(0);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [wallet, refreshKey]);
-
-  // Positions + cashouts
+  // Positions + cashouts. Mint comes from the same cached `getConfig` call so
+  // we don't issue a separate RPC for it. `getUserPositions` internally uses
+  // the cached `getAllMarkets` snapshot, so we don't need to fetch it again.
   useEffect(() => {
     let cancelled = false;
     if (!authenticated || !signer.publicKey) {
@@ -118,12 +89,14 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
     Promise.all([
       getUserPositions(program, userPk),
       getAllMarkets(program),
+      getConfig(program),
       fetch(`/api/markets/cashouts?address=${addr}`)
         .then((r) => r.json())
         .then((d) => (d?.cashouts ?? []) as CashoutRecord[])
         .catch(() => [] as CashoutRecord[]),
     ])
-      .then(([positions, markets, cashouts]) => {
+      .then(([positions, markets, cfg, cashouts]) => {
+        if (!cancelled) setMint(cfg?.mint ?? null);
         if (cancelled) return;
         const byId = new Map<number, MarketOnChain>(
           markets.map((m) => [m.marketId, m]),
@@ -181,6 +154,8 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
         setCashOutId(null);
+        // On-chain pools changed; clear cached snapshots so next reads are fresh.
+        invalidateMarketsCache();
         setRefreshKey((k) => k + 1);
         // Tell other widgets (balance, etc.) to refresh.
         window.dispatchEvent(new Event('stellar:stars-synced'));
@@ -198,6 +173,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
 
   const onDoubleDownSuccess = useCallback(() => {
     setDoubleDownId(null);
+    invalidateMarketsCache();
     setRefreshKey((k) => k + 1);
   }, []);
 

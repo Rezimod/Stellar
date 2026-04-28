@@ -69,7 +69,34 @@ function mapMarket(raw: RawMarket, mint: PublicKey): MarketOnChain {
   };
 }
 
-export async function getConfig(
+// Short-lived caches so that multiple components mounting at the same time
+// (markets page + MyActiveBets + my-positions, etc.) share a single RPC
+// instead of each kicking off their own. Keyed by RPC endpoint so dev/devnet
+// switches don't bleed between sessions.
+
+const CONFIG_TTL_MS = 60_000;
+const MARKETS_TTL_MS = 10_000;
+
+interface CacheEntry<T> {
+  value: T;
+  expires: number;
+}
+
+const _configCache = new Map<string, CacheEntry<ConfigState | null>>();
+const _configInflight = new Map<string, Promise<ConfigState | null>>();
+const _allMarketsCache = new Map<string, CacheEntry<MarketOnChain[]>>();
+const _allMarketsInflight = new Map<string, Promise<MarketOnChain[]>>();
+
+function rpcKey(program: StellarMarketsProgram): string {
+  return program.provider.connection.rpcEndpoint;
+}
+
+export function invalidateMarketsCache(): void {
+  _configCache.clear();
+  _allMarketsCache.clear();
+}
+
+async function fetchConfigFresh(
   program: StellarMarketsProgram,
 ): Promise<ConfigState | null> {
   const [pda] = configPDA(PROGRAM_ID);
@@ -89,6 +116,27 @@ export async function getConfig(
   }
 }
 
+export async function getConfig(
+  program: StellarMarketsProgram,
+): Promise<ConfigState | null> {
+  const key = rpcKey(program);
+  const now = Date.now();
+  const cached = _configCache.get(key);
+  if (cached && cached.expires > now) return cached.value;
+  const inflight = _configInflight.get(key);
+  if (inflight) return inflight;
+  const promise = fetchConfigFresh(program)
+    .then((value) => {
+      _configCache.set(key, { value, expires: Date.now() + CONFIG_TTL_MS });
+      return value;
+    })
+    .finally(() => {
+      _configInflight.delete(key);
+    });
+  _configInflight.set(key, promise);
+  return promise;
+}
+
 export async function getMarket(
   program: StellarMarketsProgram,
   marketId: number,
@@ -104,7 +152,7 @@ export async function getMarket(
   }
 }
 
-export async function getAllMarkets(
+async function fetchAllMarketsFresh(
   program: StellarMarketsProgram,
 ): Promise<MarketOnChain[]> {
   const cfg = await getConfig(program);
@@ -115,6 +163,27 @@ export async function getAllMarkets(
   return all
     .map((m) => mapMarket(m.account, cfg.mint))
     .sort((a, b) => a.marketId - b.marketId);
+}
+
+export async function getAllMarkets(
+  program: StellarMarketsProgram,
+): Promise<MarketOnChain[]> {
+  const key = rpcKey(program);
+  const now = Date.now();
+  const cached = _allMarketsCache.get(key);
+  if (cached && cached.expires > now) return cached.value;
+  const inflight = _allMarketsInflight.get(key);
+  if (inflight) return inflight;
+  const promise = fetchAllMarketsFresh(program)
+    .then((value) => {
+      _allMarketsCache.set(key, { value, expires: Date.now() + MARKETS_TTL_MS });
+      return value;
+    })
+    .finally(() => {
+      _allMarketsInflight.delete(key);
+    });
+  _allMarketsInflight.set(key, promise);
+  return promise;
 }
 
 export interface UserPositionRaw {
@@ -177,12 +246,12 @@ export async function getUserPositions(
   const raws = await getUserPositionsRaw(program, user);
   if (raws.length === 0) return [];
 
-  const marketIds = Array.from(new Set(raws.map((r) => r.marketId)));
-  const markets = await Promise.all(
-    marketIds.map((id) => getMarket(program, id)),
-  );
-  const marketById = new Map<number, MarketOnChain | null>(
-    marketIds.map((id, idx) => [id, markets[idx]]),
+  // Use the cached `getAllMarkets` snapshot instead of fetching each market
+  // individually — one RPC instead of N+1 (each per-market fetch was also
+  // re-fetching config under the hood).
+  const allMarkets = await getAllMarkets(program);
+  const marketById = new Map<number, MarketOnChain>(
+    allMarkets.map((m) => [m.marketId, m]),
   );
 
   const out: Position[] = [];

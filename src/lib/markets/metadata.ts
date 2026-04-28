@@ -26,10 +26,16 @@ function isV2Active(): boolean {
   return Object.keys(readBindingsV2()).length > 0;
 }
 
+let _v2Cache: MarketMetadata[] | null = null;
+let _v1Cache: MarketMetadata[] | null = null;
+let _previewCache: MarketMetadata[] | null = null;
+let _byMarketIdCache: Map<number, MarketMetadata> | null = null;
+
 function parseV2(): MarketMetadata[] {
+  if (_v2Cache) return _v2Cache;
   const file = seedJsonV2 as unknown as SeedMarketsFile;
   const bindings = readBindingsV2();
-  return file.markets.map((m) => ({
+  _v2Cache = file.markets.map((m) => ({
     id: m.id,
     marketId: bindings[m.id] ?? null,
     title: m.title,
@@ -48,12 +54,14 @@ function parseV2(): MarketMetadata[] {
     previewOnly: m.preview_only ?? false,
     simpleTitle: m.simple_title,
   }));
+  return _v2Cache;
 }
 
 function parseV1(): MarketMetadata[] {
+  if (_v1Cache) return _v1Cache;
   const file = seedJsonV1 as unknown as SeedMarketsFile;
   const bindings = readBindingsV1();
-  return file.markets.map((m) => ({
+  _v1Cache = file.markets.map((m) => ({
     id: m.id,
     marketId: bindings[m.id] ?? null,
     title: m.title,
@@ -67,11 +75,13 @@ function parseV1(): MarketMetadata[] {
     initialYesPct: m.initial_yes_pct,
     simpleTitle: m.simple_title,
   }));
+  return _v1Cache;
 }
 
 function parsePreview(): MarketMetadata[] {
+  if (_previewCache) return _previewCache;
   const file = seedJsonPreview as unknown as SeedMarketsFile;
-  return file.markets.map((m) => ({
+  _previewCache = file.markets.map((m) => ({
     id: m.id,
     marketId: null,
     title: m.title,
@@ -86,6 +96,7 @@ function parsePreview(): MarketMetadata[] {
     previewOnly: true,
     simpleTitle: m.simple_title,
   }));
+  return _previewCache;
 }
 
 function parseSeed(): MarketMetadata[] {
@@ -106,11 +117,17 @@ export function findMetadataBySlug(slug: string): MarketMetadata | null {
 }
 
 export function findMetadataByMarketId(marketId: number): MarketMetadata | null {
-  return (
-    parseV2().find((m) => m.marketId === marketId) ??
-    parseV1().find((m) => m.marketId === marketId) ??
-    null
-  );
+  if (!_byMarketIdCache) {
+    _byMarketIdCache = new Map();
+    // v2 wins over v1 if both bind the same on-chain id (matches old find order).
+    for (const m of parseV1()) {
+      if (m.marketId !== null) _byMarketIdCache.set(m.marketId, m);
+    }
+    for (const m of parseV2()) {
+      if (m.marketId !== null) _byMarketIdCache.set(m.marketId, m);
+    }
+  }
+  return _byMarketIdCache.get(marketId) ?? null;
 }
 
 export function getAllBindings(): Record<string, number> {
@@ -143,11 +160,13 @@ function previewOnChain(meta: MarketMetadata, idx: number): MarketOnChain {
   };
 }
 
-export async function getFullMarkets(
-  program: StellarMarketsProgram,
-): Promise<Market[]> {
+/**
+ * Build the full UI market list from an already-fetched on-chain snapshot.
+ * Lets a caller fetch on-chain markets once and reuse them across views,
+ * avoiding duplicate `program.account.market.all()` RPC calls.
+ */
+export function buildFullMarketsFromOnChain(onChain: MarketOnChain[]): Market[] {
   const seed = parseSeed();
-  const onChain = await getAllMarkets(program);
   const onChainById = new Map<number, MarketOnChain>(
     onChain.map((m) => [m.marketId, m]),
   );
@@ -190,4 +209,11 @@ export async function getFullMarkets(
     });
   });
   return out;
+}
+
+export async function getFullMarkets(
+  program: StellarMarketsProgram,
+): Promise<Market[]> {
+  const onChain = await getAllMarkets(program);
+  return buildFullMarketsFromOnChain(onChain);
 }

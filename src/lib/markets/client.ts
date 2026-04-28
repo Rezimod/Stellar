@@ -56,10 +56,20 @@ class ReadOnlyWallet implements AnchorWalletLike {
   }
 }
 
+// Cache one read-only Program per connection (keyed by RPC endpoint) so that
+// every component that calls `useReadOnlyProgram` shares the same instance
+// instead of allocating a new Anchor Program + Keypair per mount.
+const _readOnlyPrograms = new Map<string, StellarMarketsProgram>();
+
 export function getReadOnlyProgram(connection: Connection): StellarMarketsProgram {
+  const key = connection.rpcEndpoint;
+  const existing = _readOnlyPrograms.get(key);
+  if (existing) return existing;
   const wallet = new ReadOnlyWallet(Keypair.generate());
   const provider = new AnchorProvider(connection, wallet as unknown as Wallet, {
     commitment: "confirmed",
   });
-  return new Program(idlJson as unknown as Idl, provider) as unknown as StellarMarketsProgram;
+  const program = new Program(idlJson as unknown as Idl, provider) as unknown as StellarMarketsProgram;
+  _readOnlyPrograms.set(key, program);
+  return program;
 }

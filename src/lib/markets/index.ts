@@ -28,6 +28,7 @@ export {
   getAllMarkets,
   getUserPositions,
   getUserPositionsRaw,
+  invalidateMarketsCache,
   type UserPositionRaw,
 } from "./queries";
 export {
@@ -36,4 +37,5 @@ export {
   findMetadataByMarketId,
   getAllBindings,
   getFullMarkets,
+  buildFullMarketsFromOnChain,
 } from "./metadata";

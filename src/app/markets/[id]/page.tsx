@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import type { PublicKey } from '@solana/web3.js';
-import PageContainer from '@/components/layout/PageContainer';
 import PageTransition from '@/components/ui/PageTransition';
 import MarketDetail from '@/components/markets/MarketDetail';
 import {
@@ -29,6 +28,8 @@ import { useAppState } from '@/hooks/useAppState';
 import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 
 const POLL_MS = 5000;
+const THEME_KEY = 'stellar-markets-theme';
+type Theme = 'light' | 'dark';
 
 export default function MarketDetailPage({
   params,
@@ -58,6 +59,18 @@ export default function MarketDetailPage({
   const [notFound, setNotFound] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [theme, setTheme] = useState<Theme>('light');
+
+  useEffect(() => {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'dark') setTheme('dark');
+  }, []);
+
+  function toggleTheme() {
+    const next: Theme = theme === 'light' ? 'dark' : 'light';
+    setTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch {}
+  }
 
   const userAddress = signer.publicKey?.toBase58() ?? null;
 
@@ -132,100 +145,75 @@ export default function MarketDetailPage({
 
   return (
     <PageTransition>
-      <PageContainer variant="wide" className="py-3 sm:py-6 flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          {/* TODO(day-9): fix SSR hydration mismatch — styled-jsx class differs server vs client */}
-          <button
-            onClick={() => router.push('/markets')}
-            className="inline-flex items-center gap-1.5"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'rgba(255,255,255,0.55)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              letterSpacing: '0.04em',
-            }}
-          >
-            <ArrowLeft size={13} /> Back to markets
-          </button>
-          {!loading && !notFound && (
+      <div className={`markets-page ${theme === 'dark' ? 'dark' : ''}`}>
+        <div className="mkt-shell">
+          {/* Stats bar — matches /markets layout: back link + refresh + theme toggle */}
+          <div className="mkt-stats-bar">
             <button
-              onClick={refresh}
-              disabled={refreshing}
-              className="inline-flex items-center gap-1.5"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 10,
-                color: 'rgba(255,255,255,0.45)',
-                background: 'transparent',
-                border: 'none',
-                cursor: refreshing ? 'wait' : 'pointer',
-                padding: 0,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-              }}
+              type="button"
+              onClick={() => router.push('/markets')}
+              className="mkt-detail-back"
             >
-              <RefreshCw
-                size={11}
+              <ArrowLeft size={13} /> Back to markets
+            </button>
+            <div className="flex items-center gap-3">
+              {!loading && !notFound && (
+                <button
+                  type="button"
+                  onClick={refresh}
+                  disabled={refreshing}
+                  className="mkt-detail-refresh"
+                >
+                  <RefreshCw
+                    size={11}
+                    style={{
+                      animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                    }}
+                  />
+                  {refreshing ? 'Refreshing' : 'Refresh'}
+                </button>
+              )}
+              <button
+                type="button"
+                className="mkt-theme-toggle"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              />
+            </div>
+          </div>
+
+          <div className="mkt-detail-body">
+            {loading ? (
+              <div
+                className="animate-pulse rounded-xl"
                 style={{
-                  animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                  minHeight: 320,
+                  background: 'var(--stl-bg2)',
+                  border: '1px solid var(--stl-border)',
                 }}
               />
-              {refreshing ? 'Refreshing' : 'Refresh'}
-            </button>
-          )}
+            ) : notFound ? (
+              <div className="mkt-detail-notice">
+                Market #{id} not found on-chain.
+              </div>
+            ) : onChain && mint ? (
+              <MarketDetail
+                onChain={onChain}
+                meta={meta}
+                mint={mint}
+                positions={positions}
+                balance={balance}
+                onRefresh={refresh}
+                observerAdvantage={observerAdvantage}
+              />
+            ) : (
+              <div className="mkt-detail-notice">
+                Config not initialized on-chain.
+              </div>
+            )}
+          </div>
         </div>
-
-        {loading ? (
-          <div
-            className="animate-pulse rounded-xl"
-            style={{
-              minHeight: 320,
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          />
-        ) : notFound ? (
-          <div
-            className="rounded-xl px-4 py-10 text-center"
-            style={{
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              fontFamily: 'var(--font-display)',
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: 13,
-            }}
-          >
-            Market #{id} not found on-chain.
-          </div>
-        ) : onChain && mint ? (
-          <MarketDetail
-            onChain={onChain}
-            meta={meta}
-            mint={mint}
-            positions={positions}
-            balance={balance}
-            onRefresh={refresh}
-            observerAdvantage={observerAdvantage}
-          />
-        ) : (
-          <div
-            className="rounded-xl px-4 py-10 text-center"
-            style={{
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              fontFamily: 'var(--font-display)',
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: 13,
-            }}
-          >
-            Config not initialized on-chain.
-          </div>
-        )}
-      </PageContainer>
+      </div>
       <style jsx global>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
