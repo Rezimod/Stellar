@@ -23,7 +23,7 @@ export default function StarField() {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const starCount = isMobile ? 25 : 60;
+  const starCount = isMobile ? 14 : 30;
 
   const stars = useMemo<Star[]>(
     () =>

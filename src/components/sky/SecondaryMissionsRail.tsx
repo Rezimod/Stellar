@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import type { Mission } from '@/lib/types';
 import { getStarlight, MAX_STARLIGHT_VALUE } from '@/lib/starlight';
 import { CheckCircle2, Lock } from 'lucide-react';
@@ -39,9 +40,8 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
   const [starlight, setStarlight] = useState(MAX_STARLIGHT_VALUE);
   useEffect(() => {
     setStarlight(getStarlight().remaining);
-    const id = setInterval(() => setStarlight(getStarlight().remaining), 60000);
-    return () => clearInterval(id);
   }, [state.completedMissions.length]);
+  useVisibleInterval(() => setStarlight(getStarlight().remaining), 60_000);
 
   const completedIds = new Set(state.completedMissions.filter(m => m.status === 'completed').map(m => m.id));
   function completedTodayId(id: string) {

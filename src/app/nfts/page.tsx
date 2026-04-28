@@ -437,24 +437,32 @@ export default function NftsPage() {
     );
   }
 
-  const sortedNfts = [...allNfts].sort((a, b) => {
-    if (sort === 'stars') {
-      const aStars = parseInt(getAttr(a.content?.metadata?.attributes, 'Stars Earned') || getAttr(a.content?.metadata?.attributes, 'Stars') || '0');
-      const bStars = parseInt(getAttr(b.content?.metadata?.attributes, 'Stars Earned') || getAttr(b.content?.metadata?.attributes, 'Stars') || '0');
-      return bStars - aStars;
-    }
-    return 0; // keep API order for recent
-  });
+  // Pre-compute per-NFT stats once so sort/totals don't re-parse attributes on every render.
+  const nftStats = useMemo(
+    () =>
+      allNfts.map((item) => {
+        const attrs = item.content?.metadata?.attributes;
+        const stars = parseInt(getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars') || '0');
+        const cloud = parseFloat(getAttr(attrs, 'Cloud Cover').replace('%', '') || '100');
+        return { item, stars, cloud };
+      }),
+    [allNfts],
+  );
 
-  const totalStarsEarned = allNfts.reduce((sum, item) => {
-    const s = parseInt(getAttr(item.content?.metadata?.attributes, 'Stars Earned') || getAttr(item.content?.metadata?.attributes, 'Stars') || '0');
-    return sum + s;
-  }, 0);
+  const sortedNfts = useMemo(() => {
+    if (sort !== 'stars') return allNfts;
+    return [...nftStats].sort((a, b) => b.stars - a.stars).map((s) => s.item);
+  }, [allNfts, nftStats, sort]);
 
-  const bestCloud = allNfts.reduce((best, item) => {
-    const cc = parseFloat(getAttr(item.content?.metadata?.attributes, 'Cloud Cover').replace('%', '') || '100');
-    return cc < best ? cc : best;
-  }, 100);
+  const totalStarsEarned = useMemo(
+    () => nftStats.reduce((sum, s) => sum + s.stars, 0),
+    [nftStats],
+  );
+
+  const bestCloud = useMemo(
+    () => nftStats.reduce((best, s) => (s.cloud < best ? s.cloud : best), 100),
+    [nftStats],
+  );
 
   return (
     <>

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 export type Region = 'caucasus' | 'north_america' | 'europe' | 'asia' | 'south_america' | 'global'
 
@@ -112,13 +112,18 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
-  function setLocation(loc: UserLocation) {
+  const setLocation = useCallback((loc: UserLocation) => {
     localStorage.setItem('stellar_location', JSON.stringify(loc))
     setLocationState(loc)
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({ location, setLocation, loading }),
+    [location, setLocation, loading],
+  )
 
   return (
-    <LocationContext.Provider value={{ location, setLocation, loading }}>
+    <LocationContext.Provider value={value}>
       {children}
     </LocationContext.Provider>
   )

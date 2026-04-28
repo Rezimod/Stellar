@@ -7,6 +7,18 @@ import { useAppState } from '@/hooks/useAppState';
 const FUND_KEY_PREFIX = 'stellar:funded:';
 const SYNCED_KEY_PREFIX = 'stellar:synced:';
 
+function runWhenIdle(cb: () => void) {
+  if (typeof window === 'undefined') return;
+  const w = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number;
+  };
+  if (typeof w.requestIdleCallback === 'function') {
+    w.requestIdleCallback(cb, { timeout: 2000 });
+  } else {
+    window.setTimeout(cb, 600);
+  }
+}
+
 export default function WalletSync() {
   const { address, source } = useStellarUser();
   const { state, setWallet } = useAppState();
@@ -28,21 +40,25 @@ export default function WalletSync() {
       if (sessionStorage.getItem(FUND_KEY_PREFIX + address) === '1') return;
     } catch {}
     fundingRef.current = address;
-    fetch('/api/wallet/fund', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address }),
-    })
-      .then((r) => r.json().catch(() => null))
-      .then((data) => {
-        if (data && data.funded) {
-          console.log('[wallet-fund] dripped 0.02 SOL →', data.txId);
-        }
-        try { sessionStorage.setItem(FUND_KEY_PREFIX + address, '1'); } catch {}
+    runWhenIdle(() => {
+      fetch('/api/wallet/fund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
       })
-      .catch((err) => {
-        console.warn('[wallet-fund] failed (will retry next session):', err);
-      });
+        .then((r) => r.json().catch(() => null))
+        .then((data) => {
+          if (data && data.funded && process.env.NODE_ENV === 'development') {
+            console.log('[wallet-fund] dripped 0.02 SOL →', data.txId);
+          }
+          try { sessionStorage.setItem(FUND_KEY_PREFIX + address, '1'); } catch {}
+        })
+        .catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[wallet-fund] failed (will retry next session):', err);
+          }
+        });
+    });
   }, [address, source]);
 
   // Stars are minted to whichever wallet was active at the time the user
@@ -63,22 +79,28 @@ export default function WalletSync() {
       if (sessionStorage.getItem(SYNCED_KEY_PREFIX + address) === '1') return;
     } catch {}
     syncingRef.current = address;
-    fetch('/api/stars/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, expectedTotal: expected }),
-    })
-      .then((r) => r.json().catch(() => null))
-      .then((data) => {
-        if (data?.synced) {
-          console.log(`[stars-sync] minted ${data.minted} ✦ to ${address.slice(0, 8)}… → ${data.txId}`);
-          window.dispatchEvent(new CustomEvent('stellar:stars-synced', { detail: data }));
-        }
-        try { sessionStorage.setItem(SYNCED_KEY_PREFIX + address, '1'); } catch {}
+    runWhenIdle(() => {
+      fetch('/api/stars/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, expectedTotal: expected }),
       })
-      .catch((err) => {
-        console.warn('[stars-sync] failed:', err);
-      });
+        .then((r) => r.json().catch(() => null))
+        .then((data) => {
+          if (data?.synced) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`[stars-sync] minted ${data.minted} ✦ to ${address.slice(0, 8)}… → ${data.txId}`);
+            }
+            window.dispatchEvent(new CustomEvent('stellar:stars-synced', { detail: data }));
+          }
+          try { sessionStorage.setItem(SYNCED_KEY_PREFIX + address, '1'); } catch {}
+        })
+        .catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[stars-sync] failed:', err);
+          }
+        });
+    });
   }, [address, state.completedMissions]);
 
   return null;

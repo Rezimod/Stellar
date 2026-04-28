@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { useLocation } from '@/lib/location';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 
 interface SunMoonData {
   sunRise: string | null;
@@ -99,11 +100,8 @@ export default function SunMoonBar() {
       .catch(() => setError(true));
   }, [lat, lng]);
 
-  // Update "now" marker every minute
-  useEffect(() => {
-    const interval = setInterval(() => setNow(nowPercent()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  // Update "now" marker every minute (only while tab is visible)
+  useVisibleInterval(() => setNow(nowPercent()), 60_000);
 
   if (error) {
     return null;

@@ -9,6 +9,7 @@ import {
   useStellarSigner,
 } from '@/lib/markets/privy-adapter';
 import { useAppState } from '@/hooks/useAppState';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import InlineBetPanel from '@/components/markets/InlineBetPanel';
 import MyActiveBets from '@/components/markets/MyActiveBets';
 import {
@@ -323,13 +324,10 @@ export default function MarketsPage() {
   const [trendingPaused, setTrendingPaused] = useState(false);
   const TRENDING_VISIBLE = 4;
 
-  useEffect(() => {
-    if (trendingPool.length <= TRENDING_VISIBLE || trendingPaused) return;
-    const id = setInterval(() => {
-      setTrendingOffset((o) => (o + 1) % trendingPool.length);
-    }, 4500);
-    return () => clearInterval(id);
-  }, [trendingPool.length, trendingPaused]);
+  useVisibleInterval(
+    () => setTrendingOffset((o) => (o + 1) % trendingPool.length),
+    trendingPool.length <= TRENDING_VISIBLE || trendingPaused ? null : 4500,
+  );
 
   const trending = useMemo(() => {
     if (trendingPool.length === 0) return [];

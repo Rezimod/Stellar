@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, createElement } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, useEffect, ReactNode, createElement } from 'react';
 import type { AppState, CompletedMission, QuizResult } from '@/lib/types';
 
 const defaultState: AppState = {
@@ -98,32 +98,55 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     persistState(state);
   }, [state, loaded]);
 
-  const update = (patch: Partial<AppState>) => setState(s => ({ ...s, ...patch }));
-
-  const ctx: AppStateCtx = {
-    state,
-    setWallet: (address) => update({ walletConnected: true, walletAddress: address }),
-    setMembership: (tx) => update({ membershipMinted: true, membershipTx: tx }),
-    setTelescope: (data, tx) => update({ telescope: data, telescopeTx: tx }),
-    addMission: (mission) => setState(s => ({
-      ...s,
-      completedMissions: [...s.completedMissions, mission],
-    })),
-    removeMission: (txId) => setState(s => ({
-      ...s,
-      completedMissions: s.completedMissions.filter(m => m.txId !== txId),
-    })),
-    claimReward: (id) => setState(s => ({
+  const setWallet = useCallback((address: string) => {
+    setState(s => ({ ...s, walletConnected: true, walletAddress: address }));
+  }, []);
+  const setMembership = useCallback((tx: string) => {
+    setState(s => ({ ...s, membershipMinted: true, membershipTx: tx }));
+  }, []);
+  const setTelescope = useCallback((data: { brand: string; model: string; aperture: string }, tx: string) => {
+    setState(s => ({ ...s, telescope: data, telescopeTx: tx }));
+  }, []);
+  const addMission = useCallback((mission: CompletedMission) => {
+    setState(s => ({ ...s, completedMissions: [...s.completedMissions, mission] }));
+  }, []);
+  const removeMission = useCallback((txId: string) => {
+    setState(s => ({ ...s, completedMissions: s.completedMissions.filter(m => m.txId !== txId) }));
+  }, []);
+  const claimReward = useCallback((id: string) => {
+    setState(s => ({
       ...s,
       claimedRewards: s.claimedRewards.includes(id) ? s.claimedRewards : [...s.claimedRewards, id],
-    })),
-    addQuizResult: (r) => setState(s => ({
-      ...s,
-      completedQuizzes: [...(s.completedQuizzes ?? []), r],
-    })),
-    pendingCount: state.completedMissions.filter(m => m.status === 'pending').length,
-    reset: () => { localStorage.removeItem(STORAGE_KEY); setState(defaultState); },
-  };
+    }));
+  }, []);
+  const addQuizResult = useCallback((r: QuizResult) => {
+    setState(s => ({ ...s, completedQuizzes: [...(s.completedQuizzes ?? []), r] }));
+  }, []);
+  const reset = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setState(defaultState);
+  }, []);
+
+  const pendingCount = useMemo(
+    () => state.completedMissions.filter(m => m.status === 'pending').length,
+    [state.completedMissions],
+  );
+
+  const ctx = useMemo<AppStateCtx>(
+    () => ({
+      state,
+      setWallet,
+      setMembership,
+      setTelescope,
+      addMission,
+      removeMission,
+      claimReward,
+      addQuizResult,
+      pendingCount,
+      reset,
+    }),
+    [state, setWallet, setMembership, setTelescope, addMission, removeMission, claimReward, addQuizResult, pendingCount, reset],
+  );
 
   return createElement(Ctx.Provider, { value: ctx }, children);
 }

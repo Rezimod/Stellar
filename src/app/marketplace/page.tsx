@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -68,24 +68,33 @@ export default function MarketplacePage() {
     return () => window.removeEventListener('stellar:stars-synced', handler);
   }, []);
 
-  const dealers = getDealersByRegion(location.region);
-  const allProducts = getProductsByRegion(location.region);
+  const dealers = useMemo(() => getDealersByRegion(location.region), [location.region]);
+  const allProducts = useMemo(() => getProductsByRegion(location.region), [location.region]);
   const showDealer = dealers.length > 1;
 
-  const products = filter === 'all'
-    ? allProducts
-    : allProducts.filter(p => p.category === filter);
+  const products = useMemo(
+    () => (filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter)),
+    [allProducts, filter],
+  );
 
-  function getDealerName(dealerId: string): string {
-    return dealers.find(d => d.id === dealerId)?.name ?? dealerId;
-  }
+  const getDealerName = useCallback(
+    (dealerId: string): string => dealers.find(d => d.id === dealerId)?.name ?? dealerId,
+    [dealers],
+  );
 
-  const telescopesByTier = {
-    beginner: products.filter(p => p.category === 'telescope' && p.skillLevel === 'beginner'),
-    intermediate: products.filter(p => p.category === 'telescope' && (p.skillLevel === 'intermediate' || (!p.skillLevel && p.price >= 100 && p.price <= 500))),
-    advanced: products.filter(p => p.category === 'telescope' && (p.skillLevel === 'advanced' || (!p.skillLevel && p.price > 500))),
-  };
-  const nonTelescopes = products.filter(p => p.category !== 'telescope');
+  const telescopesByTier = useMemo(() => {
+    const beginner: typeof products = [];
+    const intermediate: typeof products = [];
+    const advanced: typeof products = [];
+    for (const p of products) {
+      if (p.category !== 'telescope') continue;
+      if (p.skillLevel === 'beginner') beginner.push(p);
+      else if (p.skillLevel === 'intermediate' || (!p.skillLevel && p.price >= 100 && p.price <= 500)) intermediate.push(p);
+      else if (p.skillLevel === 'advanced' || (!p.skillLevel && p.price > 500)) advanced.push(p);
+    }
+    return { beginner, intermediate, advanced };
+  }, [products]);
+  const nonTelescopes = useMemo(() => products.filter(p => p.category !== 'telescope'), [products]);
   const isTelescopeView = filter === 'all' || filter === 'telescope';
 
   async function handleRedeem(tier: RedeemTier) {

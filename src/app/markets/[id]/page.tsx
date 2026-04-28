@@ -26,6 +26,7 @@ import {
   missionsToObservations,
 } from '@/lib/observer-advantage';
 import { useAppState } from '@/hooks/useAppState';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 
 const POLL_MS = 5000;
 
@@ -124,13 +125,10 @@ export default function MarketDetailPage({
     };
   }, [program, marketId, refreshCounter, userAddress]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (loading || notFound) return;
-    const id = window.setInterval(() => {
-      setRefreshCounter((n) => n + 1);
-    }, POLL_MS);
-    return () => window.clearInterval(id);
-  }, [loading, notFound]);
+  useVisibleInterval(
+    () => setRefreshCounter((n) => n + 1),
+    loading || notFound ? null : POLL_MS,
+  );
 
   return (
     <PageTransition>

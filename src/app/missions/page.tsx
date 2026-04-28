@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
 import { useStellarUser } from '@/hooks/useStellarUser';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
@@ -113,10 +114,7 @@ export default function MissionsPage() {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibleInterval(() => setNow(new Date()), 60_000);
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
