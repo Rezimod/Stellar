@@ -16,8 +16,34 @@ import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { CompletedMission } from '@/lib/types';
 import PageContainer from '@/components/layout/PageContainer';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { getRarityInfo } from '@/lib/nft-rarity';
+
+function InlineStat({ value, label, gold, clear }: { value: string; label: string; gold?: boolean; clear?: boolean }) {
+  return (
+    <div className="flex flex-col items-end leading-tight">
+      <span style={{
+        fontFamily: 'var(--font-mono)',
+        fontWeight: 700,
+        fontSize: 16,
+        color: gold ? 'var(--color-accent-gold)' : clear ? 'var(--color-success)' : 'var(--text-primary)',
+        fontVariantNumeric: 'tabular-nums',
+        lineHeight: 1,
+      }}>
+        {value}
+      </span>
+      <span style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 9,
+        color: 'var(--color-text-faint, var(--text-muted))',
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        marginTop: 3,
+      }}>
+        {label}
+      </span>
+    </div>
+  );
+}
 
 interface NftAttribute {
   trait_type: string;
@@ -468,21 +494,45 @@ export default function NftsPage() {
     <>
     {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} onRetryMint={(selectedNft.id.startsWith('sim') || state.completedMissions.some(m => m.txId === selectedNft.id && m.status !== 'gallery')) ? handleRetryMint : undefined} retrying={retrying} />}
     <PageTransition>
-    <PageContainer variant="wide" className="py-6 sm:py-10 flex flex-col gap-6">
+    <PageContainer variant="wide" className="py-3 sm:py-5 flex flex-col gap-3 sm:gap-4">
       <BackButton />
 
-      {/* Header */}
-      <PageHeader
-        label="YOUR DISCOVERIES"
-        title="My Observations"
-        subtitle="Each one sealed on Solana."
-        action={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {!loading && (
-              <span className="badge-pill badge-muted">{allNfts.length} NFTs</span>
-            )}
+      {/* Compact header — title + inline stats + sort, all in one row */}
+      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0 flex items-baseline gap-3 flex-wrap">
+          <h1 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'clamp(20px, 2.4vw, 26px)',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1,
+            color: 'var(--text-primary)',
+            margin: 0,
+          }}>
+            My Observations
+          </h1>
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.08em',
+            color: 'var(--text-muted)',
+            textTransform: 'uppercase',
+          }}>
+            Sealed on Solana
+          </span>
+        </div>
+
+        {!loading && allNfts.length > 0 && (
+          <div className="flex items-center gap-4 sm:gap-5">
+            <InlineStat value={String(allNfts.length)} label="NFTs" />
+            <InlineStat value={`✦ ${totalStarsEarned}`} label="Stars" gold />
+            <InlineStat
+              value={bestCloud < 30 ? 'Clear' : `${Math.round(bestCloud)}%`}
+              label="Best night"
+              clear={bestCloud < 30}
+            />
             {allNfts.length > 1 && (
-              <div style={{ display: 'flex', gap: 4 }}>
+              <div className="flex gap-1 ml-1">
                 {(['recent', 'stars'] as const).map(s => (
                   <button
                     key={s}
@@ -496,47 +546,12 @@ export default function NftsPage() {
               </div>
             )}
           </div>
-        }
-      />
+        )}
+      </header>
 
-      {/* Stats bar */}
+      {/* Collection progress (kept) */}
       {!loading && allNfts.length > 0 && (
         <>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-          {[
-            { label: 'Total NFTs', value: String(allNfts.length) },
-            { label: 'Stars Earned', value: `✦ ${totalStarsEarned}`, gold: true },
-            { label: 'Best Night', value: bestCloud < 30 ? 'Clear' : `${Math.round(bestCloud)}%`, clear: bestCloud < 30 },
-          ].map(stat => (
-            <div key={stat.label} style={{
-              padding: 14, textAlign: 'center',
-              background: 'var(--color-bg-card-strong)',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-lg)',
-              transition: 'border-color 0.2s ease',
-            }}>
-              <p
-                className={stat.gold ? 'stars-amount' : ''}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700,
-                  fontSize: 19,
-                  color: stat.gold ? 'var(--color-accent-gold)' : stat.clear ? 'var(--color-success)' : 'var(--text-primary)',
-                  margin: 0,
-                  fontVariantNumeric: 'tabular-nums',
-                }}>
-                {stat.value}
-              </p>
-              <p style={{
-                color: 'var(--color-text-faint)', fontSize: 11, margin: '4px 0 0',
-                textTransform: 'uppercase', letterSpacing: '0.08em',
-                fontFamily: 'var(--font-mono)',
-              }}>
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
 
         {/* Collection progress */}
         {(() => {
@@ -556,60 +571,60 @@ export default function NftsPage() {
           if (celestialTotal === 0 || celestialCompleted === 0) return null;
 
           return (
-            <div className="card-base p-4">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
-                    Celestial collection
-                  </p>
-                  <p style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, margin: '4px 0 0' }}>
-                    {celestialCompleted}/{celestialTotal} observations
-                  </p>
+            <div className="card-base" style={{ padding: '8px 12px' }}>
+              <div className="flex items-center gap-3">
+                <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+                  Celestial
+                </p>
+                <p style={{ color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, margin: 0, flexShrink: 0 }}>
+                  {celestialCompleted}/{celestialTotal}
+                </p>
+                <div style={{ flex: 1, height: 4, borderRadius: 999, background: 'var(--color-bg-card-strong)', overflow: 'hidden', minWidth: 60 }}>
+                  <div style={{
+                    height: '100%',
+                    borderRadius: 999,
+                    width: `${(celestialCompleted / celestialTotal) * 100}%`,
+                    background: celestialCompleted === celestialTotal
+                      ? 'var(--color-success)'
+                      : 'var(--gradient-gold)',
+                    transition: 'width 0.6s ease',
+                  }} />
                 </div>
                 <p style={{
                   color: celestialCompleted === celestialTotal ? 'var(--success)' : 'var(--stars)',
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 600,
                   margin: 0,
+                  flexShrink: 0,
+                  fontFamily: 'var(--font-mono)',
                 }}>
-                  {celestialCompleted === celestialTotal ? '🏆 Complete!' : `${Math.round((celestialCompleted / celestialTotal) * 100)}%`}
+                  {celestialCompleted === celestialTotal ? '🏆' : `${Math.round((celestialCompleted / celestialTotal) * 100)}%`}
                 </p>
+                {celestialCompleted < celestialTotal && (
+                  <div className="hidden md:flex" style={{ flexWrap: 'wrap', gap: 4 }}>
+                    {celestialMissions.map(mId => {
+                      const m = MISSIONS.find(ms => ms.id === mId);
+                      if (!m) return null;
+                      const owned = uniqueOwned.includes(mId);
+                      return (
+                        <span
+                          key={mId}
+                          style={{
+                            fontSize: 10,
+                            padding: '1px 6px',
+                            borderRadius: 20,
+                            background: owned ? 'rgba(94, 234, 212,0.12)' : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${owned ? 'rgba(94, 234, 212,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                            color: owned ? 'var(--success)' : 'var(--text-muted)',
+                          }}
+                        >
+                          {owned ? '✓ ' : ''}{m.emoji} {m.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-              <div style={{ height: 6, borderRadius: 999, background: 'var(--color-bg-card-strong)', marginTop: 10, overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  borderRadius: 999,
-                  width: `${(celestialCompleted / celestialTotal) * 100}%`,
-                  background: celestialCompleted === celestialTotal
-                    ? 'var(--color-success)'
-                    : 'var(--gradient-gold)',
-                  transition: 'width 0.6s ease',
-                }} />
-              </div>
-              {celestialCompleted < celestialTotal && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
-                  {celestialMissions.map(mId => {
-                    const m = MISSIONS.find(ms => ms.id === mId);
-                    if (!m) return null;
-                    const owned = uniqueOwned.includes(mId);
-                    return (
-                      <span
-                        key={mId}
-                        style={{
-                          fontSize: 10,
-                          padding: '2px 8px',
-                          borderRadius: 20,
-                          background: owned ? 'rgba(94, 234, 212,0.12)' : 'rgba(255,255,255,0.04)',
-                          border: `1px solid ${owned ? 'rgba(94, 234, 212,0.25)' : 'rgba(255,255,255,0.06)'}`,
-                          color: owned ? 'var(--success)' : 'var(--text-muted)',
-                        }}
-                      >
-                        {owned ? '✓ ' : ''}{m.emoji} {m.name}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           );
         })()}
@@ -618,9 +633,9 @@ export default function NftsPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-56" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <Skeleton key={i} className="h-44" />
           ))}
         </div>
       )}
@@ -653,7 +668,7 @@ export default function NftsPage() {
 
       {/* NFT Grid */}
       {!loading && !error && allNfts.length > 0 && (
-        <StaggerChildren stagger={50} className="grid grid-cols-2 gap-3">
+        <StaggerChildren stagger={50} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {sortedNfts.map(item => {
             const name = item.content?.metadata?.name ?? 'Stellar Observation';
             const attrs = item.content?.metadata?.attributes;
@@ -703,9 +718,9 @@ export default function NftsPage() {
                   }
                 }}
               >
-                {/* Framed image area — dark inner panel with playful tilt on hover */}
+                {/* Framed image area — square aspect, scales with column width */}
                 <div style={{
-                  position: 'relative', width: 'calc(100% - 16px)', height: 160, margin: 8,
+                  position: 'relative', width: 'calc(100% - 12px)', aspectRatio: '4 / 3', margin: 6,
                   background: 'var(--color-bg-card-strong)',
                   borderRadius: 'var(--radius-lg)',
                   overflow: 'hidden',
@@ -732,11 +747,11 @@ export default function NftsPage() {
                   )}
                 </div>
 
-                {/* Card content */}
-                <div style={{ padding: 12 }}>
+                {/* Card content — denser */}
+                <div style={{ padding: '6px 10px 10px' }}>
                   <p style={{
                     color: 'var(--text-primary)',
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: 600,
                     fontFamily: 'var(--font-display)',
                     margin: 0,
@@ -769,41 +784,18 @@ export default function NftsPage() {
                   </p>
 
                   {/* Attribute pills */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                    {target && <span className="badge-pill badge-accent" style={{ fontSize: 10 }}>{target}</span>}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
+                    {target && <span className="badge-pill badge-accent" style={{ fontSize: 9, padding: '1px 6px' }}>{target}</span>}
                     {cloudCover && (
                       <span
                         className={`badge-pill ${ccNum < 20 ? 'badge-success' : ccNum < 50 ? 'badge-warning' : 'badge-error'}`}
-                        style={{ fontSize: 10 }}
+                        style={{ fontSize: 9, padding: '1px 6px' }}
                       >
                         {ccNum < 20 ? 'Clear' : ccNum < 50 ? 'Partial' : 'Cloudy'}
                       </span>
                     )}
-                    {stars && <span className="badge-pill badge-stars" style={{ fontSize: 10 }}>✦ {stars}</span>}
+                    {stars && <span className="badge-pill badge-stars" style={{ fontSize: 9, padding: '1px 6px' }}>✦ {stars}</span>}
                   </div>
-
-                  {/* Explorer link — only shown when on-chain */}
-                  {!item.id.startsWith('sim') && item._method !== 'simulated' && (
-                    <a
-                      href={buildExplorerUrl(item.id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        marginTop: 8,
-                        fontSize: 10,
-                        fontFamily: 'var(--font-mono)',
-                        color: 'var(--accent)',
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <ExternalLink size={12} />
-                      Explorer
-                    </a>
-                  )}
                 </div>
               </div>
             );
