@@ -90,7 +90,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
       className="relative grid grid-cols-1 md:grid-cols-[1.15fr_1fr] rounded-[20px] overflow-hidden mb-4"
       style={{
         border: '1px solid rgba(255,255,255,0.08)',
-        background: 'linear-gradient(135deg, rgba(132,101,203,0.08), rgba(56,240,255,0.04) 60%, transparent)',
+        background: 'linear-gradient(135deg, rgba(232, 130, 107,0.08), rgba(94, 234, 212,0.04) 60%, transparent)',
       }}
     >
       <div className="relative px-6 py-7 sm:px-8 sm:py-8 min-h-[280px] sm:min-h-[340px] flex flex-col justify-between overflow-hidden">
@@ -105,7 +105,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
               fontFamily: 'var(--font-mono)',
               letterSpacing: '0.2em',
               color: 'var(--stars)',
-              border: '1px solid rgba(255,209,102,0.35)',
+              border: '1px solid rgba(232, 130, 107,0.35)',
             }}
           >
             PRIME TARGET
@@ -128,14 +128,14 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
             {copy.kicker}
           </div>
           <h2
-            className="text-white leading-[0.9] m-0"
-            style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(44px, 8vw, 68px)', fontWeight: 300 }}
+            className="text-text-primary leading-[0.9] m-0"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(44px, 8vw, 68px)', fontWeight: 300 }}
           >
             {heroMission.name}
           </h2>
           <p
             className="mt-2.5 max-w-[340px]"
-            style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 15, color: 'rgba(242,240,234,0.65)', fontWeight: 300, lineHeight: 1.4 }}
+            style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 15, color: 'rgba(242,240,234,0.65)', fontWeight: 300, lineHeight: 1.4 }}
           >
             {copy.tagline}
           </p>
@@ -171,11 +171,11 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
           </div>
 
           <div className="flex items-baseline gap-3 mt-4">
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 44, color: 'var(--stars)', fontWeight: 400, lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 44, color: 'var(--stars)', fontWeight: 400, lineHeight: 1 }}>
               +{heroMission.stars}
             </span>
             <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255,209,102,0.7)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(232, 130, 107,0.7)' }}>
                 STARS EARNED
               </div>
               <div className="mt-0.5" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.35)' }}>
@@ -190,10 +190,10 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
             onClick={() => onStart(heroMission)}
             className="flex-1 transition-all hover:-translate-y-[1px] active:scale-[0.98]"
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontStyle: 'italic',
-              background: '#F2F0EA',
-              color: '#0A0E1A',
+              background: 'var(--text)',
+              color: 'var(--canvas)',
               border: 'none',
               padding: '14px 18px',
               fontSize: 15,

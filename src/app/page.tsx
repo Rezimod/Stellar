@@ -8,7 +8,7 @@ import ClosingCtaSection from '@/components/landing/ClosingCtaSection';
 
 export default function HomePage() {
   return (
-    <div className="bg-[#050811] text-[#E8E6DD] overflow-x-hidden -mt-14 pt-14">
+    <div className="bg-[var(--canvas)] text-[#E8E6DD] overflow-x-hidden -mt-14 pt-14">
       <HeroSection />
       <PartnersSection />
       <HowItWorksSection />

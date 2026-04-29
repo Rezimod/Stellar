@@ -36,8 +36,8 @@ export default function OfflineBanner() {
     <div
       className={`relative z-50 flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-medium transition-all duration-500 ${
         offline
-          ? 'bg-amber-500/15 border-b border-amber-500/20 text-amber-400'
-          : 'bg-emerald-500/15 border-b border-emerald-500/20 text-emerald-400'
+          ? 'bg-terracotta border-b border-terracotta text-terracotta'
+          : 'bg-seafoam border-b border-seafoam text-seafoam'
       }`}
     >
       {offline ? <WifiOff size={13} /> : <Wifi size={13} />}

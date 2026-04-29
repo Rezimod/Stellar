@@ -62,10 +62,10 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   if (preview) {
     return (
       <div className="flex flex-col gap-2.5 w-full">
-        <div className="relative rounded-2xl overflow-hidden bg-black w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
+        <div className="relative rounded-2xl overflow-hidden bg-canvas w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
           <img src={preview} alt="Observation preview" className="w-full h-full object-cover" />
           <div className="absolute bottom-0 left-0 right-0 px-3 py-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
-            <p className="text-[#FFD166] text-[10px] font-mono tracking-widest">
+            <p className="text-[var(--terracotta)] text-[10px] font-mono tracking-widest">
               STELLAR · {missionName.toUpperCase()} · {isUploadPreview ? 'UPLOADED' : 'CAPTURED'}
             </p>
           </div>
@@ -73,13 +73,13 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <button
           onClick={() => isUploadPreview ? (onUpload ?? onCapture)(preview) : onCapture(preview)}
           className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98] flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
+          style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
           Submit for Verification →
         </button>
         <button
           onClick={handleRetake}
-          className="w-full py-2.5 rounded-xl text-sm text-slate-400 flex items-center justify-center gap-2 flex-shrink-0"
+          className="w-full py-2.5 rounded-xl text-sm text-text-muted flex items-center justify-center gap-2 flex-shrink-0"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
           <RotateCcw size={14} /> Retake
@@ -92,14 +92,14 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   if (error === 'permission_denied') {
     return (
       <div className="flex flex-col items-center justify-center flex-1 min-h-0 text-center p-6">
-        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255,209,102,0.06)', border: '1px solid rgba(255,209,102,0.15)' }}>
-          <Camera size={22} className="text-[#FFD166]/60" />
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(232, 130, 107,0.06)', border: '1px solid rgba(232, 130, 107,0.15)' }}>
+          <Camera size={22} className="text-[var(--terracotta)]/60" />
         </div>
-        <p className="text-amber-400 text-sm mb-2">Camera access required</p>
-        <p className="text-slate-500 text-xs mb-5">Allow camera access in your browser settings, or upload a saved sky photo.</p>
+        <p className="text-terracotta text-sm mb-2">Camera access required</p>
+        <p className="text-text-muted text-xs mb-5">Allow camera access in your browser settings, or upload a saved sky photo.</p>
         <label
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
+          style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
           <Upload size={15} /> Upload from Device
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
@@ -112,36 +112,36 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   return (
     <div className="flex flex-col gap-2.5 w-full">
       {/* Viewfinder — square, fits in screen without scrolling */}
-      <div className="relative rounded-2xl overflow-hidden bg-black w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
+      <div className="relative rounded-2xl overflow-hidden bg-canvas w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
         {flash && <div className="absolute inset-0 bg-white/30 pointer-events-none" />}
 
         {/* Corner brackets */}
         {[
-          { top: '10%', left: '8%',    borderTop: '2px solid rgba(255,209,102,0.7)', borderLeft:  '2px solid rgba(255,209,102,0.7)' },
-          { top: '10%', right: '8%',   borderTop: '2px solid rgba(255,209,102,0.7)', borderRight: '2px solid rgba(255,209,102,0.7)' },
-          { bottom: '10%', left: '8%', borderBottom: '2px solid rgba(255,209,102,0.7)', borderLeft:  '2px solid rgba(255,209,102,0.7)' },
-          { bottom: '10%', right: '8%',borderBottom: '2px solid rgba(255,209,102,0.7)', borderRight: '2px solid rgba(255,209,102,0.7)' },
+          { top: '10%', left: '8%',    borderTop: '2px solid rgba(232, 130, 107,0.7)', borderLeft:  '2px solid rgba(232, 130, 107,0.7)' },
+          { top: '10%', right: '8%',   borderTop: '2px solid rgba(232, 130, 107,0.7)', borderRight: '2px solid rgba(232, 130, 107,0.7)' },
+          { bottom: '10%', left: '8%', borderBottom: '2px solid rgba(232, 130, 107,0.7)', borderLeft:  '2px solid rgba(232, 130, 107,0.7)' },
+          { bottom: '10%', right: '8%',borderBottom: '2px solid rgba(232, 130, 107,0.7)', borderRight: '2px solid rgba(232, 130, 107,0.7)' },
         ].map((s, i) => <div key={i} className="absolute w-5 h-5 pointer-events-none" style={s} />)}
 
         {/* Center reticle */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="relative">
-            <div className="w-8 h-8 rounded-full border border-[#FFD166]/30" />
+            <div className="w-8 h-8 rounded-full border border-[var(--terracotta)]/30" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-1 h-1 rounded-full bg-[#FFD166]/60" />
+              <div className="w-1 h-1 rounded-full bg-[var(--terracotta)]/60" />
             </div>
-            <div className="absolute top-1/2 -left-2 w-1.5 h-px bg-[#FFD166]/20" />
-            <div className="absolute top-1/2 -right-2 w-1.5 h-px bg-[#FFD166]/20" />
-            <div className="absolute -top-2 left-1/2 h-1.5 w-px bg-[#FFD166]/20" />
-            <div className="absolute -bottom-2 left-1/2 h-1.5 w-px bg-[#FFD166]/20" />
+            <div className="absolute top-1/2 -left-2 w-1.5 h-px bg-[var(--terracotta)]/20" />
+            <div className="absolute top-1/2 -right-2 w-1.5 h-px bg-[var(--terracotta)]/20" />
+            <div className="absolute -top-2 left-1/2 h-1.5 w-px bg-[var(--terracotta)]/20" />
+            <div className="absolute -bottom-2 left-1/2 h-1.5 w-px bg-[var(--terracotta)]/20" />
           </div>
         </div>
 
         {/* Top HUD */}
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)' }}>
-          <span className="text-[#FFD166] text-[10px] font-mono tracking-widest uppercase">STELLAR · {missionName}</span>
-          <span className="text-white/40 text-[10px] font-mono" suppressHydrationWarning>{new Date().toLocaleTimeString()}</span>
+          <span className="text-[var(--terracotta)] text-[10px] font-mono tracking-widest uppercase">STELLAR · {missionName}</span>
+          <span className="text-text-primary/40 text-[10px] font-mono" suppressHydrationWarning>{new Date().toLocaleTimeString()}</span>
         </div>
 
         {/* Flip button */}
@@ -150,13 +150,13 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           className="absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center active:scale-90"
           style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)' }}
         >
-          <RefreshCw size={14} className="text-white/70" />
+          <RefreshCw size={14} className="text-text-primary/70" />
         </button>
       </div>
 
       {/* Capture error */}
       {captureError && (
-        <p className="text-amber-400 text-xs text-center px-4 flex-shrink-0">{captureError}</p>
+        <p className="text-terracotta text-xs text-center px-4 flex-shrink-0">{captureError}</p>
       )}
 
       {/* Shutter + Upload row */}
@@ -177,7 +177,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
           title="Upload from device"
         >
-          <Upload size={15} className="text-slate-400" />
+          <Upload size={15} className="text-text-muted" />
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
         </label>
       </div>
@@ -187,7 +187,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         className="rounded-xl px-3 py-2.5 flex-shrink-0"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
       >
-        <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-1.5 font-medium">How to capture</p>
+        <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 font-medium">How to capture</p>
         <div className="flex flex-col gap-1.5">
           {[
             { n: '1', text: 'Point your telescope at the target object' },
@@ -197,11 +197,11 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
             <div key={tip.n} className="flex items-start gap-2">
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"
-                style={{ background: 'rgba(255,209,102,0.1)', color: 'var(--stars)', border: '1px solid rgba(255,209,102,0.2)' }}
+                style={{ background: 'rgba(232, 130, 107,0.1)', color: 'var(--stars)', border: '1px solid rgba(232, 130, 107,0.2)' }}
               >
                 {tip.n}
               </span>
-              <p className="text-slate-500 text-xs leading-snug">{tip.text}</p>
+              <p className="text-text-muted text-xs leading-snug">{tip.text}</p>
             </div>
           ))}
         </div>

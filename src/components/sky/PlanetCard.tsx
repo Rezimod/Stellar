@@ -151,8 +151,8 @@ function PlanetIcon({ planetKey, size = 36 }: { planetKey: string; size?: number
     default: {
       return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }}>
-          <circle cx={r} cy={r} r={R} fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.4)" strokeWidth="1" />
-          <circle cx={r} cy={r} r={R * 0.4} fill="rgba(99,102,241,0.5)" />
+          <circle cx={r} cy={r} r={R} fill="rgba(232, 130, 107,0.2)" stroke="rgba(232, 130, 107,0.4)" strokeWidth="1" />
+          <circle cx={r} cy={r} r={R * 0.4} fill="rgba(232, 130, 107,0.5)" />
         </svg>
       );
     }
@@ -172,8 +172,8 @@ function AltitudeArc({ altitude, size = 44 }: { altitude: number; size?: number 
   const dotX = cx + R * Math.cos(theta);
   const dotY = cy - R * Math.sin(theta);
 
-  const dotColor = altitude > 30 ? 'var(--success)' : altitude > 10 ? '#F59E0B' : 'rgba(255,255,255,0.3)';
-  const arcStroke = altitude > 30 ? 'rgba(52,211,153,0.2)' : altitude > 10 ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.08)';
+  const dotColor = altitude > 30 ? 'var(--success)' : altitude > 10 ? 'var(--terracotta)' : 'rgba(255,255,255,0.3)';
+  const arcStroke = altitude > 30 ? 'rgba(94, 234, 212,0.2)' : altitude > 10 ? 'rgba(232, 130, 107,0.2)' : 'rgba(255,255,255,0.08)';
 
   return (
     <svg
@@ -207,11 +207,11 @@ function AltitudeArc({ altitude, size = 44 }: { altitude: number; size?: number 
 // ── Planet Card ───────────────────────────────────────────────────────────────
 
 const PLANET_ACCENT: Record<string, string> = {
-  moon:    '#94A3B8',
-  mercury: '#A78BFA',
-  venus:   '#FCD34D',
-  mars:    '#F87171',
-  jupiter: '#FB923C',
+  moon:    'var(--text-muted)',
+  mercury: 'var(--terracotta)',
+  venus:   'var(--terracotta)',
+  mars:    'var(--negative)',
+  jupiter: 'var(--terracotta)',
   saturn:  '#FDE68A',
 };
 
@@ -219,9 +219,9 @@ const PLANET_EQUIPMENT: Record<string, { icon: string; label: string; detail: st
   moon:    { icon: '👁', label: 'Naked Eye', detail: 'Craters visible with binoculars', color: 'var(--success)' },
   mercury: { icon: '👁', label: 'Naked Eye', detail: 'Low on horizon at dusk/dawn', color: 'var(--success)' },
   venus:   { icon: '👁', label: 'Naked Eye', detail: 'Phases visible in small telescope', color: 'var(--success)' },
-  mars:    { icon: '🔭', label: 'Telescope', detail: 'Surface detail at opposition', color: '#818cf8' },
+  mars:    { icon: '🔭', label: 'Telescope', detail: 'Surface detail at opposition', color: 'var(--terracotta)' },
   jupiter: { icon: '🔭', label: 'Binoculars+', detail: '4 moons in binoculars, bands in scope', color: 'var(--stars)' },
-  saturn:  { icon: '🔭', label: 'Telescope', detail: 'Rings visible at 40× magnification', color: '#818cf8' },
+  saturn:  { icon: '🔭', label: 'Telescope', detail: 'Rings visible at 40× magnification', color: 'var(--terracotta)' },
 };
 
 function hhmm(d: Date | string | null, locale: string): string {
@@ -247,15 +247,15 @@ export default function PlanetCard({ planet }: Props) {
           <PlanetIcon planetKey={planet.key} size={32} />
         </div>
         <div className="flex flex-col gap-1 min-w-0">
-          <span className="font-semibold text-white text-sm leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          <span className="font-semibold text-text-primary text-sm leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
             {t(planet.key as Parameters<typeof t>[0])}
           </span>
           {planet.visible ? (
             <span
               className="inline-flex items-center self-start px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
-              style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', color: 'var(--success)' }}
+              style={{ background: 'rgba(94, 234, 212,0.1)', border: '1px solid rgba(94, 234, 212,0.25)', color: 'var(--success)' }}
             >
-              <span className="w-1 h-1 rounded-full bg-[#34D399] mr-1 animate-pulse" />
+              <span className="w-1 h-1 rounded-full bg-[var(--seafoam)] mr-1 animate-pulse" />
               {t('visibleNow')}
             </span>
           ) : (
@@ -277,7 +277,7 @@ export default function PlanetCard({ planet }: Props) {
           <p
             className="text-sm font-bold font-mono"
             style={{
-              color: planet.altitude > 30 ? 'var(--success)' : planet.altitude > 10 ? '#F59E0B' : 'rgba(255,255,255,0.3)',
+              color: planet.altitude > 30 ? 'var(--success)' : planet.altitude > 10 ? 'var(--terracotta)' : 'rgba(255,255,255,0.3)',
             }}
           >
             {planet.altitude}°
@@ -312,7 +312,7 @@ export default function PlanetCard({ planet }: Props) {
             <p className="text-[9px] uppercase tracking-wide mb-0.5" style={{ color: 'var(--color-text-muted)' }}>
               {t(label as Parameters<typeof t>[0])}
             </p>
-            <p className="text-xs font-mono text-white">{hhmm(planet[label], locale)}</p>
+            <p className="text-xs font-mono text-text-primary">{hhmm(planet[label], locale)}</p>
           </div>
         ))}
       </div>

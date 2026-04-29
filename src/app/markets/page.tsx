@@ -509,11 +509,11 @@ export default function MarketsPage() {
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <p className="text-slate-400 mb-3">{error}</p>
+                <p className="text-text-muted mb-3">{error}</p>
                 <button
                   type="button"
                   onClick={() => setRetryKey((k) => k + 1)}
-                  className="text-teal-400 hover:underline"
+                  className="text-seafoam hover:underline"
                 >
                   Retry
                 </button>

@@ -261,8 +261,8 @@ function ChatPageInner() {
                   className="animate-slide-up"
                   style={{
                     maxWidth: '78%',
-                    background: 'rgba(52, 211, 153, 0.10)',
-                    border: '1px solid rgba(52, 211, 153, 0.20)',
+                    background: 'rgba(94, 234, 212, 0.10)',
+                    border: '1px solid rgba(94, 234, 212, 0.20)',
                     borderRadius: '16px 16px 4px 16px',
                     padding: '10px 16px',
                     fontSize: 14,
@@ -283,8 +283,8 @@ function ChatPageInner() {
               {/* ASTRA avatar */}
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(52, 211, 153, 0.10)',
-                border: '1px solid rgba(52, 211, 153, 0.20)',
+                background: 'rgba(94, 234, 212, 0.10)',
+                border: '1px solid rgba(94, 234, 212, 0.20)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ color: 'var(--color-accent-teal)', fontSize: 10 }}>✦</span>
@@ -316,8 +316,8 @@ function ChatPageInner() {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
             <div style={{
               width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-              background: 'rgba(52, 211, 153, 0.10)',
-              border: '1px solid rgba(52, 211, 153, 0.20)',
+              background: 'rgba(94, 234, 212, 0.10)',
+              border: '1px solid rgba(94, 234, 212, 0.20)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <span style={{ color: 'var(--color-accent-teal)', fontSize: 10 }}>✦</span>
@@ -358,7 +358,7 @@ function ChatPageInner() {
             {lastSentRef.current && (
               <button
                 onClick={retryLastMessage}
-                style={{ fontSize: 12, color: '#818cf8', background: 'none', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
+                style={{ fontSize: 12, color: 'var(--terracotta)', background: 'none', border: '1px solid rgba(232, 130, 107,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
               >
                 Retry
               </button>
@@ -450,7 +450,7 @@ function ChatPageInner() {
               transition: 'background 0.2s, opacity 0.2s, transform 0.2s, box-shadow 0.2s',
             }}
           >
-            <ArrowUp size={18} color={input.trim() && !loading && authenticated ? '#0a0a0a' : 'var(--text-muted)'} />
+            <ArrowUp size={18} color={input.trim() && !loading && authenticated ? 'var(--canvas)' : 'var(--text-muted)'} />
           </button>
         </div>
       </div>

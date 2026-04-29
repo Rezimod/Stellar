@@ -28,7 +28,7 @@ export default function RewardsSection() {
       {/* Section header */}
       <div className="flex items-center gap-3 mb-3">
         <div className="ornament-line flex-1" />
-        <span className="text-[10px] text-slate-600 uppercase tracking-widest font-medium whitespace-nowrap">Rewards</span>
+        <span className="text-[10px] text-text-muted uppercase tracking-widest font-medium whitespace-nowrap">Rewards</span>
         <div className="ornament-line flex-1" />
       </div>
 
@@ -50,10 +50,10 @@ export default function RewardsSection() {
               className={`rounded-xl overflow-hidden transition-all duration-200 ${isOpen ? 'col-span-2' : ''}`}
               style={{
                 background: r.unlocked
-                  ? 'linear-gradient(135deg, rgba(52,211,153,0.06), rgba(15,31,61,0.4))'
+                  ? 'linear-gradient(135deg, rgba(94, 234, 212,0.06), rgba(15,31,61,0.4))'
                   : 'rgba(15,31,61,0.35)',
                 border: r.unlocked
-                  ? '1px solid rgba(52,211,153,0.2)'
+                  ? '1px solid rgba(94, 234, 212,0.2)'
                   : '1px solid rgba(255,255,255,0.05)',
                 opacity: !r.unlocked && r.progress === 0 ? 0.5 : 1,
               }}
@@ -67,18 +67,18 @@ export default function RewardsSection() {
                 {/* Top-right badges */}
                 <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
                   {r.unlocked && !claimed && (
-                    <span className="text-[7.5px] font-bold text-[#34d399] bg-[#34d399]/10 border border-[#34d399]/20 px-1 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[7.5px] font-bold text-[var(--seafoam)] bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/20 px-1 py-0.5 rounded-full uppercase tracking-wider">
                       Unlocked
                     </span>
                   )}
                   {claimed && (
-                    <span className="text-[7.5px] font-bold text-slate-500 bg-slate-500/10 border border-slate-500/20 px-1 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[7.5px] font-bold text-text-muted bg-[var(--surface)] border border-[var(--border)] px-1 py-0.5 rounded-full uppercase tracking-wider">
                       Claimed
                     </span>
                   )}
                   {r.unlocked
-                    ? <Unlock size={9} className="text-[#34d399] opacity-60" />
-                    : <Lock size={9} className="text-slate-600" />
+                    ? <Unlock size={9} className="text-[var(--seafoam)] opacity-60" />
+                    : <Lock size={9} className="text-text-muted" />
                   }
                 </div>
 
@@ -93,7 +93,7 @@ export default function RewardsSection() {
                   >
                     {r.icon}
                   </div>
-                  <div className={`text-[11.5px] font-semibold leading-tight truncate ${r.unlocked ? 'text-white' : 'text-slate-400'}`}>
+                  <div className={`text-[11.5px] font-semibold leading-tight truncate ${r.unlocked ? 'text-text-primary' : 'text-text-muted'}`}>
                     {r.name}
                   </div>
                 </div>
@@ -106,14 +106,14 @@ export default function RewardsSection() {
                       style={{ width: `${pct}%`, backgroundColor: progressColor }}
                     />
                   </div>
-                  <span className="text-[9px] text-slate-600 flex-shrink-0">{pct}%</span>
+                  <span className="text-[9px] text-text-muted flex-shrink-0">{pct}%</span>
                 </div>
               </button>
 
               {/* Expanded panel */}
               {isOpen && (
-                <div className="px-4 pb-4 pt-0 border-t border-white/5">
-                  <p className="text-slate-500 text-xs mb-3 mt-3">{r.description}</p>
+                <div className="px-4 pb-4 pt-0 border-t border-[var(--border)]">
+                  <p className="text-text-muted text-xs mb-3 mt-3">{r.description}</p>
 
                   {/* Required missions chips (shown when locked) */}
                   {!r.unlocked && r.requiredMissions && (
@@ -126,7 +126,7 @@ export default function RewardsSection() {
                             key={mId}
                             className="text-[9px] px-1.5 py-0.5 rounded-full border"
                             style={{
-                              borderColor: done ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.06)',
+                              borderColor: done ? 'rgba(94, 234, 212,0.3)' : 'rgba(255,255,255,0.06)',
                               color: done ? 'var(--success)' : '#4a5568',
                             }}
                           >
@@ -143,7 +143,7 @@ export default function RewardsSection() {
                         className="flex-1 px-3 py-2.5 rounded-xl text-sm font-mono tracking-widest"
                         style={{
                           background: 'rgba(7,11,20,0.8)',
-                          border: '1px solid rgba(255,209,102,0.2)',
+                          border: '1px solid rgba(232, 130, 107,0.2)',
                           color: 'var(--stars)',
                         }}
                       >
@@ -153,9 +153,9 @@ export default function RewardsSection() {
                         onClick={() => copyCode(r.id, r.code!)}
                         className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
                         style={{
-                          background: 'rgba(99,102,241,0.06)',
-                          border: '1px solid rgba(99,102,241,0.15)',
-                          color: copied === r.id ? 'var(--success)' : '#64748b',
+                          background: 'rgba(232, 130, 107,0.06)',
+                          border: '1px solid rgba(232, 130, 107,0.15)',
+                          color: copied === r.id ? 'var(--success)' : 'var(--text-muted)',
                         }}
                       >
                         {copied === r.id ? <Check size={14} /> : <Copy size={14} />}
@@ -166,8 +166,8 @@ export default function RewardsSection() {
                         rel="noopener noreferrer"
                         className="h-10 px-3 rounded-xl flex items-center text-xs font-semibold transition-all hover:opacity-80"
                         style={{
-                          background: 'linear-gradient(135deg, rgba(255,209,102,0.15), rgba(255,209,102,0.08))',
-                          border: '1px solid rgba(255,209,102,0.25)',
+                          background: 'linear-gradient(135deg, rgba(232, 130, 107,0.15), rgba(232, 130, 107,0.08))',
+                          border: '1px solid rgba(232, 130, 107,0.25)',
                           color: 'var(--stars)',
                         }}
                       >
@@ -180,8 +180,8 @@ export default function RewardsSection() {
                       onClick={() => claimReward(r.id)}
                       className="w-full mt-2 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80"
                       style={{
-                        background: 'rgba(52,211,153,0.08)',
-                        border: '1px solid rgba(52,211,153,0.2)',
+                        background: 'rgba(94, 234, 212,0.08)',
+                        border: '1px solid rgba(94, 234, 212,0.2)',
                         color: 'var(--success)',
                       }}
                     >

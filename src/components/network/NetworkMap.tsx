@@ -7,13 +7,13 @@ import type { NetworkObservation, NodeType } from '@/app/api/network/observation
 function bortleColor(b: number): string {
   if (b <= 2) return 'var(--success)';
   if (b <= 4) return '#86EFAC';
-  if (b <= 6) return '#FCD34D';
-  if (b <= 8) return '#F97316';
-  return '#EF4444';
+  if (b <= 6) return 'var(--terracotta)';
+  if (b <= 8) return 'var(--terracotta)';
+  return 'var(--negative)';
 }
 
 const NODE_COLOR: Record<NodeType, string> = {
-  passive: '#9CA3AF',
+  passive: 'var(--text-muted)',
   observer: 'var(--stl-teal)',
   advanced: 'var(--stars)',
 };
@@ -52,7 +52,7 @@ export default function NetworkMap({ observations }: { observations: NetworkObse
         }
         .leaflet-popup-tip { background: #0D1321 !important; }
         .leaflet-popup-close-button { color: rgba(255,255,255,0.5) !important; }
-        .leaflet-container { background: #070B14 !important; }
+        .leaflet-container { background: var(--canvas) !important; }
       `}</style>
       <MapContainer
         center={[42.0, 43.5]}
@@ -91,7 +91,7 @@ export default function NetworkMap({ observations }: { observations: NetworkObse
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 2 }}>
                     Bortle: {bortle}
                   </p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,209,102,0.9)', marginTop: 4 }}>
+                  <p style={{ fontSize: 11, color: 'rgba(232, 130, 107,0.9)', marginTop: 4 }}>
                     Advanced node · site reading
                   </p>
                 </div>

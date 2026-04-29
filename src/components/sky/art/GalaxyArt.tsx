@@ -5,7 +5,7 @@ export default function GalaxyArt({ className }: { className?: string }) {
         <radialGradient id="gal-body" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#fff" stopOpacity="0.95" />
           <stop offset="0.15" stopColor="var(--stars)" stopOpacity="0.7" />
-          <stop offset="0.5" stopColor="#8465CB" stopOpacity="0.35" />
+          <stop offset="0.5" stopColor="var(--terracotta)" stopOpacity="0.35" />
           <stop offset="1" stopColor="#060912" stopOpacity="0" />
         </radialGradient>
       </defs>

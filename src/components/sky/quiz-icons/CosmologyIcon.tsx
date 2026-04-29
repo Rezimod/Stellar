@@ -5,7 +5,7 @@ export default function CosmologyIcon({ size = 56 }: { size?: number }) {
         <radialGradient id="ki-gal" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#fff" stopOpacity="1" />
           <stop offset="0.15" stopColor="#FFE1A8" stopOpacity="0.9" />
-          <stop offset="0.4" stopColor="#A78BE8" stopOpacity="0.7" />
+          <stop offset="0.4" stopColor="var(--terracotta)" stopOpacity="0.7" />
           <stop offset="0.8" stopColor="#5B4191" stopOpacity="0.3" />
           <stop offset="1" stopColor="transparent" />
         </radialGradient>

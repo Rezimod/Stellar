@@ -24,11 +24,11 @@ export default function ObserveCapturePage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-white font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8' }}
+            style={{ background: 'rgba(232, 130, 107,0.12)', border: '1px solid rgba(232, 130, 107,0.25)', color: 'var(--terracotta)' }}
           >
             Back to missions
           </Link>
@@ -73,7 +73,7 @@ export default function ObserveCapturePage() {
         <div className="min-w-0">
           <h1
             className="text-base font-semibold leading-tight"
-            style={{ fontFamily: 'var(--font-serif)', color: 'var(--stl-text-bright)' }}
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--stl-text-bright)' }}
           >
             Capture your observation
           </h1>

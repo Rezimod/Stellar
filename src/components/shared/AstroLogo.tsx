@@ -15,8 +15,8 @@ export default function AstroLogo({
   variant = 'white',
   showWordmark = true,
 }: AstroLogoProps) {
-  const fg = variant === 'black' ? '#0A0E1A' : '#F4EDE0';
-  const bg = variant === 'black' ? '#F4EDE0' : '#0A0E1A';
+  const fg = variant === 'black' ? 'var(--canvas)' : 'var(--text)';
+  const bg = variant === 'black' ? 'var(--text)' : 'var(--canvas)';
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <svg

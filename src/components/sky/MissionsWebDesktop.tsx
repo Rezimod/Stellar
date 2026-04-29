@@ -179,13 +179,13 @@ export default function MissionsWebDesktop({
               style={{
                 position: 'relative',
                 overflow: 'hidden',
-                border: '1px solid rgba(255,209,102,0.32)',
+                border: '1px solid rgba(232, 130, 107,0.32)',
                 borderRadius: 18,
                 padding: '16px 16px 14px',
                 background:
-                  'linear-gradient(135deg, rgba(255,209,102,0.09) 0%, rgba(255,209,102,0.02) 55%, transparent 100%), rgba(18,14,4,0.55)',
+                  'linear-gradient(135deg, rgba(232, 130, 107,0.09) 0%, rgba(232, 130, 107,0.02) 55%, transparent 100%), rgba(18,14,4,0.55)',
                 boxShadow:
-                  '0 0 0 1px rgba(255,209,102,0.05) inset, 0 10px 30px rgba(0,0,0,0.35)',
+                  '0 0 0 1px rgba(232, 130, 107,0.05) inset, 0 10px 30px rgba(0,0,0,0.35)',
               }}
             >
               <div
@@ -195,7 +195,7 @@ export default function MissionsWebDesktop({
                   inset: 0,
                   pointerEvents: 'none',
                   background:
-                    'radial-gradient(250px 160px at 80% -10%, rgba(255,209,102,0.18), transparent 60%)',
+                    'radial-gradient(250px 160px at 80% -10%, rgba(232, 130, 107,0.18), transparent 60%)',
                 }}
               />
               {/* kicker */}
@@ -207,7 +207,7 @@ export default function MissionsWebDesktop({
                     borderRadius: 999,
                     background: 'var(--stars)',
                     boxShadow:
-                      '0 0 0 3px rgba(255,209,102,0.14), 0 0 10px rgba(255,209,102,0.6)',
+                      '0 0 0 3px rgba(232, 130, 107,0.14), 0 0 10px rgba(232, 130, 107,0.6)',
                     animation: 'stl-pulse 2.4s ease-in-out infinite',
                   }}
                 />
@@ -247,11 +247,11 @@ export default function MissionsWebDesktop({
                 <div>
                   <h2
                     style={{
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-display)',
                       fontWeight: 500,
                       fontSize: 36,
                       lineHeight: 1,
-                      color: '#F5F2E8',
+                      color: 'var(--text)',
                       letterSpacing: '-0.015em',
                       margin: 0,
                     }}
@@ -260,7 +260,7 @@ export default function MissionsWebDesktop({
                   </h2>
                   <div
                     style={{
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-display)',
                       fontStyle: 'italic',
                       fontWeight: 400,
                       fontSize: 14,
@@ -329,13 +329,13 @@ export default function MissionsWebDesktop({
                   borderRadius: 12,
                   border: 'none',
                   cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
-                  color: '#1A1000',
+                  background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))',
+                  color: 'var(--canvas)',
                   fontWeight: 600,
                   fontSize: 13,
                   letterSpacing: '0.01em',
                   boxShadow:
-                    'inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(255,209,102,0.22)',
+                    'inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(232, 130, 107,0.22)',
                 }}
               >
                 <span>Observe {primeMission.name}</span>
@@ -346,7 +346,7 @@ export default function MissionsWebDesktop({
                     padding: '2px 6px',
                     borderRadius: 6,
                     background: 'rgba(0,0,0,0.18)',
-                    color: '#1A1000',
+                    color: 'var(--canvas)',
                   }}
                 >
                   +{primeMission.stars} ★
@@ -377,11 +377,11 @@ export default function MissionsWebDesktop({
               <h3
                 style={{
                   margin: 0,
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontWeight: 500,
                   fontStyle: 'italic',
                   fontSize: 17,
-                  color: '#F2F0EA',
+                  color: 'var(--text)',
                 }}
               >
                 Tonight&apos;s targets
@@ -417,7 +417,7 @@ export default function MissionsWebDesktop({
                     padding: '9px 14px',
                     borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
                     cursor: 'pointer',
-                    background: isActive ? 'rgba(255,209,102,0.04)' : 'transparent',
+                    background: isActive ? 'rgba(232, 130, 107,0.04)' : 'transparent',
                     opacity: dim ? 0.45 : 1,
                     width: '100%',
                     textAlign: 'left',
@@ -438,7 +438,7 @@ export default function MissionsWebDesktop({
                       justifyContent: 'center',
                       background: 'rgba(255,255,255,0.03)',
                       border: '1px solid rgba(255,255,255,0.08)',
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-display)',
                       fontSize: 15,
                       color: 'rgba(255,255,255,0.7)',
                     }}
@@ -449,10 +449,10 @@ export default function MissionsWebDesktop({
                     <span
                       style={{
                         display: 'block',
-                        fontFamily: 'var(--font-serif)',
+                        fontFamily: 'var(--font-display)',
                         fontWeight: 500,
                         fontSize: 15,
-                        color: '#F2F0EA',
+                        color: 'var(--text)',
                         lineHeight: 1.1,
                       }}
                     >
@@ -489,7 +489,7 @@ export default function MissionsWebDesktop({
                         height: '100%',
                         width: `${altPct}%`,
                         borderRadius: 2,
-                        background: 'linear-gradient(90deg, rgba(99,102,241,0.4), rgba(99,102,241,0.9))',
+                        background: 'linear-gradient(90deg, rgba(232, 130, 107,0.4), rgba(232, 130, 107,0.9))',
                       }}
                     />
                   </span>
@@ -517,7 +517,7 @@ export default function MissionsWebDesktop({
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 22,
             background:
-              'radial-gradient(ellipse at 50% 35%, #0E1A35 0%, #070B1C 45%, #030612 100%)',
+              'radial-gradient(ellipse at 50% 35%, var(--canvas) 0%, var(--canvas) 45%, var(--canvas) 100%)',
             overflow: 'hidden',
             aspectRatio: '16 / 10',
             minHeight: 520,
@@ -541,12 +541,12 @@ export default function MissionsWebDesktop({
             <div>
               <div
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontStyle: 'italic',
                   fontWeight: 500,
                   fontSize: 22,
                   letterSpacing: '-0.005em',
-                  color: '#F2F0EA',
+                  color: 'var(--text)',
                 }}
               >
                 Sky tonight
@@ -586,7 +586,7 @@ export default function MissionsWebDesktop({
                     height: 5,
                     borderRadius: 999,
                     background: 'var(--success)',
-                    boxShadow: '0 0 6px #34D399',
+                    boxShadow: '0 0 6px var(--seafoam)',
                     animation: 'stl-pulse 2.4s ease-in-out infinite',
                   }}
                 />
@@ -600,13 +600,13 @@ export default function MissionsWebDesktop({
                     gap: 8,
                     marginTop: 10,
                     padding: '6px 10px',
-                    border: '1px solid rgba(255,209,102,0.18)',
+                    border: '1px solid rgba(232, 130, 107,0.18)',
                     borderRadius: 8,
-                    background: 'rgba(255,209,102,0.04)',
+                    background: 'rgba(232, 130, 107,0.04)',
                     fontFamily: 'var(--font-mono)',
                     fontSize: 10,
                     letterSpacing: '0.12em',
-                    color: '#E4CD87',
+                    color: 'var(--terracotta)',
                     textTransform: 'uppercase',
                   }}
                 >
@@ -647,10 +647,10 @@ export default function MissionsWebDesktop({
               zIndex: 5,
             }}
           >
-            <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--stars)', boxShadow: '0 0 6px rgba(255,209,102,0.6)' }} />}>Prime</LegendItem>
+            <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--stars)', boxShadow: '0 0 6px rgba(232, 130, 107,0.6)' }} />}>Prime</LegendItem>
             <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.7 }} />}>Target</LegendItem>
             <LegendItem swatch={
-              <span style={{ width: 18, height: 1, background: 'repeating-linear-gradient(90deg,rgba(255,209,102,0.7) 0 4px,transparent 4px 8px)' }} />
+              <span style={{ width: 18, height: 1, background: 'repeating-linear-gradient(90deg,rgba(232, 130, 107,0.7) 0 4px,transparent 4px 8px)' }} />
             }>Ecliptic</LegendItem>
           </div>
 
@@ -681,10 +681,10 @@ export default function MissionsWebDesktop({
           <div
             style={{
               padding: '14px 16px',
-              border: '1px solid rgba(52,211,153,0.22)',
+              border: '1px solid rgba(94, 234, 212,0.22)',
               borderRadius: 18,
               background:
-                'radial-gradient(300px 160px at 100% 0%, rgba(52,211,153,0.07),transparent 60%), rgba(4,16,10,0.6)',
+                'radial-gradient(300px 160px at 100% 0%, rgba(94, 234, 212,0.07),transparent 60%), rgba(4,16,10,0.6)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -703,7 +703,7 @@ export default function MissionsWebDesktop({
                 <span
                   style={{
                     width: 5, height: 5, borderRadius: 999, background: 'var(--success)',
-                    boxShadow: '0 0 6px #34D399',
+                    boxShadow: '0 0 6px var(--seafoam)',
                     animation: 'stl-pulse 2s ease-in-out infinite',
                   }}
                 />
@@ -715,11 +715,11 @@ export default function MissionsWebDesktop({
             </div>
             <div
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontWeight: 500,
                 fontSize: 28,
                 lineHeight: 1,
-                color: '#F2F0EA',
+                color: 'var(--text)',
                 letterSpacing: '-0.015em',
               }}
             >
@@ -729,7 +729,7 @@ export default function MissionsWebDesktop({
             </div>
             <div
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontStyle: 'italic',
                 fontSize: 14,
                 color: 'rgba(255,255,255,0.7)',
@@ -766,11 +766,11 @@ export default function MissionsWebDesktop({
               <h3
                 style={{
                   margin: 0,
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontWeight: 500,
                   fontStyle: 'italic',
                   fontSize: 17,
-                  color: '#F2F0EA',
+                  color: 'var(--text)',
                 }}
               >
                 Conditions
@@ -829,7 +829,7 @@ export default function MissionsWebDesktop({
                       height: 12,
                       borderRadius: 2,
                       background: i < 6 ? 'var(--stars)' : 'rgba(255,255,255,0.06)',
-                      boxShadow: i < 6 ? '0 0 6px rgba(255,209,102,0.5)' : 'none',
+                      boxShadow: i < 6 ? '0 0 6px rgba(232, 130, 107,0.5)' : 'none',
                     }}
                   />
                 ))}
@@ -854,7 +854,7 @@ export default function MissionsWebDesktop({
                 cursor: 'pointer',
                 color: 'inherit',
                 background:
-                  'radial-gradient(circle at 85% 25%, rgba(167,139,232,0.18) 0%, transparent 55%), radial-gradient(circle at 15% 85%, rgba(255,143,184,0.10) 0%, transparent 55%), linear-gradient(145deg,#120a24 0%,#070b18 100%)',
+                  'radial-gradient(circle at 85% 25%, rgba(167,139,232,0.18) 0%, transparent 55%), radial-gradient(circle at 15% 85%, rgba(255,143,184,0.10) 0%, transparent 55%), linear-gradient(145deg,var(--canvas) 0%,var(--canvas) 100%)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -864,7 +864,7 @@ export default function MissionsWebDesktop({
                     fontSize: 9.5,
                     letterSpacing: '0.24em',
                     textTransform: 'uppercase',
-                    color: '#C5B0F0',
+                    color: 'var(--terracotta)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 7,
@@ -872,8 +872,8 @@ export default function MissionsWebDesktop({
                 >
                   <span
                     style={{
-                      width: 5, height: 5, borderRadius: 999, background: '#A78BE8',
-                      boxShadow: '0 0 6px #A78BE8',
+                      width: 5, height: 5, borderRadius: 999, background: 'var(--terracotta)',
+                      boxShadow: '0 0 6px var(--terracotta)',
                       animation: 'stl-pulse 2.4s ease-in-out infinite',
                     }}
                   />
@@ -888,7 +888,7 @@ export default function MissionsWebDesktop({
                     borderRadius: 5,
                     background: 'rgba(255,143,184,0.14)',
                     border: '1px solid rgba(255,143,184,0.3)',
-                    color: '#FF8FB8',
+                    color: 'var(--negative)',
                     textTransform: 'uppercase',
                   }}
                 >
@@ -909,7 +909,7 @@ export default function MissionsWebDesktop({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#E0D3FF',
+                    color: 'var(--terracotta)',
                   }}
                 >
                   <svg viewBox="0 0 24 24" width={26} height={26} fill="none">
@@ -921,10 +921,10 @@ export default function MissionsWebDesktop({
                 <div style={{ minWidth: 0 }}>
                   <h4
                     style={{
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-display)',
                       fontWeight: 500,
                       fontSize: 19,
-                      color: '#F2F0EA',
+                      color: 'var(--text)',
                       lineHeight: 1.1,
                       margin: 0,
                     }}
@@ -933,7 +933,7 @@ export default function MissionsWebDesktop({
                   </h4>
                   <div
                     style={{
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-display)',
                       fontStyle: 'italic',
                       fontSize: 13,
                       color: 'rgba(255,255,255,0.7)',
@@ -957,9 +957,9 @@ export default function MissionsWebDesktop({
                   marginBottom: 12,
                 }}
               >
-                <span><b style={{ color: '#E0D3FF', fontWeight: 500 }}>{nextQuiz.questions?.length ?? 10}</b> questions</span>
+                <span><b style={{ color: 'var(--terracotta)', fontWeight: 500 }}>{nextQuiz.questions?.length ?? 10}</b> questions</span>
                 <span style={{ width: 3, height: 3, borderRadius: 999, background: 'rgba(255,255,255,0.25)' }} />
-                <span><b style={{ color: '#E0D3FF', fontWeight: 500 }}>~3 min</b></span>
+                <span><b style={{ color: 'var(--terracotta)', fontWeight: 500 }}>~3 min</b></span>
                 <span style={{ width: 3, height: 3, borderRadius: 999, background: 'rgba(255,255,255,0.25)' }} />
                 <span>+100 ★</span>
               </div>
@@ -974,7 +974,7 @@ export default function MissionsWebDesktop({
                   borderRadius: 12,
                   border: '1px solid rgba(167,139,232,0.4)',
                   background: 'rgba(167,139,232,0.14)',
-                  color: '#F0E8FF',
+                  color: 'var(--terracotta)',
                   fontSize: 12.5,
                   fontWeight: 500,
                   letterSpacing: '0.01em',
@@ -990,8 +990,8 @@ export default function MissionsWebDesktop({
                     fontSize: 10.5,
                     padding: '2px 6px',
                     borderRadius: 5,
-                    background: 'rgba(255,209,102,0.14)',
-                    border: '1px solid rgba(255,209,102,0.3)',
+                    background: 'rgba(232, 130, 107,0.14)',
+                    border: '1px solid rgba(232, 130, 107,0.3)',
                     color: 'var(--stars)',
                     marginLeft: 4,
                   }}
@@ -1008,10 +1008,10 @@ export default function MissionsWebDesktop({
               position: 'relative',
               overflow: 'hidden',
               padding: '14px 16px',
-              border: '1px solid rgba(56,240,255,0.22)',
+              border: '1px solid rgba(94, 234, 212,0.22)',
               borderRadius: 18,
               background:
-                'radial-gradient(circle at 85% 25%, rgba(56,240,255,0.12) 0%, transparent 55%), linear-gradient(145deg,#081624 0%,#070b18 100%)',
+                'radial-gradient(circle at 85% 25%, rgba(94, 234, 212,0.12) 0%, transparent 55%), linear-gradient(145deg,var(--canvas) 0%,var(--canvas) 100%)',
             }}
           >
             <div
@@ -1030,7 +1030,7 @@ export default function MissionsWebDesktop({
               <span
                 style={{
                   width: 5, height: 5, borderRadius: 999, background: 'var(--stl-teal)',
-                  boxShadow: '0 0 6px #38F0FF',
+                  boxShadow: '0 0 6px var(--seafoam)',
                   animation: 'stl-pulse 2.4s ease-in-out infinite',
                 }}
               />
@@ -1038,11 +1038,11 @@ export default function MissionsWebDesktop({
             </div>
             <div
               style={{
-                background: 'rgba(56,240,255,0.06)',
-                border: '1px solid rgba(56,240,255,0.14)',
+                background: 'rgba(94, 234, 212,0.06)',
+                border: '1px solid rgba(94, 234, 212,0.14)',
                 borderRadius: '12px 12px 12px 4px',
                 padding: '10px 12px',
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontSize: 13.5,
                 lineHeight: 1.4,
                 color: 'rgba(255,255,255,0.7)',
@@ -1050,14 +1050,14 @@ export default function MissionsWebDesktop({
                 marginBottom: 10,
               }}
             >
-              <b style={{ color: '#B8F5FC', fontStyle: 'normal', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12.5 }}>
+              <b style={{ color: 'var(--seafoam)', fontStyle: 'normal', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12.5 }}>
                 Tip:
               </b>{' '}
               {primeMission?.id === 'saturn'
-                ? <>Saturn rises at <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: '#B8F5FC', fontStyle: 'normal' }}>{primeStatus?.riseTime ?? sunsetStr}</span> — rings are near widest this week.</>
+                ? <>Saturn rises at <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--seafoam)', fontStyle: 'normal' }}>{primeStatus?.riseTime ?? sunsetStr}</span> — rings are near widest this week.</>
                 : primeMission
                 ? <>{primeMission.name} is tonight&apos;s best target. Best at {primeStatus?.peakTime ?? '—'}.</>
-                : <>Sky opens at <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: '#B8F5FC', fontStyle: 'normal' }}>{sunsetStr}</span>. Check back after sunset.</>
+                : <>Sky opens at <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--seafoam)', fontStyle: 'normal' }}>{sunsetStr}</span>. Check back after sunset.</>
               }
             </div>
             <a
@@ -1067,7 +1067,7 @@ export default function MissionsWebDesktop({
                 alignItems: 'center',
                 gap: 8,
                 padding: '8px 12px',
-                border: '1px solid rgba(56,240,255,0.22)',
+                border: '1px solid rgba(94, 234, 212,0.22)',
                 borderRadius: 10,
                 background: 'rgba(3,10,18,0.5)',
                 color: 'rgba(255,255,255,0.45)',
@@ -1084,11 +1084,11 @@ export default function MissionsWebDesktop({
                   width: 26,
                   height: 26,
                   borderRadius: 7,
-                  background: 'linear-gradient(135deg,#38F0FF,#0891B2)',
+                  background: 'linear-gradient(135deg,var(--seafoam),var(--seafoam))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#001018',
+                  color: 'var(--canvas)',
                 }}
               >
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -1111,11 +1111,11 @@ export default function MissionsWebDesktop({
               <h4
                 style={{
                   margin: 0,
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontStyle: 'italic',
                   fontWeight: 500,
                   fontSize: 16,
-                  color: '#F2F0EA',
+                  color: 'var(--text)',
                 }}
               >
                 Observing streak
@@ -1140,14 +1140,14 @@ export default function MissionsWebDesktop({
                         aspectRatio: '1',
                         borderRadius: 7,
                         background: isToday
-                          ? 'rgba(52,211,153,0.14)'
+                          ? 'rgba(94, 234, 212,0.14)'
                           : isOn
-                          ? 'rgba(255,209,102,0.14)'
+                          ? 'rgba(232, 130, 107,0.14)'
                           : 'rgba(255,255,255,0.04)',
                         border: isToday
-                          ? '1px solid rgba(52,211,153,0.35)'
+                          ? '1px solid rgba(94, 234, 212,0.35)'
                           : isOn
-                          ? '1px solid rgba(255,209,102,0.3)'
+                          ? '1px solid rgba(232, 130, 107,0.3)'
                           : '1px solid rgba(255,255,255,0.05)',
                         display: 'flex',
                         alignItems: 'center',
@@ -1200,16 +1200,16 @@ export default function MissionsWebDesktop({
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>
             Now
           </span>
-          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 500, fontSize: 22, color: '#F2F0EA', letterSpacing: '-0.005em' }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 22, color: 'var(--text)', letterSpacing: '-0.005em' }}>
             {liveTimeStr}
           </span>
         </div>
         <div style={{ position: 'relative', height: 40 }}>
           <svg viewBox="0 0 1000 40" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-            <rect x="0" y="15" width="180" height="10" fill="rgba(132,101,203,0.18)" rx="3"/>
-            <rect x="820" y="15" width="180" height="10" fill="rgba(132,101,203,0.18)" rx="3"/>
+            <rect x="0" y="15" width="180" height="10" fill="rgba(232, 130, 107,0.18)" rx="3"/>
+            <rect x="820" y="15" width="180" height="10" fill="rgba(232, 130, 107,0.18)" rx="3"/>
             <rect x="180" y="15" width="640" height="10" fill="rgba(255,255,255,0.04)" rx="3"/>
-            <path d="M0 25 Q 500 -40 1000 25" stroke="rgba(255,209,102,0.25)" strokeWidth="1" fill="none" strokeDasharray="2 4"/>
+            <path d="M0 25 Q 500 -40 1000 25" stroke="rgba(232, 130, 107,0.25)" strokeWidth="1" fill="none" strokeDasharray="2 4"/>
             <g stroke="rgba(255,255,255,0.15)" strokeWidth="1">
               <line x1="125" y1="12" x2="125" y2="28"/>
               <line x1="375" y1="12" x2="375" y2="28"/>
@@ -1231,8 +1231,8 @@ export default function MissionsWebDesktop({
               width: 24,
               height: 24,
               borderRadius: '50%',
-              background: 'radial-gradient(circle at 35% 30%,#FFE6A6,#D9A54A 55%,#8B5A1F)',
-              boxShadow: '0 0 0 2px rgba(255,209,102,0.25), 0 0 20px rgba(255,209,102,0.4)',
+              background: 'radial-gradient(circle at 35% 30%,var(--terracotta),var(--terracotta) 55%,var(--terracotta))',
+              boxShadow: '0 0 0 2px rgba(232, 130, 107,0.25), 0 0 20px rgba(232, 130, 107,0.4)',
             }}
           />
         </div>
@@ -1254,7 +1254,7 @@ export default function MissionsWebDesktop({
           >
             <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 2l7 4-7 4V2z" fill="currentColor"/></svg>
           </button>
-          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 500, fontSize: 22, color: '#F2F0EA', letterSpacing: '-0.005em' }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 22, color: 'var(--text)', letterSpacing: '-0.005em' }}>
             {sunriseStr}
           </span>
         </div>
@@ -1285,7 +1285,7 @@ function StatCell({ label, value }: { label: string; value: string }) {
       >
         {label}
       </div>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: '#F2EAD2', fontWeight: 500 }}>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>
         {value}
       </div>
     </div>
@@ -1308,11 +1308,11 @@ function WindowChip({ label, primary }: { label: string; primary?: boolean }) {
         flex: 1,
         padding: '9px 10px',
         borderRadius: 10,
-        border: primary ? '1px solid rgba(52,211,153,0.4)' : '1px solid rgba(255,255,255,0.08)',
+        border: primary ? '1px solid rgba(94, 234, 212,0.4)' : '1px solid rgba(255,255,255,0.08)',
         background: primary
-          ? 'linear-gradient(135deg, rgba(52,211,153,0.22), rgba(52,211,153,0.08))'
+          ? 'linear-gradient(135deg, rgba(94, 234, 212,0.22), rgba(94, 234, 212,0.08))'
           : 'rgba(255,255,255,0.02)',
-        color: primary ? '#D4F3E6' : 'rgba(255,255,255,0.7)',
+        color: primary ? 'var(--seafoam)' : 'rgba(255,255,255,0.7)',
         fontWeight: primary ? 500 : 400,
         fontSize: 11.5,
         display: 'flex',
@@ -1333,9 +1333,9 @@ function CondCell({
   label: string; value: string; suffix?: string; sub: string; tone?: 'ok' | 'warn';
 }) {
   const valColor =
-    tone === 'ok' ? '#6EE7B7' :
-    tone === 'warn' ? '#FCD34D' :
-    '#F2F0EA';
+    tone === 'ok' ? 'var(--seafoam)' :
+    tone === 'warn' ? 'var(--terracotta)' :
+    'var(--text)';
   return (
     <div style={{ background: 'rgba(8,12,24,0.65)', padding: '12px 14px' }}>
       <div
@@ -1352,7 +1352,7 @@ function CondCell({
       </div>
       <div
         style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontWeight: 500,
           fontSize: 22,
           lineHeight: 1,

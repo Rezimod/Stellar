@@ -35,8 +35,8 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
     <div
       className="relative flex items-center gap-2.5 p-2.5 lg:p-3 overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,209,102,0.06), rgba(255,209,102,0.01) 60%, transparent)',
-        border: '1px solid rgba(255,209,102,0.22)',
+        background: 'linear-gradient(135deg, rgba(232, 130, 107,0.06), rgba(232, 130, 107,0.01) 60%, transparent)',
+        border: '1px solid rgba(232, 130, 107,0.22)',
         borderRadius: 12,
       }}
     >
@@ -58,7 +58,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
             <div style={{ width: 3.5, height: 3.5, borderRadius: '50%', background: 'var(--stl-gold)' }} />
             <span
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontSize: 8,
                 color: 'var(--stl-gold)',
                 letterSpacing: '0.22em',
@@ -70,7 +70,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
             {altitude != null && (
               <span
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontSize: 8,
                   color: 'rgba(255,255,255,0.3)',
                   letterSpacing: '0.1em',
@@ -84,7 +84,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
             <span
               className="hidden lg:inline"
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontSize: 8,
                 color: 'rgba(255,255,255,0.3)',
                 letterSpacing: '0.14em',
@@ -97,9 +97,9 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
         </div>
         <h2
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 18,
-            color: '#F2F0EA',
+            color: 'var(--text)',
             fontWeight: 600,
             margin: 0,
             lineHeight: 1.05,
@@ -110,7 +110,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
         </h2>
         <div
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 11.5,
             color: 'rgba(255,255,255,0.5)',
             fontStyle: 'italic',
@@ -126,7 +126,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
           <div
             className="hidden lg:flex items-center gap-3 mt-1.5"
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 9,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
@@ -136,7 +136,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
             {magnitude != null && (
               <span>
                 <span style={{ color: 'rgba(255,255,255,0.35)', marginRight: 4 }}>MAG</span>
-                <span style={{ color: '#F2F0EA', fontWeight: 600 }}>
+                <span style={{ color: 'var(--text)', fontWeight: 600 }}>
                   {magnitude > 0 ? '+' : ''}{magnitude.toFixed(1)}
                 </span>
               </span>
@@ -144,7 +144,7 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
             {azimuth != null && (
               <span>
                 <span style={{ color: 'rgba(255,255,255,0.35)', marginRight: 4 }}>AZ</span>
-                <span style={{ color: '#F2F0EA', fontWeight: 600 }}>
+                <span style={{ color: 'var(--text)', fontWeight: 600 }}>
                   {Math.round(azimuth)}°
                 </span>
               </span>
@@ -159,13 +159,13 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
         className="flex-shrink-0 transition-all active:scale-[0.97] hover:brightness-110"
         style={{
           padding: '7px 11px',
-          background: 'linear-gradient(135deg, #FFD166, #CC9A33)',
-          color: '#0a0a0a',
+          background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))',
+          color: 'var(--canvas)',
           border: 'none',
           borderRadius: 9,
           fontSize: 11,
           fontWeight: 600,
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           whiteSpace: 'nowrap',
           cursor: 'pointer',
         }}

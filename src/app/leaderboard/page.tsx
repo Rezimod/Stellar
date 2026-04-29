@@ -11,9 +11,9 @@ import PageContainer from '@/components/layout/PageContainer';
 
 const RANK_LABELS: Record<string, { label: string; color: string }> = {
   Celestial:  { label: 'Celestial',  color: 'var(--stars)' },
-  Pathfinder: { label: 'Pathfinder', color: '#7A5FFF' },
-  Observer:   { label: 'Observer',   color: '#818cf8' },
-  Stargazer:  { label: 'Stargazer',  color: '#94a3b8' },
+  Pathfinder: { label: 'Pathfinder', color: 'var(--terracotta)' },
+  Observer:   { label: 'Observer',   color: 'var(--terracotta)' },
+  Stargazer:  { label: 'Stargazer',  color: 'var(--text-muted)' },
 };
 
 interface LiveEntry {
@@ -75,15 +75,15 @@ function AvatarCircle({ name, size = 40, color }: { name: string; size?: number;
 
 function ShimmerRow() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 animate-pulse">
-      <div className="w-6 h-4 rounded bg-white/5 flex-shrink-0" />
-      <div className="w-8 h-8 rounded-full bg-white/5 flex-shrink-0" />
+    <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)] animate-pulse">
+      <div className="w-6 h-4 rounded bg-[var(--surface)] flex-shrink-0" />
+      <div className="w-8 h-8 rounded-full bg-[var(--surface)] flex-shrink-0" />
       <div className="flex-1 space-y-1.5">
-        <div className="h-3.5 w-28 rounded bg-white/5" />
-        <div className="h-2.5 w-16 rounded bg-white/5" />
+        <div className="h-3.5 w-28 rounded bg-[var(--surface)]" />
+        <div className="h-2.5 w-16 rounded bg-[var(--surface)]" />
       </div>
-      <div className="h-3 w-8 rounded bg-white/5" />
-      <div className="h-4 w-14 rounded bg-white/5" />
+      <div className="h-3 w-8 rounded bg-[var(--surface)]" />
+      <div className="h-4 w-14 rounded bg-[var(--surface)]" />
     </div>
   );
 }
@@ -102,13 +102,13 @@ const PODIUM_CONFIG = [
   {
     rankNum: 1,
     rankColor: 'var(--stars)',
-    border: 'rgba(255,209,102,0.4)',
-    bg: 'rgba(255,209,102,0.07)',
+    border: 'rgba(232, 130, 107,0.4)',
+    bg: 'rgba(232, 130, 107,0.07)',
     padTop: 0,
     avatarSize: 48,
     rankFontSize: '2.25rem',
     slideFrom: '0px',
-    glow: '0 0 30px rgba(255,209,102,0.2), 0 0 60px rgba(255,209,102,0.08)',
+    glow: '0 0 30px rgba(232, 130, 107,0.2), 0 0 60px rgba(232, 130, 107,0.08)',
     scale: 'scale(1.04)',
     crown: true,
   },
@@ -194,8 +194,8 @@ export default function LeaderboardPage() {
       {/* Header */}
       <div>
         <h1
-          className="text-2xl text-white/90"
-          style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}
+          className="text-2xl text-text-primary/90"
+          style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
         >
           Leaderboard
         </h1>
@@ -205,12 +205,12 @@ export default function LeaderboardPage() {
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
         style={{
-          background: 'rgba(99,102,241,0.05)',
-          border: '1px solid rgba(99,102,241,0.12)',
-          color: 'rgba(99,102,241,0.7)',
+          background: 'rgba(232, 130, 107,0.05)',
+          border: '1px solid rgba(232, 130, 107,0.12)',
+          color: 'rgba(232, 130, 107,0.7)',
         }}
       >
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#818cf8', flexShrink: 0, opacity: 0.7, display: 'inline-block' }} />
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--terracotta)', flexShrink: 0, opacity: 0.7, display: 'inline-block' }} />
         Leaderboard updates with real observer data as missions are completed on-chain
       </div>
 
@@ -226,7 +226,7 @@ export default function LeaderboardPage() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
             style={
               activeTab === tab
-                ? { background: 'rgba(255,209,102,0.12)', color: 'var(--stars)', border: '1px solid rgba(255,209,102,0.22)' }
+                ? { background: 'rgba(232, 130, 107,0.12)', color: 'var(--stars)', border: '1px solid rgba(232, 130, 107,0.22)' }
                 : { color: 'var(--color-text-secondary)' }
             }
           >
@@ -239,11 +239,11 @@ export default function LeaderboardPage() {
       {leaderError && !loading && (
         <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="text-white/60 text-sm">Couldn&apos;t load the leaderboard.</p>
+          <p className="text-text-primary/60 text-sm">Couldn&apos;t load the leaderboard.</p>
           <button
             onClick={() => { setLeaderError(false); setActiveTab(t => t); }}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
+            style={{ background: 'rgba(232, 130, 107,0.12)', color: 'var(--terracotta)', border: '1px solid rgba(232, 130, 107,0.2)' }}
           >
             Try again
           </button>
@@ -258,18 +258,18 @@ export default function LeaderboardPage() {
         >
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)' }}
+            style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.15)' }}
           >
             <span style={{ fontSize: 28 }}>🏆</span>
           </div>
           <div>
-            <p className="text-white/80 font-semibold text-sm">Be the first on the board</p>
-            <p className="text-white/40 text-xs mt-1">Complete a mission to appear here.</p>
+            <p className="text-text-primary/80 font-semibold text-sm">Be the first on the board</p>
+            <p className="text-text-primary/40 text-xs mt-1">Complete a mission to appear here.</p>
           </div>
           <Link
             href="/missions"
             className="mt-1 px-5 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
+            style={{ background: 'rgba(232, 130, 107,0.12)', color: 'var(--terracotta)', border: '1px solid rgba(232, 130, 107,0.2)' }}
           >
             Go to Missions →
           </Link>
@@ -379,7 +379,7 @@ export default function LeaderboardPage() {
                       style={{
                         borderColor: 'rgba(255,255,255,0.05)',
                         background: rowBg,
-                        borderLeft: isCurrentUser ? '3px solid #818cf8' : undefined,
+                        borderLeft: isCurrentUser ? '3px solid var(--terracotta)' : undefined,
                         paddingLeft: isCurrentUser ? '13px' : undefined,
                       }}
                     >
@@ -435,16 +435,16 @@ export default function LeaderboardPage() {
             <div
               className="flex items-center gap-3 px-4 py-3 rounded-xl"
               style={{
-                background: 'rgba(99,102,241,0.05)',
-                border: '1px solid rgba(99,102,241,0.15)',
-                borderLeft: '3px solid #818cf8',
+                background: 'rgba(232, 130, 107,0.05)',
+                border: '1px solid rgba(232, 130, 107,0.15)',
+                borderLeft: '3px solid var(--terracotta)',
               }}
             >
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
                 Your Rank: #{currentUserIndex + 1}
               </span>
               <div className="flex-1" />
-              <span style={{ fontSize: 'var(--text-xs)', color: '#818cf8' }}>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--terracotta)' }}>
                 {entries[currentUserIndex]?.stars.toLocaleString()} ✦
               </span>
             </div>
@@ -460,7 +460,7 @@ export default function LeaderboardPage() {
       {/* CTA */}
       <div
         className="rounded-2xl p-5 text-center"
-        style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.14)' }}
+        style={{ background: 'rgba(94, 234, 212,0.05)', border: '1px solid rgba(94, 234, 212,0.14)' }}
       >
         <p className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>
           Complete missions to climb the leaderboard
@@ -471,7 +471,7 @@ export default function LeaderboardPage() {
         <Link
           href="/missions"
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #34d399, #14B8A6)', color: '#0a0a0a' }}
+          style={{ background: 'linear-gradient(135deg, var(--seafoam), var(--seafoam))', color: 'var(--canvas)' }}
         >
           Start Observing →
         </Link>

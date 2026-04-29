@@ -57,8 +57,8 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
             100% { transform: scale(1); opacity: 1; }
           }
           @keyframes checkin-glow {
-            0%, 100% { box-shadow: 0 0 10px rgba(52,211,153,0.2); }
-            50% { box-shadow: 0 0 22px rgba(52,211,153,0.45); }
+            0%, 100% { box-shadow: 0 0 10px rgba(94, 234, 212,0.2); }
+            50% { box-shadow: 0 0 22px rgba(94, 234, 212,0.45); }
           }
         `}</style>
         <div
@@ -68,8 +68,8 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
             gap: 10,
             padding: '8px 12px',
             borderRadius: 12,
-            background: 'rgba(52,211,153,0.06)',
-            border: '1px solid rgba(52,211,153,0.18)',
+            background: 'rgba(94, 234, 212,0.06)',
+            border: '1px solid rgba(94, 234, 212,0.18)',
             animation: justChecked ? 'checkin-pop 0.4s cubic-bezier(0.22,1,0.36,1), checkin-glow 2s ease 0.4s infinite' : 'checkin-glow 3s ease infinite',
           }}
         >
@@ -79,8 +79,8 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
               width: 28,
               height: 28,
               borderRadius: '50%',
-              background: 'rgba(52,211,153,0.12)',
-              border: '1.5px solid rgba(52,211,153,0.35)',
+              background: 'rgba(94, 234, 212,0.12)',
+              border: '1.5px solid rgba(94, 234, 212,0.35)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -109,8 +109,8 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
                 gap: 4,
                 padding: '3px 8px',
                 borderRadius: 9999,
-                background: 'rgba(255,209,102,0.08)',
-                border: '1px solid rgba(255,209,102,0.2)',
+                background: 'rgba(232, 130, 107,0.08)',
+                border: '1px solid rgba(232, 130, 107,0.2)',
                 flexShrink: 0,
               }}
             >
@@ -140,9 +140,9 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
           100% { background-position: 200% center; }
         }
         @keyframes pulse-ring {
-          0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
-          70% { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
-          100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+          0% { box-shadow: 0 0 0 0 rgba(232, 130, 107,0.4); }
+          70% { box-shadow: 0 0 0 8px rgba(232, 130, 107,0); }
+          100% { box-shadow: 0 0 0 0 rgba(232, 130, 107,0); }
         }
         @keyframes checkin-float {
           0%, 100% { transform: translateY(0px); }
@@ -179,15 +179,15 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
               width: 30,
               height: 30,
               borderRadius: '50%',
-              background: 'rgba(99,102,241,0.06)',
-              border: '1px solid rgba(99,102,241,0.15)',
+              background: 'rgba(232, 130, 107,0.06)',
+              border: '1px solid rgba(232, 130, 107,0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <Telescope size={14} color="rgba(99,102,241,0.7)" />
+            <Telescope size={14} color="rgba(232, 130, 107,0.7)" />
           </div>
           <div>
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', display: 'block', lineHeight: 1.2 }}>
@@ -214,12 +214,12 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
             fontSize: 12,
             fontWeight: 700,
             fontFamily: 'var(--font-display)',
-            color: '#0A0E1A',
+            color: 'var(--canvas)',
             flexShrink: 0,
             backgroundSize: '200% auto',
             backgroundImage: loading
-              ? 'linear-gradient(135deg, rgba(99,102,241,0.5), rgba(56,200,220,0.5))'
-              : 'linear-gradient(135deg, #818cf8 0%, #00D4FF 40%, #818cf8 60%, #7BFAFF 100%)',
+              ? 'linear-gradient(135deg, rgba(232, 130, 107,0.5), rgba(56,200,220,0.5))'
+              : 'linear-gradient(135deg, var(--terracotta) 0%, #00D4FF 40%, var(--terracotta) 60%, #7BFAFF 100%)',
             animation: loading ? 'none' : 'pulse-ring 2s ease infinite, checkin-float 3s ease infinite, shimmer 2.5s linear infinite',
           }}
         >

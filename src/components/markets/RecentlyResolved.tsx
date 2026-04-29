@@ -26,10 +26,10 @@ export default function RecentlyResolved({ markets }: { markets: Market[] }) {
       <header style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <h2
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 16,
             fontWeight: 600,
-            color: '#F2F0EA',
+            color: 'var(--text)',
             margin: 0,
             letterSpacing: '-0.005em',
           }}
@@ -55,20 +55,20 @@ export default function RecentlyResolved({ markets }: { markets: Market[] }) {
           const cancelled = m.status === 'cancelled';
           const badgeLabel = cancelled ? '⟳ Cancelled' : isYes ? '✓ YES' : '✗ NO';
           const badgeColor = cancelled
-            ? '#94A3B8'
+            ? 'var(--text-muted)'
             : isYes
               ? 'var(--success)'
-              : '#F472B6';
+              : 'var(--negative)';
           const badgeBg = cancelled
             ? 'rgba(148,163,184,0.10)'
             : isYes
-              ? 'rgba(52,211,153,0.10)'
-              : 'rgba(244,114,182,0.10)';
+              ? 'rgba(94, 234, 212,0.10)'
+              : 'rgba(251, 113, 133, 0.10)';
           const badgeBorder = cancelled
             ? 'rgba(148,163,184,0.3)'
             : isYes
-              ? 'rgba(52,211,153,0.3)'
-              : 'rgba(244,114,182,0.3)';
+              ? 'rgba(94, 234, 212,0.3)'
+              : 'rgba(251, 113, 133, 0.3)';
 
           return (
             <Link
@@ -106,9 +106,9 @@ export default function RecentlyResolved({ markets }: { markets: Market[] }) {
               </span>
               <span
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontSize: 13,
-                  color: '#F2F0EA',
+                  color: 'var(--text)',
                   flex: 1,
                   minWidth: 0,
                   overflow: 'hidden',

@@ -4,9 +4,9 @@ import Image from 'next/image';
 import type { Product } from '@/lib/dealers';
 
 const DIFFICULTY_TAG: Record<'beginner' | 'intermediate' | 'advanced', { bg: string; color: string; abbr: string }> = {
-  beginner:     { bg: 'rgba(52,211,153,0.12)',  color: '#34d399', abbr: 'Beg' },
-  intermediate: { bg: 'rgba(255,209,102,0.12)', color: '#FFD166', abbr: 'Mid' },
-  advanced:     { bg: 'rgba(132,101,203,0.12)', color: '#8465CB', abbr: 'Adv' },
+  beginner:     { bg: 'rgba(94, 234, 212,0.12)',  color: 'var(--seafoam)', abbr: 'Beg' },
+  intermediate: { bg: 'rgba(232, 130, 107,0.12)', color: 'var(--terracotta)', abbr: 'Mid' },
+  advanced:     { bg: 'rgba(232, 130, 107,0.12)', color: 'var(--terracotta)', abbr: 'Adv' },
 };
 
 const formatPrice = (p: Product): string => {
@@ -31,7 +31,7 @@ export default function ProductCard({ product, dealerName }: Props) {
         background: 'rgba(255,255,255,0.015)',
         border: '0.5px solid rgba(232,230,221,0.07)',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,209,102,0.25)'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232, 130, 107,0.25)'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,230,221,0.07)'; }}
     >
       {tag && (
@@ -46,7 +46,7 @@ export default function ProductCard({ product, dealerName }: Props) {
         className="relative w-full aspect-[1.3] rounded-md mb-2 overflow-hidden"
         style={{
           background:
-            'radial-gradient(ellipse at 50% 50%, rgba(255,209,102,0.05) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+            'radial-gradient(ellipse at 50% 50%, rgba(232, 130, 107,0.05) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
         }}
       >
         {product.image && (
@@ -67,8 +67,8 @@ export default function ProductCard({ product, dealerName }: Props) {
         {dealerName || product.category}
       </p>
       <div className="flex justify-between items-center pt-[6px]" style={{ borderTop: '0.5px solid rgba(232,230,221,0.06)' }}>
-        <span className="text-[11px] font-semibold text-[#FFD166]">{formatPrice(product)}</span>
-        <span className="text-[8px] tracking-[0.14em] uppercase text-[rgba(255,209,102,0.5)]">
+        <span className="text-[11px] font-semibold text-[var(--terracotta)]">{formatPrice(product)}</span>
+        <span className="text-[8px] tracking-[0.14em] uppercase text-[rgba(232, 130, 107,0.5)]">
           ✦ {product.starsPrice.toLocaleString()}
         </span>
       </div>

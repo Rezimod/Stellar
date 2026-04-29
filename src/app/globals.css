@@ -1,90 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  /* Backgrounds — tinted night-sky indigo, never pure black */
-  --bg-void: oklch(0.14 0.008 260);
-  --bg-cosmos: oklch(0.17 0.010 260);
-  --bg-deep: oklch(0.11 0.008 260);
-  --bg-base: oklch(0.14 0.008 260);
-  --bg-surface: oklch(0.17 0.010 260);
-  --bg-card: rgba(255, 255, 255, 0.02);
-  --bg-card-hover: rgba(255, 255, 255, 0.04);
-  --bg-elevated: rgba(255, 255, 255, 0.05);
+  /* === Unified token system === */
+  --canvas: #2C3E5C;
+  --terracotta: #E8826B;
+  --seafoam: #5EEAD4;
+  --negative: #FB7185;
+  --text: #F5F1E8;
+  --text-muted: #A8B4C8;
+  --border: rgba(255, 255, 255, 0.10);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
+
+  /* Backgrounds — all map to single canvas */
+  --bg-void: var(--canvas);
+  --bg-cosmos: var(--canvas);
+  --bg-deep: var(--canvas);
+  --bg-base: var(--canvas);
+  --bg-surface: var(--surface);
+  --bg-card: var(--surface);
+  --bg-card-hover: var(--surface-hover);
+  --bg-elevated: var(--surface-hover);
 
   /* Borders */
-  --border-glass: rgba(99, 102, 241, 0.08);
-  --border-glow: rgba(124, 58, 237, 0.3);
-  --border-subtle: rgba(255, 255, 255, 0.03);
-  --border-default: rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(255, 255, 255, 0.10);
+  --border-glass: var(--border);
+  --border-glow: var(--border);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: var(--border);
+  --border-strong: var(--border);
 
   /* Text */
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-dim: #4a5568;
-  --text-muted: rgba(255, 255, 255, 0.35);
+  --text-primary: var(--text);
+  --text-secondary: var(--text-muted);
+  --text-dim: var(--text-muted);
   --text-faint: rgba(255, 255, 255, 0.18);
 
-  /* PRIMARY ACCENT — indigo/violet */
-  --accent: #818cf8;
-  --accent-dim: rgba(99, 102, 241, 0.10);
-  --accent-glow: rgba(99, 102, 241, 0.20);
-  --accent-border: rgba(99, 102, 241, 0.25);
+  /* PRIMARY ACCENT — terracotta */
+  --accent: var(--terracotta);
+  --accent-dim: rgba(232, 130, 107, 0.10);
+  --accent-glow: rgba(232, 130, 107, 0.20);
+  --accent-border: rgba(232, 130, 107, 0.25);
 
   /* Legacy accent aliases (kept for backward compat) */
-  --accent-cyan: #818cf8;
-  --accent-cyan-dim: rgba(99, 102, 241, 0.10);
-  --accent-teal: #818cf8;
-  --accent-teal-dim: rgba(99, 102, 241, 0.10);
-  --accent-teal-glow: rgba(99, 102, 241, 0.20);
-  --accent-emerald: #34D399;
-  --accent-purple: #a855f7;
-  --accent-amber: #F59E0B;
-  --accent-red: #EF4444;
+  --accent-cyan: var(--seafoam);
+  --accent-cyan-dim: rgba(94, 234, 212, 0.10);
+  --accent-teal: var(--seafoam);
+  --accent-teal-dim: rgba(94, 234, 212, 0.10);
+  --accent-teal-glow: rgba(94, 234, 212, 0.20);
+  --accent-emerald: var(--seafoam);
+  --accent-purple: var(--terracotta);
+  --accent-amber: var(--terracotta);
+  --accent-red: var(--negative);
 
-  /* Stars token — gold ONLY for ✦ Stars numbers */
-  --stars: #FFD166;
-  --stars-dim: rgba(255, 209, 102, 0.12);
-  --stars-border: rgba(255, 209, 102, 0.20);
-  --accent-gold: #FFD166;
-  --accent-gold-light: #FFE08A;
-  --accent-gold-dim: rgba(255, 209, 102, 0.12);
+  /* Stars token — terracotta */
+  --stars: var(--terracotta);
+  --stars-dim: rgba(232, 130, 107, 0.12);
+  --stars-border: rgba(232, 130, 107, 0.20);
+  --accent-gold: var(--terracotta);
+  --accent-gold-light: var(--terracotta);
+  --accent-gold-dim: rgba(232, 130, 107, 0.12);
 
   /* Status colors — functional only */
-  --success: #34D399;
-  --success-dim: rgba(52, 211, 153, 0.12);
-  --warning: #FBBF24;
-  --warning-dim: rgba(251, 191, 36, 0.12);
-  --error: #F87171;
-  --error-dim: rgba(248, 113, 113, 0.12);
+  --success: var(--seafoam);
+  --success-dim: rgba(94, 234, 212, 0.12);
+  --warning: var(--terracotta);
+  --warning-dim: rgba(232, 130, 107, 0.12);
+  --error: var(--negative);
+  --error-dim: rgba(251, 113, 133, 0.12);
 
-  /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --gradient-stars: linear-gradient(135deg, #FFD166 0%, #F59E0B 100%);
-  --gradient-score: linear-gradient(135deg, #34D399 0%, #818cf8 100%);
-  --gradient-gold: linear-gradient(135deg, #FFD166 0%, #F59E0B 100%);
+  /* Gradients — flattened to solid terracotta */
+  --gradient-accent: var(--terracotta);
+  --gradient-stars: var(--terracotta);
+  --gradient-score: var(--seafoam);
+  --gradient-gold: var(--terracotta);
   --gradient-card: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
-  --gradient-rank-observer: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-  --gradient-rank-pathfinder: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
-  --gradient-rank-celestial: linear-gradient(135deg, #FFD166 0%, #F59E0B 100%);
+  --gradient-rank-observer: var(--terracotta);
+  --gradient-rank-pathfinder: var(--terracotta);
+  --gradient-rank-celestial: var(--terracotta);
 
   /* Stellar design tokens — observatory palette */
-  --stellar-void: #0a0a0a;
-  --stellar-night: #0f0f0f;
-  --stellar-surface: rgba(255, 255, 255, 0.02);
-  --stellar-border: rgba(255, 255, 255, 0.05);
-  --stellar-border-hover: rgba(99, 102, 241, 0.20);
-  --stellar-teal: #818cf8;
-  --stellar-teal-glow: rgba(99, 102, 241, 0.15);
-  --stellar-brass: #F4EDE0;
-  --stellar-sol-purple: rgba(99, 102, 241, 0.08);
-  --stellar-sol-green: rgba(20, 241, 149, 0.06);
-  --stellar-gradient-sol: linear-gradient(135deg, rgba(99, 102, 241, 0.04) 0%, rgba(124, 58, 237, 0.06) 50%, rgba(168, 85, 247, 0.03) 100%);
+  --stellar-void: var(--canvas);
+  --stellar-night: var(--canvas);
+  --stellar-surface: var(--surface);
+  --stellar-border: var(--border);
+  --stellar-border-hover: rgba(232, 130, 107, 0.20);
+  --stellar-teal: var(--seafoam);
+  --stellar-teal-glow: rgba(94, 234, 212, 0.15);
+  --stellar-brass: var(--text);
+  --stellar-sol-purple: rgba(232, 130, 107, 0.08);
+  --stellar-sol-green: rgba(94, 234, 212, 0.06);
+  --stellar-gradient-sol: linear-gradient(135deg, rgba(232, 130, 107, 0.04) 0%, rgba(232, 130, 107, 0.06) 50%, rgba(232, 130, 107, 0.03) 100%);
 
   /* Shadows — globals-only. Card / hover / teal / gold live in design-tokens.css */
   --shadow-elevated: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
-  --shadow-glow-accent: 0 0 20px rgba(99,102,241,0.25);
-  --shadow-glow-stars: 0 0 20px rgba(255,209,102,0.20);
+  --shadow-glow-accent: 0 0 20px rgba(232, 130, 107, 0.25);
+  --shadow-glow-stars: 0 0 20px rgba(232, 130, 107, 0.20);
 
   /* Radii */
   --radius-sm: 8px;
@@ -177,36 +187,48 @@
 }
 
 @theme inline {
-  --color-background: var(--bg-void);
-  --color-foreground: var(--text-primary);
-  --color-void: #0a0a0a;
-  --color-cosmos: #0f0f0f;
-  --color-brass: #F4EDE0;
-  --color-cyan: #818cf8;
-  --color-purple: #a855f7;
-  --color-solana-purple: #9945FF;
-  --color-solana-green: #14F195;
-  --color-surface: #0f0f0f;
-  --color-card: rgba(255, 255, 255, 0.02);
-  /* Stellar design tokens for Tailwind */
-  --color-stellar-bg: #050505;
-  --color-stellar-base: #0a0a0a;
-  --color-stellar-surface: #0f0f0f;
-  --color-stellar-card: rgba(255, 255, 255, 0.02);
-  --color-stellar-card-hover: rgba(255, 255, 255, 0.04);
-  --color-stellar-elevated: rgba(255, 255, 255, 0.05);
-  --color-accent: #818cf8;
-  --color-accent-dim: rgba(99, 102, 241, 0.10);
-  --color-accent-glow: rgba(99, 102, 241, 0.20);
-  --color-accent-border: rgba(99, 102, 241, 0.25);
-  --color-stars: #FFD166;
-  --color-stars-dim: rgba(255, 209, 102, 0.12);
-  --color-success: #34D399;
-  --color-warning: #FBBF24;
-  --color-error: #F87171;
-  --font-display:  var(--font-display, 'Public Sans', system-ui, sans-serif);
-  --font-body:     var(--font-display, 'Public Sans', system-ui, sans-serif);
-  --font-serif:    var(--font-serif, 'Source Serif 4', Georgia, serif);
+  --color-background: var(--canvas);
+  --color-foreground: var(--text);
+
+  /* Unified palette — Tailwind utilities: bg-canvas / text-terracotta / etc. */
+  --color-canvas: var(--canvas);
+  --color-terracotta: var(--terracotta);
+  --color-seafoam: var(--seafoam);
+  --color-negative: var(--negative);
+  --color-text-primary: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+
+  /* Legacy names — all map onto new palette */
+  --color-void: var(--canvas);
+  --color-cosmos: var(--canvas);
+  --color-brass: var(--text);
+  --color-cyan: var(--seafoam);
+  --color-purple: var(--terracotta);
+  --color-solana-purple: var(--terracotta);
+  --color-solana-green: var(--seafoam);
+  --color-card: var(--surface);
+  --color-stellar-bg: var(--canvas);
+  --color-stellar-base: var(--canvas);
+  --color-stellar-surface: var(--surface);
+  --color-stellar-card: var(--surface);
+  --color-stellar-card-hover: var(--surface-hover);
+  --color-stellar-elevated: var(--surface-hover);
+  --color-accent: var(--terracotta);
+  --color-accent-dim: rgba(232, 130, 107, 0.10);
+  --color-accent-glow: rgba(232, 130, 107, 0.20);
+  --color-accent-border: rgba(232, 130, 107, 0.25);
+  --color-stars: var(--terracotta);
+  --color-stars-dim: rgba(232, 130, 107, 0.12);
+  --color-success: var(--seafoam);
+  --color-warning: var(--terracotta);
+  --color-error: var(--negative);
+
+  /* Fonts — Fraunces display, Inter body, JetBrains Mono */
+  --font-display:  var(--font-display, 'Fraunces', Georgia, serif);
+  --font-body:     var(--font-body, 'Inter', system-ui, -apple-system, sans-serif);
+  --font-serif:    var(--font-display, 'Fraunces', Georgia, serif);
   --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }
@@ -224,11 +246,11 @@ a, button, input, select, textarea,
   transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s, color 0.2s;
 }
 
-html { background: var(--bg-void); scroll-behavior: smooth; transition: background 0.3s; }
+html { background: var(--canvas); scroll-behavior: smooth; transition: background 0.3s; }
 
 body {
-  background: var(--bg-void);
-  color: var(--text-primary);
+  background: var(--canvas);
+  color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
@@ -273,19 +295,24 @@ body::after {
   height: 100%;
   z-index: -1;
   background:
-    radial-gradient(ellipse 800px 600px at -10% 80%, rgba(99, 102, 241, 0.018) 0%, transparent 70%),
-    radial-gradient(ellipse 700px 700px at 110% 10%, rgba(124, 58, 237, 0.015) 0%, transparent 70%),
-    radial-gradient(ellipse 500px 400px at 50% 50%, rgba(168, 85, 247, 0.008) 0%, transparent 70%);
+    radial-gradient(ellipse 800px 600px at -10% 80%, rgba(232, 130, 107, 0.020) 0%, transparent 70%),
+    radial-gradient(ellipse 700px 700px at 110% 10%, rgba(94, 234, 212, 0.015) 0%, transparent 70%);
   pointer-events: none;
 }
 
-h1, h2, h3, h4 {
+h1, h2, .display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-code, pre, .mono {
+h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+code, pre, .mono, [class*="font-mono"] {
   font-family: var(--font-mono);
 }
 
@@ -297,7 +324,7 @@ code, pre, .mono {
 /* Typography utilities */
 .font-display  { font-family: var(--font-display); }
 .font-body     { font-family: var(--font-body); }
-.font-serif    { font-family: var(--font-serif); }
+.font-serif    { font-family: var(--font-display); }
 .font-georgian { font-family: var(--font-georgian); }
 
 /* Card base */
@@ -338,8 +365,8 @@ code, pre, .mono {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(99, 102, 241, 0.20);
+  background: var(--surface-hover);
+  border-color: rgba(232, 130, 107, 0.20);
 }
 @media (min-width: 640px) {
   .glass-card:hover {
@@ -352,21 +379,21 @@ code, pre, .mono {
 @media (min-width: 640px) {
   .product-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(124, 58, 237, 0.35);
+    border-color: rgba(232, 130, 107, 0.35);
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
   }
 }
 
 .glass-card:active {
-  background: rgba(20, 40, 75, 0.7);
-  border-color: rgba(56, 240, 255, 0.25);
+  background: var(--surface-hover);
+  border-color: rgba(232, 130, 107, 0.25);
   transform: scale(0.985);
   transition-duration: 0.1s;
 }
 
 /* Glass nav */
 .glass-nav {
-  background: rgba(10, 10, 10, 0.80);
+  background: rgba(44, 62, 92, 0.80);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -377,10 +404,10 @@ code, pre, .mono {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--gradient-accent);
-  color: #ffffff;
-  font-family: var(--font-display);
-  font-weight: 700;
+  background: var(--terracotta);
+  color: var(--canvas);
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 14px;
   border: none;
   border-radius: var(--radius-md);
@@ -481,9 +508,9 @@ code, pre, .mono {
 }
 
 @keyframes pulse-success {
-  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
-  70% { box-shadow: 0 0 0 12px rgba(52, 211, 153, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(94, 234, 212, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0); }
 }
 
 .animate-slide-up { animation: slide-up 0.4s ease-out forwards; }
@@ -529,7 +556,7 @@ code, pre, .mono {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #818cf8;
+  background: var(--terracotta);
   animation: pulse-dot 1.4s ease-in-out infinite;
 }
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -561,19 +588,19 @@ code, pre, .mono {
 .stagger-in > *:nth-child(7) { animation-delay: 0.35s; }
 
 /* Glow effects */
-.glow-gold { box-shadow: var(--shadow-glow-gold); }
-.glow-teal { box-shadow: var(--shadow-glow-teal); }
-.glow-emerald { box-shadow: 0 0 20px rgba(52,211,153,0.25); }
-.glow-cyan { box-shadow: 0 0 20px rgba(99,102,241,0.30); }
-.glow-purple { box-shadow: 0 0 20px rgba(168,85,247,0.30); }
+.glow-gold { box-shadow: var(--shadow-glow-stars); }
+.glow-teal { box-shadow: 0 0 20px rgba(94, 234, 212, 0.25); }
+.glow-emerald { box-shadow: 0 0 20px rgba(94, 234, 212, 0.25); }
+.glow-cyan { box-shadow: 0 0 20px rgba(94, 234, 212, 0.30); }
+.glow-purple { box-shadow: 0 0 20px rgba(232, 130, 107, 0.30); }
 .glow-accent { box-shadow: var(--shadow-glow-accent); }
 .glow-stars { box-shadow: var(--shadow-glow-stars); }
 
-.btn-glow-cyan:hover:not(:disabled) { box-shadow: 0 0 16px rgba(99, 102, 241, 0.35); }
-.btn-glow-gold:hover:not(:disabled) { box-shadow: 0 0 16px rgba(255, 209, 102, 0.3); }
+.btn-glow-cyan:hover:not(:disabled) { box-shadow: 0 0 16px rgba(232, 130, 107, 0.35); }
+.btn-glow-gold:hover:not(:disabled) { box-shadow: 0 0 16px rgba(232, 130, 107, 0.3); }
 /* Hover-only styles via pointer:fine so iOS touch never triggers hover state */
 @media (hover: hover) and (pointer: fine) {
-  .solana-explorer-link:hover { background: rgba(99,102,241,0.12) !important; }
+  .solana-explorer-link:hover { background: rgba(232, 130, 107, 0.12) !important; }
 }
 
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -658,10 +685,10 @@ input, select, textarea { font-size: 16px !important; }
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(99, 102, 241, 0.18) 20%,
-    rgba(124, 58, 237, 0.35) 45%,
-    rgba(168, 85, 247, 0.35) 55%,
-    rgba(99, 102, 241, 0.18) 80%,
+    rgba(232, 130, 107, 0.18) 20%,
+    rgba(232, 130, 107, 0.35) 45%,
+    rgba(232, 130, 107, 0.35) 55%,
+    rgba(232, 130, 107, 0.18) 80%,
     transparent 100%
   );
 }
@@ -672,8 +699,8 @@ input, select, textarea { font-size: 16px !important; }
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 7px;
-  color: rgba(129, 140, 248, 0.55);
-  background: #0a0a0a;
+  color: rgba(232, 130, 107, 0.55);
+  background: var(--canvas);
   padding: 0 10px;
   letter-spacing: 0;
   line-height: 1;
@@ -682,8 +709,8 @@ input, select, textarea { font-size: 16px !important; }
 /* Elite gradient border wrapper */
 .elite-border {
   background:
-    linear-gradient(#0a0a0a, #0a0a0a) padding-box,
-    linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(255, 209, 102, 0.5), rgba(124, 58, 237, 0.6)) border-box;
+    linear-gradient(var(--canvas), var(--canvas)) padding-box,
+    linear-gradient(135deg, rgba(232, 130, 107, 0.6), rgba(94, 234, 212, 0.5), rgba(232, 130, 107, 0.6)) border-box;
   border: 1px solid transparent;
   border-radius: 14px;
 }
@@ -727,8 +754,8 @@ input, select, textarea { font-size: 16px !important; }
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 5px rgba(99,102,241,0.2); }
-  50%       { box-shadow: 0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(99,102,241,0.15); }
+  0%, 100% { box-shadow: 0 0 5px rgba(232, 130, 107, 0.2); }
+  50%       { box-shadow: 0 0 20px rgba(232, 130, 107, 0.5), 0 0 40px rgba(232, 130, 107, 0.15); }
 }
 @keyframes pulseDot {
   0%, 100% { opacity: 1; transform: scale(1); }
@@ -781,13 +808,13 @@ input, select, textarea { font-size: 16px !important; }
 }
 
 /* --- Selection color --- */
-::selection { background: rgba(99, 102, 241, 0.20); color: #a5b4fc; }
+::selection { background: rgba(232, 130, 107, 0.25); color: var(--text); }
 
 /* ===== Game mechanics animations ===== */
 
 @keyframes starlightFlicker {
-  0%, 100% { opacity: 1;   box-shadow: 0 0 4px rgba(255,209,102,0.5); }
-  50%      { opacity: 0.85; box-shadow: 0 0 10px rgba(255,209,102,0.85), 0 0 18px rgba(255,209,102,0.25); }
+  0%, 100% { opacity: 1;   box-shadow: 0 0 4px rgba(232, 130, 107, 0.5); }
+  50%      { opacity: 0.85; box-shadow: 0 0 10px rgba(232, 130, 107, 0.85), 0 0 18px rgba(232, 130, 107, 0.25); }
 }
 
 @keyframes rarityShimmer {
@@ -858,8 +885,8 @@ input, select, textarea { font-size: 16px !important; }
   right: -10%;
   height: 320px;
   background:
-    radial-gradient(ellipse 60% 100% at 30% 0%, rgba(132,101,203,0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 100% at 80% 0%, rgba(255,209,102,0.04) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 100% at 30% 0%, rgba(232, 130, 107, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 100% at 80% 0%, rgba(232, 130, 107, 0.04) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }

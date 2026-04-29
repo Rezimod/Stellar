@@ -43,8 +43,8 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <PoolRow label="YES pool" value={fmtInt(yes)} color="var(--stl-green)" />
-        <PoolRow label="NO pool" value={fmtInt(no)} color="var(--stl-red)" />
+        <PoolRow label="YES pool" value={fmtInt(yes)} color="var(--terracotta)" />
+        <PoolRow label="NO pool" value={fmtInt(no)} color="var(--negative)" />
         <div
           style={{
             height: 1,
@@ -86,7 +86,7 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
             style={{
               flex: yesPct,
               background:
-                'linear-gradient(90deg, rgba(52,211,153,0.85), rgba(52,211,153,0.65))',
+                'linear-gradient(90deg, rgba(94, 234, 212,0.85), rgba(94, 234, 212,0.65))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -104,7 +104,7 @@ export default function PoolStats({ onChain }: PoolStatsProps) {
             style={{
               flex: noPct,
               background:
-                'linear-gradient(90deg, rgba(244,114,182,0.65), rgba(244,114,182,0.85))',
+                'linear-gradient(90deg, rgba(251, 113, 133, 0.65), rgba(251, 113, 133, 0.85))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

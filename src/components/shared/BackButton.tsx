@@ -9,7 +9,7 @@ export default function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="inline-flex items-center gap-0.5 text-slate-500 hover:text-slate-300 transition-colors text-xs"
+      className="inline-flex items-center gap-0.5 text-text-muted hover:text-text-primary transition-colors text-xs"
       aria-label="Go back"
     >
       <ChevronLeft size={16} />

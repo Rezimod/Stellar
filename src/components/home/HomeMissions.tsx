@@ -27,9 +27,9 @@ function MissionIcon({ icon }: { icon: IconKey }) {
     return (
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
         <circle cx="13" cy="13" r="9" fill="#E5E7EB" />
-        <circle cx="10" cy="11" r="1.1" fill="#9CA3AF" opacity="0.7" />
-        <circle cx="15.5" cy="14.5" r="0.9" fill="#9CA3AF" opacity="0.7" />
-        <circle cx="12" cy="16" r="0.6" fill="#9CA3AF" opacity="0.6" />
+        <circle cx="10" cy="11" r="1.1" fill="var(--text-muted)" opacity="0.7" />
+        <circle cx="15.5" cy="14.5" r="0.9" fill="var(--text-muted)" opacity="0.7" />
+        <circle cx="12" cy="16" r="0.6" fill="var(--text-muted)" opacity="0.6" />
       </svg>
     );
   }
@@ -55,8 +55,8 @@ function MissionIcon({ icon }: { icon: IconKey }) {
   return (
     <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
       <circle cx="13" cy="13" r="9" fill="#4C1D95" opacity="0.55" />
-      <circle cx="13" cy="13" r="6" fill="#7C3AED" opacity="0.6" />
-      <circle cx="13" cy="13" r="3" fill="#C4B5FD" opacity="0.85" />
+      <circle cx="13" cy="13" r="6" fill="var(--terracotta)" opacity="0.6" />
+      <circle cx="13" cy="13" r="3" fill="var(--terracotta)" opacity="0.85" />
       <circle cx="13" cy="13" r="1" fill="#FFF" />
     </svg>
   );

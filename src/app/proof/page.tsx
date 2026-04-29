@@ -33,33 +33,33 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
   const isRealTx = !isPending && mission.method === 'onchain' && !!mission.txId && mission.txId.length >= 40;
 
   return (
-    <div className={`glass-card rounded-xl overflow-hidden flex flex-col ${isPending ? '!border-amber-500/50' : ''}`} style={isPending ? { borderColor: 'rgba(245,158,11,0.5)' } : {}}>
-      <img src={isSafePhoto(mission.photo) ? mission.photo : '/images/placeholder-nft.svg'} alt={mission.name} className="w-full aspect-[4/3] object-cover" style={{ background: '#0a0e1a' }} />
+    <div className={`glass-card rounded-xl overflow-hidden flex flex-col ${isPending ? '!border-terracotta' : ''}`} style={isPending ? { borderColor: 'rgba(232, 130, 107,0.5)' } : {}}>
+      <img src={isSafePhoto(mission.photo) ? mission.photo : '/images/placeholder-nft.svg'} alt={mission.name} className="w-full aspect-[4/3] object-cover" style={{ background: 'var(--canvas)' }} />
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-xl">{mission.emoji}</span>
-          <p className="font-semibold text-white">{mission.name}</p>
+          <p className="font-semibold text-text-primary">{mission.name}</p>
         </div>
-        <p className="text-slate-400 text-xs">{new Date(mission.timestamp).toLocaleString()}</p>
+        <p className="text-text-muted text-xs">{new Date(mission.timestamp).toLocaleString()}</p>
         <div className="flex items-center gap-2">
-          <p className="text-[#FFD166] font-bold">+{displayStars} stars ✦</p>
-          {isPending && <span className="text-amber-400 text-xs flex items-center gap-1" title="Transaction is being confirmed on Solana. This usually takes 15-30 seconds."><Clock size={11} /> Pending</span>}
+          <p className="text-[var(--terracotta)] font-bold">+{displayStars} stars ✦</p>
+          {isPending && <span className="text-terracotta text-xs flex items-center gap-1" title="Transaction is being confirmed on Solana. This usually takes 15-30 seconds."><Clock size={11} /> Pending</span>}
         </div>
         <div className="flex gap-3 text-xs text-[var(--text-secondary)]">
           <span className="flex items-center gap-1"><Cloud size={11} />{mission.sky ? `${mission.sky.cloudCover}%` : '—'}</span>
         </div>
         {isPending ? (
-          <p className="text-amber-400 text-xs italic flex items-center gap-1"><Clock size={11} /> Awaiting connectivity</p>
+          <p className="text-terracotta text-xs italic flex items-center gap-1"><Clock size={11} /> Awaiting connectivity</p>
         ) : (
           <div className="flex items-center gap-2">
             <p className="font-hash text-xs text-[var(--text-dim)] truncate flex-1">
               {mission.txId.slice(0, 8)}...{mission.txId.slice(-8)}
             </p>
             {isRealTx && (
-              <span className="text-[#34d399] text-xs shrink-0 flex items-center gap-1"><CheckCircle2 size={11} /> On-chain</span>
+              <span className="text-[var(--seafoam)] text-xs shrink-0 flex items-center gap-1"><CheckCircle2 size={11} /> On-chain</span>
             )}
             {!isRealTx && !isPending && (
-              <span className="text-amber-400 text-xs shrink-0 flex items-center gap-1"><AlertTriangle size={11} /> Local</span>
+              <span className="text-terracotta text-xs shrink-0 flex items-center gap-1"><AlertTriangle size={11} /> Local</span>
             )}
           </div>
         )}
@@ -72,7 +72,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
                 text: `I observed ${mission.name} and earned +${displayStars} stars on Solana ✦`,
                 url: window.location.href,
               }).catch(() => {})}
-              className="text-xs px-2 py-1.5 border border-[rgba(99,102,241,0.12)] hover:border-[#818cf8] text-slate-400 hover:text-[#818cf8] rounded transition-all flex items-center justify-center gap-1"
+              className="text-xs px-2 py-1.5 border border-[rgba(232, 130, 107,0.12)] hover:border-[var(--terracotta)] text-text-muted hover:text-[var(--terracotta)] rounded transition-all flex items-center justify-center gap-1"
               title="Share observation"
             >
               ↗ Share
@@ -82,7 +82,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               onClick={() => openExplorer(mission)}
               title="View on Solana Explorer"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(99,102,241,0.12)] hover:border-[#818cf8] text-slate-400 hover:text-[#818cf8] btn-glow-cyan rounded transition-all flex items-center justify-center gap-1"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(232, 130, 107,0.12)] hover:border-[var(--terracotta)] text-text-muted hover:text-[var(--terracotta)] btn-glow-cyan rounded transition-all flex items-center justify-center gap-1"
             >
               <ExternalLink size={12} /> Explorer →
             </button>
@@ -90,7 +90,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               disabled
               title="Transaction is being confirmed on Solana"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(99,102,241,0.12)] text-slate-600 opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(232, 130, 107,0.12)] text-text-muted opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
             >
               <ExternalLink size={12} /> Pending
             </button>
@@ -98,7 +98,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               disabled
               title="Observation saved locally"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(99,102,241,0.12)] text-slate-600 opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(232, 130, 107,0.12)] text-text-muted opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
             >
               <ExternalLink size={12} /> Local
             </button>
@@ -106,15 +106,15 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
           {!confirming ? (
             <button
               onClick={() => setConfirming(true)}
-              className="flex-1 text-xs px-2 py-1.5 hover:border-red-500 text-slate-400 hover:text-red-400 rounded transition-all flex items-center justify-center gap-1"
-              style={{ border: '1px solid rgba(99,102,241,0.12)' }}
+              className="flex-1 text-xs px-2 py-1.5 hover:border-negative text-text-muted hover:text-negative rounded transition-all flex items-center justify-center gap-1"
+              style={{ border: '1px solid rgba(232, 130, 107,0.12)' }}
             >
               <Trash2 size={12} /> Delete
             </button>
           ) : (
             <div className="flex-1 flex gap-1">
-              <button onClick={onDelete} className="flex-1 text-xs px-2 py-1.5 bg-red-500/20 border border-red-500 text-red-400 rounded">Confirm</button>
-              <button onClick={() => setConfirming(false)} className="flex-1 text-xs px-2 py-1.5 text-slate-400 rounded" style={{ border: '1px solid rgba(99,102,241,0.12)' }}>Cancel</button>
+              <button onClick={onDelete} className="flex-1 text-xs px-2 py-1.5 bg-negative border border-negative text-negative rounded">Confirm</button>
+              <button onClick={() => setConfirming(false)} className="flex-1 text-xs px-2 py-1.5 text-text-muted rounded" style={{ border: '1px solid rgba(232, 130, 107,0.12)' }}>Cancel</button>
             </div>
           )}
         </div>
@@ -132,14 +132,14 @@ export default function ProofPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20 animate-page-enter text-center">
         <div className="glass-card p-6 sm:p-8 max-w-md mx-auto">
-          <ImageIcon size={32} className="text-[#FFD166] mx-auto mb-4" />
+          <ImageIcon size={32} className="text-[var(--terracotta)] mx-auto mb-4" />
           <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-2" style={{ fontFamily: 'Georgia, serif' }}>
             Observation Gallery
           </h2>
           <p className="text-[var(--text-secondary)] text-sm mb-6">
             Your sky observations minted as on-chain proofs on Solana. Collect them all.
           </p>
-          <Link href="/missions" className="inline-block px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg transition-all duration-200">
+          <Link href="/missions" className="inline-block px-6 py-3 bg-gradient-to-r from-[var(--terracotta)] to-[var(--terracotta)] text-black font-bold rounded-lg transition-all duration-200">
             Start Observing →
           </Link>
         </div>
@@ -158,41 +158,41 @@ export default function ProofPage() {
       <BackButton />
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#FFD166]" style={{ fontFamily: 'Georgia, serif' }}>
+          <h1 className="text-3xl font-bold text-[var(--terracotta)]" style={{ fontFamily: 'Georgia, serif' }}>
             Observation Gallery
           </h1>
-          <p className="text-slate-400 mt-1">{proofs.length} observation{proofs.length !== 1 ? 's' : ''} sealed on Solana</p>
+          <p className="text-text-muted mt-1">{proofs.length} observation{proofs.length !== 1 ? 's' : ''} sealed on Solana</p>
         </div>
         {proofs.length > 0 && (
-          <Link href="/missions" className="text-sm text-[#818cf8] hover:underline">
+          <Link href="/missions" className="text-sm text-[var(--terracotta)] hover:underline">
             + Add more →
           </Link>
         )}
       </div>
 
       {/* Rewards summary */}
-      <div className="glass-card border border-[#FFD166]/20 p-4 mb-6 flex flex-col gap-2">
-        <p className="text-[#FFD166] text-sm font-semibold">
+      <div className="glass-card border border-[var(--terracotta)]/20 p-4 mb-6 flex flex-col gap-2">
+        <p className="text-[var(--terracotta)] text-sm font-semibold">
           Rewards: {unlockedCount}/{rewards.length} unlocked
           {nextReward && (
-            <span className="text-slate-400 font-normal"> · Next: {nextReward.name}</span>
+            <span className="text-text-muted font-normal"> · Next: {nextReward.name}</span>
           )}
         </p>
         {nextReward?.requiredMissions && (
-          <p className="text-slate-500 text-xs">
+          <p className="text-text-muted text-xs">
             Observe {nextReward.requiredMissions.filter(id => !completedIds.includes(id)).join(', ')} to unlock
           </p>
         )}
-        <Link href="/missions" className="text-[#818cf8] text-xs hover:underline">
+        <Link href="/missions" className="text-[var(--terracotta)] text-xs hover:underline">
           View All Rewards →
         </Link>
       </div>
 
       {proofs.length === 0 ? (
-        <div className="text-center py-20 rounded-xl" style={{ border: '1px dashed rgba(99,102,241,0.12)' }}>
-          <Telescope size={36} className="text-[#818cf8]/30 mx-auto mb-4" />
-          <p className="text-slate-400 mb-4">No observations minted yet</p>
-          <Link href="/missions" className="px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#CC9A33] text-black font-bold rounded-lg">
+        <div className="text-center py-20 rounded-xl" style={{ border: '1px dashed rgba(232, 130, 107,0.12)' }}>
+          <Telescope size={36} className="text-[var(--terracotta)]/30 mx-auto mb-4" />
+          <p className="text-text-muted mb-4">No observations minted yet</p>
+          <Link href="/missions" className="px-6 py-3 bg-gradient-to-r from-[var(--terracotta)] to-[var(--terracotta)] text-black font-bold rounded-lg">
             Begin Observation →
           </Link>
         </div>

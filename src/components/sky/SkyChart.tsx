@@ -184,7 +184,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
           top: 6,
           left: '50%',
           transform: 'translateX(-50%)',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 9,
           color: 'rgba(255,255,255,0.35)',
           letterSpacing: '0.2em',
@@ -196,7 +196,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
           bottom: 6,
           left: '50%',
           transform: 'translateX(-50%)',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 9,
           color: 'rgba(255,255,255,0.35)',
           letterSpacing: '0.2em',
@@ -208,7 +208,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
           left: 8,
           top: '50%',
           transform: 'translateY(-50%)',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 9,
           color: 'rgba(255,255,255,0.35)',
           letterSpacing: '0.2em',
@@ -220,7 +220,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
           right: 8,
           top: '50%',
           transform: 'translateY(-50%)',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 9,
           color: 'rgba(255,255,255,0.35)',
           letterSpacing: '0.2em',
@@ -231,7 +231,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
         <div className="w-1.5 h-1.5 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
         <span
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 9,
             color: 'rgba(255,255,255,0.45)',
             letterSpacing: '0.22em',
@@ -243,7 +243,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
       <div className="absolute top-2.5 right-3 flex items-center gap-1.5">
         <span
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 9,
             color: 'rgba(255,255,255,0.45)',
             letterSpacing: '0.22em',
@@ -291,7 +291,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
                     inset: -Math.round(size * 0.6),
                     borderRadius: '50%',
                     background: isPrime
-                      ? 'radial-gradient(circle, rgba(255,209,102,0.28) 0%, rgba(255,209,102,0.06) 40%, transparent 70%)'
+                      ? 'radial-gradient(circle, rgba(232, 130, 107,0.28) 0%, rgba(232, 130, 107,0.06) 40%, transparent 70%)'
                       : 'radial-gradient(circle, rgba(184,212,255,0.14) 0%, rgba(184,212,255,0.04) 40%, transparent 70%)',
                     filter: 'blur(4px)',
                     pointerEvents: 'none',
@@ -320,11 +320,11 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
                     backdropFilter: 'blur(6px)',
                   }}
                 >
-                  <div style={{ fontFamily: 'var(--font-serif)', fontSize: 12, color: '#F2F0EA', fontWeight: 600, lineHeight: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'var(--text)', fontWeight: 600, lineHeight: 1 }}>
                     {mission.name}
                   </div>
                   {magnitude < 50 && (
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginTop: 2 }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginTop: 2 }}>
                       MAG {magnitude > 0 ? '+' : ''}{magnitude.toFixed(1)}
                     </div>
                   )}

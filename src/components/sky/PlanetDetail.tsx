@@ -104,14 +104,14 @@ export default function PlanetDetail({ planet, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 bg-canvas/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
       onClick={handleClose}
     >
       <div
         className={`
           w-full sm:max-w-sm sm:mx-auto sm:rounded-2xl
           bg-[#0F1827]
-          border-t sm:border border-[#818cf8]/10
+          border-t sm:border border-[var(--terracotta)]/10
           transition-transform duration-300
           ${visible ? 'translate-y-0' : 'translate-y-full sm:translate-y-4'}
           rounded-t-2xl sm:rounded-2xl
@@ -123,13 +123,13 @@ export default function PlanetDetail({ planet, onClose }: Props) {
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <div className="flex items-center gap-2.5">
             <span className="text-xl leading-none">{PLANET_EMOJI[planet.key] ?? '✦'}</span>
-            <h2 className="text-white text-lg font-bold" style={{ fontFamily: 'Georgia, serif' }}>
+            <h2 className="text-text-primary text-lg font-bold" style={{ fontFamily: 'Georgia, serif' }}>
               {t(planet.key as Parameters<typeof t>[0])}
             </h2>
           </div>
           <button
             onClick={handleClose}
-            className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+            className="text-text-muted hover:text-text-primary transition-colors p-1"
           >
             <X size={18} />
           </button>
@@ -139,11 +139,11 @@ export default function PlanetDetail({ planet, onClose }: Props) {
         <div className="px-5 pb-4 flex flex-col divide-y divide-white/5">
           {rows.map(row => (
             <div key={row.label} className="flex items-baseline justify-between py-2.5 gap-4">
-              <span className="text-slate-500 text-xs flex-shrink-0">{row.label}</span>
+              <span className="text-text-muted text-xs flex-shrink-0">{row.label}</span>
               <span className={`text-sm text-right ${
                 row.label === t('status')
-                  ? planet.visible ? 'text-[#34d399] font-medium' : 'text-slate-400'
-                  : 'text-slate-200'
+                  ? planet.visible ? 'text-[var(--seafoam)] font-medium' : 'text-text-muted'
+                  : 'text-text-primary'
               }`}>
                 {row.value}
               </span>
@@ -152,9 +152,9 @@ export default function PlanetDetail({ planet, onClose }: Props) {
         </div>
 
         {/* Tip */}
-        <div className="mx-5 mb-5 px-4 py-3 rounded-xl" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}>
-          <p className="text-slate-500 text-[10px] uppercase tracking-wider mb-1">{t('viewingTip')}</p>
-          <p className="text-slate-300 text-xs leading-relaxed">{VIEWING_TIP[planet.key]}</p>
+        <div className="mx-5 mb-5 px-4 py-3 rounded-xl" style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.15)' }}>
+          <p className="text-text-muted text-[10px] uppercase tracking-wider mb-1">{t('viewingTip')}</p>
+          <p className="text-text-primary text-xs leading-relaxed">{VIEWING_TIP[planet.key]}</p>
         </div>
       </div>
     </div>

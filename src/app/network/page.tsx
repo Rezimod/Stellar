@@ -39,7 +39,7 @@ type Stats = {
 };
 
 const NODE_COLOR: Record<NodeType, string> = {
-  passive: '#9CA3AF',
+  passive: 'var(--text-muted)',
   observer: 'var(--stl-teal)',
   advanced: 'var(--stl-gold)',
 };
@@ -109,11 +109,11 @@ export default function NetworkPage() {
   ];
 
   return (
-    <div className="py-4 sm:py-6" style={{ background: '#030612' }}>
+    <div className="py-4 sm:py-6" style={{ background: 'var(--canvas)' }}>
       <style>{`
         @keyframes stl-live-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); }
-          70% { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(94, 234, 212,0.55); }
+          70% { box-shadow: 0 0 0 8px rgba(94, 234, 212,0); }
         }
         .stl-live-dot { animation: stl-live-pulse 2.2s cubic-bezier(0.4,0,0.6,1) infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -352,7 +352,7 @@ export default function NetworkPage() {
               padding: '12px 22px',
               borderRadius: 'var(--stl-r-md)',
               background: 'var(--stl-gold)',
-              color: '#0A0D16',
+              color: 'var(--canvas)',
               textDecoration: 'none',
               fontWeight: 600,
             }}

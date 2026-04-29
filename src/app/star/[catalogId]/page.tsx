@@ -123,7 +123,7 @@ export default async function StarProofPage({
       <div
         style={{
           minHeight: '100vh',
-          background: '#0a0a0a',
+          background: 'var(--canvas)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -134,7 +134,7 @@ export default async function StarProofPage({
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 16 }}>
           Star not found or not yet named.
         </p>
-        <Link href="/" style={{ color: '#818cf8', fontSize: 13, textDecoration: 'none' }}>
+        <Link href="/" style={{ color: 'var(--terracotta)', fontSize: 13, textDecoration: 'none' }}>
           ← Back to Stellar
         </Link>
       </div>
@@ -149,7 +149,7 @@ export default async function StarProofPage({
     <div
       style={{
         minHeight: '100vh',
-        background: '#0a0a0a',
+        background: 'var(--canvas)',
         color: '#fff',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
@@ -257,7 +257,7 @@ export default async function StarProofPage({
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                color: '#818cf8',
+                color: 'var(--terracotta)',
                 fontSize: 12,
                 textDecoration: 'none',
                 display: 'inline-flex',
@@ -296,8 +296,8 @@ export default async function StarProofPage({
             rel="noopener noreferrer"
             style={{
               fontSize: 12,
-              color: '#A855F7',
-              border: '1px solid rgba(168,85,247,0.25)',
+              color: 'var(--terracotta)',
+              border: '1px solid rgba(232, 130, 107,0.25)',
               borderRadius: 8,
               padding: '7px 14px',
               textDecoration: 'none',

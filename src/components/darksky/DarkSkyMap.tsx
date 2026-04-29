@@ -7,9 +7,9 @@ import { LOCATIONS } from '@/lib/darksky-locations';
 function bortleColor(b: number): string {
   if (b <= 2) return 'var(--success)';
   if (b <= 4) return '#86EFAC';
-  if (b <= 6) return '#FCD34D';
-  if (b <= 8) return '#F97316';
-  return '#EF4444';
+  if (b <= 6) return 'var(--terracotta)';
+  if (b <= 8) return 'var(--terracotta)';
+  return 'var(--negative)';
 }
 
 export default function DarkSkyMap() {
@@ -30,7 +30,7 @@ export default function DarkSkyMap() {
           color: rgba(255,255,255,0.5) !important;
         }
         .leaflet-container {
-          background: #070B14 !important;
+          background: var(--canvas) !important;
         }
       `}</style>
       <MapContainer

@@ -131,8 +131,8 @@ export function OrionNebulaIcon({ size = 48, className, animate }: CelestialIcon
           <stop offset="100%" stopColor="#FF6B9D" stopOpacity="0"/>
         </radialGradient>
         <radialGradient id={`op${id}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.65"/>
-          <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0"/>
+          <stop offset="0%" stopColor="var(--terracotta)" stopOpacity="0.65"/>
+          <stop offset="100%" stopColor="var(--terracotta)" stopOpacity="0"/>
         </radialGradient>
         <radialGradient id={`ob${id}`} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.55"/>
@@ -230,13 +230,13 @@ export function CrabNebulaIcon({ size = 48, className, animate }: CelestialIconP
   const id = uid(useId());
   const fils = [
     { d: 'M24,24 L27,9',  c: '#38BDF8', o: 0.65 },
-    { d: 'M24,24 L37,15', c: '#EF4444', o: 0.60 },
-    { d: 'M24,24 L39,27', c: '#F97316', o: 0.55 },
+    { d: 'M24,24 L37,15', c: 'var(--negative)', o: 0.60 },
+    { d: 'M24,24 L39,27', c: 'var(--terracotta)', o: 0.55 },
     { d: 'M24,24 L34,37', c: '#38BDF8', o: 0.60 },
-    { d: 'M24,24 L19,39', c: '#EF4444', o: 0.65 },
-    { d: 'M24,24 L9,34',  c: '#F97316', o: 0.55 },
+    { d: 'M24,24 L19,39', c: 'var(--negative)', o: 0.65 },
+    { d: 'M24,24 L9,34',  c: 'var(--terracotta)', o: 0.55 },
     { d: 'M24,24 L9,19',  c: '#38BDF8', o: 0.60 },
-    { d: 'M24,24 L15,9',  c: '#EF4444', o: 0.50 },
+    { d: 'M24,24 L15,9',  c: 'var(--negative)', o: 0.50 },
   ];
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className}
@@ -287,8 +287,8 @@ export function NightSkyIcon({ size = 48, className }: CelestialIconProps) {
         </radialGradient>
         {/* Solana aurora */}
         <radialGradient id={`naur${id}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor="rgba(20,241,149,0.18)"/>
-          <stop offset="100%" stopColor="rgba(20,241,149,0)"/>
+          <stop offset="0%"   stopColor="rgba(94, 234, 212,0.18)"/>
+          <stop offset="100%" stopColor="rgba(94, 234, 212,0)"/>
         </radialGradient>
         {/* Moon */}
         <radialGradient id={`nmo${id}`} cx="65%" cy="35%" r="60%">
@@ -338,7 +338,7 @@ export function NightSkyIcon({ size = 48, className }: CelestialIconProps) {
       <circle cx="20" cy="34" r="0.9" fill="white" opacity="0.65"/>
       <circle cx="10" cy="27" r="0.7" fill="white" opacity="0.55"/>
       <circle cx="40" cy="22" r="0.8" fill="white" opacity="0.60"/>
-      <circle cx="28" cy="38" r="0.6" fill="rgba(20,241,149,0.9)" opacity="0.75"/>
+      <circle cx="28" cy="38" r="0.6" fill="rgba(94, 234, 212,0.9)" opacity="0.75"/>
 
       {/* Border ring */}
       <circle cx="24" cy="24" r="22" stroke="rgba(153,69,255,0.12)" strokeWidth="1" fill="none"/>
@@ -361,17 +361,17 @@ export function TelescopeIcon({ size = 48, className, animate }: CelestialIconPr
       <defs>
         {/* Solana gradient — purple → teal → green */}
         <linearGradient id={`tg${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#9945FF"/>
-          <stop offset="55%"  stopColor="#818cf8"/>
-          <stop offset="100%" stopColor="#14F195"/>
+          <stop offset="0%"   stopColor="var(--terracotta)"/>
+          <stop offset="55%"  stopColor="var(--terracotta)"/>
+          <stop offset="100%" stopColor="var(--seafoam)"/>
         </linearGradient>
         <linearGradient id={`tb${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%"   stopColor="#18103A"/>
           <stop offset="100%" stopColor="#0C0820"/>
         </linearGradient>
         <linearGradient id={`tl${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#14F195" stopOpacity="0.9"/>
-          <stop offset="100%" stopColor="#9945FF" stopOpacity="0.7"/>
+          <stop offset="0%"   stopColor="var(--seafoam)" stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="var(--terracotta)" stopOpacity="0.7"/>
         </linearGradient>
         <filter id={`tglow${id}`}>
           <feGaussianBlur stdDeviation="1.2" result="blur"/>
@@ -405,9 +405,9 @@ export function TelescopeIcon({ size = 48, className, animate }: CelestialIconPr
       {/* wide outer ring */}
       <circle cx="36" cy="15" r="5.5" fill={`url(#tb${id})`} stroke={`url(#tg${id})`} strokeWidth="1.4"/>
       {/* lens glass inner */}
-      <circle cx="36" cy="15" r="3.8" fill="rgba(153,69,255,0.18)" stroke="rgba(99,102,241,0.5)" strokeWidth="0.8"/>
+      <circle cx="36" cy="15" r="3.8" fill="rgba(153,69,255,0.18)" stroke="rgba(232, 130, 107,0.5)" strokeWidth="0.8"/>
       {/* glass reflex */}
-      <circle cx="36" cy="15" r="2.2" fill="rgba(20,241,149,0.12)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5"/>
+      <circle cx="36" cy="15" r="2.2" fill="rgba(94, 234, 212,0.12)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5"/>
       <circle cx="34.8" cy="13.8" r="0.8" fill="rgba(255,255,255,0.35)"/>
 
       {/* ── Eyepiece / focuser ── */}
@@ -440,12 +440,12 @@ export function StarTokenIcon({ size = 12, className }: { size?: number; classNa
   const id = uid(useId());
   return (
     <svg width={size} height={size} viewBox="0 0 12 12" fill="none" className={className}
-      style={{ display: 'inline-block', verticalAlign: 'middle', filter: 'drop-shadow(0 0 3px rgba(255,209,102,0.6)) drop-shadow(0 0 6px rgba(153,69,255,0.25))' }}>
+      style={{ display: 'inline-block', verticalAlign: 'middle', filter: 'drop-shadow(0 0 3px rgba(232, 130, 107,0.6)) drop-shadow(0 0 6px rgba(153,69,255,0.25))' }}>
       <defs>
         <linearGradient id={`stg${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#FFE08A"/>
+          <stop offset="0%"   stopColor="var(--terracotta)"/>
           <stop offset="60%"  stopColor="var(--stars)"/>
-          <stop offset="100%" stopColor="#CC9A33"/>
+          <stop offset="100%" stopColor="var(--terracotta)"/>
         </linearGradient>
       </defs>
       <path d="M6 0.8L7.15 4.85L11.2 6L7.15 7.15L6 11.2L4.85 7.15L0.8 6L4.85 4.85Z" fill={`url(#stg${id})`}/>
@@ -457,10 +457,10 @@ export function StarTokenIcon({ size = 12, className }: { size?: number; classNa
 export function DifficultyDots({ level }: { level: 1 | 2 | 3 | 4 }) {
   const count = level <= 2 ? level : 3;
   const color =
-    level === 4 ? 'rgba(239,68,68,0.85)'
-    : level === 3 ? 'rgba(245,158,11,0.8)'
-    : 'rgba(99,102,241,0.7)';
-  const glow = level === 4 ? '0 0 4px rgba(239,68,68,0.6)' : 'none';
+    level === 4 ? 'rgba(251, 113, 133,0.85)'
+    : level === 3 ? 'rgba(232, 130, 107,0.8)'
+    : 'rgba(232, 130, 107,0.7)';
+  const glow = level === 4 ? '0 0 4px rgba(251, 113, 133,0.6)' : 'none';
   return (
     <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
       {Array.from({ length: count }).map((_, i) => (

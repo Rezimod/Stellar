@@ -41,16 +41,16 @@ export default function CookieConsent() {
         className="rounded-2xl p-4 sm:p-5 shadow-2xl"
         style={{
           background: '#0F1220',
-          border: '1px solid rgba(124,58,237,0.28)',
+          border: '1px solid rgba(232, 130, 107,0.28)',
         }}
       >
         <p
           className="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2"
-          style={{ color: '#C4B5FD', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
+          style={{ color: 'var(--terracotta)', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
         >
           Cookies
         </p>
-        <p className="text-sm text-slate-200 leading-relaxed">
+        <p className="text-sm text-text-primary leading-relaxed">
           We use cookies to remember your sign-in, your region, and to keep Stellar fast.
           You can accept all or keep only the essentials.
         </p>
@@ -70,7 +70,7 @@ export default function CookieConsent() {
             onClick={() => persist('all')}
             className="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
             style={{
-              background: '#7C3AED',
+              background: 'var(--terracotta)',
               color: '#fff',
             }}
           >

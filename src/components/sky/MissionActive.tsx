@@ -506,34 +506,34 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <button
             onClick={() => setNewRewards([])}
             aria-label="Close"
-            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <X size={14} />
           </button>
-          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center mx-auto">
-            <Award size={22} className="text-[#34d399]" />
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/20 flex items-center justify-center mx-auto">
+            <Award size={22} className="text-[var(--seafoam)]" />
           </div>
-          <h2 className="text-lg sm:text-xl font-bold text-[#34d399]">Reward Unlocked!</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-[var(--seafoam)]">Reward Unlocked!</h2>
           <div className="overflow-y-auto flex flex-col gap-2" style={{ maxHeight: '45vh' }}>
           {newRewards.map(r => (
-            <div key={r.name} className="rounded-xl p-3 text-left flex flex-col gap-1.5" style={{ background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)' }}>
+            <div key={r.name} className="rounded-xl p-3 text-left flex flex-col gap-1.5" style={{ background: 'rgba(94, 234, 212,0.05)', border: '1px solid rgba(94, 234, 212,0.15)' }}>
               <div className="flex items-center gap-3">
                 <RewardIcon emoji={r.icon} />
                 <div>
-                  <p className="font-semibold text-white text-sm">{r.name}</p>
-                  <p className="text-slate-400 text-xs">{r.description}</p>
+                  <p className="font-semibold text-text-primary text-sm">{r.name}</p>
+                  <p className="text-text-muted text-xs">{r.description}</p>
                 </div>
               </div>
               {r.code && (
                 <div className="mt-1">
                   <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wider mb-1">Your Code</p>
                   <div className="flex items-center gap-2">
-                    <code className="bg-[#070B14] border border-[#FFD166]/25 px-3 py-2 rounded-lg text-sm text-[#FFD166] font-mono flex-1 tracking-wide">
+                    <code className="bg-[var(--canvas)] border border-[var(--terracotta)]/25 px-3 py-2 rounded-lg text-sm text-[var(--terracotta)] font-mono flex-1 tracking-wide">
                       {r.code}
                     </code>
-                    <button onClick={() => copyCode(r.code!)} className="p-2 border border-[rgba(99,102,241,0.12)] hover:border-[#818cf8] rounded-lg text-slate-400 hover:text-[#818cf8] transition-all flex-shrink-0">
-                      {copiedCode === r.code ? <Check size={14} className="text-[#34d399]" /> : <Copy size={14} />}
+                    <button onClick={() => copyCode(r.code!)} className="p-2 border border-[rgba(232, 130, 107,0.12)] hover:border-[var(--terracotta)] rounded-lg text-text-muted hover:text-[var(--terracotta)] transition-all flex-shrink-0">
+                      {copiedCode === r.code ? <Check size={14} className="text-[var(--seafoam)]" /> : <Copy size={14} />}
                     </button>
                   </div>
                 </div>
@@ -543,11 +543,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           </div>
           <div className="flex gap-2 sm:gap-3">
             <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer"
-              className="flex-1 text-center text-xs py-2.5 px-3 border border-[#FFD166]/30 text-[#FFD166] rounded-lg hover:bg-[#FFD166]/10 transition-all">
+              className="flex-1 text-center text-xs py-2.5 px-3 border border-[var(--terracotta)]/30 text-[var(--terracotta)] rounded-lg hover:bg-[var(--terracotta)]/10 transition-all">
               Visit astroman.ge →
             </a>
             <button onClick={() => setNewRewards([])}
-              className="flex-1 text-xs py-2.5 px-3 bg-[#34d399]/10 border border-[#34d399]/30 text-[#34d399] rounded-lg hover:bg-[#34d399]/20 transition-all">
+              className="flex-1 text-xs py-2.5 px-3 bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/30 text-[var(--seafoam)] rounded-lg hover:bg-[var(--seafoam)]/20 transition-all">
               Continue
             </button>
           </div>
@@ -563,7 +563,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     const ogImageUrl = skyScore
       ? buildShareImageUrl({ target: mission.name, score: skyScore.score, grade: skyScore.grade, stars: starsEarned, date: new Date().toISOString().slice(0, 10), emoji: skyScore.emoji })
       : undefined;
-    const confettiColors = ['var(--accent)', 'var(--stars)', 'var(--success)', '#A855F7', '#F87171'];
+    const confettiColors = ['var(--accent)', 'var(--stars)', 'var(--success)', 'var(--terracotta)', 'var(--negative)'];
 
     // Photo to display: actual captured photo, or local astronomy image fallback
     const NASA_FALLBACKS: Record<string, string> = {
@@ -585,7 +585,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         id="mission-done-overlay"
         className="fixed inset-0 z-[58] overflow-hidden flex flex-col"
         style={{
-          background: 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.07) 0%, transparent 55%), var(--bg-base)',
+          background: 'radial-gradient(ellipse at 50% -10%, rgba(232, 130, 107,0.07) 0%, transparent 55%), var(--bg-base)',
           height: '100dvh',
         }}
       >
@@ -620,7 +620,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-2 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors z-20"
+            className="absolute top-2 right-4 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors z-20"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <X size={14} />
@@ -630,7 +630,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="flex items-center gap-3 animate-slide-up flex-shrink-0 pr-10">
             <div
               className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
-              style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(99,102,241,0.25)' }}
+              style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(232, 130, 107,0.25)' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M6 12 l4 4 l8-8" stroke="var(--accent)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
@@ -646,7 +646,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                   {mission.name}
                 </span>
                 {isOnChain && (
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.1)', color: 'var(--success)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(94, 234, 212,0.1)', color: 'var(--success)', border: '1px solid rgba(94, 234, 212,0.2)' }}>
                     ✦ Solana
                   </span>
                 )}
@@ -665,15 +665,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <div
               className="flex items-center gap-3 px-4 py-2 rounded-xl animate-cosmic-reveal flex-shrink-0"
               style={{
-                background: 'linear-gradient(135deg, rgba(168,85,247,0.95) 0%, rgba(99,102,241,0.95) 100%)',
+                background: 'linear-gradient(135deg, rgba(232, 130, 107,0.95) 0%, rgba(232, 130, 107,0.95) 100%)',
                 border: '1px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 12px 28px rgba(168,85,247,0.35)',
+                boxShadow: '0 12px 28px rgba(232, 130, 107,0.35)',
               }}
             >
               <span style={{ fontSize: 20, filter: 'drop-shadow(0 0 6px white)' }}>✦</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.2em] text-white/80 m-0 uppercase">Cosmic Bonus</p>
-                <p className="text-base font-black text-white m-0 leading-tight">+{cosmicBonus.amount} ✦ <span className="text-[10px] font-normal text-white/85 italic">{cosmicBonus.message}</span></p>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">Cosmic Bonus</p>
+                <p className="text-base font-black text-text-primary m-0 leading-tight">+{cosmicBonus.amount} ✦ <span className="text-[10px] font-normal text-text-primary/85 italic">{cosmicBonus.message}</span></p>
               </div>
             </div>
           )}
@@ -683,15 +683,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <div
               className="flex items-center gap-3 px-4 py-2 rounded-xl animate-cosmic-reveal flex-shrink-0"
               style={{
-                background: 'linear-gradient(135deg, rgba(52,211,153,0.95) 0%, rgba(16,185,129,0.95) 100%)',
+                background: 'linear-gradient(135deg, rgba(94, 234, 212,0.95) 0%, rgba(94, 234, 212,0.95) 100%)',
                 border: '1px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 12px 28px rgba(52,211,153,0.3)',
+                boxShadow: '0 12px 28px rgba(94, 234, 212,0.3)',
               }}
             >
               <span style={{ fontSize: 16 }}>✓</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.2em] text-white/90 m-0 uppercase">Weekly Challenge</p>
-                <p className="text-sm font-bold text-white m-0">+{getActiveChallenge().bonusStars} ✦ Claimed</p>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/90 m-0 uppercase">Weekly Challenge</p>
+                <p className="text-sm font-bold text-text-primary m-0">+{getActiveChallenge().bonusStars} ✦ Claimed</p>
               </div>
             </div>
           )}
@@ -700,16 +700,16 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div
             className="rounded-2xl py-2 px-5 text-center relative overflow-hidden animate-scale-in flex-shrink-0"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,209,102,0.08) 0%, rgba(255,180,50,0.04) 100%)',
-              border: '1px solid rgba(255,209,102,0.3)',
-              boxShadow: '0 0 40px rgba(255,209,102,0.08), inset 0 1px 0 rgba(255,209,102,0.1)',
+              background: 'linear-gradient(135deg, rgba(232, 130, 107,0.08) 0%, rgba(255,180,50,0.04) 100%)',
+              border: '1px solid rgba(232, 130, 107,0.3)',
+              boxShadow: '0 0 40px rgba(232, 130, 107,0.08), inset 0 1px 0 rgba(232, 130, 107,0.1)',
             }}
           >
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(255,209,102,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(232, 130, 107,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
             {mintTier && mintTier.multiplier > 1 && (
               <div
                 className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255,209,102,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
+                style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(232, 130, 107,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
               >
                 <MoonPhase phase={mintTier.phase} size={11} />
                 <span>{mintTier.multiplier}×</span>
@@ -717,15 +717,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
             <p
               className="relative font-black leading-none"
-              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--stars)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255,209,102,0.8), 0 0 48px rgba(255,209,102,0.4)', letterSpacing: '-0.02em' }}
+              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--stars)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(232, 130, 107,0.8), 0 0 48px rgba(232, 130, 107,0.4)', letterSpacing: '-0.02em' }}
             >
               +{starsEarned}
             </p>
-            <p className="relative text-[10px] font-bold tracking-[0.25em] mt-0.5" style={{ color: 'rgba(255,209,102,0.55)' }}>
+            <p className="relative text-[10px] font-bold tracking-[0.25em] mt-0.5" style={{ color: 'rgba(232, 130, 107,0.55)' }}>
               STARS EARNED
             </p>
             {starsEarned >= 100 && (
-              <p className="relative text-[9px] mt-1" style={{ color: 'rgba(255,209,102,0.4)' }}>
+              <p className="relative text-[9px] mt-1" style={{ color: 'rgba(232, 130, 107,0.4)' }}>
                 ≈ {Math.floor(starsEarned / 100)}% off at astroman.ge
               </p>
             )}
@@ -738,13 +738,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div
             className={`relative rounded-2xl overflow-hidden animate-fade-in lg:h-full ${mintRarity?.rarity === 'Celestial' ? 'animate-rarity-pulse' : ''}`}
             style={{
-              border: `2px solid ${mintRarity?.color ?? 'rgba(99,102,241,0.15)'}`,
+              border: `2px solid ${mintRarity?.color ?? 'rgba(232, 130, 107,0.15)'}`,
               boxShadow: mintRarity?.rarity === 'Celestial'
                 ? `0 0 32px ${mintRarity.color}55`
                 : mintRarity?.rarity === 'Astral'
                   ? `0 0 24px ${mintRarity.color}40`
-                  : '0 0 20px rgba(99,102,241,0.08)',
-              background: '#0a0e1a',
+                  : '0 0 20px rgba(232, 130, 107,0.08)',
+              background: 'var(--canvas)',
               minHeight: 220,
             }}
           >
@@ -781,7 +781,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-3 left-3 flex items-center gap-1 text-[11px]"
-                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '4px 9px', backdropFilter: 'blur(6px)', border: '1px solid rgba(99,102,241,0.25)' }}
+                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '4px 9px', backdropFilter: 'blur(6px)', border: '1px solid rgba(232, 130, 107,0.25)' }}
               >
                 View on Solana <ExternalLink size={10} />
               </a>
@@ -796,7 +796,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="animate-fade-in">
             <button
               onClick={() => window.open(buildTwitterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, grade: skyScore?.grade ?? 'Good', stars: starsEarned, appUrl, ogImageUrl }), '_blank')}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-white"
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-text-primary"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
               <span style={{ fontSize: 13 }}>𝕏</span> Share
@@ -874,9 +874,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         className="flex-1 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5"
                         style={{
                           background: !starName.trim() || starClaiming
-                            ? 'rgba(255,209,102,0.15)'
-                            : 'rgba(255,209,102,0.2)',
-                          border: '1px solid rgba(255,209,102,0.35)',
+                            ? 'rgba(232, 130, 107,0.15)'
+                            : 'rgba(232, 130, 107,0.2)',
+                          border: '1px solid rgba(232, 130, 107,0.35)',
                           color: 'var(--stars)',
                           opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                           cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
@@ -885,7 +885,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         {starClaiming && (
                           <div
                             className="w-3 h-3 rounded-full border-2 animate-spin"
-                            style={{ borderColor: 'rgba(255,209,102,0.4)', borderTopColor: 'var(--stars)' }}
+                            style={{ borderColor: 'rgba(232, 130, 107,0.4)', borderTopColor: 'var(--stars)' }}
                           />
                         )}
                         Inscribe
@@ -903,7 +903,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                       </button>
                     </div>
                     {starError && (
-                      <p className="text-xs mt-2" style={{ color: '#FBBF24' }}>{starError}</p>
+                      <p className="text-xs mt-2" style={{ color: 'var(--terracotta)' }}>{starError}</p>
                     )}
                   </div>
                 )
@@ -920,7 +920,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                     href={starClaimed.proofUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#818cf8', fontSize: 12, textDecoration: 'none' }}
+                    style={{ color: 'var(--terracotta)', fontSize: 12, textDecoration: 'none' }}
                   >
                     View proof page →
                   </a>
@@ -937,34 +937,34 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
   if (step === 'gallery-saved') {
     return (
-      <div className="fixed inset-0 z-[58] bg-[#070B14] overflow-hidden flex flex-col">
+      <div className="fixed inset-0 z-[58] bg-[var(--canvas)] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
               <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
             </div>
-            <p className="text-white text-sm font-semibold">{mission.name}</p>
+            <p className="text-text-primary text-sm font-semibold">{mission.name}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
             <X size={14} />
           </button>
         </div>
         <div className="flex flex-col justify-between flex-1 min-h-0 px-6 py-5 max-w-sm mx-auto w-full text-center gap-4">
           <div className="flex flex-col items-center gap-3">
             {photo && (
-              <div className="w-full rounded-xl overflow-hidden bg-black" style={{ maxHeight: '30vh', aspectRatio: '1/1', objectFit: 'cover', borderRadius: 12 }}>
+              <div className="w-full rounded-xl overflow-hidden bg-canvas" style={{ maxHeight: '30vh', aspectRatio: '1/1', objectFit: 'cover', borderRadius: 12 }}>
                 <img src={photo} alt="Uploaded observation" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
               </div>
             )}
             <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)' }}>
-              <Camera size={20} className="text-slate-400" />
+              <Camera size={20} className="text-text-muted" />
             </div>
             <div>
-              <h3 className="text-white font-semibold text-base mb-1">Photo Saved</h3>
-              <p className="text-slate-400 text-sm leading-snug">
+              <h3 className="text-text-primary font-semibold text-base mb-1">Photo Saved</h3>
+              <p className="text-text-muted text-sm leading-snug">
                 {photoVerification?.reason ?? "Your photo didn't pass AI verification."}
               </p>
-              <p className="text-slate-600 text-xs mt-1.5">No Stars earned · Not minted as NFT</p>
+              <p className="text-text-muted text-xs mt-1.5">No Stars earned · Not minted as NFT</p>
             </div>
           </div>
           <div className="flex gap-3 w-full flex-shrink-0">
@@ -978,7 +978,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <button
               onClick={onClose}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}
+              style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.2)', color: 'var(--terracotta)' }}
             >
               Done
             </button>
@@ -995,7 +995,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     >
     <div
       ref={containerRef}
-      className="relative w-full max-w-2xl h-full bg-[#070B14] overflow-hidden flex flex-col"
+      className="relative w-full max-w-2xl h-full bg-[var(--canvas)] overflow-hidden flex flex-col"
       style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
     >
 
@@ -1022,7 +1022,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                       className="flex-1 h-px mx-1"
                       style={{
                         width: 24,
-                        background: i < current ? 'rgba(99,102,241,0.5)' : 'var(--border-subtle)',
+                        background: i < current ? 'rgba(232, 130, 107,0.5)' : 'var(--border-subtle)',
                       }}
                     />
                   )}
@@ -1040,7 +1040,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       <button
         onClick={onClose}
         aria-label="Close"
-        className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+        className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
       >
         <X size={14} />
@@ -1057,8 +1057,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: [
-                  'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(255,209,102,0.10) 0%, transparent 60%)',
-                  'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(132,101,203,0.10) 0%, transparent 65%)',
+                  'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(232, 130, 107,0.10) 0%, transparent 60%)',
+                  'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(232, 130, 107,0.10) 0%, transparent 65%)',
                   'radial-gradient(ellipse 320px 240px at 80% 75%, rgba(56,155,240,0.08) 0%, transparent 65%)',
                 ].join(', '),
               }}
@@ -1079,7 +1079,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 aria-hidden
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, rgba(255,209,102,0.28) 0%, rgba(255,209,102,0.06) 45%, transparent 70%)',
+                  background: 'radial-gradient(circle, rgba(232, 130, 107,0.28) 0%, rgba(232, 130, 107,0.06) 45%, transparent 70%)',
                   filter: 'blur(18px)',
                   transform: 'scale(1.55)',
                 }}
@@ -1091,7 +1091,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 alt={mission.name}
                 className="relative w-full h-full rounded-full object-cover stl-chart-in"
                 style={{
-                  boxShadow: '0 0 60px rgba(255,209,102,0.22), inset 0 0 0 1px rgba(255,209,102,0.15)',
+                  boxShadow: '0 0 60px rgba(232, 130, 107,0.22), inset 0 0 0 1px rgba(232, 130, 107,0.15)',
                 }}
               />
             </div>
@@ -1099,7 +1099,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <h1
               className="stl-chart-in flex-shrink-0"
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontWeight: 500,
                 fontSize: 'clamp(28px, 7vw, 40px)',
                 lineHeight: 0.95,
@@ -1114,7 +1114,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <p
               className="stl-chart-in flex-shrink-0"
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontStyle: 'italic',
                 fontWeight: 400,
                 fontSize: 'clamp(12px, 3vw, 14px)',
@@ -1153,7 +1153,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             </Button>
 
             {mission.demo && (
-              <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: '#F59E0B' }}>
+              <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
                 Demo mode — upload any photo; mints a real NFT on Solana
               </p>
             )}
@@ -1197,9 +1197,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             {photoVerification && (
               <div className="mt-2 text-center">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  photoVerification.confidence === 'high' ? 'bg-green-500/20 text-green-400' :
-                  photoVerification.confidence === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                  'bg-slate-500/20 text-slate-400'
+                  photoVerification.confidence === 'high' ? 'bg-seafoam text-seafoam' :
+                  photoVerification.confidence === 'medium' ? 'bg-terracotta text-terracotta' :
+                  'bg-[var(--surface)] text-text-muted'
                 }`}>
                   AI: {photoVerification.identifiedObject} · {photoVerification.confidence} confidence
                 </span>
@@ -1207,9 +1207,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
             {mintError && (
               <div className="mt-2 text-center">
-                <p className="text-xs text-amber-400">{mintError}</p>
+                <p className="text-xs text-terracotta">{mintError}</p>
                 {mintError.includes('cloudy') && (
-                  <Link href="/sky" className="text-xs text-[#818cf8] underline mt-1 inline-block">
+                  <Link href="/sky" className="text-xs text-[var(--terracotta)] underline mt-1 inline-block">
                     Check sky forecast →
                   </Link>
                 )}

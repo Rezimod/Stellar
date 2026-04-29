@@ -48,9 +48,9 @@ export default function LiveStatsBar() {
       <style jsx>{`
         .live-stats-bar {
           width: 100%;
-          background: rgba(52,211,153,0.04);
-          border-top: 1px solid rgba(52,211,153,0.08);
-          border-bottom: 1px solid rgba(52,211,153,0.08);
+          background: rgba(94, 234, 212,0.04);
+          border-top: 1px solid rgba(94, 234, 212,0.08);
+          border-bottom: 1px solid rgba(94, 234, 212,0.08);
           padding: 10px 16px;
         }
         .live-stats-inner {
@@ -94,7 +94,7 @@ export default function LiveStatsBar() {
           gap: 6px;
         }
         .live-stats-live-label {
-          color: rgba(52,211,153,0.7);
+          color: rgba(94, 234, 212,0.7);
           font-size: 11px;
           font-weight: 600;
           letter-spacing: 0.1em;

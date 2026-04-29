@@ -17,8 +17,8 @@ interface GuideCard {
 const LEVEL_CONFIG: { id: Level; label: string; badge: string; color: string; subtitle: string }[] = [
   { id: 'beginner',     label: 'Beginner',     badge: '🌱', color: 'var(--success)', subtitle: 'First Light' },
   { id: 'intermediate', label: 'Intermediate', badge: '🔭', color: 'var(--stars)', subtitle: 'Going Deeper' },
-  { id: 'advanced',     label: 'Advanced',     badge: '⚡', color: '#818cf8', subtitle: 'Serious Observer' },
-  { id: 'pro',          label: 'Pro',          badge: '🚀', color: '#8B5CF6', subtitle: 'Observatory Level' },
+  { id: 'advanced',     label: 'Advanced',     badge: '⚡', color: 'var(--terracotta)', subtitle: 'Serious Observer' },
+  { id: 'pro',          label: 'Pro',          badge: '🚀', color: 'var(--terracotta)', subtitle: 'Observatory Level' },
 ];
 
 const SCOPE_INTROS: Partial<Record<Level, { img: string; title: string; subtitle: string; parts: string[] }>> = {
@@ -249,7 +249,7 @@ export default function TelescopesTab() {
       {/* Level selector — sticky */}
       <div
         className="flex gap-2 pb-1 overflow-x-auto scrollbar-hide"
-        style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0a0a0a', paddingTop: '4px' }}
+        style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--canvas)', paddingTop: '4px' }}
       >
         {LEVEL_CONFIG.map(l => (
           <button
@@ -258,12 +258,12 @@ export default function TelescopesTab() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium flex-shrink-0 transition-all duration-200"
             style={level === l.id ? {
               background: l.color,
-              color: '#0a0a0a',
+              color: 'var(--canvas)',
               border: 'none',
             } : {
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.08)',
-              color: '#64748b',
+              color: 'var(--text-muted)',
             }}
           >
             <span>{l.badge}</span>
@@ -276,7 +276,7 @@ export default function TelescopesTab() {
       <div className="flex items-center gap-2">
         <span className="text-lg">{activeConfig.badge}</span>
         <div>
-          <p className="text-white text-sm font-semibold">{activeConfig.label}</p>
+          <p className="text-text-primary text-sm font-semibold">{activeConfig.label}</p>
           <p className="text-[10px] uppercase tracking-widest" style={{ color: activeConfig.color + '99' }}>
             {activeConfig.subtitle}
           </p>
@@ -293,18 +293,18 @@ export default function TelescopesTab() {
                 <Image src={intro.img} alt={intro.title} fill className="object-contain" sizes="(max-width: 672px) 100vw, 672px" />
               </div>
               <div className="p-4 pb-2">
-                <p className="text-white font-bold text-base">{intro.title}</p>
-                <p className="text-slate-400 text-xs mt-0.5">{intro.subtitle}</p>
+                <p className="text-text-primary font-bold text-base">{intro.title}</p>
+                <p className="text-text-muted text-xs mt-0.5">{intro.subtitle}</p>
               </div>
               <div className="px-4 pb-4 pt-2">
-                <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-2">Key Parts</p>
+                <p className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Key Parts</p>
                 <div className="flex flex-col gap-1.5">
                   {intro.parts.map((part, i) => (
                     <div key={i} className="flex items-start gap-2 text-xs">
                       <span className="font-bold flex-shrink-0 mt-0.5" style={{ color: activeConfig.color }}>
                         {i + 1}
                       </span>
-                      <span className="text-slate-300">{part}</span>
+                      <span className="text-text-primary">{part}</span>
                     </div>
                   ))}
                 </div>
@@ -325,9 +325,9 @@ export default function TelescopesTab() {
               >
                 {card.step}
               </span>
-              <p className="text-white text-sm font-semibold leading-snug">{card.title}</p>
+              <p className="text-text-primary text-sm font-semibold leading-snug">{card.title}</p>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed">{card.body}</p>
+            <p className="text-text-muted text-xs leading-relaxed">{card.body}</p>
             {card.tip && (
               <div
                 className="rounded-lg p-3 text-xs leading-relaxed"

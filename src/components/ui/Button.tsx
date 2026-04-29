@@ -22,8 +22,8 @@ const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
 
 const variantBase: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    background: 'linear-gradient(135deg, #818cf8 0%, #0EA5E9 100%)',
-    color: '#050A12',
+    background: 'linear-gradient(135deg, var(--terracotta) 0%, var(--seafoam) 100%)',
+    color: 'var(--canvas)',
     border: 'none',
     fontWeight: 600,
   },
@@ -40,25 +40,25 @@ const variantBase: Record<ButtonVariant, React.CSSProperties> = {
     fontWeight: 500,
   },
   danger: {
-    background: 'rgba(239,68,68,0.1)',
-    border: '1px solid rgba(239,68,68,0.2)',
-    color: '#EF4444',
+    background: 'rgba(251, 113, 133,0.1)',
+    border: '1px solid rgba(251, 113, 133,0.2)',
+    color: 'var(--negative)',
     fontWeight: 500,
   },
   reward: {
-    background: 'linear-gradient(135deg, #FFD166 0%, #F59E0B 100%)',
-    color: '#050A12',
+    background: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
+    color: 'var(--canvas)',
     border: 'none',
     fontWeight: 600,
   },
 };
 
 const variantHover: Record<ButtonVariant, React.CSSProperties> = {
-  primary:   { filter: 'brightness(1.1)', boxShadow: '0 0 16px rgba(99,102,241,0.3)' },
-  secondary: { borderColor: 'rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.04)', color: '#fff' },
+  primary:   { filter: 'brightness(1.1)', boxShadow: '0 0 16px rgba(232, 130, 107,0.3)' },
+  secondary: { borderColor: 'rgba(232, 130, 107,0.2)', background: 'rgba(232, 130, 107,0.04)', color: '#fff' },
   ghost:     { color: 'rgba(255,255,255,0.9)', background: 'rgba(255,255,255,0.04)' },
-  danger:    { background: 'rgba(239,68,68,0.2)' },
-  reward:    { filter: 'brightness(1.08)', boxShadow: '0 0 16px rgba(255,209,102,0.3)' },
+  danger:    { background: 'rgba(251, 113, 133,0.2)' },
+  reward:    { filter: 'brightness(1.08)', boxShadow: '0 0 16px rgba(232, 130, 107,0.3)' },
 };
 
 const Spinner = () => (

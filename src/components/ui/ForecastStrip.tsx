@@ -17,7 +17,7 @@ interface ForecastStripProps {
 const dotStyle: Record<ForecastDay['badge'], React.CSSProperties> = {
   go: {
     background: 'var(--success)',
-    boxShadow: '0 0 6px rgba(52,211,153,0.4)',
+    boxShadow: '0 0 6px rgba(94, 234, 212,0.4)',
   },
   maybe: { background: 'var(--warning)' },
   skip: { background: 'var(--error)' },

@@ -151,7 +151,7 @@ export default function ProfilePage() {
     }
     return { type: 'passive' as const, label: 'Passive Node', emoji: '📱',
       description: 'Weather confirmations + GPS location data',
-      color: '#9CA3AF', reward: '5–25 ✦ per check-in',
+      color: 'var(--text-muted)', reward: '5–25 ✦ per check-in',
       upgradeHint: 'Complete your first mission to become an Observer' };
   })();
 
@@ -467,7 +467,7 @@ export default function ProfilePage() {
                         className="stl-mono-data"
                         style={{
                           display: 'inline-block', padding: '3px 8px', borderRadius: 4,
-                          background: 'rgba(52,211,153,0.10)', border: '1px solid var(--stl-border-green)',
+                          background: 'rgba(94, 234, 212,0.10)', border: '1px solid var(--stl-border-green)',
                           color: 'var(--stl-green)', textDecoration: 'none',
                           textTransform: 'uppercase', letterSpacing: '0.08em',
                           fontSize: 9, fontWeight: 600,
@@ -513,8 +513,8 @@ export default function ProfilePage() {
               href="/settings#language"
               style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderBottom: '1px solid var(--stl-border-soft)' }}
             >
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Globe size={15} color="#818cf8" />
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Globe size={15} color="var(--terracotta)" />
               </div>
               <p style={{ color: 'var(--stl-text-bright)', fontSize: 14, fontWeight: 500, margin: 0, flex: 1, fontFamily: 'var(--font-display)' }}>Language</p>
               <span className="stl-mono-data" style={{ color: 'var(--stl-text-muted)' }}>EN / KA</span>
@@ -524,7 +524,7 @@ export default function ProfilePage() {
               href="/settings#notifications"
               style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderBottom: '1px solid var(--stl-border-soft)' }}
             >
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,209,102,0.08)', border: '1px solid var(--stl-border-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(232, 130, 107,0.08)', border: '1px solid var(--stl-border-terracotta)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Bell size={15} color="var(--stl-gold)" />
               </div>
               <p style={{ color: 'var(--stl-text-bright)', fontSize: 14, fontWeight: 500, margin: 0, flex: 1, fontFamily: 'var(--font-display)' }}>Notifications</p>
@@ -535,7 +535,7 @@ export default function ProfilePage() {
               href="/settings#appearance"
               style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}
             >
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(132,101,203,0.10)', border: '1px solid rgba(132,101,203,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(232, 130, 107,0.10)', border: '1px solid rgba(232, 130, 107,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Moon size={15} color="var(--stl-lilac)" />
               </div>
               <p style={{ color: 'var(--stl-text-bright)', fontSize: 14, fontWeight: 500, margin: 0, flex: 1, fontFamily: 'var(--font-display)' }}>Appearance</p>

@@ -49,22 +49,22 @@ toast.reward  = (msg: string, duration?: number) => toast(msg, 'reward',  durati
 const variantStyles: Record<ToastVariant, { border: string; icon: string; bg: string }> = {
   success: {
     bg:     'rgba(15, 29, 50, 0.92)',
-    border: 'rgba(52, 211, 153, 0.35)',
+    border: 'rgba(94, 234, 212, 0.35)',
     icon:   'var(--success)',
   },
   error: {
     bg:     'rgba(15, 29, 50, 0.92)',
-    border: 'rgba(239, 68, 68, 0.35)',
-    icon:   '#EF4444',
+    border: 'rgba(251, 113, 133, 0.35)',
+    icon:   'var(--negative)',
   },
   info: {
     bg:     'rgba(15, 29, 50, 0.92)',
-    border: 'rgba(129, 140, 248, 0.35)',
-    icon:   '#818CF8',
+    border: 'rgba(232, 130, 107, 0.35)',
+    icon:   'var(--terracotta)',
   },
   reward: {
     bg:     'rgba(15, 29, 50, 0.92)',
-    border: 'rgba(255, 209, 102, 0.40)',
+    border: 'rgba(232, 130, 107, 0.40)',
     icon:   'var(--stars)',
   },
 };

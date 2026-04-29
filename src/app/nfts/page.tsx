@@ -132,7 +132,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
           <button
             onClick={onClose}
             aria-label="Close"
-            className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors flex-shrink-0 ml-2"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors flex-shrink-0 ml-2"
             style={{ background: 'rgba(255,255,255,0.05)', minWidth: 36, minHeight: 36 }}
           >
             ✕
@@ -148,7 +148,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
             className="rounded-2xl overflow-hidden"
             style={{
               border: '1px solid rgba(255,255,255,0.08)',
-              background: '#0a0e1a',
+              background: 'var(--canvas)',
               width: '100%',
               aspectRatio: '4 / 3',
               display: 'flex',
@@ -166,7 +166,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
 
         {/* NFT certificate art — fallback only when no observation photo */}
         {!nft.photo && (
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,209,102,0.12)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(232, 130, 107,0.12)' }}>
             <Image
               src={nftImageUrl}
               alt={target}
@@ -214,7 +214,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => window.open(`https://twitter.com/intent/tweet?text=${twitterText}&url=${encodeURIComponent(fullImageUrl)}`, '_blank')}
-            className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm text-white"
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm text-text-primary"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 0', minHeight: 44 }}
           >
             𝕏 Share
@@ -222,7 +222,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
           <button
             onClick={() => window.open(`https://warpcast.com/~/compose?text=${farcasterText}&embeds[]=${encodeURIComponent(appUrl)}`, '_blank')}
             className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm"
-            style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', color: '#A855F7', padding: '12px 0', minHeight: 44 }}
+            style={{ background: 'rgba(232, 130, 107,0.1)', border: '1px solid rgba(232, 130, 107,0.3)', color: 'var(--terracotta)', padding: '12px 0', minHeight: 44 }}
           >
             ⬡ Farcaster
           </button>
@@ -235,8 +235,8 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
             disabled={retrying || !onRetryMint}
             className="flex items-center justify-center gap-2 rounded-xl text-sm w-full"
             style={{
-              background: retrying ? 'rgba(251,191,36,0.04)' : 'rgba(251,191,36,0.08)',
-              border: '1px solid rgba(251,191,36,0.25)',
+              background: retrying ? 'rgba(232, 130, 107,0.04)' : 'rgba(232, 130, 107,0.08)',
+              border: '1px solid rgba(232, 130, 107,0.25)',
               color: 'var(--warning)',
               padding: '12px 0',
               minHeight: 44,
@@ -250,8 +250,8 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
           <div
             className="flex items-center justify-center gap-2 rounded-xl text-sm w-full"
             style={{
-              background: 'rgba(251,191,36,0.06)',
-              border: '1px solid rgba(251,191,36,0.18)',
+              background: 'rgba(232, 130, 107,0.06)',
+              border: '1px solid rgba(232, 130, 107,0.18)',
               color: 'var(--warning)',
               padding: '12px 0',
               minHeight: 44,
@@ -266,9 +266,9 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-xl text-sm"
             style={{
-              background: 'rgba(99,102,241,0.06)',
-              border: '1px solid rgba(99,102,241,0.15)',
-              color: '#818cf8',
+              background: 'rgba(232, 130, 107,0.06)',
+              border: '1px solid rgba(232, 130, 107,0.15)',
+              color: 'var(--terracotta)',
               textDecoration: 'none',
               padding: '12px 0',
               minHeight: 44,
@@ -421,7 +421,7 @@ export default function NftsPage() {
                   <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
                   <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>Sign in to view</span>
                 </div>
-                <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(122,95,255,0.08))' }} />
+                <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(232, 130, 107,0.06), rgba(122,95,255,0.08))' }} />
                 <div className="p-3 select-none" aria-hidden="true">
                   <p style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, margin: 0, fontFamily: 'var(--font-display)' }}>{nft.name}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -599,8 +599,8 @@ export default function NftsPage() {
                           fontSize: 10,
                           padding: '2px 8px',
                           borderRadius: 20,
-                          background: owned ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
-                          border: `1px solid ${owned ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                          background: owned ? 'rgba(94, 234, 212,0.12)' : 'rgba(255,255,255,0.04)',
+                          border: `1px solid ${owned ? 'rgba(94, 234, 212,0.25)' : 'rgba(255,255,255,0.06)'}`,
                           color: owned ? 'var(--success)' : 'var(--text-muted)',
                         }}
                       >
@@ -628,8 +628,8 @@ export default function NftsPage() {
       {/* Error */}
       {error && !loading && (
         <div className="text-center py-12">
-          <p className="text-slate-400 mb-3">Could not load — try again</p>
-          <button onClick={fetchNfts} className="text-teal-400 hover:underline">
+          <p className="text-text-muted mb-3">Could not load — try again</p>
+          <button onClick={fetchNfts} className="text-seafoam hover:underline">
             Retry
           </button>
         </div>

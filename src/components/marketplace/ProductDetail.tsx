@@ -15,11 +15,11 @@ interface Props {
 }
 
 const CATEGORY_ART: Record<string, { emoji: string; bg: string }> = {
-  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(99,102,241,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
-  moonlamp:  { emoji: '🌕', bg: 'radial-gradient(ellipse at 60% 30%, rgba(255,209,102,0.12) 0%, rgba(26,26,46,0.95) 70%)' },
-  projector: { emoji: '✨', bg: 'radial-gradient(ellipse at 40% 60%, rgba(139,92,246,0.12) 0%, rgba(26,20,9,0.95) 70%)' },
+  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(232, 130, 107,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
+  moonlamp:  { emoji: '🌕', bg: 'radial-gradient(ellipse at 60% 30%, rgba(232, 130, 107,0.12) 0%, rgba(26,26,46,0.95) 70%)' },
+  projector: { emoji: '✨', bg: 'radial-gradient(ellipse at 40% 60%, rgba(232, 130, 107,0.12) 0%, rgba(26,20,9,0.95) 70%)' },
   accessory: { emoji: '⚙️', bg: 'radial-gradient(ellipse at 50% 50%, rgba(100,116,139,0.1) 0%, rgba(13,17,23,0.95) 70%)' },
-  digital:   { emoji: '🗺️', bg: 'radial-gradient(ellipse at 50% 30%, rgba(139,92,246,0.15) 0%, rgba(21,13,46,0.95) 70%)' },
+  digital:   { emoji: '🗺️', bg: 'radial-gradient(ellipse at 50% 30%, rgba(232, 130, 107,0.15) 0%, rgba(21,13,46,0.95) 70%)' },
 };
 
 export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
@@ -73,7 +73,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
       />
     )}
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-end sm:justify-end"
+      className="fixed inset-0 bg-canvas/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-end sm:justify-end"
       onClick={handleClose}
     >
       {/* Mobile: bottom sheet | Desktop: right panel */}
@@ -81,7 +81,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
         className={`
           w-full sm:w-96 sm:h-full
           bg-[#0F1827]
-          border-t sm:border-t-0 sm:border-l border-[#818cf8]/10
+          border-t sm:border-t-0 sm:border-l border-[var(--terracotta)]/10
           flex flex-col
           transition-transform duration-300
           rounded-t-2xl sm:rounded-none
@@ -114,7 +114,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
               )}
               <button
                 onClick={handleClose}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-canvas/50 flex items-center justify-center text-text-primary hover:bg-canvas/70 transition-colors z-10"
               >
                 <X size={15} />
               </button>
@@ -126,7 +126,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
         <div className="flex flex-col gap-4 p-5 overflow-y-auto flex-1">
           {/* Name + badges */}
           <div>
-            <h2 className="text-white font-bold text-lg leading-snug mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+            <h2 className="text-text-primary font-bold text-lg leading-snug mb-2" style={{ fontFamily: 'Georgia, serif' }}>
               {name}
             </h2>
             <div className="flex flex-wrap gap-1.5">
@@ -136,31 +136,31 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
           </div>
 
           {/* Description */}
-          <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+          <p className="text-text-muted text-sm leading-relaxed">{description}</p>
 
           {/* AI recommendations */}
           {product.aiRecommendFor?.length ? (
-            <p className="text-[#818cf8] text-xs">
+            <p className="text-[var(--terracotta)] text-xs">
               ASTRA recommends for: {product.aiRecommendFor.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
             </p>
           ) : null}
 
           {/* Price */}
           <div>
-            <p className="text-white text-3xl font-bold">{product.priceGEL} ₾</p>
-            <p className="text-slate-500 text-sm">≈ {solPrice} SOL</p>
+            <p className="text-text-primary text-3xl font-bold">{product.priceGEL} ₾</p>
+            <p className="text-text-muted text-sm">≈ {solPrice} SOL</p>
           </div>
 
           {/* Order confirmation */}
           {orderRef ? (
             <div
               className="rounded-xl p-4 text-sm"
-              style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}
+              style={{ background: 'rgba(94, 234, 212,0.08)', border: '1px solid rgba(94, 234, 212,0.2)' }}
             >
-              <p className="text-[#34d399] font-semibold mb-2">{t('contactPrompt')}:</p>
-              <p className="text-slate-300">📞 +995 555 123 456</p>
-              <p className="text-slate-300">💬 Telegram: @astroman_ge</p>
-              <p className="text-slate-500 text-xs mt-2">Reference: <span className="font-mono text-slate-400">{orderRef}</span></p>
+              <p className="text-[var(--seafoam)] font-semibold mb-2">{t('contactPrompt')}:</p>
+              <p className="text-text-primary">📞 +995 555 123 456</p>
+              <p className="text-text-primary">💬 Telegram: @astroman_ge</p>
+              <p className="text-text-muted text-xs mt-2">Reference: <span className="font-mono text-text-muted">{orderRef}</span></p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">

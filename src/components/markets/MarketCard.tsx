@@ -12,8 +12,8 @@ const DEFAULT_CATEGORY = {
   label: 'MARKET',
   emoji: '✦',
   color: 'var(--stars)',
-  bg: 'rgba(255,209,102,0.10)',
-  border: 'rgba(255,209,102,0.22)',
+  bg: 'rgba(232, 130, 107,0.10)',
+  border: 'rgba(232, 130, 107,0.22)',
 };
 
 const CATEGORY_META: Partial<
@@ -26,64 +26,64 @@ const CATEGORY_META: Partial<
     label: 'SKY',
     emoji: '🔭',
     color: 'var(--stars)',
-    bg: 'rgba(255,209,102,0.12)',
-    border: 'rgba(255,209,102,0.25)',
+    bg: 'rgba(232, 130, 107,0.12)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   weather_event: {
     label: 'WEATHER',
     emoji: '🌧',
-    color: '#5EEAD4',
-    bg: 'rgba(94,234,212,0.10)',
-    border: 'rgba(94,234,212,0.25)',
+    color: 'var(--seafoam)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.25)',
   },
   natural_phenomenon: {
     label: 'NATURE',
     emoji: '⚡',
-    color: '#C4B5FD',
-    bg: 'rgba(196,181,253,0.10)',
-    border: 'rgba(196,181,253,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.10)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   meteor: {
     label: 'METEOR',
     emoji: '☄',
     color: 'var(--stars)',
-    bg: 'rgba(255,209,102,0.12)',
-    border: 'rgba(255,209,102,0.25)',
+    bg: 'rgba(232, 130, 107,0.12)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   solar: {
     label: 'SOLAR',
     emoji: '☀',
-    color: '#F59E0B',
-    bg: 'rgba(245,158,11,0.10)',
-    border: 'rgba(245,158,11,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.10)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   mission: {
     label: 'MISSION',
     emoji: '🚀',
     color: 'var(--stl-teal)',
-    bg: 'rgba(56,240,255,0.10)',
-    border: 'rgba(56,240,255,0.22)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.22)',
   },
   comet: {
     label: 'COMET',
     emoji: '🌠',
-    color: '#8465CB',
-    bg: 'rgba(132,101,203,0.12)',
-    border: 'rgba(132,101,203,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.12)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   discovery: {
     label: 'DISCOVERY',
     emoji: '🔬',
     color: 'var(--success)',
-    bg: 'rgba(52,211,153,0.10)',
-    border: 'rgba(52,211,153,0.25)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.25)',
   },
   weather: {
     label: 'WEATHER',
     emoji: '🌤',
-    color: '#5EEAD4',
-    bg: 'rgba(94,234,212,0.10)',
-    border: 'rgba(94,234,212,0.25)',
+    color: 'var(--seafoam)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.25)',
   },
 };
 
@@ -92,9 +92,9 @@ const STATUS_META: Record<
   { label: string; dot: string }
 > = {
   open:      { label: 'Open',      dot: 'var(--success)' },
-  locked:    { label: 'Locked',    dot: '#FBBF24' },
+  locked:    { label: 'Locked',    dot: 'var(--terracotta)' },
   resolved:  { label: 'Resolved',  dot: 'var(--stars)' },
-  cancelled: { label: 'Cancelled', dot: '#94A3B8' },
+  cancelled: { label: 'Cancelled', dot: 'var(--text-muted)' },
 };
 
 function formatRelative(ms: number): string {
@@ -137,7 +137,7 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
       onClick={onClick}
       className="relative text-left overflow-hidden transition-all active:scale-[0.99] hover:-translate-y-0.5"
       style={{
-        background: 'linear-gradient(145deg, rgba(20,24,40,0.75), rgba(8,10,20,0.95))',
+        background: 'var(--surface)',
         border: '1px solid rgba(255,255,255,0.06)',
         borderRadius: 12,
         padding: '12px 14px',
@@ -180,9 +180,9 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: '0.12em',
-              color: resolvedSide === 'YES' ? 'var(--success)' : '#F472B6',
-              background: resolvedSide === 'YES' ? 'rgba(52,211,153,0.10)' : 'rgba(244,114,182,0.10)',
-              border: `1px solid ${resolvedSide === 'YES' ? 'rgba(52,211,153,0.3)' : 'rgba(244,114,182,0.3)'}`,
+              color: resolvedSide === 'YES' ? 'var(--terracotta)' : 'var(--negative)',
+              background: resolvedSide === 'YES' ? 'rgba(232, 130, 107, 0.10)' : 'rgba(251, 113, 133, 0.10)',
+              border: `1px solid ${resolvedSide === 'YES' ? 'rgba(232, 130, 107, 0.3)' : 'rgba(251, 113, 133, 0.3)'}`,
               borderRadius: 4,
               padding: '2.5px 6px',
               textTransform: 'uppercase',
@@ -222,10 +222,10 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
       {/* Title */}
       <div
         style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 17,
           fontWeight: 600,
-          color: '#F2F0EA',
+          color: 'var(--text)',
           lineHeight: 1.2,
           letterSpacing: '-0.005em',
           display: '-webkit-box',
@@ -249,8 +249,8 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
             fontWeight: 700,
             letterSpacing: '0.08em',
             color: 'var(--stars)',
-            background: 'rgba(255,209,102,0.10)',
-            border: '1px solid rgba(255,209,102,0.32)',
+            background: 'rgba(232, 130, 107,0.10)',
+            border: '1px solid rgba(232, 130, 107,0.32)',
             borderRadius: 999,
             padding: '2.5px 7px',
             textTransform: 'uppercase',
@@ -311,7 +311,7 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
           <div
             style={{
               flex: yesPct,
-              background: 'linear-gradient(90deg, rgba(52,211,153,0.85), rgba(52,211,153,0.65))',
+              background: 'linear-gradient(90deg, rgba(94, 234, 212,0.85), rgba(94, 234, 212,0.65))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -328,7 +328,7 @@ export default function MarketCard({ market, onClick, observerAdvantage = false 
           <div
             style={{
               flex: noPct,
-              background: 'linear-gradient(90deg, rgba(244,114,182,0.65), rgba(244,114,182,0.85))',
+              background: 'linear-gradient(90deg, rgba(251, 113, 133, 0.65), rgba(251, 113, 133, 0.85))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

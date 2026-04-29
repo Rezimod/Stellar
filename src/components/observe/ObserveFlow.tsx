@@ -18,10 +18,10 @@ const ANALYSIS_TEXTS = [
 ];
 
 const CONFIDENCE_BADGE: Record<string, { cls: string; label: string }> = {
-  high:     { cls: 'bg-green-500/20 text-green-400 border border-green-500/30',  label: '✓ High Confidence' },
-  medium:   { cls: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',  label: '● Medium Confidence' },
-  low:      { cls: 'bg-slate-500/20 text-slate-400 border border-slate-500/30',  label: '○ Low Confidence' },
-  rejected: { cls: 'bg-red-500/20 text-red-400 border border-red-500/30',        label: '✗ Rejected' },
+  high:     { cls: 'bg-seafoam text-seafoam border border-seafoam',  label: '✓ High Confidence' },
+  medium:   { cls: 'bg-terracotta text-terracotta border border-terracotta',  label: '● Medium Confidence' },
+  low:      { cls: 'bg-[var(--surface)] text-text-muted border border-[var(--border)]',  label: '○ Low Confidence' },
+  rejected: { cls: 'bg-negative text-negative border border-negative',        label: '✗ Rejected' },
 };
 
 export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps) {
@@ -241,16 +241,16 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   // --- uploading ---
   if (step === 'uploading') {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#070B14] flex flex-col items-center justify-center gap-6 px-4">
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col items-center justify-center gap-6 px-4">
         {photo && <img src={photo} alt="" className="rounded-xl max-h-48 object-cover opacity-60" />}
         <div className="flex justify-center gap-1.5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[#818cf8]/40"
+            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[var(--terracotta)]/40"
               style={{ animationDelay: `${i * 180}ms` }} />
           ))}
         </div>
-        <p className="text-white text-sm">Analyzing your observation...</p>
-        <p className="text-slate-500 text-xs">{ANALYSIS_TEXTS[analysisIdx]}</p>
+        <p className="text-text-primary text-sm">Analyzing your observation...</p>
+        <p className="text-text-muted text-xs">{ANALYSIS_TEXTS[analysisIdx]}</p>
       </div>
     );
   }
@@ -258,14 +258,14 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   // --- minting ---
   if (step === 'minting') {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#070B14] flex flex-col items-center justify-center gap-4">
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col items-center justify-center gap-4">
         <div className="flex gap-1.5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[#818cf8]/40"
+            <div key={i} className="w-2 h-2 rounded-full animate-bounce bg-[var(--terracotta)]/40"
               style={{ animationDelay: `${i * 180}ms` }} />
           ))}
         </div>
-        <p className="text-white text-sm">Sealing your discovery on Solana...</p>
+        <p className="text-text-primary text-sm">Sealing your discovery on Solana...</p>
       </div>
     );
   }
@@ -279,14 +279,14 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
     return (
-      <div className="fixed inset-0 z-[60] bg-[#070B14] flex flex-col items-center justify-center px-6 gap-5 overflow-y-auto py-8">
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col items-center justify-center px-6 gap-5 overflow-y-auto py-8">
         <div className="w-20 h-20 rounded-full flex items-center justify-center"
-          style={{ background: 'radial-gradient(circle, rgba(20,184,166,0.15), transparent)', border: '2px solid rgba(20,184,166,0.3)' }}>
+          style={{ background: 'radial-gradient(circle, rgba(94, 234, 212,0.15), transparent)', border: '2px solid rgba(94, 234, 212,0.3)' }}>
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M8 16l6 6 10-12" stroke="#14B8A6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8 16l6 6 10-12" stroke="var(--seafoam)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h2 className="text-2xl text-white" style={{ fontFamily: 'Georgia, serif' }}>
+        <h2 className="text-2xl text-text-primary" style={{ fontFamily: 'Georgia, serif' }}>
           {mintTxId ? 'Discovery Sealed' : 'Stars Collected'}
         </h2>
 
@@ -294,14 +294,14 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
         <div className="w-full max-w-xs rounded-2xl p-5 flex flex-col gap-3"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] tracking-widest uppercase text-slate-500">Stellar Discovery</span>
-            <span className="text-[10px] text-slate-600">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            <span className="text-[10px] tracking-widest uppercase text-text-muted">Stellar Discovery</span>
+            <span className="text-[10px] text-text-muted">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
           </div>
-          <p className="text-white font-semibold">{verification.identifiedObject}</p>
+          <p className="text-text-primary font-semibold">{verification.identifiedObject}</p>
           <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
           {explorerUrl && (
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-[#14B8A6] truncate">
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--seafoam)] truncate">
               <ExternalLink size={11} />
               {mintTxId.slice(0, 16)}…
             </a>
@@ -309,7 +309,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
         </div>
 
         {mintError && (
-          <p className="text-amber-400 text-xs text-center">{mintError}</p>
+          <p className="text-terracotta text-xs text-center">{mintError}</p>
         )}
 
         {/* Share on X */}
@@ -321,18 +321,18 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
 
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <button onClick={() => router.push('/nfts')}
-            className="w-full py-3 rounded-xl text-white text-sm font-semibold"
+            className="w-full py-3 rounded-xl text-text-primary text-sm font-semibold"
             style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>
             View NFTs
           </button>
           <button onClick={resetToCapture}
-            className="w-full py-3 rounded-xl text-white text-sm font-semibold"
+            className="w-full py-3 rounded-xl text-text-primary text-sm font-semibold"
             style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>
             Observe Again
           </button>
           <button onClick={onClose}
             className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-            style={{ background: 'linear-gradient(to right, #FFD166, #E8B84A)' }}>
+            style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
             Done
           </button>
         </div>
@@ -355,18 +355,18 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
       ...moonRows,
     ];
     return (
-      <div className="fixed inset-0 z-[60] bg-[#070B14] overflow-y-auto">
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] overflow-y-auto">
         <div className="max-w-sm mx-auto px-4 py-6 flex flex-col gap-4">
           {photo && <img src={photo} alt="" className="rounded-xl max-h-40 object-cover mx-auto" />}
           <div className={`self-center px-4 py-2 rounded-full text-sm font-semibold ${badge.cls}`}>{badge.label}</div>
-          <p className="text-white text-lg text-center" style={{ fontFamily: 'Georgia, serif' }}>{verification.identifiedObject}</p>
-          <p className="text-slate-400 text-sm text-center">{verification.reason}</p>
+          <p className="text-text-primary text-lg text-center" style={{ fontFamily: 'Georgia, serif' }}>{verification.identifiedObject}</p>
+          <p className="text-text-muted text-sm text-center">{verification.reason}</p>
           <div className="grid grid-cols-2 gap-3">
             {metricRows.map(([label, val]) => (
               <div key={label} className="rounded-xl p-3"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p className="text-slate-500 text-[10px] uppercase tracking-wider">{label}</p>
-                <p className="text-white text-sm font-medium mt-0.5 truncate">{val}</p>
+                <p className="text-text-muted text-[10px] uppercase tracking-wider">{label}</p>
+                <p className="text-text-primary text-sm font-medium mt-0.5 truncate">{val}</p>
               </div>
             ))}
           </div>
@@ -374,26 +374,26 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
             {verification.accepted ? (
               <>
                 <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
-                <p className="text-slate-500 text-xs mt-1">Stars earned for this observation</p>
+                <p className="text-text-muted text-xs mt-1">Stars earned for this observation</p>
               </>
             ) : (
               <>
-                <p className="text-red-400 text-sm">This image could not be verified</p>
-                <p className="text-slate-500 text-xs mt-1">{verification.reason}</p>
+                <p className="text-negative text-sm">This image could not be verified</p>
+                <p className="text-text-muted text-xs mt-1">{verification.reason}</p>
               </>
             )}
           </div>
-          {error && <p className="text-amber-400 text-xs text-center">{error}</p>}
+          {error && <p className="text-terracotta text-xs text-center">{error}</p>}
           <div className="flex flex-col gap-3">
             {verification.accepted ? (
               <>
                 <button onClick={handleMintObservation}
                   className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-                  style={{ background: 'linear-gradient(to right, #FFD166, #E8B84A)' }}>
+                  style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
                   Create NFT ✦
                 </button>
                 <button onClick={handleCollectOnly}
-                  className="w-full py-3 rounded-xl text-slate-400 text-sm"
+                  className="w-full py-3 rounded-xl text-text-muted text-sm"
                   style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)' }}>
                   Collect Stars Only
                 </button>
@@ -402,11 +402,11 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               <>
                 <button onClick={resetToCapture}
                   className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-                  style={{ background: 'linear-gradient(to right, #FFD166, #E8B84A)' }}>
+                  style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
                   Try Another Photo
                 </button>
                 <button onClick={onClose}
-                  className="w-full py-3 rounded-xl text-slate-400 text-sm"
+                  className="w-full py-3 rounded-xl text-text-muted text-sm"
                   style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)' }}>
                   Close
                 </button>
@@ -420,24 +420,24 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
 
   // --- capture ---
   return (
-    <div className="fixed inset-0 z-[60] bg-[#070B14] flex flex-col">
+    <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05]">
-        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white">
+        <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-text-primary">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-white text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>Observe</h1>
+        <h1 className="text-text-primary text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>Observe</h1>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4">
         {cameraActive ? (
           <div className="w-full max-w-sm flex flex-col items-center gap-4">
             <div className="relative w-full">
               <video ref={videoRef} autoPlay playsInline muted
-                className="rounded-2xl w-full aspect-[3/4] object-cover bg-black" />
+                className="rounded-2xl w-full aspect-[3/4] object-cover bg-canvas" />
               {countdown !== null && (
                 <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-3"
                   style={{ background: 'rgba(7,11,20,0.72)' }}>
-                  <p className="text-slate-300 text-xs tracking-widest uppercase">Hold steady...</p>
-                  <p className="text-7xl font-bold text-white">{countdown}</p>
+                  <p className="text-text-primary text-xs tracking-widest uppercase">Hold steady...</p>
+                  <p className="text-7xl font-bold text-text-primary">{countdown}</p>
                   {firstFrame && (
                     <img src={firstFrame} alt="" className="w-16 h-16 rounded-lg object-cover opacity-60 mt-1" />
                   )}
@@ -448,18 +448,18 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               <>
                 <button onClick={captureFrame}
                   className="w-16 h-16 rounded-full flex items-center justify-center text-black font-bold text-sm"
-                  style={{ background: 'linear-gradient(to right, #FFD166, #E8B84A)' }}>
+                  style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
                   Capture
                 </button>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl w-full"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="flex-1">
-                    <p className="text-white text-xs font-medium">Live Capture Mode</p>
-                    <p className="text-slate-500 text-[10px] mt-0.5">Takes 2 photos for stronger verification</p>
+                    <p className="text-text-primary text-xs font-medium">Live Capture Mode</p>
+                    <p className="text-text-muted text-[10px] mt-0.5">Takes 2 photos for stronger verification</p>
                   </div>
                   <button
                     onClick={() => setDoubleCapture(v => !v)}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${doubleCapture ? 'bg-[#14B8A6]' : 'bg-slate-700'}`}>
+                    className={`relative w-10 h-5 rounded-full transition-colors ${doubleCapture ? 'bg-[var(--seafoam)]' : 'bg-[var(--surface-hover)]'}`}>
                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${doubleCapture ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
@@ -469,27 +469,27 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
         ) : (
           <div className="w-full max-w-sm flex flex-col gap-4">
             <button onClick={startCamera}
-              className="rounded-2xl p-6 flex items-center gap-4 text-left transition-colors hover:bg-[#14B8A6]/10"
-              style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.2)' }}>
-              <Camera size={28} className="text-[#14B8A6] flex-shrink-0" />
+              className="rounded-2xl p-6 flex items-center gap-4 text-left transition-colors hover:bg-[var(--seafoam)]/10"
+              style={{ background: 'rgba(94, 234, 212,0.05)', border: '1px solid rgba(94, 234, 212,0.2)' }}>
+              <Camera size={28} className="text-[var(--seafoam)] flex-shrink-0" />
               <div>
-                <p className="text-white font-semibold">Take Photo</p>
-                <p className="text-slate-500 text-xs mt-0.5">Point at the sky and capture</p>
+                <p className="text-text-primary font-semibold">Take Photo</p>
+                <p className="text-text-muted text-xs mt-0.5">Point at the sky and capture</p>
               </div>
             </button>
             <button onClick={() => fileInputRef.current?.click()}
-              className="rounded-2xl p-6 flex items-center gap-4 text-left transition-colors hover:bg-white/[0.03]"
+              className="rounded-2xl p-6 flex items-center gap-4 text-left transition-colors hover:bg-[var(--surface)]]"
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(148,163,184,0.15)' }}>
-              <ImagePlus size={28} className="text-slate-400 flex-shrink-0" />
+              <ImagePlus size={28} className="text-text-muted flex-shrink-0" />
               <div>
-                <p className="text-white font-semibold">Upload from Gallery</p>
-                <p className="text-slate-500 text-xs mt-0.5">Select a photo you already took</p>
+                <p className="text-text-primary font-semibold">Upload from Gallery</p>
+                <p className="text-text-muted text-xs mt-0.5">Select a photo you already took</p>
               </div>
             </button>
           </div>
         )}
-        {error && <p className="text-amber-400 text-xs text-center">{error}</p>}
-        <p className="text-slate-500 text-xs text-center">Phone photos are welcome — even a blurry moon counts!</p>
+        {error && <p className="text-terracotta text-xs text-center">{error}</p>}
+        <p className="text-text-muted text-xs text-center">Phone photos are welcome — even a blurry moon counts!</p>
       </div>
       <canvas ref={canvasRef} className="hidden" />
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/tiff,image/heic,image/heif"

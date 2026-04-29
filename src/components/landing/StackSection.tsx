@@ -19,7 +19,7 @@ export default function StackSection() {
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
           05 · THE STACK
         </span>
-        <h2 className="mt-3 font-serif font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#E8E6DD]">
+        <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#E8E6DD]">
           Invisible infrastructure.
         </h2>
         <p className="mt-3 text-[13px] md:text-[14px] text-[rgba(232,230,221,0.55)]">
@@ -36,7 +36,7 @@ export default function StackSection() {
             <div className="font-mono text-[9px] tracking-[0.18em] text-[rgba(232,230,221,0.4)]">
               {c.tag}
             </div>
-            <div className="mt-2 font-serif text-[15px] md:text-[16px] text-[#E8E6DD]">
+            <div className="mt-2 font-display text-[15px] md:text-[16px] text-[#E8E6DD]">
               {c.name}
             </div>
             <p className="mt-1.5 text-[11px] leading-[1.5] text-[rgba(232,230,221,0.5)]">

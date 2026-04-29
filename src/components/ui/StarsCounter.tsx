@@ -76,14 +76,14 @@ export function StarsCounter({
         color: 'var(--stars)',
         fontSize: cfg.fontSize,
         transition: 'box-shadow 300ms ease-out',
-        boxShadow: glowing ? '0 0 12px rgba(255,209,102,0.4)' : undefined,
+        boxShadow: glowing ? '0 0 12px rgba(232, 130, 107,0.4)' : undefined,
       }}
     >
       <span
         style={{
           fontSize: cfg.iconSize,
           transition: 'filter 300ms ease-out',
-          filter: glowing ? 'drop-shadow(0 0 4px #FFD166)' : undefined,
+          filter: glowing ? 'drop-shadow(0 0 4px var(--terracotta))' : undefined,
         }}
       >
         ✦

@@ -393,7 +393,7 @@ export default function TonightHighlights() {
             <h1
               className="leading-none tracking-tight"
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontStyle: 'italic',
                 fontWeight: 500,
                 fontSize: 'clamp(56px, 9vw, 96px)',

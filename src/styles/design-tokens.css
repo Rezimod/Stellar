@@ -5,8 +5,8 @@
 
 :root {
   /* Background layers */
-  --color-space-black:  #050505;
-  --color-panel-dark:   #0a0a0a;
+  --color-space-black:  var(--canvas);
+  --color-panel-dark:   var(--canvas);
   --color-card-surface: rgba(255, 255, 255, 0.02);
   --color-card-hover:   rgba(255, 255, 255, 0.04);
   --color-surface-mid:  rgba(255, 255, 255, 0.05);
@@ -18,27 +18,27 @@
   --color-text-disabled:  rgba(255, 255, 255, 0.12);
 
   /* Brand: Nebula Indigo */
-  --color-nebula-teal:         #818cf8;
-  --color-nebula-teal-hover:   #a5b4fc;
-  --color-nebula-teal-pressed: #6366f1;
-  --color-nebula-teal-glow:    rgba(99, 102, 241, 0.15);
+  --color-nebula-teal:         var(--terracotta);
+  --color-nebula-teal-hover:   var(--terracotta);
+  --color-nebula-teal-pressed: var(--terracotta);
+  --color-nebula-teal-glow:    rgba(232, 130, 107, 0.15);
 
   /* Brand: Star Gold */
-  --color-star-gold:      #FFD166;
-  --color-star-gold-hover:#FFD98A;
-  --color-star-gold-glow: rgba(255, 209, 102, 0.15);
+  --color-star-gold:      var(--terracotta);
+  --color-star-gold-hover:var(--terracotta);
+  --color-star-gold-glow: rgba(232, 130, 107, 0.15);
 
   /* Status */
-  --color-aurora-green:     #34D399;
-  --color-aurora-green-glow:rgba(52, 211, 153, 0.12);
-  --color-solar-amber:      #F59E0B;
-  --color-mars-red:         #EF4444;
-  --color-oracle-blue:      #818CF8;
+  --color-aurora-green:     var(--seafoam);
+  --color-aurora-green-glow:rgba(94, 234, 212, 0.12);
+  --color-solar-amber:      var(--terracotta);
+  --color-mars-red:         var(--negative);
+  --color-oracle-blue:      var(--terracotta);
 
   /* Sky condition semantic */
-  --color-sky-go:    #34D399;
-  --color-sky-maybe: #F59E0B;
-  --color-sky-skip:  #EF4444;
+  --color-sky-go:    var(--seafoam);
+  --color-sky-maybe: var(--terracotta);
+  --color-sky-skip:  var(--negative);
 
   /* Bortle scale 1–9 */
   --color-bortle-1: #00FF88;
@@ -52,12 +52,11 @@
   --color-bortle-9: #FF0000;
 
   /* Glass surface */
-  --glass-bg:     rgba(10, 10, 10, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-bg:     rgba(44, 62, 92, 0.65);
+  --glass-border: var(--border);
   --glass-blur:   16px;
 
-  /* Fonts */
-  --font-serif:    'Fraunces', Georgia, serif;
+  /* Fonts — defer to layout.tsx next/font assignments */
   --font-georgian: 'Noto Sans Georgian', system-ui, sans-serif;
 
   /* Type scale (rem) */
@@ -71,9 +70,9 @@
 
   /* Shadows */
   --shadow-card:      0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-card-hover:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.12);
-  --shadow-glow-teal: 0 0 20px rgba(99,102,241,0.20), 0 0 60px rgba(99,102,241,0.06);
-  --shadow-glow-gold: 0 0 20px rgba(255,209,102,0.15), 0 0 60px rgba(255,209,102,0.05);
+  --shadow-card-hover:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(232, 130, 107,0.12);
+  --shadow-glow-teal: 0 0 20px rgba(232, 130, 107,0.20), 0 0 60px rgba(232, 130, 107,0.06);
+  --shadow-glow-gold: 0 0 20px rgba(232, 130, 107,0.15), 0 0 60px rgba(232, 130, 107,0.05);
   --shadow-inner:     inset 0 1px 0 rgba(255,255,255,0.04);
 
   /* Transitions */
@@ -100,8 +99,8 @@
 /* Ensure app dark theme is never overridden by system light mode */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-space-black:  #050505;
-    --color-panel-dark:   #0a0a0a;
+    --color-space-black:  var(--canvas);
+    --color-panel-dark:   var(--canvas);
     --color-card-surface: rgba(255, 255, 255, 0.02);
     --color-card-hover:   rgba(255, 255, 255, 0.04);
     --color-surface-mid:  rgba(255, 255, 255, 0.05);

@@ -32,8 +32,8 @@ export default function StatsBar() {
       className="animate-page-enter"
       style={{
         borderRadius: 10,
-        background: 'linear-gradient(135deg, rgba(255,209,102,0.04) 0%, rgba(15,20,40,0.55) 60%, transparent 100%)',
-        border: '1px solid rgba(255,209,102,0.14)',
+        background: 'linear-gradient(135deg, rgba(232, 130, 107,0.04) 0%, rgba(15,20,40,0.55) 60%, transparent 100%)',
+        border: '1px solid rgba(232, 130, 107,0.14)',
         padding: '10px 12px',
         marginBottom: 14,
       }}
@@ -42,7 +42,7 @@ export default function StatsBar() {
         <div className="flex items-center gap-2 min-w-0">
           <span
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 10,
               letterSpacing: '0.18em',
               color: 'rgba(255,255,255,0.45)',
@@ -53,7 +53,7 @@ export default function StatsBar() {
           </span>
           <span
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 13,
               fontWeight: 600,
               color: allDone ? 'var(--success)' : 'var(--stars)',
@@ -70,12 +70,12 @@ export default function StatsBar() {
               fontFamily: 'var(--font-mono)',
               fontSize: 11.5,
               fontWeight: 500,
-              color: '#F2F0EA',
+              color: 'var(--text)',
               letterSpacing: '0.02em',
             }}
           >
             {count}/{TOTAL}
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', marginLeft: 4, letterSpacing: '0.12em', textTransform: 'uppercase', fontStyle: 'italic' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', marginLeft: 4, letterSpacing: '0.12em', textTransform: 'uppercase', fontStyle: 'italic' }}>
               obs
             </span>
           </span>
@@ -102,9 +102,9 @@ export default function StatsBar() {
           style={{
             width: `${pct}%`,
             background: allDone
-              ? 'linear-gradient(to right, #34d399, #22c55e)'
-              : 'linear-gradient(to right, #CC9A33, #FFD166)',
-            boxShadow: `0 0 8px ${allDone ? 'rgba(52,211,153,0.4)' : 'rgba(255,209,102,0.5)'}`,
+              ? 'linear-gradient(to right, var(--seafoam), #22c55e)'
+              : 'linear-gradient(to right, var(--terracotta), var(--terracotta))',
+            boxShadow: `0 0 8px ${allDone ? 'rgba(94, 234, 212,0.4)' : 'rgba(232, 130, 107,0.5)'}`,
           }}
         />
       </div>

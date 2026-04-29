@@ -32,14 +32,14 @@ function nowPercent(): number {
 function SunMarker() {
   return (
     <svg width={14} height={14} viewBox="0 0 14 14" style={{ display: 'block' }}>
-      <circle cx={7} cy={7} r={3} fill="#F59E0B" />
+      <circle cx={7} cy={7} r={3} fill="var(--terracotta)" />
       {[0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
         const rad = (deg * Math.PI) / 180;
         const x1 = 7 + 4.5 * Math.cos(rad);
         const y1 = 7 + 4.5 * Math.sin(rad);
         const x2 = 7 + 6.2 * Math.cos(rad);
         const y2 = 7 + 6.2 * Math.sin(rad);
-        return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#F59E0B" strokeWidth="1.2" strokeLinecap="round" />;
+        return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--terracotta)" strokeWidth="1.2" strokeLinecap="round" />;
       })}
     </svg>
   );
@@ -64,7 +64,7 @@ function NowMarker({ percent }: { percent: number }) {
           width: 12,
           height: 12,
           borderRadius: '50%',
-          border: '1.5px solid rgba(99,102,241,0.4)',
+          border: '1.5px solid rgba(232, 130, 107,0.4)',
           animation: 'pulse-glow 2s ease-in-out infinite',
           position: 'absolute',
           inset: -3,
@@ -76,8 +76,8 @@ function NowMarker({ percent }: { percent: number }) {
           width: 6,
           height: 6,
           borderRadius: '50%',
-          background: 'var(--color-nebula-teal, #818cf8)',
-          boxShadow: '0 0 6px rgba(99,102,241,0.6)',
+          background: 'var(--color-nebula-teal, var(--terracotta))',
+          boxShadow: '0 0 6px rgba(232, 130, 107,0.6)',
           position: 'relative',
         }}
       />
@@ -118,7 +118,7 @@ export default function SunMoonBar() {
 
   // Night gradient: dark from 0–sunrise, sky-blue midday, dark again after sunset
   // We'll build a simple 5-stop gradient
-  const nightColor   = '#050A18';
+  const nightColor   = 'var(--canvas)';
   const twilightColor = 'rgba(180,80,20,0.5)';
   const dayColor     = 'rgba(30,80,160,0.25)';
 
@@ -216,8 +216,8 @@ export default function SunMoonBar() {
           {data.sunRise && (
             <div className="flex items-center gap-1.5">
               <svg width={10} height={10} viewBox="0 0 10 10">
-                <path d="M5 7 L5 3 M2.5 5.5 L5 3 L7.5 5.5" stroke="#F59E0B" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-                <line x1="1" y1="8" x2="9" y2="8" stroke="#F59E0B" strokeWidth="0.8" />
+                <path d="M5 7 L5 3 M2.5 5.5 L5 3 L7.5 5.5" stroke="var(--terracotta)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                <line x1="1" y1="8" x2="9" y2="8" stroke="var(--terracotta)" strokeWidth="0.8" />
               </svg>
               <span style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
                 {hhmm(data.sunRise, locale)}
@@ -228,8 +228,8 @@ export default function SunMoonBar() {
           {data.sunSet && (
             <div className="flex items-center gap-1.5">
               <svg width={10} height={10} viewBox="0 0 10 10">
-                <path d="M5 3 L5 7 M2.5 4.5 L5 7 L7.5 4.5" stroke="#F59E0B" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-                <line x1="1" y1="2" x2="9" y2="2" stroke="#F59E0B" strokeWidth="0.8" />
+                <path d="M5 3 L5 7 M2.5 4.5 L5 7 L7.5 4.5" stroke="var(--terracotta)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                <line x1="1" y1="2" x2="9" y2="2" stroke="var(--terracotta)" strokeWidth="0.8" />
               </svg>
               <span style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
                 {hhmm(data.sunSet, locale)}

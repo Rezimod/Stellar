@@ -30,7 +30,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-canvas/70 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -39,7 +39,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       <div
         className="relative w-full max-w-[400px] mx-4 rounded-2xl p-6"
         style={{
-          background: '#050811',
+          background: 'var(--canvas)',
           border: '1px solid rgba(232,230,221,0.08)',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -56,7 +56,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
         <h2
           style={{
-            fontFamily: 'var(--font-serif), serif',
+            fontFamily: 'var(--font-display), serif',
             fontSize: 22,
             color: '#E8E6DD',
             margin: '0 0 4px',
@@ -78,7 +78,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           }}
           style={{
             width: '100%',
-            background: '#FFD166',
+            background: 'var(--terracotta)',
             color: '#1a1208',
             fontSize: 13,
             fontWeight: 600,

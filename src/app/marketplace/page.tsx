@@ -27,17 +27,17 @@ const CATEGORIES: { key: CategoryFilter; label: string }[] = [
 ];
 
 const DIFFICULTY_TONE: Record<Exclude<DifficultyFilter, 'all'>, { border: string; bg: string; color: string }> = {
-  beginner:     { border: 'rgba(52,211,153,0.4)',  bg: 'rgba(52,211,153,0.06)',  color: '#34d399' },
-  intermediate: { border: 'rgba(255,209,102,0.4)', bg: 'rgba(255,209,102,0.06)', color: '#FFD166' },
-  advanced:     { border: 'rgba(132,101,203,0.4)', bg: 'rgba(132,101,203,0.06)', color: '#8465CB' },
+  beginner:     { border: 'rgba(94, 234, 212,0.4)',  bg: 'rgba(94, 234, 212,0.06)',  color: 'var(--seafoam)' },
+  intermediate: { border: 'rgba(232, 130, 107,0.4)', bg: 'rgba(232, 130, 107,0.06)', color: 'var(--terracotta)' },
+  advanced:     { border: 'rgba(232, 130, 107,0.4)', bg: 'rgba(232, 130, 107,0.06)', color: 'var(--terracotta)' },
 };
 
 const SECTION_COPY: Record<string, { label: string; sub: string; color: string }> = {
-  beginner:     { label: 'Beginner',    sub: 'First telescope · easy setup',    color: '#34d399' },
-  intermediate: { label: 'Mid',         sub: 'Step up · more aperture',         color: '#FFD166' },
-  advanced:     { label: 'Advanced',    sub: 'Deep sky · serious gear',         color: '#8465CB' },
+  beginner:     { label: 'Beginner',    sub: 'First telescope · easy setup',    color: 'var(--seafoam)' },
+  intermediate: { label: 'Mid',         sub: 'Step up · more aperture',         color: 'var(--terracotta)' },
+  advanced:     { label: 'Advanced',    sub: 'Deep sky · serious gear',         color: 'var(--terracotta)' },
   others:       { label: 'Accessories', sub: 'Eyepieces · binoculars · gear',   color: 'rgba(232,230,221,0.5)' },
-  all:          { label: 'All',         sub: 'All gear · sorted by difficulty', color: '#34d399' },
+  all:          { label: 'All',         sub: 'All gear · sorted by difficulty', color: 'var(--seafoam)' },
 };
 
 type RedeemTier = { stars: number; reward: string; detail: string; apiTier: string };
@@ -162,16 +162,16 @@ export default function MarketplacePage() {
 
           <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 pb-[14px] mb-[14px] border-b border-[rgba(232,230,221,0.1)]">
             <div className="flex items-baseline gap-3">
-              <span className="text-[9px] tracking-[0.24em] uppercase text-[#34d399] font-medium">04</span>
+              <span className="text-[9px] tracking-[0.24em] uppercase text-[var(--seafoam)] font-medium">04</span>
               <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-[#E8E6DD] leading-none">
-                Marketplace<span className="text-[#FFD166]">.</span>
+                Marketplace<span className="text-[var(--terracotta)]">.</span>
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <span className="flex items-baseline gap-1.5 text-[10px] uppercase">
                 <span className="tracking-[0.14em] text-[rgba(232,230,221,0.35)]">Balance</span>
-                <span className="font-medium text-[#FFD166]">{balance.toLocaleString()}</span>
-                <span className="text-[#FFD166] opacity-70">✦</span>
+                <span className="font-medium text-[var(--terracotta)]">{balance.toLocaleString()}</span>
+                <span className="text-[var(--terracotta)] opacity-70">✦</span>
               </span>
               <span className="flex items-center gap-1.5 text-[10px] uppercase">
                 <span className="tracking-[0.14em] text-[rgba(232,230,221,0.35)]">Region</span>
@@ -197,11 +197,11 @@ export default function MarketplacePage() {
                   key={tier.apiTier}
                   className="flex items-center gap-2.5 px-3 py-[10px] rounded-lg min-w-[180px]"
                   style={{
-                    background: unlocked ? 'rgba(255,209,102,0.04)' : 'rgba(255,255,255,0.015)',
-                    border: unlocked ? '0.5px solid rgba(255,209,102,0.4)' : '0.5px solid rgba(232,230,221,0.08)',
+                    background: unlocked ? 'rgba(232, 130, 107,0.04)' : 'rgba(255,255,255,0.015)',
+                    border: unlocked ? '0.5px solid rgba(232, 130, 107,0.4)' : '0.5px solid rgba(232,230,221,0.08)',
                   }}
                 >
-                  <span className="flex items-baseline whitespace-nowrap text-[13px] font-semibold tracking-[0.02em] text-[#FFD166]">
+                  <span className="flex items-baseline whitespace-nowrap text-[13px] font-semibold tracking-[0.02em] text-[var(--terracotta)]">
                     <span className="text-[10px] opacity-70 mr-[3px]">✦</span>
                     {tier.stars}
                   </span>
@@ -210,15 +210,15 @@ export default function MarketplacePage() {
                     <span className="text-[9px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.4)] truncate">{l2}</span>
                     <div className="h-[2px] bg-[rgba(232,230,221,0.05)] rounded-[1px] overflow-hidden mt-[3px]">
                       <div
-                        className="h-full bg-[#FFD166] rounded-[1px]"
-                        style={{ width: `${pct}%`, boxShadow: unlocked ? '0 0 6px rgba(255,209,102,0.8)' : undefined }}
+                        className="h-full bg-[var(--terracotta)] rounded-[1px]"
+                        style={{ width: `${pct}%`, boxShadow: unlocked ? '0 0 6px rgba(232, 130, 107,0.8)' : undefined }}
                       />
                     </div>
                   </div>
                   {code ? (
                     <span
                       className="text-[9px] tracking-[0.12em] font-semibold px-[10px] py-[5px] rounded-full"
-                      style={{ background: 'rgba(255,209,102,0.1)', border: '0.5px solid rgba(255,209,102,0.4)', color: '#FFD166' }}
+                      style={{ background: 'rgba(232, 130, 107,0.1)', border: '0.5px solid rgba(232, 130, 107,0.4)', color: 'var(--terracotta)' }}
                     >
                       {code}
                     </span>
@@ -227,7 +227,7 @@ export default function MarketplacePage() {
                       onClick={() => handleRedeem(tier)}
                       disabled={isClaim}
                       className="text-[9px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full transition-opacity disabled:opacity-60"
-                      style={{ background: 'rgba(52,211,153,0.12)', border: '0.5px solid rgba(52,211,153,0.5)', color: '#34d399' }}
+                      style={{ background: 'rgba(94, 234, 212,0.12)', border: '0.5px solid rgba(94, 234, 212,0.5)', color: 'var(--seafoam)' }}
                     >
                       {isClaim ? '…' : 'Redeem'}
                     </button>
@@ -259,7 +259,7 @@ export default function MarketplacePage() {
                   }`}
                   style={
                     active
-                      ? { background: 'rgba(255,209,102,0.1)', color: '#FFD166' }
+                      ? { background: 'rgba(232, 130, 107,0.1)', color: 'var(--terracotta)' }
                       : { color: 'rgba(232,230,221,0.5)' }
                   }
                 >

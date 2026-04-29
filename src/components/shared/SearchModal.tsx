@@ -145,7 +145,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
           {focused && (
             <span style={{
               fontSize: '0.625rem',
-              color: '#64748b',
+              color: 'var(--text-muted)',
               border: '1px solid #334155',
               borderRadius: 4,
               padding: '1px 4px',
@@ -181,14 +181,14 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
             </div>
           ) : filtered.length === 0 ? (
             /* Empty state */
-            <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.875rem', padding: '24px 0' }}>
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', padding: '24px 0' }}>
               No results for &ldquo;{query}&rdquo;
             </p>
           ) : (
             /* Grouped results */
             Object.entries(grouped).map(([type, items]) => (
               <div key={type} style={{ marginTop: 8 }}>
-                <p style={{ fontSize: '0.625rem', color: '#475569', fontWeight: 600, letterSpacing: '0.1em', padding: '4px 8px' }}>
+                <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.1em', padding: '4px 8px' }}>
                   {TYPE_LABELS[type]}
                 </p>
                 {items.map((item, idx) => (
@@ -225,9 +225,9 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ color: 'white', fontSize: '0.875rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</p>
-                      <p style={{ color: '#64748b', fontSize: '0.75rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.sub}</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.sub}</p>
                     </div>
-                    <ArrowUpRight size={12} color="#475569" style={{ flexShrink: 0 }} />
+                    <ArrowUpRight size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
                   </button>
                 ))}
               </div>

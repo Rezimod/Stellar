@@ -59,9 +59,9 @@ interface Row {
 }
 
 const CATEGORY_META: Record<string, { label: string; color: string; bg: string; border: string; emoji: string }> = {
-  sky_event: { label: 'SKY', color: 'var(--stl-gold)', bg: 'rgba(255,209,102,0.12)', border: 'rgba(255,209,102,0.25)', emoji: '🔭' },
-  weather_event: { label: 'WEATHER', color: '#5EEAD4', bg: 'rgba(94,234,212,0.10)', border: 'rgba(94,234,212,0.25)', emoji: '🌧' },
-  natural_phenomenon: { label: 'NATURE', color: '#C4B5FD', bg: 'rgba(196,181,253,0.10)', border: 'rgba(196,181,253,0.25)', emoji: '⚡' },
+  sky_event: { label: 'SKY', color: 'var(--stl-gold)', bg: 'rgba(232, 130, 107,0.12)', border: 'rgba(232, 130, 107,0.25)', emoji: '🔭' },
+  weather_event: { label: 'WEATHER', color: 'var(--seafoam)', bg: 'rgba(94, 234, 212,0.10)', border: 'rgba(94, 234, 212,0.25)', emoji: '🌧' },
+  natural_phenomenon: { label: 'NATURE', color: 'var(--terracotta)', bg: 'rgba(232, 130, 107,0.10)', border: 'rgba(232, 130, 107,0.25)', emoji: '⚡' },
 };
 
 function fmtInt(n: number): string {
@@ -278,7 +278,7 @@ export default function MyPositionsPage() {
       <PageTransition>
         <PageContainer variant="wide" className="py-3 sm:py-6 flex flex-col gap-5">
           <header className="flex flex-col gap-1.5">
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 38, lineHeight: 1.05, fontWeight: 600, color: 'var(--stl-text-bright)', letterSpacing: '-0.012em', margin: 0 }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 38, lineHeight: 1.05, fontWeight: 600, color: 'var(--stl-text-bright)', letterSpacing: '-0.012em', margin: 0 }}>
               My Positions
             </h1>
           </header>
@@ -287,16 +287,16 @@ export default function MyPositionsPage() {
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             <span style={{ fontSize: 28, opacity: 0.6 }}>✦</span>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--stl-text-bright)', margin: 0 }}>Sign in to see your positions</p>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: 17, color: 'var(--stl-text-bright)', margin: 0 }}>Sign in to see your positions</p>
             <button
               onClick={() => setAuthOpen(true)}
               style={{
                 marginTop: 4,
                 padding: '9px 16px',
                 borderRadius: 8,
-                border: '1px solid rgba(255,209,102,0.5)',
+                border: '1px solid rgba(232, 130, 107,0.5)',
                 background: 'var(--stl-gold)',
-                color: '#0a0a0a',
+                color: 'var(--canvas)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 fontWeight: 700,
@@ -318,7 +318,7 @@ export default function MyPositionsPage() {
     <PageTransition>
       <PageContainer variant="wide" className="py-3 sm:py-6 flex flex-col gap-5">
         <header className="flex flex-col gap-1.5">
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 38, lineHeight: 1.05, fontWeight: 600, color: 'var(--stl-text-bright)', letterSpacing: '-0.012em', margin: 0 }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 38, lineHeight: 1.05, fontWeight: 600, color: 'var(--stl-text-bright)', letterSpacing: '-0.012em', margin: 0 }}>
             My Positions
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.04em', margin: 0 }}>
@@ -330,7 +330,7 @@ export default function MyPositionsPage() {
         <div
           className="rounded-xl p-4 grid grid-cols-3 gap-3"
           style={{
-            background: 'linear-gradient(145deg, rgba(20,24,40,0.75), rgba(8,10,20,0.95))',
+            background: 'var(--surface)',
             border: '1px solid rgba(255,255,255,0.06)',
           }}
         >
@@ -343,7 +343,7 @@ export default function MyPositionsPage() {
         <MyActiveBets variant="full" title="Manage open bets" />
 
         {error && (
-          <div style={{ color: '#fca5a5', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+          <div style={{ color: 'var(--negative)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             Couldn’t load positions — {error}
           </div>
         )}
@@ -364,15 +364,15 @@ export default function MyPositionsPage() {
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             <span style={{ fontSize: 28, opacity: 0.6 }}>✦</span>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--stl-text-bright)', margin: 0 }}>No positions yet</p>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: 17, color: 'var(--stl-text-bright)', margin: 0 }}>No positions yet</p>
             <Link
               href="/markets"
               style={{
                 padding: '8px 14px',
                 borderRadius: 8,
-                border: '1px solid rgba(255,209,102,0.5)',
+                border: '1px solid rgba(232, 130, 107,0.5)',
                 background: 'var(--stl-gold)',
-                color: '#0a0a0a',
+                color: 'var(--canvas)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 fontWeight: 700,
@@ -437,7 +437,7 @@ function Stat({ label, value, accent = false }: { label: string; value: string; 
       </span>
       <span
         style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 22,
           color: accent ? 'var(--stl-gold)' : 'var(--stl-text-bright)',
           fontVariantNumeric: 'tabular-nums',
@@ -451,11 +451,11 @@ function Stat({ label, value, accent = false }: { label: string; value: string; 
 }
 
 const BUCKET_META: Record<Bucket, { label: string; color: string; bg: string; border: string }> = {
-  won:     { label: 'Won',         color: 'var(--stl-gold)', bg: 'rgba(255,209,102,0.12)', border: 'rgba(255,209,102,0.30)' },
-  active:  { label: 'Active',      color: 'var(--stl-green)', bg: 'rgba(52,211,153,0.10)',  border: 'rgba(52,211,153,0.25)' },
-  cashed:  { label: 'Cashed out',  color: '#FBBF24', bg: 'rgba(251,191,36,0.10)',  border: 'rgba(251,191,36,0.30)' },
-  lost:    { label: 'Lost',        color: '#F472B6', bg: 'rgba(244,114,182,0.10)', border: 'rgba(244,114,182,0.25)' },
-  claimed: { label: 'Claimed',     color: '#94A3B8', bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.25)' },
+  won:     { label: 'Won',         color: 'var(--stl-gold)', bg: 'rgba(232, 130, 107,0.12)', border: 'rgba(232, 130, 107,0.30)' },
+  active:  { label: 'Active',      color: 'var(--terracotta)', bg: 'rgba(94, 234, 212,0.10)',  border: 'rgba(94, 234, 212,0.25)' },
+  cashed:  { label: 'Cashed out',  color: 'var(--terracotta)', bg: 'rgba(232, 130, 107,0.10)',  border: 'rgba(232, 130, 107,0.30)' },
+  lost:    { label: 'Lost',        color: 'var(--negative)', bg: 'rgba(251, 113, 133, 0.10)', border: 'rgba(251, 113, 133, 0.25)' },
+  claimed: { label: 'Claimed',     color: 'var(--text-muted)', bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.25)' },
 };
 
 function PositionRow({
@@ -485,7 +485,7 @@ function PositionRow({
     <div
       className="rounded-xl p-4 flex flex-col gap-3"
       style={{
-        background: 'linear-gradient(145deg, rgba(20,24,40,0.75), rgba(8,10,20,0.95))',
+        background: 'var(--surface)',
         border: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -547,7 +547,7 @@ function PositionRow({
 
       <div
         style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 16,
           color: 'var(--stl-text-bright)',
           fontWeight: 600,
@@ -574,9 +574,9 @@ function PositionRow({
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: '0.14em',
-              color: isYes ? 'var(--stl-green)' : '#F472B6',
-              background: isYes ? 'rgba(52,211,153,0.10)' : 'rgba(244,114,182,0.10)',
-              border: `1px solid ${isYes ? 'rgba(52,211,153,0.25)' : 'rgba(244,114,182,0.25)'}`,
+              color: isYes ? 'var(--terracotta)' : 'var(--negative)',
+              background: isYes ? 'rgba(94, 234, 212,0.10)' : 'rgba(251, 113, 133, 0.10)',
+              border: `1px solid ${isYes ? 'rgba(94, 234, 212,0.25)' : 'rgba(251, 113, 133, 0.25)'}`,
               borderRadius: 4,
               padding: '3px 7px',
             }}
@@ -623,7 +623,7 @@ function PositionRow({
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 11,
-                color: '#FBBF24',
+                color: 'var(--terracotta)',
                 fontVariantNumeric: 'tabular-nums',
               }}
             >
@@ -640,9 +640,9 @@ function PositionRow({
             style={{
               padding: '8px 14px',
               borderRadius: 8,
-              border: '1px solid rgba(255,209,102,0.5)',
+              border: '1px solid rgba(232, 130, 107,0.5)',
               background: 'var(--stl-gold)',
-              color: '#0a0a0a',
+              color: 'var(--canvas)',
               fontFamily: 'var(--font-mono)',
               fontSize: 12,
               fontWeight: 700,
@@ -661,7 +661,7 @@ function PositionRow({
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 11,
-            color: status.startsWith('Error') ? '#fca5a5' : 'rgba(255,255,255,0.6)',
+            color: status.startsWith('Error') ? 'var(--negative)' : 'rgba(255,255,255,0.6)',
           }}
         >
           {status}
@@ -701,8 +701,8 @@ function ObserverAdvantageBadge({
         fontWeight: 700,
         letterSpacing: '0.08em',
         color: 'var(--stl-gold)',
-        background: 'rgba(255,209,102,0.10)',
-        border: '1px solid rgba(255,209,102,0.32)',
+        background: 'rgba(232, 130, 107,0.10)',
+        border: '1px solid rgba(232, 130, 107,0.32)',
         borderRadius: 999,
         padding: compact ? '2.5px 7px' : '3.5px 9px',
         textTransform: 'uppercase',
@@ -711,7 +711,7 @@ function ObserverAdvantageBadge({
     >
       <span aria-hidden>🔭</span>
       <span>1.5×</span>
-      <span style={{ color: 'rgba(255,209,102,0.75)', fontWeight: 500, textTransform: 'none', letterSpacing: '0.02em' }}>
+      <span style={{ color: 'rgba(232, 130, 107,0.75)', fontWeight: 500, textTransform: 'none', letterSpacing: '0.02em' }}>
         {reason}
       </span>
     </span>
@@ -725,8 +725,8 @@ function ClaimResultCard({ result }: { result: ClaimResult }) {
       <div
         className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5"
         style={{
-          background: 'rgba(255,209,102,0.06)',
-          border: '1px solid rgba(255,209,102,0.3)',
+          background: 'rgba(232, 130, 107,0.06)',
+          border: '1px solid rgba(232, 130, 107,0.3)',
         }}
       >
         <div className="flex items-center justify-between" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
@@ -738,7 +738,7 @@ function ClaimResultCard({ result }: { result: ClaimResult }) {
           <span style={{ fontVariantNumeric: 'tabular-nums' }}>+{fmtInt(bonus)} ✦</span>
         </div>
         <div
-          style={{ height: 1, background: 'rgba(255,209,102,0.2)', margin: '2px 0' }}
+          style={{ height: 1, background: 'rgba(232, 130, 107,0.2)', margin: '2px 0' }}
         />
         <div className="flex items-center justify-between" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--stl-gold)', fontWeight: 700 }}>
           <span>Total</span>
@@ -877,15 +877,15 @@ function RedeemSection({
       id="redeem"
       className="rounded-xl p-4 flex flex-col gap-4"
       style={{
-        background: 'linear-gradient(145deg, rgba(20,24,40,0.75), rgba(8,10,20,0.95))',
-        border: '1px solid rgba(255,209,102,0.18)',
+        background: 'var(--surface)',
+        border: '1px solid rgba(232, 130, 107,0.18)',
       }}
     >
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex flex-col gap-1">
           <h2
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 20,
               color: 'var(--stl-text-bright)',
               margin: 0,
@@ -934,8 +934,8 @@ function RedeemSection({
               key={t.tier}
               className="rounded-lg p-3 flex flex-col gap-2"
               style={{
-                background: unlocked ? 'rgba(255,209,102,0.06)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${unlocked ? 'rgba(255,209,102,0.28)' : 'rgba(255,255,255,0.06)'}`,
+                background: unlocked ? 'rgba(232, 130, 107,0.06)' : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${unlocked ? 'rgba(232, 130, 107,0.28)' : 'rgba(255,255,255,0.06)'}`,
                 opacity: unlocked ? 1 : 0.6,
               }}
             >
@@ -952,7 +952,7 @@ function RedeemSection({
               </div>
               <div
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontSize: 14,
                   color: 'var(--stl-text-bright)',
                   lineHeight: 1.3,
@@ -977,9 +977,9 @@ function RedeemSection({
                   marginTop: 'auto',
                   padding: '8px 12px',
                   borderRadius: 8,
-                  border: `1px solid ${unlocked ? 'rgba(255,209,102,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  border: `1px solid ${unlocked ? 'rgba(232, 130, 107,0.5)' : 'rgba(255,255,255,0.08)'}`,
                   background: unlocked ? 'var(--stl-gold)' : 'rgba(255,255,255,0.04)',
-                  color: unlocked ? '#0a0a0a' : 'rgba(255,255,255,0.5)',
+                  color: unlocked ? 'var(--canvas)' : 'rgba(255,255,255,0.5)',
                   fontFamily: 'var(--font-mono)',
                   fontSize: 11,
                   fontWeight: 700,
@@ -997,7 +997,7 @@ function RedeemSection({
       </div>
 
       {error && (
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#fca5a5' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--negative)' }}>
           {error}
         </div>
       )}
@@ -1026,8 +1026,8 @@ function RedeemSection({
             onClick={(e) => e.stopPropagation()}
             className="rounded-xl p-5 flex flex-col gap-3 max-w-md w-full"
             style={{
-              background: 'linear-gradient(145deg, rgba(20,24,40,0.98), rgba(8,10,20,1))',
-              border: '1px solid rgba(255,209,102,0.35)',
+              background: 'var(--surface)',
+              border: '1px solid rgba(232, 130, 107,0.35)',
             }}
           >
             <div
@@ -1043,7 +1043,7 @@ function RedeemSection({
             </div>
             <div
               className="rounded-lg p-3 flex items-center justify-between gap-3"
-              style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.3)' }}
+              style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.3)' }}
             >
               <code
                 style={{
@@ -1061,9 +1061,9 @@ function RedeemSection({
                 style={{
                   padding: '6px 10px',
                   borderRadius: 6,
-                  border: '1px solid rgba(255,209,102,0.5)',
-                  background: copied ? 'var(--stl-green)' : 'var(--stl-gold)',
-                  color: '#0a0a0a',
+                  border: '1px solid rgba(232, 130, 107,0.5)',
+                  background: copied ? 'var(--terracotta)' : 'var(--stl-gold)',
+                  color: 'var(--canvas)',
                   fontFamily: 'var(--font-mono)',
                   fontSize: 10,
                   fontWeight: 700,
@@ -1099,9 +1099,9 @@ function RedeemSection({
                 style={{
                   padding: '8px 14px',
                   borderRadius: 8,
-                  border: '1px solid rgba(255,209,102,0.5)',
+                  border: '1px solid rgba(232, 130, 107,0.5)',
                   background: 'var(--stl-gold)',
-                  color: '#0a0a0a',
+                  color: 'var(--canvas)',
                   fontFamily: 'var(--font-mono)',
                   fontSize: 11,
                   fontWeight: 700,

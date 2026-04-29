@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const highlight3 = searchParams.get('highlight3') ?? '';
   const location = searchParams.get('location') ?? 'Tbilisi';
 
-  const scoreColor = score >= 70 ? '#34d399' : score >= 50 ? '#FBBF24' : '#64748b';
+  const scoreColor = score >= 70 ? '#5EEAD4' : score >= 50 ? '#E8826B' : '#A8B4C8';
   const emoji = score >= 90 ? '✨' : score >= 70 ? '🌟' : score >= 50 ? '⭐' : score >= 30 ? '🌤️' : '☁️';
 
   const highlights = [highlight1, highlight2, highlight3].filter(Boolean);
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
           height: '630px',
           display: 'flex',
           flexDirection: 'column',
-          background: '#0a0a0a',
+          background: '#2C3E5C',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
           alignItems: 'center',
           padding: '32px 48px 0',
         }}>
-          <span style={{ fontSize: 28, fontWeight: 700, color: '#F4EDE0', letterSpacing: 2 }}>STELLAR</span>
+          <span style={{ fontSize: 28, fontWeight: 700, color: '#F5F1E8', letterSpacing: 2 }}>STELLAR</span>
           <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>{location}</span>
         </div>
 

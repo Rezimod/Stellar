@@ -380,11 +380,11 @@ export default function ObserveVerifyPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-white font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8' }}
+            style={{ background: 'rgba(232, 130, 107,0.12)', border: '1px solid rgba(232, 130, 107,0.25)', color: 'var(--terracotta)' }}
           >
             Back to missions
           </Link>
@@ -401,23 +401,23 @@ export default function ObserveVerifyPage() {
           <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
             <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
           </div>
-          <p className="text-white text-sm font-semibold">{mission.name}</p>
+          <p className="text-text-primary text-sm font-semibold">{mission.name}</p>
         </div>
         <div className="flex flex-col items-center gap-3 text-center">
           {photo && (
-            <div className="w-full rounded-xl overflow-hidden bg-black" style={{ maxHeight: '40vh', aspectRatio: '1/1' }}>
+            <div className="w-full rounded-xl overflow-hidden bg-canvas" style={{ maxHeight: '40vh', aspectRatio: '1/1' }}>
               <img src={photo} alt="Uploaded observation" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
             </div>
           )}
           <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)' }}>
-            <Camera size={20} className="text-slate-400" />
+            <Camera size={20} className="text-text-muted" />
           </div>
           <div>
-            <h3 className="text-white font-semibold text-base mb-1">Photo Saved</h3>
-            <p className="text-slate-400 text-sm leading-snug">
+            <h3 className="text-text-primary font-semibold text-base mb-1">Photo Saved</h3>
+            <p className="text-text-muted text-sm leading-snug">
               {flow.galleryReason || photoVerification?.reason || "Your photo didn't pass AI verification."}
             </p>
-            <p className="text-slate-600 text-xs mt-1.5">No Stars earned · Not minted as NFT</p>
+            <p className="text-text-muted text-xs mt-1.5">No Stars earned · Not minted as NFT</p>
           </div>
         </div>
         <div className="flex gap-3 w-full">
@@ -435,7 +435,7 @@ export default function ObserveVerifyPage() {
           <button
             onClick={() => router.push('/missions')}
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}
+            style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.2)', color: 'var(--terracotta)' }}
           >
             Done
           </button>
@@ -458,7 +458,7 @@ export default function ObserveVerifyPage() {
           <button
             onClick={() => router.push('/missions')}
             aria-label="Close"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <X size={14} />
@@ -478,9 +478,9 @@ export default function ObserveVerifyPage() {
           {photoVerification && (
             <div className="mt-2 text-center">
               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                photoVerification.confidence === 'high' ? 'bg-green-500/20 text-green-400' :
-                photoVerification.confidence === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                'bg-slate-500/20 text-slate-400'
+                photoVerification.confidence === 'high' ? 'bg-seafoam text-seafoam' :
+                photoVerification.confidence === 'medium' ? 'bg-terracotta text-terracotta' :
+                'bg-[var(--surface)] text-text-muted'
               }`}>
                 AI: {photoVerification.identifiedObject} · {photoVerification.confidence} confidence
               </span>
@@ -488,9 +488,9 @@ export default function ObserveVerifyPage() {
           )}
           {mintError && (
             <div className="mt-2 text-center">
-              <p className="text-xs text-amber-400">{mintError}</p>
+              <p className="text-xs text-terracotta">{mintError}</p>
               {mintError.includes('cloudy') && (
-                <Link href="/sky" className="text-xs text-[#818cf8] underline mt-1 inline-block">
+                <Link href="/sky" className="text-xs text-[var(--terracotta)] underline mt-1 inline-block">
                   Check sky forecast →
                 </Link>
               )}

@@ -14,20 +14,20 @@ interface SkyBadgeProps {
 const config: Record<SkyCondition, { color: string; bg: string; border: string; defaultLabel: string }> = {
   go: {
     color: 'var(--success)',
-    bg: 'rgba(52,211,153,0.1)',
-    border: 'rgba(52,211,153,0.25)',
+    bg: 'rgba(94, 234, 212,0.1)',
+    border: 'rgba(94, 234, 212,0.25)',
     defaultLabel: 'Clear Sky',
   },
   maybe: {
-    color: '#F59E0B',
-    bg: 'rgba(245,158,11,0.1)',
-    border: 'rgba(245,158,11,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.1)',
+    border: 'rgba(232, 130, 107,0.25)',
     defaultLabel: 'Partly Cloudy',
   },
   skip: {
-    color: '#EF4444',
-    bg: 'rgba(239,68,68,0.1)',
-    border: 'rgba(239,68,68,0.25)',
+    color: 'var(--negative)',
+    bg: 'rgba(251, 113, 133,0.1)',
+    border: 'rgba(251, 113, 133,0.25)',
     defaultLabel: 'Overcast',
   },
 };

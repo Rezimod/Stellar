@@ -52,10 +52,10 @@ export default function BestTargets() {
         {targets.map(target => {
           const eqColor = target.equipment === 'naked_eye' ? 'var(--success)'
             : target.equipment === 'binoculars' ? 'var(--stars)'
-            : '#818cf8';
-          const eqBg = target.equipment === 'naked_eye' ? 'rgba(52,211,153,0.1)'
-            : target.equipment === 'binoculars' ? 'rgba(255,209,102,0.1)'
-            : 'rgba(99,102,241,0.1)';
+            : 'var(--terracotta)';
+          const eqBg = target.equipment === 'naked_eye' ? 'rgba(94, 234, 212,0.1)'
+            : target.equipment === 'binoculars' ? 'rgba(232, 130, 107,0.1)'
+            : 'rgba(232, 130, 107,0.1)';
           const eqLabel = target.equipment === 'naked_eye' ? '👁 Naked Eye'
             : target.equipment === 'binoculars' ? '🔭 Binoculars'
             : '🔭 Telescope';
@@ -66,7 +66,7 @@ export default function BestTargets() {
               className="glass-card p-4 flex flex-col gap-2.5"
               style={{
                 borderLeft: target.visible
-                  ? '2px solid rgba(52,211,153,0.4)'
+                  ? '2px solid rgba(94, 234, 212,0.4)'
                   : '2px solid rgba(255,255,255,0.06)',
                 opacity: target.visible ? 1 : 0.5,
               }}
@@ -75,7 +75,7 @@ export default function BestTargets() {
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{target.emoji}</span>
                   <div>
-                    <p className="text-white text-sm font-semibold">{target.name}</p>
+                    <p className="text-text-primary text-sm font-semibold">{target.name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[10px] px-1.5 py-0.5 rounded" style={{
                         background: eqBg,

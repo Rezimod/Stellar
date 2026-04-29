@@ -95,7 +95,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
             border: '1px solid var(--stl-border-strong)',
             borderRadius: 8,
             color: 'var(--stl-text-bright)',
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 18,
             padding: '6px 10px',
             outline: 'none',
@@ -109,7 +109,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
           aria-label="Save username"
           style={{
             width: 30, height: 30, borderRadius: 6,
-            background: 'rgba(52,211,153,0.10)',
+            background: 'rgba(94, 234, 212,0.10)',
             border: '1px solid var(--stl-border-green)',
             color: 'var(--stl-green)',
             cursor: saving ? 'wait' : 'pointer',
@@ -135,7 +135,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
         </button>
       </div>
       {error && (
-        <p className="stl-mono-data" style={{ color: 'var(--color-error, #F87171)', margin: 0 }}>
+        <p className="stl-mono-data" style={{ color: 'var(--color-error, var(--negative))', margin: 0 }}>
           {error}
         </p>
       )}

@@ -37,15 +37,15 @@ export default function StarsRedemption({ starsBalance, walletAddress }: { stars
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all"
-        style={{ background: 'rgba(255,209,102,0.07)', border: '1px solid rgba(255,209,102,0.15)' }}
+        style={{ background: 'rgba(232, 130, 107,0.07)', border: '1px solid rgba(232, 130, 107,0.15)' }}
       >
-        <span className="text-sm text-slate-300">
+        <span className="text-sm text-text-primary">
           {starsBalance === undefined
-            ? <span className="inline-block w-10 h-3.5 rounded bg-white/10 animate-pulse align-middle" />
-            : <span className="text-[#FFD166] font-semibold">{starsBalance} ✦</span>
+            ? <span className="inline-block w-10 h-3.5 rounded bg-[var(--surface-hover)] animate-pulse align-middle" />
+            : <span className="text-[var(--terracotta)] font-semibold">{starsBalance} ✦</span>
           }{' '}Stars — redeem rewards
         </span>
-        <span className="text-[#FFD166] text-xs">{open ? '▲' : '▼'}</span>
+        <span className="text-[var(--terracotta)] text-xs">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
@@ -59,24 +59,24 @@ export default function StarsRedemption({ starsBalance, walletAddress }: { stars
           <div
             key={tier.label}
             className="glass-card p-4 flex flex-col gap-2"
-            style={{ border: unlocked ? '1px solid rgba(255,209,102,0.3)' : '1px solid rgba(255,255,255,0.06)' }}
+            style={{ border: unlocked ? '1px solid rgba(232, 130, 107,0.3)' : '1px solid rgba(255,255,255,0.06)' }}
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-white text-sm font-semibold">{tier.label}</p>
-                <p className="text-slate-500 text-xs">{tier.desc}</p>
+                <p className="text-text-primary text-sm font-semibold">{tier.label}</p>
+                <p className="text-text-muted text-xs">{tier.desc}</p>
               </div>
-              <span className="text-[#FFD166] text-xs font-mono flex-shrink-0">{tier.stars} ✦</span>
+              <span className="text-[var(--terracotta)] text-xs font-mono flex-shrink-0">{tier.stars} ✦</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${progress}%`, background: 'linear-gradient(to right, #FFD166, #CC9A33)' }}
+                style={{ width: `${progress}%`, background: 'linear-gradient(to right, var(--terracotta), var(--terracotta))' }}
               />
             </div>
             {unlocked ? (
               revealedCode ? (
-                <p className="text-[#34d399] text-xs font-mono text-center py-1">
+                <p className="text-[var(--seafoam)] text-xs font-mono text-center py-1">
                   Code copied: <strong>{revealedCode}</strong>
                 </p>
               ) : (
@@ -84,13 +84,13 @@ export default function StarsRedemption({ starsBalance, walletAddress }: { stars
                   onClick={() => handleClaim(tier.label)}
                   disabled={claiming[tier.label]}
                   className="w-full py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-60"
-                  style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
+                  style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
                 >
                   {claiming[tier.label] ? 'Claiming...' : 'Claim Discount Code'}
                 </button>
               )
             ) : (
-              <p className="text-slate-500 text-xs text-center">
+              <p className="text-text-muted text-xs text-center">
                 {tier.stars - balance} more ✦ needed
               </p>
             )}

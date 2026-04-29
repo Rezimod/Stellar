@@ -100,7 +100,7 @@ export default function OnboardingOverlay() {
       <button
         onClick={dismiss}
         style={{
-          background: 'linear-gradient(135deg, #34D399, #14B8A6)',
+          background: 'linear-gradient(135deg, var(--seafoam), var(--seafoam))',
           color: '#000',
           fontWeight: 600,
           borderRadius: 12,

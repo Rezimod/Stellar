@@ -96,11 +96,11 @@ export default function AdminResolvePage() {
         <header className="flex flex-col gap-1.5">
           <h1
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 38,
               lineHeight: 1.05,
               fontWeight: 600,
-              color: '#F2F0EA',
+              color: 'var(--text)',
               letterSpacing: '-0.012em',
               margin: 0,
             }}
@@ -124,8 +124,8 @@ export default function AdminResolvePage() {
           <div
             className="rounded-xl px-4 py-6 text-center"
             style={{
-              background: 'rgba(244,63,94,0.06)',
-              border: '1px solid rgba(244,63,94,0.2)',
+              background: 'rgba(251, 113, 133,0.06)',
+              border: '1px solid rgba(251, 113, 133,0.2)',
               color: 'rgba(252,165,165,0.85)',
               fontFamily: 'var(--font-display)',
               fontSize: 13,
@@ -167,7 +167,7 @@ export default function AdminResolvePage() {
                 border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 6,
                 padding: '6px 10px',
-                color: '#F2F0EA',
+                color: 'var(--text)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 outline: 'none',
@@ -177,7 +177,7 @@ export default function AdminResolvePage() {
         )}
 
         {error && (
-          <div style={{ color: '#fca5a5', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+          <div style={{ color: 'var(--negative)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             Couldn’t load markets — {error}
           </div>
         )}
@@ -218,9 +218,9 @@ export default function AdminResolvePage() {
                   <div className="flex flex-col gap-1">
                     <div
                       style={{
-                        fontFamily: 'var(--font-serif)',
+                        fontFamily: 'var(--font-display)',
                         fontSize: 17,
-                        color: '#F2F0EA',
+                        color: 'var(--text)',
                         fontWeight: 600,
                         lineHeight: 1.25,
                       }}
@@ -264,8 +264,8 @@ export default function AdminResolvePage() {
                       style={{
                         padding: '8px 14px',
                         borderRadius: 8,
-                        border: '1px solid rgba(52,211,153,0.4)',
-                        background: 'rgba(52,211,153,0.12)',
+                        border: '1px solid rgba(94, 234, 212,0.4)',
+                        background: 'rgba(94, 234, 212,0.12)',
                         color: 'var(--success)',
                         fontFamily: 'var(--font-mono)',
                         fontSize: 12,
@@ -284,9 +284,9 @@ export default function AdminResolvePage() {
                       style={{
                         padding: '8px 14px',
                         borderRadius: 8,
-                        border: '1px solid rgba(244,114,182,0.4)',
-                        background: 'rgba(244,114,182,0.12)',
-                        color: '#F472B6',
+                        border: '1px solid rgba(251, 113, 133,0.4)',
+                        background: 'rgba(251, 113, 133,0.12)',
+                        color: 'var(--negative)',
                         fontFamily: 'var(--font-mono)',
                         fontSize: 12,
                         fontWeight: 700,
@@ -303,7 +303,7 @@ export default function AdminResolvePage() {
                         style={{
                           fontFamily: 'var(--font-mono)',
                           fontSize: 11,
-                          color: line.startsWith('Error') ? '#fca5a5' : 'rgba(255,255,255,0.7)',
+                          color: line.startsWith('Error') ? 'var(--negative)' : 'rgba(255,255,255,0.7)',
                         }}
                       >
                         {line}

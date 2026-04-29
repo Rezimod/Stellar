@@ -76,8 +76,8 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
   const nowIdx = slots.indexOf(nowHour);
 
   function segColor(cover: number): string {
-    if (cover < 30) return 'rgba(52,211,153,0.65)';
-    if (cover < 60) return 'rgba(251,191,36,0.5)';
+    if (cover < 30) return 'rgba(94, 234, 212,0.65)';
+    if (cover < 60) return 'rgba(232, 130, 107,0.5)';
     return 'rgba(255,255,255,0.07)';
   }
 
@@ -112,8 +112,8 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
       {/* Legend */}
       <div style={{ display: 'flex', gap: 10, marginTop: 7 }}>
         {[
-          { color: 'rgba(52,211,153,0.65)', label: 'Clear' },
-          { color: 'rgba(251,191,36,0.5)', label: 'Partly cloudy' },
+          { color: 'rgba(94, 234, 212,0.65)', label: 'Clear' },
+          { color: 'rgba(232, 130, 107,0.5)', label: 'Partly cloudy' },
           { color: 'rgba(255,255,255,0.15)', label: 'Overcast' },
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -140,7 +140,7 @@ function StatCard({ label, value, sub, warn, icon }: { label: string; value: str
         <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
       </div>
       <span style={{
-        color: warn ? 'rgba(239,68,68,0.8)' : 'rgba(255,255,255,0.92)',
+        color: warn ? 'rgba(251, 113, 133,0.8)' : 'rgba(255,255,255,0.92)',
         fontSize: 26, fontWeight: 600, fontFamily: 'monospace', lineHeight: 1,
       }}>{value}</span>
       {sub && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>{sub}</span>}
@@ -208,8 +208,8 @@ export default function HomeSkyPreview() {
   const moonWarn = moonIllum > 0.7 && status !== 'Skip';
 
   const SC = {
-    Go:    { color: 'var(--success)', border: 'rgba(52,211,153,0.22)',   bg: 'rgba(52,211,153,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(52,211,153,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(99,102,241,0.06) 0%, transparent 55%)' },
-    Maybe: { color: 'var(--stars)', border: 'rgba(255,209,102,0.2)',   bg: 'rgba(255,209,102,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255,209,102,0.10) 0%, transparent 55%)' },
+    Go:    { color: 'var(--success)', border: 'rgba(94, 234, 212,0.22)',   bg: 'rgba(94, 234, 212,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(94, 234, 212,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(232, 130, 107,0.06) 0%, transparent 55%)' },
+    Maybe: { color: 'var(--stars)', border: 'rgba(232, 130, 107,0.2)',   bg: 'rgba(232, 130, 107,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(232, 130, 107,0.10) 0%, transparent 55%)' },
     Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(255,255,255,0.07)', bg: 'transparent', nebula: 'none' },
   }[status];
 
@@ -222,7 +222,7 @@ export default function HomeSkyPreview() {
     { label: 'Moon', icon: '☽', value: `${moonPct}%`, sub: moonPhaseName(moonIllum), warn: moonWarn },
   ];
 
-  const scoreColor = !skyScore ? '#94a3b8' : skyScore.score >= 70 ? 'var(--success)' : skyScore.score >= 50 ? '#FBBF24' : '#64748b';
+  const scoreColor = !skyScore ? 'var(--text-muted)' : skyScore.score >= 70 ? 'var(--success)' : skyScore.score >= 50 ? 'var(--terracotta)' : 'var(--text-muted)';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -326,8 +326,8 @@ export default function HomeSkyPreview() {
           {moonWarn && (
             <div style={{
               marginTop: 10, padding: '8px 12px', borderRadius: 10,
-              background: 'rgba(255,209,102,0.05)', border: '1px solid rgba(255,209,102,0.15)',
-              color: 'rgba(255,209,102,0.65)', fontSize: 11, lineHeight: 1.4,
+              background: 'rgba(232, 130, 107,0.05)', border: '1px solid rgba(232, 130, 107,0.15)',
+              color: 'rgba(232, 130, 107,0.65)', fontSize: 11, lineHeight: 1.4,
             }}>
               ☽ Full moon ({moonPct}%) — faint deep-sky targets will be washed out
             </div>
@@ -398,7 +398,7 @@ export default function HomeSkyPreview() {
                         <div style={{
                           height: '100%',
                           width: `${Math.max(2, Math.min(100, (p.altitude / 90) * 100))}%`,
-                          background: `linear-gradient(to right, rgba(99,102,241,0.4), rgba(99,102,241,0.8))`,
+                          background: `linear-gradient(to right, rgba(232, 130, 107,0.4), rgba(232, 130, 107,0.8))`,
                           borderRadius: 2,
                           transition: 'width 0.8s ease-out',
                         }} />
@@ -437,8 +437,8 @@ export default function HomeSkyPreview() {
             const badge = dayBadge(day);
             const { avgCloud: dc } = getNightStats(day);
             const sel2 = i === selectedDay;
-            const bs = badge === 'Go'    ? { color: 'var(--success)',               border: 'rgba(52,211,153,0.3)',   bg: 'rgba(52,211,153,0.07)' }
-                      : badge === 'Maybe' ? { color: 'var(--stars)',               border: 'rgba(255,209,102,0.25)', bg: 'rgba(255,209,102,0.06)' }
+            const bs = badge === 'Go'    ? { color: 'var(--success)',               border: 'rgba(94, 234, 212,0.3)',   bg: 'rgba(94, 234, 212,0.07)' }
+                      : badge === 'Maybe' ? { color: 'var(--stars)',               border: 'rgba(232, 130, 107,0.25)', bg: 'rgba(232, 130, 107,0.06)' }
                       :                     { color: 'rgba(148,163,184,0.45)', border: 'rgba(255,255,255,0.07)', bg: 'rgba(255,255,255,0.02)' };
             return (
               <button key={day.date} onClick={() => selectDay(i, day.date)} style={{

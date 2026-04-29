@@ -19,7 +19,7 @@ export default function PageLoader() {
       style={{
         position: 'fixed',
         inset: 0,
-        background: '#050A12',
+        background: 'var(--canvas)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -56,7 +56,7 @@ export default function PageLoader() {
             position: 'absolute',
             inset: -28,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(139,92,246,0.22) 0%, rgba(99,60,220,0.08) 50%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(232, 130, 107,0.22) 0%, rgba(99,60,220,0.08) 50%, transparent 70%)',
             animation: 'planet-glow-breathe 2.8s ease-in-out infinite',
           }}
         />
@@ -71,10 +71,10 @@ export default function PageLoader() {
             height: 44,
             marginLeft: -74,
             marginTop: -22,
-            border: '2.5px solid rgba(167,139,250,0.45)',
+            border: '2.5px solid rgba(232, 130, 107,0.45)',
             borderRadius: '50%',
             transform: 'rotateX(74deg)',
-            boxShadow: '0 0 16px rgba(139,92,246,0.2)',
+            boxShadow: '0 0 16px rgba(232, 130, 107,0.2)',
             zIndex: 1,
             animation: 'ring-shimmer-loader 2.8s ease-in-out infinite',
           }}
@@ -93,14 +93,14 @@ export default function PageLoader() {
             borderRadius: '50%',
             background: `
               radial-gradient(ellipse at 32% 30%,
-                #c4b5fd 0%,
-                #8b5cf6 28%,
-                #6d28d9 52%,
-                #3b0764 78%,
-                #1a0533 100%
+                var(--terracotta) 0%,
+                var(--terracotta) 28%,
+                var(--terracotta) 52%,
+                var(--terracotta) 78%,
+                var(--canvas) 100%
               )
             `,
-            boxShadow: '0 0 32px rgba(139,92,246,0.55), 0 0 8px rgba(139,92,246,0.35), inset -8px -8px 20px rgba(0,0,0,0.5)',
+            boxShadow: '0 0 32px rgba(232, 130, 107,0.55), 0 0 8px rgba(232, 130, 107,0.35), inset -8px -8px 20px rgba(0,0,0,0.5)',
             zIndex: 2,
             overflow: 'hidden',
           }}
@@ -143,7 +143,7 @@ export default function PageLoader() {
               position: 'absolute',
               inset: 0,
               borderRadius: '50%',
-              background: 'radial-gradient(ellipse at 68% 68%, rgba(20,184,166,0.12) 0%, transparent 60%)',
+              background: 'radial-gradient(ellipse at 68% 68%, rgba(94, 234, 212,0.12) 0%, transparent 60%)',
             }}
           />
         </div>
@@ -173,7 +173,7 @@ export default function PageLoader() {
               width: 10,
               height: 10,
               borderRadius: '50%',
-              background: 'radial-gradient(circle at 38% 35%, #e2e8f0, #94a3b8 60%, #64748b 100%)',
+              background: 'radial-gradient(circle at 38% 35%, #e2e8f0, var(--text-muted) 60%, var(--text-muted) 100%)',
               boxShadow: '0 0 10px rgba(148,163,184,0.7)',
             }}
           />
@@ -184,7 +184,7 @@ export default function PageLoader() {
       <span
         style={{
           fontSize: 11,
-          color: 'rgba(167,139,250,0.8)',
+          color: 'rgba(232, 130, 107,0.8)',
           letterSpacing: '0.2em',
           fontFamily: 'var(--font-display, sans-serif)',
           textTransform: 'uppercase',

@@ -3,8 +3,8 @@ export default function NebulaArt({ className }: { className?: string }) {
     <svg viewBox="0 0 400 400" className={className} xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="neb-body" cx="0.5" cy="0.5" r="0.6">
-          <stop offset="0" stopColor="#FF8FB8" stopOpacity="0.9" />
-          <stop offset="0.5" stopColor="#8465CB" stopOpacity="0.5" />
+          <stop offset="0" stopColor="var(--negative)" stopOpacity="0.9" />
+          <stop offset="0.5" stopColor="var(--terracotta)" stopOpacity="0.5" />
           <stop offset="1" stopColor="#060912" stopOpacity="0" />
         </radialGradient>
       </defs>

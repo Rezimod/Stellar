@@ -18,8 +18,8 @@ const DEFAULT_CATEGORY = {
   label: 'MARKET',
   emoji: '✦',
   color: 'var(--stars)',
-  bg: 'rgba(255,209,102,0.10)',
-  border: 'rgba(255,209,102,0.22)',
+  bg: 'rgba(232, 130, 107,0.10)',
+  border: 'rgba(232, 130, 107,0.22)',
 };
 
 const CATEGORY_META: Partial<
@@ -32,64 +32,64 @@ const CATEGORY_META: Partial<
     label: 'SKY EVENT',
     emoji: '🔭',
     color: 'var(--stars)',
-    bg: 'rgba(255,209,102,0.12)',
-    border: 'rgba(255,209,102,0.25)',
+    bg: 'rgba(232, 130, 107,0.12)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   weather_event: {
     label: 'WEATHER',
     emoji: '🌧',
-    color: '#5EEAD4',
-    bg: 'rgba(94,234,212,0.10)',
-    border: 'rgba(94,234,212,0.25)',
+    color: 'var(--seafoam)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.25)',
   },
   natural_phenomenon: {
     label: 'NATURE',
     emoji: '⚡',
-    color: '#C4B5FD',
-    bg: 'rgba(196,181,253,0.10)',
-    border: 'rgba(196,181,253,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.10)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   meteor: {
     label: 'METEOR',
     emoji: '☄',
     color: 'var(--stars)',
-    bg: 'rgba(255,209,102,0.12)',
-    border: 'rgba(255,209,102,0.25)',
+    bg: 'rgba(232, 130, 107,0.12)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   solar: {
     label: 'SOLAR',
     emoji: '☀',
-    color: '#F59E0B',
-    bg: 'rgba(245,158,11,0.10)',
-    border: 'rgba(245,158,11,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.10)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   mission: {
     label: 'MISSION',
     emoji: '🚀',
     color: 'var(--stl-teal)',
-    bg: 'rgba(56,240,255,0.10)',
-    border: 'rgba(56,240,255,0.22)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.22)',
   },
   comet: {
     label: 'COMET',
     emoji: '🌠',
-    color: '#8465CB',
-    bg: 'rgba(132,101,203,0.12)',
-    border: 'rgba(132,101,203,0.25)',
+    color: 'var(--terracotta)',
+    bg: 'rgba(232, 130, 107,0.12)',
+    border: 'rgba(232, 130, 107,0.25)',
   },
   discovery: {
     label: 'DISCOVERY',
     emoji: '🔬',
     color: 'var(--success)',
-    bg: 'rgba(52,211,153,0.10)',
-    border: 'rgba(52,211,153,0.25)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.25)',
   },
   weather: {
     label: 'WEATHER',
     emoji: '🌤',
-    color: '#5EEAD4',
-    bg: 'rgba(94,234,212,0.10)',
-    border: 'rgba(94,234,212,0.25)',
+    color: 'var(--seafoam)',
+    bg: 'rgba(94, 234, 212,0.10)',
+    border: 'rgba(94, 234, 212,0.25)',
   },
 };
 
@@ -274,7 +274,7 @@ export default function MarketDetail({
             <div style={{ flex: 1, minWidth: 0 }}>
               <p
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontSize: 14,
                   fontWeight: 600,
                   color: 'var(--stl-amber)',
@@ -528,7 +528,7 @@ function Banner({
     >
       <p
         style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 15,
           fontWeight: 600,
           color: t.color,

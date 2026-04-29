@@ -22,7 +22,7 @@ export default function ScoreRing({
   size = 160,
   strokeWidth = 8,
   color = 'gradient',
-  glowColor = 'rgba(99, 102, 241, 0.25)',
+  glowColor = 'rgba(232, 130, 107, 0.25)',
   label,
   sublabel,
   animate = true,
@@ -79,8 +79,8 @@ export default function ScoreRing({
       >
         <defs>
           <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#818cf8" />
-            <stop offset="100%" stopColor="#0EA5E9" />
+            <stop offset="0%" stopColor="var(--terracotta)" />
+            <stop offset="100%" stopColor="var(--seafoam)" />
           </linearGradient>
         </defs>
         {/* Background track */}

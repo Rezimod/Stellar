@@ -52,7 +52,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
           width: 'calc(100% - 48px)',
           maxWidth: '440px',
           transform: 'translate(-50%, -50%)',
-          background: '#0d1220',
+          background: 'var(--canvas)',
           border: '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 24px 60px rgba(0,0,0,0.9)',
           overflow: 'hidden',
@@ -70,7 +70,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
               sizes="110px"
               priority
             />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 60%, #0d1220 100%)' }} />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 60%, var(--canvas) 100%)' }} />
             <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: planet.color, opacity: 0.5 }} />
           </div>
 
@@ -79,12 +79,12 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
             {('missionId' in planet && (planet.key === 'moon' || planet.key === 'jupiter')) && (
               <span
                 className="inline-flex items-center gap-1 mb-1.5 px-1.5 py-0.5 rounded self-start text-[8px] uppercase tracking-widest font-bold"
-                style={{ background: 'rgba(255,209,102,0.15)', border: '1px solid rgba(255,209,102,0.3)', color: 'var(--stars)' }}
+                style={{ background: 'rgba(232, 130, 107,0.15)', border: '1px solid rgba(232, 130, 107,0.3)', color: 'var(--stars)' }}
               >
                 <Star size={7} /> {locale === 'ka' ? 'საუკეთესო' : 'Best target'}
               </span>
             )}
-            <p className="text-white font-bold text-lg leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
+            <p className="text-text-primary font-bold text-lg leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
               {planet.name[locale]}
             </p>
             <p className="text-xs mt-0.5" style={{ color: planet.color }}>
@@ -106,10 +106,10 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
         {/* Facts */}
         <div className="px-4 py-3 flex flex-col gap-1.5">
           {kidsMode ? (
-            <p className="text-slate-300 text-xs leading-relaxed">{planet.kidsLine[locale]}</p>
+            <p className="text-text-primary text-xs leading-relaxed">{planet.kidsLine[locale]}</p>
           ) : (
             planet.facts[locale].slice(0, 3).map((f, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <div key={i} className="flex items-start gap-2 text-xs text-text-primary">
                 <span style={{ color: planet.color, flexShrink: 0, fontSize: 7, marginTop: 3 }}>●</span>
                 {f}
               </div>
@@ -119,7 +119,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
 
         {/* Tip */}
         <div className="mx-4 mb-3 rounded-xl px-3 py-2 flex items-start gap-2 text-xs"
-          style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)', color: 'rgba(99,102,241,0.75)' }}>
+          style={{ background: 'rgba(232, 130, 107,0.05)', border: '1px solid rgba(232, 130, 107,0.1)', color: 'rgba(232, 130, 107,0.75)' }}>
           <Telescope size={11} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>{planet.tip[locale].split('.')[0]}.</span>
         </div>
@@ -152,7 +152,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
 function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: boolean; onSelect: (p: Planet) => void }) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-slate-600 text-[10px] uppercase tracking-widest">
+      <p className="text-text-muted text-[10px] uppercase tracking-widest">
         {locale === 'ka' ? '9 ობიექტი · შეეხე დეტალებისთვის' : '9 objects · tap to explore'}
       </p>
 
@@ -177,14 +177,14 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
               {(p.key === 'moon' || p.key === 'jupiter') && (
                 <div
                   className="absolute top-0.5 left-0.5 inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[6px] uppercase tracking-wide font-bold"
-                  style={{ background: 'rgba(255,209,102,0.25)', border: '1px solid rgba(255,209,102,0.4)', color: 'var(--stars)', backdropFilter: 'blur(4px)' }}
+                  style={{ background: 'rgba(232, 130, 107,0.25)', border: '1px solid rgba(232, 130, 107,0.4)', color: 'var(--stars)', backdropFilter: 'blur(4px)' }}
                 >
                   <Star size={5} />
                   #1
                 </div>
               )}
             </div>
-            <p className="text-white text-[10px] font-medium leading-tight text-center w-full truncate px-0.5"
+            <p className="text-text-primary text-[10px] font-medium leading-tight text-center w-full truncate px-0.5"
               style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
               {p.name[locale]}
             </p>
@@ -194,7 +194,7 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
 
       {/* Constellations */}
       <div className="mt-1 pt-3 border-t border-white/[0.05]">
-        <p className="text-[10px] uppercase tracking-widest text-slate-600 mb-2">
+        <p className="text-[10px] uppercase tracking-widest text-text-muted mb-2">
           {locale === 'ka' ? 'თანავარსკვლავედები' : 'Constellations'}
         </p>
         <div className="flex flex-col gap-2">
@@ -205,12 +205,12 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(7,11,20,0.88) 45%, transparent 100%)' }} />
                 <div className="absolute inset-0 flex flex-col justify-center px-4 gap-0.5">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-bold text-sm">{c.name[locale]}</p>
+                    <p className="text-text-primary font-bold text-sm">{c.name[locale]}</p>
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: `${c.color}20`, color: c.color, border: `1px solid ${c.color}30` }}>
                       {c.season[locale]}
                     </span>
                   </div>
-                  <p className="text-slate-400 text-[11px] leading-snug max-w-[220px] line-clamp-1">{c.desc[locale]}</p>
+                  <p className="text-text-muted text-[11px] leading-snug max-w-[220px] line-clamp-1">{c.desc[locale]}</p>
                   <p className="text-[10px]" style={{ color: c.color }}>{c.highlight[locale]}</p>
                 </div>
               </div>
@@ -227,8 +227,8 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
 const EQ_BADGES: Record<string, { label: { en: string; ka: string }; Icon: React.FC<{ size?: number; color?: string }>; color: string }> = {
   naked_eye:   { label: { en: 'Naked Eye',    ka: 'შიშველი თვალი' }, Icon: Eye,        color: 'var(--success)' },
   binoculars:  { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       Icon: Binoculars, color: 'var(--stars)' },
-  small_scope: { label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   Icon: Telescope,  color: '#818cf8' },
-  large_scope: { label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   Icon: Telescope,  color: '#8B5CF6' },
+  small_scope: { label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   Icon: Telescope,  color: 'var(--terracotta)' },
+  large_scope: { label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   Icon: Telescope,  color: 'var(--terracotta)' },
 };
 
 const DSO_SEASONS: Record<string, { en: string; ka: string }> = {
@@ -275,13 +275,13 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
               onClick={() => setEqFilter(opt.id)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex-shrink-0 transition-all duration-200"
               style={active ? {
-                background: 'rgba(255,209,102,0.12)',
-                border: '1px solid rgba(255,209,102,0.3)',
+                background: 'rgba(232, 130, 107,0.12)',
+                border: '1px solid rgba(232, 130, 107,0.3)',
                 color: 'var(--stars)',
               } : {
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
-                color: '#64748b',
+                color: 'var(--text-muted)',
               }}
             >
               {opt.Icon ? <opt.Icon size={11} /> : <Sparkles size={10} />}
@@ -300,7 +300,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
           <button
             key={obj.id}
             onClick={() => setExpanded(isExp ? null : obj.id)}
-            className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
+            className="glass-card text-left transition-all duration-200 hover:border-[var(--border)] p-4"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 relative"
@@ -308,7 +308,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                 <Image src={obj.img} alt={obj.name['en']} fill className="object-cover" sizes="40px" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm leading-snug">{obj.name[locale]}</p>
+                <p className="text-text-primary font-semibold text-sm leading-snug">{obj.name[locale]}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: `${obj.color}20`, color: obj.color }}>{obj.type[locale]}</span>
                   <span className="text-[11px] px-1.5 py-0.5 rounded inline-flex items-center gap-1" style={{ background: `${eqBadge.color}18`, color: eqBadge.color, border: `1px solid ${eqBadge.color}25` }}>
@@ -316,43 +316,43 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                   </span>
                 </div>
               </div>
-              {isExp ? <ChevronUp size={14} className="text-slate-600 flex-shrink-0" /> : <ChevronDown size={14} className="text-slate-600 flex-shrink-0" />}
+              {isExp ? <ChevronUp size={14} className="text-text-muted flex-shrink-0" /> : <ChevronDown size={14} className="text-text-muted flex-shrink-0" />}
             </div>
             {isExp && (
               <div className="mt-4 flex flex-col gap-2" style={{ paddingLeft: '52px' }}>
                 <div className="relative w-full rounded-xl overflow-hidden mb-2" style={{ height: '160px' }}>
                   <Image src={obj.img} alt={obj.name[locale]} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.8) 0%, transparent 60%)' }} />
-                  <p className="absolute bottom-2 left-3 text-white text-xs font-semibold opacity-80">{obj.name[locale]}</p>
+                  <p className="absolute bottom-2 left-3 text-text-primary text-xs font-semibold opacity-80">{obj.name[locale]}</p>
                 </div>
                 {kidsMode ? (
                   <>
-                    <p className="text-slate-300 text-xs leading-relaxed flex items-start gap-1.5">
+                    <p className="text-text-primary text-xs leading-relaxed flex items-start gap-1.5">
                       <Star size={11} style={{ color: 'var(--stars)', flexShrink: 0, marginTop: 1 }} />
                       {obj.kidsLine[locale]}
                     </p>
-                    <div className="rounded-lg p-3 text-xs text-[#818cf8]/80 flex items-start gap-2"
-                      style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}>
+                    <div className="rounded-lg p-3 text-xs text-[var(--terracotta)]/80 flex items-start gap-2"
+                      style={{ background: 'rgba(232, 130, 107,0.05)', border: '1px solid rgba(232, 130, 107,0.1)' }}>
                       <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
                       {locale === 'ka' ? 'საჭირო ინსტრუმენტი: ' : 'Scope needed: '}{obj.scope[locale].split('.')[0]}.
                     </div>
                   </>
                 ) : (
                   <>
-                    <p className="text-slate-300 text-xs leading-relaxed">{obj.desc[locale]}</p>
+                    <p className="text-text-primary text-xs leading-relaxed">{obj.desc[locale]}</p>
                     <div className="flex gap-2 flex-wrap">
                       <span className="text-[10px] px-2 py-0.5 rounded inline-flex items-center gap-1" style={{ background: `${eqBadge.color}18`, color: eqBadge.color, border: `1px solid ${eqBadge.color}25` }}>
                         <eqBadge.Icon size={9} /> {eqBadge.label[locale]}
                       </span>
-                      <span className="text-[10px] text-slate-500">{obj.distance[locale]}</span>
+                      <span className="text-[10px] text-text-muted">{obj.distance[locale]}</span>
                       {season && (
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-text-muted">
                           {locale === 'ka' ? 'სეზონი: ' : 'Best in: '}{season[locale]}
                         </span>
                       )}
                     </div>
-                    <div className="rounded-lg p-3 text-xs text-[#818cf8]/80 flex items-start gap-2"
-                      style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}>
+                    <div className="rounded-lg p-3 text-xs text-[var(--terracotta)]/80 flex items-start gap-2"
+                      style={{ background: 'rgba(232, 130, 107,0.05)', border: '1px solid rgba(232, 130, 107,0.1)' }}>
                       <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
                       {obj.scope[locale]}
                     </div>
@@ -386,7 +386,7 @@ function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef)
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-slate-500 text-xs leading-relaxed">
+      <p className="text-text-muted text-xs leading-relaxed">
         {locale === 'ka'
           ? 'შეამოწმე შენი ასტრონომიული ცოდნა. 10 კითხვა, სწორ პასუხზე 10 ✦.'
           : 'Test your astronomy knowledge. 10 questions, 10 ✦ per correct answer.'}
@@ -400,24 +400,24 @@ function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef)
           <div key={quiz.id} className="glass-card p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.15)' }}>
+                style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.15)' }}>
                 {quiz.emoji}
               </div>
               <div className="flex-1">
-                <p className="text-white font-semibold text-sm">{quiz.title[locale]}</p>
-                <p className="text-slate-500 text-xs">{quiz.description[locale]}</p>
+                <p className="text-text-primary font-semibold text-sm">{quiz.title[locale]}</p>
+                <p className="text-text-muted text-xs">{quiz.description[locale]}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {best !== null && (
-                <span className="text-[#FFD166] text-xs font-medium">
+                <span className="text-[var(--terracotta)] text-xs font-medium">
                   {locale === 'ka' ? 'საუკეთესო' : 'Best'}: {best}/{quiz.questions.length} · +{bestStars} ✦
                 </span>
               )}
               <button
                 onClick={() => onStart(quiz)}
                 className="ml-auto px-4 py-2 rounded-xl text-xs font-bold transition-all"
-                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
+                style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
               >
                 {best !== null ? (locale === 'ka' ? 'კვლავ თამაში' : 'Play Again') : (locale === 'ka' ? 'დაწყება →' : 'Start →')}
               </button>
@@ -450,8 +450,8 @@ const GLOSSARY_TERMS = [
 const BORTLE_SEGMENTS = [
   { range: '1–2', color: 'var(--success)', label: { en: 'Pristine',  ka: 'პრისტინული'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
   { range: '3–4', color: 'var(--stars)', label: { en: 'Rural',     ka: 'სოფელი'       }, desc: { en: 'Milky Way visible, 100+ stars, good for deep sky',      ka: 'ირმის ნახტომი ჩანს, 100+ ვარსკვლავი, კარგი ღრმა ცისთვის' } },
-  { range: '5–6', color: '#f97316', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
-  { range: '7–9', color: '#ef4444', label: { en: 'City',      ka: 'ქალაქი'       }, desc: { en: 'Moon and brightest planets only',                        ka: 'მხოლოდ მთვარე და ყველაზე კაშკაში პლანეტები' } },
+  { range: '5–6', color: 'var(--terracotta)', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
+  { range: '7–9', color: 'var(--negative)', label: { en: 'City',      ka: 'ქალაქი'       }, desc: { en: 'Moon and brightest planets only',                        ka: 'მხოლოდ მთვარე და ყველაზე კაშკაში პლანეტები' } },
 ];
 
 function GuideTab({ locale }: { locale: Locale }) {
@@ -482,9 +482,9 @@ function GuideTab({ locale }: { locale: Locale }) {
     const parts = def.split(/(Sky page|Dark Sky Map)/g);
     return parts.map((part, i) =>
       part === 'Sky page' ? (
-        <Link key={i} href="/sky" onClick={e => e.stopPropagation()} className="text-[#14B8A6] hover:opacity-80">{part}</Link>
+        <Link key={i} href="/sky" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
       ) : part === 'Dark Sky Map' ? (
-        <Link key={i} href="/network" onClick={e => e.stopPropagation()} className="text-[#14B8A6] hover:opacity-80">{part}</Link>
+        <Link key={i} href="/network" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
       ) : part
     );
   };
@@ -495,35 +495,35 @@ function GuideTab({ locale }: { locale: Locale }) {
       <div className="glass-card overflow-hidden">
         <button onClick={() => setGlossaryOpen(o => !o)} className="w-full flex items-center justify-between p-4 text-left">
           <div>
-            <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
+            <p className="text-text-primary font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
               {locale === 'ka' ? 'ასტრონომიის გლოსარი' : 'Astronomy Glossary'}
             </p>
-            <p className="text-slate-500 text-[10px] mt-0.5">
+            <p className="text-text-muted text-[10px] mt-0.5">
               {locale === 'ka' ? `${GLOSSARY_TERMS.length} ტერმინი` : `${GLOSSARY_TERMS.length} terms`}
             </p>
           </div>
-          {glossaryOpen ? <ChevronUp size={14} className="text-slate-600" /> : <ChevronDown size={14} className="text-slate-600" />}
+          {glossaryOpen ? <ChevronUp size={14} className="text-text-muted" /> : <ChevronDown size={14} className="text-text-muted" />}
         </button>
         {glossaryOpen && (
           <div className="px-4 pb-4 flex flex-col gap-3">
             <div className="relative">
-              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={locale === 'ka' ? 'ტერმინის ძიება...' : 'Search terms...'}
-                className="w-full pl-8 pr-3 py-2 rounded-lg text-xs text-white placeholder-slate-600 outline-none"
+                className="w-full pl-8 pr-3 py-2 rounded-lg text-xs text-text-primary placeholder-slate-600 outline-none"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
             </div>
             <div className="flex flex-col gap-2">
               {filteredTerms.length === 0 ? (
-                <p className="text-slate-600 text-xs py-2">{locale === 'ka' ? 'ვერ მოიძებნა' : 'No results'}</p>
+                <p className="text-text-muted text-xs py-2">{locale === 'ka' ? 'ვერ მოიძებნა' : 'No results'}</p>
               ) : filteredTerms.map(t => (
                 <div key={t.term} className="py-2 border-b border-white/[0.04] last:border-0">
-                  <p className="text-white font-semibold text-sm">{locale === 'ka' ? t.termKa : t.term}</p>
-                  <p className="text-slate-400 text-xs leading-relaxed mt-0.5">
+                  <p className="text-text-primary font-semibold text-sm">{locale === 'ka' ? t.termKa : t.term}</p>
+                  <p className="text-text-muted text-xs leading-relaxed mt-0.5">
                     {renderDef(locale === 'ka' ? t.defKa : t.def)}
                   </p>
                 </div>
@@ -537,18 +537,18 @@ function GuideTab({ locale }: { locale: Locale }) {
       <div className="glass-card overflow-hidden">
         <button onClick={() => setPollutionOpen(o => !o)} className="w-full flex items-center justify-between p-4 text-left">
           <div>
-            <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
+            <p className="text-text-primary font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
               {locale === 'ka' ? 'სინათლის დაბინძურება' : 'Understanding Light Pollution'}
             </p>
-            <p className="text-slate-500 text-[10px] mt-0.5">
+            <p className="text-text-muted text-[10px] mt-0.5">
               {locale === 'ka' ? 'ბორტლის სკალა' : 'Bortle scale explained'}
             </p>
           </div>
-          {pollutionOpen ? <ChevronUp size={14} className="text-slate-600" /> : <ChevronDown size={14} className="text-slate-600" />}
+          {pollutionOpen ? <ChevronUp size={14} className="text-text-muted" /> : <ChevronDown size={14} className="text-text-muted" />}
         </button>
         {pollutionOpen && (
           <div className="px-4 pb-4 flex flex-col gap-4">
-            <p className="text-slate-400 text-xs leading-relaxed">
+            <p className="text-text-muted text-xs leading-relaxed">
               {locale === 'ka'
                 ? 'სინათლის დაბინძურება — ხელოვნური განათება, რომელიც ღამის ცაში ვრცელდება. ის ბნავს სუსტ ვარსკვლავებს, ნისლეულებს და ირმის ნახტომს. ბორტლის სკალა 1-დან 9-მდე ცის სიბნელეს ზომავს.'
                 : 'Light pollution is artificial light scattered into the night sky. It washes out faint stars, nebulas, and the Milky Way. The Bortle scale measures sky darkness from 1 (pristine) to 9 (inner city).'}
@@ -561,8 +561,8 @@ function GuideTab({ locale }: { locale: Locale }) {
                     {seg.range}
                   </div>
                   <div>
-                    <p className="text-white text-xs font-medium">{seg.label[locale]}</p>
-                    <p className="text-slate-500 text-[10px] leading-relaxed">{seg.desc[locale]}</p>
+                    <p className="text-text-primary text-xs font-medium">{seg.label[locale]}</p>
+                    <p className="text-text-muted text-[10px] leading-relaxed">{seg.desc[locale]}</p>
                   </div>
                 </div>
               ))}
@@ -570,7 +570,7 @@ function GuideTab({ locale }: { locale: Locale }) {
             <Link
               href="/network"
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-medium transition-all hover:opacity-80"
-              style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.2)', color: '#14B8A6' }}
+              style={{ background: 'rgba(94, 234, 212,0.06)', border: '1px solid rgba(94, 234, 212,0.2)', color: 'var(--seafoam)' }}
             >
               <Map size={13} />
               {locale === 'ka' ? 'იპოვე ბნელი ცა შენ მახლობლად →' : 'Find dark skies near you →'}
@@ -583,33 +583,33 @@ function GuideTab({ locale }: { locale: Locale }) {
       <div className="glass-card overflow-hidden">
         <button onClick={() => setEventsOpen(o => !o)} className="w-full flex items-center justify-between p-4 text-left">
           <div>
-            <p className="text-white font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
+            <p className="text-text-primary font-semibold text-sm" style={{ fontFamily: 'Georgia, serif' }}>
               {locale === 'ka' ? '2026 — ასტრონომიული მოვლენები' : '2026 Astronomical Events'}
             </p>
-            <p className="text-slate-500 text-[10px] mt-0.5">
+            <p className="text-text-muted text-[10px] mt-0.5">
               {upcoming.length} {locale === 'ka' ? 'მომდევნო' : 'upcoming'}
             </p>
           </div>
-          {eventsOpen ? <ChevronUp size={14} className="text-slate-600" /> : <ChevronDown size={14} className="text-slate-600" />}
+          {eventsOpen ? <ChevronUp size={14} className="text-text-muted" /> : <ChevronDown size={14} className="text-text-muted" />}
         </button>
         {eventsOpen && (
           <div className="px-4 pb-4 flex flex-col gap-3">
             {nextEvent && (
-              <div className="rounded-xl p-4" style={{ boxShadow: '0 0 20px rgba(255,209,102,0.04)', border: '1px solid rgba(255,209,102,0.2)', background: 'rgba(255,209,102,0.03)' }}>
-                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255,209,102,0.6)' }}>
+              <div className="rounded-xl p-4" style={{ boxShadow: '0 0 20px rgba(232, 130, 107,0.04)', border: '1px solid rgba(232, 130, 107,0.2)', background: 'rgba(232, 130, 107,0.03)' }}>
+                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'rgba(232, 130, 107,0.6)' }}>
                   {locale === 'ka' ? 'მომდევნო მოვლენა' : 'Next Up'}
                 </p>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">{nextEvent.emoji}</span>
                     <div>
-                      <p className="text-white font-semibold text-sm">{nextEvent.name[locale]}</p>
-                      <p className="text-slate-400 text-xs mt-0.5 leading-relaxed">{nextEvent.desc[locale]}</p>
+                      <p className="text-text-primary font-semibold text-sm">{nextEvent.name[locale]}</p>
+                      <p className="text-text-muted text-xs mt-0.5 leading-relaxed">{nextEvent.desc[locale]}</p>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-[#FFD166] text-2xl font-bold leading-none">{daysFromNow(nextEvent.date)}</p>
-                    <p className="text-slate-600 text-[10px] mt-0.5">{locale === 'ka' ? 'დღეში' : 'days'}</p>
+                    <p className="text-[var(--terracotta)] text-2xl font-bold leading-none">{daysFromNow(nextEvent.date)}</p>
+                    <p className="text-text-muted text-[10px] mt-0.5">{locale === 'ka' ? 'დღეში' : 'days'}</p>
                   </div>
                 </div>
               </div>
@@ -620,14 +620,14 @@ function GuideTab({ locale }: { locale: Locale }) {
                   {upcoming.slice(1).map(ev => (
                     <div key={ev.date} className="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-                        style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' }}>
+                        style={{ background: 'rgba(232, 130, 107,0.06)', border: '1px solid rgba(232, 130, 107,0.1)' }}>
                         {ev.emoji}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white text-sm font-medium">{ev.name[locale]}</p>
-                        <p className="text-slate-500 text-xs truncate">{ev.date} · {ev.desc[locale].split('.')[0]}.</p>
+                        <p className="text-text-primary text-sm font-medium">{ev.name[locale]}</p>
+                        <p className="text-text-muted text-xs truncate">{ev.date} · {ev.desc[locale].split('.')[0]}.</p>
                       </div>
-                      <span className="text-[#818cf8] text-xs font-mono flex-shrink-0">
+                      <span className="text-[var(--terracotta)] text-xs font-mono flex-shrink-0">
                         {dayLabel(daysFromNow(ev.date))}
                       </span>
                     </div>
@@ -638,7 +638,7 @@ function GuideTab({ locale }: { locale: Locale }) {
             {past.length > 0 && (
               <button
                 onClick={() => setShowPast(s => !s)}
-                className="text-xs text-slate-600 flex items-center gap-1.5 hover:text-slate-400 transition-colors self-start"
+                className="text-xs text-text-muted flex items-center gap-1.5 hover:text-text-muted transition-colors self-start"
               >
                 {showPast ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                 {past.length} {locale === 'ka' ? 'გასული მოვლენა' : `past event${past.length !== 1 ? 's' : ''}`}
@@ -653,8 +653,8 @@ function GuideTab({ locale }: { locale: Locale }) {
                       {ev.emoji}
                     </div>
                     <div>
-                      <p className="text-slate-400 text-sm font-medium">{ev.name[locale]}</p>
-                      <p className="text-slate-600 text-[10px] font-mono">{ev.date}</p>
+                      <p className="text-text-muted text-sm font-medium">{ev.name[locale]}</p>
+                      <p className="text-text-muted text-[10px] font-mono">{ev.date}</p>
                     </div>
                   </div>
                 ))}
@@ -757,7 +757,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
   const [expanded, setExpanded] = useState<number | null>(null);
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-slate-500 text-xs leading-relaxed">
+      <p className="text-text-muted text-xs leading-relaxed">
         {locale === 'ka'
           ? 'ისწავლე, როგორ გადაიღო ღამის ცის ფოტოები ტელეფონით — ოკულარულ მეთოდიდან Stellar-ის ვერიფიკაციამდე.'
           : 'Learn how to take night sky photos with your phone — from the afocal method to getting verified on Stellar.'}
@@ -768,26 +768,26 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
           <button
             key={card.step}
             onClick={() => setExpanded(isExp ? null : card.step)}
-            className="glass-card text-left transition-all duration-200 hover:border-white/15 p-4"
+            className="glass-card text-left transition-all duration-200 hover:border-[var(--border)] p-4"
           >
             <div className="flex items-center gap-3">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                style={{ background: 'rgba(255,209,102,0.1)', border: '1px solid rgba(255,209,102,0.2)', color: 'var(--stars)' }}
+                style={{ background: 'rgba(232, 130, 107,0.1)', border: '1px solid rgba(232, 130, 107,0.2)', color: 'var(--stars)' }}
               >
                 {card.step}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm">{card.title[locale]}</p>
+                <p className="text-text-primary font-semibold text-sm">{card.title[locale]}</p>
               </div>
-              {isExp ? <ChevronUp size={14} className="text-slate-600 flex-shrink-0" /> : <ChevronDown size={14} className="text-slate-600 flex-shrink-0" />}
+              {isExp ? <ChevronUp size={14} className="text-text-muted flex-shrink-0" /> : <ChevronDown size={14} className="text-text-muted flex-shrink-0" />}
             </div>
             {isExp && (
               <div className="mt-3 flex flex-col gap-2" style={{ paddingLeft: '44px' }}>
-                <p className="text-slate-400 text-xs leading-relaxed">{card.body[locale]}</p>
+                <p className="text-text-muted text-xs leading-relaxed">{card.body[locale]}</p>
                 <div
                   className="rounded-lg p-3 text-xs flex items-start gap-2"
-                  style={{ background: 'rgba(255,209,102,0.04)', border: '1px solid rgba(255,209,102,0.1)', color: 'rgba(255,209,102,0.8)' }}
+                  style={{ background: 'rgba(232, 130, 107,0.04)', border: '1px solid rgba(232, 130, 107,0.1)', color: 'rgba(232, 130, 107,0.8)' }}
                 >
                   <Camera size={12} style={{ flexShrink: 0, marginTop: 1 }} />
                   {card.tip[locale]}
@@ -817,19 +817,19 @@ function AstraPromo({ locale }: { locale: Locale }) {
   return (
     <Link
       href="/chat"
-      className="flex items-center gap-4 px-5 py-5 rounded-2xl transition-all active:scale-[0.98] hover:border-[#818cf8]/30"
-      style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(26,143,160,0.04))', border: '1px solid rgba(99,102,241,0.18)' }}
+      className="flex items-center gap-4 px-5 py-5 rounded-2xl transition-all active:scale-[0.98] hover:border-[var(--terracotta)]/30"
+      style={{ background: 'linear-gradient(135deg, rgba(232, 130, 107,0.08), rgba(26,143,160,0.04))', border: '1px solid rgba(232, 130, 107,0.18)' }}
     >
       <div className="relative flex-shrink-0">
         <div className="w-11 h-11 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)' }}>
-          <Sparkles size={18} color="#818cf8" />
+          style={{ background: 'rgba(232, 130, 107,0.12)', border: '1px solid rgba(232, 130, 107,0.25)' }}>
+          <Sparkles size={18} color="var(--terracotta)" />
         </div>
-        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2 border-[#080e1e]" />
+        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[var(--seafoam)] border-2 border-[var(--canvas)]" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-white font-semibold text-sm">ASTRA AI</p>
-        <p className="text-slate-400 text-xs mt-0.5">
+        <p className="text-text-primary font-semibold text-sm">ASTRA AI</p>
+        <p className="text-text-muted text-xs mt-0.5">
           {locale === 'ka' ? 'შენი AI ასტრონომიული ასისტენტი · ჩათი →' : 'Your AI astronomy assistant · Chat →'}
         </p>
       </div>
@@ -938,9 +938,9 @@ export default function LearnPage() {
         <div
           className="relative overflow-hidden rounded-2xl"
           style={{
-            background: 'linear-gradient(155deg, #0c1122 0%, #080b1a 55%, #0b0a1f 100%)',
+            background: 'linear-gradient(155deg, var(--canvas) 0%, var(--canvas) 55%, var(--canvas) 100%)',
             border: '1px solid rgba(255,255,255,0.06)',
-            boxShadow: '0 0 0 1px rgba(124,58,237,0.07), 0 24px 56px rgba(0,0,0,0.7)',
+            boxShadow: '0 0 0 1px rgba(232, 130, 107,0.07), 0 24px 56px rgba(0,0,0,0.7)',
             minHeight: '96px',
             padding: '12px 20px 14px',
           }}
@@ -948,7 +948,7 @@ export default function LearnPage() {
           {/* Top shimmer seam */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.55) 30%, rgba(99,102,241,0.55) 70%, transparent 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(232, 130, 107,0.55) 30%, rgba(232, 130, 107,0.55) 70%, transparent 100%)',
             backgroundSize: '200% 100%',
             animation: 'heroShimmer 3.5s linear infinite',
           }} />
@@ -957,7 +957,7 @@ export default function LearnPage() {
           <div style={{
             position: 'absolute', top: '-50px', left: '-50px',
             width: '240px', height: '240px',
-            background: 'radial-gradient(circle, rgba(124,58,237,0.24) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(232, 130, 107,0.24) 0%, transparent 65%)',
             filter: 'blur(30px)',
             animation: 'learnOrb1 9s ease-in-out infinite',
             pointerEvents: 'none',
@@ -966,7 +966,7 @@ export default function LearnPage() {
           <div style={{
             position: 'absolute', bottom: '-55px', right: '-35px',
             width: '260px', height: '200px',
-            background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(232, 130, 107,0.15) 0%, transparent 65%)',
             filter: 'blur(34px)',
             animation: 'learnOrb2 11s ease-in-out infinite',
             pointerEvents: 'none',
@@ -975,7 +975,7 @@ export default function LearnPage() {
           <div style={{
             position: 'absolute', top: '15%', right: '12%',
             width: '110px', height: '110px',
-            background: 'radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(232, 130, 107,0.12) 0%, transparent 70%)',
             filter: 'blur(22px)',
             animation: 'learnOrb3 7s ease-in-out infinite 2s',
             pointerEvents: 'none',
@@ -988,7 +988,7 @@ export default function LearnPage() {
               left: `${s.x}%`, top: `${s.y}%`,
               width: `${s.size}px`, height: `${s.size}px`,
               borderRadius: '50%',
-              background: i % 3 === 0 ? '#a78bfa' : i % 3 === 1 ? '#818cf8' : '#ffffff',
+              background: i % 3 === 0 ? 'var(--terracotta)' : i % 3 === 1 ? 'var(--terracotta)' : '#ffffff',
               animation: `starTwinkle ${s.dur}s ease-in-out infinite ${s.delay}s`,
               pointerEvents: 'none',
             }} />
@@ -1000,18 +1000,18 @@ export default function LearnPage() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               padding: '2px 10px', borderRadius: '999px', marginBottom: '6px',
-              background: 'rgba(99,102,241,0.07)',
-              border: '1px solid rgba(99,102,241,0.18)',
+              background: 'rgba(232, 130, 107,0.07)',
+              border: '1px solid rgba(232, 130, 107,0.18)',
               animation: 'hIn0 0.5s cubic-bezier(0.16,1,0.3,1) both',
             }}>
               <span style={{
                 width: '6px', height: '6px', borderRadius: '50%',
-                background: '#818cf8',
+                background: 'var(--terracotta)',
                 display: 'inline-block',
-                boxShadow: '0 0 7px rgba(99,102,241,0.9)',
+                boxShadow: '0 0 7px rgba(232, 130, 107,0.9)',
               }} />
               <span style={{
-                fontSize: '10px', color: 'rgba(99,102,241,0.78)',
+                fontSize: '10px', color: 'rgba(232, 130, 107,0.78)',
                 letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
               }}>
                 {locale === 'ka' ? 'სასწავლო ცენტრი' : 'Astronomy Academy'}
@@ -1023,7 +1023,7 @@ export default function LearnPage() {
               fontSize: 'clamp(1.5rem, 6vw, 1.9rem)',
               fontWeight: 800,
               fontFamily: 'Georgia, serif',
-              background: 'linear-gradient(135deg, #ffffff 15%, #c4b5fd 52%, #818cf8 100%)',
+              background: 'linear-gradient(135deg, #ffffff 15%, var(--terracotta) 52%, var(--terracotta) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -1037,7 +1037,7 @@ export default function LearnPage() {
 
             {/* Subtitle */}
             <p style={{
-              color: '#3f4f66',
+              color: 'var(--text-muted)',
               fontSize: '12px',
               lineHeight: 1.4,
               animation: 'hIn2 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s both',
@@ -1055,8 +1055,8 @@ export default function LearnPage() {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '5px',
                   padding: '4px 10px', borderRadius: '999px',
-                  background: 'rgba(52,211,153,0.08)',
-                  border: '1px solid rgba(52,211,153,0.2)',
+                  background: 'rgba(94, 234, 212,0.08)',
+                  border: '1px solid rgba(94, 234, 212,0.2)',
                   fontSize: '11px', color: 'var(--success)', fontWeight: 500,
                 }}>
                   <span>✓</span>
@@ -1065,8 +1065,8 @@ export default function LearnPage() {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '5px',
                   padding: '4px 10px', borderRadius: '999px',
-                  background: 'rgba(255,209,102,0.08)',
-                  border: '1px solid rgba(255,209,102,0.2)',
+                  background: 'rgba(232, 130, 107,0.08)',
+                  border: '1px solid rgba(232, 130, 107,0.2)',
                   fontSize: '11px', color: 'var(--stars)', fontWeight: 500,
                 }}>
                   <span>✦</span>
@@ -1089,13 +1089,13 @@ export default function LearnPage() {
                 onClick={() => setTab(t.id)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200 min-h-[36px]"
                 style={active ? {
-                  background: 'rgba(255,209,102,0.12)',
-                  border: '1px solid rgba(255,209,102,0.3)',
+                  background: 'rgba(232, 130, 107,0.12)',
+                  border: '1px solid rgba(232, 130, 107,0.3)',
                   color: 'var(--stars)',
                 } : {
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#64748b',
+                  color: 'var(--text-muted)',
                 }}
               >
                 <t.Icon size={13} />

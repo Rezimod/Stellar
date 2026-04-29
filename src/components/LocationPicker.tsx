@@ -172,16 +172,16 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           gap: 7px;
           border-radius: 9999px;
           padding: ${compact ? '7px 14px' : '9px 16px'};
-          background: rgba(124, 58, 237, 0.10);
-          border: 1.5px solid rgba(124, 58, 237, 0.40);
+          background: rgba(232, 130, 107, 0.10);
+          border: 1.5px solid rgba(232, 130, 107, 0.40);
           cursor: pointer;
           transition: background 0.2s, border-color 0.2s;
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
         }
         .loc-pill:hover {
-          background: rgba(124, 58, 237, 0.18);
-          border-color: rgba(124, 58, 237, 0.65);
+          background: rgba(232, 130, 107, 0.18);
+          border-color: rgba(232, 130, 107, 0.65);
         }
         .loc-city-btn {
           display: flex;
@@ -198,8 +198,8 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         }
         .loc-city-btn:hover { background: rgba(255,255,255,0.05); }
         .loc-city-btn.active {
-          background: rgba(124, 58, 237, 0.14);
-          border-color: rgba(124, 58, 237, 0.32);
+          background: rgba(232, 130, 107, 0.14);
+          border-color: rgba(232, 130, 107, 0.32);
         }
         .loc-gps-btn {
           display: flex;
@@ -208,18 +208,18 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           gap: 8px;
           width: 100%;
           padding: 9px 12px;
-          background: rgba(124, 58, 237, 0.10);
-          border: 1px solid rgba(124, 58, 237, 0.32);
+          background: rgba(232, 130, 107, 0.10);
+          border: 1px solid rgba(232, 130, 107, 0.32);
           border-radius: 10px;
-          color: #C4B5FD;
+          color: var(--terracotta);
           font-size: 12px;
           font-weight: 600;
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
         }
         .loc-gps-btn:hover:not(:disabled) {
-          background: rgba(124, 58, 237, 0.20);
-          border-color: rgba(124, 58, 237, 0.55);
+          background: rgba(232, 130, 107, 0.20);
+          border-color: rgba(232, 130, 107, 0.55);
         }
         .loc-gps-btn:disabled { opacity: 0.5; cursor: default; }
         .loc-search-input {
@@ -234,11 +234,11 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           outline: none;
           transition: border-color 0.15s;
         }
-        .loc-search-input:focus { border-color: rgba(124, 58, 237, 0.55); }
+        .loc-search-input:focus { border-color: rgba(232, 130, 107, 0.55); }
         .loc-search-input::placeholder { color: rgba(255,255,255,0.3); }
         .loc-city-list::-webkit-scrollbar { width: 4px; }
         .loc-city-list::-webkit-scrollbar-track { background: transparent; }
-        .loc-city-list::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.30); border-radius: 2px; }
+        .loc-city-list::-webkit-scrollbar-thumb { background: rgba(232, 130, 107,0.30); border-radius: 2px; }
         @keyframes loc-spin { to { transform: rotate(360deg); } }
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
       `}</style>
@@ -247,16 +247,16 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         <div style={{ position: 'relative', width: 16, height: 16, flexShrink: 0 }}>
           <div style={{
             position: 'absolute', inset: -2, borderRadius: '50%',
-            background: 'rgba(124,58,237,0.40)',
+            background: 'rgba(232, 130, 107,0.40)',
             animation: 'loc-ping 2.4s ease-out infinite',
             pointerEvents: 'none',
           }} />
-          <MapPin size={15} color={location.source === 'gps' ? '#C4B5FD' : 'rgba(196,181,253,0.85)'} style={{ position: 'relative', zIndex: 1 }} />
+          <MapPin size={15} color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(232, 130, 107,0.85)'} style={{ position: 'relative', zIndex: 1 }} />
         </div>
         <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, letterSpacing: '0.01em' }}>
           {label}
         </span>
-        <ChevronDown size={12} color="rgba(196,181,253,0.7)"
+        <ChevronDown size={12} color="rgba(232, 130, 107,0.7)"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
 
@@ -272,7 +272,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
             width: 280,
             maxWidth: 'calc(100vw - 32px)',
             background: 'linear-gradient(160deg, rgba(15,20,40,0.98) 0%, rgba(10,14,30,0.99) 100%)',
-            border: '1px solid rgba(124,58,237,0.30)',
+            border: '1px solid rgba(232, 130, 107,0.30)',
             borderRadius: 14,
             boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
             display: 'flex', flexDirection: 'column',
@@ -303,7 +303,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
               filtered.map(group => (
                 <div key={group.label} style={{ marginBottom: 6 }}>
                   <p style={{
-                    color: 'rgba(196,181,253,0.7)', fontSize: 9, fontWeight: 700,
+                    color: 'rgba(232, 130, 107,0.7)', fontSize: 9, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     margin: '8px 4px 2px',
                   }}>
@@ -320,14 +320,14 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
                         >
                           <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{p.flag}</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <span style={{ color: active ? '#C4B5FD' : 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500 }}>
+                            <span style={{ color: active ? 'var(--terracotta)' : 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500 }}>
                               {p.city}
                             </span>
                             <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginLeft: 6 }}>
                               {p.country}
                             </span>
                           </div>
-                          {active && <Check size={13} color="#C4B5FD" style={{ flexShrink: 0 }} />}
+                          {active && <Check size={13} color="var(--terracotta)" style={{ flexShrink: 0 }} />}
                         </button>
                       )
                     })}

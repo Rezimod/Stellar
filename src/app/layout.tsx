@@ -1,26 +1,25 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Source_Serif_4, Public_Sans, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
+import { Fraunces, Inter, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
 import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
 import '../styles/animations.css';
 import '../styles/wallet-adapter-overrides.css';
 
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  variable: '--font-serif',
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-});
-const publicSans = Public_Sans({
+const fraunces = Fraunces({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
-const jetbrains = JetBrains_Mono({
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   weight: ['400', '500'],
@@ -54,7 +53,7 @@ import { Toaster } from '@/components/ui/Toast';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0A0E1A',
+  themeColor: '#2C3E5C',
 };
 
 export const metadata: Metadata = {
@@ -97,7 +96,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${sourceSerif.variable} ${publicSans.variable} ${jetbrains.variable} ${notoGeorgian.variable}`}>
+    <html lang={locale} className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} ${notoGeorgian.variable}`}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />
@@ -106,7 +105,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Prevent theme flash — read localStorage before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('stellar_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})()` }} />
       </head>
-      <body className="bg-void text-slate-200 min-h-dvh w-full font-sans flex flex-col"
+      <body className="bg-canvas text-text-primary min-h-dvh w-full font-body flex flex-col"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <ErrorBoundary>
           <NextIntlClientProvider locale={locale} messages={messages}>

@@ -216,7 +216,7 @@ export default function Nav() {
                               style={{
                                 gap: 10,
                                 padding: '8px 12px',
-                                color: isActive ? '#a5b4fc' : 'rgba(255,255,255,0.85)',
+                                color: isActive ? 'var(--terracotta)' : 'rgba(255,255,255,0.85)',
                                 fontSize: 13,
                                 borderRadius: 6,
                                 fontFamily: 'var(--font-display)',
@@ -234,7 +234,7 @@ export default function Nav() {
               </div>
 
               <Link href="/" title="Stellar" className="flex items-center" style={{ marginLeft: 4 }}>
-                <div style={{ filter: 'drop-shadow(0 0 18px rgba(99,102,241,0.6)) drop-shadow(0 0 36px rgba(99,102,241,0.25))' }}>
+                <div style={{ filter: 'drop-shadow(0 0 18px rgba(232, 130, 107,0.6)) drop-shadow(0 0 36px rgba(232, 130, 107,0.25))' }}>
                   <AstroLogo heightClass="h-8" size={30} />
                 </div>
               </Link>
@@ -251,12 +251,12 @@ export default function Nav() {
                     href={tab.href}
                     className={`nav-tab px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 ${isActive ? 'nav-tab-active' : ''}`}
                     style={isActive ? {
-                      background: 'linear-gradient(135deg, rgba(124,58,237,0.3) 0%, rgba(99,102,241,0.18) 100%)',
-                      border: '1px solid rgba(99,102,241,0.3)',
+                      background: 'linear-gradient(135deg, rgba(232, 130, 107,0.3) 0%, rgba(232, 130, 107,0.18) 100%)',
+                      border: '1px solid rgba(232, 130, 107,0.3)',
                       color: '#67e8f9',
                       textDecoration: 'none',
-                      boxShadow: '0 0 16px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
-                      textShadow: '0 0 10px rgba(99,102,241,0.5)',
+                      boxShadow: '0 0 16px rgba(232, 130, 107,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
+                      textShadow: '0 0 10px rgba(232, 130, 107,0.5)',
                     } : {
                       color: 'rgba(255,255,255,0.6)',
                       border: '1px solid transparent',
@@ -282,7 +282,7 @@ export default function Nav() {
               </button>
 
               {!ready ? (
-                <div className="w-[30px] h-[30px] rounded-full bg-white/10 animate-pulse" />
+                <div className="w-[30px] h-[30px] rounded-full bg-[var(--surface-hover)] animate-pulse" />
               ) : !authenticated ? (
                 <button
                   onClick={() => setAuthOpen(true)}

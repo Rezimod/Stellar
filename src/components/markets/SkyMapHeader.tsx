@@ -76,9 +76,9 @@ function colorForNode(market: Market): NodeColor {
 }
 
 const COLOR_MAP: Record<NodeColor, { bg: string; ring: string; label: string }> = {
-  live: { bg: 'var(--success)', ring: 'rgba(52,211,153,0.4)', label: 'Live' },
-  open: { bg: '#F59E0B', ring: 'rgba(245,158,11,0.32)', label: 'Open' },
-  upcoming: { bg: 'rgba(56,240,255,0.55)', ring: 'rgba(56,240,255,0.25)', label: 'Upcoming' },
+  live: { bg: 'var(--success)', ring: 'rgba(94, 234, 212,0.4)', label: 'Live' },
+  open: { bg: 'var(--terracotta)', ring: 'rgba(232, 130, 107,0.32)', label: 'Open' },
+  upcoming: { bg: 'rgba(94, 234, 212,0.55)', ring: 'rgba(94, 234, 212,0.25)', label: 'Upcoming' },
   resolved: { bg: 'rgba(148,163,184,0.5)', ring: 'rgba(148,163,184,0.2)', label: 'Resolved' },
 };
 
@@ -124,15 +124,15 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
         borderRadius: 16,
         overflow: 'hidden',
         background:
-          'linear-gradient(180deg, #060A12 0%, #0A1020 65%, #050810 100%)',
+          'linear-gradient(180deg, #060A12 0%, #0A1020 65%, var(--canvas) 100%)',
         border: '1px solid rgba(255,255,255,0.08)',
       }}
     >
       <style>{`
         @keyframes stellar-market-pulse {
-          0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.45); }
-          70% { box-shadow: 0 0 0 10px rgba(52,211,153,0); }
-          100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+          0% { box-shadow: 0 0 0 0 rgba(94, 234, 212,0.45); }
+          70% { box-shadow: 0 0 0 10px rgba(94, 234, 212,0); }
+          100% { box-shadow: 0 0 0 0 rgba(94, 234, 212,0); }
         }
         .stellar-market-node-live {
           animation: stellar-market-pulse 2.1s ease-out infinite;
@@ -201,7 +201,7 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
           bottom: '18%',
           height: 1,
           background:
-            'linear-gradient(90deg, transparent, rgba(255,209,102,0.25) 20%, rgba(255,209,102,0.25) 80%, transparent)',
+            'linear-gradient(90deg, transparent, rgba(232, 130, 107,0.25) 20%, rgba(232, 130, 107,0.25) 80%, transparent)',
         }}
       />
 
@@ -261,8 +261,8 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 el.animate(
                   [
-                    { outline: '2px solid rgba(255,209,102,0.6)' },
-                    { outline: '2px solid rgba(255,209,102,0)' },
+                    { outline: '2px solid rgba(232, 130, 107,0.6)' },
+                    { outline: '2px solid rgba(232, 130, 107,0)' },
                   ],
                   { duration: 1400, easing: 'ease-out' },
                 );
@@ -290,9 +290,9 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
                 borderRadius: '50%',
                 background: c.bg,
                 boxShadow: n.advantage
-                  ? `0 0 0 2px #FFD166, 0 0 10px ${c.bg}`
+                  ? `0 0 0 2px var(--terracotta), 0 0 10px ${c.bg}`
                   : `0 0 8px ${c.bg}`,
-                outline: n.advantage ? '1px solid rgba(255,209,102,0.8)' : 'none',
+                outline: n.advantage ? '1px solid rgba(232, 130, 107,0.8)' : 'none',
                 outlineOffset: n.advantage ? 2 : 0,
                 flexShrink: 0,
               }}

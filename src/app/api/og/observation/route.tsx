@@ -60,13 +60,13 @@ export async function GET(req: NextRequest) {
         style={{
           width: 600,
           height: 600,
-          background: '#0a0a0a',
+          background: '#2C3E5C',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          border: '2px solid rgba(255,209,102,0.15)',
+          border: '2px solid rgba(232, 130, 107,0.15)',
           fontFamily: 'sans-serif',
           overflow: 'hidden',
         }}
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
               width: s.size,
               height: s.size,
               borderRadius: '50%',
-              background: i % 3 === 0 ? '#FFD166' : '#ffffff',
+              background: i % 3 === 0 ? '#E8826B' : '#ffffff',
               opacity: s.opacity,
             }}
           />
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
             position: 'absolute',
             top: 16,
             left: 20,
-            color: '#F4EDE0',
+            color: '#F5F1E8',
             fontSize: 14,
             fontWeight: 700,
             letterSpacing: 2,
@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
           <div style={{ fontSize: 28, fontWeight: 700, color: '#ffffff', textAlign: 'center' }}>
             {target}
           </div>
-          <div style={{ fontSize: 13, color: '#94a3b8' }}>{date}</div>
+          <div style={{ fontSize: 13, color: '#A8B4C8' }}>{date}</div>
         </div>
 
         {/* Bottom stats */}
@@ -147,10 +147,10 @@ export async function GET(req: NextRequest) {
           }}
         >
           <div style={{ display: 'flex', gap: 12 }}>
-            <div style={{ color: '#94a3b8', fontSize: 12 }}>☁️ {cc}%</div>
-            <div style={{ color: '#FFD166', fontSize: 12 }}>✦ {stars}</div>
+            <div style={{ color: '#A8B4C8', fontSize: 12 }}>☁️ {cc}%</div>
+            <div style={{ color: '#E8826B', fontSize: 12 }}>✦ {stars}</div>
           </div>
-          <div style={{ color: '#F4EDE0', fontSize: 11, letterSpacing: 1 }}>STELLAR</div>
+          <div style={{ color: '#F5F1E8', fontSize: 11, letterSpacing: 1 }}>STELLAR</div>
         </div>
       </div>
     ),

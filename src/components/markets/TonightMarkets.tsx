@@ -164,10 +164,10 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <h2
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 20,
               fontWeight: 600,
-              color: '#F2F0EA',
+              color: 'var(--text)',
               margin: 0,
               letterSpacing: '-0.005em',
             }}
@@ -234,9 +234,9 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
                 gap: 8,
                 padding: '12px 14px',
                 borderRadius: 12,
-                background: 'linear-gradient(145deg, rgba(20,24,40,0.75), rgba(8,10,20,0.95))',
+                background: 'var(--surface)',
                 border: urgent
-                  ? '1px solid rgba(52,211,153,0.35)'
+                  ? '1px solid rgba(94, 234, 212,0.35)'
                   : '1px solid rgba(255,255,255,0.06)',
                 textDecoration: 'none',
                 transition: 'transform 0.15s ease',
@@ -259,8 +259,8 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
                       fontWeight: 700,
                       letterSpacing: '0.08em',
                       color: 'var(--stars)',
-                      background: 'rgba(255,209,102,0.10)',
-                      border: '1px solid rgba(255,209,102,0.32)',
+                      background: 'rgba(232, 130, 107,0.10)',
+                      border: '1px solid rgba(232, 130, 107,0.32)',
                       borderRadius: 999,
                       padding: '2px 6px',
                       textTransform: 'uppercase',
@@ -273,9 +273,9 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
               </div>
               <div
                 style={{
-                  fontFamily: 'var(--font-serif)',
+                  fontFamily: 'var(--font-display)',
                   fontSize: 14,
-                  color: '#F2F0EA',
+                  color: 'var(--text)',
                   fontWeight: 600,
                   lineHeight: 1.25,
                   display: '-webkit-box',
@@ -331,7 +331,7 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
         style={{
           fontFamily: 'var(--font-display)',
           fontSize: 12,
-          color: 'rgba(255,209,102,0.85)',
+          color: 'rgba(232, 130, 107,0.85)',
           textDecoration: 'none',
           alignSelf: 'flex-start',
         }}

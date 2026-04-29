@@ -12,8 +12,8 @@ interface Props {
 export default function MoonPhase({ phase, size = 18, glow = false }: Props) {
   const uid = useId();
   const colorByPhase: Record<StreakTier['phase'], string> = {
-    new:      '#64748B',
-    crescent: '#94a3b8',
+    new:      'var(--text-muted)',
+    crescent: 'var(--text-muted)',
     half:     'var(--stars)',
     gibbous:  'var(--stars)',
     full:     'var(--stars)',
@@ -45,7 +45,7 @@ export default function MoonPhase({ phase, size = 18, glow = false }: Props) {
       ) : (
         <g clipPath={`url(#moon-clip-${uid})`}>
           <circle cx="10" cy="10" r="9" fill={fill} />
-          <circle cx={10 + offset} cy="10" r="9" fill="#0a0a0a" />
+          <circle cx={10 + offset} cy="10" r="9" fill="var(--canvas)" />
         </g>
       )}
     </svg>

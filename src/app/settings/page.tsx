@@ -181,8 +181,8 @@ export default function SettingsPage() {
         {/* Email */}
         <Row
           icon={<Mail size={15} />}
-          iconBg="rgba(99,102,241,0.08)"
-          iconColor="#818cf8"
+          iconBg="rgba(232, 130, 107,0.08)"
+          iconColor="var(--terracotta)"
           label={email ? email : 'Add Email'}
           sublabel={email ? 'Primary email' : 'Link an email address'}
           onClick={email ? undefined : () => linkEmail()}
@@ -194,7 +194,7 @@ export default function SettingsPage() {
         {/* Phone */}
         <Row
           icon={<Phone size={15} />}
-          iconBg="rgba(52,211,153,0.08)"
+          iconBg="rgba(94, 234, 212,0.08)"
           iconColor="var(--success)"
           label={phone ? phone : 'Add Phone'}
           sublabel={phone ? 'Linked phone' : 'Add SMS login'}
@@ -208,7 +208,7 @@ export default function SettingsPage() {
         {hasGoogle && (
           <Row
             icon={<Chrome size={15} />}
-            iconBg="rgba(255,209,102,0.08)"
+            iconBg="rgba(232, 130, 107,0.08)"
             iconColor="var(--stars)"
             label="Google Account"
             sublabel="Connected"
@@ -222,8 +222,8 @@ export default function SettingsPage() {
         <Section title="Wallet">
           <Row
             icon={<Shield size={15} />}
-            iconBg="rgba(139,92,246,0.08)"
-            iconColor="#8B5CF6"
+            iconBg="rgba(232, 130, 107,0.08)"
+            iconColor="var(--terracotta)"
             label={`${address.slice(0, 8)}...${address.slice(-6)}`}
             sublabel="Embedded Solana wallet"
             onClick={handleCopy}
@@ -248,7 +248,7 @@ export default function SettingsPage() {
             {[
               { value: `✦ ${totalStars.toLocaleString()}`, label: 'Stars Balance', color: 'var(--stars)' },
               { value: `~${gelWorth} ₾`, label: 'Store Value', color: 'var(--success)' },
-              { value: availableRewards.length.toString(), label: 'Rewards Ready', color: '#818cf8' },
+              { value: availableRewards.length.toString(), label: 'Rewards Ready', color: 'var(--terracotta)' },
             ].map(s => (
               <div key={s.label} style={{ borderRadius: 12, padding: '12px 8px', textAlign: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
                 <p style={{ color: s.color, fontWeight: 800, fontSize: 15, margin: '0 0 2px', fontFamily: 'monospace' }}>{s.value}</p>
@@ -264,7 +264,7 @@ export default function SettingsPage() {
               {rank.nextRank && <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{rank.nextRank} →</span>}
             </div>
             <div style={{ height: 6, borderRadius: 3, background: 'var(--border-default)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 3, width: `${Math.max(rank.progressPct, 4)}%`, background: 'linear-gradient(90deg, #818cf8, #8B5CF6)', transition: 'width 0.7s' }} />
+              <div style={{ height: '100%', borderRadius: 3, width: `${Math.max(rank.progressPct, 4)}%`, background: 'linear-gradient(90deg, var(--terracotta), var(--terracotta))', transition: 'width 0.7s' }} />
             </div>
           </div>
 
@@ -283,12 +283,12 @@ export default function SettingsPage() {
               <Row
                 key={r.id}
                 icon={<Star size={14} />}
-                iconBg="rgba(255,209,102,0.1)"
+                iconBg="rgba(232, 130, 107,0.1)"
                 iconColor="var(--stars)"
                 label={r.name}
                 sublabel={r.description}
                 right={
-                  <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', color: 'var(--success)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(94, 234, 212,0.12)', border: '1px solid rgba(94, 234, 212,0.25)', color: 'var(--success)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
                     Claim
                   </span>
                 }
@@ -305,8 +305,8 @@ export default function SettingsPage() {
               <Row
                 key={r.id}
                 icon={<TrendingUp size={14} />}
-                iconBg="rgba(139,92,246,0.08)"
-                iconColor="#8B5CF6"
+                iconBg="rgba(232, 130, 107,0.08)"
+                iconColor="var(--terracotta)"
                 label={r.name}
                 sublabel={r.description}
                 right={
@@ -325,8 +325,8 @@ export default function SettingsPage() {
       <Section title="Appearance">
         <Row
           icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
-          iconBg={theme === 'dark' ? 'rgba(139,92,246,0.08)' : 'rgba(251,191,36,0.1)'}
-          iconColor={theme === 'dark' ? '#8B5CF6' : '#FBBF24'}
+          iconBg={theme === 'dark' ? 'rgba(232, 130, 107,0.08)' : 'rgba(232, 130, 107,0.1)'}
+          iconColor={theme === 'dark' ? 'var(--terracotta)' : 'var(--terracotta)'}
           label={theme === 'dark' ? 'Dark Mode' : 'Day Mode'}
           sublabel={theme === 'dark' ? 'Deep space theme' : 'Bright daytime theme'}
           onClick={undefined}
@@ -364,7 +364,7 @@ export default function SettingsPage() {
       <Section title="Notifications">
         <Row
           icon={notificationsOn ? <Bell size={15} /> : <BellOff size={15} />}
-          iconBg="rgba(255,209,102,0.08)"
+          iconBg="rgba(232, 130, 107,0.08)"
           iconColor="var(--stars)"
           label="Sky Alerts"
           sublabel="Notify when conditions are perfect"
@@ -377,7 +377,7 @@ export default function SettingsPage() {
       <Section title="Account Actions">
         <Row
           icon={<Trash2 size={15} />}
-          iconBg="rgba(248,113,113,0.06)"
+          iconBg="rgba(251, 113, 133,0.06)"
           iconColor="var(--error)"
           label={confirmReset ? 'Confirm reset?' : 'Reset Observations'}
           sublabel="Clears local mission data"
@@ -389,7 +389,7 @@ export default function SettingsPage() {
         />
         <Row
           icon={<LogOut size={15} />}
-          iconBg="rgba(248,113,113,0.06)"
+          iconBg="rgba(251, 113, 133,0.06)"
           iconColor="var(--error)"
           label={confirmSignOut ? 'Confirm sign out?' : 'Sign Out'}
           onClick={() => {

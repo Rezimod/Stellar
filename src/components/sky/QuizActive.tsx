@@ -96,30 +96,30 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const LABELS = ['A', 'B', 'C', 'D'];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#070B14] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-[var(--canvas)] flex flex-col overflow-hidden">
       {/* Progress bar */}
       <div className="flex h-0.5 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.04)' }}>
         <div
           className="h-full transition-all duration-500"
           style={{
             width: phase === 'result' ? '100%' : `${(idx / total) * 100}%`,
-            background: 'linear-gradient(90deg, #FFD166, #818cf8)',
+            background: 'linear-gradient(90deg, var(--terracotta), var(--terracotta))',
           }}
         />
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 border-b border-white/5">
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 border-b border-[var(--border)]">
         <div className="flex items-center gap-2">
           <span className="text-xl">{quiz.emoji}</span>
-          <p className="text-white text-sm font-semibold">{quiz.title[locale]}</p>
+          <p className="text-text-primary text-sm font-semibold">{quiz.title[locale]}</p>
         </div>
         {phase !== 'result' && (
-          <span className="text-slate-500 text-xs">{idx + 1} / {total}</span>
+          <span className="text-text-muted text-xs">{idx + 1} / {total}</span>
         )}
         <button
           onClick={handleClose}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white transition-colors ml-2"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors ml-2"
           style={{ background: 'rgba(255,255,255,0.05)' }}
         >
           ✕
@@ -132,13 +132,13 @@ export default function QuizActive({ quiz, onClose }: Props) {
         {phase === 'result' ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-6 text-center">
             <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
-              style={{ background: 'rgba(255,209,102,0.08)', border: '1px solid rgba(255,209,102,0.2)' }}>
+              style={{ background: 'rgba(232, 130, 107,0.08)', border: '1px solid rgba(232, 130, 107,0.2)' }}>
               {score >= 8 ? '🏆' : score >= 5 ? '⭐' : '🔭'}
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-1">{score}<span className="text-slate-500 text-2xl">/{total}</span></p>
-              <p className="text-[#FFD166] font-bold text-lg">+{stars} ✦</p>
-              <p className="text-slate-400 text-sm mt-2">
+              <p className="text-4xl font-bold text-text-primary mb-1">{score}<span className="text-text-muted text-2xl">/{total}</span></p>
+              <p className="text-[var(--terracotta)] font-bold text-lg">+{stars} ✦</p>
+              <p className="text-text-muted text-sm mt-2">
                 {score >= 8 ? 'Outstanding!' : score >= 5 ? 'Well done!' : 'Keep learning!'}
               </p>
             </div>
@@ -149,23 +149,23 @@ export default function QuizActive({ quiz, onClose }: Props) {
                     key={i}
                     className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
                     style={{
-                      background: correct ? 'rgba(52,211,153,0.15)' : 'rgba(239,68,68,0.15)',
-                      border: correct ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(239,68,68,0.3)',
-                      color: correct ? 'var(--success)' : '#f87171',
+                      background: correct ? 'rgba(94, 234, 212,0.15)' : 'rgba(251, 113, 133,0.15)',
+                      border: correct ? '1px solid rgba(94, 234, 212,0.3)' : '1px solid rgba(251, 113, 133,0.3)',
+                      color: correct ? 'var(--success)' : 'var(--negative)',
                     }}
                   >
                     {i + 1}
                   </div>
                 ))}
               </div>
-              <p className="text-slate-600 text-[10px] text-center mt-2">
+              <p className="text-text-muted text-[10px] text-center mt-2">
                 {answers.filter(Boolean).length} correct · {answers.filter(b => !b).length} wrong
               </p>
             </div>
             <div className="flex gap-3 w-full">
               <button
                 onClick={restart}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold text-slate-300 transition-all"
+                className="flex-1 py-3 rounded-xl text-sm font-semibold text-text-primary transition-all"
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
               >
                 Play Again
@@ -173,7 +173,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
               <button
                 onClick={handleClose}
                 className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
-                style={{ background: 'linear-gradient(135deg, #FFD166, #CC9A33)', color: '#0a0a0a' }}
+                style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
               >
                 Done
               </button>
@@ -186,7 +186,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
               className="rounded-2xl p-5 mb-6 flex-shrink-0"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-              <p className="text-white text-base font-medium leading-relaxed">{q.q[locale]}</p>
+              <p className="text-text-primary text-base font-medium leading-relaxed">{q.q[locale]}</p>
             </div>
 
             {/* Options */}
@@ -199,9 +199,9 @@ export default function QuizActive({ quiz, onClose }: Props) {
                 };
                 if (phase === 'feedback') {
                   if (i === q.correct) {
-                    style = { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.5)' };
+                    style = { background: 'rgba(94, 234, 212,0.15)', border: '1px solid rgba(94, 234, 212,0.5)' };
                   } else if (i === selected && i !== q.correct) {
-                    style = { background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.5)' };
+                    style = { background: 'rgba(251, 113, 133,0.15)', border: '1px solid rgba(251, 113, 133,0.5)' };
                   }
                 }
 
@@ -217,19 +217,19 @@ export default function QuizActive({ quiz, onClose }: Props) {
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                       style={{
                         background: phase === 'feedback' && i === q.correct
-                          ? 'rgba(52,211,153,0.3)'
+                          ? 'rgba(94, 234, 212,0.3)'
                           : 'rgba(255,255,255,0.06)',
                         color: phase === 'feedback' && i === q.correct ? 'var(--success)'
-                          : phase === 'feedback' && i === selected ? '#ef4444'
-                          : '#94a3b8',
+                          : phase === 'feedback' && i === selected ? 'var(--negative)'
+                          : 'var(--text-muted)',
                       }}
                     >
                       {LABELS[i]}
                     </span>
                     <span className={
-                      phase === 'feedback' && i === q.correct ? 'text-[#34d399]'
-                      : phase === 'feedback' && i === selected && i !== q.correct ? 'text-red-400'
-                      : 'text-slate-200'
+                      phase === 'feedback' && i === q.correct ? 'text-[var(--seafoam)]'
+                      : phase === 'feedback' && i === selected && i !== q.correct ? 'text-negative'
+                      : 'text-text-primary'
                     }>
                       {opt[locale]}
                     </span>
@@ -242,12 +242,12 @@ export default function QuizActive({ quiz, onClose }: Props) {
               <div
                 className="mt-1 rounded-xl p-4 text-xs leading-relaxed"
                 style={{
-                  background: selected === q.correct ? 'rgba(52,211,153,0.08)' : 'rgba(239,68,68,0.08)',
-                  border: selected === q.correct ? '1px solid rgba(52,211,153,0.2)' : '1px solid rgba(239,68,68,0.2)',
-                  color: '#94a3b8',
+                  background: selected === q.correct ? 'rgba(94, 234, 212,0.08)' : 'rgba(251, 113, 133,0.08)',
+                  border: selected === q.correct ? '1px solid rgba(94, 234, 212,0.2)' : '1px solid rgba(251, 113, 133,0.2)',
+                  color: 'var(--text-muted)',
                 }}
               >
-                <span className="font-semibold" style={{ color: selected === q.correct ? 'var(--success)' : '#f87171' }}>
+                <span className="font-semibold" style={{ color: selected === q.correct ? 'var(--success)' : 'var(--negative)' }}>
                   {selected === q.correct ? '✓ Correct — ' : '✗ Incorrect — '}
                 </span>
                 {q.explanation[locale]}

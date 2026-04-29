@@ -29,12 +29,12 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
     <div
       className="relative grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-[14px] mb-[22px] p-4 rounded-xl overflow-hidden"
       style={{
-        border: '0.5px solid rgba(255,209,102,0.2)',
+        border: '0.5px solid rgba(232, 130, 107,0.2)',
         background:
-          'radial-gradient(ellipse 80% 100% at 0% 50%, rgba(255,209,102,0.06) 0%, transparent 60%), rgba(255,255,255,0.01)',
+          'radial-gradient(ellipse 80% 100% at 0% 50%, rgba(232, 130, 107,0.06) 0%, transparent 60%), rgba(255,255,255,0.01)',
       }}
     >
-      <span className="absolute top-3 right-[14px] text-[8px] tracking-[0.3em] font-semibold text-[rgba(255,209,102,0.5)]">
+      <span className="absolute top-3 right-[14px] text-[8px] tracking-[0.3em] font-semibold text-[rgba(232, 130, 107,0.5)]">
         FEATURED
       </span>
 
@@ -43,7 +43,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
         style={{
           aspectRatio: '1.4',
           background:
-            'radial-gradient(ellipse at 50% 50%, rgba(255,209,102,0.05) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+            'radial-gradient(ellipse at 50% 50%, rgba(232, 130, 107,0.05) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
           border: '0.5px solid rgba(232,230,221,0.05)',
         }}
       >
@@ -62,7 +62,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
 
       <div className="flex flex-col justify-between py-1">
         <div>
-          <p className="text-[8px] tracking-[0.24em] uppercase font-semibold text-[#FFD166] mb-[6px]">Editor&rsquo;s Pick</p>
+          <p className="text-[8px] tracking-[0.24em] uppercase font-semibold text-[var(--terracotta)] mb-[6px]">Editor&rsquo;s Pick</p>
           <h2 className="text-[18px] font-semibold leading-[1.15] tracking-[-0.01em] text-[#E8E6DD] mb-[4px]">
             {product.name}
           </h2>
@@ -100,7 +100,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
 
         <div className="flex justify-between items-end gap-3">
           <div>
-            <p className="text-[22px] font-bold leading-none tracking-[-0.01em] text-[#FFD166]">
+            <p className="text-[22px] font-bold leading-none tracking-[-0.01em] text-[var(--terracotta)]">
               {formatPrice(product)}
             </p>
             <p className="text-[9px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.4)] mt-[4px]">
@@ -111,7 +111,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
             href={product.externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#FFD166] text-[#1a1208] px-[18px] py-[9px] rounded-full text-[10px] font-bold tracking-[0.18em] uppercase hover:opacity-90 transition-opacity"
+            className="bg-[var(--terracotta)] text-[#1a1208] px-[18px] py-[9px] rounded-full text-[10px] font-bold tracking-[0.18em] uppercase hover:opacity-90 transition-opacity"
           >
             View
           </a>

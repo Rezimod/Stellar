@@ -40,21 +40,21 @@ export default function MembershipStep() {
     <Card glow={done ? 'gold' : null} className={`${done ? 'animate-pulse-success' : ''} ${!unlocked ? 'opacity-40 pointer-events-none transition-opacity duration-500' : 'transition-opacity duration-500'}`}>
       <div className="flex flex-col items-center gap-3 text-center">
         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-          done ? 'bg-[#FFD166] border-[#FFD166] text-black' : 'border-[#FFD166] text-[#FFD166]'
+          done ? 'bg-[var(--terracotta)] border-[var(--terracotta)] text-black' : 'border-[var(--terracotta)] text-[var(--terracotta)]'
         }`}>
           {done ? '✓' : '2'}
         </div>
         <div className="w-full">
-          <h3 className="text-lg font-semibold text-white">Activate Observer Status</h3>
-          <p className="text-slate-400 text-sm mb-3">Activate your free observer status to unlock tonight&apos;s sky missions.</p>
+          <h3 className="text-lg font-semibold text-text-primary">Activate Observer Status</h3>
+          <p className="text-text-muted text-sm mb-3">Activate your free observer status to unlock tonight&apos;s sky missions.</p>
           {done ? (
-            <div className="bg-[#0F1F3D] border border-[#FFD166]/40 rounded-lg p-4 flex items-center justify-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#FFD166]/10 border border-[#FFD166]/20 flex items-center justify-center">
-                <Shield size={22} className="text-[#FFD166]" />
+            <div className="bg-[var(--surface)] border border-[var(--terracotta)]/40 rounded-lg p-4 flex items-center justify-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[var(--terracotta)]/10 border border-[var(--terracotta)]/20 flex items-center justify-center">
+                <Shield size={22} className="text-[var(--terracotta)]" />
               </div>
               <div className="text-left">
-                <p className="text-[#FFD166] font-semibold">Observer Status: Active</p>
-                <p className="text-slate-400 text-xs">Founding Observer · Discovering since 2026</p>
+                <p className="text-[var(--terracotta)] font-semibold">Observer Status: Active</p>
+                <p className="text-text-muted text-xs">Founding Observer · Discovering since 2026</p>
               </div>
             </div>
           ) : (
@@ -62,7 +62,7 @@ export default function MembershipStep() {
               <Button variant="brass" onClick={handleJoin} disabled={!unlocked || joining} className="w-full">
                 {joining ? 'Activating...' : 'Activate Now — It\'s Free ✦'}
               </Button>
-              {error && <p className="text-amber-400 text-xs mt-2">{error}</p>}
+              {error && <p className="text-terracotta text-xs mt-2">{error}</p>}
             </>
           )}
         </div>

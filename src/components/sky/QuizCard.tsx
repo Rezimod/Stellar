@@ -24,7 +24,7 @@ const THEMES: Record<QuizTheme, {
   },
   stars: {
     background:
-      'radial-gradient(circle at 80% 20%, rgba(184,212,255,0.14) 0%, transparent 50%), radial-gradient(circle at 15% 70%, rgba(132,155,220,0.08) 0%, transparent 50%), linear-gradient(145deg, #0d1428 0%, #070b18 100%)',
+      'radial-gradient(circle at 80% 20%, rgba(184,212,255,0.14) 0%, transparent 50%), radial-gradient(circle at 15% 70%, rgba(132,155,220,0.08) 0%, transparent 50%), linear-gradient(145deg, #0d1428 0%, var(--canvas) 100%)',
     border: 'rgba(184,212,255,0.12)',
     accent: '#B8D4FF',
     buttonBg: 'rgba(184,212,255,0.1)',
@@ -33,27 +33,27 @@ const THEMES: Record<QuizTheme, {
   },
   telescope: {
     background:
-      'radial-gradient(circle at 80% 30%, rgba(56,240,255,0.12) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(100,180,220,0.06) 0%, transparent 50%), linear-gradient(145deg, #081624 0%, #070b18 100%)',
-    border: 'rgba(56,240,255,0.15)',
+      'radial-gradient(circle at 80% 30%, rgba(94, 234, 212,0.12) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(100,180,220,0.06) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
+    border: 'rgba(94, 234, 212,0.15)',
     accent: 'var(--stl-teal)',
-    buttonBg: 'rgba(56,240,255,0.1)',
-    buttonBorder: 'rgba(56,240,255,0.3)',
+    buttonBg: 'rgba(94, 234, 212,0.1)',
+    buttonBorder: 'rgba(94, 234, 212,0.3)',
     buttonFill: 'var(--stl-teal)',
   },
   cosmos: {
     background:
-      'radial-gradient(circle at 85% 25%, rgba(167,139,232,0.18) 0%, transparent 55%), radial-gradient(circle at 15% 85%, rgba(255,143,184,0.1) 0%, transparent 55%), linear-gradient(145deg, #120a24 0%, #070b18 100%)',
+      'radial-gradient(circle at 85% 25%, rgba(167,139,232,0.18) 0%, transparent 55%), radial-gradient(circle at 15% 85%, rgba(255,143,184,0.1) 0%, transparent 55%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(167,139,232,0.18)',
-    accent: '#A78BE8',
+    accent: 'var(--terracotta)',
     buttonBg: 'rgba(167,139,232,0.1)',
     buttonBorder: 'rgba(167,139,232,0.3)',
     buttonFill: 'rgba(167,139,232,0.95)',
   },
   exploration: {
     background:
-      'radial-gradient(circle at 80% 20%, rgba(255,143,184,0.14) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,180,80,0.08) 0%, transparent 50%), linear-gradient(145deg, #1a0916 0%, #070b18 100%)',
+      'radial-gradient(circle at 80% 20%, rgba(255,143,184,0.14) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,180,80,0.08) 0%, transparent 50%), linear-gradient(145deg, #1a0916 0%, var(--canvas) 100%)',
     border: 'rgba(255,143,184,0.14)',
-    accent: '#FF8FB8',
+    accent: 'var(--negative)',
     buttonBg: 'rgba(255,143,184,0.08)',
     buttonBorder: 'rgba(255,143,184,0.25)',
     buttonFill: 'rgba(255,143,184,0.95)',
@@ -105,9 +105,9 @@ export default function QuizCard({
         <div className="flex items-center gap-1.5 flex-wrap">
           <h3
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 14,
-              color: '#F2F0EA',
+              color: 'var(--text)',
               fontWeight: 600,
               margin: 0,
               lineHeight: 1.1,
@@ -120,13 +120,13 @@ export default function QuizCard({
               key={i}
               className={b.variant === 'new' ? 'stl-badge-pulse' : ''}
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontSize: 8,
                 color: b.variant === 'new' ? 'var(--stl-teal)'
                      : b.variant === 'done' ? '#86efac'
-                     : '#A78BE8',
-                background: b.variant === 'new' ? 'rgba(56,240,255,0.14)'
-                          : b.variant === 'done' ? 'rgba(52,211,153,0.12)'
+                     : 'var(--terracotta)',
+                background: b.variant === 'new' ? 'rgba(94, 234, 212,0.14)'
+                          : b.variant === 'done' ? 'rgba(94, 234, 212,0.12)'
                           : 'rgba(167,139,232,0.12)',
                 padding: '2px 5px',
                 borderRadius: 3,
@@ -140,7 +140,7 @@ export default function QuizCard({
         </div>
         <div
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontSize: 10.5,
             color: 'rgba(255,255,255,0.48)',
             lineHeight: 1.35,
@@ -166,18 +166,18 @@ export default function QuizCard({
                 style={{
                   width: `${(progressQ! / totalQuestions) * 100}%`,
                   height: '100%',
-                  background: `linear-gradient(90deg, ${t.accent}, #8465CB)`,
+                  background: `linear-gradient(90deg, ${t.accent}, var(--terracotta))`,
                   borderRadius: 2,
                 }}
               />
             </div>
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9.5, color: `${t.accent}b0`, letterSpacing: '0.05em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: `${t.accent}b0`, letterSpacing: '0.05em' }}>
               {progressQ}/{totalQuestions} · CONTINUE
             </span>
           </div>
         ) : isCompleted ? (
           <div className="flex items-center gap-2.5 mt-2">
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
               {totalQuestions} Q · BEST {Math.round((bestPct! / 100) * totalQuestions)}/{totalQuestions}
             </span>
             <span style={{ fontSize: 10, color: 'var(--stars)', fontWeight: 600 }}>
@@ -186,7 +186,7 @@ export default function QuizCard({
           </div>
         ) : (
           <div className="flex items-center gap-2.5 mt-2">
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
               {totalQuestions} QUESTIONS
             </span>
             <span style={{ fontSize: 10, color: 'var(--stars)', fontWeight: 600 }}>

@@ -36,7 +36,7 @@ export default function ForecastGrid() {
       <div className="flex flex-col gap-4">
         {!ready && (
           <div className="flex items-center gap-2 px-1">
-            <div className="w-3 h-3 rounded-full border border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
+            <div className="w-3 h-3 rounded-full border border-[var(--seafoam)] border-t-transparent animate-spin flex-shrink-0" />
             <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Detecting your location…</span>
           </div>
         )}
@@ -55,12 +55,12 @@ export default function ForecastGrid() {
   if (error) {
     return (
       <div className="glass-card p-5 flex flex-col items-center gap-3 text-center"
-        style={{ border: '1px solid rgba(245,158,11,0.2)' }}>
+        style={{ border: '1px solid rgba(232, 130, 107,0.2)' }}>
         <p className="text-sm" style={{ color: 'var(--color-solar-amber)' }}>{t('forecastError')}</p>
         <button
           onClick={() => load(lat, lng)}
           className="px-4 py-2 rounded-lg text-sm transition-colors"
-          style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#F59E0B' }}
+          style={{ background: 'rgba(232, 130, 107,0.1)', border: '1px solid rgba(232, 130, 107,0.25)', color: 'var(--terracotta)' }}
         >
           {t('retry')}
         </button>

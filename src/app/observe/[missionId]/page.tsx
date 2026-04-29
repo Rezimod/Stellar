@@ -30,12 +30,12 @@ export default function ObserveBriefPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-white font-semibold text-base mb-2">Mission not found</p>
-          <p className="text-slate-500 text-sm mb-4">The mission you're looking for doesn't exist.</p>
+          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-muted text-sm mb-4">The mission you're looking for doesn't exist.</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8' }}
+            style={{ background: 'rgba(232, 130, 107,0.12)', border: '1px solid rgba(232, 130, 107,0.25)', color: 'var(--terracotta)' }}
           >
             Back to missions
           </Link>
@@ -55,8 +55,8 @@ export default function ObserveBriefPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background: [
-              'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(255,209,102,0.10) 0%, transparent 60%)',
-              'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(132,101,203,0.10) 0%, transparent 65%)',
+              'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(232, 130, 107,0.10) 0%, transparent 60%)',
+              'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(232, 130, 107,0.10) 0%, transparent 65%)',
               'radial-gradient(ellipse 320px 240px at 80% 75%, rgba(56,155,240,0.08) 0%, transparent 65%)',
             ].join(', '),
           }}
@@ -75,7 +75,7 @@ export default function ObserveBriefPage() {
             aria-hidden
             className="absolute inset-0 rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(255,209,102,0.28) 0%, rgba(255,209,102,0.06) 45%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(232, 130, 107,0.28) 0%, rgba(232, 130, 107,0.06) 45%, transparent 70%)',
               filter: 'blur(18px)',
               transform: 'scale(1.55)',
             }}
@@ -86,14 +86,14 @@ export default function ObserveBriefPage() {
             src={getMissionImage(mission.id)}
             alt={mission.name}
             className="relative w-full h-full rounded-full object-cover stl-chart-in"
-            style={{ boxShadow: '0 0 60px rgba(255,209,102,0.22), inset 0 0 0 1px rgba(255,209,102,0.15)' }}
+            style={{ boxShadow: '0 0 60px rgba(232, 130, 107,0.22), inset 0 0 0 1px rgba(232, 130, 107,0.15)' }}
           />
         </div>
 
         <h1
           className="stl-chart-in flex-shrink-0"
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontWeight: 500,
             fontSize: 'clamp(28px, 7vw, 40px)',
             lineHeight: 0.95,
@@ -108,7 +108,7 @@ export default function ObserveBriefPage() {
         <p
           className="stl-chart-in flex-shrink-0"
           style={{
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontStyle: 'italic',
             fontWeight: 400,
             fontSize: 'clamp(12px, 3vw, 14px)',
@@ -145,7 +145,7 @@ export default function ObserveBriefPage() {
         </Button>
 
         {mission.demo && (
-          <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: '#F59E0B' }}>
+          <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
             Demo mode — upload any photo; mints a real NFT on Solana
           </p>
         )}

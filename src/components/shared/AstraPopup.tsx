@@ -162,7 +162,7 @@ export default function AstraPopup() {
           transform: translateY(-50%) translateX(0);
         }
         .astra-fab-wrap:hover .astra-fab-disc {
-          border-color: rgba(255,209,102,0.55);
+          border-color: rgba(232, 130, 107,0.55);
         }
         .astra-dot:nth-child(1) { animation: astraDot 1.2s infinite 0s; }
         .astra-dot:nth-child(2) { animation: astraDot 1.2s infinite 0.2s; }
@@ -179,19 +179,19 @@ export default function AstraPopup() {
             width: 'min(360px, calc(100vw - 32px))',
             height: 'min(520px, calc(100dvh - 140px))',
             background: '#06091B',
-            border: '1px solid rgba(124,58,237,0.3)',
+            border: '1px solid rgba(232, 130, 107,0.3)',
             borderRadius: 20,
             boxShadow: '0 16px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03)',
             animation: 'astraSlide 0.2s ease forwards',
           }}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(124,58,237,0.15)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 16px rgba(124,58,237,0.5)' }}>
+          <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(232, 130, 107,0.15)' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 16px rgba(232, 130, 107,0.5)' }}>
               <Sparkles size={15} color="#fff" />
             </div>
             <div className="flex-1 min-w-0">
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', letterSpacing: '0.05em' }}>ASTRA</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--terracotta)', letterSpacing: '0.05em' }}>ASTRA</div>
               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>AI Astronomer</div>
             </div>
             <button onClick={() => setOpen(false)} className="w-7 h-7 flex items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
@@ -206,7 +206,7 @@ export default function AstraPopup() {
                 <div style={{
                   maxWidth: '85%', fontSize: 13, lineHeight: 1.5, padding: '8px 12px', borderRadius: 14,
                   ...(m.role === 'user'
-                    ? { background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.35)', color: '#e9d5ff', borderBottomRightRadius: 4 }
+                    ? { background: 'rgba(232, 130, 107,0.25)', border: '1px solid rgba(232, 130, 107,0.35)', color: '#e9d5ff', borderBottomRightRadius: 4 }
                     : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.88)', borderBottomLeftRadius: 4 }),
                 }}>
                   {m.content}
@@ -217,7 +217,7 @@ export default function AstraPopup() {
               <div className="flex justify-start">
                 <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, borderBottomLeftRadius: 4, padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
                   {[0,1,2].map(i => (
-                    <div key={i} className="astra-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#a78bfa' }} />
+                    <div key={i} className="astra-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--terracotta)' }} />
                   ))}
                 </div>
               </div>
@@ -226,7 +226,7 @@ export default function AstraPopup() {
           </div>
 
           {/* Input */}
-          <div className="flex-shrink-0 p-3" style={{ borderTop: '1px solid rgba(124,58,237,0.12)' }}>
+          <div className="flex-shrink-0 p-3" style={{ borderTop: '1px solid rgba(232, 130, 107,0.12)' }}>
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}
@@ -237,7 +237,7 @@ export default function AstraPopup() {
                 rows={1}
                 style={{
                   flex: 1, resize: 'none', background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(124,58,237,0.25)', borderRadius: 12,
+                  border: '1px solid rgba(232, 130, 107,0.25)', borderRadius: 12,
                   color: 'rgba(255,255,255,0.9)', fontSize: 13, padding: '8px 12px',
                   outline: 'none', maxHeight: 100, lineHeight: 1.5,
                   scrollbarWidth: 'none',
@@ -258,7 +258,7 @@ export default function AstraPopup() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: input.trim() && !loading ? '#fff' : 'rgba(255,255,255,0.25)',
                   transition: 'all 0.18s ease',
-                  boxShadow: input.trim() && !loading ? '0 0 16px rgba(124,58,237,0.4)' : undefined,
+                  boxShadow: input.trim() && !loading ? '0 0 16px rgba(232, 130, 107,0.4)' : undefined,
                 }}
               >
                 <ArrowUp size={15} />
@@ -277,8 +277,8 @@ export default function AstraPopup() {
             bottom: 'calc(env(safe-area-inset-bottom) + 96px)',
             right: 'calc(min(360px, calc(100vw - 32px)) - 44px + 24px)',
             width: 44, height: 44, borderRadius: '50%',
-            background: 'rgba(255,209,102,0.10)',
-            border: '1px solid rgba(255,209,102,0.35)',
+            background: 'rgba(232, 130, 107,0.10)',
+            border: '1px solid rgba(232, 130, 107,0.35)',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'right 0.2s ease',
@@ -286,7 +286,7 @@ export default function AstraPopup() {
           }}
           aria-label="Close ASTRA"
         >
-          <X size={18} color="rgba(255,209,102,0.75)" />
+          <X size={18} color="rgba(232, 130, 107,0.75)" />
         </button>
       ) : (
         <div
@@ -313,9 +313,9 @@ export default function AstraPopup() {
               fontWeight: 600,
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
-              color: 'rgba(255,209,102,0.85)',
+              color: 'rgba(232, 130, 107,0.85)',
               background: 'rgba(8,10,18,0.92)',
-              border: '1px solid rgba(255,209,102,0.22)',
+              border: '1px solid rgba(232, 130, 107,0.22)',
               borderRadius: 4,
               padding: '5px 9px',
               whiteSpace: 'nowrap',
@@ -335,7 +335,7 @@ export default function AstraPopup() {
               position: 'relative',
               width: 52, height: 52, borderRadius: '50%',
               background: 'radial-gradient(circle at 50% 50%, #131524 0%, #07090F 70%)',
-              border: '1px solid rgba(255,209,102,0.28)',
+              border: '1px solid rgba(232, 130, 107,0.28)',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 6px 18px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.02)',
@@ -350,7 +350,7 @@ export default function AstraPopup() {
             {/* Reticle crosshair (static — animations dropped: ran forever on every page) */}
             <svg
               width="22" height="22" viewBox="0 0 22 22" aria-hidden
-              style={{ color: 'rgba(255,209,102,0.92)' }}
+              style={{ color: 'rgba(232, 130, 107,0.92)' }}
             >
               <circle cx="11" cy="11" r="3.5" fill="none" stroke="currentColor" strokeWidth="1" />
               <circle cx="11" cy="11" r="1" fill="currentColor" />
@@ -367,7 +367,7 @@ export default function AstraPopup() {
                 position: 'absolute',
                 inset: -4,
                 borderRadius: '50%',
-                border: '1px dashed rgba(255,209,102,0.18)',
+                border: '1px dashed rgba(232, 130, 107,0.18)',
               }}
             />
 

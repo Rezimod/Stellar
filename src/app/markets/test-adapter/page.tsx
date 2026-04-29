@@ -89,9 +89,9 @@ export default function TestAdapterPage() {
     <PageContainer variant="wide" className="py-6 flex flex-col gap-4">
       <h1
         style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontSize: 26,
-          color: '#F2F0EA',
+          color: 'var(--text)',
           margin: 0,
         }}
       >
@@ -135,7 +135,7 @@ export default function TestAdapterPage() {
               padding: '8px 12px',
               borderRadius: 8,
               background: 'var(--stars)',
-              color: '#0a0a0a',
+              color: 'var(--canvas)',
               fontFamily: 'var(--font-mono)',
               fontSize: 12,
               fontWeight: 600,
@@ -191,7 +191,7 @@ function Row({ k, v }: { k: string; v: string }) {
       }}
     >
       <span style={{ color: 'rgba(255,255,255,0.5)' }}>{k}</span>
-      <span style={{ color: '#F2F0EA', wordBreak: 'break-all', textAlign: 'right' }}>
+      <span style={{ color: 'var(--text)', wordBreak: 'break-all', textAlign: 'right' }}>
         {v}
       </span>
     </div>
@@ -224,7 +224,7 @@ function Pre({ children }: { children: React.ReactNode }) {
         borderRadius: 8,
         padding: 12,
         fontSize: 11,
-        color: '#F2F0EA',
+        color: 'var(--text)',
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-all',
         margin: 0,
@@ -239,12 +239,12 @@ function btn(): React.CSSProperties {
   return {
     padding: '8px 12px',
     borderRadius: 8,
-    background: 'rgba(124,58,237,0.18)',
-    color: '#F2F0EA',
+    background: 'rgba(232, 130, 107,0.18)',
+    color: 'var(--text)',
     fontFamily: 'var(--font-mono)',
     fontSize: 11,
     fontWeight: 600,
-    border: '1px solid rgba(124,58,237,0.4)',
+    border: '1px solid rgba(232, 130, 107,0.4)',
     cursor: 'pointer',
   };
 }

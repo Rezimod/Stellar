@@ -57,8 +57,8 @@ export default function PlanetGrid() {
       <div className="flex flex-col gap-3">
         {!ready && (
           <div className="flex items-center gap-2 px-1">
-            <div className="w-3 h-3 rounded-full border border-[#34d399] border-t-transparent animate-spin flex-shrink-0" />
-            <span className="text-slate-500 text-xs">Detecting your location…</span>
+            <div className="w-3 h-3 rounded-full border border-[var(--seafoam)] border-t-transparent animate-spin flex-shrink-0" />
+            <span className="text-text-muted text-xs">Detecting your location…</span>
           </div>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -76,10 +76,10 @@ export default function PlanetGrid() {
         {error && (
           <div className="flex items-center justify-between glass-card px-4 py-3"
             style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-            <p className="text-slate-400 text-sm">{t('forecastError')}</p>
+            <p className="text-text-muted text-sm">{t('forecastError')}</p>
             <button
               onClick={() => load(lat, lng)}
-              className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-xs hover:bg-white/10 transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-text-primary text-xs hover:bg-[var(--surface-hover)] transition-colors"
             >
               {t('retry')}
             </button>
@@ -91,9 +91,9 @@ export default function PlanetGrid() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{m.emoji}</span>
-                  <span className="text-white text-sm font-semibold">{m.name}</span>
+                  <span className="text-text-primary text-sm font-semibold">{m.name}</span>
                 </div>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[#0F1F3D] text-slate-400 border-[rgba(99,102,241,0.12)]">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-[var(--surface)] text-text-muted border-[rgba(232, 130, 107,0.12)]">
                   Check tonight
                 </span>
               </div>
@@ -102,14 +102,14 @@ export default function PlanetGrid() {
                 {(['Rise', 'Transit', 'Set'] as const).map(label => (
                   <div key={label}>
                     <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wide">{label}</p>
-                    <p className="text-slate-500 text-xs">—</p>
+                    <p className="text-text-muted text-xs">—</p>
                   </div>
                 ))}
               </div>
               <button
                 onClick={handleObserve}
                 className="px-3 py-1.5 text-xs font-semibold rounded-lg mt-2"
-              style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
+              style={{ background: 'linear-gradient(to right, var(--terracotta), var(--terracotta))', color: '#000' }}
             >
               Observe This
             </button>
@@ -137,7 +137,7 @@ export default function PlanetGrid() {
               <button
                 onClick={handleObserve}
                 className="px-3 py-1.5 text-xs font-semibold rounded-lg w-full"
-                style={{ background: 'linear-gradient(to right, #FFD166, #CC9A33)', color: '#000' }}
+                style={{ background: 'linear-gradient(to right, var(--terracotta), var(--terracotta))', color: '#000' }}
               >
                 Start {p.key.charAt(0).toUpperCase() + p.key.slice(1)} Mission →
               </button>

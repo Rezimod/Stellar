@@ -22,7 +22,7 @@ export default function HeroSection() {
   const greeting = ready && authenticated ? displayName : null;
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-32 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,209,102,0.06)_0%,transparent_60%)]">
+    <section className="relative overflow-hidden py-20 md:py-32 bg-[radial-gradient(ellipse_at_50%_0%,rgba(232, 130, 107,0.06)_0%,transparent_60%)]">
       {STARS.map((s, i) => (
         <span
           key={i}
@@ -34,7 +34,7 @@ export default function HeroSection() {
             width: `${s.size}px`,
             height: `${s.size}px`,
             opacity: s.opacity,
-            background: s.gold ? '#FFD166' : '#E8E6DD',
+            background: s.gold ? 'var(--terracotta)' : '#E8E6DD',
           }}
         />
       ))}
@@ -45,9 +45,9 @@ export default function HeroSection() {
           BUILT ON SOLANA · COLOSSEUM FRONTIER
         </span>
 
-        <h1 className="mt-5 font-serif font-medium tracking-[-0.03em] leading-[1] md:leading-[0.95] text-[40px] md:text-[64px] text-[#E8E6DD]">
+        <h1 className="mt-5 font-display font-medium tracking-[-0.03em] leading-[1] md:leading-[0.95] text-[40px] md:text-[64px] text-[#E8E6DD]">
           <span className="block">Astronomy,</span>
-          <span className="block italic text-[#FFD166]">on chain.</span>
+          <span className="block italic text-[var(--terracotta)]">on chain.</span>
         </h1>
 
         <p className="mt-6 max-w-[440px] px-2 text-[15px] md:text-[16px] leading-[1.65] text-[rgba(232,230,221,0.65)]">
@@ -59,11 +59,11 @@ export default function HeroSection() {
           <div className="relative w-full sm:w-auto sm:p-[6px]">
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-0 hidden rounded-[14px] border-[0.5px] border-dashed border-[rgba(255,209,102,0.18)] sm:block"
+              className="pointer-events-none absolute inset-0 hidden rounded-[14px] border-[0.5px] border-dashed border-[rgba(232, 130, 107,0.18)] sm:block"
             />
             <Link
               href="/missions"
-              className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#FFD166] px-6 py-3 text-[13px] font-medium text-[#1a1208] transition-[filter,transform] hover:brightness-110"
+              className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--terracotta)] px-6 py-3 text-[13px] font-medium text-[#1a1208] transition-[filter,transform] hover:brightness-110"
             >
               <span>Start observing</span>
               <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>

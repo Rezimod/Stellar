@@ -26,7 +26,7 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={toggle}
-      className="text-xs font-mono text-[var(--text-secondary)] hover:text-white px-2 py-1 rounded hover:bg-white/5 transition-all"
+      className="text-xs font-mono text-[var(--text-secondary)] hover:text-text-primary px-2 py-1 rounded hover:bg-[var(--surface)] transition-all"
       title={locale === 'en' ? 'Switch to Georgian / გადართვა ქართულზე' : 'Switch to English'}
       aria-label={locale === 'en' ? 'Switch to Georgian language' : 'Switch to English language'}
     >

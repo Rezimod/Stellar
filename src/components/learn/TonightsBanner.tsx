@@ -76,12 +76,12 @@ export default function TonightsBanner({ locale }: Props) {
         href="/sky"
         className="group flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
         style={{
-          background: 'linear-gradient(135deg, rgba(99,102,241,0.05), rgba(20,184,166,0.02))',
-          border: '1px solid rgba(99,102,241,0.1)',
+          background: 'linear-gradient(135deg, rgba(232, 130, 107,0.05), rgba(94, 234, 212,0.02))',
+          border: '1px solid rgba(232, 130, 107,0.1)',
         }}
       >
         <span className="text-xl">🌙</span>
-        <p className="text-slate-500 text-xs leading-snug flex-1">
+        <p className="text-text-muted text-xs leading-snug flex-1">
           {locale === 'ka'
             ? '맑은 ცა? შეამოწმე ღამის ამინდი →'
             : "Clear skies? Check the sky forecast for tonight's targets →"}
@@ -92,7 +92,7 @@ export default function TonightsBanner({ locale }: Props) {
 
   // Live planet banner
   const img = (planetEntry as { img?: string }).img;
-  const color = (planetEntry as { color?: string }).color ?? '#818cf8';
+  const color = (planetEntry as { color?: string }).color ?? 'var(--terracotta)';
 
   return (
     <>
@@ -154,7 +154,7 @@ export default function TonightsBanner({ locale }: Props) {
                 }} />
                 <span style={{
                   position: 'relative', width: 7, height: 7, borderRadius: '50%', background: 'var(--success)',
-                  boxShadow: '0 0 6px #34d399',
+                  boxShadow: '0 0 6px var(--seafoam)',
                   display: 'block',
                 }} />
               </span>
@@ -163,7 +163,7 @@ export default function TonightsBanner({ locale }: Props) {
               </span>
             </div>
 
-            <p className="text-white font-semibold text-sm leading-snug">
+            <p className="text-text-primary font-semibold text-sm leading-snug">
               {locale === 'ka'
                 ? `${planetEntry.name.ka} ახლა ცაზეა`
                 : `${planetEntry.name.en} is up tonight`}

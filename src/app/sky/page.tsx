@@ -184,15 +184,15 @@ function scoreTagline(score: number): { text: string; color: string } {
   if (score >= 85) return { text: 'Perfect night — set up the scope', color: 'var(--success)' };
   if (score >= 65) return { text: 'Good observation window', color: 'var(--success)' };
   if (score >= 45) return { text: 'Fair — pick targets carefully', color: 'var(--stars)' };
-  if (score >= 25) return { text: 'Tough night — maybe tomorrow', color: '#f97316' };
-  return { text: 'Stay in. Read about telescopes.', color: '#ef4444' };
+  if (score >= 25) return { text: 'Tough night — maybe tomorrow', color: 'var(--terracotta)' };
+  return { text: 'Stay in. Read about telescopes.', color: 'var(--negative)' };
 }
 
 function scoreRingColor(score: number): string {
-  if (score >= 65) return '#4ADE80';
-  if (score >= 45) return '#FBBF24';
-  if (score >= 25) return '#FB923C';
-  return '#FB7185';
+  if (score >= 65) return 'var(--seafoam)';
+  if (score >= 45) return 'var(--terracotta)';
+  if (score >= 25) return 'var(--terracotta)';
+  return 'var(--negative)';
 }
 
 function planetTip(key: string, altitude: number, azimuthDir: string): string {
@@ -692,12 +692,12 @@ export default function SkyPage() {
                 )
               )}
               {error && !loading && (
-                <div className="sky-verdict-body" style={{ color: '#FB7185' }}>
+                <div className="sky-verdict-body" style={{ color: 'var(--negative)' }}>
                   Could not load — try again{' '}
                   <button
                     type="button"
                     onClick={() => setRetryKey((k) => k + 1)}
-                    className="text-teal-400 hover:underline"
+                    className="text-seafoam hover:underline"
                     style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                   >
                     Retry

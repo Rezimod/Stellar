@@ -38,26 +38,26 @@ const kindConfig: Record<SkyKind, {
   barColor: string;
 }> = {
   go:    {
-    badge:   { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.3)', color: 'var(--success)', label: 'GO' },
-    border:  'rgba(52,211,153,0.2)',
+    badge:   { bg: 'rgba(94, 234, 212,0.12)', border: 'rgba(94, 234, 212,0.3)', color: 'var(--success)', label: 'GO' },
+    border:  'rgba(94, 234, 212,0.2)',
     barColor: 'var(--success)',
   },
   maybe: {
-    badge:   { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', color: '#F59E0B', label: 'MAYBE' },
-    border:  'rgba(245,158,11,0.15)',
-    barColor: '#F59E0B',
+    badge:   { bg: 'rgba(232, 130, 107,0.12)', border: 'rgba(232, 130, 107,0.3)', color: 'var(--terracotta)', label: 'MAYBE' },
+    border:  'rgba(232, 130, 107,0.15)',
+    barColor: 'var(--terracotta)',
   },
   skip:  {
-    badge:   { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)', color: '#EF4444', label: 'SKIP' },
+    badge:   { bg: 'rgba(251, 113, 133,0.1)', border: 'rgba(251, 113, 133,0.2)', color: 'var(--negative)', label: 'SKIP' },
     border:  'rgba(255,255,255,0.06)',
-    barColor: '#EF4444',
+    barColor: 'var(--negative)',
   },
 };
 
 function SkyIcon({ kind, size = 20 }: { kind: SkyKind; size?: number }) {
   if (kind === 'go') return <Stars size={size} color="var(--success)" strokeWidth={1.5} />;
-  if (kind === 'maybe') return <CloudMoon size={size} color="#F59E0B" strokeWidth={1.5} />;
-  return <Cloud size={size} color="#94A3B8" strokeWidth={1.5} />;
+  if (kind === 'maybe') return <CloudMoon size={size} color="var(--terracotta)" strokeWidth={1.5} />;
+  return <Cloud size={size} color="var(--text-muted)" strokeWidth={1.5} />;
 }
 
 function StatRow({ icon, value }: { icon: React.ReactNode; value: string }) {
@@ -93,8 +93,8 @@ export default function ForecastCard({ day, isToday }: Props) {
       <div
         className="card-base p-5"
         style={{
-          borderColor: `rgba(99,102,241,0.25)`,
-          boxShadow: '0 0 0 1px rgba(99,102,241,0.06), 0 4px 16px rgba(0,0,0,0.3)',
+          borderColor: `rgba(232, 130, 107,0.25)`,
+          boxShadow: '0 0 0 1px rgba(232, 130, 107,0.06), 0 4px 16px rgba(0,0,0,0.3)',
           transition: 'transform 200ms ease-out',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)'; }}
@@ -106,7 +106,7 @@ export default function ForecastCard({ day, isToday }: Props) {
             <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'var(--color-nebula-teal)' }}>
               {t('today')}
             </p>
-            <p className="text-white text-base font-semibold">{formatDate(day.date, locale)}</p>
+            <p className="text-text-primary text-base font-semibold">{formatDate(day.date, locale)}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <SkyIcon kind={kind} size={22} />
@@ -123,11 +123,11 @@ export default function ForecastCard({ day, isToday }: Props) {
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
             <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>{t('cloudCover')}</p>
-            <p className="text-white text-xl font-bold font-mono" style={{ color: cfg.badge.color }}>{bestHour.cloudCover}%</p>
+            <p className="text-text-primary text-xl font-bold font-mono" style={{ color: cfg.badge.color }}>{bestHour.cloudCover}%</p>
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>{t('visibility')}</p>
-            <p className="text-white text-xl font-bold font-mono">{visKm} km</p>
+            <p className="text-text-primary text-xl font-bold font-mono">{visKm} km</p>
           </div>
           <div className="flex items-center gap-1.5">
             <Thermometer size={13} color="var(--color-text-muted)" strokeWidth={1.5} />
@@ -159,7 +159,7 @@ export default function ForecastCard({ day, isToday }: Props) {
             <span className="text-[11px] uppercase tracking-widest font-medium" style={{ color: 'var(--color-nebula-teal)' }}>
               {t('bestHours')}
             </span>
-            <span className="text-xs font-mono text-white ml-1">{window}</span>
+            <span className="text-xs font-mono text-text-primary ml-1">{window}</span>
           </div>
         )}
 
@@ -195,7 +195,7 @@ export default function ForecastCard({ day, isToday }: Props) {
                 .map(h => {
                   const hr = h.time.slice(11, 16);
                   const cc = h.cloudCover;
-                  const barColor = cc < 30 ? 'var(--success)' : cc < 60 ? '#F59E0B' : '#EF4444';
+                  const barColor = cc < 30 ? 'var(--success)' : cc < 60 ? 'var(--terracotta)' : 'var(--negative)';
                   return (
                     <div key={h.time} className="flex items-center gap-3">
                       <span className="text-xs font-mono w-10 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }}>
@@ -233,7 +233,7 @@ export default function ForecastCard({ day, isToday }: Props) {
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; }}
     >
       {/* Day + date */}
-      <p className="text-white text-xs font-semibold truncate">{formatDate(day.date, locale, true)}</p>
+      <p className="text-text-primary text-xs font-semibold truncate">{formatDate(day.date, locale, true)}</p>
 
       {/* Sky icon centered */}
       <div className="flex items-center justify-between gap-2">

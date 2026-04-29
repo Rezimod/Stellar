@@ -64,8 +64,8 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
 
         let chipText = 'VISIBLE';
         let chipColor = 'rgba(134,239,172,0.8)';
-        if (locked) { chipText = 'NO STARLIGHT'; chipColor = 'rgba(251,191,36,0.7)'; }
-        else if (done) { chipText = 'SEALED'; chipColor = 'rgba(52,211,153,0.9)'; }
+        if (locked) { chipText = 'NO STARLIGHT'; chipColor = 'rgba(232, 130, 107,0.7)'; }
+        else if (done) { chipText = 'SEALED'; chipColor = 'rgba(94, 234, 212,0.9)'; }
         else if (mission.difficulty === 'Expert') { chipText = 'CIRCUMPOLAR · 24H'; chipColor = 'rgba(255,255,255,0.4)'; }
         else if (mission.difficulty === 'Hard') { chipText = 'RISES LATE'; chipColor = 'rgba(255,255,255,0.4)'; }
 
@@ -76,8 +76,8 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
             disabled={disabled}
             className="relative p-5 rounded-[14px] text-left overflow-hidden transition-transform active:scale-[0.98] hover:-translate-y-0.5"
             style={{
-              background: done ? 'rgba(52,211,153,0.04)' : 'rgba(255,255,255,0.02)',
-              border: done ? '1px solid rgba(52,211,153,0.2)' : '1px solid rgba(255,255,255,0.08)',
+              background: done ? 'rgba(94, 234, 212,0.04)' : 'rgba(255,255,255,0.02)',
+              border: done ? '1px solid rgba(94, 234, 212,0.2)' : '1px solid rgba(255,255,255,0.08)',
               opacity: locked ? 0.6 : 1,
               cursor: disabled ? 'default' : 'pointer',
               minHeight: 180,
@@ -89,8 +89,8 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
               <Art className="w-[140px] h-[140px]" />
             </div>
 
-            {done && <CheckCircle2 size={14} className="absolute top-3 right-3 text-emerald-400 z-[2]" />}
-            {locked && <Lock size={12} className="absolute top-3 right-3 text-amber-400/60 z-[2]" />}
+            {done && <CheckCircle2 size={14} className="absolute top-3 right-3 text-seafoam z-[2]" />}
+            {locked && <Lock size={12} className="absolute top-3 right-3 text-terracotta/60 z-[2]" />}
 
             <div className="relative" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.18em', color: chipColor }}>
               {chipText}
@@ -99,8 +99,8 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
             <div style={{ height: 76 }} />
 
             <h4
-              className="text-white m-0"
-              style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 400, lineHeight: 1.1 }}
+              className="text-text-primary m-0"
+              style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 400, lineHeight: 1.1 }}
             >
               {mission.name}
             </h4>
@@ -115,14 +115,14 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
               className="flex items-center justify-between mt-3.5 pt-3"
               style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
             >
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--stars)' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--stars)' }}>
                 +{mission.stars}
               </span>
               {!disabled && (
-                <span className="text-[11px] text-slate-400">Begin →</span>
+                <span className="text-[11px] text-text-muted">Begin →</span>
               )}
               {doneToday && (
-                <span className="text-[9px] text-slate-500">✓ today</span>
+                <span className="text-[9px] text-text-muted">✓ today</span>
               )}
             </div>
           </button>
