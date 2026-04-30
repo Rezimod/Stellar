@@ -17,6 +17,13 @@ import { QUIZZES } from '@/lib/quizzes';
 import { PlanetViz } from '@/components/sky/PlanetViz';
 import QuizActive from '@/components/sky/QuizActive';
 import type { QuizDef } from '@/lib/quizzes';
+import {
+  Snowflake,
+  Telescope as LcTelescope,
+  Crosshair,
+  Moon as LcMoon,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 type Theme = 'light' | 'dark';
 const THEME_KEY = 'stellar-missions-theme';
@@ -48,22 +55,26 @@ const GRID: GridEntry[] = [
   { id: 'crab',      name: 'Crab Nebula (M1)', desc: 'Supernova remnant from 1054 AD',              stars: 250, diff: 'expert', diffLabel: 'Expert', equip: 'Telescope', routeId: 'crab' },
 ];
 
-const TIPS = [
+const TIPS: { title: string; body: string; Icon: LucideIcon }[] = [
   {
-    title: 'Cool the optics first',
-    body: 'Set the scope outside 30 minutes before observing. Warm glass smears detail and ruins planetary views.',
+    title: 'Cool the optics',
+    body: 'Set up 30 min before observing. Warm glass blurs detail.',
+    Icon: Snowflake,
   },
   {
-    title: 'Start at low magnification',
-    body: 'Use your longest-focal eyepiece to find a target. A wide field is forgiving — push power only after you have the object centered.',
+    title: 'Start at low power',
+    body: 'Find the target with your widest eyepiece, then zoom in.',
+    Icon: LcTelescope,
   },
   {
-    title: 'Align the finder by day',
-    body: 'Aim at a distant tree or antenna. Match the finder cross-hair to the eyepiece view. Saves 15 minutes of fumbling at night.',
+    title: 'Align by day',
+    body: 'Match finder to a distant tree. Saves 15 min at night.',
+    Icon: Crosshair,
   },
   {
-    title: 'Mind your dark adaptation',
-    body: 'It takes 20–30 minutes for eyes to fully dark-adapt. Use a red flashlight only — phone screens reset the clock.',
+    title: 'Mind dark adaptation',
+    body: 'Eyes need 20–30 min. Use red light only.',
+    Icon: LcMoon,
   },
 ];
 
@@ -377,13 +388,19 @@ export default function MissionsPage() {
             <span className="mis-section-meta">Field-tested tips</span>
           </div>
           <div className="mis-tips-deck">
-            {TIPS.map((tip, i) => (
-              <article key={tip.title} className="mis-tip-card">
-                <span className="mis-tip-num">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="mis-tip-title">{tip.title}</h3>
-                <p className="mis-tip-body">{tip.body}</p>
-              </article>
-            ))}
+            {TIPS.map((tip, i) => {
+              const Icon = tip.Icon;
+              return (
+                <article key={tip.title} className="mis-tip-card">
+                  <span className="mis-tip-icon" aria-hidden>
+                    <Icon size={16} strokeWidth={1.6} />
+                  </span>
+                  <span className="mis-tip-num">{String(i + 1).padStart(2, '0')}</span>
+                  <h3 className="mis-tip-title">{tip.title}</h3>
+                  <p className="mis-tip-body">{tip.body}</p>
+                </article>
+              );
+            })}
           </div>
         </section>
 
