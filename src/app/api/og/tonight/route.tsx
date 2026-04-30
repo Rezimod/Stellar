@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
             {score}
           </div>
           <div style={{ fontSize: 24, color: scoreColor, fontWeight: 600 }}>
-            {emoji} {badge} Sky Tonight
+            {`${emoji} ${badge} Sky Tonight`}
           </div>
           <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
             Sky Score /100

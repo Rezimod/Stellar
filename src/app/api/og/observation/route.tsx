@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
             fontSize: 12,
           }}
         >
-          {Number(lat).toFixed(2)}°, {Number(lon).toFixed(2)}°
+          {`${Number(lat).toFixed(2)}°, ${Number(lon).toFixed(2)}°`}
         </div>
 
         {/* Top-left branding */}
@@ -147,8 +147,8 @@ export async function GET(req: NextRequest) {
           }}
         >
           <div style={{ display: 'flex', gap: 12 }}>
-            <div style={{ color: '#A8B4C8', fontSize: 12 }}>☁️ {cc}%</div>
-            <div style={{ color: '#F0805C', fontSize: 12 }}>✦ {stars}</div>
+            <div style={{ color: '#A8B4C8', fontSize: 12 }}>{`☁️ ${cc}%`}</div>
+            <div style={{ color: '#F0805C', fontSize: 12 }}>{`★ ${stars}`}</div>
           </div>
           <div style={{ color: '#F8F4EC', fontSize: 11, letterSpacing: 1 }}>STELLAR</div>
         </div>

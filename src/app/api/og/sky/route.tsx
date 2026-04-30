@@ -49,7 +49,7 @@ export async function GET() {
             marginTop: 32,
           }}
         >
-          {['🔭 Observations', '✦ Stars', '🪐 NFTs'].map((label) => (
+          {['🔭 Observations', '★ Stars', '🪐 NFTs'].map((label) => (
             <div
               key={label}
               style={{

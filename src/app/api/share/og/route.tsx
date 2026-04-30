@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>
-            ✦ {stars} Stars earned · Sealed on Solana
+            {`★ ${stars} Stars earned · Sealed on Solana`}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div
