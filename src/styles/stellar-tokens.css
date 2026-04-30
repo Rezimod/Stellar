@@ -1021,39 +1021,35 @@
    ======================================================================== */
 
 .markets-page {
-  /* Light palette — twilight cosmic, not pure white */
-  --stl-bg: #F6F4FB;
-  --stl-bg2: #FBFAFE;
-  --stl-bg3: #EFEAF7;
-  --stl-bg-hover: #F1ECF9;
-  --stl-text1: #14122B;
-  --stl-text2: #4D4870;
-  --stl-text3: #847FA0;
-  --stl-border: #E5DFF1;
-  --stl-border2: #CFC6E3;
-  --stl-green: #0E9F6E;
-  --stl-green-bg: #DAF5EA;
-  --stl-red: #D6336C;
-  --stl-red-bg: #FBE0EC;
+  /* Light palette — warm-white card on a soft daylight-sky page.
+     The page itself is overridden to light blue below; --stl-bg is the
+     interior (shell) surface so inputs and sub-cards stay consistent. */
+  --stl-bg: #FFFDF7;       /* warm white shell surface */
+  --stl-bg2: #FFFFFF;      /* clean white sub-surface (bet panel, inputs) */
+  --stl-bg3: #F4ECDC;      /* warm cream accent */
+  --stl-bg-hover: #F7EFDC; /* warm hover */
+  --stl-text1: #142136;
+  --stl-text2: #4B5A72;
+  --stl-text3: #8593A8;
+  --stl-border: #ECE3CE;
+  --stl-border2: #D7C9AB;
+  --stl-green: #0E7C58;
+  --stl-green-bg: #E2EFE7;
+  --stl-red: #B23A66;
+  --stl-red-bg: #F4DDE5;
   --stl-accent: var(--terracotta);
-  --stl-accent-bg: #EDE5FE;
-  --stl-teal: #0891B2;
-  --stl-teal-bg: #DCF3F8;
-  --stl-amber: #D97706;
-  --stl-amber-bg: #FEF1D6;
-  --stl-cosmic-yes: #0E9F6E;
-  --stl-cosmic-yes-glow: rgba(34, 211, 158, 0.35);
-  --stl-cosmic-no:  #D6336C;
-  --stl-cosmic-no-glow:  rgba(232, 90, 154, 0.35);
-  --stl-sidebar-bg: #F1ECF9;
-  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(240, 128, 92,0.10), transparent 55%),
-                     radial-gradient(720px 520px at 100% 0%, rgba(34,211,238,0.08), transparent 55%),
-                     radial-gradient(640px 480px at 50% 110%, rgba(244,114,182,0.06), transparent 60%);
-  --stl-stars: radial-gradient(1px 1px at 12% 22%, rgba(20,18,43,0.18), transparent 60%),
-               radial-gradient(1px 1px at 38% 12%, rgba(20,18,43,0.12), transparent 60%),
-               radial-gradient(1px 1px at 71% 30%, rgba(20,18,43,0.16), transparent 60%),
-               radial-gradient(1px 1px at 88% 76%, rgba(20,18,43,0.10), transparent 60%),
-               radial-gradient(1px 1px at 22% 84%, rgba(20,18,43,0.14), transparent 60%);
+  --stl-accent-bg: #F7E6D6;
+  --stl-teal: #2A6F8C;
+  --stl-teal-bg: #E1ECF1;
+  --stl-amber: #B36106;
+  --stl-amber-bg: #F5E5C9;
+  --stl-cosmic-yes: #0E7C58;
+  --stl-cosmic-yes-glow: rgba(14, 124, 88, 0.18);
+  --stl-cosmic-no:  #B23A66;
+  --stl-cosmic-no-glow:  rgba(178, 58, 102, 0.18);
+  --stl-sidebar-bg: #FBF6E8;
+  --stl-cosmic-aura: none;
+  --stl-stars: none;
 }
 
 .markets-page.dark {
@@ -1102,6 +1098,43 @@
   transition: background-color 0.15s ease, color 0.15s ease;
   isolation: isolate;
   overflow: hidden;
+}
+/* Light-mode-only: light-blue page canvas with the shell as a warm-white
+   card. Dark mode keeps its cosmic aura. */
+.markets-page:not(.dark) { background: #DDE9F4; }
+.markets-page:not(.dark)::before,
+.markets-page:not(.dark)::after { display: none; }
+.markets-page:not(.dark) .mkt-shell { background: var(--stl-bg); }
+.markets-page:not(.dark) .mkt-trending-chip {
+  background: var(--stl-bg2);
+}
+.markets-page:not(.dark) .mkt-trending-chip:hover {
+  background: var(--stl-bg-hover);
+}
+/* Calmer odds cells on warm-white card — drop the cyan/magenta gradients */
+.markets-page:not(.dark) .mkt-odds-cell.yes {
+  --cell-bg: rgba(14, 124, 88, 0.08);
+  --cell-border: rgba(14, 124, 88, 0.35);
+}
+.markets-page:not(.dark) .mkt-odds-cell.no {
+  --cell-bg: rgba(178, 58, 102, 0.08);
+  --cell-border: rgba(178, 58, 102, 0.35);
+}
+.markets-page:not(.dark) .mkt-odds-cell.yes:hover:not(:disabled) {
+  --cell-bg: rgba(14, 124, 88, 0.16);
+  --cell-border: rgba(14, 124, 88, 0.55);
+}
+.markets-page:not(.dark) .mkt-odds-cell.no:hover:not(:disabled) {
+  --cell-bg: rgba(178, 58, 102, 0.16);
+  --cell-border: rgba(178, 58, 102, 0.55);
+}
+.markets-page:not(.dark) .mkt-odds-cell.yes.active {
+  --cell-bg: rgba(14, 124, 88, 0.22);
+  --cell-border: rgba(14, 124, 88, 0.72);
+}
+.markets-page:not(.dark) .mkt-odds-cell.no.active {
+  --cell-bg: rgba(178, 58, 102, 0.22);
+  --cell-border: rgba(178, 58, 102, 0.72);
 }
 /* Cosmic aura — soft purple/teal/rose color washes */
 .markets-page::before {
