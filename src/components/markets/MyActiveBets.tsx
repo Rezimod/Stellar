@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import type { PublicKey } from '@solana/web3.js';
 import { useStellarUser } from '@/hooks/useStellarUser';
@@ -44,7 +45,7 @@ interface ActiveRow {
 
 interface Props {
   /** Compact view used on /markets + /profile. Limits to 3 rows + "see all" link. */
-  variant?: 'compact' | 'full';
+  variant?: 'compact' | 'full' | 'strip';
   /** Optional title override. */
   title?: string;
 }
@@ -79,6 +80,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
   const { getAccessToken } = usePrivy();
   const program = useReadOnlyProgram();
   const signer = useStellarSigner();
+  const router = useRouter();
 
   const [rows, setRows] = useState<ActiveRow[]>([]);
   const [mint, setMint] = useState<PublicKey | null>(null);
@@ -200,6 +202,38 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
     if (variant === 'compact') return rows.slice(0, 3);
     return rows;
   }, [rows, variant]);
+
+  if (variant === 'strip') {
+    if (!authenticated || rows.length === 0) return null;
+    return (
+      <div className="mkt-active-band">
+        <span className="mkt-active-band-label">Your bets</span>
+        <div className="mab-strip" role="list">
+          {rows.map((row) => {
+            const sideClass = row.position.side === 'yes' ? 'yes' : 'no';
+            return (
+              <div
+                key={`${row.position.marketId}-${row.position.side}`}
+                role="listitem"
+                className="mab-strip-chip"
+                onClick={() => router.push(`/markets/${row.position.marketId}`)}
+              >
+                <span className={`mab-strip-side ${sideClass}`}>
+                  {row.position.side.toUpperCase()}
+                </span>
+                <span className="mab-strip-title" title={row.title}>
+                  {row.title}
+                </span>
+                <span className="mab-strip-payout">
+                  {fmtInt(row.position.projectedPayout)} ✦
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   if (!authenticated || (loading && rows.length === 0)) {
     if (variant === 'full') {

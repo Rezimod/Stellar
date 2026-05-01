@@ -1186,33 +1186,44 @@
 }
 .mkt-stats-text { font-variant-numeric: tabular-nums; }
 
-/* Pill theme toggle (40x22) */
+/* iOS-style theme toggle (32x18) */
 .mkt-theme-toggle {
   position: relative;
-  width: 40px;
-  height: 22px;
-  border-radius: 11px;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
   background: var(--stl-bg3);
   border: 1px solid var(--stl-border);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   padding: 0;
-  transition: background 0.15s ease;
+  transition: background 200ms cubic-bezier(0.4, 0.0, 0.2, 1),
+    transform 120ms cubic-bezier(0.4, 0.0, 0.2, 1);
   flex-shrink: 0;
+}
+.mkt-theme-toggle:active {
+  transform: scale(0.96);
 }
 .mkt-theme-toggle::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--stl-text2);
-  transition: transform 0.18s ease, background 0.18s ease;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+.markets-page.dark .mkt-theme-toggle {
+  background: var(--stl-text3);
+  border-color: var(--stl-text3);
+  box-shadow: none;
 }
 .markets-page.dark .mkt-theme-toggle::after {
-  transform: translateX(18px);
-  background: var(--stl-accent);
+  transform: translateX(14px);
+  background: #fff;
 }
 
 /* Two-column layout */
@@ -1259,6 +1270,89 @@
 }
 .mkt-trending-strip::-webkit-scrollbar { display: none; }
 
+/* Narrow active-bets band, sits between trending strip and "All markets" */
+.mkt-active-band {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--stl-border);
+  background: var(--stl-bg2);
+}
+.mkt-active-band-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stl-text3);
+  flex-shrink: 0;
+}
+.mab-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+.mab-strip::-webkit-scrollbar { display: none; }
+.mab-strip-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--stl-bg);
+  border: 1px solid var(--stl-border);
+  border-radius: 8px;
+  flex-shrink: 0;
+  width: 220px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.mab-strip-chip:hover { border-color: var(--stl-border2); }
+.mab-strip-side {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.mab-strip-side.yes { background: rgba(34,197,94,0.12); color: rgb(34,197,94); }
+.mab-strip-side.no  { background: rgba(239,68,68,0.12); color: rgb(239,68,68); }
+.mab-strip-title {
+  flex: 1;
+  font-size: 11px;
+  color: var(--stl-text1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mab-strip-payout {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  color: var(--stl-text2);
+  flex-shrink: 0;
+}
+
+/* Real per-market images on cards */
+.mkt-trending-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--stl-border);
+  background: var(--stl-bg3);
+}
+.mkt-row-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--stl-border);
+  background: var(--stl-bg3);
+}
+
 /* My active bets — lives in the markets sidebar (first section).
    Component returns null when empty; :empty hides the divider band. */
 .mkt-side-section--mab:empty { display: none; padding: 0; border-bottom: 0; }
@@ -1292,7 +1386,7 @@
   cursor: pointer;
   color: var(--stl-text1);
   flex-shrink: 0;
-  width: 320px;
+  width: 360px;
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease,
     box-shadow 0.18s ease;
 }
@@ -1304,12 +1398,12 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 18px -10px var(--cat-fg, rgba(240, 128, 92,0.4));
 }
-@keyframes mkt-trending-fade {
-  from { opacity: 0; transform: translateY(3px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes mkt-trending-slide {
+  from { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 .mkt-trending-chip--anim {
-  animation: mkt-trending-fade 0.45s ease-out both;
+  animation: mkt-trending-slide 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .mkt-trending-chip--anim { animation: none; }
@@ -2543,6 +2637,7 @@
   .mkt-sidebar { display: none; }
   .mkt-stats-bar { padding: 8px 12px; font-size: 10px; gap: 8px; }
   .mkt-trending-strip { padding: 8px 12px; gap: 8px; }
+  .mkt-active-band { padding: 8px 12px; gap: 8px; }
   .mkt-section-header { padding: 14px 12px 4px; }
   .mkt-tabs { padding: 4px 12px 8px; }
   .mkt-list { padding: 0 12px; }

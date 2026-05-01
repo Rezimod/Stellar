@@ -30,6 +30,7 @@ import {
   type MarketStatus,
 } from '@/lib/markets';
 import { displayTitle } from '@/lib/markets/display';
+import { marketImage } from '@/lib/markets/market-images';
 import {
   getCategoryIcon,
   TelescopeIcon,
@@ -424,6 +425,7 @@ export default function MarketsPage() {
               );
               const oracle = oracleBadge(m.metadata.resolutionSource);
               const vol = m.onChain.totalStaked;
+              const photo = marketImage(m.metadata.id);
               return (
                 <div
                   key={`${trendingOffset}-${m.onChain.marketId}`}
@@ -432,9 +434,19 @@ export default function MarketsPage() {
                   className="mkt-trending-chip mkt-trending-chip--anim"
                   onClick={() => router.push(`/markets/${m.onChain.marketId}`)}
                 >
-                  <span className="mkt-trending-icon" data-category={m.metadata.category}>
-                    <Icon size={20} />
-                  </span>
+                  {photo ? (
+                    <img
+                      className="mkt-trending-thumb"
+                      src={photo}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="mkt-trending-icon" data-category={m.metadata.category}>
+                      <Icon size={20} />
+                    </span>
+                  )}
                   <div className="mkt-trending-body">
                     <div className="mkt-trending-title">{displayTitle(m.metadata)}</div>
                     <div className="mkt-trending-meta">
@@ -452,6 +464,9 @@ export default function MarketsPage() {
             })}
           </div>
         )}
+
+        {/* Narrow active-bets band — renders nothing when empty */}
+        <MyActiveBets variant="strip" />
 
         {/* Two-column layout */}
         <div className="mkt-layout">
@@ -740,6 +755,7 @@ function MarketRow({
   const isPreview = market.metadata.previewOnly === true;
   const expanded = expandedSide !== null;
   const disabledForBet = locked || isPreview;
+  const photo = marketImage(market.metadata.id);
 
   return (
     <div
@@ -759,9 +775,19 @@ function MarketRow({
         }
       }}
     >
-      <span className="mkt-row-icon" data-category={market.metadata.category}>
-        <Icon size={16} />
-      </span>
+      {photo ? (
+        <img
+          className="mkt-row-thumb"
+          src={photo}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <span className="mkt-row-icon" data-category={market.metadata.category}>
+          <Icon size={16} />
+        </span>
+      )}
       <div className="mkt-row-content">
         <div className="mkt-row-title">{displayTitle(market.metadata)}</div>
         <div className="mkt-row-meta">
