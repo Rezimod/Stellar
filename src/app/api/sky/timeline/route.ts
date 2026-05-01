@@ -140,7 +140,14 @@ export async function GET(request: Request) {
     }
   }
 
-  objects.sort((a, b) => new Date(a.peakAt).getTime() - new Date(b.peakAt).getTime());
+  objects.sort((a, b) => {
+    const aStart = new Date(a.visibleStart).getTime();
+    const bStart = new Date(b.visibleStart).getTime();
+    if (aStart !== bStart) return aStart - bStart;
+    const aDur = new Date(a.visibleEnd).getTime() - aStart;
+    const bDur = new Date(b.visibleEnd).getTime() - bStart;
+    return bDur - aDur;
+  });
 
   return NextResponse.json(
     {

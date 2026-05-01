@@ -131,7 +131,7 @@
 
 /* === TIMELINE === */
 .sky-page-v2 .timeline-panel {
-  padding: 16px;
+  padding: 8px 20px;
   border-radius: 16px;
 }
 
@@ -144,85 +144,80 @@
   letter-spacing: 0.04em; text-transform: none;
 }
 
-.sky-page-v2 .timeline-axis {
-  display: grid;
-  grid-template-columns: 116px 1fr 100px;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 10px;
+.sky-page-v2 .timeline-list {
+  list-style: none; margin: 0; padding: 0;
 }
-.sky-page-v2 .timeline-axis-ticks {
-  display: flex; justify-content: space-between;
-  font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+
+.sky-page-v2 .timeline-item {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sky-page-v2 .timeline-item:last-child { border-bottom: none; }
+
+.sky-page-v2 .timeline-item-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  padding-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sky-page-v2 .timeline-item-info {
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 0;
+}
+
+.sky-page-v2 .timeline-item-visible {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
   letter-spacing: 0.04em;
 }
 
-.sky-page-v2 .timeline-rows { display: flex; flex-direction: column; }
-
-.sky-page-v2 .timeline-row {
-  display: grid;
-  grid-template-columns: 116px 1fr 100px;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-.sky-page-v2 .timeline-row:last-child { border-bottom: none; }
-
-.sky-page-v2 .timeline-row-name {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 500; min-width: 0;
-}
-.sky-page-v2 .timeline-row-name .dot {
-  width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0;
-}
-.sky-page-v2 .timeline-row-name .label {
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-.sky-page-v2 .timeline-row-track {
+.sky-page-v2 .timeline-item-track {
   position: relative;
-  height: 8px;
-  background: var(--surface-2);
-  border-radius: 999px;
+  height: 6px;
+  margin: 2px 0;
 }
-.sky-page-v2 .timeline-bar-visible {
-  position: absolute;
-  top: 0; bottom: 0;
-  background: var(--teal);
-  border-radius: 999px;
-  min-width: 2px;
-}
-.sky-page-v2 .timeline-bar-peak {
+.sky-page-v2 .timeline-bar {
   position: absolute;
   top: 50%;
-  width: 8px; height: 8px;
+  height: 2px;
+  background: var(--text);
+  transform: translateY(-50%);
+  min-width: 8px;
+}
+.sky-page-v2 .timeline-peak-dot {
+  position: absolute;
+  top: 50%;
+  width: 7px; height: 7px;
   border-radius: 999px;
   background: var(--accent);
-  border: 1px solid var(--bg);
   transform: translate(-50%, -50%);
   z-index: 2;
 }
 
-.sky-page-v2 .timeline-row-peak {
-  text-align: right;
+.sky-page-v2 .timeline-item-peak {
   font-family: var(--mono);
-}
-.sky-page-v2 .timeline-row-peak .peak-time {
-  font-size: 12px; color: var(--text);
-  letter-spacing: 0.02em;
-}
-.sky-page-v2 .timeline-row-peak .peak-meta {
-  font-size: 10px; color: var(--text-muted);
-  margin-top: 2px; letter-spacing: 0.04em;
+  font-size: 11px;
+  color: var(--text);
+  letter-spacing: 0.04em;
 }
 
 .sky-page-v2 .timeline-footer {
   font-family: var(--mono); font-size: 11px;
   color: var(--text-dim);
   letter-spacing: 0.04em;
-  padding-top: 12px;
-  margin-top: 4px;
+  padding: 14px 0 6px;
   border-top: 1px solid var(--border);
 }
 
@@ -357,9 +352,9 @@
   .sky-page-v2 .hero-body p { font-size: 12.5px; }
   .sky-page-v2 .hero-meta { font-size: 10px; gap: 5px; }
   .sky-page-v2 .planets-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-  .sky-page-v2 .timeline-row,
-  .sky-page-v2 .timeline-axis {
-    grid-template-columns: 96px 1fr 88px;
-    gap: 8px;
+  .sky-page-v2 .timeline-item {
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
   }
+  .sky-page-v2 .timeline-item-name { font-size: 11px; }
 }
