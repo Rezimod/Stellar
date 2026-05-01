@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
 
@@ -8,6 +9,7 @@ const TOTAL = 5;
 
 export default function StatsBar() {
   const { state } = useAppState();
+  const { ready, authenticated, getAccessToken } = usePrivy();
   const completed = state.completedMissions.filter(m => m.status === 'completed');
   const totalStars = completed.reduce((sum, m) => sum + (m.stars ?? 0), 0);
   const localCount = completed.length;
@@ -15,12 +17,19 @@ export default function StatsBar() {
   const [apiCount, setApiCount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!state.walletAddress) return;
-    fetch(`/api/observe/history?walletAddress=${encodeURIComponent(state.walletAddress)}`)
-      .then(r => r.json())
-      .then(d => setApiCount((d.observations ?? []).length))
-      .catch(() => {});
-  }, [state.walletAddress]);
+    if (!state.walletAddress || !ready || !authenticated) return;
+    let cancelled = false;
+    getAccessToken().then(token => {
+      if (cancelled || !token) return;
+      fetch(`/api/observe/history?walletAddress=${encodeURIComponent(state.walletAddress!)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(r => r.json())
+        .then(d => { if (!cancelled) setApiCount((d.observations ?? []).length); })
+        .catch(() => {});
+    });
+    return () => { cancelled = true; };
+  }, [state.walletAddress, ready, authenticated, getAccessToken]);
 
   const count = apiCount ?? localCount;
   const rank = getRank(count);

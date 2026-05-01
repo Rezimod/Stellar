@@ -13,9 +13,14 @@ export async function GET(req: NextRequest) {
   }
   const db = getDb();
   if (!db) return NextResponse.json({ cashouts: [] });
-  const rows = await db
-    .select()
-    .from(marketCashouts)
-    .where(eq(marketCashouts.wallet, address));
-  return NextResponse.json({ cashouts: rows });
+  try {
+    const rows = await db
+      .select()
+      .from(marketCashouts)
+      .where(eq(marketCashouts.wallet, address));
+    return NextResponse.json({ cashouts: rows });
+  } catch (err) {
+    console.error('[markets/cashouts]', err);
+    return NextResponse.json({ cashouts: [] });
+  }
 }

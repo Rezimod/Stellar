@@ -24,7 +24,7 @@ import { useProfile } from '@/hooks/useProfile';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
-  const { user } = usePrivy();
+  const { user, getAccessToken } = usePrivy();
   const { authenticated, address: stellarAddress } = useStellarUser();
   const { logout } = useStellarAuth();
   const { state } = useAppState();
@@ -59,15 +59,19 @@ export default function ProfilePage() {
     Promise.allSettled([
       fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
         .then(r => r.json()).then(d => setStarsBalance(d.balance)),
-      fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address)}`)
-        .then(r => r.json())
-        .then(d => {
-          const obs = d.observations ?? [];
-          setObsCount(obs.length);
-        }),
+      getAccessToken().then(token =>
+        fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
+          .then(r => r.json())
+          .then(d => {
+            const obs = d.observations ?? [];
+            setObsCount(obs.length);
+          }),
+      ),
     ]).then(() => setProfileLoaded(true));
     return () => window.removeEventListener('stellar:stars-synced', refresh);
-  }, [address, retryKey]);
+  }, [address, retryKey, getAccessToken]);
 
   const handleCopy = () => {
     if (!address) return;
