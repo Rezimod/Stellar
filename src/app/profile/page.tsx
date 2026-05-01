@@ -229,11 +229,11 @@ export default function ProfilePage() {
             onClick={() => setAvatarOpen(true)}
             aria-label="Change avatar"
             style={{
-              position: 'relative', width: 84, height: 84, padding: 0, border: 'none',
+              position: 'relative', width: 96, height: 96, padding: 0, border: 'none',
               background: 'transparent', cursor: 'pointer', borderRadius: '50%',
             }}
           >
-            <Avatar avatarId={profile?.avatar} initial={initial} size={84} />
+            <Avatar avatarId={profile?.avatar} initial={initial} size={96} />
             <span
               aria-hidden
               style={{
@@ -307,7 +307,7 @@ export default function ProfilePage() {
               ) : (
                 <span
                   className={`stl-summary-value${s.isStars ? ' stars-amount' : ''}`}
-                  style={{ color: s.color, fontFamily: 'var(--font-mono)', fontSize: 18 }}
+                  style={{ color: s.color, fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500, letterSpacing: '-0.01em' }}
                 >
                   {s.value}
                 </span>
@@ -328,13 +328,12 @@ export default function ProfilePage() {
           </div>
           <div style={{
             height: 4, borderRadius: 999, overflow: 'hidden',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid var(--stl-border-soft)',
+            background: 'var(--surface-hover)',
           }}>
             <div style={{
               width: `${Math.min(100, (completed.length / Math.max(1, completed.length + 5)) * 100)}%`,
               height: '100%',
-              background: 'linear-gradient(90deg, var(--stl-gold-dim), var(--stl-gold))',
+              background: 'var(--terracotta)',
               transition: 'width 0.4s ease',
             }} />
           </div>
@@ -553,7 +552,8 @@ export default function ProfilePage() {
         <button
           onClick={confirmSignOut ? logout : () => setConfirmSignOut(true)}
           style={{
-            width: '100%', padding: '12px 20px', borderRadius: 999,
+            width: '100%', maxWidth: 320, margin: '0 auto',
+            padding: '10px 20px', borderRadius: 999,
             fontSize: 13, fontWeight: 500,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: 'transparent',
@@ -571,7 +571,7 @@ export default function ProfilePage() {
         {confirmSignOut && (
           <button
             onClick={() => setConfirmSignOut(false)}
-            style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 12, fontSize: 12, color: 'var(--stl-text-dim)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
+            style={{ marginTop: 8, width: '100%', maxWidth: 320, margin: '8px auto 0', padding: '10px', borderRadius: 12, fontSize: 12, color: 'var(--stl-text-dim)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
           >
             Cancel
           </button>
