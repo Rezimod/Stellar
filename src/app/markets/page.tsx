@@ -407,12 +407,6 @@ export default function MarketsPage() {
           />
         </div>
 
-        {/* My active bets — surfaced above the trending strip so live positions
-            are the first thing the user sees. Hides itself when empty. */}
-        <div className="mkt-my-bets-wrap">
-          <MyActiveBets variant="compact" title="My active bets" />
-        </div>
-
         {/* Trending strip — auto-rotates every 4.5s, pauses on hover */}
         {!loading && trending.length > 0 && (
           <div
@@ -573,6 +567,12 @@ export default function MarketsPage() {
                 )}
               </div>
             )}
+
+            {/* My active bets — below the browse list per the system spec.
+                Hides itself when empty. */}
+            <div className="mkt-my-bets-wrap">
+              <MyActiveBets variant="compact" title="My active bets" />
+            </div>
           </div>
 
           {/* Sidebar */}

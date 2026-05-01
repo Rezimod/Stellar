@@ -1062,24 +1062,23 @@
   --stl-text3: #6F6B8E;
   --stl-border: #292B4A;
   --stl-border2: #393B62;
-  --stl-green: var(--seafoam);
-  --stl-green-bg: rgba(94, 234, 212,0.10);
-  --stl-red: #F472B6;
-  --stl-red-bg: rgba(244,114,182,0.10);
-  --stl-accent: #A78BFA;
+  --stl-green: var(--yes);
+  --stl-green-bg: var(--yes-dim);
+  --stl-red: var(--no);
+  --stl-red-bg: var(--no-dim);
+  --stl-accent: var(--terracotta);
   --stl-accent-bg: rgba(240, 128, 92,0.10);
-  --stl-teal: #22D3EE;
-  --stl-teal-bg: rgba(34,211,238,0.10);
+  --stl-teal: var(--seafoam);
+  --stl-teal-bg: rgba(94, 234, 212,0.10);
   --stl-amber: var(--terracotta);
   --stl-amber-bg: rgba(240, 128, 92,0.08);
-  --stl-cosmic-yes: var(--seafoam);
-  --stl-cosmic-yes-glow: rgba(94, 234, 212,0.45);
-  --stl-cosmic-no:  #F472B6;
-  --stl-cosmic-no-glow:  rgba(244,114,182,0.45);
+  --stl-cosmic-yes: var(--yes);
+  --stl-cosmic-yes-glow: rgba(52, 211, 153, 0.40);
+  --stl-cosmic-no:  var(--no);
+  --stl-cosmic-no-glow:  rgba(248, 113, 113, 0.40);
   --stl-sidebar-bg: #0E0F22;
-  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(240, 128, 92,0.22), transparent 55%),
-                     radial-gradient(720px 520px at 100% 0%, rgba(34,211,238,0.16), transparent 55%),
-                     radial-gradient(640px 480px at 50% 110%, rgba(244,114,182,0.14), transparent 60%);
+  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(240, 128, 92,0.18), transparent 55%),
+                     radial-gradient(720px 520px at 100% 0%, rgba(94, 234, 212, 0.10), transparent 55%);
   --stl-stars: radial-gradient(1.2px 1.2px at 12% 22%, rgba(255,255,255,0.55), transparent 60%),
                radial-gradient(1px 1px at 38% 12%, rgba(255,255,255,0.35), transparent 60%),
                radial-gradient(1.2px 1.2px at 71% 30%, rgba(255,255,255,0.5),  transparent 60%),
@@ -1182,7 +1181,8 @@
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--stl-text3);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .mkt-stats-text { font-variant-numeric: tabular-nums; }
 
@@ -1259,24 +1259,14 @@
 }
 .mkt-trending-strip::-webkit-scrollbar { display: none; }
 
-/* My active bets — surfaced above the trending strip on /markets.
-   Tinted band so it visually separates from the rest of the page and reads
-   as "your live position" rather than another card. */
+/* My active bets — placed below the markets list per the system spec.
+   Neutral surface, no accent stripe (forbidden border-left pattern). */
 .mkt-my-bets-wrap {
   padding: 16px 20px;
-  background: var(--stl-accent-bg);
-  border-bottom: 1px solid var(--stl-border);
+  border-top: 1px solid var(--stl-border);
   position: relative;
 }
-.mkt-my-bets-wrap::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--stl-accent);
-}
+.mkt-my-bets-wrap::before { content: none; }
 .mkt-my-bets-wrap:empty {
   /* MyActiveBets returns null when signed-out or no active bets — hide the
      whole band so we don't show an empty purple stripe. */
@@ -1476,28 +1466,22 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 11px;
-  font-weight: 700;
-  color: var(--cat-fg, var(--stl-text2));
+  font-weight: 600;
+  color: var(--stl-text3);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 16px 0 6px;
+  letter-spacing: 0.10em;
+  padding: 18px 0 8px;
 }
 .mkt-group-header::before {
   content: '';
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--cat-fg, var(--stl-accent));
-  box-shadow: 0 0 8px var(--cat-fg, var(--stl-accent));
+  background: var(--seafoam);
 }
-.mkt-group-header::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, var(--cat-border, var(--stl-border)) 0%, transparent 70%);
-  min-width: 40px;
-}
+.mkt-group-header::after { content: none; }
 
 .mkt-row {
   display: grid;
@@ -1532,18 +1516,20 @@
 .mkt-row:hover .mkt-row-icon { transform: scale(1.06); }
 .markets-page.dark .mkt-row-icon { color: var(--cat-fg, var(--stl-text2)); }
 
-/* Category color tokens — tasteful astronomy palette */
-[data-category="meteor"]            { --cat-fg: var(--terracotta); --cat-bg: rgba(240, 128, 92,0.12); --cat-border: rgba(240, 128, 92,0.30); }
-[data-category="solar"]             { --cat-fg: #F97316; --cat-bg: rgba(249,115, 22,0.12); --cat-border: rgba(249,115, 22,0.30); }
-[data-category="mission"]           { --cat-fg: #22D3EE; --cat-bg: rgba(34,211,238,0.12); --cat-border: rgba(34,211,238,0.30); }
-[data-category="comet"]             { --cat-fg: #06B6D4; --cat-bg: rgba(  6,182,212,0.12); --cat-border: rgba(  6,182,212,0.30); }
-[data-category="discovery"]         { --cat-fg: #A78BFA; --cat-bg: rgba(240, 128, 92,0.14); --cat-border: rgba(240, 128, 92,0.32); }
-[data-category="weather"]           { --cat-fg: #60A5FA; --cat-bg: rgba( 96,165,250,0.12); --cat-border: rgba( 96,165,250,0.30); }
-[data-category="weather_event"]     { --cat-fg: #38BDF8; --cat-bg: rgba( 56,189,248,0.12); --cat-border: rgba( 56,189,248,0.30); }
-[data-category="natural_phenomenon"]{ --cat-fg: var(--seafoam); --cat-bg: rgba( 52,211,153,0.12); --cat-border: rgba( 52,211,153,0.30); }
-[data-category="sky_event"]         { --cat-fg: #C084FC; --cat-bg: rgba(192,132,252,0.14); --cat-border: rgba(192,132,252,0.32); }
-[data-category="crypto"]            { --cat-fg: #F7931A; --cat-bg: rgba(247,147, 26,0.12); --cat-border: rgba(247,147, 26,0.30); }
-[data-category="sports"]            { --cat-fg: var(--seafoam); --cat-bg: rgba( 16,185,129,0.12); --cat-border: rgba( 16,185,129,0.30); }
+/* Category color tokens — neutralized to on-palette tokens.
+   Categories are differentiated by icon + label, not hue, per the
+   restrained-color spec. */
+[data-category="meteor"]            { --cat-fg: var(--terracotta); --cat-bg: rgba(240, 128, 92,0.10); --cat-border: rgba(240, 128, 92,0.25); }
+[data-category="solar"]             { --cat-fg: var(--terracotta); --cat-bg: rgba(240, 128, 92,0.10); --cat-border: rgba(240, 128, 92,0.25); }
+[data-category="mission"]           { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="comet"]             { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="discovery"]         { --cat-fg: var(--terracotta); --cat-bg: rgba(240, 128, 92,0.10); --cat-border: rgba(240, 128, 92,0.25); }
+[data-category="weather"]           { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="weather_event"]     { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="natural_phenomenon"]{ --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="sky_event"]         { --cat-fg: var(--terracotta); --cat-bg: rgba(240, 128, 92,0.10); --cat-border: rgba(240, 128, 92,0.25); }
+[data-category="crypto"]            { --cat-fg: var(--terracotta); --cat-bg: rgba(240, 128, 92,0.10); --cat-border: rgba(240, 128, 92,0.25); }
+[data-category="sports"]            { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
 
 .mkt-row-content { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .mkt-row-title {
@@ -1666,46 +1652,36 @@
 }
 
 .mkt-odds-cell.yes {
-  --cell-fg: var(--stl-cosmic-yes);
-  --cell-bg: linear-gradient(135deg, rgba(34,211,158,0.12), rgba(34,211,238,0.10));
-  --cell-border: rgba(34,211,158,0.45);
+  --cell-fg: var(--yes);
+  --cell-bg: var(--yes-dim);
+  --cell-border: var(--yes-border);
 }
 .mkt-odds-cell.no {
-  --cell-fg: var(--stl-cosmic-no);
-  --cell-bg: linear-gradient(135deg, rgba(244,114,182,0.12), rgba(240, 128, 92,0.12));
-  --cell-border: rgba(244,114,182,0.45);
+  --cell-fg: var(--no);
+  --cell-bg: var(--no-dim);
+  --cell-border: var(--no-border);
 }
 
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-bg: linear-gradient(135deg, rgba(34,211,158,0.22), rgba(34,211,238,0.18));
-  --cell-border: rgba(34,211,158,0.7);
-  box-shadow:
-    0 0 0 1px var(--cell-border) inset,
-    0 0 14px var(--stl-cosmic-yes-glow);
+  --cell-bg: rgba(52, 211, 153, 0.18);
+  --cell-border: rgba(52, 211, 153, 0.55);
   transform: translateY(-1px);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-bg: linear-gradient(135deg, rgba(244,114,182,0.22), rgba(240, 128, 92,0.20));
-  --cell-border: rgba(244,114,182,0.7);
-  box-shadow:
-    0 0 0 1px var(--cell-border) inset,
-    0 0 14px var(--stl-cosmic-no-glow);
+  --cell-bg: rgba(248, 113, 113, 0.18);
+  --cell-border: rgba(248, 113, 113, 0.55);
   transform: translateY(-1px);
 }
 
 .mkt-odds-cell.yes.active {
-  --cell-bg: linear-gradient(135deg, rgba(34,211,158,0.28), rgba(34,211,238,0.22));
-  --cell-border: rgba(34,211,158,0.85);
-  box-shadow:
-    0 0 0 1.5px var(--cell-border) inset,
-    0 0 18px var(--stl-cosmic-yes-glow);
+  --cell-bg: rgba(52, 211, 153, 0.22);
+  --cell-border: rgba(52, 211, 153, 0.70);
+  box-shadow: 0 0 0 1.5px var(--cell-border) inset;
 }
 .mkt-odds-cell.no.active {
-  --cell-bg: linear-gradient(135deg, rgba(244,114,182,0.28), rgba(240, 128, 92,0.22));
-  --cell-border: rgba(244,114,182,0.85);
-  box-shadow:
-    0 0 0 1.5px var(--cell-border) inset,
-    0 0 18px var(--stl-cosmic-no-glow);
+  --cell-bg: rgba(248, 113, 113, 0.22);
+  --cell-border: rgba(248, 113, 113, 0.70);
+  box-shadow: 0 0 0 1.5px var(--cell-border) inset;
 }
 
 /* Inline bet panel — drop-down beneath an expanded market row */
