@@ -1082,6 +1082,10 @@ export function getDealerById(id: string): Dealer | undefined {
   return DEALERS.find((d) => d.id === id)
 }
 
+export function getProductById(id: string): Product | undefined {
+  return PRODUCTS.find((p) => p.id === id)
+}
+
 export function getProductsByDealer(dealerId: string): Product[] {
   return PRODUCTS.filter((p) => p.dealerId === dealerId)
 }

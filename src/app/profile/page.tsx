@@ -6,7 +6,7 @@ import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
-import { Copy, Check, ExternalLink, Telescope, User, ChevronRight, Globe, Bell, Moon, LogOut, X, Settings, Camera } from 'lucide-react';
+import { Copy, Check, ExternalLink, Telescope, User, ChevronRight, Globe, Bell, Moon, LogOut, X, Settings, Camera, Package } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAppState } from '@/hooks/useAppState';
@@ -21,6 +21,21 @@ import { Avatar } from '@/lib/avatars';
 import { AvatarPicker } from '@/components/profile/AvatarPicker';
 import { UsernameEditor } from '@/components/profile/UsernameEditor';
 import { useProfile } from '@/hooks/useProfile';
+
+interface OrderRow {
+  id: string;
+  productId: string;
+  productName: string;
+  productImage: string | null;
+  amountSol: number;
+  amountFiat: number;
+  currency: string;
+  status: string;
+  signature: string | null;
+  createdAt: string;
+  shippingCity?: string | null;
+  shippingCountry?: string | null;
+}
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
@@ -39,6 +54,7 @@ export default function ProfilePage() {
   const [retryKey, setRetryKey] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<{ photo: string; name: string } | null>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [orderHistory, setOrderHistory] = useState<OrderRow[]>([]);
 
   useEffect(() => () => setConfirmSignOut(false), []);
 
@@ -68,6 +84,13 @@ export default function ProfilePage() {
             const obs = d.observations ?? [];
             setObsCount(obs.length);
           }),
+      ),
+      getAccessToken().then(token =>
+        fetch(`/api/orders?walletAddress=${encodeURIComponent(address)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
+          .then(r => r.json())
+          .then(d => setOrderHistory(d.orders ?? [])),
       ),
     ]).then(() => setProfileLoaded(true));
     return () => window.removeEventListener('stellar:stars-synced', refresh);
@@ -495,6 +518,98 @@ export default function ProfilePage() {
                   </div>
                 </button>
               ))}
+            </div>
+          )}
+        </section>
+
+        {/* — ORDER HISTORY — */}
+        <section style={{ marginBottom: 28 }} className="flex flex-col gap-3">
+          <div className="stl-cat-header">
+            <span className="stl-cat-name">Order History</span>
+            <span className="stl-cat-count">{orderHistory.length}</span>
+            <Link
+              href="/marketplace"
+              className="stl-mono-data"
+              style={{ marginLeft: 'auto', color: 'var(--stl-green)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 2 }}
+            >
+              Shop <ChevronRight size={11} />
+            </Link>
+          </div>
+
+          {orderHistory.length === 0 ? (
+            <div
+              className="stl-card"
+              style={{ padding: '28px 20px', textAlign: 'center' }}
+            >
+              <Package size={22} color="var(--stl-text-whisper)" style={{ marginBottom: 8 }} />
+              <p className="stl-body-sm" style={{ color: 'var(--stl-text-dim)', margin: 0 }}>
+                No orders yet — pay with SOL on any product to get started
+              </p>
+            </div>
+          ) : (
+            <div className="stl-card" style={{ overflow: 'hidden', padding: 0 }}>
+              {orderHistory.map((o, i) => {
+                const date = new Date(o.createdAt);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const isPaid = o.status === 'paid';
+                const fiatLabel = `${o.amountFiat % 1 !== 0 ? o.amountFiat.toFixed(2) : o.amountFiat.toLocaleString()} ${o.currency}`;
+                const solLabel = `${o.amountSol >= 1 ? o.amountSol.toFixed(3) : o.amountSol.toFixed(4)} SOL`;
+                return (
+                  <div
+                    key={o.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      borderBottom: i < orderHistory.length - 1 ? '1px solid var(--stl-border-soft)' : 'none',
+                    }}
+                  >
+                    <div style={{
+                      position: 'relative', width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+                      background: 'var(--stl-bg-surface)', border: '1px solid var(--stl-border-soft)',
+                    }}>
+                      {o.productImage ? (
+                        <Image src={o.productImage} alt={o.productName} fill style={{ objectFit: 'contain', padding: 4 }} unoptimized />
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          <Package size={16} color="var(--stl-text-dim)" />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ color: 'var(--stl-text-bright)', fontSize: 13, fontWeight: 500, margin: 0, fontFamily: 'var(--font-display)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {o.productName}
+                      </p>
+                      <p className="stl-mono-data" style={{ color: 'var(--stl-text-dim)', margin: '2px 0 0', fontSize: 11 }}>
+                        {dateStr} · {fiatLabel} · {solLabel}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                      <span
+                        className="stl-mono-data"
+                        style={{
+                          padding: '3px 9px', borderRadius: 999, fontSize: 9, fontWeight: 600,
+                          textTransform: 'uppercase', letterSpacing: '0.1em',
+                          background: isPaid ? 'rgba(94, 234, 212,0.10)' : 'rgba(255, 209, 102,0.08)',
+                          border: isPaid ? '1px solid var(--stl-border-green)' : '1px solid rgba(255, 209, 102,0.25)',
+                          color: isPaid ? 'var(--stl-green)' : 'var(--stl-gold)',
+                        }}
+                      >
+                        {isPaid ? 'Paid' : 'Pending'}
+                      </span>
+                      {o.signature && (
+                        <a
+                          href={`https://explorer.solana.com/tx/${o.signature}?cluster=${cluster}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="stl-mono-data"
+                          style={{ color: 'var(--stl-text-dim)', fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}
+                        >
+                          tx <ExternalLink size={9} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>

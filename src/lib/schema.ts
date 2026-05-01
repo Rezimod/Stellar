@@ -57,6 +57,35 @@ export const emailSubscribers = pgTable('email_subscribers', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+export const orders = pgTable('orders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  privyId: text('privy_id').notNull(),
+  walletAddress: text('wallet_address').notNull(),
+  productId: text('product_id').notNull(),
+  productName: text('product_name').notNull(),
+  productImage: text('product_image'),
+  dealerId: text('dealer_id').notNull(),
+  amountSol: doublePrecision('amount_sol').notNull(),
+  amountFiat: doublePrecision('amount_fiat').notNull(),
+  currency: text('currency').notNull(),
+  paymentReference: text('payment_reference').notNull(),
+  signature: text('signature'),
+  status: text('status').notNull().default('pending'),
+  shippingName: text('shipping_name').notNull(),
+  shippingPhone: text('shipping_phone').notNull(),
+  shippingAddress: text('shipping_address').notNull(),
+  shippingCity: text('shipping_city').notNull(),
+  shippingCountry: text('shipping_country').notNull(),
+  shippingNotes: text('shipping_notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
+}, (table) => [
+  uniqueIndex('orders_payment_reference_unique').on(table.paymentReference),
+  index('orders_wallet_idx').on(table.walletAddress),
+  index('orders_privy_idx').on(table.privyId),
+  index('orders_created_at_idx').on(table.createdAt),
+])
+
 export const marketCashouts = pgTable('market_cashouts', {
   id: uuid('id').primaryKey().defaultRandom(),
   wallet: text('wallet').notNull(),

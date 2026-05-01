@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/dealers';
 
@@ -136,14 +137,27 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
               {product.starsPrice.toLocaleString()} stars
             </p>
           </div>
-          <a
-            href={product.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[var(--terracotta)] text-[#1a1208] px-[18px] py-[9px] rounded-full text-[11px] font-bold tracking-[0.18em] uppercase hover:opacity-90 transition-opacity"
-          >
-            View
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href={product.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[var(--terracotta)] text-[#1a1208] px-[18px] py-[9px] rounded-full text-[11px] font-bold tracking-[0.18em] uppercase hover:opacity-90 transition-opacity"
+            >
+              View
+            </a>
+            <Link
+              href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}`}
+              className="px-[16px] py-[9px] rounded-full text-[11px] font-semibold tracking-[0.18em] uppercase transition-colors"
+              style={{
+                background: 'rgba(94, 234, 212, 0.10)',
+                border: '0.5px solid rgba(94, 234, 212, 0.45)',
+                color: 'var(--seafoam)',
+              }}
+            >
+              Pay SOL
+            </Link>
+          </div>
         </div>
       </div>
     </div>
