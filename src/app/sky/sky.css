@@ -130,78 +130,108 @@
 .sky-page-v2 .equipment-tag.scope { color: var(--accent); background: rgba(240, 128, 92, 0.10); }
 
 /* === TIMELINE === */
-.sky-page-v2 .timeline-panel { padding: 24px; position: relative; }
-.sky-page-v2 .timeline-grid {
+.sky-page-v2 .timeline-panel {
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.sky-page-v2 .dark-window-meta {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  text-align: right;
+}
+.sky-page-v2 .dark-window-meta .times {
+  font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+  letter-spacing: 0.04em; text-transform: none;
+}
+
+.sky-page-v2 .timeline-axis {
   display: grid;
-  gap: 0;
+  grid-template-columns: 116px 1fr 100px;
+  gap: 12px;
   align-items: center;
-  margin-top: 8px;
-  position: relative;
+  padding-bottom: 10px;
 }
-.sky-page-v2 .timeline-hour-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); text-align: center; padding-bottom: 8px; }
-.sky-page-v2 .timeline-hour-label.now { color: var(--teal); font-weight: 600; }
-.sky-page-v2 .timeline-name {
-  font-size: 12px; font-weight: 500;
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 10px 8px 0;
-  min-width: 0;
+.sky-page-v2 .timeline-axis-ticks {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+  letter-spacing: 0.04em;
 }
-.sky-page-v2 .timeline-name .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
-.sky-page-v2 .timeline-name .name-text {
-  flex: 1 1 auto; min-width: 0;
+
+.sky-page-v2 .timeline-rows { display: flex; flex-direction: column; }
+
+.sky-page-v2 .timeline-row {
+  display: grid;
+  grid-template-columns: 116px 1fr 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sky-page-v2 .timeline-row:last-child { border-bottom: none; }
+
+.sky-page-v2 .timeline-row-name {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 500; min-width: 0;
+}
+.sky-page-v2 .timeline-row-name .dot {
+  width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0;
+}
+.sky-page-v2 .timeline-row-name .label {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.sky-page-v2 .timeline-name .peak-time { flex-shrink: 0; font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.04em; }
-.sky-page-v2 .timeline-cell {
-  height: 18px; margin: 1px;
-  border-radius: 3px;
+
+.sky-page-v2 .timeline-row-track {
   position: relative;
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 999px;
 }
-.sky-page-v2 .timeline-cell.peak { background: var(--teal); }
-.sky-page-v2 .timeline-cell.good { background: var(--teal); }
-.sky-page-v2 .timeline-cell.ok { background: rgba(56, 240, 255, 0.30); }
-.sky-page-v2 .timeline-cell.below { background: rgba(255, 255, 255, 0.04); }
-.sky-page-v2 .timeline-cell.peak-ring {
-  box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 1px rgba(240, 128, 92, 0.35);
-}
-
-.sky-page-v2 .now-line {
+.sky-page-v2 .timeline-bar-visible {
   position: absolute;
-  top: 28px;
-  bottom: 12px;
-  width: 2px;
+  top: 0; bottom: 0;
   background: var(--teal);
-  box-shadow: 0 0 8px rgba(56, 240, 255, 0.5);
-  pointer-events: none;
+  border-radius: 999px;
+  min-width: 2px;
+}
+.sky-page-v2 .timeline-bar-peak {
+  position: absolute;
+  top: 50%;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 1px solid var(--bg);
+  transform: translate(-50%, -50%);
   z-index: 2;
-  transition: left 0.3s ease-out;
-}
-.sky-page-v2 .now-line::before {
-  content: 'NOW';
-  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-  font-family: var(--mono); font-size: 9px; font-weight: 600;
-  color: var(--teal); letter-spacing: 0.1em;
-  background: var(--bg);
-  padding: 2px 6px; border-radius: 3px;
-  border: 1px solid rgba(56, 240, 255, 0.3);
-  white-space: nowrap;
-}
-.sky-page-v2 .now-line::after {
-  content: ''; position: absolute; bottom: -3px; left: -3px;
-  width: 8px; height: 8px; border-radius: 999px; background: var(--teal);
-  box-shadow: 0 0 8px rgba(56, 240, 255, 0.7);
 }
 
-.sky-page-v2 .timeline-legend {
-  display: flex; gap: 14px; margin-top: 16px; padding-top: 12px;
-  border-top: 1px solid var(--border);
-  font-size: 11px; color: var(--text-muted);
-  flex-wrap: wrap;
+.sky-page-v2 .timeline-row-peak {
+  text-align: right;
+  font-family: var(--mono);
 }
-.sky-page-v2 .legend-pip { width: 10px; height: 10px; border-radius: 2px; }
-.sky-page-v2 .legend-pip.peak {
-  background: var(--teal);
-  box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 1px rgba(240, 128, 92, 0.35);
+.sky-page-v2 .timeline-row-peak .peak-time {
+  font-size: 12px; color: var(--text);
+  letter-spacing: 0.02em;
+}
+.sky-page-v2 .timeline-row-peak .peak-meta {
+  font-size: 10px; color: var(--text-muted);
+  margin-top: 2px; letter-spacing: 0.04em;
+}
+
+.sky-page-v2 .timeline-footer {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.sky-page-v2 .timeline-empty {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 28px 0;
+  letter-spacing: 0.02em;
 }
 
 /* === PLANET CARDS === */
@@ -327,4 +357,9 @@
   .sky-page-v2 .hero-body p { font-size: 12.5px; }
   .sky-page-v2 .hero-meta { font-size: 10px; gap: 5px; }
   .sky-page-v2 .planets-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .sky-page-v2 .timeline-row,
+  .sky-page-v2 .timeline-axis {
+    grid-template-columns: 96px 1fr 88px;
+    gap: 8px;
+  }
 }

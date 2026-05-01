@@ -25,6 +25,16 @@ export default function SkyPage() {
 
   const featuredTarget = sky.score?.bestTargets[0];
 
+  const darkWindowLabel = useMemo(() => {
+    const dw = sky.timeline.darkWindow;
+    if (!dw) return null;
+    const fmt = (iso: string) => {
+      const d = new Date(iso);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    };
+    return `${fmt(dw.start)} → ${fmt(dw.end)}`;
+  }, [sky.timeline.darkWindow]);
+
   if (sky.error) {
     return (
       <div className="sky-page-v2">
@@ -80,9 +90,12 @@ export default function SkyPage() {
         <section className="section">
           <div className="section-head">
             <h2 className="section-title">Tonight&apos;s observation timeline</h2>
-            <span className="section-meta">12-hour outlook</span>
+            <span className="section-meta dark-window-meta">
+              <span>Dark window</span>
+              <span className="times">{darkWindowLabel ?? '—'}</span>
+            </span>
           </div>
-          <ObservationTimeline targets={sky.timeline} />
+          <ObservationTimeline data={sky.timeline} />
         </section>
 
         <section className="section">

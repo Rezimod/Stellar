@@ -1,141 +1,114 @@
 // src/components/sky/ObservationTimeline.tsx
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import type { TimelineTarget } from '@/lib/use-sky-data';
-import { altitudeToVisibility } from '@/lib/sky-utils';
+import { useMemo } from 'react';
+import type { TimelinePayload } from '@/lib/use-sky-data';
 
 interface ObservationTimelineProps {
-  targets: TimelineTarget[];
-  windowStart?: string;  // ISO timestamp of first hour cell
+  data: TimelinePayload;
 }
 
-const NAME_COL_WIDTH = 116;
+const AZ_DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const;
 
-export function ObservationTimeline({ targets, windowStart }: ObservationTimelineProps) {
-  const [now, setNow] = useState(() => new Date());
+function azimuthToCardinal(az: number): (typeof AZ_DIRS)[number] {
+  const n = ((az % 360) + 360) % 360;
+  return AZ_DIRS[Math.floor(((n + 22.5) % 360) / 45)];
+}
 
-  // Update NOW line every 60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+function altitudeBand(alt: number): 'low' | 'mid' | 'high' {
+  if (alt < 30) return 'low';
+  if (alt <= 60) return 'mid';
+  return 'high';
+}
 
-  // Use the first target's hourly array for the time axis
-  const hourLabels = useMemo(
-    () => (targets[0]?.hourly ?? []).map((h) => new Date(h.hour)),
-    [targets],
-  );
-  const hourCount = hourLabels.length;
+function fmtHHmm(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
 
-  // Compute NOW line position as percentage across the grid
-  const nowPosition = useMemo(() => {
-    if (hourCount < 2) return null;
-    const start = hourLabels[0].getTime();
-    const end = hourLabels[hourCount - 1].getTime() + 60 * 60 * 1000; // +1 hour for last cell width
-    const t = now.getTime();
-    if (t < start || t > end) return null;
-    return ((t - start) / (end - start)) * 100; // percent
-  }, [now, hourLabels, hourCount]);
+export function ObservationTimeline({ data }: ObservationTimelineProps) {
+  const view = useMemo(() => {
+    if (!data.darkWindow) return null;
+    const start = new Date(data.darkWindow.start);
+    const end = new Date(data.darkWindow.end);
+    const span = end.getTime() - start.getTime();
+    if (span <= 0) return null;
+    const mid = new Date(start.getTime() + span / 2);
+    const objects = data.objects.map((o) => {
+      const visibleStart = new Date(o.visibleStart);
+      const visibleEnd = new Date(o.visibleEnd);
+      const peakAt = new Date(o.peakAt);
+      return {
+        name: o.name,
+        color: o.color,
+        peakTimeLabel: fmtHHmm(peakAt),
+        peakDirection: azimuthToCardinal(o.peakAzimuth),
+        peakHeight: altitudeBand(o.peakAlt),
+        leftPct: ((visibleStart.getTime() - start.getTime()) / span) * 100,
+        widthPct: ((visibleEnd.getTime() - visibleStart.getTime()) / span) * 100,
+        peakPct: ((peakAt.getTime() - start.getTime()) / span) * 100,
+      };
+    });
+    return { start, end, mid, objects, excludedCount: data.excludedCount };
+  }, [data]);
 
-  if (targets.length === 0) {
+  if (!view) {
     return (
       <div className="panel timeline-panel">
-        <div style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '40px 0' }}>
-          No targets to display
-        </div>
+        <div className="timeline-empty">Nothing observable in tonight&apos;s dark window.</div>
+      </div>
+    );
+  }
+
+  if (view.objects.length === 0) {
+    return (
+      <div className="panel timeline-panel">
+        <div className="timeline-empty">Nothing observable in tonight&apos;s dark window.</div>
       </div>
     );
   }
 
   return (
-    <div className="panel timeline-panel" style={{ position: 'relative' }}>
-      <div
-        className="timeline-grid"
-        style={{
-          gridTemplateColumns: `${NAME_COL_WIDTH}px repeat(${hourCount}, 1fr)`,
-          position: 'relative',
-        }}
-      >
-        {/* Hour labels header row */}
-        <div />
-        {hourLabels.map((h, i) => {
-          const hourNum = h.getHours();
-          const isNow = hourNum === now.getHours();
-          const isPostMidnight = hourNum < 12;
-          return (
-            <div
-              key={i}
-              className={`timeline-hour-label ${isNow ? 'now' : ''}`}
-              style={{ color: isPostMidnight ? 'var(--text-dim)' : undefined }}
-            >
-              {hourNum.toString().padStart(2, '0')}
+    <div className="panel timeline-panel">
+      <div className="timeline-axis">
+        <div className="timeline-axis-spacer-l" />
+        <div className="timeline-axis-ticks">
+          <span>{fmtHHmm(view.start)}</span>
+          <span>{fmtHHmm(view.mid)}</span>
+          <span>{fmtHHmm(view.end)}</span>
+        </div>
+        <div className="timeline-axis-spacer-r" />
+      </div>
+
+      <div className="timeline-rows">
+        {view.objects.map((o) => (
+          <div key={o.name} className="timeline-row">
+            <div className="timeline-row-name">
+              <span className="dot" style={{ background: o.color }} />
+              <span className="label">{o.name}</span>
             </div>
-          );
-        })}
-
-        {/* NOW indicator line — absolutely positioned over the grid */}
-        {nowPosition !== null && (
-          <div
-            className="now-line"
-            style={{
-              left: `calc(${NAME_COL_WIDTH}px + (100% - ${NAME_COL_WIDTH}px) * ${nowPosition / 100})`,
-            }}
-          />
-        )}
-
-        {/* Target rows */}
-        {targets.map((target) => (
-          <TimelineRow key={target.name} target={target} />
+            <div className="timeline-row-track" aria-hidden>
+              <div
+                className="timeline-bar-visible"
+                style={{ left: `${o.leftPct}%`, width: `${o.widthPct}%` }}
+              />
+              <div
+                className="timeline-bar-peak"
+                style={{ left: `${o.peakPct}%` }}
+              />
+            </div>
+            <div className="timeline-row-peak">
+              <div className="peak-time">{o.peakTimeLabel}</div>
+              <div className="peak-meta">
+                {o.peakDirection} · {o.peakHeight}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
-      <div className="timeline-legend">
-        <div className="legend-item">
-          <span className="legend-pip" style={{ background: 'var(--teal)' }} />
-          Best viewing
-        </div>
-        <div className="legend-item">
-          <span className="legend-pip" style={{ background: 'rgba(56,240,255,0.30)' }} />
-          Visible
-        </div>
-        <div className="legend-item">
-          <span className="legend-pip peak" />
-          Peak
-        </div>
-      </div>
+      {view.excludedCount > 0 && (
+        <div className="timeline-footer">+ {view.excludedCount} not visible tonight</div>
+      )}
     </div>
-  );
-}
-
-function TimelineRow({ target }: { target: TimelineTarget }) {
-  // Peak cell = the hour with the highest altitude (only when actually visible)
-  const peakIdx = target.hourly.reduce(
-    (best, p, i, arr) => (p.altitude > arr[best].altitude ? i : best),
-    0,
-  );
-  const peakAltitude = target.hourly[peakIdx]?.altitude ?? 0;
-  return (
-    <>
-      <div className="timeline-name">
-        <span className="dot" style={{ background: target.color }} />
-        <span className="name-text">{target.name}</span>
-      </div>
-      {target.hourly.map((point, i) => {
-        const level = altitudeToVisibility(point.altitude);
-        const isPeak = i === peakIdx && peakAltitude > 5;
-        return (
-          <div
-            key={i}
-            className={`timeline-cell ${level}${isPeak ? ' peak-ring' : ''}`}
-            title={`${new Date(point.hour).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })} — ${Math.round(point.altitude)}°`}
-          />
-        );
-      })}
-    </>
   );
 }

@@ -13,16 +13,25 @@ export interface PlanetData {
   visible: boolean;
 }
 
-export interface HourlyAltitude {
-  hour: string;
-  altitude: number;
-}
-
-export interface TimelineTarget {
+export interface ObservableObject {
   name: string;
   color: string;
-  hourly: HourlyAltitude[];
-  peakTime: string | null;
+  visibleStart: string;
+  visibleEnd: string;
+  peakAt: string;
+  peakAlt: number;
+  peakAzimuth: number;
+}
+
+export interface DarkWindow {
+  start: string;
+  end: string;
+}
+
+export interface TimelinePayload {
+  darkWindow: DarkWindow | null;
+  objects: ObservableObject[];
+  excludedCount: number;
 }
 
 export interface ForecastDay {
@@ -56,7 +65,7 @@ export interface SkyData {
   location: { city: string; lat: number; lon: number; bortle: number } | null;
   score: ObservationScore | null;
   planets: PlanetData[];
-  timeline: TimelineTarget[];
+  timeline: TimelinePayload;
   conditions: SkyConditions | null;
   forecast: ForecastDay[];
   refreshedAt: Date | null;
@@ -109,9 +118,7 @@ interface RawVerify {
   bortleClass: number;
 }
 
-interface RawTimeline {
-  targets: TimelineTarget[];
-}
+type RawTimeline = TimelinePayload;
 
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -122,7 +129,7 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
     location: null,
     score: null,
     planets: [],
-    timeline: [],
+    timeline: { darkWindow: null, objects: [], excludedCount: 0 },
     conditions: null,
     forecast: [],
     refreshedAt: null,
@@ -144,7 +151,9 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
       const forecastRaw: RawSkyDay[] = forecastRes.ok ? await forecastRes.json() : [];
       const sunMoon: RawSunMoon | null = sunMoonRes.ok ? await sunMoonRes.json() : null;
       const verify: RawVerify | null = verifyRes.ok ? await verifyRes.json() : null;
-      const timelineRaw: RawTimeline = timelineRes.ok ? await timelineRes.json() : { targets: [] };
+      const timelineRaw: RawTimeline = timelineRes.ok
+        ? await timelineRes.json()
+        : { darkWindow: null, objects: [], excludedCount: 0 };
 
       const planets: PlanetData[] = planetsRaw.map(normalizePlanet);
 
@@ -176,7 +185,7 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
         },
         score,
         planets,
-        timeline: timelineRaw.targets ?? [],
+        timeline: timelineRaw,
         conditions,
         forecast,
         refreshedAt: new Date(),
