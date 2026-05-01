@@ -155,21 +155,21 @@ export default function MarketplacePage() {
         <div className="relative z-10">
           <button
             onClick={() => router.back()}
-            className="block text-[9px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.65)] hover:text-[#E8E6DD] transition-colors mb-[18px]"
+            className="block text-[10px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.65)] hover:text-[#E8E6DD] transition-colors mb-[18px]"
           >
             ‹ Back · Marketplace
           </button>
 
           <header className="flex flex-col items-center gap-3 pb-[14px] mb-[14px] border-b border-[rgba(232,230,221,0.1)] text-center">
             <div className="flex items-baseline justify-center gap-3">
-              <span className="text-[9px] tracking-[0.24em] uppercase text-[var(--seafoam)] font-medium">04</span>
-              <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-[#E8E6DD] leading-none">
+              <span className="text-[10px] tracking-[0.24em] uppercase text-[var(--seafoam)] font-medium">04</span>
+              <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[#E8E6DD] leading-none">
                 Marketplace<span className="text-[var(--terracotta)]">.</span>
               </h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
               <span
-                className="inline-flex items-center gap-[7px] px-[14px] py-[7px] rounded-full text-[10px] uppercase backdrop-blur-md"
+                className="inline-flex items-center gap-[7px] px-[14px] py-[7px] rounded-full text-[11px] uppercase backdrop-blur-md"
                 style={{
                   background: 'rgba(94, 234, 212, 0.10)',
                   border: '1.5px solid rgba(94, 234, 212, 0.40)',
@@ -179,19 +179,9 @@ export default function MarketplacePage() {
                 <span className="font-semibold text-[var(--seafoam)]">{balance.toLocaleString()}</span>
                 <span className="text-[var(--seafoam)]">✦</span>
               </span>
-              <span className="inline-flex items-center gap-[7px] text-[10px] uppercase">
+              <span className="inline-flex items-center gap-[7px] text-[11px] uppercase">
                 <span className="tracking-[0.14em] text-[rgba(232,230,221,0.7)]">Region</span>
                 <LocationPicker compact />
-              </span>
-              <span
-                className="inline-flex items-center gap-[7px] px-[14px] py-[7px] rounded-full text-[10px] uppercase backdrop-blur-md"
-                style={{
-                  background: 'rgba(232,230,221,0.04)',
-                  border: '1.5px solid rgba(232,230,221,0.18)',
-                }}
-              >
-                <span className="tracking-[0.14em] text-[rgba(232,230,221,0.7)]">Codes</span>
-                <span className="font-semibold text-[#E8E6DD]">90d</span>
               </span>
             </div>
           </header>
@@ -213,13 +203,13 @@ export default function MarketplacePage() {
                     border: unlocked ? '0.5px solid rgba(255, 209, 102,0.4)' : '0.5px solid rgba(232,230,221,0.08)',
                   }}
                 >
-                  <span className="flex items-baseline whitespace-nowrap text-[13px] font-semibold tracking-[0.02em] text-[var(--terracotta)]">
-                    <span className="text-[10px] opacity-70 mr-[3px]">✦</span>
+                  <span className="flex items-baseline whitespace-nowrap text-[14px] font-semibold tracking-[0.02em] text-[var(--terracotta)]">
+                    <span className="text-[11px] opacity-70 mr-[3px]">✦</span>
                     {tier.stars}
                   </span>
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-[11px] text-[#E8E6DD] truncate">{tier.reward}</span>
-                    <span className="text-[9px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.65)] truncate">{l2}</span>
+                    <span className="text-[12px] text-[#E8E6DD] truncate">{tier.reward}</span>
+                    <span className="text-[10px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.65)] truncate">{l2}</span>
                     <div className="h-[2px] bg-[rgba(232,230,221,0.08)] rounded-[1px] overflow-hidden mt-[3px]">
                       <div
                         className="h-full bg-[var(--terracotta)] rounded-[1px]"
@@ -229,7 +219,7 @@ export default function MarketplacePage() {
                   </div>
                   {code ? (
                     <span
-                      className="text-[9px] tracking-[0.12em] font-semibold px-[10px] py-[5px] rounded-full"
+                      className="text-[10px] tracking-[0.12em] font-semibold px-[10px] py-[5px] rounded-full"
                       style={{ background: 'rgba(255, 209, 102,0.1)', border: '0.5px solid rgba(255, 209, 102,0.4)', color: 'var(--terracotta)' }}
                     >
                       {code}
@@ -238,14 +228,14 @@ export default function MarketplacePage() {
                     <button
                       onClick={() => handleRedeem(tier)}
                       disabled={isClaim}
-                      className="text-[9px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full transition-opacity disabled:opacity-60"
+                      className="text-[10px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full transition-opacity disabled:opacity-60"
                       style={{ background: 'rgba(94, 234, 212,0.12)', border: '0.5px solid rgba(94, 234, 212,0.5)', color: 'var(--seafoam)' }}
                     >
                       {isClaim ? '…' : 'Redeem'}
                     </button>
                   ) : (
                     <span
-                      className="text-[9px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full whitespace-nowrap"
+                      className="text-[10px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full whitespace-nowrap"
                       style={{ border: '0.5px solid rgba(232,230,221,0.18)', color: 'rgba(232,230,221,0.55)' }}
                     >
                       Locked
@@ -266,7 +256,7 @@ export default function MarketplacePage() {
                 <button
                   key={c.key}
                   onClick={() => setFilter(c.key)}
-                  className={`px-[14px] py-[7px] text-[10px] tracking-[0.12em] uppercase rounded-full whitespace-nowrap transition-colors ${
+                  className={`px-[14px] py-[7px] text-[11px] tracking-[0.12em] uppercase rounded-full whitespace-nowrap transition-colors ${
                     active ? 'font-semibold' : ''
                   }`}
                   style={
@@ -288,7 +278,7 @@ export default function MarketplacePage() {
                 <button
                   key={d}
                   onClick={() => setDifficulty(active ? 'all' : d)}
-                  className="px-[10px] py-[6px] text-[9px] tracking-[0.16em] uppercase font-medium rounded-full whitespace-nowrap transition-colors"
+                  className="px-[10px] py-[6px] text-[10px] tracking-[0.16em] uppercase font-medium rounded-full whitespace-nowrap transition-colors"
                   style={{
                     border: `0.5px solid ${active ? tone.border : 'rgba(232,230,221,0.18)'}`,
                     background: active ? tone.bg : 'transparent',
@@ -306,20 +296,20 @@ export default function MarketplacePage() {
           )}
 
           {sections.length === 0 ? (
-            <p className="text-center text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">
+            <p className="text-center text-[12px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">
               No items match these filters
             </p>
           ) : (
             sections.map(sec => (
               <section key={sec.key} className="mb-7">
                 <div className="flex items-baseline gap-3 mb-[10px] pb-2 border-b border-[rgba(232,230,221,0.1)]">
-                  <span className="text-[9px] tracking-[0.24em] uppercase font-semibold" style={{ color: sec.color }}>
+                  <span className="text-[10px] tracking-[0.24em] uppercase font-semibold" style={{ color: sec.color }}>
                     {sec.label}
                   </span>
-                  <span className="text-[10px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.65)]">
+                  <span className="text-[11px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.65)]">
                     {sec.sub}
                   </span>
-                  <span className="ml-auto text-[9px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)]">
+                  <span className="ml-auto text-[10px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)]">
                     {sec.items.length} {sec.items.length === 1 ? 'item' : 'items'}
                   </span>
                 </div>

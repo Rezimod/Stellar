@@ -36,7 +36,7 @@ export default function ProductCard({ product, dealerName }: Props) {
     >
       {tag && (
         <span
-          className="absolute top-[7px] left-[7px] z-10 px-[6px] py-[2px] rounded-[3px] text-[7px] tracking-[0.18em] uppercase font-semibold"
+          className="absolute top-[7px] left-[7px] z-10 px-[6px] py-[2px] rounded-[3px] text-[8px] tracking-[0.18em] uppercase font-semibold"
           style={{ background: tag.bg, color: tag.color }}
         >
           {tag.abbr}
@@ -60,15 +60,15 @@ export default function ProductCard({ product, dealerName }: Props) {
           />
         )}
       </div>
-      <p className="text-[11px] font-medium text-[#E8E6DD] leading-[1.2] truncate mb-[2px]">
+      <p className="text-[12px] font-medium text-[#E8E6DD] leading-[1.2] truncate mb-[2px]">
         {product.name}
       </p>
-      <p className="text-[8px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.65)] mb-[6px] truncate">
+      <p className="text-[9px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.65)] mb-[6px] truncate">
         {dealerName || product.category}
       </p>
       <div className="flex justify-between items-center pt-[6px]" style={{ borderTop: '0.5px solid rgba(232,230,221,0.1)' }}>
-        <span className="text-[12px] font-semibold text-[var(--terracotta)]">{formatPrice(product)}</span>
-        <span className="text-[9px] tracking-[0.14em] uppercase font-semibold text-[var(--seafoam)]">
+        <span className="text-[13px] font-semibold text-[var(--terracotta)]">{formatPrice(product)}</span>
+        <span className="text-[10px] tracking-[0.14em] uppercase font-semibold text-[var(--seafoam)]">
           ✦ {product.starsPrice.toLocaleString()}
         </span>
       </div>

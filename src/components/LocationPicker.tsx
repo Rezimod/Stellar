@@ -138,10 +138,9 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
     if (!r) return
     const panelWidth = Math.min(PANEL_WIDTH, window.innerWidth - 32)
     const pad = 16
-    const center = r.left + r.width / 2
-    let left = center
-    if (center - panelWidth / 2 < pad) left = pad + panelWidth / 2
-    else if (center + panelWidth / 2 > window.innerWidth - pad) left = window.innerWidth - pad - panelWidth / 2
+    let left = r.left
+    if (left + panelWidth > window.innerWidth - pad) left = window.innerWidth - pad - panelWidth
+    if (left < pad) left = pad
     setAnchor({ top: r.bottom + 6, left })
   }, [])
 
@@ -218,8 +217,8 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           100% { transform: scale(2.4); opacity: 0; }
         }
         @keyframes loc-dropdown-in {
-          from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .loc-pill {
           display: inline-flex;
@@ -325,7 +324,6 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
             position: 'fixed',
             top: anchor.top,
             left: anchor.left,
-            transform: 'translateX(-50%)',
             zIndex: 9999,
             width: PANEL_WIDTH,
             maxWidth: 'calc(100vw - 32px)',
