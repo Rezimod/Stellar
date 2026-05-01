@@ -48,9 +48,6 @@ export function ObservationTimeline({ targets, windowStart }: ObservationTimelin
     );
   }
 
-  // Astronomical dark range — hardcoded for now, would come from /api/sky/sun-moon
-  const darkRange = { start: '22:48', end: '04:12' };
-
   return (
     <div className="panel timeline-panel" style={{ position: 'relative' }}>
       <div
@@ -95,23 +92,16 @@ export function ObservationTimeline({ targets, windowStart }: ObservationTimelin
 
       <div className="timeline-legend">
         <div className="legend-item">
-          <span className="legend-pip" style={{ background: 'var(--brass)' }} />
-          Peak
+          <span className="legend-pip" style={{ background: 'var(--teal)' }} />
+          Best viewing
         </div>
         <div className="legend-item">
-          <span className="legend-pip" style={{ background: 'rgba(52,211,153,0.4)' }} />
-          Good
-        </div>
-        <div className="legend-item">
-          <span className="legend-pip" style={{ background: 'rgba(56,240,255,0.18)' }} />
+          <span className="legend-pip" style={{ background: 'rgba(56,240,255,0.30)' }} />
           Visible
         </div>
         <div className="legend-item">
-          <span className="legend-pip" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          Below horizon
-        </div>
-        <div className="legend-item" style={{ marginLeft: 'auto', color: 'var(--text-dim)' }}>
-          Astronomical dark {darkRange.start} → {darkRange.end}
+          <span className="legend-pip peak" />
+          Peak
         </div>
       </div>
     </div>
@@ -119,19 +109,25 @@ export function ObservationTimeline({ targets, windowStart }: ObservationTimelin
 }
 
 function TimelineRow({ target }: { target: TimelineTarget }) {
+  // Peak cell = the hour with the highest altitude (only when actually visible)
+  const peakIdx = target.hourly.reduce(
+    (best, p, i, arr) => (p.altitude > arr[best].altitude ? i : best),
+    0,
+  );
+  const peakAltitude = target.hourly[peakIdx]?.altitude ?? 0;
   return (
     <>
       <div className="timeline-name">
         <span className="dot" style={{ background: target.color }} />
         <span className="name-text">{target.name}</span>
-        {target.peakTime && <span className="peak-time">{target.peakTime}</span>}
       </div>
       {target.hourly.map((point, i) => {
         const level = altitudeToVisibility(point.altitude);
+        const isPeak = i === peakIdx && peakAltitude > 5;
         return (
           <div
             key={i}
-            className={`timeline-cell ${level}`}
+            className={`timeline-cell ${level}${isPeak ? ' peak-ring' : ''}`}
             title={`${new Date(point.hour).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',

@@ -38,11 +38,6 @@
 }
 .sky-page-v2 .section-title {
   font-family: var(--serif); font-size: 22px; font-weight: 500; letter-spacing: 0.01em;
-  display: flex; align-items: center; gap: 10px;
-}
-.sky-page-v2 .section-title::before {
-  content: ''; display: inline-block; width: 4px; height: 18px;
-  background: var(--brass); border-radius: 2px;
 }
 .sky-page-v2 .section-meta { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; }
 .sky-page-v2 .panel {
@@ -54,52 +49,44 @@
 
 /* === HERO === */
 .sky-page-v2 .hero {
-  display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
-  padding: 14px 22px;
-  background: linear-gradient(135deg, rgba(56, 240, 255, 0.04) 0%, rgba(132, 101, 203, 0.04) 100%);
-  border: 1px solid rgba(56, 240, 255, 0.15);
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   position: relative;
-  overflow: hidden;
 }
-.sky-page-v2 .hero::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(56, 240, 255, 0.08), transparent 50%);
-  pointer-events: none;
-}
-.sky-page-v2 .score-ring { position: relative; width: 64px; height: 64px; flex-shrink: 0; animation: none; border-radius: 0; }
+.sky-page-v2 .hero::before { content: none; }
+.sky-page-v2 .score-ring { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
 .sky-page-v2 .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.sky-page-v2 .score-ring circle { fill: none; stroke-width: 4; }
-.sky-page-v2 .score-ring .track { stroke: rgba(255, 255, 255, 0.06); }
+.sky-page-v2 .score-ring circle { fill: none; stroke-width: 2; }
+.sky-page-v2 .score-ring .track { stroke: var(--border-strong); }
 .sky-page-v2 .score-ring .fill {
   stroke: var(--teal); stroke-linecap: round;
-  stroke-dasharray: 226;
-  filter: drop-shadow(0 0 6px rgba(56, 240, 255, 0.4));
   transition: stroke-dashoffset 0.6s ease-out;
 }
 .sky-page-v2 .score-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.sky-page-v2 .score-num .n { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; }
-.sky-page-v2 .score-num .d { font-family: var(--mono); font-size: 8px; color: var(--text-dim); margin-top: 1px; letter-spacing: 0.1em; }
+.sky-page-v2 .score-num .n { font-family: var(--serif); font-size: 24px; font-weight: 500; line-height: 1; }
+.sky-page-v2 .score-num .d { font-family: var(--mono); font-size: 9px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.08em; }
+.sky-page-v2 .hero-body { min-width: 0; flex: 1; }
 .sky-page-v2 .hero-body h1 {
-  font-family: var(--serif); font-size: 20px; font-weight: 500; letter-spacing: -0.01em;
-  margin-bottom: 2px;
-  display: flex; align-items: center; gap: 10px;
+  font-family: var(--serif); font-size: 18px; font-weight: 500; letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.sky-page-v2 .pulse {
-  width: 7px; height: 7px; border-radius: 999px; background: var(--green);
-  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5);
-  animation: skyPulseV2 2s infinite;
+.sky-page-v2 .hero-body p {
+  color: var(--text-muted); font-size: 13px; line-height: 1.4;
+  margin: 0 0 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-@keyframes skyPulseV2 {
-  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+.sky-page-v2 .hero-meta {
+  display: flex; gap: 6px; align-items: baseline;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-dim); letter-spacing: 0.05em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.sky-page-v2 .hero-body p { color: var(--text-muted); font-size: 12.5px; line-height: 1.45; }
-.sky-page-v2 .hero-meta { text-align: right; }
-.sky-page-v2 .loc { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; }
-.sky-page-v2 .loc .city { color: var(--text); font-size: 12.5px; letter-spacing: 0; font-family: var(--sans); margin-bottom: 1px; display: block; }
-.sky-page-v2 .date { font-family: var(--serif); font-size: 14px; margin-top: 4px; color: var(--text); }
+.sky-page-v2 .hero-meta .city { color: var(--text-muted); }
+.sky-page-v2 .hero-meta .sep { opacity: 0.4; }
 
 /* === COMPASS + LIVE OBJECTS === */
 .sky-page-v2 .observe-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
@@ -174,10 +161,13 @@
   border-radius: 3px;
   position: relative;
 }
-.sky-page-v2 .timeline-cell.peak { background: var(--brass); }
-.sky-page-v2 .timeline-cell.good { background: rgba(52, 211, 153, 0.4); }
-.sky-page-v2 .timeline-cell.ok { background: rgba(56, 240, 255, 0.18); }
-.sky-page-v2 .timeline-cell.below { background: rgba(255, 255, 255, 0.03); }
+.sky-page-v2 .timeline-cell.peak { background: var(--teal); }
+.sky-page-v2 .timeline-cell.good { background: var(--teal); }
+.sky-page-v2 .timeline-cell.ok { background: rgba(56, 240, 255, 0.30); }
+.sky-page-v2 .timeline-cell.below { background: rgba(255, 255, 255, 0.04); }
+.sky-page-v2 .timeline-cell.peak-ring {
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 1px rgba(240, 128, 92, 0.35);
+}
 
 .sky-page-v2 .now-line {
   position: absolute;
@@ -213,6 +203,10 @@
   flex-wrap: wrap;
 }
 .sky-page-v2 .legend-pip { width: 10px; height: 10px; border-radius: 2px; }
+.sky-page-v2 .legend-pip.peak {
+  background: var(--teal);
+  box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 1px rgba(240, 128, 92, 0.35);
+}
 
 /* === PLANET CARDS === */
 .sky-page-v2 .planets-grid {
@@ -330,7 +324,11 @@
 
 @media (max-width: 700px) {
   .sky-page-v2 .sky-container { padding: 16px 16px 80px; }
-  .sky-page-v2 .hero { grid-template-columns: auto 1fr; padding: 16px; gap: 16px; }
-  .sky-page-v2 .hero-meta { grid-column: 1 / -1; text-align: left; }
+  .sky-page-v2 .hero { padding: 14px; gap: 14px; }
+  .sky-page-v2 .score-ring { width: 64px; height: 64px; }
+  .sky-page-v2 .score-num .n { font-size: 21px; }
+  .sky-page-v2 .hero-body h1 { font-size: 16px; }
+  .sky-page-v2 .hero-body p { font-size: 12.5px; }
+  .sky-page-v2 .hero-meta { font-size: 10px; gap: 5px; }
   .sky-page-v2 .planets-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 }

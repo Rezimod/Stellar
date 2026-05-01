@@ -21,28 +21,24 @@ export function SkyHero({ score, location, loading }: SkyHeroProps) {
   const today = new Date();
   const dateLabel = today.toLocaleDateString([], {
     weekday: 'short',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
-  // Score ring math: circumference = 2π × r (r=36) ≈ 226
-  const circumference = 226;
+  const circumference = 2 * Math.PI * 32;
   const dashOffset = circumference * (1 - score.score / 100);
-
-  const pulseColor =
-    score.score >= 75 ? 'var(--green)' : score.score >= 50 ? 'var(--amber)' : 'var(--rose)';
 
   return (
     <section className="hero">
       <div className="score-ring">
-        <svg viewBox="0 0 80 80">
-          <circle className="track" cx="40" cy="40" r="36" />
+        <svg viewBox="0 0 72 72">
+          <circle className="track" cx="36" cy="36" r="32" />
           <circle
             className="fill"
-            cx="40"
-            cy="40"
-            r="36"
-            style={{ strokeDashoffset: dashOffset }}
+            cx="36"
+            cy="36"
+            r="32"
+            style={{ strokeDasharray: circumference, strokeDashoffset: dashOffset }}
           />
         </svg>
         <div className="score-num">
@@ -52,19 +48,17 @@ export function SkyHero({ score, location, loading }: SkyHeroProps) {
       </div>
 
       <div className="hero-body">
-        <h1>
-          <span className="pulse" style={{ background: pulseColor }} />
-          {score.headline}
-        </h1>
+        <h1>{score.headline}</h1>
         <p>{score.summary}</p>
-      </div>
-
-      <div className="hero-meta">
-        <div className="loc">
+        <div className="hero-meta">
           <span className="city">{location.city}</span>
-          {location.lat.toFixed(2)}°N · {location.lon.toFixed(2)}°E · Bortle {location.bortle}
+          <span className="sep">·</span>
+          <span>{location.lat.toFixed(2)}°N {location.lon.toFixed(2)}°E</span>
+          <span className="sep">·</span>
+          <span>Bortle {location.bortle}</span>
+          <span className="sep">·</span>
+          <span>{dateLabel}</span>
         </div>
-        <div className="date">{dateLabel}</div>
       </div>
     </section>
   );
