@@ -587,13 +587,6 @@ export default function MarketsPage() {
           {/* Sidebar */}
           <aside className="mkt-sidebar">
             <div className="mkt-sidebar-inner">
-              {/* My active bets — first so users see their own positions
-                  on top. The component returns null when empty, and the
-                  :empty rule on the wrapper hides the section divider. */}
-              <div className="mkt-side-section mkt-side-section--mab">
-                <MyActiveBets variant="compact" title="My active bets" />
-              </div>
-
               <div className="mkt-side-section">
                 <div className="mkt-side-head">
                   <span className="mkt-side-title">Tonight&rsquo;s sky</span>

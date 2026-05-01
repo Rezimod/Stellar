@@ -56,6 +56,18 @@ export const MARKET_IMAGES: Record<string, string> = {
   "natural-004-firms-large-wildfire-us": "/images/markets/natural-004-firms-large-wildfire-us.jpg",
   "natural-005-named-tropical-cyclone": "/images/markets/natural-005-named-tropical-cyclone.jpg",
   "natural-006-reykjanes-swarm": "/images/markets/natural-006-reykjanes-swarm.jpg",
+
+  // Crypto
+  "crypto-001-btc-100k":      "/images/markets/crypto-001-btc-100k.jpg",
+  "crypto-002-sol-300":       "/images/markets/crypto-002-sol-300.jpg",
+  "crypto-003-eth-flippening":"/images/markets/crypto-003-eth-flippening.jpg",
+  "crypto-004-stable-volume": "/images/markets/crypto-004-stable-volume.png",
+
+  // Sports
+  "sports-001-cl-final":      "/images/markets/sports-001-cl-final.jpg",
+  "sports-002-nba-finals":    "/images/markets/sports-002-nba-finals.jpg",
+  "sports-003-world-cup-host":"/images/markets/sports-003-world-cup-host.jpg",
+  "sports-004-f1-driver":     "/images/markets/sports-004-f1-driver.jpg",
 };
 
 export function marketImage(id: string): string | null {

@@ -1353,25 +1353,6 @@
   background: var(--stl-bg3);
 }
 
-/* My active bets — lives in the markets sidebar (first section).
-   Component returns null when empty; :empty hides the divider band. */
-.mkt-side-section--mab:empty { display: none; padding: 0; border-bottom: 0; }
-.mkt-side-section--mab .mab-section-title {
-  font-family: var(--font-body, inherit);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  color: var(--stl-text1);
-}
-.mkt-side-section--mab .mab-section-head { margin-bottom: 10px; }
-.mkt-side-section--mab .mab-link {
-  font-family: inherit;
-  font-size: 11px;
-  letter-spacing: 0;
-  font-weight: 500;
-}
-
 .mkt-trending-chip {
   position: relative;
   display: flex;
