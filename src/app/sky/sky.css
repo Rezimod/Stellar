@@ -13,12 +13,8 @@
   --text-dim: #5A6275;
   --teal: #38F0FF;
   --teal-soft: rgba(56, 240, 255, 0.12);
-  --brass: #FFD166;
-  --brass-2: #E8B84A;
   --rose: #F87171;
-  --amber: #FBBF24;
   --green: #34D399;
-  --violet: #8465CB;
   --serif: var(--font-display, 'Source Serif 4'), serif;
   --sans: var(--font-body, 'Inter'), system-ui, sans-serif;
   --mono: var(--font-mono, 'JetBrains Mono'), monospace;
@@ -131,7 +127,7 @@
 }
 .sky-page-v2 .equipment-tag.eye { color: var(--green); background: rgba(52, 211, 153, 0.08); }
 .sky-page-v2 .equipment-tag.binoc { color: var(--teal); background: rgba(56, 240, 255, 0.08); }
-.sky-page-v2 .equipment-tag.scope { color: var(--brass); background: rgba(255, 209, 102, 0.08); }
+.sky-page-v2 .equipment-tag.scope { color: var(--accent); background: rgba(240, 128, 92, 0.10); }
 
 /* === TIMELINE === */
 .sky-page-v2 .timeline-panel { padding: 24px; position: relative; }

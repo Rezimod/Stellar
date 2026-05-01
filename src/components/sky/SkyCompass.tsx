@@ -199,7 +199,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
                     cy={p.y}
                     r={radius}
                     fill="none"
-                    stroke="#FFD166"
+                    stroke="#F0805C"
                     strokeWidth="1.5"
                   />
                 )}

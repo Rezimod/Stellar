@@ -27,11 +27,11 @@ export function ConditionsDetail({ conditions }: ConditionsDetailProps) {
     conditions.cloudCoverPct < 20
       ? 'var(--green)'
       : conditions.cloudCoverPct < 60
-      ? 'var(--amber)'
+      ? 'var(--accent)'
       : 'var(--rose)';
 
   const windColor =
-    conditions.windKmh < 15 ? undefined : conditions.windKmh < 30 ? 'var(--amber)' : 'var(--rose)';
+    conditions.windKmh < 15 ? undefined : conditions.windKmh < 30 ? 'var(--accent)' : 'var(--rose)';
 
   return (
     <div className="detail-row">
