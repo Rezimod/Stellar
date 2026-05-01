@@ -23,6 +23,7 @@ import { getStarlight, consumeStarlight } from '@/lib/starlight';
 import { getTierForStreak, type StreakTier } from '@/lib/constellation-streak';
 import { calculateRarity, type RarityInfo } from '@/lib/nft-rarity';
 import { rollCosmicBonus, type CosmicBonus } from '@/lib/cosmic-bonus';
+import { urlToBlob } from '@/lib/data-url';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
 
@@ -190,7 +191,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       if (!mission.demo) {
         try {
           const verifyToken = await getAccessToken().catch(() => null);
-          const blob = await (await fetch(p)).blob();
+          const blob = await urlToBlob(p);
           const mimeType = blob.type || 'image/jpeg';
           const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
           const file = new File([blob], `observation.${ext}`, { type: mimeType });

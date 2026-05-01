@@ -21,63 +21,83 @@ const privy = new PrivyClient(
 )
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  if (!token) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  }
-
-  let verifiedPrivyId: string
   try {
-    const claims = await privy.verifyAuthToken(token)
-    verifiedPrivyId = claims.userId
-  } catch {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { privyId, email, walletAddress } = await req.json()
-
-  // Ensure users can only upsert their own record
-  if (privyId !== verifiedPrivyId) {
-    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
-  }
-
-  if (!privyId) {
-    return NextResponse.json({ success: false, error: 'privyId required' }, { status: 400 })
-  }
-
-  // Validate and sanitize optional fields
-  let cleanEmail: string | null = null;
-  if (email != null) {
-    const trimmed = sanitizeString(String(email), 500);
-    if (!isValidEmail(trimmed)) {
-      return NextResponse.json({ success: false, error: 'Invalid email address' }, { status: 400 });
+    const authHeader = req.headers.get('authorization')
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
-    cleanEmail = trimmed;
-  }
 
-  let cleanWallet: string | null = null;
-  if (walletAddress != null) {
-    const trimmed = sanitizeString(String(walletAddress), 500);
-    if (!isValidPublicKey(trimmed)) {
-      return NextResponse.json({ success: false, error: 'Invalid wallet address' }, { status: 400 });
+    let verifiedPrivyId: string
+    try {
+      const claims = await privy.verifyAuthToken(token)
+      verifiedPrivyId = claims.userId
+    } catch {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
-    cleanWallet = trimmed;
+
+    let body: { privyId?: string; email?: string | null; walletAddress?: string | null }
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { privyId, email, walletAddress } = body
+
+    if (!privyId) {
+      return NextResponse.json({ success: false, error: 'privyId required' }, { status: 400 })
+    }
+
+    // Ensure users can only upsert their own record
+    if (privyId !== verifiedPrivyId) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Validate and sanitize optional fields
+    let cleanEmail: string | null = null
+    if (email != null) {
+      const trimmed = sanitizeString(String(email), 500)
+      if (!isValidEmail(trimmed)) {
+        return NextResponse.json({ success: false, error: 'Invalid email address' }, { status: 400 })
+      }
+      cleanEmail = trimmed
+    }
+
+    let cleanWallet: string | null = null
+    if (walletAddress != null) {
+      const trimmed = sanitizeString(String(walletAddress), 500)
+      if (!isValidPublicKey(trimmed)) {
+        return NextResponse.json({ success: false, error: 'Invalid wallet address' }, { status: 400 })
+      }
+      cleanWallet = trimmed
+    }
+
+    const db = getDb()
+    if (!db) {
+      return NextResponse.json({ success: false, error: 'no db' }, { status: 503 })
+    }
+
+    // Use explicit returning columns so the query doesn't blow up if the
+    // production schema is missing any newly-added columns (e.g. avatar).
+    const [user] = await db
+      .insert(users)
+      .values({ privyId, email: cleanEmail, walletAddress: cleanWallet })
+      .onConflictDoUpdate({
+        target: users.privyId,
+        set: { email: cleanEmail, walletAddress: cleanWallet, updatedAt: new Date() },
+      })
+      .returning({
+        id: users.id,
+        privyId: users.privyId,
+        email: users.email,
+        walletAddress: users.walletAddress,
+        username: users.username,
+      })
+
+    return NextResponse.json({ success: true, user })
+  } catch (err) {
+    console.error('[users/upsert] error', err)
+    const message = err instanceof Error ? err.message : 'Internal error'
+    return NextResponse.json({ success: false, error: message }, { status: 500 })
   }
-
-  const db = getDb()
-  if (!db) {
-    return NextResponse.json({ success: false, error: 'no db' })
-  }
-
-  const [user] = await db
-    .insert(users)
-    .values({ privyId, email: cleanEmail, walletAddress: cleanWallet })
-    .onConflictDoUpdate({
-      target: users.privyId,
-      set: { email: cleanEmail, walletAddress: cleanWallet, updatedAt: new Date() },
-    })
-    .returning()
-
-  return NextResponse.json({ success: true, user })
 }

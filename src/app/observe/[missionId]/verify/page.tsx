@@ -16,6 +16,7 @@ import { calculateRarity } from '@/lib/nft-rarity';
 import { rollCosmicBonus } from '@/lib/cosmic-bonus';
 import { consumeStarlight } from '@/lib/starlight';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
+import { urlToBlob } from '@/lib/data-url';
 import type { PhotoVerificationResult, SkyVerification } from '@/lib/types';
 import BackButton from '@/components/shared/BackButton';
 import Verification from '@/components/sky/Verification';
@@ -126,7 +127,7 @@ export default function ObserveVerifyPage() {
           setStage('verifying-photo');
           try {
             const verifyToken = await getAccessToken().catch(() => null);
-            const blob = await (await fetch(photo)).blob();
+            const blob = await urlToBlob(photo);
             const mimeType = blob.type || 'image/jpeg';
             const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
             const file = new File([blob], `observation.${ext}`, { type: mimeType });
