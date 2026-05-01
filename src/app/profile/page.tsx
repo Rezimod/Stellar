@@ -469,7 +469,7 @@ export default function ProfilePage() {
                         onClick={e => e.stopPropagation()}
                         className="stl-mono-data"
                         style={{
-                          display: 'inline-block', padding: '3px 8px', borderRadius: 4,
+                          display: 'inline-block', padding: '3px 9px', borderRadius: 999,
                           background: 'rgba(94, 234, 212,0.10)', border: '1px solid var(--stl-border-green)',
                           color: 'var(--stl-green)', textDecoration: 'none',
                           textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -482,7 +482,7 @@ export default function ProfilePage() {
                       <span
                         className="stl-mono-data"
                         style={{
-                          display: 'inline-block', padding: '3px 8px', borderRadius: 4,
+                          display: 'inline-block', padding: '3px 9px', borderRadius: 999,
                           background: 'var(--stl-bg-surface)', border: '1px solid var(--stl-border-regular)',
                           color: 'var(--stl-text-dim)',
                           textTransform: 'uppercase', letterSpacing: '0.08em',

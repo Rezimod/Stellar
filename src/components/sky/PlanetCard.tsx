@@ -15,7 +15,7 @@ interface PlanetCardProps {
 }
 
 const ARROW_COLORS = {
-  active: { teal: '#38F0FF', brass: '#FFD166' },
+  active: { teal: '#38F0FF', peak: '#F0805C' },
   inactive: '#5A6275',
 };
 
@@ -24,11 +24,11 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
   const equipment = equipmentForMagnitude(planet.magnitude);
   const cardinal = azimuthToCardinal(planet.azimuth);
 
-  // Arrow color: brass for transit/peak, teal for visible, dim for below
+  // Arrow color: --accent for peak/transit (>50°), --teal for visible, dim for below
   const arrowColor = !isActive
     ? ARROW_COLORS.inactive
     : planet.altitude > 50
-    ? ARROW_COLORS.active.brass
+    ? ARROW_COLORS.active.peak
     : ARROW_COLORS.active.teal;
 
   // Mini-compass: arrow rotates by azimuth (0° = N pointing up)
@@ -88,7 +88,7 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
         </div>
         <span
           className="dir-label"
-          style={{ color: !isActive ? 'var(--text-dim)' : planet.altitude > 50 ? 'var(--brass)' : 'var(--teal)' }}
+          style={{ color: !isActive ? 'var(--text-dim)' : planet.altitude > 50 ? 'var(--accent)' : 'var(--teal)' }}
         >
           {isActive ? `${cardinal} · ${Math.round(planet.altitude)}°` : 'below'}
         </span>
@@ -129,7 +129,7 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
                   ? 'var(--green)'
                   : equipment === 'binoc'
                   ? 'var(--teal)'
-                  : 'var(--brass)',
+                  : 'var(--accent)',
             }}
           >
             {equipmentLabel(equipment)}

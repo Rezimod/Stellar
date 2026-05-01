@@ -120,7 +120,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
           {/* Deep sky targets */}
           {visibleDeepSky.map((d) => {
             const isFeatured = featuredTarget === d.name;
-            const color = isFeatured ? '#FFD166' : '#8465CB';
+            const color = isFeatured ? '#F0805C' : '#5EEAD4';
             return (
               <g key={d.name}>
                 {isFeatured && (
@@ -206,7 +206,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
                 <text
                   x={p.x}
                   y={p.y - radius - 6}
-                  fill={isFeatured ? '#FFD166' : '#E8ECF1'}
+                  fill={isFeatured ? '#F0805C' : '#E8ECF1'}
                   fontFamily="Inter"
                   fontSize={isFeatured ? '11' : '10'}
                   fontWeight="500"
@@ -217,7 +217,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
                 <text
                   x={p.x}
                   y={p.y + radius + 14}
-                  fill={isFeatured ? '#FFD166' : '#8A93A6'}
+                  fill={isFeatured ? '#F0805C' : '#8A93A6'}
                   fontFamily="JetBrains Mono"
                   fontSize="9"
                   textAnchor="middle"
@@ -246,7 +246,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
 
       <div className="compass-legend">
         <div className="legend-item">
-          <span className="legend-dot" style={{ background: '#FFD166' }} />
+          <span className="legend-dot" style={{ background: '#F0805C' }} />
           Featured target
         </div>
         <div className="legend-item">
@@ -254,7 +254,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
           Planets
         </div>
         <div className="legend-item">
-          <span className="legend-dot" style={{ background: '#8465CB' }} />
+          <span className="legend-dot" style={{ background: '#5EEAD4' }} />
           Deep sky
         </div>
         <div className="legend-item" style={{ marginLeft: 'auto', color: 'var(--text-dim)' }}>

@@ -295,7 +295,7 @@
   margin-bottom: 8px;
 }
 .sky-page-v2 .badge-go { background: rgba(52, 211, 153, 0.15); color: var(--green); }
-.sky-page-v2 .badge-maybe { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
+.sky-page-v2 .badge-maybe { background: rgba(240, 128, 92, 0.15); color: var(--accent); }
 .sky-page-v2 .badge-skip { background: rgba(248, 113, 113, 0.15); color: var(--rose); }
 .sky-page-v2 .forecast-day .cloud { font-family: var(--mono); font-size: 11px; color: var(--text); }
 .sky-page-v2 .forecast-day .sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }

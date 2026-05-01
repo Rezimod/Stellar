@@ -1259,23 +1259,23 @@
 }
 .mkt-trending-strip::-webkit-scrollbar { display: none; }
 
-/* My active bets — placed below the markets list per the system spec.
-   Neutral surface, no accent stripe (forbidden border-left pattern). */
-.mkt-my-bets-wrap {
-  padding: 16px 20px;
-  border-top: 1px solid var(--stl-border);
-  position: relative;
+/* My active bets — lives in the markets sidebar (first section).
+   Component returns null when empty; :empty hides the divider band. */
+.mkt-side-section--mab:empty { display: none; padding: 0; border-bottom: 0; }
+.mkt-side-section--mab .mab-section-title {
+  font-family: var(--font-body, inherit);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--stl-text1);
 }
-.mkt-my-bets-wrap::before { content: none; }
-.mkt-my-bets-wrap:empty {
-  /* MyActiveBets returns null when signed-out or no active bets — hide the
-     whole band so we don't show an empty purple stripe. */
-  display: none;
-  border-bottom: 0;
-  padding: 0;
-}
-@media (max-width: 768px) {
-  .mkt-my-bets-wrap { padding: 14px 12px; }
+.mkt-side-section--mab .mab-section-head { margin-bottom: 10px; }
+.mkt-side-section--mab .mab-link {
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0;
+  font-weight: 500;
 }
 
 .mkt-trending-chip {
@@ -2069,7 +2069,7 @@
   background: var(--stl-teal-bg);
   border-radius: 8px;
 }
-.markets-page.dark .mkt-tip { border: 1px solid rgba(34,211,238,0.12); }
+.markets-page.dark .mkt-tip { border: 1px solid rgba(94, 234, 212,0.18); }
 .mkt-tip-title {
   display: flex;
   align-items: center;
@@ -4576,11 +4576,13 @@
   flex-wrap: wrap;
 }
 .mis-stats-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: rgba(255,255,255,0.92);
   margin: 0;
+  line-height: 1.1;
 }
 .mis-stats-meta {
   font-family: var(--font-mono);
@@ -5332,27 +5334,27 @@
 .mis-qtile-icon.constellations {
   background: rgba(240, 128, 92,0.08);
   border: 1px solid rgba(240, 128, 92,0.12);
-  color: #A78BFA;
+  color: var(--terracotta);
 }
 .mis-qtile-icon.constellations::before { background: radial-gradient(circle, rgba(240, 128, 92,0.3), transparent 70%); }
 .mis-qtile-icon.telescopes {
-  background: rgba(34,211,238,0.06);
-  border: 1px solid rgba(34,211,238,0.1);
-  color: #22D3EE;
+  background: rgba(94, 234, 212,0.08);
+  border: 1px solid rgba(94, 234, 212,0.18);
+  color: var(--seafoam);
 }
-.mis-qtile-icon.telescopes::before { background: radial-gradient(circle, rgba(34,211,238,0.25), transparent 70%); }
+.mis-qtile-icon.telescopes::before { background: radial-gradient(circle, rgba(94, 234, 212,0.30), transparent 70%); }
 .mis-qtile-icon.universe {
-  background: rgba(232,121,249,0.06);
-  border: 1px solid rgba(232,121,249,0.1);
-  color: #E879F9;
+  background: rgba(240, 128, 92,0.08);
+  border: 1px solid rgba(240, 128, 92,0.12);
+  color: var(--terracotta);
 }
-.mis-qtile-icon.universe::before { background: radial-gradient(circle, rgba(232,121,249,0.25), transparent 70%); }
+.mis-qtile-icon.universe::before { background: radial-gradient(circle, rgba(240, 128, 92,0.30), transparent 70%); }
 .mis-qtile-icon.space-exploration {
-  background: rgba(74,222,128,0.06);
-  border: 1px solid rgba(74,222,128,0.1);
-  color: #4ADE80;
+  background: rgba(94, 234, 212,0.08);
+  border: 1px solid rgba(94, 234, 212,0.18);
+  color: var(--seafoam);
 }
-.mis-qtile-icon.space-exploration::before { background: radial-gradient(circle, rgba(74,222,128,0.25), transparent 70%); }
+.mis-qtile-icon.space-exploration::before { background: radial-gradient(circle, rgba(94, 234, 212,0.30), transparent 70%); }
 
 .mis-qtile-name {
   font-size: 13px;
@@ -5402,7 +5404,7 @@
   background: var(--terracotta);
   transition: width 0.3s ease;
 }
-.mis-qtile-progress-bar > span.done { background: #4ADE80; }
+.mis-qtile-progress-bar > span.done { background: var(--seafoam); }
 .mis-qtile-progress-text {
   font-family: var(--font-mono);
   font-size: 9px;
