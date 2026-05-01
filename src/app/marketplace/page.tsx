@@ -26,12 +26,6 @@ const CATEGORIES: { key: CategoryFilter; label: string }[] = [
   { key: 'accessory', label: 'Accessories' },
 ];
 
-const DIFFICULTY_TONE: Record<Exclude<DifficultyFilter, 'all'>, { border: string; bg: string; color: string }> = {
-  beginner:     { border: 'rgba(94, 234, 212,0.4)',  bg: 'rgba(94, 234, 212,0.06)',  color: 'var(--seafoam)' },
-  intermediate: { border: 'rgba(232, 130, 107,0.4)', bg: 'rgba(232, 130, 107,0.06)', color: 'var(--terracotta)' },
-  advanced:     { border: 'rgba(232, 130, 107,0.4)', bg: 'rgba(232, 130, 107,0.06)', color: 'var(--terracotta)' },
-};
-
 const SECTION_COPY: Record<string, { label: string; sub: string; color: string }> = {
   beginner:     { label: 'Beginner',    sub: 'First telescope · easy setup',    color: 'var(--seafoam)' },
   intermediate: { label: 'Mid',         sub: 'Step up · more aperture',         color: 'var(--terracotta)' },
@@ -150,143 +144,60 @@ export default function MarketplacePage() {
   }
 
   return (
-    <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
+    <PageContainer variant="wide" className="py-5 animate-page-enter">
       <div className="marketplace-page-bg overflow-hidden">
         <div className="relative z-10">
-          <button
-            onClick={() => router.back()}
-            className="block text-[9px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.4)] hover:text-[rgba(232,230,221,0.7)] transition-colors mb-[18px]"
-          >
-            ‹ Back · Marketplace
-          </button>
-
-          <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 pb-[14px] mb-[14px] border-b border-[rgba(232,230,221,0.1)]">
-            <div className="flex items-baseline gap-3">
-              <span className="text-[9px] tracking-[0.24em] uppercase text-[var(--seafoam)] font-medium">04</span>
-              <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-[#E8E6DD] leading-none">
-                Marketplace<span className="text-[var(--terracotta)]">.</span>
-              </h1>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="flex items-baseline gap-1.5 text-[10px] uppercase">
-                <span className="tracking-[0.14em] text-[rgba(232,230,221,0.35)]">Balance</span>
-                <span className="font-medium text-[var(--terracotta)]">{balance.toLocaleString()}</span>
-                <span className="text-[var(--terracotta)] opacity-70">✦</span>
-              </span>
-              <span className="flex items-center gap-1.5 text-[10px] uppercase">
-                <span className="tracking-[0.14em] text-[rgba(232,230,221,0.35)]">Region</span>
-                <LocationPicker compact />
-              </span>
-              <span className="flex items-baseline gap-1.5 text-[10px] uppercase">
-                <span className="tracking-[0.14em] text-[rgba(232,230,221,0.35)]">Codes</span>
-                <span className="font-medium text-[#E8E6DD]">90d</span>
-              </span>
-            </div>
+          {/* Header — one compact row: title + region picker. Stars balance below. */}
+          <header className="flex items-center justify-between gap-3 mb-1">
+            <h1 className="text-2xl sm:text-3xl font-display font-medium tracking-tight text-[var(--text)]">
+              Marketplace
+            </h1>
+            <LocationPicker compact />
           </header>
+          <p className="font-mono text-xs uppercase tracking-wider text-[rgba(232,230,221,0.45)] mb-5">
+            Balance · {balance.toLocaleString()} ✦
+          </p>
 
-          <div className="grid grid-cols-3 gap-[6px] mb-[18px] overflow-x-auto">
-            {REDEEM_TIERS.map(tier => {
-              const code     = revealedCodes[tier.apiTier];
-              const unlocked = balance >= tier.stars;
-              const pct      = Math.min(100, Math.round((balance / tier.stars) * 100));
-              const remain   = Math.max(0, tier.stars - balance);
-              const isClaim  = !!claiming[tier.apiTier];
-              const l2 = unlocked ? `${tier.detail} · earned` : `${pct}% · ${remain.toLocaleString()} to go`;
-              return (
-                <div
-                  key={tier.apiTier}
-                  className="flex items-center gap-2.5 px-3 py-[10px] rounded-lg min-w-[180px]"
-                  style={{
-                    background: unlocked ? 'rgba(232, 130, 107,0.04)' : 'rgba(255,255,255,0.015)',
-                    border: unlocked ? '0.5px solid rgba(232, 130, 107,0.4)' : '0.5px solid rgba(232,230,221,0.08)',
-                  }}
-                >
-                  <span className="flex items-baseline whitespace-nowrap text-[13px] font-semibold tracking-[0.02em] text-[var(--terracotta)]">
-                    <span className="text-[10px] opacity-70 mr-[3px]">✦</span>
-                    {tier.stars}
-                  </span>
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-[11px] text-[#E8E6DD] truncate">{tier.reward}</span>
-                    <span className="text-[9px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.4)] truncate">{l2}</span>
-                    <div className="h-[2px] bg-[rgba(232,230,221,0.05)] rounded-[1px] overflow-hidden mt-[3px]">
-                      <div
-                        className="h-full bg-[var(--terracotta)] rounded-[1px]"
-                        style={{ width: `${pct}%`, boxShadow: unlocked ? '0 0 6px rgba(232, 130, 107,0.8)' : undefined }}
-                      />
-                    </div>
-                  </div>
-                  {code ? (
-                    <span
-                      className="text-[9px] tracking-[0.12em] font-semibold px-[10px] py-[5px] rounded-full"
-                      style={{ background: 'rgba(232, 130, 107,0.1)', border: '0.5px solid rgba(232, 130, 107,0.4)', color: 'var(--terracotta)' }}
-                    >
-                      {code}
-                    </span>
-                  ) : unlocked ? (
-                    <button
-                      onClick={() => handleRedeem(tier)}
-                      disabled={isClaim}
-                      className="text-[9px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full transition-opacity disabled:opacity-60"
-                      style={{ background: 'rgba(94, 234, 212,0.12)', border: '0.5px solid rgba(94, 234, 212,0.5)', color: 'var(--seafoam)' }}
-                    >
-                      {isClaim ? '…' : 'Redeem'}
-                    </button>
-                  ) : (
-                    <span
-                      className="text-[9px] tracking-[0.16em] uppercase font-medium px-[10px] py-[5px] rounded-full whitespace-nowrap"
-                      style={{ border: '0.5px solid rgba(232,230,221,0.1)', color: 'rgba(232,230,221,0.3)' }}
-                    >
-                      Locked
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <div
-            className="flex items-center gap-[4px] p-[5px] rounded-full mb-[18px] overflow-x-auto"
-            style={{ background: 'rgba(255,255,255,0.015)', border: '0.5px solid rgba(232,230,221,0.06)' }}
-          >
-            {CATEGORIES.map(c => {
-              const active = filter === c.key;
-              return (
-                <button
-                  key={c.key}
-                  onClick={() => setFilter(c.key)}
-                  className={`px-[14px] py-[7px] text-[10px] tracking-[0.12em] uppercase rounded-full whitespace-nowrap transition-colors ${
-                    active ? 'font-semibold' : ''
-                  }`}
-                  style={
-                    active
-                      ? { background: 'rgba(232, 130, 107,0.1)', color: 'var(--terracotta)' }
-                      : { color: 'rgba(232,230,221,0.5)' }
-                  }
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-            <span className="w-px h-[14px] bg-[rgba(232,230,221,0.1)] mx-1 flex-shrink-0" />
-            {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
-              const active = difficulty === d;
-              const tone   = DIFFICULTY_TONE[d];
-              const label  = d === 'intermediate' ? 'Mid' : d.charAt(0).toUpperCase() + d.slice(1);
-              return (
-                <button
-                  key={d}
-                  onClick={() => setDifficulty(active ? 'all' : d)}
-                  className="px-[10px] py-[6px] text-[9px] tracking-[0.16em] uppercase font-medium rounded-full whitespace-nowrap transition-colors"
-                  style={{
-                    border: `0.5px solid ${active ? tone.border : 'rgba(232,230,221,0.08)'}`,
-                    background: active ? tone.bg : 'transparent',
-                    color: active ? tone.color : 'rgba(232,230,221,0.5)',
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
+          {/* Category tabs — sticky horizontal scroll */}
+          <div className="sticky top-14 z-20 -mx-4 px-4 py-2 mb-4 bg-[var(--canvas)]/85 backdrop-blur-md border-b border-[var(--border)]">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              {CATEGORIES.map(c => {
+                const active = filter === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    onClick={() => setFilter(c.key)}
+                    className="flex-shrink-0 px-4 py-1.5 text-sm rounded-full transition-colors"
+                    style={
+                      active
+                        ? { background: 'var(--terracotta)', color: 'var(--canvas)' }
+                        : { color: 'rgba(232,230,221,0.55)' }
+                    }
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+              <span className="w-px h-4 bg-[var(--border)] mx-1 flex-shrink-0" />
+              {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
+                const active = difficulty === d;
+                const label  = d === 'intermediate' ? 'Mid' : d.charAt(0).toUpperCase() + d.slice(1);
+                return (
+                  <button
+                    key={d}
+                    onClick={() => setDifficulty(active ? 'all' : d)}
+                    className="flex-shrink-0 px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-full transition-colors"
+                    style={{
+                      border: `1px solid ${active ? 'rgba(94,234,212,0.4)' : 'var(--border)'}`,
+                      background: active ? 'rgba(94,234,212,0.08)' : 'transparent',
+                      color: active ? 'var(--seafoam)' : 'rgba(232,230,221,0.5)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {featured && (
@@ -294,24 +205,22 @@ export default function MarketplacePage() {
           )}
 
           {sections.length === 0 ? (
-            <p className="text-center text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.5)] py-12">
+            <p className="text-center font-mono text-xs uppercase tracking-wider text-[rgba(232,230,221,0.5)] py-12">
               No items match these filters
             </p>
           ) : (
             sections.map(sec => (
               <section key={sec.key} className="mb-7">
-                <div className="flex items-baseline gap-3 mb-[10px] pb-2 border-b border-[rgba(232,230,221,0.06)]">
-                  <span className="text-[9px] tracking-[0.24em] uppercase font-semibold" style={{ color: sec.color }}>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--seafoam)]" />
+                  <span className="font-mono text-xs uppercase tracking-wider font-semibold text-[rgba(232,230,221,0.55)]">
                     {sec.label}
                   </span>
-                  <span className="text-[10px] tracking-[0.1em] uppercase text-[rgba(232,230,221,0.4)]">
-                    {sec.sub}
-                  </span>
-                  <span className="ml-auto text-[9px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.35)]">
+                  <span className="ml-auto font-mono text-xs uppercase tracking-wider text-[rgba(232,230,221,0.35)]">
                     {sec.items.length} {sec.items.length === 1 ? 'item' : 'items'}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[8px]">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
                   {sec.items.map(p => (
                     <ProductCard key={p.id} product={p} dealerName={showDealer ? getDealerName(p.dealerId) : ''} />
                   ))}
@@ -319,6 +228,84 @@ export default function MarketplacePage() {
               </section>
             ))
           )}
+
+          {/* Redeem with Stars — moved out of the header. Spaced horizontal scroll
+              of code cards with proper rhythm. */}
+          <section className="mt-10">
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--terracotta)]" />
+              <span className="font-mono text-xs uppercase tracking-wider font-semibold text-[rgba(232,230,221,0.55)]">
+                Redeem with Stars
+              </span>
+              <span className="ml-auto font-mono text-xs uppercase tracking-wider text-[rgba(232,230,221,0.35)]">
+                {balance.toLocaleString()} ✦
+              </span>
+            </div>
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 snap-x snap-mandatory">
+              {REDEEM_TIERS.map(tier => {
+                const code     = revealedCodes[tier.apiTier];
+                const unlocked = balance >= tier.stars;
+                const pct      = Math.min(100, Math.round((balance / tier.stars) * 100));
+                const remain   = Math.max(0, tier.stars - balance);
+                const isClaim  = !!claiming[tier.apiTier];
+                return (
+                  <div
+                    key={tier.apiTier}
+                    className="flex-shrink-0 w-[260px] snap-start rounded-2xl p-4 flex flex-col gap-2.5"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${unlocked ? 'rgba(240, 128, 92,0.30)' : 'var(--border)'}`,
+                    }}
+                  >
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-base font-semibold text-[var(--terracotta)]">
+                        ✦ {tier.stars.toLocaleString()}
+                      </span>
+                      <span className="font-mono text-xs uppercase tracking-wider text-[rgba(232,230,221,0.4)]">
+                        {tier.detail}
+                      </span>
+                    </div>
+                    <div className="text-sm text-[var(--text)]">{tier.reward}</div>
+                    <div className="h-[2px] bg-[rgba(255,255,255,0.06)] rounded overflow-hidden">
+                      <div
+                        className="h-full bg-[var(--terracotta)] rounded transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-[rgba(232,230,221,0.4)]">
+                        {unlocked ? 'Earned' : `${remain.toLocaleString()} to go`}
+                      </span>
+                      {code ? (
+                        <span
+                          className="font-mono text-xs px-3 py-1 rounded-full"
+                          style={{ background: 'rgba(240, 128, 92,0.10)', border: '1px solid rgba(240, 128, 92,0.35)', color: 'var(--terracotta)' }}
+                        >
+                          {code}
+                        </span>
+                      ) : unlocked ? (
+                        <button
+                          onClick={() => handleRedeem(tier)}
+                          disabled={isClaim}
+                          className="text-xs uppercase tracking-wider font-medium px-3 py-1.5 rounded-full transition-opacity disabled:opacity-60"
+                          style={{ background: 'rgba(94,234,212,0.10)', border: '1px solid rgba(94,234,212,0.40)', color: 'var(--seafoam)' }}
+                        >
+                          {isClaim ? '…' : 'Redeem'}
+                        </button>
+                      ) : (
+                        <span
+                          className="font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full"
+                          style={{ border: '1px solid var(--border)', color: 'rgba(232,230,221,0.3)' }}
+                        >
+                          Locked
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         </div>
       </div>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

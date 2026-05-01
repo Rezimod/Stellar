@@ -57,6 +57,16 @@ const CITY_PRESETS: { region: Region; label: string; cities: PresetCity[] }[] = 
   },
   {
     region: 'asia',
+    label: 'MENA',
+    cities: [
+      { region: 'asia', country: 'AE', city: 'Dubai',     lat: 25.2048, lon: 55.2708,  source: 'manual', flag: '🇦🇪', nameEn: 'Dubai' },
+      { region: 'asia', country: 'IL', city: 'Tel Aviv',  lat: 32.0853, lon: 34.7818,  source: 'manual', flag: '🇮🇱', nameEn: 'Tel Aviv' },
+      { region: 'asia', country: 'EG', city: 'Cairo',     lat: 30.0444, lon: 31.2357,  source: 'manual', flag: '🇪🇬', nameEn: 'Cairo' },
+      { region: 'asia', country: 'SA', city: 'Riyadh',    lat: 24.7136, lon: 46.6753,  source: 'manual', flag: '🇸🇦', nameEn: 'Riyadh' },
+    ],
+  },
+  {
+    region: 'asia',
     label: 'Asia',
     cities: [
       { region: 'asia', country: 'JP', city: 'Tokyo',     lat: 35.6762, lon: 139.6503, source: 'manual', flag: '🇯🇵', nameEn: 'Tokyo' },
@@ -241,6 +251,15 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         .loc-city-list::-webkit-scrollbar-thumb { background: rgba(232, 130, 107,0.30); border-radius: 2px; }
         @keyframes loc-spin { to { transform: rotate(360deg); } }
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
+        @media (max-width: 640px) {
+          .loc-panel {
+            left: 16px !important;
+            right: 16px !important;
+            width: auto !important;
+            max-width: none !important;
+            transform: none !important;
+          }
+        }
       `}</style>
 
       <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
@@ -263,6 +282,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
       {open && anchor && (
         <div
           ref={panelRef}
+          className="loc-panel"
           style={{
             position: 'fixed',
             top: anchor.top,

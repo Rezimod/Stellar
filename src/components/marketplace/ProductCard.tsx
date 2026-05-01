@@ -3,15 +3,19 @@
 import Image from 'next/image';
 import type { Product } from '@/lib/dealers';
 
-const DIFFICULTY_TAG: Record<'beginner' | 'intermediate' | 'advanced', { bg: string; color: string; abbr: string }> = {
-  beginner:     { bg: 'rgba(94, 234, 212,0.12)',  color: 'var(--seafoam)', abbr: 'Beg' },
-  intermediate: { bg: 'rgba(232, 130, 107,0.12)', color: 'var(--terracotta)', abbr: 'Mid' },
-  advanced:     { bg: 'rgba(232, 130, 107,0.12)', color: 'var(--terracotta)', abbr: 'Adv' },
-};
-
 const formatPrice = (p: Product): string => {
   const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
   return `${n} ${p.currency}`;
+};
+
+// Approximate SOL conversion. TODO: wire to real /api/price/sol when available.
+const SOL_TO_GEL = 305;
+const formatSol = (p: Product): string | null => {
+  if (p.currency !== 'GEL' && p.currency !== 'USD') return null;
+  const gel = p.currency === 'USD' ? p.price * 2.7 : p.price;
+  const sol = gel / SOL_TO_GEL;
+  if (sol < 0.01) return null;
+  return `~${sol.toFixed(2)} SOL`;
 };
 
 interface Props {
@@ -20,57 +24,43 @@ interface Props {
 }
 
 export default function ProductCard({ product, dealerName }: Props) {
-  const tag = product.skillLevel ? DIFFICULTY_TAG[product.skillLevel] : null;
+  const sol = formatSol(product);
   return (
     <a
       href={product.externalUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="relative block rounded-lg p-[10px] transition-colors"
+      className="group flex flex-col rounded-2xl p-3 transition-colors"
       style={{
-        background: 'rgba(255,255,255,0.015)',
-        border: '0.5px solid rgba(232,230,221,0.07)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
       }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232, 130, 107,0.25)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,230,221,0.07)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
-      {tag && (
-        <span
-          className="absolute top-[7px] left-[7px] z-10 px-[6px] py-[2px] rounded-[3px] text-[7px] tracking-[0.18em] uppercase font-semibold"
-          style={{ background: tag.bg, color: tag.color }}
-        >
-          {tag.abbr}
-        </span>
-      )}
-      <div
-        className="relative w-full aspect-[1.3] rounded-md mb-2 overflow-hidden"
-        style={{
-          background:
-            'radial-gradient(ellipse at 50% 50%, rgba(232, 130, 107,0.05) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
-        }}
-      >
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-3 bg-white">
         {product.image && (
           <Image
             src={product.image}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, 220px"
-            style={{ objectFit: 'contain', padding: '14px' }}
+            style={{ objectFit: 'contain', padding: '12px' }}
             unoptimized
           />
         )}
       </div>
-      <p className="text-[11px] font-medium text-[#E8E6DD] leading-[1.2] truncate mb-[2px]">
+      <p className="text-sm font-medium text-[var(--text)] line-clamp-1 mb-0.5">
         {product.name}
       </p>
-      <p className="text-[8px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.4)] mb-[6px] truncate">
+      <p className="font-mono text-[10px] uppercase tracking-wider text-[rgba(232,230,221,0.4)] mb-2 truncate">
         {dealerName || product.category}
       </p>
-      <div className="flex justify-between items-center pt-[6px]" style={{ borderTop: '0.5px solid rgba(232,230,221,0.06)' }}>
-        <span className="text-[11px] font-semibold text-[var(--terracotta)]">{formatPrice(product)}</span>
-        <span className="text-[8px] tracking-[0.14em] uppercase text-[rgba(232, 130, 107,0.5)]">
-          ✦ {product.starsPrice.toLocaleString()}
-        </span>
+      <div className="mt-auto flex items-baseline justify-between gap-2">
+        <span className="text-base font-medium text-[var(--text)] font-mono">{formatPrice(product)}</span>
+        {sol && (
+          <span className="font-mono text-[10px] text-[rgba(232,230,221,0.4)]">{sol}</span>
+        )}
       </div>
     </a>
   );
