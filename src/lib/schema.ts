@@ -2,6 +2,18 @@ import { pgTable, uuid, text, integer, timestamp, doublePrecision, boolean, uniq
 
 // Run in Neon SQL editor if migrating an existing DB:
 //   ALTER TABLE public.users ADD COLUMN IF NOT EXISTS avatar text;
+//   CREATE TABLE IF NOT EXISTS feed_follows (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     follower_wallet text NOT NULL,
+//     followed_wallet text NOT NULL,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE UNIQUE INDEX IF NOT EXISTS feed_follows_pair_unique
+//     ON feed_follows (follower_wallet, followed_wallet);
+//   CREATE INDEX IF NOT EXISTS feed_follows_follower_idx
+//     ON feed_follows (follower_wallet);
+//   CREATE INDEX IF NOT EXISTS feed_follows_followed_idx
+//     ON feed_follows (followed_wallet);
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   privyId: text('privy_id').unique().notNull(),
@@ -144,6 +156,17 @@ export const feedShares = pgTable('feed_shares', {
   destination: text('destination').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
+
+export const feedFollows = pgTable('feed_follows', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  followerWallet: text('follower_wallet').notNull(),
+  followedWallet: text('followed_wallet').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('feed_follows_pair_unique').on(t.followerWallet, t.followedWallet),
+  index('feed_follows_follower_idx').on(t.followerWallet),
+  index('feed_follows_followed_idx').on(t.followedWallet),
+])
 
 export const marketCashouts = pgTable('market_cashouts', {
   id: uuid('id').primaryKey().defaultRandom(),

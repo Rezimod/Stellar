@@ -226,7 +226,50 @@
   display: flex; align-items: flex-start; justify-content: space-between;
   margin-bottom: 14px;
 }
-.post-author { display: flex; align-items: center; gap: 12px; }
+.post-author {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: inherit;
+  border-radius: 10px; padding: 2px 4px; margin: -2px -4px;
+  transition: background 0.15s;
+}
+.post-author:hover { background: rgba(255,255,255,0.03); }
+.post-author:hover .author-name { color: var(--brass); }
+
+.follow-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 14px; border-radius: 999px;
+  font-family: var(--feed-sans); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--brass);
+  background: var(--brass);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  min-height: 28px;
+}
+.follow-btn:hover:not(:disabled):not(.is-following) { filter: brightness(1.08); }
+.follow-btn:disabled { opacity: 0.6; cursor: progress; }
+.follow-btn.is-following {
+  background: transparent;
+  color: var(--slate-100);
+  border-color: var(--hairline);
+}
+.follow-btn.is-following:hover:not(:disabled) {
+  border-color: var(--red);
+  color: var(--red);
+}
+.follow-btn.is-following:hover:not(:disabled)::after {
+  content: ' · Unfollow';
+  font-weight: 500;
+}
+.follow-btn.md { padding: 9px 22px; font-size: 13px; min-height: 36px; }
+.follow-btn-skel {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.06);
+  color: transparent;
+  height: 28px;
+}
 .author-avatar {
   width: 42px; height: 42px; border-radius: 50%;
   display: grid; place-items: center;
@@ -673,14 +716,24 @@
 }
 .planet-row {
   display: grid;
-  grid-template-columns: 18px 1fr auto auto;
+  grid-template-columns: 28px 1fr auto auto;
   align-items: center;
-  gap: 8px;
-  padding: 7px 0;
+  gap: 10px;
+  padding: 8px 0;
   font-size: 11.5px;
   border-bottom: 1px dashed var(--hairline);
 }
 .planet-row:last-child { border-bottom: none; }
+.planet-thumb {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.06), rgba(0,0,0,0.4));
+  border: 1px solid rgba(255,255,255,0.06);
+  display: grid; place-items: center;
+  box-shadow: 0 0 8px rgba(0,0,0,0.4), inset 0 0 6px rgba(0,0,0,0.4);
+}
+.planet-thumb img { display: block; }
 .planet-glyph {
   font-size: 13px;
   text-align: center;

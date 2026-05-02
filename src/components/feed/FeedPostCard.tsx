@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { MessageCircle, MoreHorizontal, Share2, Telescope, Trash2, Copy, Twitter } from 'lucide-react'
+import FollowButton from '@/components/feed/FollowButton'
 import {
   REACTION_EMOJI,
   REACTION_GRADIENT,
@@ -65,7 +67,7 @@ interface Props {
   index: number
 }
 
-export default function FeedPostCard({ post, myWallet, myInitial, myDisplayName, myAvatarGlyph, onDelete, onChange, authPrompt, index }: Props) {
+function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGlyph, onDelete, onChange, authPrompt, index }: Props) {
   const [showPicker, setShowPicker] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
@@ -208,7 +210,12 @@ export default function FeedPostCard({ post, myWallet, myInitial, myDisplayName,
   return (
     <article className="feed-post" style={{ animationDelay }}>
       <div className="post-header">
-        <div className="post-author">
+        <Link
+          href={`/u/${post.authorWallet}`}
+          prefetch={false}
+          className="post-author"
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
           <div className="author-avatar" style={{ background: avatarBg }}>{initial}</div>
           <div>
             <div className="author-name">
@@ -232,21 +239,24 @@ export default function FeedPostCard({ post, myWallet, myInitial, myDisplayName,
               )}
             </div>
           </div>
+        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {!isMine && <FollowButton wallet={post.authorWallet} authPrompt={authPrompt} />}
+          {isMine && (
+            <div ref={menuRef} style={{ position: 'relative' }}>
+              <button className="post-menu" onClick={() => setShowMenu(s => !s)} aria-label="More">
+                <MoreHorizontal size={18} />
+              </button>
+              {showMenu && (
+                <div className="post-menu-dropdown">
+                  <button onClick={deletePost}>
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        {isMine && (
-          <div ref={menuRef} style={{ position: 'relative' }}>
-            <button className="post-menu" onClick={() => setShowMenu(s => !s)} aria-label="More">
-              <MoreHorizontal size={18} />
-            </button>
-            {showMenu && (
-              <div className="post-menu-dropdown">
-                <button onClick={deletePost}>
-                  <Trash2 size={13} /> Delete
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {post.type === 'achievement' && post.body && (
@@ -259,7 +269,12 @@ export default function FeedPostCard({ post, myWallet, myInitial, myDisplayName,
       {post.type === 'photo' && post.imageUrl && (
         <div className="post-media" onClick={() => setLightbox(true)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.imageUrl} alt={post.observationTarget ?? 'Post media'} />
+          <img
+            src={post.imageUrl}
+            alt={post.observationTarget ?? 'Post media'}
+            loading="lazy"
+            decoding="async"
+          />
           {post.observationNftAddress && (
             <div className="media-badge">
               <Telescope size={11} />
@@ -439,3 +454,14 @@ export default function FeedPostCard({ post, myWallet, myInitial, myDisplayName,
     </article>
   )
 }
+
+const FeedPostCard = memo(FeedPostCardImpl, (prev, next) => (
+  prev.post === next.post &&
+  prev.myWallet === next.myWallet &&
+  prev.myInitial === next.myInitial &&
+  prev.myDisplayName === next.myDisplayName &&
+  prev.myAvatarGlyph === next.myAvatarGlyph &&
+  prev.index === next.index
+))
+
+export default FeedPostCard

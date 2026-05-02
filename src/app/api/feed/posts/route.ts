@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PublicKey } from '@solana/web3.js'
 import { and, desc, eq, gt, inArray, lt, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
-import { feedPosts, feedReactions, feedComments } from '@/lib/schema'
+import { feedPosts, feedReactions, feedComments, feedFollows } from '@/lib/schema'
 
 const REACTION_TYPES = ['like', 'love', 'dislike', 'wow', 'sad'] as const
 type ReactionType = typeof REACTION_TYPES[number]
@@ -32,11 +32,15 @@ export async function GET(req: NextRequest) {
   const before = sp.get('before')
   const filter = sp.get('filter') ?? 'latest'
   const walletAddress = sp.get('walletAddress')
+  const authorWallet = sp.get('authorWallet')
 
   const conds = []
   if (before) {
     const beforeDate = new Date(before)
     if (!isNaN(beforeDate.getTime())) conds.push(lt(feedPosts.createdAt, beforeDate))
+  }
+  if (authorWallet) {
+    conds.push(eq(feedPosts.authorWallet, authorWallet))
   }
 
   if (filter === 'discoveries') {
@@ -44,8 +48,20 @@ export async function GET(req: NextRequest) {
   } else if (filter === 'tonight') {
     const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000)
     conds.push(gt(feedPosts.createdAt, twelveHoursAgo))
+  } else if (filter === 'following') {
+    if (!walletAddress) {
+      return NextResponse.json({ posts: [], nextCursor: null })
+    }
+    const followed = await db
+      .select({ w: feedFollows.followedWallet })
+      .from(feedFollows)
+      .where(eq(feedFollows.followerWallet, walletAddress))
+    const wallets = followed.map(r => r.w)
+    if (wallets.length === 0) {
+      return NextResponse.json({ posts: [], nextCursor: null })
+    }
+    conds.push(inArray(feedPosts.authorWallet, wallets))
   }
-  // TODO: implement 'following' filter once a follows table exists.
 
   const whereExpr = conds.length ? and(...conds) : undefined
   const rows = await db
