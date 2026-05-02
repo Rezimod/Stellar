@@ -22,10 +22,11 @@ export default function TermsPage() {
         <section className="flex flex-col gap-2">
           <h2 className="font-display text-xl text-white">What Stellar is</h2>
           <p>
-            A planning and observation companion for telescope owners and space
-            enthusiasts. We forecast sky conditions, track planets, mint compressed NFTs
-            for verified observations, and let you buy real telescopes from Astroman and
-            partner dealers.
+            A planning and observation companion for anyone curious about the night sky —
+            smartphone users, casual stargazers, telescope owners alike. We forecast sky
+            conditions, track planets, mint compressed NFTs for verified observations, and
+            let you redeem rewards for real telescopes and optics from Astroman and partner
+            dealers.
           </p>
         </section>
 

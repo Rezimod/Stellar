@@ -95,7 +95,7 @@ export default function Footer() {
                 fontFamily: 'var(--font-display)',
               }}
             >
-              The night-sky companion for telescope owners. Forecast, plan, and observe with confidence.
+              The night-sky companion for anyone with a smartphone. Forecast, photograph, earn real optics.
             </p>
           </div>
 

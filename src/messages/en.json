@@ -2,7 +2,7 @@
   "common": {
     "appName": "STELLAR",
     "tagline": "Observe. Verify. Collect.",
-    "taglineDesc": "Observe planets with your telescope and earn real rewards from the Astroman store.",
+    "taglineDesc": "Photograph the night sky with whatever camera you have and earn real rewards from the Astroman store.",
     "startObserving": "See Tonight's Sky →",
     "startEarning": "Start Earning →",
     "visitStore": "Visit →",
@@ -31,9 +31,9 @@
     "observeEarnDesc": "Complete missions to unlock real rewards from the Astroman store.",
     "steps": {
       "observe": "Observe",
-      "observeDesc": "Point your telescope at tonight's target",
+      "observeDesc": "Step outside, find tonight's target",
       "capture": "Capture",
-      "captureDesc": "Photograph through the eyepiece",
+      "captureDesc": "Photograph it with your phone or telescope",
       "verify": "Verify",
       "verifyDesc": "AI verifies your sky conditions",
       "mint": "Collect",
@@ -163,7 +163,7 @@
   },
   "observe": {
     "hero": "Observe & Earn",
-    "heroDesc": "Photograph the night sky through your telescope. Every verified observation earns real rewards from your local astronomy partner.",
+    "heroDesc": "Photograph the night sky with whatever camera you have — phone, telescope, DSLR. Every verified observation earns real rewards from your local astronomy partner.",
     "signIn": "Sign In to Start Observing →",
     "signInSub": "Free forever · No seed phrase required"
   },

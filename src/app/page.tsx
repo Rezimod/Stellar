@@ -214,7 +214,7 @@ export default function HomePage() {
             </h1>
 
             <p className="text-[17px] md:text-[18px] leading-[1.65] text-[#9BA3B4] mb-9 max-w-[480px]">
-              The night sky for telescope owners. Forecast clear nights, complete missions, earn real telescopes.
+              For anyone with a smartphone and a sky above them. Step outside, photograph the night, earn rewards you can redeem for telescopes and optics.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3.5 max-w-[440px]">
@@ -293,9 +293,9 @@ export default function HomePage() {
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-12 text-center">
               <div className="text-[#FFD166] text-[40px] font-bold leading-none mb-7">02</div>
-              <div className="text-white text-[22px] font-bold mb-4">Observe the sky</div>
+              <div className="text-white text-[22px] font-bold mb-4">Photograph the sky</div>
               <div className="text-[#9BA3B4] text-[15px] leading-[1.6]">
-                Photograph a target. Open-Meteo verifies sky conditions. NFT attestation minted to your wallet, gasless.
+                Point your phone — or telescope, or DSLR — at the night. Open-Meteo verifies sky conditions. NFT attestation minted to your wallet, gasless.
               </div>
             </div>
             <div className="flex items-center justify-center px-0 md:px-6 rotate-90 md:rotate-0">
@@ -305,9 +305,9 @@ export default function HomePage() {
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-12 text-center">
               <div className="text-[#FFD166] text-[40px] font-bold leading-none mb-7">03</div>
-              <div className="text-white text-[22px] font-bold mb-4">Earn Stars, redeem real gear</div>
+              <div className="text-white text-[22px] font-bold mb-4">Earn Stars, redeem real optics</div>
               <div className="text-[#9BA3B4] text-[15px] leading-[1.6]">
-                Each verified observation earns Stars. Redeem them at Astroman for real telescopes from Bresser, Levenhuk, and Celestron.
+                Each verified observation earns Stars. Redeem them at Astroman for telescopes, binoculars, and accessories — Bresser, Levenhuk, Celestron.
               </div>
             </div>
           </div>
@@ -328,9 +328,9 @@ export default function HomePage() {
               </IconTile>
               <CardTitle>Observe with you</CardTitle>
               <CardBody>
-                Photograph the Moon, Jupiter, Saturn, the Andromeda Galaxy. Claude verifies your image,
-                Open-Meteo verifies the sky, the chain seals the discovery.{' '}
-                <em className="not-italic text-white italic">Real telescopes. Real photos. Real proof.</em>
+                Photograph the Moon, Jupiter, Saturn, the Andromeda Galaxy — through any lens you have.
+                Claude verifies your image, Open-Meteo verifies the sky, the chain seals the discovery.{' '}
+                <em className="not-italic text-white italic">Any camera. Real photos. Real proof.</em>
               </CardBody>
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-9">
@@ -345,7 +345,7 @@ export default function HomePage() {
               <CardTitle>Plans with you</CardTitle>
               <CardBody>
                 7-day sky forecast, planet visibility tracker, ASTRA AI companion. Know what&apos;s up,
-                when conditions are clear, and where to look — for your exact location and equipment.
+                when the sky is clear, and where to point — phone, binoculars, or telescope.
               </CardBody>
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-9">
@@ -356,8 +356,8 @@ export default function HomePage() {
               </IconTile>
               <CardTitle>Rewards your sky time</CardTitle>
               <CardBody>
-                Stars for every verified observation, every quiz, every mission. Redeem for real telescopes
-                at Astroman in Tbilisi — Bresser, Levenhuk, Celestron.
+                Stars for every verified observation, every quiz, every mission. Redeem at Astroman for
+                telescopes, binoculars, or accessories — Bresser, Levenhuk, Celestron.
               </CardBody>
             </div>
           </div>
@@ -488,7 +488,7 @@ export default function HomePage() {
               <CardTitle>ASTRA AI companion</CardTitle>
               <CardBody>
                 Claude-powered. Tells you what&apos;s visible from your location, the best night this week,
-                what your telescope can resolve.
+                and what you can capture with whatever&apos;s in your hand.
               </CardBody>
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-9">
@@ -525,10 +525,10 @@ export default function HomePage() {
                   <path d="M25 11l1-4" />
                 </StrokeIcon>
               </IconTile>
-              <CardTitle>Telescope marketplace</CardTitle>
+              <CardTitle>Optics marketplace</CardTitle>
               <CardBody>
-                Bresser, Levenhuk, Celestron. Real inventory at Astroman.ge — Georgia&apos;s first astronomy
-                store. Stars convert to discounts and free gear.
+                Telescopes, binoculars, accessories. Real inventory at Astroman.ge — Georgia&apos;s first
+                astronomy store. Stars convert to discounts and free gear.
               </CardBody>
             </div>
           </div>
@@ -585,7 +585,7 @@ export default function HomePage() {
               </IconTile>
               <CardTitle>Mission Collector</CardTitle>
               <Prompt>&quot;What&apos;s left to complete the &lsquo;All Seven&rsquo; reward?&quot;</Prompt>
-              <Prompt>&quot;Which missions are best with a 70mm refractor?&quot;</Prompt>
+              <Prompt>&quot;Which missions can I shoot with just my phone?&quot;</Prompt>
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-9">
               <IconTile tone="brass">
@@ -597,7 +597,7 @@ export default function HomePage() {
                 </StrokeIcon>
               </IconTile>
               <CardTitle>ASTRA Sessions</CardTitle>
-              <Prompt>&quot;What can I see with a 70mm tonight from Tbilisi?&quot;</Prompt>
+              <Prompt>&quot;What can I photograph with my phone tonight?&quot;</Prompt>
               <Prompt>&quot;How do I find Andromeda by star-hopping?&quot;</Prompt>
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-9">
@@ -787,8 +787,9 @@ export default function HomePage() {
             The Vision
           </h2>
           <p className="text-[18px] md:text-[20px] leading-[1.6] text-[#9BA3B4] max-w-[720px] mx-auto mb-8">
-            Every astronomy customer gets a tool that turns their telescope into a verified discovery
-            machine. <strong className="text-white font-semibold">Astroman is the shop. Stellar is the night sky&apos;s companion app.</strong> Together they make stargazing a tracked, rewarded, on-chain practice — not a hobby that disappears the moment you put the eyepiece down.
+            Anyone with a smartphone and a sky above them can become an observer.
+            <strong className="text-white font-semibold"> Astroman is the shop. Stellar is the night sky&apos;s companion app.</strong>{' '}
+            Together they make stargazing a tracked, rewarded, on-chain practice — and turn casual sky-gazers into real telescope owners over time.
           </p>
           <div className="text-[16px] md:text-[18px] text-white">
             Stellar is{' '}
@@ -812,8 +813,8 @@ export default function HomePage() {
             Take your first observation.
           </h2>
           <p className="text-[18px] md:text-[20px] leading-[1.6] text-[#9BA3B4] max-w-[640px] mx-auto mb-12">
-            Sign in with email. Your wallet appears silently. Browse 7 missions, check tonight&apos;s sky,
-            ask ASTRA what&apos;s visible — start with whichever speaks to you.
+            Sign in with email. Your wallet appears silently. Step outside with the phone you already have,
+            check tonight&apos;s sky, ask ASTRA what&apos;s visible — start with whichever speaks to you.
           </p>
           <div className="inline-flex flex-wrap gap-3.5 justify-center">
             <Link
