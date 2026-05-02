@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
           height: 630,
           display: 'flex',
           flexDirection: 'column',
-          background: 'linear-gradient(135deg, #0F1320 0%, #0D1117 50%, #0B0E17 100%)',
+          background: 'linear-gradient(135deg, #0A1735 0%, #07112B 50%, #050E22 100%)',
           fontFamily: 'sans-serif',
           position: 'relative',
           overflow: 'hidden',

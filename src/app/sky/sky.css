@@ -2,8 +2,8 @@
    Scoped under .sky-page-v2 so tokens and rules don't leak globally. */
 
 .sky-page-v2 {
-  --bg: #070B14;
-  --bg-2: #0B1120;
+  --bg: #06122B;
+  --bg-2: #0A1735;
   --surface: rgba(255, 255, 255, 0.025);
   --surface-2: rgba(255, 255, 255, 0.04);
   --border: rgba(255, 255, 255, 0.07);

@@ -160,7 +160,7 @@ function StarSparkle({ className = 'w-3 h-3' }: { className?: string }) {
 
 export default function HomePage() {
   return (
-    <div className="bg-[#0A0E1A] text-white -mt-14 pt-14 overflow-x-hidden">
+    <div className="bg-[#0A1735] text-white -mt-14 pt-14 overflow-x-hidden">
 
       {/* ============================================================
           HERO
