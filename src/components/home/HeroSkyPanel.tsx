@@ -12,7 +12,7 @@ const CX = 240;
 const CY = 240;
 
 type Planet = {
-  key: 'mercury' | 'venus' | 'earth' | 'mars' | 'jupiter' | 'saturn';
+  key: 'mercury' | 'venus' | 'earth' | 'mars' | 'jupiter' | 'saturn' | 'uranus' | 'neptune';
   body: number;       // planet radius in svg units
   orbit: number;      // distance from sun
   period: number;     // orbital period (seconds)
@@ -24,12 +24,14 @@ type Planet = {
 };
 
 const PLANETS: Planet[] = [
-  { key: 'mercury', body: 3.4,  orbit:  46, period: 10, phase:  20, spin: 32 },
-  { key: 'venus',   body: 4.4,  orbit:  74, period: 16, phase: 130, spin: 50, retrograde: true, glow: '#E8C77C' },
-  { key: 'earth',   body: 4.8,  orbit: 104, period: 22, phase: 245, spin: 8,  glow: '#5C8FCC' },
-  { key: 'mars',    body: 3.8,  orbit: 134, period: 30, phase:  60, spin: 8.2 },
-  { key: 'jupiter', body: 9.6,  orbit: 174, period: 50, phase: 290, spin: 3.6 },
-  { key: 'saturn',  body: 8.4,  orbit: 212, period: 80, phase: 200, spin: 4,  rings: true },
+  { key: 'mercury', body: 2.8,  orbit:  34, period:  8, phase:  20, spin: 32 },
+  { key: 'venus',   body: 3.8,  orbit:  56, period: 14, phase: 130, spin: 50, retrograde: true, glow: '#E8C77C' },
+  { key: 'earth',   body: 4.0,  orbit:  80, period: 20, phase: 245, spin: 8,  glow: '#5C8FCC' },
+  { key: 'mars',    body: 3.2,  orbit: 104, period: 28, phase:  60, spin: 8.2 },
+  { key: 'jupiter', body: 8.4,  orbit: 138, period: 46, phase: 290, spin: 3.6 },
+  { key: 'saturn',  body: 7.4,  orbit: 174, period: 72, phase: 200, spin: 4,  rings: true },
+  { key: 'uranus',  body: 5.4,  orbit: 204, period: 110, phase:  85, spin: 6, retrograde: true, glow: '#A8E0E8' },
+  { key: 'neptune', body: 5.2,  orbit: 232, period: 150, phase: 320, spin: 5.6, glow: '#5577CC' },
 ];
 
 const STARS: { cx: number; cy: number; r: number; o: number; d: number }[] = [
@@ -77,10 +79,6 @@ export default function HeroSkyPanel() {
           0%, 100% { opacity: var(--o, 0.5); }
           50%      { opacity: calc(var(--o, 0.5) * 0.4); }
         }
-        @keyframes orrery-zodiac {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
 
         .orbit {
           animation: orrery-orbit linear infinite;
@@ -92,15 +90,9 @@ export default function HeroSkyPanel() {
 
         .corona { animation: orrery-corona 5s ease-in-out infinite; transform-origin: ${CX}px ${CY}px; transform-box: view-box; }
         .star   { animation: orrery-twinkle 5s ease-in-out infinite; }
-        .zodiac {
-          animation: orrery-zodiac 480s linear infinite;
-          transform-origin: ${CX}px ${CY}px;
-          transform-box: view-box;
-        }
 
         @media (prefers-reduced-motion: reduce) {
-          .orbit, .spin, .spin-rev, .corona, .star,
-          .zodiac { animation: none !important; }
+          .orbit, .spin, .spin-rev, .corona, .star { animation: none !important; }
         }
       `}</style>
 
@@ -177,39 +169,6 @@ export default function HeroSkyPanel() {
               } as React.CSSProperties}
             />
           ))}
-        </g>
-
-        {/* zodiac outer ring */}
-        <g className="zodiac">
-          <circle cx={CX} cy={CY} r="232" stroke="#1A2238" strokeWidth="0.6" />
-          <circle cx={CX} cy={CY} r="222" stroke="#11172A" strokeWidth="0.5" />
-          {Array.from({ length: 72 }).map((_, i) => {
-            const major = i % 6 === 0;
-            const a = (i * 5) * (Math.PI / 180);
-            const r1 = 232;
-            const r2 = major ? 218 : 226;
-            const x1 = CX + r1 * Math.cos(a - Math.PI / 2);
-            const y1 = CY + r1 * Math.sin(a - Math.PI / 2);
-            const x2 = CX + r2 * Math.cos(a - Math.PI / 2);
-            const y2 = CY + r2 * Math.sin(a - Math.PI / 2);
-            return (
-              <line
-                key={i}
-                x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke={major ? '#3A4256' : '#1F2740'}
-                strokeWidth={major ? 0.9 : 0.5}
-              />
-            );
-          })}
-          <g style={{ fontFamily: 'var(--font-mono)' }} fill="#4A5269" fontSize="9" letterSpacing="0.18em">
-            {['ARI','TAU','GEM','CNC','LEO','VIR','LIB','SCO','SGR','CAP','AQR','PSC'].map((sign, i) => {
-              const a = (i * 30) * (Math.PI / 180);
-              const r = 244;
-              const x = CX + r * Math.cos(a - Math.PI / 2);
-              const y = CY + r * Math.sin(a - Math.PI / 2) + 3;
-              return <text key={sign} x={x} y={y} textAnchor="middle">{sign}</text>;
-            })}
-          </g>
         </g>
 
         {/* orbital paths */}
@@ -343,20 +302,6 @@ export default function HeroSkyPanel() {
           );
         })}
 
-        {/* center crosshair */}
-        <g stroke="#3A4256" strokeWidth="0.6" opacity="0.5">
-          <line x1={CX - 226} y1={CY} x2={CX - 218} y2={CY} />
-          <line x1={CX + 218} y1={CY} x2={CX + 226} y2={CY} />
-          <line x1={CX} y1={CY - 226} x2={CX} y2={CY - 218} />
-          <line x1={CX} y1={CY + 218} x2={CX} y2={CY + 226} />
-        </g>
-
-        {/* today marker */}
-        <g transform={`translate(${CX} ${CY - 232})`}>
-          <path d="M 0 -6 L -3.5 1 L 3.5 1 Z" fill="#FFD166" opacity="0.9" />
-          <line x1="0" y1="2" x2="0" y2="6" stroke="#FFD166" strokeWidth="0.8" opacity="0.5" />
-        </g>
-
         {/* corner stamps */}
         <g style={{ fontFamily: 'var(--font-mono)' }}>
           <text x="20" y="28" fontSize="9" fill="#6B7280" letterSpacing="0.22em">ORRERY</text>
@@ -366,7 +311,7 @@ export default function HeroSkyPanel() {
           <text x="460" y="44" fontSize="8" fill="#4A5269" letterSpacing="0.16em" textAnchor="end">HELIOCENTRIC</text>
 
           <text x="20" y="468" fontSize="8" fill="#3A4256" letterSpacing="0.2em">
-            ☿ ♀ ♁ ♂ ♃ ♄
+            ☿ ♀ ♁ ♂ ♃ ♄ ♅ ♆
           </text>
           <text x="460" y="468" fontSize="7" fill="#3A4256" letterSpacing="0.16em" textAnchor="end">
             TEXTURES · SOLARSYSTEMSCOPE · CC BY 4.0
