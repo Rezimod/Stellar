@@ -110,8 +110,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const addMission = useCallback((mission: CompletedMission) => {
     setState(s => ({ ...s, completedMissions: [...s.completedMissions, mission] }));
   }, []);
-  const removeMission = useCallback((txId: string) => {
-    setState(s => ({ ...s, completedMissions: s.completedMissions.filter(m => m.txId !== txId) }));
+  const removeMission = useCallback((key: string) => {
+    setState(s => ({
+      ...s,
+      completedMissions: s.completedMissions.filter(m => m.id !== key && m.txId !== key),
+    }));
   }, []);
   const claimReward = useCallback((id: string) => {
     setState(s => ({

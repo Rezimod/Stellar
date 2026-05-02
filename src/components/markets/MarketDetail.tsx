@@ -154,6 +154,7 @@ interface MarketDetailProps {
   balance: number | null;
   onRefresh: () => void;
   observerAdvantage?: ObserverAdvantage | null;
+  userAddress?: string | null;
 }
 
 const EXPLORER_CLUSTER =
@@ -173,6 +174,7 @@ export default function MarketDetail({
   balance,
   onRefresh,
   observerAdvantage,
+  userAddress,
 }: MarketDetailProps) {
   const cat =
     (meta && CATEGORY_META[meta.category]) ||
@@ -327,7 +329,15 @@ export default function MarketDetail({
         {/* Pool stats */}
         <PoolStats onChain={onChain} />
 
-        <UserPositionCard positions={positions} />
+        <UserPositionCard
+          positions={positions}
+          market={onChain}
+          mint={mint}
+          balance={balance}
+          walletAddress={userAddress ?? null}
+          locked={status.kind === 'locked' || status.kind === 'resolved' || status.kind === 'cancelled'}
+          onRefresh={onRefresh}
+        />
 
         {/* Resolution details */}
         <section className="flex flex-col gap-2">

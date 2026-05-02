@@ -6,7 +6,7 @@ import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
-import { Copy, Check, ExternalLink, Telescope, User, ChevronRight, Globe, Bell, Moon, LogOut, X, Settings, Camera, Package } from 'lucide-react';
+import { Copy, Check, ExternalLink, Telescope, User, ChevronRight, Globe, Bell, Moon, LogOut, X, Settings, Camera, Package, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAppState } from '@/hooks/useAppState';
@@ -14,7 +14,6 @@ import { getRank } from '@/lib/rewards';
 import Button from '@/components/shared/Button';
 import PageTransition from '@/components/ui/PageTransition';
 import PageContainer from '@/components/layout/PageContainer';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import MyActiveBets from '@/components/markets/MyActiveBets';
 import { Avatar } from '@/lib/avatars';
@@ -44,7 +43,8 @@ export default function ProfilePage() {
   const { user, getAccessToken } = usePrivy();
   const { authenticated, address: stellarAddress } = useStellarUser();
   const { logout } = useStellarAuth();
-  const { state } = useAppState();
+  const { state, removeMission } = useAppState();
+  const [discoveryToDelete, setDiscoveryToDelete] = useState<string | null>(null);
   const { profile, saving, update } = useProfile();
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -159,6 +159,7 @@ export default function ProfilePage() {
 
   const photoDiscoveries = completed.filter(m => m.photo).map(m => ({
     key: `m-${m.id}`,
+    id: m.id,
     name: m.name,
     photo: m.photo!,
     date: m.timestamp,
@@ -226,10 +227,8 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <PageHeader label="OBSERVATORY" title="Your profile" />
-
         {/* — HEADER: Avatar + Name + Address — */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 28, gap: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 24, paddingBottom: 28, gap: 14 }}>
           {/* Avatar with edit overlay */}
           <button
             onClick={() => setAvatarOpen(true)}
@@ -471,62 +470,104 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', marginLeft: -2, paddingLeft: 2 }}>
-              {photoDiscoveries.map(d => (
-                <button
-                  key={d.key}
-                  onClick={() => setSelectedPhoto({ photo: d.photo, name: d.name })}
-                  className="stl-card"
-                  style={{
-                    flexShrink: 0, width: 160, overflow: 'hidden',
-                    cursor: 'pointer', textAlign: 'left', padding: 0,
-                  }}
-                >
-                  <div style={{ position: 'relative', width: '100%', height: 110 }}>
-                    <Image src={d.photo} alt={d.name} fill style={{ objectFit: 'cover' }} unoptimized />
-                  </div>
-                  <div style={{ padding: '10px 12px 12px' }}>
-                    <p
-                      className="stl-row-obs-title"
-                      style={{ margin: '0 0 3px', fontSize: 13 }}
+              {photoDiscoveries.map(d => {
+                const isConfirming = discoveryToDelete === d.id;
+                return (
+                  <div
+                    key={d.key}
+                    className="stl-card"
+                    style={{
+                      flexShrink: 0, width: 160, overflow: 'hidden',
+                      textAlign: 'left', padding: 0, position: 'relative',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPhoto({ photo: d.photo, name: d.name })}
+                      style={{
+                        display: 'block', width: '100%', padding: 0, border: 'none',
+                        background: 'transparent', cursor: 'pointer', textAlign: 'left',
+                      }}
                     >
-                      {d.name}
-                    </p>
-                    <p className="stl-mono-data" style={{ color: 'var(--stl-text-dim)', margin: '0 0 8px' }}>
-                      {new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                    {d.txId ? (
-                      <a
-                        href={`https://explorer.solana.com/tx/${d.txId}?cluster=${cluster}`}
-                        target="_blank" rel="noopener noreferrer"
-                        onClick={e => e.stopPropagation()}
-                        className="stl-mono-data"
-                        style={{
-                          display: 'inline-block', padding: '3px 9px', borderRadius: 999,
-                          background: 'rgba(94, 234, 212,0.10)', border: '1px solid var(--stl-border-green)',
-                          color: 'var(--stl-green)', textDecoration: 'none',
-                          textTransform: 'uppercase', letterSpacing: '0.08em',
-                          fontSize: 9, fontWeight: 600,
-                        }}
-                      >
-                        On-chain Proof
-                      </a>
-                    ) : (
-                      <span
-                        className="stl-mono-data"
-                        style={{
-                          display: 'inline-block', padding: '3px 9px', borderRadius: 999,
-                          background: 'var(--stl-bg-surface)', border: '1px solid var(--stl-border-regular)',
-                          color: 'var(--stl-text-dim)',
-                          textTransform: 'uppercase', letterSpacing: '0.08em',
-                          fontSize: 9,
-                        }}
-                      >
-                        Local
-                      </span>
-                    )}
+                      <div style={{ position: 'relative', width: '100%', height: 110 }}>
+                        <Image src={d.photo} alt={d.name} fill style={{ objectFit: 'cover' }} unoptimized />
+                      </div>
+                      <div style={{ padding: '10px 12px 12px' }}>
+                        <p
+                          className="stl-row-obs-title"
+                          style={{ margin: '0 0 3px', fontSize: 13 }}
+                        >
+                          {d.name}
+                        </p>
+                        <p className="stl-mono-data" style={{ color: 'var(--stl-text-dim)', margin: '0 0 8px' }}>
+                          {new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                        {d.txId ? (
+                          <a
+                            href={`https://explorer.solana.com/tx/${d.txId}?cluster=${cluster}`}
+                            target="_blank" rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="stl-mono-data"
+                            style={{
+                              display: 'inline-block', padding: '3px 9px', borderRadius: 999,
+                              background: 'rgba(94, 234, 212,0.10)', border: '1px solid var(--stl-border-green)',
+                              color: 'var(--stl-green)', textDecoration: 'none',
+                              textTransform: 'uppercase', letterSpacing: '0.08em',
+                              fontSize: 9, fontWeight: 600,
+                            }}
+                          >
+                            On-chain Proof
+                          </a>
+                        ) : (
+                          <span
+                            className="stl-mono-data"
+                            style={{
+                              display: 'inline-block', padding: '3px 9px', borderRadius: 999,
+                              background: 'var(--stl-bg-surface)', border: '1px solid var(--stl-border-regular)',
+                              color: 'var(--stl-text-dim)',
+                              textTransform: 'uppercase', letterSpacing: '0.08em',
+                              fontSize: 9,
+                            }}
+                          >
+                            Local
+                          </span>
+                        )}
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      aria-label={isConfirming ? 'Confirm delete discovery' : 'Delete discovery'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isConfirming) {
+                          removeMission(d.id);
+                          setDiscoveryToDelete(null);
+                        } else {
+                          setDiscoveryToDelete(d.id);
+                        }
+                      }}
+                      onBlur={() => isConfirming && setDiscoveryToDelete(null)}
+                      style={{
+                        position: 'absolute', top: 6, right: 6,
+                        height: 24, minWidth: 24,
+                        padding: isConfirming ? '0 8px' : 0,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                        borderRadius: 999,
+                        background: isConfirming ? 'var(--stl-red, rgba(251, 113, 133, 0.95))' : 'rgba(3,6,18,0.7)',
+                        border: `1px solid ${isConfirming ? 'var(--stl-red, rgba(251, 113, 133, 0.95))' : 'var(--stl-border-regular)'}`,
+                        color: isConfirming ? '#fff' : 'var(--stl-text-bright)',
+                        cursor: 'pointer', backdropFilter: 'blur(8px)',
+                        fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
+                        letterSpacing: '0.08em', textTransform: 'uppercase',
+                      }}
+                    >
+                      <Trash2 size={11} />
+                      {isConfirming && <span>Delete</span>}
+                    </button>
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

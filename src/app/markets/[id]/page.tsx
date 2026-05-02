@@ -205,6 +205,7 @@ export default function MarketDetailPage({
                 balance={balance}
                 onRefresh={refresh}
                 observerAdvantage={observerAdvantage}
+                userAddress={userAddress}
               />
             ) : (
               <div className="mkt-detail-notice">
