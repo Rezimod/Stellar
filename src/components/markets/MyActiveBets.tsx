@@ -300,22 +300,131 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
 
           if (isCompact) {
             return (
-              <Link
+              <article
                 key={`${position.marketId}-${position.side}`}
-                href={`/markets/${position.marketId}`}
-                className={`mab-row mab-row-compact${cashedOut ? ' cashed' : ''}${locked ? ' locked' : ''}`}
-                title={rowTitle}
+                className={`mab-card${cashedOut ? ' cashed' : ''}${locked ? ' locked' : ''}`}
               >
-                <span className={`mab-row-pill ${sideClass}`}>
-                  {position.side.toUpperCase()}
-                </span>
-                <span className="mab-row-title">{rowTitle}</span>
-                <span className="mab-row-stat">
-                  {cashedOut
-                    ? `${fmtInt(cashout.refundedAmount)} ✦`
-                    : `${fmtInt(position.projectedPayout)} ✦`}
-                </span>
-              </Link>
+                <div className="mab-card-head">
+                  <span className={`mab-row-pill ${sideClass}`}>
+                    {position.side.toUpperCase()}
+                  </span>
+                  <Link
+                    href={`/markets/${position.marketId}`}
+                    className="mab-card-title"
+                    title={rowTitle}
+                  >
+                    {rowTitle}
+                  </Link>
+                </div>
+
+                <div className="mab-card-meta">
+                  <div className="mab-meta-cell">
+                    <span className="mab-meta-label">Stake</span>
+                    <span className="mab-meta-value">{fmtInt(position.amount)} ✦</span>
+                  </div>
+                  <div className="mab-meta-cell">
+                    <span className="mab-meta-label">
+                      {cashedOut ? 'Cashed' : locked ? 'Status' : 'Payout if win'}
+                    </span>
+                    <span
+                      className="mab-meta-value"
+                      style={{
+                        color: cashedOut
+                          ? 'var(--stl-text2, rgba(255,255,255,0.7))'
+                          : locked
+                          ? 'var(--stl-amber, rgba(255, 209, 102, 0.95))'
+                          : 'var(--stl-green, var(--seafoam))',
+                      }}
+                    >
+                      {cashedOut
+                        ? `+${fmtInt(cashout.refundedAmount)} ✦`
+                        : locked
+                        ? 'Awaiting'
+                        : `${fmtInt(position.projectedPayout)} ✦`}
+                    </span>
+                  </div>
+                  <div className="mab-meta-cell">
+                    <span className="mab-meta-label">Resolves</span>
+                    <span className="mab-meta-value">
+                      {locked ? 'Locked' : `in ${resolveCountdown}`}
+                    </span>
+                  </div>
+                </div>
+
+                {!cashedOut && !locked && (
+                  <div className="mab-card-actions">
+                    <button
+                      type="button"
+                      className={`mab-btn ghost${isDoubleDownOpen ? ' active' : ''}`}
+                      onClick={() =>
+                        setDoubleDownId((cur) =>
+                          cur === position.marketId ? null : position.marketId,
+                        )
+                      }
+                      disabled={busy}
+                      aria-expanded={isDoubleDownOpen}
+                    >
+                      {isDoubleDownOpen ? 'Close' : '+ Double down'}
+                    </button>
+                    <button
+                      type="button"
+                      className={`mab-btn warn${isCashOutOpen ? ' active' : ''}`}
+                      onClick={() =>
+                        setCashOutId((cur) =>
+                          cur === position.marketId ? null : position.marketId,
+                        )
+                      }
+                      disabled={busy}
+                      aria-expanded={isCashOutOpen}
+                    >
+                      {isCashOutOpen ? 'Close' : `Cash out ${fmtInt(refundPreview)} ✦`}
+                    </button>
+                  </div>
+                )}
+
+                {isCashOutOpen && !cashedOut && !locked && (
+                  <div className="mab-confirm">
+                    <p className="mab-confirm-text">
+                      Take {fmtInt(refundPreview)} ✦ now, forfeit{' '}
+                      {fmtInt(position.amount - refundPreview)} ✦ to the winning side.
+                    </p>
+                    <div className="mab-confirm-actions">
+                      <button
+                        type="button"
+                        className="mab-btn ghost"
+                        onClick={() => setCashOutId(null)}
+                        disabled={busy}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="mab-btn primary"
+                        onClick={() => onCashOut(position.marketId, position.side)}
+                        disabled={busy}
+                      >
+                        {busy ? 'Cashing out…' : 'Confirm'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {isDoubleDownOpen && !cashedOut && !locked && (
+                  <div className="mab-bet-wrap">
+                    <InlineBetPanel
+                      onChain={market}
+                      mint={mint}
+                      balance={balance}
+                      side={position.side}
+                      locked={locked}
+                      onClose={() => setDoubleDownId(null)}
+                      onSuccess={onDoubleDownSuccess}
+                    />
+                  </div>
+                )}
+
+                {err && <div className="mab-error">{err}</div>}
+              </article>
             );
           }
 
@@ -490,46 +599,92 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           background: var(--stl-bg2, rgba(255, 255, 255, 0.02));
           border: 1px solid var(--stl-border2, var(--stl-border, rgba(255, 255, 255, 0.08)));
         }
-        .mab-section.compact .mab-list { gap: 2px; }
-        .mab-row-compact {
+        .mab-section.compact .mab-list { gap: 10px; }
+
+        /* Compact rich card used on /profile */
+        .mab-card {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding: 14px 14px 12px;
+          border-radius: 10px;
+          background: var(--stl-bg2, rgba(255, 255, 255, 0.025));
+          border: 1px solid var(--stl-border, rgba(255, 255, 255, 0.08));
+          transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .mab-card:hover {
+          border-color: var(--stl-text3, rgba(255, 255, 255, 0.18));
+        }
+        .mab-card.cashed {
+          opacity: 0.55;
+        }
+        .mab-card.locked {
+          border-color: var(--stl-amber, rgba(255, 209, 102, 0.35));
+        }
+        .mab-card-head {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 6px 8px;
-          border-radius: 6px;
-          background: transparent;
-          border: 1px solid transparent;
-          text-decoration: none;
-          min-height: 0;
-          transition: background 0.12s ease, border-color 0.12s ease;
+          gap: 10px;
+          min-width: 0;
         }
-        .mab-row-compact:hover {
-          background: var(--stl-bg2, rgba(255, 255, 255, 0.03));
-          border-color: var(--stl-border, rgba(255, 255, 255, 0.08));
-        }
-        .mab-row-compact .mab-row-title {
+        .mab-card-title {
           flex: 1 1 auto;
           min-width: 0;
-          font-size: 12px;
+          font-family: var(--font-display, var(--font-body, sans-serif));
+          font-size: 14px;
           font-weight: 500;
           color: var(--stl-text1, var(--text));
-          line-height: 1.2;
+          text-decoration: none;
+          line-height: 1.3;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .mab-row-compact .mab-row-pill {
+        .mab-card-title:hover {
+          text-decoration: underline;
+        }
+        .mab-card-meta {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1px;
+          background: var(--stl-border, rgba(255, 255, 255, 0.06));
+          border: 1px solid var(--stl-border, rgba(255, 255, 255, 0.06));
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .mab-meta-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          padding: 8px 10px;
+          background: var(--stl-bg, rgba(0, 0, 0, 0.2));
+        }
+        .mab-meta-label {
+          font-family: var(--font-mono);
           font-size: 9px;
-          padding: 2px 5px;
-          letter-spacing: 0.08em;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--stl-text3, rgba(255, 255, 255, 0.45));
         }
-        .mab-row-compact .mab-row-stat {
+        .mab-meta-value {
+          font-family: var(--font-mono);
+          font-size: 12px;
+          font-weight: 600;
+          font-variant-numeric: tabular-nums;
+          color: var(--stl-text1, var(--text));
+          letter-spacing: 0.01em;
+        }
+        .mab-card-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .mab-card-actions .mab-btn {
+          flex: 1 1 0;
+          padding: 8px 10px;
           font-size: 10.5px;
-          color: var(--stl-text2, rgba(255, 255, 255, 0.7));
-        }
-        .mab-row-compact.cashed { opacity: 0.55; }
-        .mab-row-compact.locked .mab-row-stat {
-          color: var(--stl-amber, rgba(255, 209, 102, 0.85));
+          letter-spacing: 0.08em;
+          text-align: center;
         }
         .mab-row.cashed {
           opacity: 0.6;

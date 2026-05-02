@@ -165,25 +165,6 @@ export default function ProfilePage() {
     txId: m.txId ?? null,
   }));
 
-  const nodeType = (() => {
-    if (obsCount >= 5 || completed.length >= 5) {
-      return { type: 'advanced' as const, label: 'Advanced Node', emoji: '🛸',
-        description: 'Telescope-grade contributions + environmental data',
-        color: 'var(--stl-gold)', reward: '100–500 ✦ per mission',
-        upgradeHint: null };
-    }
-    if (completed.length >= 1 || obsCount >= 1) {
-      return { type: 'observer' as const, label: 'Observer Node', emoji: '🔭',
-        description: 'Verified sky observations with on-chain cNFT proofs',
-        color: 'var(--stl-teal)', reward: '50–250 ✦ per mission',
-        upgradeHint: 'Complete 5+ missions or submit a Bortle reading to become Advanced' };
-    }
-    return { type: 'passive' as const, label: 'Passive Node', emoji: '📱',
-      description: 'Weather confirmations + GPS location data',
-      color: 'var(--text-muted)', reward: '5–25 ✦ per check-in',
-      upgradeHint: 'Complete your first mission to become an Observer' };
-  })();
-
   return (
     <PageTransition>
       {/* Lightbox */}
@@ -369,73 +350,99 @@ export default function ProfilePage() {
           <MyActiveBets variant="compact" title="My active bets" />
         </div>
 
-        {/* — NETWORK STATUS — */}
+        {/* — MY PURCHASES — */}
         <section style={{ marginBottom: 28 }} className="flex flex-col gap-3">
           <div className="stl-cat-header">
-            <span className="stl-cat-name">Network Status</span>
+            <span className="stl-cat-name">My purchases</span>
+            <span className="stl-cat-count">{orderHistory.length}</span>
             <Link
-              href="/network"
+              href="/marketplace"
               className="stl-mono-data"
               style={{ marginLeft: 'auto', color: 'var(--stl-green)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 2 }}
             >
-              View network <ChevronRight size={11} />
+              Shop <ChevronRight size={11} />
             </Link>
           </div>
-          <div className="stl-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 26, lineHeight: 1 }}>{nodeType.emoji}</span>
-              <div style={{ flex: 1 }}>
-                <p
-                  className="stl-mono-data"
-                  style={{
-                    color: nodeType.color,
-                    fontWeight: 600,
-                    margin: 0,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                  }}
-                >
-                  {nodeType.label}
-                </p>
-                <p className="stl-body-sm" style={{ color: 'var(--stl-text-muted)', margin: '4px 0 0' }}>
-                  {nodeType.description}
-                </p>
-              </div>
+
+          {orderHistory.length === 0 ? (
+            <div
+              className="stl-card"
+              style={{ padding: '28px 20px', textAlign: 'center' }}
+            >
+              <Package size={22} color="var(--stl-text-whisper)" style={{ marginBottom: 8 }} />
+              <p className="stl-body-sm" style={{ color: 'var(--stl-text-dim)', margin: 0 }}>
+                No purchases yet — pay with SOL or stars on any product to get started
+              </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--stl-border-soft)', border: '1px solid var(--stl-border-soft)', borderRadius: 'var(--stl-r-md)', overflow: 'hidden' }}>
-              {[
-                { label: 'Missions', value: String(completed.length) },
-                { label: 'Observations', value: String(obsCount) },
-                { label: 'Earn rate', value: nodeType.reward },
-              ].map(row => (
-                <div
-                  key={row.label}
-                  style={{
-                    padding: '10px 12px',
-                    background: 'var(--stl-bg-base)',
-                    display: 'flex', flexDirection: 'column', gap: 4,
-                  }}
-                >
-                  <span className="stl-summary-label">{row.label}</span>
-                  <span
-                    className="stl-mono-data"
+          ) : (
+            <div className="stl-card" style={{ overflow: 'hidden', padding: 0 }}>
+              {orderHistory.map((o, i) => {
+                const date = new Date(o.createdAt);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const isPaid = o.status === 'paid';
+                const isStars = o.paymentMethod === 'stars';
+                const fiatLabel = `${o.amountFiat % 1 !== 0 ? o.amountFiat.toFixed(2) : o.amountFiat.toLocaleString()} ${o.currency}`;
+                const payLabel = isStars
+                  ? `✦ ${(o.amountStars ?? 0).toLocaleString()} stars`
+                  : `${o.amountSol >= 1 ? o.amountSol.toFixed(3) : o.amountSol.toFixed(4)} SOL`;
+                return (
+                  <div
+                    key={o.id}
                     style={{
-                      color: 'var(--stl-text-bright)',
-                      fontSize: 12,
-                      letterSpacing: '0.04em',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      borderBottom: i < orderHistory.length - 1 ? '1px solid var(--stl-border-soft)' : 'none',
                     }}
                   >
-                    {row.value}
-                  </span>
-                </div>
-              ))}
+                    <div style={{
+                      position: 'relative', width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+                      background: 'var(--stl-bg-surface)', border: '1px solid var(--stl-border-soft)',
+                    }}>
+                      {o.productImage ? (
+                        <Image src={o.productImage} alt={o.productName} fill style={{ objectFit: 'contain', padding: 4 }} unoptimized />
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          <Package size={16} color="var(--stl-text-dim)" />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ color: 'var(--stl-text-bright)', fontSize: 13, fontWeight: 500, margin: 0, fontFamily: 'var(--font-display)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {o.productName}
+                      </p>
+                      <p className="stl-mono-data" style={{ color: 'var(--stl-text-dim)', margin: '2px 0 0', fontSize: 11 }}>
+                        {dateStr} · {fiatLabel} · {payLabel}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                      <span
+                        className="stl-mono-data"
+                        style={{
+                          padding: '3px 9px', borderRadius: 999, fontSize: 9, fontWeight: 600,
+                          textTransform: 'uppercase', letterSpacing: '0.1em',
+                          background: isPaid ? 'rgba(94, 234, 212,0.10)' : 'rgba(255, 209, 102,0.08)',
+                          border: isPaid ? '1px solid var(--stl-border-green)' : '1px solid rgba(255, 209, 102,0.25)',
+                          color: isPaid ? 'var(--stl-green)' : 'var(--stl-gold)',
+                        }}
+                      >
+                        {isPaid ? 'Paid' : 'Pending'}
+                      </span>
+                      {o.signature && (
+                        <a
+                          href={`https://explorer.solana.com/tx/${o.signature}?cluster=${cluster}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="stl-mono-data"
+                          style={{ color: 'var(--stl-text-dim)', fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}
+                        >
+                          tx <ExternalLink size={9} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            {nodeType.upgradeHint && (
-              <p className="stl-body-sm" style={{ color: 'var(--stl-text-dim)', margin: 0 }}>
-                {nodeType.upgradeHint}
-              </p>
-            )}
-          </div>
+          )}
         </section>
 
         {/* — MY DISCOVERIES — */}
@@ -520,101 +527,6 @@ export default function ProfilePage() {
                   </div>
                 </button>
               ))}
-            </div>
-          )}
-        </section>
-
-        {/* — ORDER HISTORY — */}
-        <section style={{ marginBottom: 28 }} className="flex flex-col gap-3">
-          <div className="stl-cat-header">
-            <span className="stl-cat-name">Order History</span>
-            <span className="stl-cat-count">{orderHistory.length}</span>
-            <Link
-              href="/marketplace"
-              className="stl-mono-data"
-              style={{ marginLeft: 'auto', color: 'var(--stl-green)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 2 }}
-            >
-              Shop <ChevronRight size={11} />
-            </Link>
-          </div>
-
-          {orderHistory.length === 0 ? (
-            <div
-              className="stl-card"
-              style={{ padding: '28px 20px', textAlign: 'center' }}
-            >
-              <Package size={22} color="var(--stl-text-whisper)" style={{ marginBottom: 8 }} />
-              <p className="stl-body-sm" style={{ color: 'var(--stl-text-dim)', margin: 0 }}>
-                No orders yet — pay with SOL on any product to get started
-              </p>
-            </div>
-          ) : (
-            <div className="stl-card" style={{ overflow: 'hidden', padding: 0 }}>
-              {orderHistory.map((o, i) => {
-                const date = new Date(o.createdAt);
-                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const isPaid = o.status === 'paid';
-                const isStars = o.paymentMethod === 'stars';
-                const fiatLabel = `${o.amountFiat % 1 !== 0 ? o.amountFiat.toFixed(2) : o.amountFiat.toLocaleString()} ${o.currency}`;
-                const payLabel = isStars
-                  ? `✦ ${(o.amountStars ?? 0).toLocaleString()} stars`
-                  : `${o.amountSol >= 1 ? o.amountSol.toFixed(3) : o.amountSol.toFixed(4)} SOL`;
-                return (
-                  <div
-                    key={o.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '14px 16px',
-                      borderBottom: i < orderHistory.length - 1 ? '1px solid var(--stl-border-soft)' : 'none',
-                    }}
-                  >
-                    <div style={{
-                      position: 'relative', width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
-                      background: 'var(--stl-bg-surface)', border: '1px solid var(--stl-border-soft)',
-                    }}>
-                      {o.productImage ? (
-                        <Image src={o.productImage} alt={o.productName} fill style={{ objectFit: 'contain', padding: 4 }} unoptimized />
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                          <Package size={16} color="var(--stl-text-dim)" />
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: 'var(--stl-text-bright)', fontSize: 13, fontWeight: 500, margin: 0, fontFamily: 'var(--font-display)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {o.productName}
-                      </p>
-                      <p className="stl-mono-data" style={{ color: 'var(--stl-text-dim)', margin: '2px 0 0', fontSize: 11 }}>
-                        {dateStr} · {fiatLabel} · {payLabel}
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                      <span
-                        className="stl-mono-data"
-                        style={{
-                          padding: '3px 9px', borderRadius: 999, fontSize: 9, fontWeight: 600,
-                          textTransform: 'uppercase', letterSpacing: '0.1em',
-                          background: isPaid ? 'rgba(94, 234, 212,0.10)' : 'rgba(255, 209, 102,0.08)',
-                          border: isPaid ? '1px solid var(--stl-border-green)' : '1px solid rgba(255, 209, 102,0.25)',
-                          color: isPaid ? 'var(--stl-green)' : 'var(--stl-gold)',
-                        }}
-                      >
-                        {isPaid ? 'Paid' : 'Pending'}
-                      </span>
-                      {o.signature && (
-                        <a
-                          href={`https://explorer.solana.com/tx/${o.signature}?cluster=${cluster}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="stl-mono-data"
-                          style={{ color: 'var(--stl-text-dim)', fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}
-                        >
-                          tx <ExternalLink size={9} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           )}
         </section>
