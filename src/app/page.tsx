@@ -86,7 +86,7 @@ const STROKE_TEAL = '#38F0FF';
 function IconTile({ tone, children }: { tone: 'brass' | 'purple' | 'teal'; children: React.ReactNode }) {
   const cls = tone === 'brass' ? TILE_BRASS : tone === 'purple' ? TILE_PURPLE : TILE_TEAL;
   return (
-    <div className={`w-14 h-14 ${cls} border rounded-xl flex items-center justify-center mb-6`}>
+    <div className={`w-14 h-14 ${cls} border rounded-xl flex items-center justify-center mb-6 mx-auto md:mx-0`}>
       {children}
     </div>
   );
@@ -320,7 +320,7 @@ export default function HomePage() {
       <section className="px-4 md:px-8 pb-14 md:pb-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="brass">
                 <StrokeIcon tone="brass">
                   <path d="M5 27l8-8M11 21l-2 6-2-1-3 3M22 6l4 4M19 9l4 4M16 12l-2 2 4 4 2-2M22 6l-9 9 4 4 9-9" />
@@ -333,7 +333,7 @@ export default function HomePage() {
                 <em className="not-italic text-white italic">Any camera. Real photos. Real proof.</em>
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="purple">
                 <StrokeIcon tone="purple">
                   <circle cx="16" cy="16" r="12" />
@@ -348,7 +348,7 @@ export default function HomePage() {
                 when the sky is clear, and where to point — phone, binoculars, or telescope.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="teal">
                 <StrokeIcon tone="teal">
                   <path d="M16 3l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z" />
@@ -387,10 +387,10 @@ export default function HomePage() {
               <Link
                 key={m.id}
                 href={`/missions/${m.id}`}
-                className="block bg-[#11172A] border border-white/[0.06] rounded-[14px] p-5 hover:border-white/[0.12] hover:-translate-y-0.5 transition-all no-underline"
+                className="block bg-[#11172A] border border-white/[0.06] rounded-[14px] p-5 hover:border-white/[0.12] hover:-translate-y-0.5 transition-all no-underline text-center md:text-left"
               >
                 <svg
-                  className="w-10 h-10 mb-4"
+                  className="w-10 h-10 mb-4 mx-auto md:mx-0"
                   stroke="#FFD166"
                   fill="none"
                   strokeWidth={1.5}
@@ -410,10 +410,10 @@ export default function HomePage() {
             ))}
             <Link
               href="/missions"
-              className="block bg-gradient-to-b from-[rgba(255,209,102,0.06)] to-[#11172A] border border-[rgba(255,209,102,0.2)] rounded-[14px] p-5 hover:border-[rgba(255,209,102,0.4)] hover:-translate-y-0.5 transition-all no-underline"
+              className="block bg-gradient-to-b from-[rgba(255,209,102,0.06)] to-[#11172A] border border-[rgba(255,209,102,0.2)] rounded-[14px] p-5 hover:border-[rgba(255,209,102,0.4)] hover:-translate-y-0.5 transition-all no-underline text-center md:text-left"
             >
               <svg
-                className="w-10 h-10 mb-4"
+                className="w-10 h-10 mb-4 mx-auto md:mx-0"
                 stroke="#FFD166"
                 fill="none"
                 strokeWidth={1.5}
@@ -446,7 +446,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="brass">
                 <StrokeIcon tone="brass">
                   <path d="M3 18c4-6 8-9 13-9s9 3 13 9" />
@@ -460,7 +460,7 @@ export default function HomePage() {
                 location via Open-Meteo.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="purple">
                 <StrokeIcon tone="purple">
                   <circle cx="16" cy="16" r="13" />
@@ -475,7 +475,7 @@ export default function HomePage() {
                 with astronomy-engine.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="teal">
                 <StrokeIcon tone="teal">
                   <rect x="6" y="6" width="20" height="20" rx="4" />
@@ -491,7 +491,7 @@ export default function HomePage() {
                 and what you can capture with whatever&apos;s in your hand.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="brass">
                 <StrokeIcon tone="brass">
                   <circle cx="16" cy="16" r="12" />
@@ -504,7 +504,7 @@ export default function HomePage() {
                 gasless, yours forever.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="purple">
                 <StrokeIcon tone="purple">
                   <path d="M16 3l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z" />
@@ -516,7 +516,7 @@ export default function HomePage() {
                 Astroman for real gear.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="teal">
                 <StrokeIcon tone="teal">
                   <circle cx="9" cy="22" r="3" />
@@ -553,7 +553,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="brass">
                 <StrokeIcon tone="brass">
                   <path d="M3 22c0-7 6-13 13-13s13 6 13 13" />
@@ -565,7 +565,7 @@ export default function HomePage() {
               <Prompt>&quot;Alert me at 6pm when tonight is a clear-sky &lsquo;Go&rsquo;&quot;</Prompt>
               <Prompt>&quot;Show me the next 3 dark-sky windows in Kazbegi&quot;</Prompt>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="purple">
                 <StrokeIcon tone="purple">
                   <circle cx="16" cy="16" r="12" />
@@ -577,7 +577,7 @@ export default function HomePage() {
               <Prompt>&quot;When can I see Saturn&apos;s rings tilt this year?&quot;</Prompt>
               <Prompt>&quot;Track Jupiter&apos;s 4 moons for the next two weeks&quot;</Prompt>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="teal">
                 <StrokeIcon tone="teal">
                   <path d="M5 25l9-9M11 19l-2 6-2-1-3 3M22 4l4 4M19 7l4 4M16 10l-2 2 4 4 2-2M22 4l-9 9 4 4 9-9" />
@@ -587,7 +587,7 @@ export default function HomePage() {
               <Prompt>&quot;What&apos;s left to complete the &lsquo;All Seven&rsquo; reward?&quot;</Prompt>
               <Prompt>&quot;Which missions can I shoot with just my phone?&quot;</Prompt>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="brass">
                 <StrokeIcon tone="brass">
                   <rect x="6" y="6" width="20" height="20" rx="4" />
@@ -600,7 +600,7 @@ export default function HomePage() {
               <Prompt>&quot;What can I photograph with my phone tonight?&quot;</Prompt>
               <Prompt>&quot;How do I find Andromeda by star-hopping?&quot;</Prompt>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="purple">
                 <StrokeIcon tone="purple">
                   <path d="M16 3l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z" />
@@ -610,7 +610,7 @@ export default function HomePage() {
               <Prompt>&quot;How many Stars until the free Moon Lamp reward?&quot;</Prompt>
               <Prompt>&quot;Show all my unlocked Astroman discount codes&quot;</Prompt>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="teal">
                 <StrokeIcon tone="teal">
                   <circle cx="9" cy="22" r="3" />
@@ -638,7 +638,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 md:min-h-[240px]">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 md:min-h-[240px] text-center md:text-left">
               <IconTile tone="brass">
                 <StrokeIcon tone="brass">
                   <path d="M5 11h22l-2 14H7zM10 11V7a6 6 0 0112 0v4" />
@@ -650,7 +650,7 @@ export default function HomePage() {
                 exists, the logistics already work.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 md:min-h-[240px]">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 md:min-h-[240px] text-center md:text-left">
               <IconTile tone="purple">
                 <StrokeIcon tone="purple">
                   <circle cx="11" cy="13" r="5" />
@@ -664,7 +664,7 @@ export default function HomePage() {
                 the loop. No upfront inventory.
               </CardBody>
             </div>
-            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 md:min-h-[240px]">
+            <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 md:min-h-[240px] text-center md:text-left">
               <IconTile tone="teal">
                 <StrokeIcon tone="teal">
                   <path d="M16 3a8 8 0 018 8c0 6-8 16-8 16s-8-10-8-16a8 8 0 018-8z" />
@@ -699,17 +699,18 @@ export default function HomePage() {
             </SectionSub>
           </div>
 
-          <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] overflow-hidden overflow-x-auto">
-            <table className="w-full border-collapse min-w-[640px]">
+          <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] overflow-hidden md:overflow-x-auto">
+            <table className="w-full border-collapse md:min-w-[640px]">
               <thead>
                 <tr>
-                  <th className="text-left text-white text-[14px] md:text-[18px] font-bold py-4 md:py-6 px-4 md:px-8 border-b border-white/[0.06] w-[30%]">
+                  <th className="text-left text-white text-[12px] md:text-[18px] font-bold py-3 md:py-6 px-2 md:px-8 border-b border-white/[0.06] w-[28%] md:w-[30%]">
                     Feature
                   </th>
-                  <th className="text-left text-white text-[14px] md:text-[18px] font-bold py-4 md:py-6 px-4 md:px-8 border-b border-white/[0.06]">
-                    Generic astronomy app
+                  <th className="text-left text-white text-[12px] md:text-[18px] font-bold py-3 md:py-6 px-2 md:px-8 border-b border-white/[0.06]">
+                    Generic
+                    <span className="hidden md:inline"> astronomy app</span>
                   </th>
-                  <th className="text-left text-white text-[14px] md:text-[18px] font-bold py-4 md:py-6 px-4 md:px-8 border-b border-white/[0.06] border-l-[3px] border-l-[#8B5CF6] bg-[rgba(139,92,246,0.06)]">
+                  <th className="text-left text-white text-[12px] md:text-[18px] font-bold py-3 md:py-6 px-2 md:px-8 border-b border-white/[0.06] border-l-[3px] border-l-[#8B5CF6] bg-[rgba(139,92,246,0.06)]">
                     Stellar
                   </th>
                 </tr>
@@ -731,22 +732,22 @@ export default function HomePage() {
                   const [usMark, usText] = us as [string, string];
                   return (
                     <tr key={feature as string}>
-                      <td className={`py-4 md:py-[22px] px-4 md:px-8 text-white font-medium text-[14px] md:text-[16px] ${isLast ? '' : 'border-b border-white/[0.06]'}`}>
+                      <td className={`py-3 md:py-[22px] px-2 md:px-8 text-white font-medium text-[12px] md:text-[16px] ${isLast ? '' : 'border-b border-white/[0.06]'}`}>
                         {feature}
                       </td>
-                      <td className={`py-4 md:py-[22px] px-4 md:px-8 text-[#9BA3B4] text-[14px] md:text-[16px] ${isLast ? '' : 'border-b border-white/[0.06]'}`}>
+                      <td className={`py-3 md:py-[22px] px-2 md:px-8 text-[#9BA3B4] text-[12px] md:text-[16px] ${isLast ? '' : 'border-b border-white/[0.06]'}`}>
                         {themMark === 'check' ? (
-                          <span className="text-[#10B981] mr-2.5 font-bold">✓</span>
+                          <span className="text-[#10B981] mr-1.5 md:mr-2.5 font-bold">✓</span>
                         ) : (
-                          <span className="text-[#EF4444] mr-2.5 font-bold">✗</span>
+                          <span className="text-[#EF4444] mr-1.5 md:mr-2.5 font-bold">✗</span>
                         )}
-                        {themText && <em className="not-italic italic">{themText}</em>}
+                        <span className="hidden md:inline">{themText && <em className="not-italic italic">{themText}</em>}</span>
                       </td>
-                      <td className={`py-4 md:py-[22px] px-4 md:px-8 text-white text-[14px] md:text-[16px] border-l-[3px] border-l-[#8B5CF6] bg-[rgba(139,92,246,0.04)] ${isLast ? '' : 'border-b border-white/[0.06]'}`}>
+                      <td className={`py-3 md:py-[22px] px-2 md:px-8 text-white text-[12px] md:text-[16px] border-l-[3px] border-l-[#8B5CF6] bg-[rgba(139,92,246,0.04)] ${isLast ? '' : 'border-b border-white/[0.06]'}`}>
                         {usMark === 'check' ? (
-                          <span className="text-[#10B981] mr-2.5 font-bold">✓</span>
+                          <span className="text-[#10B981] mr-1.5 md:mr-2.5 font-bold">✓</span>
                         ) : (
-                          <span className="text-[#EF4444] mr-2.5 font-bold">✗</span>
+                          <span className="text-[#EF4444] mr-1.5 md:mr-2.5 font-bold">✗</span>
                         )}
                         {usText}
                       </td>
