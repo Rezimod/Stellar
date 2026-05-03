@@ -585,33 +585,38 @@
   text-transform: uppercase;
 }
 
-/* === HINT CARDS === */
+/* === HINT CARDS — contextual strip, attached to the active target === */
 .sky-page-v2 .finder-hints {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 24px;
-}
-.sky-page-v2 .finder-hint {
-  background: var(--surface);
+  gap: 0;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px;
+  overflow: hidden;
+}
+.sky-page-v2 .finder-hint {
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+}
+.sky-page-v2 .finder-hint:last-child {
+  border-right: none;
 }
 .sky-page-v2 .finder-hint__label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-dim);
 }
 .sky-page-v2 .finder-hint__body {
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.45;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255,255,255,0.82);
 }
 
 /* === ACTION ROW === */
@@ -694,6 +699,8 @@
   }
   .sky-page-v2 .finder-hero__meta-item:not(:last-child)::after { content: none; }
   .sky-page-v2 .finder-hints { grid-template-columns: 1fr; }
+  .sky-page-v2 .finder-hint { border-right: none; border-bottom: 1px solid var(--border); }
+  .sky-page-v2 .finder-hint:last-child { border-bottom: none; }
   .sky-page-v2 .finder-actions { flex-direction: column; }
   .sky-page-v2 .finder-action { width: 100%; text-align: center; }
 }

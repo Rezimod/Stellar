@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 import { useSkyData } from '@/lib/use-sky-data';
 import { useLocation } from '@/lib/location';
 import { SkyHero } from '@/components/sky/SkyHero';
+import { VisibleNow } from '@/components/sky/VisibleNow';
 import { ObservationTimeline } from '@/components/sky/ObservationTimeline';
 import { LocationFallbackBanner } from '@/components/sky/LocationFallbackBanner';
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
 import { HorizonStrip } from '@/components/sky/finder/HorizonStrip';
 import { ObjectTabs } from '@/components/sky/finder/ObjectTabs';
+import { HintCards } from '@/components/sky/finder/HintCards';
 import { ARFinder } from '@/components/sky/finder/ARFinder';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
@@ -127,6 +129,22 @@ export default function SkyPage() {
             location.lon === FALLBACK_COORDS.lon
           }
         />
+
+        <section className="section">
+          <div className="section-head">
+            <h2 className="section-title">{tPage('visibleTonight')}</h2>
+            <span className="section-meta">
+              {sky.refreshedAt
+                ? sky.refreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+                : '—'}
+            </span>
+          </div>
+          <VisibleNow
+            planets={sky.planets}
+            featuredTarget={activeObject?.name}
+            isCurrentlyDark={sky.isCurrentlyDark}
+          />
+        </section>
 
         <section className="section">
           <div className="section-head">
@@ -280,7 +298,10 @@ function FinderRegion({
           />
 
           {activeObject ? (
-            <DirectionHero object={activeObject} />
+            <>
+              <DirectionHero object={activeObject} />
+              <HintCards object={activeObject} />
+            </>
           ) : (
             <div
               style={{
