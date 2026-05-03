@@ -55,10 +55,8 @@ function missionImage(id: string): string {
 }
 
 type CategoryFilter = 'all' | MarketCategory;
-type Theme = 'light' | 'dark';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-const THEME_KEY = 'stellar-markets-theme';
 
 interface CategoryDef {
   key: MarketCategory;
@@ -205,7 +203,6 @@ export default function MarketsPage() {
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const [category, setCategory] = useState<CategoryFilter>('all');
-  const [theme, setTheme] = useState<Theme>('light');
   const [mint, setMint] = useState<PublicKey | null>(null);
   const balance = useStarsBalance(signer.publicKey?.toBase58() ?? null);
   const [expanded, setExpanded] = useState<{
@@ -219,17 +216,6 @@ export default function MarketsPage() {
 
   // Stars balance is provided by the shared `useStarsBalance` hook above; it
   // already listens for `stellar:stars-synced` and re-fetches on demand.
-
-  useEffect(() => {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved === 'dark') setTheme('dark');
-  }, []);
-
-  function toggleTheme() {
-    const next: Theme = theme === 'light' ? 'dark' : 'light';
-    setTheme(next);
-    try { localStorage.setItem(THEME_KEY, next); } catch {}
-  }
 
   const observations = useMemo(
     () => missionsToObservations(state.completedMissions ?? []),
@@ -386,9 +372,9 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
-      <div className={`markets-page ${theme === 'dark' ? 'dark' : ''}`}>
+      <div className="markets-page">
         <div className="mkt-shell">
-        {/* Stats bar + theme toggle */}
+        {/* Stats bar */}
         <div className="mkt-stats-bar">
           {loading ? (
             <span
@@ -400,12 +386,6 @@ export default function MarketsPage() {
               {`${summary.open} open · ${summary.resolved} resolved · ${formatVolume(summary.staked)} staked`}
             </span>
           )}
-          <button
-            type="button"
-            className="mkt-theme-toggle"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          />
         </div>
 
         {/* Trending strip — auto-rotates every 4.5s, pauses on hover */}

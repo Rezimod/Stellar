@@ -1021,47 +1021,17 @@
    ======================================================================== */
 
 .markets-page {
-  /* Light palette — warm-white card on a soft daylight-sky page.
-     The page itself is overridden to light blue below; --stl-bg is the
-     interior (shell) surface so inputs and sub-cards stay consistent. */
-  --stl-bg: #FFFDF7;       /* warm white shell surface */
-  --stl-bg2: #FFFFFF;      /* clean white sub-surface (bet panel, inputs) */
-  --stl-bg3: #F4ECDC;      /* warm cream accent */
-  --stl-bg-hover: #F7EFDC; /* warm hover */
-  --stl-text1: #142136;
-  --stl-text2: #4B5A72;
-  --stl-text3: #8593A8;
-  --stl-border: #ECE3CE;
-  --stl-border2: #D7C9AB;
-  --stl-green: #0E7C58;
-  --stl-green-bg: #E2EFE7;
-  --stl-red: #B23A66;
-  --stl-red-bg: #F4DDE5;
-  --stl-accent: var(--terracotta);
-  --stl-accent-bg: #F7E6D6;
-  --stl-teal: #2A6F8C;
-  --stl-teal-bg: #E1ECF1;
-  --stl-amber: #B36106;
-  --stl-amber-bg: #F5E5C9;
-  --stl-cosmic-yes: #0E7C58;
-  --stl-cosmic-yes-glow: rgba(14, 124, 88, 0.18);
-  --stl-cosmic-no:  #B23A66;
-  --stl-cosmic-no-glow:  rgba(178, 58, 102, 0.18);
-  --stl-sidebar-bg: #FBF6E8;
-  --stl-cosmic-aura: none;
-  --stl-stars: none;
-}
-
-.markets-page.dark {
-  --stl-bg: #0A0B14;
-  --stl-bg2: #14152A;
-  --stl-bg3: #1C1D38;
-  --stl-bg-hover: #20223F;
+  /* Always-dark cosmic blue canvas. Sub-surfaces are tinted lifts of the
+     same blue so cards "pop" against the page without breaking color theme. */
+  --stl-bg: var(--canvas);                 /* shell sits on the page (uniform blue) */
+  --stl-bg2: rgba(255, 255, 255, 0.045);   /* card surface — subtle lift */
+  --stl-bg3: rgba(255, 255, 255, 0.085);   /* elevated surface (active inputs) */
+  --stl-bg-hover: rgba(255, 255, 255, 0.075);
   --stl-text1: #F0EEFB;
-  --stl-text2: #A6A2C5;
-  --stl-text3: #6F6B8E;
-  --stl-border: #292B4A;
-  --stl-border2: #393B62;
+  --stl-text2: #A6B0C8;
+  --stl-text3: #7A86A0;
+  --stl-border: rgba(255, 255, 255, 0.08);
+  --stl-border2: rgba(255, 255, 255, 0.16);
   --stl-green: var(--yes);
   --stl-green-bg: var(--yes-dim);
   --stl-red: var(--no);
@@ -1076,9 +1046,9 @@
   --stl-cosmic-yes-glow: rgba(52, 211, 153, 0.40);
   --stl-cosmic-no:  var(--no);
   --stl-cosmic-no-glow:  rgba(248, 113, 113, 0.40);
-  --stl-sidebar-bg: #0E0F22;
-  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(255, 209, 102,0.18), transparent 55%),
-                     radial-gradient(720px 520px at 100% 0%, rgba(94, 234, 212, 0.10), transparent 55%);
+  --stl-sidebar-bg: var(--canvas);          /* sidebar = same canvas (uniform) */
+  --stl-cosmic-aura: radial-gradient(900px 600px at 12% -8%, rgba(255, 209, 102,0.10), transparent 55%),
+                     radial-gradient(720px 520px at 100% 0%, rgba(94, 234, 212, 0.06), transparent 55%);
   --stl-stars: radial-gradient(1.2px 1.2px at 12% 22%, rgba(255,255,255,0.55), transparent 60%),
                radial-gradient(1px 1px at 38% 12%, rgba(255,255,255,0.35), transparent 60%),
                radial-gradient(1.2px 1.2px at 71% 30%, rgba(255,255,255,0.5),  transparent 60%),
@@ -1087,58 +1057,15 @@
                radial-gradient(1px 1px at 56% 56%, rgba(255,255,255,0.25), transparent 60%);
 }
 
-/* Root wrapper takes over the page background/text for scoped theming */
+/* Root wrapper — uniform cosmic blue, no shell card swap */
 .markets-page {
   position: relative;
-  background: var(--stl-bg);
+  background: var(--canvas);
   color: var(--stl-text1);
   font-family: var(--font-display), -apple-system, 'Segoe UI', sans-serif;
   min-height: calc(100vh - 56px);
-  transition: background-color 0.15s ease, color 0.15s ease;
   isolation: isolate;
   overflow: hidden;
-}
-/* Light-mode-only: cosmic-blue page canvas (matches site-wide --canvas) with
-   the shell as a warm-white card sitting on it. Dark mode keeps its aura. */
-.markets-page:not(.dark) { background: var(--canvas); }
-.markets-page:not(.dark)::before,
-.markets-page:not(.dark)::after { display: none; }
-.markets-page:not(.dark) .mkt-shell {
-  background: var(--stl-bg);
-  border-left: 1px solid rgba(255, 255, 255, 0.10);
-  border-right: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 60px rgba(0, 0, 0, 0.30);
-}
-.markets-page:not(.dark) .mkt-trending-chip {
-  background: var(--stl-bg2);
-}
-.markets-page:not(.dark) .mkt-trending-chip:hover {
-  background: var(--stl-bg-hover);
-}
-/* Calmer odds cells on warm-white card — drop the cyan/magenta gradients */
-.markets-page:not(.dark) .mkt-odds-cell.yes {
-  --cell-bg: rgba(14, 124, 88, 0.08);
-  --cell-border: rgba(14, 124, 88, 0.35);
-}
-.markets-page:not(.dark) .mkt-odds-cell.no {
-  --cell-bg: rgba(178, 58, 102, 0.08);
-  --cell-border: rgba(178, 58, 102, 0.35);
-}
-.markets-page:not(.dark) .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-bg: rgba(14, 124, 88, 0.16);
-  --cell-border: rgba(14, 124, 88, 0.55);
-}
-.markets-page:not(.dark) .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-bg: rgba(178, 58, 102, 0.16);
-  --cell-border: rgba(178, 58, 102, 0.55);
-}
-.markets-page:not(.dark) .mkt-odds-cell.yes.active {
-  --cell-bg: rgba(14, 124, 88, 0.22);
-  --cell-border: rgba(14, 124, 88, 0.72);
-}
-.markets-page:not(.dark) .mkt-odds-cell.no.active {
-  --cell-bg: rgba(178, 58, 102, 0.22);
-  --cell-border: rgba(178, 58, 102, 0.72);
 }
 /* Cosmic aura — soft purple/teal/rose color washes */
 .markets-page::before {
@@ -1191,46 +1118,6 @@
 }
 .mkt-stats-text { font-variant-numeric: tabular-nums; }
 
-/* iOS-style theme toggle (32x18) */
-.mkt-theme-toggle {
-  position: relative;
-  width: 32px;
-  height: 18px;
-  border-radius: 9px;
-  background: var(--stl-bg3);
-  border: 1px solid var(--stl-border);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
-  cursor: pointer;
-  padding: 0;
-  transition: background 200ms cubic-bezier(0.4, 0.0, 0.2, 1),
-    transform 120ms cubic-bezier(0.4, 0.0, 0.2, 1);
-  flex-shrink: 0;
-}
-.mkt-theme-toggle:active {
-  transform: scale(0.96);
-}
-.mkt-theme-toggle::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: transform 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-.markets-page.dark .mkt-theme-toggle {
-  background: var(--stl-text3);
-  border-color: var(--stl-text3);
-  box-shadow: none;
-}
-.markets-page.dark .mkt-theme-toggle::after {
-  transform: translateX(14px);
-  background: #fff;
-}
-
 /* Two-column layout */
 .mkt-layout {
   display: grid;
@@ -1249,7 +1136,7 @@
   min-height: 100%;
   overflow: hidden;
 }
-.markets-page.dark .mkt-sidebar::before {
+.mkt-sidebar::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -1587,14 +1474,13 @@
   border-radius: 8px;
   background: var(--cat-bg, transparent);
   border: 1px solid var(--cat-border, transparent);
-  color: var(--cat-fg, var(--stl-text3));
+  color: var(--cat-fg, var(--stl-text2));
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.15s ease;
 }
 .mkt-row:hover .mkt-row-icon { transform: scale(1.06); }
-.markets-page.dark .mkt-row-icon { color: var(--cat-fg, var(--stl-text2)); }
 
 /* Category color tokens — neutralized to on-palette tokens.
    Categories are differentiated by icon + label, not hue, per the
@@ -1681,87 +1567,88 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-width: 78px;
-  height: 34px;
+  gap: 7px;
+  min-width: 84px;
+  height: 36px;
   padding: 0 14px 0 12px;
-  border: 1px solid transparent;
-  border-radius: 999px;
+  border: 1.5px solid var(--cell-border, transparent);
+  border-radius: 10px;
   background: var(--cell-bg, transparent);
   cursor: pointer;
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   color: var(--cell-fg, var(--stl-text2));
-  box-shadow:
-    0 0 0 1px var(--cell-border, var(--stl-border2)) inset,
-    0 0 0 0 var(--cell-glow, transparent);
   transition: box-shadow 0.18s ease, background 0.18s ease, transform 0.12s ease,
-    color 0.12s ease;
+    color 0.12s ease, border-color 0.18s ease;
 }
 .mkt-odds-cell:disabled { opacity: 0.45; cursor: not-allowed; }
 .mkt-odds-cell::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--cell-fg, currentColor);
-  box-shadow: 0 0 6px var(--cell-fg, currentColor);
+  box-shadow: 0 0 8px var(--cell-fg, currentColor);
   flex-shrink: 0;
-  opacity: 0.85;
 }
 .mkt-odds-cell .cell-label {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  opacity: 0.78;
+  color: var(--cell-fg, currentColor);
 }
 .mkt-odds-cell .cell-num {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1;
   font-feature-settings: 'tnum';
+  color: var(--cell-fg, currentColor);
 }
 .mkt-odds-cell .cell-pct {
   font-size: 9px;
-  font-weight: 500;
+  font-weight: 600;
   margin-left: 1px;
-  opacity: 0.55;
+  opacity: 0.7;
 }
 
 .mkt-odds-cell.yes {
-  --cell-fg: var(--yes);
-  --cell-bg: var(--yes-dim);
-  --cell-border: var(--yes-border);
+  --cell-fg: #6EE7B7;
+  --cell-bg: rgba(52, 211, 153, 0.18);
+  --cell-border: rgba(52, 211, 153, 0.55);
 }
 .mkt-odds-cell.no {
-  --cell-fg: var(--no);
-  --cell-bg: var(--no-dim);
-  --cell-border: var(--no-border);
+  --cell-fg: #FCA5A5;
+  --cell-bg: rgba(248, 113, 113, 0.18);
+  --cell-border: rgba(248, 113, 113, 0.55);
 }
 
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-bg: rgba(52, 211, 153, 0.18);
-  --cell-border: rgba(52, 211, 153, 0.55);
+  --cell-bg: rgba(52, 211, 153, 0.32);
+  --cell-border: rgba(52, 211, 153, 0.85);
   transform: translateY(-1px);
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.10);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-bg: rgba(248, 113, 113, 0.18);
-  --cell-border: rgba(248, 113, 113, 0.55);
+  --cell-bg: rgba(248, 113, 113, 0.32);
+  --cell-border: rgba(248, 113, 113, 0.85);
   transform: translateY(-1px);
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.10);
 }
 
 .mkt-odds-cell.yes.active {
-  --cell-bg: rgba(52, 211, 153, 0.22);
-  --cell-border: rgba(52, 211, 153, 0.70);
-  box-shadow: 0 0 0 1.5px var(--cell-border) inset;
+  --cell-bg: rgba(52, 211, 153, 0.42);
+  --cell-border: rgb(52, 211, 153);
+  --cell-fg: #ECFDF5;
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.18);
 }
 .mkt-odds-cell.no.active {
-  --cell-bg: rgba(248, 113, 113, 0.22);
-  --cell-border: rgba(248, 113, 113, 0.70);
-  box-shadow: 0 0 0 1.5px var(--cell-border) inset;
+  --cell-bg: rgba(248, 113, 113, 0.42);
+  --cell-border: rgb(248, 113, 113);
+  --cell-fg: #FEF2F2;
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.18);
 }
 
 /* Inline bet panel — drop-down beneath an expanded market row */
@@ -2147,9 +2034,9 @@
 .mkt-tip {
   padding: 10px 12px;
   background: var(--stl-teal-bg);
+  border: 1px solid rgba(94, 234, 212, 0.18);
   border-radius: 8px;
 }
-.markets-page.dark .mkt-tip { border: 1px solid rgba(94, 234, 212,0.18); }
 .mkt-tip-title {
   display: flex;
   align-items: center;
