@@ -79,7 +79,8 @@
       "visibleTonight": "Visible tonight",
       "tonightTimeline": "Tonight's observation timeline",
       "darkWindow": "Dark window",
-      "noVisible": "No bright objects above the horizon right now."
+      "noVisible": "No bright objects above the horizon right now.",
+      "extendedForecast": "Extended forecast"
     },
     "hero": {
       "face": "Face",
@@ -105,7 +106,9 @@
         "mercury": "Mercury looks like a bright \"star\" near the horizon — fast-mover, never far from the Sun.",
         "uranus": "Faint and tricky — you'll need binoculars or a small telescope to actually see it.",
         "neptune": "Faint — binoculars or a telescope only."
-      }
+      },
+      "belowSentenceA": "is below the horizon. It will rise in the",
+      "belowSentenceB": "at"
     },
     "directions": {
       "fists": {
@@ -245,6 +248,47 @@
         "noSensors": "AR works on a phone with motion sensors. On desktop, use the horizon view instead."
       },
       "close": "Close"
+    },
+    "picker": {
+      "header": "Tonight's sky · {count} visible now",
+      "auto": "AUTO",
+      "autoToggle": "Auto-rotate",
+      "risesAt": "rises {time}"
+    },
+    "strip": {
+      "a11y": "Live sky state",
+      "labels": {
+        "location": "Location",
+        "sky": "Sky",
+        "moon": "Moon",
+        "clouds": "Clouds",
+        "time": "Local time"
+      },
+      "phase": {
+        "day": "Daylight",
+        "civil": "Civil twilight",
+        "nautical": "Nautical twilight",
+        "astronomical": "Astronomical twilight",
+        "dark": "Dark sky"
+      },
+      "setsAt": "Sets {time}",
+      "darkIn": "Dark in {dur}",
+      "dawnAt": "Dawn at {time}",
+      "dawnIn": "Dawn in {dur}",
+      "moonAbove": "{illum}% · {alt}° up",
+      "moonBelow": "{illum}% · below horizon",
+      "clouds": {
+        "clear": "Clear",
+        "partly": "Partly cloudy",
+        "overcast": "Overcast"
+      },
+      "locationFallback": "Default — set your own"
+    },
+    "horizon": {
+      "label": "Your horizon — looking around",
+      "refresh": "Updates every minute",
+      "zenith": "ZENITH",
+      "below": "below"
     }
   },
   "planets": {

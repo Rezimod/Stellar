@@ -1,24 +1,20 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import type { SkyObject, ObjectId } from './types';
 
 interface HorizonStripProps {
   objects: SkyObject[];
-  highlightedId?: ObjectId;
+  highlightedId?: ObjectId | null;
   onObjectClick?: (id: ObjectId) => void;
 }
 
-interface PlottedObject extends SkyObject {
-  xPct: number;
-  yPct: number;
-  labelOffsetY: number;
-}
-
 const STRIP_WIDTH = 1600;
-const STRIP_HEIGHT = 220;
-const BOTTOM_BAND = 32;
-const PLOT_HEIGHT = STRIP_HEIGHT - BOTTOM_BAND;
+const STRIP_HEIGHT = 280;
+const COMPASS_BAND = 28;
+const SKY_FRACTION = 0.78; // top 78% = sky, bottom 22% (above compass band) = ground
+
 const COMPASS_LABELS: { dir: string; az: number }[] = [
   { dir: 'N', az: 0 },
   { dir: 'NE', az: 45 },
@@ -46,7 +42,7 @@ const ACCENT: Record<ObjectId, string> = {
 const GLOW: Record<ObjectId, string> = {
   sun:     '0 0 18px rgba(255,209,102,0.70), 0 0 36px rgba(255,123,26,0.25)',
   moon:    '0 0 14px rgba(244,237,224,0.55), 0 0 28px rgba(244,237,224,0.18)',
-  mercury: '0 0 10px rgba(214,205,177,0.40)',
+  mercury: '0 0 8px rgba(214,205,177,0.35)',
   venus:   '0 0 14px rgba(247,231,168,0.55), 0 0 26px rgba(247,231,168,0.18)',
   mars:    '0 0 12px rgba(255,123,84,0.50), 0 0 24px rgba(255,123,84,0.18)',
   jupiter: '0 0 14px rgba(255,209,102,0.55), 0 0 28px rgba(255,209,102,0.20)',
@@ -55,37 +51,57 @@ const GLOW: Record<ObjectId, string> = {
   neptune: '0 0 10px rgba(141,183,232,0.40)',
 };
 
+interface PlottedObject extends SkyObject {
+  xPx: number;
+  yPx: number;
+  size: number;
+  isAbove: boolean;
+}
+
+const skyHeightPx = (STRIP_HEIGHT - COMPASS_BAND) * SKY_FRACTION;
+const groundHeightPx = (STRIP_HEIGHT - COMPASS_BAND) - skyHeightPx;
+const horizonY = skyHeightPx;
+
+function discSizeForMag(mag: number, active: boolean): number {
+  // Brighter = larger. Mag scale roughly -27 (Sun) … +8 (Neptune).
+  const base = mag <= -2 ? 14 : mag <= 0 ? 12 : mag <= 2 ? 10 : mag <= 4 ? 9 : 8;
+  return active ? base + 4 : base;
+}
+
 function plot(objects: SkyObject[]): PlottedObject[] {
-  const sorted = [...objects].sort((a, b) => a.azimuth - b.azimuth);
-  const placed: PlottedObject[] = [];
-  for (const o of sorted) {
-    const xPct = (o.azimuth / 360) * 100;
-    // altitude clamps to 0..90 → yPct from bottom-band edge to 0
-    const altClamped = Math.max(0, Math.min(90, o.altitude));
-    const yPx = (PLOT_HEIGHT) - (altClamped / 90) * PLOT_HEIGHT;
-    const yPct = (yPx / STRIP_HEIGHT) * 100;
-    let labelOffsetY = 0;
-    for (const p of placed) {
-      const dxPct = Math.abs(p.xPct - xPct);
-      // 60px of 1600 = ~3.75% — collide if within that range AND vertically close
-      if (dxPct < 4 && Math.abs(p.yPct - yPct) < 6) {
-        labelOffsetY = (p.labelOffsetY === 0 ? 16 : 0);
-      }
+  return objects.map((o) => {
+    const xPx = (o.azimuth / 360) * STRIP_WIDTH;
+    const altClamped = Math.max(-90, Math.min(90, o.altitude));
+    let yPx: number;
+    let isAbove: boolean;
+    if (altClamped >= 0) {
+      yPx = horizonY - (altClamped / 90) * skyHeightPx;
+      isAbove = true;
+    } else {
+      // Below horizon: place 0..|alt|/90 of groundHeight downward.
+      // Cap at 80% into ground so the dot doesn't sit on the compass row.
+      const depth = Math.min(0.8, Math.abs(altClamped) / 90);
+      yPx = horizonY + depth * groundHeightPx;
+      isAbove = false;
     }
-    placed.push({ ...o, xPct, yPct, labelOffsetY });
-  }
-  return placed;
+    return {
+      ...o,
+      xPx,
+      yPx,
+      size: discSizeForMag(o.magnitude, false),
+      isAbove,
+    };
+  });
 }
 
 export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonStripProps) {
+  const t = useTranslations('sky.horizon');
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const plotted = useMemo(() => plot(objects.filter((o) => o.visible)), [objects]);
+  const plotted = useMemo(() => plot(objects), [objects]);
 
   useEffect(() => {
     if (!scrollRef.current) return;
-    const focus = highlightedId
-      ? plotted.find((p) => p.id === highlightedId)
-      : null;
+    const focus = highlightedId ? plotted.find((p) => p.id === highlightedId) : null;
     const az = focus?.azimuth ?? 180;
     const el = scrollRef.current;
     const target = (az / 360) * STRIP_WIDTH - el.clientWidth / 2;
@@ -93,28 +109,69 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
   }, [highlightedId, plotted]);
 
   return (
-    <div className="finder-strip">
-      <div ref={scrollRef} className="finder-strip__scroll">
-        <div className="finder-strip__inner" style={{ width: STRIP_WIDTH }}>
-          <div className="finder-strip__bg" />
+    <div className="horizon-strip">
+      <div ref={scrollRef} className="horizon-strip__scroll">
+        <div className="horizon-strip__inner" style={{ width: STRIP_WIDTH, height: STRIP_HEIGHT }}>
+          <div className="horizon-strip__bg" />
           <StarField />
-          <div className="finder-strip__horizon" />
+
+          {/* Altitude grid */}
+          <div
+            className="horizon-strip__grid"
+            style={{ top: horizonY - skyHeightPx * (60 / 90) }}
+            aria-hidden="true"
+          />
+          <div
+            className="horizon-strip__grid"
+            style={{ top: horizonY - skyHeightPx * (30 / 90) }}
+            aria-hidden="true"
+          />
+          <div className="horizon-strip__alt-label" style={{ top: horizonY - skyHeightPx * (60 / 90) - 10 }}>
+            60°
+          </div>
+          <div className="horizon-strip__alt-label" style={{ top: horizonY - skyHeightPx * (30 / 90) - 10 }}>
+            30°
+          </div>
+          <div className="horizon-strip__alt-label" style={{ top: 4 }}>
+            {t('zenith')}
+          </div>
+
+          {/* Horizon line */}
+          <div className="horizon-strip__horizon" style={{ top: horizonY }} />
+
+          {/* Ground band tint */}
+          <div
+            className="horizon-strip__ground"
+            style={{ top: horizonY, height: groundHeightPx + COMPASS_BAND }}
+          />
+
+          {/* Object marks */}
           {plotted.map((p) => {
             const isHl = p.id === highlightedId;
             const accent = ACCENT[p.id];
-            const glow = GLOW[p.id];
-            const discSize = isHl ? 18 : 12;
+            const radius = isHl ? p.size + 4 : p.size;
+            const opacity = p.isAbove ? 1 : 0.32;
             return (
-              <div key={p.id} style={{ position: 'absolute', left: `${p.xPct}%`, top: 0, bottom: 0 }}>
-                {isHl && (
+              <div
+                key={p.id}
+                style={{
+                  position: 'absolute',
+                  left: p.xPx,
+                  top: p.yPx,
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: isHl ? 5 : p.isAbove ? 3 : 2,
+                }}
+              >
+                {isHl && p.isAbove && (
                   <div
-                    className="finder-strip__beam"
+                    className="horizon-strip__beam"
                     style={{
                       position: 'absolute',
-                      left: -1,
-                      top: `${p.yPct}%`,
-                      bottom: BOTTOM_BAND,
-                      width: 2,
+                      left: '50%',
+                      top: '50%',
+                      width: 1,
+                      height: horizonY - p.yPx,
+                      transform: 'translateX(-50%)',
                     }}
                   />
                 )}
@@ -122,55 +179,40 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
                   type="button"
                   onClick={() => onObjectClick?.(p.id)}
                   aria-label={p.name}
+                  className={`horizon-strip__mark${isHl ? ' is-active' : ''}${p.isAbove ? '' : ' is-below'}`}
                   style={{
-                    position: 'absolute',
-                    top: `${p.yPct}%`,
-                    transform: 'translate(-50%, -50%)',
-                    width: discSize,
-                    height: discSize,
-                    borderRadius: '50%',
-                    background: accent,
-                    boxShadow: glow,
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
+                    width: radius,
+                    height: radius,
+                    background: p.isAbove ? accent : 'rgba(255,255,255,0.45)',
+                    boxShadow: p.isAbove ? GLOW[p.id] : 'none',
+                    opacity,
                   }}
                 />
                 <div
+                  className="horizon-strip__mark-label"
                   style={{
-                    position: 'absolute',
-                    top: `calc(${p.yPct}% - ${discSize / 2 + 14 + p.labelOffsetY}px)`,
-                    transform: 'translateX(-50%)',
-                    fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-                    fontSize: 10,
-                    color: isHl ? accent : 'rgba(244,237,224,0.85)',
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
+                    color: isHl ? 'var(--terracotta, #ffd166)' : p.isAbove ? '#f4ede0' : 'rgba(244,237,224,0.45)',
+                    transform: `translate(-50%, ${-radius - 18}px)`,
                     fontWeight: isHl ? 600 : 500,
-                    letterSpacing: '0.04em',
                   }}
                 >
                   {p.name}
                 </div>
                 <div
+                  className="horizon-strip__mark-alt"
                   style={{
-                    position: 'absolute',
-                    top: `calc(${p.yPct}% + ${discSize / 2 + 4 + p.labelOffsetY}px)`,
-                    transform: 'translateX(-50%)',
-                    fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-                    fontSize: 9,
-                    color: isHl ? 'rgba(255,209,102,0.85)' : 'rgba(244,237,224,0.50)',
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
-                    letterSpacing: '0.04em',
+                    color: isHl ? 'var(--terracotta, #ffd166)' : p.isAbove ? 'rgba(244,237,224,0.55)' : 'rgba(244,237,224,0.35)',
+                    transform: `translate(-50%, ${radius / 2 + 6}px)`,
                   }}
                 >
-                  {Math.round(p.altitude)}°
+                  {p.isAbove ? `${Math.round(p.altitude)}°` : t('below')}
                 </div>
               </div>
             );
           })}
-          <div className="finder-strip__compass-row" style={{ height: BOTTOM_BAND }}>
+
+          {/* Compass row */}
+          <div className="horizon-strip__compass-row" style={{ height: COMPASS_BAND }}>
             {COMPASS_LABELS.map((c, i) => {
               const xPct = (c.az / 360) * 100;
               const isFocus = highlightedId
@@ -179,17 +221,8 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
               return (
                 <span
                   key={`${c.dir}-${i}`}
-                  style={{
-                    position: 'absolute',
-                    left: `${xPct}%`,
-                    bottom: 8,
-                    transform: 'translateX(-50%)',
-                    fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-                    fontSize: 10,
-                    color: isFocus ? '#5EEAD4' : 'rgba(255,255,255,0.42)',
-                    letterSpacing: '0.08em',
-                    fontWeight: isFocus ? 600 : 400,
-                  }}
+                  className={`horizon-strip__compass${isFocus ? ' is-focus' : ''}`}
+                  style={{ left: `${xPct}%` }}
                 >
                   {c.dir}
                 </span>
@@ -203,8 +236,6 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
 }
 
 function StarField() {
-  // Faint star dots — 1px boxes with multiple shadow offsets baked in.
-  // Stable seeded scatter so it doesn't wiggle between renders.
   const stars = useMemo(() => {
     const out: { x: number; y: number; o: number }[] = [];
     let seed = 1337;
@@ -212,11 +243,11 @@ function StarField() {
       seed = (seed * 9301 + 49297) % 233280;
       return seed / 233280;
     };
-    for (let i = 0; i < 70; i++) {
+    for (let i = 0; i < 90; i++) {
       out.push({
         x: rand() * STRIP_WIDTH,
-        y: rand() * (STRIP_HEIGHT - BOTTOM_BAND - 8) + 4,
-        o: 0.25 + rand() * 0.55,
+        y: rand() * skyHeightPx,
+        o: 0.18 + rand() * 0.45,
       });
     }
     return out;
@@ -226,17 +257,8 @@ function StarField() {
       {stars.map((s, i) => (
         <span
           key={i}
-          style={{
-            position: 'absolute',
-            left: s.x,
-            top: s.y,
-            width: 1,
-            height: 1,
-            background: 'white',
-            opacity: s.o,
-            borderRadius: '50%',
-            pointerEvents: 'none',
-          }}
+          className="horizon-strip__star"
+          style={{ left: s.x, top: s.y, opacity: s.o }}
         />
       ))}
     </>

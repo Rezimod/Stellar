@@ -80,15 +80,33 @@ export function DirectionHero({ object }: DirectionHeroProps) {
         </div>
       </div>
 
-      <p className="finder-hero__sentence" lang={locale}>
-        {t('hero.face')}{' '}
-        <span className="finder-hero__direction">{directionText}</span>
-        {t('hero.thenLook')}{' '}
-        <span className="finder-hero__fists">{fistsText}</span>{' '}
-        {t('hero.aboveHorizon')}
-        {' '}
-        <span className="finder-hero__tail">{tail}</span>
-      </p>
+      {object.visible ? (
+        <p className="finder-hero__sentence" lang={locale}>
+          {t('hero.face')}{' '}
+          <span className="finder-hero__direction">{directionText}</span>
+          {t('hero.thenLook')}{' '}
+          <span className="finder-hero__fists">{fistsText}</span>{' '}
+          {t('hero.aboveHorizon')}
+          {' '}
+          <span className="finder-hero__tail">{tail}</span>
+        </p>
+      ) : (
+        <p className="finder-hero__sentence" lang={locale}>
+          {object.name}{' '}
+          {t('hero.belowSentenceA')}{' '}
+          <span className="finder-hero__direction">{directionText}</span>
+          {riseLabel ? (
+            <>
+              {' '}
+              {t('hero.belowSentenceB')}{' '}
+              <span className="finder-hero__fists">{riseLabel}</span>
+              {'.'}
+            </>
+          ) : (
+            '.'
+          )}
+        </p>
+      )}
 
       <div className="finder-hero__meta">
         {bottomMeta.map((m, i) => (

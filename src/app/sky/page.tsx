@@ -11,16 +11,22 @@ import { DirectionHero } from '@/components/sky/finder/DirectionHero';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { BodyTable } from '@/components/sky/finder/BodyTable';
 import { ARFinder } from '@/components/sky/finder/ARFinder';
+import { SkyStateStrip } from '@/components/sky/finder/SkyStateStrip';
+import { TargetPicker } from '@/components/sky/finder/TargetPicker';
+import { HintCards } from '@/components/sky/finder/HintCards';
+import { HorizonStrip } from '@/components/sky/finder/HorizonStrip';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
 
 const FALLBACK_COORDS = { lat: 41.6941, lon: 44.8337 };
+const REFRESH_MS = 60_000;
 
 export default function SkyPage() {
   const { location } = useLocation();
   const tPage = useTranslations('sky.page');
   const tHeader = useTranslations('sky.header');
   const tErrors = useTranslations('sky.errors');
+  const tHorizon = useTranslations('sky.horizon');
 
   const initialCoords = useMemo(
     () => ({ lat: location.lat, lon: location.lon, city: location.city }),
@@ -32,27 +38,24 @@ export default function SkyPage() {
   const [finderLoading, setFinderLoading] = useState(true);
   const [finderError, setFinderError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<ObjectId | null>(null);
+  const [autoRotate, setAutoRotate] = useState(false);
   const [arOpen, setArOpen] = useState(false);
-  const [now, setNow] = useState(() => new Date());
-
-  // Tick the clock every minute so the live readout stays current.
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const [extendedOpen, setExtendedOpen] = useState(false);
 
   const fetchFinder = useCallback(async () => {
-    setFinderLoading(true);
     setFinderError(null);
     try {
       const res = await fetch(`/api/sky/finder?lat=${location.lat}&lon=${location.lon}`);
       if (!res.ok) throw new Error('fetch failed');
       const data: FinderResponse = await res.json();
       setFinder(data);
-      const visible = data.objects
-        .filter((o) => o.visible && o.id !== 'sun')
-        .sort((a, b) => a.magnitude - b.magnitude);
-      setActiveId((prev) => prev ?? (visible[0]?.id ?? null));
+      setActiveId((prev) => {
+        if (prev && data.objects.some((o) => o.id === prev)) return prev;
+        const visible = data.objects
+          .filter((o) => o.visible && o.id !== 'sun')
+          .sort((a, b) => a.magnitude - b.magnitude);
+        return visible[0]?.id ?? null;
+      });
     } catch {
       setFinderError(tErrors('fetchFailed'));
     } finally {
@@ -64,8 +67,14 @@ export default function SkyPage() {
     fetchFinder();
   }, [fetchFinder]);
 
-  // Bodies for the chart and table — exclude Sun at night, include otherwise.
-  // The decision is "is the sun above the horizon" (handled in the API).
+  // Re-fetch every minute so live state stays current.
+  useEffect(() => {
+    const id = setInterval(fetchFinder, REFRESH_MS);
+    return () => clearInterval(id);
+  }, [fetchFinder]);
+
+  // Bodies for the dome chart and table — exclude Sun at night, include
+  // otherwise (handled by sun.visible flag from the API).
   const tableObjects = useMemo<SkyObject[]>(() => {
     if (!finder) return [];
     const sun = finder.objects.find((o) => o.id === 'sun');
@@ -92,13 +101,13 @@ export default function SkyPage() {
 
   const handleSelect = useCallback((id: ObjectId) => {
     setActiveId(id);
-  }, []);
+    if (autoRotate) setAutoRotate(false);
+  }, [autoRotate]);
 
   const verdict = useMemo(() => {
     if (!finder) return null;
     const visibleCount = visibleSorted.length;
     if (visibleCount === 0) {
-      // Find the next body to rise.
       const next = finder.objects
         .filter((o) => !o.visible && o.riseTime)
         .sort((a, b) => (a.riseTime ?? '').localeCompare(b.riseTime ?? ''))[0];
@@ -128,13 +137,6 @@ export default function SkyPage() {
     });
   }, [finder, visibleSorted, tHeader]);
 
-  const dateLabel = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-  const timeLabel = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-  const conditionsLabel =
-    finder?.conditions
-      ? `${tHeader(`conditions.${finder.conditions.quality.toLowerCase()}`)} · ${finder.conditions.cloudCoverPct}% ${tHeader('clouds')}`
-      : null;
-
   const fallbackUsed =
     location.source === 'default' &&
     location.lat === FALLBACK_COORDS.lat &&
@@ -150,42 +152,37 @@ export default function SkyPage() {
     return `${fmt(dw.start)} → ${fmt(dw.end)}`;
   }, [sky.timeline.darkWindow]);
 
+  const locationLabel = location.city || (fallbackUsed ? 'Tbilisi' : '—');
+
   return (
     <div className="sky-page-v2 sky-v3">
       <div className="sky-v3__container">
         <LocationFallbackBanner />
 
-        {/* === Header === */}
-        <header className="sky-v3__head">
-          <div className="sky-v3__head-left">
-            <p className="sky-v3__eyebrow">{tHeader('eyebrow')}</p>
-            <h1 className="sky-v3__title">{tHeader('title')}</h1>
-            <p className="sky-v3__meta">
-              <span>{location.city ?? '—'}</span>
-              <span aria-hidden>·</span>
-              <span>{dateLabel}</span>
-              <span aria-hidden>·</span>
-              <span className="sky-v3__meta-time">{timeLabel}</span>
-              {sky.location && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span>Bortle {sky.location.bortle}</span>
-                </>
-              )}
-            </p>
-            {conditionsLabel && <p className="sky-v3__conditions">{conditionsLabel}</p>}
-          </div>
-          <div className="sky-v3__head-right">
+        {/* === Live status strip === */}
+        <SkyStateStrip
+          finder={finder}
+          locationLabel={locationLabel}
+          fallbackLocation={fallbackUsed}
+          lat={location.lat}
+          lon={location.lon}
+        />
+
+        {/* === Page heading === */}
+        <header className="sky-v3__lede">
+          <div className="sky-v3__lede-left">
+            <h1 className="sky-v3__title">{tPage('title')}</h1>
+            <p className="sky-v3__lede-sub">{tPage('subtitle')}</p>
             {verdict && <p className="sky-v3__verdict">{verdict}</p>}
-            <button
-              type="button"
-              className="sky-v3__ar"
-              onClick={() => setArOpen(true)}
-              disabled={arBodies.length === 0}
-            >
-              {tHeader('openAr')}
-            </button>
           </div>
+          <button
+            type="button"
+            className="sky-v3__ar"
+            onClick={() => setArOpen(true)}
+            disabled={arBodies.length === 0}
+          >
+            {tHeader('openAr')}
+          </button>
         </header>
 
         {fallbackUsed && finder && (
@@ -202,11 +199,22 @@ export default function SkyPage() {
           </div>
         )}
 
-        {finderLoading && !finder && (
-          <div className="sky-v3__loading">{tPage('detectingLocation')}</div>
+        {/* === Target picker === */}
+        {finder && !finderError && (
+          <TargetPicker
+            objects={finder.objects}
+            activeId={activeId}
+            onSelect={handleSelect}
+            autoRotate={autoRotate}
+            onToggleAuto={() => setAutoRotate((v) => !v)}
+          />
         )}
 
-        {/* === Chart + Table === */}
+        {finderLoading && !finder && (
+          <SkyLoadingSkeleton />
+        )}
+
+        {/* === Dome chart + table === */}
         {finder && !finderError && (
           <>
             <section className="sky-v3__split">
@@ -222,21 +230,53 @@ export default function SkyPage() {
             {activeObject && (
               <section className="sky-v3__active">
                 <DirectionHero object={activeObject} />
+                <HintCards object={activeObject} />
               </section>
             )}
+
+            {/* === Looking around — horizon panorama === */}
+            <section className="sky-v3__horizon">
+              <div className="sky-v3__section-head">
+                <span className="sky-v3__section-label">{tHorizon('label')}</span>
+                <span className="sky-v3__section-meta">{tHorizon('refresh')}</span>
+              </div>
+              <HorizonStrip
+                objects={finder.objects}
+                highlightedId={activeId ?? undefined}
+                onObjectClick={handleSelect}
+              />
+            </section>
           </>
         )}
 
-        {/* === Timeline === */}
-        <section className="sky-v3__timeline">
-          <div className="sky-v3__timeline-head">
-            <h2 className="sky-v3__h2">{tPage('tonightTimeline')}</h2>
-            <span className="sky-v3__timeline-meta">
-              <span>{tPage('darkWindow')}</span>
-              <span className="times">{darkWindowLabel ?? '—'}</span>
+        {/* === Extended forecast (collapsible) === */}
+        <section className="sky-v3__extended">
+          <button
+            type="button"
+            className={`sky-v3__extended-toggle${extendedOpen ? ' is-open' : ''}`}
+            onClick={() => setExtendedOpen((v) => !v)}
+            aria-expanded={extendedOpen}
+          >
+            <span className="sky-v3__section-label">{tPage('extendedForecast')}</span>
+            <span className="sky-v3__extended-meta">
+              {darkWindowLabel ? `${tPage('darkWindow')} ${darkWindowLabel}` : ''}
             </span>
-          </div>
-          <ObservationTimeline data={sky.timeline} />
+            <span className={`sky-v3__chevron${extendedOpen ? ' is-open' : ''}`} aria-hidden="true">
+              ▾
+            </span>
+          </button>
+          {extendedOpen && (
+            <div className="sky-v3__extended-body">
+              <div className="sky-v3__timeline-head">
+                <h2 className="sky-v3__h2">{tPage('tonightTimeline')}</h2>
+                <span className="sky-v3__timeline-meta">
+                  <span>{tPage('darkWindow')}</span>
+                  <span className="times">{darkWindowLabel ?? '—'}</span>
+                </span>
+              </div>
+              <ObservationTimeline data={sky.timeline} />
+            </div>
+          )}
         </section>
       </div>
 
@@ -248,6 +288,15 @@ export default function SkyPage() {
           onClose={() => setArOpen(false)}
         />
       )}
+    </div>
+  );
+}
+
+function SkyLoadingSkeleton() {
+  return (
+    <div className="sky-v3__skeleton" aria-hidden="true">
+      <div className="sky-v3__skel-card sky-v3__skel-card--lg" />
+      <div className="sky-v3__skel-card" />
     </div>
   );
 }

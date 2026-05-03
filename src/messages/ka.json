@@ -79,7 +79,8 @@
       "visibleTonight": "ხილული ამაღამ",
       "tonightTimeline": "ამაღამის დაკვირვების ვადა",
       "darkWindow": "ბნელი ფანჯარა",
-      "noVisible": "ჰორიზონტს ზემოთ ნათელი ობიექტები ჯერ არ არის."
+      "noVisible": "ჰორიზონტს ზემოთ ნათელი ობიექტები ჯერ არ არის.",
+      "extendedForecast": "Extended forecast"
     },
     "hero": {
       "face": "შემობრუნდი",
@@ -105,7 +106,9 @@
         "mercury": "მერკური ჰორიზონტთან ჩანს როგორც ნათელი „ვარსკვლავი“ — სწრაფად მოძრაობს, მზესთან ახლოსაა.",
         "uranus": "სუსტია — დაგჭირდება ბინოკლი ან პატარა ტელესკოპი.",
         "neptune": "ძალიან სუსტია — მხოლოდ ბინოკლი ან ტელესკოპი."
-      }
+      },
+      "belowSentenceA": "is below the horizon. It will rise in the",
+      "belowSentenceB": "at"
     },
     "directions": {
       "fists": {
@@ -245,6 +248,47 @@
         "noSensors": "AR მუშაობს მოძრაობის სენსორების მქონე ტელეფონზე. დესკტოპზე გამოიყენე ჰორიზონტის ხედი."
       },
       "close": "დახურვა"
+    },
+    "picker": {
+      "header": "Tonight's sky · {count} visible now",
+      "auto": "AUTO",
+      "autoToggle": "Auto-rotate",
+      "risesAt": "rises {time}"
+    },
+    "strip": {
+      "a11y": "Live sky state",
+      "labels": {
+        "location": "Location",
+        "sky": "Sky",
+        "moon": "Moon",
+        "clouds": "Clouds",
+        "time": "Local time"
+      },
+      "phase": {
+        "day": "Daylight",
+        "civil": "Civil twilight",
+        "nautical": "Nautical twilight",
+        "astronomical": "Astronomical twilight",
+        "dark": "Dark sky"
+      },
+      "setsAt": "Sets {time}",
+      "darkIn": "Dark in {dur}",
+      "dawnAt": "Dawn at {time}",
+      "dawnIn": "Dawn in {dur}",
+      "moonAbove": "{illum}% · {alt}° up",
+      "moonBelow": "{illum}% · below horizon",
+      "clouds": {
+        "clear": "Clear",
+        "partly": "Partly cloudy",
+        "overcast": "Overcast"
+      },
+      "locationFallback": "Default — set your own"
+    },
+    "horizon": {
+      "label": "Your horizon — looking around",
+      "refresh": "Updates every minute",
+      "zenith": "ZENITH",
+      "below": "below"
     }
   },
   "planets": {

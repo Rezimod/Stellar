@@ -24,6 +24,15 @@ export interface SkyObject {
   phase: number | null;
 }
 
+export interface TwilightTimes {
+  civilDusk: string | null;
+  nauticalDusk: string | null;
+  astronomicalDusk: string | null;
+  astronomicalDawn: string | null;
+  nauticalDawn: string | null;
+  civilDawn: string | null;
+}
+
 export interface FinderResponse {
   observerLocation: { lat: number; lon: number; name: string | null };
   generatedAt: string;
@@ -33,4 +42,5 @@ export interface FinderResponse {
     summary: string;
   };
   objects: SkyObject[];
+  twilight?: TwilightTimes;
 }

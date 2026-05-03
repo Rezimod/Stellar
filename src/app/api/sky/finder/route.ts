@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Body, Equator, Horizon, Observer, SearchRiseSet } from 'astronomy-engine';
+import { Body, Equator, Horizon, Observer, SearchAltitude, SearchRiseSet } from 'astronomy-engine';
 import { getVisiblePlanets, type PlanetInfo } from '@/lib/planets';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import { azimuthToCompass, altitudeToFists } from '@/lib/sky/directions';
@@ -50,6 +50,15 @@ interface FinderObject {
   phase: number | null;
 }
 
+interface TwilightTimes {
+  civilDusk: string | null;
+  nauticalDusk: string | null;
+  astronomicalDusk: string | null;
+  astronomicalDawn: string | null;
+  nauticalDawn: string | null;
+  civilDawn: string | null;
+}
+
 interface FinderResponse {
   observerLocation: { lat: number; lon: number; name: string | null };
   generatedAt: string;
@@ -59,6 +68,35 @@ interface FinderResponse {
     summary: string;
   };
   objects: FinderObject[];
+  twilight: TwilightTimes;
+}
+
+function computeTwilight(observer: Observer, now: Date): TwilightTimes {
+  // For each twilight altitude, look forward up to 1 day for the next time
+  // the Sun crosses that altitude going DOWN (dusk) and up to 1 day after
+  // that for the matching dawn going UP. Falls back to null on failure.
+  const lookFor = (dir: 1 | -1, alt: number, start: Date): Date | null => {
+    try {
+      const hit = SearchAltitude(Body.Sun, observer, dir, start, 1, alt);
+      return hit?.date ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const civilDusk = lookFor(-1, -6, now);
+  const nauticalDusk = lookFor(-1, -12, now);
+  const astronomicalDusk = lookFor(-1, -18, now);
+  const astronomicalDawn = astronomicalDusk ? lookFor(+1, -18, astronomicalDusk) : null;
+  const nauticalDawn = astronomicalDawn ? lookFor(+1, -12, astronomicalDawn) : null;
+  const civilDawn = nauticalDawn ? lookFor(+1, -6, nauticalDawn) : null;
+  return {
+    civilDusk: civilDusk?.toISOString() ?? null,
+    nauticalDusk: nauticalDusk?.toISOString() ?? null,
+    astronomicalDusk: astronomicalDusk?.toISOString() ?? null,
+    astronomicalDawn: astronomicalDawn?.toISOString() ?? null,
+    nauticalDawn: nauticalDawn?.toISOString() ?? null,
+    civilDawn: civilDawn?.toISOString() ?? null,
+  };
 }
 
 function toIso(d: Date | string | null | undefined): string | null {
@@ -153,6 +191,16 @@ export async function GET(req: NextRequest) {
 
   const cond = cloudQuality(cloudCoverPct);
 
+  let twilight: TwilightTimes = {
+    civilDusk: null, nauticalDusk: null, astronomicalDusk: null,
+    astronomicalDawn: null, nauticalDawn: null, civilDawn: null,
+  };
+  try {
+    twilight = computeTwilight(new Observer(lat, lon, 0), now);
+  } catch (err) {
+    console.warn('[api/sky/finder] twilight failed:', err instanceof Error ? err.message : err);
+  }
+
   const body: FinderResponse = {
     observerLocation: { lat, lon, name: null },
     generatedAt: now.toISOString(),
@@ -162,6 +210,7 @@ export async function GET(req: NextRequest) {
       summary: cond.summary,
     },
     objects,
+    twilight,
   };
 
   return NextResponse.json(body, {
