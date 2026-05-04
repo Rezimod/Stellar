@@ -5438,3 +5438,102 @@
   .mis-auth-card { max-width: 100%; padding: 20px; margin: 16px 0; }
 }
 
+/* === Centered layout — every section, every text block, every card body === */
+.missions-page .mis-stats-bar {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.missions-page .mis-stats-left {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.missions-page .mis-stats-right { justify-content: center; }
+
+.missions-page .mis-prime {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+.missions-page .mis-prime-body {
+  align-items: center;
+  text-align: center;
+}
+
+.missions-page .mis-lineup-head {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+.missions-page .mis-lineup-item {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.missions-page .mis-lineup-info {
+  align-items: center;
+  text-align: center;
+}
+.missions-page .mis-lineup-row { justify-content: center; }
+
+.missions-page .mis-section-head {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.missions-page .mis-tile-info {
+  align-items: center;
+  text-align: center;
+}
+.missions-page .mis-tile-foot {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.missions-page .mis-tile-foot-left { justify-content: center; }
+.missions-page .mis-tile-reminder {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.missions-page .mis-tile-reminder-text { flex: 1 1 auto; text-align: center; }
+
+.missions-page .mis-tip-card {
+  align-items: center;
+  text-align: center;
+}
+.missions-page .mis-tip-icon {
+  position: static;
+  margin: 0 auto 6px;
+}
+.missions-page .mis-tip-title { padding-right: 0; }
+
+.missions-page .mis-explore-card {
+  align-items: center;
+  text-align: center;
+}
+.missions-page .mis-explore-icon { margin: 0 auto 6px; }
+
+.missions-page .mis-auth-card { text-align: center; }
+
+.missions-page .mis-lineup-status--daytime .mis-lineup-dot,
+.missions-page .mis-lineup-status--cloudy  .mis-lineup-dot {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: none;
+  animation: none;
+}
+.missions-page .mis-lineup-status--daytime,
+.missions-page .mis-lineup-status--cloudy {
+  color: rgba(255, 255, 255, 0.32);
+}
+

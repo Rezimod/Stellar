@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAppState } from '@/hooks/useAppState';
@@ -129,16 +129,50 @@ export default function MissionsPage() {
   const dark = useMemo(() => getTonightDarkWindow(lat, lon, now), [lat, lon, now]);
   const evalTime = dark.evalTime;
 
-  const tonightPlanets = useMemo(() => {
-    if (dark.isCurrentlyDark || !dark.duskStart || !dark.dawnEnd) {
-      return getVisiblePlanets(lat, lon, evalTime);
+  // Window-based visibility: best altitude any planet/object reaches during
+  // tonight's astronomical-dark window. This drives the "Missions tonight"
+  // grid + visible count, so it stays accurate during daylight or cloudy
+  // weather — it's a forecast of *tonight*, not a live readout.
+  const tonightWindowPlanets = useMemo(() => {
+    if (dark.duskStart && dark.dawnEnd) {
+      return getWindowPlanets(lat, lon, dark.duskStart, dark.dawnEnd);
     }
-    return getWindowPlanets(lat, lon, dark.duskStart, dark.dawnEnd);
-  }, [lat, lon, evalTime, dark.isCurrentlyDark, dark.duskStart, dark.dawnEnd]);
+    return getVisiblePlanets(lat, lon, evalTime);
+  }, [lat, lon, evalTime, dark.duskStart, dark.dawnEnd]);
+
+  // Live positions: where planets actually are right now. Only used to fill
+  // the LIVE strip when the sky is dark *and* clear.
+  const livePlanets = useMemo(() => getVisiblePlanets(lat, lon, now), [lat, lon, now]);
+
+  // Current cloud cover for the LIVE gate. Pulled from the cached sky-forecast
+  // route; we just snap to the hour closest to now.
+  const [cloudCoverPct, setCloudCoverPct] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/sky/forecast?lat=${lat}&lon=${lon}`);
+        if (!res.ok) return;
+        const days: { hours: { time: string; cloudCover: number }[] }[] = await res.json();
+        if (cancelled) return;
+        const flat = days.flatMap((d) => d.hours ?? []);
+        if (!flat.length) return;
+        const nowMs = Date.now();
+        let best = flat[0];
+        let bestDiff = Number.POSITIVE_INFINITY;
+        for (const h of flat) {
+          const diff = Math.abs(new Date(h.time).getTime() - nowMs);
+          if (diff < bestDiff) { bestDiff = diff; best = h; }
+        }
+        setCloudCoverPct(typeof best.cloudCover === 'number' ? best.cloudCover : null);
+      } catch { /* leave null — LIVE gate stays optimistic */ }
+    })();
+    return () => { cancelled = true; };
+  }, [lat, lon]);
 
   const skyPositions = useMemo(() => {
     const out: Record<string, { altitude: number; azimuth: number; rise: Date | null }> = {};
-    for (const p of tonightPlanets) {
+    for (const p of tonightWindowPlanets) {
       const rise = p.rise instanceof Date ? p.rise : null;
       out[p.key] = { altitude: p.altitude, azimuth: p.azimuth, rise };
     }
@@ -147,7 +181,7 @@ export default function MissionsPage() {
       out[d.id] = { altitude: d.altitude, azimuth: d.azimuth, rise: null };
     }
     return out;
-  }, [lat, lon, evalTime, tonightPlanets]);
+  }, [lat, lon, evalTime, tonightWindowPlanets]);
 
   const completedIds = useMemo(
     () => new Set(state.completedMissions.filter((m) => m.status === 'completed').map((m) => m.id)),
@@ -194,16 +228,27 @@ export default function MissionsPage() {
     [state.completedMissions],
   );
 
-  const headerTime = (dark.isCurrentlyDark ? now : evalTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  const headerLabel = dark.isCurrentlyDark ? 'LIVE' : 'TONIGHT';
+  const headerTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const dateLabel = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+  // LIVE gate: only show real-time planets when it is actually astronomical
+  // dark *and* the sky isn't overcast. Anything else collapses the lineup to
+  // an empty state so users aren't misled into pointing a scope at clouds.
+  const CLOUD_OVERCAST_PCT = 70;
+  const isCloudy = cloudCoverPct != null && cloudCoverPct >= CLOUD_OVERCAST_PCT;
+  const liveStatus: 'live' | 'daytime' | 'cloudy' = !dark.isCurrentlyDark
+    ? 'daytime'
+    : isCloudy
+      ? 'cloudy'
+      : 'live';
 
   const startMission = useCallback((routeId: string) => {
     router.push(`/observe/${routeId}`);
   }, [router]);
 
   const lineup = useMemo(() => {
-    const map = new Map(tonightPlanets.map((p) => [p.key, p] as const));
+    if (liveStatus !== 'live') return [];
+    const map = new Map(livePlanets.map((p) => [p.key, p] as const));
     const items: {
       key: string;
       name: string;
@@ -229,7 +274,7 @@ export default function MissionsPage() {
     }
     items.sort((a, b) => b.altitude - a.altitude);
     return items;
-  }, [tonightPlanets]);
+  }, [liveStatus, livePlanets]);
 
   // ---- Auth gate ----
   if (!authenticated) {
@@ -245,7 +290,7 @@ export default function MissionsPage() {
             </div>
             <TonightLineup
               items={lineup}
-              headerLabel={headerLabel}
+              liveStatus={liveStatus}
               headerTime={headerTime}
               dateLabel={dateLabel}
               cityLabel={cityLabel}
@@ -303,7 +348,7 @@ export default function MissionsPage() {
 
           <TonightLineup
             items={lineup}
-            headerLabel={headerLabel}
+            liveStatus={liveStatus}
             headerTime={headerTime}
             dateLabel={dateLabel}
             cityLabel={cityLabel}
@@ -428,33 +473,49 @@ interface LineupItem {
 
 function TonightLineup({
   items,
-  headerLabel,
+  liveStatus,
   headerTime,
   dateLabel,
   cityLabel,
   onStart,
 }: {
   items: LineupItem[];
-  headerLabel: string;
+  liveStatus: 'live' | 'daytime' | 'cloudy';
   headerTime: string;
   dateLabel: string;
   cityLabel: string;
   onStart: (routeId: string) => void;
 }) {
+  const empty =
+    liveStatus === 'daytime'
+      ? {
+          title: 'Daylight — sky is too bright',
+          sub: 'The LIVE feed wakes up after astronomical dusk. See "Missions tonight" below for what the sky will offer.',
+        }
+      : liveStatus === 'cloudy'
+        ? {
+            title: 'Overcast — nothing observable right now',
+            sub: 'Cloud cover is blocking the sky. "Missions tonight" still shows what would be up if it cleared.',
+          }
+        : {
+            title: 'Nothing above the horizon right now',
+            sub: 'Check back later tonight — targets rise and set throughout the night.',
+          };
+
   return (
-    <div className="mis-lineup" role="region" aria-label="Tonight's visible targets">
+    <div className="mis-lineup" role="region" aria-label="Live visible targets">
       <div className="mis-lineup-head">
-        <div className="mis-lineup-status">
+        <div className={`mis-lineup-status mis-lineup-status--${liveStatus}`}>
           <span className="mis-lineup-dot" aria-hidden />
-          <span>{headerLabel} · {headerTime}</span>
+          <span>LIVE · {headerTime}</span>
         </div>
         <div className="mis-lineup-loc">{dateLabel} · {cityLabel}</div>
       </div>
 
       {items.length === 0 ? (
         <div className="mis-lineup-empty">
-          <span className="mis-lineup-empty-title">Nothing above the horizon tonight</span>
-          <span className="mis-lineup-empty-sub">Check back after sunset — quizzes below earn Stars while you wait.</span>
+          <span className="mis-lineup-empty-title">{empty.title}</span>
+          <span className="mis-lineup-empty-sub">{empty.sub}</span>
         </div>
       ) : (
         <div className="mis-lineup-list">
