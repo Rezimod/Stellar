@@ -448,6 +448,32 @@
   align-items: center;
 }
 .sky-page-v2 .finder-hero__planet { display: flex; align-items: center; }
+.sky-page-v2 .finder-hero__portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  gap: 6px;
+  width: 88px;
+}
+.sky-page-v2 .finder-hero__portrait img {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sky-page-v2 .finder-hero__portrait-credit {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+  text-align: center;
+  line-height: 1.25;
+}
 .sky-page-v2 .finder-hero__head { min-width: 0; }
 .sky-page-v2 .finder-hero__name {
   font-family: var(--serif);
@@ -2095,5 +2121,212 @@
 }
 .sky-page-v2 .finder-hint__hop-deg {
   color: rgba(255, 255, 255, 0.45);
+}
+
+/* ================================================================
+   === MOBILE PREMIUM PASS — dome first, dense, no overlaps     ===
+   ================================================================ */
+
+@media (max-width: 760px) {
+  /* Tighter shell so we can fit the dome above the fold. */
+  .sky-v3 .sky-v3__container {
+    padding: 12px 14px 80px;
+    gap: 16px;
+  }
+
+  /* Reorder so the visual anchor (dome chart) sits right under the live
+     status strip — the user opens the page and immediately sees the sky.
+     Lede / picker / tables / forecast follow below. Elements without an
+     explicit order keep their default 0 and stay in DOM order, which
+     means the LocationFallbackBanner / fallback / error / tour banners
+     remain at the very top where they belong. */
+  .sky-v3 .sky-v3__container > .sky-strip { order: 1; }
+  .sky-v3 .sky-v3__container > .sky-v3__split { order: 2; }
+  .sky-v3 .sky-v3__container > .sky-v3__lede { order: 3; }
+  .sky-v3 .sky-v3__container > .target-picker { order: 4; }
+  .sky-v3 .sky-v3__container > .sky-v3__skeleton { order: 5; }
+  .sky-v3 .sky-v3__container > .sky-v3__active { order: 6; }
+  .sky-v3 .sky-v3__container > .sky-v3__horizon { order: 7; }
+  .sky-v3 .sky-v3__container > .sky-v3__extended { order: 8; }
+
+  /* === Live status strip — dense, two-row band.
+     Row 1: location · sky phase · moon.
+     Row 2: clouds (2-col span) · local time.
+     Note: the existing @760px block above hides ::before separators and
+     sets border-lefts on children 2 and 4 — we extend that approach to
+     a 3-column first row. === */
+  .sky-strip {
+    padding: 10px 0;
+    margin: 0;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-radius: 0;
+  }
+  .sky-strip__segment { padding: 2px 10px; border-left: none; }
+  .sky-strip__label { font-size: 9px; margin-bottom: 4px; letter-spacing: 0.16em; }
+  .sky-strip__value { font-size: 12.5px; line-height: 1.2; }
+  .sky-strip__time { font-size: 14px; }
+  .sky-strip__sub { font-size: 10px; margin-top: 2px; }
+  .sky-strip__cloud-bar { width: 48px; height: 3px; margin-top: 6px; }
+  .sky-strip__moon-row { gap: 6px; }
+  .sky-strip__moon-row svg { width: 14px; height: 14px; }
+  /* First row dividers between location/sky/moon. */
+  .sky-strip__segment:nth-child(2),
+  .sky-strip__segment:nth-child(3) { border-left: 1px solid var(--border); }
+  /* Second row: clouds spans the first two columns, time owns the third.
+     Both get a top divider so the row reads as a separate band. The
+     border-left: none on clouds overrides the older @760px rule above
+     that would otherwise leave a vertical hairline mid-row. */
+  .sky-strip__segment:nth-child(4) {
+    grid-column: 1 / span 2;
+    border-top: 1px solid var(--border);
+    border-left: none;
+    padding-top: 10px;
+    margin-top: 8px;
+  }
+  .sky-strip__segment:nth-child(5) {
+    grid-column: 3 / span 1;
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: 8px;
+  }
+
+  /* === Dome card — give it a real frame on mobile so it reads as the
+     hero element and the rim labels (N/E/S/W) don't crash into edges. === */
+  .sky-v3__map-wrap {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 14px 12px 10px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(56, 240, 255, 0.06), rgba(7, 11, 20, 0) 60%),
+      linear-gradient(180deg, rgba(13, 26, 61, 0.55), rgba(4, 8, 20, 0.55));
+  }
+  .sky-map { max-width: 320px; margin: 0 auto; }
+  .sky-v3__map-caption {
+    margin-top: 6px;
+    font-size: 9.5px;
+    color: rgba(255, 255, 255, 0.42);
+  }
+
+  /* Body table sits below the dome — drop the desktop split's sticky
+     offsets and let it stretch full width. */
+  .sky-v3__split { gap: 14px; }
+  .sky-v3__table-wrap { margin-top: 2px; }
+
+  /* === HUD pills — reflowed so calibrate/facing on the left and the
+     aim pill on the right never overlap, no matter how long aim text
+     gets ("Turn 120° right · Tilt 40° up"). === */
+  .sky-map__hud {
+    flex-wrap: wrap;
+    gap: 6px;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+  }
+  .sky-map__calibrate,
+  .sky-map__facing,
+  .sky-map__aim-pill {
+    padding: 4px 9px;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    border-radius: 999px;
+  }
+  .sky-map__aim-pill {
+    margin-left: auto;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .sky-map__facing-label { letter-spacing: 0.14em; }
+
+  /* === Lede header — title + verdict + AR button, tight stack. === */
+  .sky-v3__lede {
+    gap: 10px;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--border);
+  }
+  .sky-v3 .sky-v3__lede .sky-v3__title {
+    font-size: 28px;
+    line-height: 1.04;
+  }
+  .sky-v3__lede-sub {
+    font-size: 12.5px;
+    line-height: 1.4;
+    margin: 4px 0 0;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .sky-v3__lede .sky-v3__verdict {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 8px 0 0;
+  }
+  .sky-v3__ar {
+    padding: 12px 18px;
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    min-height: 44px;
+    border-radius: 14px;
+  }
+
+  /* === Tier tabs — single row, horizontal scroll. The 4-tab wrap on
+     phones (HARD jumping to a second row) is the biggest visual mess
+     in the screenshot. === */
+  .target-picker { gap: 8px; }
+  .target-picker__tiers {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 12px 2px 4px;
+    margin-bottom: 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .target-picker__tiers::-webkit-scrollbar { display: none; }
+  .target-tier {
+    padding: 6px 11px;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+  }
+  .target-tier__count {
+    font-size: 9.5px;
+    padding: 1px 5px;
+  }
+
+  .target-picker__label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    padding-top: 10px;
+  }
+  .target-picker__chips { gap: 5px; }
+  .target-chip {
+    padding: 7px 11px;
+    font-size: 12px;
+    min-height: 32px;
+  }
+  .target-chip__alt,
+  .target-chip__rises { font-size: 9.5px; }
+  .target-picker__auto {
+    padding: 7px 11px;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    min-height: 32px;
+  }
+
+  /* === Section labels (LOOKING AROUND, EXTENDED FORECAST). === */
+  .sky-v3__section-head { padding-top: 12px; margin-bottom: 8px; }
+  .sky-v3__section-label,
+  .sky-v3__section-meta { font-size: 9.5px; letter-spacing: 0.16em; }
+}
+
+/* On the smallest phones, drop the strip's label letter-spacing further
+   and hide the "FACING" word so the HUD reads cleanly. */
+@media (max-width: 380px) {
+  .sky-strip__segment { padding: 2px 8px; }
+  .sky-strip__value { font-size: 12px; }
+  .sky-v3 .sky-v3__lede .sky-v3__title { font-size: 26px; }
+  .sky-map__facing-label { display: none; }
 }
 

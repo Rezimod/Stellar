@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { PlanetIcon } from './PlanetIcon';
 import { fistsToKey, moonPhaseKey, type CompassDir } from '@/lib/sky/directions';
+import { getTargetPhoto } from '@/lib/sky/target-photos';
 import type { SkyObject } from './types';
 
 interface DirectionHeroProps {
@@ -81,13 +83,7 @@ export function DirectionHero({ object }: DirectionHeroProps) {
     <div className="finder-hero">
       <div className="finder-hero__top">
         <div className="finder-hero__planet">
-          <PlanetIcon
-            id={object.id}
-            type={object.type}
-            magnitude={object.magnitude}
-            size={88}
-            phase={object.phase}
-          />
+          <TargetPortrait object={object} />
         </div>
         <div className="finder-hero__head">
           <div className="finder-hero__tags">
@@ -140,5 +136,41 @@ export function DirectionHero({ object }: DirectionHeroProps) {
         ))}
       </div>
     </div>
+  );
+}
+
+/**
+ * Hero portrait: prefer a real reference photo for the active target; fall
+ * back to the synthesised PlanetIcon glyph for stars and on image error.
+ */
+function TargetPortrait({ object }: { object: SkyObject }) {
+  const photo = getTargetPhoto(object.id);
+  const [errored, setErrored] = useState(false);
+  const showGlyph = !photo || errored;
+
+  if (showGlyph) {
+    return (
+      <PlanetIcon
+        id={object.id}
+        type={object.type}
+        magnitude={object.magnitude}
+        size={88}
+        phase={object.phase}
+      />
+    );
+  }
+
+  return (
+    <figure className="finder-hero__portrait">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photo.src}
+        alt={photo.alt}
+        loading="lazy"
+        decoding="async"
+        onError={() => setErrored(true)}
+      />
+      <figcaption className="finder-hero__portrait-credit">{photo.credit}</figcaption>
+    </figure>
   );
 }

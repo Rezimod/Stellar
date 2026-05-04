@@ -2,25 +2,35 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-import { useSkyData } from '@/lib/use-sky-data';
+import { useSkyData, type TimelinePayload } from '@/lib/use-sky-data';
 import { useLocation } from '@/lib/location';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
 import { CONSTELLATION_LINES, STAR_TO_CONSTELLATION, positionStars } from '@/lib/sky/stars';
 import type { ConstellationStar } from '@/components/sky/finder/SkyMap';
 import { azimuthToCompass, altitudeToFists } from '@/lib/sky/directions';
-import { ObservationTimeline } from '@/components/sky/ObservationTimeline';
 import { LocationFallbackBanner } from '@/components/sky/LocationFallbackBanner';
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { BodyTable } from '@/components/sky/finder/BodyTable';
-import { ARFinder } from '@/components/sky/finder/ARFinder';
 import { SkyStateStrip } from '@/components/sky/finder/SkyStateStrip';
 import { TargetPicker } from '@/components/sky/finder/TargetPicker';
 import { HintCards } from '@/components/sky/finder/HintCards';
 import { HorizonStrip } from '@/components/sky/finder/HorizonStrip';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
+
+// Heavy / on-demand UI — split into their own chunks so the first paint
+// doesn't pay for AR or the timeline until the user actually opens them.
+const ARFinder = dynamic(
+  () => import('@/components/sky/finder/ARFinder').then((m) => ({ default: m.ARFinder })),
+  { ssr: false },
+);
+const ObservationTimeline = dynamic(
+  () => import('@/components/sky/ObservationTimeline').then((m) => ({ default: m.ObservationTimeline })),
+  { ssr: false },
+);
 
 const FALLBACK_COORDS = { lat: 41.6941, lon: 44.8337 };
 const REFRESH_MS = 60_000;
@@ -33,11 +43,6 @@ export default function SkyPage() {
   const tErrors = useTranslations('sky.errors');
   const tHorizon = useTranslations('sky.horizon');
 
-  const initialCoords = useMemo(
-    () => ({ lat: location.lat, lon: location.lon, city: location.city }),
-    [location.lat, location.lon, location.city],
-  );
-  const sky = useSkyData(initialCoords);
   const compass = useDeviceHeading();
 
   const [showTour, setShowTour] = useState(false);
@@ -85,10 +90,24 @@ export default function SkyPage() {
     fetchFinder();
   }, [fetchFinder]);
 
-  // Re-fetch every minute so live state stays current.
+  // Re-fetch every minute so live state stays current — but skip the
+  // refresh while the tab is hidden (no-one is looking) and resume on
+  // visibility change so we never go more than ~one minute stale once
+  // the user comes back.
   useEffect(() => {
-    const id = setInterval(fetchFinder, REFRESH_MS);
-    return () => clearInterval(id);
+    if (typeof document === 'undefined') return;
+    const tick = () => {
+      if (document.visibilityState === 'visible') fetchFinder();
+    };
+    const id = window.setInterval(tick, REFRESH_MS);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') fetchFinder();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [fetchFinder]);
 
   // Bodies for the dome chart and table — exclude Sun at night, include
@@ -204,16 +223,6 @@ export default function SkyPage() {
     location.source === 'default' &&
     location.lat === FALLBACK_COORDS.lat &&
     location.lon === FALLBACK_COORDS.lon;
-
-  const darkWindowLabel = useMemo(() => {
-    const dw = sky.timeline.darkWindow;
-    if (!dw) return null;
-    const fmt = (iso: string) => {
-      const d = new Date(iso);
-      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    };
-    return `${fmt(dw.start)} → ${fmt(dw.end)}`;
-  }, [sky.timeline.darkWindow]);
 
   const locationLabel = location.city || (fallbackUsed ? 'Tbilisi' : '—');
 
@@ -331,34 +340,13 @@ export default function SkyPage() {
         )}
 
         {/* === Extended forecast (collapsible) === */}
-        <section className="sky-v3__extended">
-          <button
-            type="button"
-            className={`sky-v3__extended-toggle${extendedOpen ? ' is-open' : ''}`}
-            onClick={() => setExtendedOpen((v) => !v)}
-            aria-expanded={extendedOpen}
-          >
-            <span className="sky-v3__section-label">{tPage('extendedForecast')}</span>
-            <span className="sky-v3__extended-meta">
-              {darkWindowLabel ? `${tPage('darkWindow')} ${darkWindowLabel}` : ''}
-            </span>
-            <span className={`sky-v3__chevron${extendedOpen ? ' is-open' : ''}`} aria-hidden="true">
-              ▾
-            </span>
-          </button>
-          {extendedOpen && (
-            <div className="sky-v3__extended-body">
-              <div className="sky-v3__timeline-head">
-                <h2 className="sky-v3__h2">{tPage('tonightTimeline')}</h2>
-                <span className="sky-v3__timeline-meta">
-                  <span>{tPage('darkWindow')}</span>
-                  <span className="times">{darkWindowLabel ?? '—'}</span>
-                </span>
-              </div>
-              <ObservationTimeline data={sky.timeline} />
-            </div>
-          )}
-        </section>
+        <ExtendedForecastSection
+          lat={location.lat}
+          lon={location.lon}
+          city={location.city}
+          open={extendedOpen}
+          onToggle={() => setExtendedOpen((v) => !v)}
+        />
       </div>
 
       {arOpen && arBodies.length > 0 && (
@@ -380,6 +368,91 @@ function SkyLoadingSkeleton() {
       <div className="sky-v3__skel-card" />
     </div>
   );
+}
+
+// Extended forecast pulls 5 separate /api/sky/* endpoints via useSkyData.
+// We don't need any of that data on first paint — only when the user
+// opens this section. We mount the hook lazily on first open and keep
+// it mounted thereafter so subsequent toggles are instant.
+function ExtendedForecastSection({
+  lat,
+  lon,
+  city,
+  open,
+  onToggle,
+}: {
+  lat: number;
+  lon: number;
+  city?: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const tPage = useTranslations('sky.page');
+  const [hasOpened, setHasOpened] = useState(false);
+  const handleToggle = useCallback(() => {
+    if (!hasOpened) setHasOpened(true);
+    onToggle();
+  }, [hasOpened, onToggle]);
+
+  return (
+    <section className="sky-v3__extended">
+      <button
+        type="button"
+        className={`sky-v3__extended-toggle${open ? ' is-open' : ''}`}
+        onClick={handleToggle}
+        aria-expanded={open}
+      >
+        <span className="sky-v3__section-label">{tPage('extendedForecast')}</span>
+        <span className="sky-v3__extended-meta" />
+        <span className={`sky-v3__chevron${open ? ' is-open' : ''}`} aria-hidden="true">▾</span>
+      </button>
+      {hasOpened && (
+        <ExtendedForecastBody lat={lat} lon={lon} city={city} visible={open} />
+      )}
+    </section>
+  );
+}
+
+function ExtendedForecastBody({
+  lat,
+  lon,
+  city,
+  visible,
+}: {
+  lat: number;
+  lon: number;
+  city?: string;
+  visible: boolean;
+}) {
+  const tPage = useTranslations('sky.page');
+  const coords = useMemo(() => ({ lat, lon, city }), [lat, lon, city]);
+  const sky = useSkyData(coords);
+  const darkWindowLabel = useMemo(() => formatDarkWindow(sky.timeline), [sky.timeline]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="sky-v3__extended-body">
+      <div className="sky-v3__timeline-head">
+        <h2 className="sky-v3__h2">{tPage('tonightTimeline')}</h2>
+        <span className="sky-v3__timeline-meta">
+          <span>{tPage('darkWindow')}</span>
+          <span className="times">{darkWindowLabel ?? '—'}</span>
+        </span>
+      </div>
+      <ObservationTimeline data={sky.timeline} />
+    </div>
+  );
+}
+
+function formatDarkWindow(timeline: TimelinePayload): string | null {
+  const dw = timeline.darkWindow;
+  if (!dw) return null;
+  const fmt = (iso: string) => {
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+  return `${fmt(dw.start)} → ${fmt(dw.end)}`;
 }
 
 function FinderTour({ onDismiss }: { onDismiss: () => void }) {
