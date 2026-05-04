@@ -88,6 +88,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [doubleDownId, setDoubleDownId] = useState<number | null>(null);
   const [cashOutId, setCashOutId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<number, string>>({});
 
@@ -199,7 +200,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
   }, []);
 
   const visibleRows = useMemo(() => {
-    if (variant === 'compact') return rows.slice(0, 3);
+    if (variant === 'compact') return rows.slice(0, 4);
     return rows;
   }, [rows, variant]);
 
@@ -299,144 +300,153 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           const resolveDate = fmtResolveDate(market.resolutionTime);
 
           if (isCompact) {
-            const potentialGain = Math.max(0, position.projectedPayout - position.amount);
-            const gainPct = position.amount > 0
-              ? Math.round((potentialGain / position.amount) * 100)
-              : 0;
+            const expanded = expandedId === position.marketId;
+            const statusKind = cashedOut ? 'cashed' : locked ? 'locked' : 'live';
+            const statusLabel = cashedOut
+              ? 'Cashed'
+              : locked
+              ? 'Awaiting'
+              : `${resolveCountdown} left`;
+            const payoutValue = cashedOut
+              ? cashout.refundedAmount
+              : position.projectedPayout;
+            const toggleExpanded = () => {
+              setExpandedId((cur) =>
+                cur === position.marketId ? null : position.marketId,
+              );
+              if (expanded) {
+                setDoubleDownId(null);
+                setCashOutId(null);
+              }
+            };
             return (
-              <article
+              <div
                 key={`${position.marketId}-${position.side}`}
-                className={`mab-card${cashedOut ? ' cashed' : ''}${locked ? ' locked' : ''}`}
+                className={`mab-pillrow-wrap${cashedOut ? ' cashed' : ''}${locked ? ' locked' : ''}${expanded ? ' open' : ''}`}
               >
-                <span className={`mab-card-stripe ${sideClass}`} aria-hidden />
-
-                <div className="mab-card-head">
-                  <span className={`mab-row-pill ${sideClass}`}>
+                <div
+                  className="mab-pillrow"
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={expanded}
+                  onClick={toggleExpanded}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleExpanded();
+                    }
+                  }}
+                >
+                  <span className={`mab-pillrow-side ${sideClass}`}>
                     {position.side.toUpperCase()}
                   </span>
                   <Link
                     href={`/markets/${position.marketId}`}
-                    className="mab-card-title"
+                    className="mab-pillrow-title"
                     title={rowTitle}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {rowTitle}
                   </Link>
+                  <span className={`mab-pillrow-chip ${statusKind}`} aria-hidden>
+                    <span className="mab-pillrow-chip-stake">{fmtInt(position.amount)}</span>
+                    <span className="mab-pillrow-chip-arrow">→</span>
+                    <span className="mab-pillrow-chip-payout">
+                      {fmtInt(payoutValue)} ✦
+                    </span>
+                  </span>
+                  <span className={`mab-pillrow-status ${statusKind}`}>
+                    <span className="mab-pillrow-status-dot" aria-hidden />
+                    {statusLabel}
+                  </span>
                   <span
-                    className={`mab-card-status ${
-                      cashedOut ? 'cashed' : locked ? 'locked' : 'live'
-                    }`}
+                    className={`mab-pillrow-caret${expanded ? ' open' : ''}`}
+                    aria-hidden
                   >
-                    <span className="mab-status-dot" aria-hidden />
-                    {cashedOut ? 'Cashed' : locked ? 'Awaiting' : `${resolveCountdown} left`}
+                    ›
                   </span>
                 </div>
 
-                <div className="mab-card-payout">
-                  <div className="mab-payout-leg">
-                    <span className="mab-payout-label">Stake</span>
-                    <span className="mab-payout-value">{fmtInt(position.amount)} <span className="mab-payout-unit">✦</span></span>
-                  </div>
-                  <span className="mab-payout-arrow" aria-hidden>→</span>
-                  <div className="mab-payout-leg">
-                    <span className="mab-payout-label">
-                      {cashedOut ? 'Refunded' : locked ? 'If wins' : 'Payout if win'}
-                    </span>
-                    <span
-                      className={`mab-payout-value strong ${
-                        cashedOut ? 'muted' : locked ? 'amber' : 'green'
-                      }`}
-                    >
-                      {cashedOut
-                        ? fmtInt(cashout.refundedAmount)
-                        : fmtInt(position.projectedPayout)}{' '}
-                      <span className="mab-payout-unit">✦</span>
-                    </span>
-                    {!cashedOut && !locked && potentialGain > 0 && (
-                      <span className="mab-payout-delta">+{fmtInt(potentialGain)} ({gainPct}%)</span>
+                {expanded && (
+                  <div className="mab-drawer">
+                    {!cashedOut && !locked && !isCashOutOpen && !isDoubleDownOpen && (
+                      <div className="mab-drawer-actions">
+                        <button
+                          type="button"
+                          className="mab-btn ghost"
+                          onClick={() => setDoubleDownId(position.marketId)}
+                          disabled={busy}
+                        >
+                          Double down
+                        </button>
+                        <button
+                          type="button"
+                          className="mab-btn warn"
+                          onClick={() => setCashOutId(position.marketId)}
+                          disabled={busy}
+                        >
+                          Cash out {fmtInt(refundPreview)} ✦
+                        </button>
+                      </div>
                     )}
-                  </div>
-                </div>
 
-                {!cashedOut && !locked && (
-                  <div className="mab-card-actions">
-                    <button
-                      type="button"
-                      className={`mab-btn ghost${isDoubleDownOpen ? ' active' : ''}`}
-                      onClick={() =>
-                        setDoubleDownId((cur) =>
-                          cur === position.marketId ? null : position.marketId,
-                        )
-                      }
-                      disabled={busy}
-                      aria-expanded={isDoubleDownOpen}
-                    >
-                      {isDoubleDownOpen ? 'Close' : 'Double down'}
-                    </button>
-                    <button
-                      type="button"
-                      className={`mab-btn warn${isCashOutOpen ? ' active' : ''}`}
-                      onClick={() =>
-                        setCashOutId((cur) =>
-                          cur === position.marketId ? null : position.marketId,
-                        )
-                      }
-                      disabled={busy}
-                      aria-expanded={isCashOutOpen}
-                    >
-                      {isCashOutOpen ? 'Close' : `Cash out ${fmtInt(refundPreview)} ✦`}
-                    </button>
-                  </div>
-                )}
+                    {locked && !cashedOut && (
+                      <div className="mab-locked-note">
+                        Locked at {market.resolutionTime.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} — oracle resolves shortly.
+                      </div>
+                    )}
 
-                {locked && !cashedOut && (
-                  <div className="mab-locked-note">
-                    Locked at {market.resolutionTime.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} — oracle resolves shortly.
-                  </div>
-                )}
+                    {cashedOut && (
+                      <div className="mab-locked-note">
+                        Cashed out {fmtInt(cashout.refundedAmount)} ✦ on {new Date(cashout.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}.
+                      </div>
+                    )}
 
-                {isCashOutOpen && !cashedOut && !locked && (
-                  <div className="mab-confirm">
-                    <p className="mab-confirm-text">
-                      Take {fmtInt(refundPreview)} ✦ now, forfeit{' '}
-                      {fmtInt(position.amount - refundPreview)} ✦ to the winning side.
-                    </p>
-                    <div className="mab-confirm-actions">
-                      <button
-                        type="button"
-                        className="mab-btn ghost"
-                        onClick={() => setCashOutId(null)}
-                        disabled={busy}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="mab-btn primary"
-                        onClick={() => onCashOut(position.marketId, position.side)}
-                        disabled={busy}
-                      >
-                        {busy ? 'Cashing out…' : 'Confirm'}
-                      </button>
-                    </div>
+                    {isCashOutOpen && !cashedOut && !locked && (
+                      <div className="mab-confirm">
+                        <p className="mab-confirm-text">
+                          Take {fmtInt(refundPreview)} ✦ now, forfeit{' '}
+                          {fmtInt(position.amount - refundPreview)} ✦ to the winning side.
+                        </p>
+                        <div className="mab-confirm-actions">
+                          <button
+                            type="button"
+                            className="mab-btn ghost"
+                            onClick={() => setCashOutId(null)}
+                            disabled={busy}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="mab-btn primary"
+                            onClick={() => onCashOut(position.marketId, position.side)}
+                            disabled={busy}
+                          >
+                            {busy ? 'Cashing out…' : 'Confirm'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {isDoubleDownOpen && !cashedOut && !locked && (
+                      <div className="mab-bet-wrap">
+                        <InlineBetPanel
+                          onChain={market}
+                          mint={mint}
+                          balance={balance}
+                          side={position.side}
+                          locked={locked}
+                          onClose={() => setDoubleDownId(null)}
+                          onSuccess={onDoubleDownSuccess}
+                        />
+                      </div>
+                    )}
+
+                    {err && <div className="mab-error">{err}</div>}
                   </div>
                 )}
-
-                {isDoubleDownOpen && !cashedOut && !locked && (
-                  <div className="mab-bet-wrap">
-                    <InlineBetPanel
-                      onChain={market}
-                      mint={mint}
-                      balance={balance}
-                      side={position.side}
-                      locked={locked}
-                      onClose={() => setDoubleDownId(null)}
-                      onSuccess={onDoubleDownSuccess}
-                    />
-                  </div>
-                )}
-
-                {err && <div className="mab-error">{err}</div>}
-              </article>
+              </div>
             );
           }
 
@@ -611,189 +621,205 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           background: var(--stl-bg2, rgba(255, 255, 255, 0.02));
           border: 1px solid var(--stl-border2, var(--stl-border, rgba(255, 255, 255, 0.08)));
         }
-        .mab-section.compact .mab-list { gap: 10px; }
+        .mab-section.compact .mab-list { gap: 6px; }
+        .mab-section.compact .mab-section-head {
+          padding: 0 4px;
+          margin-bottom: 8px;
+        }
+        .mab-section.compact .mab-section-title {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.18em;
+          color: var(--stl-text-muted);
+        }
+        .mab-section.compact .mab-link {
+          font-size: 11px;
+          color: var(--stl-green);
+          letter-spacing: normal;
+        }
 
-        /* Compact rich card used on /profile */
-        .mab-card {
-          position: relative;
+        /* Compact button-style row used on /profile */
+        .mab-pillrow-wrap {
           display: flex;
           flex-direction: column;
-          gap: 14px;
-          padding: 14px 14px 13px 16px;
-          border-radius: 10px;
-          background: var(--stl-bg2, rgba(255, 255, 255, 0.025));
-          border: 1px solid var(--stl-border, rgba(255, 255, 255, 0.08));
+          background: var(--stl-bg-surface, var(--stl-bg2, #1A1F2E));
+          border: 1px solid var(--stl-border-regular, var(--stl-border, rgba(255, 255, 255, 0.08)));
+          border-radius: var(--stl-r-md, 12px);
           overflow: hidden;
           transition: border-color 0.15s ease, background 0.15s ease;
         }
-        .mab-card:hover {
-          border-color: var(--stl-text3, rgba(255, 255, 255, 0.22));
+        .mab-pillrow-wrap:hover,
+        .mab-pillrow-wrap.open {
+          border-color: var(--stl-border-strong, var(--stl-text3, rgba(255, 255, 255, 0.22)));
+          background: var(--stl-bg-elevated, var(--stl-bg2, #1F2536));
         }
-        .mab-card.cashed {
-          opacity: 0.62;
-        }
-        .mab-card.locked {
-          border-color: var(--stl-amber, rgba(255, 209, 102, 0.32));
-          background: var(--stl-amber-bg, rgba(255, 209, 102, 0.04));
-        }
-        .mab-card-stripe {
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 3px;
-        }
-        .mab-card-stripe.yes {
-          background: var(--stl-green, var(--seafoam));
-        }
-        .mab-card-stripe.no {
-          background: var(--stl-red, var(--negative));
-        }
-        .mab-card.cashed .mab-card-stripe,
-        .mab-card.locked .mab-card-stripe {
-          opacity: 0.55;
-        }
-        .mab-card-head {
+        .mab-pillrow-wrap.cashed { opacity: 0.62; }
+        .mab-pillrow {
           display: flex;
           align-items: center;
           gap: 10px;
+          padding: 8px 10px;
+          min-height: 44px;
+          cursor: pointer;
+          user-select: none;
           min-width: 0;
         }
-        .mab-card-title {
+        .mab-pillrow:focus-visible {
+          outline: 2px solid var(--stl-accent, var(--terracotta));
+          outline-offset: -2px;
+        }
+        .mab-pillrow-side {
+          flex-shrink: 0;
+          font-family: var(--font-mono);
+          font-size: 9.5px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          line-height: 1;
+          padding: 4px 7px;
+          border-radius: var(--stl-r-pill, 999px);
+          background: transparent;
+          white-space: nowrap;
+        }
+        .mab-pillrow-side.yes {
+          color: var(--stl-green, #5EEAD4);
+          border: 1px solid var(--stl-green, rgba(94, 234, 212, 0.55));
+        }
+        .mab-pillrow-side.no {
+          color: var(--stl-red, var(--negative));
+          border: 1px solid var(--stl-red, rgba(251, 113, 133, 0.55));
+        }
+        .mab-pillrow-title {
           flex: 1 1 auto;
           min-width: 0;
           font-family: var(--font-display, var(--font-body, sans-serif));
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
-          color: var(--stl-text1, var(--text));
+          color: var(--stl-text-bright, var(--stl-text1, var(--text)));
           text-decoration: none;
           line-height: 1.3;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .mab-card-title:hover {
-          text-decoration: underline;
-        }
-        .mab-card-status {
+        .mab-pillrow-title:hover { text-decoration: underline; }
+        .mab-pillrow-chip {
           flex-shrink: 0;
           display: inline-flex;
           align-items: center;
           gap: 5px;
+          padding: 4px 10px;
+          border-radius: 8px;
+          background: var(--stl-bg-elevated, var(--stl-bg2, #1F2536));
+          border: 1px solid var(--stl-border-regular, var(--stl-border, rgba(255, 255, 255, 0.08)));
           font-family: var(--font-mono);
-          font-size: 9.5px;
+          font-size: 12px;
+          font-weight: 600;
+          font-variant-numeric: tabular-nums;
+          line-height: 1.1;
+          white-space: nowrap;
+        }
+        .mab-pillrow-chip-stake {
+          color: var(--stl-text-dim, var(--stl-text2, rgba(255, 255, 255, 0.55)));
+        }
+        .mab-pillrow-chip-arrow {
+          color: var(--stl-text-dim, var(--stl-text3, rgba(255, 255, 255, 0.4)));
+          font-size: 11px;
+        }
+        .mab-pillrow-chip.live .mab-pillrow-chip-payout {
+          color: var(--stl-green, #5EEAD4);
+        }
+        .mab-pillrow-chip.locked .mab-pillrow-chip-payout {
+          color: var(--stl-gold, #FFD166);
+        }
+        .mab-pillrow-chip.cashed .mab-pillrow-chip-payout {
+          color: var(--stl-text-dim, var(--stl-text2, rgba(255, 255, 255, 0.55)));
+        }
+        .mab-pillrow-status {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: var(--font-mono);
+          font-size: 10px;
           font-weight: 700;
           letter-spacing: 0.1em;
           text-transform: uppercase;
-          color: var(--stl-text2, rgba(255, 255, 255, 0.7));
+          padding: 3px 9px;
+          border-radius: var(--stl-r-pill, 999px);
+          background: var(--stl-bg-elevated, var(--stl-bg2, #1F2536));
+          border: 1px solid var(--stl-border-regular, var(--stl-border, rgba(255, 255, 255, 0.08)));
+          line-height: 1;
+          white-space: nowrap;
         }
-        .mab-status-dot {
+        .mab-pillrow-status-dot {
           width: 6px;
           height: 6px;
           border-radius: 9999px;
-          background: var(--stl-text3, rgba(255, 255, 255, 0.4));
+          background: var(--stl-text-dim, rgba(255, 255, 255, 0.4));
         }
-        .mab-card-status.live {
-          color: var(--stl-green, var(--seafoam));
+        .mab-pillrow-status.live {
+          color: var(--stl-green, #5EEAD4);
+          border-color: var(--stl-green, rgba(94, 234, 212, 0.45));
         }
-        .mab-card-status.live .mab-status-dot {
-          background: var(--stl-green, var(--seafoam));
-          box-shadow: 0 0 0 2px rgba(94, 234, 212, 0.18);
+        .mab-pillrow-status.live .mab-pillrow-status-dot {
+          background: var(--stl-green, #5EEAD4);
           animation: mabPulse 1.6s ease-in-out infinite;
         }
-        .mab-card-status.locked {
-          color: var(--stl-amber, rgba(255, 209, 102, 0.95));
+        .mab-pillrow-status.locked {
+          color: var(--stl-gold, #FFD166);
+          border-color: var(--stl-gold, rgba(255, 209, 102, 0.45));
         }
-        .mab-card-status.locked .mab-status-dot {
-          background: var(--stl-amber, rgba(255, 209, 102, 0.95));
+        .mab-pillrow-status.locked .mab-pillrow-status-dot {
+          background: var(--stl-gold, #FFD166);
         }
-        .mab-card-status.cashed {
-          color: var(--stl-text3, rgba(255, 255, 255, 0.5));
+        .mab-pillrow-status.cashed {
+          color: var(--stl-text-dim, var(--stl-text3, rgba(255, 255, 255, 0.5)));
         }
         @keyframes mabPulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.45; }
         }
-        .mab-card-payout {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          align-items: center;
-          gap: 12px;
-          padding: 10px 12px;
-          border-radius: 8px;
-          background: var(--stl-bg, rgba(0, 0, 0, 0.22));
-          border: 1px solid var(--stl-border, rgba(255, 255, 255, 0.06));
+        .mab-pillrow-caret {
+          flex-shrink: 0;
+          font-size: 14px;
+          line-height: 1;
+          color: var(--stl-text-dim, var(--stl-text3, rgba(255, 255, 255, 0.45)));
+          transform: rotate(90deg);
+          transition: transform 0.15s ease;
         }
-        .mab-payout-leg {
+        .mab-pillrow-caret.open { transform: rotate(270deg); }
+        .mab-drawer {
           display: flex;
           flex-direction: column;
-          gap: 2px;
-          min-width: 0;
+          gap: 8px;
+          padding: 8px 10px 10px;
+          border-top: 1px solid var(--stl-border-regular, var(--stl-border, rgba(255, 255, 255, 0.08)));
+          background: var(--stl-bg-surface, var(--stl-bg2, #1A1F2E));
         }
-        .mab-payout-leg:last-child {
-          align-items: flex-end;
-          text-align: right;
+        .mab-drawer-actions {
+          display: flex;
+          gap: 6px;
         }
-        .mab-payout-label {
-          font-family: var(--font-mono);
-          font-size: 9px;
-          font-weight: 600;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--stl-text3, rgba(255, 255, 255, 0.45));
-        }
-        .mab-payout-value {
-          font-family: var(--font-mono);
-          font-size: 14px;
-          font-weight: 600;
-          font-variant-numeric: tabular-nums;
-          color: var(--stl-text1, var(--text));
-          letter-spacing: 0.01em;
-          line-height: 1.1;
-        }
-        .mab-payout-value.strong {
-          font-size: 16px;
-          font-weight: 700;
-        }
-        .mab-payout-value.green { color: var(--stl-green, var(--seafoam)); }
-        .mab-payout-value.amber { color: var(--stl-amber, rgba(255, 209, 102, 0.95)); }
-        .mab-payout-value.muted { color: var(--stl-text2, rgba(255, 255, 255, 0.55)); }
-        .mab-payout-unit {
-          font-size: 0.78em;
-          opacity: 0.7;
-          margin-left: 1px;
-        }
-        .mab-payout-arrow {
-          font-family: var(--font-mono);
-          font-size: 16px;
-          color: var(--stl-text3, rgba(255, 255, 255, 0.32));
-          line-height: 1;
-        }
-        .mab-payout-delta {
-          margin-top: 2px;
-          font-family: var(--font-mono);
+        .mab-drawer-actions .mab-btn {
+          flex: 1 1 0;
+          padding: 7px 14px;
           font-size: 10px;
-          font-weight: 600;
-          color: var(--stl-green, var(--seafoam));
-          letter-spacing: 0.02em;
+          letter-spacing: 0.08em;
+          border-radius: var(--stl-r-pill, 999px);
+          text-align: center;
         }
         .mab-locked-note {
           font-family: var(--font-mono);
           font-size: 10.5px;
           line-height: 1.4;
-          color: var(--stl-text2, rgba(255, 255, 255, 0.6));
+          color: var(--stl-text-dim, var(--stl-text2, rgba(255, 255, 255, 0.6)));
           letter-spacing: 0.02em;
         }
-        .mab-card-actions {
-          display: flex;
-          gap: 8px;
-        }
-        .mab-card-actions .mab-btn {
-          flex: 1 1 0;
-          padding: 9px 10px;
-          font-size: 10.5px;
-          letter-spacing: 0.08em;
-          text-align: center;
+        @media (max-width: 560px) {
+          .mab-pillrow-chip-stake,
+          .mab-pillrow-chip-arrow { display: none; }
+          .mab-pillrow { gap: 8px; padding: 8px; }
+          .mab-pillrow-status { padding: 3px 7px; }
         }
         .mab-row.cashed {
           opacity: 0.6;
