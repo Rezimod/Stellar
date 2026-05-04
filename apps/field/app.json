@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Stellar Field",
+    "slug": "stellar-field",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "scheme": "stellarfield",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0E17"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stellar.field",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece. Audio is transcribed locally and never leaves your device."
+      }
+    },
+    "android": {
+      "package": "com.stellar.field",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0E17"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece."
+        }
+      ],
+      "expo-web-browser"
+    ]
+  }
+}

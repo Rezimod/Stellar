@@ -1,0 +1,110 @@
+[
+  {
+    "id": "m31",
+    "source": "messier",
+    "title": "M31 — Andromeda Galaxy",
+    "text": "M31, the Andromeda Galaxy, is the nearest large spiral galaxy to the Milky Way at 2.5 million light-years. Magnitude 3.4, visible to the naked eye from dark skies as a faint smudge in Andromeda. Best viewed September–January from the northern hemisphere. In an 8-inch telescope at 50x, look for the bright nucleus and the dust lane on the southwest side. Companions M32 and M110 sit nearby."
+  },
+  {
+    "id": "m42",
+    "source": "messier",
+    "title": "M42 — Orion Nebula",
+    "text": "M42, the Orion Nebula, is the closest large star-forming region at 1,344 light-years. Magnitude 4.0, visible naked-eye as the middle 'star' of Orion's sword. Best viewed November–March. At 100x in a 6-inch scope you will see the trapezium (four central young stars) and wispy nebulosity. A UHC or O-III filter dramatically increases contrast on the nebulosity."
+  },
+  {
+    "id": "m13",
+    "source": "messier",
+    "title": "M13 — Hercules Globular Cluster",
+    "text": "M13 is the brightest globular cluster in the northern hemisphere, magnitude 5.8, in Hercules. Best viewed May–September. At 150x in an 8-inch telescope you will resolve hundreds of individual stars across the core. About 145 light-years across at 22,200 light-years away."
+  },
+  {
+    "id": "m45",
+    "source": "messier",
+    "title": "M45 — Pleiades",
+    "text": "M45, the Pleiades or Seven Sisters, is a young open cluster at 444 light-years, magnitude 1.6. Best viewed October–March. Use binoculars or a wide-field eyepiece — at high magnification you only see a few stars. Faint blue reflection nebulosity appears in long-exposure photos but is difficult visually."
+  },
+  {
+    "id": "m51",
+    "source": "messier",
+    "title": "M51 — Whirlpool Galaxy",
+    "text": "M51, the Whirlpool Galaxy, is a face-on spiral interacting with companion NGC 5195, in Canes Venatici near the Big Dipper handle. Magnitude 8.4, distance 31 million light-years. Best viewed March–July. Spiral arms become visible from dark sites in 10-inch and larger scopes."
+  },
+  {
+    "id": "m81",
+    "source": "messier",
+    "title": "M81 — Bode's Galaxy",
+    "text": "M81 is a bright spiral galaxy in Ursa Major, magnitude 6.9. Best viewed January–June. Forms a famous pair with M82 (the Cigar Galaxy) — both fit in the same low-power eyepiece field. At 12 million light-years, M81 is one of the closest spiral galaxies outside the Local Group."
+  },
+  {
+    "id": "m22",
+    "source": "messier",
+    "title": "M22 — Sagittarius Globular",
+    "text": "M22 in Sagittarius is one of the four brightest globular clusters in the entire sky, magnitude 5.1. Best viewed June–September. Closer than M13 at 10,400 light-years. Resolves into thousands of stars in a 10-inch scope."
+  },
+  {
+    "id": "saturn-tips",
+    "source": "observation-tips",
+    "title": "Observing Saturn",
+    "text": "Saturn is the showpiece planet. At 100x you see the rings clearly. The Cassini Division (gap in the rings) becomes visible at 150x in steady seeing. Look for the shadow of the planet on the rings, and the shadow of the rings on the planet. Titan, the largest moon, is visible in any small telescope as a magnitude-8 point. Best viewed when at least 30 degrees above the horizon to escape atmospheric distortion."
+  },
+  {
+    "id": "jupiter-tips",
+    "source": "observation-tips",
+    "title": "Observing Jupiter",
+    "text": "Jupiter shows surface detail at any aperture. At 80x you will see the two main equatorial belts and the four Galilean moons (Io, Europa, Ganymede, Callisto). At 150x in steady seeing the Great Red Spot is visible if it's facing Earth — check a transit prediction app first. Moons cast shadows on the planet during transits, visible at 150x+ as black dots."
+  },
+  {
+    "id": "moon-tips",
+    "source": "observation-tips",
+    "title": "Observing the Moon",
+    "text": "The terminator (shadow line between lit and dark sides) is where detail is sharpest. Don't observe the full moon at high magnification — surface detail vanishes in the flat lighting. Best craters and mountains visible 3 days after new moon and a few days after full moon. A neutral density or polarizing filter cuts the glare on a near-full moon."
+  },
+  {
+    "id": "ursa-major",
+    "source": "constellation",
+    "title": "Ursa Major — The Great Bear",
+    "text": "Ursa Major contains the Big Dipper asterism. The Pointer Stars (Dubhe, Merak) point to Polaris. Mizar in the handle is a famous double star — its companion Alcor is naked-eye visible. Hosts M81/M82 galaxy pair, M101 Pinwheel Galaxy, and M97 Owl Nebula. Circumpolar from northern temperate latitudes."
+  },
+  {
+    "id": "orion",
+    "source": "constellation",
+    "title": "Orion — The Hunter",
+    "text": "Orion is the most recognizable winter constellation. Three belt stars (Alnitak, Alnilam, Mintaka) point south to Sirius. The sword below the belt contains M42, the Orion Nebula. Betelgeuse (red supergiant, top-left) and Rigel (blue supergiant, bottom-right) are the two brightest stars. Best viewed November–March."
+  },
+  {
+    "id": "cassiopeia",
+    "source": "constellation",
+    "title": "Cassiopeia — The Queen",
+    "text": "Cassiopeia is the W-shaped circumpolar constellation opposite the Big Dipper across Polaris. Always visible from northern latitudes. Hosts open clusters M52, M103, NGC 457 (the Owl Cluster). When the Big Dipper is low, Cassiopeia is high, and vice versa."
+  },
+  {
+    "id": "telescope-collimation",
+    "source": "telescope-faq",
+    "title": "Collimating a Reflector",
+    "text": "A Newtonian reflector needs collimation (mirror alignment) every few sessions, or after transport. Use a laser collimator or Cheshire eyepiece. Adjust the secondary mirror first to center the primary, then adjust the primary to center the secondary's reflection. A poorly collimated scope shows soft, comet-shaped stars at high power. Star test by defocusing slightly on a bright star — concentric rings indicate good collimation."
+  },
+  {
+    "id": "telescope-eyepieces",
+    "source": "telescope-faq",
+    "title": "Choosing Eyepieces",
+    "text": "Magnification = telescope focal length / eyepiece focal length. A 1200mm scope with a 25mm eyepiece gives 48x. Useful magnification range is roughly 30x to 50x per inch of aperture — beyond that, the image gets dim and atmospheric seeing limits detail. A good starting set: 25mm or 32mm wide-field for finding objects, 10mm for medium power, 6mm for planetary detail, plus a 2x Barlow."
+  },
+  {
+    "id": "telescope-cooldown",
+    "source": "telescope-faq",
+    "title": "Letting a Telescope Cool Down",
+    "text": "A warm telescope brought outside into cold air shows poor image quality until the optics reach ambient temperature. Allow 30–60 minutes for a 6-inch scope, longer for larger apertures. Heat currents inside the tube cause shimmering even in steady seeing. Some Dobsonians have fans that speed cool-down."
+  },
+  {
+    "id": "dark-adaptation",
+    "source": "observation-tips",
+    "title": "Dark Adaptation",
+    "text": "Your eyes need 20–30 minutes in full darkness to reach maximum sensitivity to faint light. White light (phone screen, flashlight) destroys dark adaptation in seconds. Use a red flashlight or a phone screen with a deep red filter. Faint deep-sky objects (galaxies, nebulae) are dramatically more visible after full dark adaptation."
+  },
+  {
+    "id": "seeing-transparency",
+    "source": "observation-tips",
+    "title": "Seeing vs Transparency",
+    "text": "Seeing is the steadiness of the air — affects how much detail you see on planets and the Moon. Good seeing means crisp views at 200x+. Transparency is how clear the sky is — affects how faint a deep-sky object you can see. A hazy night with steady air is good for planets but bad for galaxies. A crystal-clear windy night is the opposite. Both are rated 1–10 on most forecast sites."
+  }
+]
