@@ -28,6 +28,12 @@ export interface UseDeviceHeading {
   status: HeadingStatus;
   /** Best-effort accuracy in degrees from iOS, or null. */
   accuracy: number | null;
+  /** Persistent calibration nudge applied on top of the raw sensor heading. */
+  offset: number;
+  /** Add `delta` degrees to the calibration offset. Persisted to localStorage. */
+  nudge: (delta: number) => void;
+  /** Reset the calibration offset to zero. */
+  resetCalibration: () => void;
   /** Trigger the iOS permission prompt and start listening. Idempotent. */
   request: () => Promise<void>;
   /** Stop listening and forget the heading. */
@@ -59,27 +65,71 @@ function smoothAngle(prev: number | null, next: number, alpha: number): number {
   return a;
 }
 
+/**
+ * Current screen rotation in degrees. iOS Safari already corrects
+ * `webkitCompassHeading` for screen orientation, so we only apply this for
+ * the Android (`deviceorientationabsolute`) path.
+ */
+function screenAngle(): number {
+  if (typeof window === 'undefined') return 0;
+  const so = (window.screen as Screen & { orientation?: { angle?: number } }).orientation;
+  if (so && typeof so.angle === 'number') return so.angle;
+  // Legacy fallback.
+  const wo = (window as Window & { orientation?: number }).orientation;
+  return typeof wo === 'number' ? wo : 0;
+}
+
 /** Pull a compass heading out of a DeviceOrientationEvent across browsers. */
 function eventHeading(e: DeviceOrientationEvent): number | null {
   const ev = e as unknown as { webkitCompassHeading?: number };
   if (typeof ev.webkitCompassHeading === 'number' && !Number.isNaN(ev.webkitCompassHeading)) {
-    // iOS: 0 = magnetic north, increases clockwise.
+    // iOS: 0 = true north (Apple corrects for declination), increases clockwise,
+    // and is already screen-orientation corrected.
     return ev.webkitCompassHeading;
   }
   if (e.alpha != null && !Number.isNaN(e.alpha) && e.absolute) {
     // Android `deviceorientationabsolute`: alpha is 0 when device top points
-    // north, increases counter-clockwise → invert to compass.
-    return (360 - e.alpha) % 360;
+    // north, increases counter-clockwise → invert to compass and rotate by
+    // current screen orientation so landscape mode matches portrait.
+    const compass = (360 - e.alpha + screenAngle()) % 360;
+    return (compass + 360) % 360;
   }
   return null;
 }
 
+const OFFSET_KEY = 'stellar.sky.compass.offset';
+const MAX_OFFSET = 30;
+
+function loadOffset(): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = window.localStorage.getItem(OFFSET_KEY);
+    const n = raw ? parseFloat(raw) : 0;
+    if (!isFinite(n)) return 0;
+    return Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, n));
+  } catch {
+    return 0;
+  }
+}
+function saveOffset(n: number) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(OFFSET_KEY, String(n));
+  } catch { /* ignore */ }
+}
+
 export function useDeviceHeading(): UseDeviceHeading {
-  const [heading, setHeading] = useState<number | null>(null);
+  const [rawHeading, setRawHeading] = useState<number | null>(null);
   const [altitude, setAltitude] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [status, setStatus] = useState<HeadingStatus>('idle');
   const [live, setLive] = useState(false);
+  const [offset, setOffset] = useState<number>(0);
+
+  // Lazy-load offset on mount (client-only — localStorage isn't on the server).
+  useEffect(() => {
+    setOffset(loadOffset());
+  }, []);
 
   const smoothedHeadingRef = useRef<number | null>(null);
   const smoothedAltRef = useRef<number | null>(null);
@@ -115,7 +165,7 @@ export function useDeviceHeading(): UseDeviceHeading {
       if (next == null) return;
       setLive(true);
       smoothedHeadingRef.current = smoothAngle(smoothedHeadingRef.current, next, SMOOTH_ALPHA);
-      setHeading(smoothedHeadingRef.current);
+      setRawHeading(smoothedHeadingRef.current);
 
       // beta=0 → screen flat face up, back of phone points down → alt -90.
       // beta=90 → phone upright, back points at horizon → alt 0.
@@ -171,16 +221,32 @@ export function useDeviceHeading(): UseDeviceHeading {
   const stop = useCallback(() => {
     detach();
     setLive(false);
-    setHeading(null);
+    setRawHeading(null);
     setAltitude(null);
     smoothedHeadingRef.current = null;
     smoothedAltRef.current = null;
     setStatus('idle');
   }, [detach]);
 
+  const nudge = useCallback((delta: number) => {
+    setOffset((prev) => {
+      const next = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, prev + delta));
+      saveOffset(next);
+      return next;
+    });
+  }, []);
+
+  const resetCalibration = useCallback(() => {
+    setOffset(0);
+    saveOffset(0);
+  }, []);
+
   useEffect(() => detach, [detach]);
 
-  return { heading, altitude, live, status, accuracy, request, stop };
+  // Apply the calibration offset to the raw sensor heading. Wrapped to [0, 360).
+  const heading = rawHeading == null ? null : ((rawHeading + offset) % 360 + 360) % 360;
+
+  return { heading, altitude, live, status, accuracy, offset, nudge, resetCalibration, request, stop };
 }
 
 /** Signed shortest difference between two compass directions, in degrees [-180..+180]. */

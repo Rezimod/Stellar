@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { headingDelta, type HeadingStatus } from '@/lib/sky/use-device-heading';
 import type { ObjectId, SkyObject } from './types';
@@ -71,6 +71,10 @@ interface SkyMapProps {
   constellationLines?: Array<[string, string]>;
   /** When set, draws a dashed terracotta trail from anchor → active body. */
   hopAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
+  /** Persistent calibration offset (degrees) — shown next to nudge controls. */
+  calibrationOffset?: number;
+  /** Apply ±degrees to the calibration offset. Optional — only renders the +/− pad when provided. */
+  onNudge?: (delta: number) => void;
 }
 
 interface Plotted {
@@ -102,6 +106,8 @@ export function SkyMap({
   constellationStars = [],
   constellationLines = [],
   hopAnchor = null,
+  calibrationOffset = 0,
+  onNudge,
 }: SkyMapProps) {
   const t = useTranslations('sky.skymap');
   const liveOffset = heading ?? 0;
@@ -144,6 +150,25 @@ export function SkyMap({
     return { dAz, dAlt, azOnTarget, altOnTarget, onTarget };
   }, [isLive, active, heading, hasTilt, userAltitude]);
 
+  // Vibrate exactly once each time the lock transitions from off to on for
+  // the current target. Reset whenever the active id changes.
+  const lastLockedRef = useRef<{ id: string | null; locked: boolean }>({ id: null, locked: false });
+  const isLocked = aim?.onTarget ?? false;
+  useEffect(() => {
+    const prev = lastLockedRef.current;
+    if (active?.obj.id !== prev.id) {
+      lastLockedRef.current = { id: active?.obj.id ?? null, locked: false };
+    }
+    if (active && isLocked && !lastLockedRef.current.locked) {
+      lastLockedRef.current = { id: active.obj.id, locked: true };
+      if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+        try { navigator.vibrate([12, 40, 12]); } catch { /* ignore */ }
+      }
+    } else if (!isLocked && lastLockedRef.current.locked) {
+      lastLockedRef.current = { id: lastLockedRef.current.id, locked: false };
+    }
+  }, [active, isLocked]);
+
   // Where the phone is currently aimed, projected onto the rotated dome.
   // Because the dome rotates with heading, the user's facing azimuth always
   // sits at the top (angle 0). Their pitch becomes the radial position.
@@ -153,6 +178,33 @@ export function SkyMap({
     const dist = (1 - alt / 90) * R;
     return { x: CX, y: CY - dist, belowHorizon: (userAltitude ?? 0) < 0 };
   }, [isLive, hasTilt, userAltitude]);
+
+  // Deterministic starfield filling the dome — gives the background some
+  // texture without depending on a network image. Generated once.
+  const starfield = useMemo(() => {
+    let seed = 1729;
+    const rand = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+    const stars: { x: number; y: number; r: number; o: number }[] = [];
+    const target = 80;
+    let attempts = 0;
+    while (stars.length < target && attempts < target * 8) {
+      attempts++;
+      // Reject sample inside the rim circle.
+      const x = rand() * SIZE;
+      const y = rand() * SIZE;
+      const dx = x - CX;
+      const dy = y - CY;
+      const d = Math.hypot(dx, dy);
+      if (d > R - 4) continue;
+      const r = 0.35 + rand() * 1.05;
+      const o = 0.22 + rand() * 0.55;
+      stars.push({ x, y, r, o });
+    }
+    return stars;
+  }, []);
 
   // Constellation stars projected onto the rotated dome.
   const projectedStars = useMemo(() => {
@@ -210,9 +262,13 @@ export function SkyMap({
       >
         <defs>
           <radialGradient id="skymap-bg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#0d1a3d" />
-            <stop offset="100%" stopColor="#040814" />
+            <stop offset="0%" stopColor="#0e1a36" />
+            <stop offset="55%" stopColor="#070d22" />
+            <stop offset="100%" stopColor="#02060f" />
           </radialGradient>
+          <clipPath id="skymap-clip">
+            <circle cx={CX} cy={CY} r={R - 0.5} />
+          </clipPath>
           <radialGradient id="skymap-nebula" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="rgba(232,164,158,0.85)" />
             <stop offset="60%" stopColor="rgba(190,108,108,0.35)" />
@@ -227,6 +283,20 @@ export function SkyMap({
 
         <circle cx={CX} cy={CY} r={R} fill="url(#skymap-bg)" />
 
+        {/* Deterministic background starfield — clipped to dome interior. */}
+        <g clipPath="url(#skymap-clip)" pointerEvents="none">
+          {starfield.map((s, i) => (
+            <circle
+              key={`bg-${i}`}
+              cx={s.x}
+              cy={s.y}
+              r={s.r}
+              fill="#f4ede0"
+              opacity={s.o}
+            />
+          ))}
+        </g>
+
         <circle cx={CX} cy={CY} r={R * (1 / 3)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={0.5} />
         <circle cx={CX} cy={CY} r={R * (2 / 3)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={0.5} />
 
@@ -237,7 +307,8 @@ export function SkyMap({
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.20)" strokeWidth={1} />
 
         {/* Constellation stick figures + bright stars (drawn under the
-            bodies so the planet glyphs sit on top). */}
+            bodies so the planet glyphs sit on top). Visible by default,
+            and brightened around the active constellation. */}
         {constellationLines.length > 0 && (
           <g pointerEvents="none">
             {constellationLines.map(([a, b], i) => {
@@ -252,22 +323,23 @@ export function SkyMap({
                   y1={sa.y}
                   x2={sb.x}
                   y2={sb.y}
-                  stroke={isActive ? 'rgba(255,255,255,0.42)' : 'rgba(255,255,255,0.10)'}
-                  strokeWidth={isActive ? 0.85 : 0.6}
+                  stroke={isActive ? 'rgba(255,241,210,0.65)' : 'rgba(255,255,255,0.22)'}
+                  strokeWidth={isActive ? 1.0 : 0.75}
+                  strokeLinecap="round"
                 />
               );
             })}
             {projectedStars.map((s) => {
               const isActive = activeConstellation && s.constellation === activeConstellation;
-              const r = s.mag <= 1 ? 1.6 : s.mag <= 2 ? 1.3 : 1.0;
+              const r = s.mag <= 1 ? 1.9 : s.mag <= 2 ? 1.55 : 1.2;
               return (
                 <circle
                   key={`cstar-${s.id}`}
                   cx={s.x}
                   cy={s.y}
                   r={r}
-                  fill={isActive ? '#fff1d2' : 'rgba(244,237,224,0.55)'}
-                  opacity={isActive ? 0.95 : 0.55}
+                  fill={isActive ? '#fff1d2' : '#e8e2d2'}
+                  opacity={isActive ? 1 : 0.78}
                 />
               );
             })}
@@ -349,8 +421,13 @@ export function SkyMap({
           );
         })}
 
-        {/* Active crosshair last */}
-        {active && <Crosshair x={active.x} y={active.y} />}
+        {/* Active crosshair + lock ripples last so they sit above everything. */}
+        {active && (
+          <>
+            {aim?.onTarget && <LockRipples key={`lock-${active.obj.id}`} x={active.x} y={active.y} />}
+            <Crosshair x={active.x} y={active.y} locked={!!aim?.onTarget} />
+          </>
+        )}
       </svg>
 
       {/* === Compass control overlay === */}
@@ -401,6 +478,33 @@ export function SkyMap({
           </span>
         )}
       </div>
+
+      {/* === Calibrate nudge — only visible while compass is live === */}
+      {isLive && onNudge && (
+        <div className="sky-map__nudge" role="group" aria-label={t('nudgeAria')}>
+          <button
+            type="button"
+            className="sky-map__nudge-btn"
+            onClick={() => onNudge(-1)}
+            aria-label={t('nudgeLeft')}
+          >
+            −1°
+          </button>
+          <span className="sky-map__nudge-val" aria-live="polite">
+            {calibrationOffset === 0
+              ? t('nudgeNeutral')
+              : `${calibrationOffset > 0 ? '+' : ''}${Math.round(calibrationOffset)}°`}
+          </span>
+          <button
+            type="button"
+            className="sky-map__nudge-btn"
+            onClick={() => onNudge(1)}
+            aria-label={t('nudgeRight')}
+          >
+            +1°
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -513,21 +617,31 @@ function renderBody(o: SkyObject, x: number, y: number, r: number) {
   return <circle cx={x} cy={y} r={r} fill="#ffffff" />;
 }
 
-function Crosshair({ x, y }: { x: number; y: number }) {
+function Crosshair({ x, y, locked = false }: { x: number; y: number; locked?: boolean }) {
   const ringR = 11;
   const tickGap = 2.5;
   const tickLen = 6;
   return (
-    <g pointerEvents="none">
-      <circle cx={x} cy={y} r={ringR} fill="none" stroke="var(--terracotta)" strokeWidth={1.1} opacity={0.95} />
-      <line x1={x} y1={y - ringR - tickGap} x2={x} y2={y - ringR - tickGap - tickLen}
-        stroke="var(--terracotta)" strokeWidth={1.1} />
-      <line x1={x} y1={y + ringR + tickGap} x2={x} y2={y + ringR + tickGap + tickLen}
-        stroke="var(--terracotta)" strokeWidth={1.1} />
-      <line x1={x - ringR - tickGap} y1={y} x2={x - ringR - tickGap - tickLen} y2={y}
-        stroke="var(--terracotta)" strokeWidth={1.1} />
-      <line x1={x + ringR + tickGap} y1={y} x2={x + ringR + tickGap + tickLen} y2={y}
-        stroke="var(--terracotta)" strokeWidth={1.1} />
+    <g pointerEvents="none" className={`sky-map__crosshair${locked ? ' is-locked' : ''}`}>
+      <circle cx={x} cy={y} r={ringR} fill="none" strokeWidth={1.2} opacity={0.95} />
+      <line x1={x} y1={y - ringR - tickGap} x2={x} y2={y - ringR - tickGap - tickLen} strokeWidth={1.2} />
+      <line x1={x} y1={y + ringR + tickGap} x2={x} y2={y + ringR + tickGap + tickLen} strokeWidth={1.2} />
+      <line x1={x - ringR - tickGap} y1={y} x2={x - ringR - tickGap - tickLen} y2={y} strokeWidth={1.2} />
+      <line x1={x + ringR + tickGap} y1={y} x2={x + ringR + tickGap + tickLen} y2={y} strokeWidth={1.2} />
+    </g>
+  );
+}
+
+/**
+ * Three expanding rings emanating from the lock point. CSS-driven so they
+ * play exactly once on mount (key on the active id triggers a re-mount).
+ */
+function LockRipples({ x, y }: { x: number; y: number }) {
+  return (
+    <g pointerEvents="none" className="sky-map__lock-ripples">
+      <circle cx={x} cy={y} r={11} fill="none" stroke="#7ed4a8" strokeWidth={1.2} className="sky-map__lock-ring sky-map__lock-ring--1" />
+      <circle cx={x} cy={y} r={11} fill="none" stroke="#7ed4a8" strokeWidth={1.0} className="sky-map__lock-ring sky-map__lock-ring--2" />
+      <circle cx={x} cy={y} r={11} fill="none" stroke="#7ed4a8" strokeWidth={0.8} className="sky-map__lock-ring sky-map__lock-ring--3" />
     </g>
   );
 }

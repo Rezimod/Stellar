@@ -219,6 +219,8 @@ export default function SkyPage() {
                 userAltitude={compass.altitude}
                 headingStatus={compass.status}
                 onCalibrate={compass.request}
+                calibrationOffset={compass.offset}
+                onNudge={compass.nudge}
                 constellationStars={constellationStars}
                 constellationLines={CONSTELLATION_LINES}
                 hopAnchor={hopAnchor ? {

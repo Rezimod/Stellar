@@ -369,7 +369,11 @@
       "turnLeft": "Turn left {deg}°",
       "turnRight": "Turn right {deg}°",
       "tiltUp": "Tilt up {deg}°",
-      "tiltDown": "Tilt down {deg}°"
+      "tiltDown": "Tilt down {deg}°",
+      "nudgeAria": "Compass calibration",
+      "nudgeLeft": "Nudge compass left",
+      "nudgeRight": "Nudge compass right",
+      "nudgeNeutral": "Aligned"
     },
     "tour": {
       "aria": "How to find a target",
