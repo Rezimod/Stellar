@@ -46,7 +46,7 @@ Celestron for the Americas, Levenhuk for Europe, Astroman for the Caucasus.
 Next: iOS app, mainnet, 3 regional dealer partnerships."
 
 [2:45–3:00] — Close
-"Stellar. Proof of observation on Solana."
+"Stellar. Astronomy, on chain. Live on Solana mainnet."
 ```
 
 ---

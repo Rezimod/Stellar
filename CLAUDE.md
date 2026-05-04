@@ -1,7 +1,7 @@
-# STELLARR — AI-Powered Astronomy App on Solana
+# STELLAR — AI-Powered Astronomy App on Solana
 
 ## What This Is
-Stellarr is the all-in-one astronomy app for telescope owners and space enthusiasts. It combines a 7-day sky forecast, real-time planet tracker, and AI space companion with a real product marketplace — all powered by invisible Solana infrastructure.
+Stellar is the all-in-one astronomy app for telescope owners and space enthusiasts. It combines a 7-day sky forecast, real-time planet tracker, and AI space companion with a real product marketplace — all powered by invisible Solana infrastructure.
 
 Built for the Colosseum Frontier Hackathon (April 6 – May 11, 2026). Consumer track.
 

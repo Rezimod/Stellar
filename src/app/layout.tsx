@@ -57,9 +57,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Stellar — From the telescope shop to on-chain',
+  title: 'Stellar — Astronomy, on chain',
   description:
-    "The crypto layer for Astroman, Georgia's astronomy store. Predict the sky, observe at night, redeem winnings for real telescopes.",
+    'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
   metadataBase: new URL('https://stellarrclub.vercel.app'),
   manifest: '/manifest.json',
   appleWebApp: {
@@ -68,16 +68,18 @@ export const metadata: Metadata = {
     title: 'Stellar',
   },
   openGraph: {
-    title: 'Stellar — From the telescope shop to on-chain',
-    description: '60,000 astronomers, on-chain. Predict, observe, redeem for real telescopes.',
+    title: 'Stellar — Astronomy, on chain',
+    description:
+      'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
     url: 'https://stellarrclub.vercel.app',
     siteName: 'Stellar',
     images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Stellar — From the telescope shop to on-chain',
-    description: '60,000 astronomers, on-chain.',
+    title: 'Stellar — Astronomy, on chain',
+    description:
+      'Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
     images: ['/opengraph-image'],
     creator: '@StellarClub26',
   },

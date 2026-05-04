@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Stellar — Cosmic prediction markets on Solana';
+export const alt = 'Stellar — Astronomy, on chain';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -31,7 +31,7 @@ export default async function Image() {
             maxWidth: 900,
           }}
         >
-          From Georgia&rsquo;s telescope shop to on-chain
+          Astronomy, on chain
         </div>
         <div
           style={{
@@ -42,7 +42,7 @@ export default async function Image() {
             maxWidth: 800,
           }}
         >
-          60,000 astronomers. Real markets. Real gear.
+          Photograph the sky. Earn Stars. Redeem for real telescopes.
         </div>
         <div
           style={{
