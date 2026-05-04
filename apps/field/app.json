@@ -45,7 +45,8 @@
           "microphonePermission": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-asset"
     ],
     "extra": {
       "eas": {
