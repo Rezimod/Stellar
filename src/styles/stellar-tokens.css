@@ -1595,14 +1595,15 @@
 
 .mkt-odds-pair { display: flex; align-items: center; gap: 4px; }
 
-/* Stellar odds — solid round planets.
-   Saturated radial-gradient body lit from upper-left with a deep
-   terminator on the bottom-right (polished stone, not tinted glass).
-   Dark mono number on the bright side carries strong contrast. */
+/* Stellar odds — flat round dials.
+   Restrained: subtle tinted body, hairline brand-color border, mono
+   number in brand color. Active state fills with the full brand
+   color and inverts the number to a dark canvas tone. No gradients,
+   no inset shadows, no drop shadows. */
 .mkt-odds-cells {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .mkt-odds-cell {
@@ -1613,24 +1614,15 @@
   width: 42px;
   height: 42px;
   padding: 0;
-  border: 0;
+  border: 1px solid var(--cell-edge);
   border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 30% 28%,
-      var(--cell-lit) 0%,
-      var(--cell-mid) 55%,
-      var(--cell-dark) 100%
-    );
-  box-shadow:
-    inset 0 0 0 1px var(--cell-edge),
-    inset -3px -5px 10px -3px rgba(0, 0, 0, 0.55);
+  background: var(--cell-bg);
   color: var(--cell-fg);
   cursor: pointer;
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
-  transition: box-shadow 0.18s ease, transform 0.16s ease,
-    background 0.18s ease, color 0.14s ease;
+  transition: background 0.16s ease, border-color 0.16s ease,
+    color 0.14s ease, transform 0.14s ease;
 }
 .mkt-odds-cell:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -1647,62 +1639,48 @@
 }
 .mkt-odds-cell .cell-num {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.02em;
   font-feature-settings: 'tnum';
 }
 .mkt-odds-cell .cell-pct {
   font-size: 8px;
-  font-weight: 600;
+  font-weight: 500;
   margin-left: 1px;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .mkt-odds-cell.yes {
-  --cell-lit:  #6FF1DB;
-  --cell-mid:  #14B8A6;
-  --cell-dark: #0D5F58;
-  --cell-edge: #5EEAD4;
-  --cell-fg:   #062521;
+  --cell-bg:   rgba(94, 234, 212, 0.06);
+  --cell-edge: rgba(94, 234, 212, 0.42);
+  --cell-fg:   #5EEAD4;
 }
 .mkt-odds-cell.no {
-  --cell-lit:  #FFD98A;
-  --cell-mid:  #C97A12;
-  --cell-dark: #6E3F08;
-  --cell-edge: #FFD166;
-  --cell-fg:   #1F1100;
+  --cell-bg:   rgba(255, 209, 102, 0.06);
+  --cell-edge: rgba(255, 209, 102, 0.42);
+  --cell-fg:   #FFD166;
 }
 
 .mkt-odds-cell:hover:not(:disabled) { transform: translateY(-1px); }
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-lit:  #88F5E1;
-  --cell-mid:  #19CCB7;
-  --cell-edge: #82F0DE;
+  --cell-bg:   rgba(94, 234, 212, 0.14);
+  --cell-edge: rgba(94, 234, 212, 0.75);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-lit:  #FFE3A6;
-  --cell-mid:  #DE8916;
-  --cell-edge: #FFDC8A;
+  --cell-bg:   rgba(255, 209, 102, 0.14);
+  --cell-edge: rgba(255, 209, 102, 0.75);
 }
 
 .mkt-odds-cell.yes.active {
-  --cell-lit:  #A8FAEB;
-  --cell-mid:  #2DD4BF;
-  --cell-dark: #0F766E;
-  --cell-edge: #A8FAEB;
-  box-shadow:
-    inset 0 0 0 1.5px var(--cell-edge),
-    inset -3px -5px 10px -3px rgba(0, 0, 0, 0.4);
+  --cell-bg:   #5EEAD4;
+  --cell-edge: #5EEAD4;
+  --cell-fg:   #06231F;
 }
 .mkt-odds-cell.no.active {
-  --cell-lit:  #FFEAB8;
-  --cell-mid:  #F59E0B;
-  --cell-dark: #92400E;
-  --cell-edge: #FFEAB8;
-  box-shadow:
-    inset 0 0 0 1.5px var(--cell-edge),
-    inset -3px -5px 10px -3px rgba(0, 0, 0, 0.4);
+  --cell-bg:   #FFD166;
+  --cell-edge: #FFD166;
+  --cell-fg:   #1F1100;
 }
 
 /* Inline bet panel — drop-down beneath an expanded market row */
