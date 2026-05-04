@@ -18,6 +18,11 @@ export type HeadingStatus = 'idle' | 'granted' | 'denied' | 'unavailable';
 export interface UseDeviceHeading {
   /** Current heading in degrees, 0..360, or null until the first event fires. */
   heading: number | null;
+  /**
+   * Direction the back of the phone is pointing in altitude, in degrees.
+   * −90 = straight down, 0 = horizon, +90 = zenith. Null until the first event.
+   */
+  altitude: number | null;
   /** Has Stellar received any heading event yet? */
   live: boolean;
   status: HeadingStatus;
@@ -71,11 +76,13 @@ function eventHeading(e: DeviceOrientationEvent): number | null {
 
 export function useDeviceHeading(): UseDeviceHeading {
   const [heading, setHeading] = useState<number | null>(null);
+  const [altitude, setAltitude] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [status, setStatus] = useState<HeadingStatus>('idle');
   const [live, setLive] = useState(false);
 
-  const smoothedRef = useRef<number | null>(null);
+  const smoothedHeadingRef = useRef<number | null>(null);
+  const smoothedAltRef = useRef<number | null>(null);
   const handlerRef = useRef<((e: DeviceOrientationEvent) => void) | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
@@ -107,8 +114,20 @@ export function useDeviceHeading(): UseDeviceHeading {
       const next = eventHeading(e);
       if (next == null) return;
       setLive(true);
-      smoothedRef.current = smoothAngle(smoothedRef.current, next, SMOOTH_ALPHA);
-      setHeading(smoothedRef.current);
+      smoothedHeadingRef.current = smoothAngle(smoothedHeadingRef.current, next, SMOOTH_ALPHA);
+      setHeading(smoothedHeadingRef.current);
+
+      // beta=0 → screen flat face up, back of phone points down → alt -90.
+      // beta=90 → phone upright, back points at horizon → alt 0.
+      // beta=180 → phone tilted backward, back points up → alt +90.
+      if (e.beta != null && !Number.isNaN(e.beta)) {
+        const rawAlt = Math.max(-90, Math.min(90, e.beta - 90));
+        const prev = smoothedAltRef.current;
+        const smoothed = prev == null ? rawAlt : prev * (1 - SMOOTH_ALPHA) + rawAlt * SMOOTH_ALPHA;
+        smoothedAltRef.current = smoothed;
+        setAltitude(smoothed);
+      }
+
       const acc = (e as unknown as { webkitCompassAccuracy?: number }).webkitCompassAccuracy;
       if (typeof acc === 'number' && acc >= 0) setAccuracy(acc);
     };
@@ -120,7 +139,7 @@ export function useDeviceHeading(): UseDeviceHeading {
 
     timeoutRef.current = window.setTimeout(() => {
       // No usable heading after the timeout — sensor is dead or absent.
-      if (!live && smoothedRef.current === null) {
+      if (!live && smoothedHeadingRef.current === null) {
         setStatus('unavailable');
       }
     }, FIRST_EVENT_TIMEOUT_MS);
@@ -153,13 +172,15 @@ export function useDeviceHeading(): UseDeviceHeading {
     detach();
     setLive(false);
     setHeading(null);
-    smoothedRef.current = null;
+    setAltitude(null);
+    smoothedHeadingRef.current = null;
+    smoothedAltRef.current = null;
     setStatus('idle');
   }, [detach]);
 
   useEffect(() => detach, [detach]);
 
-  return { heading, live, status, accuracy, request, stop };
+  return { heading, altitude, live, status, accuracy, request, stop };
 }
 
 /** Signed shortest difference between two compass directions, in degrees [-180..+180]. */

@@ -348,7 +348,16 @@
       "compassUnavailable": "ამ მოწყობილობას კომპასი არ აქვს",
       "onTarget": "სამიზნეზე",
       "turnLeft": "მოატრიალე მარცხნივ {deg}°",
-      "turnRight": "მოატრიალე მარჯვნივ {deg}°"
+      "turnRight": "მოატრიალე მარჯვნივ {deg}°",
+      "tiltUp": "ასწიე {deg}°",
+      "tiltDown": "ჩამოწიე {deg}°"
+    },
+    "tour": {
+      "aria": "როგორ მოვძებნოთ სამიზნე",
+      "step1": "დააჭირე კომპასის კალიბრაციას",
+      "step2": "აარჩიე სამიზნე",
+      "step3": "ატრიალე ტელეფონი ფიქსაციამდე",
+      "dismiss": "გასაგებია"
     },
     "horizon": {
       "label": "Your horizon — looking around",

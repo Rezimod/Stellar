@@ -988,6 +988,22 @@
   margin-left: auto;
   border-color: rgba(255, 209, 102, 0.35);
   color: rgba(255, 209, 102, 0.95);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sky-map__aim-axis {
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.16em;
+}
+.sky-map__aim-axis + .sky-map__aim-axis {
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 209, 102, 0.25);
+}
+.sky-map__user-aim.is-locked circle,
+.sky-map__user-aim.is-locked line {
+  filter: drop-shadow(0 0 4px rgba(120, 220, 170, 0.6));
 }
 .sky-map__aim-pill.is-locked {
   border-color: rgba(120, 220, 170, 0.60);
@@ -1830,6 +1846,84 @@
   height: 220px;
 }
 .sky-v3__skel-card--lg { height: 320px; }
+
+/* ================================================================
+   === First-run finder tour                                     ===
+   ================================================================ */
+
+.sky-v3__tour {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 209, 102, 0.05), rgba(255, 209, 102, 0.02));
+  border: 1px solid rgba(255, 209, 102, 0.20);
+  border-radius: 14px;
+  position: relative;
+}
+.sky-v3__tour-steps {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+  min-width: 0;
+}
+.sky-v3__tour-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sky-v3__tour-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.14);
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  color: var(--terracotta);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-feature-settings: 'tnum' 1;
+  flex-shrink: 0;
+}
+.sky-v3__tour-text {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.01em;
+}
+.sky-v3__tour-dismiss {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+  flex-shrink: 0;
+}
+.sky-v3__tour-dismiss:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+}
+@media (max-width: 640px) {
+  .sky-v3__tour { flex-direction: column; align-items: stretch; }
+  .sky-v3__tour-steps { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .sky-v3__tour-dismiss { align-self: flex-end; }
+}
 
 /* ================================================================
    === Difficulty tier filter (TargetPicker)                    ===

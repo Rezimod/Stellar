@@ -21,6 +21,7 @@ import './sky.css';
 
 const FALLBACK_COORDS = { lat: 41.6941, lon: 44.8337 };
 const REFRESH_MS = 60_000;
+const TOUR_KEY = 'stellar.sky.tour.v1';
 
 export default function SkyPage() {
   const { location } = useLocation();
@@ -35,6 +36,18 @@ export default function SkyPage() {
   );
   const sky = useSkyData(initialCoords);
   const compass = useDeviceHeading();
+
+  const [showTour, setShowTour] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (!window.localStorage.getItem(TOUR_KEY)) setShowTour(true);
+    } catch { /* private mode — just don't show */ }
+  }, []);
+  const dismissTour = useCallback(() => {
+    setShowTour(false);
+    try { window.localStorage.setItem(TOUR_KEY, '1'); } catch { /* ignore */ }
+  }, []);
 
   const [finder, setFinder] = useState<FinderResponse | null>(null);
   const [finderLoading, setFinderLoading] = useState(true);
@@ -206,6 +219,8 @@ export default function SkyPage() {
           </div>
         )}
 
+        {showTour && <FinderTour onDismiss={dismissTour} />}
+
         {/* === Target picker === */}
         {finder && !finderError && (
           <TargetPicker
@@ -231,6 +246,7 @@ export default function SkyPage() {
                   activeId={activeId}
                   onSelect={handleSelect}
                   heading={compass.heading}
+                  userAltitude={compass.altitude}
                   headingStatus={compass.status}
                   onCalibrate={compass.request}
                 />
@@ -312,5 +328,30 @@ function SkyLoadingSkeleton() {
       <div className="sky-v3__skel-card sky-v3__skel-card--lg" />
       <div className="sky-v3__skel-card" />
     </div>
+  );
+}
+
+function FinderTour({ onDismiss }: { onDismiss: () => void }) {
+  const t = useTranslations('sky.tour');
+  return (
+    <aside className="sky-v3__tour" role="note" aria-label={t('aria')}>
+      <ol className="sky-v3__tour-steps">
+        <li>
+          <span className="sky-v3__tour-num">1</span>
+          <span className="sky-v3__tour-text">{t('step1')}</span>
+        </li>
+        <li>
+          <span className="sky-v3__tour-num">2</span>
+          <span className="sky-v3__tour-text">{t('step2')}</span>
+        </li>
+        <li>
+          <span className="sky-v3__tour-num">3</span>
+          <span className="sky-v3__tour-text">{t('step3')}</span>
+        </li>
+      </ol>
+      <button type="button" className="sky-v3__tour-dismiss" onClick={onDismiss} aria-label={t('dismiss')}>
+        {t('dismiss')}
+      </button>
+    </aside>
   );
 }

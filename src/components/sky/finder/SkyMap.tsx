@@ -48,6 +48,8 @@ interface SkyMapProps {
   onSelect: (id: ObjectId) => void;
   /** Optional live device compass heading. When provided, the dome rotates so the user's facing direction is at top. */
   heading?: number | null;
+  /** Optional live device altitude (where the back of the phone points), −90..+90. */
+  userAltitude?: number | null;
   /** Permission/availability state for the heading source. */
   headingStatus?: HeadingStatus;
   /** Triggered when the user taps the calibrate compass control. */
@@ -77,12 +79,14 @@ export function SkyMap({
   activeId,
   onSelect,
   heading = null,
+  userAltitude = null,
   headingStatus = 'idle',
   onCalibrate,
 }: SkyMapProps) {
   const t = useTranslations('sky.skymap');
   const liveOffset = heading ?? 0;
   const isLive = heading != null;
+  const hasTilt = userAltitude != null;
 
   const plotted = useMemo<Plotted[]>(() => {
     return objects
@@ -108,13 +112,27 @@ export function SkyMap({
     return plotted.find((p) => p.obj.id === activeId) ?? null;
   }, [plotted, activeId]);
 
-  // Aim arrow geometry: signed delta from current heading to target azimuth.
+  // Aim geometry: signed delta from current heading→target azimuth and from
+  // current pitch→target altitude. Lock requires both axes within tolerance.
   const aim = useMemo(() => {
     if (!isLive || !active) return null;
-    const delta = headingDelta(active.obj.azimuth, heading ?? 0);
-    const onTarget = Math.abs(delta) <= ON_TARGET_DEG;
-    return { delta, onTarget };
-  }, [isLive, active, heading]);
+    const dAz = headingDelta(active.obj.azimuth, heading ?? 0);
+    const dAlt = hasTilt ? active.obj.altitude - (userAltitude ?? 0) : null;
+    const azOnTarget = Math.abs(dAz) <= ON_TARGET_DEG;
+    const altOnTarget = dAlt == null || Math.abs(dAlt) <= ON_TARGET_DEG;
+    const onTarget = azOnTarget && altOnTarget;
+    return { dAz, dAlt, azOnTarget, altOnTarget, onTarget };
+  }, [isLive, active, heading, hasTilt, userAltitude]);
+
+  // Where the phone is currently aimed, projected onto the rotated dome.
+  // Because the dome rotates with heading, the user's facing azimuth always
+  // sits at the top (angle 0). Their pitch becomes the radial position.
+  const userAim = useMemo(() => {
+    if (!isLive || !hasTilt) return null;
+    const alt = Math.max(0, Math.min(90, userAltitude ?? 0));
+    const dist = (1 - alt / 90) * R;
+    return { x: CX, y: CY - dist, belowHorizon: (userAltitude ?? 0) < 0 };
+  }, [isLive, hasTilt, userAltitude]);
 
   // Cardinal letters need to STAY at compass-correct positions, so we draw
   // them in the rotating frame at their true azimuths (0/90/180/270).
@@ -200,6 +218,11 @@ export function SkyMap({
           <AimArrow x={active.x} y={active.y} onTarget={aim.onTarget} />
         )}
 
+        {/* User-aim reticle: the projected position of where the phone is
+            actually pointing right now. Drives home that the user has to
+            move the phone — not just the chart — to reach the target. */}
+        {userAim && <UserAimReticle x={userAim.x} y={userAim.y} below={userAim.belowHorizon} locked={!!aim?.onTarget} />}
+
         {/* Bodies */}
         {drawOrder.map((p) => {
           const isActive = p.obj.id === activeId;
@@ -246,9 +269,22 @@ export function SkyMap({
         )}
         {aim && (
           <span className={`sky-map__aim-pill${aim.onTarget ? ' is-locked' : ''}`}>
-            {aim.onTarget
-              ? t('onTarget')
-              : t(aim.delta > 0 ? 'turnRight' : 'turnLeft', { deg: Math.abs(Math.round(aim.delta)) })}
+            {aim.onTarget ? (
+              t('onTarget')
+            ) : (
+              <>
+                {!aim.azOnTarget && (
+                  <span className="sky-map__aim-axis">
+                    {t(aim.dAz > 0 ? 'turnRight' : 'turnLeft', { deg: Math.abs(Math.round(aim.dAz)) })}
+                  </span>
+                )}
+                {!aim.altOnTarget && aim.dAlt != null && (
+                  <span className="sky-map__aim-axis">
+                    {t(aim.dAlt > 0 ? 'tiltUp' : 'tiltDown', { deg: Math.abs(Math.round(aim.dAlt)) })}
+                  </span>
+                )}
+              </>
+            )}
           </span>
         )}
       </div>
@@ -437,6 +473,51 @@ function AimArrow({ x, y, onTarget }: { x: number; y: number; onTarget: boolean 
         fill="var(--terracotta)"
         opacity={onTarget ? 1 : 0.85}
       />
+    </g>
+  );
+}
+
+function UserAimReticle({
+  x,
+  y,
+  below,
+  locked,
+}: {
+  x: number;
+  y: number;
+  below: boolean;
+  locked: boolean;
+}) {
+  // Phone pointed below the horizon — show a small floor cue at the bottom
+  // of the dome instead of drifting outside.
+  if (below) {
+    return (
+      <g pointerEvents="none" opacity={0.55}>
+        <text
+          x={CX}
+          y={CY + R + 26}
+          textAnchor="middle"
+          fill="rgba(255,255,255,0.45)"
+          fontSize="9"
+          fontFamily="var(--mono)"
+          letterSpacing="0.16em"
+        >
+          ↓ BELOW HORIZON
+        </text>
+      </g>
+    );
+  }
+  const r = 5.5;
+  const tickLen = 5;
+  const stroke = locked ? '#7ed4a8' : 'rgba(255,255,255,0.85)';
+  return (
+    <g pointerEvents="none" className={`sky-map__user-aim${locked ? ' is-locked' : ''}`}>
+      <circle cx={x} cy={y} r={r} fill="none" stroke={stroke} strokeWidth={1.2} />
+      <circle cx={x} cy={y} r={1.4} fill={stroke} />
+      <line x1={x} y1={y - r - 1} x2={x} y2={y - r - 1 - tickLen} stroke={stroke} strokeWidth={1.2} />
+      <line x1={x} y1={y + r + 1} x2={x} y2={y + r + 1 + tickLen} stroke={stroke} strokeWidth={1.2} />
+      <line x1={x - r - 1} y1={y} x2={x - r - 1 - tickLen} y2={y} stroke={stroke} strokeWidth={1.2} />
+      <line x1={x + r + 1} y1={y} x2={x + r + 1 + tickLen} y2={y} stroke={stroke} strokeWidth={1.2} />
     </g>
   );
 }
