@@ -46,7 +46,14 @@
         }
       ],
       "expo-web-browser",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": { "minSdkVersion": 29 }
+        }
+      ],
+      "@qvac/sdk/expo-plugin"
     ],
     "extra": {
       "eas": {
