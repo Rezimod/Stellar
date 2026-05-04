@@ -1587,115 +1587,87 @@
 
 .mkt-odds-pair { display: flex; align-items: center; gap: 4px; }
 
-/* Stellar odds readout — observatory instrument style.
-   Vertical stack: small caps label on top, large mono number below,
-   thin proportional fill at the base showing the implied probability.
-   Brand seafoam (YES) and terracotta (NO) — no candy red/green. */
+/* Stellar odds tags — compact directional chevrons.
+   YES points right, NO points left, meeting at a small seam in the
+   middle. Single-line label + number, brand seafoam / terracotta. */
 .mkt-odds-cells {
   display: flex;
-  align-items: stretch;
-  gap: 6px;
+  align-items: center;
+  gap: 3px;
 }
 
 .mkt-odds-cell {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  min-width: 78px;
-  height: 48px;
-  padding: 4px 10px 8px;
-  border: 1px solid var(--cell-border, transparent);
-  border-radius: 8px;
+  gap: 6px;
+  height: 30px;
+  min-width: 72px;
+  padding: 0 12px;
+  border: 0;
   background: var(--cell-bg, transparent);
+  color: var(--cell-fg, var(--stl-text2));
   cursor: pointer;
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
-  color: var(--cell-fg, var(--stl-text2));
-  overflow: hidden;
-  transition: background 0.16s ease, border-color 0.16s ease, transform 0.12s ease,
-    color 0.12s ease;
+  letter-spacing: 0.01em;
+  transition: background 0.14s ease, color 0.14s ease, transform 0.12s ease;
 }
 .mkt-odds-cell:disabled { opacity: 0.45; cursor: not-allowed; }
-.mkt-odds-cell::before {
-  /* Proportional readout bar across the bottom — analog instrument feel.
-     Width is driven inline via --pct (0–100) from the component. */
-  content: '';
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: 4px;
-  height: 2px;
-  background: linear-gradient(
-    to right,
-    var(--cell-fg, currentColor) 0%,
-    var(--cell-fg, currentColor) calc(var(--pct, 50) * 1%),
-    rgba(255, 255, 255, 0.08) calc(var(--pct, 50) * 1%),
-    rgba(255, 255, 255, 0.08) 100%
-  );
-  border-radius: 1px;
-}
+
 .mkt-odds-cell .cell-label {
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--cell-fg, currentColor);
-  opacity: 0.85;
+  opacity: 0.78;
   line-height: 1;
-  margin-bottom: 4px;
-  text-align: left;
 }
 .mkt-odds-cell .cell-num {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.01em;
   font-feature-settings: 'tnum';
-  color: var(--cell-fg, currentColor);
-  text-align: left;
 }
 .mkt-odds-cell .cell-pct {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
   margin-left: 1px;
   opacity: 0.55;
-  letter-spacing: 0;
 }
 
+/* Asymmetric tag silhouettes — chevron-out on the inner edge,
+   flat on the outer. Drawn with clip-path so the shape is exact. */
 .mkt-odds-cell.yes {
   --cell-fg: var(--seafoam);
-  --cell-bg: rgba(94, 234, 212, 0.06);
-  --cell-border: rgba(94, 234, 212, 0.22);
+  --cell-bg: rgba(94, 234, 212, 0.10);
+  padding-right: 16px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
 }
 .mkt-odds-cell.no {
   --cell-fg: var(--terracotta);
-  --cell-bg: rgba(255, 209, 102, 0.06);
-  --cell-border: rgba(255, 209, 102, 0.22);
+  --cell-bg: rgba(255, 209, 102, 0.10);
+  padding-left: 16px;
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 8px 100%, 0 50%);
 }
 
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-bg: rgba(94, 234, 212, 0.12);
-  --cell-border: rgba(94, 234, 212, 0.45);
-  transform: translateY(-1px);
+  --cell-bg: rgba(94, 234, 212, 0.20);
+  transform: translateX(-1px);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-bg: rgba(255, 209, 102, 0.12);
-  --cell-border: rgba(255, 209, 102, 0.45);
-  transform: translateY(-1px);
+  --cell-bg: rgba(255, 209, 102, 0.20);
+  transform: translateX(1px);
 }
 
 .mkt-odds-cell.yes.active {
-  --cell-bg: rgba(94, 234, 212, 0.20);
-  --cell-border: var(--seafoam);
-  --cell-fg: #DDFBF4;
+  --cell-bg: rgba(94, 234, 212, 0.32);
+  --cell-fg: #E6FBF6;
 }
 .mkt-odds-cell.no.active {
-  --cell-bg: rgba(255, 209, 102, 0.18);
-  --cell-border: var(--terracotta);
-  --cell-fg: #FFE9B5;
+  --cell-bg: rgba(255, 209, 102, 0.30);
+  --cell-fg: #FFEEC2;
 }
 
 /* Inline bet panel — drop-down beneath an expanded market row */
@@ -1949,9 +1921,9 @@
   gap: 4px;
 }
 .mkt-sk-pill {
-  width: 78px;
-  height: 48px;
-  border-radius: 8px !important;
+  width: 72px;
+  height: 30px;
+  border-radius: 4px !important;
 }
 .mkt-sk-vol {
   width: 36px;
@@ -2572,16 +2544,18 @@
   .mkt-row-title { font-size: 13px; }
   .mkt-odds-pair { gap: 3px; }
   .mkt-odds-btn { font-size: 12px; padding: 5px 8px; min-width: 44px; }
-  .mkt-odds-cells { gap: 5px; }
+  .mkt-odds-cells { gap: 2px; }
   .mkt-odds-cell {
-    min-width: 64px;
-    height: 42px;
-    padding: 4px 8px 7px;
+    min-width: 60px;
+    height: 26px;
+    padding: 0 10px;
+    gap: 5px;
   }
-  .mkt-odds-cell::before { left: 5px; right: 5px; height: 2px; bottom: 3px; }
-  .mkt-odds-cell .cell-label { font-size: 8px; margin-bottom: 3px; }
-  .mkt-odds-cell .cell-num { font-size: 15px; }
-  .mkt-odds-cell .cell-pct { font-size: 9px; }
+  .mkt-odds-cell.yes { padding-right: 14px; }
+  .mkt-odds-cell.no { padding-left: 14px; }
+  .mkt-odds-cell .cell-label { font-size: 8px; }
+  .mkt-odds-cell .cell-num { font-size: 12px; }
+  .mkt-odds-cell .cell-pct { font-size: 8px; }
   .mkt-row-volume { display: none; }
   .mkt-bet-panel {
     grid-template-columns: 1fr;

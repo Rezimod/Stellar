@@ -794,7 +794,6 @@ function MarketRow({
         <button
           type="button"
           className={`mkt-odds-cell yes${expandedSide === 'yes' ? ' active' : ''}`}
-          style={{ ['--pct' as string]: yesPct }}
           onClick={(e) => {
             e.stopPropagation();
             if (disabledForBet) return;
@@ -809,7 +808,6 @@ function MarketRow({
         <button
           type="button"
           className={`mkt-odds-cell no${expandedSide === 'no' ? ' active' : ''}`}
-          style={{ ['--pct' as string]: noPct }}
           onClick={(e) => {
             e.stopPropagation();
             if (disabledForBet) return;
