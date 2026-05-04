@@ -254,8 +254,8 @@ export default function HomePage() {
             <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Sky Missions</div>
           </div>
           <div>
-            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 text-[#FFD166]">100M+</div>
-            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Telescope Users</div>
+            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 text-[#FFD166]">5B+</div>
+            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Sky Cameras</div>
           </div>
           <div>
             <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">3</div>
