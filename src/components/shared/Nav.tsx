@@ -233,13 +233,12 @@ export default function Nav() {
             {/* MIDDLE cluster: centered nav (md+) */}
             <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1">
               {NAV_ITEMS.map(tab => {
-                const Icon = tab.icon;
                 const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
                 return (
                   <Link
                     key={tab.href}
                     href={tab.href}
-                    className={`nav-tab px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 ${isActive ? 'nav-tab-active' : ''}`}
+                    className={`nav-tab px-3.5 py-1.5 text-xs font-semibold ${isActive ? 'nav-tab-active' : ''}`}
                     style={isActive ? {
                       background: 'linear-gradient(135deg, rgba(255, 209, 102,0.22) 0%, rgba(255, 209, 102,0.12) 100%)',
                       border: '1px solid rgba(255, 209, 102,0.35)',
@@ -253,8 +252,7 @@ export default function Nav() {
                       textDecoration: 'none',
                     }}
                   >
-                    <Icon size={15} />
-                    <span>{tab.label}</span>
+                    {tab.label}
                   </Link>
                 );
               })}
