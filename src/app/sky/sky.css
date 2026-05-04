@@ -1005,6 +1005,15 @@
 .sky-map__user-aim.is-locked line {
   filter: drop-shadow(0 0 4px rgba(120, 220, 170, 0.6));
 }
+
+/* Star-hop trail — flowing dashes from anchor to target. */
+.sky-map__hop-trail line {
+  animation: skymapHopFlow 1.6s linear infinite;
+}
+@keyframes skymapHopFlow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -14; }
+}
 .sky-map__aim-pill.is-locked {
   border-color: rgba(120, 220, 170, 0.60);
   background: rgba(120, 220, 170, 0.10);

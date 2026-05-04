@@ -63,36 +63,74 @@ export const BRIGHT_STARS: Star[] = [
   { id: 'gienah',     name: 'Gienah',     ra: 20.770, dec:  33.970, mag:  2.48 },
   { id: 'aljanah',    name: 'Aljanah',    ra: 20.770, dec:  33.971, mag:  2.46 },
   { id: 'albireo',    name: 'Albireo',    ra: 19.512, dec:  27.960, mag:  3.05 },
+  // Andromeda — anchor stars used by the M31 star-hop.
+  { id: 'alpheratz',  name: 'Alpheratz',  ra: 0.140,  dec:  29.090, mag:  2.06 },
+  { id: 'mirach',     name: 'Mirach',     ra: 1.162,  dec:  35.621, mag:  2.05 },
+  { id: 'almach',     name: 'Almach',     ra: 2.065,  dec:  42.330, mag:  2.10 },
 ];
 
-// Stick figures — pairs of star ids drawn as line segments.
-export const CONSTELLATION_LINES: Array<[string, string]> = [
-  // Orion
-  ['betelgeuse', 'bellatrix'],
-  ['betelgeuse', 'alnitak'],
-  ['bellatrix', 'mintaka'],
-  ['mintaka', 'alnilam'],
-  ['alnilam', 'alnitak'],
-  ['alnitak', 'rigel'],
-  // Big Dipper
-  ['dubhe', 'merak'],
-  ['merak', 'phecda'],
-  ['phecda', 'megrez'],
-  ['megrez', 'alioth'],
-  ['alioth', 'mizar'],
-  ['mizar', 'alkaid'],
-  ['megrez', 'dubhe'],
-  // Cassiopeia (W)
-  ['caph', 'schedar'],
-  ['schedar', 'gamma_cas'],
-  ['gamma_cas', 'ruchbah'],
-  ['ruchbah', 'segin'],
-  // Cygnus (Northern Cross)
-  ['deneb', 'sadr'],
-  ['sadr', 'albireo'],
-  ['sadr', 'gienah'],
-  ['sadr', 'aljanah'],
-];
+/** Stick figures grouped by constellation, so the SkyMap can highlight a
+ *  whole figure when the active target lives inside it. */
+export const CONSTELLATION_GROUPS: Record<string, Array<[string, string]>> = {
+  orion: [
+    ['betelgeuse', 'bellatrix'],
+    ['betelgeuse', 'alnitak'],
+    ['bellatrix', 'mintaka'],
+    ['mintaka', 'alnilam'],
+    ['alnilam', 'alnitak'],
+    ['alnitak', 'rigel'],
+  ],
+  ursaMajor: [
+    ['dubhe', 'merak'],
+    ['merak', 'phecda'],
+    ['phecda', 'megrez'],
+    ['megrez', 'alioth'],
+    ['alioth', 'mizar'],
+    ['mizar', 'alkaid'],
+    ['megrez', 'dubhe'],
+  ],
+  cassiopeia: [
+    ['caph', 'schedar'],
+    ['schedar', 'gamma_cas'],
+    ['gamma_cas', 'ruchbah'],
+    ['ruchbah', 'segin'],
+  ],
+  cygnus: [
+    ['deneb', 'sadr'],
+    ['sadr', 'albireo'],
+    ['sadr', 'gienah'],
+    ['sadr', 'aljanah'],
+  ],
+  andromeda: [
+    ['alpheratz', 'mirach'],
+    ['mirach', 'almach'],
+  ],
+  lyra: [
+    // Vega is the apex; we only have Vega + Albireo nearby in BRIGHT_STARS,
+    // so M57 lives "between" stars we don't catalog. Trail still anchors at
+    // Vega via hopFromId — the line-figure for Lyra needs more stars to be
+    // worth drawing, so leave it empty for now.
+  ],
+};
+
+/** Flat list of all stick-figure segments — kept for AR overlay back-compat. */
+export const CONSTELLATION_LINES: Array<[string, string]> = Object.values(CONSTELLATION_GROUPS).flat();
+
+/**
+ * For each bright star id, the constellation it belongs to (or null). Used
+ * to find the "active" constellation when the user picks a hop anchor that
+ * sits in a known stick figure.
+ */
+export const STAR_TO_CONSTELLATION: Record<string, string | undefined> = (() => {
+  const out: Record<string, string | undefined> = {};
+  for (const [name, lines] of Object.entries(CONSTELLATION_GROUPS)) {
+    for (const [a, b] of lines) {
+      out[a] = name;
+      out[b] = name;
+    }
+  }
+  return out;
+})();
 
 /* === Coordinate math === */
 

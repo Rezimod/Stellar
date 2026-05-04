@@ -82,14 +82,17 @@ export const CATALOG: CatalogTarget[] = [
   /* Andromeda — the only galaxy a beginner can find with binoculars. */
   { id: 'm31',        type: 'galaxy', difficulty: 'medium', instrument: 'binoculars',
     ra: 0.712,  dec: 41.269,  magnitude: 3.4,  constellation: 'Andromeda',
+    hopFromId: 'mirach',
     fallbackName: 'Andromeda Galaxy' },
 
   /* Two most popular nebulae: Orion (winter, naked-eye-ish) + Ring (summer, scope). */
   { id: 'm42',        type: 'nebula', difficulty: 'medium', instrument: 'binoculars',
     ra: 5.591,  dec: -5.391,  magnitude: 4.0,  constellation: 'Orion',
+    hopFromId: 'rigel',
     fallbackName: 'Orion Nebula' },
   { id: 'm57',        type: 'nebula', difficulty: 'hard',   instrument: 'telescope',
     ra: 18.886, dec: 33.029,  magnitude: 8.8,  constellation: 'Lyra',
+    hopFromId: 'vega',
     fallbackName: 'Ring Nebula' },
 ];
 

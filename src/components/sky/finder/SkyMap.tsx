@@ -42,6 +42,17 @@ const CY = SIZE / 2;
 const R = 152;
 const ON_TARGET_DEG = 8;
 
+/** Bright star + its current alt/az, sized for chart rendering. */
+export interface ConstellationStar {
+  id: string;
+  name: string;
+  altitude: number;
+  azimuth: number;
+  mag: number;
+  /** Constellation key (e.g. 'orion', 'andromeda'). */
+  constellation?: string;
+}
+
 interface SkyMapProps {
   objects: SkyObject[];
   activeId: ObjectId | null;
@@ -54,6 +65,12 @@ interface SkyMapProps {
   headingStatus?: HeadingStatus;
   /** Triggered when the user taps the calibrate compass control. */
   onCalibrate?: () => void;
+  /** Stick-figure stars to render at low opacity behind the bodies. */
+  constellationStars?: ConstellationStar[];
+  /** Stick-figure line segments — pairs of star ids. */
+  constellationLines?: Array<[string, string]>;
+  /** When set, draws a dashed terracotta trail from anchor → active body. */
+  hopAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
 }
 
 interface Plotted {
@@ -82,6 +99,9 @@ export function SkyMap({
   userAltitude = null,
   headingStatus = 'idle',
   onCalibrate,
+  constellationStars = [],
+  constellationLines = [],
+  hopAnchor = null,
 }: SkyMapProps) {
   const t = useTranslations('sky.skymap');
   const liveOffset = heading ?? 0;
@@ -134,6 +154,43 @@ export function SkyMap({
     return { x: CX, y: CY - dist, belowHorizon: (userAltitude ?? 0) < 0 };
   }, [isLive, hasTilt, userAltitude]);
 
+  // Constellation stars projected onto the rotated dome.
+  const projectedStars = useMemo(() => {
+    return constellationStars
+      .filter((s) => s.altitude > 0)
+      .map((s) => ({ ...s, ...project(s.altitude, s.azimuth, liveOffset) }));
+  }, [constellationStars, liveOffset]);
+
+  const starById = useMemo(() => {
+    const m = new Map<string, (typeof projectedStars)[number]>();
+    projectedStars.forEach((s) => m.set(s.id, s));
+    return m;
+  }, [projectedStars]);
+
+  // Active constellation key — the one to highlight. Chosen from the active
+  // target's hop-anchor star, then from the active target itself if it's a
+  // bright star.
+  const activeConstellation = useMemo(() => {
+    if (hopAnchor) {
+      const a = constellationStars.find((s) => s.id === hopAnchor.id);
+      if (a?.constellation) return a.constellation;
+    }
+    if (active) {
+      const a = constellationStars.find((s) => s.id === active.obj.id);
+      if (a?.constellation) return a.constellation;
+    }
+    return null;
+  }, [hopAnchor, active, constellationStars]);
+
+  // Hop trail endpoints in dome-screen coords.
+  const hopTrail = useMemo(() => {
+    if (!hopAnchor || !active) return null;
+    if (hopAnchor.altitude <= 0) return null;
+    const from = project(hopAnchor.altitude, hopAnchor.azimuth, liveOffset);
+    const to = { x: active.x, y: active.y };
+    return { from, to };
+  }, [hopAnchor, active, liveOffset]);
+
   // Cardinal letters need to STAY at compass-correct positions, so we draw
   // them in the rotating frame at their true azimuths (0/90/180/270).
   const cardinals: { dir: string; az: number }[] = [
@@ -178,6 +235,62 @@ export function SkyMap({
         <line x1={CX - R} y1={CY} x2={CX + R} y2={CY} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
 
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.20)" strokeWidth={1} />
+
+        {/* Constellation stick figures + bright stars (drawn under the
+            bodies so the planet glyphs sit on top). */}
+        {constellationLines.length > 0 && (
+          <g pointerEvents="none">
+            {constellationLines.map(([a, b], i) => {
+              const sa = starById.get(a);
+              const sb = starById.get(b);
+              if (!sa || !sb) return null;
+              const isActive = activeConstellation && (sa.constellation === activeConstellation || sb.constellation === activeConstellation);
+              return (
+                <line
+                  key={`cline-${i}`}
+                  x1={sa.x}
+                  y1={sa.y}
+                  x2={sb.x}
+                  y2={sb.y}
+                  stroke={isActive ? 'rgba(255,255,255,0.42)' : 'rgba(255,255,255,0.10)'}
+                  strokeWidth={isActive ? 0.85 : 0.6}
+                />
+              );
+            })}
+            {projectedStars.map((s) => {
+              const isActive = activeConstellation && s.constellation === activeConstellation;
+              const r = s.mag <= 1 ? 1.6 : s.mag <= 2 ? 1.3 : 1.0;
+              return (
+                <circle
+                  key={`cstar-${s.id}`}
+                  cx={s.x}
+                  cy={s.y}
+                  r={r}
+                  fill={isActive ? '#fff1d2' : 'rgba(244,237,224,0.55)'}
+                  opacity={isActive ? 0.95 : 0.55}
+                />
+              );
+            })}
+          </g>
+        )}
+
+        {/* Star-hop trail: dashed path from anchor → active target. */}
+        {hopTrail && (
+          <g pointerEvents="none" className="sky-map__hop-trail">
+            <line
+              x1={hopTrail.from.x}
+              y1={hopTrail.from.y}
+              x2={hopTrail.to.x}
+              y2={hopTrail.to.y}
+              stroke="var(--terracotta)"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
+              opacity={0.85}
+            />
+            <circle cx={hopTrail.from.x} cy={hopTrail.from.y} r={3.5}
+              fill="none" stroke="var(--terracotta)" strokeWidth={1.1} opacity={0.9} />
+          </g>
+        )}
 
         {/* Live heading marker — small terracotta tick at the top of the rim,
             indicating "this is where the user is facing." Drawn only when live. */}

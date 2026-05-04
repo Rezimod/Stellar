@@ -6,6 +6,9 @@ import { useTranslations } from 'next-intl';
 import { useSkyData } from '@/lib/use-sky-data';
 import { useLocation } from '@/lib/location';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
+import { CONSTELLATION_LINES, STAR_TO_CONSTELLATION, positionStars } from '@/lib/sky/stars';
+import type { ConstellationStar } from '@/components/sky/finder/SkyMap';
+import { azimuthToCompass, altitudeToFists } from '@/lib/sky/directions';
 import { ObservationTimeline } from '@/components/sky/ObservationTimeline';
 import { LocationFallbackBanner } from '@/components/sky/LocationFallbackBanner';
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
@@ -114,10 +117,50 @@ export default function SkyPage() {
     return finder.objects.find((o) => o.id === activeId) ?? null;
   }, [finder, activeId]);
 
+  // Constellation stars projected once per finder refresh — the angular
+  // drift across a few minutes is below dome resolution, so this is fine.
+  const constellationStars = useMemo<ConstellationStar[]>(() => {
+    if (!finder) return [];
+    const t = new Date(finder.generatedAt);
+    return positionStars(location.lat, location.lon, t).map((s) => ({
+      id: s.id,
+      name: s.name,
+      altitude: s.altitude,
+      azimuth: s.azimuth,
+      mag: s.mag,
+      constellation: STAR_TO_CONSTELLATION[s.id],
+    }));
+  }, [finder, location.lat, location.lon]);
+
+  // Hop anchor: prefer a catalog match (e.g. when the anchor is itself a
+  // tracked target), otherwise fall back to the bright-star catalog so M31
+  // can lean on Mirach even though Mirach isn't in the finder catalog.
   const hopAnchor = useMemo<SkyObject | null>(() => {
     if (!finder || !activeObject?.hopFromId) return null;
-    return finder.objects.find((o) => o.id === activeObject.hopFromId) ?? null;
-  }, [finder, activeObject]);
+    const id = activeObject.hopFromId;
+    const catalogHit = finder.objects.find((o) => o.id === id);
+    if (catalogHit) return catalogHit;
+    const star = constellationStars.find((s) => s.id === id);
+    if (!star) return null;
+    return {
+      id: star.id,
+      name: star.name,
+      altitude: star.altitude,
+      azimuth: star.azimuth,
+      magnitude: star.mag,
+      visible: star.altitude > 0,
+      nakedEye: star.mag <= 6,
+      compassDirection: azimuthToCompass(star.azimuth),
+      fistsAboveHorizon: altitudeToFists(star.altitude),
+      riseTime: null,
+      setTime: null,
+      phase: null,
+      type: 'star',
+      difficulty: 'easy',
+      instrument: 'naked',
+      constellation: star.constellation ?? '',
+    };
+  }, [finder, activeObject, constellationStars]);
 
   const handleSelect = useCallback((id: ObjectId) => {
     setActiveId(id);
@@ -249,6 +292,14 @@ export default function SkyPage() {
                   userAltitude={compass.altitude}
                   headingStatus={compass.status}
                   onCalibrate={compass.request}
+                  constellationStars={constellationStars}
+                  constellationLines={CONSTELLATION_LINES}
+                  hopAnchor={hopAnchor ? {
+                    id: hopAnchor.id,
+                    name: hopAnchor.name,
+                    azimuth: hopAnchor.azimuth,
+                    altitude: hopAnchor.altitude,
+                  } : null}
                 />
                 <p className="sky-v3__map-caption">{tHeader('mapCaption')}</p>
               </div>
