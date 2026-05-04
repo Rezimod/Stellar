@@ -7,7 +7,18 @@ const nextConfig: NextConfig = {
   compress: true,
   experimental: {
     reactCompiler: true,
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@privy-io/react-auth',
+      '@solana/wallet-adapter-react',
+      '@solana/wallet-adapter-react-ui',
+      '@solana/wallet-adapter-base',
+      '@metaplex-foundation/mpl-bubblegum',
+      '@metaplex-foundation/umi',
+      '@metaplex-foundation/umi-bundle-defaults',
+      '@solana/spl-token',
+      'astronomy-engine',
+    ],
   },
   images: {
     formats: ['image/avif', 'image/webp'],
