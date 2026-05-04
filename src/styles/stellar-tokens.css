@@ -1032,14 +1032,14 @@
   /* Always-dark cosmic blue canvas. Sub-surfaces are tinted lifts of the
      same blue so cards "pop" against the page without breaking color theme. */
   --stl-bg: var(--canvas);                 /* shell sits on the page (uniform blue) */
-  --stl-bg2: rgba(255, 255, 255, 0.045);   /* card surface — subtle lift */
-  --stl-bg3: rgba(255, 255, 255, 0.085);   /* elevated surface (active inputs) */
-  --stl-bg-hover: rgba(255, 255, 255, 0.075);
-  --stl-text1: #F0EEFB;
-  --stl-text2: #A6B0C8;
-  --stl-text3: #7A86A0;
-  --stl-border: rgba(255, 255, 255, 0.08);
-  --stl-border2: rgba(255, 255, 255, 0.16);
+  --stl-bg2: rgba(255, 255, 255, 0.075);   /* card surface — clear lift off canvas */
+  --stl-bg3: rgba(255, 255, 255, 0.12);    /* elevated surface (active inputs) */
+  --stl-bg-hover: rgba(255, 255, 255, 0.11);
+  --stl-text1: #F4F2FB;
+  --stl-text2: #B4BED4;
+  --stl-text3: #8C97B0;
+  --stl-border: rgba(255, 255, 255, 0.11);
+  --stl-border2: rgba(255, 255, 255, 0.20);
   --stl-green: var(--yes);
   --stl-green-bg: var(--yes-dim);
   --stl-red: var(--no);
