@@ -1389,6 +1389,14 @@
   gap: 8px;
   color: var(--stl-text2);
 }
+.mkt-section-intro {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--stl-text3);
+  margin: 0;
+  padding: 0 20px 14px;
+  max-width: 62ch;
+}
 
 /* Category tabs */
 .mkt-tabs {

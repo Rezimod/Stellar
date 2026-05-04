@@ -328,7 +328,7 @@ export default function NetworkPage() {
                 { step: '01', title: 'Observe', body: 'Your phone or telescope captures sky data with GPS and timestamp.' },
                 { step: '02', title: 'Verify', body: 'Claude Vision + oracle hash validate the observation.' },
                 { step: '03', title: 'Attest', body: 'Proof sealed as a compressed NFT on Solana for ~$0.000005.' },
-                { step: '04', title: 'Feed', body: 'Verified data feeds prediction-market resolution.' },
+                { step: '04', title: 'Feed', body: 'Verified data feeds Stargazer Challenge resolution.' },
                 { step: '05', title: 'Earn', body: 'Stars rewards flow back to the observer who contributed.' },
               ].map(row => (
                 <li key={row.step} style={{ display: 'grid', gridTemplateColumns: '44px 1fr', gap: 14, alignItems: 'baseline' }}>

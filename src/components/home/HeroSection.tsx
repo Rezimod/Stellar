@@ -151,20 +151,20 @@ export default function HeroSection() {
         <div className="home-hero-left">
           <span className="home-hero-badge">
             <span className="home-hero-badge-dot" />
-            29 live markets on Solana
+            Live on Solana · Free to use
           </span>
 
           <h1 className="home-hero-headline">
-            The night sky is open for <em>predictions</em>
+            Astronomy, <em>on chain</em>
           </h1>
 
           <p className="home-hero-subtitle">
-            Bet on meteor showers, solar flares, and space missions. Observe the sky to earn a 1.5x advantage. Redeem winnings for real telescopes.
+            The companion app for everyone with a sky above them and a camera in their pocket. Get tonight's forecast, photograph what you see, earn rewards you can redeem for real telescopes at Astroman.
           </p>
 
           <div className="home-hero-cta-row">
-            <Link href="/markets" className="home-hero-cta-primary">Browse markets</Link>
-            <Link href="/missions" className="home-hero-cta-secondary">Start observing</Link>
+            <Link href="/missions" className="home-hero-cta-primary">Start observing</Link>
+            <Link href="/sky" className="home-hero-cta-secondary">Tonight's sky</Link>
           </div>
 
           <div className="home-hero-trust">

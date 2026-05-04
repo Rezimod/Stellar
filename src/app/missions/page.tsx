@@ -83,7 +83,7 @@ const TIPS: { title: string; body: string; Icon: LucideIcon }[] = [
 
 const EXPLORE: { href: string; name: string; meta: string; desc: string; Icon: LucideIcon }[] = [
   { href: '/sky',         name: 'Sky',      meta: 'Forecast',  desc: '7-day cloud, seeing, and transparency forecast for your location.', Icon: CloudSun },
-  { href: '/markets',     name: 'Markets',  meta: 'Predict',   desc: 'On-chain prediction markets on celestial events and observations.', Icon: TrendingUp },
+  { href: '/markets',     name: 'Challenges', meta: 'Stake',   desc: 'Weekly stake-based leaderboards on celestial events. Optional bonus layer.', Icon: TrendingUp },
   { href: '/learn',       name: 'Learning', meta: 'Articles',  desc: 'Field guides, equipment primers, and observing techniques.',        Icon: BookOpen },
   { href: '/network',     name: 'Network',  meta: 'Community', desc: 'See where other Stellar observers are reporting from tonight.',     Icon: Users },
   { href: '/marketplace', name: 'Shop',     meta: 'Gear',      desc: 'Telescopes, eyepieces, and accessories from verified dealers.',     Icon: LcTelescope },

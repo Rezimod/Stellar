@@ -9,7 +9,7 @@ const TABS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/sky',      label: 'Sky',      icon: CloudSun },
   { href: '/missions', label: 'Missions', icon: Satellite },
   { href: '/',         label: 'Home',     icon: Home },
-  { href: '/markets',  label: 'Markets',  icon: TrendingUp },
+  { href: '/markets',  label: 'Challenges', icon: TrendingUp },
   { href: '/profile',  label: 'Profile',  icon: User },
 ];
 

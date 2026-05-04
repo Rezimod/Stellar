@@ -460,17 +460,20 @@ export default function MarketsPage() {
         <div className="mkt-layout">
           <div className="mkt-main">
             <header className="mkt-section-header">
-              <h1 className="mkt-section-title">All markets</h1>
+              <h1 className="mkt-section-title">Stargazer Challenges</h1>
               {!loading && (
                 <span className="mkt-section-meta mkt-section-live">
                   <span className="live-led" aria-hidden />
-                  {activeCount} live markets on Solana
+                  {activeCount} live challenges on Solana
                   {previewCount > 0 && (
                     <span className="mkt-section-preview-count"> · {previewCount} preview</span>
                   )}
                 </span>
               )}
             </header>
+            <p className="mkt-section-intro">
+              Weekly observation challenges with stake-based leaderboards. Pick a side on a celestial event — meteor shower peaks, clear-sky windows, solar activity — stake Stars, win Stars back when the oracle resolves. Complete a related sky mission for a 1.5× payout.
+            </p>
 
             <div className="mkt-tabs" role="tablist">
               {CATEGORY_TABS.map((t) => (
@@ -517,8 +520,8 @@ export default function MarketsPage() {
               </div>
             ) : activeCount === 0 ? (
               <div className="mkt-state">
-                <p className="mkt-state-title">No markets in this category</p>
-                <p>Try another filter or come back when new markets seed.</p>
+                <p className="mkt-state-title">No challenges in this category</p>
+                <p>Try another filter or come back when new challenges seed.</p>
               </div>
             ) : (
               <div className="mkt-list">

@@ -22,7 +22,7 @@ const SECTIONS: Section[] = [
     label: 'Explore',
     links: [
       { href: '/sky',         label: 'Sky forecast',  icon: Sun },
-      { href: '/markets',     label: 'Markets',       icon: TrendingUp },
+      { href: '/markets',     label: 'Challenges',    icon: TrendingUp },
       { href: '/missions',    label: 'Missions',      icon: Target },
       { href: '/feed',        label: 'Feed',          icon: Sparkles },
       { href: '/learn',       label: 'Learning',      icon: BookOpen },
@@ -50,7 +50,7 @@ const NAV_ITEMS = [
   { href: '/sky',         label: 'Sky',       icon: CloudSun },
   { href: '/missions',    label: 'Missions',  icon: Satellite },
   { href: '/feed',        label: 'Feed',      icon: Sparkles },
-  { href: '/markets',     label: 'Markets',   icon: TrendingUp },
+  { href: '/markets',     label: 'Challenges', icon: TrendingUp },
   { href: '/learn',       label: 'Learning',  icon: BookOpen },
   { href: '/marketplace', label: 'Shop',      icon: ShoppingBag },
 ];
