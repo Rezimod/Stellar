@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { CatalogDifficulty } from '@/lib/sky/catalog';
+import { getTargetPhoto } from '@/lib/sky/target-photos';
+import { PlanetIcon } from './PlanetIcon';
 import type { ObjectId, SkyObject } from './types';
 
 interface TargetPickerProps {
@@ -54,7 +56,7 @@ export function TargetPicker({
     visible.sort((a, b) => {
       if (a.id === 'moon' && b.id !== 'moon') return -1;
       if (b.id === 'moon' && a.id !== 'moon') return 1;
-      return a.magnitude - b.magnitude;
+      return b.altitude - a.altitude;
     });
     below.sort((a, b) => {
       const ar = a.riseTime ? new Date(a.riseTime).getTime() : Number.POSITIVE_INFINITY;
@@ -77,66 +79,40 @@ export function TargetPicker({
     return counts;
   }, [objects]);
 
-  // AUTO mode: every 30s, re-pick the brightest visible target in current tier.
+  // AUTO mode: every 30s, re-pick the highest visible target in current tier.
   useEffect(() => {
     if (!autoRotate) return;
     if (sorted.visible.length === 0) return;
-    const pickBrightest = () => onSelect(sorted.visible[0].id);
-    pickBrightest();
-    const id = setInterval(pickBrightest, 30_000);
+    const pickHighest = () => onSelect(sorted.visible[0].id);
+    pickHighest();
+    const id = setInterval(pickHighest, 30_000);
     return () => clearInterval(id);
   }, [autoRotate, sorted.visible, onSelect]);
 
   return (
     <div className="target-picker">
-      <div className="target-picker__tiers" role="tablist" aria-label={t('tierAria')}>
-        {TIER_ORDER.map((tk) => {
-          const active = tier === tk;
-          const count =
-            tk === 'all'
-              ? tierCounts.easy + tierCounts.medium + tierCounts.hard
-              : tierCounts[tk];
-          return (
-            <button
-              key={tk}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setTier(tk)}
-              className={`target-tier${active ? ' is-active' : ''} target-tier--${tk}`}
-            >
-              <span className="target-tier__label">{t(`tier.${tk}`)}</span>
-              <span className="target-tier__count">{count}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="target-picker__label">
-        {t('header', { count: visibleCount })}
-      </div>
-
-      <div className="target-picker__row">
-        <div className="target-picker__chips">
-          {sorted.visible.map((o) => (
-            <ChipVisible key={o.id} obj={o} active={o.id === activeId} onSelect={onSelect} />
-          ))}
-          {sorted.below.map((o) => (
-            <ChipBelow
-              key={o.id}
-              obj={o}
-              active={o.id === activeId}
-              onSelect={onSelect}
-              risesLabel={
-                o.circumpolar
-                  ? t('circumpolar')
-                  : t('risesAt', { time: fmtHHmm(o.riseTime) ?? '—' })
-              }
-            />
-          ))}
-          {sorted.visible.length === 0 && sorted.below.length === 0 && (
-            <span className="target-picker__empty">{t('emptyTier')}</span>
-          )}
+      <div className="target-picker__row-top">
+        <div className="target-picker__tiers" role="tablist" aria-label={t('tierAria')}>
+          {TIER_ORDER.map((tk) => {
+            const active = tier === tk;
+            const count =
+              tk === 'all'
+                ? tierCounts.easy + tierCounts.medium + tierCounts.hard
+                : tierCounts[tk];
+            return (
+              <button
+                key={tk}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTier(tk)}
+                className={`target-tier${active ? ' is-active' : ''} target-tier--${tk}`}
+              >
+                <span className="target-tier__label">{t(`tier.${tk}`)}</span>
+                <span className="target-tier__count">{count}</span>
+              </button>
+            );
+          })}
         </div>
         <button
           type="button"
@@ -149,111 +125,95 @@ export function TargetPicker({
           {t('auto')}
         </button>
       </div>
+
+      <div className="target-picker__label">
+        {t('header', { count: visibleCount })}
+      </div>
+
+      <div className="target-cards">
+        {sorted.visible.map((o) => (
+          <TargetCard key={o.id} obj={o} active={o.id === activeId} onSelect={onSelect} t={t} />
+        ))}
+        {sorted.below.map((o) => (
+          <TargetCard key={o.id} obj={o} active={o.id === activeId} onSelect={onSelect} t={t} />
+        ))}
+        {sorted.visible.length === 0 && sorted.below.length === 0 && (
+          <span className="target-picker__empty">{t('emptyTier')}</span>
+        )}
+      </div>
     </div>
   );
 }
 
-function ChipVisible({
+function TargetCard({
   obj,
   active,
   onSelect,
+  t,
 }: {
   obj: SkyObject;
   active: boolean;
   onSelect: (id: ObjectId) => void;
+  t: ReturnType<typeof useTranslations>;
 }) {
+  const photo = getTargetPhoto(obj.id);
+  const setLabel = fmtHHmm(obj.setTime);
+  const riseLabel = fmtHHmm(obj.riseTime);
+
+  let primary: string;
+  let secondary: string;
+  if (obj.visible) {
+    primary = `+${Math.round(obj.altitude)}° ${obj.compassDirection}`;
+    secondary = obj.circumpolar
+      ? t('upAllNight')
+      : setLabel
+        ? t('setsAt', { time: setLabel })
+        : t('upAllNight');
+  } else {
+    primary = obj.circumpolar
+      ? t('upAllNight')
+      : riseLabel
+        ? t('risesAt', { time: riseLabel })
+        : t('belowHorizon');
+    secondary = setLabel ? t('setsAt', { time: setLabel }) : '';
+  }
+
   return (
     <button
       type="button"
       onClick={() => onSelect(obj.id)}
-      className={`target-chip target-chip--${obj.type}${active ? ' is-active' : ''}`}
+      className={`target-card target-card--${obj.type}${active ? ' is-active' : ''}${!obj.visible ? ' is-below' : ''}`}
       aria-pressed={active}
     >
-      <TypeGlyph obj={obj} />
-      <span className="target-chip__name">{obj.name}</span>
-      <span className="target-chip__alt">{Math.round(obj.altitude)}°</span>
+      <span className="target-card__thumb">
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+        ) : (
+          <PlanetIcon
+            id={obj.id}
+            type={obj.type}
+            magnitude={obj.magnitude}
+            phase={obj.phase}
+            size={36}
+            glow={false}
+          />
+        )}
+      </span>
+      <span className="target-card__body">
+        <span className="target-card__name">{obj.name}</span>
+        <span className="target-card__primary">{primary}</span>
+        {secondary && <span className="target-card__secondary">{secondary}</span>}
+      </span>
       {obj.instrument === 'binoculars' && <BinocsIcon />}
       {obj.instrument === 'telescope' && <TelescopeIcon />}
     </button>
   );
 }
 
-function ChipBelow({
-  obj,
-  active,
-  onSelect,
-  risesLabel,
-}: {
-  obj: SkyObject;
-  active: boolean;
-  onSelect: (id: ObjectId) => void;
-  risesLabel: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(obj.id)}
-      className={`target-chip target-chip--${obj.type} target-chip--below${active ? ' is-active' : ''}`}
-      aria-pressed={active}
-    >
-      <TypeGlyph obj={obj} />
-      <span className="target-chip__name">{obj.name}</span>
-      <span className="target-chip__rises">{risesLabel}</span>
-    </button>
-  );
-}
-
-function TypeGlyph({ obj }: { obj: SkyObject }) {
-  if (obj.type === 'planet' || obj.type === 'moon' || obj.type === 'sun') {
-    return <span className={`target-chip__glyph target-chip__glyph--planet target-chip__glyph--${obj.id}`} />;
-  }
-  if (obj.type === 'star' || obj.type === 'double') {
-    return (
-      <svg width={12} height={12} viewBox="0 0 12 12" className="target-chip__glyph-svg" aria-hidden="true">
-        <path
-          d="M6 0.6 L7.1 4.5 L11.1 4.5 L7.9 6.9 L9.0 10.8 L6 8.4 L3.0 10.8 L4.1 6.9 L0.9 4.5 L4.9 4.5 Z"
-          fill="currentColor"
-        />
-      </svg>
-    );
-  }
-  if (obj.type === 'galaxy') {
-    return (
-      <svg width={14} height={12} viewBox="0 0 14 12" className="target-chip__glyph-svg" aria-hidden="true">
-        <ellipse cx={7} cy={6} rx={6.2} ry={2.2} fill="none" stroke="currentColor" strokeWidth={1.2} transform="rotate(-25 7 6)" />
-        <circle cx={7} cy={6} r={1.1} fill="currentColor" />
-      </svg>
-    );
-  }
-  if (obj.type === 'nebula') {
-    return (
-      <svg width={12} height={12} viewBox="0 0 12 12" className="target-chip__glyph-svg" aria-hidden="true">
-        <path
-          d="M3 6 Q3 3 6 3 Q9 3 9 6 Q9 9 6 9 Q3 9 3 6 Z M2 5 Q4 4 6 5 M10 7 Q8 8 6 7"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.1}
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  if (obj.type === 'cluster') {
-    return (
-      <svg width={12} height={12} viewBox="0 0 12 12" className="target-chip__glyph-svg" aria-hidden="true">
-        <circle cx={6} cy={3} r={1.1} fill="currentColor" />
-        <circle cx={3} cy={8} r={1.1} fill="currentColor" />
-        <circle cx={9} cy={8} r={1.1} fill="currentColor" />
-        <circle cx={6} cy={6.5} r={0.7} fill="currentColor" opacity={0.7} />
-      </svg>
-    );
-  }
-  return null;
-}
-
 function TelescopeIcon() {
   return (
-    <svg width={11} height={11} viewBox="0 0 16 16" aria-hidden="true" className="target-chip__scope">
+    <svg width={12} height={12} viewBox="0 0 16 16" aria-hidden="true" className="target-card__scope">
       <path d="M2.5 11l4.5-7 6 3.5-2 3.5L2.5 11Z" fill="none" stroke="currentColor" strokeWidth={1.25} strokeLinejoin="round" />
       <path d="M5 11.5l-2 3.5" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" />
       <path d="M9.5 11.5l-1 2.5" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" />
@@ -263,7 +223,7 @@ function TelescopeIcon() {
 
 function BinocsIcon() {
   return (
-    <svg width={12} height={11} viewBox="0 0 16 14" aria-hidden="true" className="target-chip__scope">
+    <svg width={13} height={11} viewBox="0 0 16 14" aria-hidden="true" className="target-card__scope">
       <circle cx={4} cy={9} r={3.5} fill="none" stroke="currentColor" strokeWidth={1.2} />
       <circle cx={12} cy={9} r={3.5} fill="none" stroke="currentColor" strokeWidth={1.2} />
       <path d="M3 5l1.4-2.5h7.2L13 5" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round" />

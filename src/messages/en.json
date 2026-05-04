@@ -301,7 +301,10 @@
       "header": "Tonight's sky · {count} visible now",
       "auto": "AUTO",
       "autoToggle": "Auto-rotate",
-      "risesAt": "rises {time}",
+      "risesAt": "Rises {time}",
+      "setsAt": "Sets {time}",
+      "upAllNight": "Up all night",
+      "belowHorizon": "Below horizon",
       "circumpolar": "always up",
       "tierAria": "Filter by difficulty",
       "emptyTier": "No targets in this tier right now",
@@ -310,6 +313,16 @@
         "easy": "Easy",
         "medium": "Medium",
         "hard": "Hard"
+      }
+    },
+    "forecast7": {
+      "label": "7-night sky outlook",
+      "today": "Tonight",
+      "empty": "Forecast unavailable.",
+      "badge": {
+        "go": "Go",
+        "maybe": "Maybe",
+        "skip": "Skip"
       }
     },
     "strip": {

@@ -1430,7 +1430,7 @@
 }
 
 /* ================================================================
-   === Target picker chip row                                   ===
+   === Target picker — small photo cards with rise / set times  ===
    ================================================================ */
 
 .target-picker {
@@ -1438,88 +1438,116 @@
   flex-direction: column;
   gap: 10px;
 }
+.target-picker__row-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 .target-picker__label {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.45);
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
 }
-.target-picker__row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.target-picker__chips {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  flex: 1;
-  padding-bottom: 2px;
-  scrollbar-width: none;
-}
-.target-picker__chips::-webkit-scrollbar { display: none; }
 
-.target-chip {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
+.target-cards {
+  display: flex;
   gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  padding: 2px 0 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.target-cards::-webkit-scrollbar { display: none; }
+
+.target-card {
+  appearance: none;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 10px;
+  align-items: center;
   flex-shrink: 0;
-  padding: 8px 14px;
-  min-height: 36px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 999px;
+  width: 200px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   cursor: pointer;
+  text-align: left;
   color: var(--text);
+  scroll-snap-align: start;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.target-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.target-card.is-active {
+  background: rgba(255, 209, 102, 0.08);
+  border-color: rgba(255, 209, 102, 0.45);
+}
+.target-card.is-below {
+  opacity: 0.55;
+}
+
+.target-card__thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.target-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.target-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.target-card__name {
   font-family: var(--font-body, var(--font-display));
   font-size: 13px;
   font-weight: 500;
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-.target-chip:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-.target-chip__name {
-  white-space: nowrap;
-}
-.target-chip__alt {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.5);
-  font-feature-settings: 'tnum' 1;
-}
-.target-chip__rises {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.45);
-  font-feature-settings: 'tnum' 1;
-  text-decoration: line-through;
-  text-decoration-color: rgba(255, 255, 255, 0.25);
-}
-.target-chip__scope {
-  color: #b794f4;
-  flex-shrink: 0;
-}
-.target-chip--below {
-  background: transparent;
-  border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.55);
-}
-.target-chip.is-active {
-  background: rgba(255, 209, 102, 0.12);
-  border-color: rgba(255, 209, 102, 0.4);
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.005em;
 }
-.target-chip.is-active .target-chip__alt {
+.target-card.is-active .target-card__name {
   color: var(--terracotta);
+}
+.target-card__primary {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.78);
+  font-feature-settings: 'tnum' 1;
+}
+.target-card__secondary {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+  font-feature-settings: 'tnum' 1;
+}
+.target-card__scope {
+  color: rgba(183, 148, 244, 0.85);
+  flex-shrink: 0;
 }
 
 .target-picker__auto {
@@ -1969,39 +1997,12 @@
   padding: 8px 4px;
 }
 
-/* === Type glyph in chip === */
-.target-chip__glyph-svg {
-  flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.70);
-}
-.target-chip--star  .target-chip__glyph-svg,
-.target-chip--double .target-chip__glyph-svg { color: #fff1d2; }
-.target-chip--galaxy .target-chip__glyph-svg { color: #c8d4e8; }
-.target-chip--nebula .target-chip__glyph-svg { color: #e8a39e; }
-.target-chip--cluster .target-chip__glyph-svg { color: #f1e4b8; }
-.target-chip__glyph--planet {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #f4ede0;
-  flex-shrink: 0;
-}
-.target-chip__glyph--sun     { background: #ffd166; }
-.target-chip__glyph--moon    { background: #f4ede0; }
-.target-chip__glyph--mercury { background: #d6cdb1; }
-.target-chip__glyph--venus   { background: #f7e7a8; }
-.target-chip__glyph--mars    { background: #ff7b54; }
-.target-chip__glyph--jupiter { background: #fbe9b7; }
-.target-chip__glyph--saturn  { background: #d4a574; }
-.target-chip__glyph--uranus  { background: #9ad4d4; }
-.target-chip__glyph--neptune { background: #8db7e8; }
-
-/* Active chip border colour-codes by type */
-.target-chip--galaxy.is-active  { border-color: rgba(200, 212, 232, 0.55); background: rgba(200, 212, 232, 0.08); }
-.target-chip--nebula.is-active  { border-color: rgba(232, 163, 158, 0.55); background: rgba(232, 163, 158, 0.08); }
-.target-chip--cluster.is-active { border-color: rgba(241, 228, 184, 0.55); background: rgba(241, 228, 184, 0.08); }
-.target-chip--star.is-active,
-.target-chip--double.is-active { border-color: rgba(255, 241, 210, 0.55); background: rgba(255, 241, 210, 0.06); }
+/* Active card border colour-codes by type */
+.target-card--galaxy.is-active  { border-color: rgba(200, 212, 232, 0.55); background: rgba(200, 212, 232, 0.06); }
+.target-card--nebula.is-active  { border-color: rgba(232, 163, 158, 0.55); background: rgba(232, 163, 158, 0.06); }
+.target-card--cluster.is-active { border-color: rgba(241, 228, 184, 0.55); background: rgba(241, 228, 184, 0.06); }
+.target-card--star.is-active,
+.target-card--double.is-active { border-color: rgba(255, 241, 210, 0.55); background: rgba(255, 241, 210, 0.05); }
 
 /* ================================================================
    === DirectionHero metadata tags                              ===
@@ -2268,5 +2269,172 @@
   .sky-strip__value { font-size: 12px; }
   .sky-v3 .sky-v3__lede .sky-v3__title { font-size: 26px; }
   .sky-map__facing-label { display: none; }
+}
+
+/* ================================================================
+   === Dome wrapper (no more side table)                         ===
+   ================================================================ */
+
+.sky-v3__dome-only {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0;
+}
+.sky-v3__dome-only .sky-map {
+  max-width: 460px;
+  width: 100%;
+}
+
+/* ================================================================
+   === 7-day sky forecast — primary outlook section             ===
+   ================================================================ */
+
+.forecast7 {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.forecast7__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.forecast7__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.forecast7__loc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: rgba(255, 255, 255, 0.30);
+}
+.forecast7__row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.forecast7__skeleton {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.forecast7__skel {
+  height: 96px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  background-size: 200% 100%;
+  animation: skyShimmer 1.6s linear infinite;
+}
+.forecast7__empty {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.forecast7__day {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-align: left;
+  min-height: 96px;
+}
+.forecast7__day.is-today {
+  border-color: rgba(255, 209, 102, 0.40);
+  background: rgba(255, 209, 102, 0.06);
+}
+.forecast7__day-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.forecast7__weekday {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+  font-feature-settings: 'tnum' 1;
+}
+.forecast7__day.is-today .forecast7__weekday {
+  color: var(--terracotta);
+}
+.forecast7__date {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.10em;
+  color: rgba(255, 255, 255, 0.40);
+  font-feature-settings: 'tnum' 1;
+}
+.forecast7__cloud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.forecast7__cloud-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.forecast7__cloud-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(120, 220, 170, 0.85), rgba(255, 209, 102, 0.85), rgba(220, 130, 130, 0.85));
+}
+.forecast7__cloud-pct {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+  font-feature-settings: 'tnum' 1;
+  min-width: 28px;
+  text-align: right;
+}
+.forecast7__badge {
+  margin-top: auto;
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.forecast7__badge--go    { color: #7ed4a8; border-color: rgba(120, 220, 170, 0.45); background: rgba(120, 220, 170, 0.08); }
+.forecast7__badge--maybe { color: #ffd166; border-color: rgba(255, 209, 102, 0.45); background: rgba(255, 209, 102, 0.08); }
+.forecast7__badge--skip  { color: #e89797; border-color: rgba(220, 130, 130, 0.45); background: rgba(220, 130, 130, 0.08); }
+
+@media (max-width: 720px) {
+  .forecast7__row,
+  .forecast7__skeleton {
+    grid-template-columns: repeat(7, 96px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .forecast7__row::-webkit-scrollbar,
+  .forecast7__skeleton::-webkit-scrollbar { display: none; }
+  .forecast7__day {
+    width: 96px;
+  }
 }
 
