@@ -1596,15 +1596,16 @@
 .mkt-odds-pair { display: flex; align-items: center; gap: 4px; }
 
 /* Stellar odds — round planets with an orbiting moon.
-   Each cell is a 40px circle (the planet) with a tiny dot that
-   orbits the center on a transform-only keyframe. YES orbits
-   clockwise, NO counter-clockwise.
-   Performance: only transform animates, GPU-composited, ~24 dots
-   on screen at most. Disabled under prefers-reduced-motion. */
+   Premium treatment: radial-gradient body lit from upper-left with
+   a darker terminator on the bottom-right (sphere/3D feel), faint
+   1px orbital path just outside the body, refined moon with a
+   hairline rim. YES orbits clockwise, NO counter-clockwise.
+   Performance: only transform animates, GPU-composited; disabled
+   under prefers-reduced-motion. */
 .mkt-odds-cells {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .mkt-odds-cell {
@@ -1612,18 +1613,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border: 1px solid var(--cell-border, transparent);
+  border: 0;
   border-radius: 50%;
-  background: var(--cell-bg, transparent);
+  background:
+    radial-gradient(
+      circle at 30% 28%,
+      var(--cell-lit,  rgba(94, 234, 212, 0.32)) 0%,
+      var(--cell-mid,  rgba(94, 234, 212, 0.14)) 55%,
+      var(--cell-dark, rgba(94, 234, 212, 0.04)) 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px var(--cell-edge, rgba(94, 234, 212, 0.32)),
+    inset -4px -6px 10px -4px rgba(0, 0, 0, 0.45);
   color: var(--cell-fg, var(--stl-text2));
   cursor: pointer;
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
-  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease,
-    transform 0.12s ease;
+  transition: box-shadow 0.18s ease, transform 0.16s ease, color 0.14s ease,
+    background 0.18s ease;
 }
 .mkt-odds-cell:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -1642,11 +1652,12 @@
   border: 0;
 }
 .mkt-odds-cell .cell-num {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
+  letter-spacing: -0.02em;
   font-feature-settings: 'tnum';
-  letter-spacing: -0.01em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
 }
 .mkt-odds-cell .cell-pct {
   font-size: 8px;
@@ -1655,73 +1666,95 @@
   opacity: 0.55;
 }
 
-/* The orbiting moon — small dot revolving around the planet center.
-   ::after stays unclipped because the planet has no overflow:hidden. */
+/* Faint orbital path — 1px ring just outside the planet body. */
+.mkt-odds-cell::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--cell-fg, currentColor);
+  opacity: 0.14;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+/* The orbiting moon. Hairline outer rim sells it as a body. */
 .mkt-odds-cell::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 3px;
-  height: 3px;
-  margin: -1.5px 0 0 -1.5px;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
   border-radius: 50%;
   background: var(--cell-fg, currentColor);
-  opacity: 0.85;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.10);
   pointer-events: none;
   animation: mkt-orbit 7s linear infinite;
 }
 
 @keyframes mkt-orbit {
-  from { transform: rotate(0deg)   translateX(24px); }
-  to   { transform: rotate(360deg) translateX(24px); }
+  from { transform: rotate(0deg)   translateX(25px); }
+  to   { transform: rotate(360deg) translateX(25px); }
 }
 @keyframes mkt-orbit-rev {
-  from { transform: rotate(0deg)   translateX(24px); }
-  to   { transform: rotate(-360deg) translateX(24px); }
+  from { transform: rotate(0deg)   translateX(25px); }
+  to   { transform: rotate(-360deg) translateX(25px); }
 }
 
 .mkt-odds-cell.yes {
   --cell-fg: var(--seafoam);
-  --cell-bg: rgba(94, 234, 212, 0.10);
-  --cell-border: rgba(94, 234, 212, 0.32);
+  --cell-lit:  rgba(94, 234, 212, 0.32);
+  --cell-mid:  rgba(94, 234, 212, 0.14);
+  --cell-dark: rgba(94, 234, 212, 0.04);
+  --cell-edge: rgba(94, 234, 212, 0.32);
 }
 .mkt-odds-cell.no {
   --cell-fg: var(--terracotta);
-  --cell-bg: rgba(255, 209, 102, 0.10);
-  --cell-border: rgba(255, 209, 102, 0.32);
+  --cell-lit:  rgba(255, 209, 102, 0.32);
+  --cell-mid:  rgba(255, 209, 102, 0.14);
+  --cell-dark: rgba(255, 209, 102, 0.04);
+  --cell-edge: rgba(255, 209, 102, 0.32);
 }
 .mkt-odds-cell.no::after {
   animation-name: mkt-orbit-rev;
   animation-duration: 9s;
 }
 
+.mkt-odds-cell:hover:not(:disabled) { transform: translateY(-1px); }
+.mkt-odds-cell:hover:not(:disabled)::before { opacity: 0.26; }
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-bg: rgba(94, 234, 212, 0.22);
-  --cell-border: rgba(94, 234, 212, 0.60);
-  transform: translateY(-1px);
+  --cell-lit:  rgba(94, 234, 212, 0.42);
+  --cell-mid:  rgba(94, 234, 212, 0.20);
+  --cell-edge: rgba(94, 234, 212, 0.55);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-bg: rgba(255, 209, 102, 0.22);
-  --cell-border: rgba(255, 209, 102, 0.60);
-  transform: translateY(-1px);
+  --cell-lit:  rgba(255, 209, 102, 0.42);
+  --cell-mid:  rgba(255, 209, 102, 0.20);
+  --cell-edge: rgba(255, 209, 102, 0.55);
 }
 
 .mkt-odds-cell.yes.active {
-  --cell-bg: rgba(94, 234, 212, 0.34);
-  --cell-border: var(--seafoam);
-  --cell-fg: #E6FBF6;
+  --cell-lit:  rgba(94, 234, 212, 0.60);
+  --cell-mid:  rgba(94, 234, 212, 0.28);
+  --cell-dark: rgba(94, 234, 212, 0.10);
+  --cell-edge: var(--seafoam);
+  --cell-fg: #E8FCF7;
 }
 .mkt-odds-cell.no.active {
-  --cell-bg: rgba(255, 209, 102, 0.32);
-  --cell-border: var(--terracotta);
-  --cell-fg: #FFEEC2;
+  --cell-lit:  rgba(255, 209, 102, 0.55);
+  --cell-mid:  rgba(255, 209, 102, 0.26);
+  --cell-dark: rgba(255, 209, 102, 0.10);
+  --cell-edge: var(--terracotta);
+  --cell-fg: #FFF1C8;
 }
+.mkt-odds-cell.active::before { opacity: 0.36; }
 
 @media (prefers-reduced-motion: reduce) {
   .mkt-odds-cell::after {
     animation: none;
-    transform: rotate(-35deg) translateX(24px);
+    transform: rotate(-35deg) translateX(25px);
   }
 }
 
@@ -1976,8 +2009,8 @@
   gap: 4px;
 }
 .mkt-sk-pill {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50% !important;
 }
 .mkt-sk-vol {
@@ -2599,25 +2632,23 @@
   .mkt-row-title { font-size: 13px; }
   .mkt-odds-pair { gap: 3px; }
   .mkt-odds-btn { font-size: 12px; padding: 5px 8px; min-width: 44px; }
-  .mkt-odds-cells { gap: 10px; }
+  .mkt-odds-cells { gap: 12px; }
   .mkt-odds-cell {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
   }
   .mkt-odds-cell .cell-num { font-size: 11px; }
   .mkt-odds-cell .cell-pct { font-size: 7px; }
-  .mkt-odds-cell::after { animation-duration: 8s; }
+  .mkt-odds-cell::before { inset: -3px; }
+  .mkt-odds-cell::after { animation-name: mkt-orbit-mobile; animation-duration: 8s; }
+  .mkt-odds-cell.no::after { animation-name: mkt-orbit-mobile-rev; animation-duration: 10s; }
   @keyframes mkt-orbit-mobile {
-    from { transform: rotate(0deg)   translateX(20px); }
-    to   { transform: rotate(360deg) translateX(20px); }
-  }
-  .mkt-odds-cell::after { animation-name: mkt-orbit-mobile; }
-  .mkt-odds-cell.no::after {
-    animation-name: mkt-orbit-mobile-rev;
+    from { transform: rotate(0deg)   translateX(21px); }
+    to   { transform: rotate(360deg) translateX(21px); }
   }
   @keyframes mkt-orbit-mobile-rev {
-    from { transform: rotate(0deg)   translateX(20px); }
-    to   { transform: rotate(-360deg) translateX(20px); }
+    from { transform: rotate(0deg)   translateX(21px); }
+    to   { transform: rotate(-360deg) translateX(21px); }
   }
   .mkt-row-volume { display: none; }
   .mkt-bet-panel {
