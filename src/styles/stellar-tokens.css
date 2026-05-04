@@ -1587,11 +1587,12 @@
 
 .mkt-odds-pair { display: flex; align-items: center; gap: 4px; }
 
-/* Stellar odds — ringed planets.
-   Pill body with a Saturn-style tilted ring drawn as a pseudo-element
-   that extends past the pill on each side. YES tilts the ring one
-   way, NO tilts it the other so the pair reads as two distinct
-   bodies. Brand seafoam (YES) / terracotta (NO). */
+/* Stellar odds — round planets with an orbiting moon.
+   Each cell is a 40px circle (the planet) with a tiny dot that
+   orbits the center on a transform-only keyframe. YES orbits
+   clockwise, NO counter-clockwise.
+   Performance: only transform animates, GPU-composited, ~24 dots
+   on screen at most. Disabled under prefers-reduced-motion. */
 .mkt-odds-cells {
   display: flex;
   align-items: center;
@@ -1603,12 +1604,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  height: 28px;
-  min-width: 70px;
-  padding: 0 13px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 1px solid var(--cell-border, transparent);
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--cell-bg, transparent);
   color: var(--cell-fg, var(--stl-text2));
   cursor: pointer;
@@ -1619,81 +1619,103 @@
 }
 .mkt-odds-cell:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* The planet's ring — thin tilted ellipse extending past the body.
-   Drawn on top with low opacity so the pill content reads through. */
-.mkt-odds-cell::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  right: -10px;
-  top: 50%;
-  height: 8px;
-  border: 1px solid var(--cell-fg, currentColor);
-  border-radius: 50%;
-  background: transparent;
-  opacity: 0.42;
-  transform: translateY(-50%) rotate(var(--ring-tilt, -12deg));
-  pointer-events: none;
-  transition: opacity 0.14s ease, transform 0.14s ease;
-}
-
+/* Inside the planet: just the number. Label is hidden — meaning is
+   carried by color + position (left = YES, right = NO) and the
+   button's aria-label. */
 .mkt-odds-cell .cell-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.78;
-  line-height: 1;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .mkt-odds-cell .cell-num {
   font-size: 12px;
   font-weight: 600;
   line-height: 1;
   font-feature-settings: 'tnum';
+  letter-spacing: -0.01em;
 }
 .mkt-odds-cell .cell-pct {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 500;
   margin-left: 1px;
   opacity: 0.55;
+}
+
+/* The orbiting moon — small dot revolving around the planet center.
+   ::after stays unclipped because the planet has no overflow:hidden. */
+.mkt-odds-cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: var(--cell-fg, currentColor);
+  opacity: 0.85;
+  pointer-events: none;
+  animation: mkt-orbit 7s linear infinite;
+}
+
+@keyframes mkt-orbit {
+  from { transform: rotate(0deg)   translateX(24px); }
+  to   { transform: rotate(360deg) translateX(24px); }
+}
+@keyframes mkt-orbit-rev {
+  from { transform: rotate(0deg)   translateX(24px); }
+  to   { transform: rotate(-360deg) translateX(24px); }
 }
 
 .mkt-odds-cell.yes {
   --cell-fg: var(--seafoam);
   --cell-bg: rgba(94, 234, 212, 0.10);
   --cell-border: rgba(94, 234, 212, 0.32);
-  --ring-tilt: -14deg;
 }
 .mkt-odds-cell.no {
   --cell-fg: var(--terracotta);
   --cell-bg: rgba(255, 209, 102, 0.10);
   --cell-border: rgba(255, 209, 102, 0.32);
-  --ring-tilt: 14deg;
+}
+.mkt-odds-cell.no::after {
+  animation-name: mkt-orbit-rev;
+  animation-duration: 9s;
 }
 
 .mkt-odds-cell.yes:hover:not(:disabled) {
-  --cell-bg: rgba(94, 234, 212, 0.20);
-  --cell-border: rgba(94, 234, 212, 0.55);
+  --cell-bg: rgba(94, 234, 212, 0.22);
+  --cell-border: rgba(94, 234, 212, 0.60);
   transform: translateY(-1px);
 }
 .mkt-odds-cell.no:hover:not(:disabled) {
-  --cell-bg: rgba(255, 209, 102, 0.20);
-  --cell-border: rgba(255, 209, 102, 0.55);
+  --cell-bg: rgba(255, 209, 102, 0.22);
+  --cell-border: rgba(255, 209, 102, 0.60);
   transform: translateY(-1px);
 }
-.mkt-odds-cell:hover:not(:disabled)::before { opacity: 0.72; }
 
 .mkt-odds-cell.yes.active {
-  --cell-bg: rgba(94, 234, 212, 0.32);
+  --cell-bg: rgba(94, 234, 212, 0.34);
   --cell-border: var(--seafoam);
   --cell-fg: #E6FBF6;
 }
 .mkt-odds-cell.no.active {
-  --cell-bg: rgba(255, 209, 102, 0.30);
+  --cell-bg: rgba(255, 209, 102, 0.32);
   --cell-border: var(--terracotta);
   --cell-fg: #FFEEC2;
 }
-.mkt-odds-cell.active::before { opacity: 0.85; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mkt-odds-cell::after {
+    animation: none;
+    transform: rotate(-35deg) translateX(24px);
+  }
+}
 
 /* Inline bet panel — drop-down beneath an expanded market row */
 .mkt-row.expanded {
@@ -1946,9 +1968,9 @@
   gap: 4px;
 }
 .mkt-sk-pill {
-  width: 70px;
-  height: 28px;
-  border-radius: 999px !important;
+  width: 40px;
+  height: 40px;
+  border-radius: 50% !important;
 }
 .mkt-sk-vol {
   width: 36px;
@@ -2569,21 +2591,26 @@
   .mkt-row-title { font-size: 13px; }
   .mkt-odds-pair { gap: 3px; }
   .mkt-odds-btn { font-size: 12px; padding: 5px 8px; min-width: 44px; }
-  .mkt-odds-cells { gap: 12px; }
+  .mkt-odds-cells { gap: 10px; }
   .mkt-odds-cell {
-    min-width: 60px;
-    height: 24px;
-    padding: 0 10px;
-    gap: 4px;
+    width: 34px;
+    height: 34px;
   }
-  .mkt-odds-cell::before {
-    left: -8px;
-    right: -8px;
-    height: 6px;
-  }
-  .mkt-odds-cell .cell-label { font-size: 8px; }
   .mkt-odds-cell .cell-num { font-size: 11px; }
-  .mkt-odds-cell .cell-pct { font-size: 8px; }
+  .mkt-odds-cell .cell-pct { font-size: 7px; }
+  .mkt-odds-cell::after { animation-duration: 8s; }
+  @keyframes mkt-orbit-mobile {
+    from { transform: rotate(0deg)   translateX(20px); }
+    to   { transform: rotate(360deg) translateX(20px); }
+  }
+  .mkt-odds-cell::after { animation-name: mkt-orbit-mobile; }
+  .mkt-odds-cell.no::after {
+    animation-name: mkt-orbit-mobile-rev;
+  }
+  @keyframes mkt-orbit-mobile-rev {
+    from { transform: rotate(0deg)   translateX(20px); }
+    to   { transform: rotate(-360deg) translateX(20px); }
+  }
   .mkt-row-volume { display: none; }
   .mkt-bet-panel {
     grid-template-columns: 1fr;
