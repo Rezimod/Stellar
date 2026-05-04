@@ -341,6 +341,15 @@
       },
       "locationFallback": "Default — set your own"
     },
+    "skymap": {
+      "calibrate": "კომპასის კალიბრაცია",
+      "facing": "გიჭერია",
+      "compassDenied": "კომპასი უარყოფილია",
+      "compassUnavailable": "ამ მოწყობილობას კომპასი არ აქვს",
+      "onTarget": "სამიზნეზე",
+      "turnLeft": "მოატრიალე მარცხნივ {deg}°",
+      "turnRight": "მოატრიალე მარჯვნივ {deg}°"
+    },
     "horizon": {
       "label": "Your horizon — looking around",
       "refresh": "Updates every minute",

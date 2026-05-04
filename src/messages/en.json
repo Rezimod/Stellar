@@ -346,6 +346,15 @@
       "refresh": "Updates every minute",
       "zenith": "ZENITH",
       "below": "below"
+    },
+    "skymap": {
+      "calibrate": "Calibrate compass",
+      "facing": "Facing",
+      "compassDenied": "Compass denied",
+      "compassUnavailable": "No compass on this device",
+      "onTarget": "On target",
+      "turnLeft": "Turn left {deg}°",
+      "turnRight": "Turn right {deg}°"
     }
   },
   "planets": {

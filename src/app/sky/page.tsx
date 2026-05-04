@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSkyData } from '@/lib/use-sky-data';
 import { useLocation } from '@/lib/location';
+import { useDeviceHeading } from '@/lib/sky/use-device-heading';
 import { ObservationTimeline } from '@/components/sky/ObservationTimeline';
 import { LocationFallbackBanner } from '@/components/sky/LocationFallbackBanner';
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
@@ -33,6 +34,7 @@ export default function SkyPage() {
     [location.lat, location.lon, location.city],
   );
   const sky = useSkyData(initialCoords);
+  const compass = useDeviceHeading();
 
   const [finder, setFinder] = useState<FinderResponse | null>(null);
   const [finderLoading, setFinderLoading] = useState(true);
@@ -224,7 +226,14 @@ export default function SkyPage() {
           <>
             <section className="sky-v3__split">
               <div className="sky-v3__map-wrap">
-                <SkyMap objects={tableObjects} activeId={activeId} onSelect={handleSelect} />
+                <SkyMap
+                  objects={tableObjects}
+                  activeId={activeId}
+                  onSelect={handleSelect}
+                  heading={compass.heading}
+                  headingStatus={compass.status}
+                  onCalibrate={compass.request}
+                />
                 <p className="sky-v3__map-caption">{tHeader('mapCaption')}</p>
               </div>
               <div className="sky-v3__table-wrap">

@@ -894,6 +894,7 @@
   width: 100%;
   max-width: 460px;
   aspect-ratio: 1 / 1;
+  position: relative;
 }
 .sky-map__svg {
   width: 100%;
@@ -902,6 +903,117 @@
 }
 .sky-map__svg g[role="button"]:hover circle:first-of-type {
   filter: brightness(1.15);
+}
+
+/* === HUD overlay (calibrate / facing / aim) === */
+.sky-map__hud {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.sky-map__calibrate,
+.sky-map__facing,
+.sky-map__aim-pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: rgba(7, 11, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.75);
+}
+.sky-map__calibrate {
+  cursor: pointer;
+  appearance: none;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.sky-map__calibrate:hover {
+  color: var(--text);
+  border-color: rgba(255, 209, 102, 0.45);
+  background: rgba(255, 209, 102, 0.08);
+}
+.sky-map__calibrate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sky-map__facing {
+  border-color: rgba(255, 209, 102, 0.40);
+  background: rgba(255, 209, 102, 0.06);
+  color: var(--terracotta);
+}
+.sky-map__facing.is-locked {
+  border-color: rgba(120, 220, 170, 0.60);
+  background: rgba(120, 220, 170, 0.10);
+  color: #7ed4a8;
+}
+.sky-map__facing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--terracotta);
+  box-shadow: 0 0 6px rgba(255, 209, 102, 0.7);
+}
+.sky-map__facing.is-locked .sky-map__facing-dot {
+  background: #7ed4a8;
+  box-shadow: 0 0 6px rgba(120, 220, 170, 0.8);
+}
+.sky-map__facing-label {
+  color: rgba(255, 255, 255, 0.50);
+  letter-spacing: 0.18em;
+}
+.sky-map__facing-deg {
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+.sky-map__facing-card {
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sky-map__aim-pill {
+  margin-left: auto;
+  border-color: rgba(255, 209, 102, 0.35);
+  color: rgba(255, 209, 102, 0.95);
+}
+.sky-map__aim-pill.is-locked {
+  border-color: rgba(120, 220, 170, 0.60);
+  background: rgba(120, 220, 170, 0.10);
+  color: #7ed4a8;
+}
+
+/* SVG aim arrow pulse + lock animations */
+.sky-map__aim {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.sky-map__aim.is-pulsing polygon {
+  animation: skymapAimPulse 1.4s ease-in-out infinite;
+}
+.sky-map__aim.is-locked polygon {
+  animation: skymapAimLock 0.36s ease-out 1;
+}
+@keyframes skymapAimPulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+@keyframes skymapAimLock {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
 }
 
 /* === Body table === */
