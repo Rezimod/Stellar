@@ -167,11 +167,26 @@ export function useDeviceHeading(): UseDeviceHeading {
       smoothedHeadingRef.current = smoothAngle(smoothedHeadingRef.current, next, SMOOTH_ALPHA);
       setRawHeading(smoothedHeadingRef.current);
 
-      // beta=0 → screen flat face up, back of phone points down → alt -90.
-      // beta=90 → phone upright, back points at horizon → alt 0.
-      // beta=180 → phone tilted backward, back points up → alt +90.
-      if (e.beta != null && !Number.isNaN(e.beta)) {
-        const rawAlt = Math.max(-90, Math.min(90, e.beta - 90));
+      // Pitch the back camera is aimed at depends on which axis is "up" given
+      // the current screen orientation. In portrait, beta tracks pitch and
+      // altitude = beta − 90. In landscape, the long edge is horizontal and
+      // gamma takes over; its sign flips between the two landscape rotations.
+      const beta = e.beta;
+      const gamma = e.gamma;
+      if (beta != null && !Number.isNaN(beta)) {
+        const sa = screenAngle();
+        let rawAlt: number;
+        if (sa === 90 && gamma != null && !Number.isNaN(gamma)) {
+          // Phone rotated 90° (home button on left in old phones / right edge up).
+          rawAlt = -gamma;
+        } else if ((sa === 270 || sa === -90) && gamma != null && !Number.isNaN(gamma)) {
+          rawAlt = gamma;
+        } else if (sa === 180) {
+          rawAlt = 90 - beta;
+        } else {
+          rawAlt = beta - 90;
+        }
+        rawAlt = Math.max(-90, Math.min(90, rawAlt));
         const prev = smoothedAltRef.current;
         const smoothed = prev == null ? rawAlt : prev * (1 - SMOOTH_ALPHA) + rawAlt * SMOOTH_ALPHA;
         smoothedAltRef.current = smoothed;

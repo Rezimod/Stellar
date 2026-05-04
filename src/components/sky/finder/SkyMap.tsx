@@ -40,7 +40,11 @@ const SIZE = 360;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const R = 152;
-const ON_TARGET_DEG = 8;
+// Lock window. Azimuth holds tighter than altitude — phone pitch shake at
+// high tilts (zenith-side targets) easily exceeds 8°, which made lock
+// effectively unreachable on planets above ~60° altitude.
+const ON_TARGET_AZ_DEG = 10;
+const ON_TARGET_ALT_DEG = 12;
 
 /** Bright star + its current alt/az, sized for chart rendering. */
 export interface ConstellationStar {
@@ -144,8 +148,8 @@ export function SkyMap({
     if (!isLive || !active) return null;
     const dAz = headingDelta(active.obj.azimuth, heading ?? 0);
     const dAlt = hasTilt ? active.obj.altitude - (userAltitude ?? 0) : null;
-    const azOnTarget = Math.abs(dAz) <= ON_TARGET_DEG;
-    const altOnTarget = dAlt == null || Math.abs(dAlt) <= ON_TARGET_DEG;
+    const azOnTarget = Math.abs(dAz) <= ON_TARGET_AZ_DEG;
+    const altOnTarget = dAlt == null || Math.abs(dAlt) <= ON_TARGET_ALT_DEG;
     const onTarget = azOnTarget && altOnTarget;
     return { dAz, dAlt, azOnTarget, altOnTarget, onTarget };
   }, [isLive, active, heading, hasTilt, userAltitude]);
