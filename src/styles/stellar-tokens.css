@@ -211,6 +211,14 @@
 .nft-planet { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 .nft-card:hover .nft-planet { transform: rotate(2deg); }
 
+/* Per-card delete button — hidden until hover/focus, always shown on touch */
+.nft-card:hover .nft-card-delete,
+.nft-card:focus-within .nft-card-delete { opacity: 1; }
+.nft-card-delete:hover { background: rgba(239,68,68,0.18) !important; }
+@media (hover: none) {
+  .nft-card-delete { opacity: 1 !important; }
+}
+
 /* Typing dots for chat — teal not slate */
 @keyframes typing-bounce {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }

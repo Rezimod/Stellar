@@ -13,6 +13,7 @@ const defaultState: AppState = {
   completedMissions: [],
   claimedRewards: [],
   completedQuizzes: [],
+  hiddenObservationIds: [],
 };
 
 interface AppStateCtx {
@@ -22,6 +23,8 @@ interface AppStateCtx {
   setTelescope: (data: { brand: string; model: string; aperture: string }, tx: string) => void;
   addMission: (mission: CompletedMission) => void;
   removeMission: (txId: string) => void;
+  hideObservation: (id: string) => void;
+  unhideObservation: (id: string) => void;
   claimReward: (id: string) => void;
   addQuizResult: (r: QuizResult) => void;
   pendingCount: number;
@@ -116,6 +119,20 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       completedMissions: s.completedMissions.filter(m => m.id !== key && m.txId !== key),
     }));
   }, []);
+  const hideObservation = useCallback((id: string) => {
+    setState(s => {
+      const ids = s.hiddenObservationIds ?? [];
+      if (ids.includes(id)) return s;
+      return {
+        ...s,
+        hiddenObservationIds: [...ids, id],
+        completedMissions: s.completedMissions.filter(m => m.id !== id && m.txId !== id),
+      };
+    });
+  }, []);
+  const unhideObservation = useCallback((id: string) => {
+    setState(s => ({ ...s, hiddenObservationIds: (s.hiddenObservationIds ?? []).filter(x => x !== id) }));
+  }, []);
   const claimReward = useCallback((id: string) => {
     setState(s => ({
       ...s,
@@ -143,12 +160,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setTelescope,
       addMission,
       removeMission,
+      hideObservation,
+      unhideObservation,
       claimReward,
       addQuizResult,
       pendingCount,
       reset,
     }),
-    [state, setWallet, setMembership, setTelescope, addMission, removeMission, claimReward, addQuizResult, pendingCount, reset],
+    [state, setWallet, setMembership, setTelescope, addMission, removeMission, hideObservation, unhideObservation, claimReward, addQuizResult, pendingCount, reset],
   );
 
   return createElement(Ctx.Provider, { value: ctx }, children);

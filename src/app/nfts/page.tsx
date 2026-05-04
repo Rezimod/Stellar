@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { Telescope, Satellite, ExternalLink, Lock } from 'lucide-react';
+import { Telescope, Satellite, ExternalLink, Lock, Trash2 } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -99,7 +99,8 @@ function localToNftAsset(m: CompletedMission): NftAsset {
   };
 }
 
-function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAsset; onClose: () => void; onRetryMint?: () => void; retrying?: boolean }) {
+function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { nft: NftAsset; onClose: () => void; onRetryMint?: () => void; retrying?: boolean; onRemove: () => void }) {
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const attrs = nft.content?.metadata?.attributes;
   const name = nft.content?.metadata?.name ?? 'Stellar Observation';
   const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || 'Unknown';
@@ -318,6 +319,60 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
             </p>
           </div>
         )}
+
+        {/* Remove from gallery — soft hide. On-chain mint is not burned. */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 4 }}>
+          {!confirmRemove ? (
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="flex items-center justify-center gap-2 rounded-xl text-xs w-full"
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: 'var(--text-muted)',
+                padding: '10px 0',
+                minHeight: 40,
+                cursor: 'pointer',
+              }}
+            >
+              <Trash2 size={13} /> Remove from gallery
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p style={{ color: 'var(--text-secondary)', fontSize: 11, textAlign: 'center', margin: 0 }}>
+                {isSimulated ? 'Permanently delete this local observation?' : 'Hide from your gallery? The on-chain NFT is not burned.'}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmRemove(false)}
+                  className="flex-1 rounded-xl text-xs"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: 'var(--text-muted)',
+                    padding: '10px 0',
+                    minHeight: 40,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={onRemove}
+                  className="flex-1 rounded-xl text-xs font-semibold"
+                  style={{
+                    background: 'rgba(239,68,68,0.12)',
+                    border: '1px solid rgba(239,68,68,0.35)',
+                    color: '#f87171',
+                    padding: '10px 0',
+                    minHeight: 40,
+                  }}
+                >
+                  {isSimulated ? 'Delete' : 'Hide'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         </div>
       </div>
     </div>
@@ -327,7 +382,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying }: { nft: NftAss
 export default function NftsPage() {
   const { getAccessToken } = usePrivy();
   const { authenticated, ready, address: stellarAddress } = useStellarUser();
-  const { state } = useAppState();
+  const { state, hideObservation } = useAppState();
   const [authOpen, setAuthOpen] = useState(false);
   const [nfts, setNfts] = useState<NftAsset[]>([]);
   const [loading, setLoading] = useState(false);
@@ -406,12 +461,18 @@ export default function NftsPage() {
 
   // Must be above early return — Rules of Hooks require unconditional hook calls
   const allNfts = useMemo<NftAsset[]>(() => {
+    const hidden = new Set(state.hiddenObservationIds ?? []);
     const dasIds = new Set(nfts.map(n => n.id));
     const localAssets = state.completedMissions
       .filter(m => m.status !== 'gallery' && !dasIds.has(m.txId))
       .map(localToNftAsset);
-    return [...nfts, ...localAssets];
-  }, [nfts, state.completedMissions]);
+    return [...nfts, ...localAssets].filter(n => !hidden.has(n.id));
+  }, [nfts, state.completedMissions, state.hiddenObservationIds]);
+
+  const handleRemove = (id: string) => {
+    hideObservation(id);
+    setSelectedNft(null);
+  };
 
   if (!ready || !authenticated) {
     const demoNfts = [
@@ -492,7 +553,7 @@ export default function NftsPage() {
 
   return (
     <>
-    {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} onRetryMint={(selectedNft.id.startsWith('sim') || state.completedMissions.some(m => m.txId === selectedNft.id && m.status !== 'gallery')) ? handleRetryMint : undefined} retrying={retrying} />}
+    {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} onRetryMint={(selectedNft.id.startsWith('sim') || state.completedMissions.some(m => m.txId === selectedNft.id && m.status !== 'gallery')) ? handleRetryMint : undefined} retrying={retrying} onRemove={() => handleRemove(selectedNft.id)} />}
     <PageTransition>
     <PageContainer variant="wide" className="py-3 sm:py-5 flex flex-col gap-3 sm:gap-4">
       <BackButton />
@@ -719,7 +780,7 @@ export default function NftsPage() {
                 }}
               >
                 {/* Framed image area — square aspect, scales with column width */}
-                <div style={{
+                <div className="nft-card-image" style={{
                   position: 'relative', width: 'calc(100% - 12px)', aspectRatio: '4 / 3', margin: 6,
                   background: 'var(--color-bg-card-strong)',
                   borderRadius: 'var(--radius-lg)',
@@ -745,6 +806,37 @@ export default function NftsPage() {
                       onError={e => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder-nft.svg'; }}
                     />
                   )}
+                  <button
+                    type="button"
+                    aria-label="Remove from gallery"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Remove this observation from your gallery?')) {
+                        handleRemove(item.id);
+                      }
+                    }}
+                    className="nft-card-delete"
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      width: 26,
+                      height: 26,
+                      borderRadius: 9999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(7,11,20,0.7)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'rgba(248,113,113,0.85)',
+                      cursor: 'pointer',
+                      opacity: 0,
+                      transition: 'opacity 0.15s, background 0.15s',
+                      backdropFilter: 'blur(4px)',
+                    }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
                 </div>
 
                 {/* Card content — denser */}

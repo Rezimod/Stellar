@@ -66,6 +66,7 @@ export interface AppState {
   completedMissions: CompletedMission[];
   claimedRewards: string[];
   completedQuizzes: QuizResult[];
+  hiddenObservationIds: string[];
 }
 
 export type ObservationTarget = 'moon' | 'planet' | 'stars' | 'constellation' | 'deep_sky' | 'unknown'
