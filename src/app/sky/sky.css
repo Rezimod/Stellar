@@ -1067,142 +1067,114 @@
   100% { transform: scale(1); }
 }
 
-/* === Body table === */
+/* === Body list — simple card per object ===
+   Replaces the old multi-column body table. Each card carries a real
+   reference photo (with a glyph fallback for stars / catalog targets
+   without a photo), the body's name, and a plain-language status line
+   ("Sets 22:29", "Rises 06:14", "Up all night", "Below horizon").
+   Direction + altitude live in a small mono cluster on the right so
+   the card stays scannable without looking like a data table. */
 
-.body-table {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.body-table__head {
-  display: grid;
-  grid-template-columns: minmax(160px, 1.5fr) 90px 60px 60px 1fr;
-  gap: 16px;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.025);
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.body-table__col--mag,
-.body-table__col--alt {
-  text-align: right;
-}
-
-.body-table__rows {
+.body-list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
-.body-row {
+.body-card {
   appearance: none;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
   display: grid;
-  grid-template-columns: minmax(160px, 1.5fr) 90px 60px 60px 1fr;
-  gap: 16px;
+  grid-template-columns: 56px 1fr auto;
+  gap: 14px;
   align-items: center;
-  padding: 14px 18px;
-  cursor: pointer;
-  text-align: left;
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  transition: background 120ms ease;
   width: 100%;
-  min-height: 56px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
 }
-.body-row:last-child { border-bottom: none; }
-.body-row:hover { background: rgba(255, 255, 255, 0.025); }
-.body-row.is-active {
-  background: rgba(255, 209, 102, 0.06);
+.body-card:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.16);
 }
-.body-row.is-below {
+.body-card.is-active {
+  background: rgba(255, 209, 102, 0.07);
+  border-color: rgba(255, 209, 102, 0.40);
+}
+.body-card.is-below {
   opacity: 0.55;
 }
 
-.body-row__name {
-  display: inline-flex;
+.body-card__thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.body-row__disc {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  justify-content: center;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.15);
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.body-card__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.body-row__name-text {
-  font-family: var(--sans);
-  font-size: 14px;
+.body-card__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.body-card__name {
+  font-family: var(--font-display, var(--serif));
+  font-size: 16px;
   font-weight: 500;
-  color: var(--text);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.body-row.is-active .body-row__name-text {
+.body-card.is-active .body-card__name {
   color: var(--terracotta);
 }
-
-.body-row__tier {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 999px;
-  margin-left: auto;
-}
-.body-row__tier--eye    { color: var(--green); background: rgba(52, 211, 153, 0.10); }
-.body-row__tier--binocs { color: var(--text); background: rgba(255, 255, 255, 0.06); }
-.body-row__tier--scope  { color: var(--text-muted); background: rgba(255, 255, 255, 0.04); }
-
-.body-row__bearing {
-  color: var(--text);
-  font-feature-settings: 'tnum' 1;
-}
-.body-row__bearing small {
+.body-card__status {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
-  font-size: 11px;
-  margin-left: 4px;
-}
-.body-row__bearing--dim { color: var(--text-dim); }
-
-.body-row__alt {
-  text-align: right;
-  color: var(--text);
   font-feature-settings: 'tnum' 1;
 }
-.body-row__alt--dim {
+
+.body-card__bearing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1;
+}
+.body-card__alt {
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.body-card__compass {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
   color: var(--text-dim);
-  font-size: 11px;
-}
-
-.body-row__mag {
-  text-align: right;
-  color: var(--text-muted);
-  font-feature-settings: 'tnum' 1;
-}
-
-.body-row__event {
-  color: var(--text-muted);
-  font-feature-settings: 'tnum' 1;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  text-transform: uppercase;
 }
 
 /* === Active target panel (inherits .finder-hero styling from v2) === */
@@ -1251,11 +1223,6 @@
 @media (max-width: 980px) {
   .sky-v3__split { grid-template-columns: 1fr; gap: 24px; }
   .sky-v3__map-wrap { position: static; max-width: 460px; margin: 0 auto; }
-  .body-table__head,
-  .body-row {
-    grid-template-columns: minmax(140px, 1.3fr) 80px 56px 56px 1fr;
-    gap: 12px;
-  }
 }
 
 @media (max-width: 700px) {
@@ -1275,47 +1242,20 @@
   .sky-v3__title { font-size: 36px; }
   .sky-v3__verdict { font-size: 15.5px; }
   .sky-v3__ar { width: 100%; text-align: center; }
-
-  /* Body table — drop magnitude column on phones, stack on small */
-  .body-table__head {
-    grid-template-columns: minmax(120px, 1.4fr) 78px 50px 1fr;
-  }
-  .body-table__col--mag { display: none; }
-
-  .body-row {
-    grid-template-columns: minmax(120px, 1.4fr) 78px 50px 1fr;
-    padding: 12px 14px;
-    font-size: 12.5px;
-  }
-  .body-row__mag { display: none; }
-  .body-row__name-text { font-size: 13.5px; }
-  .body-row__tier { display: none; }
-  .body-row__event { font-size: 11.5px; }
 }
 
 @media (max-width: 460px) {
-  /* Two-line layout: name+disc on top, numbers below */
-  .body-table__head {
-    display: none;
+  /* Body cards: trim the bearing column on the smallest phones — the
+     plain-language status ("Sets 22:29") is enough on its own. */
+  .body-card {
+    grid-template-columns: 48px 1fr;
+    gap: 12px;
+    padding: 10px 12px;
   }
-  .body-row {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "name event"
-      "data data";
-    gap: 6px 12px;
-    padding: 14px 14px;
-  }
-  .body-row__name { grid-area: name; }
-  .body-row__event { grid-area: event; text-align: right; }
-  .body-row__bearing,
-  .body-row__alt {
-    grid-area: data;
-    display: inline;
-    color: var(--text-muted);
-  }
-  .body-row__bearing::after { content: " · "; color: var(--text-dim); }
-  .body-row__alt { text-align: left; }
+  .body-card__thumb { width: 48px; height: 48px; border-radius: 10px; }
+  .body-card__name { font-size: 15px; }
+  .body-card__status { font-size: 11px; }
+  .body-card__bearing { display: none; }
 }
 
 /* ================================================================

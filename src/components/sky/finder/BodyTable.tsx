@@ -1,35 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { getTargetPhoto } from '@/lib/sky/target-photos';
+import { PlanetIcon } from './PlanetIcon';
 import type { ObjectId, SkyObject } from './types';
-
-const PLANET_COLORS: Record<string, string> = {
-  sun:     '#ffd166',
-  moon:    '#f4ede0',
-  mercury: '#d6cdb1',
-  venus:   '#f7e7a8',
-  mars:    '#ff7b54',
-  jupiter: '#fbe9b7',
-  saturn:  '#d4a574',
-  uranus:  '#9ad4d4',
-  neptune: '#8db7e8',
-};
-
-function dotColor(o: SkyObject): string {
-  if (o.type === 'planet' || o.type === 'sun' || o.type === 'moon') {
-    return PLANET_COLORS[o.id] ?? '#f4ede0';
-  }
-  if (o.type === 'star' || o.type === 'double') {
-    if (o.magnitude <= -1) return '#bcd6ff';
-    if (o.magnitude <= 0)  return '#f4ede0';
-    if (o.magnitude <= 1)  return '#fff1d2';
-    return '#e8d8b6';
-  }
-  if (o.type === 'nebula') return '#e8a39e';
-  if (o.type === 'galaxy') return '#c8d4e8';
-  if (o.type === 'cluster') return '#f1e4b8';
-  return '#f4ede0';
-}
 
 interface BodyTableProps {
   objects: SkyObject[];
@@ -47,15 +22,12 @@ function fmtTime(iso: string | null): string | null {
   }
 }
 
-function tierFromInstrument(o: SkyObject): 'eye' | 'binocs' | 'scope' {
-  if (o.instrument === 'binoculars') return 'binocs';
-  if (o.instrument === 'telescope') return 'scope';
-  return 'eye';
-}
-
 export function BodyTable({ objects, activeId, onSelect }: BodyTableProps) {
   const t = useTranslations('sky.bodyTable');
 
+  // Visible bodies first, sorted by altitude (highest first); below-horizon
+  // bodies sorted by upcoming rise time. The list reads top-to-bottom in
+  // priority of "what should I look at right now."
   const sorted = [...objects].sort((a, b) => {
     if (a.visible && !b.visible) return -1;
     if (!a.visible && b.visible) return 1;
@@ -65,61 +37,87 @@ export function BodyTable({ objects, activeId, onSelect }: BodyTableProps) {
   });
 
   return (
-    <div className="body-table" role="listbox" aria-label={t('label')}>
-      <header className="body-table__head">
-        <span className="body-table__col body-table__col--name">{t('cols.body')}</span>
-        <span className="body-table__col body-table__col--bearing">{t('cols.bearing')}</span>
-        <span className="body-table__col body-table__col--alt">{t('cols.altitude')}</span>
-        <span className="body-table__col body-table__col--mag">{t('cols.mag')}</span>
-        <span className="body-table__col body-table__col--event">{t('cols.event')}</span>
-      </header>
-      <div className="body-table__rows">
-        {sorted.map((o) => {
-          const isActive = o.id === activeId;
-          const setLabel = fmtTime(o.setTime);
-          const riseLabel = fmtTime(o.riseTime);
-          const tier = tierFromInstrument(o);
-          const tierLabel = t(`tier.${tier}`);
-          const magStr = `${o.magnitude > 0 ? '+' : ''}${o.magnitude.toFixed(1)}`;
-          const event = o.circumpolar
-            ? t('upAllNight')
-            : o.visible
-              ? (setLabel ? t('setsAt', { time: setLabel }) : t('upAllNight'))
-              : (riseLabel ? t('risesAt', { time: riseLabel }) : '—');
-
-          return (
-            <button
-              key={o.id}
-              type="button"
-              role="option"
-              aria-selected={isActive}
-              className={`body-row ${isActive ? 'is-active' : ''} ${!o.visible ? 'is-below' : ''}`}
-              onClick={() => onSelect(o.id)}
-            >
-              <span className="body-row__name">
-                <span className="body-row__disc" style={{ background: dotColor(o) }} />
-                <span className="body-row__name-text">{o.name}</span>
-                <span className={`body-row__tier body-row__tier--${tier}`}>{tierLabel}</span>
-              </span>
-              {o.visible ? (
-                <>
-                  <span className="body-row__bearing">
-                    {Math.round(o.azimuth)}° <small>{o.compassDirection}</small>
-                  </span>
-                  <span className="body-row__alt">+{Math.round(o.altitude)}°</span>
-                </>
-              ) : (
-                <>
-                  <span className="body-row__bearing body-row__bearing--dim">—</span>
-                  <span className="body-row__alt body-row__alt--dim">{t('below')}</span>
-                </>
-              )}
-              <span className="body-row__mag">{magStr}</span>
-              <span className="body-row__event">{event}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="body-list" role="listbox" aria-label={t('label')}>
+      {sorted.map((o) => (
+        <BodyCard
+          key={o.id}
+          o={o}
+          isActive={o.id === activeId}
+          onSelect={onSelect}
+        />
+      ))}
     </div>
+  );
+}
+
+function BodyCard({
+  o,
+  isActive,
+  onSelect,
+}: {
+  o: SkyObject;
+  isActive: boolean;
+  onSelect: (id: ObjectId) => void;
+}) {
+  const t = useTranslations('sky.bodyTable');
+  const photo = getTargetPhoto(o.id);
+  const [imgErr, setImgErr] = useState(false);
+  const showPhoto = photo && !imgErr;
+
+  const setTime = fmtTime(o.setTime);
+  const riseTime = fmtTime(o.riseTime);
+
+  // Plain-language status: "Up · sets 22:29", "Rises 06:14", "Up all night",
+  // or "Below horizon" — we never make the user parse a table.
+  let status: string;
+  if (o.circumpolar) {
+    status = t('upAllNight');
+  } else if (o.visible) {
+    status = setTime ? t('setsAt', { time: setTime }) : t('upAllNight');
+  } else if (riseTime) {
+    status = t('risesAt', { time: riseTime });
+  } else {
+    status = t('below');
+  }
+
+  return (
+    <button
+      type="button"
+      role="option"
+      aria-selected={isActive}
+      className={`body-card${isActive ? ' is-active' : ''}${!o.visible ? ' is-below' : ''}`}
+      onClick={() => onSelect(o.id)}
+    >
+      <div className="body-card__thumb">
+        {showPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photo!.src}
+            alt={photo!.alt}
+            loading="lazy"
+            decoding="async"
+            onError={() => setImgErr(true)}
+          />
+        ) : (
+          <PlanetIcon
+            id={o.id}
+            type={o.type}
+            magnitude={o.magnitude}
+            phase={o.phase}
+            size={48}
+          />
+        )}
+      </div>
+      <div className="body-card__body">
+        <div className="body-card__name">{o.name}</div>
+        <div className="body-card__status">{status}</div>
+      </div>
+      {o.visible && (
+        <div className="body-card__bearing" aria-hidden="true">
+          <span className="body-card__alt">+{Math.round(o.altitude)}°</span>
+          <span className="body-card__compass">{o.compassDirection}</span>
+        </div>
+      )}
+    </button>
   );
 }
