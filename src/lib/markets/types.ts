@@ -11,7 +11,11 @@ export type MarketCategory =
   | "discovery"
   | "weather"
   | "crypto"
-  | "sports";
+  | "sports"
+  | "tech"
+  | "politics"
+  | "entertainment"
+  | "economy";
 export type MarketSide = "yes" | "no";
 export type MarketOutcome = "yes" | "no" | "unresolved" | "cancelled";
 export type MarketStatus = "open" | "locked" | "resolved" | "cancelled";

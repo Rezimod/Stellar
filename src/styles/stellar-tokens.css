@@ -1496,6 +1496,10 @@
 [data-category="sky_event"]         { --cat-fg: var(--terracotta); --cat-bg: rgba(255, 209, 102,0.10); --cat-border: rgba(255, 209, 102,0.25); }
 [data-category="crypto"]            { --cat-fg: var(--terracotta); --cat-bg: rgba(255, 209, 102,0.10); --cat-border: rgba(255, 209, 102,0.25); }
 [data-category="sports"]            { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="tech"]              { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
+[data-category="politics"]          { --cat-fg: var(--terracotta); --cat-bg: rgba(255, 209, 102,0.10); --cat-border: rgba(255, 209, 102,0.25); }
+[data-category="economy"]           { --cat-fg: var(--terracotta); --cat-bg: rgba(255, 209, 102,0.10); --cat-border: rgba(255, 209, 102,0.25); }
+[data-category="entertainment"]     { --cat-fg: var(--seafoam);    --cat-bg: rgba(94, 234, 212,0.10); --cat-border: rgba(94, 234, 212,0.25); }
 
 .mkt-row-content { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .mkt-row-title {

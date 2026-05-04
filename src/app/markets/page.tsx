@@ -75,19 +75,27 @@ const CATEGORY_ORDER: CategoryDef[] = [
   { key: 'natural_phenomenon', label: 'Natural phenomena' },
   { key: 'crypto',             label: 'Crypto markets' },
   { key: 'sports',             label: 'Sports' },
+  { key: 'tech',               label: 'Tech & AI' },
+  { key: 'politics',           label: 'Politics & world' },
+  { key: 'economy',            label: 'Economy & markets' },
+  { key: 'entertainment',      label: 'Entertainment' },
 ];
 
 const CATEGORY_TABS: { value: CategoryFilter; label: string }[] = [
-  { value: 'all',        label: 'All' },
-  { value: 'meteor',     label: 'Meteor showers' },
-  { value: 'solar',      label: 'Solar' },
-  { value: 'mission',    label: 'Missions' },
-  { value: 'comet',      label: 'Comets' },
-  { value: 'discovery',  label: 'Discoveries' },
-  { value: 'weather',    label: 'Weather' },
-  { value: 'sky_event',  label: 'Sky events' },
-  { value: 'crypto',     label: 'Crypto' },
-  { value: 'sports',     label: 'Sports' },
+  { value: 'all',           label: 'All' },
+  { value: 'meteor',        label: 'Meteor showers' },
+  { value: 'solar',         label: 'Solar' },
+  { value: 'mission',       label: 'Missions' },
+  { value: 'comet',         label: 'Comets' },
+  { value: 'discovery',     label: 'Discoveries' },
+  { value: 'weather',       label: 'Weather' },
+  { value: 'sky_event',     label: 'Sky events' },
+  { value: 'crypto',        label: 'Crypto' },
+  { value: 'sports',        label: 'Sports' },
+  { value: 'tech',          label: 'Tech & AI' },
+  { value: 'politics',      label: 'Politics' },
+  { value: 'economy',       label: 'Economy' },
+  { value: 'entertainment', label: 'Culture' },
 ];
 
 interface SkyEvent {

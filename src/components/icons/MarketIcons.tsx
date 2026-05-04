@@ -195,6 +195,65 @@ export function TrophyIcon(props: MarketIconProps) {
   );
 }
 
+export function ChipIcon(props: MarketIconProps) {
+  return (
+    <Base {...props}>
+      <rect x="5" y="5" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+      <rect x="8" y="8" width="4" height="4" stroke="currentColor" strokeWidth="1" />
+      <path
+        d="M3 8h2M3 12h2M15 8h2M15 12h2M8 3v2M12 3v2M8 15v2M12 15v2"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+    </Base>
+  );
+}
+
+export function GovernmentIcon(props: MarketIconProps) {
+  return (
+    <Base {...props}>
+      <path
+        d="M3 8l7-4 7 4M4 8v8M16 8v8M3 17h14"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M7 9v6M10 9v6M13 9v6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    </Base>
+  );
+}
+
+export function FilmIcon(props: MarketIconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="5" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+      <path
+        d="M3 9h2M3 12h2M15 9h2M15 12h2M7 5v11M13 5v11"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+    </Base>
+  );
+}
+
+export function ChartIcon(props: MarketIconProps) {
+  return (
+    <Base {...props}>
+      <path
+        d="M3 16h14M5 13l3-3 3 2 4-5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="15" cy="7" r="1" fill="currentColor" />
+    </Base>
+  );
+}
+
 type IconComp = React.FC<MarketIconProps>;
 
 export const CATEGORY_ICONS: Record<string, IconComp> = {
@@ -209,6 +268,10 @@ export const CATEGORY_ICONS: Record<string, IconComp> = {
   sky_event: TelescopeIcon,
   crypto: CryptoIcon,
   sports: TrophyIcon,
+  tech: ChipIcon,
+  politics: GovernmentIcon,
+  entertainment: FilmIcon,
+  economy: ChartIcon,
 };
 
 export function getCategoryIcon(category: string): IconComp {
