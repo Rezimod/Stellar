@@ -55,12 +55,23 @@ export const observationLog = pgTable('observation_log', {
   starsAwarded: integer('stars_awarded'),
   oracleHash: text('oracle_hash'),
   observedDate: date('observed_date'),
+  fileHash: text('file_hash'),
+  uploadSource: text('upload_source'),
+  deviceTier: text('device_tier'),
+  deviceMake: text('device_make'),
+  deviceModel: text('device_model'),
+  exifLat: doublePrecision('exif_lat'),
+  exifLon: doublePrecision('exif_lon'),
+  exifTakenAt: timestamp('exif_taken_at', { withTimezone: true }),
+  isInternetSourced: boolean('is_internet_sourced').default(false),
+  verificationNotes: jsonb('verification_notes'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (table) => [
   uniqueIndex('observation_log_wallet_mint_tx_unique').on(table.wallet, table.mintTx),
   uniqueIndex('obs_daily_unique').on(table.wallet, table.target, table.observedDate),
   index('obs_log_created_at_idx').on(table.createdAt),
   index('obs_log_target_idx').on(table.target),
+  index('obs_log_file_hash_idx').on(table.fileHash),
 ])
 
 export const emailSubscribers = pgTable('email_subscribers', {

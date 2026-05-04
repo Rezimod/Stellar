@@ -36,6 +36,15 @@ export async function POST(req: NextRequest) {
     identifiedObject?: string
     oracleHash?: string
     capturedAt?: string
+    fileHash?: string
+    uploadSource?: string
+    deviceTier?: string
+    deviceMake?: string | null
+    deviceModel?: string | null
+    exifLat?: number | null
+    exifLon?: number | null
+    exifTakenAt?: string | null
+    isInternetSourced?: boolean
   }
   try {
     body = await req.json()
@@ -69,7 +78,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ logged: false, reason: 'Missing verification token' }, { status: 401 });
     }
     const capturedAt = body.capturedAt ?? '';
-    const expectedTokenData = `${body.identifiedObject ?? body.target ?? ''}:${confidence}:${capturedAt}`;
+    const expectedTokenData = [
+      body.identifiedObject ?? body.target ?? '',
+      confidence,
+      capturedAt,
+      body.fileHash ?? '',
+      body.deviceTier ?? '',
+      body.deviceMake ?? '',
+      body.deviceModel ?? '',
+      body.isInternetSourced ? '1' : '0',
+    ].join(':');
     const expectedToken = createHmac('sha256', process.env.ANTHROPIC_API_KEY ?? '')
       .update(expectedTokenData)
       .digest('hex');
@@ -146,6 +164,7 @@ export async function POST(req: NextRequest) {
       ? Math.max(DAILY_STARS_CAP - todayStars, 0)
       : stars
 
+    const exifTakenDate = typeof body.exifTakenAt === 'string' ? new Date(body.exifTakenAt) : null;
     await db.insert(observationLog).values({
       wallet,
       target,
@@ -158,6 +177,15 @@ export async function POST(req: NextRequest) {
       starsAwarded: starsToAward,
       oracleHash: body.oracleHash ?? null,
       observedDate: new Date().toISOString().split('T')[0],
+      fileHash: typeof body.fileHash === 'string' ? body.fileHash : null,
+      uploadSource: typeof body.uploadSource === 'string' ? body.uploadSource : null,
+      deviceTier: typeof body.deviceTier === 'string' ? body.deviceTier : null,
+      deviceMake: typeof body.deviceMake === 'string' ? body.deviceMake : null,
+      deviceModel: typeof body.deviceModel === 'string' ? body.deviceModel : null,
+      exifLat: typeof body.exifLat === 'number' && isFinite(body.exifLat) ? body.exifLat : null,
+      exifLon: typeof body.exifLon === 'number' && isFinite(body.exifLon) ? body.exifLon : null,
+      exifTakenAt: exifTakenDate && !isNaN(exifTakenDate.getTime()) ? exifTakenDate : null,
+      isInternetSourced: body.isInternetSourced === true,
     })
 
     // Award tokens on-chain (non-blocking — log still succeeds even if this fails)

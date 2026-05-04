@@ -16,7 +16,11 @@ const privy = new PrivyClient(
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo } = body;
+  const {
+    userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo,
+    fileHash, deviceTier, deviceMake, deviceModel, exifLat, exifLon, exifTakenAt,
+    isInternetSourced, uploadSource,
+  } = body;
 
   const isDemoMint = demo === true;
 
@@ -110,14 +114,21 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Map deviceTier to single-char URI marker (C/S/U) per Metaplex 200-byte URI cap
+  const tierChar: 'C' | 'S' | 'U' | undefined =
+    deviceTier === 'camera' ? 'C' :
+    deviceTier === 'smartphone' ? 'S' :
+    deviceTier === 'unknown' ? 'U' : undefined;
+
   try {
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target, isDemoMint ? '(demo)' : '');
-    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity: rarityVal });
+    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity: rarityVal, tier: tierChar });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
     // Skip DB log for demo mints to avoid polluting production records
     if (db && userAddress && !isDemoMint) {
+      const exifTakenDate = typeof exifTakenAt === 'string' ? new Date(exifTakenAt) : null;
       db.insert(observationLog).values({
         wallet: userAddress,
         target,
@@ -125,6 +136,15 @@ export async function POST(req: NextRequest) {
         confidence: 'minted',
         mintTx: txId,
         observedDate: new Date().toISOString().split('T')[0],
+        fileHash: typeof fileHash === 'string' ? fileHash : null,
+        uploadSource: typeof uploadSource === 'string' ? uploadSource : null,
+        deviceTier: typeof deviceTier === 'string' ? deviceTier : null,
+        deviceMake: typeof deviceMake === 'string' ? deviceMake : null,
+        deviceModel: typeof deviceModel === 'string' ? deviceModel : null,
+        exifLat: typeof exifLat === 'number' && isFinite(exifLat) ? exifLat : null,
+        exifLon: typeof exifLon === 'number' && isFinite(exifLon) ? exifLon : null,
+        exifTakenAt: exifTakenDate && !isNaN(exifTakenDate.getTime()) ? exifTakenDate : null,
+        isInternetSourced: isInternetSourced === true,
       }).catch(err => console.error('[mint] db.insert failed:', err));
     }
 

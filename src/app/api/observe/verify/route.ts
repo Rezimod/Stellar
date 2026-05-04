@@ -5,6 +5,12 @@ import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { CLAUDE_MODEL } from '@/lib/ai-config';
 import type { PhotoVerificationResult, ObservationTarget, VerificationConfidence } from '@/lib/types';
 import { checkObjectVisibility } from '@/lib/astronomy-check';
+import { extractExif } from '@/lib/exif';
+import { findDuplicateByHash } from '@/lib/observations-dedup';
+import { checkReverseImage } from '@/lib/reverse-image';
+import { classifyDevice, type DeviceTier } from '@/lib/device-tier';
+import { getDb } from '@/lib/db';
+import { observationLog } from '@/lib/schema';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -74,6 +80,11 @@ export async function POST(req: NextRequest) {
   const latParam = formData.get('lat') as string | null;
   const lonParam = formData.get('lon') as string | null;
   const capturedAt = (formData.get('capturedAt') as string | null) ?? new Date().toISOString();
+  // Wallet is used as excludeWallet for cross-wallet hash dedup. Trust boundary:
+  // a lying client only sabotages their own dedup — stars/cNFT-binding still
+  // requires the signed verificationToken at /api/observe/log.
+  const walletParam = ((formData.get('wallet') as string | null) ?? '').slice(0, 64);
+  const uploadSourceParam = ((formData.get('uploadSource') as string | null) ?? 'upload').slice(0, 32);
 
   // Validation
   if (!file) {
@@ -108,6 +119,126 @@ export async function POST(req: NextRequest) {
   }
 
   const fileHash = '0x' + createHash('sha256').update(buffer).digest('hex').slice(0, 40);
+
+  // ───────────────────────── Pre-check pipeline ─────────────────────────
+  // Run cheap, deterministic checks before the expensive Claude call.
+  // Each check that rejects writes a `confidence: 'rejected'` row to
+  // observation_log so future attempts at the same hash short-circuit.
+  const db = getDb();
+
+  async function writeRejectionRow(reason: string, notes: Record<string, unknown>) {
+    if (!db || !walletParam) return;
+    try {
+      await db.insert(observationLog).values({
+        wallet: walletParam,
+        target: ((formData.get('target') as string | null) ?? 'unknown').slice(0, 64),
+        stars: 0,
+        confidence: 'rejected',
+        fileHash,
+        uploadSource: uploadSourceParam,
+        verificationNotes: { reason, ...notes },
+        observedDate: new Date().toISOString().split('T')[0],
+      });
+    } catch (err) {
+      // Daily-unique constraint may collide on retries — non-fatal.
+      console.warn('[verify] rejection-row insert failed:', err);
+    }
+  }
+
+  // Returns a PhotoVerificationResult-shaped payload for early rejections so
+  // the client UI renders cleanly (no undefined astronomyCheck/imageAnalysis crashes).
+  // Stars are 0 and `accepted: false` — no token issued so /api/observe/log
+  // would refuse anyway.
+  function buildRejection(rejectionReason: string, message: string, extra: Record<string, unknown> = {}): PhotoVerificationResult {
+    return {
+      accepted: false,
+      confidence: 'rejected',
+      rejectionReason,
+      target: 'unknown',
+      identifiedObject: 'Unverified',
+      reason: message,
+      astronomyCheck: { objectVisible: false },
+      imageAnalysis: {
+        isScreenshot: false,
+        isAiGenerated: rejectionReason === 'ai_generated',
+        hasNightSkyCharacteristics: false,
+        sharpness: 'low',
+      },
+      starsEstimate: 0,
+      metadata: {
+        fileHash,
+        capturedAt: capturedAt || new Date().toISOString(),
+        lat,
+        lon,
+        cloudCover: 0,
+        ...extra,
+      },
+    };
+  }
+
+  // 1. Cross-wallet hash dedup
+  if (walletParam) {
+    try {
+      const dup = await findDuplicateByHash(fileHash, walletParam);
+      if (dup) {
+        await writeRejectionRow('duplicate_image', { duplicateOfWallet: dup.wallet.slice(0, 8) + '…' });
+        return NextResponse.json(buildRejection(
+          'duplicate_image',
+          'This exact image was already submitted by another user. Take your own photo to earn Stars.',
+        ));
+      }
+    } catch (err) {
+      console.warn('[verify] dedup check failed (non-fatal):', err);
+    }
+  }
+
+  // 2. EXIF extraction
+  const exif = await extractExif(buffer);
+  const exifLat = exif?.lat ?? null;
+  const exifLon = exif?.lon ?? null;
+  const exifTakenAt = exif?.takenAt ?? null;
+  const deviceMake = exif?.make ?? null;
+  const deviceModel = exif?.model ?? null;
+
+  // 3. EXIF GPS mismatch (> 0.5° ≈ 55km) — only check if EXIF GPS exists
+  if (exifLat !== null && exifLon !== null) {
+    if (Math.abs(exifLat - lat) > 0.5 || Math.abs(exifLon - lon) > 0.5) {
+      const notes = { exifLat, exifLon, clientLat: lat, clientLon: lon };
+      await writeRejectionRow('gps_mismatch', notes);
+      return NextResponse.json(buildRejection(
+        'gps_mismatch',
+        'Photo location does not match where you say you are. Make sure you took it yourself, on this device.',
+      ));
+    }
+  }
+
+  // 4. Photo too old (> 24h before submission). Mission-configurable later.
+  if (exifTakenAt) {
+    const ageMs = Date.now() - exifTakenAt.getTime();
+    if (ageMs > 24 * 60 * 60 * 1000) {
+      await writeRejectionRow('photo_too_old', { exifTakenAt: exifTakenAt.toISOString(), ageHours: Math.floor(ageMs / 3_600_000) });
+      return NextResponse.json(buildRejection(
+        'photo_too_old',
+        'Photo was taken more than 24 hours ago. Capture a fresh observation to earn Stars.',
+      ));
+    }
+  }
+
+  // 5. Device tier
+  const deviceTier: DeviceTier = classifyDevice(deviceMake, deviceModel);
+
+  // 6. Reverse image lookup (optional — gated on GOOGLE_VISION_API_KEY)
+  const reverse = await checkReverseImage(buffer);
+  const isInternetSourced = reverse.matchCount > 0;
+  if (isInternetSourced) {
+    await writeRejectionRow('stock_image_detected', { matchCount: reverse.matchCount, sampleUrls: reverse.sampleUrls });
+    return NextResponse.json(buildRejection(
+      'stock_image_detected',
+      'This image was found on the web — looks like a stock or downloaded photo, not your own observation.',
+      { isInternetSourced: true },
+    ));
+  }
+  // ──────────────────────── End pre-check pipeline ────────────────────────
 
   // Base64 for Claude
   const base64 = buffer.toString('base64');
@@ -225,6 +356,25 @@ Return ONLY valid JSON, no markdown, no preamble:
     return NextResponse.json({ error: 'Verification service unavailable' }, { status: 500 });
   }
 
+  // Hard-reject AI-generated images and screenshots — no Stars, no NFT.
+  // This is also caught by the confidence scoring below, but returning
+  // early means clients see a clear `rejectionReason` and we persist a
+  // rejection row immediately for hash-dedup of synthetic images.
+  if (analysis.isAiGenerated) {
+    await writeRejectionRow('ai_generated', { identifiedObject: analysis.identifiedObject, claudeReason: analysis.reason });
+    return NextResponse.json(buildRejection(
+      'ai_generated',
+      'This looks AI-generated. Stars are only awarded for real photos you took yourself.',
+    ));
+  }
+  if (analysis.isScreenshot) {
+    await writeRejectionRow('screenshot_detected', { identifiedObject: analysis.identifiedObject, claudeReason: analysis.reason });
+    return NextResponse.json(buildRejection(
+      'screenshot_detected',
+      'This looks like a screenshot. Stars are only awarded for real photos of the sky.',
+    ));
+  }
+
   // Fetch real-time cloud cover from Open-Meteo oracle
   let cloudCover: number | null = null;
   try {
@@ -298,9 +448,19 @@ Return ONLY valid JSON, no markdown, no preamble:
   const reward = REWARD_TABLE[confidence];
   const starsAwarded = reward.base + (isRare ? reward.rare_bonus : 0);
 
-  // Generate verification token — signs identifiedObject + confidence so log route
-  // can verify confidence was set server-side (prevents clients claiming arbitrary stars)
-  const tokenData = `${analysis.identifiedObject}:${confidence}:${capturedAt}`;
+  // Generate verification token — signs identifiedObject + confidence + new
+  // device/EXIF fields so the /api/observe/log route can confirm none of these
+  // were tampered with on the way to persistence.
+  const tokenData = [
+    analysis.identifiedObject,
+    confidence,
+    capturedAt,
+    fileHash,
+    deviceTier,
+    deviceMake ?? '',
+    deviceModel ?? '',
+    isInternetSourced ? '1' : '0',
+  ].join(':');
   const verificationToken = createHmac('sha256', process.env.ANTHROPIC_API_KEY ?? '')
     .update(tokenData)
     .digest('hex');
@@ -331,6 +491,14 @@ Return ONLY valid JSON, no markdown, no preamble:
       lon,
       cloudCover: cloudCover ?? 0,
       ...(isDoubleCapture && analysis.liveCaptureConfirmed ? { doubleCaptureVerified: true } : {}),
+      deviceTier,
+      deviceMake,
+      deviceModel,
+      exifLat,
+      exifLon,
+      exifTakenAt: exifTakenAt ? exifTakenAt.toISOString() : null,
+      isInternetSourced,
+      uploadSource: uploadSourceParam,
     },
   };
 

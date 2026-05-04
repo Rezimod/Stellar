@@ -72,12 +72,15 @@ export type ObservationTarget = 'moon' | 'planet' | 'stars' | 'constellation' | 
 
 export type VerificationConfidence = 'high' | 'medium' | 'low' | 'rejected'
 
+export type DeviceTier = 'camera' | 'smartphone' | 'unknown'
+
 export interface PhotoVerificationResult {
   accepted: boolean
   confidence: VerificationConfidence
   target: ObservationTarget
   identifiedObject: string
   reason: string
+  rejectionReason?: string
   astronomyCheck: {
     objectVisible: boolean
     expectedPhase?: string
@@ -99,6 +102,14 @@ export interface PhotoVerificationResult {
     lon: number
     cloudCover: number
     doubleCaptureVerified?: boolean
+    deviceTier?: DeviceTier
+    deviceMake?: string | null
+    deviceModel?: string | null
+    exifLat?: number | null
+    exifLon?: number | null
+    exifTakenAt?: string | null
+    isInternetSourced?: boolean
+    uploadSource?: string
   }
 }
 

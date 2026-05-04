@@ -200,6 +200,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           fd.append('lat', String(lat));
           fd.append('lon', String(lon));
           fd.append('capturedAt', ts);
+          if (solanaWallet?.address) fd.append('wallet', solanaWallet.address);
+          fd.append('uploadSource', source ?? 'upload');
           const pvRes = await fetch('/api/observe/verify', {
             method: 'POST',
             body: fd,
@@ -324,6 +326,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           rarity: rarityInfo.rarity,
           multiplier: tier.multiplier,
           demo: mission.demo === true,
+          fileHash: photoVerification?.metadata?.fileHash,
+          uploadSource: photoVerification?.metadata?.uploadSource,
+          deviceTier: photoVerification?.metadata?.deviceTier,
+          deviceMake: photoVerification?.metadata?.deviceMake,
+          deviceModel: photoVerification?.metadata?.deviceModel,
+          exifLat: photoVerification?.metadata?.exifLat,
+          exifLon: photoVerification?.metadata?.exifLon,
+          exifTakenAt: photoVerification?.metadata?.exifTakenAt,
+          isInternetSourced: photoVerification?.metadata?.isInternetSourced,
         }),
       });
       clearTimeout(timer);
@@ -413,6 +424,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
     // --- Log observation (use TOTAL stars so server records the full amount) ---
     if (solanaWallet?.address) {
+      const pvm = photoVerification?.metadata;
       fetch('/api/observe/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -421,12 +433,21 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           target: targetName,
           identifiedObject: photoVerification?.identifiedObject ?? targetName,
           verificationToken: photoVerification?.verificationToken ?? null,
-          capturedAt: photoVerification?.metadata?.capturedAt ?? new Date().toISOString(),
+          capturedAt: pvm?.capturedAt ?? new Date().toISOString(),
           confidence: photoVerification?.confidence ?? (sky?.verified ? 'medium' : 'low'),
           mintTx: txId,
           lat: coords.lat,
           lon: coords.lon,
           oracleHash: sky?.oracleHash ?? null,
+          fileHash: pvm?.fileHash,
+          uploadSource: pvm?.uploadSource,
+          deviceTier: pvm?.deviceTier,
+          deviceMake: pvm?.deviceMake,
+          deviceModel: pvm?.deviceModel,
+          exifLat: pvm?.exifLat,
+          exifLon: pvm?.exifLon,
+          exifTakenAt: pvm?.exifTakenAt,
+          isInternetSourced: pvm?.isInternetSourced,
         }),
       }).catch(() => {});
     }

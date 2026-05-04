@@ -144,6 +144,8 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     formData.append('lat', String(location?.lat ?? 0));
     formData.append('lon', String(location?.lon ?? 0));
     formData.append('capturedAt', new Date().toISOString());
+    if (walletAddress) formData.append('wallet', walletAddress);
+    formData.append('uploadSource', firstFrameFile ? 'live-double' : 'live-single');
     if (firstFrameFile) formData.append('file2', firstFrameFile);
     try {
       const ctrl = new AbortController();
@@ -173,6 +175,18 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
         capturedAt: v.metadata.capturedAt,
         confidence: v.confidence,
         mintTx: mintTx || null,
+        lat: v.metadata.lat,
+        lon: v.metadata.lon,
+        oracleHash: v.metadata.fileHash,
+        fileHash: v.metadata.fileHash,
+        uploadSource: v.metadata.uploadSource,
+        deviceTier: v.metadata.deviceTier,
+        deviceMake: v.metadata.deviceMake,
+        deviceModel: v.metadata.deviceModel,
+        exifLat: v.metadata.exifLat,
+        exifLon: v.metadata.exifLon,
+        exifTakenAt: v.metadata.exifTakenAt,
+        isInternetSourced: v.metadata.isInternetSourced,
       }),
     }).catch(() => {});
   };
@@ -200,6 +214,15 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
           cloudCover: verification.metadata.cloudCover,
           oracleHash: verification.metadata.fileHash,
           stars: verification.starsEstimate,
+          fileHash: verification.metadata.fileHash,
+          uploadSource: verification.metadata.uploadSource,
+          deviceTier: verification.metadata.deviceTier,
+          deviceMake: verification.metadata.deviceMake,
+          deviceModel: verification.metadata.deviceModel,
+          exifLat: verification.metadata.exifLat,
+          exifLon: verification.metadata.exifLon,
+          exifTakenAt: verification.metadata.exifTakenAt,
+          isInternetSourced: verification.metadata.isInternetSourced,
         }),
       });
       if (res.ok) {
@@ -378,8 +401,17 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               </>
             ) : (
               <>
-                <p className="text-negative text-sm">This image could not be verified</p>
+                <p className="text-negative text-sm">
+                  {verification.rejectionReason === 'duplicate_image' ? 'Already submitted by someone else' :
+                   verification.rejectionReason === 'ai_generated' ? 'AI-generated image rejected' :
+                   verification.rejectionReason === 'screenshot_detected' ? 'Screenshot rejected' :
+                   verification.rejectionReason === 'stock_image_detected' ? 'Stock photo rejected' :
+                   verification.rejectionReason === 'gps_mismatch' ? 'Location mismatch' :
+                   verification.rejectionReason === 'photo_too_old' ? 'Photo too old' :
+                   'This image could not be verified'}
+                </p>
                 <p className="text-text-muted text-xs mt-1">{verification.reason}</p>
+                <p className="text-text-muted text-xs mt-2">No Stars or NFT awarded.</p>
               </>
             )}
           </div>

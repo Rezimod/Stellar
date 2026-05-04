@@ -136,6 +136,8 @@ export default function ObserveVerifyPage() {
             fd.append('lat', String(lat));
             fd.append('lon', String(lon));
             fd.append('capturedAt', ts);
+            if (solanaWallet?.address) fd.append('wallet', solanaWallet.address);
+            fd.append('uploadSource', source ?? 'upload');
             const pvRes = await fetch('/api/observe/verify', {
               method: 'POST',
               body: fd,
@@ -254,6 +256,15 @@ export default function ObserveVerifyPage() {
           rarity: rarityInfo.rarity,
           multiplier: tier.multiplier,
           demo: mission.demo === true,
+          fileHash: photoVerification?.metadata?.fileHash,
+          uploadSource: photoVerification?.metadata?.uploadSource,
+          deviceTier: photoVerification?.metadata?.deviceTier,
+          deviceMake: photoVerification?.metadata?.deviceMake,
+          deviceModel: photoVerification?.metadata?.deviceModel,
+          exifLat: photoVerification?.metadata?.exifLat,
+          exifLon: photoVerification?.metadata?.exifLon,
+          exifTakenAt: photoVerification?.metadata?.exifTakenAt,
+          isInternetSourced: photoVerification?.metadata?.isInternetSourced,
         }),
       });
       clearTimeout(timer);
@@ -331,6 +342,7 @@ export default function ObserveVerifyPage() {
     setMintDone(true);
 
     if (solanaWallet?.address) {
+      const pvm = photoVerification?.metadata;
       fetch('/api/observe/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -339,12 +351,21 @@ export default function ObserveVerifyPage() {
           target: targetName,
           identifiedObject: photoVerification?.identifiedObject ?? targetName,
           verificationToken: photoVerification?.verificationToken ?? null,
-          capturedAt: photoVerification?.metadata?.capturedAt ?? new Date().toISOString(),
+          capturedAt: pvm?.capturedAt ?? new Date().toISOString(),
           confidence: photoVerification?.confidence ?? (sky?.verified ? 'medium' : 'low'),
           mintTx: txId,
           lat: coords.lat,
           lon: coords.lon,
           oracleHash: sky?.oracleHash ?? null,
+          fileHash: pvm?.fileHash,
+          uploadSource: pvm?.uploadSource,
+          deviceTier: pvm?.deviceTier,
+          deviceMake: pvm?.deviceMake,
+          deviceModel: pvm?.deviceModel,
+          exifLat: pvm?.exifLat,
+          exifLon: pvm?.exifLon,
+          exifTakenAt: pvm?.exifTakenAt,
+          isInternetSourced: pvm?.isInternetSourced,
         }),
       }).catch(() => {});
     }
