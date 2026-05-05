@@ -2,6 +2,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Camera } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
@@ -14,6 +15,7 @@ import EventBanner from '@/components/sky/EventBanner';
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { SkyHeaderStrip } from '@/components/sky/finder/SkyHeaderStrip';
+import { ARFinder } from '@/components/sky/finder/ARFinder';
 import {
   TargetBelowGrid,
   TargetFilters,
@@ -31,6 +33,7 @@ const TOUR_KEY = 'stellar.sky.tour.v1';
 export default function SkyPage() {
   const { location } = useLocation();
   const tErrors = useTranslations('sky.errors');
+  const tAr = useTranslations('sky.ar');
 
   const compass = useDeviceHeading();
   const forecast = useForecast(location.lat, location.lon);
@@ -52,6 +55,7 @@ export default function SkyPage() {
   const [finderError, setFinderError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<ObjectId | null>(null);
   const [tier, setTier] = useState<TierFilter>('all');
+  const [arOpen, setArOpen] = useState(false);
 
   const fetchFinder = useCallback(async () => {
     setFinderError(null);
@@ -234,6 +238,16 @@ export default function SkyPage() {
                     altitude: hopAnchor.altitude,
                   } : null}
                 />
+                {compass.status !== 'unavailable' && (
+                  <button
+                    type="button"
+                    className="sky-v3__ar-launch"
+                    onClick={() => setArOpen(true)}
+                  >
+                    <Camera size={14} />
+                    <span>{tAr('openAr')}</span>
+                  </button>
+                )}
               </div>
               <TargetVisibleGrid
                 objects={finder.objects}
@@ -265,6 +279,16 @@ export default function SkyPage() {
           locationLabel={locationLabel}
         />
       </div>
+
+      {arOpen && finder && (
+        <ARFinder
+          objects={finder.objects}
+          observerLat={location.lat}
+          observerLon={location.lon}
+          activeId={activeId}
+          onClose={() => setArOpen(false)}
+        />
+      )}
     </div>
   );
 }

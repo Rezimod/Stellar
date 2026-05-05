@@ -79,9 +79,72 @@
   animation: arFocus 1.2s ease-in-out infinite;
 }
 
+.ar-body--locked .ar-body__crosshair {
+  border-color: #7ed4a8;
+  box-shadow: 0 0 28px rgba(120,220,170,0.55);
+  animation: none;
+}
+
 @keyframes arFocus {
   0%, 100% { transform: scale(1); opacity: 1; }
   50%      { transform: scale(1.12); opacity: 0.8; }
+}
+
+/* Hold-to-lock progress ring around the active body. Sits centered on the
+   body's icon; the dasharray is driven from JS as the user holds aim. */
+.ar-hold-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255,209,102,0.45));
+}
+
+/* Edge-of-screen arrow pointing toward an off-screen active target. The
+   wrapper rotates to point along the radial; the inline label
+   counter-rotates so the text stays readable. */
+.ar-edge-arrow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 3;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px rgba(255,209,102,0.45));
+}
+.ar-edge-arrow__label {
+  display: inline-block;
+  padding: 3px 9px;
+  background: rgba(7,11,20,0.72);
+  border: 0.5px solid rgba(255,209,102,0.45);
+  border-radius: 999px;
+  color: var(--terracotta);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Compass calibration banner — same content as the dome's, anchored to
+   bottom of the AR overlay above the compass strip. */
+.ar-accuracy-banner {
+  position: absolute;
+  left: 50%;
+  bottom: calc(110px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,209,102,0.10);
+  border: 1px solid rgba(255,209,102,0.40);
+  color: rgba(255,220,140,0.95);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.10em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .ar-body__label {

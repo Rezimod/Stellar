@@ -1,10 +1,6 @@
-// AR pointing math: turns DeviceOrientationEvent angles into the sky
-// direction the back of the phone is aimed at.
-
-export interface SkyPointing {
-  azimuth: number;   // 0 = north, increases clockwise
-  altitude: number;  // -90 = down, 0 = horizon, +90 = zenith
-}
+// AR overlay constants + small helpers. The actual pointing math (heading
+// and altitude from DeviceOrientationEvent) lives in `use-device-heading.ts`,
+// which uses a quaternion path that doesn't break near vertical.
 
 // Effective on-screen FOV after a portrait phone's rear camera is rendered
 // with `object-fit: cover`. The lens is wide (~60°), but in portrait we crop
@@ -14,42 +10,6 @@ export interface SkyPointing {
 // reasonably across iPhone and modern Android.
 export const DEFAULT_HORIZONTAL_FOV = 38;
 export const DEFAULT_VERTICAL_FOV = 60;
-
-// Distance below which a body is considered "centered" by the user.
-export const ON_TARGET_DEG = 4;
-
-/**
- * Convert raw device orientation angles to the (azimuth, altitude) the back
- * of the device is pointing at, assuming the user holds the phone in
- * portrait with the screen facing them.
- */
-export function deviceToSkyPointing(
-  alpha: number | null,
-  beta: number | null,
-  _gamma: number | null,
-  webkitCompassHeading: number | null,
-): SkyPointing {
-  let azimuth: number;
-  if (webkitCompassHeading !== null && !isNaN(webkitCompassHeading)) {
-    // iOS: webkitCompassHeading is 0 = magnetic north, increasing clockwise
-    azimuth = webkitCompassHeading;
-  } else if (alpha !== null && !isNaN(alpha)) {
-    // Android `deviceorientationabsolute`: alpha is 0 when device top points
-    // north, increases counter-clockwise → invert.
-    azimuth = (360 - alpha) % 360;
-  } else {
-    azimuth = 0;
-  }
-  azimuth = ((azimuth % 360) + 360) % 360;
-
-  // beta=0 → screen flat face up, back of phone points down → alt -90
-  // beta=90 → phone upright, back points at horizon → alt 0
-  // beta=180 → phone tilted backward, back points up → alt +90
-  const b = beta ?? 90;
-  const altitude = Math.max(-90, Math.min(90, b - 90));
-
-  return { azimuth, altitude };
-}
 
 /** Signed shortest difference between two compass directions, in degrees. */
 export function shortestAzDelta(targetAz: number, fromAz: number): number {
