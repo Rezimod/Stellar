@@ -8,8 +8,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
-import { useDisplayProfile } from '@/hooks/useDisplayProfile';
-
 type HubItem = { href: string; label: string; icon: LucideIcon };
 type HubSection = { label: string; items: HubItem[] };
 
@@ -40,26 +38,11 @@ const SECTIONS: HubSection[] = [
 
 export default function HubPage() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const { authenticated, firstName } = useDisplayProfile();
-  const greeting = authenticated ? `Welcome back, ${firstName}.` : 'Welcome to Stellar.';
 
   return (
     <>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <header className="mb-6 sm:mb-8">
-          <div
-            className="text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] uppercase text-white/40 mb-2"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Hub
-          </div>
-          <h1
-            className="text-[24px] sm:text-[32px] leading-[1.1] text-white tracking-[-0.01em] mb-5"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            {greeting}
-          </h1>
-
           <button
             onClick={() => setSearchOpen(true)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-left text-[#A8B4C8] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors"
