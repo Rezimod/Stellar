@@ -206,15 +206,15 @@ export default function HomePage() {
         <div className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-15 items-center">
           <div>
             <h1 className="text-[36px] md:text-[72px] font-extrabold leading-[1.05] md:leading-[1] tracking-[-0.025em] text-white mb-5 md:mb-8">
-              Plan
-              <br />
+              Know where{' '}
               <span className="bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">
-                tonight&rsquo;s sky.
-              </span>
+                every planet is
+              </span>{' '}
+              &mdash; and earn rewards for finding them.
             </h1>
 
             <p className="text-[15px] md:text-[18px] leading-[1.65] text-[#9BA3B4] mb-7 md:mb-9 max-w-[480px]">
-              For anyone with a smartphone and a sky above them. Step outside, photograph the night, earn rewards you can redeem for telescopes and optics.
+              Real-time planet and deep-sky positions from your exact location. Photograph what you find, earn Stars, redeem them for telescopes from Bresser, Levenhuk, and Celestron.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-[460px]">
@@ -228,7 +228,7 @@ export default function HomePage() {
                 href="/sky"
                 className="flex-1 inline-flex items-center justify-center px-8 py-[18px] bg-[#161C2D] text-white font-bold text-[15px] tracking-[0.01em] rounded-[12px] shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/10 hover:bg-[#1B2236] hover:ring-white/15 active:translate-y-[0.5px] transition-all no-underline"
               >
-                Tonight&apos;s sky
+                See tonight&apos;s sky
               </Link>
             </div>
           </div>
@@ -243,19 +243,19 @@ export default function HomePage() {
         <div className="relative max-w-[1200px] mx-auto mt-12 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 text-center">
           <div>
             <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">7</div>
-            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Sky Missions</div>
+            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Sky missions</div>
           </div>
           <div>
-            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 text-[#FFD166]">500M+</div>
-            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Space Enthusiasts</div>
+            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 text-[#FFD166]">Real-time</div>
+            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Planet positions</div>
           </div>
           <div>
-            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">4</div>
-            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Brand Partners</div>
+            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">3 brands</div>
+            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Bresser · Levenhuk · Celestron</div>
           </div>
           <div>
-            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 text-[#FFD166]">100%</div>
-            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">Gasless</div>
+            <div className="text-[28px] md:text-[48px] font-bold leading-none mb-1.5 md:mb-2 text-[#FFD166]">Free</div>
+            <div className="text-[12px] md:text-[14px] font-medium text-[#9BA3B4]">No wallet needed</div>
           </div>
         </div>
       </section>

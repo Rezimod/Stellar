@@ -22,6 +22,24 @@
     "signOut": "გასვლა და წაშლა"
   },
   "home": {
+    "hero": {
+      "headlineLead": "იცოდე სად არის",
+      "headlineAccent": "ყველა პლანეტა",
+      "headlineTrail": "— და მიიღე ჯილდო მათი პოვნისთვის.",
+      "subtitle": "პლანეტებისა და ღრმა ცის ობიექტების რეალურ დროში პოზიციები შენი ზუსტი ლოკაციიდან. გადაიღე ის, რასაც აღმოაჩენ, დააგროვე Stars და გადაცვალე ტელესკოპებზე Bresser-ის, Levenhuk-ისა და Celestron-ისგან.",
+      "ctaPrimary": "დაიწყე დაკვირვება",
+      "ctaSecondary": "ნახე ამაღამ ცა",
+      "stats": {
+        "missionsValue": "7",
+        "missionsLabel": "ცის მისია",
+        "positionsValue": "რეალურ დროში",
+        "positionsLabel": "პლანეტების პოზიციები",
+        "brandsValue": "3 ბრენდი",
+        "brandsLabel": "Bresser · Levenhuk · Celestron",
+        "walletValue": "უფასო",
+        "walletLabel": "საფულე არ გჭირდება"
+      }
+    },
     "howItWorks": "როგორ მუშაობს",
     "tonightTargets": "დღეს ღამის სამიზნეები",
     "missions": "მისიები",
