@@ -151,20 +151,6 @@ function Prompt({ children }: { children: React.ReactNode }) {
   );
 }
 
-function CornerTick({ className = '', rotate = 0 }: { className?: string; rotate?: number }) {
-  return (
-    <span
-      className={`absolute pointer-events-none ${className}`}
-      style={{ transform: `rotate(${rotate}deg)` }}
-      aria-hidden="true"
-    >
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-        <path d="M0 0H6M0 0V6" stroke="rgba(255,209,102,0.45)" strokeWidth="1" strokeLinecap="square" />
-      </svg>
-    </span>
-  );
-}
-
 function LedgerStat({
   label,
   value,
@@ -179,17 +165,17 @@ function LedgerStat({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="px-4 md:px-8 py-6 md:py-8 group hover:bg-white/[0.015] transition-colors">
-      <div className="flex items-center gap-2 text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-[#6B7385]">
+    <div className="px-3 md:px-6 py-6 md:py-8 flex flex-col items-center text-center">
+      <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-[#6B7385] font-mono">
         <span className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FFD166] flex-none">{icon}</span>
-        <span className="font-mono">{label}</span>
+        <span>{label}</span>
       </div>
-      <div className="mt-3 md:mt-4 flex items-baseline">
-        <span className="font-mono text-[28px] md:text-[44px] font-bold leading-none text-white tabular-nums tracking-tight">
+      <div className="mt-3 md:mt-4 flex items-baseline justify-center">
+        <span className="font-mono text-[30px] md:text-[48px] font-bold leading-none text-white tabular-nums tracking-tight">
           {value}
         </span>
         {suffix && (
-          <span className="font-mono text-[18px] md:text-[26px] font-bold leading-none text-[#FFD166] tabular-nums ml-0.5">
+          <span className="font-mono text-[20px] md:text-[28px] font-bold leading-none text-[#FFD166] tabular-nums ml-0.5">
             {suffix}
           </span>
         )}
@@ -686,122 +672,75 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* loyalty ledger — Astroman membership card */}
-        <div className="relative max-w-[1200px] mx-auto mt-14 md:mt-24">
-          {/* membership card */}
-          <div className="relative rounded-[20px] md:rounded-[24px] bg-[linear-gradient(180deg,rgba(255,209,102,0.04)_0%,rgba(11,14,23,0)_60%)] border border-white/[0.08] overflow-hidden">
-            {/* top hairline accent */}
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,209,102,0.45)] to-transparent" aria-hidden="true" />
-            {/* corner ticks */}
-            <CornerTick className="top-3 left-3" rotate={0} />
-            <CornerTick className="top-3 right-3" rotate={90} />
-            <CornerTick className="bottom-3 left-3" rotate={270} />
-            <CornerTick className="bottom-3 right-3" rotate={180} />
-
-            {/* card header */}
-            <div className="flex items-center justify-between px-5 md:px-9 pt-5 md:pt-7 pb-4 md:pb-5 border-b border-white/[0.06]">
-              <div className="flex items-center gap-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD166] shadow-[0_0_8px_rgba(255,209,102,0.6)]" aria-hidden="true" />
-                <span className="text-[10.5px] md:text-[11px] uppercase tracking-[0.24em] text-[#FFD166] font-semibold">
-                  Astroman ledger
-                </span>
-              </div>
-              <span className="text-[9.5px] md:text-[10.5px] uppercase tracking-[0.22em] text-[#6B7385] font-mono">
-                Est. 2018 · Tbilisi
-              </span>
-            </div>
-
-            {/* stats row */}
-            <div className="grid grid-cols-3 divide-x divide-white/[0.06]">
-              <LedgerStat
-                label="Customers"
-                value="30,000"
-                suffix="+"
-                meta="On astroman.ge"
-                icon={
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-                    <circle cx="6" cy="6" r="2.5" />
-                    <circle cx="11.5" cy="7" r="2" />
-                    <path d="M2 13c.5-2 2-3 4-3s3.5 1 4 3M10 13c.4-1.4 1.4-2.2 3-2.2s2.6.8 3 2.2" />
-                  </svg>
-                }
-              />
-              <LedgerStat
-                label="Trust"
-                value="8"
-                suffix=" yrs"
-                meta="Of orders fulfilled"
-                icon={
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-                    <rect x="2.5" y="3.5" width="11" height="10" rx="1" />
-                    <path d="M2.5 6.5h11M5.5 2v3M10.5 2v3" />
-                    <circle cx="8" cy="10" r="0.8" fill="currentColor" />
-                  </svg>
-                }
-              />
-              <LedgerStat
-                label="Brands"
-                value="04"
-                meta="Official partners"
-                icon={
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-                    <path d="M8 1.5l1.8 4.4 4.7.4-3.6 3.1 1.1 4.6L8 11.6 3.9 14l1.1-4.6L1.5 6.3l4.7-.4z" />
-                  </svg>
-                }
-              />
-            </div>
-
-            {/* logo wall inside card */}
-            <div className="border-t border-white/[0.06] grid grid-cols-2 md:grid-cols-4 items-center gap-y-2 md:gap-y-0 md:divide-x md:divide-white/[0.06]">
-              <PartnerLogo
-                src="/brand-partners/astroman.png"
-                alt="Astroman"
-                width={640}
-                height={169}
-                filter="invert(1) brightness(1.05)"
-              />
-              <PartnerLogo
-                src="/brand-partners/bresser.svg"
-                alt="Bresser"
-                width={290}
-                height={60}
-                filter="brightness(0) invert(0.85)"
-              />
-              <PartnerLogo
-                src="/brand-partners/celestron.png"
-                alt="Celestron"
-                width={500}
-                height={76}
-              />
-              <PartnerLogo
-                src="/brand-partners/levenhuk.svg"
-                alt="Levenhuk"
-                width={300}
-                height={60}
-              />
-            </div>
-
-            {/* card footer */}
-            <div className="border-t border-white/[0.06] px-5 md:px-9 py-4 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-              <div className="text-[11.5px] md:text-[12.5px] text-[#9BA3B4] flex items-center gap-2 leading-[1.5]">
-                <svg className="w-3.5 h-3.5 flex-none text-[#6B7385]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="2" y="3" width="12" height="10" rx="1.5" />
-                  <path d="M2 5l6 4 6-4" />
+        {/* loyalty stats + brand partners — minimal, centered */}
+        <div className="relative max-w-[960px] mx-auto mt-14 md:mt-24">
+          {/* stats row */}
+          <div className="grid grid-cols-3 md:divide-x md:divide-white/[0.06]">
+            <LedgerStat
+              label="Customers"
+              value="30,000"
+              suffix="+"
+              meta="Across Georgia"
+              icon={
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                  <circle cx="6" cy="6" r="2.5" />
+                  <circle cx="11.5" cy="7" r="2" />
+                  <path d="M2 13c.5-2 2-3 4-3s3.5 1 4 3M10 13c.4-1.4 1.4-2.2 3-2.2s2.6.8 3 2.2" />
                 </svg>
-                <span>
-                  Same email as <span className="text-white">astroman.ge</span> &middot; orders sync as Stars
-                </span>
-              </div>
-              <Link
-                href="/marketplace"
-                className="inline-flex items-center gap-1.5 text-[12px] md:text-[13px] font-semibold text-[#FFD166] hover:text-white transition-colors whitespace-nowrap"
-              >
-                Browse the store
-                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 6h6M7 3l3 3-3 3" />
+              }
+            />
+            <LedgerStat
+              label="Years"
+              value="8"
+              meta="Since 2018"
+              icon={
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                  <rect x="2.5" y="3.5" width="11" height="10" rx="1" />
+                  <path d="M2.5 6.5h11M5.5 2v3M10.5 2v3" />
+                  <circle cx="8" cy="10" r="0.8" fill="currentColor" />
                 </svg>
-              </Link>
-            </div>
+              }
+            />
+            <LedgerStat
+              label="Brands"
+              value="04"
+              meta="Top optics"
+              icon={
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                  <path d="M8 1.5l1.8 4.4 4.7.4-3.6 3.1 1.1 4.6L8 11.6 3.9 14l1.1-4.6L1.5 6.3l4.7-.4z" />
+                </svg>
+              }
+            />
+          </div>
+
+          {/* logo wall */}
+          <div className="mt-2 md:mt-4 grid grid-cols-2 md:grid-cols-4 items-center gap-y-2 md:gap-y-0">
+            <PartnerLogo
+              src="/brand-partners/astroman.png"
+              alt="Astroman"
+              width={640}
+              height={169}
+              filter="invert(1) brightness(1.05)"
+            />
+            <PartnerLogo
+              src="/brand-partners/bresser.svg"
+              alt="Bresser"
+              width={290}
+              height={60}
+              filter="brightness(0) invert(0.85)"
+            />
+            <PartnerLogo
+              src="/brand-partners/celestron.png"
+              alt="Celestron"
+              width={500}
+              height={76}
+            />
+            <PartnerLogo
+              src="/brand-partners/levenhuk.svg"
+              alt="Levenhuk"
+              width={300}
+              height={60}
+            />
           </div>
         </div>
       </section>
