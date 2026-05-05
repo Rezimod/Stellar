@@ -1147,6 +1147,37 @@
   text-transform: uppercase;
 }
 
+/* === SkyHeaderStrip — slim mono row sitting just above the dome.
+   Replaces dead negative space between page header and the sky chart. */
+.sky-strip-mini {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 8px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-feature-settings: 'tnum' 1;
+}
+.sky-strip-mini__cell {
+  white-space: nowrap;
+}
+.sky-strip-mini__cell--time {
+  color: var(--text);
+}
+.sky-strip-mini__cell--active {
+  color: var(--terracotta);
+  letter-spacing: 0.08em;
+}
+.sky-strip-mini__sep {
+  opacity: 0.35;
+}
+
 /* === Body list — simple card per object ===
    Replaces the old multi-column body table. Each card carries a real
    reference photo (with a glyph fallback for stars / catalog targets
@@ -2179,31 +2210,39 @@
   /* Drop the time segment — phone OS already shows it. */
   .sky-strip__segment:nth-child(5) { display: none; }
 
-  /* === Dome map — full-bleed sky view, no rounded card frame. === */
+  /* === Dome map — full-bleed sky view, no rounded card frame.
+     Stacks: header strip (location · time · count · active), then dome. === */
   .sky-v3__map-wrap {
     width: calc(100% + 28px);
     max-width: none;
     margin: 0 -14px;
-    padding: 0;
+    padding: 8px 0 0;
     border-radius: 0;
     border: none;
     background:
       radial-gradient(ellipse at 50% 100%, rgba(56, 240, 255, 0.05), rgba(2, 6, 15, 0) 65%),
       linear-gradient(180deg, #050a18 0%, #02060f 100%);
-    aspect-ratio: 1 / 1;
-    max-height: 70vh;
     display: flex;
+    flex-direction: column;
     align-items: stretch;
-    justify-content: stretch;
+    justify-content: flex-start;
     overflow: hidden;
     position: relative;
   }
+  .sky-strip-mini {
+    flex: 0 0 auto;
+    padding: 6px 14px 4px;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+  }
   .sky-map {
+    flex: 1 1 auto;
     width: 100%;
-    height: 100%;
     max-width: none;
     margin: 0;
-    aspect-ratio: auto;
+    aspect-ratio: 1 / 1;
+    max-height: 64vh;
+    align-self: center;
   }
   .sky-map__svg {
     width: 100%;
@@ -2212,6 +2251,12 @@
   /* Hide the round rim border so the sky reads as edge-to-edge. */
   .sky-map__rim { display: none; }
   .sky-v3__map-caption { display: none; }
+  /* Drop the small altitude tick text (60° / 30°) on mobile — it crowds
+     the dome and isn't actionable for naked-eye targeting. */
+  .sky-map__alt-label { display: none; }
+  /* Dim side cardinals so North reads as primary on a small screen. */
+  .sky-map__cardinal { opacity: 0.5; }
+  .sky-map__cardinal--primary { opacity: 0.95; }
 
   /* Body table sits below the dome — drop the desktop split's sticky
      offsets and let it stretch full width. */

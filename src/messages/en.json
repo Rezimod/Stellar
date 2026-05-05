@@ -391,7 +391,8 @@
       "nudgeAria": "Compass calibration",
       "nudgeLeft": "Nudge compass left",
       "nudgeRight": "Nudge compass right",
-      "nudgeNeutral": "Aligned"
+      "nudgeNeutral": "Aligned",
+      "visible": "{count} visible"
     },
     "tour": {
       "aria": "How to find a target",

@@ -87,6 +87,59 @@ interface Plotted {
   y: number;
 }
 
+interface LabelPlacement {
+  lx: number;
+  ly: number;
+  anchor: 'start' | 'middle' | 'end';
+  text: string;
+}
+
+// Approximate width of the rendered label glyphs at fontSize=9.5 mono.
+const CHAR_W = 5.2;
+const LABEL_H = 10;
+const LABEL_PAD = 2;
+
+function labelPriority(p: Plotted, activeId: string | null): number {
+  if (p.obj.id === activeId) return 0;
+  const t = p.obj.type;
+  if (t === 'sun' || t === 'moon' || t === 'planet') return 1;
+  if ((t === 'star' || t === 'double') && p.obj.magnitude <= 1.5) return 2;
+  if (t === 'star' || t === 'double') return 5;
+  return 3; // DSOs (galaxy / nebula / cluster)
+}
+
+function makeLabel(p: Plotted): LabelPlacement {
+  const isPlanet = p.obj.type === 'planet' || p.obj.type === 'sun' || p.obj.type === 'moon';
+  let radius: number;
+  if (isPlanet) {
+    radius = p.obj.id === 'sun' ? 7 : p.obj.id === 'moon' ? 6.5 : 5.5;
+  } else {
+    radius = 4.5;
+  }
+  const dx = p.x - CX;
+  const dy = p.y - CY;
+  const norm = Math.hypot(dx, dy) || 1;
+  const offset = radius + 11;
+  const lx = p.x + (dx / norm) * offset;
+  const ly = p.y + (dy / norm) * offset;
+  const anchor: 'start' | 'middle' | 'end' = lx < CX - 24 ? 'end' : lx > CX + 24 ? 'start' : 'middle';
+  return { lx, ly, anchor, text: p.obj.name };
+}
+
+function labelBox(pl: LabelPlacement): { x: number; y: number; w: number; h: number } {
+  const w = pl.text.length * CHAR_W + LABEL_PAD * 2;
+  const h = LABEL_H + LABEL_PAD * 2;
+  let left: number;
+  if (pl.anchor === 'end') left = pl.lx - w + LABEL_PAD;
+  else if (pl.anchor === 'start') left = pl.lx - LABEL_PAD;
+  else left = pl.lx - w / 2;
+  return { x: left, y: pl.ly - h / 2, w, h };
+}
+
+function rectsOverlap(a: { x: number; y: number; w: number; h: number }, b: typeof a): boolean {
+  return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+}
+
 function project(alt: number, az: number, headingOffset: number): { x: number; y: number } {
   const altC = Math.max(0, Math.min(90, alt));
   const dist = (1 - altC / 90) * R;
@@ -140,6 +193,44 @@ export function SkyMap({
   const active = useMemo(() => {
     if (!activeId) return null;
     return plotted.find((p) => p.obj.id === activeId) ?? null;
+  }, [plotted, activeId]);
+
+  // Label deconfliction: walk plotted bodies in priority order (active first,
+  // then planets, bright stars, DSOs) and only keep labels whose bbox doesn't
+  // collide with one already placed. Active always wins.
+  const labelMap = useMemo(() => {
+    const sorted = plotted.slice().sort((a, b) => {
+      const pa = labelPriority(a, activeId);
+      const pb = labelPriority(b, activeId);
+      if (pa !== pb) return pa - pb;
+      return a.obj.magnitude - b.obj.magnitude;
+    });
+    const placed: Array<{ x: number; y: number; w: number; h: number }> = [];
+    const out = new Map<string, LabelPlacement | null>();
+    for (const p of sorted) {
+      const isPlanet = p.obj.type === 'planet' || p.obj.type === 'sun' || p.obj.type === 'moon';
+      const isStar = p.obj.type === 'star' || p.obj.type === 'double';
+      const eligible =
+        p.obj.id === activeId ||
+        isPlanet ||
+        (!isStar) ||
+        p.obj.magnitude <= 1.5;
+      if (!eligible) { out.set(p.obj.id, null); continue; }
+
+      const placement = makeLabel(p);
+      const box = labelBox(placement);
+      const collides = placed.some((b) => rectsOverlap(box, b));
+      if (!collides) {
+        placed.push(box);
+        out.set(p.obj.id, placement);
+      } else if (p.obj.id === activeId) {
+        placed.push(box);
+        out.set(p.obj.id, placement);
+      } else {
+        out.set(p.obj.id, null);
+      }
+    }
+    return out;
   }, [plotted, activeId]);
 
   // Aim geometry: signed delta from current heading→target azimuth and from
@@ -375,9 +466,9 @@ export function SkyMap({
         <circle cx={CX} cy={CY} r={1.5} fill="rgba(255,255,255,0.4)" />
 
         <text x={CX + 4} y={CY - R * (1 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
-          fontFamily="var(--mono)" letterSpacing="0.05em">60°</text>
+          fontFamily="var(--mono)" letterSpacing="0.05em" className="sky-map__alt-label">60°</text>
         <text x={CX + 4} y={CY - R * (2 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
-          fontFamily="var(--mono)" letterSpacing="0.05em">30°</text>
+          fontFamily="var(--mono)" letterSpacing="0.05em" className="sky-map__alt-label">30°</text>
 
         {/* Cardinals — positioned at their true azimuths after rotation. */}
         {cardinals.map((c) => {
@@ -395,6 +486,7 @@ export function SkyMap({
               fontSize="13"
               fontFamily="var(--mono)"
               letterSpacing="0.16em"
+              className={`sky-map__cardinal${c.dir === 'N' ? ' sky-map__cardinal--primary' : ''}`}
             >
               {c.dir}
             </text>
@@ -421,6 +513,7 @@ export function SkyMap({
               p={p}
               isActive={isActive}
               onSelect={onSelect}
+              label={labelMap.get(p.obj.id) ?? null}
             />
           );
         })}
@@ -517,13 +610,11 @@ interface GlyphProps {
   p: Plotted;
   isActive: boolean;
   onSelect: (id: ObjectId) => void;
+  label: LabelPlacement | null;
 }
 
-function ObjectGlyph({ p, isActive, onSelect }: GlyphProps) {
+function ObjectGlyph({ p, isActive, onSelect, label }: GlyphProps) {
   const { obj, x, y } = p;
-  const dx = x - CX;
-  const dy = y - CY;
-  const norm = Math.hypot(dx, dy) || 1;
 
   const isPlanet = obj.type === 'planet' || obj.type === 'sun' || obj.type === 'moon';
   let radius: number;
@@ -537,17 +628,6 @@ function ObjectGlyph({ p, isActive, onSelect }: GlyphProps) {
   }
   if (isActive && (obj.type === 'star' || obj.type === 'double')) radius += 1;
 
-  const labelOffset = (isPlanet ? radius : 6) + 11;
-  const lx = x + (dx / norm) * labelOffset;
-  const ly = y + (dy / norm) * labelOffset;
-  const anchor = lx < CX - 24 ? 'end' : lx > CX + 24 ? 'start' : 'middle';
-
-  const showLabel =
-    isActive ||
-    isPlanet ||
-    (obj.type !== 'star' && obj.type !== 'double') ||
-    obj.magnitude <= 1.5;
-
   return (
     <g
       onClick={() => onSelect(obj.id)}
@@ -559,18 +639,18 @@ function ObjectGlyph({ p, isActive, onSelect }: GlyphProps) {
       {/* Invisible hit area — keeps fingertip taps reliable on tightly
          clustered planets without enlarging the visible glyph. */}
       <circle cx={x} cy={y} r={Math.max(radius + 8, 14)} fill="transparent" />
-      {showLabel && (
+      {label && (
         <text
-          x={lx}
-          y={ly}
-          textAnchor={anchor}
+          x={label.lx}
+          y={label.ly}
+          textAnchor={label.anchor}
           dominantBaseline="middle"
           fill={isActive ? 'var(--terracotta)' : isPlanet ? 'var(--text)' : 'rgba(255,255,255,0.55)'}
           fontSize="9.5"
           fontFamily="var(--mono)"
-          letterSpacing="0.10em"
+          letterSpacing="0.06em"
         >
-          {obj.name.toUpperCase()}
+          {label.text}
         </text>
       )}
     </g>
