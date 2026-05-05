@@ -59,6 +59,46 @@ export default function SkyPage() {
   const [activeId, setActiveId] = useState<ObjectId | null>(null);
   const [tier, setTier] = useState<TierFilter>('all');
   const [arOpen, setArOpen] = useState(false);
+  const [arStream, setArStream] = useState<MediaStream | null>(null);
+
+  // Both motion AND camera permissions need a user-gesture chain on iOS.
+  // Firing them from the same click handler keeps the chain valid; awaiting
+  // one before the other works on iOS Safari as long as no async hop runs in
+  // between. setArOpen(true) is called immediately so the overlay appears
+  // even if the camera stream is still resolving.
+  const handleArOpen = useCallback(async () => {
+    if (compass.heading == null) {
+      // Fire iOS motion-permission prompt; on Android this is a no-op. We
+      // intentionally don't await the result — the camera permission below
+      // needs to remain in the same gesture window.
+      void compass.request();
+    }
+    setArOpen(true);
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false,
+        });
+        setArStream(stream);
+      } catch {
+        // Camera denied or unavailable — AR falls back to a starfield bg.
+      }
+    }
+  }, [compass]);
+
+  const handleArClose = useCallback(() => {
+    if (arStream) arStream.getTracks().forEach((t) => t.stop());
+    setArStream(null);
+    setArOpen(false);
+  }, [arStream]);
+
+  // Stop camera on unmount in case the user navigates away while AR is open.
+  useEffect(() => {
+    return () => {
+      if (arStream) arStream.getTracks().forEach((t) => t.stop());
+    };
+  }, [arStream]);
 
   const fetchFinder = useCallback(async () => {
     setFinderError(null);
@@ -245,7 +285,7 @@ export default function SkyPage() {
                   <button
                     type="button"
                     className="sky-v3__ar-launch"
-                    onClick={() => setArOpen(true)}
+                    onClick={handleArOpen}
                   >
                     <Camera size={14} />
                     <span>{tAr('openAr')}</span>
@@ -303,8 +343,14 @@ export default function SkyPage() {
           objects={finder.objects}
           observerLat={location.lat}
           observerLon={location.lon}
+          heading={compass.heading}
+          altitude={compass.altitude}
+          accuracy={compass.accuracy}
+          headingStatus={compass.status}
+          cameraStream={arStream}
           activeId={activeId}
-          onClose={() => setArOpen(false)}
+          onSelectActive={handleSelect}
+          onClose={handleArClose}
         />
       )}
     </div>

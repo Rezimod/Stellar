@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { Telescope, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { PlanetIcon } from './PlanetIcon';
 import {
   DEFAULT_HORIZONTAL_FOV,
@@ -18,7 +18,6 @@ import {
 } from '@/lib/sky/ar';
 import {
   angularSeparation,
-  useDeviceHeading,
   type HeadingStatus,
 } from '@/lib/sky/use-device-heading';
 import { CONSTELLATION_LINES, positionStars, type PositionedStar } from '@/lib/sky/stars';
@@ -29,14 +28,23 @@ interface ARFinderProps {
   objects: SkyObject[];
   observerLat: number;
   observerLon: number;
-  /** When set, the AR view leads the user to this body — edge arrow when
-   *  off-screen, hold-to-lock when centered. Optional; without it the AR
-   *  view just labels everything visible. */
-  activeId?: ObjectId | null;
+  /** Live compass heading from the parent's useDeviceHeading() — sharing
+   *  the instance avoids a second iOS permission prompt and ensures the
+   *  AR view picks up wherever the dome left off. */
+  heading: number | null;
+  altitude: number | null;
+  accuracy: number | null;
+  headingStatus: HeadingStatus;
+  /** Pre-acquired camera stream from the launcher's user-gesture click.
+   *  Falls back to a starfield background when null. */
+  cameraStream: MediaStream | null;
+  /** When set, AR leads the user to this body — edge arrow when off-screen,
+   *  hold-to-lock when centered. */
+  activeId: ObjectId | null;
+  /** Called when the user picks a different target from the in-AR picker. */
+  onSelectActive: (id: ObjectId) => void;
   onClose: () => void;
 }
-
-type Phase = 'permission' | 'denied' | 'ar' | 'noSensors';
 
 const COMPASS_TICKS = [
   { deg: 0,   label: 'N',  cardinal: true },
@@ -68,26 +76,33 @@ function lockRadiusDeg(obj: SkyObject): number {
   return 8;
 }
 
-export function ARFinder({ objects, observerLat, observerLon, activeId = null, onClose }: ARFinderProps) {
+export function ARFinder({
+  objects,
+  observerLat,
+  observerLon,
+  heading,
+  altitude,
+  accuracy,
+  headingStatus,
+  cameraStream,
+  activeId,
+  onSelectActive,
+  onClose,
+}: ARFinderProps) {
   const t = useTranslations('sky.ar');
 
-  const [phase, setPhase] = useState<Phase>('permission');
-  const [hasCamera, setHasCamera] = useState<boolean>(true);
   const [viewport, setViewport] = useState({
     w: typeof window !== 'undefined' ? window.innerWidth : 360,
     h: typeof window !== 'undefined' ? window.innerHeight : 640,
   });
 
-  const compass = useDeviceHeading();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
   // Stars are computed once when AR opens. They drift ~0.25°/min — plenty
   // accurate for a phone-AR session lasting a few minutes.
   const stars = useMemo<PositionedStar[]>(() => {
-    if (phase !== 'ar') return [];
     return positionStars(observerLat, observerLon, new Date());
-  }, [phase, observerLat, observerLon]);
+  }, [observerLat, observerLon]);
 
   const starById = useMemo(() => {
     const map = new Map<string, PositionedStar>();
@@ -103,14 +118,6 @@ export function ARFinder({ objects, observerLat, observerLon, activeId = null, o
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Detect missing DeviceOrientationEvent up-front (desktop).
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (typeof DeviceOrientationEvent === 'undefined') {
-      setPhase('noSensors');
-    }
-  }, []);
-
   // Track viewport for FOV → pixel math.
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -123,123 +130,15 @@ export function ARFinder({ objects, observerLat, observerLon, activeId = null, o
     };
   }, []);
 
-  // Stop camera + heading on unmount.
+  // Wire the camera stream into the <video> element. The stream itself is
+  // created in the launcher click, then passed in — this keeps the camera
+  // permission request in the same user-gesture window as the open click.
   useEffect(() => {
-    return () => {
-      const s = streamRef.current;
-      if (s) s.getTracks().forEach((trk) => trk.stop());
-      streamRef.current = null;
-      compass.stop();
-    };
-    // We deliberately depend only on a stable ref, not on `compass`, so the
-    // cleanup runs once on unmount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // If the heading hook reports unavailable / denied, surface the right card.
-  useEffect(() => {
-    if (phase !== 'ar') return;
-    if (compass.status === 'unavailable') setPhase('noSensors');
-    else if (compass.status === 'denied') setPhase('denied');
-  }, [compass.status, phase]);
-
-  const startCamera = useCallback(async () => {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      setHasCamera(false);
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      const v = videoRef.current;
-      if (v) {
-        v.srcObject = stream;
-        try { await v.play(); } catch { /* autoplay deferred */ }
-      }
-      setHasCamera(true);
-    } catch {
-      setHasCamera(false);
-    }
-  }, []);
-
-  const handleEnable = useCallback(async () => {
-    await compass.request();
-    if (compass.status === 'denied') {
-      setPhase('denied');
-      return;
-    }
-    setPhase('ar');
-    setTimeout(() => { void startCamera(); }, 0);
-  }, [compass, startCamera]);
-
-  const handleClose = useCallback(() => {
-    const s = streamRef.current;
-    if (s) s.getTracks().forEach((trk) => trk.stop());
-    streamRef.current = null;
-    compass.stop();
-    onClose();
-  }, [compass, onClose]);
-
-  if (phase === 'permission') {
-    return <PermissionCard t={t} onEnable={handleEnable} onClose={onClose} />;
-  }
-  if (phase === 'denied') {
-    return <DeniedCard t={t} onRetry={() => setPhase('permission')} onClose={onClose} />;
-  }
-  if (phase === 'noSensors') {
-    return <NoSensorsCard t={t} onClose={onClose} />;
-  }
-
-  return (
-    <ARLive
-      objects={objects}
-      stars={stars}
-      starById={starById}
-      heading={compass.heading}
-      altitude={compass.altitude}
-      accuracy={compass.accuracy}
-      headingStatus={compass.status}
-      hasCamera={hasCamera}
-      videoRef={videoRef}
-      viewport={viewport}
-      activeId={activeId}
-      onClose={handleClose}
-    />
-  );
-}
-
-interface ARLiveProps {
-  objects: SkyObject[];
-  stars: PositionedStar[];
-  starById: Map<string, PositionedStar>;
-  heading: number | null;
-  altitude: number | null;
-  accuracy: number | null;
-  headingStatus: HeadingStatus;
-  hasCamera: boolean;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  viewport: { w: number; h: number };
-  activeId: ObjectId | null;
-  onClose: () => void;
-}
-
-function ARLive({
-  objects,
-  stars,
-  starById,
-  heading,
-  altitude,
-  hasCamera,
-  videoRef,
-  viewport,
-  activeId,
-  accuracy,
-  onClose,
-}: ARLiveProps) {
-  const t = useTranslations('sky.ar');
+    const v = videoRef.current;
+    if (!v || !cameraStream) return;
+    v.srcObject = cameraStream;
+    v.play().catch(() => { /* autoplay deferred */ });
+  }, [cameraStream]);
 
   const phoneAim = useMemo(() => ({
     azimuth: heading ?? 0,
@@ -249,7 +148,6 @@ function ARLive({
   const hFov = DEFAULT_HORIZONTAL_FOV;
   const vFov = DEFAULT_VERTICAL_FOV;
 
-  /** Plane-projection of a sky direction onto the camera viewport. */
   const project = useCallback(
     (az: number, alt: number) => {
       const dAz = shortestAzDelta(az, phoneAim.azimuth);
@@ -275,12 +173,11 @@ function ARLive({
     });
   }, [objects, project, hFov, vFov, phoneAim]);
 
-  // Sort so the active body — and otherwise the most-centered — renders last.
   const bodiesSortedForRender = useMemo(() => {
     return bodies.slice().sort((a, b) => {
       if (a.obj.id === activeId) return 1;
       if (b.obj.id === activeId) return -1;
-      return b.sep - a.sep; // farther first, closer last
+      return b.sep - a.sep;
     });
   }, [bodies, activeId]);
 
@@ -299,9 +196,6 @@ function ARLive({
     return bodies.find((b) => b.obj.id === activeBody.id) ?? null;
   }, [bodies, activeBody]);
 
-  // Lock state machine — same shape as the dome's: stay inside the cone for
-  // HOLD_TO_LOCK_MS before triggering a confirmed lock + haptic. Resets when
-  // the active target changes or the user wanders off the body.
   const lockRadius = activeBody ? lockRadiusDeg(activeBody) : 8;
   const insideLockCone = activeRow != null && heading != null && altitude != null && activeRow.sep <= lockRadius;
   const [holdProgress, setHoldProgress] = useState(0);
@@ -348,16 +242,14 @@ function ARLive({
     return () => cancelAnimationFrame(raf);
   }, [insideLockCone, confirmedLock, holdProgress]);
 
-  // Edge arrow: when the active body is off-screen, project it and clamp to
-  // a position just inside the viewport edge so the user knows which way to
-  // swing the phone.
+  // Edge arrow: when active body is off-screen, project it and clamp to a
+  // position just inside the viewport so the user knows which way to swing.
   const edgeArrow = useMemo(() => {
     if (!activeRow || activeRow.onScreen) return null;
     const cx = viewport.w / 2;
     const cy = viewport.h / 2;
     let dx = activeRow.screenX - cx;
     let dy = activeRow.screenY - cy;
-    // Behind the user — flip so the arrow points the *short* way around.
     if (Math.abs(activeRow.dAz) > 90) {
       dx = -dx;
       dy = -dy;
@@ -366,7 +258,6 @@ function ARLive({
     const ux = dx / norm;
     const uy = dy / norm;
     const margin = 70;
-    // Intersect the radial with the bounding rect (cx ± w/2-margin, cy ± h/2-margin).
     const halfW = cx - margin;
     const halfH = cy - margin;
     const tx = ux > 0 ? halfW / ux : -halfW / ux;
@@ -381,11 +272,17 @@ function ARLive({
   const horizonY = (phoneAim.altitude / vFov) * viewport.h + viewport.h / 2;
   const cardinal = azimuthToCardinal(phoneAim.azimuth);
   const compassPxPerDeg = viewport.w / COMPASS_VISIBLE_DEG;
-  const poorAccuracy = accuracy == null || accuracy > POOR_ACCURACY_DEG;
+  const headingActive = heading != null && altitude != null;
+  const poorAccuracy = headingActive && (accuracy == null || accuracy > POOR_ACCURACY_DEG);
 
-  // Bottom hint: prefer target-driven copy when an activeBody is set.
   let hint: string;
-  if (activeBody && activeRow) {
+  if (!headingActive) {
+    hint = headingStatus === 'denied'
+      ? t('denied.body')
+      : headingStatus === 'unavailable'
+        ? t('fallbacks.noSensors')
+        : t('liftPhone');
+  } else if (activeBody && activeRow) {
     if (confirmedLock) {
       hint = t('found', { object: activeBody.name });
     } else if (activeRow.onScreen) {
@@ -416,9 +313,21 @@ function ARLive({
     return out;
   }, [starById, project, hFov, vFov]);
 
+  // List of bodies suitable for the in-AR target picker — visible only,
+  // sorted brightest first. Sun deliberately excluded so the user doesn't
+  // try to "find" it during a session that's by design after sunset.
+  const pickerBodies = useMemo(() => {
+    return objects
+      .filter((o) => o.visible && o.id !== 'sun')
+      .slice()
+      .sort((a, b) => a.magnitude - b.magnitude);
+  }, [objects]);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   return (
     <div className="ar-overlay" role="dialog" aria-modal="true" aria-label={t('title')}>
-      {hasCamera ? (
+      {cameraStream ? (
         <video
           ref={videoRef}
           className="ar-overlay__camera"
@@ -483,27 +392,26 @@ function ARLive({
         {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen }) => {
           if (!onScreen) return null;
           const isActive = obj.id === activeId;
-          const focused = isActive;
           return (
             <div
               key={obj.id}
-              className={`ar-body ${focused ? 'ar-body--focused' : ''} ${isActive && confirmedLock ? 'ar-body--locked' : ''}`}
+              className={`ar-body ${isActive ? 'ar-body--focused' : ''} ${isActive && confirmedLock ? 'ar-body--locked' : ''}`}
               style={{
                 left: screenX,
                 top: screenY,
-                opacity: focused ? 1 : 0.85,
+                opacity: isActive ? 1 : 0.85,
               }}
             >
               <div className="ar-body__icon">
                 <PlanetIcon
                   id={obj.id}
-                  size={focused ? 56 : 40}
+                  size={isActive ? 56 : 40}
                   phase={obj.phase}
                   glow={true}
                 />
                 <div className="ar-body__crosshair" />
                 {isActive && !confirmedLock && holdProgress > 0 && (
-                  <HoldRing progress={holdProgress} size={focused ? 70 : 54} />
+                  <HoldRing progress={holdProgress} size={isActive ? 70 : 54} />
                 )}
               </div>
               <div className="ar-body__label">{obj.name}</div>
@@ -546,7 +454,7 @@ function ARLive({
         </div>
       </div>
 
-      {!hasCamera && (
+      {!cameraStream && (
         <div className="ar-bottom-hint" style={{ bottom: 'auto', top: 70 }}>
           {t('fallbacks.noCamera')}
         </div>
@@ -582,6 +490,20 @@ function ARLive({
           {t('poorAccuracy')}
         </div>
       )}
+
+      {/* In-AR target picker — chip in the top-left, tap to expand a list
+          of currently-visible bodies. Lets the user switch from Jupiter to
+          Saturn without dropping back to the dome. */}
+      <ARTargetPicker
+        bodies={pickerBodies}
+        activeId={activeId}
+        open={pickerOpen}
+        onToggle={() => setPickerOpen((v) => !v)}
+        onSelect={(id) => {
+          onSelectActive(id);
+          setPickerOpen(false);
+        }}
+      />
 
       <div className="ar-overlay__topbar">
         <div>
@@ -644,75 +566,59 @@ function ArrowGlyph() {
   );
 }
 
-interface CardProps {
-  t: ReturnType<typeof useTranslations>;
-  onClose: () => void;
-}
-function PermissionCard({ t, onEnable, onClose }: CardProps & { onEnable: () => void }) {
-  return (
-    <div className="ar-overlay">
-      <div className="ar-card-stage">
-        <div className="ar-card">
-          <div className="ar-card__icon"><Telescope size={20} /></div>
-          <h2 className="ar-card__title">{t('title')}</h2>
-          <p className="ar-card__body">{t('permissionBody')}</p>
-          <p className="ar-card__body">{t('permissionInstructions')}</p>
-          <ul className="ar-card__list">
-            <li>{t('permissionItems.camera')}</li>
-            <li>{t('permissionItems.motion')}</li>
-            <li>{t('permissionItems.location')}</li>
-          </ul>
-          <div className="ar-card__actions">
-            <button type="button" className="ar-card__btn ar-card__btn--primary" onClick={onEnable}>
-              {t('enable')}
-            </button>
-            <button type="button" className="ar-card__btn ar-card__btn--ghost" onClick={onClose}>
-              {t('cancel')}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+interface PickerProps {
+  bodies: SkyObject[];
+  activeId: ObjectId | null;
+  open: boolean;
+  onToggle: () => void;
+  onSelect: (id: ObjectId) => void;
 }
 
-function DeniedCard({ t, onRetry, onClose }: CardProps & { onRetry: () => void }) {
-  return (
-    <div className="ar-overlay">
-      <div className="ar-card-stage">
-        <div className="ar-card">
-          <div className="ar-card__icon"><Telescope size={20} /></div>
-          <h2 className="ar-card__title">{t('denied.title')}</h2>
-          <p className="ar-card__body">{t('denied.body')}</p>
-          <div className="ar-card__actions">
-            <button type="button" className="ar-card__btn ar-card__btn--primary" onClick={onRetry}>
-              {t('denied.tryAgain')}
-            </button>
-            <button type="button" className="ar-card__btn ar-card__btn--ghost" onClick={onClose}>
-              {t('denied.useHorizonInstead')}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+function ARTargetPicker({ bodies, activeId, open, onToggle, onSelect }: PickerProps) {
+  const t = useTranslations('sky.ar');
+  const active = bodies.find((b) => b.id === activeId) ?? null;
 
-function NoSensorsCard({ t, onClose }: CardProps) {
   return (
-    <div className="ar-overlay">
-      <div className="ar-card-stage">
-        <div className="ar-card">
-          <div className="ar-card__icon"><Telescope size={20} /></div>
-          <h2 className="ar-card__title">{t('title')}</h2>
-          <p className="ar-card__body">{t('fallbacks.noSensors')}</p>
-          <div className="ar-card__actions">
-            <button type="button" className="ar-card__btn ar-card__btn--primary" onClick={onClose}>
-              {t('denied.useHorizonInstead')}
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className={`ar-picker${open ? ' is-open' : ''}`}>
+      <button
+        type="button"
+        className="ar-picker__chip"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="ar-picker__chip-label">{t('targetLabel')}</span>
+        <strong className="ar-picker__chip-name">
+          {active?.name ?? t('targetEmpty')}
+        </strong>
+        <ChevronDown size={14} className="ar-picker__chip-caret" aria-hidden="true" />
+      </button>
+      {open && (
+        <ul className="ar-picker__list" role="listbox" aria-label={t('targetLabel')}>
+          {bodies.length === 0 && (
+            <li className="ar-picker__empty">{t('noVisibleBodies')}</li>
+          )}
+          {bodies.map((b) => {
+            const selected = b.id === activeId;
+            return (
+              <li key={b.id}>
+                <button
+                  type="button"
+                  className={`ar-picker__row${selected ? ' is-selected' : ''}`}
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => onSelect(b.id)}
+                >
+                  <span className="ar-picker__row-name">{b.name}</span>
+                  <span className="ar-picker__row-coords">
+                    {Math.round(b.altitude)}° · {b.compassDirection}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

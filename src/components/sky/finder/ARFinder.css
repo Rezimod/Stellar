@@ -127,6 +127,121 @@
   white-space: nowrap;
 }
 
+/* In-AR target picker — chip top-left, expands to a body list. Lives
+   beneath the topbar so the close button stays reachable. */
+.ar-picker {
+  position: absolute;
+  top: calc(60px + env(safe-area-inset-top));
+  left: 14px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 260px;
+}
+
+.ar-picker__chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(7, 11, 20, 0.72);
+  border: 0.5px solid rgba(255, 209, 102, 0.40);
+  color: var(--terracotta);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  text-transform: uppercase;
+  pointer-events: auto;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+.ar-picker__chip:hover {
+  background: rgba(255, 209, 102, 0.12);
+}
+
+.ar-picker__chip-label {
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.18em;
+}
+.ar-picker__chip-name {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.ar-picker__chip-caret {
+  margin-left: 2px;
+  transition: transform 180ms ease;
+  color: rgba(255, 209, 102, 0.85);
+}
+.ar-picker.is-open .ar-picker__chip-caret {
+  transform: rotate(180deg);
+}
+
+.ar-picker__list {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 4px;
+  width: max-content;
+  min-width: 200px;
+  max-width: 260px;
+  background: rgba(7, 11, 20, 0.88);
+  border: 0.5px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.ar-picker__row {
+  appearance: none;
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.ar-picker__row:hover {
+  background: rgba(255, 209, 102, 0.06);
+}
+.ar-picker__row.is-selected {
+  background: rgba(255, 209, 102, 0.14);
+  color: var(--terracotta);
+}
+.ar-picker__row-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+.ar-picker__row-coords {
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+.ar-picker__row.is-selected .ar-picker__row-coords {
+  color: rgba(255, 209, 102, 0.75);
+}
+.ar-picker__empty {
+  padding: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+
 /* Compass calibration banner — same content as the dome's, anchored to
    bottom of the AR overlay above the compass strip. */
 .ar-accuracy-banner {
