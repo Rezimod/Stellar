@@ -93,7 +93,8 @@ export default function Nav() {
         .nav-tab:hover:not(.nav-tab-active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9) !important; }
         .signin-btn { transition: all 0.18s ease; }
         .signin-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25); color: white; }
-        .hub-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: rgba(255,255,255,0.7); transition: all 0.15s ease; text-decoration: none; }
+        .hub-btn { width: 32px; height: 32px; display: none; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: rgba(255,255,255,0.7); transition: all 0.15s ease; text-decoration: none; }
+        @media (min-width: 768px) { .hub-btn { display: flex; } }
         .hub-btn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.95); }
         .hub-btn[data-active="true"] { background: rgba(255,209,102,0.10); border-color: rgba(255,209,102,0.25); color: #FFD166; }
         .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; border-radius: 9999px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: box-shadow 0.18s ease, border-color 0.18s ease; background: #0B0E17; border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -8px 16px rgba(0,0,0,0.35); }
@@ -117,7 +118,7 @@ export default function Nav() {
             <div className="flex items-center flex-shrink-0 gap-2">
               <Link
                 href="/hub"
-                className="hub-btn hidden md:flex"
+                className="hub-btn"
                 data-active={pathname.startsWith('/hub')}
                 aria-label="Hub"
               >
