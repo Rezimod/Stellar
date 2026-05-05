@@ -8,6 +8,16 @@
 
 ---
 
+## 0. Status note (2026-05-05)
+
+The full QVAC integration described in sections 1–6 below was implemented across Days 1–3 (commits `06bbca0`, `432a096`, `0f0b2e9`). All three QVAC capabilities are wired in code: local LLM inference, on-device Whisper STT, and an embedding-aware RAG retrieval over a 72-chunk astronomy corpus.
+
+The on-device runtime did not ship in the first verification APK because EAS Build kept failing the **Prebuild** phase, where QVAC's Expo plugin invokes `bare-pack` to generate the worker.mobile.bundle.js. The QVAC Expo path is documented for `npx expo run:android --device` (a local Android Studio build), not EAS managed builds, and we don't have a local Android toolchain set up (macOS Ventura 13.1 blocks current Xcode; Android Studio install is queued for off-hours).
+
+**Pivot taken:** the verification APK ships with `lib/qvac.ts` stubbed so we can validate the rest of the app on hardware (UI, audio recording, observation save, offline queue, RAG retrieval falls back to keyword scoring). The full QVAC integration is preserved in git history and documented below; restoring it is a single file revert plus the dep set in `package.json` from commit `2a69854`. See section 14 for the re-enablement plan.
+
+---
+
 ## 1. The thesis (one paragraph)
 
 Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. Stellar's current AI Space Companion runs on the Claude API and goes dark the moment a user reaches the place they bought their telescope for. **QVAC fixes that.** We ship a companion mobile app, **Stellar Field**, that runs on-device LLM, Whisper STT, and TTS via QVAC, so the AI works under the stars where users actually need it. This is not a forced fit; it is the exact problem QVAC was built to solve.
@@ -222,4 +232,27 @@ Tether requires a "public GitHub repo with a working demo or video walkthrough."
 
 ---
 
-*Last updated: 2026-05-04. Owner: Rezi. Status: planning.*
+## 14. Re-enabling QVAC after the verification APK works
+
+When the stubbed APK is verified on hardware (Days 4+ work depends on this), restoring full QVAC is a single short session:
+
+1. **Set up the local Android toolchain.** Either:
+   - Install Android Studio (works on macOS 13.1), connect Android phone via USB with debugging on, OR
+   - Skip Android Studio: install the Android SDK command-line tools + JDK 17 manually
+2. **Restore the QVAC code paths.**
+   - `git show 2a69854 -- apps/field/package.json apps/field/app.json apps/field/metro.config.js apps/field/lib/qvac.ts apps/field/lib/privy.tsx apps/field/lib/user.ts apps/field/App.tsx | git apply` (or cherry-pick the relevant hunks)
+   - `npm install` to repopulate the QVAC + Privy + bare-* + viem dep set
+3. **Build via the documented path.**
+   - `npx expo prebuild --clean` — runs the QVAC plugin, generates `worker.mobile.bundle.js`
+   - `npx expo run:android --device` — builds + installs on the connected phone
+4. **Verify:**
+   - Llama 3.2 1B downloads on first launch
+   - Chat answers cite corpus entries (e.g., M31 dust lane)
+   - Voice log records, transcribes locally with Whisper, saves observation
+5. **Re-build the EAS preview** for distribution if local works. The QVAC docs are clear that EAS may need extra bare-pack config; we'll know once the local path is proven.
+
+The blockers have not been QVAC's correctness — they've been native build toolchain setup that isn't possible on this Mac without installing Android Studio (~1 hour). Doing that off-hours and resuming this is the cleanest path to the prize-eligible build.
+
+---
+
+*Last updated: 2026-05-05. Owner: Rezi. Status: pivoted to verification APK with stubbed AI; QVAC restoration pending Android Studio.*

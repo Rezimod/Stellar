@@ -2,7 +2,6 @@ import 'react-native-get-random-values';
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { StellarPrivyProvider } from './lib/privy';
 import { FieldChatScreen } from './components/FieldChatScreen';
 import { VoiceLogScreen } from './components/VoiceLogScreen';
 
@@ -12,18 +11,16 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('chat');
 
   return (
-    <StellarPrivyProvider>
-      <SafeAreaView style={styles.root}>
-        <StatusBar style="light" />
-        <View style={styles.screen}>
-          {tab === 'chat' ? <FieldChatScreen /> : <VoiceLogScreen />}
-        </View>
-        <View style={styles.tabBar}>
-          <TabButton label="Companion" active={tab === 'chat'} onPress={() => setTab('chat')} />
-          <TabButton label="Voice Log" active={tab === 'voice'} onPress={() => setTab('voice')} />
-        </View>
-      </SafeAreaView>
-    </StellarPrivyProvider>
+    <SafeAreaView style={styles.root}>
+      <StatusBar style="light" />
+      <View style={styles.screen}>
+        {tab === 'chat' ? <FieldChatScreen /> : <VoiceLogScreen />}
+      </View>
+      <View style={styles.tabBar}>
+        <TabButton label="Companion" active={tab === 'chat'} onPress={() => setTab('chat')} />
+        <TabButton label="Voice Log" active={tab === 'voice'} onPress={() => setTab('voice')} />
+      </View>
+    </SafeAreaView>
   );
 }
 
