@@ -2276,7 +2276,11 @@
 
   /* === Tier filter row — solid pressable buttons, no longer transparent
      blends. ALL/EASY/MEDIUM/HARD now read as real controls. === */
-  .target-filters { padding: 0; margin: 0; }
+  .target-filters {
+    padding: 14px 0 0;
+    margin: 0;
+    border-top: 1px solid var(--border);
+  }
   .target-picker { gap: 8px; }
   .target-picker__tiers {
     display: grid;
