@@ -16,6 +16,7 @@ import { QUIZZES } from '@/lib/quizzes';
 import { PlanetViz } from '@/components/sky/PlanetViz';
 import QuizActive from '@/components/sky/QuizActive';
 import EventInfoSheet from '@/components/sky/EventInfoSheet';
+import DifficultyExplainer from '@/components/sky/DifficultyExplainer';
 import { getUpcomingEvents, type AstroEvent } from '@/lib/astro-events';
 import type { QuizDef } from '@/lib/quizzes';
 import {
@@ -119,6 +120,7 @@ export default function MissionsPage() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [activeQuiz, setActiveQuiz] = useState<QuizDef | null>(null);
   const [activeEvent, setActiveEvent] = useState<AstroEvent | null>(null);
+  const [activeExplainer, setActiveExplainer] = useState<{ kind: 'mission' | 'event'; id: string; title: string; eventType?: string } | null>(null);
 
   const upcomingEvents = useMemo(() => getUpcomingEvents(new Date(), 30), []);
 
@@ -336,6 +338,7 @@ export default function MissionsPage() {
                   above={altitude > 0}
                   rise={pos?.rise ?? null}
                   onStart={() => startMission(g.routeId)}
+                  onExplain={() => setActiveExplainer({ kind: 'mission', id: g.id, title: g.name })}
                 />
               );
             })}
@@ -350,7 +353,12 @@ export default function MissionsPage() {
             </div>
             <div className="mis-events-deck">
               {upcomingEvents.map(ev => (
-                <EventRow key={`${ev.date}-${ev.name}`} event={ev} onOpen={() => setActiveEvent(ev)} />
+                <EventRow
+                  key={`${ev.date}-${ev.name}`}
+                  event={ev}
+                  onOpen={() => setActiveEvent(ev)}
+                  onExplain={() => setActiveExplainer({ kind: 'event', id: ev.name, title: ev.name, eventType: ev.type })}
+                />
               ))}
             </div>
           </section>
@@ -437,6 +445,15 @@ export default function MissionsPage() {
         event={activeEvent}
         onClose={() => setActiveEvent(null)}
       />
+
+      <DifficultyExplainer
+        open={!!activeExplainer}
+        onClose={() => setActiveExplainer(null)}
+        target={activeExplainer?.kind === 'mission' ? activeExplainer.id : undefined}
+        eventType={activeExplainer?.kind === 'event' ? activeExplainer.eventType : undefined}
+        title={activeExplainer?.title ?? ''}
+        location={{ lat: location.lat, lon: location.lon }}
+      />
     </div>
   );
 }
@@ -467,7 +484,7 @@ function daysFromToday(dateStr: string): number {
   return Math.round((event.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function EventRow({ event, onOpen }: { event: AstroEvent; onOpen: () => void }) {
+function EventRow({ event, onOpen, onExplain }: { event: AstroEvent; onOpen: () => void; onExplain?: () => void }) {
   const days = daysFromToday(event.date);
   const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, {
     month: 'short', day: 'numeric',
@@ -520,7 +537,29 @@ function EventRow({ event, onOpen }: { event: AstroEvent; onOpen: () => void }) 
       >
         {event.difficulty}
       </span>
-      <span aria-hidden style={{ color: 'var(--stl-text-dim)', fontSize: 14, lineHeight: 1, marginLeft: 4 }}>i</span>
+      {onExplain ? (
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={`Why ${event.name} is hard`}
+          onClick={(e) => { e.stopPropagation(); onExplain(); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); onExplain(); } }}
+          style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 18, height: 18, borderRadius: '50%',
+            marginLeft: 4,
+            background: 'rgba(255,255,255,0.06)',
+            border: '0.5px solid rgba(255,255,255,0.18)',
+            color: 'var(--stl-text-muted)',
+            fontFamily: 'var(--font-mono)', fontSize: 11,
+            cursor: 'pointer', lineHeight: 1,
+          }}
+        >
+          i
+        </span>
+      ) : (
+        <span aria-hidden style={{ color: 'var(--stl-text-dim)', fontSize: 14, lineHeight: 1, marginLeft: 4 }}>i</span>
+      )}
     </button>
   );
 }
@@ -654,11 +693,13 @@ function MissionTile({
   above,
   rise,
   onStart,
+  onExplain,
 }: {
   entry: GridEntry;
   above: boolean;
   rise: Date | null;
   onStart: () => void;
+  onExplain?: () => void;
 }) {
   const [showReminder, setShowReminder] = useState(false);
   const riseTxt = above ? null : fmtRiseClock(rise);
@@ -711,6 +752,32 @@ function MissionTile({
         <div className="mis-tile-foot">
           <span className="mis-tile-foot-left">
             <span className={`mis-diff ${entry.diff}`}>{entry.diffLabel}</span>
+            {(entry.diff === 'hard' || entry.diff === 'expert') && onExplain && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onExplain(); }}
+                aria-label={`Why ${entry.name} is hard`}
+                className="mis-diff-info"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 16,
+                  height: 16,
+                  marginLeft: 4,
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '0.5px solid rgba(255,255,255,0.18)',
+                  color: 'var(--text-muted)',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-mono)',
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+              >
+                i
+              </button>
+            )}
             <span className="mis-tile-equip">
               <EquipIcon kind={entry.equip} />
               <span>{entry.equip}</span>
