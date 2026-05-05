@@ -14,6 +14,14 @@ type HubSection = { label: string; items: HubItem[] };
 
 const SECTIONS: HubSection[] = [
   {
+    label: 'You',
+    items: [
+      { href: '/profile',     label: 'Profile',      icon: User },
+      { href: '/club',        label: 'My telescope', icon: Telescope },
+      { href: '/nfts',        label: 'Discoveries',  icon: Gem },
+    ],
+  },
+  {
     label: 'Explore',
     items: [
       { href: '/sky',         label: 'Sky forecast', icon: Sun },
@@ -29,9 +37,6 @@ const SECTIONS: HubSection[] = [
     label: 'Community',
     items: [
       { href: '/leaderboard', label: 'Leaderboard',  icon: Trophy },
-      { href: '/nfts',        label: 'Discoveries',  icon: Gem },
-      { href: '/club',        label: 'My telescope', icon: Telescope },
-      { href: '/profile',     label: 'Profile',      icon: User },
     ],
   },
   {

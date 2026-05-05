@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CloudSun, Satellite, User, TrendingUp, LayoutGrid } from 'lucide-react';
+import { CloudSun, Satellite, User, TrendingUp, Home } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const TABS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/sky',      label: 'Sky',      icon: CloudSun },
   { href: '/missions', label: 'Missions', icon: Satellite },
-  { href: '/hub',      label: 'Hub',      icon: LayoutGrid },
+  { href: '/',         label: 'Home',     icon: Home },
   { href: '/markets',  label: 'Markets',  icon: TrendingUp },
   { href: '/profile',  label: 'Profile',  icon: User },
 ];
@@ -33,7 +33,7 @@ export default function BottomNav() {
         }}
       >
         {TABS.map(tab => {
-          const isActive = pathname.startsWith(tab.href);
+          const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
           const Icon = tab.icon;
 
           return (

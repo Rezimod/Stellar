@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
-import { useStellarAuth } from '@/hooks/useStellarAuth';
+import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { AuthModal } from '@/components/auth/AuthModal';
 import {
-  CloudSun, ShoppingBag, Satellite, User, Search, BookOpen,
-  Telescope, Gem, TrendingUp, LogOut, Sparkles, LayoutGrid,
+  CloudSun, ShoppingBag, Satellite, Search, BookOpen,
+  TrendingUp, Sparkles, LayoutGrid,
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import SearchModal from './SearchModal';
@@ -22,76 +21,26 @@ const NAV_ITEMS = [
   { href: '/marketplace', label: 'Shop',      icon: ShoppingBag },
 ];
 
-const AVATAR_ITEMS: { href: string; label: string; icon: typeof User }[] = [
-  { href: '/profile', label: 'Profile',         icon: User },
-  { href: '/club',    label: 'My telescope',    icon: Telescope },
-  { href: '/nfts',    label: 'My discoveries',  icon: Gem },
-];
-
 export default function Nav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { authenticated, ready, email, displayName, initials, avatarGlyph } = useDisplayProfile();
-  const { logout } = useStellarAuth();
+  const { authenticated, ready } = useDisplayProfile();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [avatarOpen, setAvatarOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
-  const avatarWrapRef = useRef<HTMLDivElement>(null);
-  const avatarTriggerRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => { setSearchOpen(false); setAvatarOpen(false); }, [pathname]);
-
-  useEffect(() => {
-    if (!avatarOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setAvatarOpen(false);
-        avatarTriggerRef.current?.focus();
-      }
-    };
-    const onClick = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (avatarWrapRef.current && !avatarWrapRef.current.contains(t)) setAvatarOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('mousedown', onClick);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      window.removeEventListener('mousedown', onClick);
-    };
-  }, [avatarOpen]);
-
-  useEffect(() => {
-    const onResize = () => { if (window.innerWidth < 768) setAvatarOpen(false); };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  const handleLogout = async () => {
-    setAvatarOpen(false);
-    try { await logout(); } catch {}
-    router.push('/');
-  };
+  useEffect(() => { setSearchOpen(false); }, [pathname]);
 
   return (
     <>
       <style>{`
-        @keyframes dropIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
         .nav-icon-btn { transition: color 0.15s ease, background 0.15s ease; background: transparent; border: none; cursor: pointer; }
         .nav-icon-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.95); }
         .nav-tab { position: relative; transition: all 0.18s ease; border-radius: 9999px; }
         .nav-tab:hover:not(.nav-tab-active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9) !important; }
         .signin-btn { transition: all 0.18s ease; }
         .signin-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25); color: white; }
-        .dd-link { transition: background 0.15s ease; text-decoration: none; }
-        .dd-link:hover { background: rgba(255,255,255,0.04); }
         .hub-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: rgba(255,255,255,0.7); transition: all 0.15s ease; text-decoration: none; }
         .hub-btn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.95); }
         .hub-btn[data-active="true"] { background: rgba(255,209,102,0.10); border-color: rgba(255,209,102,0.25); color: var(--terracotta); }
-        .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; border-radius: 9999px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: box-shadow 0.18s ease; background: linear-gradient(135deg, #534AB7, #7F77DD); border: 1.5px solid rgba(255,255,255,0.15); }
-        .avatar-btn:hover { box-shadow: 0 0 0 2px rgba(127,119,221,0.2); }
-        .avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
       `}</style>
 
       <nav
@@ -104,18 +53,9 @@ export default function Nav() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-14 relative flex items-center">
 
-            {/* LEFT cluster: hub + logo */}
-            <div className="flex items-center gap-2.5 flex-shrink-0">
-              <Link
-                href="/hub"
-                className="hub-btn"
-                data-active={pathname.startsWith('/hub')}
-                aria-label="Hub"
-              >
-                <LayoutGrid size={17} strokeWidth={1.9} />
-              </Link>
-
-              <Link href="/" title="Stellar" className="flex items-center" style={{ marginLeft: 4 }}>
+            {/* LEFT cluster: logo */}
+            <div className="flex items-center flex-shrink-0">
+              <Link href="/" title="Stellar" className="flex items-center">
                 <div style={{ filter: 'drop-shadow(0 0 18px rgba(255, 209, 102,0.6)) drop-shadow(0 0 36px rgba(255, 209, 102,0.25))' }}>
                   <AstroLogo heightClass="h-8" size={30} />
                 </div>
@@ -162,7 +102,7 @@ export default function Nav() {
               </button>
 
               {!ready ? (
-                <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] animate-pulse shrink-0" style={{ aspectRatio: '1 / 1' }} />
+                <div className="w-8 h-8 rounded-lg bg-[var(--surface-hover)] animate-pulse shrink-0" />
               ) : !authenticated ? (
                 <button
                   onClick={() => setAuthOpen(true)}
@@ -182,133 +122,14 @@ export default function Nav() {
                   Sign in
                 </button>
               ) : (
-                <div ref={avatarWrapRef} className="relative">
-                  <button
-                    ref={avatarTriggerRef}
-                    onClick={() => setAvatarOpen(v => !v)}
-                    className="avatar-btn"
-                    aria-label="Open profile menu"
-                    aria-expanded={avatarOpen}
-                    aria-controls="avatar-menu"
-                    aria-haspopup="menu"
-                  >
-                    {avatarGlyph ? (
-                      <span style={{ fontSize: 16, lineHeight: 1, filter: 'saturate(0.95)' }}>
-                        {avatarGlyph}
-                      </span>
-                    ) : initials ? (
-                      <span style={{ color: 'white', fontSize: 11, fontWeight: 500, letterSpacing: '0.02em', lineHeight: 1 }}>
-                        {initials}
-                      </span>
-                    ) : (
-                      <Telescope size={14} strokeWidth={1.75} color="white" />
-                    )}
-                  </button>
-
-                  {avatarOpen && (
-                    <div
-                      id="avatar-menu"
-                      role="menu"
-                      className="absolute z-[60]"
-                      style={{
-                        top: 'calc(100% + 8px)',
-                        right: 0,
-                        width: 220,
-                        animation: 'dropIn 0.15s cubic-bezier(0.22,1,0.36,1)',
-                        background: '#0d1424',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: 10,
-                        padding: 8,
-                        boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '10px 12px',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
-                        marginBottom: 4,
-                      }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 9999, flexShrink: 0,
-                          background: 'linear-gradient(135deg, #534AB7, #7F77DD)',
-                          border: '1.5px solid rgba(255,255,255,0.15)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: 'white', fontSize: 11, fontWeight: 500,
-                        }}>
-                          {avatarGlyph ? (
-                            <span style={{ fontSize: 17, lineHeight: 1 }}>{avatarGlyph}</span>
-                          ) : initials || <Telescope size={14} strokeWidth={1.75} color="white" />}
-                        </div>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{
-                            color: 'white', fontSize: 13, fontWeight: 500,
-                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                            fontFamily: 'var(--font-display)',
-                          }}>
-                            {displayName}
-                          </div>
-                          {email && (
-                            <div style={{
-                              color: 'rgba(255,255,255,0.4)', fontSize: 11,
-                              fontFamily: 'var(--font-mono)',
-                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                            }}>
-                              {email}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {AVATAR_ITEMS.map(item => {
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            role="menuitem"
-                            onClick={() => setAvatarOpen(false)}
-                            className="dd-link flex items-center"
-                            style={{
-                              gap: 10,
-                              padding: '8px 12px',
-                              color: 'rgba(255,255,255,0.85)',
-                              fontSize: 13,
-                              borderRadius: 6,
-                              fontFamily: 'var(--font-display)',
-                            }}
-                          >
-                            <Icon size={14} strokeWidth={1.75} />
-                            <span>{item.label}</span>
-                          </Link>
-                        );
-                      })}
-
-                      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
-
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleLogout}
-                        className="dd-link flex items-center w-full"
-                        style={{
-                          gap: 10,
-                          padding: '8px 12px',
-                          color: 'rgba(255,140,140,0.85)',
-                          fontSize: 13,
-                          borderRadius: 6,
-                          background: 'transparent',
-                          border: 'none',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          fontFamily: 'var(--font-display)',
-                        }}
-                      >
-                        <LogOut size={14} strokeWidth={1.75} />
-                        <span>Sign out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <Link
+                  href="/hub"
+                  className="hub-btn"
+                  data-active={pathname.startsWith('/hub')}
+                  aria-label="Hub"
+                >
+                  <LayoutGrid size={17} strokeWidth={1.9} />
+                </Link>
               )}
             </div>
           </div>
