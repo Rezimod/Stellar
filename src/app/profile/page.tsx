@@ -120,9 +120,10 @@ export default function ProfilePage() {
   const [authOpen, setAuthOpen] = useState(false);
 
   const [starsBalance, setStarsBalance] = useState<number>(0);
+  const [lifetimeEarned, setLifetimeEarned] = useState<number>(0);
+  const [lifetimeBurned, setLifetimeBurned] = useState<number>(0);
   const [copied, setCopied] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [obsCount, setObsCount] = useState<number>(0);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<{ photo: string; name: string } | null>(null);
@@ -147,17 +148,11 @@ export default function ProfilePage() {
     window.addEventListener('stellar:stars-synced', refresh);
     Promise.allSettled([
       fetch(`/api/stars-balance?address=${encodeURIComponent(address)}`)
-        .then(r => r.json()).then(d => setStarsBalance(d.balance)),
-      getAccessToken().then(token =>
-        fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address)}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        })
-          .then(r => r.json())
-          .then(d => {
-            const obs = d.observations ?? [];
-            setObsCount(obs.length);
-          }),
-      ),
+        .then(r => r.json()).then(d => {
+          setStarsBalance(d.balance ?? 0);
+          setLifetimeEarned(d.lifetimeEarned ?? 0);
+          setLifetimeBurned(d.lifetimeBurned ?? 0);
+        }),
       getAccessToken().then(token =>
         fetch(`/api/orders?walletAddress=${encodeURIComponent(address)}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -240,10 +235,11 @@ export default function ProfilePage() {
   const addrShort = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : null;
 
   const completed = state.completedMissions.filter(m => m.status === 'completed');
-  const totalStars = completed.reduce((sum, m) => sum + (m.stars ?? 0), 0);
-  const starsDisplay = profileLoaded ? starsBalance : (starsBalance || totalStars);
-  const STARS_TO_GEL = 0.012;
-  const gelWorth = (starsDisplay * STARS_TO_GEL).toFixed(1);
+  const totalStarsLocal = completed.reduce((sum, m) => sum + (m.stars ?? 0), 0);
+  // Server is the source of truth; fall back to local mission sum until /api/stars-balance lands.
+  const balanceDisplay = profileLoaded ? starsBalance : (starsBalance || totalStarsLocal);
+  const earnedDisplay = profileLoaded ? lifetimeEarned : (lifetimeEarned || totalStarsLocal);
+  const burnedDisplay = profileLoaded ? lifetimeBurned : 0;
   const rank = getRank(completed.length);
   const rankProgress = Math.min(100, (completed.length / Math.max(1, completed.length + 5)) * 100);
 
@@ -258,20 +254,20 @@ export default function ProfilePage() {
 
   const stats = [
     {
-      label: 'Stars Earned',
-      value: `✦ ${starsDisplay.toLocaleString()}`,
+      label: t('lifetimeEarned'),
+      value: `✦ ${earnedDisplay.toLocaleString()}`,
       color: 'var(--stl-gold)',
       skeleton: !profileLoaded,
     },
     {
-      label: 'Missions Done',
-      value: String(completed.length),
+      label: t('balance'),
+      value: `✦ ${balanceDisplay.toLocaleString()}`,
       color: 'var(--stl-text-bright)',
-      skeleton: false,
+      skeleton: !profileLoaded,
     },
     {
-      label: starsDisplay > 0 ? 'Store Value' : 'NFTs Minted',
-      value: starsDisplay > 0 ? `~${gelWorth}₾` : String(obsCount),
+      label: t('lifetimeBurned'),
+      value: `✦ ${burnedDisplay.toLocaleString()}`,
       color: 'var(--stl-green)',
       skeleton: !profileLoaded,
     },

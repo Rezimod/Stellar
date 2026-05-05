@@ -9,7 +9,6 @@ import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import { MISSIONS } from '@/lib/constants';
 import { getMissionImage } from '@/lib/mission-icons';
-import { getUnlockedRewards, getRank } from '@/lib/rewards';
 import { calculateSkyScore, visibilityToMeters } from '@/lib/sky-score';
 import { getTierForStreak } from '@/lib/constellation-streak';
 import { calculateRarity } from '@/lib/nft-rarity';
@@ -39,7 +38,7 @@ export default function ObserveVerifyPage() {
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
 
-  const { state, addMission } = useAppState();
+  const { addMission } = useAppState();
   const { user, getAccessToken } = usePrivy();
   const { address: stellarAddress } = useStellarUser();
   const solanaWallet = stellarAddress ? { address: stellarAddress } : null;
@@ -51,7 +50,6 @@ export default function ObserveVerifyPage() {
     setSky, setSkyScore, setPhotoVerification, setMintTxId, setMintError,
     setMintTier, setMintRarity, setCosmicBonus, setTotalStarsEarned,
     setChallengeCompleted, setNftImageUrl, setGalleryReason,
-    setJustUnlockedRewardIds,
   } = flow;
 
   const [stage, setStage] = useState<Stage>('verifying-sky');
@@ -222,14 +220,6 @@ export default function ObserveVerifyPage() {
     const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);
     setMintRarity(rarityInfo);
 
-    const prevCompleted = state.completedMissions
-      .filter(m => m.status === 'completed')
-      .map(m => m.id);
-    const prevRank = getRank(prevCompleted.length).name;
-    const prevUnlocked = getUnlockedRewards(prevCompleted, prevRank)
-      .filter(r => r.unlocked)
-      .map(r => r.id);
-
     setMintError('');
 
     let txId = 'sim_' + Date.now().toString(36);
@@ -371,11 +361,6 @@ export default function ObserveVerifyPage() {
     }
 
     setTimeout(() => {
-      const newCompleted = [...prevCompleted, mission.id];
-      const newRank = getRank(newCompleted.length).name;
-      const nowUnlocked = getUnlockedRewards(newCompleted, newRank).filter(r => r.unlocked);
-      const justUnlocked = nowUnlocked.filter(r => !prevUnlocked.includes(r.id));
-
       addMission({
         id: mission.id,
         name: mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name),
@@ -391,7 +376,6 @@ export default function ObserveVerifyPage() {
         method: txId.startsWith('sim') ? 'simulated' : 'onchain',
       });
 
-      setJustUnlockedRewardIds(justUnlocked.map(r => r.id));
       setStage('done');
       router.push(`/observe/${mission.id}/result`);
     }, 1200);

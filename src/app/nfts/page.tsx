@@ -11,7 +11,6 @@ import Image from 'next/image';
 import PageTransition from '@/components/ui/PageTransition';
 import StaggerChildren from '@/components/ui/StaggerChildren';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { REWARDS, MISSION_REWARD_HINTS } from '@/lib/rewards';
 import { MISSIONS } from '@/lib/constants';
 import { useAppState } from '@/hooks/useAppState';
 import type { CompletedMission } from '@/lib/types';
@@ -121,9 +120,6 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
   const farcasterText = encodeURIComponent(`Observed ${target} and sealed it on Solana with @StellarClub26 ✦`);
 
   const isDemoNft = target.toLowerCase().includes('demo') || (getAttr(attrs, 'Mission-ID') || '').startsWith('quick-') || (getAttr(attrs, 'Mission-ID') || '') === 'demo';
-
-  const missionMatch = MISSIONS.find(m => m.name.toLowerCase() === target.toLowerCase());
-  const rewardHint = missionMatch ? MISSION_REWARD_HINTS[missionMatch.id] : null;
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -303,21 +299,6 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
           >
             <ExternalLink size={14} /> View on Solana Explorer
           </a>
-        )}
-
-        {/* Reward hint */}
-        {rewardHint && (
-          <div className="card-base p-4">
-            <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-              Reward progress
-            </p>
-            <p style={{ color: 'var(--stars)', fontSize: 13, fontWeight: 600, margin: '4px 0 0' }}>
-              {rewardHint}
-            </p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '2px 0 0' }}>
-              Redeem at astroman.ge
-            </p>
-          </div>
         )}
 
         {/* Remove from gallery — soft hide. On-chain mint is not burned. */}
@@ -624,8 +605,8 @@ export default function NftsPage() {
           }).filter(Boolean) as string[];
           const uniqueOwned = [...new Set(ownedTargets)];
 
-          const celestialReward = REWARDS.find(r => r.id === 'complete-all');
-          const celestialMissions = celestialReward?.requiredMissions ?? [];
+          // Beginner + intermediate set — completing all five earns the Celestial rank.
+          const celestialMissions = ['moon', 'jupiter', 'orion', 'saturn', 'pleiades'];
           const celestialCompleted = celestialMissions.filter(id => uniqueOwned.includes(id)).length;
           const celestialTotal = celestialMissions.length;
 

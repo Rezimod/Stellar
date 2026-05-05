@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Copy, Check, Award, X } from 'lucide-react';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { MISSIONS } from '@/lib/constants';
-import { REWARDS } from '@/lib/rewards';
 import { getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
-import RewardIcon from '@/components/shared/RewardIcon';
 import DiscoverySealed from '@/components/sky/DiscoverySealed';
 import { useObserveFlow } from '../ObserveFlowContext';
 import { useAppState } from '@/hooks/useAppState';
@@ -29,7 +26,6 @@ export default function ObserveResultPage() {
     sky, skyScore, coords,
     mintTxId, mintTier, cosmicBonus,
     totalStarsEarned, challengeCompleted,
-    justUnlockedRewardIds, setJustUnlockedRewardIds,
   } = useObserveFlow();
 
   useEffect(() => {
@@ -47,8 +43,6 @@ export default function ObserveResultPage() {
   const [starClaimed, setStarClaimed] = useState<{ chosenName: string; proofUrl: string } | null>(null);
   const [starError, setStarError] = useState('');
   const [starSkipped, setStarSkipped] = useState(false);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [rewardsModalOpen, setRewardsModalOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,28 +55,10 @@ export default function ObserveResultPage() {
   }, [mission, mintTxId, coords.lat, coords.lon]);
 
   useEffect(() => {
-    if (justUnlockedRewardIds.length > 0) {
-      const t = setTimeout(() => setRewardsModalOpen(true), 1800);
-      return () => clearTimeout(t);
-    }
-  }, [justUnlockedRewardIds.length]);
-
-  useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 2500);
     return () => clearTimeout(t);
   }, [toast]);
-
-  const newRewards = useMemo(() => {
-    if (justUnlockedRewardIds.length === 0) return [];
-    const idSet = new Set(justUnlockedRewardIds);
-    return REWARDS.filter(r => idSet.has(r.id)).map(r => ({
-      icon: r.icon,
-      name: r.name,
-      description: r.description,
-      code: r.code,
-    }));
-  }, [justUnlockedRewardIds]);
 
   const handleStarClaim = async () => {
     if (!starName.trim() || !nearestStar || !mintTxId) return;
@@ -110,17 +86,6 @@ export default function ObserveResultPage() {
     } finally {
       setStarClaiming(false);
     }
-  };
-
-  const copyCode = (code: string) => {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
-
-  const closeRewardsModal = () => {
-    setRewardsModalOpen(false);
-    setJustUnlockedRewardIds([]);
   };
 
   if (!mission) {
@@ -365,76 +330,6 @@ export default function ObserveResultPage() {
         </div>
       )}
 
-      {/* Rewards unlock modal */}
-      {rewardsModalOpen && newRewards.length > 0 && (
-        <div
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-start pt-14 overflow-y-auto px-4 pb-8"
-          style={{ background: 'rgba(7,11,20,0.97)', backdropFilter: 'blur(12px)' }}
-        >
-          <div
-            className="relative max-w-sm w-full mx-auto flex flex-col gap-3 text-center p-5 pt-10 rounded-2xl"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
-          >
-            <button
-              onClick={closeRewardsModal}
-              aria-label="Close"
-              className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              <X size={14} />
-            </button>
-            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/20 flex items-center justify-center mx-auto">
-              <Award size={22} className="text-[var(--seafoam)]" />
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-[var(--seafoam)]">Reward Unlocked!</h2>
-            <div className="overflow-y-auto flex flex-col gap-2" style={{ maxHeight: '45vh' }}>
-              {newRewards.map(r => (
-                <div key={r.name} className="rounded-xl p-3 text-left flex flex-col gap-1.5" style={{ background: 'rgba(94, 234, 212,0.05)', border: '1px solid rgba(94, 234, 212,0.15)' }}>
-                  <div className="flex items-center gap-3">
-                    <RewardIcon emoji={r.icon} />
-                    <div>
-                      <p className="font-semibold text-text-primary text-sm">{r.name}</p>
-                      <p className="text-text-muted text-xs">{r.description}</p>
-                    </div>
-                  </div>
-                  {r.code && (
-                    <div className="mt-1">
-                      <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wider mb-1">Your Code</p>
-                      <div className="flex items-center gap-2">
-                        <code className="bg-[var(--canvas)] border border-[var(--terracotta)]/25 px-3 py-2 rounded-lg text-sm text-[var(--terracotta)] font-mono flex-1 tracking-wide">
-                          {r.code}
-                        </code>
-                        <button
-                          onClick={() => copyCode(r.code!)}
-                          className="p-2 border border-[rgba(255, 209, 102,0.12)] hover:border-[var(--terracotta)] rounded-lg text-text-muted hover:text-[var(--terracotta)] transition-all flex-shrink-0"
-                        >
-                          {copiedCode === r.code ? <Check size={14} className="text-[var(--seafoam)]" /> : <Copy size={14} />}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2 sm:gap-3">
-              <a
-                href="https://astroman.ge"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-center text-xs py-2.5 px-3 border border-[var(--terracotta)]/30 text-[var(--terracotta)] rounded-lg hover:bg-[var(--terracotta)]/10 transition-all"
-              >
-                Visit astroman.ge →
-              </a>
-              <button
-                onClick={closeRewardsModal}
-                className="flex-1 text-xs py-2.5 px-3 bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/30 text-[var(--seafoam)] rounded-lg hover:bg-[var(--seafoam)]/20 transition-all"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </PageContainer>
   );
 }

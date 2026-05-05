@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ExternalLink, Trash2, Clock, CheckCircle2, Cloud, ImageIcon, AlertTriangle, Telescope } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
 import { useAppState } from '@/hooks/useAppState';
-import { getUnlockedRewards, getRank } from '@/lib/rewards';
+import { getRank } from '@/lib/rewards';
 import type { CompletedMission } from '@/lib/types';
 
 function openExplorer(mission: CompletedMission) {
@@ -148,10 +148,10 @@ export default function ProofPage() {
   }
 
   const completedIds = state.completedMissions.filter(m => m.status === 'completed').map(m => m.id);
-  const rank = getRank(completedIds.length).name;
-  const rewards = getUnlockedRewards(completedIds, rank);
-  const unlockedCount = rewards.filter(r => r.unlocked).length;
-  const nextReward = rewards.find(r => !r.unlocked && r.progress > 0);
+  const rank = getRank(completedIds.length);
+  const lifetimeStarsLocal = state.completedMissions
+    .filter(m => m.status === 'completed')
+    .reduce((sum, m) => sum + (m.stars ?? 0), 0);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 animate-page-enter">
@@ -170,21 +170,19 @@ export default function ProofPage() {
         )}
       </div>
 
-      {/* Rewards summary */}
+      {/* Stars summary */}
       <div className="glass-card border border-[var(--terracotta)]/20 p-4 mb-6 flex flex-col gap-2">
         <p className="text-[var(--terracotta)] text-sm font-semibold">
-          Rewards: {unlockedCount}/{rewards.length} unlocked
-          {nextReward && (
-            <span className="text-text-muted font-normal"> · Next: {nextReward.name}</span>
-          )}
+          {rank.icon} {rank.name}
+          <span className="text-text-muted font-normal"> · ✦ {lifetimeStarsLocal.toLocaleString()} earned</span>
         </p>
-        {nextReward?.requiredMissions && (
+        {rank.nextRank && (
           <p className="text-text-muted text-xs">
-            Observe {nextReward.requiredMissions.filter(id => !completedIds.includes(id)).join(', ')} to unlock
+            Next rank: {rank.nextRank} · {rank.progressPct}% to go
           </p>
         )}
-        <Link href="/missions" className="text-[var(--terracotta)] text-xs hover:underline">
-          View All Rewards →
+        <Link href="/profile" className="text-[var(--terracotta)] text-xs hover:underline">
+          View profile →
         </Link>
       </div>
 

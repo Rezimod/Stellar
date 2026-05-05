@@ -58,9 +58,6 @@ export interface ObserveFlowState {
   galleryReason: string;
   setGalleryReason: (v: string) => void;
 
-  justUnlockedRewardIds: string[];
-  setJustUnlockedRewardIds: (v: string[]) => void;
-
   reset: () => void;
 }
 
@@ -83,7 +80,6 @@ export function ObserveFlowProvider({ children }: { children: ReactNode }) {
   const [challengeCompleted, setChallengeCompleted] = useState(false);
   const [nftImageUrl, setNftImageUrl] = useState('');
   const [galleryReason, setGalleryReason] = useState('');
-  const [justUnlockedRewardIds, setJustUnlockedRewardIds] = useState<string[]>([]);
 
   const reset = () => {
     setPhoto('');
@@ -101,7 +97,6 @@ export function ObserveFlowProvider({ children }: { children: ReactNode }) {
     setChallengeCompleted(false);
     setNftImageUrl('');
     setGalleryReason('');
-    setJustUnlockedRewardIds([]);
   };
 
   return (
@@ -122,7 +117,6 @@ export function ObserveFlowProvider({ children }: { children: ReactNode }) {
       challengeCompleted, setChallengeCompleted,
       nftImageUrl, setNftImageUrl,
       galleryReason, setGalleryReason,
-      justUnlockedRewardIds, setJustUnlockedRewardIds,
       reset,
     }}>
       {children}

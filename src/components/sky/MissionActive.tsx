@@ -7,7 +7,6 @@ import type { Mission, SkyVerification, MissionState, PhotoVerificationResult } 
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
-import { getUnlockedRewards, getRank } from '@/lib/rewards';
 import CameraCapture from './CameraCapture';
 import Verification from './Verification';
 import MintAnimation from '@/components/shared/MintAnimation';
@@ -15,10 +14,9 @@ import Button from '@/components/shared/Button';
 import LoadingRing from '@/components/ui/LoadingRing';
 import ScoreRing from '@/components/ui/ScoreRing';
 import { calculateSkyScore, visibilityToMeters, type SkyScoreResult } from '@/lib/sky-score';
-import { Copy, Check, Award, ExternalLink, Camera, X } from 'lucide-react';
+import { ExternalLink, Camera, X } from 'lucide-react';
 import { getMissionImage } from '@/lib/mission-icons';
 import { buildTwitterShareUrl, buildShareImageUrl } from '@/lib/share';
-import RewardIcon from '@/components/shared/RewardIcon';
 import { getStarlight, consumeStarlight } from '@/lib/starlight';
 import { getTierForStreak, type StreakTier } from '@/lib/constellation-streak';
 import { calculateRarity, type RarityInfo } from '@/lib/nft-rarity';
@@ -44,13 +42,6 @@ interface MissionActiveProps {
   onClose: () => void;
 }
 
-interface NewReward {
-  icon: string;
-  name: string;
-  description: string;
-  code?: string;
-}
-
 export default function MissionActive({ mission, onClose }: MissionActiveProps) {
   const router = useRouter();
   const { state, addMission } = useAppState();
@@ -65,8 +56,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const [mintDone, setMintDone] = useState(false);
   const [mintTxId, setMintTxId] = useState('');
   const [mintError, setMintError] = useState('');
-  const [newRewards, setNewRewards] = useState<NewReward[]>([]);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showSlowMint, setShowSlowMint] = useState(false);
   const [skyScore, setSkyScore] = useState<SkyScoreResult | null>(null);
   const [nftImageUrl, setNftImageUrl] = useState('');
@@ -291,14 +280,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);
     setMintRarity(rarityInfo);
 
-    const prevCompleted = state.completedMissions
-      .filter(m => m.status === 'completed')
-      .map(m => m.id);
-    const prevRank = getRank(prevCompleted.length).name;
-    const prevUnlocked = getUnlockedRewards(prevCompleted, prevRank)
-      .filter(r => r.unlocked)
-      .map(r => r.id);
-
     setMintError('');
 
     // --- Mint the NFT, passing rarity through ---
@@ -453,11 +434,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     }
 
     setTimeout(() => {
-      const newCompleted = [...prevCompleted, mission.id];
-      const newRank = getRank(newCompleted.length).name;
-      const nowUnlocked = getUnlockedRewards(newCompleted, newRank).filter(r => r.unlocked);
-      const justUnlocked = nowUnlocked.filter(r => !prevUnlocked.includes(r.id));
-
       const isSafePhoto = (url: string) =>
         url.startsWith('data:image/jpeg;base64,') ||
         url.startsWith('data:image/png;base64,') ||
@@ -481,11 +457,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       });
 
       setStep('done');
-      if (justUnlocked.length > 0) {
-        setTimeout(() => {
-          setNewRewards(justUnlocked.map(r => ({ icon: r.icon, name: r.name, description: r.description, code: r.code })));
-        }, 1800);
-      }
     }, 1200);
   };
 
@@ -516,70 +487,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       setStarClaiming(false);
     }
   };
-
-  const copyCode = (code: string) => {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
-
-  // Reward unlock modal
-  if (newRewards.length > 0) {
-    return (
-      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-start pt-14 overflow-y-auto px-4 pb-8" style={{ background: 'rgba(7,11,20,0.97)', backdropFilter: 'blur(12px)' }}>
-        <div className="relative max-w-sm w-full mx-auto flex flex-col gap-3 text-center p-5 pt-10 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
-          <button
-            onClick={() => setNewRewards([])}
-            aria-label="Close"
-            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            <X size={14} />
-          </button>
-          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/20 flex items-center justify-center mx-auto">
-            <Award size={22} className="text-[var(--seafoam)]" />
-          </div>
-          <h2 className="text-lg sm:text-xl font-bold text-[var(--seafoam)]">Reward Unlocked!</h2>
-          <div className="overflow-y-auto flex flex-col gap-2" style={{ maxHeight: '45vh' }}>
-          {newRewards.map(r => (
-            <div key={r.name} className="rounded-xl p-3 text-left flex flex-col gap-1.5" style={{ background: 'rgba(94, 234, 212,0.05)', border: '1px solid rgba(94, 234, 212,0.15)' }}>
-              <div className="flex items-center gap-3">
-                <RewardIcon emoji={r.icon} />
-                <div>
-                  <p className="font-semibold text-text-primary text-sm">{r.name}</p>
-                  <p className="text-text-muted text-xs">{r.description}</p>
-                </div>
-              </div>
-              {r.code && (
-                <div className="mt-1">
-                  <p className="text-[var(--text-dim)] text-[9px] uppercase tracking-wider mb-1">Your Code</p>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-[var(--canvas)] border border-[var(--terracotta)]/25 px-3 py-2 rounded-lg text-sm text-[var(--terracotta)] font-mono flex-1 tracking-wide">
-                      {r.code}
-                    </code>
-                    <button onClick={() => copyCode(r.code!)} className="p-2 border border-[rgba(255, 209, 102,0.12)] hover:border-[var(--terracotta)] rounded-lg text-text-muted hover:text-[var(--terracotta)] transition-all flex-shrink-0">
-                      {copiedCode === r.code ? <Check size={14} className="text-[var(--seafoam)]" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-          </div>
-          <div className="flex gap-2 sm:gap-3">
-            <a href="https://astroman.ge" target="_blank" rel="noopener noreferrer"
-              className="flex-1 text-center text-xs py-2.5 px-3 border border-[var(--terracotta)]/30 text-[var(--terracotta)] rounded-lg hover:bg-[var(--terracotta)]/10 transition-all">
-              Visit astroman.ge →
-            </a>
-            <button onClick={() => setNewRewards([])}
-              className="flex-1 text-xs py-2.5 px-3 bg-[var(--seafoam)]/10 border border-[var(--seafoam)]/30 text-[var(--seafoam)] rounded-lg hover:bg-[var(--seafoam)]/20 transition-all">
-              Continue
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (step === 'done') {
     const isOnChain = mintTxId && !mintTxId.startsWith('sim');

@@ -599,8 +599,8 @@ export default function HomePage() {
                 </StrokeIcon>
               </IconTile>
               <CardTitle>Stars Stacker</CardTitle>
-              <Prompt>&quot;How many Stars until the free Moon Lamp reward?&quot;</Prompt>
-              <Prompt>&quot;Show all my unlocked Astroman discount codes&quot;</Prompt>
+              <Prompt>&quot;How many Stars until the next rank?&quot;</Prompt>
+              <Prompt>&quot;Burn 100 Stars for a 1₾ discount on this telescope&quot;</Prompt>
             </div>
             <div className="bg-[#11172A] border border-white/[0.06] rounded-[18px] p-5 md:p-9 text-center md:text-left">
               <IconTile tone="teal">

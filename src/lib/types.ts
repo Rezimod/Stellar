@@ -64,7 +64,6 @@ export interface AppState {
   telescope: { brand: string; model: string; aperture: string } | null;
   telescopeTx: string;
   completedMissions: CompletedMission[];
-  claimedRewards: string[];
   completedQuizzes: QuizResult[];
   hiddenObservationIds: string[];
 }

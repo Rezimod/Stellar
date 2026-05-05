@@ -102,6 +102,22 @@ export const MISSIONS: Mission[] = [
     context: 'deep_sky_m1_supernova_remnant' },
 ];
 
+// Star payout per mission tier. Mission rows on /missions and the Sky page
+// drive their reward hint from this table — keep it the single source of truth.
+export type MissionTier = 'easy' | 'medium' | 'hard' | 'expert';
+
+export const STAR_PAYOUT_BY_TIER: Record<MissionTier, number> = {
+  easy: 50,
+  medium: 100,
+  hard: 175,
+  expert: 250,
+};
+
+// 2x bonus when the observation timestamp lands within ±24h of a matching
+// AstroEvent (eclipse, opposition, conjunction, etc). Wired in /api/observe/log
+// and mirrored in /api/observe/verify so the UI estimate matches the mint.
+export const EVENT_BONUS_MULTIPLIER = 2;
+
 export const TELESCOPE_BRANDS = ['Celestron', 'National Geographic', 'Meade', 'Sky-Watcher', 'Orion', 'Other'];
 
 export const AGENT_META = {

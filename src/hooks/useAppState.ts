@@ -11,7 +11,6 @@ const defaultState: AppState = {
   telescope: null,
   telescopeTx: '',
   completedMissions: [],
-  claimedRewards: [],
   completedQuizzes: [],
   hiddenObservationIds: [],
 };
@@ -25,7 +24,6 @@ interface AppStateCtx {
   removeMission: (txId: string) => void;
   hideObservation: (id: string) => void;
   unhideObservation: (id: string) => void;
-  claimReward: (id: string) => void;
   addQuizResult: (r: QuizResult) => void;
   pendingCount: number;
   reset: () => void;
@@ -133,12 +131,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const unhideObservation = useCallback((id: string) => {
     setState(s => ({ ...s, hiddenObservationIds: (s.hiddenObservationIds ?? []).filter(x => x !== id) }));
   }, []);
-  const claimReward = useCallback((id: string) => {
-    setState(s => ({
-      ...s,
-      claimedRewards: s.claimedRewards.includes(id) ? s.claimedRewards : [...s.claimedRewards, id],
-    }));
-  }, []);
   const addQuizResult = useCallback((r: QuizResult) => {
     setState(s => ({ ...s, completedQuizzes: [...(s.completedQuizzes ?? []), r] }));
   }, []);
@@ -162,12 +154,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       removeMission,
       hideObservation,
       unhideObservation,
-      claimReward,
       addQuizResult,
       pendingCount,
       reset,
     }),
-    [state, setWallet, setMembership, setTelescope, addMission, removeMission, hideObservation, unhideObservation, claimReward, addQuizResult, pendingCount, reset],
+    [state, setWallet, setMembership, setTelescope, addMission, removeMission, hideObservation, unhideObservation, addQuizResult, pendingCount, reset],
   );
 
   return createElement(Ctx.Provider, { value: ctx }, children);

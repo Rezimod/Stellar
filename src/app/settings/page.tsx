@@ -7,13 +7,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ChevronLeft, Sun, Moon, Globe, Bell, BellOff, Shield,
+  ChevronLeft, Sun, Moon, Bell, BellOff, Shield,
   Mail, Phone, Chrome, Copy, Check, ExternalLink,
-  Star, TrendingUp, LogOut, Trash2, ChevronRight,
+  LogOut, Trash2, ChevronRight,
 } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useAppState } from '@/hooks/useAppState';
-import { getRank, getUnlockedRewards } from '@/lib/rewards';
+import { getRank } from '@/lib/rewards';
 
 const STARS_TO_GEL = 0.012; // 1 Star ≈ 0.012 GEL (100 Stars ≈ 1.2 GEL store credit)
 
@@ -145,8 +145,6 @@ export default function SettingsPage() {
   const rank = getRank(completed.length);
   const totalStars = starsBalance || completed.reduce((s, m) => s + (m.stars ?? 0), 0);
   const gelWorth = (totalStars * STARS_TO_GEL).toFixed(2);
-  const unlockedRewards = getUnlockedRewards(completed.map(m => m.id), rank.name);
-  const availableRewards = unlockedRewards.filter(r => r.unlocked && !r.claimed);
 
   const email = user?.email?.address ??
     (user?.linkedAccounts.find(a => a.type === 'email') as { address?: string } | undefined)?.address;
@@ -240,15 +238,14 @@ export default function SettingsPage() {
         </Section>
       )}
 
-      {/* ── STARS & REWARDS ── */}
-      <Section title="Stars & Rewards">
-        {/* Balance card */}
-        <div style={{ padding: '16px 16px 0' }}>
+      {/* ── STARS ── */}
+      <Section title="Stars">
+        <div style={{ padding: '16px 16px 18px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
             {[
-              { value: `✦ ${totalStars.toLocaleString()}`, label: 'Stars Balance', color: 'var(--stars)' },
+              { value: `✦ ${totalStars.toLocaleString()}`, label: 'Balance', color: 'var(--stars)' },
               { value: `~${gelWorth} ₾`, label: 'Store Value', color: 'var(--success)' },
-              { value: availableRewards.length.toString(), label: 'Rewards Ready', color: 'var(--terracotta)' },
+              { value: rank.name, label: rank.icon, color: 'var(--terracotta)' },
             ].map(s => (
               <div key={s.label} style={{ borderRadius: 12, padding: '12px 8px', textAlign: 'center', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
                 <p style={{ color: s.color, fontWeight: 800, fontSize: 15, margin: '0 0 2px', fontFamily: 'monospace' }}>{s.value}</p>
@@ -270,55 +267,11 @@ export default function SettingsPage() {
 
           {/* SOL price info */}
           {solPrice > 0 && (
-            <p style={{ color: 'var(--text-muted)', fontSize: 11, marginBottom: 14, textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: 0, textAlign: 'center' }}>
               SOL ${solPrice.toFixed(0)} · 100 Stars ≈ {(100 * STARS_TO_GEL).toFixed(2)} ₾ store credit
             </p>
           )}
         </div>
-
-        {/* Unlocked rewards */}
-        {availableRewards.length > 0 && (
-          <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
-            {availableRewards.map((r, i) => (
-              <Row
-                key={r.id}
-                icon={<Star size={14} />}
-                iconBg="rgba(255, 209, 102,0.1)"
-                iconColor="var(--stars)"
-                label={r.name}
-                sublabel={r.description}
-                right={
-                  <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(94, 234, 212,0.12)', border: '1px solid rgba(94, 234, 212,0.25)', color: 'var(--success)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    Claim
-                  </span>
-                }
-                last={i === availableRewards.length - 1}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Next reward progress */}
-        {availableRewards.length === 0 && (
-          <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
-            {unlockedRewards.filter(r => !r.unlocked).slice(0, 2).map((r, i, arr) => (
-              <Row
-                key={r.id}
-                icon={<TrendingUp size={14} />}
-                iconBg="rgba(255, 209, 102,0.08)"
-                iconColor="var(--terracotta)"
-                label={r.name}
-                sublabel={r.description}
-                right={
-                  <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                    {Math.round(r.progress * 100)}%
-                  </span>
-                }
-                last={i === arr.length - 1}
-              />
-            ))}
-          </div>
-        )}
       </Section>
 
       {/* ── APPEARANCE ── */}
