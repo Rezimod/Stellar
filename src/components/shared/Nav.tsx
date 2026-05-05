@@ -127,7 +127,7 @@ export default function Nav() {
         .hamburger-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; transition: all 0.15s ease; }
         .hamburger-btn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
         .hamburger-btn[data-open="true"] { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
-        .avatar-btn { width: 30px; height: 30px; border-radius: 9999px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: box-shadow 0.18s ease; background: linear-gradient(135deg, #534AB7, #7F77DD); border: 1.5px solid rgba(255,255,255,0.15); }
+        .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; border-radius: 9999px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: box-shadow 0.18s ease; background: linear-gradient(135deg, #534AB7, #7F77DD); border: 1.5px solid rgba(255,255,255,0.15); }
         .avatar-btn:hover { box-shadow: 0 0 0 2px rgba(127,119,221,0.2); }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .menu-dropdown { width: 240px; }
@@ -270,7 +270,7 @@ export default function Nav() {
               </button>
 
               {!ready ? (
-                <div className="w-[30px] h-[30px] rounded-full bg-[var(--surface-hover)] animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] animate-pulse shrink-0" style={{ aspectRatio: '1 / 1' }} />
               ) : !authenticated ? (
                 <button
                   onClick={() => setAuthOpen(true)}
