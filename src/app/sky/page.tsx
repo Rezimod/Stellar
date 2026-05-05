@@ -13,7 +13,12 @@ import { LocationFallbackBanner } from '@/components/sky/LocationFallbackBanner'
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { SkyStateStrip } from '@/components/sky/finder/SkyStateStrip';
-import { TargetPicker } from '@/components/sky/finder/TargetPicker';
+import {
+  TargetBelowGrid,
+  TargetFilters,
+  TargetVisibleGrid,
+  type TierFilter,
+} from '@/components/sky/finder/TargetPicker';
 import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
@@ -46,6 +51,7 @@ export default function SkyPage() {
   const [finderError, setFinderError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<ObjectId | null>(null);
   const [autoRotate, setAutoRotate] = useState(false);
+  const [tier, setTier] = useState<TierFilter>('all');
 
   const fetchFinder = useCallback(async () => {
     setFinderError(null);
@@ -192,12 +198,12 @@ export default function SkyPage() {
 
         {showTour && <FinderTour onDismiss={dismissTour} />}
 
-        {/* === Target picker === */}
+        {/* === Difficulty + AUTO filters (centered above the split) === */}
         {finder && !finderError && (
-          <TargetPicker
+          <TargetFilters
             objects={finder.objects}
-            activeId={activeId}
-            onSelect={handleSelect}
+            tier={tier}
+            onTierChange={setTier}
             autoRotate={autoRotate}
             onToggleAuto={() => setAutoRotate((v) => !v)}
           />
@@ -207,30 +213,46 @@ export default function SkyPage() {
           <SkyLoadingSkeleton />
         )}
 
-        {/* === Dome chart === */}
+        {/* === Split: dome chart on the left, visible targets on the right === */}
         {finder && !finderError && (
           <>
-            <section className="sky-v3__dome-only">
-              <SkyMap
-                objects={tableObjects}
+            <section className="sky-v3__split sky-v3__split--finder">
+              <div className="sky-v3__map-wrap">
+                <SkyMap
+                  objects={tableObjects}
+                  activeId={activeId}
+                  onSelect={handleSelect}
+                  heading={compass.heading}
+                  userAltitude={compass.altitude}
+                  headingStatus={compass.status}
+                  onCalibrate={compass.request}
+                  calibrationOffset={compass.offset}
+                  onNudge={compass.nudge}
+                  constellationStars={constellationStars}
+                  constellationLines={CONSTELLATION_LINES}
+                  hopAnchor={hopAnchor ? {
+                    id: hopAnchor.id,
+                    name: hopAnchor.name,
+                    azimuth: hopAnchor.azimuth,
+                    altitude: hopAnchor.altitude,
+                  } : null}
+                />
+              </div>
+              <TargetVisibleGrid
+                objects={finder.objects}
+                tier={tier}
                 activeId={activeId}
                 onSelect={handleSelect}
-                heading={compass.heading}
-                userAltitude={compass.altitude}
-                headingStatus={compass.status}
-                onCalibrate={compass.request}
-                calibrationOffset={compass.offset}
-                onNudge={compass.nudge}
-                constellationStars={constellationStars}
-                constellationLines={CONSTELLATION_LINES}
-                hopAnchor={hopAnchor ? {
-                  id: hopAnchor.id,
-                  name: hopAnchor.name,
-                  azimuth: hopAnchor.azimuth,
-                  altitude: hopAnchor.altitude,
-                } : null}
+                autoRotate={autoRotate}
               />
             </section>
+
+            <TargetBelowGrid
+              objects={finder.objects}
+              tier={tier}
+              activeId={activeId}
+              onSelect={handleSelect}
+            />
 
             {activeObject && (
               <section className="sky-v3__active">

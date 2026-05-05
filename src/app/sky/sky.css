@@ -2512,3 +2512,262 @@
   }
 }
 
+/* ================================================================
+   === DESKTOP — pill-styled status strip + finder split        ===
+   === Mobile (≤ 760px) keeps its existing styles untouched.    ===
+   ================================================================ */
+
+@media (min-width: 761px) {
+  /* === Status strip → row of small pill buttons === */
+  .sky-v3 .sky-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 0 2px;
+    margin: 0;
+    border: none;
+    grid-template-columns: none;
+  }
+  .sky-v3 .sky-strip__segment {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 999px;
+    transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+    min-width: 0;
+  }
+  .sky-v3 .sky-strip__segment:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  .sky-v3 .sky-strip__segment::before { display: none; }
+  .sky-v3 .sky-strip__label {
+    margin: 0;
+    padding-right: 10px;
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+    font-size: 9px;
+    letter-spacing: 0.20em;
+    color: rgba(255, 255, 255, 0.42);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .sky-v3 .sky-strip__value {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 22ch;
+  }
+  .sky-v3 .sky-strip__time {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+  .sky-v3 .sky-strip__sub {
+    margin: 0;
+    padding-left: 10px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.42);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 18ch;
+  }
+  .sky-v3 .sky-strip__moon-row { gap: 6px; }
+  .sky-v3 .sky-strip__moon-row svg { width: 16px; height: 16px; }
+  .sky-v3 .sky-strip__cloud-bar {
+    display: inline-block;
+    width: 38px;
+    height: 3px;
+    margin-top: 0;
+  }
+
+  /* === Filter row (tiers + AUTO) — centered above the split === */
+  .target-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 4px 0;
+  }
+  .target-filters .target-picker__tiers {
+    border-top: none;
+    padding-top: 0;
+    margin-bottom: 0;
+    gap: 8px;
+  }
+  .target-filters .target-tier {
+    padding: 8px 16px;
+    font-size: 11px;
+    letter-spacing: 0.20em;
+  }
+
+  /* === Finder split — dome on left, visible cards on right === */
+  .sky-v3__split--finder {
+    display: grid;
+    grid-template-columns: minmax(360px, 480px) 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .sky-v3__split--finder .sky-v3__map-wrap {
+    position: sticky;
+    top: 24px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .sky-v3__split--finder .sky-map {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* === Visible target column (right side of split) === */
+  .target-visible {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .target-visible__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .target-visible__label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .target-cards--visible {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .target-cards--visible .target-card {
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+  .target-cards--visible .target-card__thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+  .target-cards--visible .target-card__name {
+    font-size: 14px;
+  }
+  .target-cards--visible .target-card__primary {
+    font-size: 11px;
+  }
+  .target-cards--visible .target-card__secondary {
+    font-size: 10px;
+  }
+
+  /* === Below-horizon row (full width, under the split) === */
+  .target-below {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .target-below__head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .target-below__label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.40);
+  }
+  .target-below__count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.40);
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .target-cards--below {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+
+  /* Tighter container gap on desktop so the strip + filters + split read
+     as a single composed block instead of disjointed sections. */
+  .sky-v3 .sky-v3__container {
+    gap: 18px;
+  }
+}
+
+/* === Mobile fallbacks for new wrapper classes ============== */
+
+@media (max-width: 760px) {
+  .target-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .target-visible__head,
+  .target-below__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .target-visible__label,
+  .target-below__label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .target-below__count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.40);
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  /* On mobile, the split collapses to single column (rule already exists
+     above). Visible-cards + below-cards reuse the auto-fill grid to
+     keep parity with the previous TargetPicker layout. */
+  .target-cards--visible,
+  .target-cards--below {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  /* Order the new wrappers sensibly within the existing mobile order
+     scheme (.sky-strip = 1, .sky-v3__split = 2, .sky-v3__active = 6). */
+  .sky-v3 .sky-v3__container > .target-filters { order: 3; }
+  .sky-v3 .sky-v3__container > .target-below { order: 4; }
+}
+

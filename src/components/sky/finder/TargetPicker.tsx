@@ -15,7 +15,7 @@ interface TargetPickerProps {
   onToggleAuto: () => void;
 }
 
-type TierFilter = 'all' | CatalogDifficulty;
+export type TierFilter = 'all' | CatalogDifficulty;
 
 const TIER_ORDER: TierFilter[] = ['all', 'easy', 'medium', 'hard'];
 
@@ -142,6 +142,178 @@ export function TargetPicker({
         )}
       </div>
     </div>
+  );
+}
+
+/* ================================================================
+ * Split exports — used by the desktop sky page.
+ * The existing TargetPicker remains for any caller that wants the
+ * single-block version; these three pieces let the page place the
+ * filter row, the visible grid and the below-horizon grid in
+ * separate slots (e.g. left-of-map vs right-of-map).
+ * ================================================================ */
+
+interface TargetFiltersProps {
+  objects: SkyObject[];
+  tier: TierFilter;
+  onTierChange: (tier: TierFilter) => void;
+  autoRotate: boolean;
+  onToggleAuto: () => void;
+}
+
+export function TargetFilters({
+  objects,
+  tier,
+  onTierChange,
+  autoRotate,
+  onToggleAuto,
+}: TargetFiltersProps) {
+  const t = useTranslations('sky.picker');
+  const counts = useMemo(() => {
+    const c: Record<CatalogDifficulty, number> = { easy: 0, medium: 0, hard: 0 };
+    for (const o of objects) {
+      if (!o.visible || o.id === 'sun') continue;
+      c[o.difficulty]++;
+    }
+    return c;
+  }, [objects]);
+
+  return (
+    <div className="target-filters">
+      <div className="target-picker__tiers" role="tablist" aria-label={t('tierAria')}>
+        {TIER_ORDER.map((tk) => {
+          const active = tier === tk;
+          const count =
+            tk === 'all' ? counts.easy + counts.medium + counts.hard : counts[tk];
+          return (
+            <button
+              key={tk}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => onTierChange(tk)}
+              className={`target-tier${active ? ' is-active' : ''} target-tier--${tk}`}
+            >
+              <span className="target-tier__label">{t(`tier.${tk}`)}</span>
+              <span className="target-tier__count">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        onClick={onToggleAuto}
+        className={`target-picker__auto${autoRotate ? ' is-on' : ''}`}
+        aria-pressed={autoRotate}
+        title={t('autoToggle')}
+      >
+        <span className="target-picker__auto-dot" />
+        {t('auto')}
+      </button>
+    </div>
+  );
+}
+
+interface TargetVisibleGridProps {
+  objects: SkyObject[];
+  tier: TierFilter;
+  activeId: ObjectId | null;
+  onSelect: (id: ObjectId) => void;
+  autoRotate: boolean;
+}
+
+export function TargetVisibleGrid({
+  objects,
+  tier,
+  activeId,
+  onSelect,
+  autoRotate,
+}: TargetVisibleGridProps) {
+  const t = useTranslations('sky.picker');
+  const visible = useMemo(() => {
+    const filtered = objects.filter((o) => {
+      if (o.id === 'sun' && !o.visible) return false;
+      if (!o.visible) return false;
+      if (tier === 'all') return true;
+      return o.difficulty === tier;
+    });
+    return filtered.sort((a, b) => {
+      if (a.id === 'moon' && b.id !== 'moon') return -1;
+      if (b.id === 'moon' && a.id !== 'moon') return 1;
+      return b.altitude - a.altitude;
+    });
+  }, [objects, tier]);
+
+  useEffect(() => {
+    if (!autoRotate || visible.length === 0) return;
+    const pickHighest = () => onSelect(visible[0].id);
+    pickHighest();
+    const id = setInterval(pickHighest, 30_000);
+    return () => clearInterval(id);
+  }, [autoRotate, visible, onSelect]);
+
+  return (
+    <section className="target-visible">
+      <header className="target-visible__head">
+        <span className="target-visible__label">
+          {t('header', { count: visible.length })}
+        </span>
+      </header>
+      {visible.length === 0 ? (
+        <div className="target-picker__empty">{t('emptyTier')}</div>
+      ) : (
+        <div className="target-cards target-cards--visible">
+          {visible.map((o) => (
+            <TargetCard key={o.id} obj={o} active={o.id === activeId} onSelect={onSelect} t={t} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+interface TargetBelowGridProps {
+  objects: SkyObject[];
+  tier: TierFilter;
+  activeId: ObjectId | null;
+  onSelect: (id: ObjectId) => void;
+}
+
+export function TargetBelowGrid({
+  objects,
+  tier,
+  activeId,
+  onSelect,
+}: TargetBelowGridProps) {
+  const t = useTranslations('sky.picker');
+  const below = useMemo(() => {
+    const filtered = objects.filter((o) => {
+      if (o.id === 'sun') return false;
+      if (o.visible) return false;
+      if (tier === 'all') return true;
+      return o.difficulty === tier;
+    });
+    return filtered.sort((a, b) => {
+      const ar = a.riseTime ? new Date(a.riseTime).getTime() : Number.POSITIVE_INFINITY;
+      const br = b.riseTime ? new Date(b.riseTime).getTime() : Number.POSITIVE_INFINITY;
+      return ar - br;
+    });
+  }, [objects, tier]);
+
+  if (below.length === 0) return null;
+
+  return (
+    <section className="target-below">
+      <header className="target-below__head">
+        <span className="target-below__label">{t('belowHorizon')}</span>
+        <span className="target-below__count">{below.length}</span>
+      </header>
+      <div className="target-cards target-cards--below">
+        {below.map((o) => (
+          <TargetCard key={o.id} obj={o} active={o.id === activeId} onSelect={onSelect} t={t} />
+        ))}
+      </div>
+    </section>
   );
 }
 
