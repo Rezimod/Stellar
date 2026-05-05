@@ -2765,9 +2765,31 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 8px;
   }
-  /* Order the new wrappers sensibly within the existing mobile order
-     scheme (.sky-strip = 1, .sky-v3__split = 2, .sky-v3__active = 6). */
+  /* === Mobile-only layout order ===
+     compass → status pills → filters → planets → below-horizon →
+     active hero → 7-day forecast.
+
+     The finder split wrapper becomes display: contents so its two
+     children (.sky-v3__map-wrap and .target-visible) participate
+     directly in the container's flex order, letting us interleave
+     them with the strip / filters / forecast. */
+  .sky-v3 .sky-v3__container > .sky-v3__split--finder {
+    display: contents;
+  }
+  .sky-v3 .sky-v3__container > .sky-v3__split--finder > .sky-v3__map-wrap { order: 1; }
+  .sky-v3 .sky-v3__container > .sky-strip { order: 2; }
   .sky-v3 .sky-v3__container > .target-filters { order: 3; }
-  .sky-v3 .sky-v3__container > .target-below { order: 4; }
+  .sky-v3 .sky-v3__container > .sky-v3__split--finder > .target-visible { order: 4; }
+  .sky-v3 .sky-v3__container > .target-below { order: 5; }
+  .sky-v3 .sky-v3__container > .sky-v3__active { order: 6; }
+  .sky-v3 .sky-v3__container > .forecast7 { order: 7; }
+
+  /* Drop the "Local Time" pill on mobile and let Clouds stretch the
+     full width of the second strip row so we don't leave a gap. */
+  .sky-strip__segment:nth-child(5) { display: none; }
+  .sky-strip__segment:nth-child(4) {
+    grid-column: 1 / -1;
+    border-left: none;
+  }
 }
 
