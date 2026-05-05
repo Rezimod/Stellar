@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PublicKey } from '@solana/web3.js';
 import PageTransition from '@/components/ui/PageTransition';
-import ComingSoonOverlay from '@/components/shared/ComingSoonOverlay';
 import {
   useReadOnlyProgram,
   useStellarSigner,
@@ -381,15 +380,8 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
-      <div className="markets-page" style={{ position: 'relative' }}>
-        {/* COMING_SOON_OVERLAY:start — remove this block to restore the page */}
-        <ComingSoonOverlay />
-        {/* COMING_SOON_OVERLAY:end */}
-        <div
-          className="mkt-shell"
-          aria-hidden
-          style={{ filter: 'blur(8px)', pointerEvents: 'none', userSelect: 'none' }}
-        >
+      <div className="markets-page">
+        <div className="mkt-shell">
         {/* Stats bar */}
         <div className="mkt-stats-bar">
           {loading ? (
