@@ -23,35 +23,39 @@ export default function ComingSoonOverlay() {
 
   return (
     <div
-      onClick={swallow}
-      onTouchStart={swallow}
-      onTouchMove={swallow}
-      onWheel={swallow}
+      aria-hidden={false}
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9999,
+        zIndex: 40,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'rgba(11, 14, 23, 0.55)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
       }}
     >
       <div
-        role="button"
+        role="presentation"
         aria-disabled="true"
         tabIndex={-1}
         onClick={swallow}
+        onMouseDown={swallow}
+        onPointerDown={swallow}
+        onTouchStart={swallow}
+        onTouchMove={swallow}
+        onTouchEnd={swallow}
+        onKeyDown={swallow}
         style={{
           fontFamily: '"Source Serif 4", Georgia, serif',
           fontSize: 'clamp(1rem, 2.4vw, 1.25rem)',
           fontWeight: 400,
           letterSpacing: '0.02em',
           color: 'rgba(255, 255, 255, 0.92)',
-          background: 'rgba(26, 31, 46, 0.85)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          background: 'rgba(26, 31, 46, 0.92)',
+          border: '1px solid rgba(255, 255, 255, 0.14)',
           borderRadius: 9999,
           padding: '0.75rem 1.75rem',
           cursor: 'not-allowed',
