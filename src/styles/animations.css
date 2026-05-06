@@ -176,6 +176,50 @@
   50%       { opacity: 0.85; letter-spacing: 0.25em; }
 }
 
+/* ── Telescope reticle (find-a-planet) ────────────────────── */
+
+@keyframes scope-find {
+  0%   { transform: translate(-7px, -3px); opacity: 0; }
+  18%  { opacity: 1; }
+  46%, 58% { transform: translate(0, 0); opacity: 1; }
+  74%  { opacity: 0; }
+  100% { transform: translate(7px, 3px); opacity: 0; }
+}
+
+@keyframes scope-pulse {
+  0%, 38%, 100% { transform: scale(1); opacity: 0.55; }
+  50%, 60%      { transform: scale(1.18); opacity: 1; }
+}
+
+@keyframes scope-sweep {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.scope-planet {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: scope-find 3.6s ease-in-out infinite;
+}
+
+.scope-reticle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: scope-pulse 3.6s ease-in-out infinite;
+}
+
+.scope-sweep {
+  transform-box: fill-box;
+  transform-origin: 9px 9px;
+  animation: scope-sweep 3.6s linear infinite;
+}
+
+.btn-find-tonight:hover .scope-planet,
+.btn-find-tonight:hover .scope-reticle,
+.btn-find-tonight:hover .scope-sweep {
+  animation-duration: 1.8s;
+}
+
 /* ── Reduced motion overrides ─────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -187,6 +231,9 @@
   .animate-float,
   .animate-breathe,
   .animate-pulse-glow,
+  .scope-planet,
+  .scope-reticle,
+  .scope-sweep,
   .stagger-children > * {
     animation: none !important;
     opacity: 1 !important;

@@ -656,9 +656,20 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/sky"
-                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] bg-[#161C2D] text-white font-bold text-[15px] tracking-[0.01em] rounded-[12px] shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/10 hover:bg-[#1B2236] hover:ring-white/15 active:translate-y-[0.5px] transition-all no-underline"
+                className="btn-find-tonight group flex-1 inline-flex items-center justify-center gap-2.5 px-8 py-[18px] bg-[#0E1F33] text-[#E2F8FF] font-bold text-[15px] tracking-[0.01em] rounded-[12px] shadow-[0_1px_0_rgba(94,234,212,0.10)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-[#38F0FF]/25 hover:bg-[#10243E] hover:ring-[#38F0FF]/45 active:translate-y-[0.5px] transition-all no-underline"
               >
                 See tonight&apos;s sky
+                <span aria-hidden className="relative inline-flex w-[18px] h-[18px] flex-shrink-0">
+                  <svg viewBox="0 0 18 18" className="absolute inset-0 w-full h-full text-[#5EEAD4]" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+                    <circle cx="9" cy="9" r="6.5" opacity="0.55" className="scope-reticle" />
+                    <line x1="9" y1="0.5" x2="9" y2="3" opacity="0.45" />
+                    <line x1="9" y1="15" x2="9" y2="17.5" opacity="0.45" />
+                    <line x1="0.5" y1="9" x2="3" y2="9" opacity="0.45" />
+                    <line x1="15" y1="9" x2="17.5" y2="9" opacity="0.45" />
+                    <line x1="9" y1="2.5" x2="9" y2="9" opacity="0.35" className="scope-sweep" stroke="#38F0FF" />
+                    <circle cx="9" cy="9" r="1" fill="#FFD166" stroke="none" className="scope-planet" />
+                  </svg>
+                </span>
               </Link>
             </div>
           </div>
