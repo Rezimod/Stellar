@@ -173,32 +173,81 @@ function HowStep({
 
 function PhonePic({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative mx-auto w-[230px] md:w-[260px] aspect-[884/1498]">
-      {/* Side buttons — left (volume up / down) */}
-      <div className="absolute left-[-2px] top-[19%] w-[2px] h-[26px] rounded-l-[1px] bg-[#0a0c12]" />
-      <div className="absolute left-[-2px] top-[26%] w-[2px] h-[42px] rounded-l-[1px] bg-[#0a0c12]" />
-      <div className="absolute left-[-2px] top-[34%] w-[2px] h-[42px] rounded-l-[1px] bg-[#0a0c12]" />
+    <div className="relative mx-auto w-[260px] md:w-[300px]">
+      {/* Side buttons — left (silent + volume up/down) */}
+      <div className="absolute left-[-3px] top-[14%] w-[3px] h-[22px] rounded-l-[2px] bg-[#0a0c12] shadow-[inset_-1px_0_0_rgba(255,255,255,0.04)]" />
+      <div className="absolute left-[-3px] top-[21%] w-[3px] h-[44px] rounded-l-[2px] bg-[#0a0c12] shadow-[inset_-1px_0_0_rgba(255,255,255,0.04)]" />
+      <div className="absolute left-[-3px] top-[30%] w-[3px] h-[44px] rounded-l-[2px] bg-[#0a0c12] shadow-[inset_-1px_0_0_rgba(255,255,255,0.04)]" />
       {/* Side button — right (power) */}
-      <div className="absolute right-[-2px] top-[25%] w-[2px] h-[58px] rounded-r-[1px] bg-[#0a0c12]" />
+      <div className="absolute right-[-3px] top-[23%] w-[3px] h-[64px] rounded-r-[2px] bg-[#0a0c12] shadow-[inset_1px_0_0_rgba(255,255,255,0.04)]" />
 
       {/* Phone chassis */}
-      <div className="relative h-full w-full rounded-[40px] bg-gradient-to-br from-[#1a1d24] via-[#0d1016] to-[#06080d] p-[6px] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.05)]">
-        {/* Inner bezel highlight */}
-        <div className="absolute inset-[2px] rounded-[38px] ring-1 ring-white/[0.06] pointer-events-none" />
+      <div
+        className="relative w-full rounded-[44px] p-[7px]"
+        style={{
+          background:
+            'linear-gradient(155deg, #2a2d36 0%, #161922 28%, #0a0d14 60%, #050709 100%)',
+          boxShadow:
+            '0 50px 100px -30px rgba(0,0,0,0.85), 0 20px 40px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.08)',
+        }}
+      >
+        {/* Inner titanium ring */}
+        <div className="absolute inset-[3px] rounded-[41px] ring-1 ring-white/[0.05] pointer-events-none" />
 
         {/* Screen */}
-        <div className="relative h-full w-full rounded-[34px] overflow-hidden bg-[#0B0E17]">
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            sizes="(min-width: 768px) 260px, 230px"
-            loading="lazy"
-            className="object-cover"
-          />
+        <div className="relative w-full rounded-[37px] overflow-hidden bg-black">
+          {/* iOS status bar */}
+          <div className="relative flex items-center justify-between h-[28px] md:h-[32px] px-6 md:px-7 bg-black z-10">
+            <span className="font-mono text-[10px] md:text-[11px] font-semibold text-white/90 tabular-nums">
+              9:41
+            </span>
 
-          {/* Dynamic Island */}
-          <div className="absolute top-[7px] left-1/2 -translate-x-1/2 w-[68px] h-[18px] rounded-full bg-black ring-1 ring-white/[0.06] z-10" />
+            {/* Dynamic Island */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[88px] md:w-[100px] h-[24px] md:h-[28px] rounded-full bg-black ring-1 ring-white/[0.04]" />
+
+            <span className="flex items-center gap-[5px]">
+              {/* signal */}
+              <svg viewBox="0 0 18 10" className="w-[15px] h-[8px]" fill="white" fillOpacity="0.9">
+                <rect x="0"  y="6" width="3" height="4" rx="0.6" />
+                <rect x="5"  y="4" width="3" height="6" rx="0.6" />
+                <rect x="10" y="2" width="3" height="8" rx="0.6" />
+                <rect x="15" y="0" width="3" height="10" rx="0.6" />
+              </svg>
+              {/* battery */}
+              <span className="relative flex items-center">
+                <span className="block w-[22px] h-[10px] rounded-[2.5px] border border-white/55 p-[1px]">
+                  <span className="block w-[16px] h-full rounded-[1px] bg-white/85" />
+                </span>
+                <span className="ml-[1px] block w-[1.5px] h-[4px] rounded-r-[1px] bg-white/55" />
+              </span>
+            </span>
+          </div>
+
+          {/* Screenshot */}
+          <div className="relative w-full" style={{ aspectRatio: '884 / 1498' }}>
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              sizes="(min-width: 768px) 300px, 260px"
+              loading="lazy"
+              className="object-cover"
+            />
+          </div>
+
+          {/* Home indicator */}
+          <div className="relative flex items-center justify-center h-[22px] md:h-[26px] bg-black">
+            <span className="block w-[105px] md:w-[120px] h-[4px] rounded-full bg-white/85" />
+          </div>
+
+          {/* Subtle screen glare */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[37px]"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 22%, rgba(255,255,255,0) 78%, rgba(255,255,255,0.025) 100%)',
+            }}
+          />
         </div>
       </div>
     </div>
