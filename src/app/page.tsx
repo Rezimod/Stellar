@@ -656,18 +656,18 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/sky"
-                className="btn-find-tonight group flex-1 inline-flex items-center justify-center gap-2.5 px-8 py-[18px] bg-[#0E1F33] text-[#E2F8FF] font-bold text-[15px] tracking-[0.01em] rounded-[12px] shadow-[0_1px_0_rgba(94,234,212,0.10)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-[#38F0FF]/25 hover:bg-[#10243E] hover:ring-[#38F0FF]/45 active:translate-y-[0.5px] transition-all no-underline"
+                className="btn-sky-watcher group flex-1 inline-flex items-center justify-center gap-2 px-8 py-[18px] bg-[#0E1F33] text-[#E2F8FF] font-bold text-[15px] tracking-[0.01em] whitespace-nowrap rounded-[12px] shadow-[0_1px_0_rgba(94,234,212,0.10)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-[#38F0FF]/25 hover:bg-[#10243E] hover:ring-[#38F0FF]/45 active:translate-y-[0.5px] transition-all no-underline"
               >
-                See tonight&apos;s sky
+                Sky watcher
                 <span aria-hidden className="relative inline-flex w-[18px] h-[18px] flex-shrink-0">
-                  <svg viewBox="0 0 18 18" className="absolute inset-0 w-full h-full text-[#5EEAD4]" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
-                    <circle cx="9" cy="9" r="6.5" opacity="0.55" className="scope-reticle" />
-                    <line x1="9" y1="0.5" x2="9" y2="3" opacity="0.45" />
-                    <line x1="9" y1="15" x2="9" y2="17.5" opacity="0.45" />
-                    <line x1="0.5" y1="9" x2="3" y2="9" opacity="0.45" />
-                    <line x1="15" y1="9" x2="17.5" y2="9" opacity="0.45" />
-                    <line x1="9" y1="2.5" x2="9" y2="9" opacity="0.35" className="scope-sweep" stroke="#38F0FF" />
-                    <circle cx="9" cy="9" r="1" fill="#FFD166" stroke="none" className="scope-planet" />
+                  <svg viewBox="0 0 18 18" className="absolute inset-0 w-full h-full" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6 L6 4 L9 7 L12 4 L15 6" pathLength="100" stroke="#5EEAD4" strokeWidth="0.7" className="constellation-line" />
+                    <circle cx="3" cy="6" r="0.7" fill="#E2F8FF" className="constellation-star const-s1" />
+                    <circle cx="6" cy="4" r="0.7" fill="#E2F8FF" className="constellation-star const-s2" />
+                    <circle cx="12" cy="4" r="0.7" fill="#E2F8FF" className="constellation-star const-s3" />
+                    <circle cx="15" cy="6" r="0.7" fill="#E2F8FF" className="constellation-star const-s4" />
+                    <circle cx="9" cy="7" r="2" fill="#FFD166" className="constellation-glow" />
+                    <circle cx="9" cy="7" r="1" fill="#FFD166" className="constellation-anchor" />
                   </svg>
                 </span>
               </Link>

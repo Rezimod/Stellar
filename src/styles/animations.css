@@ -176,48 +176,74 @@
   50%       { opacity: 0.85; letter-spacing: 0.25em; }
 }
 
-/* ── Telescope reticle (find-a-planet) ────────────────────── */
+/* ── Sky-watcher constellation tracer ─────────────────────── */
 
-@keyframes scope-find {
-  0%   { transform: translate(-7px, -3px); opacity: 0; }
-  18%  { opacity: 1; }
-  46%, 58% { transform: translate(0, 0); opacity: 1; }
-  74%  { opacity: 0; }
-  100% { transform: translate(7px, 3px); opacity: 0; }
-}
-
-@keyframes scope-pulse {
-  0%, 38%, 100% { transform: scale(1); opacity: 0.55; }
-  50%, 60%      { transform: scale(1.18); opacity: 1; }
-}
-
-@keyframes scope-sweep {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.scope-planet {
+.constellation-star {
   transform-box: fill-box;
   transform-origin: center;
-  animation: scope-find 3.6s ease-in-out infinite;
+  opacity: 0;
+  animation: const-twinkle 5.4s ease-in-out infinite;
+}
+.const-s1 { animation-delay:   0ms; }
+.const-s2 { animation-delay: 180ms; }
+.const-s3 { animation-delay: 360ms; }
+.const-s4 { animation-delay: 540ms; }
+
+.constellation-line {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+  animation: const-line 5.4s ease-in-out infinite;
 }
 
-.scope-reticle {
+.constellation-anchor {
   transform-box: fill-box;
   transform-origin: center;
-  animation: scope-pulse 3.6s ease-in-out infinite;
+  opacity: 0;
+  animation: const-anchor 5.4s ease-in-out infinite;
 }
 
-.scope-sweep {
+.constellation-glow {
   transform-box: fill-box;
-  transform-origin: 9px 9px;
-  animation: scope-sweep 3.6s linear infinite;
+  transform-origin: center;
+  opacity: 0;
+  animation: const-glow 5.4s ease-in-out infinite;
 }
 
-.btn-find-tonight:hover .scope-planet,
-.btn-find-tonight:hover .scope-reticle,
-.btn-find-tonight:hover .scope-sweep {
-  animation-duration: 1.8s;
+@keyframes const-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3); }
+  6%       { opacity: 1; transform: scale(1.15); }
+  14%, 78% { opacity: 0.95; transform: scale(1); }
+  90%      { opacity: 0.3; transform: scale(0.7); }
+}
+
+@keyframes const-line {
+  0%, 16%   { stroke-dashoffset: 100; opacity: 0; }
+  22%       { opacity: 0.55; }
+  52%       { stroke-dashoffset: 0; opacity: 0.7; }
+  78%       { stroke-dashoffset: 0; opacity: 0.55; }
+  92%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes const-anchor {
+  0%, 30%   { opacity: 0; transform: scale(0.3); }
+  44%       { opacity: 1; transform: scale(1.3); }
+  58%, 78%  { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes const-glow {
+  0%, 36%   { opacity: 0; transform: scale(0.6); }
+  50%       { opacity: 0.35; transform: scale(1.4); }
+  68%, 78%  { opacity: 0.22; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(0.6); }
+}
+
+.btn-sky-watcher:hover .constellation-line,
+.btn-sky-watcher:hover .constellation-star,
+.btn-sky-watcher:hover .constellation-anchor,
+.btn-sky-watcher:hover .constellation-glow {
+  animation-duration: 2.7s;
 }
 
 /* ── Reduced motion overrides ─────────────────────────────── */
@@ -231,9 +257,10 @@
   .animate-float,
   .animate-breathe,
   .animate-pulse-glow,
-  .scope-planet,
-  .scope-reticle,
-  .scope-sweep,
+  .constellation-line,
+  .constellation-star,
+  .constellation-anchor,
+  .constellation-glow,
   .stagger-children > * {
     animation: none !important;
     opacity: 1 !important;
