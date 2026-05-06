@@ -102,16 +102,49 @@ export default function MarketplacePage() {
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
       <div className="marketplace-page-bg overflow-hidden">
         <div className="relative z-10">
-          {/* Filters left, Balance + Region pushed to the right edge */}
-          <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[10px] mb-[20px] justify-between">
-            <div className="flex flex-wrap items-center gap-[8px]">
+          {/* Mobile: balance/region row above a horizontal-scroll filter strip. Desktop: filters left, balance/region right. */}
+          <div className="flex flex-col gap-[10px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-[12px] sm:gap-y-[10px] sm:justify-between mb-[14px] sm:mb-[20px]">
+            {/* Balance + Region — first on mobile so it's compact above the filter strip */}
+            <div className="order-1 sm:order-2 flex items-center gap-[8px] flex-shrink-0">
+              <span
+                className="inline-flex items-center gap-[7px] px-[12px] py-[7px] sm:gap-[8px] sm:px-[14px] sm:py-[9px] rounded-lg text-[12px] uppercase cursor-default"
+                style={{
+                  background: 'rgba(15, 18, 28, 0.72)',
+                  border: '1px solid rgba(167, 139, 250, 0.42)',
+                  boxShadow: 'inset 0 1px 0 rgba(167, 139, 250, 0.10), 0 1px 0 rgba(0,0,0,0.25)',
+                }}
+              >
+                <span className="tracking-[0.16em] text-[rgba(232,230,221,0.6)] text-[10px]">Balance</span>
+                <span className="font-semibold tracking-[0.04em] text-[13px]" style={{ color: '#A78BFA' }}>
+                  {balance.toLocaleString()}
+                </span>
+                <span style={{ color: '#A78BFA' }} className="text-[12px]">★</span>
+              </span>
+
+              <span
+                className="inline-flex items-center gap-[8px] pl-[10px] pr-[4px] py-[3px] sm:gap-[10px] sm:pl-[12px] sm:pr-[5px] sm:py-[4px] rounded-lg"
+                style={{
+                  background: 'rgba(15, 18, 28, 0.72)',
+                  border: '1px solid rgba(232,230,221,0.16)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 0 rgba(0,0,0,0.25)',
+                }}
+              >
+                <span className="tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)] text-[10px]">Region</span>
+                <LocationPicker compact />
+              </span>
+            </div>
+
+            {/* Filter chips — horizontal scroll on mobile, wrap on desktop */}
+            <div
+              className="order-2 sm:order-1 flex items-center gap-[8px] flex-nowrap overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
             {CATEGORIES.map(c => {
               const active = filter === c.key;
               return (
                 <button
                   key={c.key}
                   onClick={() => setFilter(c.key)}
-                  className="px-[18px] py-[10px] text-[12px] tracking-[0.14em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
+                  className="flex-shrink-0 px-[14px] py-[8px] sm:px-[18px] sm:py-[10px] text-[11px] sm:text-[12px] tracking-[0.14em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
                   style={
                     active
                       ? {
@@ -147,7 +180,7 @@ export default function MarketplacePage() {
                 <button
                   key={d}
                   onClick={() => setDifficulty(active ? 'all' : d)}
-                  className="px-[16px] py-[10px] text-[11px] tracking-[0.18em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
+                  className="flex-shrink-0 px-[12px] py-[8px] sm:px-[16px] sm:py-[10px] text-[10px] sm:text-[11px] tracking-[0.18em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
                   style={
                     active
                       ? {
@@ -169,36 +202,6 @@ export default function MarketplacePage() {
                 </button>
               );
             })}
-            </div>
-
-            {/* Balance + Region — right edge */}
-            <div className="flex flex-wrap items-center gap-[8px]">
-              <span
-                className="inline-flex items-center gap-[8px] px-[14px] py-[9px] rounded-lg text-[12px] uppercase cursor-default"
-                style={{
-                  background: 'rgba(15, 18, 28, 0.72)',
-                  border: '1px solid rgba(251, 146, 60, 0.42)',
-                  boxShadow: 'inset 0 1px 0 rgba(251, 146, 60, 0.10), 0 1px 0 rgba(0,0,0,0.25)',
-                }}
-              >
-                <span className="tracking-[0.16em] text-[rgba(232,230,221,0.6)] text-[10px]">Balance</span>
-                <span className="font-semibold tracking-[0.04em] text-[13px]" style={{ color: '#FB923C' }}>
-                  {balance.toLocaleString()}
-                </span>
-                <span style={{ color: '#FB923C' }} className="text-[12px]">★</span>
-              </span>
-
-              <span
-                className="inline-flex items-center gap-[10px] pl-[12px] pr-[5px] py-[4px] rounded-lg"
-                style={{
-                  background: 'rgba(15, 18, 28, 0.72)',
-                  border: '1px solid rgba(232,230,221,0.16)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 0 rgba(0,0,0,0.25)',
-                }}
-              >
-                <span className="tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)] text-[10px]">Region</span>
-                <LocationPicker compact />
-              </span>
             </div>
           </div>
 

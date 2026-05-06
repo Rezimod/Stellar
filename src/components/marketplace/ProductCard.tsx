@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '@/lib/dealers';
 
-const STARS_ORANGE = '#FB923C';
+const STARS_VIOLET = '#A78BFA';
 
 const DIFFICULTY_TAG: Record<'beginner' | 'intermediate' | 'advanced', { color: string; border: string; abbr: string }> = {
   beginner:     { color: '#5EEAD4', border: 'rgba(94, 234, 212, 0.55)', abbr: 'Beg' },
@@ -116,7 +116,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         </div>
         <span
           className="text-[11px] tracking-[0.10em] uppercase font-bold whitespace-nowrap"
-          style={{ color: STARS_ORANGE }}
+          style={{ color: STARS_VIOLET }}
         >
           ★ {product.starsPrice.toLocaleString()}
         </span>
@@ -140,10 +140,10 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           href={checkoutHref('stars')}
           className="flex-1 inline-flex items-center justify-center gap-[3px] px-[6px] py-[7px] rounded-lg text-[10px] tracking-[0.10em] uppercase font-bold whitespace-nowrap transition-[filter,transform] hover:brightness-110"
           style={{
-            background: STARS_ORANGE,
-            border: `1px solid ${STARS_ORANGE}`,
-            color: '#1a0e02',
-            boxShadow: '0 6px 18px -10px rgba(251, 146, 60, 0.55)',
+            background: STARS_VIOLET,
+            border: `1px solid ${STARS_VIOLET}`,
+            color: '#150a2b',
+            boxShadow: '0 6px 18px -10px rgba(167, 139, 250, 0.55)',
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >
