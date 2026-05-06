@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -65,7 +65,7 @@ export default function Nav() {
 
   const renderAvatarFace = (size: number) => {
     if (showAvatarIcon && avatarDef) {
-      return <avatarDef.Icon size={Math.round(size * 0.7)} tint={avatarDef.tint} />;
+      return <avatarDef.Icon size={Math.round(size * 0.62)} tint="#FFFFFF" />;
     }
     if (initials) {
       return (
@@ -75,6 +75,27 @@ export default function Nav() {
       );
     }
     return <Telescope size={Math.round(size * 0.45)} strokeWidth={1.75} color="white" />;
+  };
+
+  // Premium gradient face when an avatar is selected; deep cosmic surface otherwise.
+  const avatarSurfaceStyle = (size: number): CSSProperties => {
+    const base: CSSProperties = {
+      borderRadius: 9999,
+      border: '1px solid rgba(255,255,255,0.10)',
+      overflow: 'hidden',
+    };
+    if (showAvatarIcon && avatarDef) {
+      return {
+        ...base,
+        background: avatarDef.gradient,
+        boxShadow: `0 ${Math.round(size * 0.10)}px ${Math.round(size * 0.28)}px ${-Math.round(size * 0.10)}px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 ${-Math.round(size * 0.12)}px ${Math.round(size * 0.26)}px rgba(0,0,0,0.28)`,
+      };
+    }
+    return {
+      ...base,
+      background: '#0B0E17',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -8px 16px rgba(0,0,0,0.35)',
+    };
   };
 
   const handleLogout = async () => {
@@ -97,9 +118,9 @@ export default function Nav() {
         @media (min-width: 768px) { .hub-btn { display: flex; } }
         .hub-btn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.95); }
         .hub-btn[data-active="true"] { background: rgba(255,209,102,0.10); border-color: rgba(255,209,102,0.25); color: #FFD166; }
-        .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; border-radius: 9999px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: box-shadow 0.18s ease, border-color 0.18s ease; background: #0B0E17; border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -8px 16px rgba(0,0,0,0.35); }
-        .avatar-btn:hover { border-color: rgba(255,255,255,0.22); }
-        .avatar-btn[data-active="true"] { border-color: rgba(255,209,102,0.55); box-shadow: 0 0 0 1.5px rgba(255,209,102,0.18), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -8px 16px rgba(0,0,0,0.35); }
+        .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.18s ease, filter 0.18s ease; }
+        .avatar-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+        .avatar-btn[data-active="true"] { box-shadow: 0 0 0 1.5px rgba(255,209,102,0.55), 0 4px 12px -4px rgba(255,209,102,0.30) !important; }
         .dd-link { transition: background 0.15s ease; text-decoration: none; }
         .dd-link:hover { background: rgba(255,255,255,0.04); }
       `}</style>
@@ -201,6 +222,7 @@ export default function Nav() {
                     aria-expanded={avatarOpen}
                     aria-controls="avatar-menu"
                     aria-haspopup="menu"
+                    style={avatarSurfaceStyle(32)}
                   >
                     {renderAvatarFace(32)}
                   </button>
@@ -229,12 +251,10 @@ export default function Nav() {
                         marginBottom: 4,
                       }}>
                         <div style={{
-                          width: 36, height: 36, borderRadius: 9999, flexShrink: 0,
-                          background: '#0B0E17',
-                          border: '1px solid rgba(255,255,255,0.12)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -8px 16px rgba(0,0,0,0.35)',
+                          width: 36, height: 36, flexShrink: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: 'white', overflow: 'hidden',
+                          color: 'white',
+                          ...avatarSurfaceStyle(36),
                         }}>
                           {renderAvatarFace(36)}
                         </div>
