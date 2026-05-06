@@ -42,12 +42,12 @@ export default function ClosingCtaSection() {
           <span className="block italic text-[var(--terracotta)]">Take your first observation.</span>
         </h2>
 
-        <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full">
+        <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
           <Link
             href="/missions"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--terracotta)] px-6 py-3 text-[13px] font-medium text-[#1a1208] transition-[filter,transform] hover:brightness-110"
+            className="btn-stellar w-full sm:w-auto"
           >
-            Start observing  →
+            Start observing <span aria-hidden>→</span>
           </Link>
 
           {ready && !authenticated ? (
@@ -55,18 +55,18 @@ export default function ClosingCtaSection() {
               <button
                 type="button"
                 onClick={() => setAuthOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
+                className="btn-stellar-ghost w-full sm:w-auto"
               >
-                Sign in
+                Sign in <span aria-hidden>→</span>
               </button>
               <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
             </>
           ) : (
             <Link
               href="/sky"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
+              className="btn-stellar-ghost w-full sm:w-auto"
             >
-              Tonight&apos;s sky
+              Tonight&apos;s sky <span aria-hidden>→</span>
             </Link>
           )}
         </div>

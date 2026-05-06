@@ -39,6 +39,7 @@
   "exclude": [
     "node_modules",
     "drizzle.config.ts",
-    "apps/**"
+    "apps/**",
+    "scripts/**"
   ]
 }

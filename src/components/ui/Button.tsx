@@ -22,16 +22,21 @@ const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
 
 const variantBase: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    background: 'linear-gradient(135deg, var(--terracotta) 0%, var(--seafoam) 100%)',
-    color: 'var(--canvas)',
+    background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+    color: '#FFFFFF',
     border: 'none',
     fontWeight: 600,
+    fontFamily: 'var(--font-cta, var(--font-body))',
+    borderRadius: 14,
+    boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
   },
   secondary: {
-    background: 'transparent',
-    border: '1px solid rgba(255,255,255,0.12)',
-    color: 'rgba(255,255,255,0.9)',
+    background: '#161A28',
+    border: '1px solid rgba(255,255,255,0.10)',
+    color: 'rgba(255,255,255,0.92)',
     fontWeight: 500,
+    fontFamily: 'var(--font-cta, var(--font-display))',
+    borderRadius: 14,
   },
   ghost: {
     background: 'transparent',
@@ -54,8 +59,8 @@ const variantBase: Record<ButtonVariant, React.CSSProperties> = {
 };
 
 const variantHover: Record<ButtonVariant, React.CSSProperties> = {
-  primary:   { filter: 'brightness(1.1)', boxShadow: '0 0 16px rgba(255, 209, 102,0.3)' },
-  secondary: { borderColor: 'rgba(255, 209, 102,0.2)', background: 'rgba(255, 209, 102,0.04)', color: '#fff' },
+  primary:   { filter: 'brightness(1.08)', boxShadow: '0 10px 32px rgba(91, 108, 255, 0.45)' },
+  secondary: { borderColor: 'rgba(255,255,255,0.18)', background: '#1C2235', color: '#fff' },
   ghost:     { color: 'rgba(255,255,255,0.9)', background: 'rgba(255,255,255,0.04)' },
   danger:    { background: 'rgba(251, 113, 133,0.2)' },
   reward:    { filter: 'brightness(1.08)', boxShadow: '0 0 16px rgba(255, 209, 102,0.3)' },

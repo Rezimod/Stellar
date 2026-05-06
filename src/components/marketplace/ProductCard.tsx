@@ -89,7 +89,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
               fill
               sizes="(max-width: 768px) 50vw, 220px"
               style={{ objectFit: 'contain', padding: '12px' }}
-              unoptimized
+              loading="lazy"
             />
           )}
         </div>

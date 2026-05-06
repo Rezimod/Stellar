@@ -431,48 +431,129 @@ code, pre, .mono, [class*="font-mono"] {
   -webkit-backdrop-filter: blur(20px);
 }
 
+/* === Astroman Club CTA tokens ===
+   Pulled from club.astroman.ge. Indigo→violet gradient pill primary,
+   dark pill secondary. Used by .btn-primary, .btn-ghost, .btn-stellar*,
+   and .icon-badge-gradient. */
+:root {
+  --cta-indigo: #5B6CFF;
+  --cta-violet: #8B5CF6;
+  --cta-orange-from: #F59E0B;
+  --cta-orange-to:   #F97316;
+  --cta-gradient: linear-gradient(135deg, var(--cta-indigo) 0%, var(--cta-violet) 100%);
+  --cta-gradient-orange: linear-gradient(135deg, var(--cta-orange-from) 0%, var(--cta-orange-to) 100%);
+  --cta-glow: 0 8px 24px rgba(91, 108, 255, 0.28), 0 0 0 1px rgba(139, 92, 246, 0.25) inset;
+  --cta-glow-strong: 0 10px 32px rgba(91, 108, 255, 0.45), 0 0 0 1px rgba(139, 92, 246, 0.35) inset;
+  --cta-secondary-bg: #161A28;
+  --cta-secondary-border: rgba(255,255,255,0.10);
+  --cta-radius: 14px;
+}
+
 /* Button styles */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: var(--terracotta);
-  color: var(--canvas);
-  font-family: var(--font-body);
+  gap: 10px;
+  background: var(--cta-gradient);
+  color: #FFFFFF;
+  font-family: var(--font-cta, var(--font-body));
   font-weight: 600;
   font-size: 14px;
+  letter-spacing: 0.005em;
   border: none;
-  border-radius: var(--radius-md);
-  padding: 12px 24px;
+  border-radius: var(--cta-radius);
+  padding: 12px 22px;
   min-height: 48px;
   cursor: pointer;
-  transition: filter var(--duration-fast), transform var(--duration-fast);
+  box-shadow: var(--cta-glow);
+  transition: filter var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
 }
-.btn-primary:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
-.btn-primary:active:not(:disabled) { transform: translateY(0); filter: brightness(1.05); }
-.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; filter: none; }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: var(--cta-glow-strong); }
+.btn-primary:active:not(:disabled) { transform: translateY(0); filter: brightness(1.02); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
 
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: transparent;
-  border: 1px solid var(--border-strong);
-  color: var(--text-secondary);
-  font-family: var(--font-display);
-  font-weight: 600;
+  background: var(--cta-secondary-bg);
+  border: 1px solid var(--cta-secondary-border);
+  color: var(--text-primary);
+  font-family: var(--font-cta, var(--font-display));
+  font-weight: 500;
   font-size: 14px;
-  border-radius: var(--radius-md);
-  padding: 12px 24px;
+  border-radius: var(--cta-radius);
+  padding: 12px 22px;
   min-height: 48px;
   cursor: pointer;
-  transition: border-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast);
+  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast);
 }
-.btn-ghost:hover:not(:disabled) { border-color: rgba(255,255,255,0.30); color: var(--text-primary); transform: translateY(-1px); }
+.btn-ghost:hover:not(:disabled) { background: #1C2235; border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
 .btn-ghost:active:not(:disabled) { transform: translateY(0); }
 .btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+/* Aliases for explicit Astroman-Club look (so a component can opt in
+   without depending on the .btn-primary alias staying gradient). */
+.btn-stellar       { /* primary alias */
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--cta-gradient); color: #FFFFFF;
+  font-family: var(--font-cta, var(--font-body)); font-weight: 600; font-size: 14px;
+  letter-spacing: 0.005em; border: none; border-radius: var(--cta-radius);
+  padding: 12px 22px; min-height: 48px; cursor: pointer; box-shadow: var(--cta-glow);
+  transition: filter var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
+}
+.btn-stellar:hover:not(:disabled)  { filter: brightness(1.08); transform: translateY(-1px); box-shadow: var(--cta-glow-strong); }
+.btn-stellar:active:not(:disabled) { transform: translateY(0); filter: brightness(1.02); }
+
+.btn-stellar-ghost { /* secondary alias */
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--cta-secondary-bg); border: 1px solid var(--cta-secondary-border);
+  color: var(--text-primary); font-family: var(--font-cta, var(--font-display));
+  font-weight: 500; font-size: 14px; border-radius: var(--cta-radius);
+  padding: 12px 22px; min-height: 48px; cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast);
+}
+.btn-stellar-ghost:hover:not(:disabled)  { background: #1C2235; border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
+.btn-stellar-ghost:active:not(:disabled) { transform: translateY(0); }
+
+/* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
+   on club.astroman.ge. Use .icon-badge-gradient.is-orange for the third
+   accent color (sparkle step). */
+.icon-badge-gradient {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  background: var(--cta-gradient);
+  color: #FFFFFF;
+  box-shadow: 0 16px 40px rgba(91, 108, 255, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.icon-badge-gradient.is-orange {
+  background: var(--cta-gradient-orange);
+  box-shadow: 0 16px 40px rgba(249, 115, 22, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.icon-badge-gradient svg { width: 32px; height: 32px; }
+
+/* Small "01 / 02 / 03" step pill that sits below an icon badge. */
+.step-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(22, 26, 40, 0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
 
 .btn-accent-ghost {
   display: inline-flex;

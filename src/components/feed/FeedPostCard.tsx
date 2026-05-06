@@ -471,7 +471,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
       {lightbox && post.imageUrl && (
         <div className="feed-lightbox" onClick={() => setLightbox(false)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.imageUrl} alt="" />
+          <img src={post.imageUrl} alt="" decoding="async" />
         </div>
       )}
     </article>

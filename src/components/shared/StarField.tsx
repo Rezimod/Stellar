@@ -13,6 +13,7 @@ interface Star {
 export default function StarField() {
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -20,13 +21,22 @@ export default function StarField() {
     setIsMobile(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+
+    const reducedMq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(reducedMq.matches);
+    const reducedHandler = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    reducedMq.addEventListener('change', reducedHandler);
+
+    return () => {
+      mq.removeEventListener('change', handler);
+      reducedMq.removeEventListener('change', reducedHandler);
+    };
   }, []);
 
   // Cut from 30/14 — at this density the difference is invisible but each
   // animated DOM node is its own compositor candidate. Pages also have their
   // own gradient backgrounds; the field is a subtle ambient layer.
-  const starCount = isMobile ? 10 : 18;
+  const starCount = reduceMotion ? 0 : isMobile ? 10 : 18;
 
   const stars = useMemo<Star[]>(
     () =>

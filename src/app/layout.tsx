@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Fraunces, Inter, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
+import { Fraunces, Inter, JetBrains_Mono, Noto_Sans_Georgian, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
@@ -10,7 +10,7 @@ import '../styles/wallet-adapter-overrides.css';
 const fraunces = Fraunces({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '600', '700'],
   display: 'swap',
 });
 const inter = Inter({
@@ -22,15 +22,21 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
-  weight: ['400', '500'],
+  weight: ['400', '700'],
   display: 'swap',
 });
 const notoGeorgian = Noto_Sans_Georgian({
   subsets: ['georgian'],
   variable: '--font-georgian',
-  weight: ['400', '500', '600'],
+  weight: ['400', '600'],
   display: 'swap',
   preload: false,
+});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-cta',
+  weight: ['500', '600', '700'],
+  display: 'swap',
 });
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
@@ -98,7 +104,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} ${notoGeorgian.variable}`}>
+    <html lang={locale} className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} ${notoGeorgian.variable} ${spaceGrotesk.variable}`}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />

@@ -57,38 +57,32 @@ export default function HeroSection() {
           and seal your discoveries on Solana.
         </p>
 
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full">
-          <div className="relative w-full sm:w-auto sm:p-[6px]">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 hidden rounded-[14px] border-[0.5px] border-dashed border-[rgba(255, 209, 102,0.18)] sm:block"
-            />
-            <Link
-              href="/missions"
-              className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--terracotta)] px-6 py-3 text-[13px] font-medium text-[#1a1208] transition-[filter,transform] hover:brightness-110"
-            >
-              <span>Start observing</span>
-              <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-            </Link>
-          </div>
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+          <Link
+            href="/missions"
+            className="btn-stellar group w-full sm:w-auto"
+          >
+            <span>Start observing</span>
+            <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+          </Link>
 
           {ready && !authenticated ? (
             <>
               <button
                 type="button"
                 onClick={() => setAuthOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
+                className="btn-stellar-ghost w-full sm:w-auto"
               >
-                Sign in
+                Sign in <span aria-hidden>→</span>
               </button>
               <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
             </>
           ) : (
             <Link
               href="/profile"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(232,230,221,0.2)] px-6 py-3 text-[13px] font-medium text-[rgba(232,230,221,0.85)] transition-colors hover:border-[rgba(232,230,221,0.35)]"
+              className="btn-stellar-ghost w-full sm:w-auto"
             >
-              Your profile
+              Your profile <span aria-hidden>→</span>
             </Link>
           )}
         </div>

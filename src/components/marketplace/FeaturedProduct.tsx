@@ -78,7 +78,6 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
             sizes="(max-width: 1024px) 100vw, 460px"
             className="p-[14px] sm:p-[22px]"
             style={{ objectFit: 'contain' }}
-            unoptimized
             priority
           />
         )}

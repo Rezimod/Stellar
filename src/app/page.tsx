@@ -135,6 +135,8 @@ function PartnerLogo({
   height: number;
   filter?: string;
 }) {
+  // SVGs are already vector-perfect, skip Next's raster pipeline; raster logos go through next/image so they ship as AVIF/WebP at the actual rendered size.
+  const isSvg = src.endsWith('.svg');
   return (
     <div className="flex items-center justify-center px-4 md:px-6 h-[88px] md:h-[112px] group">
       <Image
@@ -142,7 +144,9 @@ function PartnerLogo({
         alt={alt}
         width={width}
         height={height}
-        unoptimized
+        unoptimized={isSvg}
+        loading="lazy"
+        sizes="(max-width: 768px) 50vw, 240px"
         className="h-7 md:h-9 w-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300"
         style={filter ? { filter, height: 'auto', maxHeight: '36px' } : { height: 'auto', maxHeight: '36px' }}
       />
@@ -211,6 +215,7 @@ function PhonePic({ src, alt }: { src: string; alt: string }) {
           alt={alt}
           fill
           sizes="(min-width: 768px) 260px, 230px"
+          loading="lazy"
           className="object-cover"
         />
       </div>
