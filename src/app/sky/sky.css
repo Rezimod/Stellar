@@ -2128,65 +2128,174 @@
 }
 
 /* ================================================================
-   === Difficulty tier filter (TargetPicker)                    ===
+   === Difficulty tier filter + Prime Target row                ===
    ================================================================ */
 
 .target-picker__tiers {
-  display: flex;
+  display: inline-flex;
   gap: 6px;
   flex-wrap: wrap;
   align-items: center;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-  margin-bottom: 4px;
+  padding: 4px;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
 }
 .target-tier {
   appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 13px;
+  padding: 8px 14px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.60);
+  color: rgba(255, 255, 255, 0.62);
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
   flex-shrink: 0;
+  min-height: 34px;
 }
 .target-tier:hover {
   color: var(--text);
-  border-color: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.04);
+}
+.target-tier:active {
+  transform: scale(0.97);
+}
+.target-tier:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.50);
 }
 .target-tier__count {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.40);
+  color: rgba(255, 255, 255, 0.50);
   font-feature-settings: 'tnum' 1;
   letter-spacing: 0.04em;
   padding: 1px 6px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: color 140ms ease, background 140ms ease;
 }
 .target-tier.is-active {
-  color: var(--text);
-  border-color: rgba(255, 209, 102, 0.45);
-  background: rgba(255, 209, 102, 0.08);
+  color: #0c1426;
+  background: #f3eee0;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 4px 14px rgba(0, 0, 0, 0.30);
 }
 .target-tier.is-active .target-tier__count {
-  color: var(--terracotta);
-  background: rgba(255, 209, 102, 0.10);
+  color: #0c1426;
+  background: rgba(12, 20, 38, 0.12);
 }
-.target-tier--easy.is-active   { border-color: rgba(120, 220, 170, 0.50); background: rgba(120, 220, 170, 0.07); }
-.target-tier--easy.is-active .target-tier__count   { color: #7ed4a8; background: rgba(120, 220, 170, 0.10); }
-.target-tier--medium.is-active { border-color: rgba(255, 209, 102, 0.50); background: rgba(255, 209, 102, 0.07); }
-.target-tier--medium.is-active .target-tier__count { color: #ffd166; background: rgba(255, 209, 102, 0.10); }
-.target-tier--hard.is-active   { border-color: rgba(220, 130, 130, 0.50); background: rgba(220, 130, 130, 0.07); }
-.target-tier--hard.is-active .target-tier__count   { color: #e89797; background: rgba(220, 130, 130, 0.10); }
+.target-tier--easy.is-active   { background: #b8efd0; }
+.target-tier--medium.is-active { background: #ffe39a; }
+.target-tier--hard.is-active   { background: #f3b9b9; }
+
+/* === Prime target tile (sits left of the tier pills) === */
+.prime-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.10), rgba(255, 209, 102, 0.04) 60%, rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 209, 102, 0.32);
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 56px;
+}
+.prime-target::before {
+  content: '';
+  position: absolute;
+  inset: -40% -30% auto auto;
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(closest-side, rgba(255, 209, 102, 0.30), transparent 75%);
+  pointer-events: none;
+}
+.prime-target:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 209, 102, 0.55);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+.prime-target:active { transform: translateY(0); }
+.prime-target.is-active {
+  border-color: rgba(255, 209, 102, 0.75);
+  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.35), 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+.prime-target__thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.prime-target__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.prime-target__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.prime-target__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--terracotta, #ffd166);
+}
+.prime-target__star {
+  color: var(--terracotta, #ffd166);
+  filter: drop-shadow(0 0 4px rgba(255, 209, 102, 0.55));
+  animation: prime-twinkle 3s ease-in-out infinite;
+}
+@keyframes prime-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+.prime-target__name {
+  font-family: var(--font-display, 'Source Serif 4', serif);
+  font-size: 17px;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.prime-target__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.62);
+  font-feature-settings: 'tnum' 1;
+}
+.prime-target__sep { color: rgba(255, 255, 255, 0.25); }
+@media (prefers-reduced-motion: reduce) {
+  .prime-target__star { animation: none; }
+}
 
 .target-picker__empty {
   font-family: var(--font-mono);
@@ -2451,52 +2560,70 @@
     border-radius: 14px;
   }
 
-  /* === Tier filter row — solid pressable buttons, no longer transparent
-     blends. ALL/EASY/MEDIUM/HARD now read as real controls. === */
+  /* === Tier filter row + prime target tile — stacks on mobile.
+     Prime card on top (full width), then a 4-up segmented control. === */
   .target-filters {
-    padding: 14px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 0 4px;
     margin: 0;
     border-top: 1px solid var(--border);
+    border-bottom: none;
   }
+  .target-filters .prime-target {
+    width: 100%;
+    padding: 10px 12px 10px 10px;
+  }
+  .prime-target__name { font-size: 16px; }
+  .prime-target__meta { font-size: 10.5px; }
+
   .target-picker { gap: 8px; }
   .target-picker__tiers {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
     overflow-x: visible;
-    border-top: none;
-    padding: 0;
+    padding: 4px;
     margin: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
   }
   .target-picker__tiers::-webkit-scrollbar { display: none; }
   .target-tier {
     flex: none;
     width: 100%;
     justify-content: center;
-    padding: 10px 8px;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    border-radius: 12px;
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.78);
-    min-height: 40px;
+    padding: 9px 6px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    border-radius: 10px;
+    border-color: transparent;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.70);
+    min-height: 38px;
+    gap: 6px;
   }
   .target-tier.is-active {
-    background: rgba(255, 209, 102, 0.18);
-    border-color: rgba(255, 209, 102, 0.65);
-    color: var(--terracotta);
+    background: #f3eee0;
+    color: #0c1426;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 4px 14px rgba(0, 0, 0, 0.30);
   }
-  .target-tier--easy.is-active   { background: rgba(120, 220, 170, 0.18); border-color: rgba(120, 220, 170, 0.65); color: #7ed4a8; }
-  .target-tier--medium.is-active { background: rgba(255, 209, 102, 0.18); border-color: rgba(255, 209, 102, 0.65); color: #ffd166; }
-  .target-tier--hard.is-active   { background: rgba(220, 130, 130, 0.18); border-color: rgba(220, 130, 130, 0.65); color: #e89797; }
+  .target-tier--easy.is-active   { background: #b8efd0; color: #0c1426; }
+  .target-tier--medium.is-active { background: #ffe39a; color: #0c1426; }
+  .target-tier--hard.is-active   { background: #f3b9b9; color: #0c1426; }
   .target-tier__count {
     font-size: 9.5px;
-    padding: 1px 5px;
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.55);
   }
   .target-tier.is-active .target-tier__count {
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(12, 20, 38, 0.14);
+    color: #0c1426;
   }
 
   .target-picker__label {
@@ -2776,28 +2903,29 @@
     margin-top: 0;
   }
 
-  /* === Filter row (tiers + AUTO) — centered above the split === */
+  /* === Filter row (prime + tiers) — sits above the split === */
   .target-filters {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
-    padding: 8px 0;
+    padding: 14px 0;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     margin: 4px 0;
   }
+  .target-filters .prime-target { flex: 0 1 auto; }
   .target-filters .target-picker__tiers {
     border-top: none;
-    padding-top: 0;
-    margin-bottom: 0;
-    gap: 8px;
+    padding: 4px;
+    margin: 0;
+    gap: 4px;
   }
   .target-filters .target-tier {
-    padding: 8px 16px;
+    padding: 9px 18px;
     font-size: 11px;
-    letter-spacing: 0.20em;
+    letter-spacing: 0.18em;
   }
 
   /* === Finder split — dome on left, visible cards on right === */
@@ -2909,12 +3037,8 @@
 /* === Mobile fallbacks for new wrapper classes ============== */
 
 @media (max-width: 760px) {
-  .target-filters {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+  /* .target-filters layout is set in the premium-pass block above
+     (column stack: prime card on top, segmented tiers below). */
   .target-visible__head,
   .target-below__head {
     display: flex;

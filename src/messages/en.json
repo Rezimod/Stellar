@@ -309,53 +309,53 @@
       },
       "details": {
         "lunar_eclipse_mar3": {
-          "body": "The full Moon slides through Earth's shadow and turns deep copper-red — a slow, two-hour spectacle.",
-          "peak": "Mid-eclipse around 11:33 UTC",
-          "moon": "Full Moon — the show itself",
-          "gear": "Naked eye is best",
-          "tip": "No filters needed. Find a clear view east — start watching as the Moon enters Earth's umbra."
+          "body": "The full Moon drifts through Earth's umbra and glows deep copper-red. Totality lasts 58 minutes; the full event runs about 3.5 hours from first to last contact.",
+          "peak": "Mid-totality 11:33 UTC (visible from Asia, Australia, the Pacific)",
+          "moon": "Full Moon — and the eclipse star itself",
+          "gear": "Naked eye; binoculars sharpen the colour",
+          "tip": "No filters needed. Find a clear horizon and start watching as the Moon enters the penumbra — the dimming begins subtly, then accelerates into umbral contact."
         },
         "lyrids": {
-          "body": "A reliable spring shower with 15–20 meteors per hour. Bright, fast streaks radiate from Lyra.",
-          "peak": "Pre-dawn April 23",
-          "moon": "Waning crescent — dark skies",
-          "gear": "Naked eye, lounge chair",
-          "tip": "Look up after midnight. Let your eyes adapt for 20 minutes — no phone screens."
+          "body": "A steady spring shower with a Zenithal Hourly Rate near 18, and occasional outbursts that triple it. Streaks are bright, fast, and often leave persistent trains.",
+          "peak": "02:00–04:00 local time, April 23",
+          "moon": "Waning crescent — sets early, sky stays dark",
+          "gear": "Naked eye; reclining chair beats craning your neck",
+          "tip": "Look up once the radiant in Lyra is high (after midnight). Let your eyes adapt for 20 minutes — no phone screens, no flashlights."
         },
         "mars_saturn_conj": {
-          "body": "Mars and Saturn slide within a quarter-degree of each other — close enough to fit in one low-power eyepiece view.",
-          "peak": "Pre-dawn May 12, low in the east",
-          "moon": "Waning crescent — barely interferes",
-          "gear": "Binoculars or any telescope",
-          "tip": "Get up an hour before sunrise. Find a clear eastern horizon — Mars is the redder dot, Saturn the steady gold. Both ride low, so an unobstructed view matters."
+          "body": "Mars and Saturn pass within 0.4° — close enough to share a single low-power eyepiece field. Mars glows steady red; Saturn shows pale gold with rings barely tilted.",
+          "peak": "Pre-dawn May 12, ~04:30 local, ~15° above the eastern horizon",
+          "moon": "Waning crescent — minor light pollution only",
+          "gear": "10×50 binoculars frame both; any small scope splits Saturn's rings",
+          "tip": "Be set up an hour before sunrise. Mars is the redder, steady dot; Saturn the steadier gold. Both ride low — an unobstructed eastern horizon makes or breaks the view."
         },
         "perseids": {
-          "body": "The classic summer shower — up to 100 meteors per hour, often with bright fireballs that linger.",
-          "peak": "Pre-dawn August 13",
-          "moon": "New Moon — perfect dark sky",
-          "gear": "Naked eye",
-          "tip": "Get out of city light. Lie back, face northeast, and just watch — no equipment needed."
+          "body": "The summer classic — peak Zenithal Hourly Rate of 100, with bright fireballs that often leave smoke trains lasting several seconds.",
+          "peak": "00:30 to dawn, August 13",
+          "moon": "New Moon — the darkest possible sky",
+          "gear": "Naked eye only; cameras with 24mm+ wide lenses catch the bright ones",
+          "tip": "Drive 30+ minutes out of city light. Lie back, face northeast where Perseus rises, and just watch. Counting meteors keeps you alert."
         },
         "solar_eclipse_aug12": {
-          "body": "Totality crosses Iceland and northern Spain. Outside the path you'll see a deep partial — protective filters required.",
-          "peak": "17:46 UTC — early evening in Europe",
-          "moon": "New Moon — the eclipsing body",
-          "gear": "Solar filters mandatory",
-          "tip": "Never look directly without certified eclipse glasses. Project the image with a pinhole if you don't have filters."
+          "body": "The path of totality crosses Greenland, Iceland, and northern Spain — about 2 minutes 18 seconds of full darkness. Across the rest of Europe and North Africa it's a deep partial.",
+          "peak": "Greatest eclipse 17:47 UTC — early evening across Europe",
+          "moon": "New Moon — the occulting body",
+          "gear": "ISO-12312-2 solar filters or eclipse glasses, always",
+          "tip": "Never look directly without certified protection. If you lack filters, build a pinhole projector — a single hole in card stock projects a crescent Sun onto any flat surface."
         },
         "saturn_opp": {
-          "body": "Saturn rises at sunset and shines all night, brightest and biggest of the year. The rings, edge-on in 2025, are now tilted about 8° — gradually reopening.",
-          "peak": "All night, highest near midnight",
-          "moon": "Near new — clean dark sky",
-          "gear": "Telescope (any size)",
-          "tip": "Even a 60mm scope shows the rings clearly. Wait until Saturn is 30°+ above the horizon for the steadiest view."
+          "body": "Saturn rises as the Sun sets and shines all night, at its brightest (mag +0.4) and biggest of the year. Rings are tilted about 9° — reopening from the 2025 edge-on event.",
+          "peak": "Rises at sunset; transits highest around local midnight",
+          "moon": "Near new on Oct 4 — pristine dark sky",
+          "gear": "Telescope at 80×+ to split the rings; even a 60mm achromat shows them clearly",
+          "tip": "Wait until Saturn climbs above 30° altitude — atmospheric turbulence smears the view at low angles. Use medium magnification first; push higher only when the seeing is steady."
         },
         "geminids": {
-          "body": "The strongest shower of the year — slow, multicoloured meteors at up to 120 per hour.",
-          "peak": "Pre-dawn December 14",
-          "moon": "First quarter — sets by midnight",
-          "gear": "Naked eye, warm clothes",
-          "tip": "Late-night to dawn is best. Wait for the Moon to set and then look anywhere overhead."
+          "body": "The most reliable shower of the year — slow, colour-tinted meteors at a Zenithal Hourly Rate near 120. Often produces bright multicoloured fireballs.",
+          "peak": "02:00 local time, December 14, with the radiant nearly overhead",
+          "moon": "First quarter — sets by midnight, leaving prime hours dark",
+          "gear": "Naked eye; serious thermal layers (this is winter)",
+          "tip": "Wait for moonset around midnight, then face anywhere — the radiant in Gemini is overhead, so meteors fall in every direction."
         }
       }
     },

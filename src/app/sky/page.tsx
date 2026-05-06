@@ -24,7 +24,6 @@ import {
 } from '@/components/sky/finder/TargetPicker';
 import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
 import { PointIdentify } from '@/components/sky/PointIdentify';
-import { TonightTimeline } from '@/components/sky/TonightTimeline';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
@@ -158,6 +157,17 @@ export default function SkyPage() {
     return finder.objects.find((o) => o.id === activeId) ?? null;
   }, [finder, activeId]);
 
+  // The brightest, easiest non-Moon, non-Sun target above the horizon — the
+  // single thing tonight a beginner should walk outside and look at first.
+  const primeTarget = useMemo<SkyObject | null>(() => {
+    if (!finder) return null;
+    const candidates = finder.objects.filter(
+      (o) => o.visible && o.id !== 'moon' && o.id !== 'sun' && o.altitude >= 10,
+    );
+    if (candidates.length === 0) return null;
+    return [...candidates].sort((a, b) => a.magnitude - b.magnitude)[0];
+  }, [finder]);
+
   // Constellation stars projected once per finder refresh — the angular
   // drift across a few minutes is below dome resolution, so this is fine.
   const constellationStars = useMemo<ConstellationStar[]>(() => {
@@ -236,12 +246,15 @@ export default function SkyPage() {
 
         {showTour && <FinderTour onDismiss={dismissTour} />}
 
-        {/* === Difficulty filters (centered above the split) === */}
+        {/* === Prime target + difficulty filters (centered above the split) === */}
         {finder && !finderError && (
           <TargetFilters
             objects={finder.objects}
             tier={tier}
             onTierChange={setTier}
+            primeTarget={primeTarget}
+            primeActive={activeId === primeTarget?.id}
+            onPrimeSelect={() => primeTarget && setActiveId(primeTarget.id)}
           />
         )}
 
@@ -323,9 +336,6 @@ export default function SkyPage() {
             observerLon={location.lon}
           />
         )}
-
-        {/* === Tonight Timeline: drag-to-scrub through tonight's dark window === */}
-        <TonightTimeline lat={location.lat} lon={location.lon} />
 
         {/* === Year-in-the-sky 2026 events rail === */}
         <SkyEvents2026 />

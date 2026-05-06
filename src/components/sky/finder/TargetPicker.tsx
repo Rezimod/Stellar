@@ -133,12 +133,18 @@ interface TargetFiltersProps {
   objects: SkyObject[];
   tier: TierFilter;
   onTierChange: (tier: TierFilter) => void;
+  primeTarget?: SkyObject | null;
+  primeActive?: boolean;
+  onPrimeSelect?: () => void;
 }
 
 export function TargetFilters({
   objects,
   tier,
   onTierChange,
+  primeTarget = null,
+  primeActive = false,
+  onPrimeSelect,
 }: TargetFiltersProps) {
   const t = useTranslations('sky.picker');
   const counts = useMemo(() => {
@@ -152,6 +158,14 @@ export function TargetFilters({
 
   return (
     <div className="target-filters">
+      {primeTarget && (
+        <PrimeTargetCard
+          obj={primeTarget}
+          active={primeActive}
+          onSelect={onPrimeSelect}
+          t={t}
+        />
+      )}
       <div className="target-picker__tiers" role="tablist" aria-label={t('tierAria')}>
         {TIER_ORDER.map((tk) => {
           const active = tier === tk;
@@ -173,6 +187,72 @@ export function TargetFilters({
         })}
       </div>
     </div>
+  );
+}
+
+function PrimeTargetCard({
+  obj,
+  active,
+  onSelect,
+  t,
+}: {
+  obj: SkyObject;
+  active: boolean;
+  onSelect?: () => void;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const photo = getTargetPhoto(obj.id);
+  const setLabel = fmtHHmm(obj.setTime);
+  const altitude = `+${Math.round(obj.altitude)}° ${obj.compassDirection}`;
+  const window = obj.circumpolar
+    ? t('upAllNight')
+    : setLabel
+      ? t('setsAt', { time: setLabel })
+      : t('upAllNight');
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect?.()}
+      className={`prime-target${active ? ' is-active' : ''}`}
+      aria-label={`Prime target tonight: ${obj.name}`}
+    >
+      <span className="prime-target__thumb">
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+        ) : (
+          <PlanetIcon
+            id={obj.id}
+            type={obj.type}
+            magnitude={obj.magnitude}
+            phase={obj.phase}
+            size={36}
+            glow={false}
+          />
+        )}
+      </span>
+      <span className="prime-target__body">
+        <span className="prime-target__eyebrow">
+          <PrimeStar />
+          <span>Prime tonight</span>
+        </span>
+        <span className="prime-target__name">{obj.name}</span>
+        <span className="prime-target__meta">
+          <span className="prime-target__alt">{altitude}</span>
+          <span className="prime-target__sep" aria-hidden>·</span>
+          <span className="prime-target__window">{window}</span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function PrimeStar() {
+  return (
+    <svg width={10} height={10} viewBox="0 0 16 16" aria-hidden="true" className="prime-target__star">
+      <path d="M8 1.2l1.85 4.6 4.95.4-3.78 3.22 1.18 4.83L8 11.74l-4.2 2.51 1.18-4.83L1.2 6.2l4.95-.4L8 1.2z" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -206,11 +286,6 @@ export function TargetVisibleGrid({
 
   return (
     <section className="target-visible">
-      <header className="target-visible__head">
-        <span className="target-visible__label">
-          {t('header', { count: visible.length })}
-        </span>
-      </header>
       {visible.length === 0 ? (
         <div className="target-picker__empty">{t('emptyTier')}</div>
       ) : (

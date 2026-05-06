@@ -121,82 +121,129 @@
 
 /* === Animations ================================================== */
 
-/* Lunar eclipse — Moon drifts L→R, switching from normal to blood-red */
+/* Lunar eclipse — Moon transits Earth's umbra (centered at x=100). The
+   geometry is honest: the Moon enters from the left, dims as it crosses
+   the umbra disc, hits totality at center, then reddens back out. */
 .ev-le__moon {
-  animation: ev-le-translate 7s ease-in-out infinite;
+  animation: ev-le-translate 9s cubic-bezier(0.4, 0.0, 0.6, 1) infinite;
 }
 @keyframes ev-le-translate {
-  0%   { transform: translate(20px, 0); }
-  50%  { transform: translate(100px, 0); }
-  100% { transform: translate(180px, 0); }
+  0%   { transform: translate(0px,   0); }
+  100% { transform: translate(220px, 0); }
 }
-.ev-le__pre  { animation: ev-le-fadeOut 7s ease-in-out infinite; }
-.ev-le__blood { opacity: 0; animation: ev-le-fadeIn 7s ease-in-out infinite; }
+.ev-le__pre  { animation: ev-le-fadeOut 9s ease-in-out infinite; }
+.ev-le__blood { opacity: 0; animation: ev-le-fadeIn 9s ease-in-out infinite; }
 @keyframes ev-le-fadeOut {
-  0%, 30%   { opacity: 1; }
-  45%, 65%  { opacity: 0; }
-  85%, 100% { opacity: 1; }
+  0%, 28%   { opacity: 1; }
+  40%, 60%  { opacity: 0; }
+  72%, 100% { opacity: 1; }
 }
 @keyframes ev-le-fadeIn {
-  0%, 30%   { opacity: 0; }
-  45%, 65%  { opacity: 1; }
-  85%, 100% { opacity: 0; }
+  0%, 28%   { opacity: 0; }
+  40%, 60%  { opacity: 1; }
+  72%, 100% { opacity: 0; }
 }
 
-/* Solar eclipse — Moon disc occulting Sun */
+/* Solar eclipse — Moon slides across the Sun. Corona blooms only at the
+   apex of totality. A bright "diamond ring" pulse fires twice — once at
+   second contact (entering totality) and once at third contact (exiting). */
 .ev-se__moon {
-  animation: ev-se-occult 6s ease-in-out infinite;
+  animation: ev-se-occult 7s cubic-bezier(0.45, 0.0, 0.55, 1) infinite;
 }
 @keyframes ev-se-occult {
-  0%   { transform: translate(-58px, 0); }
+  0%   { transform: translate(-60px, 0); }
   50%  { transform: translate(0, 0); }
-  100% { transform: translate(58px, 0); }
+  100% { transform: translate(60px, 0); }
 }
 .ev-se__corona {
   opacity: 0;
-  animation: ev-se-corona 6s ease-in-out infinite;
+  animation: ev-se-corona 7s ease-in-out infinite;
+  transform-origin: center;
 }
 @keyframes ev-se-corona {
-  0%, 30%, 70%, 100% { opacity: 0; transform: scale(0.95); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%, 30%, 70%, 100% { opacity: 0; transform: scale(0.92); }
+  45%                { opacity: 0.85; transform: scale(1.04); }
+  50%                { opacity: 1; transform: scale(1.10); }
+  55%                { opacity: 0.85; transform: scale(1.04); }
+}
+.ev-se__rays {
+  opacity: 0;
+  animation: ev-se-rays 7s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ev-se-rays {
+  0%, 30%, 70%, 100% { opacity: 0; transform: rotate(0deg) scale(0.9); }
+  50%                { opacity: 1; transform: rotate(8deg) scale(1.0); }
+}
+.ev-se__diamond {
+  opacity: 0;
+  animation: ev-se-diamond 7s ease-in-out infinite;
+}
+@keyframes ev-se-diamond {
+  0%, 100%      { opacity: 0; transform: translate(-26px, 0) scale(0.6); }
+  42%           { opacity: 0; transform: translate(2px, 0) scale(0.6); }
+  46%           { opacity: 1; transform: translate(2px, 0) scale(1.4); }
+  48%           { opacity: 0; transform: translate(2px, 0) scale(0.6); }
+  52%           { opacity: 0; transform: translate(-2px, 0) scale(0.6); }
+  54%           { opacity: 1; transform: translate(-2px, 0) scale(1.4); }
+  56%           { opacity: 0; transform: translate(-2px, 0) scale(0.6); }
 }
 
-/* Meteor shower — diagonal streaks */
+/* Meteor shower — each streak grows from the radiant outward, then fades.
+   Custom timing per streak (set inline) gives a believable random rhythm. */
 .ev-ms__streak {
   opacity: 0;
-  animation: ev-ms-fall 1.8s linear infinite;
+  animation-name: ev-ms-streak;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1);
 }
-@keyframes ev-ms-fall {
-  0%   { opacity: 0; transform: translate(-30px, -30px); }
-  20%  { opacity: 1; }
-  90%  { opacity: 0.4; }
-  100% { opacity: 0; transform: translate(120px, 120px); }
+@keyframes ev-ms-streak {
+  0%   { opacity: 0; transform: scale(0); }
+  10%  { opacity: 1; transform: scale(0.4); }
+  60%  { opacity: 0.85; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.05); }
 }
 
-/* Saturn opposition — gentle pulse, slight tilt */
+/* Saturn opposition — slow, steady brightness pulse with a subtle ring
+   wobble. The glow halo expands at peak so the eye registers the
+   "opposition surge" without resorting to gimmicky tilt. */
 .ev-op__saturn {
   transform-origin: 100px 60px;
-  animation: ev-op-tilt 6s ease-in-out infinite;
+  animation: ev-op-pulse 7s ease-in-out infinite;
 }
-@keyframes ev-op-tilt {
-  0%, 100% { transform: translate(100px, 60px) rotate(-6deg) scale(0.95); filter: brightness(0.9); }
-  50%      { transform: translate(100px, 60px) rotate(6deg) scale(1.05); filter: brightness(1.15); }
+@keyframes ev-op-pulse {
+  0%, 100% { transform: translate(100px, 60px) rotate(-8deg) scale(0.97); filter: brightness(0.95); }
+  50%      { transform: translate(100px, 60px) rotate(-7deg) scale(1.03); filter: brightness(1.18); }
+}
+.ev-op__glow {
+  animation: ev-op-glow 7s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ev-op-glow {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50%      { opacity: 1;   transform: scale(1.12); }
 }
 
-/* Conjunction — two planets approach + drift */
-.ev-cj__a {
-  animation: ev-cj-a 5s ease-in-out infinite;
-}
-.ev-cj__b {
-  animation: ev-cj-b 5s ease-in-out infinite;
-}
+/* Conjunction — two planets approach until nearly tangent, hold briefly,
+   then drift apart. Halos brighten at closest approach so the moment of
+   conjunction reads at a glance. */
+.ev-cj__a { animation: ev-cj-a 6s ease-in-out infinite; }
+.ev-cj__b { animation: ev-cj-b 6s ease-in-out infinite; }
 @keyframes ev-cj-a {
   0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(50px, 0); }
+  44%, 56% { transform: translate(54px, 0); }
 }
 @keyframes ev-cj-b {
   0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(-48px, 0); }
+  44%, 56% { transform: translate(-52px, 0); }
+}
+.ev-cj__halo {
+  animation: ev-cj-halo 6s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ev-cj-halo {
+  0%, 100%   { opacity: 0.4; transform: scale(0.85); }
+  44%, 56%   { opacity: 1;   transform: scale(1.18); }
 }
 
 /* === Reduce motion =============================================== */
@@ -206,13 +253,18 @@
   .ev-le__blood,
   .ev-se__moon,
   .ev-se__corona,
+  .ev-se__rays,
+  .ev-se__diamond,
   .ev-ms__streak,
   .ev-op__saturn,
+  .ev-op__glow,
   .ev-cj__a,
-  .ev-cj__b {
+  .ev-cj__b,
+  .ev-cj__halo {
     animation: none !important;
   }
   .ev-le__blood { opacity: 0.5; }
+  .ev-ms__streak { opacity: 0.7; transform: scale(1); }
 }
 
 /* === Sheet (modal-ish) =========================================== */
