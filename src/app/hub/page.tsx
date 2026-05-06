@@ -8,21 +8,21 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
-type HubItem = { href: string; label: string; icon: LucideIcon };
+type HubItem = { href: string; label: string; icon: LucideIcon; comingSoon?: boolean };
 type HubSection = { label: string; items: HubItem[] };
 
 const SECTIONS: HubSection[] = [
   {
     label: 'Explore',
     items: [
-      { href: '/sky',         label: 'Sky forecast', icon: Sun },
-      { href: '/markets',     label: 'Markets',      icon: TrendingUp },
+      { href: '/sky',         label: 'Sky Watcher', icon: Sun },
+      { href: '/markets',     label: 'Markets',      icon: TrendingUp,   comingSoon: true },
       { href: '/missions',    label: 'Missions',     icon: Target },
       { href: '/chat',        label: 'ASTRA AI',     icon: MessageCircle },
       { href: '/feed',        label: 'Feed',         icon: Sparkles },
       { href: '/learn',       label: 'Learning',     icon: BookOpen },
-      { href: '/network',     label: 'Network',      icon: Globe },
-      { href: '/leaderboard', label: 'Leaderboard',  icon: Trophy },
+      { href: '/network',     label: 'Network',      icon: Globe,        comingSoon: true },
+      { href: '/leaderboard', label: 'Leaderboard',  icon: Trophy,       comingSoon: true },
       { href: '/marketplace', label: 'Marketplace',  icon: ShoppingBag },
     ],
   },
@@ -73,12 +73,26 @@ export default function HubPage() {
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3">
               {section.items.map((item) => {
                 const Icon = item.icon;
+                const dimmed = item.comingSoon;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex flex-col items-center justify-center gap-2.5 p-4 sm:p-5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline text-center"
+                    className={`relative flex flex-col items-center justify-center gap-2.5 p-4 sm:p-5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline text-center ${dimmed ? 'opacity-70' : ''}`}
                   >
+                    {item.comingSoon && (
+                      <span
+                        className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-semibold tracking-[0.18em] uppercase"
+                        style={{
+                          color: 'rgba(255,209,102,0.85)',
+                          background: 'rgba(255,209,102,0.08)',
+                          border: '1px solid rgba(255,209,102,0.28)',
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        Soon
+                      </span>
+                    )}
                     <div className="w-10 h-10 rounded-lg bg-[#FFD166]/[0.08] border border-[#FFD166]/[0.16] flex items-center justify-center shrink-0">
                       <Icon size={18} strokeWidth={1.8} color="#FFD166" />
                     </div>

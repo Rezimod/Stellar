@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { Telescope } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
+import ComingSoonOverlay from '@/components/shared/ComingSoonOverlay';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import PageContainer from '@/components/layout/PageContainer';
@@ -188,6 +189,9 @@ export default function LeaderboardPage() {
   ];
 
   return (
+    <div style={{ position: 'relative' }}>
+      <ComingSoonOverlay />
+      <div aria-hidden style={{ filter: 'blur(8px)', pointerEvents: 'none', userSelect: 'none' }}>
     <PageContainer variant="content" className="py-6 sm:py-10 animate-page-enter flex flex-col gap-5">
       <BackButton />
 
@@ -477,5 +481,7 @@ export default function LeaderboardPage() {
         </Link>
       </div>
     </PageContainer>
+      </div>
+    </div>
   );
 }
