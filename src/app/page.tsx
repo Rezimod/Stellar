@@ -125,18 +125,226 @@ function SectionLink({ href, children }: { href: string; children: React.ReactNo
    every phone on the page so the visual language is consistent. */
 
 type IPhoneSize = 'sm' | 'md' | 'lg';
+type AppTab = 'sky' | 'missions' | 'home' | 'feed' | 'hub';
+
+function TabIcon({
+  kind,
+  color,
+  size,
+  strokeWidth = 1.7,
+}: {
+  kind: AppTab;
+  color: string;
+  size: number;
+  strokeWidth?: number;
+}) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: color,
+    strokeWidth,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  switch (kind) {
+    case 'sky':
+      return (
+        <svg {...common}>
+          <circle cx="7" cy="9" r="3" />
+          <path d="M17 18a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1A4.5 4.5 0 0 0 8 18z" />
+        </svg>
+      );
+    case 'missions':
+      return (
+        <svg {...common}>
+          <path d="M14.5 3a6 6 0 0 1 6.5 6.5 11 11 0 0 1-7 7l-3-3a11 11 0 0 1 7-7l-3.5-3.5z" />
+          <path d="M7 14l-3 3 3 3 3-3" />
+          <circle cx="15.5" cy="8.5" r="1.2" />
+        </svg>
+      );
+    case 'home':
+      return (
+        <svg {...common}>
+          <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+        </svg>
+      );
+    case 'feed':
+      return (
+        <svg {...common}>
+          <path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z" />
+          <path d="M18 15l.7 1.8L20.5 17.5l-1.8.7L18 20l-.7-1.8L15.5 17.5l1.8-.7z" />
+        </svg>
+      );
+    case 'hub':
+      return (
+        <svg {...common}>
+          <rect x="3.5" y="3.5" width="7" height="7" rx="1.4" />
+          <rect x="13.5" y="3.5" width="7" height="7" rx="1.4" />
+          <rect x="3.5" y="13.5" width="7" height="7" rx="1.4" />
+          <rect x="13.5" y="13.5" width="7" height="7" rx="1.4" />
+        </svg>
+      );
+  }
+}
+
+function PhoneTopBar({ size }: { size: IPhoneSize }) {
+  const cfg =
+    size === 'sm'
+      ? { h: 22, logo: 7.5, icon: 10, padX: 8, gap: 5, mark: 9 }
+      : size === 'md'
+      ? { h: 28, logo: 9.5, icon: 13, padX: 10, gap: 7, mark: 12 }
+      : { h: 34, logo: 11.5, icon: 15, padX: 12, gap: 9, mark: 14 };
+
+  return (
+    <div
+      className="flex items-center justify-between bg-black"
+      style={{
+        height: cfg.h,
+        paddingLeft: cfg.padX,
+        paddingRight: cfg.padX,
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        flexShrink: 0,
+      }}
+    >
+      <div className="flex items-center" style={{ gap: Math.max(4, cfg.gap * 0.55) }}>
+        <span
+          className="rounded-full flex items-center justify-center"
+          style={{
+            width: cfg.mark,
+            height: cfg.mark,
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
+          }}
+        >
+          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#FFD166">
+            <path d="M6 1l1.5 3.5L11 5l-2.5 2L9 10.5 6 8.5 3 10.5l.5-3.5L1 5l3.5-.5z" />
+          </svg>
+        </span>
+        <span
+          className="font-semibold text-white"
+          style={{
+            fontSize: cfg.logo,
+            letterSpacing: '0.18em',
+            fontFamily: 'var(--font-display, ui-serif, Georgia, serif)',
+            lineHeight: 1,
+          }}
+        >
+          STELLAR
+        </span>
+      </div>
+      <div className="flex items-center" style={{ gap: cfg.gap }}>
+        <svg
+          width={cfg.icon}
+          height={cfg.icon}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          strokeOpacity="0.7"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <span
+          className="rounded-full"
+          style={{
+            width: cfg.icon + 2,
+            height: cfg.icon + 2,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.18)',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function PhoneBottomNav({ size, active }: { size: IPhoneSize; active: AppTab }) {
+  const cfg =
+    size === 'sm'
+      ? { h: 32, icon: 12, label: 6, gap: 1.5, dashW: 10, dashH: 1.2, padTop: 4 }
+      : size === 'md'
+      ? { h: 40, icon: 15, label: 7.5, gap: 2, dashW: 13, dashH: 1.5, padTop: 5 }
+      : { h: 48, icon: 18, label: 9, gap: 2.5, dashW: 16, dashH: 1.6, padTop: 6 };
+
+  const tabs: AppTab[] = ['sky', 'missions', 'home', 'feed', 'hub'];
+  const labels: Record<AppTab, string> = {
+    sky: 'Sky',
+    missions: 'Missions',
+    home: 'Home',
+    feed: 'Feed',
+    hub: 'Hub',
+  };
+
+  return (
+    <div
+      className="flex items-stretch bg-black"
+      style={{
+        height: cfg.h,
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        flexShrink: 0,
+      }}
+    >
+      {tabs.map((t) => {
+        const isActive = t === active;
+        const color = isActive ? '#FFD166' : 'rgba(255,255,255,0.42)';
+        return (
+          <div
+            key={t}
+            className="flex-1 flex flex-col items-center relative"
+            style={{ paddingTop: cfg.padTop, gap: cfg.gap }}
+          >
+            {isActive && (
+              <span
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: cfg.dashW,
+                  height: cfg.dashH,
+                  borderRadius: cfg.dashH,
+                  background: '#FFD166',
+                }}
+              />
+            )}
+            <TabIcon kind={t} color={color} size={cfg.icon} strokeWidth={isActive ? 2 : 1.7} />
+            <span
+              style={{
+                fontSize: cfg.label,
+                color,
+                fontWeight: isActive ? 600 : 400,
+                letterSpacing: '0.01em',
+                lineHeight: 1,
+                fontFamily: 'var(--font-display, ui-sans-serif, system-ui)',
+              }}
+            >
+              {labels[t]}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function IPhone({
   size = 'md',
   image,
   imageAlt,
   imageSizes,
+  activeTab = 'home',
   children,
 }: {
   size?: IPhoneSize;
   image?: string;
   imageAlt?: string;
   imageSizes?: string;
+  activeTab?: AppTab;
   children?: React.ReactNode;
 }) {
   const cfg =
@@ -254,7 +462,7 @@ function IPhone({
             </span>
           </div>
 
-          {/* Content area — image OR mockup children */}
+          {/* Content area — image OR mockup children with app chrome */}
           {image ? (
             <div className="relative w-full" style={{ aspectRatio: '884 / 1498' }}>
               <Image
@@ -268,10 +476,12 @@ function IPhone({
             </div>
           ) : (
             <div
-              className="relative w-full bg-gradient-to-b from-[#0B0E17] to-[#0F1424]"
+              className="relative w-full flex flex-col bg-gradient-to-b from-[#0B0E17] to-[#0F1424]"
               style={{ aspectRatio: '884 / 1498' }}
             >
-              <div className={`absolute inset-0 ${cfg.contentPad}`}>{children}</div>
+              <PhoneTopBar size={size} />
+              <div className={`flex-1 min-h-0 overflow-hidden ${cfg.contentPad}`}>{children}</div>
+              <PhoneBottomNav size={size} active={activeTab} />
             </div>
           )}
 
@@ -772,7 +982,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-1 mx-auto">
-              <IPhone size="md">
+              <IPhone size="md" activeTab="missions">
                 <MissionsScreen />
               </IPhone>
             </div>
@@ -838,7 +1048,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="order-1 md:order-2 mx-auto">
-              <IPhone size="md">
+              <IPhone size="md" activeTab="hub">
                 <LearnScreen />
               </IPhone>
             </div>
@@ -859,16 +1069,16 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-12 md:gap-x-6 md:gap-y-14 max-w-[1040px] mx-auto">
             <SkyFeatureSlot title="Live sky map" caption="Every visible planet, charted to your location.">
-              <IPhone size="sm"><SkyMapScreen /></IPhone>
+              <IPhone size="sm" activeTab="sky"><SkyMapScreen /></IPhone>
             </SkyFeatureSlot>
             <SkyFeatureSlot title="AR finder" caption="Point your phone. Center the reticle.">
-              <IPhone size="sm"><SkyARScreen /></IPhone>
+              <IPhone size="sm" activeTab="sky"><SkyARScreen /></IPhone>
             </SkyFeatureSlot>
             <SkyFeatureSlot title="Target detail" caption="Direction, altitude, when it sets.">
-              <IPhone size="sm"><SkyTargetScreen /></IPhone>
+              <IPhone size="sm" activeTab="sky"><SkyTargetScreen /></IPhone>
             </SkyFeatureSlot>
             <SkyFeatureSlot title="7-day forecast" caption="Cloud, moon, seeing — Go or Skip.">
-              <IPhone size="sm"><SkyForecastScreen /></IPhone>
+              <IPhone size="sm" activeTab="home"><SkyForecastScreen /></IPhone>
             </SkyFeatureSlot>
           </div>
 
