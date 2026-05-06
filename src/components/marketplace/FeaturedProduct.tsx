@@ -151,7 +151,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
             </a>
             <Link
               href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=sol`}
-              className="px-[18px] py-[10px] rounded-lg text-[12px] font-bold tracking-[0.18em] uppercase transition-[filter,transform] hover:brightness-110"
+              className="inline-flex items-center gap-[6px] px-[16px] py-[10px] rounded-lg text-[11px] font-bold tracking-[0.14em] uppercase whitespace-nowrap transition-[filter,transform] hover:brightness-110"
               style={{
                 background: 'var(--terracotta)',
                 border: '1px solid var(--terracotta)',
@@ -159,11 +159,12 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
                 boxShadow: '0 10px 28px -10px rgba(255, 209, 102, 0.55)',
               }}
             >
-              Pay SOL
+              <span aria-hidden className="text-[13px] leading-none">◎</span>
+              <span>Pay SOL</span>
             </Link>
             <Link
               href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
-              className="px-[18px] py-[10px] rounded-lg text-[12px] font-bold tracking-[0.18em] uppercase transition-[filter,transform] hover:brightness-110"
+              className="inline-flex items-center gap-[6px] px-[16px] py-[10px] rounded-lg text-[11px] font-bold tracking-[0.14em] uppercase whitespace-nowrap transition-[filter,transform] hover:brightness-110"
               style={{
                 background: 'var(--seafoam)',
                 border: '1px solid var(--seafoam)',
@@ -171,7 +172,8 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
                 boxShadow: '0 10px 28px -10px rgba(94, 234, 212, 0.55)',
               }}
             >
-              Pay Stars
+              <span aria-hidden className="text-[13px] leading-none">✦</span>
+              <span>Pay Stars</span>
             </Link>
           </div>
         </div>

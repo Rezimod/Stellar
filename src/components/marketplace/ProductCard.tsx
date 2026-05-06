@@ -91,32 +91,34 @@ export default function ProductCard({ product, dealerName }: Props) {
           ✦ {product.starsPrice.toLocaleString()}
         </span>
       </div>
-      <div className="flex gap-[6px]">
+      <div className="flex gap-[5px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 text-center px-[8px] py-[9px] rounded-lg text-[11px] tracking-[0.14em] uppercase font-bold transition-[filter,transform] hover:brightness-110"
+          className="flex-1 inline-flex items-center justify-center gap-[3px] px-[6px] py-[7px] rounded-lg text-[10px] tracking-[0.10em] uppercase font-bold whitespace-nowrap transition-[filter,transform] hover:brightness-110"
           style={{
             background: 'var(--terracotta)',
             border: '1px solid var(--terracotta)',
             color: '#1a1208',
-            boxShadow: '0 8px 22px -10px rgba(255, 209, 102, 0.55)',
+            boxShadow: '0 6px 18px -10px rgba(255, 209, 102, 0.55)',
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
-          Pay SOL
+          <span aria-hidden className="text-[11px] leading-none">◎</span>
+          <span>SOL</span>
         </Link>
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 text-center px-[8px] py-[9px] rounded-lg text-[11px] tracking-[0.14em] uppercase font-bold transition-[filter,transform] hover:brightness-110"
+          className="flex-1 inline-flex items-center justify-center gap-[3px] px-[6px] py-[7px] rounded-lg text-[10px] tracking-[0.10em] uppercase font-bold whitespace-nowrap transition-[filter,transform] hover:brightness-110"
           style={{
             background: 'var(--seafoam)',
             border: '1px solid var(--seafoam)',
             color: '#06231f',
-            boxShadow: '0 8px 22px -10px rgba(94, 234, 212, 0.55)',
+            boxShadow: '0 6px 18px -10px rgba(94, 234, 212, 0.55)',
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >
-          Pay Stars
+          <span aria-hidden className="text-[11px] leading-none">✦</span>
+          <span>Stars</span>
         </Link>
       </div>
     </div>
