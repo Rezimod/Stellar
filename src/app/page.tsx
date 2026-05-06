@@ -14,40 +14,6 @@ const HERO_MISSIONS: { id: string; name: string; equip: string; diff: string; st
   { id: 'crab',      name: 'Crab Nebula',  equip: 'Telescope',  diff: 'Expert', stars: 250 },
 ];
 
-const TILE_BRASS = 'bg-[rgba(255,209,102,0.08)] border-[rgba(255,209,102,0.2)]';
-const TILE_PURPLE = 'bg-[rgba(176,127,232,0.08)] border-[rgba(176,127,232,0.2)]';
-const TILE_TEAL = 'bg-[rgba(56,240,255,0.08)] border-[rgba(56,240,255,0.2)]';
-
-const STROKE_BRASS = '#FFD166';
-const STROKE_PURPLE = '#B07FE8';
-const STROKE_TEAL = '#38F0FF';
-
-function IconTile({ tone, children }: { tone: 'brass' | 'purple' | 'teal'; children: React.ReactNode }) {
-  const cls = tone === 'brass' ? TILE_BRASS : tone === 'purple' ? TILE_PURPLE : TILE_TEAL;
-  return (
-    <div className={`w-14 h-14 ${cls} border rounded-xl flex items-center justify-center mb-6 mx-auto md:mx-0`}>
-      {children}
-    </div>
-  );
-}
-
-function StrokeIcon({ tone, children }: { tone: 'brass' | 'purple' | 'teal'; children: React.ReactNode }) {
-  const stroke = tone === 'brass' ? STROKE_BRASS : tone === 'purple' ? STROKE_PURPLE : STROKE_TEAL;
-  return (
-    <svg
-      className="w-7 h-7"
-      stroke={stroke}
-      fill="none"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      viewBox="0 0 32 32"
-    >
-      {children}
-    </svg>
-  );
-}
-
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <div className="text-[14px] font-semibold tracking-[0.22em] uppercase text-[#FFD166] mb-6">
@@ -319,55 +285,246 @@ function LearnScreen() {
   );
 }
 
-function SkyScreen() {
-  const days = [
-    { d: 'Mon', label: 'Go',    color: '#10B981' },
-    { d: 'Tue', label: 'Go',    color: '#10B981' },
-    { d: 'Wed', label: 'Maybe', color: '#FFD166' },
-    { d: 'Thu', label: 'Skip',  color: '#94A3B8' },
-    { d: 'Fri', label: 'Go',    color: '#10B981' },
-    { d: 'Sat', label: 'Maybe', color: '#FFD166' },
-    { d: 'Sun', label: 'Go',    color: '#10B981' },
+/* Smaller phone frame for the four-up Sky page showcase. */
+function SkyPhoneFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative mx-auto w-[170px] md:w-[200px] aspect-[9/19.5] rounded-[30px] bg-[#05070D] p-[5px] shadow-[0_22px_55px_-18px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]">
+      <div className="absolute -inset-[1px] rounded-[31px] ring-1 ring-white/[0.04] pointer-events-none" />
+      <div className="relative h-full w-full rounded-[25px] bg-gradient-to-b from-[#0B0E17] to-[#0F1424] overflow-hidden">
+        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 h-[15px] w-[58px] rounded-full bg-black z-20" />
+        <div className="flex items-center justify-between px-3.5 pt-1.5 text-[7.5px] font-mono text-white/50 relative z-10">
+          <span>9:41</span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-1 rounded-[1px] bg-white/40" />
+            <span className="w-2.5 h-1 rounded-[1px] border border-white/40" />
+          </span>
+        </div>
+        <div className="px-2.5 pt-5 pb-3 h-full">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* Sky page screen 1 — live dome chart with planets and cardinals. */
+function SkyMapScreen() {
+  const stars: Array<[number, number, number]> = [
+    [22, 28, 0.5], [70, 22, 0.7], [82, 58, 0.5], [33, 72, 0.6],
+    [60, 78, 0.7], [18, 56, 0.5], [55, 18, 0.5], [78, 80, 0.5],
+    [44, 50, 0.4], [28, 42, 0.4], [62, 38, 0.5], [85, 40, 0.4],
+    [40, 84, 0.4], [72, 65, 0.4], [25, 80, 0.4],
   ];
   return (
-    <PhoneFrame>
-      <div className="flex flex-col pt-3">
+    <SkyPhoneFrame>
+      <div className="flex flex-col h-full pt-2">
         <div className="flex items-center justify-between">
-          <span className="text-white/60 text-[10px] font-mono uppercase tracking-wider">Tbilisi</span>
-          <span className="text-[#5EEAD4] text-[9.5px] font-mono">Tonight: Go</span>
+          <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">Tbilisi</span>
+          <span className="text-[#5EEAD4] text-[8px] font-mono">7 visible</span>
         </div>
-        <div className="mt-1 text-white text-[14px] font-bold leading-tight">7-day forecast</div>
+        <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">Sky map</div>
 
-        <div className="mt-3 flex flex-col gap-1.5">
-          {days.map((d, i) => (
-            <div key={d.d} className="flex items-center gap-2">
-              <span className="text-white/55 text-[9.5px] font-mono w-6">{d.d}</span>
-              <div className="flex-1 h-[6px] rounded-full bg-white/[0.06] overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${[88, 82, 60, 28, 90, 55, 84][i]}%`, background: d.color }}
-                />
+        <div className="relative mt-2 mx-auto w-full aspect-square">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            <defs>
+              <radialGradient id="domeBg" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#0a1430" />
+                <stop offset="100%" stopColor="#05070D" />
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="50" r="46" fill="url(#domeBg)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.4" />
+            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.3" />
+            <circle cx="50" cy="50" r="15" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.3" />
+            <line x1="50" y1="4" x2="50" y2="96" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
+            <line x1="4" y1="50" x2="96" y2="50" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
+
+            <text x="50" y="3.5" fill="rgba(255,255,255,0.45)" fontSize="3.5" textAnchor="middle" fontFamily="monospace">N</text>
+            <text x="96.5" y="51.5" fill="rgba(255,255,255,0.45)" fontSize="3.5" textAnchor="middle" fontFamily="monospace">E</text>
+            <text x="50" y="99" fill="rgba(255,255,255,0.45)" fontSize="3.5" textAnchor="middle" fontFamily="monospace">S</text>
+            <text x="3.5" y="51.5" fill="rgba(255,255,255,0.45)" fontSize="3.5" textAnchor="middle" fontFamily="monospace">W</text>
+
+            {stars.map(([cx, cy, r], i) => (
+              <circle key={i} cx={cx} cy={cy} r={r} fill="white" opacity={0.4 + (i % 3) * 0.15} />
+            ))}
+
+            {/* Jupiter — active target */}
+            <circle cx="38" cy="42" r="3.2" fill="none" stroke="#FFD166" strokeWidth="0.5" opacity="0.6" />
+            <circle cx="38" cy="42" r="1.8" fill="#FFD166" />
+            <text x="38" y="36" fill="#FFD166" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
+
+            {/* Saturn */}
+            <circle cx="65" cy="55" r="1.4" fill="#B07FE8" />
+            <text x="65" y="50" fill="#B07FE8" fontSize="2.6" textAnchor="middle" fontFamily="monospace">SAT</text>
+
+            {/* Moon */}
+            <circle cx="48" cy="68" r="2.6" fill="#E2F8FF" opacity="0.85" />
+
+            {/* Venus */}
+            <circle cx="76" cy="34" r="1.2" fill="#FFE0A3" />
+          </svg>
+        </div>
+      </div>
+    </SkyPhoneFrame>
+  );
+}
+
+/* Sky page screen 2 — AR finder with reticle and labeled target. */
+function SkyARScreen() {
+  return (
+    <SkyPhoneFrame>
+      <div className="flex flex-col h-full pt-2">
+        <div className="flex items-center justify-between">
+          <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">AR</span>
+          <span className="text-[#FFD166] text-[8px] font-mono">SE 142°</span>
+        </div>
+
+        <div className="mt-2 relative flex-1 rounded-[10px] overflow-hidden bg-gradient-to-b from-[#0a1430] via-[#0f1a40] to-[#1a1030]">
+          {Array.from({ length: 28 }).map((_, i) => {
+            const x = (i * 37) % 100;
+            const y = (i * 53) % 100;
+            const r = i % 4 === 0 ? 0.7 : 0.35;
+            return (
+              <div
+                key={i}
+                className="absolute rounded-full bg-white"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  width: `${r * 2}px`,
+                  height: `${r * 2}px`,
+                  opacity: 0.4 + (i % 3) * 0.2,
+                }}
+              />
+            );
+          })}
+
+          <div className="absolute top-1.5 left-0 right-0 flex justify-center text-[6.5px] font-mono text-white/40 gap-2.5">
+            <span>N</span><span>NE</span><span className="text-white">E</span><span>SE</span><span>S</span>
+          </div>
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative">
+              <div className="w-[42px] h-[42px] rounded-full border border-[#FFD166]/70" />
+              <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#FFD166] shadow-[0_0_10px_#FFD166]" />
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFD166]/70" />
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFD166]/70" />
+              <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFD166]/70" />
+              <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFD166]/70" />
+              <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
+                <div className="text-[#FFD166] text-[9px] font-bold leading-none">Jupiter</div>
+                <div className="text-white/55 text-[7px] font-mono mt-0.5">alt 38° · mag −2.1</div>
               </div>
-              <span
-                className="text-[8.5px] font-mono uppercase w-8 text-right"
-                style={{ color: d.color }}
-              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </SkyPhoneFrame>
+  );
+}
+
+/* Sky page screen 3 — target detail card with direction + altitude. */
+function SkyTargetScreen() {
+  return (
+    <SkyPhoneFrame>
+      <div className="flex flex-col h-full pt-2">
+        <div className="flex items-center justify-between">
+          <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">Target</span>
+          <span className="text-[#5EEAD4] text-[8px] font-mono">VISIBLE</span>
+        </div>
+
+        <div className="mt-1.5 relative aspect-square w-full rounded-[10px] overflow-hidden">
+          <Image src="/sky/targets/saturn.jpg" alt="Saturn" fill sizes="200px" className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute bottom-1.5 left-2 right-2">
+            <div className="text-white text-[12px] font-bold leading-none">Saturn</div>
+            <div className="text-white/65 text-[7.5px] mt-0.5 font-mono uppercase tracking-wide">Telescope</div>
+          </div>
+        </div>
+
+        <div className="mt-2 rounded-[8px] bg-white/[0.04] border border-white/10 px-2 py-1.5">
+          <div className="text-[7px] text-white/55 font-mono uppercase tracking-wider">Look</div>
+          <div className="text-[10.5px] text-white font-bold leading-tight mt-0.5">SE · 4 fists up</div>
+        </div>
+
+        <div className="mt-1.5 grid grid-cols-2 gap-1">
+          <div className="rounded-[6px] bg-white/[0.04] px-1.5 py-1">
+            <div className="text-[6.5px] text-white/55 font-mono uppercase">Alt</div>
+            <div className="text-[9px] text-white font-mono">38°</div>
+          </div>
+          <div className="rounded-[6px] bg-white/[0.04] px-1.5 py-1">
+            <div className="text-[6.5px] text-white/55 font-mono uppercase">Set</div>
+            <div className="text-[9px] text-white font-mono">02:14</div>
+          </div>
+        </div>
+      </div>
+    </SkyPhoneFrame>
+  );
+}
+
+/* Sky page screen 4 — 7-day forecast with Go/Maybe/Skip verdict. */
+function SkyForecastScreen() {
+  const days = [
+    { d: 'M', label: 'Go',    color: '#10B981', pct: 88 },
+    { d: 'T', label: 'Go',    color: '#10B981', pct: 82 },
+    { d: 'W', label: 'Maybe', color: '#FFD166', pct: 60 },
+    { d: 'T', label: 'Skip',  color: '#94A3B8', pct: 28 },
+    { d: 'F', label: 'Go',    color: '#10B981', pct: 90 },
+    { d: 'S', label: 'Maybe', color: '#FFD166', pct: 55 },
+    { d: 'S', label: 'Go',    color: '#10B981', pct: 84 },
+  ];
+  return (
+    <SkyPhoneFrame>
+      <div className="flex flex-col h-full pt-2">
+        <div className="flex items-center justify-between">
+          <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">7 days</span>
+          <span className="text-[#5EEAD4] text-[8px] font-mono">Tonight: Go</span>
+        </div>
+        <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">Forecast</div>
+
+        <div className="mt-2 flex flex-col gap-1">
+          {days.map((d, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="text-white/55 text-[8px] font-mono w-2.5">{d.d}</span>
+              <div className="flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${d.pct}%`, background: d.color }} />
+              </div>
+              <span className="text-[7px] font-mono uppercase w-7 text-right" style={{ color: d.color }}>
                 {d.label}
               </span>
             </div>
           ))}
         </div>
 
-        <div className="mt-3 rounded-[10px] bg-white/[0.04] border border-white/10 p-2">
-          <div className="grid grid-cols-3 text-[9px] text-white/55 font-mono uppercase">
-            <span>Cloud</span><span>Moon</span><span>Seeing</span>
+        <div className="mt-2.5 rounded-[8px] bg-white/[0.04] border border-white/10 p-1.5">
+          <div className="grid grid-cols-3 text-[6.5px] text-white/55 font-mono uppercase">
+            <span>Cloud</span><span>Moon</span><span>See</span>
           </div>
-          <div className="grid grid-cols-3 text-[10px] text-white mt-0.5">
+          <div className="grid grid-cols-3 text-[9px] text-white mt-0.5 font-mono">
             <span>14%</span><span>22%</span><span>Good</span>
           </div>
         </div>
       </div>
-    </PhoneFrame>
+    </SkyPhoneFrame>
+  );
+}
+
+function SkyFeatureSlot({
+  title,
+  caption,
+  children,
+}: {
+  title: string;
+  caption: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      {children}
+      <div className="mt-5 md:mt-6 text-white text-[14px] md:text-[15.5px] font-semibold tracking-[-0.005em]">
+        {title}
+      </div>
+      <div className="mt-1.5 text-[#9BA3B4] text-[12.5px] md:text-[13.5px] leading-[1.5] max-w-[180px]">
+        {caption}
+      </div>
+    </div>
   );
 }
 
@@ -604,9 +761,21 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
+          REFERENCE-INSPIRED PALETTE BAND
+          Deeper purple-black background pulled from club.astroman.ge.
+          Wraps every section after "How It Works".
+         ============================================================ */}
+      <div className="relative bg-[#0a0a1a]">
+        {/* smooth fade from the hero's blue-purple to the new purple-black */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#0A1735] to-transparent"
+        />
+
+      {/* ============================================================
           SKY MISSIONS — phone + tight list
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px]">
+      <section className="relative px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Missions</Eyebrow>
@@ -654,7 +823,7 @@ export default function HomePage() {
       {/* ============================================================
           LEARNING — phone + tight description
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px] bg-[#0E1428]/50">
+      <section className="px-4 md:px-8 py-14 md:py-[120px] bg-[#15082c]/55">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Learn</Eyebrow>
@@ -701,66 +870,38 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
-          CAPABILITIES — phone + compact features
+          SKY PAGE — four-up screenshot tour
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <Eyebrow>Capabilities</Eyebrow>
-            <SectionTitle>Plan every clear night.</SectionTitle>
-            <SectionSub>Forecast, planet positions, AI companion. One app.</SectionSub>
+          <div className="text-center mb-12 md:mb-20">
+            <Eyebrow>The Sky page</Eyebrow>
+            <SectionTitle>Tonight, in four screens.</SectionTitle>
+            <SectionSub>Live map. AR finder. Target detail. 7-day forecast.</SectionSub>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
-            <div className="order-1 mx-auto">
-              <SkyScreen />
-            </div>
-            <div className="order-2 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="bg-[#11172A] border border-white/[0.06] rounded-[14px] p-4 md:p-5">
-                <IconTile tone="brass">
-                  <StrokeIcon tone="brass">
-                    <path d="M3 18c4-6 8-9 13-9s9 3 13 9" />
-                    <path d="M3 18c4 6 8 9 13 9s9-3 13-9" />
-                    <circle cx="16" cy="18" r="3" />
-                  </StrokeIcon>
-                </IconTile>
-                <div className="text-white text-[15px] font-bold mb-1">7-day forecast</div>
-                <div className="text-[#9BA3B4] text-[13px] leading-[1.5]">Cloud, moon, seeing. Go / Maybe / Skip.</div>
-              </div>
-              <div className="bg-[#11172A] border border-white/[0.06] rounded-[14px] p-4 md:p-5">
-                <IconTile tone="purple">
-                  <StrokeIcon tone="purple">
-                    <circle cx="16" cy="16" r="13" />
-                    <circle cx="16" cy="16" r="6" />
-                    <circle cx="22" cy="11" r="1" fill="#B07FE8" />
-                  </StrokeIcon>
-                </IconTile>
-                <div className="text-white text-[15px] font-bold mb-1">Planet tracker</div>
-                <div className="text-[#9BA3B4] text-[13px] leading-[1.5]">Live altitude, rise/set, location-aware.</div>
-              </div>
-              <div className="bg-[#11172A] border border-white/[0.06] rounded-[14px] p-4 md:p-5">
-                <IconTile tone="teal">
-                  <StrokeIcon tone="teal">
-                    <rect x="6" y="6" width="20" height="20" rx="4" />
-                    <circle cx="12" cy="14" r="1.5" />
-                    <circle cx="20" cy="14" r="1.5" />
-                    <path d="M12 20c1 1.5 2.5 2.5 4 2.5s3-1 4-2.5" />
-                  </StrokeIcon>
-                </IconTile>
-                <div className="text-white text-[15px] font-bold mb-1">ASTRA AI</div>
-                <div className="text-[#9BA3B4] text-[13px] leading-[1.5]">Ask what&apos;s up. Get a plan for tonight.</div>
-              </div>
-              <div className="bg-[#11172A] border border-white/[0.06] rounded-[14px] p-4 md:p-5">
-                <IconTile tone="brass">
-                  <StrokeIcon tone="brass">
-                    <circle cx="16" cy="16" r="12" />
-                    <path d="M9 16l5 5 9-9" />
-                  </StrokeIcon>
-                </IconTile>
-                <div className="text-white text-[15px] font-bold mb-1">On-chain proof</div>
-                <div className="text-[#9BA3B4] text-[13px] leading-[1.5]">Each observation: a compressed NFT. Gasless.</div>
-              </div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-12 md:gap-x-6 md:gap-y-14 max-w-[1040px] mx-auto">
+            <SkyFeatureSlot title="Live sky map" caption="Every visible planet, charted to your location.">
+              <SkyMapScreen />
+            </SkyFeatureSlot>
+            <SkyFeatureSlot title="AR finder" caption="Point your phone. Center the reticle. Done.">
+              <SkyARScreen />
+            </SkyFeatureSlot>
+            <SkyFeatureSlot title="Target detail" caption="Direction, altitude, when it sets.">
+              <SkyTargetScreen />
+            </SkyFeatureSlot>
+            <SkyFeatureSlot title="7-day forecast" caption="Cloud, moon, seeing — Go or Skip.">
+              <SkyForecastScreen />
+            </SkyFeatureSlot>
+          </div>
+
+          <div className="mt-10 md:mt-16 text-center">
+            <Link
+              href="/sky"
+              className="inline-flex items-center gap-2 text-[#FFD166] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
+            >
+              Open the Sky page →
+            </Link>
           </div>
         </div>
       </section>
@@ -768,7 +909,7 @@ export default function HomePage() {
       {/* ============================================================
           BUILT ON ASTROMAN — logos + 3 bullets
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px] bg-[#0E1428]/50">
+      <section className="px-4 md:px-8 py-14 md:py-[120px] bg-[#15082c]/55">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-10 md:mb-14">
             <Eyebrow>Distribution</Eyebrow>
@@ -825,7 +966,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 max-w-[920px] mx-auto">
             {/* generic */}
-            <div className="bg-[#0E1426] border border-white/[0.06] rounded-[18px] p-6 md:p-8">
+            <div className="bg-[#0d0820] border border-white/[0.06] rounded-[18px] p-6 md:p-8">
               <div className="text-[#6B7385] text-[11px] uppercase tracking-[0.22em] mb-4">Generic astronomy app</div>
               <ul className="space-y-3">
                 {['Sky chart', 'Static planet positions', 'No verification', 'No rewards', 'No real gear'].map((s) => (
@@ -839,7 +980,7 @@ export default function HomePage() {
               </ul>
             </div>
             {/* stellar */}
-            <div className="relative bg-gradient-to-b from-[rgba(255,209,102,0.05)] to-[#11172A] border border-[rgba(255,209,102,0.25)] rounded-[18px] p-6 md:p-8">
+            <div className="relative bg-gradient-to-b from-[rgba(245,166,35,0.06)] to-[#120c26] border border-[rgba(245,166,35,0.28)] rounded-[18px] p-6 md:p-8">
               <div className="text-[#FFD166] text-[11px] uppercase tracking-[0.22em] mb-4">Stellar</div>
               <ul className="space-y-3">
                 {[
@@ -870,7 +1011,7 @@ export default function HomePage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(176,127,232,0.10) 0%, transparent 50%)',
+              'radial-gradient(circle at 50% 50%, rgba(107,63,160,0.18) 0%, transparent 55%)',
           }}
         />
         <div className="relative max-w-[900px] mx-auto">
@@ -939,6 +1080,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      </div>
+      {/* end reference-inspired palette band */}
 
     </div>
   );
