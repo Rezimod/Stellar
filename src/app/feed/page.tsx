@@ -16,7 +16,6 @@ import { useLocation } from '@/lib/location'
 import FeedPostCard from '@/components/feed/FeedPostCard'
 import SkyWidget from '@/components/feed/SkyWidget'
 import { MarketsWidget, ShopWidget } from '@/components/feed/SidebarWidgets'
-import ComingSoonOverlay from '@/components/shared/ComingSoonOverlay'
 import type { FeedPost } from '@/lib/feed/types'
 
 type FilterKey = 'latest' | 'following' | 'discoveries' | 'tonight'
@@ -216,13 +215,8 @@ export default function FeedPage() {
     : 'What did the sky show you tonight?'
 
   return (
-    <div className="feed-page" style={{ position: 'relative' }}>
-      <ComingSoonOverlay />
-      <div
-        className="feed-grid"
-        aria-hidden
-        style={{ filter: 'blur(8px)', pointerEvents: 'none', userSelect: 'none' }}
-      >
+    <div className="feed-page">
+      <div className="feed-grid">
         <aside className="sidebar-left">
           <div className="side-section">
             <div className="side-label">Feed</div>
