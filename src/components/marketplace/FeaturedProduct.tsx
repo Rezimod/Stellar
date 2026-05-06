@@ -61,7 +61,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
       </span>
 
       <div
-        className="relative rounded-lg overflow-hidden aspect-[1.7] sm:aspect-[1.25]"
+        className="relative rounded-lg overflow-hidden aspect-[2.2] sm:aspect-[1.25]"
         style={{
           background:
             'radial-gradient(ellipse at 50% 50%, rgba(255, 209, 102,0.06) 0%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
@@ -74,7 +74,7 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
             alt={product.name}
             fill
             sizes="(max-width: 1024px) 100vw, 460px"
-            className="p-[14px] sm:p-[22px]"
+            className="p-[8px] sm:p-[22px]"
             style={{ objectFit: 'contain' }}
             priority
           />
@@ -117,7 +117,55 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
           </p>
         )}
 
-        <div className="flex flex-wrap justify-between items-end gap-3">
+        {/* Mobile-only price + buttons layout — fills the row */}
+        <div className="flex flex-col gap-[10px] sm:hidden">
+          <div className="flex items-end justify-between gap-[12px]">
+            <div className="flex flex-col gap-[4px] min-w-0">
+              <p className="text-[26px] font-bold leading-none tracking-[-0.01em] text-[var(--terracotta)]">
+                {formatPrice(product)}
+              </p>
+              {solAmount !== null && (
+                <p className="text-[11px] tracking-[0.14em] uppercase font-medium text-[rgba(232,230,221,0.85)]">
+                  ≈ <span className="text-[#E8E6DD]">{formatSol(solAmount)}</span> SOL
+                </p>
+              )}
+            </div>
+            <Link
+              href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=sol`}
+              className="inline-flex items-center justify-center gap-[8px] flex-1 max-w-[180px] px-[18px] py-[12px] rounded-[14px] text-[13px] font-semibold tracking-[0.005em] whitespace-nowrap"
+              style={{
+                background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+                border: 'none',
+                color: '#FFFFFF',
+                boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
+              }}
+            >
+              <span aria-hidden className="text-[14px] leading-none">◎</span>
+              <span>Pay SOL</span>
+            </Link>
+          </div>
+          <div className="flex items-center justify-between gap-[10px]">
+            <Link
+              href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
+              className="inline-flex items-center gap-[6px] text-[12px] tracking-[0.14em] uppercase font-semibold"
+              style={{ color: '#A78BFA' }}
+            >
+              <span className="text-[14px] leading-none">★</span>
+              <span>Pay {product.starsPrice.toLocaleString()} Stars</span>
+            </Link>
+            <a
+              href={product.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[12px] tracking-[0.14em] uppercase font-medium text-[rgba(232,230,221,0.7)]"
+            >
+              View →
+            </a>
+          </div>
+        </div>
+
+        {/* Desktop layout — unchanged */}
+        <div className="hidden sm:flex flex-wrap justify-between items-end gap-3">
           <div className="flex flex-col gap-[6px]">
             <p className="text-[28px] font-bold leading-none tracking-[-0.01em] text-[var(--terracotta)] transition-all hover:scale-[1.06] hover:text-[#FFE08A] origin-left cursor-default">
               {formatPrice(product)}

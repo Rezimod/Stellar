@@ -6,12 +6,6 @@ import { priceToSol, type Product } from '@/lib/dealers';
 
 const STARS_VIOLET = '#A78BFA';
 
-const DIFFICULTY_TAG: Record<'beginner' | 'intermediate' | 'advanced', { color: string; border: string; abbr: string }> = {
-  beginner:     { color: '#5EEAD4', border: 'rgba(94, 234, 212, 0.55)', abbr: 'Beg' },
-  intermediate: { color: '#FFD166', border: 'rgba(255, 209, 102, 0.55)', abbr: 'Mid' },
-  advanced:     { color: '#FB923C', border: 'rgba(251, 146, 60, 0.55)',  abbr: 'Adv' },
-};
-
 const formatPrice = (p: Product): string => {
   const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
   return `${n} ${p.currency}`;
@@ -31,7 +25,6 @@ interface Props {
 }
 
 export default function ProductCard({ product, dealerName, solPerGEL = 0, solPriceUsd = 0 }: Props) {
-  const tag = product.skillLevel ? DIFFICULTY_TAG[product.skillLevel] : null;
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
 
@@ -54,19 +47,6 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         e.currentTarget.style.background = 'rgba(232,230,221,0.045)';
       }}
     >
-      {tag && (
-        <span
-          className="absolute top-[14px] left-[14px] z-10 px-[9px] py-[4px] rounded-[5px] text-[10px] tracking-[0.18em] uppercase font-bold"
-          style={{
-            background: 'rgba(11, 14, 23, 0.92)',
-            color: tag.color,
-            border: `1px solid ${tag.border}`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
-          }}
-        >
-          {tag.abbr}
-        </span>
-      )}
       <a
         href={product.externalUrl}
         target="_blank"
