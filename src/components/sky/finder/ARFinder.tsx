@@ -375,9 +375,14 @@ export function ARFinder({
       </div>
 
       <div className="ar-overlay__layer">
-        {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen }) => {
-          if (!onScreen) return null;
+        {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen, dAz, dAlt }) => {
+          // Render bodies a bit beyond the viewport so they fade in/out
+          // smoothly as the user pans, instead of popping when they
+          // cross the edge.
+          const inFadeBand = Math.abs(dAz) <= hFov * 0.85 && Math.abs(dAlt) <= vFov * 0.85;
+          if (!inFadeBand) return null;
           const isActive = obj.id === activeId;
+          const baseOpacity = onScreen ? (isActive ? 1 : 0.85) : 0;
           return (
             <div
               key={obj.id}
@@ -385,7 +390,7 @@ export function ARFinder({
               style={{
                 left: screenX,
                 top: screenY,
-                opacity: isActive ? 1 : 0.85,
+                opacity: baseOpacity,
               }}
             >
               <div className="ar-body__icon">

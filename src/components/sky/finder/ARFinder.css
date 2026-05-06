@@ -124,7 +124,11 @@
   align-items: center;
   gap: 6px;
   transform: translate(-50%, -50%);
-  transition: opacity 200ms ease;
+  /* Smooth pan: bodies slide instead of teleporting between heading
+     samples. Short duration keeps the motion responsive rather than
+     laggy when the user sweeps the phone. */
+  transition: left 90ms linear, top 90ms linear, opacity 240ms ease;
+  will-change: left, top, opacity;
 }
 
 .ar-body__icon {
@@ -143,7 +147,7 @@
   inset: -14px;
   border: 2px solid var(--terracotta);
   box-shadow: 0 0 24px rgba(255,209,102,0.45);
-  animation: arFocus 1.2s ease-in-out infinite;
+  animation: arFocus 1.6s ease-in-out infinite;
 }
 
 .ar-body--locked .ar-body__crosshair {
@@ -152,9 +156,11 @@
   animation: none;
 }
 
+/* Subtler pulse — keeps opacity full so the body never reads as
+   "disappearing" when you focus on it. Only the ring breathes. */
 @keyframes arFocus {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%      { transform: scale(1.12); opacity: 0.8; }
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.06); opacity: 0.95; }
 }
 
 /* Hold-to-lock progress ring around the active body. Sits centered on the

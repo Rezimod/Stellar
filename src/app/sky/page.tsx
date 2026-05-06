@@ -274,7 +274,8 @@ export default function SkyPage() {
                       aria-label={tAr('openAr')}
                       title={tAr('openAr')}
                     >
-                      <Telescope size={16} aria-hidden="true" />
+                      <Telescope size={14} aria-hidden="true" />
+                      <span className="sky-v3__ar-launch-label">AR</span>
                     </button>
                   )}
                 </div>
