@@ -40,6 +40,14 @@ export interface ForecastDay {
   cloudCoverPct: number;
   badge: 'go' | 'maybe' | 'skip';
   recommendation: string;
+  /** Daytime high temperature, °C. */
+  tempHigh?: number;
+  /** Overnight low temperature, °C. */
+  tempLow?: number;
+  /** Average evening wind speed, km/h. */
+  windKmh?: number;
+  /** Average evening relative humidity, %. */
+  humidityPct?: number;
 }
 
 export interface SkyConditions {

@@ -9,6 +9,9 @@
   background: rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.06);
   overflow: hidden;
+  /* Off-screen contain — skips layout / paint when scrolled away. */
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
 }
 
 .ev__head {
@@ -48,7 +51,6 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  /* Bleed the rail beyond the card padding so cards can scroll edge-to-edge. */
   margin-left: -18px;
   margin-right: -18px;
 }
@@ -119,155 +121,102 @@
   color: var(--text);
 }
 
-/* === Animations ================================================== */
+/* === Animations =================================================== */
+/* Lighter than the previous build:
+   - No filter:brightness (forces a full-frame paint each tick)
+   - No long-distance translates (Moon traversing 220px / 9s, etc)
+   - Shorter durations
+   - Animations are paused while the section is offscreen via data-anim. */
 
-/* Lunar eclipse — Moon transits Earth's umbra (centered at x=100). The
-   geometry is honest: the Moon enters from the left, dims as it crosses
-   the umbra disc, hits totality at center, then reddens back out. */
-.ev-le__moon {
-  animation: ev-le-translate 9s cubic-bezier(0.4, 0.0, 0.6, 1) infinite;
-}
-@keyframes ev-le-translate {
-  0%   { transform: translate(0px,   0); }
-  100% { transform: translate(220px, 0); }
-}
-.ev-le__pre  { animation: ev-le-fadeOut 9s ease-in-out infinite; }
-.ev-le__blood { opacity: 0; animation: ev-le-fadeIn 9s ease-in-out infinite; }
-@keyframes ev-le-fadeOut {
-  0%, 28%   { opacity: 1; }
-  40%, 60%  { opacity: 0; }
-  72%, 100% { opacity: 1; }
-}
-@keyframes ev-le-fadeIn {
-  0%, 28%   { opacity: 0; }
-  40%, 60%  { opacity: 1; }
-  72%, 100% { opacity: 0; }
+.ev[data-anim='off'] *,
+.ev[data-anim='off'] *::before,
+.ev[data-anim='off'] *::after {
+  animation-play-state: paused !important;
 }
 
-/* Solar eclipse — Moon slides across the Sun. Corona blooms only at the
-   apex of totality. A bright "diamond ring" pulse fires twice — once at
-   second contact (entering totality) and once at third contact (exiting). */
-.ev-se__moon {
-  animation: ev-se-occult 7s cubic-bezier(0.45, 0.0, 0.55, 1) infinite;
+/* Lunar eclipse — single-spot crossfade between bright Moon and copper. */
+.ev-le__pre,
+.ev-le__blood,
+.ev-le__halo {
+  will-change: opacity;
 }
-@keyframes ev-se-occult {
-  0%   { transform: translate(-60px, 0); }
-  50%  { transform: translate(0, 0); }
-  100% { transform: translate(60px, 0); }
-}
+.ev-le__pre   { animation: ev-le-pre   5s ease-in-out infinite; }
+.ev-le__blood { opacity: 0; animation: ev-le-blood 5s ease-in-out infinite; }
+.ev-le__halo  { opacity: 0.2; animation: ev-le-halo 5s ease-in-out infinite; }
+@keyframes ev-le-pre   { 0%, 25%, 100% { opacity: 1; } 45%, 65% { opacity: 0; } }
+@keyframes ev-le-blood { 0%, 25%, 100% { opacity: 0; } 45%, 65% { opacity: 1; } }
+@keyframes ev-le-halo  { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.55; } }
+
+/* Solar eclipse — corona breathes only. */
 .ev-se__corona {
-  opacity: 0;
-  animation: ev-se-corona 7s ease-in-out infinite;
+  opacity: 0.55;
   transform-origin: center;
+  will-change: opacity, transform;
+  animation: ev-se-corona 4.5s ease-in-out infinite;
 }
 @keyframes ev-se-corona {
-  0%, 30%, 70%, 100% { opacity: 0; transform: scale(0.92); }
-  45%                { opacity: 0.85; transform: scale(1.04); }
-  50%                { opacity: 1; transform: scale(1.10); }
-  55%                { opacity: 0.85; transform: scale(1.04); }
-}
-.ev-se__rays {
-  opacity: 0;
-  animation: ev-se-rays 7s ease-in-out infinite;
-  transform-origin: center;
-}
-@keyframes ev-se-rays {
-  0%, 30%, 70%, 100% { opacity: 0; transform: rotate(0deg) scale(0.9); }
-  50%                { opacity: 1; transform: rotate(8deg) scale(1.0); }
-}
-.ev-se__diamond {
-  opacity: 0;
-  animation: ev-se-diamond 7s ease-in-out infinite;
-}
-@keyframes ev-se-diamond {
-  0%, 100%      { opacity: 0; transform: translate(-26px, 0) scale(0.6); }
-  42%           { opacity: 0; transform: translate(2px, 0) scale(0.6); }
-  46%           { opacity: 1; transform: translate(2px, 0) scale(1.4); }
-  48%           { opacity: 0; transform: translate(2px, 0) scale(0.6); }
-  52%           { opacity: 0; transform: translate(-2px, 0) scale(0.6); }
-  54%           { opacity: 1; transform: translate(-2px, 0) scale(1.4); }
-  56%           { opacity: 0; transform: translate(-2px, 0) scale(0.6); }
+  0%, 100% { opacity: 0.5; transform: scale(0.96); }
+  50%      { opacity: 1;   transform: scale(1.05); }
 }
 
-/* Meteor shower — each streak grows from the radiant outward, then fades.
-   Custom timing per streak (set inline) gives a believable random rhythm. */
+/* Meteor streaks — short scale-out + fade. */
 .ev-ms__streak {
   opacity: 0;
-  animation-name: ev-ms-streak;
-  animation-iteration-count: infinite;
-  animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1);
+  will-change: transform, opacity;
+  animation: ev-ms-streak 1.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 @keyframes ev-ms-streak {
   0%   { opacity: 0; transform: scale(0); }
-  10%  { opacity: 1; transform: scale(0.4); }
+  18%  { opacity: 1; transform: scale(0.5); }
   60%  { opacity: 0.85; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.05); }
 }
 
-/* Saturn opposition — slow, steady brightness pulse with a subtle ring
-   wobble. The glow halo expands at peak so the eye registers the
-   "opposition surge" without resorting to gimmicky tilt. */
-.ev-op__saturn {
-  transform-origin: 100px 60px;
-  animation: ev-op-pulse 7s ease-in-out infinite;
-}
-@keyframes ev-op-pulse {
-  0%, 100% { transform: translate(100px, 60px) rotate(-8deg) scale(0.97); filter: brightness(0.95); }
-  50%      { transform: translate(100px, 60px) rotate(-7deg) scale(1.03); filter: brightness(1.18); }
-}
+/* Saturn opposition — soft halo pulse only. No tilt, no filter. */
 .ev-op__glow {
-  animation: ev-op-glow 7s ease-in-out infinite;
   transform-origin: center;
+  will-change: transform, opacity;
+  animation: ev-op-glow 4.5s ease-in-out infinite;
 }
 @keyframes ev-op-glow {
-  0%, 100% { opacity: 0.5; transform: scale(0.85); }
-  50%      { opacity: 1;   transform: scale(1.12); }
+  0%, 100% { opacity: 0.45; transform: scale(0.92); }
+  50%      { opacity: 1;    transform: scale(1.08); }
 }
 
-/* Conjunction — two planets approach until nearly tangent, hold briefly,
-   then drift apart. Halos brighten at closest approach so the moment of
-   conjunction reads at a glance. */
-.ev-cj__a { animation: ev-cj-a 6s ease-in-out infinite; }
-.ev-cj__b { animation: ev-cj-b 6s ease-in-out infinite; }
-@keyframes ev-cj-a {
-  0%, 100% { transform: translate(0, 0); }
-  44%, 56% { transform: translate(54px, 0); }
-}
-@keyframes ev-cj-b {
-  0%, 100% { transform: translate(0, 0); }
-  44%, 56% { transform: translate(-52px, 0); }
-}
+/* Conjunction — shared halo pulse; bodies stay still. */
 .ev-cj__halo {
-  animation: ev-cj-halo 6s ease-in-out infinite;
   transform-origin: center;
+  will-change: transform, opacity;
+  animation: ev-cj-halo 4s ease-in-out infinite;
 }
+.ev-cj__halo--b { animation-delay: 0.2s; }
 @keyframes ev-cj-halo {
-  0%, 100%   { opacity: 0.4; transform: scale(0.85); }
-  44%, 56%   { opacity: 1;   transform: scale(1.18); }
+  0%, 100% { opacity: 0.45; transform: scale(0.92); }
+  50%      { opacity: 1;    transform: scale(1.10); }
 }
 
 /* === Reduce motion =============================================== */
 @media (prefers-reduced-motion: reduce) {
-  .ev-le__moon,
   .ev-le__pre,
   .ev-le__blood,
-  .ev-se__moon,
+  .ev-le__halo,
   .ev-se__corona,
-  .ev-se__rays,
-  .ev-se__diamond,
   .ev-ms__streak,
-  .ev-op__saturn,
   .ev-op__glow,
-  .ev-cj__a,
-  .ev-cj__b,
   .ev-cj__halo {
     animation: none !important;
   }
   .ev-le__blood { opacity: 0.5; }
   .ev-ms__streak { opacity: 0.7; transform: scale(1); }
+  .ev-cj__halo { opacity: 0.6; }
+  .ev-op__glow { opacity: 0.6; }
+  .ev-se__corona { opacity: 0.7; }
 }
 
-/* === Sheet (modal-ish) =========================================== */
+/* === Dialog ===================================================== */
+/* Position is anchored to the viewport (position: fixed + flex center),
+   so the dialog appears at the user's current screen center regardless
+   of how far they've scrolled. */
 .ev__sheet-backdrop {
   position: fixed;
   inset: 0;
@@ -276,8 +225,10 @@
   -webkit-backdrop-filter: blur(6px);
   z-index: 100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
   animation: ev-fade-in 200ms ease;
 }
 @keyframes ev-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -285,18 +236,21 @@
   position: relative;
   width: 100%;
   max-width: 540px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   background: linear-gradient(180deg, #142446 0%, #0A1735 100%);
-  border-top: 1px solid rgba(255,255,255,0.10);
-  border-radius: 18px 18px 0 0;
-  padding: 18px 18px 28px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  padding: 18px 18px 24px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: ev-slide-up 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation: ev-pop-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-@keyframes ev-slide-up {
-  from { transform: translateY(40px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+@keyframes ev-pop-in {
+  from { transform: translateY(8px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
 }
 .ev__sheet-close {
   position: absolute;
@@ -380,7 +334,7 @@
   color: rgba(255,237,200,0.9);
 }
 
-/* === Web layout =================================================== */
+/* === Web layout ================================================== */
 @media (min-width: 760px) {
   .ev__title { font-size: 26px; }
   .ev__rail {
@@ -395,13 +349,5 @@
   .ev__card {
     width: 100%;
     height: 240px;
-  }
-  .ev__sheet-backdrop {
-    align-items: center;
-  }
-  .ev__sheet {
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.10);
-    margin: 24px;
   }
 }

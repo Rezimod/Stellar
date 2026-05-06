@@ -454,6 +454,7 @@
       "label": "7-night sky outlook",
       "today": "Tonight",
       "empty": "Forecast unavailable.",
+      "clouds": "clouds",
       "badge": {
         "go": "Go",
         "maybe": "Maybe",
