@@ -116,31 +116,53 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
   if (beta == null || Number.isNaN(beta) || gamma == null || Number.isNaN(gamma)) {
     return null;
   }
-  const alpha = e.alpha;
-  // Fall back to a usable alpha if iOS's `alpha` happens to be null but we
-  // still have webkitCompassHeading — for the matrix, alpha doesn't actually
-  // matter to compute altitude (it's a rotation around vertical, and the
-  // back-vector's z component is independent of α).
-  const aForMatrix = alpha != null && !Number.isNaN(alpha) ? alpha : 0;
-  const v = backVectorWorld(aForMatrix, beta, gamma);
+
+  // Resolve a world-frame α to feed the rotation matrix.
+  // - iOS: `webkitCompassHeading` is true-north-corrected and screen-orientation-aware,
+  //   but it tracks the heading of the TOP of the device's horizontal projection — not
+  //   the back camera. Its relationship to world α depends on β:
+  //     • cos(β) ≥ 0 (phone leaning forward, β ∈ [-90°, 90°]):
+  //         webkit ≈ (360 − αworld) mod 360
+  //     • cos(β) < 0 (phone tilted backward past vertical, β ∈ (90°, 180°]):
+  //         webkit ≈ (180 − αworld) mod 360
+  //   Without inverting the right branch the heading flips 180° as soon as the user
+  //   tilts past vertical to look at anything near the zenith — i.e. exactly the
+  //   "I pointed at the moon and it labeled it the sun" bug.
+  // - Android `deviceorientationabsolute`: α is already in world frame.
+  // - Otherwise α drifts; do the best we can.
+  const compass = ev.webkitCompassHeading;
+  const compassValid = typeof compass === 'number' && !Number.isNaN(compass) && compass >= 0;
+  const alphaRaw = e.alpha;
+
+  let alphaWorld: number;
+  if (compassValid) {
+    const cb = Math.cos(beta * DEG);
+    if (cb >= 0) {
+      alphaWorld = (360 - (compass as number) + 360) % 360;
+    } else {
+      alphaWorld = (180 - (compass as number) + 360) % 360;
+    }
+  } else if (alphaRaw != null && !Number.isNaN(alphaRaw) && e.absolute) {
+    alphaWorld = alphaRaw;
+  } else {
+    alphaWorld = alphaRaw != null && !Number.isNaN(alphaRaw) ? alphaRaw : 0;
+  }
+
+  const v = backVectorWorld(alphaWorld, beta, gamma);
   const altitude = Math.max(-90, Math.min(90, Math.asin(Math.max(-1, Math.min(1, v.z))) / DEG));
 
+  // Heading = azimuth of the back-of-phone's horizontal projection, atan2(East, North).
+  // Same path on iOS and Android — the only difference is how we anchored α above.
   let heading: number | null = null;
-  if (typeof ev.webkitCompassHeading === 'number' && !Number.isNaN(ev.webkitCompassHeading)) {
-    // iOS: 0 = true north (Apple corrects for declination), increases clockwise,
-    // and is already screen-orientation corrected.
-    heading = ev.webkitCompassHeading;
-  } else if (alpha != null && !Number.isNaN(alpha) && e.absolute) {
-    // Android `deviceorientationabsolute` — recover heading from the back-
-    // vector's horizontal projection. atan2(East, North) yields a clockwise-
-    // from-north compass heading. This is more robust than the legacy
-    // (360 - alpha) shortcut when the phone is heavily tilted.
-    const horiz = Math.hypot(v.x, v.y);
-    if (horiz > 1e-3) {
-      let h = Math.atan2(v.x, v.y) / DEG;
-      h = ((h % 360) + 360) % 360;
-      heading = h;
-    }
+  const horiz = Math.hypot(v.x, v.y);
+  if (horiz > 1e-3) {
+    let h = Math.atan2(v.x, v.y) / DEG;
+    h = ((h % 360) + 360) % 360;
+    heading = h;
+  } else if (compassValid) {
+    // Back camera is aimed straight up or down — no horizontal component.
+    // Fall back to the raw compass so the dome still rotates with the body.
+    heading = compass as number;
   }
 
   return { heading, altitude };
