@@ -600,7 +600,7 @@ export default function HomePage() {
           </g>
         </svg>
 
-        <div className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_1.25fr] gap-10 md:gap-12 items-center">
+        <div className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10 md:gap-12 items-center">
           <div>
             <h1 className="text-[36px] md:text-[72px] font-extrabold leading-[1.05] md:leading-[1] tracking-[-0.025em] text-white mb-5 md:mb-8">
               Find every{' '}
@@ -616,7 +616,7 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-3 max-w-[460px]">
               <Link
-                href="/missions"
+                href="/sky"
                 className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:brightness-[1.08]"
                 style={{
                   fontFamily: 'var(--font-cta, var(--font-body))',
@@ -627,26 +627,15 @@ export default function HomePage() {
                 Start observing
               </Link>
               <Link
-                href="/sky"
-                className="btn-sky-watcher group flex-1 inline-flex items-center justify-center gap-2 px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] whitespace-nowrap rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:bg-[#1C2235]"
+                href="/missions"
+                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:brightness-[1.08]"
                 style={{
                   fontFamily: 'var(--font-cta, var(--font-body))',
-                  background: '#161A28',
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: 'linear-gradient(135deg, #FF8A1F 0%, #F25C05 100%)',
+                  boxShadow: '0 10px 32px rgba(242, 92, 5, 0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
                 }}
               >
-                Sky watcher
-                <span aria-hidden className="relative inline-flex w-[18px] h-[18px] flex-shrink-0">
-                  <svg viewBox="0 0 18 18" className="absolute inset-0 w-full h-full" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 6 L6 4 L9 7 L12 4 L15 6" pathLength="100" stroke="#5EEAD4" strokeWidth="0.7" className="constellation-line" />
-                    <circle cx="3" cy="6" r="0.7" fill="#E2F8FF" className="constellation-star const-s1" />
-                    <circle cx="6" cy="4" r="0.7" fill="#E2F8FF" className="constellation-star const-s2" />
-                    <circle cx="12" cy="4" r="0.7" fill="#E2F8FF" className="constellation-star const-s3" />
-                    <circle cx="15" cy="6" r="0.7" fill="#E2F8FF" className="constellation-star const-s4" />
-                    <circle cx="9" cy="7" r="2" fill="#FFD166" className="constellation-glow" />
-                    <circle cx="9" cy="7" r="1" fill="#FFD166" className="constellation-anchor" />
-                  </svg>
-                </span>
+                Earn stars
               </Link>
             </div>
           </div>

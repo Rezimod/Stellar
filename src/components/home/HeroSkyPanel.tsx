@@ -105,7 +105,7 @@ export default function HeroSkyPanel() {
   return (
     <div
       ref={wrapRef}
-      className="relative w-full max-w-[520px] md:max-w-[600px] lg:max-w-[680px] mx-auto select-none"
+      className="relative w-full max-w-[560px] md:max-w-[720px] lg:max-w-[820px] mx-auto select-none"
       data-paused={!visible}
     >
       <style jsx>{`
