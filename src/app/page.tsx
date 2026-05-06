@@ -463,13 +463,23 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 max-w-[460px]">
               <Link
                 href="/missions"
-                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] bg-[#FFD166] text-[#0A0E1A] font-bold text-[15px] tracking-[0.01em] rounded-[12px] shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_10px_30px_-12px_rgba(255,209,102,0.55)] ring-1 ring-[#E8B84A]/60 hover:bg-[#FFDA85] active:translate-y-[0.5px] transition-all no-underline"
+                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:brightness-[1.08]"
+                style={{
+                  fontFamily: 'var(--font-cta, var(--font-body))',
+                  background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+                  boxShadow: '0 10px 32px rgba(91, 108, 255, 0.35), inset 0 1px 0 rgba(255,255,255,0.10)',
+                }}
               >
                 Start observing
               </Link>
               <Link
                 href="/sky"
-                className="btn-sky-watcher group flex-1 inline-flex items-center justify-center gap-2 px-8 py-[18px] bg-[#0E1F33] text-[#E2F8FF] font-bold text-[15px] tracking-[0.01em] whitespace-nowrap rounded-[12px] shadow-[0_1px_0_rgba(94,234,212,0.10)_inset,0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-[#38F0FF]/25 hover:bg-[#10243E] hover:ring-[#38F0FF]/45 active:translate-y-[0.5px] transition-all no-underline"
+                className="btn-sky-watcher group flex-1 inline-flex items-center justify-center gap-2 px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] whitespace-nowrap rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:bg-[#1C2235]"
+                style={{
+                  fontFamily: 'var(--font-cta, var(--font-body))',
+                  background: '#161A28',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                }}
               >
                 Sky watcher
                 <span aria-hidden className="relative inline-flex w-[18px] h-[18px] flex-shrink-0">
@@ -882,8 +892,14 @@ export default function HomePage() {
           <div className="inline-flex flex-wrap gap-3.5 justify-center">
             <Link
               href="/missions"
-              className="inline-flex items-center gap-2.5 px-9 py-4.5 bg-[#FFD166] text-[#0A0E1A] font-semibold text-[17px] rounded-xl hover:bg-[#FFE08A] transition-colors no-underline"
-              style={{ paddingTop: 18, paddingBottom: 18 }}
+              className="inline-flex items-center gap-2.5 px-9 text-white font-semibold text-[17px] rounded-[14px] transition-all hover:brightness-[1.08] active:translate-y-[0.5px] no-underline"
+              style={{
+                paddingTop: 18,
+                paddingBottom: 18,
+                fontFamily: 'var(--font-cta, var(--font-body))',
+                background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+                boxShadow: '0 12px 36px rgba(91, 108, 255, 0.40), inset 0 1px 0 rgba(255,255,255,0.10)',
+              }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
@@ -893,8 +909,14 @@ export default function HomePage() {
             </Link>
             <Link
               href="/sky"
-              className="inline-flex items-center gap-2.5 px-9 bg-[rgba(255,209,102,0.10)] text-[#FFD166] font-semibold text-[17px] rounded-xl border border-[rgba(255,209,102,0.30)] hover:bg-[rgba(255,209,102,0.18)] transition-colors no-underline"
-              style={{ paddingTop: 18, paddingBottom: 18 }}
+              className="inline-flex items-center gap-2.5 px-9 text-white font-semibold text-[17px] rounded-[14px] transition-all hover:bg-[#1C2235] no-underline"
+              style={{
+                paddingTop: 18,
+                paddingBottom: 18,
+                fontFamily: 'var(--font-cta, var(--font-body))',
+                background: '#161A28',
+                border: '1px solid rgba(255,255,255,0.10)',
+              }}
             >
               Tonight&apos;s sky →
             </Link>
