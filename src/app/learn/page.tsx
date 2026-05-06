@@ -961,9 +961,9 @@ export default function LearnPage() {
           style={{
             background: 'linear-gradient(155deg, var(--canvas) 0%, var(--canvas) 55%, var(--canvas) 100%)',
             border: '1px solid rgba(255,255,255,0.06)',
-            boxShadow: '0 0 0 1px rgba(255, 209, 102,0.07), 0 24px 56px rgba(0,0,0,0.7)',
-            minHeight: '96px',
-            padding: '12px 20px 14px',
+            boxShadow: '0 0 0 1px rgba(255, 209, 102,0.07), 0 18px 40px rgba(0,0,0,0.6)',
+            minHeight: '72px',
+            padding: '8px 16px 10px',
           }}
         >
           {/* Top shimmer seam */}
@@ -1019,20 +1019,20 @@ export default function LearnPage() {
           <div className="relative flex flex-col items-center text-center" style={{ zIndex: 1, paddingTop: '0px' }}>
             {/* Eyebrow pill */}
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              padding: '2px 10px', borderRadius: '999px', marginBottom: '6px',
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+              padding: '2px 8px', borderRadius: '999px', marginBottom: '4px',
               background: 'rgba(255, 209, 102,0.07)',
               border: '1px solid rgba(255, 209, 102,0.18)',
               animation: 'hIn0 0.5s cubic-bezier(0.16,1,0.3,1) both',
             }}>
               <span style={{
-                width: '6px', height: '6px', borderRadius: '50%',
+                width: '5px', height: '5px', borderRadius: '50%',
                 background: 'var(--terracotta)',
                 display: 'inline-block',
-                boxShadow: '0 0 7px rgba(255, 209, 102,0.9)',
+                boxShadow: '0 0 6px rgba(255, 209, 102,0.9)',
               }} />
               <span style={{
-                fontSize: '10px', color: 'rgba(255, 209, 102,0.78)',
+                fontSize: '9px', color: 'rgba(255, 209, 102,0.78)',
                 letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
               }}>
                 {locale === 'ka' ? 'სასწავლო ცენტრი' : 'Astronomy Academy'}
@@ -1041,7 +1041,7 @@ export default function LearnPage() {
 
             {/* Title */}
             <h1 style={{
-              fontSize: 'clamp(1.5rem, 6vw, 1.9rem)',
+              fontSize: 'clamp(1.05rem, 4.5vw, 1.35rem)',
               fontWeight: 800,
               fontFamily: 'Georgia, serif',
               background: 'linear-gradient(135deg, #ffffff 15%, var(--terracotta) 52%, var(--terracotta) 100%)',
@@ -1049,7 +1049,7 @@ export default function LearnPage() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               lineHeight: 1.05,
-              marginBottom: '4px',
+              marginBottom: '2px',
               letterSpacing: '-0.01em',
               animation: 'hIn1 0.55s cubic-bezier(0.16,1,0.3,1) 0.07s both',
             }}>
@@ -1059,8 +1059,8 @@ export default function LearnPage() {
             {/* Subtitle */}
             <p style={{
               color: 'var(--text-muted)',
-              fontSize: '12px',
-              lineHeight: 1.4,
+              fontSize: '11px',
+              lineHeight: 1.35,
               animation: 'hIn2 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s both',
             }}>
               {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
@@ -1069,26 +1069,26 @@ export default function LearnPage() {
             {/* Stats pills */}
             {completedQuizzes.length > 0 && (
               <div style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                marginTop: '16px',
+                display: 'flex', alignItems: 'center', gap: '6px',
+                marginTop: '8px',
                 animation: 'hIn3 0.65s ease-out 0.3s both',
               }}>
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: '5px',
-                  padding: '4px 10px', borderRadius: '999px',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '2px 8px', borderRadius: '999px',
                   background: 'rgba(94, 234, 212,0.08)',
                   border: '1px solid rgba(94, 234, 212,0.2)',
-                  fontSize: '11px', color: 'var(--success)', fontWeight: 500,
+                  fontSize: '10px', color: 'var(--success)', fontWeight: 500,
                 }}>
                   <span>✓</span>
                   <span>{completedQuizzes.length} {locale === 'ka' ? 'ქვიზი' : 'quizzes'}</span>
                 </div>
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: '5px',
-                  padding: '4px 10px', borderRadius: '999px',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '2px 8px', borderRadius: '999px',
                   background: 'rgba(255, 209, 102,0.08)',
                   border: '1px solid rgba(255, 209, 102,0.2)',
-                  fontSize: '11px', color: 'var(--stars)', fontWeight: 500,
+                  fontSize: '10px', color: 'var(--stars)', fontWeight: 500,
                 }}>
                   <span>✦</span>
                   <span>{completedQuizzes.reduce((s, r) => s + r.stars, 0)} {locale === 'ka' ? 'ვარსკვლავი' : 'earned'}</span>
