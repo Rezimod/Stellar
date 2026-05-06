@@ -67,26 +67,36 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
 
   // 'processed' commitment returns in ~1-2s vs 15-30s for 'confirmed'.
   // Route has maxDuration=60, so give the mint enough headroom for slow devnet ticks.
-  const TIMEOUT_MS = 50000;
+  const TIMEOUT_MS = 25000;
+  const treeKey = toPublicKey(MERKLE_TREE_ADDRESS);
+  const collectionKey = toPublicKey(COLLECTION_MINT_ADDRESS);
 
-  const mintPromise = mintV1(umi, {
-    leafOwner: recipient,
-    merkleTree: toPublicKey(MERKLE_TREE_ADDRESS),
-    metadata: {
-      name,
-      uri,
-      sellerFeeBasisPoints: 0,
-      collection: { key: toPublicKey(COLLECTION_MINT_ADDRESS), verified: false },
-      creators: [],
-    },
-  }).sendAndConfirm(umi, { send: { skipPreflight: true }, confirm: { commitment: 'processed' } });
+  async function attempt(): Promise<string> {
+    const mintPromise = mintV1(umi, {
+      leafOwner: recipient,
+      merkleTree: treeKey,
+      metadata: {
+        name,
+        uri,
+        sellerFeeBasisPoints: 0,
+        collection: { key: collectionKey, verified: false },
+        creators: [],
+      },
+    }).sendAndConfirm(umi, { send: { skipPreflight: true }, confirm: { commitment: 'processed' } });
 
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error(`Mint timeout after ${TIMEOUT_MS}ms`)), TIMEOUT_MS)
-  );
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Mint timeout after ${TIMEOUT_MS}ms`)), TIMEOUT_MS)
+    );
 
-  const { signature } = await Promise.race([mintPromise, timeoutPromise]);
+    const { signature } = await Promise.race([mintPromise, timeoutPromise]);
+    return base58.deserialize(signature)[0];
+  }
 
-  const txId = base58.deserialize(signature)[0];
-  return { txId };
+  // One retry on transient devnet failures (timeouts, blockhash expiry, etc.)
+  try {
+    return { txId: await attempt() };
+  } catch (err) {
+    console.warn('[mint-nft] First attempt failed, retrying once:', err instanceof Error ? err.message : err);
+    return { txId: await attempt() };
+  }
 }

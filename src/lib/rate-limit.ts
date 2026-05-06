@@ -20,7 +20,7 @@ function makeLimit(window: Duration, requests: number, prefix: string) {
 
 export const chatRateLimit = { limit: (id: string) => makeLimit('60 s', 10, 'rl:chat').limit(id) };
 export const verifyRateLimit = { limit: (id: string) => makeLimit('60 s', 5, 'rl:verify').limit(id) };
-export const mintRateLimit = { limit: (id: string) => makeLimit('3600 s', 2, 'rl:mint').limit(id) };
+export const mintRateLimit = { limit: (id: string) => makeLimit('3600 s', 30, 'rl:mint').limit(id) };
 export const awardStarsRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:award').limit(id) };
 export const redeemRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:redeem').limit(id) };
 

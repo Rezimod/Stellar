@@ -283,7 +283,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     setMintError('');
 
     // --- Mint the NFT, passing rarity through ---
-    let txId = 'sim_' + Date.now().toString(36);
+    let txId: string | null = null;
     try {
       const authToken = await getAccessToken().catch(() => null);
       const ctrl = new AbortController();
@@ -322,22 +322,29 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
 
       if (res.ok) {
         const data = await res.json();
-        txId = data.txId;
-        console.log('[mint] On-chain success, txId:', data.txId);
+        if (typeof data.txId === 'string' && data.txId.length > 0) {
+          txId = data.txId;
+          console.log('[mint] On-chain success, txId:', data.txId);
+        }
       } else {
         const errData = await res.json().catch(() => ({}));
         const msg: string = errData?.error ?? '';
         console.error('[mint] API error', res.status, msg);
-        if (res.status === 400 && (msg.toLowerCase().includes('cloud cover') || msg.toLowerCase().includes('sky conditions'))) {
-          setMintError('The sky is too cloudy to verify tonight. Check back when cloud cover drops below 70%.');
-          setStep('verified');
-          setMintDone(false);
-          return;
+        if (res.status === 429) {
+          setMintError(msg || 'Too many mints right now — try again in a minute.');
+        } else {
+          setMintError(msg || 'NFT mint failed — please retry.');
         }
-        setMintError('NFT mint failed — your observation is saved locally. You can retry from your NFTs page.');
       }
     } catch (err) {
       console.error('[mint] Network/timeout error:', err);
+      setMintError('Network error — please retry.');
+    }
+
+    if (!txId) {
+      setStep('verified');
+      setMintDone(false);
+      return;
     }
 
     setMintTxId(txId);
@@ -574,7 +581,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  <img src={getMissionImage(mission.id)} alt="" className="w-3 h-3 rounded object-cover flex-shrink-0" />
+                  <img src={getMissionImage(mission.id)} alt="" loading="lazy" decoding="async" className="w-3 h-3 rounded object-cover flex-shrink-0" />
                   {mission.name}
                 </span>
                 {isOnChain && (
@@ -873,7 +880,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-              <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
+              <img src={getMissionImage(mission.id)} alt={mission.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
             </div>
             <p className="text-text-primary text-sm font-semibold">{mission.name}</p>
           </div>
@@ -885,7 +892,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="flex flex-col items-center gap-3">
             {photo && (
               <div className="w-full rounded-xl overflow-hidden bg-canvas" style={{ maxHeight: '30vh', aspectRatio: '1/1', objectFit: 'cover', borderRadius: 12 }}>
-                <img src={photo} alt="Uploaded observation" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
+                <img src={photo} alt="Uploaded observation" decoding="async" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
               </div>
             )}
             <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)' }}>

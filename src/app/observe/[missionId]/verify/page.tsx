@@ -222,7 +222,7 @@ export default function ObserveVerifyPage() {
 
     setMintError('');
 
-    let txId = 'sim_' + Date.now().toString(36);
+    let txId: string | null = null;
     try {
       const authToken = await getAccessToken().catch(() => null);
       const ctrl = new AbortController();
@@ -261,19 +261,28 @@ export default function ObserveVerifyPage() {
 
       if (res.ok) {
         const data = await res.json();
-        txId = data.txId;
+        if (typeof data.txId === 'string' && data.txId.length > 0) {
+          txId = data.txId;
+        }
       } else {
         const errData = await res.json().catch(() => ({}));
         const msg: string = errData?.error ?? '';
-        if (res.status === 400 && (msg.toLowerCase().includes('cloud cover') || msg.toLowerCase().includes('sky conditions'))) {
-          setMintError('The sky is too cloudy to verify tonight. Check back when cloud cover drops below 70%.');
-          setStage('mint-ready');
-          return;
+        if (res.status === 429) {
+          setMintError(msg || 'Too many mints right now — try again in a minute.');
+        } else {
+          setMintError(msg || 'NFT mint failed — please retry.');
         }
-        setMintError('NFT mint failed — your observation is saved locally. You can retry from your NFTs page.');
       }
-    } catch {
-      // Network/timeout — fall through with sim txId
+    } catch (err) {
+      console.error('[mint] network/timeout', err);
+      setMintError('Network error — please retry.');
+    }
+
+    if (!txId) {
+      // No on-chain mint → don't pretend the mission is sealed.
+      setStage('mint-ready');
+      setMintDone(false);
+      return;
     }
 
     setMintTxId(txId);
