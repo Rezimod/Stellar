@@ -1174,3 +1174,17 @@ export function getProductsByDealer(dealerId: string): Product[] {
 export function getAllDealers(): Dealer[] {
   return DEALERS
 }
+
+const USD_PER_EUR = 1.08
+
+export function priceToSol(
+  price: number,
+  currency: string,
+  solPerGEL: number,
+  solPriceUsd: number,
+): number {
+  if (currency === 'GEL' && solPerGEL > 0) return price * solPerGEL
+  if (currency === 'USD' && solPriceUsd > 0) return price / solPriceUsd
+  if (currency === 'EUR' && solPriceUsd > 0) return (price * USD_PER_EUR) / solPriceUsd
+  return 0
+}

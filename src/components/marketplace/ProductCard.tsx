@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product } from '@/lib/dealers';
+import { priceToSol, type Product } from '@/lib/dealers';
 
 const STARS_VIOLET = '#A78BFA';
 
@@ -35,10 +35,8 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
 
-  const solAmount =
-    product.currency === 'GEL' && solPerGEL > 0 ? product.price * solPerGEL :
-    product.currency === 'USD' && solPriceUsd > 0 ? product.price / solPriceUsd :
-    null;
+  const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
+  const solAmount = solValue > 0 ? solValue : null;
 
   return (
     <div

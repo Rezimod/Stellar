@@ -12,7 +12,7 @@ import { useAppState } from '@/hooks/useAppState';
 import { useWallets as usePrivySolanaWallets } from '@privy-io/react-auth/solana';
 import { AuthModal } from '@/components/auth/AuthModal';
 import PageContainer from '@/components/layout/PageContainer';
-import { getProductById, getDealerById } from '@/lib/dealers';
+import { getProductById, getDealerById, priceToSol } from '@/lib/dealers';
 import type { Product } from '@/lib/dealers';
 import {
   STARS_PER_GEL,
@@ -75,9 +75,7 @@ function CheckoutContent() {
 
   const amountSol = useMemo(() => {
     if (!product) return 0;
-    if (product.currency === 'GEL' && solPerGEL > 0) return product.price * solPerGEL;
-    if (product.currency === 'USD' && solPriceUsd > 0) return product.price / solPriceUsd;
-    return 0;
+    return priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
   }, [product, solPerGEL, solPriceUsd]);
 
   const [authOpen, setAuthOpen] = useState(false);
@@ -121,9 +119,8 @@ function CheckoutContent() {
   const discountedFiat = product ? Math.max(0, product.price - gelDiscount) : 0;
   const discountedSol = useMemo(() => {
     if (!product) return 0;
-    if (product.currency === 'GEL' && solPerGEL > 0) return discountedFiat * solPerGEL;
-    if (product.currency === 'USD' && solPriceUsd > 0) return discountedFiat / solPriceUsd;
-    return amountSol;
+    const v = priceToSol(discountedFiat, product.currency, solPerGEL, solPriceUsd);
+    return v > 0 ? v : amountSol;
   }, [product, discountedFiat, solPerGEL, solPriceUsd, amountSol]);
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
@@ -279,6 +276,27 @@ function CheckoutContent() {
 
   return (
     <PageContainer variant="wide" className="font-mono py-5">
+      <style jsx global>{`
+        .stl-checkout-field {
+          color: #E8E6DD;
+          background: #161A28;
+          border: 1px solid rgba(255,255,255,0.10);
+        }
+        .stl-checkout-field:hover { border-color: rgba(255,255,255,0.18); }
+        .stl-checkout-field:focus {
+          border-color: rgba(91, 108, 255, 0.55);
+          background: #1C2235;
+        }
+        .stl-checkout-field:-webkit-autofill,
+        .stl-checkout-field:-webkit-autofill:hover,
+        .stl-checkout-field:-webkit-autofill:focus,
+        .stl-checkout-field:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #161A28 inset !important;
+          -webkit-text-fill-color: #E8E6DD !important;
+          caret-color: #E8E6DD;
+          transition: background-color 9999s ease-out, color 9999s ease-out;
+        }
+      `}</style>
       <button
         onClick={() => router.back()}
         className="inline-flex items-center gap-1 text-[10px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.65)] hover:text-[#E8E6DD] transition-colors mb-[18px]"
@@ -340,19 +358,29 @@ function CheckoutContent() {
               <button
                 onClick={handlePay}
                 disabled={!canSubmit || submitting || pendingPay || burning}
-                className="bg-[var(--terracotta)] text-[#1a1208] px-[20px] py-[12px] rounded-full text-[12px] font-bold tracking-[0.18em] uppercase transition-opacity disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-[8px] px-[22px] py-[13px] rounded-[14px] text-[13px] font-semibold tracking-[0.005em] text-white whitespace-nowrap transition-[filter,transform,box-shadow] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:filter-none"
+                style={{
+                  background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+                  border: 'none',
+                  boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
+                }}
               >
-                {burning
-                  ? 'Burning Stars…'
-                  : submitting
-                    ? 'Creating order…'
-                    : pendingPay && authenticated && !walletAddress
-                      ? 'Preparing wallet…'
-                      : mode === 'stars'
-                        ? `Redeem ${product.starsPrice.toLocaleString()} stars`
-                        : discountedSol > 0
-                          ? `Pay ${formatSol(discountedSol)} SOL`
-                          : 'Loading SOL price…'}
+                {mode === 'stars'
+                  ? <span aria-hidden className="text-[14px] leading-none">★</span>
+                  : <span aria-hidden className="text-[14px] leading-none">◎</span>}
+                <span>
+                  {burning
+                    ? 'Burning Stars…'
+                    : submitting
+                      ? 'Creating order…'
+                      : pendingPay && authenticated && !walletAddress
+                        ? 'Preparing wallet…'
+                        : mode === 'stars'
+                          ? `Redeem ${product.starsPrice.toLocaleString()} stars`
+                          : discountedSol > 0
+                            ? `Pay ${formatSol(discountedSol)} SOL`
+                            : 'Loading SOL price…'}
+                </span>
               </button>
               {!authenticated && (
                 <p className="text-[11px] text-[rgba(232,230,221,0.6)]">
@@ -616,14 +644,10 @@ function Field({ label, value, onChange, required, multiline, type, placeholder 
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
     placeholder: placeholder ?? '',
     className:
-      'w-full px-3 py-[10px] text-[13px] text-[#E8E6DD] rounded-md outline-none transition-colors placeholder:text-[rgba(232,230,221,0.35)] focus:border-[rgba(94,234,212,0.45)]',
-    style: {
-      background: 'rgba(255,255,255,0.015)',
-      border: '0.5px solid rgba(232,230,221,0.12)',
-    } as React.CSSProperties,
+      'stl-checkout-field w-full px-[14px] py-[12px] text-[14px] rounded-[14px] outline-none transition-[border-color,background] duration-150 placeholder:text-[rgba(232,230,221,0.4)]',
   };
   return (
-    <label className="flex flex-col gap-[6px]">
+    <label className="flex flex-col gap-[7px]">
       <span className="text-[10px] tracking-[0.18em] uppercase text-[rgba(232,230,221,0.65)]">
         {label}{required && <span className="text-[var(--terracotta)] ml-1">*</span>}
       </span>

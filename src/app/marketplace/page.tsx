@@ -105,7 +105,7 @@ export default function MarketplacePage() {
           {/* Mobile: balance/region row above a horizontal-scroll filter strip. Desktop: filters left, balance/region right. */}
           <div className="flex flex-col gap-[10px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-[12px] sm:gap-y-[10px] sm:justify-between mb-[14px] sm:mb-[20px]">
             {/* Balance + Region — first on mobile so it's compact above the filter strip */}
-            <div className="order-1 sm:order-2 flex items-center gap-[8px] flex-shrink-0">
+            <div className="order-1 sm:order-2 flex items-center justify-between sm:justify-start gap-[8px] w-full sm:w-auto flex-shrink-0">
               <span
                 className="inline-flex items-center gap-[7px] px-[12px] py-[7px] sm:gap-[8px] sm:px-[14px] sm:py-[9px] rounded-lg text-[12px] uppercase cursor-default"
                 style={{
@@ -121,8 +121,12 @@ export default function MarketplacePage() {
                 <span style={{ color: '#A78BFA' }} className="text-[12px]">★</span>
               </span>
 
+              {/* Mobile: bare picker pill on the right. Desktop: wrapped with REGION label. */}
+              <span className="sm:hidden">
+                <LocationPicker compact />
+              </span>
               <span
-                className="inline-flex items-center gap-[8px] pl-[10px] pr-[4px] py-[3px] sm:gap-[10px] sm:pl-[12px] sm:pr-[5px] sm:py-[4px] rounded-lg"
+                className="hidden sm:inline-flex items-center gap-[10px] pl-[12px] pr-[5px] py-[4px] rounded-lg"
                 style={{
                   background: 'rgba(15, 18, 28, 0.72)',
                   border: '1px solid rgba(232,230,221,0.16)',
@@ -210,14 +214,14 @@ export default function MarketplacePage() {
             <>
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,460px)_1fr] gap-[16px] items-start mb-[16px]">
                 <FeaturedProduct product={featured} dealerName={showDealer ? getDealerName(featured.dealerId) : ''} />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] content-start">
+                <div className="grid grid-cols-2 gap-[14px] sm:gap-[16px] content-start">
                   {sidebarProducts.map(p => (
                     <ProductCard key={p.id} product={p} dealerName={showDealer ? getDealerName(p.dealerId) : ''} solPerGEL={solPerGEL} solPriceUsd={solPriceUsd} />
                   ))}
                 </div>
               </div>
               {overflowProducts.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
                   {overflowProducts.map(p => (
                     <ProductCard key={p.id} product={p} dealerName={showDealer ? getDealerName(p.dealerId) : ''} solPerGEL={solPerGEL} solPriceUsd={solPriceUsd} />
                   ))}
@@ -227,7 +231,7 @@ export default function MarketplacePage() {
           ) : featured ? (
             <FeaturedProduct product={featured} dealerName={showDealer ? getDealerName(featured.dealerId) : ''} />
           ) : visible.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
               {visible.map(p => (
                 <ProductCard key={p.id} product={p} dealerName={showDealer ? getDealerName(p.dealerId) : ''} solPerGEL={solPerGEL} solPriceUsd={solPriceUsd} />
               ))}

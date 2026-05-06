@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { Product } from '@/lib/dealers';
+import { priceToSol, type Product } from '@/lib/dealers';
 
 const FEATURED_SPEC_KEYS = ['aperture', 'focal', 'mount', 'weight'] as const;
 
@@ -36,10 +36,8 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
       .catch(() => {});
   }, []);
 
-  const solAmount =
-    product.currency === 'GEL' && solPerGEL > 0 ? product.price * solPerGEL :
-    product.currency === 'USD' && solPriceUsd > 0 ? product.price / solPriceUsd :
-    null;
+  const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
+  const solAmount = solValue > 0 ? solValue : null;
   const specs = product.specs ?? {};
   const rows = FEATURED_SPEC_KEYS
     .map(k => ({ key: k, value: specs[k] }))
