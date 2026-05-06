@@ -633,7 +633,7 @@ export default function HomePage() {
           </g>
         </svg>
 
-        <div className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-15 items-center">
+        <div className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_1.25fr] gap-10 md:gap-12 items-center">
           <div>
             <h1 className="text-[36px] md:text-[72px] font-extrabold leading-[1.05] md:leading-[1] tracking-[-0.025em] text-white mb-5 md:mb-8">
               Find every{' '}
@@ -675,7 +675,7 @@ export default function HomePage() {
           <div className="grid grid-cols-3 md:divide-x md:divide-white/[0.06]">
             <LedgerStat
               label="Customers"
-              value="65,000"
+              value="60K"
               suffix="+"
               meta="Across Georgia"
             />
@@ -686,7 +686,7 @@ export default function HomePage() {
             />
             <LedgerStat
               label="Brands"
-              value="04"
+              value="4"
               meta="Authorized dealer"
             />
           </div>
@@ -942,7 +942,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
             <div className="text-center md:text-left">
-              <div className="font-mono text-[28px] md:text-[36px] font-bold text-white tabular-nums leading-none">65K+</div>
+              <div className="font-mono text-[28px] md:text-[36px] font-bold text-white tabular-nums leading-none">60K+</div>
               <div className="text-white text-[14px] md:text-[15px] font-semibold mt-2.5">Astroman customers</div>
               <div className="text-[#9BA3B4] text-[13px] md:text-[13.5px] leading-[1.55] mt-1">Seven years. Physical store in Tbilisi.</div>
             </div>

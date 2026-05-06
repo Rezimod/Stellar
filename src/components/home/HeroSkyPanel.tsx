@@ -51,7 +51,35 @@ const STARS: { cx: number; cy: number; r: number; o: number; d: number }[] = [
   { cx:  20, cy: 332, r: 0.5, o: 0.45, d: 1.6 },
   { cx: 320, cy: 460, r: 0.5, o: 0.45, d: 2.9 },
   { cx:  64, cy: 112, r: 0.4, o: 0.4,  d: 0.2 },
+  { cx:  88, cy:  72, r: 0.5, o: 0.45, d: 3.1 },
+  { cx: 388, cy: 100, r: 0.4, o: 0.35, d: 1.2 },
+  { cx: 296, cy:  36, r: 0.5, o: 0.4,  d: 0.6 },
+  { cx: 412, cy: 256, r: 0.6, o: 0.5,  d: 2.8 },
+  { cx:  72, cy: 264, r: 0.4, o: 0.35, d: 0.8 },
+  { cx: 354, cy: 442, r: 0.6, o: 0.45, d: 1.7 },
+  { cx: 124, cy: 432, r: 0.5, o: 0.4,  d: 3.3 },
+  { cx: 256, cy: 442, r: 0.4, o: 0.35, d: 0.5 },
 ];
+
+// Deterministic asteroid field between Mars (orbit 104) and Jupiter (orbit 138).
+// Pre-computed once so it's stable across renders.
+const ASTEROIDS = Array.from({ length: 42 }, (_, i) => {
+  const baseAngle = (i / 42) * Math.PI * 2;
+  const angleJit = Math.sin(i * 11.37) * 0.09;
+  const radJit = Math.cos(i * 7.71) * 6.5;
+  const angle = baseAngle + angleJit;
+  const r = 121 + radJit;
+  return {
+    cx: CX + r * Math.cos(angle),
+    cy: CY + r * Math.sin(angle),
+    size: 0.35 + Math.abs(Math.sin(i * 4.13)) * 0.55,
+    op: 0.28 + Math.abs(Math.cos(i * 2.71)) * 0.32,
+  };
+});
+
+// Comet — its own orbit between Saturn (174) and Uranus (204), faster than Saturn
+// to read as a transient visitor. Tail always points away from the sun in local coords.
+const COMET = { orbit: 192, period: 22, phase: 35, tailLen: 28 };
 
 // Sun rendering constants
 const SUN_R = 16;
@@ -77,7 +105,7 @@ export default function HeroSkyPanel() {
   return (
     <div
       ref={wrapRef}
-      className="relative w-full max-w-[480px] mx-auto select-none"
+      className="relative w-full max-w-[520px] md:max-w-[600px] lg:max-w-[680px] mx-auto select-none"
       data-paused={!visible}
     >
       <style jsx>{`
@@ -176,6 +204,18 @@ export default function HeroSkyPanel() {
             <stop offset="78%"  stopColor="#8E7551" stopOpacity="0.45" />
             <stop offset="100%" stopColor="#6B563A" stopOpacity="0" />
           </linearGradient>
+          {/* comet tail — bright at head, fading along the trail */}
+          <linearGradient id="comet-tail" x1="0" y1="0.5" x2="1" y2="0.5">
+            <stop offset="0%"   stopColor="#E8F2FF" stopOpacity="0.9" />
+            <stop offset="35%"  stopColor="#9CC4FF" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#9CC4FF" stopOpacity="0" />
+          </linearGradient>
+          {/* comet head soft halo */}
+          <radialGradient id="comet-head" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.95" />
+            <stop offset="55%"  stopColor="#BCD6FF" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#9CC4FF" stopOpacity="0" />
+          </radialGradient>
 
           {/* clip paths — one per planet, anchored at (0,0) so they
               translate with the planet's parent group */}
@@ -220,6 +260,26 @@ export default function HeroSkyPanel() {
         <g stroke="#1F2740" fill="none" strokeWidth="0.6" strokeDasharray="1.5 4">
           {PLANETS.map((p) => (
             <circle key={p.key} cx={CX} cy={CY} r={p.orbit} />
+          ))}
+        </g>
+
+        {/* asteroid belt — single rotating group, drifts slowly */}
+        <g
+          className="orbit"
+          style={{
+            ['--from' as string]: '0deg',
+            animationDuration: '110s',
+          } as React.CSSProperties}
+        >
+          {ASTEROIDS.map((a, i) => (
+            <circle
+              key={i}
+              cx={a.cx}
+              cy={a.cy}
+              r={a.size}
+              fill="#9099AD"
+              opacity={a.op}
+            />
           ))}
         </g>
 
@@ -356,6 +416,27 @@ export default function HeroSkyPanel() {
             </g>
           );
         })}
+
+        {/* ═══════════════ COMET ═══════════════ */}
+        <g
+          className="orbit"
+          style={{
+            ['--from' as string]: `${COMET.phase}deg`,
+            animationDuration: `${COMET.period}s`,
+          } as React.CSSProperties}
+        >
+          <g transform={`translate(${CX + COMET.orbit} ${CY})`}>
+            {/* tail — fades from head outward (away from sun in local +x) */}
+            <path
+              d={`M 0 0 L ${COMET.tailLen} -0.7 L ${COMET.tailLen} 0.7 Z`}
+              fill="url(#comet-tail)"
+            />
+            {/* outer halo */}
+            <circle cx="0" cy="0" r="3.2" fill="url(#comet-head)" />
+            {/* hot core */}
+            <circle cx="0" cy="0" r="1.1" fill="#FFFFFF" />
+          </g>
+        </g>
 
       </svg>
     </div>
