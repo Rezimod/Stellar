@@ -1,8 +1,17 @@
 # Tether QVAC restoration — resume plan
 
-**Last updated:** 2026-05-05
+**Last updated:** 2026-05-06
 **Owner:** Rezi
-**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — open it next session and continue from "Current state."
+**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — pick up from "Current state" below.
+
+---
+
+## Status update (2026-05-06)
+
+- **Tether rep validation:** spoke with the QVAC representative. Use case (offline observers + cost savings vs paid Claude API) confirmed. Android APK confirmed as the path. Direct rep contact retained as a live support channel — paste any stuck build log to him before grinding solo for hours.
+- **Source files already restored** in the working tree from `1abb18c^` (== commit `2a69854`): `App.tsx`, `app.json`, `lib/qvac.ts`, `lib/user.ts`, `lib/privy.tsx`, `package.json`, `scripts/build-rag-index.ts`. **Step 6 below is now a single `npm install`.** The restore was deliberate — see git status for diffs.
+- **Web-side artifacts shipped** in the same session: `/field` APK download landing (uses `NEXT_PUBLIC_FIELD_APK_URL` env var), Field Mode banner on `/chat`, `docs/qvac-integration.md` for judges, README updated with the cloud/edge framing.
+- **What's left:** install Android Studio (or cmdline tools), connect phone, `npm install` in `apps/field`, run prebuild + Android build, verify on hardware, set `NEXT_PUBLIC_FIELD_APK_URL` once the APK is hosted, record demo, submit.
 
 ---
 
@@ -12,10 +21,11 @@ If you're a Claude opening this cold:
 
 - Stellar Field is an Expo app at `apps/field/` in this repo
 - The Tether prize requires QVAC SDK actually running on-device (not stubbed)
-- Days 1–3 of code is real and committed; QVAC is currently stubbed at `apps/field/lib/qvac.ts` after pivot commit `1abb18c`
-- The user has macOS Ventura 13.1 (Xcode is blocked — never suggest iOS), an Android phone with USB cable, and Homebrew may or may not be installed
-- The user wants the cmdline-only Android toolchain (no Android Studio)
-- Read `TETHER_QVAC_TRACK.md` (sibling file) for the full integration design
+- The Tether rep has validated the use case (offline observers, free vs paid Claude) and is on standby for build help — the user has his contact
+- Source files are already restored (working tree matches `2a69854`); `apps/field/node_modules` does NOT yet have the QVAC + Privy + bare-* deps because `npm install` hasn't been run in the restored state
+- Web-side download landing lives at `src/app/field/page.tsx` (route: `/field`); it reads `NEXT_PUBLIC_FIELD_APK_URL` and shows "Available shortly" until that's set
+- The user has macOS Ventura 13.1 (Xcode is blocked — never suggest iOS), an Android phone arriving tonight or tomorrow, and Homebrew may or may not be installed
+- Read `TETHER_QVAC_TRACK.md` §0.1 for the rep-validated 2-day plan and `docs/qvac-integration.md` for the judge-facing technical writeup
 - Pick up at "Step 1" below
 
 ---
@@ -148,22 +158,17 @@ ABC123XYZ        device
 **If "unauthorized":** check the phone for the popup, allow, retry.
 **If empty list:** cable might be charge-only — try another USB cable. Or run `adb kill-server && adb start-server`.
 
-### Step 6 — Restore the QVAC code
+### Step 6 — Reinstall deps (source files already restored)
 
-This brings back the full integration from commit `2a69854`:
+The source files (`App.tsx`, `app.json`, `lib/qvac.ts`, `lib/user.ts`, `lib/privy.tsx`, `package.json`, `scripts/build-rag-index.ts`) were checked out from `1abb18c^` (== commit `2a69854`) on 2026-05-06 and are sitting in the working tree. **You don't need to run `git checkout` again — just install the deps.**
 
 ```bash
-cd /Users/nika/Desktop/Stellar-rezimod
-git checkout 2a69854 -- apps/field/App.tsx apps/field/app.json apps/field/lib/qvac.ts apps/field/lib/user.ts apps/field/package.json apps/field/package-lock.json apps/field/metro.config.js
-git checkout 2a69854 -- apps/field/lib/privy.tsx
-```
-
-Then reinstall:
-```bash
-cd apps/field
+cd /Users/nika/Desktop/Stellar-rezimod/apps/field
 rm -rf node_modules
 npm install
 ```
+
+Note: `package-lock.json` was *not* restored (the pivot's lockfile is still in place). Letting `npm install` regenerate it from the restored `package.json` is safer than reverting the 12k-line pivot lockfile.
 
 Verify the typecheck still passes:
 ```bash
@@ -171,6 +176,12 @@ npx tsc --noEmit
 ```
 
 **Expected:** silent (no errors).
+
+**If you need to abort and re-stub** (e.g., the rep responds with a different recommendation): re-stub by checking out the pivot files from commit `1abb18c`:
+```bash
+git checkout 1abb18c -- apps/field/App.tsx apps/field/app.json apps/field/lib/qvac.ts apps/field/lib/user.ts apps/field/package.json apps/field/scripts/build-rag-index.ts
+git rm apps/field/lib/privy.tsx
+```
 
 ### Step 7 — Run expo prebuild
 
@@ -183,7 +194,7 @@ This is the step that **always failed in EAS**. Locally it should succeed becaus
 
 **Expected:** Several minutes. Output should include lines like "🕚 QVAC: Generating tree-shaken bundle..." and "🫡 QVAC: Mobile bundle generated".
 
-**If it fails here:** paste the error to Claude. Most likely culprits (in order):
+**If it fails here:** paste the error to **the Tether rep first** (he's expecting it), then to Claude. Most likely culprits (in order):
 - Missing `@qvac/cli` — install with `npm install --save-dev @qvac/cli`
 - Bare module resolution issue — may need `npm install bare-runtime bare-os bare-fs ...`
 - NDK / Gradle issue — usually fixed by re-running prebuild after installing missing pieces
@@ -222,6 +233,30 @@ Once the app launches successfully, run through these in order. Each should pass
 9. **Airplane mode test** — toggle on, repeat steps 3 and 7 — should still work fully offline
 
 If 1–9 all pass, the QVAC integration is verified end-to-end and the project is **prize-eligible**.
+
+## Step 9 — Host the APK and wire it into the web app
+
+The verified APK is at `apps/field/android/app/build/outputs/apk/release/app-release.apk` (or `debug/app-debug.apk` for the dev build). Two hosting options, ordered by speed:
+
+1. **GitHub Release** (fastest, judges respect it)
+   ```bash
+   gh release create v0.1.0-field --title "Stellar Field 0.1.0 (Tether QVAC track)" \
+     --notes-file docs/qvac-integration.md \
+     apps/field/android/app/build/outputs/apk/release/app-release.apk
+   ```
+   Copy the asset's direct download URL.
+
+2. **Vercel public asset** (drop into `public/downloads/stellar-field.apk`)
+   - Note size: GitHub LFS or external hosting if >100MB after Gradle's release build.
+
+Then set the env var on the production deploy:
+```bash
+NEXT_PUBLIC_FIELD_APK_URL=<URL from above>
+```
+- Local: add to `.env.local`
+- Vercel: project → Settings → Environment Variables → add for Production. Redeploy.
+
+The `/field` route reads this var. Empty value → "Available shortly" pill. Set value → "Download APK" button.
 
 ## Demo capture for submission
 

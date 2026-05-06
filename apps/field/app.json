@@ -38,13 +38,22 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-secure-store",
       [
         "expo-audio",
         {
           "microphonePermission": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece."
         }
       ],
-      "expo-asset"
+      "expo-web-browser",
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": { "minSdkVersion": 29 }
+        }
+      ],
+      "@qvac/sdk/expo-plugin"
     ],
     "extra": {
       "eas": {

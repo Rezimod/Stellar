@@ -1,19 +1,4 @@
-/**
- * Stub runtime for the verification build.
- *
- * The full QVAC integration (Llama + Whisper running on-device via the
- * @qvac/sdk Bare-runtime bridge) is implemented in commits prior to this
- * one — see git history and TETHER_QVAC_TRACK.md. EAS Build kept failing
- * during the QVAC native prebuild step (worker.mobile.bundle generation
- * via bare-pack), and we needed a working APK on hardware to verify the
- * rest of the app, so this module temporarily returns canned responses
- * instead of importing @qvac/sdk.
- *
- * Plan to re-enable: install Android Studio locally, use `npx expo
- * run:android --device` (the path the QVAC docs recommend over EAS for
- * the first build), confirm the prebuild plugin runs locally, then
- * restore the previous version of this file.
- */
+import 'react-native-get-random-values';
 
 export type LoadProgress = {
   phase: 'idle' | 'downloading' | 'loading' | 'ready' | 'error';
@@ -27,15 +12,11 @@ export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: stri
 
 type Listener = (p: LoadProgress) => void;
 
-const STUB_REPLY = `On-device AI is currently disabled in this build while we finish wiring the Tether QVAC native modules. The full integration is implemented (lib/qvac.ts in earlier commits) and works in development; the EAS build pipeline needs additional setup that requires a local Android Studio toolchain. Once that's resolved, this same chat will be answered by Llama 3.2 1B running entirely on this phone.`;
-
-const STUB_TRANSCRIPT = `M31 Andromeda, 25mm Plossl at 100x, faint dust lane visible, seeing 7 of 10`;
-
-class StubProgress {
-  private state: LoadProgress = { phase: 'ready', message: 'AI runtime stub' };
+class ProgressTracker {
+  private state: LoadProgress = { phase: 'idle' };
   private listeners = new Set<Listener>();
 
-  get() {
+  get(): LoadProgress {
     return this.state;
   }
 
@@ -44,11 +25,23 @@ class StubProgress {
     fn(this.state);
     return () => this.listeners.delete(fn);
   }
+
+  emit(next: LoadProgress) {
+    this.state = next;
+    this.listeners.forEach((l) => l(next));
+  }
 }
 
 class QvacRuntime {
-  private llmTracker = new StubProgress();
-  private whisperTracker = new StubProgress();
+  private llmModelId: string | null = null;
+  private embedModelId: string | null = null;
+  private whisperModelId: string | null = null;
+
+  private llmTracker = new ProgressTracker();
+  private whisperTracker = new ProgressTracker();
+
+  private llmLoad: Promise<void> | null = null;
+  private whisperLoad: Promise<void> | null = null;
 
   getProgress() {
     return this.llmTracker.get();
@@ -67,32 +60,142 @@ class QvacRuntime {
   }
 
   async ensureReady(): Promise<void> {
-    return;
+    if (this.llmTracker.get().phase === 'ready') return;
+    if (this.llmLoad) return this.llmLoad;
+
+    this.llmLoad = (async () => {
+      try {
+        this.llmTracker.emit({
+          phase: 'downloading',
+          message: 'Fetching local model (~700MB, one-time)',
+        });
+
+        const sdk = await import('@qvac/sdk');
+        const { loadModel, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
+
+        this.llmModelId = await loadModel({
+          modelSrc: LLAMA_3_2_1B_INST_Q4_0,
+          modelType: 'llm',
+          onProgress: (p: { downloaded?: number; total?: number }) => {
+            this.llmTracker.emit({
+              phase: 'downloading',
+              bytesDownloaded: p.downloaded,
+              bytesTotal: p.total,
+              message: 'Downloading Llama 3.2 1B',
+            });
+          },
+        });
+
+        this.llmTracker.emit({ phase: 'loading', message: 'Warming model' });
+
+        try {
+          const embedSrc = (sdk as any).EMBED_NOMIC_V1_5 ?? (sdk as any).EMBED_BGE_SMALL_EN ?? null;
+          if (embedSrc) {
+            this.embedModelId = await loadModel({ modelSrc: embedSrc, modelType: 'embed' });
+          }
+        } catch {
+          this.embedModelId = null;
+        }
+
+        this.llmTracker.emit({ phase: 'ready', message: 'On-device AI ready' });
+      } catch (err: any) {
+        this.llmTracker.emit({ phase: 'error', error: err?.message ?? String(err) });
+        throw err;
+      }
+    })();
+
+    return this.llmLoad;
   }
 
   async ensureWhisperReady(): Promise<void> {
-    return;
+    if (this.whisperTracker.get().phase === 'ready') return;
+    if (this.whisperLoad) return this.whisperLoad;
+
+    this.whisperLoad = (async () => {
+      try {
+        this.whisperTracker.emit({
+          phase: 'downloading',
+          message: 'Fetching speech recognizer (~150MB, one-time)',
+        });
+
+        const sdk = await import('@qvac/sdk');
+        const loadModel = (sdk as any).loadModel;
+        const whisperSrc =
+          (sdk as any).WHISPER_BASE_EN ??
+          (sdk as any).WHISPER_TINY_EN ??
+          (sdk as any).WHISPER_BASE ??
+          (sdk as any).WHISPER_TINY ??
+          null;
+
+        if (!loadModel || !whisperSrc) {
+          throw new Error('Whisper model constants not exported by @qvac/sdk');
+        }
+
+        this.whisperModelId = await loadModel({
+          modelSrc: whisperSrc,
+          modelType: 'transcription',
+          onProgress: (p: { downloaded?: number; total?: number }) => {
+            this.whisperTracker.emit({
+              phase: 'downloading',
+              bytesDownloaded: p.downloaded,
+              bytesTotal: p.total,
+              message: 'Downloading Whisper',
+            });
+          },
+        });
+
+        this.whisperTracker.emit({ phase: 'ready', message: 'Speech recognizer ready' });
+      } catch (err: any) {
+        this.whisperTracker.emit({ phase: 'error', error: err?.message ?? String(err) });
+        throw err;
+      }
+    })();
+
+    return this.whisperLoad;
   }
 
-  async *generate(_history: ChatMessage[]): AsyncIterable<string> {
-    const tokens = STUB_REPLY.split(/(\s+)/);
-    for (const t of tokens) {
-      await new Promise((r) => setTimeout(r, 18));
-      yield t;
+  async *generate(history: ChatMessage[]): AsyncIterable<string> {
+    await this.ensureReady();
+    if (!this.llmModelId) throw new Error('LLM not loaded');
+
+    const sdk = await import('@qvac/sdk');
+    const { completion } = sdk as any;
+
+    const result = completion({ modelId: this.llmModelId, history, stream: true });
+    for await (const token of result.tokenStream) {
+      yield token as string;
     }
   }
 
-  async embed(_text: string): Promise<number[] | null> {
-    return null;
+  async embed(text: string): Promise<number[] | null> {
+    await this.ensureReady();
+    if (!this.embedModelId) return null;
+
+    const sdk = await import('@qvac/sdk');
+    const embedFn = (sdk as any).embed;
+    if (!embedFn) return null;
+
+    const out = await embedFn({ modelId: this.embedModelId, text });
+    return Array.isArray(out) ? out : (out?.vector ?? null);
   }
 
-  async transcribe(_audioPath: string): Promise<string> {
-    await new Promise((r) => setTimeout(r, 600));
-    return STUB_TRANSCRIPT;
+  async transcribe(audioPath: string): Promise<string> {
+    await this.ensureWhisperReady();
+    if (!this.whisperModelId) throw new Error('Whisper not loaded');
+
+    const sdk = await import('@qvac/sdk');
+    const transcribeFn = (sdk as any).transcribe;
+    if (!transcribeFn) throw new Error('@qvac/sdk has no transcribe export');
+
+    const out = await transcribeFn({ modelId: this.whisperModelId, audioPath });
+    if (typeof out === 'string') return out;
+    if (out?.text) return out.text;
+    if (Array.isArray(out?.segments)) return out.segments.map((s: any) => s.text ?? '').join(' ');
+    return '';
   }
 
   hasEmbedder() {
-    return false;
+    return this.embedModelId != null;
   }
 }
 

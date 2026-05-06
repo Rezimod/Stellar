@@ -6,7 +6,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, WifiOff, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { useLocation } from '@/lib/location';
 import PageContainer from '@/components/layout/PageContainer';
 
@@ -34,6 +35,7 @@ function ChatPageInner() {
   const { location } = useLocation();
   const t = useTranslations('chat');
   const ts = useTranslations('chat.suggestions');
+  const tf = useTranslations('chat.fieldBanner');
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q');
   const autoSentRef = useRef(false);
@@ -250,6 +252,59 @@ function ChatPageInner() {
               {skySummary.cloudCover}% cloud · {skySummary.visibility} · Ask me what to observe
             </p>
           </div>
+        )}
+
+        {/* Field Mode banner — idle state only */}
+        {messages.length === 1 && (
+          <Link
+            href="/field"
+            aria-label={tf('cta')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '10px 14px',
+              borderRadius: 12,
+              border: '1px solid var(--accent-border)',
+              background: 'var(--accent-dim)',
+              textDecoration: 'none',
+              marginBottom: 8,
+            }}
+          >
+            <div style={{
+              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+              background: 'rgba(94, 234, 212, 0.10)',
+              border: '1px solid rgba(94, 234, 212, 0.20)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--accent)',
+            }}>
+              <WifiOff size={14} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 10,
+                color: 'var(--accent)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                margin: '0 0 2px',
+              }}>
+                {tf('label')}
+              </p>
+              <p style={{
+                fontSize: 12,
+                color: 'var(--text-secondary)',
+                margin: 0,
+                lineHeight: 1.4,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {tf('body')}
+              </p>
+            </div>
+            <ChevronRight size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+          </Link>
         )}
 
         {displayMessages.map((m, i) => {

@@ -4,7 +4,7 @@
 
 Get tonight's sky forecast, photograph what you see, earn rewards you can redeem for real telescopes and gear at [Astroman](https://astroman.ge), Georgia's first astronomy store. Built on Solana. Free to use.
 
-[Live App](https://stellarrclub.vercel.app) · [Colosseum Frontier 2026](https://www.colosseum.org) · [Twitter/X](https://x.com/StellarClub26)
+[Live App](https://stellarrclub.vercel.app) · [Colosseum Frontier 2026](https://www.colosseum.org) · [Tether Frontier Track](docs/qvac-integration.md) · [Twitter/X](https://x.com/StellarClub26)
 
 ---
 
@@ -50,6 +50,22 @@ Sky atlases show you the sky. Stellar connects what you see to a real economy.
 
 ---
 
+## Stellar Field — On-Device AI for Dark Sites
+
+*Tether Frontier Track submission ([technical writeup](docs/qvac-integration.md))*
+
+Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. The cloud AI in our web app dies the moment a user reaches the place they bought their telescope for. **Stellar Field** is the Android companion that runs Astra entirely on the phone, powered by Tether QVAC.
+
+- **Local LLM with RAG** — Llama 3.2 1B Q4_0 + a 72-chunk astronomy corpus (Messier catalog, constellation guide, telescope FAQ). Same Astra persona, no server. (`@qvac/llm-llamacpp` + `@qvac/embed-llamacpp`)
+- **Voice notes at the eyepiece** — press, speak the observation, release. Whisper transcribes on-device. Saves as a structured record, queues for sync, optionally mints as a Discovery Attestation cNFT. (`@qvac/transcription-whispercpp`)
+- **Background sky checker** — local QVAC loop watches planet altitudes via `astronomy-engine` and alerts when targets enter your scope's window — without a server round-trip.
+
+The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on Claude (fast and broad), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
+
+[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Plan + status](TETHER_QVAC_TRACK.md)
+
+---
+
 ## DePIN: Every Smartphone Is a Sky Sensor
 
 Stellar is a Decentralized Physical Infrastructure Network where the physical infrastructure is the night sky itself, and the nodes are people with phones, cameras, and telescopes.
@@ -77,7 +93,8 @@ Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.
 | NFTs | Metaplex Bubblegum compressed NFTs |
 | Token | Stars SPL token (0 decimals) |
 | Markets program (for Challenges) | Custom Anchor program on Solana devnet |
-| AI | Claude API — ASTRA persona with tool calling (sky data + Vision verification) |
+| AI (online) | Claude API — ASTRA persona with tool calling (sky data + Vision verification) |
+| AI (offline, Field Mode) | Tether QVAC — Llama 3.2 1B + Whisper, on-device via `@qvac/sdk` (Expo / Android) |
 | Sky data | Open-Meteo (weather), astronomy-engine (celestial mechanics), NOAA SWPC (solar), IMO (meteors) |
 | Database | Neon Postgres via Drizzle ORM |
 | RPC | Helius |

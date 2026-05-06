@@ -128,10 +128,7 @@ function parseFile(md: string): ParsedSection[] {
 
 async function tryEmbed(text: string): Promise<number[] | null> {
   try {
-    // Dynamic via variable so TypeScript doesn't try to resolve the type
-    // when @qvac/sdk isn't installed (it isn't in the verification build).
-    const sdkSpecifier = '@qvac/sdk';
-    const sdk: any = await import(sdkSpecifier).catch(() => null);
+    const sdk: any = await import('@qvac/sdk').catch(() => null);
     if (!sdk?.loadModel || !sdk?.embed) return null;
     const modelSrc = sdk.EMBED_NOMIC_V1_5 ?? sdk.EMBED_BGE_SMALL_EN;
     if (!modelSrc) return null;

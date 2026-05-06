@@ -18,6 +18,36 @@ The on-device runtime did not ship in the first verification APK because EAS Bui
 
 ---
 
+## 0.1. Rep validation + compressed plan (2026-05-06)
+
+Spoke with the Tether QVAC representative. Three confirmations:
+
+1. **Offline use case is the right fit.** Astronomers travelling to no-cell sites is exactly the gap QVAC was built for. Framing also lands on cost: Claude API is paid per call, QVAC inference is free once the model is on the device.
+2. **Android APK is the integration target.** Browser is not a path — confirms section 3. iOS is possible but not required for this submission.
+3. **Direct support channel established.** Rep contact retained for build-time questions over the next 48 hours — use it the moment a native build error blocks progress, do not solo-debug for hours.
+
+**New tagline (use in README, demo VO, submission text):** *"Cloud AI fails where astronomers actually go. QVAC runs on the phone, free and offline."*
+
+### Compressed execution plan (2 days)
+
+| Day | Work | Ship gate |
+|---|---|---|
+| **Day 1 (Wed May 6)** | Install Android Studio + SDK + JDK 17 (~1h). Plug in Android device with USB debugging. Restore QVAC code from commit `2a69854` (single revert + `npm install`). Run `npx expo prebuild --clean` then `npx expo run:android --device`. | Llama 3.2 1B downloads on first launch; offline chat answers "What is M31?" with corpus citation; voice log records + transcribes locally. |
+| **Day 2 (Thu May 7)** | Test airplane-mode end-to-end on hardware. Record 90s demo video (script in §10). Write `/docs/qvac-integration.md`. Update root README with demo link + cost-savings framing. Submit on Superteam Earn. | Submission live, video unlisted on YouTube, repo public with daily commits intact. |
+
+### Cuts vs original plan
+
+- iOS dropped (Android-only for this submission)
+- TTS (§5.3) dropped from the demo flow
+- Translation NMT (§5.4) dropped
+- cNFT mint bridge mentioned in submission text but not filmed in the 90s demo
+
+### Active prerequisite (block before Day 1)
+
+Confirm an Android phone with USB debugging on hand. iOS adds days the timeline does not have. If no Android device, the plan changes — borrow or buy before starting Day 1.
+
+---
+
 ## 1. The thesis (one paragraph)
 
 Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. Stellar's current AI Space Companion runs on the Claude API and goes dark the moment a user reaches the place they bought their telescope for. **QVAC fixes that.** We ship a companion mobile app, **Stellar Field**, that runs on-device LLM, Whisper STT, and TTS via QVAC, so the AI works under the stars where users actually need it. This is not a forced fit; it is the exact problem QVAC was built to solve.
@@ -134,7 +164,10 @@ Stellar-rezimod/
 
 Alternative if workspace conversion is risky mid-hackathon: keep `apps/field` as a sibling folder with its own `package.json`, no workspace. Less elegant, lower risk.
 
-## 7. Timeline (May 4 → May 11, 7 days)
+## 7. Original 7-day timeline (historical — superseded by §0.1)
+
+> The active plan is the 2-day compressed plan in §0.1. The table below is preserved for context on what was originally scoped and where Days 1–3 actually landed.
+
 
 | Day | Work | Ship gate | Status |
 |---|---|---|---|
@@ -223,12 +256,12 @@ Tether requires a "public GitHub repo with a working demo or video walkthrough."
 | Whisper accuracy poor in Georgian | Medium | Ship EN-only voice for v1, document as known limit |
 | 7 days is tight solo | High | P2 features are explicitly droppable; core (5.1 + 5.2) is the must-ship |
 
-## 13. Open questions to resolve in conversation
+## 13. Open questions
 
-1. Are we comfortable adding an Expo app this late, or is a Bare/Node demo a safer bet for the Tether prize *only*, leaving the web app untouched?
-2. Do we have iOS + Android test devices on hand?
+1. ~~Expo vs Bare/Node demo?~~ **Resolved 2026-05-06:** Expo APK is the path, per rep. Bare/Node fallback abandoned.
+2. ~~Test devices?~~ **Resolved 2026-05-06:** Android phone required for Day 1; iOS dropped from this submission.
 3. Has Privy been swapped in already on the web app, or are we still on wallet-adapter? (Memory says migration not started — relevant because Field will be the first Privy surface to actually ship.)
-4. Should we register this as a separate Colosseum project, or is Tether eligibility automatic given the main Stellar submission?
+4. Should we register this as a separate Colosseum project, or is Tether eligibility automatic given the main Stellar submission? **Pending — ask rep before the Day 2 submit step.**
 
 ---
 
@@ -255,4 +288,4 @@ The blockers have not been QVAC's correctness — they've been native build tool
 
 ---
 
-*Last updated: 2026-05-05. Owner: Rezi. Status: pivoted to verification APK with stubbed AI; QVAC restoration pending Android Studio.*
+*Last updated: 2026-05-06. Owner: Rezi. Status: rep-validated (offline observer use case + cost angle confirmed); 2-day execution plan locked (§0.1); Android Studio install + local `expo run:android` build pending; rep contact retained as live support channel.*
