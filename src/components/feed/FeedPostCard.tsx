@@ -77,19 +77,27 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
   const [draft, setDraft] = useState('')
   const [lightbox, setLightbox] = useState(false)
   const pickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const longPressFired = useRef(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const shareRef = useRef<HTMLDivElement>(null)
+  const pickerWrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!showMenu && !showShare) return
-    const onClick = (e: MouseEvent) => {
+    if (!showMenu && !showShare && !showPicker) return
+    const onPointerDown = (e: Event) => {
       const t = e.target as Node
       if (showMenu && menuRef.current && !menuRef.current.contains(t)) setShowMenu(false)
       if (showShare && shareRef.current && !shareRef.current.contains(t)) setShowShare(false)
+      if (showPicker && pickerWrapRef.current && !pickerWrapRef.current.contains(t)) setShowPicker(false)
     }
-    window.addEventListener('mousedown', onClick)
-    return () => window.removeEventListener('mousedown', onClick)
-  }, [showMenu, showShare])
+    window.addEventListener('mousedown', onPointerDown)
+    window.addEventListener('touchstart', onPointerDown, { passive: true })
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown)
+      window.removeEventListener('touchstart', onPointerDown)
+    }
+  }, [showMenu, showShare, showPicker])
 
   const isMine = !!myWallet && myWallet === post.authorWallet
   const liveName = isMine ? (myDisplayName?.trim() || null) : null
@@ -334,6 +342,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
 
       <div className="actions">
         <div
+          ref={pickerWrapRef}
           className="action-wrap"
           onMouseEnter={() => { if (pickerTimer.current) clearTimeout(pickerTimer.current); setShowPicker(true) }}
           onMouseLeave={() => { pickerTimer.current = setTimeout(() => setShowPicker(false), 250) }}
@@ -355,7 +364,21 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
           )}
           <button
             className={`action ${myReaction ? 'liked' : ''}`}
-            onClick={() => react('like')}
+            onClick={() => {
+              if (longPressFired.current) { longPressFired.current = false; return }
+              react('like')
+            }}
+            onTouchStart={() => {
+              longPressFired.current = false
+              if (longPressTimer.current) clearTimeout(longPressTimer.current)
+              longPressTimer.current = setTimeout(() => {
+                longPressFired.current = true
+                setShowPicker(true)
+              }, 350)
+            }}
+            onTouchEnd={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current) }}
+            onTouchMove={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current) }}
+            onContextMenu={e => { e.preventDefault(); setShowPicker(true) }}
           >
             {myReaction ? (
               <span style={{ fontSize: 16 }}>{REACTION_EMOJI[myReaction]}</span>

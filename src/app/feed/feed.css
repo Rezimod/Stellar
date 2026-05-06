@@ -873,108 +873,249 @@
   font-family: var(--feed-sans);
 }
 
-/* === MOBILE-ONLY POLISH (max-width: 767px) ===
-   Affects only phone-sized viewports; tablet+ desktop unchanged. */
+/* === MOBILE FACEBOOK-STYLE REDESIGN (max-width: 767px) ===
+   Card-stack layout, larger tap targets, edge-to-edge media,
+   pill composer, divided action bar, long-press reaction picker. */
 @media (max-width: 767px) {
   .feed-page {
-    padding: 16px 14px 120px;
+    padding: 12px 0 120px;
+    max-width: 100%;
+  }
+  .feed-grid { gap: 0; }
+
+  /* Composer — pill input + divided action row */
+  .composer {
+    padding: 14px 14px 6px;
+    border-radius: 16px;
+    margin: 0 12px 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  }
+  .composer::before { display: none; }
+  .composer-row {
+    gap: 10px;
+    align-items: center;
+  }
+  .composer-avatar {
+    width: 38px; height: 38px; font-size: 16px;
+  }
+  .composer-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 14.5px;
+    min-height: 40px;
+  }
+  .composer-input:focus {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,209,102,0.25);
   }
 
-  /* Composer */
-  .composer { padding: 14px; border-radius: 14px; margin-bottom: 18px; }
-  .composer-row { gap: 10px; }
-  .composer-avatar {
-    width: 36px; height: 36px; font-size: 16px;
+  .composer-preview { margin-top: 10px; gap: 8px; }
+  .composer-thumb { width: 76px; height: 76px; }
+
+  /* Action row sits below input, divided like FB: Photo · Observation · Location · NFT · Send */
+  .composer-actions {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+    gap: 0;
   }
-  .composer-input { font-size: 15px; }
-  .composer-actions { margin-top: 12px; padding-top: 12px; gap: 8px; }
-  .composer-tools { gap: 4px; flex-wrap: nowrap; }
-  /* Collapse tool buttons to icon-only on mobile */
+  .composer-tools {
+    flex: 1;
+    gap: 0;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+  }
   .tool-btn {
-    padding: 10px;
-    min-width: 44px;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 4px;
+    min-width: 0;
     min-height: 44px;
-    border-radius: 999px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
   }
-  .tool-btn-label { display: none; }
+  .tool-btn:hover { background: rgba(255,255,255,0.04); border: none; }
+  .tool-btn.active {
+    background: rgba(255,209,102,0.08);
+    border: none;
+    color: var(--brass);
+  }
+  .tool-btn-label {
+    display: block;
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .tool-btn svg { width: 18px; height: 18px; }
+
   .post-btn {
-    padding: 10px 16px;
-    min-height: 44px;
-    font-size: 13px;
+    padding: 0 16px;
+    height: 36px;
+    min-height: 36px;
+    margin-left: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-radius: 999px;
+    align-self: center;
   }
-  .composer-thumb { width: 80px; height: 80px; }
+
   .composer-auth {
     padding: 12px 14px;
     border-radius: 14px;
-    margin-bottom: 18px;
+    margin: 0 12px 12px;
     flex-wrap: wrap;
     gap: 10px;
   }
 
-  /* Filter tabs */
+  /* Filter tabs — segmented control, full width */
   .feed-filters {
-    margin-bottom: 18px;
-    width: 100%;
+    margin: 0 12px 12px;
+    width: calc(100% - 24px);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
     scrollbar-width: none;
+    padding: 3px;
   }
   .feed-filters::-webkit-scrollbar { display: none; }
   .filter-tab {
-    padding: 10px 16px;
-    min-height: 38px;
-    font-size: 13px;
+    flex: 1;
+    padding: 9px 12px;
+    min-height: 36px;
+    font-size: 12.5px;
+    font-weight: 500;
     white-space: nowrap;
     flex-shrink: 0;
   }
+  .filter-tab.active {
+    background: linear-gradient(135deg, var(--brass), var(--brass-dim));
+    color: var(--ink);
+    font-weight: 600;
+  }
 
-  /* Posts */
+  /* Posts — fewer borders, bigger image, FB feel */
   .feed-post {
-    padding: 14px 12px;
+    padding: 14px 14px 6px;
     border-radius: 14px;
-    margin-bottom: 14px;
+    margin: 0 12px 10px;
+    /* Slight elevation instead of just hairline */
+    background: rgba(255,255,255,0.035);
+    border: 1px solid var(--hairline);
   }
-  .post-header { margin-bottom: 12px; }
-  .post-text { font-size: 14px; margin-bottom: 14px; }
-  .post-quote { font-size: 17px; }
-  .post-media { border-radius: 10px; margin-bottom: 12px; }
-  .author-avatar { width: 36px; height: 36px; font-size: 16px; }
-  .author-name { font-size: 13px; gap: 6px; }
-  .author-meta { font-size: 9.5px; gap: 6px; }
+  .feed-post:hover { border-color: var(--hairline); }
+  .post-header { margin-bottom: 10px; }
+  .post-text {
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+  .post-quote { font-size: 17px; padding: 4px 0 10px; }
+  .author-avatar { width: 40px; height: 40px; font-size: 16px; }
+  .author-name { font-size: 14px; gap: 6px; font-weight: 600; }
+  .author-meta { font-size: 10px; gap: 6px; }
 
-  /* Reactions */
-  .reactions-summary { padding: 8px 0; gap: 8px; }
-  .reaction-emoji { width: 20px; height: 20px; font-size: 10px; }
+  /* Image goes edge-to-edge inside the card (FB look) */
+  .post-media {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin: 0 -14px 10px;
+    aspect-ratio: 4 / 3;
+  }
 
-  /* Action buttons (Stars / Comment / Share) */
-  .actions { gap: 2px; padding: 4px 0 2px; }
+  /* Reactions summary — left-aligned bubble stack like FB */
+  .reactions-summary {
+    padding: 6px 0 8px;
+    border-bottom: 1px solid var(--hairline);
+    gap: 8px;
+    font-size: 12px;
+  }
+  .reaction-emoji {
+    width: 22px; height: 22px;
+    font-size: 11px;
+    border: 2px solid #0E1A36;
+  }
+  .reactions-count-right { font-size: 11px; }
+
+  /* Action bar — 3 divided buttons, FB-style, wider tap area */
+  .actions {
+    gap: 0;
+    padding: 2px 0;
+  }
+  .actions > * {
+    flex: 1;
+    border-right: 1px solid var(--hairline);
+  }
+  .actions > *:last-child {
+    border-right: none;
+  }
   .action {
-    padding: 12px 8px;
+    padding: 12px 6px;
     gap: 6px;
-    font-size: 12.5px;
-    min-height: 44px;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 46px;
+    border-radius: 0;
   }
-  .action svg { width: 15px; height: 15px; }
+  .action:hover { background: transparent; }
+  .action:active { background: rgba(255,255,255,0.04); }
+  .action svg { width: 16px; height: 16px; }
+  .action.liked { color: var(--brass); font-weight: 600; }
 
-  /* Disable hover-only reaction picker on mobile (single tap toggles stars) */
-  .reaction-picker { display: none !important; }
+  /* Mobile reaction picker — shown via long-press, larger emojis */
+  .reaction-picker {
+    bottom: 100%;
+    margin-bottom: 8px;
+    padding: 6px;
+    gap: 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    max-width: calc(100vw - 24px);
+    border-radius: 999px;
+  }
+  .reaction-picker::-webkit-scrollbar { display: none; }
+  .reaction-pick {
+    width: 38px; height: 38px;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .reaction-pick:hover { transform: none; }
+  .reaction-pick:active { transform: scale(1.2) translateY(-2px); }
 
-  /* Comments */
-  .comment { gap: 8px; margin-bottom: 10px; }
-  .comment-avatar { width: 28px; height: 28px; font-size: 13px; }
-  .comment-content { padding: 8px 12px; border-radius: 12px; }
-  .comment-text { font-size: 12.5px; }
-  .comment-actions { gap: 12px; padding: 6px 12px 0; }
-  .comment-input-wrap { padding: 8px 12px; }
+  /* Comments — tighter, bubble-style */
+  .comments { padding-top: 10px; }
+  .comment { gap: 8px; margin-bottom: 8px; }
+  .comment-avatar { width: 30px; height: 30px; font-size: 13px; }
+  .comment-content {
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.045);
+  }
+  .comment-author { font-size: 12px; font-weight: 600; }
+  .comment-text { font-size: 13px; }
+  .comment-actions { gap: 12px; padding: 4px 14px 0; font-size: 10px; }
+  .comment-input-row { margin-top: 8px; }
+  .comment-input-wrap {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.045);
+    border-radius: 999px;
+  }
+  .comment-input { font-size: 13px; }
 
-  /* Achievements / sky widget cards */
+  /* Achievements */
   .achievement {
     padding: 14px;
     gap: 12px;
     border-radius: 12px;
   }
-  .achievement-icon { width: 44px; height: 44px; }
+  .achievement-icon { width: 46px; height: 46px; }
   .achievement-icon svg,
   .achievement-icon img { transform: scale(0.85); }
   .achievement-title { font-size: 16px; }
@@ -995,4 +1136,11 @@
   }
   .media-target { font-size: 16px; }
   .media-coords { font-size: 9.5px; padding: 3px 6px; }
+
+  /* Skeletons match new card spacing */
+  .feed-skeleton {
+    margin: 0 12px 10px;
+    border-radius: 14px;
+  }
+  .feed-empty { padding: 40px 20px; }
 }

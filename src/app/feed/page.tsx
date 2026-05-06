@@ -333,7 +333,7 @@ export default function FeedPage() {
                   </button>
                 </div>
                 <button className="post-btn" disabled={!canPost} onClick={submitPost}>
-                  {posting ? 'Posting…' : 'Post to cosmos'}
+                  {posting ? 'Sending…' : 'Cosmos'}
                 </button>
               </div>
             </div>

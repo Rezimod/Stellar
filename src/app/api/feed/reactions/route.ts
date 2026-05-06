@@ -3,7 +3,7 @@ import { and, eq, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { feedPosts, feedReactions } from '@/lib/schema'
 
-const REACTION_TYPES = ['like', 'love', 'dislike', 'wow', 'sad'] as const
+const REACTION_TYPES = ['like', 'love', 'wow', 'sad', 'dislike', 'star', 'rocket', 'galaxy'] as const
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function POST(req: NextRequest) {
