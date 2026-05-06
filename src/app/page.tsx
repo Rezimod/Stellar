@@ -149,28 +149,6 @@ function PhoneFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-function HowStep({
-  title,
-  caption,
-  screen,
-}: {
-  title: string;
-  caption: string;
-  screen: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col items-center text-center">
-      {screen}
-      <div className="mt-7 md:mt-8 text-white text-[18px] md:text-[20px] font-semibold tracking-[-0.01em]">
-        {title}
-      </div>
-      <div className="mt-2 text-[#9BA3B4] text-[13.5px] md:text-[14.5px] leading-[1.55] max-w-[260px]">
-        {caption}
-      </div>
-    </div>
-  );
-}
-
 function PhonePic({ src, alt }: { src: string; alt: string }) {
   return (
     <div className="relative mx-auto w-[260px] md:w-[300px]">
@@ -577,52 +555,6 @@ function SkyFeatureSlot({
   );
 }
 
-/* ─── Brand wordmarks ────────────────────────────────────────────── */
-
-function BrandLogo({ name }: { name: 'astroman' | 'bresser' | 'celestron' | 'levenhuk' }) {
-  if (name === 'astroman') {
-    return (
-      <span
-        className="text-white/80 leading-none whitespace-nowrap"
-        style={{ fontFamily: '"Source Serif 4", Georgia, serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 600, letterSpacing: '0.18em' }}
-      >
-        ASTROMAN
-      </span>
-    );
-  }
-  if (name === 'bresser') {
-    return (
-      <span
-        className="inline-flex items-baseline gap-1.5 text-white/80 leading-none whitespace-nowrap"
-        style={{ fontFamily: '"Public Sans", system-ui, sans-serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 800, letterSpacing: '-0.01em' }}
-      >
-        BRESSER
-        <svg viewBox="0 0 12 12" className="w-[9px] h-[9px] self-start mt-[3px]" fill="currentColor" aria-hidden="true">
-          <path d="M6 0l1.5 4.2L12 4.6l-3.5 2.9L9.7 12 6 9.4 2.3 12l1.2-4.5L0 4.6l4.5-.4z" />
-        </svg>
-      </span>
-    );
-  }
-  if (name === 'celestron') {
-    return (
-      <span
-        className="text-white/80 leading-none whitespace-nowrap"
-        style={{ fontFamily: '"Public Sans", system-ui, sans-serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 800, fontStyle: 'italic', letterSpacing: '-0.015em' }}
-      >
-        CELESTRON
-      </span>
-    );
-  }
-  return (
-    <span
-      className="text-white/80 leading-none whitespace-nowrap"
-      style={{ fontFamily: '"Public Sans", system-ui, sans-serif', fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 300, letterSpacing: '0.24em' }}
-    >
-      LEVENHUK
-    </span>
-  );
-}
-
 export default function HomePage() {
   return (
     <div className="bg-[#0A1735] text-white -mt-14 pt-14 overflow-x-hidden">
@@ -780,46 +712,74 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
-          HOW IT WORKS
+          HOW IT WORKS — phone + step list
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-20">
+          <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Get Started</Eyebrow>
             <SectionTitle>How It Works</SectionTitle>
+            <SectionSub>
+              Sign in with email. Step outside. Earn Stars for every verified discovery.
+            </SectionSub>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6">
-            <HowStep
-              title="Sign in"
-              caption="Email or Google. Wallet appears silently."
-              screen={<PhonePic src="/landing/login.png" alt="Sign in to Stellar" />}
-            />
-            <HowStep
-              title="Complete missions"
-              caption="Photograph each target. We verify the night."
-              screen={<PhonePic src="/landing/missions.png" alt="Tonight's mission: Jupiter" />}
-            />
-            <HowStep
-              title="Earn rewards"
-              caption="Stars for every discovery. Spend at real shops."
-              screen={<PhonePic src="/landing/stars.png" alt="Your Stars and discoveries" />}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
+            <div className="order-2 md:order-1">
+              <ul className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+                {[
+                  {
+                    n: '01',
+                    title: 'Sign in',
+                    caption: 'Email or Google. Wallet appears silently.',
+                    meta: 'EMAIL · GOOGLE',
+                  },
+                  {
+                    n: '02',
+                    title: 'Complete missions',
+                    caption: 'Photograph each target. We verify the night.',
+                    meta: 'PHOTO · ORACLE',
+                  },
+                  {
+                    n: '03',
+                    title: 'Earn rewards',
+                    caption: 'Stars for every discovery. Spend at real shops.',
+                    meta: 'STARS · TELESCOPE',
+                  },
+                ].map((s) => (
+                  <li key={s.n} className="flex items-start justify-between gap-5 py-3.5 md:py-5">
+                    <div className="flex items-start gap-3 md:gap-4 min-w-0">
+                      <span className="font-mono text-[11px] md:text-[12px] text-[#6B7385] tabular-nums tracking-[0.04em] mt-0.5">
+                        {s.n}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-white text-[15px] md:text-[18px] font-semibold leading-tight tracking-[-0.005em]">
+                          {s.title}
+                        </div>
+                        <div className="text-[#9BA3B4] text-[12.5px] md:text-[14px] leading-[1.55] mt-1">
+                          {s.caption}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="font-mono text-[10px] md:text-[11px] text-[#6B7385] uppercase tracking-[0.18em] whitespace-nowrap mt-1.5 hidden sm:block">
+                      {s.meta}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/missions"
+                className="mt-5 md:mt-6 inline-flex items-center gap-2 text-[#FFD166] font-mono text-[11px] md:text-[12px] hover:gap-3 transition-all no-underline"
+              >
+                Start observing →
+              </Link>
+            </div>
+            <div className="order-1 md:order-2 mx-auto">
+              <PhonePic src="/landing/missions.png" alt="Tonight's mission: Jupiter" />
+            </div>
           </div>
         </div>
       </section>
-
-      {/* ============================================================
-          REFERENCE-INSPIRED PALETTE BAND
-          Deeper purple-black background pulled from club.astroman.ge.
-          Wraps every section after "How It Works".
-         ============================================================ */}
-      <div className="relative bg-[#0a0a1a]">
-        {/* smooth fade from the hero's blue-purple to the new purple-black */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#0A1735] to-transparent"
-        />
 
       {/* ============================================================
           SKY MISSIONS — phone + tight list
@@ -872,7 +832,7 @@ export default function HomePage() {
       {/* ============================================================
           LEARNING — phone + tight description
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px] bg-[#15082c]/55">
+      <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Learn</Eyebrow>
@@ -956,48 +916,105 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
-          BUILT ON ASTROMAN — logos + 3 bullets
+          MARKETPLACE — featured Astroman products
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px] bg-[#15082c]/55">
+      <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-10 md:mb-14">
-            <Eyebrow>Distribution</Eyebrow>
-            <SectionTitle>Built on top of Astroman.</SectionTitle>
-            <SectionSub>Real shop. Real inventory. Real partners.</SectionSub>
+            <Eyebrow>Marketplace</Eyebrow>
+            <SectionTitle>The shop is in the app.</SectionTitle>
+            <SectionSub>
+              Real telescopes from Astroman&rsquo;s Tbilisi shelves. Pay by card, SOL, or Stars
+              earned tonight.
+            </SectionSub>
           </div>
 
-          {/* logo wall */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 md:gap-y-0 border-y border-white/[0.07] py-8 md:py-10 mb-10 md:mb-14">
-            <div className="flex items-center justify-center md:border-r md:border-white/[0.06] md:px-4">
-              <BrandLogo name="astroman" />
-            </div>
-            <div className="flex items-center justify-center md:border-r md:border-white/[0.06] md:px-4">
-              <BrandLogo name="bresser" />
-            </div>
-            <div className="flex items-center justify-center md:border-r md:border-white/[0.06] md:px-4">
-              <BrandLogo name="celestron" />
-            </div>
-            <div className="flex items-center justify-center md:px-4">
-              <BrandLogo name="levenhuk" />
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+            {[
+              {
+                id: 'scope-bresser-76-300',
+                name: 'Bresser Junior 76/300',
+                spec: '76mm reflector · Beginner',
+                price: '288',
+                stars: '2,880',
+                image: 'https://astroman.ge/wp-content/uploads/2024/11/222.jpg',
+              },
+              {
+                id: 'scope-natgeo-60-700',
+                name: 'NatGeo 60/700 AZ',
+                spec: '60mm refractor · Alt-Az',
+                price: '779',
+                stars: '7,790',
+                image: 'https://astroman.ge/wp-content/uploads/2025/11/%E1%83%91%E1%83%94%E1%83%A5%E1%83%98-02.jpg',
+              },
+              {
+                id: 'scope-foreseen-80',
+                name: 'Foreseen 80mm Refractor',
+                spec: '80mm aperture · Featured',
+                price: '856',
+                stars: '8,560',
+                image: 'https://astroman.ge/wp-content/uploads/2024/08/Telescope.jpg',
+              },
+              {
+                id: 'scope-nexstar-90slt',
+                name: 'Celestron NexStar 90SLT',
+                spec: '90mm GoTo · Advanced',
+                price: '2,660',
+                stars: '26,600',
+                image: 'https://astroman.ge/wp-content/uploads/2024/11/1222.jpg',
+              },
+            ].map((p) => (
+              <Link
+                key={p.id}
+                href={`/marketplace?product=${p.id}`}
+                className="group flex flex-col rounded-[14px] bg-white/[0.025] border border-white/[0.07] p-3 md:p-4 hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline"
+              >
+                <div className="relative w-full aspect-[1.05] rounded-[10px] mb-3 md:mb-4 overflow-hidden bg-[#EFEAE0]">
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 280px"
+                    style={{ objectFit: 'contain', padding: '14px' }}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="text-white text-[13.5px] md:text-[15px] font-semibold leading-[1.3] line-clamp-2">
+                  {p.name}
+                </div>
+                <div className="text-[#6B7385] text-[12px] md:text-[12.5px] mt-1 leading-[1.4] line-clamp-1">
+                  {p.spec}
+                </div>
+                <div className="flex items-baseline justify-between mt-3 md:mt-4 pt-3 border-t border-white/[0.06]">
+                  <span className="font-mono text-white tabular-nums text-[15px] md:text-[17px] font-bold">
+                    {p.price}
+                    <span className="text-[#9BA3B4] font-mono text-[12px] md:text-[13px] ml-0.5">
+                      ₾
+                    </span>
+                  </span>
+                  <span className="font-mono text-[#A78BFA] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
+                    ★ {p.stars}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-            <div className="text-center md:text-left">
-              <div className="font-mono text-[28px] md:text-[36px] font-bold text-white tabular-nums leading-none">60K+</div>
-              <div className="text-white text-[14px] md:text-[15px] font-semibold mt-2.5">Astroman customers</div>
-              <div className="text-[#9BA3B4] text-[13px] md:text-[13.5px] leading-[1.55] mt-1">Seven years. Physical store in Tbilisi.</div>
-            </div>
-            <div className="text-center md:text-left">
-              <div className="font-mono text-[28px] md:text-[36px] font-bold text-white tabular-nums leading-none">3</div>
-              <div className="text-white text-[14px] md:text-[15px] font-semibold mt-2.5">Brand partners</div>
-              <div className="text-[#9BA3B4] text-[13px] md:text-[13.5px] leading-[1.55] mt-1">Authorized dealer for Bresser, Celestron, and Levenhuk.</div>
-            </div>
-            <div className="text-center md:text-left">
-              <div className="font-mono text-[28px] md:text-[36px] font-bold text-white tabular-nums leading-none">0</div>
-              <div className="text-white text-[14px] md:text-[15px] font-semibold mt-2.5">Drop-shipping promises</div>
-              <div className="text-[#9BA3B4] text-[13px] md:text-[13.5px] leading-[1.55] mt-1">Stars redeem for gear users pick up in store.</div>
-            </div>
+          <div className="mt-6 md:mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-[12px] md:text-[12.5px] text-[#6B7385] font-mono uppercase tracking-[0.16em]">
+            <span>60K+ customers</span>
+            <span className="text-white/[0.12]">·</span>
+            <span>Authorized dealer · Bresser · Celestron · Levenhuk</span>
+            <span className="text-white/[0.12]">·</span>
+            <span>Pickup in Tbilisi</span>
+          </div>
+
+          <div className="mt-10 md:mt-12 text-center">
+            <Link
+              href="/marketplace"
+              className="inline-flex items-center gap-2 text-[#FFD166] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
+            >
+              Open the marketplace →
+            </Link>
           </div>
         </div>
       </section>
@@ -1015,7 +1032,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 max-w-[920px] mx-auto">
             {/* generic */}
-            <div className="bg-[#0d0820] border border-white/[0.06] rounded-[18px] p-6 md:p-8">
+            <div className="bg-[#0F1A35] border border-white/[0.06] rounded-[18px] p-6 md:p-8">
               <div className="text-[#6B7385] text-[11px] uppercase tracking-[0.22em] mb-4">Generic astronomy app</div>
               <ul className="space-y-3">
                 {['Sky chart', 'Static planet positions', 'No verification', 'No rewards', 'No real gear'].map((s) => (
@@ -1029,7 +1046,7 @@ export default function HomePage() {
               </ul>
             </div>
             {/* stellar */}
-            <div className="relative bg-gradient-to-b from-[rgba(245,166,35,0.06)] to-[#120c26] border border-[rgba(245,166,35,0.28)] rounded-[18px] p-6 md:p-8">
+            <div className="relative bg-gradient-to-b from-[rgba(245,166,35,0.06)] to-[#0F1A35] border border-[rgba(245,166,35,0.28)] rounded-[18px] p-6 md:p-8">
               <div className="text-[#FFD166] text-[11px] uppercase tracking-[0.22em] mb-4">Stellar</div>
               <ul className="space-y-3">
                 {[
@@ -1053,29 +1070,76 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
-          VISION — one line
+          VISION & ROADMAP — headline + 3 phase cards
          ============================================================ */}
-      <section className="relative px-4 md:px-8 py-16 md:py-[120px] text-center overflow-hidden">
+      <section className="relative px-4 md:px-8 py-16 md:py-[120px] overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(107,63,160,0.18) 0%, transparent 55%)',
+              'radial-gradient(circle at 50% 30%, rgba(107,63,160,0.18) 0%, transparent 55%)',
           }}
         />
-        <div className="relative max-w-[900px] mx-auto">
-          <Eyebrow>The Vision</Eyebrow>
-          <h2 className="text-[28px] md:text-[52px] font-extrabold leading-[1.1] tracking-[-0.02em] text-white mb-5 md:mb-6">
-            Astroman is the shop.
-            <br />
-            Stellar is{' '}
-            <span className="bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">
-              the on-chain layer for the night sky.
-            </span>
-          </h2>
-          <p className="text-[14px] md:text-[17px] leading-[1.6] text-[#9BA3B4] max-w-[560px] mx-auto">
-            Every smartphone is a telescope&apos;s starting point.
-          </p>
+        <div className="relative max-w-[1200px] mx-auto">
+          <div className="text-center mb-14 md:mb-20">
+            <Eyebrow>Vision & Roadmap</Eyebrow>
+            <h2 className="text-[28px] md:text-[52px] font-extrabold leading-[1.1] tracking-[-0.02em] text-white mb-5 md:mb-6">
+              Astroman is the shop.
+              <br />
+              Stellar is{' '}
+              <span className="bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">
+                the on-chain layer for the night sky.
+              </span>
+            </h2>
+            <p className="text-[14px] md:text-[17px] leading-[1.6] text-[#9BA3B4] max-w-[600px] mx-auto">
+              Every smartphone is a telescope&apos;s starting point. Here&apos;s what comes next.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+            {/* Prediction markets */}
+            <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8 hover:border-white/[0.14] transition-colors">
+              <div className="flex items-center justify-between mb-5">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#10B981]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                  Live · Devnet
+                </span>
+                <span className="font-mono text-[11px] text-[#6B7385] tabular-nums">01</span>
+              </div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Prediction markets</div>
+              <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
+                Bet on tonight&apos;s seeing, eclipse totality, asteroid passes — resolved on-chain by the same sky oracle that verifies observations.
+              </p>
+            </div>
+
+            {/* Leaderboard */}
+            <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8 hover:border-white/[0.14] transition-colors">
+              <div className="flex items-center justify-between mb-5">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#FFD166]">
+                  Q3 2026
+                </span>
+                <span className="font-mono text-[11px] text-[#6B7385] tabular-nums">02</span>
+              </div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Leaderboard</div>
+              <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
+                Top observers, club rankings, monthly star champions. Public, verifiable, redeemable for real gear at Astroman.
+              </p>
+            </div>
+
+            {/* Network */}
+            <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8 hover:border-white/[0.14] transition-colors">
+              <div className="flex items-center justify-between mb-5">
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#B07FE8]">
+                  2027
+                </span>
+                <span className="font-mono text-[11px] text-[#6B7385] tabular-nums">03</span>
+              </div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Network</div>
+              <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
+                Every astronomy shop on Earth, federated. Stars earned on Stellar redeem at any partner dealer — one open layer for the global night sky.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1129,9 +1193,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      </div>
-      {/* end reference-inspired palette band */}
 
     </div>
   );
