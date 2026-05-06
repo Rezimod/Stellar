@@ -94,11 +94,12 @@ export default function ProductCard({ product, dealerName }: Props) {
       <div className="flex gap-[6px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 text-center px-[8px] py-[9px] rounded-md text-[11px] tracking-[0.14em] uppercase font-semibold transition-all hover:brightness-115"
+          className="flex-1 text-center px-[8px] py-[9px] rounded-lg text-[11px] tracking-[0.14em] uppercase font-bold transition-[filter,transform] hover:brightness-110"
           style={{
-            background: 'rgba(255, 209, 102, 0.16)',
-            border: '1px solid rgba(255, 209, 102, 0.45)',
-            color: 'var(--terracotta)',
+            background: 'var(--terracotta)',
+            border: '1px solid var(--terracotta)',
+            color: '#1a1208',
+            boxShadow: '0 8px 22px -10px rgba(255, 209, 102, 0.55)',
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
@@ -106,11 +107,12 @@ export default function ProductCard({ product, dealerName }: Props) {
         </Link>
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 text-center px-[8px] py-[9px] rounded-md text-[11px] tracking-[0.14em] uppercase font-semibold transition-all hover:brightness-115"
+          className="flex-1 text-center px-[8px] py-[9px] rounded-lg text-[11px] tracking-[0.14em] uppercase font-bold transition-[filter,transform] hover:brightness-110"
           style={{
-            background: 'rgba(94, 234, 212, 0.14)',
-            border: '1px solid rgba(94, 234, 212, 0.45)',
-            color: 'var(--seafoam)',
+            background: 'var(--seafoam)',
+            border: '1px solid var(--seafoam)',
+            color: '#06231f',
+            boxShadow: '0 8px 22px -10px rgba(94, 234, 212, 0.55)',
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >

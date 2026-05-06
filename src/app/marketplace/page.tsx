@@ -135,7 +135,7 @@ export default function MarketplacePage() {
             </span>
           </div>
 
-          {/* Filter buttons — solid backgrounds */}
+          {/* Filter buttons — solid amber active, matching "Start observing" CTA */}
           <div className="flex flex-wrap items-center gap-[8px] mb-[20px]">
             {CATEGORIES.map(c => {
               const active = filter === c.key;
@@ -143,11 +143,22 @@ export default function MarketplacePage() {
                 <button
                   key={c.key}
                   onClick={() => setFilter(c.key)}
-                  className="px-[16px] py-[10px] text-[12px] tracking-[0.14em] uppercase rounded-md whitespace-nowrap transition-all duration-200 hover:brightness-115"
+                  className="px-[18px] py-[10px] text-[12px] tracking-[0.14em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
                   style={
                     active
-                      ? { background: 'rgba(255, 209, 102, 0.18)', color: 'var(--terracotta)', border: '1px solid rgba(255, 209, 102, 0.55)', fontWeight: 600 }
-                      : { color: 'rgba(232,230,221,0.85)', border: '1px solid rgba(232,230,221,0.14)', background: 'rgba(232,230,221,0.05)' }
+                      ? {
+                          background: 'var(--terracotta)',
+                          color: '#1a1208',
+                          border: '1px solid var(--terracotta)',
+                          fontWeight: 700,
+                          boxShadow: '0 10px 28px -10px rgba(255, 209, 102, 0.55)',
+                        }
+                      : {
+                          color: 'rgba(232,230,221,0.85)',
+                          border: '1px solid rgba(232,230,221,0.14)',
+                          background: 'transparent',
+                          fontWeight: 500,
+                        }
                   }
                 >
                   {c.label}
@@ -159,16 +170,32 @@ export default function MarketplacePage() {
               const active = difficulty === d;
               const tone   = DIFFICULTY_TONE[d];
               const label  = d === 'intermediate' ? 'Mid' : d.charAt(0).toUpperCase() + d.slice(1);
+              const isBeginner = d === 'beginner';
+              const activeBg = isBeginner ? 'var(--seafoam)' : 'var(--terracotta)';
+              const activeShadow = isBeginner
+                ? '0 10px 28px -10px rgba(94, 234, 212, 0.55)'
+                : '0 10px 28px -10px rgba(255, 209, 102, 0.55)';
               return (
                 <button
                   key={d}
                   onClick={() => setDifficulty(active ? 'all' : d)}
-                  className="px-[14px] py-[10px] text-[11px] tracking-[0.18em] uppercase font-medium rounded-md whitespace-nowrap transition-all duration-200 hover:brightness-115"
-                  style={{
-                    border: `1px solid ${active ? tone.border : 'rgba(232,230,221,0.14)'}`,
-                    background: active ? tone.bg : 'rgba(232,230,221,0.05)',
-                    color: active ? tone.color : 'rgba(232,230,221,0.85)',
-                  }}
+                  className="px-[16px] py-[10px] text-[11px] tracking-[0.18em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
+                  style={
+                    active
+                      ? {
+                          background: activeBg,
+                          color: '#1a1208',
+                          border: `1px solid ${activeBg}`,
+                          fontWeight: 700,
+                          boxShadow: activeShadow,
+                        }
+                      : {
+                          color: tone.color,
+                          border: `1px solid ${tone.border}`,
+                          background: 'transparent',
+                          fontWeight: 500,
+                        }
+                  }
                 >
                   {label}
                 </button>

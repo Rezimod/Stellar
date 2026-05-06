@@ -140,28 +140,35 @@ export default function FeaturedProduct({ product, dealerName }: Props) {
               href={product.externalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[var(--terracotta)] text-[#1a1208] px-[20px] py-[10px] rounded-full text-[12px] font-bold tracking-[0.18em] uppercase transition-all hover:scale-[1.06] hover:brightness-110"
+              className="px-[18px] py-[10px] rounded-lg text-[12px] font-bold tracking-[0.18em] uppercase transition-[filter,transform] hover:brightness-110"
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(232,230,221,0.22)',
+                color: '#E8E6DD',
+              }}
             >
               View
             </a>
             <Link
               href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=sol`}
-              className="px-[16px] py-[10px] rounded-full text-[12px] font-semibold tracking-[0.18em] uppercase transition-all hover:scale-[1.06]"
+              className="px-[18px] py-[10px] rounded-lg text-[12px] font-bold tracking-[0.18em] uppercase transition-[filter,transform] hover:brightness-110"
               style={{
-                background: 'rgba(255, 209, 102, 0.12)',
-                border: '1px solid rgba(255, 209, 102, 0.5)',
-                color: 'var(--terracotta)',
+                background: 'var(--terracotta)',
+                border: '1px solid var(--terracotta)',
+                color: '#1a1208',
+                boxShadow: '0 10px 28px -10px rgba(255, 209, 102, 0.55)',
               }}
             >
               Pay SOL
             </Link>
             <Link
               href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
-              className="px-[16px] py-[10px] rounded-full text-[12px] font-semibold tracking-[0.18em] uppercase transition-all hover:scale-[1.06]"
+              className="px-[18px] py-[10px] rounded-lg text-[12px] font-bold tracking-[0.18em] uppercase transition-[filter,transform] hover:brightness-110"
               style={{
-                background: 'rgba(94, 234, 212, 0.12)',
-                border: '1px solid rgba(94, 234, 212, 0.5)',
-                color: 'var(--seafoam)',
+                background: 'var(--seafoam)',
+                border: '1px solid var(--seafoam)',
+                color: '#06231f',
+                boxShadow: '0 10px 28px -10px rgba(94, 234, 212, 0.55)',
               }}
             >
               Pay Stars
