@@ -643,11 +643,11 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 max-w-[460px]">
               <Link
                 href="/sky"
-                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:brightness-[1.08]"
+                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white/90 font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:bg-white/[0.06] hover:text-white"
                 style={{
                   fontFamily: 'var(--font-cta, var(--font-body))',
-                  background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
-                  boxShadow: '0 10px 32px rgba(91, 108, 255, 0.35), inset 0 1px 0 rgba(255,255,255,0.10)',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.10)',
                 }}
               >
                 Start observing
