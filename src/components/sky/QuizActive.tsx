@@ -13,9 +13,13 @@ interface Props {
   onClose: () => void;
 }
 
-const QUESTION_SECONDS = 20;
 const READY_BEAT_MS = 1000;
 const MUTE_KEY = 'stellar_quiz_mute';
+
+// Per-question countdown — first half of the quiz gets 10s, later questions 5s.
+function questionSeconds(index: number, total: number): number {
+  return index < Math.ceil(total / 2) ? 10 : 5;
+}
 
 // Anti-cheat: a question that runs out without a pick locks star reward.
 // Picking late (still on the clock) is fine — reading-time variance is normal.
@@ -58,6 +62,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const passThreshold = Math.ceil(total * 0.7);
   const eligibleForStars = score >= passThreshold && !missedAnyTimeout;
   const stars = eligibleForStars ? score * quiz.starsPerCorrect : 0;
+  const currentSeconds = questionSeconds(idx, total);
 
   // Mount: load mute pref + reduced-motion
   useEffect(() => {
@@ -140,10 +145,10 @@ export default function QuizActive({ quiz, onClose }: Props) {
     if (phase !== 'question') return;
     const tick = (now: number) => {
       const elapsed = (now - startRef.current) / 1000;
-      const ratio = Math.min(1, elapsed / QUESTION_SECONDS);
+      const ratio = Math.min(1, elapsed / currentSeconds);
       setProgress(ratio);
 
-      const secondsLeft = Math.ceil(QUESTION_SECONDS - elapsed);
+      const secondsLeft = Math.ceil(currentSeconds - elapsed);
       if (secondsLeft <= 3 && secondsLeft >= 1) playTick(secondsLeft);
 
       if (ratio >= 1) {
@@ -162,7 +167,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
     };
     rafRef.current = requestAnimationFrame(tick);
     return cancelRaf;
-  }, [phase, idx, selected, q.correct]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase, idx, selected, q.correct, currentSeconds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Feedback → next question (or result).
   useEffect(() => {
@@ -224,7 +229,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   };
 
   const LABELS = ['A', 'B', 'C', 'D'];
-  const secondsLeft = Math.max(0, Math.ceil(QUESTION_SECONDS - progress * QUESTION_SECONDS));
+  const secondsLeft = Math.max(0, Math.ceil(currentSeconds - progress * currentSeconds));
   const ringStrokeColor = ringColor(secondsLeft);
 
   return (
@@ -340,7 +345,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                     style={{ color: ringStrokeColor }}
                     aria-label={`${secondsLeft} seconds left`}
                   >
-                    {phase === 'ready' ? `${QUESTION_SECONDS}s` : `${secondsLeft}s`}
+                    {phase === 'ready' ? `${currentSeconds}s` : `${secondsLeft}s`}
                   </span>
                 ) : (
                   <svg
@@ -371,7 +376,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                       fontFamily="var(--font-mono)"
                       fill={ringStrokeColor}
                     >
-                      {phase === 'ready' ? QUESTION_SECONDS : secondsLeft}
+                      {phase === 'ready' ? currentSeconds : secondsLeft}
                     </text>
                   </svg>
                 )}
