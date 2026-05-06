@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { angularSeparation, type HeadingStatus } from '@/lib/sky/use-device-heading';
+import { angularSeparation, headingDelta, type HeadingStatus } from '@/lib/sky/use-device-heading';
 import type { ObjectId, SkyObject } from './types';
 
 const PLANET_COLORS: Record<string, string> = {
@@ -39,17 +39,13 @@ function azimuthToCardinal(az: number): string {
 const SIZE = 380;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
-/** Square half-extent the chart projects onto. Setting this close to
- *  the SVG edge lets planets near the horizon spread into the corners
- *  instead of clustering on a circular rim, giving big finger-friendly
- *  tap zones where the chart used to be empty black. */
-const HALF = 170;
-/** Cardinal-label radius — sits just outside HALF so labels don't
- *  collide with planets at the horizon. */
-const CARD_R = 183;
-/** Legacy radius kept for the user-aim reticle math — equal to HALF so
- *  the user's pitch maps to "horizon at the edge of the chart." */
-const R = HALF;
+/** Circular dome radius — azimuthal equidistant projection. Zenith at the
+ *  centre, horizon on a circle of radius R. This is the projection every
+ *  real-world planetarium app (Stellarium, SkyView, Sky Safari) uses, so
+ *  angles read true: a 45° span between two bodies measures 45° on screen. */
+const R = 168;
+/** Cardinal-label radius — sits just outside R. */
+const CARD_R = R + 14;
 
 /**
  * Per-target lock radius (degrees of great-circle separation). Bigger for
@@ -172,24 +168,19 @@ function rectsOverlap(a: { x: number; y: number; w: number; h: number }, b: type
 }
 
 /**
- * Square-edge azimuthal projection. Zenith sits at the centre, the
- * horizon walks the perimeter of a square of half-side HALF — so a
- * body at altitude 0 in the NE direction lands in the NE corner of
- * the chart, not on a circular rim. The result fills the full area
- * the chart sits on, making low-altitude planets easy to tap.
+ * Azimuthal equidistant projection. Zenith at centre, horizon on a circle
+ * of radius R. Radial distance from the centre is linear in the zenith
+ * angle, so two bodies separated by N° on the sky are separated by N° on
+ * the chart. This is the conventional planetarium projection — what
+ * SkyView, Stellarium, and Sky Safari all use.
  */
 function project(alt: number, az: number, headingOffset: number): { x: number; y: number } {
   const altC = Math.max(0, Math.min(90, alt));
-  const t = 1 - altC / 90; // 0 = zenith, 1 = horizon
+  const dist = (1 - altC / 90) * R; // 0 at zenith, R at horizon
   const azRad = ((az - headingOffset) * Math.PI) / 180;
-  const sx = Math.sin(azRad);
-  const sy = -Math.cos(azRad);
-  // Distance from centre to the square edge in direction (sx, sy).
-  const edge = HALF / Math.max(Math.abs(sx), Math.abs(sy), 1e-6);
-  const dist = t * edge;
   return {
-    x: CX + dist * sx,
-    y: CY + dist * sy,
+    x: CX + dist * Math.sin(azRad),
+    y: CY - dist * Math.cos(azRad),
   };
 }
 
@@ -360,7 +351,8 @@ export function SkyMap({
       return seed / 233280;
     };
     const stars: { x: number; y: number; r: number; o: number }[] = [];
-    const target = 110;
+    const target = 130;
+    const innerR = R - 4;
     let attempts = 0;
     while (stars.length < target && attempts < target * 8) {
       attempts++;
@@ -368,7 +360,7 @@ export function SkyMap({
       const y = rand() * SIZE;
       const dx = x - CX;
       const dy = y - CY;
-      if (Math.abs(dx) > HALF - 4 || Math.abs(dy) > HALF - 4) continue;
+      if (dx * dx + dy * dy > innerR * innerR) continue;
       const r = 0.35 + rand() * 1.05;
       const o = 0.22 + rand() * 0.55;
       stars.push({ x, y, r, o });
@@ -435,14 +427,7 @@ export function SkyMap({
             <stop offset="100%" stopColor="#02060f" />
           </radialGradient>
           <clipPath id="skymap-clip">
-            <rect
-              x={CX - HALF}
-              y={CY - HALF}
-              width={HALF * 2}
-              height={HALF * 2}
-              rx={14}
-              ry={14}
-            />
+            <circle cx={CX} cy={CY} r={R} />
           </clipPath>
           <radialGradient id="skymap-nebula" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="rgba(232,164,158,0.85)" />
@@ -456,13 +441,10 @@ export function SkyMap({
           </radialGradient>
         </defs>
 
-        <rect
-          x={CX - HALF}
-          y={CY - HALF}
-          width={HALF * 2}
-          height={HALF * 2}
-          rx={14}
-          ry={14}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={R}
           fill="url(#skymap-bg)"
         />
 
@@ -479,35 +461,28 @@ export function SkyMap({
           ))}
         </g>
 
-        {/* Concentric altitude squares — replace the circular alt rings
-            so the chart reads as a rectangular field instead of a dome. */}
+        {/* Concentric altitude rings at 30° and 60° (radii 2R/3 and R/3). */}
         {[1 / 3, 2 / 3].map((k) => (
-          <rect
+          <circle
             key={`alt-${k}`}
-            x={CX - HALF * k}
-            y={CY - HALF * k}
-            width={HALF * 2 * k}
-            height={HALF * 2 * k}
-            rx={10}
-            ry={10}
+            cx={CX}
+            cy={CY}
+            r={R * k}
             fill="none"
             stroke="rgba(255,255,255,0.05)"
             strokeWidth={0.5}
           />
         ))}
 
-        <line x1={CX} y1={CY - HALF} x2={CX} y2={CY + HALF} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
-        <line x1={CX - HALF} y1={CY} x2={CX + HALF} y2={CY} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
+        <line x1={CX} y1={CY - R} x2={CX} y2={CY + R} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
+        <line x1={CX - R} y1={CY} x2={CX + R} y2={CY} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />
 
-        <rect
-          x={CX - HALF}
-          y={CY - HALF}
-          width={HALF * 2}
-          height={HALF * 2}
-          rx={14}
-          ry={14}
+        <circle
+          cx={CX}
+          cy={CY}
+          r={R}
           fill="none"
-          stroke="rgba(255,255,255,0.20)"
+          stroke="rgba(255,255,255,0.22)"
           strokeWidth={1}
           className="sky-map__rim"
         />
@@ -570,22 +545,15 @@ export function SkyMap({
 
         <circle cx={CX} cy={CY} r={1.5} fill="rgba(255,255,255,0.4)" />
 
-        <text x={CX + 4} y={CY - HALF * (1 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
+        <text x={CX + 4} y={CY - R * (1 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
           fontFamily="var(--mono)" letterSpacing="0.05em" className="sky-map__alt-label">60°</text>
-        <text x={CX + 4} y={CY - HALF * (2 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
+        <text x={CX + 4} y={CY - R * (2 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
           fontFamily="var(--mono)" letterSpacing="0.05em" className="sky-map__alt-label">30°</text>
 
         {cardinals.map((c) => {
           const angleRad = ((c.az - liveOffset) * Math.PI) / 180;
-          const sx = Math.sin(angleRad);
-          const sy = -Math.cos(angleRad);
-          // Hug the square's perimeter — sit 12 units beyond the chart
-          // edge along this ray. At cardinal headings the label lands at
-          // the edge midpoint; at 45° it lands just past the corner.
-          const edge = HALF / Math.max(Math.abs(sx), Math.abs(sy), 1e-6);
-          const labelDist = edge + 12;
-          const lx = CX + labelDist * sx;
-          const ly = CY + labelDist * sy;
+          const lx = CX + CARD_R * Math.sin(angleRad);
+          const ly = CY - CARD_R * Math.cos(angleRad);
           // Highlight whichever cardinal is currently nearest the user's
           // facing direction so the rotating dome reads as "you are here."
           const distFromTop = Math.abs(((c.az - liveOffset + 540) % 360) - 180);
@@ -706,28 +674,47 @@ export function SkyMap({
       )}
 
       {isLive && onNudge && (
-        <div className="sky-map__nudge" role="group" aria-label={t('nudgeAria')}>
-          <button
-            type="button"
-            className="sky-map__nudge-btn"
-            onClick={() => onNudge(-1)}
-            aria-label={t('nudgeLeft')}
-          >
-            −1°
-          </button>
-          <span className="sky-map__nudge-val" aria-live="polite">
-            {calibrationOffset === 0
-              ? t('nudgeNeutral')
-              : `${calibrationOffset > 0 ? '+' : ''}${Math.round(calibrationOffset)}°`}
-          </span>
-          <button
-            type="button"
-            className="sky-map__nudge-btn"
-            onClick={() => onNudge(1)}
-            aria-label={t('nudgeRight')}
-          >
-            +1°
-          </button>
+        <div className="sky-map__cal" role="group" aria-label={t('nudgeAria')}>
+          {active && heading != null && (
+            <button
+              type="button"
+              className="sky-map__cal-lock"
+              onClick={() => {
+                const delta = headingDelta(active.obj.azimuth, heading);
+                onNudge(delta);
+              }}
+              aria-label={t('lockTo', { name: active.obj.name })}
+              title={t('lockTo', { name: active.obj.name })}
+            >
+              <span className="sky-map__cal-lock-icon" aria-hidden="true">⊕</span>
+              <span className="sky-map__cal-lock-text">
+                {t('lockTo', { name: active.obj.name })}
+              </span>
+            </button>
+          )}
+          <div className="sky-map__nudge">
+            <button
+              type="button"
+              className="sky-map__nudge-btn"
+              onClick={() => onNudge(-1)}
+              aria-label={t('nudgeLeft')}
+            >
+              −1°
+            </button>
+            <span className="sky-map__nudge-val" aria-live="polite">
+              {calibrationOffset === 0
+                ? t('nudgeNeutral')
+                : `${calibrationOffset > 0 ? '+' : ''}${Math.round(calibrationOffset)}°`}
+            </span>
+            <button
+              type="button"
+              className="sky-map__nudge-btn"
+              onClick={() => onNudge(1)}
+              aria-label={t('nudgeRight')}
+            >
+              +1°
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -791,15 +778,33 @@ function ObjectGlyph({ p, isActive, onSelect, label }: GlyphProps) {
 
 function renderBody(o: SkyObject, x: number, y: number, r: number) {
   if (o.type === 'planet' || o.type === 'sun' || o.type === 'moon') {
-    return <circle cx={x} cy={y} r={r} fill={PLANET_COLORS[o.id] ?? '#ffffff'} />;
-  }
-  if (o.type === 'star' || o.type === 'double') {
+    const fill = PLANET_COLORS[o.id] ?? '#ffffff';
+    // Soft halo so planets bloom slightly against the dome — same trick
+    // SkyView uses to make Jupiter/Venus pop without overdrawing them.
     return (
       <>
-        {o.magnitude <= 0.6 && (
-          <circle cx={x} cy={y} r={r + 1.6} fill={starColor(o.magnitude)} opacity={0.18} />
+        <circle cx={x} cy={y} r={r + 4} fill={fill} opacity={0.08} />
+        <circle cx={x} cy={y} r={r + 2} fill={fill} opacity={0.16} />
+        <circle cx={x} cy={y} r={r} fill={fill} />
+      </>
+    );
+  }
+  if (o.type === 'star' || o.type === 'double') {
+    const c = starColor(o.magnitude);
+    const veryBright = o.magnitude <= 0.6;
+    const bright = o.magnitude <= 1.5;
+    const spike = r * (veryBright ? 4.2 : 2.6);
+    return (
+      <>
+        {bright && <circle cx={x} cy={y} r={r + 4} fill={c} opacity={0.06} />}
+        {bright && <circle cx={x} cy={y} r={r + 2} fill={c} opacity={0.18} />}
+        <circle cx={x} cy={y} r={r} fill={c} />
+        {veryBright && (
+          <g stroke={c} strokeWidth={0.55} strokeLinecap="round" opacity={0.6} pointerEvents="none">
+            <line x1={x - spike} y1={y} x2={x + spike} y2={y} />
+            <line x1={x} y1={y - spike} x2={x} y2={y + spike} />
+          </g>
         )}
-        <circle cx={x} cy={y} r={r} fill={starColor(o.magnitude)} />
         {o.type === 'double' && (
           <circle cx={x + r * 1.3} cy={y - r * 0.6} r={Math.max(1.1, r * 0.55)} fill={starColor(o.magnitude + 1)} />
         )}
@@ -943,7 +948,7 @@ function UserAimReticle({
       <g pointerEvents="none" opacity={0.55}>
         <text
           x={CX}
-          y={CY + HALF - 8}
+          y={CY + R - 8}
           textAnchor="middle"
           fill="rgba(255,255,255,0.45)"
           fontSize="9"

@@ -504,6 +504,7 @@
       "nudgeLeft": "მარცხნივ კალიბრაცია",
       "nudgeRight": "მარჯვნივ კალიბრაცია",
       "nudgeNeutral": "გასწორებული",
+      "lockTo": "დაუმიზნე {name}-ს და დააჭირე",
       "visible": "{count} ხილული"
     },
     "tour": {

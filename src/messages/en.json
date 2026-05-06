@@ -510,6 +510,7 @@
       "nudgeLeft": "Nudge compass left",
       "nudgeRight": "Nudge compass right",
       "nudgeNeutral": "Aligned",
+      "lockTo": "Aim at {name}, tap to lock",
       "visible": "{count} visible"
     },
     "tour": {
