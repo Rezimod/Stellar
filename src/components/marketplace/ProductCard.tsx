@@ -71,7 +71,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         aria-label={`View ${product.name} on dealer site`}
       >
         <div
-          className={`relative w-full rounded-lg mb-[14px] overflow-hidden ${featured ? 'flex-1 min-h-[200px] md:min-h-0 aspect-[1.25] md:aspect-auto' : 'aspect-[1.25]'}`}
+          className="relative w-full rounded-lg mb-[14px] overflow-hidden aspect-[1.25]"
           style={{
             background: 'rgba(232,230,221,0.92)',
           }}
@@ -81,13 +81,13 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
               src={product.image}
               alt={product.name}
               fill
-              sizes={featured ? '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 640px' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px'}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
               style={{ objectFit: 'contain', padding: '16px' }}
               loading="lazy"
             />
           )}
         </div>
-        <p className={`font-medium text-[#F8F4EC] leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[15px] md:text-[18px]' : 'text-[15px]'}`}>
+        <p className="font-medium text-[#F8F4EC] leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors text-[15px]">
           {product.name}
         </p>
         <p className="text-[11px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)] mb-[10px] truncate">
@@ -118,12 +118,11 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
       <div className="flex gap-[8px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 inline-flex items-center justify-center gap-[6px] px-[14px] py-[10px] rounded-[14px] text-[12px] tracking-[0.04em] font-semibold whitespace-nowrap transition-[filter,transform,box-shadow] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[6px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.04em] font-semibold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px]"
           style={{
-            background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+            background: '#FF6A1A',
             border: 'none',
             color: '#FFFFFF',
-            boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
@@ -132,19 +131,17 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         </Link>
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 inline-flex items-center justify-center gap-[6px] px-[14px] py-[10px] rounded-[14px] text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,border-color,transform] duration-150 hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[6px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
           style={{
-            background: '#161A28',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: 'rgba(255,255,255,0.92)',
+            background: '#1A2540',
+            border: '1px solid rgba(255,255,255,0.06)',
+            color: '#FFFFFF',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = '#1C2235';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+            e.currentTarget.style.background = '#22305A';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = '#161A28';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)';
+            e.currentTarget.style.background = '#1A2540';
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >

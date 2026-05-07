@@ -247,7 +247,6 @@ export default function MarketplacePage() {
                     solPerGEL={solPerGEL}
                     solPriceUsd={solPriceUsd}
                     featured={isFeatured}
-                    className={isFeatured ? 'md:col-span-2 md:row-span-2' : ''}
                   />
                 );
               })}
