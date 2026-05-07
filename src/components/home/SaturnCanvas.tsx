@@ -63,7 +63,7 @@ export default function SaturnCanvas() {
     surfaceTex.colorSpace = THREE.SRGBColorSpace;
 
     const planet = new THREE.Mesh(
-      new THREE.SphereGeometry(2.05, 128, 128),
+      new THREE.SphereGeometry(2.45, 128, 128),
       new THREE.MeshStandardMaterial({
         map: surfaceTex,
         roughness: 0.92,
@@ -76,8 +76,8 @@ export default function SaturnCanvas() {
 
     // ── Ring particles ───────────────────────────────────────────
     const RING_COUNT = reduceMotion ? 2400 : 8200;
-    const innerR = 2.5;
-    const outerR = 4.18;
+    const innerR = 2.95;
+    const outerR = 4.95;
 
     const positions = new Float32Array(RING_COUNT * 3);
     const colors = new Float32Array(RING_COUNT * 3);
@@ -200,12 +200,20 @@ export default function SaturnCanvas() {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    // ── Saturn group offset (push past right edge for cinematic crop) ─
+    // ── Saturn group offset (aspect-aware: cinematic crop on desktop,
+    //    pulled back on portrait/mobile so it stays visible) ──────────
     const planetGroup = new THREE.Group();
     planetGroup.add(planet);
     planetGroup.add(rings);
     scene.add(planetGroup);
-    planetGroup.position.x = 4.6;
+    const updatePlanetOffset = () => {
+      const aspect = mount.clientWidth / Math.max(1, mount.clientHeight);
+      if (aspect < 0.9)        planetGroup.position.x = 0.6;   // narrow mobile portrait
+      else if (aspect < 1.3)   planetGroup.position.x = 2.4;   // tablet / square
+      else if (aspect < 1.7)   planetGroup.position.x = 4.0;   // tight laptop
+      else                      planetGroup.position.x = 5.15; // wide desktop
+    };
+    updatePlanetOffset();
 
     // ── Mouse parallax ───────────────────────────────────────────
     const target = { x: 0, y: 0 };
@@ -232,6 +240,7 @@ export default function SaturnCanvas() {
       camera.updateProjectionMatrix();
       ringMat.uniforms.uPixelRatio.value = renderer.getPixelRatio();
       starMat.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+      updatePlanetOffset();
     };
     window.addEventListener('resize', onResize);
 

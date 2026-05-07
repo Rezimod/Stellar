@@ -13,9 +13,10 @@ const SaturnCanvas = dynamic(() => import('./SaturnCanvas'), {
 export default function HeroSaturn() {
   return (
     <section
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden flex items-center"
       style={{
-        minHeight: 'min(720px, 100vh)',
+        minHeight: '100vh',
+        height: '100vh',
         // Deep cosmic base + warm amber halo on the right matching Saturn's lit hemisphere
         background: [
           'radial-gradient(ellipse 78% 95% at 82% 52%, rgba(255, 168, 85, 0.18) 0%, rgba(255, 122, 58, 0.09) 26%, transparent 56%)',
@@ -41,7 +42,7 @@ export default function HeroSaturn() {
       />
 
       {/* === Copy === */}
-      <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 py-24 md:py-28 lg:py-36 pointer-events-none">
+      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 pointer-events-none">
         <div className="max-w-[640px]">
           <h1
             className="text-white leading-[1.02] tracking-[-0.01em]"
