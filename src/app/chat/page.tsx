@@ -183,11 +183,33 @@ function ChatPageInner() {
   };
 
   return (
-    <PageContainer variant="content" className="flex flex-col -mb-24 sm:mb-0" style={{ height: 'calc(100dvh - 56px)' }}>
+    <PageContainer
+      variant="content"
+      className="flex flex-col -mb-24 sm:mb-0"
+      style={{ height: 'calc(100dvh - 56px)', paddingTop: 16, paddingBottom: 16 }}
+    >
       <style>{`
         @keyframes cursorBlink { 0%,100% { opacity:1 } 50% { opacity:0 } }
         .streaming-cursor { animation: cursorBlink 0.7s ease-in-out infinite; color: var(--accent); }
+        .astra-panel {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.18);
+        }
+        @media (max-width: 640px) {
+          .astra-panel {
+            border-radius: 14px;
+          }
+        }
       `}</style>
+
+      <div className="astra-panel">
 
       {/* Header */}
       <div style={{
@@ -197,12 +219,6 @@ function ChatPageInner() {
         gap: 16,
         padding: '14px 18px',
         borderBottom: '1px solid var(--border-subtle)',
-        background: 'rgba(7,11,20,0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
       }}>
         {/* Name + subtitle */}
         <div style={{ minWidth: 0, flex: 1 }}>
@@ -575,13 +591,12 @@ function ChatPageInner() {
       </div>
 
       {/* Input bar */}
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', flexShrink: 0 }}>
       {!authenticated && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 10,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          background: 'rgba(7,11,20,0.95)',
-          backdropFilter: 'blur(12px)',
+          background: 'var(--canvas)',
           borderTop: '1px solid var(--border-subtle)',
           padding: '12px 16px',
         }}>
@@ -597,9 +612,6 @@ function ChatPageInner() {
         padding: '12px 16px',
         paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
         borderTop: '1px solid var(--border-subtle)',
-        background: 'rgba(7,11,20,0.9)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, maxWidth: 672, margin: '0 auto' }}>
           <textarea
@@ -661,6 +673,8 @@ function ChatPageInner() {
         </div>
       </div>
       </div>
+
+      </div>{/* /.astra-panel */}
     </PageContainer>
   );
 }
