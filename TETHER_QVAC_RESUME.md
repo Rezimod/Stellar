@@ -1,12 +1,87 @@
 # Tether QVAC restoration — resume plan
 
-**Last updated:** 2026-05-07 (evening, after A14 hardware-block)
+**Last updated:** 2026-05-08 (early morning, after end-to-end verification on Poco X3 NFC and APK ship)
 **Owner:** Rezi
-**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — pick up from "Resume after A14 device-block 2026-05-07 evening" below.
+**Why this file exists:** Initially this doc was the recovery plan for restoring QVAC after the verification-APK pivot. Now it's the live state log for the Tether QVAC submission. Pick up from "Resume 2026-05-08" below.
 
 ---
 
-## Resume after A14 device-block 2026-05-07 evening (READ THIS FIRST)
+## Resume 2026-05-08 (READ THIS FIRST)
+
+If you're a Claude opening this and Rezi says "continue QVAC" — **the situation is**:
+
+**The full QVAC integration is shipped.** Not just bundle-generation: every layer is verified end-to-end on a real phone, an installable release APK exists, and it's wired into the production website. The remaining work is non-technical (record demo, write submission, click Submit). Optional pre-submission features (TTS, KA translation) are scoped and ready to add if there's appetite.
+
+**What's verified working on Poco X3 NFC** (Snapdragon 732G, Cortex-A76+A55, 6GB RAM — chipset has DOTPROD/`asimddp` which the A14 lacked):
+- ✅ APK installs and launches
+- ✅ Llama 3.2 1B Q4 downloads, mmaps, loads, streams chat tokens
+- ✅ Whisper downloads, transcribes voice
+- ✅ Voice log: speak → transcript → target auto-extracted (M31, etc) → save to local queue
+- ✅ Airplane mode ON → chat still streams. The prize-defining shot.
+
+**Bug fixes applied during verification** (all in `apps/field/lib/qvac.ts`, committed `2a9448f`):
+- `modelType: 'transcription'` → `'whisper'` (the SDK-canonical alias). Old value rejected with "plugin not found".
+- `audioPath` parameter → `audioChunk` (the actual API key in the discriminated-union schema). Old name caused `Cannot read property toString of undefined` deep in the SDK's request validator.
+- Strip `file://` prefix from `recorder.uri` before passing to `transcribe()`. bare-fs in the worker sandbox doesn't recognize URI scheme.
+- Reverted diagnostic config (gpu_layers/n_threads/no_mmap/Qwen-first fallback) added during the A14 chipset-block investigation. Now using clean defaults — that's the right production config.
+
+**UI redesign committed `1f3dfbe`:**
+- Killed the redundant "Powered by Tether QVAC" footer that ate vertical space below the composer
+- Replaced with a monospace status strip in the header that reports actual state: `ON-DEVICE · READY · LLAMA 3.2 1B · TETHER QVAC` (and the Whisper variant on Voice Log)
+- Added a colored status dot beside the title: teal=ready, amber=loading, red=error
+- Bumped scrollContent paddingBottom so the last message isn't hidden behind the composer
+- Added `keyboardShouldPersistTaps="handled"` and `keyboardDismissMode="on-drag"` for proper Android scroll-while-typing
+- See `/tmp/stellar-field-mockup.html` for the visual reference (regenerate with the prompt history if /tmp got cleaned)
+
+**Production artifacts shipped:**
+- Release APK: `apps/field/android/app/build/outputs/apk/release/app-release.apk` (256MB, debug-keystore signed which is fine for direct-download distribution)
+- GitHub Release: https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field
+- Direct APK download URL: https://github.com/Rezimod/Stellar/releases/download/v0.1.0-field/app-release.apk
+- Vercel: `NEXT_PUBLIC_FIELD_APK_URL` set on production, redeploy triggered via empty commit `a625791`
+- /field route verified live serving the **Download APK** button: https://stellarrclub.vercel.app/field
+
+**Outstanding before May 11 23:59 UTC submission deadline:**
+
+Required:
+1. **Record demo video on the Poco** — 75 sec, script + visual checklist in `docs/qvac-demo-script.md`. Best to do a fresh install of the release APK first (uninstall existing, reinstall to capture model-download from scratch).
+2. **Upload to YouTube as Unlisted.** Title: `Stellar Field — Tether QVAC Track Demo (Frontier Hackathon)`. Description should include first 3 paragraphs of `docs/qvac-integration.md` + GitHub Release URL above.
+3. **Submit to Superteam Earn** per `docs/qvac-submission.md`.
+
+Optional pre-submission add-ons (each ~1 day, would meaningfully strengthen the entry):
+4. **TTS read-aloud mode** — biggest UX win for the actual eyepiece use case. SDK has `onnx-tts` plugin already. Need to: add the plugin to `qvac.config.json`, install peer deps if any (use the `feedback_qvac_bundle.md` recipe), wire a "speak" button next to AI bubbles, regenerate worker bundle, build new release APK.
+5. **EN↔KA translation via NMT** — kills the localization argument for Astroman's Georgian customers. Plugin: `nmtcpp-translation`. Model: `SALAMANDRATA_2B_INST_Q4`. Same wiring pattern as TTS.
+
+If adding 4 or 5: each requires `npx expo prebuild --clean --platform android` to regenerate the worker bundle with the new plugin set, then a fresh `./gradlew assembleRelease`. The peer-deps recipe in `feedback_qvac_bundle.md` may need re-running for any new plugin's transitive deps.
+
+**Recommended pacing for May 8–11:**
+
+| Day | Work |
+|---|---|
+| 8 (Fri) | Optional: ship TTS + KA translation. Record demo if not adding extras. |
+| 9 (Sat) | New release APK if step 4/5 done. Record demo. |
+| 10 (Sun) | Upload to YouTube. Draft Superteam Earn submission body. |
+| 11 (Mon) | Final submission with buffer. Do NOT ship at 23:00 UTC. |
+
+**Toolchain state on Mac:**
+- All env vars in `~/.zshrc` (Java 21 via Android Studio JBR, ANDROID_HOME, PATH)
+- Android SDK installed: platform-tools, platforms;android-35, build-tools 35.0.0, NDK 29.0.14206865 (the QVAC pin)
+- gh CLI authenticated as `Rezimod`
+- Vercel CLI authenticated as `morningbriefrezi`
+- adb device authorization for Poco X3 NFC (8afd922a) is persisted; will recognize on next plug-in
+- Metro is stopped. To restart for hot-reload dev: `adb reverse tcp:8081 tcp:8081 && cd apps/field && npx expo start --dev-client --port 8081 &`
+
+**Pointers** (read these instead of re-deriving):
+- `docs/qvac-demo-script.md` — 75-second demo script (EN + KA narration), visual checklist, anti-patterns
+- `docs/qvac-submission.md` — Superteam Earn submission package + ship checklist
+- `docs/qvac-integration.md` — judge-facing technical writeup (also serves as the YouTube description and GitHub Release notes)
+- `~/.claude/projects/.../memory/feedback_qvac_chipset_compat.md` — Helio G-series chipset gotcha (don't suggest those phones)
+- `~/.claude/projects/.../memory/feedback_qvac_bundle.md` — peer-deps recipe if regenerating worker bundle
+
+**Do NOT** keep grinding on the A14 device — that's a chipset-level mismatch documented in memory. Use the Poco X3 NFC.
+
+---
+
+## Resume after A14 device-block 2026-05-07 evening (historical, superseded by section above)
 
 If you're a Claude opening this and Rezi says "continue QVAC" — **the situation is**:
 
