@@ -1,16 +1,24 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Saira, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
+import { Orbitron, Geist, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
 import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
 import '../styles/animations.css';
 import '../styles/wallet-adapter-overrides.css';
 
-const saira = Saira({
+// Hero titles + headings — Orbitron Medium across every page.
+const orbitron = Orbitron({
   subsets: ['latin'],
-  variable: '--font-saira',
-  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-orbitron',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+// Body / paragraph copy — Geist Medium across every page.
+const geist = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist',
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 const jetbrainsMono = JetBrains_Mono({
@@ -92,7 +100,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${saira.variable} ${jetbrainsMono.variable} ${notoGeorgian.variable}`}>
+    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${notoGeorgian.variable}`}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />

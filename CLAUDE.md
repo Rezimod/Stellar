@@ -169,7 +169,12 @@ Full design context lives in `.impeccable.md` at the project root. Read that fil
 - **Brand personality: patient / precise / earned.** Opposite of hype. Every number is measured by a real instrument. No countdown timers, no "trending" theater, no gambling-skin patterns.
 - **Reference: nasa.gov.** Anti-reference: Kalshi / Polymarket / generic shadcn dashboards.
 - **Theme: dark, but not pure black.** Tinted near-black around `oklch(0.15 0.015 260)` — a night-sky color, not VSCode's. Light theme shipped for daytime planning.
-- **Font stack:** `Source Serif 4` display (headings/verdict only) + `Public Sans` body + `JetBrains Mono` numbers + `Noto Sans Georgian` for KA. **Do NOT** use Cormorant Garamond, Inter, Fraunces, Space Grotesk, or any font on Impeccable's reflex-reject list.
+- **Font stack (global, every page):**
+  - **Hero titles + all headings** (`h1`–`h6`, `.display`): `Orbitron` **Medium (500)** — exact font, no substitutions.
+  - **Paragraphs + body / UI copy**: `Geist` **Medium (500)** — exact font, no substitutions.
+  - **Numbers / data / mono**: `JetBrains Mono`.
+  - **Georgian (KA locale)**: `Noto Sans Georgian`.
+  - Fonts are wired through token vars in `src/app/globals.css`: `--font-display` → Orbitron, `--font-body` / `--font-cta` → Geist. Any new component must use those vars (or the utilities `.font-display` / `.font-body`) — never hardcode `Inter`, `Saira`, `Source Serif 4`, `Public Sans`, `Cormorant Garamond`, `Fraunces`, or `Space Grotesk`.
 - **Banned patterns:** glass-card-in-glass-card nesting, violet/indigo glow shadows, gradient text (`background-clip: text`), `border-left: 3px solid ...` accent stripes, microcopy below 12px, identical card grids repeated.
 - **Design principles:**
   1. Verdict first, detail on demand

@@ -264,11 +264,12 @@
   --color-yes: var(--yes);
   --color-no: var(--no);
 
-  /* Fonts — Saira everywhere (display + body + CTA), JetBrains Mono for numbers */
-  --font-display:  var(--font-saira), system-ui, -apple-system, sans-serif;
-  --font-body:     var(--font-saira), system-ui, -apple-system, sans-serif;
-  --font-cta:      var(--font-saira), system-ui, -apple-system, sans-serif;
-  --font-serif:    var(--font-saira), system-ui, -apple-system, sans-serif;
+  /* Fonts — Orbitron for hero titles + headings, Geist for body / paragraphs,
+     JetBrains Mono for numbers, Noto Sans Georgian for KA. */
+  --font-display:  var(--font-orbitron), system-ui, -apple-system, sans-serif;
+  --font-body:     var(--font-geist), system-ui, -apple-system, sans-serif;
+  --font-cta:      var(--font-geist), system-ui, -apple-system, sans-serif;
+  --font-serif:    var(--font-orbitron), system-ui, -apple-system, sans-serif;
   --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }
@@ -293,10 +294,17 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
+  font-weight: 500; /* Geist Medium — global default body weight */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
+}
+
+/* Paragraphs — Geist Medium across the app */
+p {
+  font-family: var(--font-body);
+  font-weight: 500;
 }
 
 body::before {
@@ -340,15 +348,11 @@ body::after {
   pointer-events: none;
 }
 
-h1, h2, .display {
+/* Headings — Orbitron Medium across the app. Hero titles (h1) and all
+   subsequent heading levels use the same display font. */
+h1, h2, h3, h4, h5, h6, .display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-h3, h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500; /* Orbitron Medium */
   letter-spacing: -0.01em;
 }
 
