@@ -208,10 +208,15 @@ export default function SaturnCanvas() {
     scene.add(planetGroup);
     const updatePlanetOffset = () => {
       const aspect = mount.clientWidth / Math.max(1, mount.clientHeight);
-      if (aspect < 0.9)        planetGroup.position.x = 0.6;   // narrow mobile portrait
-      else if (aspect < 1.3)   planetGroup.position.x = 2.4;   // tablet / square
-      else if (aspect < 1.7)   planetGroup.position.x = 4.0;   // tight laptop
-      else                      planetGroup.position.x = 5.15; // wide desktop
+      if (aspect < 0.9) {
+        planetGroup.position.x = 0.6;       // narrow mobile portrait
+        planetGroup.scale.setScalar(0.82);  // smaller on mobile only
+      } else {
+        planetGroup.scale.setScalar(1);
+        if (aspect < 1.3)      planetGroup.position.x = 2.4;   // tablet / square
+        else if (aspect < 1.7) planetGroup.position.x = 4.0;   // tight laptop
+        else                   planetGroup.position.x = 5.15;  // wide desktop
+      }
     };
     updatePlanetOffset();
 
