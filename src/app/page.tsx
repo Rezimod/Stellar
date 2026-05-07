@@ -978,45 +978,79 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-[960px] mx-auto rounded-[18px] border border-white/[0.07] bg-[#0F1A35]/50 px-5 md:px-10 py-9 md:py-12">
-            {/* Stage rail */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-8 md:gap-y-0">
+            {/* Legend */}
+            <div className="flex items-center justify-between flex-wrap gap-y-3 mb-8 md:mb-10">
+              <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-[#6B7385]">
+                8 measures · honest scoring
+              </div>
+              <div className="flex items-center gap-4 md:gap-5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#5C6478]" />
+                  <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-[#6B7385]">Most apps</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#5EEAD4]" />
+                  <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-[#5EEAD4]">Stellar</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison rows */}
+            <div className="space-y-4 md:space-y-5">
               {[
-                { n: '01', label: 'Plan',    sub: 'Forecast'    },
-                { n: '02', label: 'Aim',     sub: 'Sky chart'   },
-                { n: '03', label: 'Observe', sub: 'AR finder'   },
-                { n: '04', label: 'Verify',  sub: 'Photo proof' },
-                { n: '05', label: 'Earn',    sub: 'Stars'       },
-                { n: '06', label: 'Redeem',  sub: 'Real gear'   },
-              ].map((s, i) => {
-                const beyond = i >= 3;
+                { label: 'Sky catalog',      most: 95, stellar: 55  },
+                { label: '7-day forecast',   most: 30, stellar: 95  },
+                { label: 'AR finder',        most: 80, stellar: 75  },
+                { label: 'Photo proof',      most: 0,  stellar: 100 },
+                { label: 'Stars rewards',    most: 0,  stellar: 100 },
+                { label: 'Gear redemption',  most: 0,  stellar: 100 },
+                { label: 'Scope control',    most: 75, stellar: 20  },
+                { label: 'Ad-free',          most: 55, stellar: 100 },
+              ].map((r) => {
+                const diff = r.stellar - r.most;
+                const verdict = diff >= 15 ? 'Leads' : diff <= -15 ? 'Trails' : 'Even';
+                const verdictColor =
+                  verdict === 'Leads'  ? 'text-[#5EEAD4]' :
+                  verdict === 'Trails' ? 'text-white/35'  : 'text-[#6B7385]';
                 return (
-                  <div key={s.n} className="flex flex-col items-center text-center">
-                    <div className={`font-mono text-[10px] md:text-[11px] tracking-[0.22em] ${beyond ? 'text-[#FFB347]' : 'text-[#6B7385]'}`}>{s.n}</div>
-                    <div className="mt-2 text-white text-[13px] md:text-[15px] font-semibold leading-tight">{s.label}</div>
-                    <div className="mt-1 text-[#6B7385] text-[11px] md:text-[12px] leading-tight">{s.sub}</div>
+                  <div
+                    key={r.label}
+                    className="grid grid-cols-[1fr_auto] md:grid-cols-[160px_1fr_64px] gap-x-3 md:gap-x-5 gap-y-1.5 items-center"
+                  >
+                    <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-white/80">
+                      {r.label}
+                    </div>
+                    <div className={`md:hidden font-mono text-[9.5px] uppercase tracking-[0.18em] ${verdictColor}`}>
+                      {verdict}
+                    </div>
+                    <div className="col-span-2 md:col-span-1 space-y-1.5">
+                      <div className="relative h-[3px] bg-white/[0.06] rounded-full">
+                        <div
+                          className="absolute left-0 top-0 h-full bg-[#5C6478] rounded-full"
+                          style={{ width: `${r.most}%` }}
+                        />
+                      </div>
+                      <div className="relative h-[3px] bg-white/[0.06] rounded-full">
+                        <div
+                          className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#FFB347] to-[#5EEAD4] rounded-full"
+                          style={{ width: `${r.stellar}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className={`hidden md:block font-mono text-[10px] uppercase tracking-[0.18em] text-right ${verdictColor}`}>
+                      {verdict}
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Coverage tracks */}
-            <div className="mt-9 md:mt-12 space-y-4 md:space-y-5">
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#6B7385] w-[78px] md:w-[110px] shrink-0">Most apps</div>
-                <div className="relative flex-1 h-[3px] bg-white/[0.06] rounded-full">
-                  <div className="absolute left-0 top-0 h-full w-1/2 bg-[#5C6478] rounded-full" />
-                  <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#5C6478]" />
-                </div>
-                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#6B7385] w-[88px] md:w-[140px] text-right shrink-0">Show the sky</div>
-              </div>
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#FFB347] w-[78px] md:w-[110px] shrink-0">Stellar</div>
-                <div className="relative flex-1 h-[3px] bg-white/[0.06] rounded-full">
-                  <div className="absolute left-0 top-0 h-full w-full bg-gradient-to-r from-[#FFB347] to-[#5EEAD4] rounded-full" />
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2 h-2 rounded-full bg-[#5EEAD4]" />
-                </div>
-                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#5EEAD4] w-[88px] md:w-[140px] text-right shrink-0">Close the loop</div>
-              </div>
+            {/* Footnote */}
+            <div className="mt-8 md:mt-10 pt-6 md:pt-7 border-t border-white/[0.06]">
+              <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-[#6B7385] text-center leading-[1.6]">
+                Stellarium owns the catalog. SkySafari drives the mount.
+                <br className="hidden sm:inline" /> Stellar closes the loop after you saw it.
+              </p>
             </div>
           </div>
         </div>
