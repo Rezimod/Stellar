@@ -55,7 +55,7 @@ export default function BottomNav() {
                 position: 'relative',
               }}
             >
-              {/* Active pill — filled tab background behind icon */}
+              {/* Icon + active underline */}
               <div
                 style={{
                   position: 'relative',
@@ -64,38 +64,28 @@ export default function BottomNav() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderRadius: 12,
-                  background: isActive
-                    ? 'radial-gradient(ellipse at 50% 55%, rgba(255, 179, 71,0.22) 0%, rgba(255, 179, 71,0.05) 55%, transparent 75%)'
-                    : 'transparent',
-                  transition: 'background 0.2s ease',
                 }}
               >
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 2.2 : 1.7}
+                  color={isActive ? 'var(--stl-gold)' : '#ffffff'}
+                />
                 {isActive && (
                   <span
                     aria-hidden
                     style={{
                       position: 'absolute',
-                      top: -6,
+                      bottom: -4,
                       left: '50%',
                       transform: 'translateX(-50%)',
                       width: 20,
                       height: 2,
                       borderRadius: 2,
                       background: 'var(--stl-gold)',
-                      boxShadow: '0 0 10px rgba(255, 179, 71,0.8)',
                     }}
                   />
                 )}
-                <Icon
-                  size={22}
-                  strokeWidth={isActive ? 2.2 : 1.7}
-                  color={isActive ? 'var(--stl-gold)' : '#ffffff'}
-                  style={{
-                    filter: isActive ? 'drop-shadow(0 0 6px rgba(255, 179, 71,0.45))' : 'none',
-                    transition: 'color 0.2s ease, filter 0.2s ease',
-                  }}
-                />
               </div>
 
               <span
