@@ -8,7 +8,7 @@ export default function MarketplaceSection() {
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--terracotta)]/70">
             04 · MARKETPLACE
           </span>
-          <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#E8E6DD]">
+          <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#F8F4EC]">
             Stars buy real telescopes.
           </h2>
           <p className="mt-3 text-[13px] md:text-[14px] leading-[1.65] text-[rgba(232,230,221,0.6)] max-w-[440px]">
@@ -41,7 +41,7 @@ export default function MarketplaceSection() {
 
           <div className="mt-3 flex items-center justify-between rounded-[10px] border-[0.5px] border-[rgba(255, 209, 102,0.2)] bg-[rgba(255, 209, 102,0.06)] p-[14px]">
             <div className="min-w-0">
-              <div className="font-display text-[12px] md:text-[13px] text-[#E8E6DD] truncate">
+              <div className="font-display text-[12px] md:text-[13px] text-[#F8F4EC] truncate">
                 Celestron AstroMaster 70
               </div>
               <div className="mt-0.5 text-[10px] text-[rgba(232,230,221,0.5)]">
@@ -90,7 +90,7 @@ function ProductCard({
       <div className={`flex h-7 w-7 items-center justify-center rounded-full ${styles.chipOuter}`}>
         {styles.chipInner}
       </div>
-      <div className="mt-3 font-display text-[12px] md:text-[13px] text-[#E8E6DD] truncate">
+      <div className="mt-3 font-display text-[12px] md:text-[13px] text-[#F8F4EC] truncate">
         {title}
       </div>
       <div className="mt-0.5 text-[10px] text-[rgba(232,230,221,0.5)]">{subtitle}</div>

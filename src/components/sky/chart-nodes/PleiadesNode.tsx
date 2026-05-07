@@ -3,18 +3,18 @@ export default function PleiadesNode({ size = 34 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="pn-haze" cx="0.5" cy="0.5" r="0.55">
-          <stop offset="0" stopColor="#B8D4FF" stopOpacity="0.55" />
+          <stop offset="0" stopColor="#5EEAD4" stopOpacity="0.55" />
           <stop offset="0.45" stopColor="#6D7FC4" stopOpacity="0.22" />
-          <stop offset="1" stopColor="#B8D4FF" stopOpacity="0" />
+          <stop offset="1" stopColor="#5EEAD4" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="pn-star" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#FFFFFF" />
-          <stop offset="0.45" stopColor="#E8F0FF" />
+          <stop offset="0.45" stopColor="#5EEAD4" />
           <stop offset="1" stopColor="#A8BEF0" stopOpacity="0" />
         </radialGradient>
       </defs>
       <circle cx="18" cy="18" r="17" fill="url(#pn-haze)" />
-      <g opacity="0.55" stroke="#B8D4FF" strokeWidth="0.35" fill="none">
+      <g opacity="0.55" stroke="#5EEAD4" strokeWidth="0.35" fill="none">
         <path d="M 14 13 L 19 11 L 23 15 L 20.5 20 L 15 22 L 12 18 Z" />
       </g>
       <g>

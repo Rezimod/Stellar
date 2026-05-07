@@ -134,7 +134,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
           </radialGradient>
         </defs>
         <circle cx="32" cy="32" r="22" fill="url(#evSun)" />
-        <circle cx="38" cy="30" r="20" fill="#0B0E17" />
+        <circle cx="38" cy="30" r="20" fill="#0A1735" />
       </svg>
     );
   }
@@ -160,13 +160,13 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
       <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
         <defs>
           <linearGradient id="evTail" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#7DD3FC" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#7DD3FC" stopOpacity="0" />
+            <stop offset="0%" stopColor="#5EEAD4" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#5EEAD4" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d="M52 12 L20 44" stroke="url(#evTail)" strokeWidth="6" strokeLinecap="round" />
         <circle cx="52" cy="12" r="6" fill="#FFFFFF" />
-        <circle cx="52" cy="12" r="3" fill="#7DD3FC" />
+        <circle cx="52" cy="12" r="3" fill="#5EEAD4" />
       </svg>
     );
   }
@@ -175,7 +175,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
       <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
         <defs>
           <radialGradient id="evPlanet" cx="40%" cy="40%">
-            <stop offset="0%" stopColor="#F59E0B" />
+            <stop offset="0%" stopColor="#FFB347" />
             <stop offset="80%" stopColor="#B45309" />
             <stop offset="100%" stopColor="#3B1607" />
           </radialGradient>
@@ -184,7 +184,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
         <circle cx="52" cy="50" r="1" fill="#FFFFFF" opacity="0.6" />
         <circle cx="50" cy="14" r="1.2" fill="#FFFFFF" opacity="0.7" />
         <circle cx="32" cy="32" r="18" fill="url(#evPlanet)" />
-        <ellipse cx="32" cy="32" rx="28" ry="6" fill="none" stroke="#F59E0B" strokeOpacity="0.45" strokeWidth="1.5" />
+        <ellipse cx="32" cy="32" rx="28" ry="6" fill="none" stroke="#FFB347" strokeOpacity="0.45" strokeWidth="1.5" />
       </svg>
     );
   }

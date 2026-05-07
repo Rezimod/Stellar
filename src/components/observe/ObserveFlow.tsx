@@ -355,7 +355,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
           </button>
           <button onClick={onClose}
             className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-            style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
+            style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
             Done
           </button>
         </div>
@@ -421,7 +421,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               <>
                 <button onClick={handleMintObservation}
                   className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-                  style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
+                  style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
                   Create NFT ✦
                 </button>
                 <button onClick={handleCollectOnly}
@@ -434,7 +434,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               <>
                 <button onClick={resetToCapture}
                   className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-                  style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
+                  style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
                   Try Another Photo
                 </button>
                 <button onClick={onClose}
@@ -480,7 +480,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               <>
                 <button onClick={captureFrame}
                   className="w-16 h-16 rounded-full flex items-center justify-center text-black font-bold text-sm"
-                  style={{ background: 'linear-gradient(to right, var(--terracotta), #E8B84A)' }}>
+                  style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
                   Capture
                 </button>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl w-full"

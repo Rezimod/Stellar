@@ -263,7 +263,7 @@ export default function LeaderboardPage() {
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #FFB347 0%, #FF7E3F 100%)',
+              background: 'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
               boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
             }}
           >

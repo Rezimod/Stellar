@@ -138,7 +138,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
         onClick={e => e.stopPropagation()}
         className="relative rounded-2xl overflow-hidden flex flex-col w-full max-w-lg my-8"
         style={{
-          background: '#0B0E17',
+          background: '#0A1735',
           border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
           animation: 'slideUp 220ms ease-out',

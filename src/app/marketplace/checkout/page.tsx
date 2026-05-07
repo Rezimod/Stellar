@@ -278,7 +278,7 @@ function CheckoutContent() {
     <PageContainer variant="wide" className="font-mono py-5">
       <style jsx global>{`
         .stl-checkout-field {
-          color: #E8E6DD;
+          color: #F8F4EC;
           background: #161A28;
           border: 1px solid rgba(255,255,255,0.10);
         }
@@ -292,14 +292,14 @@ function CheckoutContent() {
         .stl-checkout-field:-webkit-autofill:focus,
         .stl-checkout-field:-webkit-autofill:active {
           -webkit-box-shadow: 0 0 0 1000px #161A28 inset !important;
-          -webkit-text-fill-color: #E8E6DD !important;
-          caret-color: #E8E6DD;
+          -webkit-text-fill-color: #F8F4EC !important;
+          caret-color: #F8F4EC;
           transition: background-color 9999s ease-out, color 9999s ease-out;
         }
       `}</style>
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-[10px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.65)] hover:text-[#E8E6DD] transition-colors mb-[18px]"
+        className="inline-flex items-center gap-1 text-[10px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.65)] hover:text-[#F8F4EC] transition-colors mb-[18px]"
       >
         <ArrowLeft size={11} /> Back · Checkout
       </button>
@@ -307,7 +307,7 @@ function CheckoutContent() {
       <header className="flex flex-col items-center gap-3 pb-[14px] mb-[22px] border-b border-[rgba(232,230,221,0.1)] text-center">
         <div className="flex items-baseline justify-center gap-3">
           <span className="text-[10px] tracking-[0.24em] uppercase text-[var(--seafoam)] font-medium">04 · 02</span>
-          <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[#E8E6DD] leading-none">
+          <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[#F8F4EC] leading-none">
             Checkout<span className="text-[var(--terracotta)]">.</span>
           </h1>
         </div>
@@ -321,7 +321,7 @@ function CheckoutContent() {
         <div className="flex flex-col gap-4">
           {step === 'form' && (
             <>
-              <h2 className="text-[14px] tracking-[0.18em] uppercase font-semibold text-[#E8E6DD]">
+              <h2 className="text-[14px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
                 Delivery details
               </h2>
 
@@ -392,7 +392,7 @@ function CheckoutContent() {
 
           {step === 'paying' && (
             <div className="flex flex-col gap-4 items-center">
-              <h2 className="text-[14px] tracking-[0.18em] uppercase font-semibold text-[#E8E6DD]">
+              <h2 className="text-[14px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
                 Scan to pay
               </h2>
               <div className="p-3 rounded-xl bg-white">
@@ -422,7 +422,7 @@ function CheckoutContent() {
                   setPayUrl('');
                   setOrderId(null);
                 }}
-                className="text-[10px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.55)] hover:text-[#E8E6DD] transition-colors"
+                className="text-[10px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.55)] hover:text-[#F8F4EC] transition-colors"
               >
                 Cancel and edit details
               </button>
@@ -435,7 +435,7 @@ function CheckoutContent() {
                 style={{ background: 'rgba(94, 234, 212,0.12)', border: '1px solid rgba(94, 234, 212,0.3)' }}>
                 <Check size={26} color="var(--seafoam)" strokeWidth={2.4} />
               </div>
-              <h2 className="text-[18px] font-semibold text-[#E8E6DD]">
+              <h2 className="text-[18px] font-semibold text-[#F8F4EC]">
                 {mode === 'stars' ? 'Stars redeemed' : 'Payment confirmed'}
               </h2>
               <p className="text-[12px] tracking-[0.06em] text-[rgba(232,230,221,0.7)] max-w-sm">
@@ -492,7 +492,7 @@ function CheckoutContent() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-[#E8E6DD] leading-tight mb-1 truncate">{product.name}</p>
+              <p className="text-[13px] font-medium text-[#F8F4EC] leading-tight mb-1 truncate">{product.name}</p>
               {dealer?.name && (
                 <p className="text-[10px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)]">{dealer.name}</p>
               )}
@@ -532,7 +532,7 @@ function CheckoutContent() {
           ) : (
             <div className="flex justify-between items-center mt-2">
               <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">SOL</span>
-              <span className="text-[13px] font-semibold text-[#E8E6DD]">
+              <span className="text-[13px] font-semibold text-[#F8F4EC]">
                 {discountedSol > 0 ? `${formatSol(discountedSol)} SOL` : '—'}
               </span>
             </div>

@@ -71,7 +71,7 @@ const TONIGHT = [
 
 export default function EarnPage() {
   return (
-    <main className="min-h-screen bg-[#0B0E17] text-white">
+    <main className="min-h-screen bg-[#0A1735] text-white">
       {/* Hero */}
       <section className="border-b border-white/10 px-6 py-16 sm:px-10 sm:py-24">
         <div className="mx-auto max-w-5xl">
@@ -104,7 +104,7 @@ export default function EarnPage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-px overflow-hidden rounded-lg bg-white/10 md:grid-cols-3">
             {TIERS.map((t) => (
-              <article key={t.key} className="bg-[#1A1F2E] p-8">
+              <article key={t.key} className="bg-[#0A1735] p-8">
                 <div className="flex items-baseline justify-between">
                   <h2 className="font-mono text-xs uppercase tracking-widest text-white/60">
                     {t.label}

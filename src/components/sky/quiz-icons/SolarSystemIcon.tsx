@@ -4,7 +4,7 @@ export default function SolarSystemIcon({ size = 56 }: { size?: number }) {
       <defs>
         <radialGradient id="ssi-sun" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#FFF4C4" />
-          <stop offset="0.4" stopColor="#FFB84A" />
+          <stop offset="0.4" stopColor="#FFB347" />
           <stop offset="1" stopColor="#B04818" />
         </radialGradient>
       </defs>
@@ -12,7 +12,7 @@ export default function SolarSystemIcon({ size = 56 }: { size?: number }) {
       <ellipse cx="28" cy="28" rx="14" ry="4" fill="none" stroke="rgba(255,180,80,0.3)" strokeWidth="0.6" />
       <ellipse cx="28" cy="28" rx="24" ry="8" fill="none" stroke="rgba(255,180,80,0.15)" strokeWidth="0.6" />
       <circle cx="28" cy="28" r="7" fill="url(#ssi-sun)" />
-      <g stroke="#FFB84A" strokeWidth="0.4" opacity="0.6">
+      <g stroke="#FFB347" strokeWidth="0.4" opacity="0.6">
         <line x1="28" y1="18" x2="28" y2="21" />
         <line x1="28" y1="35" x2="28" y2="38" />
         <line x1="18" y1="28" x2="21" y2="28" />

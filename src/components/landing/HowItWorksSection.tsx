@@ -26,7 +26,7 @@ export default function HowItWorksSection() {
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
           02 · MECHANISM
         </span>
-        <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#E8E6DD]">
+        <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#F8F4EC]">
           Three orbits, one discovery.
         </h2>
         <p className="mt-3 text-[13px] md:text-[14px] text-[rgba(232,230,221,0.55)]">
@@ -58,7 +58,7 @@ export default function HowItWorksSection() {
               cx={s.cx}
               cy={s.cy}
               r={s.r}
-              fill={s.gold ? 'var(--terracotta)' : '#E8E6DD'}
+              fill={s.gold ? 'var(--terracotta)' : '#F8F4EC'}
               opacity={s.opacity}
             />
           ))}
@@ -88,7 +88,7 @@ export default function HowItWorksSection() {
             <text x="340" y="92" textAnchor="middle" fontSize="9" letterSpacing="0.2em" fill="var(--seafoam)" fontFamily="var(--font-mono)">
               i · OBSERVE
             </text>
-            <text x="340" y="170" textAnchor="middle" fontSize="14" fill="#E8E6DD" fontFamily="var(--font-display)">
+            <text x="340" y="170" textAnchor="middle" fontSize="14" fill="#F8F4EC" fontFamily="var(--font-display)">
               Tonight&apos;s sky
             </text>
           </g>
@@ -107,7 +107,7 @@ export default function HowItWorksSection() {
             <text x="540" y="222" textAnchor="start" fontSize="9" letterSpacing="0.2em" fill="var(--terracotta)" fontFamily="var(--font-mono)">
               ii · VERIFY
             </text>
-            <text x="540" y="240" textAnchor="start" fontSize="14" fill="#E8E6DD" fontFamily="var(--font-display)">
+            <text x="540" y="240" textAnchor="start" fontSize="14" fill="#F8F4EC" fontFamily="var(--font-display)">
               Photo + oracle
             </text>
           </g>
@@ -125,7 +125,7 @@ export default function HowItWorksSection() {
             <text x="140" y="222" textAnchor="end" fontSize="9" letterSpacing="0.2em" fill="var(--terracotta)" fontFamily="var(--font-mono)">
               iii · COLLECT
             </text>
-            <text x="140" y="240" textAnchor="end" fontSize="14" fill="#E8E6DD" fontFamily="var(--font-display)">
+            <text x="140" y="240" textAnchor="end" fontSize="14" fill="#F8F4EC" fontFamily="var(--font-display)">
               NFT + Stars
             </text>
           </g>

@@ -151,7 +151,7 @@
 }
 
 .ar-body--locked .ar-body__crosshair {
-  border-color: #7ed4a8;
+  border-color: #5EEAD4;
   box-shadow: 0 0 28px rgba(120,220,170,0.55);
   animation: none;
 }
@@ -707,7 +707,7 @@
   background: rgba(11,28,22,0.78);
 }
 .ar-bottom-hint.is-locked .ar-bottom-hint__primary {
-  color: #7ed4a8;
+  color: #5EEAD4;
 }
 
 /* === Stage cards (permission, denied, no-sensors) === */

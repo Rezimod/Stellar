@@ -8,7 +8,7 @@ export default function TelescopeIcon({ size = 56 }: { size?: number }) {
           <stop offset="1" stopColor="#4A6B8A" />
         </linearGradient>
         <radialGradient id="ti-lens" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#E8F0FF" />
+          <stop offset="0" stopColor="#5EEAD4" />
           <stop offset="0.6" stopColor="#38A0D8" />
           <stop offset="1" stopColor="#0E3A5C" />
         </radialGradient>

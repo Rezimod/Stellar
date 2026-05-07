@@ -64,13 +64,13 @@ export const REACTION_LABEL: Record<ReactionType, string> = {
 }
 
 export const REACTION_GRADIENT: Record<ReactionType, string> = {
-  like: 'linear-gradient(135deg, #38BDF8, #6366F1)',
-  love: 'linear-gradient(135deg, #F472B6, #EF4444)',
-  wow: 'linear-gradient(135deg, #FFD166, #F59E0B)',
-  sad: 'linear-gradient(135deg, #60A5FA, #312E81)',
+  like: 'linear-gradient(135deg, #5EEAD4, #8B5CF6)',
+  love: 'linear-gradient(135deg, #FB7185, #EF4444)',
+  wow: 'linear-gradient(135deg, #FFD166, #FFB347)',
+  sad: 'linear-gradient(135deg, #5EEAD4, #312E81)',
   dislike: 'linear-gradient(135deg, #94A3B8, #475569)',
-  star: 'linear-gradient(135deg, #FFD166, #F472B6)',
-  rocket: 'linear-gradient(135deg, #38F0FF, #8465CB)',
+  star: 'linear-gradient(135deg, #FFD166, #FB7185)',
+  rocket: 'linear-gradient(135deg, #5EEAD4, #8465CB)',
   galaxy: 'linear-gradient(135deg, #8465CB, #06122B)',
 }
 

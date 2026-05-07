@@ -29,7 +29,7 @@ export default function ClosingCtaSection() {
             width: `${s.size}px`,
             height: `${s.size}px`,
             opacity: s.opacity,
-            background: s.gold ? 'var(--terracotta)' : '#E8E6DD',
+            background: s.gold ? 'var(--terracotta)' : '#F8F4EC',
           }}
         />
       ))}
@@ -37,7 +37,7 @@ export default function ClosingCtaSection() {
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center"
         style={{ alignItems: 'center' }}>
         <div className="flex flex-col items-center text-center w-full" style={{ maxWidth: 640 }}>
-        <h2 className="font-display font-medium tracking-[-0.02em] leading-[1.1] text-[26px] md:text-[38px] text-[#E8E6DD]">
+        <h2 className="font-display font-medium tracking-[-0.02em] leading-[1.1] text-[26px] md:text-[38px] text-[#F8F4EC]">
           <span className="block">The sky is open.</span>
           <span className="block italic text-[var(--terracotta)]">Take your first observation.</span>
         </h2>

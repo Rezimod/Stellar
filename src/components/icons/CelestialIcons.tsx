@@ -135,8 +135,8 @@ export function OrionNebulaIcon({ size = 48, className, animate }: CelestialIcon
           <stop offset="100%" stopColor="var(--terracotta)" stopOpacity="0"/>
         </radialGradient>
         <radialGradient id={`ob${id}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.55"/>
-          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#5EEAD4" stopOpacity="0.55"/>
+          <stop offset="100%" stopColor="#5EEAD4" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <g filter={`url(#of${id})`} className={animate ? `oc${id}` : ''}>
@@ -229,13 +229,13 @@ export function AndromedaIcon({ size = 48, className, animate }: CelestialIconPr
 export function CrabNebulaIcon({ size = 48, className, animate }: CelestialIconProps) {
   const id = uid(useId());
   const fils = [
-    { d: 'M24,24 L27,9',  c: '#38BDF8', o: 0.65 },
+    { d: 'M24,24 L27,9',  c: '#5EEAD4', o: 0.65 },
     { d: 'M24,24 L37,15', c: 'var(--negative)', o: 0.60 },
     { d: 'M24,24 L39,27', c: 'var(--terracotta)', o: 0.55 },
-    { d: 'M24,24 L34,37', c: '#38BDF8', o: 0.60 },
+    { d: 'M24,24 L34,37', c: '#5EEAD4', o: 0.60 },
     { d: 'M24,24 L19,39', c: 'var(--negative)', o: 0.65 },
     { d: 'M24,24 L9,34',  c: 'var(--terracotta)', o: 0.55 },
-    { d: 'M24,24 L9,19',  c: '#38BDF8', o: 0.60 },
+    { d: 'M24,24 L9,19',  c: '#5EEAD4', o: 0.60 },
     { d: 'M24,24 L15,9',  c: 'var(--negative)', o: 0.50 },
   ];
   return (

@@ -271,7 +271,7 @@ export function generateSimPhoto(name: string): string {
       ctx.fill();
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#e8f0ff';
+      ctx.fillStyle = '#5EEAD4';
       ctx.fill();
     });
   } else {

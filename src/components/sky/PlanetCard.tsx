@@ -15,7 +15,7 @@ interface PlanetCardProps {
 }
 
 const ARROW_COLORS = {
-  active: { teal: '#38F0FF', peak: '#FFD166' },
+  active: { teal: '#5EEAD4', peak: '#FFD166' },
   inactive: '#5A6275',
 };
 

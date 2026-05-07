@@ -213,7 +213,7 @@ export default function HeroSkyPanel() {
           {/* comet head soft halo */}
           <radialGradient id="comet-head" cx="50%" cy="50%" r="50%">
             <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.95" />
-            <stop offset="55%"  stopColor="#BCD6FF" stopOpacity="0.35" />
+            <stop offset="55%"  stopColor="#5EEAD4" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#9CC4FF" stopOpacity="0" />
           </radialGradient>
 
@@ -394,7 +394,7 @@ export default function HeroSkyPanel() {
                     {/* Cassini Division (gap between B and A) */}
                     <ellipse cx="0" cy="0" rx={r * 1.92} ry={r * 0.51} stroke="#0A0E1A" strokeWidth="0.55" fill="none" />
                     {/* Encke Gap (faint dark line in A) */}
-                    <ellipse cx="0" cy="0" rx={r * 2.04} ry={r * 0.54} stroke="#1A1F2E" strokeWidth="0.25" fill="none" opacity="0.7" />
+                    <ellipse cx="0" cy="0" rx={r * 2.04} ry={r * 0.54} stroke="#0A1735" strokeWidth="0.25" fill="none" opacity="0.7" />
                   </g>
                 )}
 

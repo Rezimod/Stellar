@@ -495,7 +495,7 @@
   border: 1px solid rgba(94, 234, 212,0.25);
 }
 .stl-resolved-no {
-  color: #F472B6;
+  color: var(--no);
   background: rgba(244,114,182,0.10);
   border: 1px solid rgba(244,114,182,0.25);
 }
@@ -880,7 +880,7 @@
   text-transform: uppercase;
 }
 .stl-bet-yes .stl-bet-side-label { color: var(--seafoam); }
-.stl-bet-no  .stl-bet-side-label { color: #F472B6; }
+.stl-bet-no  .stl-bet-side-label { color: var(--no); }
 
 .stl-bet-side-pct {
   font-family: var(--font-mono);
@@ -3474,7 +3474,7 @@
 }
 .sky-hero-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: #4ADE80;
+  background: var(--seafoam);
   animation: home-pulse-dot 2s ease-in-out infinite;
 }
 .sky-hero-city {
@@ -3537,7 +3537,7 @@
   flex-shrink: 0;
   width: 88px; height: 88px;
   border-radius: 50%;
-  border: 3px solid #4ADE80;
+  border: 3px solid var(--seafoam);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3687,7 +3687,7 @@
   width: 5px; height: 5px; border-radius: 50%;
   display: inline-block;
 }
-.sky-planet-dot.up { background: #4ADE80; }
+.sky-planet-dot.up { background: var(--seafoam); }
 .sky-planet-dot.low { background: var(--terracotta); }
 .sky-planet-meta {
   font-family: var(--font-mono);
@@ -4050,7 +4050,7 @@
   background: rgba(255,255,255,0.07);
 }
 .sky-planet-card:focus-visible {
-  outline: 2px solid #A78BFA;
+  outline: 2px solid #8B5CF6;
   outline-offset: 2px;
 }
 
@@ -4483,8 +4483,8 @@
   --mis-t3: #585B66;
   --mis-bd: #27282E;
   --mis-bd2: #35363E;
-  --mis-grn: #4ADE80;
-  --mis-grn-bg: rgba(74,222,128,0.10);
+  --mis-grn: #5EEAD4;
+  --mis-grn-bg: rgba(94,234,212,0.10);
   --mis-amb: var(--terracotta);
   --mis-amb-bg: rgba(255, 209, 102,0.08);
   --mis-acc: var(--terracotta);
@@ -4763,8 +4763,8 @@
 .mis-lineup-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #4ADE80;
-  box-shadow: 0 0 6px rgba(74,222,128,0.6);
+  background: var(--seafoam);
+  box-shadow: 0 0 6px rgba(94,234,212,0.6);
   animation: home-pulse-dot 2s ease-in-out infinite;
 }
 .mis-lineup-loc {
@@ -4816,7 +4816,7 @@
 .mis-lineup-name {
   font-size: 13px;
   font-weight: 600;
-  color: #E8E6E0;
+  color: var(--text);
   letter-spacing: -0.005em;
 }
 .mis-lineup-row {
@@ -4883,8 +4883,8 @@
 .mis-status-chip-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #4ADE80;
-  box-shadow: 0 0 6px rgba(74,222,128,0.6);
+  background: var(--seafoam);
+  box-shadow: 0 0 6px rgba(94,234,212,0.6);
   animation: home-pulse-dot 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -5114,7 +5114,7 @@
 .mis-tile-name {
   font-size: 12.5px;
   font-weight: 600;
-  color: #E8E6E0;
+  color: var(--text);
   letter-spacing: -0.005em;
 }
 .mis-tile-desc {
@@ -5305,7 +5305,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 11;
-  background: #0B0E17;
+  background: var(--canvas);
   overflow: hidden;
 }
 @media (min-width: 720px) {
@@ -5421,16 +5421,16 @@
   width: 56px;
   height: 56px;
   border-radius: 12px;
-  background: #0B0E17;
+  background: var(--canvas);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border: 0.5px solid rgba(255, 255, 255, 0.06);
 }
-.mis-rare-art--eclipse-solar { background: radial-gradient(circle at 60% 40%, rgba(242, 90, 26, 0.18), transparent 60%), #0B0E17; }
-.mis-rare-art--eclipse-lunar { background: radial-gradient(circle at 50% 50%, rgba(229, 75, 63, 0.18), transparent 60%), #0B0E17; }
-.mis-rare-art--comet         { background: radial-gradient(circle at 30% 70%, rgba(125, 211, 252, 0.18), transparent 60%), #0B0E17; }
+.mis-rare-art--eclipse-solar { background: radial-gradient(circle at 60% 40%, rgba(242, 90, 26, 0.18), transparent 60%), var(--canvas); }
+.mis-rare-art--eclipse-lunar { background: radial-gradient(circle at 50% 50%, rgba(229, 75, 63, 0.18), transparent 60%), var(--canvas); }
+.mis-rare-art--comet         { background: radial-gradient(circle at 30% 70%, rgba(125, 211, 252, 0.18), transparent 60%), var(--canvas); }
 .mis-rare-date {
   display: flex;
   flex-direction: column;
@@ -5609,7 +5609,7 @@
 .mis-qtile-name {
   font-size: 13px;
   font-weight: 600;
-  color: #E8E6E0;
+  color: var(--text);
   letter-spacing: -0.005em;
   position: relative;
   z-index: 1;

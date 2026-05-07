@@ -20,8 +20,8 @@ export default function CosmologyIcon({ size = 56 }: { size?: number }) {
       <circle cx="48" cy="14" r="0.5" fill="#fff" opacity="0.6" />
       <circle cx="10" cy="46" r="0.5" fill="#fff" opacity="0.6" />
       <circle cx="46" cy="44" r="0.7" fill="#fff" opacity="0.8" />
-      <circle cx="4" cy="28" r="0.4" fill="#B8D4FF" opacity="0.5" />
-      <circle cx="52" cy="30" r="0.4" fill="#B8D4FF" opacity="0.5" />
+      <circle cx="4" cy="28" r="0.4" fill="#5EEAD4" opacity="0.5" />
+      <circle cx="52" cy="30" r="0.4" fill="#5EEAD4" opacity="0.5" />
     </svg>
   );
 }

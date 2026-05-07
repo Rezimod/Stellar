@@ -187,7 +187,7 @@ export default function AstraPopup() {
         >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255, 209, 102,0.15)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 16px rgba(255, 209, 102,0.5)' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #5EEAD4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 16px rgba(255, 209, 102,0.5)' }}>
               <Sparkles size={15} color="#fff" />
             </div>
             <div className="flex-1 min-w-0">
@@ -253,7 +253,7 @@ export default function AstraPopup() {
                 disabled={!input.trim() || loading}
                 style={{
                   width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                  background: input.trim() && !loading ? 'linear-gradient(135deg, #7c3aed, #06b6d4)' : 'rgba(255,255,255,0.06)',
+                  background: input.trim() && !loading ? 'linear-gradient(135deg, #7c3aed, #5EEAD4)' : 'rgba(255,255,255,0.06)',
                   border: 'none', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: input.trim() && !loading ? '#fff' : 'rgba(255,255,255,0.25)',

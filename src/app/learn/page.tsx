@@ -19,10 +19,10 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 const QUIZ_HUB: Record<string, { Icon: LucideIcon; gradient: string }> = {
-  'solar-system':      { Icon: Sun,       gradient: 'linear-gradient(135deg, #FFB347 0%, #FF7E3F 100%)' },
-  'constellations':    { Icon: Star,      gradient: 'linear-gradient(135deg, #D946EF 0%, #8B5CF6 100%)' },
-  'telescopes':        { Icon: Telescope, gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)' },
-  'universe':          { Icon: Globe,     gradient: 'linear-gradient(135deg, #2DD4BF 0%, #06B6D4 100%)' },
+  'solar-system':      { Icon: Sun,       gradient: 'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)' },
+  'constellations':    { Icon: Star,      gradient: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)' },
+  'telescopes':        { Icon: Telescope, gradient: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)' },
+  'universe':          { Icon: Globe,     gradient: 'linear-gradient(135deg, #5EEAD4 0%, #5EEAD4 100%)' },
   'space-exploration': { Icon: Rocket,    gradient: 'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)' },
 };
 
@@ -413,7 +413,7 @@ function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef)
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: hub?.gradient ?? 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+                  background: hub?.gradient ?? 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
                   boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
                 }}
               >
@@ -840,7 +840,7 @@ function AstraPromo({ locale }: { locale: Locale }) {
         <div
           className="w-11 h-11 rounded-full flex items-center justify-center"
           style={{
-            background: 'linear-gradient(135deg, #D946EF 0%, #8B5CF6 100%)',
+            background: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
             boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
           }}
         >

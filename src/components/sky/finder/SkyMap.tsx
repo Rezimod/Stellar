@@ -7,7 +7,7 @@ import type { ObjectId, SkyObject } from './types';
 
 const PLANET_COLORS: Record<string, string> = {
   sun:     '#ffd166',
-  moon:    '#f4ede0',
+  moon:    '#F8F4EC',
   mercury: '#d6cdb1',
   venus:   '#f7e7a8',
   mars:    '#ff7b54',
@@ -18,9 +18,9 @@ const PLANET_COLORS: Record<string, string> = {
 };
 
 function starColor(mag: number): string {
-  if (mag <= -1) return '#bcd6ff';
-  if (mag <= 0)  return '#f4ede0';
-  if (mag <= 1)  return '#fff1d2';
+  if (mag <= -1) return '#5EEAD4';
+  if (mag <= 0)  return '#F8F4EC';
+  if (mag <= 1)  return '#FFD166';
   return '#e8d8b6';
 }
 
@@ -53,7 +53,7 @@ const STAR_TINT: Record<string, string> = {
   // White (A/F)
   altair:    '#f4f1e6',
   deneb:     '#f0eee0',
-  procyon:   '#f4ede0',
+  procyon:   '#F8F4EC',
   castor:    '#ecedf0',
   // Yellow / yellow-white (F/G)
   capella:   '#fbe9ad',
@@ -538,7 +538,7 @@ export function SkyMap({
               cx={s.x}
               cy={s.y}
               r={s.r}
-              fill="#f4ede0"
+              fill="#F8F4EC"
               opacity={s.o}
             />
           ))}
@@ -621,7 +621,7 @@ export function SkyMap({
             {projectedStars.map((s) => {
               const isActive = activeConstellation && s.constellation === activeConstellation;
               const r = s.mag <= 1 ? 1.9 : s.mag <= 2 ? 1.55 : 1.2;
-              const tint = STAR_TINT[s.id] ?? (isActive ? '#fff1d2' : starColor(s.mag));
+              const tint = STAR_TINT[s.id] ?? (isActive ? '#FFD166' : starColor(s.mag));
               return (
                 <circle
                   key={`cstar-${s.id}`}
@@ -1010,9 +1010,9 @@ function Crosshair({ x, y, locked = false }: { x: number; y: number; locked?: bo
 function LockRipples({ x, y }: { x: number; y: number }) {
   return (
     <g pointerEvents="none" className="sky-map__lock-ripples">
-      <circle cx={x} cy={y} r={11} fill="none" stroke="#7ed4a8" strokeWidth={1.2} className="sky-map__lock-ring sky-map__lock-ring--1" />
-      <circle cx={x} cy={y} r={11} fill="none" stroke="#7ed4a8" strokeWidth={1.0} className="sky-map__lock-ring sky-map__lock-ring--2" />
-      <circle cx={x} cy={y} r={11} fill="none" stroke="#7ed4a8" strokeWidth={0.8} className="sky-map__lock-ring sky-map__lock-ring--3" />
+      <circle cx={x} cy={y} r={11} fill="none" stroke="#5EEAD4" strokeWidth={1.2} className="sky-map__lock-ring sky-map__lock-ring--1" />
+      <circle cx={x} cy={y} r={11} fill="none" stroke="#5EEAD4" strokeWidth={1.0} className="sky-map__lock-ring sky-map__lock-ring--2" />
+      <circle cx={x} cy={y} r={11} fill="none" stroke="#5EEAD4" strokeWidth={0.8} className="sky-map__lock-ring sky-map__lock-ring--3" />
     </g>
   );
 }

@@ -6,7 +6,7 @@ import type { NetworkObservation, NodeType } from '@/app/api/network/observation
 
 function bortleColor(b: number): string {
   if (b <= 2) return 'var(--success)';
-  if (b <= 4) return '#86EFAC';
+  if (b <= 4) return '#5EEAD4';
   if (b <= 6) return 'var(--terracotta)';
   if (b <= 8) return 'var(--terracotta)';
   return 'var(--negative)';

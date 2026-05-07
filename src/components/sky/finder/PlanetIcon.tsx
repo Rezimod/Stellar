@@ -40,7 +40,7 @@ const PLANET_IDS = new Set<PlanetId>(['sun', 'moon', 'mercury', 'venus', 'mars',
 
 const GRADIENTS: Record<PlanetId, string> = {
   sun:     'radial-gradient(circle at 40% 40%, #fffbe1 0%, #ffd166 50%, #ff7b1a 90%)',
-  moon:    'radial-gradient(circle at 40% 40%, #f4ede0 0%, #c8c2b5 60%, #6a665e 95%)',
+  moon:    'radial-gradient(circle at 40% 40%, #F8F4EC 0%, #c8c2b5 60%, #6a665e 95%)',
   mercury: 'radial-gradient(circle at 35% 35%, #e2dccd 0%, #a89e88 55%, #58523f 95%)',
   venus:   'radial-gradient(circle at 35% 35%, #fff5d6 0%, #e7cd84 50%, #8a6b2a 95%)',
   mars:    'radial-gradient(circle at 35% 35%, #ff7b54 0%, #c2451f 60%, #5a1d08 95%)',
@@ -219,7 +219,7 @@ function CatalogGlyph({
     const m = Math.max(-2, Math.min(4, magnitude));
     const core = size * (0.13 - ((m + 2) / 6) * 0.05); // ~size * 0.13 → 0.08
     const halo = size * 0.42;
-    const tint = m <= -1 ? '#bcd6ff' : m <= 0 ? '#f4ede0' : m <= 1 ? '#fff1d2' : '#e8d8b6';
+    const tint = m <= -1 ? '#5EEAD4' : m <= 0 ? '#F8F4EC' : m <= 1 ? '#FFD166' : '#e8d8b6';
     const haloShadow = glow
       ? `0 0 ${size * 0.18}px rgba(255,250,235,0.45), 0 0 ${size * 0.34}px rgba(180,205,255,0.18)`
       : 'none';
@@ -265,7 +265,7 @@ function CatalogGlyph({
               marginTop: -core * 0.275 - core * 0.85,
               marginLeft: core * 0.55,
               borderRadius: '50%',
-              background: '#bcd6ff',
+              background: '#5EEAD4',
               opacity: 0.85,
             }}
           />

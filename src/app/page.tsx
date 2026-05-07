@@ -424,7 +424,7 @@ function IPhone({
             </div>
           ) : (
             <div
-              className="relative w-full flex flex-col bg-gradient-to-b from-[#0B0E17] to-[#0F1424]"
+              className="relative w-full flex flex-col bg-gradient-to-b from-[#0A1735] to-[#0F1424]"
               style={{ aspectRatio: '884 / 1498' }}
             >
               <PhoneTopBar size={size} />
@@ -473,7 +473,7 @@ function MissionsScreen() {
               <Image src={t.img} alt={t.name} fill sizes="120px" className="object-cover" />
               {t.done && (
                 <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
-                  <span className="w-4 h-4 rounded-full bg-[#10B981] flex items-center justify-center">
+                  <span className="w-4 h-4 rounded-full bg-[#5EEAD4] flex items-center justify-center">
                     <svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 8l3 3 7-7" />
                     </svg>
@@ -649,13 +649,13 @@ function SkyARScreen() {
 
 function SkyForecastScreen() {
   const days = [
-    { d: 'M', label: 'Go',    color: '#10B981', pct: 88 },
-    { d: 'T', label: 'Go',    color: '#10B981', pct: 82 },
+    { d: 'M', label: 'Go',    color: '#5EEAD4', pct: 88 },
+    { d: 'T', label: 'Go',    color: '#5EEAD4', pct: 82 },
     { d: 'W', label: 'Maybe', color: '#FFD166', pct: 60 },
     { d: 'T', label: 'Skip',  color: '#94A3B8', pct: 28 },
-    { d: 'F', label: 'Go',    color: '#10B981', pct: 90 },
+    { d: 'F', label: 'Go',    color: '#5EEAD4', pct: 90 },
     { d: 'S', label: 'Maybe', color: '#FFD166', pct: 55 },
-    { d: 'S', label: 'Go',    color: '#10B981', pct: 84 },
+    { d: 'S', label: 'Go',    color: '#5EEAD4', pct: 84 },
   ];
   return (
     <div className="flex flex-col h-full">
@@ -768,7 +768,7 @@ export default function HomePage() {
           <div>
             <h1 className="text-[36px] md:text-[72px] font-extrabold leading-[1.05] md:leading-[1] tracking-[-0.025em] text-white mb-5 md:mb-8">
               Find every{' '}
-              <span className="bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#B07FE8] to-[#5EEAD4] bg-clip-text text-transparent">
                 planet
               </span>
               . Earn rewards.
@@ -1076,7 +1076,7 @@ export default function HomePage() {
                       ₾
                     </span>
                   </span>
-                  <span className="font-mono text-[#A78BFA] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
+                  <span className="font-mono text-[#8B5CF6] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
                     ★ {p.stars}
                   </span>
                 </div>
@@ -1128,7 +1128,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex justify-center">
                   {row.us === true ? (
-                    <svg className="w-4 h-4 text-[#10B981]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
+                    <svg className="w-4 h-4 text-[#5EEAD4]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
                   ) : (
                     <svg className="w-3.5 h-3.5 text-[#5C6478]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
                   )}
@@ -1155,7 +1155,7 @@ export default function HomePage() {
             <Eyebrow>Vision</Eyebrow>
             <SectionTitle>
               Astroman is the shop.{' '}
-              <span className="bg-gradient-to-r from-[#B07FE8] to-[#38F0FF] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#B07FE8] to-[#5EEAD4] bg-clip-text text-transparent">
                 Stellar is the layer.
               </span>
             </SectionTitle>

@@ -213,10 +213,6 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
   return (
     <div style={{ display: 'inline-block' }}>
       <style>{`
-        @keyframes loc-ping {
-          0% { transform: scale(0.7); opacity: 0.6; }
-          100% { transform: scale(2.4); opacity: 0; }
-        }
         @keyframes loc-dropdown-in {
           from { opacity: 0; transform: translateY(-6px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -225,18 +221,17 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           display: inline-flex;
           align-items: center;
           gap: 7px;
-          border-radius: 9999px;
-          padding: ${compact ? '7px 14px' : '9px 16px'};
-          background: rgba(255, 209, 102, 0.10);
-          border: 1.5px solid rgba(255, 209, 102, 0.40);
+          border-radius: 8px;
+          height: 30px;
+          padding: 0 ${compact ? '11px' : '14px'};
+          background: rgba(15, 18, 28, 0.55);
+          border: 1px solid rgba(255, 209, 102, 0.32);
           cursor: pointer;
-          transition: background 0.2s, border-color 0.2s;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          transition: background 0.15s, border-color 0.15s;
         }
         .loc-pill:hover {
-          background: rgba(255, 209, 102, 0.18);
-          border-color: rgba(255, 209, 102, 0.65);
+          background: rgba(15, 18, 28, 0.75);
+          border-color: rgba(255, 209, 102, 0.55);
         }
         .loc-city-btn {
           display: flex;
@@ -283,7 +278,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(232,230,221,0.14);
           border-radius: 10px;
-          color: #E8E6DD;
+          color: #F8F4EC;
           font-size: 13px;
           box-sizing: border-box;
           outline: none;
@@ -302,20 +297,12 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
       `}</style>
 
       <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
-        <div style={{ position: 'relative', width: 16, height: 16, flexShrink: 0 }}>
-          <div style={{
-            position: 'absolute', inset: -2, borderRadius: '50%',
-            background: 'rgba(255, 209, 102,0.40)',
-            animation: 'loc-ping 2.4s ease-out infinite',
-            pointerEvents: 'none',
-          }} />
-          <MapPin size={15} color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 209, 102,0.85)'} style={{ position: 'relative', zIndex: 1 }} />
-        </div>
-        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, letterSpacing: '0.01em' }}>
+        <MapPin size={13} color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 209, 102,0.85)'} style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.92)', fontWeight: 500, letterSpacing: '0.01em' }}>
           {label}
         </span>
-        <ChevronDown size={12} color="rgba(255, 209, 102,0.7)"
-          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+        <ChevronDown size={11} color="rgba(255, 209, 102,0.7)"
+          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
       </button>
 
       {open && anchor && typeof document !== 'undefined' && createPortal(
@@ -351,7 +338,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
                   Current
                 </p>
                 <p style={{
-                  color: '#E8E6DD', fontSize: 13, fontWeight: 600, margin: 0,
+                  color: '#F8F4EC', fontSize: 13, fontWeight: 600, margin: 0,
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
                   {label}
@@ -442,7 +429,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
                         >
                           <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{p.flag}</span>
                           <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                            <span style={{ color: active ? 'var(--terracotta)' : '#E8E6DD', fontSize: 13, fontWeight: 500 }}>
+                            <span style={{ color: active ? 'var(--terracotta)' : '#F8F4EC', fontSize: 13, fontWeight: 500 }}>
                               {p.city}
                             </span>
                             <span style={{

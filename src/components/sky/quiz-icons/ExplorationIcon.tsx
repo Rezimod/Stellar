@@ -9,7 +9,7 @@ export default function ExplorationIcon({ size = 56 }: { size?: number }) {
         </linearGradient>
         <linearGradient id="ei-flame" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="#FFF4C4" />
-          <stop offset="0.5" stopColor="#FFB84A" />
+          <stop offset="0.5" stopColor="#FFB347" />
           <stop offset="1" stopColor="#FF6428" stopOpacity="0" />
         </linearGradient>
       </defs>

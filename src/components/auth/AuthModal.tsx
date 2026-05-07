@@ -58,7 +58,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           style={{
             fontFamily: 'var(--font-display), serif',
             fontSize: 22,
-            color: '#E8E6DD',
+            color: '#F8F4EC',
             margin: '0 0 4px',
             fontWeight: 500,
             letterSpacing: '-0.01em',
@@ -120,7 +120,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           style={{
             width: '100%',
             background: 'transparent',
-            color: '#E8E6DD',
+            color: '#F8F4EC',
             fontSize: 13,
             fontWeight: 500,
             padding: '12px 16px',

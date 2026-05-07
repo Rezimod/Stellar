@@ -18,6 +18,7 @@
   */
   --canvas: #0A1735;
   --terracotta: #FFD166;
+  --orange: #FFB347;        /* tertiary accent — light orange for missions / bets / event highlights */
   --seafoam: #5EEAD4;
   --negative: #FB7185;
   --text: #F8F4EC;
@@ -57,11 +58,16 @@
   --text-dim: var(--text-muted);
   --text-faint: rgba(255, 255, 255, 0.18);
 
-  /* PRIMARY ACCENT — terracotta */
+  /* PRIMARY ACCENT — terracotta (badges, Stars, gold highlights) */
   --accent: var(--terracotta);
   --accent-dim: rgba(255, 209, 102, 0.10);
   --accent-glow: rgba(255, 209, 102, 0.20);
   --accent-border: rgba(255, 209, 102, 0.25);
+
+  /* TERTIARY ACCENT — light orange (missions, bets, event highlights) */
+  --orange-dim: rgba(255, 179, 71, 0.10);
+  --orange-glow: rgba(255, 179, 71, 0.20);
+  --orange-border: rgba(255, 179, 71, 0.25);
 
   /* Legacy accent aliases (kept for backward compat) */
   --accent-cyan: var(--seafoam);
@@ -70,8 +76,8 @@
   --accent-teal-dim: rgba(94, 234, 212, 0.10);
   --accent-teal-glow: rgba(94, 234, 212, 0.20);
   --accent-emerald: var(--seafoam);
-  --accent-purple: var(--terracotta);
-  --accent-amber: var(--terracotta);
+  --accent-purple: #8B5CF6;
+  --accent-amber: var(--orange);
   --accent-red: var(--negative);
 
   /* Stars token — terracotta */
@@ -85,8 +91,8 @@
   /* Status colors — functional only */
   --success: var(--seafoam);
   --success-dim: rgba(94, 234, 212, 0.12);
-  --warning: var(--terracotta);
-  --warning-dim: rgba(255, 209, 102, 0.12);
+  --warning: var(--orange);
+  --warning-dim: rgba(255, 179, 71, 0.12);
   --error: var(--negative);
   --error-dim: rgba(251, 113, 133, 0.12);
 
@@ -223,6 +229,7 @@
   /* Unified palette — Tailwind utilities: bg-canvas / text-terracotta / etc. */
   --color-canvas: var(--canvas);
   --color-terracotta: var(--terracotta);
+  --color-orange: var(--orange);
   --color-seafoam: var(--seafoam);
   --color-negative: var(--negative);
   --color-text-primary: var(--text);
@@ -438,8 +445,8 @@ code, pre, .mono, [class*="font-mono"] {
 :root {
   --cta-indigo: #5B6CFF;
   --cta-violet: #8B5CF6;
-  --cta-orange-from: #F59E0B;
-  --cta-orange-to:   #F97316;
+  --cta-orange-from: #FFB347;
+  --cta-orange-to:   #FFB347;
   --cta-gradient: linear-gradient(135deg, var(--cta-indigo) 0%, var(--cta-violet) 100%);
   --cta-gradient-orange: linear-gradient(135deg, var(--cta-orange-from) 0%, var(--cta-orange-to) 100%);
   --cta-glow: 0 8px 24px rgba(91, 108, 255, 0.28), 0 0 0 1px rgba(139, 92, 246, 0.25) inset;
@@ -533,8 +540,8 @@ code, pre, .mono, [class*="font-mono"] {
   box-shadow: 0 16px 40px rgba(91, 108, 255, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
 }
 .icon-badge-gradient.is-orange {
-  background: var(--cta-gradient-orange);
-  box-shadow: 0 16px 40px rgba(249, 115, 22, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
+  background: var(--orange);
+  box-shadow: 0 16px 40px rgba(255, 179, 71, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
 }
 .icon-badge-gradient svg { width: 32px; height: 32px; }
 

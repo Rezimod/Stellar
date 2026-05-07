@@ -22,7 +22,7 @@ export default function MissionsSection() {
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--seafoam)]/70">
             03 · MISSIONS
           </span>
-          <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#E8E6DD]">
+          <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#F8F4EC]">
             Seven missions await.
           </h2>
           <p className="mt-3 text-[13px] md:text-[14px] leading-[1.65] text-[rgba(232,230,221,0.6)] max-w-[440px]">
@@ -46,7 +46,7 @@ export default function MissionsSection() {
               }`}
             >
               <div className="min-w-0">
-                <div className="font-display text-[13px] md:text-[14px] text-[#E8E6DD]">
+                <div className="font-display text-[13px] md:text-[14px] text-[#F8F4EC]">
                   {row.name}
                 </div>
                 <div className="mt-0.5 text-[10px] text-[rgba(232,230,221,0.45)]">

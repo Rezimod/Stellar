@@ -236,7 +236,7 @@ function ProfilePageContent() {
         >
           <div style={{
             width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
+            background: 'linear-gradient(135deg, #5EEAD4 0%, #3B82F6 100%)',
             boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -842,7 +842,7 @@ function ProfilePageContent() {
             };
             const tiles = [
               { href: '/settings#notifications', icon: Bell,        color: '#FFD166', label: 'Notifications', value: 'On' },
-              { href: '/settings#appearance',    icon: Moon,        color: '#A78BFA', label: 'Appearance',    value: 'Dark / Day' },
+              { href: '/settings#appearance',    icon: Moon,        color: '#8B5CF6', label: 'Appearance',    value: 'Dark / Day' },
               { href: '/settings#wallet',        icon: Wallet,      color: '#5EEAD4', label: 'Wallet',        value: addrShort ?? '—' },
               { href: '/settings#privacy',       icon: ShieldCheck, color: '#5EEAD4', label: 'Privacy & Data', value: 'Manage' },
             ];

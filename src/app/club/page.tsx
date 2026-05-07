@@ -107,7 +107,7 @@ export default function ClubPage() {
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+              background: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
               boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
             }}
           >
@@ -164,7 +164,7 @@ export default function ClubPage() {
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+                  background: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
                   boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
                 }}
               >
@@ -200,7 +200,7 @@ export default function ClubPage() {
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+              background: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
               boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
             }}
           >

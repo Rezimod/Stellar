@@ -670,7 +670,7 @@ function NFTPreviewArt({ missionId, sealMode = false }: { missionId: string; sea
     <svg width={size} height={size} viewBox="0 0 80 80" style={{ filter: sealMode ? 'none' : 'drop-shadow(0 0 12px rgba(184,212,255,0.4))' }}>
       <defs>
         <radialGradient id={`nft-${missionId}`} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#B8D4FF" stopOpacity="0.6" />
+          <stop offset="0" stopColor="#5EEAD4" stopOpacity="0.6" />
           <stop offset="0.5" stopColor="var(--terracotta)" stopOpacity="0.2" />
           <stop offset="1" stopColor="transparent" />
         </radialGradient>

@@ -36,7 +36,7 @@ export default function HeroSection() {
             width: `${s.size}px`,
             height: `${s.size}px`,
             opacity: s.opacity,
-            background: s.gold ? 'var(--terracotta)' : '#E8E6DD',
+            background: s.gold ? 'var(--terracotta)' : '#F8F4EC',
           }}
         />
       ))}
@@ -47,7 +47,7 @@ export default function HeroSection() {
           BUILT ON SOLANA · COLOSSEUM FRONTIER
         </span>
 
-        <h1 className="mt-5 font-display font-medium tracking-[-0.03em] leading-[1] md:leading-[0.95] text-[40px] md:text-[64px] text-[#E8E6DD]">
+        <h1 className="mt-5 font-display font-medium tracking-[-0.03em] leading-[1] md:leading-[0.95] text-[40px] md:text-[64px] text-[#F8F4EC]">
           <span className="block">Astronomy,</span>
           <span className="block italic text-[var(--terracotta)]">on chain.</span>
         </h1>

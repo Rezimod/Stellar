@@ -29,7 +29,7 @@ const COMPASS_LABELS: { dir: string; az: number }[] = [
 
 const PLANET_ACCENT: Record<string, string> = {
   sun:     '#ffd166',
-  moon:    '#f4ede0',
+  moon:    '#F8F4EC',
   mercury: '#d6cdb1',
   venus:   '#f7e7a8',
   mars:    '#ff7b54',
@@ -53,18 +53,18 @@ const PLANET_GLOW: Record<string, string> = {
 
 function accentFor(o: SkyObject): string {
   if (o.type === 'planet' || o.type === 'sun' || o.type === 'moon') {
-    return PLANET_ACCENT[o.id] ?? '#f4ede0';
+    return PLANET_ACCENT[o.id] ?? '#F8F4EC';
   }
   if (o.type === 'star' || o.type === 'double') {
-    if (o.magnitude <= -1) return '#bcd6ff';
-    if (o.magnitude <= 0)  return '#f4ede0';
-    if (o.magnitude <= 1)  return '#fff1d2';
+    if (o.magnitude <= -1) return '#5EEAD4';
+    if (o.magnitude <= 0)  return '#F8F4EC';
+    if (o.magnitude <= 1)  return '#FFD166';
     return '#e8d8b6';
   }
   if (o.type === 'nebula') return '#e8a39e';
   if (o.type === 'galaxy') return '#c8d4e8';
   if (o.type === 'cluster') return '#f1e4b8';
-  return '#f4ede0';
+  return '#F8F4EC';
 }
 
 function glowFor(o: SkyObject): string {
@@ -237,7 +237,7 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
                 <div
                   className="horizon-strip__mark-label"
                   style={{
-                    color: isHl ? 'var(--terracotta, #ffd166)' : p.isAbove ? '#f4ede0' : 'rgba(244,237,224,0.45)',
+                    color: isHl ? 'var(--terracotta, #ffd166)' : p.isAbove ? '#F8F4EC' : 'rgba(244,237,224,0.45)',
                     transform: `translate(-50%, ${-radius - 18}px)`,
                     fontWeight: isHl ? 600 : 500,
                   }}

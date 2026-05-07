@@ -217,7 +217,7 @@ function LunarEclipseArt({ large }: { large: boolean }) {
     <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'}>
       <defs>
         <radialGradient id="moonNorm" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#f4ede0" />
+          <stop offset="0%" stopColor="#F8F4EC" />
           <stop offset="60%" stopColor="#c8c2b5" />
           <stop offset="100%" stopColor="#6a665e" />
         </radialGradient>

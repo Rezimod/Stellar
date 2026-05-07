@@ -658,7 +658,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         .mab-pillrow-wrap {
           display: flex;
           flex-direction: column;
-          background: var(--stl-bg-surface, var(--stl-bg2, #1A1F2E));
+          background: var(--stl-bg-surface, var(--stl-bg2, #0A1735));
           border: 1px solid var(--stl-border-regular, var(--stl-border, rgba(255, 255, 255, 0.08)));
           border-radius: var(--stl-r-md, 12px);
           overflow: hidden;
@@ -701,8 +701,8 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         }
         .mab-pillrow-side.yes {
           color: #052E27;
-          background: linear-gradient(180deg, #7AF5DD 0%, #2DD4BF 100%);
-          border: 1px solid #2DD4BF;
+          background: linear-gradient(180deg, #7AF5DD 0%, #5EEAD4 100%);
+          border: 1px solid #5EEAD4;
           box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.55),
             inset 0 -2px 0 rgba(0, 0, 0, 0.18),
@@ -823,7 +823,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           padding: 6px 11px;
           border-radius: 8px;
           color: #2A1A03;
-          background: linear-gradient(180deg, #FFE08A 0%, #F59E0B 100%);
+          background: linear-gradient(180deg, #FFE08A 0%, #FFB347 100%);
           border: 1px solid #E59008;
           box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.5),
@@ -864,7 +864,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           gap: 8px;
           padding: 8px 10px 10px;
           border-top: 1px solid var(--stl-border-regular, var(--stl-border, rgba(255, 255, 255, 0.08)));
-          background: var(--stl-bg-surface, var(--stl-bg2, #1A1F2E));
+          background: var(--stl-bg-surface, var(--stl-bg2, #0A1735));
         }
         .mab-drawer-actions {
           display: flex;

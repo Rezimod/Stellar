@@ -164,7 +164,7 @@ function HopDiagram({ from, to, degrees }: { from: string; to: string; degrees: 
   return (
     <div className="finder-hint__hop-diagram" aria-hidden="true">
       <svg width={120} height={42} viewBox="0 0 120 42" fill="none">
-        <circle cx={14} cy={28} r={4.5} fill="#fff1d2" />
+        <circle cx={14} cy={28} r={4.5} fill="#FFD166" />
         <circle cx={14} cy={28} r={8} fill="none" stroke="rgba(255,241,210,0.25)" strokeWidth={0.8} />
         <path d="M22 26 Q 60 6 100 22" stroke="var(--terracotta, #FFD166)" strokeWidth={1} strokeDasharray="2 2" fill="none" />
         <circle cx={104} cy={22} r={2.6} fill="none" stroke="var(--terracotta, #FFD166)" strokeWidth={1.1} />

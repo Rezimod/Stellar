@@ -19,7 +19,7 @@ interface SkyCompassProps {
 }
 
 const PLANET_COLORS: Record<string, { fill: string; ring?: string }> = {
-  Jupiter: { fill: '#E8B84A' },
+  Jupiter: { fill: '#FFB347' },
   Venus: { fill: '#F0E5C0' },
   Mars: { fill: '#C84A2E' },
   Saturn: { fill: '#D4A954', ring: '#D4A954' },

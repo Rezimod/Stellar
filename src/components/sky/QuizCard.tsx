@@ -17,16 +17,16 @@ const THEMES: Record<QuizTheme, {
     background:
       'radial-gradient(circle at 85% 30%, rgba(255,180,80,0.18) 0%, transparent 55%), radial-gradient(circle at 20% 80%, rgba(255,100,40,0.1) 0%, transparent 50%), linear-gradient(145deg, #1a0e07 0%, #0a0a14 100%)',
     border: 'rgba(255,180,80,0.18)',
-    accent: '#FFB84A',
+    accent: '#FFB347',
     buttonBg: 'rgba(255,180,80,0.1)',
     buttonBorder: 'rgba(255,180,80,0.3)',
-    buttonFill: '#FFB84A',
+    buttonFill: '#FFB347',
   },
   stars: {
     background:
       'radial-gradient(circle at 80% 20%, rgba(184,212,255,0.14) 0%, transparent 50%), radial-gradient(circle at 15% 70%, rgba(132,155,220,0.08) 0%, transparent 50%), linear-gradient(145deg, #0d1428 0%, var(--canvas) 100%)',
     border: 'rgba(184,212,255,0.12)',
-    accent: '#B8D4FF',
+    accent: '#5EEAD4',
     buttonBg: 'rgba(184,212,255,0.1)',
     buttonBorder: 'rgba(184,212,255,0.25)',
     buttonFill: 'rgba(184,212,255,0.9)',

@@ -158,7 +158,7 @@ export const DSO = [
     desc: { en: 'One of the nearest and most famous star clusters. The naked eye sees 6–7 stars but binoculars reveal hundreds. Astronomers in ancient Georgia, Greece, and Japan all recorded this cluster.', ka: 'ყველაზე ახლო და ცნობილი ვარსკვლავთა გროვა. შიშველი თვალი 6–7 ვარსკვლავს ხედავს, ბინოკლი — ასობითს.' },
     scope: { en: 'Best in binoculars or a very wide-field telescope. High magnification makes it too large to fit in view.', ka: 'საუკეთესო ბინოკლით. მაღალი გადიდება ზედმეტად ზრდის.' },
     kidsLine: { en: 'These 7 sister stars have guided sailors and farmers for thousands of years!', ka: 'ეს 7 და-ვარსკვლავი ათასობით წლის განმავლობაში ზღვაოსნებსა და ფერმერებს ეხმარებოდა!' },
-    color: '#38f0ff',
+    color: '#5EEAD4',
     missionId: 'pleiades',
   },
   {
@@ -215,7 +215,7 @@ export const DSO = [
     desc: { en: 'Two galaxies in the process of colliding and merging. The Whirlpool is being distorted by the gravitational pull of its smaller companion (NGC 5195). Charles Messier discovered it in 1773.', ka: 'ორი გალაქტიკა, რომლებიც ერთმანეთთან შეჯახებისა და შერწყმის პროცესშია.' },
     scope: { en: '100mm shows a faint smudge with a brighter core. 200mm+ on a dark night shows the spiral arms and the companion galaxy as a separate spot.', ka: '100 მმ აჩვენებს სუსტ ლაქას. 200 მმ+ ბნელ ღამეს ხვეული მკლავები ჩანს.' },
     kidsLine: { en: 'Two galaxies crashing into each other — this takes billions of years!', ka: 'ორი გალაქტიკა ერთმანეთს ეჯახება — ეს მილიარდობით წელს გრძელდება!' },
-    color: '#6366f1',
+    color: '#8B5CF6',
   },
   {
     id: 'm8', emoji: '🏝️', img: '/images/dso/m8.jpg',
@@ -237,7 +237,7 @@ export const DSO = [
     desc: { en: 'Two spectacular open star clusters sitting side by side in Perseus. Each contains hundreds of young, hot blue-white stars. They are physically related — both formed from the same giant molecular cloud roughly 13 million years ago.', ka: 'ორი შთამბეჭდავი ღია ვარსკვლავთა გროვა პერსევსში გვერდიგვერდ. თითოეული ასობით ახალ ვარსკვლავს შეიცავს.' },
     scope: { en: 'Magnificent in binoculars — both fit in the same field of view. A telescope at low power fills the eyepiece with sparkling stars.', ka: 'ბინოკლით შთამბეჭდავია — ორივე ერთ ხედვის ველში ჩანს. ტელესკოპი ვარსკვლავებით სავსე სანახაობას გვიჩვენებს.' },
     kidsLine: { en: 'Two giant star cities sitting right next to each other in space!', ka: 'ორი გიგანტური ვარსკვლავთა ქალაქი კოსმოსში გვერდიგვერდ!' },
-    color: '#38f0ff',
+    color: '#5EEAD4',
   },
 ];
 
@@ -262,7 +262,7 @@ export const CONSTELLATIONS = [
     stars: 7,
     desc: { en: 'The Great Bear — contains the Big Dipper, which points to the North Star.', ka: 'დიდი დათვი — შეიცავს "დიდ ჩარხს", რომელიც ჩრდილოეთის ვარსკვლავისკენ მიუთითებს.' },
     highlight: { en: 'The two end stars of the Big Dipper always point toward Polaris', ka: 'ჩარხის ორი ბოლო ვარსკვლავი ყოველთვის პოლარისისკენ მიუთითებს' },
-    color: '#38f0ff',
+    color: '#5EEAD4',
   },
   {
     id: 'cassiopeia',

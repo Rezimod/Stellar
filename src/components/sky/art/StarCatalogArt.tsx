@@ -4,7 +4,7 @@ export default function StarCatalogArt({ className }: { className?: string }) {
       <defs>
         <radialGradient id="star-glow" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#fff" stopOpacity="1" />
-          <stop offset="0.3" stopColor="#B8D4FF" stopOpacity="0.6" />
+          <stop offset="0.3" stopColor="#5EEAD4" stopOpacity="0.6" />
           <stop offset="1" stopColor="#060912" stopOpacity="0" />
         </radialGradient>
       </defs>

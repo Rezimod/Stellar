@@ -23,10 +23,10 @@ import { Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, St
 import type { LucideIcon } from 'lucide-react';
 
 const HUB_GRADIENTS = {
-  amber:   'linear-gradient(135deg, #FFB347 0%, #FF7E3F 100%)',
-  violet:  'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
-  fuchsia: 'linear-gradient(135deg, #D946EF 0%, #8B5CF6 100%)',
-  teal:    'linear-gradient(135deg, #2DD4BF 0%, #06B6D4 100%)',
+  amber:   'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
+  violet:  'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
+  fuchsia: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
+  teal:    'linear-gradient(135deg, #5EEAD4 0%, #5EEAD4 100%)',
   rose:    'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)',
 } as const;
 
@@ -532,7 +532,7 @@ function RareEventArt({ type }: { type: AstroEvent['type'] }) {
           </radialGradient>
         </defs>
         <circle cx="32" cy="32" r="22" fill="url(#rareSun)" />
-        <circle cx="38" cy="30" r="20" fill="#0B0E17" />
+        <circle cx="38" cy="30" r="20" fill="#0A1735" />
       </svg>
     );
   }
@@ -558,13 +558,13 @@ function RareEventArt({ type }: { type: AstroEvent['type'] }) {
     <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
       <defs>
         <linearGradient id="rareTail" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#7DD3FC" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#7DD3FC" stopOpacity="0" />
+          <stop offset="0%" stopColor="#5EEAD4" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#5EEAD4" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d="M52 12 L20 44" stroke="url(#rareTail)" strokeWidth="6" strokeLinecap="round" />
       <circle cx="52" cy="12" r="6" fill="#FFFFFF" />
-      <circle cx="52" cy="12" r="3" fill="#7DD3FC" />
+      <circle cx="52" cy="12" r="3" fill="#5EEAD4" />
     </svg>
   );
 }
