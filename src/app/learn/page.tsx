@@ -869,27 +869,6 @@ const TAB_CONFIG: { id: Tab; Icon: React.FC<{ size?: number }>; en: string; ka: 
   { id: 'guide',      Icon: BookOpen,   en: 'Guide',       ka: 'გზამკვლევი' },
 ];
 
-// ─── Hero star positions (fixed to avoid hydration mismatch) ─────────────────
-
-const HERO_STARS = [
-  { x:  8, y: 12, size: 1.5, dur: 3.2, delay: 0.0  },
-  { x: 22, y: 28, size: 1.0, dur: 2.8, delay: 0.5  },
-  { x: 38, y:  8, size: 2.0, dur: 4.1, delay: 1.1  },
-  { x: 55, y: 18, size: 1.0, dur: 3.5, delay: 0.7  },
-  { x: 72, y: 10, size: 1.5, dur: 2.6, delay: 1.9  },
-  { x: 87, y: 22, size: 1.0, dur: 3.8, delay: 0.3  },
-  { x: 93, y:  5, size: 1.5, dur: 4.5, delay: 2.1  },
-  { x: 14, y: 55, size: 1.0, dur: 3.1, delay: 1.4  },
-  { x: 48, y: 72, size: 1.5, dur: 2.9, delay: 0.8  },
-  { x: 78, y: 65, size: 1.0, dur: 3.7, delay: 1.6  },
-  { x: 62, y: 85, size: 2.0, dur: 4.2, delay: 0.4  },
-  { x: 30, y: 90, size: 1.0, dur: 3.3, delay: 2.0  },
-  { x:  5, y: 80, size: 1.5, dur: 2.7, delay: 1.2  },
-  { x: 96, y: 75, size: 1.0, dur: 4.0, delay: 0.6  },
-  { x: 50, y: 45, size: 1.5, dur: 3.6, delay: 1.8  },
-  { x: 25, y: 40, size: 1.0, dur: 2.5, delay: 0.9  },
-];
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function LearnPage() {
@@ -922,181 +901,54 @@ export default function LearnPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-page-enter flex flex-col gap-5">
         <BackButton />
 
-        {/* ── Premium animated hero ── */}
-        <style>{`
-          @keyframes learnOrb1 {
-            0%,100% { transform:translate(0,0) scale(1); opacity:.7; }
-            33%      { transform:translate(14px,-10px) scale(1.06); opacity:.9; }
-            66%      { transform:translate(-8px,12px) scale(.96); opacity:.75; }
-          }
-          @keyframes learnOrb2 {
-            0%,100% { transform:translate(0,0) scale(1); opacity:.55; }
-            40%      { transform:translate(-12px,9px) scale(1.04); opacity:.75; }
-            70%      { transform:translate(10px,-14px) scale(.97); opacity:.6; }
-          }
-          @keyframes learnOrb3 {
-            0%,100% { transform:translate(0,0) scale(1); }
-            50%      { transform:translate(8px,-6px) scale(1.08); }
-          }
-          @keyframes starTwinkle {
-            0%,100% { opacity:.3; transform:scale(1); }
-            50%      { opacity:1; transform:scale(1.5); }
-          }
-          @keyframes heroShimmer {
-            from { background-position:-200% 0; }
-            to   { background-position:200% 0; }
-          }
-          @keyframes liveRing {
-            0%   { transform:scale(1);   opacity:.8; }
-            100% { transform:scale(2.2); opacity:0; }
-          }
-          @keyframes hIn0 { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-          @keyframes hIn1 { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
-          @keyframes hIn2 { from{opacity:0;transform:translateY(8px);}  to{opacity:1;transform:translateY(0);} }
-          @keyframes hIn3 { from{opacity:0;}                             to{opacity:1;} }
-        `}</style>
-
-        <div
-          className="relative overflow-hidden rounded-2xl"
-          style={{
-            background: 'linear-gradient(155deg, var(--canvas) 0%, var(--canvas) 55%, var(--canvas) 100%)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            boxShadow: '0 0 0 1px rgba(255, 179, 71,0.07), 0 18px 40px rgba(0,0,0,0.6)',
-            minHeight: '72px',
-            padding: '8px 16px 10px',
-          }}
-        >
-          {/* Top shimmer seam */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255, 179, 71,0.55) 30%, rgba(255, 179, 71,0.55) 70%, transparent 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'heroShimmer 3.5s linear infinite',
-          }} />
-
-          {/* Violet orb — top-left */}
-          <div style={{
-            position: 'absolute', top: '-50px', left: '-50px',
-            width: '240px', height: '240px',
-            background: 'radial-gradient(circle, rgba(255, 179, 71,0.24) 0%, transparent 65%)',
-            filter: 'blur(30px)',
-            animation: 'learnOrb1 9s ease-in-out infinite',
-            pointerEvents: 'none',
-          }} />
-          {/* Cyan orb — bottom-right */}
-          <div style={{
-            position: 'absolute', bottom: '-55px', right: '-35px',
-            width: '260px', height: '200px',
-            background: 'radial-gradient(circle, rgba(255, 179, 71,0.15) 0%, transparent 65%)',
-            filter: 'blur(34px)',
-            animation: 'learnOrb2 11s ease-in-out infinite',
-            pointerEvents: 'none',
-          }} />
-          {/* Lavender accent orb — center-right */}
-          <div style={{
-            position: 'absolute', top: '15%', right: '12%',
-            width: '110px', height: '110px',
-            background: 'radial-gradient(circle, rgba(255, 179, 71,0.12) 0%, transparent 70%)',
-            filter: 'blur(22px)',
-            animation: 'learnOrb3 7s ease-in-out infinite 2s',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Stars */}
-          {HERO_STARS.map((s, i) => (
-            <div key={i} style={{
-              position: 'absolute',
-              left: `${s.x}%`, top: `${s.y}%`,
-              width: `${s.size}px`, height: `${s.size}px`,
-              borderRadius: '50%',
-              background: i % 3 === 0 ? 'var(--terracotta)' : i % 3 === 1 ? 'var(--terracotta)' : '#ffffff',
-              animation: `starTwinkle ${s.dur}s ease-in-out infinite ${s.delay}s`,
-              pointerEvents: 'none',
-            }} />
-          ))}
-
-          {/* Main content */}
-          <div className="relative flex flex-col items-center text-center" style={{ zIndex: 1, paddingTop: '0px' }}>
-            {/* Eyebrow pill */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '5px',
-              padding: '2px 8px', borderRadius: '999px', marginBottom: '4px',
-              background: 'rgba(255, 179, 71,0.07)',
-              border: '1px solid rgba(255, 179, 71,0.18)',
-              animation: 'hIn0 0.5s cubic-bezier(0.16,1,0.3,1) both',
-            }}>
-              <span style={{
-                width: '5px', height: '5px', borderRadius: '50%',
-                background: 'var(--terracotta)',
-                display: 'inline-block',
-                boxShadow: '0 0 6px rgba(255, 179, 71,0.9)',
-              }} />
-              <span style={{
-                fontSize: '9px', color: 'rgba(255, 179, 71,0.78)',
-                letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
-              }}>
-                {locale === 'ka' ? 'სასწავლო ცენტრი' : 'Astronomy Academy'}
-              </span>
+        {/* ── Header — home-page vibes: amber eyebrow + bold white title ── */}
+        <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+          <div className="min-w-0">
+            <div className="text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#FFB347] mb-2">
+              {locale === 'ka' ? 'სასწავლო ცენტრი' : 'Astronomy Academy'}
             </div>
-
-            {/* Title */}
-            <h1 style={{
-              fontSize: 'clamp(1.05rem, 4.5vw, 1.35rem)',
-              fontWeight: 800,
-              fontFamily: 'Georgia, serif',
-              background: 'linear-gradient(135deg, #ffffff 15%, var(--terracotta) 52%, var(--terracotta) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              lineHeight: 1.05,
-              marginBottom: '2px',
-              letterSpacing: '-0.01em',
-              animation: 'hIn1 0.55s cubic-bezier(0.16,1,0.3,1) 0.07s both',
-            }}>
+            <h1
+              className="text-white font-extrabold leading-[1.05] tracking-[-0.02em] m-0"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(28px, 4.5vw, 48px)',
+              }}
+            >
               {locale === 'ka' ? 'სწავლა' : 'Learn'}
             </h1>
-
-            {/* Subtitle */}
-            <p style={{
-              color: 'var(--text-muted)',
-              fontSize: '11px',
-              lineHeight: 1.35,
-              animation: 'hIn2 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s both',
-            }}>
+            <p className="mt-2 text-[13px] md:text-[14.5px] text-white/55 leading-snug max-w-[480px]">
               {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
             </p>
-
-            {/* Stats pills */}
-            {completedQuizzes.length > 0 && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                marginTop: '8px',
-                animation: 'hIn3 0.65s ease-out 0.3s both',
-              }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '2px 8px', borderRadius: '999px',
-                  background: 'rgba(94, 234, 212,0.08)',
-                  border: '1px solid rgba(94, 234, 212,0.2)',
-                  fontSize: '10px', color: 'var(--success)', fontWeight: 500,
-                }}>
-                  <span>✓</span>
-                  <span>{completedQuizzes.length} {locale === 'ka' ? 'ქვიზი' : 'quizzes'}</span>
-                </div>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '2px 8px', borderRadius: '999px',
-                  background: 'rgba(255, 179, 71,0.08)',
-                  border: '1px solid rgba(255, 179, 71,0.2)',
-                  fontSize: '10px', color: 'var(--stars)', fontWeight: 500,
-                }}>
-                  <span>✦</span>
-                  <span>{completedQuizzes.reduce((s, r) => s + r.stars, 0)} {locale === 'ka' ? 'ვარსკვლავი' : 'earned'}</span>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
+
+          {completedQuizzes.length > 0 && (
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex flex-col">
+                <span
+                  className="text-white font-bold tabular-nums leading-none"
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(20px, 3vw, 28px)' }}
+                >
+                  {completedQuizzes.length}
+                </span>
+                <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/40 font-mono">
+                  {locale === 'ka' ? 'ქვიზი' : 'Quizzes'}
+                </span>
+              </div>
+              <div className="w-px h-9 bg-white/10" />
+              <div className="flex flex-col">
+                <span
+                  className="font-bold tabular-nums leading-none"
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(20px, 3vw, 28px)', color: '#FFB347' }}
+                >
+                  ✦ {completedQuizzes.reduce((s, r) => s + r.stars, 0)}
+                </span>
+                <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/40 font-mono">
+                  {locale === 'ka' ? 'ვარსკვლავი' : 'Earned'}
+                </span>
+              </div>
+            </div>
+          )}
+        </header>
 
         <TonightsBanner locale={locale} />
 
