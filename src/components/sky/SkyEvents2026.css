@@ -1,4 +1,7 @@
 /* === Sky Events 2026 ============================================== */
+/* Static cards — no per-card animations. Section has no contain /
+   content-visibility / overflow:hidden so children rendered via portal
+   are never affected, and the page stays smooth on slower devices. */
 
 .ev {
   display: flex;
@@ -8,10 +11,6 @@
   border-radius: 16px;
   background: rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.06);
-  overflow: hidden;
-  /* Off-screen contain — skips layout / paint when scrolled away. */
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 720px;
 }
 
 .ev__head {
@@ -27,7 +26,8 @@
   margin: 0 0 6px;
 }
 .ev__title {
-  font-family: var(--font-display, 'Source Serif 4', serif);
+  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-weight: 500;
   font-size: 22px;
   line-height: 1.15;
   letter-spacing: -0.01em;
@@ -61,33 +61,40 @@
   flex: 0 0 auto;
 }
 
+/* Card — generous height so the date pill + name never get clipped, and
+   a stronger surface so it reads against the page background. */
 .ev__card {
-  width: 200px;
-  height: 184px;
+  width: 210px;
+  height: 222px;
   display: flex;
   flex-direction: column;
   border-radius: 14px;
-  background: rgba(11,24,48,0.65);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(20, 36, 70, 0.85) 0%, rgba(10, 23, 53, 0.92) 100%);
+  border: 1px solid rgba(255,255,255,0.10);
   padding: 0;
   overflow: hidden;
   cursor: pointer;
   text-align: left;
   color: inherit;
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 .ev__card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255,255,255,0.18);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.30);
+  border-color: rgba(255,255,255,0.20);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.32);
 }
+.ev__card:active {
+  transform: translateY(0);
+}
+
 .ev__art {
-  flex: 0 0 96px;
+  flex: 0 0 124px;
   width: 100%;
   position: relative;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.04), transparent 60%),
-    linear-gradient(180deg, #0E1B36 0%, #0A1735 100%);
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.05), transparent 60%),
+    linear-gradient(180deg, #0E1B36 0%, #08122A 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,149 +104,82 @@
   height: 100%;
   display: block;
 }
-.ev-art--lg { min-height: 200px; }
+.ev-art--lg { min-height: 220px; }
 
 .ev__caption {
   flex: 1 1 auto;
   padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  background: rgba(255,255,255,0.025);
+  gap: 6px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+  min-height: 0;
 }
 .ev__date {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--terracotta);
+  color: var(--terracotta, #FFB347);
   font-weight: 600;
 }
 .ev__name {
-  font-family: var(--font-display, 'Source Serif 4', serif);
-  font-size: 17px;
-  line-height: 1.2;
+  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-weight: 500;
+  font-size: 15.5px;
+  line-height: 1.25;
   color: var(--text);
   letter-spacing: -0.005em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* === Animations =================================================== */
-/* Lighter than the previous build:
-   - No filter:brightness (forces a full-frame paint each tick)
-   - No long-distance translates (Moon traversing 220px / 9s, etc)
-   - Shorter durations
-   - Animations are paused while the section is offscreen via data-anim. */
-
-.ev[data-anim='off'] *,
-.ev[data-anim='off'] *::before,
-.ev[data-anim='off'] *::after {
-  animation-play-state: paused !important;
-}
-
-/* Lunar eclipse — single-spot crossfade between bright Moon and copper. */
-.ev-le__pre,
-.ev-le__blood,
-.ev-le__halo {
-  will-change: opacity;
-}
-.ev-le__pre   { animation: ev-le-pre   5s ease-in-out infinite; }
-.ev-le__blood { opacity: 0; animation: ev-le-blood 5s ease-in-out infinite; }
-.ev-le__halo  { opacity: 0.2; animation: ev-le-halo 5s ease-in-out infinite; }
-@keyframes ev-le-pre   { 0%, 25%, 100% { opacity: 1; } 45%, 65% { opacity: 0; } }
-@keyframes ev-le-blood { 0%, 25%, 100% { opacity: 0; } 45%, 65% { opacity: 1; } }
-@keyframes ev-le-halo  { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.55; } }
-
-/* Solar eclipse — corona breathes only. */
-.ev-se__corona {
-  opacity: 0.55;
-  transform-origin: center;
-  will-change: opacity, transform;
-  animation: ev-se-corona 4.5s ease-in-out infinite;
-}
-@keyframes ev-se-corona {
-  0%, 100% { opacity: 0.5; transform: scale(0.96); }
-  50%      { opacity: 1;   transform: scale(1.05); }
-}
-
-/* Meteor streaks — short scale-out + fade. */
-.ev-ms__streak {
-  opacity: 0;
-  will-change: transform, opacity;
-  animation: ev-ms-streak 1.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
-}
-@keyframes ev-ms-streak {
-  0%   { opacity: 0; transform: scale(0); }
-  18%  { opacity: 1; transform: scale(0.5); }
-  60%  { opacity: 0.85; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.05); }
-}
-
-/* Saturn opposition — soft halo pulse only. No tilt, no filter. */
-.ev-op__glow {
-  transform-origin: center;
-  will-change: transform, opacity;
-  animation: ev-op-glow 4.5s ease-in-out infinite;
-}
-@keyframes ev-op-glow {
-  0%, 100% { opacity: 0.45; transform: scale(0.92); }
-  50%      { opacity: 1;    transform: scale(1.08); }
-}
-
-/* Conjunction — shared halo pulse; bodies stay still. */
-.ev-cj__halo {
-  transform-origin: center;
-  will-change: transform, opacity;
-  animation: ev-cj-halo 4s ease-in-out infinite;
-}
-.ev-cj__halo--b { animation-delay: 0.2s; }
-@keyframes ev-cj-halo {
-  0%, 100% { opacity: 0.45; transform: scale(0.92); }
-  50%      { opacity: 1;    transform: scale(1.10); }
-}
-
-/* === Reduce motion =============================================== */
-@media (prefers-reduced-motion: reduce) {
-  .ev-le__pre,
-  .ev-le__blood,
-  .ev-le__halo,
-  .ev-se__corona,
-  .ev-ms__streak,
-  .ev-op__glow,
-  .ev-cj__halo {
-    animation: none !important;
+/* === Web layout ================================================== */
+@media (min-width: 760px) {
+  .ev__title { font-size: 26px; }
+  .ev__rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    overflow: visible;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
   }
-  .ev-le__blood { opacity: 0.5; }
-  .ev-ms__streak { opacity: 0.7; transform: scale(1); }
-  .ev-cj__halo { opacity: 0.6; }
-  .ev-op__glow { opacity: 0.6; }
-  .ev-se__corona { opacity: 0.7; }
+  .ev__card {
+    width: 100%;
+    height: 230px;
+  }
+  .ev__art {
+    flex: 0 0 132px;
+  }
+  .ev__name {
+    font-size: 16.5px;
+  }
 }
 
-/* === Dialog ===================================================== */
-/* Position is anchored to the viewport (position: fixed + flex center),
-   so the dialog appears at the user's current screen center regardless
-   of how far they've scrolled. */
-.ev__sheet-backdrop {
+/* === Modal (rendered via portal to <body>) ======================== */
+.ev-modal {
   position: fixed;
   inset: 0;
-  background: rgba(5, 12, 28, 0.78);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
   overflow-y: auto;
-  animation: ev-fade-in 200ms ease;
+  background: rgba(5, 12, 28, 0.78);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
-@keyframes ev-fade-in { from { opacity: 0; } to { opacity: 1; } }
-.ev__sheet {
+.ev-modal__sheet {
   position: relative;
   width: 100%;
   max-width: 540px;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   overflow-y: auto;
   background: linear-gradient(180deg, #142446 0%, #0A1735 100%);
   border: 1px solid rgba(255,255,255,0.10);
@@ -249,114 +189,93 @@
   flex-direction: column;
   gap: 8px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-  animation: ev-pop-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-@keyframes ev-pop-in {
-  from { transform: translateY(8px) scale(0.98); opacity: 0; }
-  to   { transform: translateY(0) scale(1); opacity: 1; }
-}
-.ev__sheet-close {
+.ev-modal__close {
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
   color: var(--text);
   cursor: pointer;
+  z-index: 1;
 }
-.ev__sheet-art {
-  height: 200px;
+.ev-modal__close:hover {
+  background: rgba(255,255,255,0.14);
+}
+.ev-modal__art {
+  height: 220px;
   border-radius: 12px;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.04), transparent 60%),
-    linear-gradient(180deg, #0E1B36 0%, #0A1735 100%);
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.05), transparent 60%),
+    linear-gradient(180deg, #0E1B36 0%, #08122A 100%);
   margin-bottom: 8px;
   overflow: hidden;
 }
-.ev__sheet-eyebrow {
+.ev-modal__eyebrow {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--terracotta);
+  color: var(--terracotta, #FFB347);
   margin: 4px 0 0;
 }
-.ev__sheet-title {
-  font-family: var(--font-display, 'Source Serif 4', serif);
-  font-size: 24px;
+.ev-modal__title {
+  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-weight: 500;
+  font-size: 22px;
   line-height: 1.15;
   margin: 0;
   color: var(--text);
 }
-.ev__sheet-body {
+.ev-modal__body {
   margin: 0;
   font-size: 14px;
-  color: rgba(255,255,255,0.70);
+  line-height: 1.5;
+  color: rgba(255,255,255,0.72);
   max-width: 56ch;
 }
-.ev__sheet-meta {
+.ev-modal__meta {
   list-style: none;
   margin: 6px 0 0;
   padding: 0;
   display: grid;
   gap: 6px;
 }
-.ev__sheet-meta li {
+.ev-modal__meta li {
   display: grid;
   grid-template-columns: 80px 1fr;
   gap: 10px;
   align-items: baseline;
   padding: 6px 0;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
-.ev__sheet-meta li:first-child { border-top: none; }
-.ev__sheet-key {
+.ev-modal__meta li:first-child { border-top: none; }
+.ev-modal__key {
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.42);
+  color: rgba(255,255,255,0.50);
 }
-.ev__sheet-val {
+.ev-modal__val {
   font-size: 13px;
+  line-height: 1.45;
   color: var(--text);
 }
-.ev__sheet-tip {
+.ev-modal__tip {
   margin-top: 6px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(255,179,71,0.07);
-  border: 1px solid rgba(255,179,71,0.18);
+  background: rgba(255,179,71,0.08);
+  border: 1px solid rgba(255,179,71,0.20);
   font-size: 13px;
-  color: rgba(255,237,200,0.9);
-}
-
-/* === Web layout ================================================== */
-@media (min-width: 760px) {
-  .ev__title { font-size: 26px; }
-  .ev__rail {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    overflow: visible;
-    margin-left: 0;
-    margin-right: 0;
-    padding: 0;
-  }
-  .ev__card {
-    width: 100%;
-    height: 188px;
-  }
-  .ev__art {
-    flex: 0 0 100px;
-  }
-  .ev__name {
-    font-size: 18px;
-  }
+  line-height: 1.5;
+  color: rgba(255,237,200,0.92);
 }

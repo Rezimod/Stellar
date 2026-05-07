@@ -1,13 +1,14 @@
 // src/components/sky/SkyEvents2026.tsx
 //
-// Year-in-the-sky rail. Each card has a small refined icon and a light
-// motion accent. Animations pause when the section is offscreen so the
-// page stays smooth. Tapping a card opens a centered dialog at the
-// viewport — its position is independent of the user's scroll offset.
+// Year-in-the-sky rail. Static cards (no per-card animation) with strong,
+// legible illustrations. Tapping a card opens a dialog rendered via a
+// portal to document.body so it always centers in the viewport — never
+// trapped by parent contain / overflow.
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import './SkyEvents2026.css';
@@ -39,29 +40,18 @@ const EVENTS: SkyEvent[] = [
 export function SkyEvents2026() {
   const t = useTranslations('sky.events');
   const [openId, setOpenId] = useState<string | null>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-  const [active, setActive] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const opened = EVENTS.find((e) => e.id === openId) ?? null;
 
-  // Pause animations when the rail isn't visible — keeps the page snappy.
+  // Lock body scroll while the dialog is open (preserves position so iOS
+  // Safari doesn't jump to the top). Esc closes.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const node = sectionRef.current;
-    if (!node) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setActive(entry.isIntersecting),
-      { rootMargin: '120px 0px' },
-    );
-    obs.observe(node);
-    return () => obs.disconnect();
-  }, []);
-
-  // Scroll lock that preserves position (avoids the iOS Safari jump-to-top
-  // behaviour that happens when you only set body.overflow = hidden).
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
     if (!openId) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenId(null); };
+    document.addEventListener('keydown', onKey);
     const scrollY = window.scrollY;
     const body = document.body;
     const prev = {
@@ -75,6 +65,7 @@ export function SkyEvents2026() {
     body.style.width = '100%';
     body.style.overflow = 'hidden';
     return () => {
+      document.removeEventListener('keydown', onKey);
       body.style.position = prev.position;
       body.style.top = prev.top;
       body.style.width = prev.width;
@@ -83,23 +74,8 @@ export function SkyEvents2026() {
     };
   }, [openId]);
 
-  // Esc closes.
-  useEffect(() => {
-    if (!openId) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpenId(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [openId]);
-
   return (
-    <section
-      ref={sectionRef}
-      className="ev"
-      aria-label={t('aria')}
-      data-anim={active ? 'on' : 'off'}
-    >
+    <section className="ev" aria-label={t('aria')}>
       <header className="ev__head">
         <p className="ev__eyebrow">{t('eyebrow')}</p>
         <h2 className="ev__title">{t('title')}</h2>
@@ -127,52 +103,52 @@ export function SkyEvents2026() {
         ))}
       </ol>
 
-      {opened && (
+      {mounted && opened && createPortal(
         <div
-          className="ev__sheet-backdrop"
+          className="ev-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`ev-sheet-title-${opened.id}`}
           onClick={() => setOpenId(null)}
-          role="presentation"
         >
           <div
-            className="ev__sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`ev-sheet-title-${opened.id}`}
+            className="ev-modal__sheet"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
-              className="ev__sheet-close"
+              className="ev-modal__close"
               aria-label={t('close')}
               onClick={() => setOpenId(null)}
             >
               <X size={18} />
             </button>
-            <div className="ev__sheet-art">
+            <div className="ev-modal__art">
               <EventArt kind={opened.kind} large />
             </div>
-            <p className="ev__sheet-eyebrow">{formatDateRange(opened.date, opened.endDate)}</p>
-            <h3 id={`ev-sheet-title-${opened.id}`} className="ev__sheet-title">
+            <p className="ev-modal__eyebrow">{formatDateRange(opened.date, opened.endDate)}</p>
+            <h3 id={`ev-sheet-title-${opened.id}`} className="ev-modal__title">
               {t(`names.${opened.id}`)}
             </h3>
-            <p className="ev__sheet-body">{t(`details.${opened.id}.body`)}</p>
-            <ul className="ev__sheet-meta">
+            <p className="ev-modal__body">{t(`details.${opened.id}.body`)}</p>
+            <ul className="ev-modal__meta">
               <li>
-                <span className="ev__sheet-key">{t('peak')}</span>
-                <span className="ev__sheet-val">{t(`details.${opened.id}.peak`)}</span>
+                <span className="ev-modal__key">{t('peak')}</span>
+                <span className="ev-modal__val">{t(`details.${opened.id}.peak`)}</span>
               </li>
               <li>
-                <span className="ev__sheet-key">{t('moon')}</span>
-                <span className="ev__sheet-val">{t(`details.${opened.id}.moon`)}</span>
+                <span className="ev-modal__key">{t('moon')}</span>
+                <span className="ev-modal__val">{t(`details.${opened.id}.moon`)}</span>
               </li>
               <li>
-                <span className="ev__sheet-key">{t('gear')}</span>
-                <span className="ev__sheet-val">{t(`details.${opened.id}.gear`)}</span>
+                <span className="ev-modal__key">{t('gear')}</span>
+                <span className="ev-modal__val">{t(`details.${opened.id}.gear`)}</span>
               </li>
             </ul>
-            <p className="ev__sheet-tip">{t(`details.${opened.id}.tip`)}</p>
+            <p className="ev-modal__tip">{t(`details.${opened.id}.tip`)}</p>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   );
@@ -210,78 +186,66 @@ function EventArt({ kind, large = false }: EventArtProps) {
   }
 }
 
-// Lunar eclipse — a single Moon that crossfades white → copper-red and
-// back. No traversal, no shadow disc — reads as a totality icon.
+// All art is static — no animations. Solid colors, strong contrast,
+// reads instantly at icon scale.
+
 function LunarEclipseArt({ large }: { large: boolean }) {
   return (
-    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'}>
+    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'} preserveAspectRatio="xMidYMid slice">
       <defs>
-        <radialGradient id="moonNorm" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#F8F4EC" />
-          <stop offset="60%" stopColor="#c8c2b5" />
-          <stop offset="100%" stopColor="#6a665e" />
-        </radialGradient>
-        <radialGradient id="moonBlood" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#FFB28A" />
+        <radialGradient id="le-blood" cx="38%" cy="36%" r="68%">
+          <stop offset="0%" stopColor="#FFC59A" />
           <stop offset="55%" stopColor="#C84A2E" />
           <stop offset="100%" stopColor="#3F0E0A" />
         </radialGradient>
-        <radialGradient id="moonHalo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(200, 74, 46, 0.28)" />
+        <radialGradient id="le-halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="rgba(200, 74, 46, 0.34)" />
           <stop offset="100%" stopColor="rgba(200, 74, 46, 0)" />
         </radialGradient>
       </defs>
       <BackgroundDots />
       <g transform="translate(100,60)">
-        <circle r="44" fill="url(#moonHalo)" className="ev-le__halo" />
-        <circle r="26" fill="url(#moonNorm)" className="ev-le__pre" />
-        <circle r="26" fill="url(#moonBlood)" className="ev-le__blood" />
+        <circle r="48" fill="url(#le-halo)" />
+        <circle r="30" fill="url(#le-blood)" />
+        <circle cx="-9" cy="-7" r="3.2" fill="rgba(0,0,0,0.18)" />
+        <circle cx="6"  cy="2"  r="2.4" fill="rgba(0,0,0,0.16)" />
+        <circle cx="-2" cy="9"  r="2"   fill="rgba(0,0,0,0.14)" />
       </g>
     </svg>
   );
 }
 
-// Solar eclipse — Sun with the Moon parked over it; only the corona
-// breathes. Cheaper than the previous animated occultation and reads
-// instantly as "eclipse" at icon scale.
 function SolarEclipseArt({ large }: { large: boolean }) {
   return (
-    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'}>
+    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'} preserveAspectRatio="xMidYMid slice">
       <defs>
-        <radialGradient id="se-sun" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fffbe1" />
-          <stop offset="50%" stopColor="#FFB347" />
-          <stop offset="100%" stopColor="#ff7b1a" />
-        </radialGradient>
         <radialGradient id="se-corona" cx="50%" cy="50%" r="65%">
-          <stop offset="40%" stopColor="rgba(255,233,180,0)" />
-          <stop offset="48%" stopColor="rgba(255,233,180,0.85)" />
-          <stop offset="60%" stopColor="rgba(255,179,71,0.40)" />
+          <stop offset="42%" stopColor="rgba(255,233,180,0)" />
+          <stop offset="50%" stopColor="rgba(255,233,180,0.95)" />
+          <stop offset="62%" stopColor="rgba(255,179,71,0.45)" />
           <stop offset="100%" stopColor="rgba(255,179,71,0)" />
         </radialGradient>
       </defs>
       <BackgroundDots />
       <g transform="translate(100,60)">
-        <circle r="46" fill="url(#se-corona)" className="ev-se__corona" />
-        <circle r="26" fill="url(#se-sun)" />
-        <circle r="22" fill="#06101F" />
+        <circle r="50" fill="url(#se-corona)" />
+        <circle r="28" fill="#0A1224" />
       </g>
     </svg>
   );
 }
 
-// Meteor shower — three streaks falling from the radiant on a tight
-// 1.6s loop. Half the count of the old version, half the duration.
 function MeteorShowerArt({ large }: { large: boolean }) {
-  const radiantX = 150;
-  const radiantY = 18;
+  const radiantX = 152;
+  const radiantY = 22;
   const streaks = [
-    { angle: 200, len: 64, delay: '0s',   width: 1.6, opacity: 0.95 },
-    { angle: 215, len: 44, delay: '0.5s', width: 1.0, opacity: 0.75 },
-    { angle: 225, len: 36, delay: '1s',   width: 0.9, opacity: 0.6 },
+    { angle: 200, len: 86, width: 1.8, opacity: 0.95 },
+    { angle: 215, len: 64, width: 1.2, opacity: 0.78 },
+    { angle: 225, len: 50, width: 0.9, opacity: 0.6 },
+    { angle: 235, len: 38, width: 0.8, opacity: 0.45 },
   ];
   return (
-    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'}>
+    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'} preserveAspectRatio="xMidYMid slice">
       <BackgroundDots dense />
       <defs>
         <linearGradient id="ms-streak" x1="0" y1="0" x2="1" y2="0">
@@ -290,98 +254,86 @@ function MeteorShowerArt({ large }: { large: boolean }) {
           <stop offset="100%" stopColor="#FFE3A1" />
         </linearGradient>
       </defs>
-      <circle cx={radiantX} cy={radiantY} r={1.4} fill="rgba(255, 226, 180, 0.7)" />
+      <circle cx={radiantX} cy={radiantY} r={1.6} fill="rgba(255, 226, 180, 0.85)" />
       {streaks.map((s, i) => {
         const rad = (s.angle * Math.PI) / 180;
         const dx = Math.cos(rad) * s.len;
         const dy = Math.sin(rad) * s.len;
         return (
-          <g
+          <line
             key={i}
-            className="ev-ms__streak"
-            style={{
-              animationDelay: s.delay,
-              opacity: s.opacity,
-              transformOrigin: `${radiantX}px ${radiantY}px`,
-            }}
-          >
-            <line
-              x1={radiantX}
-              y1={radiantY}
-              x2={radiantX + dx}
-              y2={radiantY + dy}
-              stroke="url(#ms-streak)"
-              strokeWidth={s.width}
-              strokeLinecap="round"
-            />
-          </g>
+            x1={radiantX}
+            y1={radiantY}
+            x2={radiantX + dx}
+            y2={radiantY + dy}
+            stroke="url(#ms-streak)"
+            strokeWidth={s.width}
+            strokeLinecap="round"
+            opacity={s.opacity}
+          />
         );
       })}
     </svg>
   );
 }
 
-// Saturn opposition — slow halo glow only. No rotation, no brightness
-// filter (which forces a full-frame repaint each tick).
 function SaturnOppositionArt({ large }: { large: boolean }) {
   return (
-    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'}>
+    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'} preserveAspectRatio="xMidYMid slice">
       <BackgroundDots />
       <defs>
         <radialGradient id="op-saturn" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#f0dc9a" />
+          <stop offset="0%" stopColor="#f4e0a0" />
           <stop offset="55%" stopColor="#c89a3e" />
-          <stop offset="100%" stopColor="#6b5020" />
+          <stop offset="100%" stopColor="#5a4318" />
         </radialGradient>
         <radialGradient id="op-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(255, 230, 160, 0.45)" />
+          <stop offset="0%" stopColor="rgba(255, 230, 160, 0.40)" />
           <stop offset="100%" stopColor="rgba(255, 230, 160, 0)" />
         </radialGradient>
       </defs>
-      <g transform="translate(100,60) rotate(-8)">
-        <circle r="48" fill="url(#op-glow)" className="ev-op__glow" />
-        <ellipse cx="0" cy="0" rx="52" ry="11" fill="none" stroke="rgba(245, 222, 168, 0.85)" strokeWidth="1.4" />
-        <ellipse cx="0" cy="0" rx="46" ry="9.5" fill="none" stroke="rgba(0, 0, 0, 0.45)" strokeWidth="0.8" />
-        <ellipse cx="0" cy="0" rx="42" ry="8.5" fill="none" stroke="rgba(212, 169, 84, 0.55)" strokeWidth="1.0" />
-        <circle r="22" fill="url(#op-saturn)" />
-        <ellipse cx="0" cy="-4" rx="20" ry="1.6" fill="rgba(140, 100, 50, 0.30)" />
-        <ellipse cx="0" cy="6" rx="20" ry="1.6" fill="rgba(140, 100, 50, 0.22)" />
+      <g transform="translate(100,60) rotate(-10)">
+        <circle r="52" fill="url(#op-glow)" />
+        <ellipse cx="0" cy="0" rx="56" ry="12" fill="none" stroke="rgba(245, 222, 168, 0.85)" strokeWidth="1.6" />
+        <ellipse cx="0" cy="0" rx="50" ry="10.5" fill="none" stroke="rgba(0, 0, 0, 0.50)" strokeWidth="0.9" />
+        <ellipse cx="0" cy="0" rx="46" ry="9.5" fill="none" stroke="rgba(212, 169, 84, 0.55)" strokeWidth="1.0" />
+        <circle r="24" fill="url(#op-saturn)" />
+        <ellipse cx="0" cy="-4" rx="22" ry="1.6" fill="rgba(140, 100, 50, 0.32)" />
+        <ellipse cx="0" cy="6" rx="22" ry="1.6" fill="rgba(140, 100, 50, 0.22)" />
       </g>
     </svg>
   );
 }
 
-// Conjunction — Mars and Saturn sit close. A single shared halo pulses;
-// no traversal animation. Reads as "two planets, eyepiece field."
 function ConjunctionArt({ large }: { large: boolean }) {
   return (
-    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'}>
+    <svg viewBox="0 0 200 120" width="100%" height="100%" aria-hidden="true" className={large ? 'ev-art ev-art--lg' : 'ev-art'} preserveAspectRatio="xMidYMid slice">
       <BackgroundDots />
       <defs>
         <radialGradient id="cj-mars" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#ff8a64" />
+          <stop offset="0%" stopColor="#ff9c78" />
           <stop offset="60%" stopColor="#c2451f" />
           <stop offset="100%" stopColor="#5a1d08" />
         </radialGradient>
         <radialGradient id="cj-saturn" cx="35%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#f0dc9a" />
+          <stop offset="0%" stopColor="#f4e0a0" />
           <stop offset="55%" stopColor="#c89a3e" />
           <stop offset="100%" stopColor="#6b5020" />
         </radialGradient>
         <radialGradient id="cj-halo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(255, 220, 170, 0.40)" />
+          <stop offset="0%" stopColor="rgba(255, 220, 170, 0.45)" />
           <stop offset="100%" stopColor="rgba(255, 220, 170, 0)" />
         </radialGradient>
       </defs>
-      <line x1="20" y1="60" x2="180" y2="60" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" strokeDasharray="2 4" />
-      <g transform="translate(80,60)">
-        <circle r="22" fill="url(#cj-halo)" className="ev-cj__halo" />
-        <circle r="7" fill="url(#cj-mars)" />
+      <line x1="14" y1="62" x2="186" y2="62" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" strokeDasharray="2 4" />
+      <g transform="translate(78,58)">
+        <circle r="26" fill="url(#cj-halo)" />
+        <circle r="8" fill="url(#cj-mars)" />
       </g>
-      <g transform="translate(120,60)">
-        <circle r="24" fill="url(#cj-halo)" className="ev-cj__halo ev-cj__halo--b" />
-        <circle r="8.5" fill="url(#cj-saturn)" />
-        <ellipse rx="14" ry="2.6" fill="none" stroke="rgba(212, 169, 84, 0.65)" strokeWidth="0.8" />
+      <g transform="translate(124,58)">
+        <circle r="28" fill="url(#cj-halo)" />
+        <circle r="10" fill="url(#cj-saturn)" />
+        <ellipse rx="17" ry="3" fill="none" stroke="rgba(212, 169, 84, 0.75)" strokeWidth="0.9" />
       </g>
     </svg>
   );

@@ -2677,9 +2677,11 @@
    ================================================================ */
 
 @media (max-width: 760px) {
-  /* Tighter shell so we can fit the dome above the fold. */
+  /* Tighter shell so the dome hugs the global header — no empty band
+     between the nav and the sky map. */
   .sky-v3 .sky-v3__container {
     padding: 0 14px 80px;
+    margin-top: -14px;
     gap: 12px;
   }
 
@@ -2756,7 +2758,7 @@
     width: calc(100% + 28px);
     max-width: none;
     margin: 0 -14px;
-    padding: 8px 0 0;
+    padding: 0;
     border-radius: 0;
     border: none;
     background:
@@ -2771,7 +2773,7 @@
   }
   .sky-strip-mini {
     flex: 0 0 auto;
-    padding: 6px 14px 4px;
+    padding: 4px 14px 2px;
     font-size: 10.5px;
     letter-spacing: 0.08em;
   }
