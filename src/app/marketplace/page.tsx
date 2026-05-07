@@ -198,21 +198,21 @@ export default function MarketplacePage() {
               })}
             </div>
 
-            {/* Balance + Region — compact, matching toolbar height */}
-            <div className="order-1 sm:order-2 flex items-center justify-end gap-[8px] flex-shrink-0">
+            {/* Balance + Region — compact, matching toolbar height. Smaller and tighter on mobile. */}
+            <div className="order-1 sm:order-2 flex items-center justify-end gap-[5px] sm:gap-[8px] flex-shrink-0">
               <span
-                className="inline-flex items-center h-[34px] gap-[7px] px-[11px] rounded-md text-[10.5px] uppercase cursor-default"
+                className="inline-flex items-center h-[22px] sm:h-[34px] gap-[5px] sm:gap-[7px] px-[7px] sm:px-[11px] rounded-md uppercase cursor-default"
                 style={{
                   background: 'rgba(15, 18, 28, 0.55)',
                   border: '1px solid rgba(255, 126, 54, 0.38)',
                   boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                 }}
               >
-                <span className="tracking-[0.12em] text-white text-[9.5px] font-semibold">Bal</span>
-                <span className="font-semibold tabular-nums tracking-[0.02em] text-[12.5px]" style={{ color: 'var(--terracotta)' }}>
+                <span className="tracking-[0.1em] sm:tracking-[0.12em] text-white text-[8px] sm:text-[9.5px] font-semibold">Bal</span>
+                <span className="font-semibold tabular-nums tracking-[0.02em] text-[10.5px] sm:text-[12.5px]" style={{ color: 'var(--terracotta)' }}>
                   {balance.toLocaleString()}
                 </span>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" className="w-[8px] h-[8px] sm:w-[10px] sm:h-[10px]">
                   <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
                 </svg>
               </span>

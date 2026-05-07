@@ -220,14 +220,24 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         .loc-pill {
           display: inline-flex;
           align-items: center;
-          gap: 7px;
+          gap: ${compact ? '5px' : '7px'};
           border-radius: 8px;
-          height: 30px;
-          padding: 0 ${compact ? '11px' : '14px'};
+          height: ${compact ? '22px' : '30px'};
+          padding: 0 ${compact ? '7px' : '14px'};
           background: rgba(15, 18, 28, 0.55);
           border: 1px solid rgba(255, 179, 71, 0.32);
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
+        }
+        @media (min-width: 640px) {
+          .loc-pill {
+            gap: 7px;
+            height: ${compact ? '34px' : '30px'};
+            padding: 0 ${compact ? '11px' : '14px'};
+          }
+          .loc-pill .loc-pill-label { font-size: 12px !important; }
+          .loc-pill .loc-pill-mappin { width: 13px !important; height: 13px !important; }
+          .loc-pill .loc-pill-chevron { width: 11px !important; height: 11px !important; }
         }
         .loc-pill:hover {
           background: rgba(15, 18, 28, 0.75);
@@ -297,12 +307,21 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
       `}</style>
 
       <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
-        <MapPin size={13} color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)'} style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.92)', fontWeight: 500, letterSpacing: '0.01em' }}>
+        <MapPin
+          size={compact ? 11 : 13}
+          color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)'}
+          className="loc-pill-mappin"
+          style={{ flexShrink: 0 }}
+        />
+        <span className="loc-pill-label" style={{ fontSize: compact ? 10.5 : 12, color: 'rgba(255,255,255,0.92)', fontWeight: 500, letterSpacing: '0.01em' }}>
           {label}
         </span>
-        <ChevronDown size={11} color="rgba(255, 179, 71,0.7)"
-          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+        <ChevronDown
+          size={compact ? 9 : 11}
+          color="rgba(255, 179, 71,0.7)"
+          className="loc-pill-chevron"
+          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
+        />
       </button>
 
       {open && anchor && typeof document !== 'undefined' && createPortal(
