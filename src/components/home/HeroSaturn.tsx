@@ -96,7 +96,7 @@ function CTA({
   };
   const skin: CSSProperties =
     tone === 'primary'
-      ? { background: '#FF6A1A', color: '#FFFFFF', border: 'none' }
+      ? { background: '#FFB347', color: '#0A1735', border: 'none' }
       : { background: '#1A2540', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.06)' };
 
   return (

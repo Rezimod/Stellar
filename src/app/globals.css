@@ -531,7 +531,7 @@ code, pre, .mono, [class*="font-mono"] {
 .btn-stellar-ghost:active:not(:disabled) { filter: brightness(0.96); }
 
 /* Home hero CTAs */
-.hero-cta-primary:hover   { background: #FF7A2E !important; }
+.hero-cta-primary:hover   { background: #FFC36B !important; }
 .hero-cta-secondary:hover { background: #223054 !important; }
 
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles

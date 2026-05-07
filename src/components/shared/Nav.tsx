@@ -151,16 +151,14 @@ export default function Nav() {
                   <Link
                     key={tab.href}
                     href={tab.href}
-                    className={`nav-tab px-3.5 py-1.5 text-xs font-semibold ${isActive ? 'nav-tab-active' : ''}`}
+                    className={`nav-tab px-4 py-2 text-[14px] font-semibold ${isActive ? 'nav-tab-active' : ''}`}
                     style={isActive ? {
-                      background: 'linear-gradient(135deg, rgba(255, 179, 71,0.22) 0%, rgba(255, 179, 71,0.12) 100%)',
-                      border: '1px solid rgba(255, 179, 71,0.35)',
-                      color: '#FFB347',
+                      background: '#FFB347',
+                      border: '1px solid #FFB347',
+                      color: '#0A1735',
                       textDecoration: 'none',
-                      boxShadow: '0 0 16px rgba(255, 179, 71,0.18), inset 0 1px 0 rgba(255,255,255,0.08)',
-                      textShadow: '0 0 10px rgba(255, 179, 71,0.45)',
                     } : {
-                      color: 'rgba(255,255,255,0.6)',
+                      color: '#FFFFFF',
                       border: '1px solid transparent',
                       textDecoration: 'none',
                     }}
