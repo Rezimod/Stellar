@@ -761,59 +761,18 @@ export default function HomePage() {
             <Eyebrow>How it works</Eyebrow>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
-            <div className="order-2 md:order-1">
-              <ol className="relative">
-                <span
-                  aria-hidden
-                  className="absolute left-[7px] top-2 bottom-2 w-px bg-white/[0.08]"
-                />
-                {[
-                  {
-                    n: '01',
-                    title: 'Sign in',
-                    body: 'Email or Google. Your wallet is created in the background — no seed phrases, no extensions.',
-                  },
-                  {
-                    n: '02',
-                    title: 'Find a target',
-                    body: 'Real objects visible from your location tonight, ranked by clear sky and altitude.',
-                  },
-                  {
-                    n: '03',
-                    title: 'Earn Stars',
-                    body: 'Verify your observation. Stars land in your wallet — redeemable in the marketplace.',
-                  },
-                ].map((step, i, arr) => (
-                  <li
-                    key={step.n}
-                    className={`relative pl-8 md:pl-10 ${i === arr.length - 1 ? '' : 'pb-7 md:pb-9'}`}
-                  >
-                    <span
-                      aria-hidden
-                      className="absolute left-0 top-[6px] w-[15px] h-[15px] rounded-full border border-white/20 bg-[#0B0E17] flex items-center justify-center"
-                    >
-                      <span className="w-[5px] h-[5px] rounded-full bg-[#FFB347]" />
-                    </span>
-                    <div className="font-mono text-[10.5px] md:text-[11.5px] tracking-[0.18em] text-[#FFB347] mb-1.5">
-                      {step.n}
-                    </div>
-                    <div className="text-white text-[17px] md:text-[20px] font-semibold leading-tight tracking-[-0.005em] mb-1.5">
-                      {step.title}
-                    </div>
-                    <p className="text-white/55 text-[13.5px] md:text-[14.5px] leading-[1.55] max-w-[420px]">
-                      {step.body}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-7 md:mt-8 pl-8 md:pl-10">
-                <SectionLink href="/missions">Start observing →</SectionLink>
-              </div>
+          <div className="flex flex-col items-center gap-10 md:gap-14 max-w-[1000px] mx-auto">
+            <IPhone size="md" image="/landing/missions.png" imageAlt="Tonight's mission: Jupiter" />
+
+            <div className="grid grid-cols-3 gap-4 md:gap-10 w-full max-w-[720px]">
+              {['Sign in', 'Find a target', 'Earn Stars'].map((title) => (
+                <div key={title} className="text-center text-white text-[15px] md:text-[20px] font-semibold leading-tight tracking-[-0.005em]">
+                  {title}
+                </div>
+              ))}
             </div>
-            <div className="order-1 md:order-2 mx-auto">
-              <IPhone size="md" image="/landing/missions.png" imageAlt="Tonight's mission: Jupiter" />
-            </div>
+
+            <SectionLink href="/missions">Start observing →</SectionLink>
           </div>
         </div>
       </section>
