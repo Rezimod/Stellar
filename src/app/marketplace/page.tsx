@@ -146,7 +146,7 @@ export default function MarketplacePage() {
                   <button
                     key={c.key}
                     onClick={() => setFilter(c.key)}
-                    className="flex-shrink-0 h-[34px] px-[14px] text-[11px] tracking-[0.08em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 h-[30px] px-[12px] text-[11px] tracking-[0.08em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -178,7 +178,7 @@ export default function MarketplacePage() {
                   <button
                     key={d}
                     onClick={() => setDifficulty(active ? 'all' : d)}
-                    className="flex-shrink-0 inline-flex items-center gap-[7px] h-[34px] pl-[11px] pr-[13px] text-[10.5px] tracking-[0.1em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 inline-flex items-center gap-[7px] h-[30px] pl-[10px] pr-[12px] text-[10.5px] tracking-[0.1em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {

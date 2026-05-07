@@ -308,7 +308,25 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
       `}</style>
 
-      <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
+      <button
+        ref={btnRef}
+        className={ghost ? 'loc-pill-ghost' : 'loc-pill'}
+        onClick={() => setOpen(v => !v)}
+        style={ghost ? {
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          height: 22,
+          padding: '0 6px',
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          transition: 'background 0.15s',
+        } : undefined}
+        onMouseEnter={ghost ? (e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' } : undefined}
+        onMouseLeave={ghost ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
+      >
         <MapPin
           size={ghost ? 10 : compact ? 11 : 13}
           color={ghost
