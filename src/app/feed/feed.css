@@ -17,7 +17,9 @@
   --hairline: rgba(255,255,255,0.08);
   --card-bg: rgba(255,255,255,0.025);
   --card-bg-hover: rgba(255,255,255,0.045);
-  --feed-serif: 'Cormorant Garamond', Georgia, serif;
+  /* Page typography aligned with the global stack: Orbitron for display /
+     headings, Geist for body, JetBrains Mono for numerics. No serif italic. */
+  --feed-display: var(--font-display), system-ui, -apple-system, sans-serif;
   --feed-sans: var(--font-body), 'Geist', -apple-system, system-ui, sans-serif;
   --feed-mono: var(--font-mono), 'JetBrains Mono', ui-monospace, monospace;
 
@@ -112,8 +114,10 @@
   width: 40px; height: 40px; border-radius: 50%;
   background: linear-gradient(135deg, var(--brass), var(--rose));
   display: grid; place-items: center;
-  font-family: var(--feed-serif); font-size: 18px; font-weight: 600; color: var(--ink);
+  font-family: var(--feed-display); font-size: 16px; font-weight: 500; color: var(--ink);
+  letter-spacing: 0.04em;
   flex-shrink: 0;
+  overflow: hidden;
 }
 .composer-input {
   flex: 1; background: transparent; border: none; outline: none;
@@ -122,6 +126,25 @@
   resize: none; min-height: 44px; max-height: 200px; line-height: 1.5;
 }
 .composer-input::placeholder { color: var(--slate-400); }
+.composer-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.composer-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 6px;
+  font-family: var(--feed-mono);
+  font-size: 10px; letter-spacing: 0.04em;
+  color: var(--slate-400);
+}
+.composer-meta-hint { color: var(--slate-500); }
+.composer-counter { font-feature-settings: 'tnum'; }
+.composer-counter.warn { color: var(--brass); }
+.composer-counter.over { color: var(--red); }
+
+.composer-row .composer-avatar-img {
+  width: 40px; height: 40px; border-radius: 50%;
+  flex-shrink: 0; display: grid; place-items: center;
+  overflow: hidden;
+}
 
 .composer-preview {
   margin-top: 12px;
@@ -273,8 +296,10 @@
 .author-avatar {
   width: 42px; height: 42px; border-radius: 50%;
   display: grid; place-items: center;
-  font-family: var(--feed-serif); font-size: 18px; font-weight: 600;
+  font-family: var(--feed-display); font-size: 15px; font-weight: 500;
+  letter-spacing: 0.04em;
   color: var(--bone); flex-shrink: 0;
+  overflow: hidden;
 }
 .author-name {
   font-size: 14px; font-weight: 500; color: var(--slate-100);
@@ -321,8 +346,9 @@
   white-space: pre-wrap;
 }
 .post-quote {
-  font-family: var(--feed-serif);
-  font-size: 19px; font-style: italic;
+  font-family: var(--feed-display);
+  font-size: 17px; font-weight: 500;
+  letter-spacing: 0.01em;
   line-height: 1.4; color: var(--bone);
   padding: 8px 0 12px;
 }
@@ -362,8 +388,9 @@
   gap: 12px;
 }
 .media-target {
-  font-family: var(--feed-serif); font-size: 18px;
-  color: var(--bone); font-style: italic;
+  font-family: var(--feed-display); font-size: 16px;
+  font-weight: 500; letter-spacing: 0.02em;
+  color: var(--bone);
   text-shadow: 0 2px 8px rgba(0,0,0,0.6);
 }
 .media-coords {
@@ -415,8 +442,9 @@
   margin-bottom: 4px;
 }
 .achievement-title {
-  font-family: var(--feed-serif);
-  font-size: 19px; font-weight: 500;
+  font-family: var(--feed-display);
+  font-size: 17px; font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--bone);
   margin-bottom: 4px; line-height: 1.2;
 }
@@ -527,8 +555,10 @@
 .comment-avatar {
   width: 32px; height: 32px; border-radius: 50%;
   display: grid; place-items: center;
-  font-family: var(--feed-serif); font-size: 14px;
+  font-family: var(--feed-display); font-size: 12px;
+  font-weight: 500; letter-spacing: 0.04em;
   color: var(--bone); flex-shrink: 0;
+  overflow: hidden;
 }
 .comment-bubble { flex: 1; min-width: 0; }
 .comment-content {
@@ -614,9 +644,10 @@
   50% { opacity: 0.5; transform: scale(0.8); }
 }
 .sky-condition-text {
-  font-family: var(--feed-serif);
-  font-style: italic;
-  font-size: 16px;
+  font-family: var(--feed-display);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--bone);
 }
 .sky-row {
@@ -672,14 +703,12 @@
 }
 .planet-summary-icon { color: var(--brass); flex-shrink: 0; }
 .planet-summary-text {
-  font-family: var(--feed-serif);
-  font-style: italic;
-  font-size: 14px;
+  font-family: var(--feed-sans);
+  font-size: 13px;
   color: var(--bone);
   flex: 1;
 }
 .planet-summary-text strong {
-  font-style: normal;
   font-family: var(--feed-mono);
   font-weight: 500;
   color: var(--brass);

@@ -16,7 +16,10 @@ import { useLocation } from '@/lib/location'
 import FeedPostCard from '@/components/feed/FeedPostCard'
 import SkyWidget from '@/components/feed/SkyWidget'
 import { DiscoveriesWidget, ShopWidget } from '@/components/feed/SidebarWidgets'
+import { Avatar } from '@/lib/avatars'
 import type { FeedPost } from '@/lib/feed/types'
+
+const POST_BODY_MAX = 2000
 
 type FilterKey = 'latest' | 'following' | 'discoveries' | 'tonight'
 
@@ -51,7 +54,7 @@ export default function FeedPage() {
   const { authenticated, address } = useStellarUser()
   const { } = useStellarAuth()
   const { location } = useLocation()
-  const { displayName, firstName, initial: profileInitial, avatarGlyph } = useDisplayProfile()
+  const { displayName, firstName, initial: profileInitial, avatarGlyph, avatarId } = useDisplayProfile()
   const [authOpen, setAuthOpen] = useState(false)
 
   const myInitial = avatarGlyph ?? profileInitial
@@ -151,7 +154,8 @@ export default function FeedPage() {
     )
   }
 
-  const canPost = (draft.trim().length > 0 || pendingImage) && !posting
+  const trimmedDraft = draft.trim()
+  const canPost = (trimmedDraft.length > 0 || pendingImage) && trimmedDraft.length <= POST_BODY_MAX && !posting
 
   async function submitPost() {
     if (!ensureAuth() || !address) return
@@ -189,6 +193,7 @@ export default function FeedPage() {
         setPendingImage(null)
         setPendingObservation(null)
         setPendingLocation(null)
+        if (composerRef.current) composerRef.current.style.height = 'auto'
       } else {
         const err = await res.json().catch(() => ({}))
         alert(err.error ?? 'Failed to post')
@@ -240,20 +245,47 @@ export default function FeedPage() {
           {authenticated ? (
             <div className="composer">
               <div className="composer-row">
-                <div className="composer-avatar">{myInitial}</div>
+                {avatarId ? (
+                  <Avatar avatarId={avatarId} initial={profileInitial} size={40} />
+                ) : (
+                  <div className="composer-avatar">{myInitial}</div>
+                )}
                 <textarea
                   ref={composerRef}
                   className="composer-input"
                   placeholder={composerPlaceholder}
                   value={draft}
+                  disabled={posting}
+                  maxLength={POST_BODY_MAX + 200}
                   onChange={e => {
                     setDraft(e.target.value)
                     const el = e.target
                     el.style.height = 'auto'
                     el.style.height = `${Math.min(200, el.scrollHeight)}px`
                   }}
+                  onKeyDown={e => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                      e.preventDefault()
+                      if (canPost) submitPost()
+                    }
+                  }}
                 />
               </div>
+
+              {(draft.length > POST_BODY_MAX - 200 || pendingImage) && (
+                <div className="composer-meta">
+                  <span className="composer-meta-hint">
+                    {pendingImage ? 'Photo attached · ⌘↵ to post' : '⌘↵ to post'}
+                  </span>
+                  {draft.length > POST_BODY_MAX - 200 && (
+                    <span className={`composer-counter ${
+                      draft.length > POST_BODY_MAX ? 'over' : draft.length > POST_BODY_MAX - 50 ? 'warn' : ''
+                    }`}>
+                      {draft.length} / {POST_BODY_MAX}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {(pendingImage || pendingObservation || pendingLocation) && (
                 <div className="composer-preview">
@@ -294,11 +326,12 @@ export default function FeedPage() {
                     style={{ display: 'none' }}
                     onChange={onPickPhoto}
                   />
-                  <button className={`tool-btn ${pendingImage ? 'active' : ''}`} onClick={() => fileInputRef.current?.click()}>
+                  <button className={`tool-btn ${pendingImage ? 'active' : ''}`} disabled={posting} onClick={() => fileInputRef.current?.click()}>
                     <ImageIcon /> <span className="tool-btn-label">Photo</span>
                   </button>
                   <button
                     className={`tool-btn ${pendingObservation ? 'active' : ''}`}
+                    disabled={posting}
                     onClick={async () => {
                       try {
                         const res = await fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address ?? '')}`)
@@ -321,11 +354,12 @@ export default function FeedPage() {
                   >
                     <Eye /> <span className="tool-btn-label">Observation</span>
                   </button>
-                  <button className={`tool-btn ${pendingLocation ? 'active' : ''}`} onClick={requestLocation}>
+                  <button className={`tool-btn ${pendingLocation ? 'active' : ''}`} disabled={posting} onClick={requestLocation}>
                     <MapPin /> <span className="tool-btn-label">Location</span>
                   </button>
                   <button
                     className="tool-btn"
+                    disabled={posting}
                     onClick={() => router.push('/nfts')}
                     title="Open your discoveries to attach an NFT"
                   >
@@ -378,6 +412,7 @@ export default function FeedPage() {
                   myInitial={myInitial}
                   myDisplayName={displayName}
                   myAvatarGlyph={avatarGlyph}
+                  myAvatarId={avatarId}
                   onChange={updatePost}
                   onDelete={removePost}
                   authPrompt={() => setAuthOpen(true)}

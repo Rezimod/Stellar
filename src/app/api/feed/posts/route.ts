@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PublicKey } from '@solana/web3.js'
 import { and, desc, eq, gt, inArray, lt, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
-import { feedPosts, feedReactions, feedComments, feedFollows } from '@/lib/schema'
+import { feedPosts, feedReactions, feedComments, feedFollows, users } from '@/lib/schema'
 
 const REACTION_TYPES = ['like', 'love', 'wow', 'sad', 'dislike', 'star', 'rocket', 'galaxy'] as const
 type ReactionType = typeof REACTION_TYPES[number]
@@ -80,8 +80,9 @@ export async function GET(req: NextRequest) {
   }
 
   const postIds = sliced.map(p => p.id)
+  const authorWallets = Array.from(new Set(sliced.map(p => p.authorWallet)))
 
-  const [allComments, allReactions, myReactions] = await Promise.all([
+  const [allComments, allReactions, myReactions, authorRows] = await Promise.all([
     db.select().from(feedComments).where(inArray(feedComments.postId, postIds)).orderBy(desc(feedComments.createdAt)),
     db
       .select({
@@ -98,7 +99,16 @@ export async function GET(req: NextRequest) {
           .from(feedReactions)
           .where(and(inArray(feedReactions.postId, postIds), eq(feedReactions.wallet, walletAddress)))
       : Promise.resolve([] as Array<{ postId: string; reaction: string }>),
+    db
+      .select({ wallet: users.walletAddress, avatar: users.avatar, username: users.username })
+      .from(users)
+      .where(inArray(users.walletAddress, authorWallets)),
   ])
+
+  const authorByWallet = new Map<string, { avatar: string | null; username: string | null }>()
+  for (const a of authorRows) {
+    if (a.wallet) authorByWallet.set(a.wallet, { avatar: a.avatar, username: a.username })
+  }
 
   const commentsByPost = new Map<string, typeof allComments>()
   for (const c of allComments) {
@@ -122,8 +132,11 @@ export async function GET(req: NextRequest) {
   const posts = sliced.map(p => {
     const reacts = (reactionsByPost.get(p.id) ?? []).sort((a, b) => b.count - a.count)
     const topReactions = reacts.slice(0, 3).map(r => r.reaction)
+    const a = authorByWallet.get(p.authorWallet)
     return {
       ...p,
+      authorAvatar: a?.avatar ?? null,
+      authorName: p.authorName ?? a?.username ?? null,
       createdAt: p.createdAt.toISOString(),
       topReactions,
       myReaction: myByPost.get(p.id) ?? null,
@@ -204,8 +217,15 @@ export async function POST(req: NextRequest) {
   }
 
   const [inserted] = await db.insert(feedPosts).values(post).returning()
+  const [authorRow] = await db
+    .select({ avatar: users.avatar, username: users.username })
+    .from(users)
+    .where(eq(users.walletAddress, authorWallet))
+    .limit(1)
   return NextResponse.json({
     ...inserted,
+    authorAvatar: authorRow?.avatar ?? null,
+    authorName: inserted.authorName ?? authorRow?.username ?? null,
     createdAt: inserted.createdAt.toISOString(),
     topReactions: [],
     myReaction: null,

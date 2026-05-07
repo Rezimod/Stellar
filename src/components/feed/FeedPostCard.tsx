@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { MessageCircle, MoreHorizontal, Share2, Telescope, Trash2, Copy, Twitter } from 'lucide-react'
 import FollowButton from '@/components/feed/FollowButton'
+import { Avatar } from '@/lib/avatars'
 import {
   REACTION_EMOJI,
   REACTION_GRADIENT,
@@ -61,13 +62,14 @@ interface Props {
   myInitial: string
   myDisplayName?: string | null
   myAvatarGlyph?: string | null
+  myAvatarId?: string | null
   onDelete?: (postId: string) => void
   onChange: (post: FeedPost) => void
   authPrompt: () => void
   index: number
 }
 
-function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGlyph, onDelete, onChange, authPrompt, index }: Props) {
+function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGlyph, myAvatarId, onDelete, onChange, authPrompt, index }: Props) {
   const [showPicker, setShowPicker] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
@@ -103,6 +105,10 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
   const liveName = isMine ? (myDisplayName?.trim() || null) : null
   const liveGlyph = isMine ? (myAvatarGlyph ?? null) : null
   const displayName = liveName ?? post.authorName ?? shortWallet(post.authorWallet)
+  // Prefer the live avatar id for my own posts (so a fresh avatar choice is reflected
+  // immediately); otherwise use whatever the API joined onto the post row.
+  const resolvedAvatarId = isMine ? (myAvatarId ?? null) : (post.authorAvatar ?? null)
+  const showsAvatarComponent = !!resolvedAvatarId
   const initial = liveGlyph ?? (liveName ?? post.authorName ?? post.authorWallet).slice(0, 1).toUpperCase()
   const rank = post.authorRank ?? 'Stargazer'
   const avatarBg = RANK_GRADIENT[rank] ?? RANK_GRADIENT.Stargazer
@@ -224,7 +230,11 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
           className="post-author"
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
-          <div className="author-avatar" style={{ background: avatarBg }}>{initial}</div>
+          {showsAvatarComponent ? (
+            <Avatar avatarId={resolvedAvatarId} initial={initial} size={42} />
+          ) : (
+            <div className="author-avatar" style={{ background: avatarBg }}>{initial}</div>
+          )}
           <div>
             <div className="author-name">
               {displayName}
@@ -437,7 +447,11 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             </button>
           )}
           <div className="comment-input-row">
-            <div className="comment-avatar" style={{ background: RANK_GRADIENT.Pathfinder }}>{myInitial}</div>
+            {myAvatarId ? (
+              <Avatar avatarId={myAvatarId} initial={myInitial} size={32} />
+            ) : (
+              <div className="comment-avatar" style={{ background: RANK_GRADIENT.Pathfinder }}>{myInitial}</div>
+            )}
             <div className="comment-input-wrap">
               <input
                 className="comment-input"
@@ -484,6 +498,7 @@ const FeedPostCard = memo(FeedPostCardImpl, (prev, next) => (
   prev.myInitial === next.myInitial &&
   prev.myDisplayName === next.myDisplayName &&
   prev.myAvatarGlyph === next.myAvatarGlyph &&
+  prev.myAvatarId === next.myAvatarId &&
   prev.index === next.index
 ))
 

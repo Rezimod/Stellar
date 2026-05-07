@@ -20,6 +20,8 @@ export interface FeedPost {
   authorWallet: string
   authorName: string | null
   authorRank: string | null
+  /** Avatar id from the users table, joined at fetch time. */
+  authorAvatar?: string | null
   type: FeedPostType
   body: string | null
   imageUrl: string | null
