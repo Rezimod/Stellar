@@ -34,14 +34,14 @@ const SECTIONS: HubSection[] = [
     label: 'Explore',
     items: [
       { href: '/sky',         label: 'Sky Watcher',  icon: Sun,           gradient: G.amber },
-      { href: '/markets',     label: 'Markets',      icon: TrendingUp,    gradient: G.emerald, comingSoon: true },
       { href: '/missions',    label: 'Missions',     icon: Target,        gradient: G.violet },
+      { href: '/marketplace', label: 'Marketplace',  icon: ShoppingBag,   gradient: G.indigo },
       { href: '/chat',        label: 'ASTRA AI',     icon: MessageCircle, gradient: G.fuchsia },
-      { href: '/feed',        label: 'Feed',         icon: Sparkles,      gradient: G.orange },
       { href: '/learn',       label: 'Learning',     icon: BookOpen,      gradient: G.blue },
+      { href: '/feed',        label: 'Feed',         icon: Sparkles,      gradient: G.orange },
+      { href: '/markets',     label: 'Markets',      icon: TrendingUp,    gradient: G.emerald, comingSoon: true },
       { href: '/network',     label: 'Network',      icon: Globe,         gradient: G.teal,    comingSoon: true },
       { href: '/leaderboard', label: 'Leaderboard',  icon: Trophy,        gradient: G.amber,   comingSoon: true },
-      { href: '/marketplace', label: 'Marketplace',  icon: ShoppingBag,   gradient: G.indigo },
     ],
   },
   {
