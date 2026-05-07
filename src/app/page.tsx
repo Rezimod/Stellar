@@ -719,7 +719,7 @@ export default function HomePage() {
       <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="relative max-w-[960px] mx-auto">
           <div className="text-center mb-5 md:mb-7 text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#6B7385]">
-            Backed by Astroman — authorized dealer
+            Partner brands
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-y-2 md:gap-y-0">
             <PartnerLogo
