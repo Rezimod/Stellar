@@ -102,110 +102,89 @@ export default function MarketplacePage() {
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
       <div className="marketplace-page-bg overflow-hidden">
         <div className="relative z-10">
-          {/* Mobile: balance/region row above a horizontal-scroll filter strip. Desktop: filters left, balance/region right. */}
-          <div className="flex flex-col gap-[10px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-[12px] sm:gap-y-[10px] sm:justify-between mb-[14px] sm:mb-[20px]">
-            {/* Balance + Region — first on mobile so it's compact above the filter strip */}
-            <div className="order-1 sm:order-2 flex items-center justify-between sm:justify-start gap-[8px] w-full sm:w-auto flex-shrink-0">
-              <span
-                className="inline-flex items-center gap-[7px] px-[12px] py-[7px] sm:gap-[8px] sm:px-[14px] sm:py-[9px] rounded-lg text-[12px] uppercase cursor-default"
-                style={{
-                  background: 'rgba(15, 18, 28, 0.72)',
-                  border: '1px solid rgba(167, 139, 250, 0.42)',
-                  boxShadow: 'inset 0 1px 0 rgba(167, 139, 250, 0.10), 0 1px 0 rgba(0,0,0,0.25)',
-                }}
-              >
-                <span className="tracking-[0.16em] text-[rgba(232,230,221,0.6)] text-[10px]">Balance</span>
-                <span className="font-semibold tracking-[0.04em] text-[13px]" style={{ color: '#A78BFA' }}>
-                  {balance.toLocaleString()}
-                </span>
-                <span style={{ color: '#A78BFA' }} className="text-[12px]">★</span>
-              </span>
-
-              {/* Mobile: bare picker pill on the right. Desktop: wrapped with REGION label. */}
-              <span className="sm:hidden">
-                <LocationPicker compact />
-              </span>
-              <span
-                className="hidden sm:inline-flex items-center gap-[10px] pl-[12px] pr-[5px] py-[4px] rounded-lg"
-                style={{
-                  background: 'rgba(15, 18, 28, 0.72)',
-                  border: '1px solid rgba(232,230,221,0.16)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 0 rgba(0,0,0,0.25)',
-                }}
-              >
-                <span className="tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)] text-[10px]">Region</span>
-                <LocationPicker compact />
-              </span>
+          {/* Compact toolbar: filters left, balance + region right. Single row at sm+, stacked on mobile. */}
+          <div className="flex flex-col gap-[8px] sm:flex-row sm:items-center sm:justify-between sm:gap-[12px] mb-[14px] sm:mb-[18px]">
+            {/* Filter chips — horizontal scroll on mobile, inline on desktop */}
+            <div
+              className="order-2 sm:order-1 flex items-center gap-[6px] flex-nowrap overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0 sm:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {CATEGORIES.map(c => {
+                const active = filter === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    onClick={() => setFilter(c.key)}
+                    className="flex-shrink-0 h-[30px] px-[11px] text-[11px] tracking-[0.08em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    style={
+                      active
+                        ? {
+                            background: 'var(--terracotta)',
+                            color: '#1a1208',
+                            border: '1px solid var(--terracotta)',
+                            fontWeight: 700,
+                          }
+                        : {
+                            color: 'rgba(232,230,221,0.78)',
+                            border: '1px solid rgba(232,230,221,0.14)',
+                            background: 'rgba(15,18,28,0.45)',
+                            fontWeight: 500,
+                          }
+                    }
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+              <span className="w-px h-[18px] bg-[rgba(232,230,221,0.14)] mx-[4px] flex-shrink-0" />
+              {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
+                const active = difficulty === d;
+                const tone   = DIFFICULTY_TONE[d];
+                const label  = d === 'intermediate' ? 'Mid' : d.charAt(0).toUpperCase() + d.slice(1);
+                const isBeginner = d === 'beginner';
+                const activeBg = isBeginner ? 'var(--seafoam)' : 'var(--terracotta)';
+                return (
+                  <button
+                    key={d}
+                    onClick={() => setDifficulty(active ? 'all' : d)}
+                    className="flex-shrink-0 h-[30px] px-[10px] text-[10.5px] tracking-[0.1em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    style={
+                      active
+                        ? {
+                            background: activeBg,
+                            color: '#1a1208',
+                            border: `1px solid ${activeBg}`,
+                            fontWeight: 700,
+                          }
+                        : {
+                            color: tone.color,
+                            border: `1px solid ${tone.border}`,
+                            background: 'rgba(15,18,28,0.45)',
+                            fontWeight: 500,
+                          }
+                    }
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Filter chips — horizontal scroll on mobile, wrap on desktop */}
-            <div
-              className="order-2 sm:order-1 flex items-center gap-[8px] flex-nowrap overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-            {CATEGORIES.map(c => {
-              const active = filter === c.key;
-              return (
-                <button
-                  key={c.key}
-                  onClick={() => setFilter(c.key)}
-                  className="flex-shrink-0 px-[14px] py-[8px] sm:px-[18px] sm:py-[10px] text-[11px] sm:text-[12px] tracking-[0.14em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
-                  style={
-                    active
-                      ? {
-                          background: 'var(--terracotta)',
-                          color: '#1a1208',
-                          border: '1px solid var(--terracotta)',
-                          fontWeight: 700,
-                          boxShadow: '0 10px 28px -10px rgba(255, 209, 102, 0.55)',
-                        }
-                      : {
-                          color: 'rgba(232,230,221,0.85)',
-                          border: '1px solid rgba(232,230,221,0.14)',
-                          background: 'transparent',
-                          fontWeight: 500,
-                        }
-                  }
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-            <span className="w-px h-[24px] bg-[rgba(232,230,221,0.15)] mx-1 flex-shrink-0" />
-            {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
-              const active = difficulty === d;
-              const tone   = DIFFICULTY_TONE[d];
-              const label  = d === 'intermediate' ? 'Mid' : d.charAt(0).toUpperCase() + d.slice(1);
-              const isBeginner = d === 'beginner';
-              const activeBg = isBeginner ? 'var(--seafoam)' : 'var(--terracotta)';
-              const activeShadow = isBeginner
-                ? '0 10px 28px -10px rgba(94, 234, 212, 0.55)'
-                : '0 10px 28px -10px rgba(255, 209, 102, 0.55)';
-              return (
-                <button
-                  key={d}
-                  onClick={() => setDifficulty(active ? 'all' : d)}
-                  className="flex-shrink-0 px-[12px] py-[8px] sm:px-[16px] sm:py-[10px] text-[10px] sm:text-[11px] tracking-[0.18em] uppercase rounded-lg whitespace-nowrap transition-[filter,transform,background,color,border-color] duration-200 hover:brightness-110"
-                  style={
-                    active
-                      ? {
-                          background: activeBg,
-                          color: '#1a1208',
-                          border: `1px solid ${activeBg}`,
-                          fontWeight: 700,
-                          boxShadow: activeShadow,
-                        }
-                      : {
-                          color: tone.color,
-                          border: `1px solid ${tone.border}`,
-                          background: 'transparent',
-                          fontWeight: 500,
-                        }
-                  }
-                >
-                  {label}
-                </button>
-              );
-            })}
+            {/* Balance + Region — compact, matching toolbar height */}
+            <div className="order-1 sm:order-2 flex items-center justify-end gap-[6px] flex-shrink-0">
+              <span
+                className="inline-flex items-center h-[30px] gap-[6px] px-[10px] rounded-md text-[10.5px] uppercase cursor-default"
+                style={{
+                  background: 'rgba(15, 18, 28, 0.55)',
+                  border: '1px solid rgba(167, 139, 250, 0.32)',
+                }}
+              >
+                <span className="tracking-[0.1em] text-[rgba(232,230,221,0.55)] text-[9.5px]">Bal</span>
+                <span className="font-semibold tabular-nums tracking-[0.02em] text-[12px]" style={{ color: '#A78BFA' }}>
+                  {balance.toLocaleString()}
+                </span>
+                <span style={{ color: '#A78BFA' }} className="text-[11px] leading-none">★</span>
+              </span>
+              <LocationPicker compact />
             </div>
           </div>
 
