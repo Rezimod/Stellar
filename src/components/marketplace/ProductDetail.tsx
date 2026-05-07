@@ -37,7 +37,12 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
     requestAnimationFrame(() => setVisible(true));
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = () => {

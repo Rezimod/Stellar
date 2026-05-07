@@ -21,7 +21,12 @@ export default function MintAnimation({
   doneSubtitle = 'Proof recorded on-chain',
 }: MintAnimationProps) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, []);
 
   const overlay = (
     <div

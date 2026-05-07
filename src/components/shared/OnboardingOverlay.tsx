@@ -11,6 +11,13 @@ export default function OnboardingOverlay() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!visible) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, [visible]);
+
   if (!visible) return null;
 
   function dismiss() {

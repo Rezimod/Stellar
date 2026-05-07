@@ -138,8 +138,13 @@ export default function DifficultyExplainer({
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+    const prevOverflow = document.body.style.overflow;
+    if (!anchorRect) document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      if (!anchorRect) document.body.style.overflow = prevOverflow;
+    };
+  }, [open, onClose, anchorRect]);
 
   if (!open) return null;
 

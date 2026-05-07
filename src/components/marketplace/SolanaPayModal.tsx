@@ -63,6 +63,12 @@ export default function SolanaPayModal({
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-canvas/70 backdrop-blur-sm z-[70] flex items-center justify-center px-4"
       onClick={onClose}>

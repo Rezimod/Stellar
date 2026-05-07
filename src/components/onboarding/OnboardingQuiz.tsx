@@ -51,6 +51,13 @@ export default function OnboardingQuiz({ onComplete }: Props) {
     )
   }, [])
 
+  // Lock background scroll while the onboarding overlay is mounted
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prevOverflow }
+  }, [])
+
   const handleContinue = useCallback(() => {
     if (step === 1 && equipment) setStep(2)
     else if (step === 2 && environment) setStep(3)
