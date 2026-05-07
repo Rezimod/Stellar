@@ -73,51 +73,59 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
             />
           )}
         </div>
-        <p className="font-medium text-[#F8F4EC] leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors text-[15px]">
+        <p className="font-medium text-white leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors text-[15px]">
           {product.name}
         </p>
-        <p className="text-[11px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)] mb-[10px] truncate">
+        <p className="text-[11px] tracking-[0.16em] uppercase text-white/85 mb-[10px] truncate">
           {dealerName || product.category}
         </p>
       </a>
       <div
         className="flex justify-between items-end pt-[10px] mb-[12px] gap-[10px]"
-        style={{ borderTop: '1px solid rgba(232,230,221,0.10)' }}
+        style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
       >
         <div className="flex flex-col gap-[2px] min-w-0">
           <span className="text-[18px] font-semibold text-white leading-none">
             {formatPrice(product)}
           </span>
           {solAmount !== null && (
-            <span className="text-[10px] tracking-[0.10em] uppercase text-[rgba(232,230,221,0.55)] leading-none mt-[4px]">
-              ≈ <span className="text-[rgba(232,230,221,0.85)]">{formatSol(solAmount)}</span> SOL
+            <span className="text-[10px] tracking-[0.10em] uppercase text-white/70 leading-none mt-[4px]">
+              ≈ <span className="text-white">{formatSol(solAmount)}</span> SOL
             </span>
           )}
         </div>
-        <span className="text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap text-white">
-          ★ {product.starsPrice.toLocaleString()}
+        <span className="inline-flex items-center gap-[5px] text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap text-white">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
+          </svg>
+          {product.starsPrice.toLocaleString()}
         </span>
       </div>
       <div className="flex gap-[8px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 inline-flex items-center justify-center gap-[6px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.04em] font-semibold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.04em] font-semibold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px]"
           style={{
-            background: '#FF6A1A',
+            background: '#FF7E36',
             border: 'none',
             color: '#FFFFFF',
+            boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,126,54,0.28)',
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
-          <span aria-hidden className="text-[13px] leading-none">◎</span>
+          <svg width="13" height="13" viewBox="0 0 397 311" aria-hidden="true">
+            <path fill="#FFFFFF" d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
+            <path fill="#FFFFFF" d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
+            <path fill="#FFFFFF" d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
+          </svg>
           <span>SOL</span>
         </Link>
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 inline-flex items-center justify-center gap-[6px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
           style={{
             background: '#1A2540',
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
             color: '#FFFFFF',
           }}
           onMouseEnter={e => {
@@ -128,7 +136,9 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >
-          <span aria-hidden className="text-[13px] leading-none text-white">★</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="text-white">
+            <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
+          </svg>
           <span>Stars</span>
         </Link>
       </div>

@@ -162,7 +162,7 @@ export default function MarketplacePage() {
                   <button
                     key={c.key}
                     onClick={() => setFilter(c.key)}
-                    className="flex-shrink-0 h-[30px] px-[11px] text-[11px] tracking-[0.08em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 h-[40px] px-[18px] text-[12px] tracking-[0.08em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color,transform] duration-150 hover:-translate-y-[1px]"
                     style={
                       active
                         ? {
@@ -170,12 +170,14 @@ export default function MarketplacePage() {
                             color: '#1a1208',
                             border: '1px solid var(--terracotta)',
                             fontWeight: 700,
+                            boxShadow: '0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 12px rgba(255,126,54,0.18)',
                           }
                         : {
-                            color: 'rgba(232,230,221,0.78)',
-                            border: '1px solid rgba(232,230,221,0.14)',
-                            background: 'rgba(15,18,28,0.45)',
-                            fontWeight: 500,
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255,255,255,0.18)',
+                            background: 'rgba(15,18,28,0.55)',
+                            fontWeight: 600,
+                            boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                           }
                     }
                   >
@@ -183,7 +185,7 @@ export default function MarketplacePage() {
                   </button>
                 );
               })}
-              <span className="w-px h-[18px] bg-[rgba(232,230,221,0.14)] mx-[4px] flex-shrink-0" />
+              <span className="w-px h-[22px] bg-[rgba(255,255,255,0.18)] mx-[6px] flex-shrink-0" />
               {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
                 const active = difficulty === d;
                 const meta   = SKILL_META[d];
@@ -192,7 +194,7 @@ export default function MarketplacePage() {
                   <button
                     key={d}
                     onClick={() => setDifficulty(active ? 'all' : d)}
-                    className="flex-shrink-0 inline-flex items-center gap-[7px] h-[30px] pl-[9px] pr-[12px] text-[10.5px] tracking-[0.1em] uppercase rounded-full whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 inline-flex items-center gap-[8px] h-[40px] pl-[14px] pr-[16px] text-[11.5px] tracking-[0.1em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color,transform] duration-150 hover:-translate-y-[1px]"
                     style={
                       active
                         ? {
@@ -200,12 +202,14 @@ export default function MarketplacePage() {
                             color: '#1a1208',
                             border: `1px solid ${meta.activeColor}`,
                             fontWeight: 700,
+                            boxShadow: '0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 12px rgba(0,0,0,0.25)',
                           }
                         : {
-                            color: 'rgba(232,230,221,0.78)',
-                            border: '1px dashed rgba(232,230,221,0.22)',
-                            background: 'transparent',
-                            fontWeight: 500,
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255,255,255,0.18)',
+                            background: 'rgba(15,18,28,0.55)',
+                            fontWeight: 600,
+                            boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                           }
                     }
                   >
@@ -217,19 +221,22 @@ export default function MarketplacePage() {
             </div>
 
             {/* Balance + Region — compact, matching toolbar height */}
-            <div className="order-1 sm:order-2 flex items-center justify-end gap-[6px] flex-shrink-0">
+            <div className="order-1 sm:order-2 flex items-center justify-end gap-[8px] flex-shrink-0">
               <span
-                className="inline-flex items-center h-[30px] gap-[6px] px-[10px] rounded-md text-[10.5px] uppercase cursor-default"
+                className="inline-flex items-center h-[40px] gap-[8px] px-[14px] rounded-lg text-[11px] uppercase cursor-default"
                 style={{
                   background: 'rgba(15, 18, 28, 0.55)',
-                  border: '1px solid rgba(167, 139, 250, 0.32)',
+                  border: '1px solid rgba(255, 126, 54, 0.38)',
+                  boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                 }}
               >
-                <span className="tracking-[0.1em] text-[rgba(232,230,221,0.55)] text-[9.5px]">Bal</span>
-                <span className="font-semibold tabular-nums tracking-[0.02em] text-[12px]" style={{ color: '#8B5CF6' }}>
+                <span className="tracking-[0.12em] text-white text-[10px] font-semibold">Bal</span>
+                <span className="font-semibold tabular-nums tracking-[0.02em] text-[13.5px]" style={{ color: 'var(--terracotta)' }}>
                   {balance.toLocaleString()}
                 </span>
-                <span style={{ color: '#8B5CF6' }} className="text-[11px] leading-none">★</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true">
+                  <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
+                </svg>
               </span>
               <LocationPicker compact />
             </div>
