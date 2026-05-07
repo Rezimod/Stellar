@@ -1176,9 +1176,10 @@ function CalibrationBanner({
     return () => window.clearTimeout(id);
   }, [justLocked]);
 
-  // Hide the banner entirely if user has already calibrated and is now
-  // off-aim — they don't need a second prompt cluttering the chart.
-  if (calibrationOffset !== 0 && !justLocked && Math.abs(azDelta) > 30) return null;
+  // After calibration the banner gets out of the way. Pre-calibration
+  // (offset === 0) it stays visible to walk the user through tilt → sweep
+  // → tap. The only post-cal render is the brief success flash.
+  if (calibrationOffset !== 0 && !justLocked) return null;
 
   if (justLocked) {
     return (
