@@ -300,9 +300,9 @@ function IPhone({
     size === 'sm'
       ? {
           width: 'w-[170px] md:w-[200px]',
-          chRound: 30, chPad: 3, scrRound: 27,
-          statH: 18, txt: 7.5,
-          speakerW: 22, speakerH: 2,
+          chRound: 32, chPad: 3, scrRound: 28,
+          statH: 24, txt: 7.5,
+          islandW: 50, islandH: 14,
           contentPad: 'px-2.5 pt-1.5',
           imgSizes: '(min-width:768px) 200px, 170px',
           showSignal: false,
@@ -310,18 +310,18 @@ function IPhone({
       : size === 'md'
       ? {
           width: 'w-[230px] md:w-[260px]',
-          chRound: 36, chPad: 3.5, scrRound: 32,
-          statH: 24, txt: 9,
-          speakerW: 30, speakerH: 2.5,
+          chRound: 40, chPad: 3.5, scrRound: 36,
+          statH: 30, txt: 9,
+          islandW: 70, islandH: 18,
           contentPad: 'px-3 pt-2',
           imgSizes: '(min-width:768px) 260px, 230px',
           showSignal: true,
         }
       : {
           width: 'w-[260px] md:w-[300px]',
-          chRound: 40, chPad: 4, scrRound: 36,
-          statH: 30, txt: 10.5,
-          speakerW: 38, speakerH: 3,
+          chRound: 46, chPad: 4, scrRound: 42,
+          statH: 36, txt: 10.5,
+          islandW: 86, islandH: 22,
           contentPad: 'px-4 pt-2.5',
           imgSizes: '(min-width:768px) 300px, 260px',
           showSignal: true,
@@ -329,15 +329,24 @@ function IPhone({
 
   return (
     <div className={`relative mx-auto ${cfg.width}`}>
+      {/* Outer titanium edge */}
+      <div
+        className="relative w-full"
+        style={{
+          padding: 1,
+          borderRadius: cfg.chRound + 1,
+          background: 'linear-gradient(145deg, #2A2E38 0%, #14171F 50%, #1F242E 100%)',
+        }}
+      >
       {/* Solid dark chassis */}
       <div
         className="relative w-full"
         style={{
           padding: cfg.chPad,
           borderRadius: cfg.chRound,
-          background: '#0a0d14',
+          background: '#05070C',
           boxShadow:
-            '0 50px 100px -30px rgba(0,0,0,0.85), 0 20px 40px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)',
+            '0 50px 100px -30px rgba(0,0,0,0.85), 0 20px 40px -20px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.05)',
         }}
       >
         {/* Screen */}
@@ -350,24 +359,28 @@ function IPhone({
             className="relative flex items-center justify-between bg-black z-10"
             style={{
               height: cfg.statH,
-              paddingLeft: Math.round(cfg.statH * 0.85),
-              paddingRight: Math.round(cfg.statH * 0.85),
+              paddingLeft: Math.round(cfg.statH * 0.7),
+              paddingRight: Math.round(cfg.statH * 0.7),
             }}
           >
             <span
-              className="font-mono font-semibold text-white/90 tabular-nums"
+              className="font-mono font-semibold text-white/95 tabular-nums z-10"
               style={{ fontSize: cfg.txt }}
             >
               9:41
             </span>
 
-            {/* Speaker slit */}
+            {/* Dynamic Island */}
             <span
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10"
-              style={{ width: cfg.speakerW, height: cfg.speakerH }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black"
+              style={{
+                width: cfg.islandW,
+                height: cfg.islandH,
+                boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.04)',
+              }}
             />
 
-            <span className="flex items-center" style={{ gap: Math.max(2, cfg.txt * 0.4) }}>
+            <span className="flex items-center z-10" style={{ gap: Math.max(2, cfg.txt * 0.4) }}>
               {cfg.showSignal && (
                 <svg
                   viewBox="0 0 18 10"
@@ -420,6 +433,7 @@ function IPhone({
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
@@ -627,42 +641,6 @@ function SkyARScreen() {
               <div className="text-white/55 text-[7px] font-mono mt-0.5">alt 38° · mag −2.1</div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SkyTargetScreen() {
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between">
-        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">Target</span>
-        <span className="text-[#5EEAD4] text-[8px] font-mono">VISIBLE</span>
-      </div>
-
-      <div className="mt-1.5 relative aspect-square w-full rounded-[10px] overflow-hidden">
-        <Image src="/sky/targets/saturn.jpg" alt="Saturn" fill sizes="200px" className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute bottom-1.5 left-2 right-2">
-          <div className="text-white text-[12px] font-bold leading-none">Saturn</div>
-          <div className="text-white/65 text-[7.5px] mt-0.5 font-mono uppercase tracking-wide">Telescope</div>
-        </div>
-      </div>
-
-      <div className="mt-2 rounded-[8px] bg-white/[0.04] border border-white/10 px-2 py-1.5">
-        <div className="text-[7px] text-white/55 font-mono uppercase tracking-wider">Look</div>
-        <div className="text-[10.5px] text-white font-bold leading-tight mt-0.5">SE · 4 fists up</div>
-      </div>
-
-      <div className="mt-1.5 grid grid-cols-2 gap-1">
-        <div className="rounded-[6px] bg-white/[0.04] px-1.5 py-1">
-          <div className="text-[6.5px] text-white/55 font-mono uppercase">Alt</div>
-          <div className="text-[9px] text-white font-mono">38°</div>
-        </div>
-        <div className="rounded-[6px] bg-white/[0.04] px-1.5 py-1">
-          <div className="text-[6.5px] text-white/55 font-mono uppercase">Set</div>
-          <div className="text-[9px] text-white font-mono">02:14</div>
         </div>
       </div>
     </div>
@@ -881,26 +859,16 @@ export default function HomePage() {
             <div className="order-2 md:order-1">
               <ul className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
                 {[
-                  { n: '01', title: 'Sign in',      caption: 'Email or Google. Wallet appears silently.', meta: 'EMAIL · GOOGLE' },
-                  { n: '02', title: 'Find a target', caption: 'We tell you where to look — and verify the photo.', meta: 'PHOTO · ORACLE' },
-                  { n: '03', title: 'Earn Stars',   caption: 'Redeem at Astroman for real telescopes.',       meta: 'STARS · GEAR' },
+                  { title: 'Sign in',       caption: 'Email or Google.' },
+                  { title: 'Find a target', caption: 'We tell you where to look.' },
+                  { title: 'Earn Stars',    caption: 'Redeem for real telescopes.' },
                 ].map((s) => (
-                  <li key={s.n} className="flex items-start justify-between gap-5 py-3.5 md:py-5">
-                    <div className="flex items-start gap-3 md:gap-4 min-w-0">
-                      <span className="font-mono text-[11px] md:text-[12px] text-[#6B7385] tabular-nums tracking-[0.04em] mt-0.5">
-                        {s.n}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="text-white text-[15px] md:text-[18px] font-semibold leading-tight tracking-[-0.005em]">
-                          {s.title}
-                        </div>
-                        <div className="text-[#9BA3B4] text-[12.5px] md:text-[14px] leading-[1.55] mt-1">
-                          {s.caption}
-                        </div>
-                      </div>
+                  <li key={s.title} className="py-3.5 md:py-5">
+                    <div className="text-white text-[16px] md:text-[19px] font-semibold leading-tight tracking-[-0.005em]">
+                      {s.title}
                     </div>
-                    <div className="font-mono text-[10px] md:text-[11px] text-[#6B7385] uppercase tracking-[0.18em] whitespace-nowrap mt-1.5 hidden sm:block">
-                      {s.meta}
+                    <div className="text-[#9BA3B4] text-[13px] md:text-[14.5px] leading-[1.5] mt-1">
+                      {s.caption}
                     </div>
                   </li>
                 ))}
@@ -910,7 +878,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="order-1 md:order-2 mx-auto">
-              <IPhone size="lg" image="/landing/missions.png" imageAlt="Tonight's mission: Jupiter" />
+              <IPhone size="md" image="/landing/missions.png" imageAlt="Tonight's mission: Jupiter" />
             </div>
           </div>
         </div>
@@ -923,8 +891,8 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Missions</Eyebrow>
-            <SectionTitle>Seven targets. One free telescope.</SectionTitle>
-            <SectionSub>Photograph each one. Stars are earned, not airdropped.</SectionSub>
+            <SectionTitle>Seven targets. Free scope.</SectionTitle>
+            <SectionSub>Stars are earned, not airdropped.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
@@ -934,30 +902,22 @@ export default function HomePage() {
               </IPhone>
             </div>
             <div className="order-2">
-              <div className="font-mono text-[10.5px] md:text-[11px] uppercase tracking-[0.22em] text-[#6B7385] mb-4">
-                How to use
-              </div>
               <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
                 {[
-                  { n: '01', title: 'Pick tonight&rsquo;s target', caption: 'Moon, Jupiter, Pleiades — sorted by what&rsquo;s up.' },
-                  { n: '02', title: 'Photograph through your scope', caption: 'Phone clip works. Any sensor, any focal length.' },
-                  { n: '03', title: 'Sky oracle verifies', caption: 'Match the photo to the sky at that time + place.' },
-                  { n: '04', title: 'Stars land in your wallet', caption: 'Finish all seven targets — the telescope is free.' },
+                  { title: 'Pick a target',        caption: 'Sorted by what&rsquo;s up tonight.' },
+                  { title: 'Photograph it',        caption: 'Phone clip works on any scope.' },
+                  { title: 'Oracle verifies',      caption: 'Time + place must match.' },
+                  { title: 'Stars in your wallet', caption: 'Finish all seven — scope is free.' },
                 ].map((s) => (
-                  <li key={s.n} className="flex items-start gap-3 md:gap-4 py-3 md:py-4">
-                    <span className="font-mono text-[11px] md:text-[12px] text-[#6B7385] tabular-nums tracking-[0.04em] mt-0.5">
-                      {s.n}
-                    </span>
-                    <div className="min-w-0">
-                      <div
-                        className="text-white text-[14px] md:text-[15.5px] font-semibold leading-tight tracking-[-0.005em]"
-                        dangerouslySetInnerHTML={{ __html: s.title }}
-                      />
-                      <div
-                        className="text-[#9BA3B4] text-[12.5px] md:text-[13.5px] leading-[1.55] mt-1"
-                        dangerouslySetInnerHTML={{ __html: s.caption }}
-                      />
-                    </div>
+                  <li key={s.title} className="py-3 md:py-4">
+                    <div
+                      className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]"
+                      dangerouslySetInnerHTML={{ __html: s.title }}
+                    />
+                    <div
+                      className="text-[#9BA3B4] text-[13px] md:text-[14px] leading-[1.5] mt-1"
+                      dangerouslySetInnerHTML={{ __html: s.caption }}
+                    />
                   </li>
                 ))}
               </ol>
@@ -977,34 +937,26 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Learn</Eyebrow>
             <SectionTitle>Know what you&apos;re looking at.</SectionTitle>
-            <SectionSub>Planets, nebulae, constellations — and quizzes that pay Stars.</SectionSub>
+            <SectionSub>Field guide free. Quizzes pay Stars.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-2 md:order-1 text-center md:text-left">
-              <div className="font-mono text-[10.5px] md:text-[11px] uppercase tracking-[0.22em] text-[#6B7385] mb-4">
-                How to use
-              </div>
               <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06] text-left">
                 {[
-                  { n: '01', title: 'Tap a planet or deep-sky object', caption: 'Real photos. Whether it&rsquo;s up tonight, when to look.' },
-                  { n: '02', title: 'Read the field guide', caption: 'How to find it, which scope, what you&rsquo;ll see at the eyepiece.' },
-                  { n: '03', title: 'Take a 10-question quiz', caption: 'Solar System, constellations, optics — 100 Stars per pass.' },
+                  { title: 'Tap an object',  caption: 'Real photos. Best time to see it.' },
+                  { title: 'Read the guide', caption: 'How to find it. What you&rsquo;ll see.' },
+                  { title: 'Take the quiz',  caption: '10 questions. 100 Stars per pass.' },
                 ].map((s) => (
-                  <li key={s.n} className="flex items-start gap-3 md:gap-4 py-3 md:py-4">
-                    <span className="font-mono text-[11px] md:text-[12px] text-[#6B7385] tabular-nums tracking-[0.04em] mt-0.5">
-                      {s.n}
-                    </span>
-                    <div className="min-w-0">
-                      <div
-                        className="text-white text-[14px] md:text-[15.5px] font-semibold leading-tight tracking-[-0.005em]"
-                        dangerouslySetInnerHTML={{ __html: s.title }}
-                      />
-                      <div
-                        className="text-[#9BA3B4] text-[12.5px] md:text-[13.5px] leading-[1.55] mt-1"
-                        dangerouslySetInnerHTML={{ __html: s.caption }}
-                      />
-                    </div>
+                  <li key={s.title} className="py-3 md:py-4">
+                    <div
+                      className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]"
+                      dangerouslySetInnerHTML={{ __html: s.title }}
+                    />
+                    <div
+                      className="text-[#9BA3B4] text-[13px] md:text-[14px] leading-[1.5] mt-1"
+                      dangerouslySetInnerHTML={{ __html: s.caption }}
+                    />
                   </li>
                 ))}
               </ol>
@@ -1028,21 +980,18 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-20">
             <Eyebrow>The Sky page</Eyebrow>
-            <SectionTitle>Tonight, in four screens.</SectionTitle>
-            <SectionSub>One page that answers: can I observe, what, where, and when.</SectionSub>
+            <SectionTitle>Tonight, in three screens.</SectionTitle>
+            <SectionSub>Can I go out? Where do I aim?</SectionSub>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-12 md:gap-x-6 md:gap-y-14 max-w-[1040px] mx-auto">
-            <SkyFeatureSlot step="01" title="Open the live map" caption="Tap any planet to lock it as tonight&rsquo;s target.">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 md:gap-y-14 max-w-[920px] mx-auto">
+            <SkyFeatureSlot title="Live planet map" caption="Tap a planet to lock it.">
               <IPhone size="sm" activeTab="sky"><SkyMapScreen /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot step="02" title="Aim with AR" caption="Point your phone — walk the reticle onto the planet.">
+            <SkyFeatureSlot title="AR finder" caption="Walk the reticle onto target.">
               <IPhone size="sm" activeTab="sky"><SkyARScreen /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot step="03" title="Read the target card" caption="Direction in fists, altitude, set time. Then go outside.">
-              <IPhone size="sm" activeTab="sky"><SkyTargetScreen /></IPhone>
-            </SkyFeatureSlot>
-            <SkyFeatureSlot step="04" title="Plan the week" caption="Pick a Go night. Skip the cloudy ones. Save your gear time.">
+            <SkyFeatureSlot title="7-day forecast" caption="Skip cloudy nights.">
               <IPhone size="sm" activeTab="home"><SkyForecastScreen /></IPhone>
             </SkyFeatureSlot>
           </div>
@@ -1148,43 +1097,44 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>The difference</Eyebrow>
-            <SectionTitle>Other apps vs Stellar.</SectionTitle>
+            <SectionTitle>SkySafari shows. Stellar pays.</SectionTitle>
             <SectionSub>Plenty show the sky. One closes the loop.</SectionSub>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 max-w-[920px] mx-auto">
-            <div className="bg-[#0F1A35] border border-white/[0.06] rounded-[18px] p-6 md:p-8">
-              <div className="text-[#6B7385] text-[11px] uppercase tracking-[0.22em] mb-4">Generic astronomy app</div>
-              <ul className="space-y-3">
-                {['Sky chart', 'Static planet positions', 'No verification', 'No rewards', 'No real gear'].map((s) => (
-                  <li key={s} className="flex items-start gap-2.5 text-[#9BA3B4] text-[14px] md:text-[15px]">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#EF4444]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 4l8 8M12 4l-8 8" />
-                    </svg>
-                    {s}
-                  </li>
-                ))}
-              </ul>
+          <div className="max-w-[760px] mx-auto rounded-[18px] border border-white/[0.07] overflow-hidden bg-[#0F1A35]/50">
+            <div className="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 md:px-6 py-3 md:py-4 border-b border-white/[0.07] bg-white/[0.02]">
+              <div />
+              <div className="text-[#6B7385] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">SkySafari · Star Walk</div>
+              <div className="text-[#FFD166] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">Stellar</div>
             </div>
-            <div className="relative bg-gradient-to-b from-[rgba(245,166,35,0.06)] to-[#0F1A35] border border-[rgba(245,166,35,0.28)] rounded-[18px] p-6 md:p-8">
-              <div className="text-[#FFD166] text-[11px] uppercase tracking-[0.22em] mb-4">Stellar</div>
-              <ul className="space-y-3">
-                {[
-                  '7-day forecast for your location',
-                  'Live planet altitude — where to point',
-                  'Photo + sky oracle + on-chain proof',
-                  'Stars for every observation',
-                  'Redeem for telescopes at Astroman',
-                ].map((s) => (
-                  <li key={s} className="flex items-start gap-2.5 text-white text-[14px] md:text-[15px]">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#10B981]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 8l3 3 7-7" />
-                    </svg>
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {[
+              { f: 'Sky chart',                them: true,  us: true  },
+              { f: '7-day cloud forecast',     them: false, us: true  },
+              { f: 'AR finder',                them: 'some', us: true },
+              { f: 'Verified photo missions',  them: false, us: true  },
+              { f: 'Earn rewards',             them: false, us: true  },
+              { f: 'Redeem for real gear',     them: false, us: true  },
+            ].map((row) => (
+              <div key={row.f} className="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 md:px-6 py-3 md:py-3.5 border-b border-white/[0.05] last:border-b-0">
+                <div className="text-white text-[13.5px] md:text-[15px]">{row.f}</div>
+                <div className="flex justify-center">
+                  {row.them === true ? (
+                    <svg className="w-4 h-4 text-[#9BA3B4]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
+                  ) : row.them === 'some' ? (
+                    <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#9BA3B4]">Some</span>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 text-[#5C6478]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  {row.us === true ? (
+                    <svg className="w-4 h-4 text-[#10B981]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 text-[#5C6478]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -1209,28 +1159,28 @@ export default function HomePage() {
                 Stellar is the layer.
               </span>
             </SectionTitle>
-            <SectionSub>Utility first, crypto invisible. Every phone is a telescope&rsquo;s starting point.</SectionSub>
+            <SectionSub>Utility first. Crypto invisible.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
               <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Utility first</div>
               <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
-                A real astronomy app — sky forecast, AR finder, field guide. Email sign-in, no seed phrase, no gas. Card pays first; SOL is optional.
+                Real astronomy app. Email sign-in. No seed phrase, no gas.
               </p>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Verified, then rewarded</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Earned, not airdropped</div>
               <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
-                Photographs proven by a sky oracle, attested on-chain. Stars are earned, not airdropped — and they redeem for real telescopes.
+                Sky oracle proves the photo. Stars redeem for telescopes.
               </p>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
               <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Open to every shop</div>
               <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
-                Astroman today. Every astronomy dealer on Earth tomorrow. One layer where Stars redeem against any partner&rsquo;s catalog.
+                Astroman today. Every dealer tomorrow.
               </p>
             </div>
           </div>
