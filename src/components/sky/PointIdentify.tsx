@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { Compass, MapPin } from 'lucide-react';
 import {
   angularSeparation,
-  useDeviceHeading,
+  type UseDeviceHeading,
 } from '@/lib/sky/use-device-heading';
 import { positionStars, type PositionedStar } from '@/lib/sky/stars';
 import { azimuthToCardinal } from '@/lib/sky/ar';
@@ -23,6 +23,11 @@ interface PointIdentifyProps {
   objects: SkyObject[];
   observerLat: number;
   observerLon: number;
+  /** Shared compass instance from the parent so the calibration offset
+   *  set in SkyMap propagates here. Earlier this component called
+   *  useDeviceHeading() itself, which forked the state — calibration
+   *  in SkyMap silently didn't reach Reverse Compass. */
+  compass: UseDeviceHeading;
 }
 
 interface Candidate {
@@ -41,9 +46,8 @@ const HOLD_TO_LOCK_MS = 700;
 const WEB_FALLBACK_AZ_RANGE = 360;
 const WEB_FALLBACK_ALT_RANGE = 90;
 
-export function PointIdentify({ objects, observerLat, observerLon }: PointIdentifyProps) {
+export function PointIdentify({ objects, observerLat, observerLon, compass }: PointIdentifyProps) {
   const t = useTranslations('sky.pointId');
-  const compass = useDeviceHeading();
 
   const [enabled, setEnabled] = useState(false);
   const [webMode, setWebMode] = useState(false);
@@ -175,8 +179,21 @@ export function PointIdentify({ objects, observerLat, observerLon }: PointIdenti
 
       {!enabled && (
         <div className="point-id__placeholder">
-          <ScanRings />
-          <p>{t('placeholder')}</p>
+          <PreviewRadar />
+          <ul className="point-id__features">
+            <li>
+              <span className="point-id__feature-dot" aria-hidden="true" />
+              {t('feature1')}
+            </li>
+            <li>
+              <span className="point-id__feature-dot" aria-hidden="true" />
+              {t('feature2')}
+            </li>
+            <li>
+              <span className="point-id__feature-dot" aria-hidden="true" />
+              {t('feature3')}
+            </li>
+          </ul>
         </div>
       )}
 
@@ -295,14 +312,78 @@ function kindLabel(kind: Candidate['kind'], t: ReturnType<typeof useTranslations
   }
 }
 
-function ScanRings() {
+/**
+ * Pre-enable preview of what the radar will show once the user grants
+ * motion permission. Renders a static set of example bodies labelled by
+ * name so the user knows roughly what they're getting — replaces the
+ * empty rings + sweep that read as "nothing here yet."
+ */
+function PreviewRadar() {
+  const SIZE = 220;
+  const C = SIZE / 2;
+  const samples: { x: number; y: number; r: number; fill: string; label: string }[] = [
+    { x: C - 24, y: C - 38, r: 4.5, fill: '#FFE6A6', label: 'Jupiter' },
+    { x: C + 36, y: C + 14, r: 3.2, fill: '#cfe1ff', label: 'Vega' },
+    { x: C + 10, y: C + 48, r: 2.6, fill: '#e8d8b6', label: 'Altair' },
+    { x: C - 46, y: C + 30, r: 2.2, fill: '#5EEAD4', label: 'M31' },
+  ];
   return (
-    <svg className="point-id__rings" width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
-      <circle cx="60" cy="60" r="55" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
-      <circle cx="60" cy="60" r="40" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-      <circle cx="60" cy="60" r="25" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-      <circle cx="60" cy="60" r="2.5" fill="var(--terracotta)" />
-      <circle cx="60" cy="60" r="55" fill="none" stroke="var(--terracotta)" strokeWidth="1" strokeDasharray="80 800" className="point-id__rings-sweep" />
+    <svg
+      className="point-id__preview"
+      width={SIZE}
+      height={SIZE}
+      viewBox={`0 0 ${SIZE} ${SIZE}`}
+      aria-hidden="true"
+    >
+      <defs>
+        <radialGradient id="pid-preview-bg" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor="rgba(232,164,102,0.06)" />
+          <stop offset="60%" stopColor="rgba(11,24,48,0.30)" />
+          <stop offset="100%" stopColor="rgba(11,24,48,0.55)" />
+        </radialGradient>
+      </defs>
+      <circle cx={C} cy={C} r={C - 4} fill="url(#pid-preview-bg)" stroke="rgba(255,255,255,0.10)" />
+      <circle cx={C} cy={C} r={(C - 14) * 0.66} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="2 4" />
+      <circle cx={C} cy={C} r={(C - 14) * 0.33} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="2 4" />
+
+      {/* Reticle */}
+      <g>
+        <circle cx={C} cy={C} r={14} fill="none" stroke="var(--terracotta)" strokeWidth={1.3} />
+        <line x1={C - 22} y1={C} x2={C - 16} y2={C} stroke="var(--terracotta)" strokeWidth={1.3} />
+        <line x1={C + 16} y1={C} x2={C + 22} y2={C} stroke="var(--terracotta)" strokeWidth={1.3} />
+        <line x1={C} y1={C - 22} x2={C} y2={C - 16} stroke="var(--terracotta)" strokeWidth={1.3} />
+        <line x1={C} y1={C + 16} x2={C} y2={C + 22} stroke="var(--terracotta)" strokeWidth={1.3} />
+        <circle cx={C} cy={C} r={2} fill="var(--terracotta)" />
+      </g>
+
+      {/* Sample bodies + labels */}
+      {samples.map((s, i) => (
+        <g key={i} opacity={0.85}>
+          <circle cx={s.x} cy={s.y} r={s.r} fill={s.fill} />
+          <text
+            x={s.x}
+            y={s.y - s.r - 4}
+            textAnchor="middle"
+            fontFamily="var(--font-sans, Inter)"
+            fontSize="9"
+            fill="rgba(255,255,255,0.70)"
+          >
+            {s.label}
+          </text>
+        </g>
+      ))}
+
+      {/* Subtle slow sweep so the preview feels alive without being noisy */}
+      <line
+        x1={C}
+        y1={C}
+        x2={C}
+        y2={14}
+        stroke="rgba(255,209,102,0.45)"
+        strokeWidth={1}
+        strokeLinecap="round"
+        className="point-id__preview-sweep"
+      />
     </svg>
   );
 }

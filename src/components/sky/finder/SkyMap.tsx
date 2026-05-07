@@ -139,10 +139,14 @@ interface SkyMapProps {
   constellationLines?: Array<[string, string]>;
   /** When set, draws a dashed terracotta trail from anchor → active body. */
   hopAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
-  /** Best body the user can physically aim at to calibrate the compass — set
-   *  by the page (Moon &gt; bright planet &gt; Sun &gt; brightest visible). The
-   *  guided calibration banner uses this regardless of the selected target. */
+  /** Best body the user can physically aim at to calibrate the compass.
+   *  Defaults to highest-altitude among Moon/Sun/Jupiter/Venus. */
   calibrationAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
+  /** All currently-visible calibration candidates (Sun, Moon, bright planets).
+   *  Renders as a chip switcher inside the banner so the user can pick. */
+  calibrationCandidates?: Array<{ id: string; name: string; azimuth: number; altitude: number }>;
+  /** Called when the user picks a different anchor from the switcher. */
+  onCalibrationAnchorChange?: (id: string) => void;
   /** Persistent calibration offset (degrees) — shown next to nudge controls. */
   calibrationOffset?: number;
   /** Apply ±degrees to the calibration offset. Optional — only renders the +/− pad when provided. */
@@ -243,6 +247,8 @@ export function SkyMap({
   constellationLines = [],
   hopAnchor = null,
   calibrationAnchor = null,
+  calibrationCandidates = [],
+  onCalibrationAnchorChange,
   calibrationOffset = 0,
   onNudge,
   onProximityChange,
@@ -825,6 +831,8 @@ export function SkyMap({
       {isLive && calibrationAnchor && onNudge && (
         <CalibrationBanner
           anchor={calibrationAnchor}
+          candidates={calibrationCandidates}
+          onAnchorChange={onCalibrationAnchorChange}
           onLock={() => {
             const delta = headingDelta(calibrationAnchor.azimuth, heading ?? 0);
             onNudge(delta);
@@ -1137,6 +1145,8 @@ function CompassIcon() {
 
 interface CalibrationBannerProps {
   anchor: { id: string; name: string; azimuth: number; altitude: number };
+  candidates?: Array<{ id: string; name: string; azimuth: number; altitude: number }>;
+  onAnchorChange?: (id: string) => void;
   onLock: () => void;
   calibrationOffset: number;
 }
@@ -1154,6 +1164,8 @@ interface CalibrationBannerProps {
  */
 function CalibrationBanner({
   anchor,
+  candidates = [],
+  onAnchorChange,
   onLock,
   calibrationOffset,
 }: CalibrationBannerProps) {
@@ -1177,32 +1189,47 @@ function CalibrationBanner({
     );
   }
 
+  const showSwitcher = candidates.length > 1 && onAnchorChange != null;
   return (
-    <button
-      type="button"
-      className={`sky-map__cal-banner sky-map__cal-banner--ready${calibrationOffset !== 0 ? ' sky-map__cal-banner--secondary' : ''}`}
-      onClick={() => {
-        onLock();
-        setJustLocked(true);
-        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-          try { navigator.vibrate([10, 30, 10]); } catch { /* ignore */ }
-        }
-      }}
-      aria-label={t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
-    >
-      <span className="sky-map__cal-banner-icon" aria-hidden="true">⊕</span>
-      <span className="sky-map__cal-banner-text">
-        {t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
-      </span>
-      {/* Tiny readout — power users can sanity-check what the app thinks
-          the anchor's bearing is (the number won't match the phone heading
-          until after this tap). Helps debug "wait, why is the dome off?". */}
-      <span className="sky-map__cal-banner-meta" aria-hidden="true">
-        {t('calMeta', {
-          deg: Math.round(((anchor.azimuth % 360) + 360) % 360),
-          alt: Math.round(anchor.altitude),
-        })}
-      </span>
-    </button>
+    <div className="sky-map__cal-cluster">
+      <button
+        type="button"
+        className={`sky-map__cal-banner sky-map__cal-banner--ready${calibrationOffset !== 0 ? ' sky-map__cal-banner--secondary' : ''}`}
+        onClick={() => {
+          onLock();
+          setJustLocked(true);
+          if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+            try { navigator.vibrate([10, 30, 10]); } catch { /* ignore */ }
+          }
+        }}
+        aria-label={t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
+      >
+        <span className="sky-map__cal-banner-icon" aria-hidden="true">⊕</span>
+        <span className="sky-map__cal-banner-text">
+          {t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
+        </span>
+        <span className="sky-map__cal-banner-meta" aria-hidden="true">
+          {t('calMeta', {
+            deg: Math.round(((anchor.azimuth % 360) + 360) % 360),
+            alt: Math.round(anchor.altitude),
+          })}
+        </span>
+      </button>
+      {showSwitcher && (
+        <div className="sky-map__cal-switcher" role="group" aria-label={t('calPick')}>
+          {candidates.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={`sky-map__cal-chip${c.id === anchor.id ? ' is-active' : ''}`}
+              onClick={() => onAnchorChange?.(c.id)}
+              aria-pressed={c.id === anchor.id}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

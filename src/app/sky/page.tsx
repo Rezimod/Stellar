@@ -139,24 +139,44 @@ export default function SkyPage() {
     return [...candidates].sort((a, b) => a.magnitude - b.magnitude)[0];
   }, [finder]);
 
-  // The body the compass should be calibrated against — a big, obvious thing
-  // the user can physically aim at. Priority: Moon (works day or night),
-  // then Venus / Jupiter (very bright planets), then the Sun, then the
-  // brightest visible body. Below 5° we skip — refraction near the horizon
-  // makes precise aiming hopeless.
-  const calibrationAnchor = useMemo<SkyObject | null>(() => {
-    if (!finder) return null;
-    const visible = finder.objects.filter((o) => o.visible && o.altitude > 5);
-    const moon = visible.find((o) => o.id === 'moon');
-    if (moon) return moon;
-    const brightPlanet = visible
-      .filter((o) => o.type === 'planet' && (o.id === 'venus' || o.id === 'jupiter'))
-      .sort((a, b) => a.magnitude - b.magnitude)[0];
-    if (brightPlanet) return brightPlanet;
-    const sun = visible.find((o) => o.id === 'sun');
-    if (sun) return sun;
-    return [...visible].sort((a, b) => a.magnitude - b.magnitude)[0] ?? null;
+  // Bodies the user can credibly aim at without binoculars — Sun, Moon, and
+  // the two brightest planets. Sorted by altitude so the highest one (the
+  // easiest to point at without horizon obstructions) sits first; the user
+  // can also tap a chip in the banner to switch.
+  const calibrationCandidates = useMemo<SkyObject[]>(() => {
+    if (!finder) return [];
+    return finder.objects
+      .filter(
+        (o) =>
+          o.visible &&
+          o.altitude > 5 &&
+          (o.id === 'moon' || o.id === 'sun' || o.id === 'jupiter' || o.id === 'venus'),
+      )
+      .sort((a, b) => b.altitude - a.altitude);
   }, [finder]);
+
+  // The user's chosen anchor. Defaults to the highest-altitude candidate;
+  // resets if the candidates list churns and the previous pick is no longer
+  // visible. Persisted in URL? No — short-lived per session is fine.
+  const [calibrationAnchorId, setCalibrationAnchorId] = useState<string | null>(null);
+  useEffect(() => {
+    if (calibrationCandidates.length === 0) {
+      if (calibrationAnchorId !== null) setCalibrationAnchorId(null);
+      return;
+    }
+    const stillThere = calibrationAnchorId
+      ? calibrationCandidates.some((o) => o.id === calibrationAnchorId)
+      : false;
+    if (!stillThere) setCalibrationAnchorId(calibrationCandidates[0].id);
+  }, [calibrationCandidates, calibrationAnchorId]);
+
+  const calibrationAnchor = useMemo<SkyObject | null>(() => {
+    if (calibrationCandidates.length === 0) return null;
+    const found = calibrationAnchorId
+      ? calibrationCandidates.find((o) => o.id === calibrationAnchorId)
+      : null;
+    return found ?? calibrationCandidates[0];
+  }, [calibrationCandidates, calibrationAnchorId]);
 
   // Constellation stars projected once per finder refresh — the angular
   // drift across a few minutes is below dome resolution, so this is fine.
@@ -290,6 +310,13 @@ export default function SkyPage() {
                       azimuth: calibrationAnchor.azimuth,
                       altitude: calibrationAnchor.altitude,
                     } : null}
+                    calibrationCandidates={calibrationCandidates.map((o) => ({
+                      id: o.id,
+                      name: o.name,
+                      azimuth: o.azimuth,
+                      altitude: o.altitude,
+                    }))}
+                    onCalibrationAnchorChange={setCalibrationAnchorId}
                   />
                   {compass.status !== 'unavailable' && (
                     <button
@@ -337,6 +364,7 @@ export default function SkyPage() {
             objects={finder.objects}
             observerLat={location.lat}
             observerLon={location.lon}
+            compass={compass}
           />
         )}
 

@@ -1281,15 +1281,56 @@
   100% { transform: scale(2.6);  opacity: 0; }
 }
 
-/* === Guided calibration banner — top-center pill that walks the user
-   from "tilt" → "sweep" → "tap to calibrate" using the picked anchor body.
-   States: --guide (instruction), --ready (button, tap to apply),
-   --locked (transient confirmation). === */
-.sky-map__cal-banner {
+/* === Calibration cluster — primary tap-to-calibrate button + an
+   optional chip switcher beneath it so the user can pick which body
+   they're aiming at (Moon vs Sun vs bright planet). === */
+.sky-map__cal-cluster {
   position: absolute;
   top: 50px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 4;
+  max-width: calc(100% - 24px);
+}
+.sky-map__cal-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(7, 11, 20, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.sky-map__cal-chip {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+.sky-map__cal-chip:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+.sky-map__cal-chip.is-active {
+  color: #c8f3dc;
+  background: rgba(120, 220, 170, 0.16);
+}
+
+.sky-map__cal-banner {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1323,7 +1364,7 @@
   background: rgba(120, 220, 170, 0.22);
   border-color: rgba(120, 220, 170, 0.75);
 }
-.sky-map__cal-banner--ready:active { transform: translateX(-50%) scale(0.98); }
+.sky-map__cal-banner--ready:active { transform: scale(0.98); }
 .sky-map__cal-banner--ready .sky-map__cal-banner-icon { color: #7ed4a8; font-size: 12px; }
 /* Secondary post-cal variant — quieter so the user doesn't feel pressured
    to recalibrate but the option stays one tap away. */
@@ -1369,9 +1410,9 @@
 }
 .sky-map__cal-banner--locked .sky-map__cal-banner-icon { color: #7ed4a8; }
 @keyframes skymapCalLocked {
-  0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
-  60%  { transform: translateX(-50%) scale(1.04); opacity: 1; }
-  100% { transform: translateX(-50%) scale(1);    opacity: 1; }
+  0%   { transform: scale(0.92); opacity: 0; }
+  60%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
 .sky-map__nudge {

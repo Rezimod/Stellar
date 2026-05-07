@@ -257,6 +257,9 @@
       "subtitle": "Lift your phone toward any patch of sky. We'll tell you what's there.",
       "enable": "Enable",
       "placeholder": "Tap Enable, then aim the back of your phone at the sky.",
+      "feature1": "Pan the back of your phone — labels follow the brightest body in view.",
+      "feature2": "Hold steady to lock the identification. Works for planets, bright stars, and deep-sky objects.",
+      "feature3": "Uses the same calibrated compass as the dome above — calibrate once, both stay accurate.",
       "aimingAt": "Aiming",
       "empty": "Looking into empty sky.",
       "emptyHint": "Pan slowly — the closest bright body will appear here.",
@@ -515,6 +518,7 @@
       "calRecal": "Re-calibrate to {name}",
       "calMeta": "expects {deg}° · alt {alt}°",
       "calLocked": "Compass aligned to {name} ({deg}°)",
+      "calPick": "Calibrate using:",
       "visible": "{count} visible"
     },
     "tour": {
