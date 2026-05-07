@@ -9,7 +9,6 @@ import LocationPicker from '@/components/LocationPicker';
 import PageContainer from '@/components/layout/PageContainer';
 import ProductCard from '@/components/marketplace/ProductCard';
 import { getProductsByRegion, getDealersByRegion, GLOBAL_FALLBACK } from '@/lib/dealers';
-import type { Product } from '@/lib/dealers';
 
 type CategoryFilter = 'all' | 'telescope' | 'eyepiece' | 'binocular' | 'accessory';
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
@@ -123,28 +122,7 @@ export default function MarketplacePage() {
     [inCategory, difficulty],
   );
 
-  const featured = useMemo<Product | null>(() => {
-    const telescopeScope = filter === 'all' || filter === 'telescope';
-    if (!telescopeScope) return null;
-    if (difficulty === 'advanced') return null;
-    const pool = inCategory.filter(p => p.category === 'telescope');
-    if (pool.length === 0) return null;
-    if (difficulty === 'all' || difficulty === 'intermediate') {
-      const mid = pool.find(p => p.skillLevel === 'intermediate');
-      if (mid) return mid;
-    }
-    if (difficulty === 'all' || difficulty === 'beginner') {
-      const beginners = pool.filter(p => p.skillLevel === 'beginner');
-      if (beginners.length) return [...beginners].sort((a, b) => b.price - a.price)[0];
-    }
-    return pool[0] ?? null;
-  }, [inCategory, filter, difficulty]);
-
-  const orderedVisible = useMemo(() => {
-    if (!featured) return visible;
-    const rest = visible.filter(p => p.id !== featured.id);
-    return [featured, ...rest];
-  }, [visible, featured]);
+  const orderedVisible = visible;
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
@@ -162,7 +140,7 @@ export default function MarketplacePage() {
                   <button
                     key={c.key}
                     onClick={() => setFilter(c.key)}
-                    className="flex-shrink-0 h-[40px] px-[18px] text-[12px] tracking-[0.08em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color,transform] duration-150 hover:-translate-y-[1px]"
+                    className="flex-shrink-0 h-[40px] px-[18px] text-[12px] tracking-[0.08em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -194,7 +172,7 @@ export default function MarketplacePage() {
                   <button
                     key={d}
                     onClick={() => setDifficulty(active ? 'all' : d)}
-                    className="flex-shrink-0 inline-flex items-center gap-[8px] h-[40px] pl-[14px] pr-[16px] text-[11.5px] tracking-[0.1em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color,transform] duration-150 hover:-translate-y-[1px]"
+                    className="flex-shrink-0 inline-flex items-center gap-[8px] h-[40px] pl-[14px] pr-[16px] text-[11.5px] tracking-[0.1em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -244,19 +222,15 @@ export default function MarketplacePage() {
 
           {orderedVisible.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
-              {orderedVisible.map(p => {
-                const isFeatured = featured?.id === p.id;
-                return (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    dealerName={showDealer ? getDealerName(p.dealerId) : ''}
-                    solPerGEL={solPerGEL}
-                    solPriceUsd={solPriceUsd}
-                    featured={isFeatured}
-                  />
-                );
-              })}
+              {orderedVisible.map(p => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  dealerName={showDealer ? getDealerName(p.dealerId) : ''}
+                  solPerGEL={solPerGEL}
+                  solPriceUsd={solPriceUsd}
+                />
+              ))}
             </div>
           ) : (
             <p className="text-center text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">

@@ -20,11 +20,10 @@ interface Props {
   dealerName: string;
   solPerGEL?: number;
   solPriceUsd?: number;
-  featured?: boolean;
   className?: string;
 }
 
-export default function ProductCard({ product, dealerName, solPerGEL = 0, solPriceUsd = 0, featured = false, className = '' }: Props) {
+export default function ProductCard({ product, dealerName, solPerGEL = 0, solPriceUsd = 0, className = '' }: Props) {
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
 
@@ -35,7 +34,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
 
   return (
     <div
-      className={`group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px] ${featured ? 'md:col-span-2' : ''} ${className}`}
+      className={`group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px] ${className}`}
       style={{
         background: idleBg,
         border: `1px solid ${idleBorder}`,
@@ -104,19 +103,26 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
       <div className="flex gap-[8px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.04em] font-semibold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
           style={{
-            background: '#FF7E36',
-            border: 'none',
-            color: '#FFFFFF',
-            boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,126,54,0.28)',
+            background: 'var(--terracotta)',
+            border: '1px solid var(--terracotta)',
+            color: '#1a1208',
+            boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,179,71,0.22)',
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
-          <svg width="13" height="13" viewBox="0 0 397 311" aria-hidden="true">
-            <path fill="#FFFFFF" d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
-            <path fill="#FFFFFF" d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
-            <path fill="#FFFFFF" d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
+          <svg width="14" height="14" viewBox="0 0 397 311" aria-hidden="true">
+            <defs>
+              <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#9945FF" />
+                <stop offset="50%" stopColor="#19FB9B" />
+                <stop offset="100%" stopColor="#14F195" />
+              </linearGradient>
+            </defs>
+            <path fill={`url(#sol-grad-${product.id})`} d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
+            <path fill={`url(#sol-grad-${product.id})`} d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
+            <path fill={`url(#sol-grad-${product.id})`} d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
           </svg>
           <span>SOL</span>
         </Link>
