@@ -63,7 +63,7 @@ export default function SaturnCanvas() {
     surfaceTex.colorSpace = THREE.SRGBColorSpace;
 
     const planet = new THREE.Mesh(
-      new THREE.SphereGeometry(1.6, 128, 128),
+      new THREE.SphereGeometry(2.05, 128, 128),
       new THREE.MeshStandardMaterial({
         map: surfaceTex,
         roughness: 0.92,
@@ -75,9 +75,9 @@ export default function SaturnCanvas() {
 
 
     // ── Ring particles ───────────────────────────────────────────
-    const RING_COUNT = reduceMotion ? 2200 : 7200;
-    const innerR = 1.95;
-    const outerR = 3.25;
+    const RING_COUNT = reduceMotion ? 2400 : 8200;
+    const innerR = 2.5;
+    const outerR = 4.18;
 
     const positions = new Float32Array(RING_COUNT * 3);
     const colors = new Float32Array(RING_COUNT * 3);
@@ -200,12 +200,12 @@ export default function SaturnCanvas() {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    // ── Saturn group offset (push to right edge of viewport) ─────
+    // ── Saturn group offset (push past right edge for cinematic crop) ─
     const planetGroup = new THREE.Group();
     planetGroup.add(planet);
     planetGroup.add(rings);
     scene.add(planetGroup);
-    planetGroup.position.x = 3.6;
+    planetGroup.position.x = 4.6;
 
     // ── Mouse parallax ───────────────────────────────────────────
     const target = { x: 0, y: 0 };

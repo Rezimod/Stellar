@@ -16,9 +16,17 @@ export default function HeroSaturn() {
       className="relative w-full overflow-hidden"
       style={{
         minHeight: 'min(720px, 100vh)',
-        background: 'var(--canvas)', /* solid blue, matches the rest of the page */
+        // Deep cosmic base + warm amber halo on the right matching Saturn's lit hemisphere
+        background: [
+          'radial-gradient(ellipse 78% 95% at 82% 52%, rgba(255, 168, 85, 0.18) 0%, rgba(255, 122, 58, 0.09) 26%, transparent 56%)',
+          'radial-gradient(ellipse 60% 70% at 18% 35%, rgba(70, 110, 210, 0.07) 0%, transparent 60%)',
+          'linear-gradient(180deg, #04081A 0%, #08122A 48%, #050A1C 100%)',
+        ].join(', '),
       }}
     >
+      {/* === Static CSS starfield (covers full hero, behind WebGL) === */}
+      <div aria-hidden className="hero-starfield" />
+
       {/* === WebGL Saturn (planet + orbiting ring particles + parallax) === */}
       <SaturnCanvas />
 
@@ -28,7 +36,7 @@ export default function HeroSaturn() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(90deg, rgba(10,23,53,0.85) 0%, rgba(10,23,53,0.45) 28%, transparent 50%)',
+            'linear-gradient(90deg, rgba(4,8,26,0.88) 0%, rgba(6,12,32,0.45) 26%, transparent 50%)',
         }}
       />
 

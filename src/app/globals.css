@@ -534,6 +534,88 @@ code, pre, .mono, [class*="font-mono"] {
 .hero-cta-primary:hover   { background: #FFC36B !important; }
 .hero-cta-secondary:hover { background: #223054 !important; }
 
+/* === Hero starfield ===
+   Layered radial gradients paint hundreds of pinpoint stars, then two
+   keyframe animations gently fade alternating layers in/out for a slow
+   twinkle. Sits behind the WebGL Saturn canvas. */
+.hero-starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 4% 12%,  rgba(255,255,255,0.85) 50%, transparent 100%),
+    radial-gradient(1px 1px at 11% 78%, rgba(255,250,235,0.7)  50%, transparent 100%),
+    radial-gradient(1px 1px at 17% 32%, rgba(220,230,255,0.85) 50%, transparent 100%),
+    radial-gradient(1.4px 1.4px at 23% 64%, rgba(255,255,255,0.9) 50%, transparent 100%),
+    radial-gradient(1px 1px at 29% 18%, rgba(255,240,210,0.6)  50%, transparent 100%),
+    radial-gradient(1px 1px at 36% 88%, rgba(255,255,255,0.75) 50%, transparent 100%),
+    radial-gradient(1px 1px at 41% 44%, rgba(200,220,255,0.7)  50%, transparent 100%),
+    radial-gradient(1.6px 1.6px at 47% 22%, rgba(255,255,255,0.95) 50%, transparent 100%),
+    radial-gradient(1px 1px at 53% 70%, rgba(255,240,220,0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 60% 8%,  rgba(255,255,255,0.7)  50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 66% 56%, rgba(220,235,255,0.85) 50%, transparent 100%),
+    radial-gradient(1px 1px at 73% 30%, rgba(255,255,255,0.6)  50%, transparent 100%),
+    radial-gradient(1px 1px at 79% 84%, rgba(255,235,205,0.7)  50%, transparent 100%),
+    radial-gradient(1.4px 1.4px at 86% 14%, rgba(255,255,255,0.85) 50%, transparent 100%),
+    radial-gradient(1px 1px at 92% 48%, rgba(220,230,255,0.65) 50%, transparent 100%),
+    radial-gradient(1px 1px at 96% 92%, rgba(255,255,255,0.55) 50%, transparent 100%);
+  animation: heroStarsTwinkleA 6.5s ease-in-out infinite;
+}
+.hero-starfield::before,
+.hero-starfield::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hero-starfield::before {
+  background-image:
+    radial-gradient(1px 1px at 7% 38%,  rgba(255,255,255,0.7)  50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 14% 6%, rgba(255,245,220,0.85) 50%, transparent 100%),
+    radial-gradient(1px 1px at 21% 92%, rgba(220,230,255,0.6)  50%, transparent 100%),
+    radial-gradient(1px 1px at 27% 50%, rgba(255,255,255,0.5)  50%, transparent 100%),
+    radial-gradient(1.6px 1.6px at 33% 26%, rgba(255,255,255,0.95) 50%, transparent 100%),
+    radial-gradient(1px 1px at 39% 72%, rgba(255,240,210,0.65) 50%, transparent 100%),
+    radial-gradient(1px 1px at 44% 4%,  rgba(255,255,255,0.6)  50%, transparent 100%),
+    radial-gradient(1px 1px at 50% 56%, rgba(220,230,255,0.7)  50%, transparent 100%),
+    radial-gradient(1.4px 1.4px at 56% 84%, rgba(255,255,255,0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 63% 38%, rgba(255,235,200,0.55) 50%, transparent 100%),
+    radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.7)  50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 76% 64%, rgba(220,230,255,0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 83% 40%, rgba(255,250,230,0.6)  50%, transparent 100%),
+    radial-gradient(1px 1px at 89% 78%, rgba(255,255,255,0.55) 50%, transparent 100%);
+  animation: heroStarsTwinkleB 8.2s ease-in-out infinite;
+}
+.hero-starfield::after {
+  /* Big rare bright stars with a soft halo */
+  background-image:
+    radial-gradient(2px 2px at 19% 24%, rgba(255,255,255,1) 30%, rgba(255,255,255,0.25) 60%, transparent 100%),
+    radial-gradient(2px 2px at 58% 14%, rgba(255,240,210,1) 30%, rgba(255,240,210,0.2) 60%, transparent 100%),
+    radial-gradient(2px 2px at 12% 70%, rgba(220,235,255,1) 30%, rgba(220,235,255,0.2) 60%, transparent 100%),
+    radial-gradient(2.4px 2.4px at 44% 86%, rgba(255,255,255,1) 30%, rgba(255,255,255,0.25) 60%, transparent 100%),
+    radial-gradient(2px 2px at 8% 50%, rgba(255,250,235,1) 30%, rgba(255,250,235,0.18) 60%, transparent 100%);
+  animation: heroStarsTwinkleC 4.8s ease-in-out infinite;
+}
+@keyframes heroStarsTwinkleA {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 0.55; }
+}
+@keyframes heroStarsTwinkleB {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.95; }
+}
+@keyframes heroStarsTwinkleC {
+  0%, 100% { opacity: 0.9; }
+  35%      { opacity: 0.45; }
+  70%      { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-starfield,
+  .hero-starfield::before,
+  .hero-starfield::after { animation: none; }
+}
+
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
    on club.astroman.ge. Use .icon-badge-gradient.is-orange for the third
    accent color (sparkle step). */
