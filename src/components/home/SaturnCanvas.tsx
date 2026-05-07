@@ -210,7 +210,7 @@ export default function SaturnCanvas() {
       const aspect = mount.clientWidth / Math.max(1, mount.clientHeight);
       if (aspect < 0.9) {
         planetGroup.position.x = 0.6;       // narrow mobile portrait
-        planetGroup.scale.setScalar(0.82);  // smaller on mobile only
+        planetGroup.scale.setScalar(0.7);   // smaller on mobile only
       } else {
         planetGroup.scale.setScalar(1);
         if (aspect < 1.3)      planetGroup.position.x = 2.4;   // tablet / square

@@ -69,7 +69,7 @@ export default function HeroSaturn() {
             Redeem Stars for a real telescope.
           </p>
 
-          <div className="mt-9 md:mt-12 grid grid-cols-2 sm:flex sm:flex-wrap gap-3 pointer-events-auto">
+          <div className="mt-9 md:mt-12 flex flex-col items-start sm:flex-row sm:flex-wrap gap-3 pointer-events-auto">
             <CTA href="/missions" tone="primary">Earn Rewards</CTA>
             <CTA href="/sky" tone="secondary">Start Observing</CTA>
           </div>
@@ -92,7 +92,6 @@ function CTA({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '16px 28px',
     borderRadius: 8,
     fontFamily: 'var(--font-display)',
     fontSize: 16,
@@ -111,7 +110,7 @@ function CTA({
     <Link
       href={href}
       style={{ ...base, ...skin }}
-      className={`w-full sm:w-auto sm:min-w-[168px] ${tone === 'primary' ? 'hero-cta-primary' : 'hero-cta-secondary'}`}
+      className={`min-w-[180px] sm:min-w-[168px] py-2.5 px-5 sm:py-4 sm:px-7 ${tone === 'primary' ? 'hero-cta-primary' : 'hero-cta-secondary'}`}
     >
       {children}
     </Link>
