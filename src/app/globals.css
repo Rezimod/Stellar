@@ -448,10 +448,10 @@ code, pre, .mono, [class*="font-mono"] {
    rounding. No gradients, no glow. Used by .btn-primary, .btn-ghost,
    .btn-stellar*, and .icon-badge-gradient. */
 :root {
-  --cta-orange:       #FF6A1A;
-  --cta-orange-hover: #FF7A2E;
-  --cta-orange-from:  #FF6A1A;
-  --cta-orange-to:    #FF6A1A;
+  --cta-orange:       #FFB347;
+  --cta-orange-hover: #FFC36B;
+  --cta-orange-from:  #FFB347;
+  --cta-orange-to:    #FFB347;
   --cta-gradient:        var(--cta-orange);
   --cta-gradient-orange: var(--cta-orange);
   --cta-glow:        none;
@@ -469,7 +469,7 @@ code, pre, .mono, [class*="font-mono"] {
   justify-content: center;
   gap: 10px;
   background: var(--cta-orange);
-  color: #FFFFFF;
+  color: #0A1735;
   font-family: var(--font-cta, var(--font-body));
   font-weight: 600;
   font-size: 14px;

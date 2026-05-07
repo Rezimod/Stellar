@@ -22,8 +22,8 @@ const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
 
 const variantBase: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    background: '#FF6A1A',
-    color: '#FFFFFF',
+    background: '#FFB347',
+    color: '#0A1735',
     border: 'none',
     fontWeight: 600,
     fontFamily: 'var(--font-cta, var(--font-body))',
@@ -59,7 +59,7 @@ const variantBase: Record<ButtonVariant, React.CSSProperties> = {
 };
 
 const variantHover: Record<ButtonVariant, React.CSSProperties> = {
-  primary:   { background: '#FF7A2E' },
+  primary:   { background: '#FFC36B' },
   secondary: { background: '#223054', color: '#fff' },
   ghost:     { color: 'rgba(255,255,255,0.9)', background: 'rgba(255,255,255,0.04)' },
   danger:    { background: 'rgba(251, 113, 133,0.2)' },
