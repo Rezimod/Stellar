@@ -17,6 +17,32 @@ export type TierFilter = 'all' | CatalogDifficulty;
 
 const TIER_ORDER: TierFilter[] = ['all', 'easy', 'medium', 'hard'];
 
+/** Curated top-objects cap. Showing more than this turns the picker into a
+ *  catalog dump and buries the Moon + bright planets the user actually wants. */
+const TOP_OBJECTS_CAP = 10;
+
+/**
+ * Priority bucket — lower wins. Moon first, then bright naked-eye planets in
+ * brightness order, then outer planets, then bright stars, then DSOs.
+ */
+function categoryRank(id: string, type: string, magnitude: number): number {
+  if (id === 'moon') return 0;
+  if (id === 'sun') return 1;
+  if (id === 'venus')   return 10;
+  if (id === 'jupiter') return 11;
+  if (id === 'mars')    return 12;
+  if (id === 'saturn')  return 13;
+  if (id === 'mercury') return 14;
+  if (id === 'uranus')  return 15;
+  if (id === 'neptune') return 16;
+  if (type === 'star' || type === 'double') {
+    // Brighter stars sort first inside the star bucket.
+    return 20 + Math.max(0, Math.min(8, magnitude + 2));
+  }
+  // DSOs last, ordered by brightness.
+  return 30 + Math.max(0, Math.min(8, magnitude));
+}
+
 function fmtHHmm(iso: string | null): string | null {
   if (!iso) return null;
   try {
@@ -277,11 +303,13 @@ export function TargetVisibleGrid({
       if (tier === 'all') return true;
       return o.difficulty === tier;
     });
-    return filtered.sort((a, b) => {
-      if (a.id === 'moon' && b.id !== 'moon') return -1;
-      if (b.id === 'moon' && a.id !== 'moon') return 1;
+    const sorted = filtered.sort((a, b) => {
+      const ra = categoryRank(a.id, a.type, a.magnitude);
+      const rb = categoryRank(b.id, b.type, b.magnitude);
+      if (ra !== rb) return ra - rb;
       return b.altitude - a.altitude;
     });
+    return sorted.slice(0, TOP_OBJECTS_CAP);
   }, [objects, tier]);
 
   return (
@@ -320,11 +348,18 @@ export function TargetBelowGrid({
       if (tier === 'all') return true;
       return o.difficulty === tier;
     });
-    return filtered.sort((a, b) => {
+    // Same Moon → planets → stars → DSO ordering as the visible grid.
+    // Inside a category, sort by next rise time so the user can see what's
+    // coming up first. Cap to keep the section glanceable.
+    const sorted = filtered.sort((a, b) => {
+      const ra = categoryRank(a.id, a.type, a.magnitude);
+      const rb = categoryRank(b.id, b.type, b.magnitude);
+      if (ra !== rb) return ra - rb;
       const ar = a.riseTime ? new Date(a.riseTime).getTime() : Number.POSITIVE_INFINITY;
       const br = b.riseTime ? new Date(b.riseTime).getTime() : Number.POSITIVE_INFINITY;
       return ar - br;
     });
+    return sorted.slice(0, TOP_OBJECTS_CAP);
   }, [objects, tier]);
 
   if (below.length === 0) return null;

@@ -62,6 +62,8 @@ interface LocationContextValue {
   loading: boolean
   gpsState: GpsState
   isFallback: boolean
+  /** Re-prompt the browser for geolocation. Safe to call repeatedly. */
+  requestLocation: () => void
 }
 
 const LocationContext = createContext<LocationContextValue | null>(null)
@@ -71,19 +73,12 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [gpsState, setGpsState] = useState<GpsState>('pending')
 
-  useEffect(() => {
-    const stored = localStorage.getItem('stellar_location')
-    if (stored) {
-      try { setLocationState(JSON.parse(stored)) } catch {}
-      setGpsState('resolved')
-      return
-    }
-
-    if (!navigator.geolocation) {
+  const requestLocation = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setGpsState('unsupported')
       return
     }
-
+    setLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -111,14 +106,27 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           setGpsState('resolved')
         } catch {
           setGpsState('failed')
+        } finally {
+          setLoading(false)
         }
       },
       (err) => {
         setGpsState(err.code === err.PERMISSION_DENIED ? 'denied' : 'failed')
+        setLoading(false)
       },
-      { timeout: 3000, maximumAge: 600000 }
+      { timeout: 8000, maximumAge: 600000 }
     )
   }, [])
+
+  useEffect(() => {
+    const stored = localStorage.getItem('stellar_location')
+    if (stored) {
+      try { setLocationState(JSON.parse(stored)) } catch {}
+      setGpsState('resolved')
+      return
+    }
+    requestLocation()
+  }, [requestLocation])
 
   const setLocation = useCallback((loc: UserLocation) => {
     localStorage.setItem('stellar_location', JSON.stringify(loc))
@@ -129,8 +137,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const isFallback = location.source === 'default' && gpsState !== 'pending' && gpsState !== 'resolved'
 
   const value = useMemo(
-    () => ({ location, setLocation, loading, gpsState, isFallback }),
-    [location, setLocation, loading, gpsState, isFallback],
+    () => ({ location, setLocation, loading, gpsState, isFallback, requestLocation }),
+    [location, setLocation, loading, gpsState, isFallback, requestLocation],
   )
 
   return (

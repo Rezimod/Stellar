@@ -2,7 +2,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Telescope } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
@@ -33,11 +33,20 @@ const REFRESH_MS = 60_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
 
 export default function SkyPage() {
-  const { location } = useLocation();
+  const { location, requestLocation, gpsState } = useLocation();
   const tErrors = useTranslations('sky.errors');
   const tAr = useTranslations('sky.ar');
 
   const compass = useDeviceHeading();
+  // Calibrate compass should also request browser location if we don't have it
+  // yet. The browser will only show a single permission UI per origin so this
+  // is safe to call any time the user wants to actually use the finder.
+  const handleCalibrate = useCallback(() => {
+    if (location.source !== 'gps' && gpsState !== 'resolved') {
+      requestLocation();
+    }
+    compass.request();
+  }, [compass, requestLocation, location.source, gpsState]);
   const forecast = useForecast(location.lat, location.lon);
 
   const [showTour, setShowTour] = useState(false);
@@ -292,7 +301,7 @@ export default function SkyPage() {
                     userAltitude={compass.altitude}
                     headingStatus={compass.status}
                     accuracy={compass.accuracy}
-                    onCalibrate={compass.request}
+                    onCalibrate={handleCalibrate}
                     calibrationOffset={compass.offset}
                     onNudge={compass.nudge}
                     onProximityChange={compass.setProximityDeg}
@@ -410,21 +419,25 @@ function FinderTour({ onDismiss }: { onDismiss: () => void }) {
   const t = useTranslations('sky.tour');
   return (
     <aside className="sky-v3__tour" role="note" aria-label={t('aria')}>
+      <header className="sky-v3__tour-head">
+        <span className="sky-v3__tour-eyebrow">3 STEPS</span>
+        <h3 className="sky-v3__tour-title">{t('aria')}</h3>
+      </header>
       <ol className="sky-v3__tour-steps">
-        <li>
-          <span className="sky-v3__tour-num">1</span>
-          <span className="sky-v3__tour-text">{t('step1')}</span>
+        <li className="sky-v3__tour-step">
+          <span className="sky-v3__tour-num"><Compass size={14} aria-hidden /></span>
+          <span className="sky-v3__tour-text"><b>1.</b> {t('step1')}</span>
         </li>
-        <li>
-          <span className="sky-v3__tour-num">2</span>
-          <span className="sky-v3__tour-text">{t('step2')}</span>
+        <li className="sky-v3__tour-step">
+          <span className="sky-v3__tour-num"><Crosshair size={14} aria-hidden /></span>
+          <span className="sky-v3__tour-text"><b>2.</b> {t('step2')}</span>
         </li>
-        <li>
-          <span className="sky-v3__tour-num">3</span>
-          <span className="sky-v3__tour-text">{t('step3')}</span>
+        <li className="sky-v3__tour-step">
+          <span className="sky-v3__tour-num"><Hand size={14} aria-hidden /></span>
+          <span className="sky-v3__tour-text"><b>3.</b> {t('step3')}</span>
         </li>
       </ol>
-      <button type="button" className="sky-v3__tour-dismiss" onClick={onDismiss} aria-label={t('dismiss')}>
+      <button type="button" className="sky-v3__tour-cta" onClick={onDismiss} aria-label={t('dismiss')}>
         {t('dismiss')}
       </button>
     </aside>

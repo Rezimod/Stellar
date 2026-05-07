@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import type { AstroEvent } from '@/lib/astro-events';
 
@@ -29,28 +30,49 @@ const TYPE_LABEL: Record<AstroEvent['type'], string> = {
 };
 
 export default function EventInfoSheet({ open, event, onClose }: Props) {
+  // Render the modal via a portal to document.body so any parent transform /
+  // filter / overflow on the sky page can't clip or shift the dialog. This
+  // matches the pattern used by the learn-page Planet modal.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    // Lock scroll while preserving position (avoids iOS Safari jump-to-top).
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
     };
   }, [open, onClose]);
 
-  if (!open || !event) return null;
+  if (!open || !event || !mounted) return null;
 
   const eventDate = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, {
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center p-4"
-      style={{ background: 'rgba(7,11,20,0.78)', backdropFilter: 'blur(8px)' }}
+      style={{ background: 'rgba(7,11,20,0.82)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -109,7 +131,8 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
