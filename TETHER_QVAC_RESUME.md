@@ -1,8 +1,75 @@
 # Tether QVAC restoration — resume plan
 
-**Last updated:** 2026-05-06
+**Last updated:** 2026-05-07 (afternoon, mid-session before Mac restart)
 **Owner:** Rezi
-**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — pick up from "Current state" below.
+**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — pick up from "Resume after restart 2026-05-07" below.
+
+---
+
+## Resume after restart 2026-05-07 (READ THIS FIRST)
+
+If you're a Claude opening this after Rezi restarts his Mac and says "continue QVAC", **the situation is**:
+
+**What's done (committed to main):**
+- ✅ Android SDK fully installed (`~/Library/Android/sdk/`): platform-tools, platforms;android-35, build-tools 35.0.0, **NDK 29.0.14206865** (the QVAC pin)
+- ✅ Java 21 (Android Studio JBR) wired as `JAVA_HOME` in `~/.zshrc`. `ANDROID_HOME` + PATH wired
+- ✅ `apps/field/node_modules` has all deps including ~25 missing peer deps that QVAC needs but doesn't declare. See `~/.claude/projects/-Users-nika-Desktop-Stellar-rezimod/memory/feedback_qvac_bundle.md` for the full list
+- ✅ `apps/field/qvac.config.json` trims plugins to LLM + embedding + Whisper (drops parakeet, NMT, TTS, OCR, image gen)
+- ✅ `apps/field/qvac/worker.bundle.js` (8.4MB) generated successfully — **the step EAS Build always died on, now passing locally**. This is the prize-eligible technical breakthrough.
+- ✅ `npx expo prebuild --clean --platform android` succeeds end-to-end with `🫡 QVAC: Mobile bundle generated`
+- ✅ `apps/field/android/` directory generated (gitignored — will need to be regenerated post-restart via `expo prebuild` if blown away by `git clean`, but the working dir survives a Mac restart untouched)
+- ✅ Submission package drafted at `docs/qvac-submission.md`, demo recording script at `docs/qvac-demo-script.md`, judge-facing tech writeup at `docs/qvac-integration.md`
+- ✅ Web `/field` route already wired to read `NEXT_PUBLIC_FIELD_APK_URL` env var
+
+**What was running when restart happened:**
+- `./gradlew assembleDebug` in `apps/field/android/` — was 922+ log lines deep, compiling React Native libraries, ~5-15 min from finishing. **Mac restart killed this process.** Gradle cache (~/.gradle) persists, so re-running it should be much faster on second attempt — maybe 5-10 min instead of fresh 15-30.
+
+**Immediate pickup steps (in order):**
+
+1. Verify the working tree survived restart:
+   ```bash
+   ls /Users/nika/Desktop/Stellar-rezimod/apps/field/qvac/worker.bundle.js   # should be 8.4MB
+   ls /Users/nika/Desktop/Stellar-rezimod/apps/field/android/gradlew         # should exist
+   ```
+   If `qvac/` or `android/` is missing (e.g., user ran `git clean`), regenerate with:
+   ```bash
+   cd /Users/nika/Desktop/Stellar-rezimod/apps/field && npx expo prebuild --clean --platform android
+   ```
+
+2. Source env vars (they're in `~/.zshrc` but may not be in the new shell):
+   ```bash
+   source ~/.zshrc
+   java -version   # expect openjdk 21
+   adb --version
+   sdkmanager --version
+   ```
+
+3. Re-kick the gradle build:
+   ```bash
+   cd /Users/nika/Desktop/Stellar-rezimod/apps/field/android
+   ./gradlew assembleDebug
+   ```
+   This will pick up where the cache left off. APK lands at `apps/field/android/app/build/outputs/apk/debug/app-debug.apk`.
+
+4. **Phone arrives ~8-9pm Tbilisi time** (a borrowed modern Android — **Galaxy J3 Pro is NOT viable**, only 2GB RAM and no Vulkan support). Once plugged in:
+   ```bash
+   adb devices    # should show device, not "unauthorized"
+   adb install -r apps/field/android/app/build/outputs/apk/debug/app-debug.apk
+   ```
+   On the phone — accept the "Allow USB debugging" RSA fingerprint popup, set USB to MTP/File Transfer.
+
+5. Run the 9-step on-device verification from `docs/qvac-demo-script.md` (boot → model download → chat M31 → voice log → airplane mode).
+
+6. Build release APK and ship per `docs/qvac-submission.md` checklist (steps 5-14).
+
+**Do NOT re-derive any of the steps in §0–§9 below — those were the pre-restart plan and are now mostly historical. The state above supersedes them.**
+
+**Reference docs in repo root / `docs/`:**
+- `docs/qvac-integration.md` — judge-facing technical writeup
+- `docs/qvac-submission.md` — Superteam Earn submission package + ship checklist
+- `docs/qvac-demo-script.md` — 75s demo recording script (EN + KA)
+- `TETHER_QVAC_TRACK.md` §0.1 — rep-validated 2-day plan (now mostly historical, day-of work is complete)
+- `~/.claude/projects/.../memory/feedback_qvac_bundle.md` — exact peer-deps recipe if anything needs rebuilding
 
 ---
 
