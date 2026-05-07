@@ -1019,44 +1019,51 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>The difference</Eyebrow>
-            <SectionTitle>SkySafari shows. Stellar pays.</SectionTitle>
+            <SectionTitle>Most apps show. Stellar pays.</SectionTitle>
             <SectionSub>Plenty show the sky. One closes the loop.</SectionSub>
           </div>
 
-          <div className="max-w-[760px] mx-auto rounded-[18px] border border-white/[0.07] overflow-hidden bg-[#0F1A35]/50">
-            <div className="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 md:px-6 py-3 md:py-4 border-b border-white/[0.07] bg-white/[0.02]">
-              <div />
-              <div className="text-[#6B7385] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">SkySafari · Star Walk</div>
-              <div className="text-[#FFB347] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">Stellar</div>
+          <div className="max-w-[960px] mx-auto rounded-[18px] border border-white/[0.07] bg-[#0F1A35]/50 px-5 md:px-10 py-9 md:py-12">
+            {/* Stage rail */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-8 md:gap-y-0">
+              {[
+                { n: '01', label: 'Plan',    sub: 'Forecast'    },
+                { n: '02', label: 'Aim',     sub: 'Sky chart'   },
+                { n: '03', label: 'Observe', sub: 'AR finder'   },
+                { n: '04', label: 'Verify',  sub: 'Photo proof' },
+                { n: '05', label: 'Earn',    sub: 'Stars'       },
+                { n: '06', label: 'Redeem',  sub: 'Real gear'   },
+              ].map((s, i) => {
+                const beyond = i >= 3;
+                return (
+                  <div key={s.n} className="flex flex-col items-center text-center">
+                    <div className={`font-mono text-[10px] md:text-[11px] tracking-[0.22em] ${beyond ? 'text-[#FFB347]' : 'text-[#6B7385]'}`}>{s.n}</div>
+                    <div className="mt-2 text-white text-[13px] md:text-[15px] font-semibold leading-tight">{s.label}</div>
+                    <div className="mt-1 text-[#6B7385] text-[11px] md:text-[12px] leading-tight">{s.sub}</div>
+                  </div>
+                );
+              })}
             </div>
-            {[
-              { f: 'Sky chart',                them: true,  us: true  },
-              { f: '7-day cloud forecast',     them: false, us: true  },
-              { f: 'AR finder',                them: 'some', us: true },
-              { f: 'Verified photo missions',  them: false, us: true  },
-              { f: 'Earn rewards',             them: false, us: true  },
-              { f: 'Redeem for real gear',     them: false, us: true  },
-            ].map((row) => (
-              <div key={row.f} className="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 md:px-6 py-3 md:py-3.5 border-b border-white/[0.05] last:border-b-0">
-                <div className="text-white text-[13.5px] md:text-[15px]">{row.f}</div>
-                <div className="flex justify-center">
-                  {row.them === true ? (
-                    <svg className="w-4 h-4 text-[#9BA3B4]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
-                  ) : row.them === 'some' ? (
-                    <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#9BA3B4]">Some</span>
-                  ) : (
-                    <svg className="w-3.5 h-3.5 text-[#5C6478]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
-                  )}
+
+            {/* Coverage tracks */}
+            <div className="mt-9 md:mt-12 space-y-4 md:space-y-5">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#6B7385] w-[78px] md:w-[110px] shrink-0">Most apps</div>
+                <div className="relative flex-1 h-[3px] bg-white/[0.06] rounded-full">
+                  <div className="absolute left-0 top-0 h-full w-1/2 bg-[#5C6478] rounded-full" />
+                  <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#5C6478]" />
                 </div>
-                <div className="flex justify-center">
-                  {row.us === true ? (
-                    <svg className="w-4 h-4 text-[#5EEAD4]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l3 3 7-7" /></svg>
-                  ) : (
-                    <svg className="w-3.5 h-3.5 text-[#5C6478]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
-                  )}
-                </div>
+                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#6B7385] w-[88px] md:w-[140px] text-right shrink-0">Show the sky</div>
               </div>
-            ))}
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#FFB347] w-[78px] md:w-[110px] shrink-0">Stellar</div>
+                <div className="relative flex-1 h-[3px] bg-white/[0.06] rounded-full">
+                  <div className="absolute left-0 top-0 h-full w-full bg-gradient-to-r from-[#FFB347] to-[#5EEAD4] rounded-full" />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2 h-2 rounded-full bg-[#5EEAD4]" />
+                </div>
+                <div className="font-mono text-[9.5px] md:text-[11px] uppercase tracking-[0.18em] md:tracking-[0.22em] text-[#5EEAD4] w-[88px] md:w-[140px] text-right shrink-0">Close the loop</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
