@@ -15,6 +15,10 @@ const TABS: Tab[] = [
   { href: '/hub',      label: 'Hub',      icon: LayoutGrid },
 ];
 
+const ACTIVE_RED = '#E63E4F';
+const INACTIVE_RED = 'rgba(230, 62, 79, 0.45)';
+const INACTIVE_LABEL = 'rgba(220, 220, 240, 0.55)';
+
 export default function BottomNav() {
   const pathname = usePathname();
 
@@ -22,16 +26,21 @@ export default function BottomNav() {
     <nav
       className="sm:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: '#050812',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        paddingBottom: 'max(env(safe-area-inset-bottom), 10px)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
+        background: 'transparent',
+        pointerEvents: 'none',
       }}
     >
       <div
         style={{
+          pointerEvents: 'auto',
+          background: '#1A1B3E',
+          borderTopLeftRadius: 22,
+          borderTopRightRadius: 22,
+          borderTop: '1px solid rgba(255,255,255,0.05)',
           display: 'flex',
-          height: 70,
-          padding: '6px 4px 0',
+          height: 76,
+          padding: '10px 4px 8px',
         }}
       >
         {TABS.map(tab => {
@@ -48,62 +57,26 @@ export default function BottomNav() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'flex-start',
-                gap: 4,
-                paddingTop: 6,
+                gap: 6,
+                paddingTop: 4,
                 textDecoration: 'none',
                 WebkitTapHighlightColor: 'transparent',
-                position: 'relative',
               }}
             >
-              {/* Active pill — filled tab background behind icon */}
-              <div
-                style={{
-                  position: 'relative',
-                  width: 44,
-                  height: 30,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 12,
-                  background: isActive
-                    ? 'radial-gradient(ellipse at 50% 55%, rgba(255, 179, 71,0.22) 0%, rgba(255, 179, 71,0.05) 55%, transparent 75%)'
-                    : 'transparent',
-                  transition: 'background 0.2s ease',
-                }}
-              >
-                {isActive && (
-                  <span
-                    aria-hidden
-                    style={{
-                      position: 'absolute',
-                      top: -6,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 20,
-                      height: 2,
-                      borderRadius: 2,
-                      background: 'var(--stl-gold)',
-                      boxShadow: '0 0 10px rgba(255, 179, 71,0.8)',
-                    }}
-                  />
-                )}
-                <Icon
-                  size={22}
-                  strokeWidth={isActive ? 2.2 : 1.7}
-                  color={isActive ? 'var(--stl-gold)' : 'rgba(255,255,255,0.42)'}
-                  style={{
-                    filter: isActive ? 'drop-shadow(0 0 6px rgba(255, 179, 71,0.45))' : 'none',
-                    transition: 'color 0.2s ease, filter 0.2s ease',
-                  }}
-                />
-              </div>
+              <Icon
+                size={24}
+                strokeWidth={2}
+                color={isActive ? ACTIVE_RED : INACTIVE_RED}
+                fill={isActive ? ACTIVE_RED : INACTIVE_RED}
+                style={{ transition: 'color 0.2s ease, fill 0.2s ease' }}
+              />
 
               <span
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 10.5,
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? 'var(--stl-text-bright)' : 'rgba(255,255,255,0.42)',
+                  fontSize: 11,
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? '#FFFFFF' : INACTIVE_LABEL,
                   letterSpacing: '0.01em',
                   lineHeight: 1,
                   transition: 'color 0.2s ease',
@@ -111,6 +84,19 @@ export default function BottomNav() {
               >
                 {tab.label}
               </span>
+
+              {isActive && (
+                <span
+                  aria-hidden
+                  style={{
+                    marginTop: 2,
+                    width: 22,
+                    height: 2,
+                    borderRadius: 2,
+                    background: '#FFFFFF',
+                  }}
+                />
+              )}
             </Link>
           );
         })}
