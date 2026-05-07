@@ -305,15 +305,11 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Mobile-only: balance + location pills blended into the nav header (centered). */}
+      {/* Mobile-only: balance + location blended into the nav header (centered, no outlines). */}
       {navSlot && createPortal(
-        <div className="flex items-center gap-[6px]">
+        <div className="flex items-center gap-[2px]">
           <span
-            className="inline-flex items-center h-[22px] gap-[5px] px-[7px] rounded-lg uppercase cursor-default"
-            style={{
-              background: 'rgba(255, 179, 71, 0.07)',
-              border: '1px solid rgba(255, 179, 71, 0.20)',
-            }}
+            className="inline-flex items-center h-[22px] gap-[5px] px-[6px] rounded-md uppercase cursor-default"
           >
             <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" style={{ width: 9, height: 9 }}>
               <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
@@ -322,7 +318,7 @@ export default function MarketplacePage() {
               {balance.toLocaleString()}
             </span>
           </span>
-          <LocationPicker compact />
+          <LocationPicker ghost />
         </div>,
         navSlot,
       )}

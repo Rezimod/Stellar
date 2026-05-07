@@ -123,7 +123,7 @@ const REGION_TABS: { key: Region; label: string; emoji: string }[] = [
 
 const PANEL_WIDTH = 340
 
-export default function LocationPicker({ compact = false }: { compact?: boolean }) {
+export default function LocationPicker({ compact = false, ghost = false }: { compact?: boolean; ghost?: boolean }) {
   const { location, setLocation } = useLocation()
   const [open, setOpen] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
@@ -220,15 +220,16 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         .loc-pill {
           display: inline-flex;
           align-items: center;
-          gap: ${compact ? '5px' : '7px'};
+          gap: ${ghost ? '4px' : compact ? '5px' : '7px'};
           border-radius: 8px;
-          height: ${compact ? '22px' : '30px'};
-          padding: 0 ${compact ? '7px' : '14px'};
-          background: rgba(15, 18, 28, 0.55);
-          border: 1px solid rgba(255, 179, 71, 0.32);
+          height: ${ghost ? '22px' : compact ? '22px' : '30px'};
+          padding: 0 ${ghost ? '6px' : compact ? '7px' : '14px'};
+          background: ${ghost ? 'transparent' : 'rgba(15, 18, 28, 0.55)'};
+          border: ${ghost ? '1px solid transparent' : '1px solid rgba(255, 179, 71, 0.32)'};
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
         }
+        ${ghost ? '' : `
         @media (min-width: 640px) {
           .loc-pill {
             gap: 7px;
@@ -239,9 +240,10 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           .loc-pill .loc-pill-mappin { width: 13px !important; height: 13px !important; }
           .loc-pill .loc-pill-chevron { width: 11px !important; height: 11px !important; }
         }
+        `}
         .loc-pill:hover {
-          background: rgba(15, 18, 28, 0.75);
-          border-color: rgba(255, 179, 71, 0.55);
+          background: ${ghost ? 'rgba(255,255,255,0.06)' : 'rgba(15, 18, 28, 0.75)'};
+          border-color: ${ghost ? 'transparent' : 'rgba(255, 179, 71, 0.55)'};
         }
         .loc-city-btn {
           display: flex;
@@ -308,17 +310,27 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
 
       <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
         <MapPin
-          size={compact ? 11 : 13}
-          color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)'}
+          size={ghost ? 10 : compact ? 11 : 13}
+          color={ghost
+            ? (location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255,255,255,0.55)')
+            : (location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)')}
           className="loc-pill-mappin"
           style={{ flexShrink: 0 }}
         />
-        <span className="loc-pill-label" style={{ fontSize: compact ? 10.5 : 12, color: 'rgba(255,255,255,0.92)', fontWeight: 500, letterSpacing: '0.01em' }}>
+        <span
+          className="loc-pill-label"
+          style={{
+            fontSize: ghost ? 10.5 : compact ? 10.5 : 12,
+            color: ghost ? 'rgba(255,255,255,0.78)' : 'rgba(255,255,255,0.92)',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+        >
           {label}
         </span>
         <ChevronDown
-          size={compact ? 9 : 11}
-          color="rgba(255, 179, 71,0.7)"
+          size={ghost ? 9 : compact ? 9 : 11}
+          color={ghost ? 'rgba(255,255,255,0.45)' : 'rgba(255, 179, 71,0.7)'}
           className="loc-pill-chevron"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
         />
