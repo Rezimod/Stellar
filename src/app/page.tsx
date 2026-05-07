@@ -759,21 +759,55 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>How it works</Eyebrow>
-            <SectionTitle>Three steps. One night.</SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-2 md:order-1">
-              <ul className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-                {['Sign in', 'Find a target', 'Earn Stars'].map((title) => (
-                  <li key={title} className="py-3.5 md:py-5">
-                    <div className="text-white text-[16px] md:text-[19px] font-semibold leading-tight tracking-[-0.005em]">
-                      {title}
+              <ol className="relative">
+                <span
+                  aria-hidden
+                  className="absolute left-[7px] top-2 bottom-2 w-px bg-white/[0.08]"
+                />
+                {[
+                  {
+                    n: '01',
+                    title: 'Sign in',
+                    body: 'Email or Google. Your wallet is created in the background — no seed phrases, no extensions.',
+                  },
+                  {
+                    n: '02',
+                    title: 'Find a target',
+                    body: 'Real objects visible from your location tonight, ranked by clear sky and altitude.',
+                  },
+                  {
+                    n: '03',
+                    title: 'Earn Stars',
+                    body: 'Verify your observation. Stars land in your wallet — redeemable in the marketplace.',
+                  },
+                ].map((step, i, arr) => (
+                  <li
+                    key={step.n}
+                    className={`relative pl-8 md:pl-10 ${i === arr.length - 1 ? '' : 'pb-7 md:pb-9'}`}
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-[6px] w-[15px] h-[15px] rounded-full border border-white/20 bg-[#0B0E17] flex items-center justify-center"
+                    >
+                      <span className="w-[5px] h-[5px] rounded-full bg-[#FFB347]" />
+                    </span>
+                    <div className="font-mono text-[10.5px] md:text-[11.5px] tracking-[0.18em] text-[#FFB347] mb-1.5">
+                      {step.n}
                     </div>
+                    <div className="text-white text-[17px] md:text-[20px] font-semibold leading-tight tracking-[-0.005em] mb-1.5">
+                      {step.title}
+                    </div>
+                    <p className="text-white/55 text-[13.5px] md:text-[14.5px] leading-[1.55] max-w-[420px]">
+                      {step.body}
+                    </p>
                   </li>
                 ))}
-              </ul>
-              <div className="mt-5 md:mt-6">
+              </ol>
+              <div className="mt-7 md:mt-8 pl-8 md:pl-10">
                 <SectionLink href="/missions">Start observing →</SectionLink>
               </div>
             </div>
