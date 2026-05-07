@@ -38,13 +38,24 @@ export default function SaturnCanvas() {
     camera.position.set(0, 0.4, 8.6);
     camera.lookAt(0, 0, 0);
 
-    // ── Lighting ─────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0x2a2030, 0.55));
-    const sun = new THREE.DirectionalLight(0xffd9a8, 1.55);
-    sun.position.set(-5, 2.4, 4);
+    // ── Lighting (cinematic 3-point: key sun, cool fill, back rim) ──
+    // Low ambient so the unlit hemisphere stays dramatically dark — that
+    // contrast is what gives the planet an "epic" crescent silhouette.
+    scene.add(new THREE.AmbientLight(0x10162a, 0.18));
+
+    // Key light: warm sun from upper-left, sharp falloff
+    const sun = new THREE.DirectionalLight(0xffe4ba, 3.6);
+    sun.position.set(-6, 3.2, 5);
     scene.add(sun);
-    const rim = new THREE.DirectionalLight(0xff8a4a, 0.55);
-    rim.position.set(6, -1.5, 2.5);
+
+    // Cool fill from lower-right, mimics scattered light off the rings
+    const fill = new THREE.DirectionalLight(0x6a82c2, 0.45);
+    fill.position.set(4.5, -2, 2.0);
+    scene.add(fill);
+
+    // Back rim light — orange, wraps the silhouette edge
+    const rim = new THREE.DirectionalLight(0xff7a3a, 1.4);
+    rim.position.set(5, 0.4, -3.5);
     scene.add(rim);
 
     // ── Saturn surface texture (procedural bands) ────────────────
@@ -52,15 +63,92 @@ export default function SaturnCanvas() {
     surfaceTex.colorSpace = THREE.SRGBColorSpace;
 
     const planet = new THREE.Mesh(
-      new THREE.SphereGeometry(1.6, 96, 96),
+      new THREE.SphereGeometry(1.6, 128, 128),
       new THREE.MeshStandardMaterial({
         map: surfaceTex,
-        roughness: 0.95,
+        roughness: 0.92,
         metalness: 0.0,
       }),
     );
     planet.rotation.z = THREE.MathUtils.degToRad(26.7); // Saturn's axial tilt
     scene.add(planet);
+
+    // ── North-pole hexagonal storm ───────────────────────────────
+    // Real Saturn has a persistent hexagonal jet-stream feature at its
+    // north pole. Render a thin stroked hexagon (plus an inner ring) just
+    // above the pole, parented to the planet so it inherits axis tilt
+    // AND axial spin.
+    const hexGroup = new THREE.Group();
+    const hexR = 0.42;
+    const hexPts: THREE.Vector3[] = [];
+    for (let i = 0; i <= 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
+      hexPts.push(new THREE.Vector3(Math.cos(a) * hexR, 0, Math.sin(a) * hexR));
+    }
+    const hexGeo = new THREE.BufferGeometry().setFromPoints(hexPts);
+    hexGroup.add(
+      new THREE.Line(
+        hexGeo,
+        new THREE.LineBasicMaterial({
+          color: 0xfff0c8,
+          transparent: true,
+          opacity: 0.55,
+        }),
+      ),
+    );
+    // Inner concentric circle hint
+    const hexInnerPts: THREE.Vector3[] = [];
+    for (let i = 0; i <= 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      hexInnerPts.push(new THREE.Vector3(Math.cos(a) * hexR * 0.55, 0, Math.sin(a) * hexR * 0.55));
+    }
+    hexGroup.add(
+      new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(hexInnerPts),
+        new THREE.LineBasicMaterial({
+          color: 0xffc285,
+          transparent: true,
+          opacity: 0.4,
+        }),
+      ),
+    );
+    // Sit just above the pole surface (radius 1.6) to avoid z-fighting
+    hexGroup.position.y = 1.598;
+    planet.add(hexGroup);
+
+    // ── Atmospheric halo (back-facing fresnel shell) ─────────────
+    const halo = new THREE.Mesh(
+      new THREE.SphereGeometry(1.72, 64, 64),
+      new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uColor: { value: new THREE.Color(0xff9a55) },
+        },
+        vertexShader: /* glsl */ `
+          varying vec3 vNormal;
+          varying vec3 vView;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            vView = normalize(-mv.xyz);
+            gl_Position = projectionMatrix * mv;
+          }
+        `,
+        fragmentShader: /* glsl */ `
+          varying vec3 vNormal;
+          varying vec3 vView;
+          uniform vec3 uColor;
+          void main() {
+            float fres = pow(1.0 - abs(dot(vNormal, vView)), 2.4);
+            gl_FragColor = vec4(uColor, fres * 0.55);
+          }
+        `,
+      }),
+    );
+    planet.add(halo);
 
     // ── Ring particles ───────────────────────────────────────────
     const RING_COUNT = reduceMotion ? 2200 : 7200;
@@ -188,12 +276,12 @@ export default function SaturnCanvas() {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    // ── Saturn group offset (push to right) ──────────────────────
+    // ── Saturn group offset (push to right edge of viewport) ─────
     const planetGroup = new THREE.Group();
     planetGroup.add(planet);
     planetGroup.add(rings);
     scene.add(planetGroup);
-    planetGroup.position.x = 1.55;
+    planetGroup.position.x = 2.85;
 
     // ── Mouse parallax ───────────────────────────────────────────
     const target = { x: 0, y: 0 };

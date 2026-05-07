@@ -16,20 +16,19 @@ export default function HeroSaturn() {
       className="relative w-full overflow-hidden"
       style={{
         minHeight: 'min(720px, 100vh)',
-        background:
-          'radial-gradient(120% 80% at 75% 55%, #2A0E1F 0%, #160A1E 38%, #0A0815 70%, #06060F 100%)',
+        background: 'var(--canvas)', /* solid blue, matches the rest of the page */
       }}
     >
       {/* === WebGL Saturn (planet + orbiting ring particles + parallax) === */}
       <SaturnCanvas />
 
-      {/* === Soft vignette so the copy stays readable === */}
+      {/* === Left-side vignette keeps the copy readable on bright Saturn === */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(90deg, rgba(6,6,15,0.78) 0%, rgba(6,6,15,0.45) 32%, transparent 60%)',
+            'linear-gradient(90deg, rgba(10,23,53,0.85) 0%, rgba(10,23,53,0.45) 28%, transparent 50%)',
         }}
       />
 
@@ -37,10 +36,10 @@ export default function HeroSaturn() {
       <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 py-24 md:py-28 lg:py-36 pointer-events-none">
         <div className="max-w-[640px]">
           <h1
-            className="text-white leading-[0.98] tracking-[-0.01em]"
+            className="text-white leading-[1.02] tracking-[-0.01em]"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(44px, 8vw, 96px)',
+              fontSize: 'clamp(34px, 5.4vw, 68px)',
               fontWeight: 500, /* Orbitron Medium */
             }}
           >
