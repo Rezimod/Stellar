@@ -55,10 +55,9 @@ export default function BottomNav() {
                 position: 'relative',
               }}
             >
-              {/* Icon + active underline */}
+              {/* Icon */}
               <div
                 style={{
-                  position: 'relative',
                   width: 44,
                   height: 30,
                   display: 'flex',
@@ -71,21 +70,6 @@ export default function BottomNav() {
                   strokeWidth={isActive ? 2.2 : 1.7}
                   color={isActive ? 'var(--stl-gold)' : '#ffffff'}
                 />
-                {isActive && (
-                  <span
-                    aria-hidden
-                    style={{
-                      position: 'absolute',
-                      bottom: -4,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 20,
-                      height: 2,
-                      borderRadius: 2,
-                      background: 'var(--stl-gold)',
-                    }}
-                  />
-                )}
               </div>
 
               <span
@@ -101,6 +85,22 @@ export default function BottomNav() {
               >
                 {tab.label}
               </span>
+
+              {isActive && (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    bottom: 2,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 32,
+                    height: 2,
+                    borderRadius: 2,
+                    background: 'var(--stl-gold)',
+                  }}
+                />
+              )}
             </Link>
           );
         })}
