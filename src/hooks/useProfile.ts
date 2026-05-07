@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
 
 export type ProfileRow = {
   privyId: string;
@@ -14,6 +14,7 @@ type UpdateInput = { username?: string | null; avatar?: string | null };
 
 export function useProfile() {
   const { user, getAccessToken, authenticated } = usePrivy();
+  const { login } = useLogin();
   const privyId = user?.id ?? null;
 
   const [profile, setProfile] = useState<ProfileRow | null>(null);
@@ -41,12 +42,23 @@ export function useProfile() {
   }, [authenticated, privyId, reload]);
 
   const update = useCallback(async (input: UpdateInput): Promise<{ ok: boolean; error?: string }> => {
-    if (!authenticated) return { ok: false, error: 'Not signed in' };
+    // Profile data is keyed by Privy userId, so a wallet-adapter-only user
+    // (Phantom connected outside Privy) has no row to update. Prompt them to
+    // sign in via Privy — once they do, Phantom is reused as a Privy
+    // connector and they get a userId tied to the same address.
+    if (!authenticated) {
+      login({ loginMethods: ['wallet', 'email', 'sms', 'google'], walletChainType: 'solana-only' });
+      return { ok: false, error: 'Sign in to save your profile' };
+    }
     setSaving(true);
     setError(null);
     try {
       const token = await getAccessToken();
-      if (!token) { setError('Not signed in'); return { ok: false, error: 'Not signed in' }; }
+      if (!token) {
+        login({ loginMethods: ['wallet', 'email', 'sms', 'google'], walletChainType: 'solana-only' });
+        setError('Session expired — sign in again');
+        return { ok: false, error: 'Session expired — sign in again' };
+      }
       const r = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -66,7 +78,7 @@ export function useProfile() {
     } finally {
       setSaving(false);
     }
-  }, [authenticated, getAccessToken]);
+  }, [authenticated, getAccessToken, login]);
 
   return { profile, loading, saving, error, update, reload };
 }

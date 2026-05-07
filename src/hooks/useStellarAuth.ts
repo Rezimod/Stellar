@@ -1,22 +1,32 @@
 'use client';
 
-import { usePrivy } from '@privy-io/react-auth';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { useWallet as useWalletAdapter } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useCallback } from 'react';
 
+// Single source of truth for sign-in.
+// Both buttons route through Privy so EVERY signed-in user has a Privy
+// session (and a JWT). The wallet-adapter modal is no longer used as a
+// login path — wallets log in via Privy's `solanaConnectors` and inherit
+// a Privy `userId` like email users do. Without this, Phantom users had
+// no Privy session and every server endpoint that calls
+// `privy.verifyAuthToken` would 401.
 export function useStellarAuth() {
-  const { login: privyLogin, logout: privyLogout } = usePrivy();
+  const { logout: privyLogout } = usePrivy();
   const { disconnect: adapterDisconnect } = useWalletAdapter();
-  const { setVisible: setWalletModalVisible } = useWalletModal();
+  const { login } = useLogin({
+    onError: (error) => {
+      console.error('[privy login]', error);
+    },
+  });
 
   const loginWithEmail = useCallback(() => {
-    privyLogin();
-  }, [privyLogin]);
+    login({ loginMethods: ['email', 'sms', 'google'] });
+  }, [login]);
 
   const connectWallet = useCallback(() => {
-    setWalletModalVisible(true);
-  }, [setWalletModalVisible]);
+    login({ loginMethods: ['wallet'], walletChainType: 'solana-only' });
+  }, [login]);
 
   const logout = useCallback(async () => {
     await Promise.allSettled([privyLogout(), adapterDisconnect()]);
