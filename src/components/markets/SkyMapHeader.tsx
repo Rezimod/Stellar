@@ -77,7 +77,7 @@ function colorForNode(market: Market): NodeColor {
 
 const COLOR_MAP: Record<NodeColor, { bg: string; ring: string; label: string }> = {
   live: { bg: 'var(--success)', ring: 'rgba(94, 234, 212,0.4)', label: 'Live' },
-  open: { bg: 'var(--terracotta)', ring: 'rgba(255, 209, 102,0.32)', label: 'Open' },
+  open: { bg: 'var(--terracotta)', ring: 'rgba(255, 179, 71,0.32)', label: 'Open' },
   upcoming: { bg: 'rgba(94, 234, 212,0.55)', ring: 'rgba(94, 234, 212,0.25)', label: 'Upcoming' },
   resolved: { bg: 'rgba(148,163,184,0.5)', ring: 'rgba(148,163,184,0.2)', label: 'Resolved' },
 };
@@ -201,7 +201,7 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
           bottom: '18%',
           height: 1,
           background:
-            'linear-gradient(90deg, transparent, rgba(255, 209, 102,0.25) 20%, rgba(255, 209, 102,0.25) 80%, transparent)',
+            'linear-gradient(90deg, transparent, rgba(255, 179, 71,0.25) 20%, rgba(255, 179, 71,0.25) 80%, transparent)',
         }}
       />
 
@@ -261,8 +261,8 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 el.animate(
                   [
-                    { outline: '2px solid rgba(255, 209, 102,0.6)' },
-                    { outline: '2px solid rgba(255, 209, 102,0)' },
+                    { outline: '2px solid rgba(255, 179, 71,0.6)' },
+                    { outline: '2px solid rgba(255, 179, 71,0)' },
                   ],
                   { duration: 1400, easing: 'ease-out' },
                 );
@@ -292,7 +292,7 @@ export default function SkyMapHeader({ markets, advantageByMarketId = {} }: Prop
                 boxShadow: n.advantage
                   ? `0 0 0 2px var(--terracotta), 0 0 10px ${c.bg}`
                   : `0 0 8px ${c.bg}`,
-                outline: n.advantage ? '1px solid rgba(255, 209, 102,0.8)' : 'none',
+                outline: n.advantage ? '1px solid rgba(255, 179, 71,0.8)' : 'none',
                 outlineOffset: n.advantage ? 2 : 0,
                 flexShrink: 0,
               }}

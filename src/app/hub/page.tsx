@@ -102,9 +102,9 @@ export default function HubPage() {
                       <span
                         className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-semibold tracking-[0.18em] uppercase"
                         style={{
-                          color: 'rgba(255,209,102,0.85)',
-                          background: 'rgba(255,209,102,0.08)',
-                          border: '1px solid rgba(255,209,102,0.28)',
+                          color: 'rgba(255,179,71,0.85)',
+                          background: 'rgba(255,179,71,0.08)',
+                          border: '1px solid rgba(255,179,71,0.28)',
                           fontFamily: 'var(--font-mono)',
                         }}
                       >

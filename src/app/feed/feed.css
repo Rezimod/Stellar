@@ -2,7 +2,7 @@
   --ink: #06122B;
   --ink-2: #0A1735;
   --bone: #F8F4EC;
-  --brass: #FFD166;
+  --brass: #FFB347;
   --brass-dim: #c89a3e;
   --teal: #5EEAD4;
   --violet: #8465CB;
@@ -85,8 +85,8 @@
 }
 .feed-page .side-link:hover { background: var(--card-bg-hover); color: var(--slate-100); }
 .feed-page .side-link.active {
-  background: rgba(255,209,102,0.05); color: var(--brass);
-  border-color: rgba(255,209,102,0.12);
+  background: rgba(255,179,71,0.05); color: var(--brass);
+  border-color: rgba(255,179,71,0.12);
 }
 .feed-page .side-link-icon { width: 16px; height: 16px; opacity: 0.7; }
 .feed-page .side-link.active .side-link-icon { opacity: 1; }
@@ -104,7 +104,7 @@
   content: ''; position: absolute;
   top: -40px; right: -40px;
   width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(255,209,102,0.08), transparent 70%);
+  background: radial-gradient(circle, rgba(255,179,71,0.08), transparent 70%);
   pointer-events: none;
 }
 .composer-row { display: flex; gap: 14px; align-items: flex-start; }
@@ -167,7 +167,7 @@
 .tool-btn:hover { background: var(--card-bg-hover); border-color: var(--hairline); color: var(--slate-100); }
 .tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .tool-btn svg { width: 14px; height: 14px; }
-.tool-btn.active { background: rgba(255,209,102,0.08); border-color: rgba(255,209,102,0.25); color: var(--brass); }
+.tool-btn.active { background: rgba(255,179,71,0.08); border-color: rgba(255,179,71,0.25); color: var(--brass); }
 
 .post-btn {
   padding: 8px 18px;
@@ -179,7 +179,7 @@
   transition: transform 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
-.post-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,209,102,0.25); }
+.post-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,179,71,0.25); }
 .post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .composer-auth {
@@ -206,7 +206,7 @@
   font-family: var(--feed-sans); transition: all 0.2s;
 }
 .filter-tab:hover { color: var(--slate-100); }
-.filter-tab.active { background: rgba(255,209,102,0.1); color: var(--brass); }
+.filter-tab.active { background: rgba(255,179,71,0.1); color: var(--brass); }
 
 .feed-post {
   background: var(--card-bg); border: 1px solid var(--hairline);
@@ -349,7 +349,7 @@
   /* No backdrop-filter here — every photo card would trigger GPU compositing.
      A solid translucent background reads almost identically over a photo. */
   background: rgba(7,11,20,0.78);
-  border: 1px solid rgba(255,209,102,0.25);
+  border: 1px solid rgba(255,179,71,0.25);
   border-radius: 999px;
   font-family: var(--feed-mono);
   font-size: 10px; color: var(--brass);
@@ -387,8 +387,8 @@
 }
 
 .achievement {
-  background: linear-gradient(135deg, rgba(255,209,102,0.06), rgba(132,101,203,0.04));
-  border: 1px solid rgba(255,209,102,0.18);
+  background: linear-gradient(135deg, rgba(255,179,71,0.06), rgba(132,101,203,0.04));
+  border: 1px solid rgba(255,179,71,0.18);
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 14px;
@@ -397,7 +397,7 @@
 }
 .achievement::before {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 90% 20%, rgba(255,209,102,0.15), transparent 30%);
+  background: radial-gradient(circle at 90% 20%, rgba(255,179,71,0.15), transparent 30%);
   pointer-events: none;
 }
 .achievement-icon {
@@ -405,7 +405,7 @@
   background: radial-gradient(circle, var(--brass), var(--brass-dim));
   display: grid; place-items: center;
   flex-shrink: 0;
-  box-shadow: 0 0 32px rgba(255,209,102,0.25);
+  box-shadow: 0 0 32px rgba(255,179,71,0.25);
 }
 .achievement-body { flex: 1; position: relative; }
 .achievement-label {
@@ -597,7 +597,7 @@
   content: ''; position: absolute;
   top: -20px; right: -20px;
   width: 80px; height: 80px;
-  background: radial-gradient(circle, rgba(255,209,102,0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(255,179,71,0.15), transparent 70%);
   pointer-events: none;
 }
 .sky-condition {
@@ -697,7 +697,7 @@
   white-space: nowrap;
 }
 .planet-cloud-pill.go { color: var(--green); border-color: rgba(94,234,212,0.25); }
-.planet-cloud-pill.maybe { color: var(--brass); border-color: rgba(255,209,102,0.25); }
+.planet-cloud-pill.maybe { color: var(--brass); border-color: rgba(255,179,71,0.25); }
 .planet-cloud-pill.skip { color: var(--red); border-color: rgba(255,140,140,0.25); }
 .planet-dark {
   display: flex; align-items: center; gap: 6px;
@@ -911,7 +911,7 @@
   }
   .composer-input:focus {
     background: rgba(255,255,255,0.06);
-    border-color: rgba(255,209,102,0.25);
+    border-color: rgba(255,179,71,0.25);
   }
 
   .composer-preview { margin-top: 10px; gap: 8px; }
@@ -943,7 +943,7 @@
   }
   .tool-btn:hover { background: rgba(255,255,255,0.04); border: none; }
   .tool-btn.active {
-    background: rgba(255,209,102,0.08);
+    background: rgba(255,179,71,0.08);
     border: none;
     color: var(--brass);
   }

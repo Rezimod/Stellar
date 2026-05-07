@@ -15,11 +15,11 @@ interface Props {
 }
 
 const CATEGORY_ART: Record<string, { emoji: string; bg: string }> = {
-  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(255, 209, 102,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
-  moonlamp:  { emoji: '🌕', bg: 'radial-gradient(ellipse at 60% 30%, rgba(255, 209, 102,0.12) 0%, rgba(26,26,46,0.95) 70%)' },
-  projector: { emoji: '✨', bg: 'radial-gradient(ellipse at 40% 60%, rgba(255, 209, 102,0.12) 0%, rgba(26,20,9,0.95) 70%)' },
+  telescope: { emoji: '🔭', bg: 'radial-gradient(ellipse at 30% 40%, rgba(255, 179, 71,0.12) 0%, rgba(10,22,40,0.95) 70%)' },
+  moonlamp:  { emoji: '🌕', bg: 'radial-gradient(ellipse at 60% 30%, rgba(255, 179, 71,0.12) 0%, rgba(26,26,46,0.95) 70%)' },
+  projector: { emoji: '✨', bg: 'radial-gradient(ellipse at 40% 60%, rgba(255, 179, 71,0.12) 0%, rgba(26,20,9,0.95) 70%)' },
   accessory: { emoji: '⚙️', bg: 'radial-gradient(ellipse at 50% 50%, rgba(100,116,139,0.1) 0%, rgba(13,17,23,0.95) 70%)' },
-  digital:   { emoji: '🗺️', bg: 'radial-gradient(ellipse at 50% 30%, rgba(255, 209, 102,0.15) 0%, rgba(21,13,46,0.95) 70%)' },
+  digital:   { emoji: '🗺️', bg: 'radial-gradient(ellipse at 50% 30%, rgba(255, 179, 71,0.15) 0%, rgba(21,13,46,0.95) 70%)' },
 };
 
 export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
@@ -73,23 +73,19 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
       />
     )}
     <div
-      className="fixed inset-0 bg-canvas/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-end sm:justify-end"
+      className="fixed inset-0 bg-canvas/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={handleClose}
     >
-      {/* Mobile: bottom sheet | Desktop: right panel */}
       <div
         className={`
-          w-full sm:w-96 sm:h-full
+          w-full max-w-md
           bg-[#0F1827]
-          border-t sm:border-t-0 sm:border-l border-[var(--terracotta)]/10
+          border border-[var(--terracotta)]/10
           flex flex-col
-          transition-transform duration-300
-          rounded-t-2xl sm:rounded-none
-          max-h-[90dvh] sm:max-h-full
-          ${visible
-            ? 'translate-y-0 sm:translate-x-0'
-            : 'translate-y-full sm:translate-y-0 sm:translate-x-full'
-          }
+          transition-opacity duration-300
+          rounded-2xl
+          max-h-[90dvh] overflow-hidden
+          ${visible ? 'opacity-100' : 'opacity-0'}
         `}
         onClick={e => e.stopPropagation()}
       >

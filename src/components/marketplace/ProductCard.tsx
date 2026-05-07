@@ -23,27 +23,28 @@ interface Props {
   solPerGEL?: number;
   solPriceUsd?: number;
   featured?: boolean;
+  className?: string;
 }
 
-export default function ProductCard({ product, dealerName, solPerGEL = 0, solPriceUsd = 0, featured = false }: Props) {
+export default function ProductCard({ product, dealerName, solPerGEL = 0, solPriceUsd = 0, featured = false, className = '' }: Props) {
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
 
   const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
   const solAmount = solValue > 0 ? solValue : null;
-  const idleBg = featured ? 'rgba(255, 209, 102,0.05)' : 'rgba(232,230,221,0.045)';
-  const idleBorder = featured ? 'rgba(255, 209, 102,0.32)' : 'rgba(232,230,221,0.10)';
+  const idleBg = featured ? 'rgba(255, 179, 71,0.05)' : 'rgba(232,230,221,0.045)';
+  const idleBorder = featured ? 'rgba(255, 179, 71,0.32)' : 'rgba(232,230,221,0.10)';
 
   return (
     <div
-      className="group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px]"
+      className={`group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px] ${className}`}
       style={{
         background: idleBg,
         border: `1px solid ${idleBorder}`,
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'rgba(255, 209, 102,0.40)';
-        e.currentTarget.style.background = featured ? 'rgba(255, 209, 102,0.08)' : 'rgba(232,230,221,0.075)';
+        e.currentTarget.style.borderColor = 'rgba(255, 179, 71,0.40)';
+        e.currentTarget.style.background = featured ? 'rgba(255, 179, 71,0.08)' : 'rgba(232,230,221,0.075)';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = idleBorder;
@@ -54,8 +55,8 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         <span
           className="absolute top-[10px] right-[10px] z-10 px-[8px] py-[3px] rounded-md text-[9px] tracking-[0.22em] uppercase font-semibold"
           style={{
-            background: 'rgba(255, 209, 102,0.16)',
-            border: '1px solid rgba(255, 209, 102,0.4)',
+            background: 'rgba(255, 179, 71,0.16)',
+            border: '1px solid rgba(255, 179, 71,0.4)',
             color: 'var(--terracotta)',
           }}
         >

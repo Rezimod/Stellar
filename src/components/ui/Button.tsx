@@ -63,7 +63,7 @@ const variantHover: Record<ButtonVariant, React.CSSProperties> = {
   secondary: { borderColor: 'rgba(255,255,255,0.18)', background: '#1C2235', color: '#fff' },
   ghost:     { color: 'rgba(255,255,255,0.9)', background: 'rgba(255,255,255,0.04)' },
   danger:    { background: 'rgba(251, 113, 133,0.2)' },
-  reward:    { filter: 'brightness(1.08)', boxShadow: '0 0 16px rgba(255, 209, 102,0.3)' },
+  reward:    { filter: 'brightness(1.08)', boxShadow: '0 0 16px rgba(255, 179, 71,0.3)' },
 };
 
 const Spinner = () => (

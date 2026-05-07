@@ -239,12 +239,12 @@ function btn(): React.CSSProperties {
   return {
     padding: '8px 12px',
     borderRadius: 8,
-    background: 'rgba(255, 209, 102,0.18)',
+    background: 'rgba(255, 179, 71,0.18)',
     color: 'var(--text)',
     fontFamily: 'var(--font-mono)',
     fontSize: 11,
     fontWeight: 600,
-    border: '1px solid rgba(255, 209, 102,0.4)',
+    border: '1px solid rgba(255, 179, 71,0.4)',
     cursor: 'pointer',
   };
 }

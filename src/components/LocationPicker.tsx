@@ -225,13 +225,13 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           height: 30px;
           padding: 0 ${compact ? '11px' : '14px'};
           background: rgba(15, 18, 28, 0.55);
-          border: 1px solid rgba(255, 209, 102, 0.32);
+          border: 1px solid rgba(255, 179, 71, 0.32);
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
         }
         .loc-pill:hover {
           background: rgba(15, 18, 28, 0.75);
-          border-color: rgba(255, 209, 102, 0.55);
+          border-color: rgba(255, 179, 71, 0.55);
         }
         .loc-city-btn {
           display: flex;
@@ -248,8 +248,8 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
         }
         .loc-city-btn:hover { background: rgba(255,255,255,0.05); }
         .loc-city-btn.active {
-          background: rgba(255, 209, 102, 0.14);
-          border-color: rgba(255, 209, 102, 0.32);
+          background: rgba(255, 179, 71, 0.14);
+          border-color: rgba(255, 179, 71, 0.32);
         }
         .loc-gps-btn {
           display: flex;
@@ -258,8 +258,8 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           gap: 8px;
           width: 100%;
           padding: 9px 12px;
-          background: rgba(255, 209, 102, 0.10);
-          border: 1px solid rgba(255, 209, 102, 0.32);
+          background: rgba(255, 179, 71, 0.10);
+          border: 1px solid rgba(255, 179, 71, 0.32);
           border-radius: 10px;
           color: var(--terracotta);
           font-size: 12px;
@@ -268,8 +268,8 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           transition: background 0.15s, border-color 0.15s;
         }
         .loc-gps-btn:hover:not(:disabled) {
-          background: rgba(255, 209, 102, 0.20);
-          border-color: rgba(255, 209, 102, 0.55);
+          background: rgba(255, 179, 71, 0.20);
+          border-color: rgba(255, 179, 71, 0.55);
         }
         .loc-gps-btn:disabled { opacity: 0.5; cursor: default; }
         .loc-search-input {
@@ -285,23 +285,23 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
           transition: border-color 0.15s, background 0.15s;
         }
         .loc-search-input:focus {
-          border-color: rgba(255, 209, 102, 0.55);
+          border-color: rgba(255, 179, 71, 0.55);
           background: rgba(255,255,255,0.07);
         }
         .loc-search-input::placeholder { color: rgba(232,230,221,0.45); }
         .loc-city-list::-webkit-scrollbar { width: 4px; }
         .loc-city-list::-webkit-scrollbar-track { background: transparent; }
-        .loc-city-list::-webkit-scrollbar-thumb { background: rgba(255, 209, 102,0.30); border-radius: 2px; }
+        .loc-city-list::-webkit-scrollbar-thumb { background: rgba(255, 179, 71,0.30); border-radius: 2px; }
         @keyframes loc-spin { to { transform: rotate(360deg); } }
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
       `}</style>
 
       <button ref={btnRef} className="loc-pill" onClick={() => setOpen(v => !v)}>
-        <MapPin size={13} color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 209, 102,0.85)'} style={{ flexShrink: 0 }} />
+        <MapPin size={13} color={location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)'} style={{ flexShrink: 0 }} />
         <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.92)', fontWeight: 500, letterSpacing: '0.01em' }}>
           {label}
         </span>
-        <ChevronDown size={11} color="rgba(255, 209, 102,0.7)"
+        <ChevronDown size={11} color="rgba(255, 179, 71,0.7)"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
       </button>
 
@@ -316,7 +316,7 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
             width: PANEL_WIDTH,
             maxWidth: 'calc(100vw - 32px)',
             background: 'linear-gradient(160deg, rgba(18,22,38,0.98) 0%, rgba(12,16,28,0.99) 100%)',
-            border: '1px solid rgba(255, 209, 102,0.32)',
+            border: '1px solid rgba(255, 179, 71,0.32)',
             borderRadius: 14,
             boxShadow: '0 18px 44px rgba(0,0,0,0.65)',
             display: 'flex', flexDirection: 'column',
@@ -385,8 +385,8 @@ export default function LocationPicker({ compact = false }: { compact?: boolean 
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '5px 10px', borderRadius: 999,
                     fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-                    background: active ? 'rgba(255, 209, 102,0.14)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(255, 209, 102,0.45)' : 'rgba(232,230,221,0.12)'}`,
+                    background: active ? 'rgba(255, 179, 71,0.14)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(255, 179, 71,0.45)' : 'rgba(232,230,221,0.12)'}`,
                     color: active ? 'var(--terracotta)' : 'rgba(232,230,221,0.7)',
                     cursor: 'pointer', whiteSpace: 'nowrap',
                     transition: 'background 0.15s, border-color 0.15s, color 0.15s',

@@ -24,7 +24,7 @@ export function MoonGlyph({ phase, size = 24 }: MoonGlyphProps) {
   if (p < 0.03 || p > 0.97) {
     body = <circle cx={r} cy={r} r={r} fill="rgba(255,255,255,0.10)" />;
   } else if (p > 0.47 && p < 0.53) {
-    body = <circle cx={r} cy={r} r={r} fill="var(--terracotta, #FFD166)" />;
+    body = <circle cx={r} cy={r} r={r} fill="var(--terracotta, #FFB347)" />;
   } else {
     const waxing = p < 0.5;
     // 0 at new/full edge, 1 fully illuminated/dark
@@ -32,7 +32,7 @@ export function MoonGlyph({ phase, size = 24 }: MoonGlyphProps) {
     const offset = k * size;
     body = (
       <g clipPath={`url(#${clipId})`}>
-        <circle cx={r} cy={r} r={r} fill="var(--terracotta, #FFD166)" />
+        <circle cx={r} cy={r} r={r} fill="var(--terracotta, #FFB347)" />
         <circle
           cx={waxing ? r - offset : r + offset}
           cy={r}

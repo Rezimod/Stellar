@@ -55,12 +55,12 @@ export default function ForecastGrid() {
   if (error) {
     return (
       <div className="glass-card p-5 flex flex-col items-center gap-3 text-center"
-        style={{ border: '1px solid rgba(255, 209, 102,0.2)' }}>
+        style={{ border: '1px solid rgba(255, 179, 71,0.2)' }}>
         <p className="text-sm" style={{ color: 'var(--color-solar-amber)' }}>{t('forecastError')}</p>
         <button
           onClick={() => load(lat, lng)}
           className="px-4 py-2 rounded-lg text-sm transition-colors"
-          style={{ background: 'rgba(255, 209, 102,0.1)', border: '1px solid rgba(255, 209, 102,0.25)', color: 'var(--terracotta)' }}
+          style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
         >
           {t('retry')}
         </button>

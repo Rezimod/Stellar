@@ -346,12 +346,12 @@ function ProfilePageContent() {
     labelColor: string;
   }> = {
     gold: {
-      background: 'linear-gradient(180deg, rgba(255,209,102,0.10) 0%, rgba(255,209,102,0.03) 100%)',
-      border: '1px solid rgba(255,209,102,0.28)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px -14px rgba(255,209,102,0.45)',
-      valueColor: '#FFD166',
-      sparkColor: '#FFD166',
-      labelColor: 'rgba(255,209,102,0.75)',
+      background: 'linear-gradient(180deg, rgba(255,179,71,0.10) 0%, rgba(255,179,71,0.03) 100%)',
+      border: '1px solid rgba(255,179,71,0.28)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px -14px rgba(255,179,71,0.45)',
+      valueColor: '#FFB347',
+      sparkColor: '#FFB347',
+      labelColor: 'rgba(255,179,71,0.75)',
     },
     dark: {
       background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%)',
@@ -540,8 +540,8 @@ function ProfilePageContent() {
               <div style={{
                 width: `${rankProgress}%`,
                 height: '100%',
-                background: 'linear-gradient(90deg, #FFD166 0%, #FFB347 100%)',
-                boxShadow: '0 0 8px rgba(255,209,102,0.4)',
+                background: 'linear-gradient(90deg, #FFB347 0%, #FFB347 100%)',
+                boxShadow: '0 0 8px rgba(255,179,71,0.4)',
                 transition: 'width 0.4s ease',
               }} />
             </div>
@@ -841,7 +841,7 @@ function ProfilePageContent() {
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             };
             const tiles = [
-              { href: '/settings#notifications', icon: Bell,        color: '#FFD166', label: 'Notifications', value: 'On' },
+              { href: '/settings#notifications', icon: Bell,        color: '#FFB347', label: 'Notifications', value: 'On' },
               { href: '/settings#appearance',    icon: Moon,        color: '#8B5CF6', label: 'Appearance',    value: 'Dark / Day' },
               { href: '/settings#wallet',        icon: Wallet,      color: '#5EEAD4', label: 'Wallet',        value: addrShort ?? '—' },
               { href: '/settings#privacy',       icon: ShieldCheck, color: '#5EEAD4', label: 'Privacy & Data', value: 'Manage' },
@@ -889,13 +889,13 @@ function ProfilePageContent() {
             justifyContent: 'space-between',
             gap: 12,
             padding: '16px 18px',
-            background: 'linear-gradient(180deg, rgba(255,209,102,0.16) 0%, rgba(255,209,102,0.05) 100%)',
-            border: '1px solid rgba(255,209,102,0.32)',
+            background: 'linear-gradient(180deg, rgba(255,179,71,0.16) 0%, rgba(255,179,71,0.05) 100%)',
+            border: '1px solid rgba(255,179,71,0.32)',
             borderRadius: 14,
             cursor: 'pointer',
             textAlign: 'left',
             width: '100%',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 30px -16px rgba(255,209,102,0.5)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 30px -16px rgba(255,179,71,0.5)',
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
             transition: 'transform 120ms ease, box-shadow 200ms ease',
@@ -905,7 +905,7 @@ function ProfilePageContent() {
             <span style={{
               fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.16em',
-              color: '#FFD166',
+              color: '#FFB347',
             }}>
               Redeem at Astroman till
             </span>
@@ -914,11 +914,11 @@ function ProfilePageContent() {
             </span>
           </span>
           <span aria-hidden style={{
-            color: '#FFD166', fontSize: 18,
+            color: '#FFB347', fontSize: 18,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: 28, height: 28, borderRadius: 999,
-            background: 'rgba(255,209,102,0.12)',
-            border: '1px solid rgba(255,209,102,0.28)',
+            background: 'rgba(255,179,71,0.12)',
+            border: '1px solid rgba(255,179,71,0.28)',
           }}>→</span>
         </button>
 

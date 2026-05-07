@@ -250,14 +250,14 @@ function SolarEclipseArt({ large }: { large: boolean }) {
       <defs>
         <radialGradient id="se-sun" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#fffbe1" />
-          <stop offset="50%" stopColor="#ffd166" />
+          <stop offset="50%" stopColor="#FFB347" />
           <stop offset="100%" stopColor="#ff7b1a" />
         </radialGradient>
         <radialGradient id="se-corona" cx="50%" cy="50%" r="65%">
           <stop offset="40%" stopColor="rgba(255,233,180,0)" />
           <stop offset="48%" stopColor="rgba(255,233,180,0.85)" />
-          <stop offset="60%" stopColor="rgba(255,209,102,0.40)" />
-          <stop offset="100%" stopColor="rgba(255,209,102,0)" />
+          <stop offset="60%" stopColor="rgba(255,179,71,0.40)" />
+          <stop offset="100%" stopColor="rgba(255,179,71,0)" />
         </radialGradient>
       </defs>
       <BackgroundDots />

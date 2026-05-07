@@ -56,7 +56,7 @@ export default function WalletStep() {
           ) : (
             <div className="mt-3 flex flex-col gap-4">
               {/* Email / social — primary */}
-              <div className="bg-[var(--surface)] rounded-xl p-4 flex flex-col gap-3" style={{ border: '1px solid rgba(255, 209, 102,0.2)' }}>
+              <div className="bg-[var(--surface)] rounded-xl p-4 flex flex-col gap-3" style={{ border: '1px solid rgba(255, 179, 71,0.2)' }}>
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-2">
                     <Mail size={16} className="text-[var(--terracotta)]" />

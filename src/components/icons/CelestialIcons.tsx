@@ -405,7 +405,7 @@ export function TelescopeIcon({ size = 48, className, animate }: CelestialIconPr
       {/* wide outer ring */}
       <circle cx="36" cy="15" r="5.5" fill={`url(#tb${id})`} stroke={`url(#tg${id})`} strokeWidth="1.4"/>
       {/* lens glass inner */}
-      <circle cx="36" cy="15" r="3.8" fill="rgba(153,69,255,0.18)" stroke="rgba(255, 209, 102,0.5)" strokeWidth="0.8"/>
+      <circle cx="36" cy="15" r="3.8" fill="rgba(153,69,255,0.18)" stroke="rgba(255, 179, 71,0.5)" strokeWidth="0.8"/>
       {/* glass reflex */}
       <circle cx="36" cy="15" r="2.2" fill="rgba(94, 234, 212,0.12)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5"/>
       <circle cx="34.8" cy="13.8" r="0.8" fill="rgba(255,255,255,0.35)"/>
@@ -440,7 +440,7 @@ export function StarTokenIcon({ size = 12, className }: { size?: number; classNa
   const id = uid(useId());
   return (
     <svg width={size} height={size} viewBox="0 0 12 12" fill="none" className={className}
-      style={{ display: 'inline-block', verticalAlign: 'middle', filter: 'drop-shadow(0 0 3px rgba(255, 209, 102,0.6)) drop-shadow(0 0 6px rgba(153,69,255,0.25))' }}>
+      style={{ display: 'inline-block', verticalAlign: 'middle', filter: 'drop-shadow(0 0 3px rgba(255, 179, 71,0.6)) drop-shadow(0 0 6px rgba(153,69,255,0.25))' }}>
       <defs>
         <linearGradient id={`stg${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%"   stopColor="var(--terracotta)"/>
@@ -458,8 +458,8 @@ export function DifficultyDots({ level }: { level: 1 | 2 | 3 | 4 }) {
   const count = level <= 2 ? level : 3;
   const color =
     level === 4 ? 'rgba(251, 113, 133,0.85)'
-    : level === 3 ? 'rgba(255, 209, 102,0.8)'
-    : 'rgba(255, 209, 102,0.7)';
+    : level === 3 ? 'rgba(255, 179, 71,0.8)'
+    : 'rgba(255, 179, 71,0.7)';
   const glow = level === 4 ? '0 0 4px rgba(251, 113, 133,0.6)' : 'none';
   return (
     <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>

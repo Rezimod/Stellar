@@ -116,10 +116,10 @@ export default function Nav() {
         .hub-btn { width: 32px; height: 32px; display: none; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: rgba(255,255,255,0.7); transition: all 0.15s ease; text-decoration: none; }
         @media (min-width: 768px) { .hub-btn { display: flex; } }
         .hub-btn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.95); }
-        .hub-btn[data-active="true"] { background: rgba(255,209,102,0.10); border-color: rgba(255,209,102,0.25); color: #FFD166; }
+        .hub-btn[data-active="true"] { background: rgba(255,179,71,0.10); border-color: rgba(255,179,71,0.25); color: #FFB347; }
         .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.18s ease, filter 0.18s ease; }
         .avatar-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
-        .avatar-btn[data-active="true"] { box-shadow: 0 0 0 1.5px rgba(255,209,102,0.55), 0 4px 12px -4px rgba(255,209,102,0.30) !important; }
+        .avatar-btn[data-active="true"] { box-shadow: 0 0 0 1.5px rgba(255,179,71,0.55), 0 4px 12px -4px rgba(255,179,71,0.30) !important; }
         .dd-link { transition: background 0.15s ease; text-decoration: none; }
         .dd-link:hover { background: rgba(255,255,255,0.04); }
       `}</style>
@@ -145,7 +145,7 @@ export default function Nav() {
                 <LayoutGrid size={17} strokeWidth={1.9} />
               </Link>
               <Link href="/" title="Stellar" className="flex items-center">
-                <div style={{ filter: 'drop-shadow(0 0 18px rgba(255, 209, 102,0.6)) drop-shadow(0 0 36px rgba(255, 209, 102,0.25))' }}>
+                <div style={{ filter: 'drop-shadow(0 0 18px rgba(255, 179, 71,0.6)) drop-shadow(0 0 36px rgba(255, 179, 71,0.25))' }}>
                   <AstroLogo heightClass="h-8" size={30} />
                 </div>
               </Link>
@@ -161,12 +161,12 @@ export default function Nav() {
                     href={tab.href}
                     className={`nav-tab px-3.5 py-1.5 text-xs font-semibold ${isActive ? 'nav-tab-active' : ''}`}
                     style={isActive ? {
-                      background: 'linear-gradient(135deg, rgba(255, 209, 102,0.22) 0%, rgba(255, 209, 102,0.12) 100%)',
-                      border: '1px solid rgba(255, 209, 102,0.35)',
-                      color: '#FFD166',
+                      background: 'linear-gradient(135deg, rgba(255, 179, 71,0.22) 0%, rgba(255, 179, 71,0.12) 100%)',
+                      border: '1px solid rgba(255, 179, 71,0.35)',
+                      color: '#FFB347',
                       textDecoration: 'none',
-                      boxShadow: '0 0 16px rgba(255, 209, 102,0.18), inset 0 1px 0 rgba(255,255,255,0.08)',
-                      textShadow: '0 0 10px rgba(255, 209, 102,0.45)',
+                      boxShadow: '0 0 16px rgba(255, 179, 71,0.18), inset 0 1px 0 rgba(255,255,255,0.08)',
+                      textShadow: '0 0 10px rgba(255, 179, 71,0.45)',
                     } : {
                       color: 'rgba(255,255,255,0.6)',
                       border: '1px solid transparent',

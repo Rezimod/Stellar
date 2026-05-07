@@ -182,7 +182,7 @@ export const DSO = [
     desc: { en: 'One of the finest globular clusters in the northern sky — a sphere of ~300,000 stars packed together. In 1974 scientists sent the Arecibo radio message toward it.', ka: 'ჩრდილოეთ ნახევარსფეროში ერთ-ერთი საუკეთესო გლობულარული გროვა — ~300,000 ვარსკვლავი.' },
     scope: { en: 'Small telescope shows a fuzzy ball. 150mm+ resolves individual stars at the edges. Best in summer.', ka: 'პატარა ტელესკოპი ბუნდოვან ბურთს აჩვენებს. 150 მმ+ ინდივიდუალურ ვარსკვლავებს გამოყოფს.' },
     kidsLine: { en: 'A ball of 300,000 stars all packed together — like a giant cosmic city!', ka: '300,000 ვარსკვლავი ერთად — გიგანტური კოსმოსური ქალაქივით!' },
-    color: '#ffd166',
+    color: '#FFB347',
   },
   {
     id: 'm57', emoji: '💍', img: '/images/dso/m57.jpg',
@@ -292,7 +292,7 @@ export const CONSTELLATIONS = [
     stars: 9,
     desc: { en: 'The Swan — forms a clear cross (Northern Cross) flying along the Milky Way.', ka: 'გედი — ნათელ ჯვარს ქმნის (ჩრდილოეთის ჯვარი) ირმის ნახტომში.' },
     highlight: { en: 'Deneb marks the tail — one of the most luminous stars visible to the naked eye', ka: 'დენები კუდს ნიშნავს — ერთ-ერთი ყველაზე ნათელი ვარსკვლავი' },
-    color: '#FFD166',
+    color: '#FFB347',
   },
   {
     id: 'leo',

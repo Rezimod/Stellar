@@ -90,7 +90,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
       className="relative grid grid-cols-1 md:grid-cols-[1.15fr_1fr] rounded-[20px] overflow-hidden mb-4"
       style={{
         border: '1px solid rgba(255,255,255,0.08)',
-        background: 'linear-gradient(135deg, rgba(255, 209, 102,0.08), rgba(94, 234, 212,0.04) 60%, transparent)',
+        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.08), rgba(94, 234, 212,0.04) 60%, transparent)',
       }}
     >
       <div className="relative px-6 py-7 sm:px-8 sm:py-8 min-h-[280px] sm:min-h-[340px] flex flex-col justify-between overflow-hidden">
@@ -105,7 +105,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
               fontFamily: 'var(--font-mono)',
               letterSpacing: '0.2em',
               color: 'var(--stars)',
-              border: '1px solid rgba(255, 209, 102,0.35)',
+              border: '1px solid rgba(255, 179, 71,0.35)',
             }}
           >
             PRIME TARGET
@@ -175,7 +175,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
               +{heroMission.stars}
             </span>
             <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255, 209, 102,0.7)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255, 179, 71,0.7)' }}>
                 STARS EARNED
               </div>
               <div className="mt-0.5" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.35)' }}>

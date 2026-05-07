@@ -28,7 +28,7 @@ export default function ObserveCapturePage() {
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 209, 102,0.12)', border: '1px solid rgba(255, 209, 102,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
             Back to missions
           </Link>

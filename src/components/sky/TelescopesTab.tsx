@@ -355,7 +355,7 @@ function TelescopeLadder({ locale }: { locale: Locale }) {
 
       <div
         className="rounded-xl p-3 flex items-start gap-2 mt-1"
-        style={{ background: 'rgba(255, 209, 102,0.04)', border: '1px solid rgba(255, 209, 102,0.12)' }}
+        style={{ background: 'rgba(255, 179, 71,0.04)', border: '1px solid rgba(255, 179, 71,0.12)' }}
       >
         <Sparkles size={12} style={{ color: 'var(--stars)', flexShrink: 0, marginTop: 2 }} />
         <p className="text-text-muted text-[11px] leading-relaxed">

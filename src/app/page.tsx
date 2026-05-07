@@ -4,7 +4,7 @@ import HeroSkyPanel from '@/components/home/HeroSkyPanelLazy';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[12px] md:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#FFD166] mb-5">
+    <div className="text-[12px] md:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#FFB347] mb-5">
       {children}
     </div>
   );
@@ -61,7 +61,7 @@ function SectionLink({ href, children }: { href: string; children: React.ReactNo
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-[#FFD166] font-mono text-[11.5px] md:text-[12.5px] hover:gap-3 transition-all no-underline"
+      className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[11.5px] md:text-[12.5px] hover:gap-3 transition-all no-underline"
     >
       {children}
     </Link>
@@ -167,7 +167,7 @@ function PhoneTopBar({ size }: { size: IPhoneSize }) {
             border: '1px solid rgba(255,255,255,0.10)',
           }}
         >
-          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#FFD166">
+          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#FFB347">
             <path d="M6 1l1.5 3.5L11 5l-2.5 2L9 10.5 6 8.5 3 10.5l.5-3.5L1 5l3.5-.5z" />
           </svg>
         </span>
@@ -239,7 +239,7 @@ function PhoneBottomNav({ size, active }: { size: IPhoneSize; active: AppTab }) 
     >
       {tabs.map((t) => {
         const isActive = t === active;
-        const color = isActive ? '#FFD166' : 'rgba(255,255,255,0.42)';
+        const color = isActive ? '#FFB347' : 'rgba(255,255,255,0.42)';
         return (
           <div
             key={t}
@@ -257,7 +257,7 @@ function PhoneBottomNav({ size, active }: { size: IPhoneSize; active: AppTab }) 
                   width: cfg.dashW,
                   height: cfg.dashH,
                   borderRadius: cfg.dashH,
-                  background: '#FFD166',
+                  background: '#FFB347',
                 }}
               />
             )}
@@ -454,13 +454,13 @@ function MissionsScreen() {
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[10px] font-mono uppercase tracking-wider">Missions</span>
-        <span className="text-[#FFD166] text-[9.5px] font-mono tabular-nums">2 / 7</span>
+        <span className="text-[#FFB347] text-[9.5px] font-mono tabular-nums">2 / 7</span>
       </div>
       <div className="mt-1 text-white text-[14px] font-bold leading-tight">Seven targets.</div>
       <div className="text-white/50 text-[10px]">Finish all seven → free telescope</div>
 
       <div className="mt-2 h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
-        <div className="h-full rounded-full bg-[#FFD166]" style={{ width: '28%' }} />
+        <div className="h-full rounded-full bg-[#FFB347]" style={{ width: '28%' }} />
       </div>
 
       <div className="mt-2.5 grid grid-cols-2 gap-1.5">
@@ -483,7 +483,7 @@ function MissionsScreen() {
             </div>
             <div className="px-1.5 py-1 flex items-center justify-between">
               <span className="text-white text-[9.5px] font-medium leading-none">{t.name}</span>
-              <span className="text-[#FFD166] text-[8.5px] font-mono tabular-nums">+{t.stars}</span>
+              <span className="text-[#FFB347] text-[8.5px] font-mono tabular-nums">+{t.stars}</span>
             </div>
           </div>
         ))}
@@ -537,7 +537,7 @@ function LearnScreen() {
           <div className="text-white/55 text-[8px] font-mono uppercase tracking-wider">Quiz</div>
           <div className="text-white text-[10px] leading-tight">Constellations · 10 Q</div>
         </div>
-        <span className="text-[#FFD166] font-mono text-[9.5px] tabular-nums">+100 ★</span>
+        <span className="text-[#FFB347] font-mono text-[9.5px] tabular-nums">+100 ★</span>
       </div>
     </div>
   );
@@ -581,9 +581,9 @@ function SkyMapScreen() {
             <circle key={i} cx={cx} cy={cy} r={r} fill="white" opacity={0.4 + (i % 3) * 0.15} />
           ))}
 
-          <circle cx="38" cy="42" r="3.2" fill="none" stroke="#FFD166" strokeWidth="0.5" opacity="0.6" />
-          <circle cx="38" cy="42" r="1.8" fill="#FFD166" />
-          <text x="38" y="36" fill="#FFD166" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
+          <circle cx="38" cy="42" r="3.2" fill="none" stroke="#FFB347" strokeWidth="0.5" opacity="0.6" />
+          <circle cx="38" cy="42" r="1.8" fill="#FFB347" />
+          <text x="38" y="36" fill="#FFB347" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
 
           <circle cx="65" cy="55" r="1.4" fill="#B07FE8" />
           <text x="65" y="50" fill="#B07FE8" fontSize="2.6" textAnchor="middle" fontFamily="monospace">SAT</text>
@@ -601,7 +601,7 @@ function SkyARScreen() {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">AR</span>
-        <span className="text-[#FFD166] text-[8px] font-mono">SE 142°</span>
+        <span className="text-[#FFB347] text-[8px] font-mono">SE 142°</span>
       </div>
 
       <div className="mt-2 relative flex-1 rounded-[10px] overflow-hidden bg-gradient-to-b from-[#0a1430] via-[#0f1a40] to-[#1a1030]">
@@ -630,14 +630,14 @@ function SkyARScreen() {
 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            <div className="w-[42px] h-[42px] rounded-full border border-[#FFD166]/70" />
-            <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#FFD166] shadow-[0_0_10px_#FFD166]" />
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFD166]/70" />
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFD166]/70" />
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFD166]/70" />
-            <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFD166]/70" />
+            <div className="w-[42px] h-[42px] rounded-full border border-[#FFB347]/70" />
+            <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#FFB347] shadow-[0_0_10px_#FFB347]" />
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFB347]/70" />
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFB347]/70" />
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
+            <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
             <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
-              <div className="text-[#FFD166] text-[9px] font-bold leading-none">Jupiter</div>
+              <div className="text-[#FFB347] text-[9px] font-bold leading-none">Jupiter</div>
               <div className="text-white/55 text-[7px] font-mono mt-0.5">alt 38° · mag −2.1</div>
             </div>
           </div>
@@ -651,10 +651,10 @@ function SkyForecastScreen() {
   const days = [
     { d: 'M', label: 'Go',    color: '#5EEAD4', pct: 88 },
     { d: 'T', label: 'Go',    color: '#5EEAD4', pct: 82 },
-    { d: 'W', label: 'Maybe', color: '#FFD166', pct: 60 },
+    { d: 'W', label: 'Maybe', color: '#FFB347', pct: 60 },
     { d: 'T', label: 'Skip',  color: '#94A3B8', pct: 28 },
     { d: 'F', label: 'Go',    color: '#5EEAD4', pct: 90 },
-    { d: 'S', label: 'Maybe', color: '#FFD166', pct: 55 },
+    { d: 'S', label: 'Maybe', color: '#FFB347', pct: 55 },
     { d: 'S', label: 'Go',    color: '#5EEAD4', pct: 84 },
   ];
   return (
@@ -733,7 +733,7 @@ export default function HomePage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 70% 50%, rgba(255, 209, 102, 0.10) 0%, transparent 50%), radial-gradient(circle at 30% 60%, rgba(176, 127, 232, 0.08) 0%, transparent 50%)',
+              'radial-gradient(circle at 70% 50%, rgba(255, 179, 71, 0.10) 0%, transparent 50%), radial-gradient(circle at 30% 60%, rgba(176, 127, 232, 0.08) 0%, transparent 50%)',
           }}
         />
         <svg
@@ -1105,7 +1105,7 @@ export default function HomePage() {
             <div className="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 md:px-6 py-3 md:py-4 border-b border-white/[0.07] bg-white/[0.02]">
               <div />
               <div className="text-[#6B7385] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">SkySafari · Star Walk</div>
-              <div className="text-[#FFD166] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">Stellar</div>
+              <div className="text-[#FFB347] text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-center">Stellar</div>
             </div>
             {[
               { f: 'Sky chart',                them: true,  us: true  },

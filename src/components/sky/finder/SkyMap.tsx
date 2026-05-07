@@ -6,7 +6,7 @@ import { angularSeparation, headingDelta, type HeadingStatus } from '@/lib/sky/u
 import type { ObjectId, SkyObject } from './types';
 
 const PLANET_COLORS: Record<string, string> = {
-  sun:     '#ffd166',
+  sun:     '#FFB347',
   moon:    '#F8F4EC',
   mercury: '#d6cdb1',
   venus:   '#f7e7a8',
@@ -20,7 +20,7 @@ const PLANET_COLORS: Record<string, string> = {
 function starColor(mag: number): string {
   if (mag <= -1) return '#5EEAD4';
   if (mag <= 0)  return '#F8F4EC';
-  if (mag <= 1)  return '#FFD166';
+  if (mag <= 1)  return '#FFB347';
   return '#e8d8b6';
 }
 
@@ -621,7 +621,7 @@ export function SkyMap({
             {projectedStars.map((s) => {
               const isActive = activeConstellation && s.constellation === activeConstellation;
               const r = s.mag <= 1 ? 1.9 : s.mag <= 2 ? 1.55 : 1.2;
-              const tint = STAR_TINT[s.id] ?? (isActive ? '#FFD166' : starColor(s.mag));
+              const tint = STAR_TINT[s.id] ?? (isActive ? '#FFB347' : starColor(s.mag));
               return (
                 <circle
                   key={`cstar-${s.id}`}

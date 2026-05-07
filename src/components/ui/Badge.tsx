@@ -21,14 +21,14 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
     border: '1px solid rgba(255,255,255,0.08)',
   },
   teal: {
-    background: 'rgba(255, 209, 102,0.1)',
+    background: 'rgba(255, 179, 71,0.1)',
     color: 'var(--terracotta)',
-    border: '1px solid rgba(255, 209, 102,0.2)',
+    border: '1px solid rgba(255, 179, 71,0.2)',
   },
   gold: {
-    background: 'rgba(255, 209, 102,0.1)',
+    background: 'rgba(255, 179, 71,0.1)',
     color: 'var(--stars)',
-    border: '1px solid rgba(255, 209, 102,0.2)',
+    border: '1px solid rgba(255, 179, 71,0.2)',
   },
   green: {
     background: 'rgba(94, 234, 212,0.1)',
@@ -36,9 +36,9 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
     border: '1px solid rgba(94, 234, 212,0.2)',
   },
   amber: {
-    background: 'rgba(255, 209, 102,0.1)',
+    background: 'rgba(255, 179, 71,0.1)',
     color: 'var(--terracotta)',
-    border: '1px solid rgba(255, 209, 102,0.2)',
+    border: '1px solid rgba(255, 179, 71,0.2)',
   },
   red: {
     background: 'rgba(251, 113, 133,0.1)',
@@ -46,9 +46,9 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
     border: '1px solid rgba(251, 113, 133,0.2)',
   },
   oracle: {
-    background: 'rgba(255, 209, 102,0.1)',
+    background: 'rgba(255, 179, 71,0.1)',
     color: 'var(--terracotta)',
-    border: '1px solid rgba(255, 209, 102,0.2)',
+    border: '1px solid rgba(255, 179, 71,0.2)',
   },
 };
 

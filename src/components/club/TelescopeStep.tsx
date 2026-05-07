@@ -49,17 +49,17 @@ export default function TelescopeStep() {
             <div className="flex flex-col gap-3">
               <label className="text-xs text-[var(--text-secondary)] -mb-1.5">Telescope Brand</label>
               <select value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
-                className="bg-[var(--surface)] border border-[rgba(255, 209, 102, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-[var(--terracotta)]">
+                className="bg-[var(--surface)] border border-[rgba(255, 179, 71, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-[var(--terracotta)]">
                 {TELESCOPE_BRANDS.map(b => <option key={b}>{b}</option>)}
               </select>
               <label className="text-xs text-[var(--text-secondary)] -mb-1.5">Model</label>
               <input value={form.model} onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
                 placeholder="Model (e.g. NexStar 8SE)"
-                className="bg-[var(--surface)] border border-[rgba(255, 209, 102, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]" />
+                className="bg-[var(--surface)] border border-[rgba(255, 179, 71, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]" />
               <label className="text-xs text-[var(--text-secondary)] -mb-1.5">Aperture</label>
               <input value={form.aperture} onChange={e => setForm(f => ({ ...f, aperture: e.target.value }))}
                 placeholder="Aperture (e.g. 203mm)"
-                className="bg-[var(--surface)] border border-[rgba(255, 209, 102, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]" />
+                className="bg-[var(--surface)] border border-[rgba(255, 179, 71, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]" />
               <Button variant="cyan" onClick={handleSave} disabled={!form.model || !form.aperture || saving} className="w-full">
                 {saving ? 'Saving...' : 'Register Telescope 🔭'}
               </Button>

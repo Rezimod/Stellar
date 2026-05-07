@@ -229,7 +229,7 @@ export default function SettingsPage() {
         {/* Email */}
         <Row
           icon={<Mail size={15} />}
-          iconBg="rgba(255, 209, 102,0.08)"
+          iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--terracotta)"
           label={email ? email : 'Add Email'}
           sublabel={email ? 'Primary email' : 'Link an email address'}
@@ -256,7 +256,7 @@ export default function SettingsPage() {
         {hasGoogle && (
           <Row
             icon={<Chrome size={15} />}
-            iconBg="rgba(255, 209, 102,0.08)"
+            iconBg="rgba(255, 179, 71,0.08)"
             iconColor="var(--stars)"
             label="Google Account"
             sublabel="Connected"
@@ -270,7 +270,7 @@ export default function SettingsPage() {
         <Section title="Wallet">
           <Row
             icon={<Shield size={15} />}
-            iconBg="rgba(255, 209, 102,0.08)"
+            iconBg="rgba(255, 179, 71,0.08)"
             iconColor="var(--terracotta)"
             label={`${address.slice(0, 8)}...${address.slice(-6)}`}
             sublabel="Embedded Solana wallet"
@@ -347,8 +347,8 @@ export default function SettingsPage() {
               <div style={{
                 height: '100%', borderRadius: 999,
                 width: `${Math.max(rank.progressPct, 4)}%`,
-                background: 'linear-gradient(90deg, #FFD166 0%, #FFB347 100%)',
-                boxShadow: '0 0 8px rgba(255,209,102,0.4)',
+                background: 'linear-gradient(90deg, #FFB347 0%, #FFB347 100%)',
+                boxShadow: '0 0 8px rgba(255,179,71,0.4)',
                 transition: 'width 0.7s',
               }} />
             </div>
@@ -373,7 +373,7 @@ export default function SettingsPage() {
       <Section title="Appearance">
         <Row
           icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
-          iconBg={theme === 'dark' ? 'rgba(255, 209, 102,0.08)' : 'rgba(255, 209, 102,0.1)'}
+          iconBg={theme === 'dark' ? 'rgba(255, 179, 71,0.08)' : 'rgba(255, 179, 71,0.1)'}
           iconColor={theme === 'dark' ? 'var(--terracotta)' : 'var(--terracotta)'}
           label={theme === 'dark' ? 'Dark Mode' : 'Day Mode'}
           sublabel={theme === 'dark' ? 'Deep space theme' : 'Bright daytime theme'}
@@ -400,13 +400,13 @@ export default function SettingsPage() {
                   borderRadius: 14,
                   cursor: 'pointer',
                   background: active
-                    ? 'linear-gradient(180deg, rgba(255,209,102,0.16) 0%, rgba(255,209,102,0.04) 100%)'
+                    ? 'linear-gradient(180deg, rgba(255,179,71,0.16) 0%, rgba(255,179,71,0.04) 100%)'
                     : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? 'rgba(255,209,102,0.45)' : 'rgba(255,255,255,0.08)'}`,
+                  border: `1px solid ${active ? 'rgba(255,179,71,0.45)' : 'rgba(255,255,255,0.08)'}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                   transition: 'all 0.2s',
                   boxShadow: active
-                    ? 'inset 0 1px 0 rgba(255,255,255,0.10), 0 8px 24px -14px rgba(255,209,102,0.45)'
+                    ? 'inset 0 1px 0 rgba(255,255,255,0.10), 0 8px 24px -14px rgba(255,179,71,0.45)'
                     : 'inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}
               >
@@ -428,7 +428,7 @@ export default function SettingsPage() {
       <Section title="Notifications">
         <Row
           icon={notificationsOn ? <Bell size={15} /> : <BellOff size={15} />}
-          iconBg="rgba(255, 209, 102,0.08)"
+          iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--stars)"
           label="Sky Alerts"
           sublabel="Notify when conditions are perfect"

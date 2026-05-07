@@ -17,7 +17,7 @@ export default function ClosingCtaSection() {
   const [authOpen, setAuthOpen] = useState(false);
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-24 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255, 209, 102,0.08)_0%,transparent_70%)]">
+    <section className="relative overflow-hidden py-20 md:py-24 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255, 179, 71,0.08)_0%,transparent_70%)]">
       {STARS.map((s, i) => (
         <span
           key={i}

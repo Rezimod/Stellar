@@ -120,7 +120,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
           {/* Deep sky targets */}
           {visibleDeepSky.map((d) => {
             const isFeatured = featuredTarget === d.name;
-            const color = isFeatured ? '#FFD166' : '#5EEAD4';
+            const color = isFeatured ? '#FFB347' : '#5EEAD4';
             return (
               <g key={d.name}>
                 {isFeatured && (
@@ -199,14 +199,14 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
                     cy={p.y}
                     r={radius}
                     fill="none"
-                    stroke="#FFD166"
+                    stroke="#FFB347"
                     strokeWidth="1.5"
                   />
                 )}
                 <text
                   x={p.x}
                   y={p.y - radius - 6}
-                  fill={isFeatured ? '#FFD166' : '#E8ECF1'}
+                  fill={isFeatured ? '#FFB347' : '#E8ECF1'}
                   fontFamily="Inter"
                   fontSize={isFeatured ? '11' : '10'}
                   fontWeight="500"
@@ -217,7 +217,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
                 <text
                   x={p.x}
                   y={p.y + radius + 14}
-                  fill={isFeatured ? '#FFD166' : '#8A93A6'}
+                  fill={isFeatured ? '#FFB347' : '#8A93A6'}
                   fontFamily="JetBrains Mono"
                   fontSize="9"
                   textAnchor="middle"
@@ -246,7 +246,7 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
 
       <div className="compass-legend">
         <div className="legend-item">
-          <span className="legend-dot" style={{ background: '#FFD166' }} />
+          <span className="legend-dot" style={{ background: '#FFB347' }} />
           Featured target
         </div>
         <div className="legend-item">

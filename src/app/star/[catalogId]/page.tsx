@@ -295,7 +295,7 @@ export default async function StarProofPage({
             style={{
               fontSize: 12,
               color: 'var(--terracotta)',
-              border: '1px solid rgba(255, 209, 102,0.25)',
+              border: '1px solid rgba(255, 179, 71,0.25)',
               borderRadius: 8,
               padding: '7px 14px',
               textDecoration: 'none',

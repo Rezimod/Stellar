@@ -67,7 +67,7 @@ export default function SolanaPayModal({
     <div className="fixed inset-0 bg-canvas/70 backdrop-blur-sm z-[70] flex items-center justify-center px-4"
       onClick={onClose}>
       <div className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
-        style={{ background: '#0F1827', border: '1px solid rgba(255, 209, 102,0.15)' }}
+        style={{ background: '#0F1827', border: '1px solid rgba(255, 179, 71,0.15)' }}
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-center justify-between">

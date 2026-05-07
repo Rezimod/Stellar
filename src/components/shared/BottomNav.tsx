@@ -66,7 +66,7 @@ export default function BottomNav() {
                   justifyContent: 'center',
                   borderRadius: 12,
                   background: isActive
-                    ? 'radial-gradient(ellipse at 50% 55%, rgba(255, 209, 102,0.22) 0%, rgba(255, 209, 102,0.05) 55%, transparent 75%)'
+                    ? 'radial-gradient(ellipse at 50% 55%, rgba(255, 179, 71,0.22) 0%, rgba(255, 179, 71,0.05) 55%, transparent 75%)'
                     : 'transparent',
                   transition: 'background 0.2s ease',
                 }}
@@ -83,7 +83,7 @@ export default function BottomNav() {
                       height: 2,
                       borderRadius: 2,
                       background: 'var(--stl-gold)',
-                      boxShadow: '0 0 10px rgba(255, 209, 102,0.8)',
+                      boxShadow: '0 0 10px rgba(255, 179, 71,0.8)',
                     }}
                   />
                 )}
@@ -92,7 +92,7 @@ export default function BottomNav() {
                   strokeWidth={isActive ? 2.2 : 1.7}
                   color={isActive ? 'var(--stl-gold)' : 'rgba(255,255,255,0.42)'}
                   style={{
-                    filter: isActive ? 'drop-shadow(0 0 6px rgba(255, 209, 102,0.45))' : 'none',
+                    filter: isActive ? 'drop-shadow(0 0 6px rgba(255, 179, 71,0.45))' : 'none',
                     transition: 'color 0.2s ease, filter 0.2s ease',
                   }}
                 />

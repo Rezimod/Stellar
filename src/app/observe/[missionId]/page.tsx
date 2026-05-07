@@ -35,7 +35,7 @@ export default function ObserveBriefPage() {
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 209, 102,0.12)', border: '1px solid rgba(255, 209, 102,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
             Back to missions
           </Link>
@@ -55,8 +55,8 @@ export default function ObserveBriefPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background: [
-              'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(255, 209, 102,0.10) 0%, transparent 60%)',
-              'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(255, 209, 102,0.10) 0%, transparent 65%)',
+              'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(255, 179, 71,0.10) 0%, transparent 60%)',
+              'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(255, 179, 71,0.10) 0%, transparent 65%)',
               'radial-gradient(ellipse 320px 240px at 80% 75%, rgba(56,155,240,0.08) 0%, transparent 65%)',
             ].join(', '),
           }}
@@ -75,7 +75,7 @@ export default function ObserveBriefPage() {
             aria-hidden
             className="absolute inset-0 rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(255, 209, 102,0.28) 0%, rgba(255, 209, 102,0.06) 45%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(255, 179, 71,0.28) 0%, rgba(255, 179, 71,0.06) 45%, transparent 70%)',
               filter: 'blur(18px)',
               transform: 'scale(1.55)',
             }}
@@ -86,7 +86,7 @@ export default function ObserveBriefPage() {
             src={getMissionImage(mission.id)}
             alt={mission.name}
             className="relative w-full h-full rounded-full object-cover stl-chart-in"
-            style={{ boxShadow: '0 0 60px rgba(255, 209, 102,0.22), inset 0 0 0 1px rgba(255, 209, 102,0.15)' }}
+            style={{ boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
           />
         </div>
 

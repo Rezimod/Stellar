@@ -143,7 +143,7 @@ export default function ClubPage() {
           {starsEarned > 0 ? (
             <div
               className="mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
-              style={{ background: 'rgba(255, 209, 102,0.08)', border: '1px solid rgba(255, 209, 102,0.2)' }}
+              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
             >
               <span className="text-[var(--terracotta)] text-xl">✦</span>
               <div>

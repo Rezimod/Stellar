@@ -19,7 +19,7 @@ export default function RewardIcon({ emoji, size = 20 }: { emoji: string; size?:
   const color = entry?.color || 'text-[var(--terracotta)]';
 
   return (
-    <div className="w-9 h-9 rounded-full bg-[var(--surface)] border border-[rgba(255, 209, 102,0.1)] flex items-center justify-center flex-shrink-0">
+    <div className="w-9 h-9 rounded-full bg-[var(--surface)] border border-[rgba(255, 179, 71,0.1)] flex items-center justify-center flex-shrink-0">
       <IconComp size={size} className={color} />
     </div>
   );

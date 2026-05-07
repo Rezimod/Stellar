@@ -41,8 +41,8 @@ export default function StatsBar() {
       className="animate-page-enter"
       style={{
         borderRadius: 10,
-        background: 'linear-gradient(135deg, rgba(255, 209, 102,0.04) 0%, rgba(15,20,40,0.55) 60%, transparent 100%)',
-        border: '1px solid rgba(255, 209, 102,0.14)',
+        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.04) 0%, rgba(15,20,40,0.55) 60%, transparent 100%)',
+        border: '1px solid rgba(255, 179, 71,0.14)',
         padding: '10px 12px',
         marginBottom: 14,
       }}
@@ -113,7 +113,7 @@ export default function StatsBar() {
             background: allDone
               ? 'linear-gradient(to right, var(--seafoam), #22c55e)'
               : 'linear-gradient(to right, var(--terracotta), var(--terracotta))',
-            boxShadow: `0 0 8px ${allDone ? 'rgba(94, 234, 212,0.4)' : 'rgba(255, 209, 102,0.5)'}`,
+            boxShadow: `0 0 8px ${allDone ? 'rgba(94, 234, 212,0.4)' : 'rgba(255, 179, 71,0.5)'}`,
           }}
         />
       </div>

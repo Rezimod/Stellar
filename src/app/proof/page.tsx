@@ -33,7 +33,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
   const isRealTx = !isPending && mission.method === 'onchain' && !!mission.txId && mission.txId.length >= 40;
 
   return (
-    <div className={`glass-card rounded-xl overflow-hidden flex flex-col ${isPending ? '!border-terracotta' : ''}`} style={isPending ? { borderColor: 'rgba(255, 209, 102,0.5)' } : {}}>
+    <div className={`glass-card rounded-xl overflow-hidden flex flex-col ${isPending ? '!border-terracotta' : ''}`} style={isPending ? { borderColor: 'rgba(255, 179, 71,0.5)' } : {}}>
       <img src={isSafePhoto(mission.photo) ? mission.photo : '/images/placeholder-nft.svg'} alt={mission.name} className="w-full aspect-[4/3] object-cover" style={{ background: 'var(--canvas)' }} />
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
                 text: `I observed ${mission.name} and earned +${displayStars} stars on Solana ✦`,
                 url: window.location.href,
               }).catch(() => {})}
-              className="text-xs px-2 py-1.5 border border-[rgba(255, 209, 102,0.12)] hover:border-[var(--terracotta)] text-text-muted hover:text-[var(--terracotta)] rounded transition-all flex items-center justify-center gap-1"
+              className="text-xs px-2 py-1.5 border border-[rgba(255, 179, 71,0.12)] hover:border-[var(--terracotta)] text-text-muted hover:text-[var(--terracotta)] rounded transition-all flex items-center justify-center gap-1"
               title="Share observation"
             >
               ↗ Share
@@ -82,7 +82,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               onClick={() => openExplorer(mission)}
               title="View on Solana Explorer"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(255, 209, 102,0.12)] hover:border-[var(--terracotta)] text-text-muted hover:text-[var(--terracotta)] btn-glow-cyan rounded transition-all flex items-center justify-center gap-1"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(255, 179, 71,0.12)] hover:border-[var(--terracotta)] text-text-muted hover:text-[var(--terracotta)] btn-glow-cyan rounded transition-all flex items-center justify-center gap-1"
             >
               <ExternalLink size={12} /> Explorer →
             </button>
@@ -90,7 +90,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               disabled
               title="Transaction is being confirmed on Solana"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(255, 209, 102,0.12)] text-text-muted opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(255, 179, 71,0.12)] text-text-muted opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
             >
               <ExternalLink size={12} /> Pending
             </button>
@@ -98,7 +98,7 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               disabled
               title="Observation saved locally"
-              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(255, 209, 102,0.12)] text-text-muted opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
+              className="flex-1 text-center text-xs px-2 py-1.5 border border-[rgba(255, 179, 71,0.12)] text-text-muted opacity-50 cursor-not-allowed rounded transition-all flex items-center justify-center gap-1"
             >
               <ExternalLink size={12} /> Local
             </button>
@@ -107,14 +107,14 @@ function ProofCard({ mission, onDelete }: { mission: CompletedMission; onDelete:
             <button
               onClick={() => setConfirming(true)}
               className="flex-1 text-xs px-2 py-1.5 hover:border-negative text-text-muted hover:text-negative rounded transition-all flex items-center justify-center gap-1"
-              style={{ border: '1px solid rgba(255, 209, 102,0.12)' }}
+              style={{ border: '1px solid rgba(255, 179, 71,0.12)' }}
             >
               <Trash2 size={12} /> Delete
             </button>
           ) : (
             <div className="flex-1 flex gap-1">
               <button onClick={onDelete} className="flex-1 text-xs px-2 py-1.5 bg-negative border border-negative text-negative rounded">Confirm</button>
-              <button onClick={() => setConfirming(false)} className="flex-1 text-xs px-2 py-1.5 text-text-muted rounded" style={{ border: '1px solid rgba(255, 209, 102,0.12)' }}>Cancel</button>
+              <button onClick={() => setConfirming(false)} className="flex-1 text-xs px-2 py-1.5 text-text-muted rounded" style={{ border: '1px solid rgba(255, 179, 71,0.12)' }}>Cancel</button>
             </div>
           )}
         </div>
@@ -187,7 +187,7 @@ export default function ProofPage() {
       </div>
 
       {proofs.length === 0 ? (
-        <div className="text-center py-20 rounded-xl" style={{ border: '1px dashed rgba(255, 209, 102,0.12)' }}>
+        <div className="text-center py-20 rounded-xl" style={{ border: '1px dashed rgba(255, 179, 71,0.12)' }}>
           <Telescope size={36} className="text-[var(--terracotta)]/30 mx-auto mb-4" />
           <p className="text-text-muted mb-4">No observations minted yet</p>
           <Link href="/missions" className="px-6 py-3 bg-gradient-to-r from-[var(--terracotta)] to-[var(--terracotta)] text-black font-bold rounded-lg">

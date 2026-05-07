@@ -76,8 +76,8 @@ export default function TonightsBanner({ locale }: Props) {
         href="/sky"
         className="group flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
         style={{
-          background: 'linear-gradient(135deg, rgba(255, 209, 102,0.05), rgba(94, 234, 212,0.02))',
-          border: '1px solid rgba(255, 209, 102,0.1)',
+          background: 'linear-gradient(135deg, rgba(255, 179, 71,0.05), rgba(94, 234, 212,0.02))',
+          border: '1px solid rgba(255, 179, 71,0.1)',
         }}
       >
         <span className="text-xl">🌙</span>

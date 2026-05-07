@@ -291,7 +291,7 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
                     inset: -Math.round(size * 0.6),
                     borderRadius: '50%',
                     background: isPrime
-                      ? 'radial-gradient(circle, rgba(255, 209, 102,0.28) 0%, rgba(255, 209, 102,0.06) 40%, transparent 70%)'
+                      ? 'radial-gradient(circle, rgba(255, 179, 71,0.28) 0%, rgba(255, 179, 71,0.06) 40%, transparent 70%)'
                       : 'radial-gradient(circle, rgba(184,212,255,0.14) 0%, rgba(184,212,255,0.04) 40%, transparent 70%)',
                     filter: 'blur(4px)',
                     pointerEvents: 'none',

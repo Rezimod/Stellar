@@ -91,7 +91,7 @@ export default function NetworkMap({ observations }: { observations: NetworkObse
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 2 }}>
                     Bortle: {bortle}
                   </p>
-                  <p style={{ fontSize: 11, color: 'rgba(255, 209, 102,0.9)', marginTop: 4 }}>
+                  <p style={{ fontSize: 11, color: 'rgba(255, 179, 71,0.9)', marginTop: 4 }}>
                     Advanced node · site reading
                   </p>
                 </div>

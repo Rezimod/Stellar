@@ -108,7 +108,7 @@
   cursor: pointer;
 }
 .sky-page-v2 .object-row:hover { border-color: var(--border-strong); background: rgba(255, 255, 255, 0.05); }
-.sky-page-v2 .object-row.featured { border-color: rgba(255, 209, 102, 0.25); background: rgba(255, 209, 102, 0.04); }
+.sky-page-v2 .object-row.featured { border-color: rgba(255, 179, 71, 0.25); background: rgba(255, 179, 71, 0.04); }
 .sky-page-v2 .object-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: rgba(255, 255, 255, 0.04); font-size: 18px; }
 .sky-page-v2 .object-info .name { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 .sky-page-v2 .object-info .meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.04em; }
@@ -127,7 +127,7 @@
 }
 .sky-page-v2 .equipment-tag.eye { color: var(--green); background: rgba(52, 211, 153, 0.08); }
 .sky-page-v2 .equipment-tag.binoc { color: var(--teal); background: rgba(56, 240, 255, 0.08); }
-.sky-page-v2 .equipment-tag.scope { color: var(--accent); background: rgba(255, 209, 102, 0.10); }
+.sky-page-v2 .equipment-tag.scope { color: var(--accent); background: rgba(255, 179, 71, 0.10); }
 
 /* === TIMELINE === */
 .sky-page-v2 .timeline-panel {
@@ -316,7 +316,7 @@
   margin-bottom: 8px;
 }
 .sky-page-v2 .badge-go { background: rgba(52, 211, 153, 0.15); color: var(--green); }
-.sky-page-v2 .badge-maybe { background: rgba(255, 209, 102, 0.15); color: var(--accent); }
+.sky-page-v2 .badge-maybe { background: rgba(255, 179, 71, 0.15); color: var(--accent); }
 .sky-page-v2 .badge-skip { background: rgba(248, 113, 113, 0.15); color: var(--rose); }
 .sky-page-v2 .forecast-day .cloud { font-family: var(--mono); font-size: 11px; color: var(--text); }
 .sky-page-v2 .forecast-day .sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
@@ -412,7 +412,7 @@
 }
 .sky-page-v2 .finder-tab:hover { color: var(--text); }
 .sky-page-v2 .finder-tab--active {
-  background: rgba(255, 209, 102, 0.10);
+  background: rgba(255, 179, 71, 0.10);
   color: var(--accent);
   font-weight: 500;
 }
@@ -586,8 +586,8 @@
   height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(255,209,102,0.25) 8%,
-    rgba(255,209,102,0.25) 92%,
+    rgba(255,179,71,0.25) 8%,
+    rgba(255,179,71,0.25) 92%,
     transparent 100%);
 }
 .sky-page-v2 .finder-strip__beam {
@@ -666,11 +666,11 @@
   transition: all 0.15s;
 }
 .sky-page-v2 .finder-action--primary {
-  background: rgba(255,209,102,0.10);
-  border-color: rgba(255,209,102,0.3);
+  background: rgba(255,179,71,0.10);
+  border-color: rgba(255,179,71,0.3);
   color: var(--accent);
 }
-.sky-page-v2 .finder-action--primary:hover { background: rgba(255,209,102,0.15); }
+.sky-page-v2 .finder-action--primary:hover { background: rgba(255,179,71,0.15); }
 .sky-page-v2 .finder-action--ghost { color: var(--text-muted); }
 .sky-page-v2 .finder-action--ghost:hover { color: var(--text); border-color: var(--border-strong); }
 .sky-page-v2 .finder-action[disabled] { opacity: 0.45; cursor: not-allowed; }
@@ -815,8 +815,8 @@
 
 .sky-v3__ar {
   appearance: none;
-  border: 1px solid rgba(255, 209, 102, 0.45);
-  background: rgba(255, 209, 102, 0.10);
+  border: 1px solid rgba(255, 179, 71, 0.45);
+  background: rgba(255, 179, 71, 0.10);
   color: var(--terracotta);
   padding: 11px 18px;
   border-radius: 999px;
@@ -829,7 +829,7 @@
   min-height: 44px;
 }
 .sky-v3__ar:hover:not(:disabled) {
-  background: rgba(255, 209, 102, 0.18);
+  background: rgba(255, 179, 71, 0.18);
 }
 .sky-v3__ar:disabled {
   opacity: 0.4;
@@ -851,8 +851,8 @@
   gap: 12px;
 }
 .sky-v3__fallback {
-  background: rgba(255, 209, 102, 0.06);
-  border: 1px solid rgba(255, 209, 102, 0.18);
+  background: rgba(255, 179, 71, 0.06);
+  border: 1px solid rgba(255, 179, 71, 0.18);
   color: var(--text-muted);
 }
 .sky-v3__fallback button {
@@ -943,7 +943,7 @@
   padding: 0 12px;
   border-radius: 999px;
   background: rgba(7, 11, 20, 0.62);
-  border: 0.5px solid rgba(255, 209, 102, 0.32);
+  border: 0.5px solid rgba(255, 179, 71, 0.32);
   color: var(--terracotta);
   cursor: pointer;
   -webkit-backdrop-filter: blur(8px);
@@ -960,15 +960,15 @@
   font-weight: 600;
 }
 .sky-v3__ar-launch:hover {
-  background: rgba(255, 209, 102, 0.10);
-  border-color: rgba(255, 209, 102, 0.55);
+  background: rgba(255, 179, 71, 0.10);
+  border-color: rgba(255, 179, 71, 0.55);
   color: #ffe7a8;
 }
 .sky-v3__ar-launch:active {
   transform: translateY(1px);
 }
 .sky-v3__ar-launch:focus-visible {
-  outline: 2px solid rgba(255, 209, 102, 0.55);
+  outline: 2px solid rgba(255, 179, 71, 0.55);
   outline-offset: 2px;
 }
 
@@ -1043,16 +1043,16 @@
 }
 .sky-map__calibrate:hover {
   color: var(--text);
-  border-color: rgba(255, 209, 102, 0.45);
-  background: rgba(255, 209, 102, 0.08);
+  border-color: rgba(255, 179, 71, 0.45);
+  background: rgba(255, 179, 71, 0.08);
 }
 .sky-map__calibrate:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .sky-map__facing {
-  border-color: rgba(255, 209, 102, 0.40);
-  background: rgba(255, 209, 102, 0.06);
+  border-color: rgba(255, 179, 71, 0.40);
+  background: rgba(255, 179, 71, 0.06);
   color: var(--terracotta);
 }
 .sky-map__facing.is-locked {
@@ -1065,7 +1065,7 @@
   height: 6px;
   border-radius: 999px;
   background: var(--terracotta);
-  box-shadow: 0 0 6px rgba(255, 209, 102, 0.7);
+  box-shadow: 0 0 6px rgba(255, 179, 71, 0.7);
 }
 .sky-map__facing.is-locked .sky-map__facing-dot {
   background: #5EEAD4;
@@ -1087,8 +1087,8 @@
 
 .sky-map__aim-pill {
   margin-left: auto;
-  border-color: rgba(255, 209, 102, 0.35);
-  color: rgba(255, 209, 102, 0.95);
+  border-color: rgba(255, 179, 71, 0.35);
+  color: rgba(255, 179, 71, 0.95);
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
@@ -1158,8 +1158,8 @@
 }
 
 .sky-map__aim-pill.is-acquiring {
-  border-color: rgba(255, 209, 102, 0.55);
-  background: rgba(255, 209, 102, 0.08);
+  border-color: rgba(255, 179, 71, 0.55);
+  background: rgba(255, 179, 71, 0.08);
 }
 .sky-map__aim-pill.is-acquiring .sky-map__aim-pill-deg {
   color: #ffd870;
@@ -1207,8 +1207,8 @@
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 209, 102, 0.08);
-  border: 1px solid rgba(255, 209, 102, 0.35);
+  background: rgba(255, 179, 71, 0.08);
+  border: 1px solid rgba(255, 179, 71, 0.35);
   color: rgba(255, 220, 140, 0.95);
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -1225,7 +1225,7 @@
   font-size: 12px;
   line-height: 14px;
   border-radius: 999px;
-  background: rgba(255, 209, 102, 0.18);
+  background: rgba(255, 179, 71, 0.18);
   color: rgba(255, 220, 140, 1);
 }
 
@@ -1450,7 +1450,7 @@
   background: rgba(255, 255, 255, 0.06);
 }
 .sky-map__nudge-btn:active {
-  background: rgba(255, 209, 102, 0.10);
+  background: rgba(255, 179, 71, 0.10);
 }
 .sky-map__nudge-val {
   font-family: var(--font-mono);
@@ -1530,8 +1530,8 @@
   border-color: rgba(255, 255, 255, 0.16);
 }
 .body-card.is-active {
-  background: rgba(255, 209, 102, 0.07);
-  border-color: rgba(255, 209, 102, 0.40);
+  background: rgba(255, 179, 71, 0.07);
+  border-color: rgba(255, 179, 71, 0.40);
 }
 .body-card.is-below {
   opacity: 0.55;
@@ -1907,8 +1907,8 @@
   border-color: rgba(255, 255, 255, 0.16);
 }
 .target-card.is-active {
-  background: rgba(255, 209, 102, 0.08);
-  border-color: rgba(255, 209, 102, 0.45);
+  background: rgba(255, 179, 71, 0.08);
+  border-color: rgba(255, 179, 71, 0.45);
 }
 .target-card.is-below {
   opacity: 0.55;
@@ -2087,9 +2087,9 @@
   height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(255, 209, 102, 0.20) 8%,
-    rgba(255, 209, 102, 0.30) 50%,
-    rgba(255, 209, 102, 0.20) 92%,
+    rgba(255, 179, 71, 0.20) 8%,
+    rgba(255, 179, 71, 0.30) 50%,
+    rgba(255, 179, 71, 0.20) 92%,
     transparent 100%);
 }
 .horizon-strip__ground {
@@ -2245,8 +2245,8 @@
   padding: 14px 16px;
   margin-top: 16px;
   background:
-    linear-gradient(180deg, rgba(255, 209, 102, 0.05), rgba(255, 209, 102, 0.02));
-  border: 1px solid rgba(255, 209, 102, 0.20);
+    linear-gradient(180deg, rgba(255, 179, 71, 0.05), rgba(255, 179, 71, 0.02));
+  border: 1px solid rgba(255, 179, 71, 0.20);
   border-radius: 14px;
   position: relative;
 }
@@ -2273,8 +2273,8 @@
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  background: rgba(255, 209, 102, 0.14);
-  border: 1px solid rgba(255, 209, 102, 0.45);
+  background: rgba(255, 179, 71, 0.14);
+  border: 1px solid rgba(255, 179, 71, 0.45);
   color: var(--terracotta);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -2422,7 +2422,7 @@
 }
 .target-tier:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.50);
+  box-shadow: 0 0 0 2px rgba(255, 179, 71, 0.50);
 }
 .target-tier__count {
   font-family: var(--font-mono);
@@ -2456,8 +2456,8 @@
   gap: 12px;
   padding: 10px 14px 10px 10px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(255, 209, 102, 0.10), rgba(255, 209, 102, 0.04) 60%, rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 209, 102, 0.32);
+  background: linear-gradient(135deg, rgba(255, 179, 71, 0.10), rgba(255, 179, 71, 0.04) 60%, rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 179, 71, 0.32);
   cursor: pointer;
   color: inherit;
   text-align: left;
@@ -2472,18 +2472,18 @@
   inset: -40% -30% auto auto;
   width: 110px;
   height: 110px;
-  background: radial-gradient(closest-side, rgba(255, 209, 102, 0.30), transparent 75%);
+  background: radial-gradient(closest-side, rgba(255, 179, 71, 0.30), transparent 75%);
   pointer-events: none;
 }
 .prime-target:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 209, 102, 0.55);
+  border-color: rgba(255, 179, 71, 0.55);
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
 }
 .prime-target:active { transform: translateY(0); }
 .prime-target.is-active {
-  border-color: rgba(255, 209, 102, 0.75);
-  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.35), 0 6px 22px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 179, 71, 0.75);
+  box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.35), 0 6px 22px rgba(0, 0, 0, 0.35);
 }
 .prime-target__thumb {
   width: 44px;
@@ -2516,11 +2516,11 @@
   font-size: 9.5px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--terracotta, #ffd166);
+  color: var(--terracotta, #FFB347);
 }
 .prime-target__star {
-  color: var(--terracotta, #ffd166);
-  filter: drop-shadow(0 0 4px rgba(255, 209, 102, 0.55));
+  color: var(--terracotta, #FFB347);
+  filter: drop-shadow(0 0 4px rgba(255, 179, 71, 0.55));
   animation: prime-twinkle 3s ease-in-out infinite;
 }
 @keyframes prime-twinkle {
@@ -2587,7 +2587,7 @@
   background: rgba(255, 255, 255, 0.025);
 }
 .sky-page-v2 .finder-hero__tag--easy   { color: #5EEAD4; border-color: rgba(120, 220, 170, 0.35); background: rgba(120, 220, 170, 0.05); }
-.sky-page-v2 .finder-hero__tag--medium { color: #ffd166; border-color: rgba(255, 209, 102, 0.35); background: rgba(255, 209, 102, 0.05); }
+.sky-page-v2 .finder-hero__tag--medium { color: #FFB347; border-color: rgba(255, 179, 71, 0.35); background: rgba(255, 179, 71, 0.05); }
 .sky-page-v2 .finder-hero__tag--hard   { color: #e89797; border-color: rgba(220, 130, 130, 0.35); background: rgba(220, 130, 130, 0.05); }
 .sky-page-v2 .finder-hero__tag--type   { color: rgba(255, 255, 255, 0.55); }
 .sky-page-v2 .finder-hero__tag--constellation { color: rgba(180, 200, 230, 0.75); }
@@ -2613,7 +2613,7 @@
   letter-spacing: 0.10em;
 }
 .sky-page-v2 .finder-hint__hop-from {
-  color: #FFD166;
+  color: #FFB347;
   text-transform: uppercase;
 }
 .sky-page-v2 .finder-hint__hop-to {
@@ -2994,10 +2994,10 @@
   min-height: 168px;
 }
 .forecast7__day.is-today {
-  border-color: rgba(255, 209, 102, 0.40);
+  border-color: rgba(255, 179, 71, 0.40);
   background:
-    radial-gradient(120% 100% at 50% 0%, rgba(255, 209, 102, 0.10), transparent 60%),
-    rgba(255, 209, 102, 0.04);
+    radial-gradient(120% 100% at 50% 0%, rgba(255, 179, 71, 0.10), transparent 60%),
+    rgba(255, 179, 71, 0.04);
 }
 .forecast7__day-head {
   display: flex;
@@ -3041,8 +3041,8 @@
   color: #b8ecd1;
 }
 .forecast7__icon--maybe {
-  background: rgba(255, 209, 102, 0.10);
-  border-color: rgba(255, 209, 102, 0.28);
+  background: rgba(255, 179, 71, 0.10);
+  border-color: rgba(255, 179, 71, 0.28);
   color: #ffd987;
 }
 .forecast7__icon--skip {
@@ -3081,7 +3081,7 @@
 .forecast7__cloud-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, rgba(120, 220, 170, 0.95), rgba(255, 209, 102, 0.95), rgba(220, 130, 130, 0.95));
+  background: linear-gradient(90deg, rgba(120, 220, 170, 0.95), rgba(255, 179, 71, 0.95), rgba(220, 130, 130, 0.95));
 }
 .forecast7__cloud-pct {
   font-family: var(--font-mono);
@@ -3135,7 +3135,7 @@
   border: 1px solid;
 }
 .forecast7__badge--go    { color: #5EEAD4; border-color: rgba(120, 220, 170, 0.45); background: rgba(120, 220, 170, 0.08); }
-.forecast7__badge--maybe { color: #ffd166; border-color: rgba(255, 209, 102, 0.45); background: rgba(255, 209, 102, 0.08); }
+.forecast7__badge--maybe { color: #FFB347; border-color: rgba(255, 179, 71, 0.45); background: rgba(255, 179, 71, 0.08); }
 .forecast7__badge--skip  { color: #e89797; border-color: rgba(220, 130, 130, 0.45); background: rgba(220, 130, 130, 0.08); }
 
 @media (max-width: 720px) {

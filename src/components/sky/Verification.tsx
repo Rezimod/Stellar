@@ -63,8 +63,8 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             <div
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold w-fit"
               style={{
-                background: conditionOk ? 'rgba(94, 234, 212,0.08)' : 'rgba(255, 209, 102,0.08)',
-                border: `1px solid ${conditionOk ? 'rgba(94, 234, 212,0.2)' : 'rgba(255, 209, 102,0.2)'}`,
+                background: conditionOk ? 'rgba(94, 234, 212,0.08)' : 'rgba(255, 179, 71,0.08)',
+                border: `1px solid ${conditionOk ? 'rgba(94, 234, 212,0.2)' : 'rgba(255, 179, 71,0.2)'}`,
                 color: conditionOk ? 'var(--success)' : 'var(--terracotta)',
               }}
             >
@@ -90,7 +90,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             {metrics.map((m) => (
               <div key={m.label} className="rounded-lg px-2 py-1.5 flex flex-col gap-0.5"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="flex items-center gap-1" style={{ color: m.good ? 'rgba(255,255,255,0.3)' : 'rgba(255, 209, 102,0.5)' }}>
+                <div className="flex items-center gap-1" style={{ color: m.good ? 'rgba(255,255,255,0.3)' : 'rgba(255, 179, 71,0.5)' }}>
                   {m.icon}
                   <span className="text-[9px] text-text-muted truncate">{m.label}</span>
                 </div>
@@ -99,7 +99,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
                   <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                     <div className="h-full rounded-full" style={{
                       width: `${Math.min(m.bar as number, 100)}%`,
-                      background: m.good ? 'rgba(94, 234, 212,0.6)' : 'rgba(255, 209, 102,0.6)',
+                      background: m.good ? 'rgba(94, 234, 212,0.6)' : 'rgba(255, 179, 71,0.6)',
                     }} />
                   </div>
                 )}
@@ -108,7 +108,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             {/* Signature cell */}
             <div className="rounded-lg px-2 py-1.5 flex flex-col gap-0.5"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div className="flex items-center gap-1" style={{ color: 'rgba(255, 209, 102,0.55)' }}>
+              <div className="flex items-center gap-1" style={{ color: 'rgba(255, 179, 71,0.55)' }}>
                 <ShieldCheck size={12} />
                 <span className="text-[9px] text-text-muted truncate">Signature</span>
               </div>
@@ -135,10 +135,10 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             padding: compact ? '10px 0' : '14px 0',
             background: stars > 0
               ? 'linear-gradient(135deg, var(--terracotta), var(--terracotta))'
-              : 'linear-gradient(135deg, rgba(255, 209, 102,0.12), rgba(94, 234, 212,0.12))',
+              : 'linear-gradient(135deg, rgba(255, 179, 71,0.12), rgba(94, 234, 212,0.12))',
             color: stars > 0 ? 'var(--canvas)' : 'var(--terracotta)',
-            border: stars > 0 ? 'none' : '1px solid rgba(255, 209, 102,0.25)',
-            boxShadow: stars > 0 ? '0 0 24px rgba(255, 209, 102,0.2)' : '0 0 16px rgba(255, 209, 102,0.08)',
+            border: stars > 0 ? 'none' : '1px solid rgba(255, 179, 71,0.25)',
+            boxShadow: stars > 0 ? '0 0 24px rgba(255, 179, 71,0.2)' : '0 0 16px rgba(255, 179, 71,0.08)',
           }}
         >
           {stars > 0 ? `Create NFT  +${stars} Stars` : 'Log Cloudy Observation'}

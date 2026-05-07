@@ -153,7 +153,7 @@ function FistDiagram() {
         <line x1={4} y1={28} x2={64} y2={28} stroke="rgba(255,255,255,0.18)" strokeWidth={1} />
         <path d="M6 30 L26 22 L34 14" stroke="rgba(255,255,255,0.45)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
         <circle cx={36} cy={11} r={4.5} fill="rgba(255,255,255,0.55)" />
-        <path d="M22 28 A 18 18 0 0 1 30 14" stroke="var(--terracotta, #FFD166)" strokeWidth={1} strokeDasharray="2 2" fill="none" />
+        <path d="M22 28 A 18 18 0 0 1 30 14" stroke="var(--terracotta, #FFB347)" strokeWidth={1} strokeDasharray="2 2" fill="none" />
       </svg>
       <span className="finder-hint__fist-caption">≈ 10°</span>
     </div>
@@ -164,12 +164,12 @@ function HopDiagram({ from, to, degrees }: { from: string; to: string; degrees: 
   return (
     <div className="finder-hint__hop-diagram" aria-hidden="true">
       <svg width={120} height={42} viewBox="0 0 120 42" fill="none">
-        <circle cx={14} cy={28} r={4.5} fill="#FFD166" />
+        <circle cx={14} cy={28} r={4.5} fill="#FFB347" />
         <circle cx={14} cy={28} r={8} fill="none" stroke="rgba(255,241,210,0.25)" strokeWidth={0.8} />
-        <path d="M22 26 Q 60 6 100 22" stroke="var(--terracotta, #FFD166)" strokeWidth={1} strokeDasharray="2 2" fill="none" />
-        <circle cx={104} cy={22} r={2.6} fill="none" stroke="var(--terracotta, #FFD166)" strokeWidth={1.1} />
-        <line x1={104} y1={15} x2={104} y2={11} stroke="var(--terracotta, #FFD166)" strokeWidth={1.1} />
-        <line x1={104} y1={29} x2={104} y2={33} stroke="var(--terracotta, #FFD166)" strokeWidth={1.1} />
+        <path d="M22 26 Q 60 6 100 22" stroke="var(--terracotta, #FFB347)" strokeWidth={1} strokeDasharray="2 2" fill="none" />
+        <circle cx={104} cy={22} r={2.6} fill="none" stroke="var(--terracotta, #FFB347)" strokeWidth={1.1} />
+        <line x1={104} y1={15} x2={104} y2={11} stroke="var(--terracotta, #FFB347)" strokeWidth={1.1} />
+        <line x1={104} y1={29} x2={104} y2={33} stroke="var(--terracotta, #FFB347)" strokeWidth={1.1} />
       </svg>
       <div className="finder-hint__hop-caption">
         <span className="finder-hint__hop-from">{from}</span>

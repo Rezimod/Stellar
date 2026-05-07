@@ -56,7 +56,7 @@ export default function PageLoader() {
             position: 'absolute',
             inset: -28,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255, 209, 102,0.22) 0%, rgba(99,60,220,0.08) 50%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(255, 179, 71,0.22) 0%, rgba(99,60,220,0.08) 50%, transparent 70%)',
             animation: 'planet-glow-breathe 2.8s ease-in-out infinite',
           }}
         />
@@ -71,10 +71,10 @@ export default function PageLoader() {
             height: 44,
             marginLeft: -74,
             marginTop: -22,
-            border: '2.5px solid rgba(255, 209, 102,0.45)',
+            border: '2.5px solid rgba(255, 179, 71,0.45)',
             borderRadius: '50%',
             transform: 'rotateX(74deg)',
-            boxShadow: '0 0 16px rgba(255, 209, 102,0.2)',
+            boxShadow: '0 0 16px rgba(255, 179, 71,0.2)',
             zIndex: 1,
             animation: 'ring-shimmer-loader 2.8s ease-in-out infinite',
           }}
@@ -100,7 +100,7 @@ export default function PageLoader() {
                 var(--canvas) 100%
               )
             `,
-            boxShadow: '0 0 32px rgba(255, 209, 102,0.55), 0 0 8px rgba(255, 209, 102,0.35), inset -8px -8px 20px rgba(0,0,0,0.5)',
+            boxShadow: '0 0 32px rgba(255, 179, 71,0.55), 0 0 8px rgba(255, 179, 71,0.35), inset -8px -8px 20px rgba(0,0,0,0.5)',
             zIndex: 2,
             overflow: 'hidden',
           }}
@@ -184,7 +184,7 @@ export default function PageLoader() {
       <span
         style={{
           fontSize: 11,
-          color: 'rgba(255, 209, 102,0.8)',
+          color: 'rgba(255, 179, 71,0.8)',
           letterSpacing: '0.2em',
           fontFamily: 'var(--font-display, sans-serif)',
           textTransform: 'uppercase',

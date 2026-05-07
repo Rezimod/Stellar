@@ -54,8 +54,8 @@ export default function BestTargets() {
             : target.equipment === 'binoculars' ? 'var(--stars)'
             : 'var(--terracotta)';
           const eqBg = target.equipment === 'naked_eye' ? 'rgba(94, 234, 212,0.1)'
-            : target.equipment === 'binoculars' ? 'rgba(255, 209, 102,0.1)'
-            : 'rgba(255, 209, 102,0.1)';
+            : target.equipment === 'binoculars' ? 'rgba(255, 179, 71,0.1)'
+            : 'rgba(255, 179, 71,0.1)';
           const eqLabel = target.equipment === 'naked_eye' ? '👁 Naked Eye'
             : target.equipment === 'binoculars' ? '🔭 Binoculars'
             : '🔭 Telescope';

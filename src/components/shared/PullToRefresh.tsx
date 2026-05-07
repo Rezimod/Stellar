@@ -111,7 +111,7 @@ export default function PullToRefresh() {
             cy={RING / 2}
             r={R}
             fill="none"
-            stroke="#FFD166"
+            stroke="#FFB347"
             strokeWidth={STROKE}
             strokeLinecap="round"
             strokeDasharray={C}
@@ -123,7 +123,7 @@ export default function PullToRefresh() {
         {progress >= 0.9 && (
           <span
             style={{
-              color: '#FFD166',
+              color: '#FFB347',
               fontSize: 9.5,
               fontWeight: 600,
               fontFamily: 'var(--font-mono, ui-monospace, monospace)',

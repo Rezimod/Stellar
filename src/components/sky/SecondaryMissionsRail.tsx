@@ -64,7 +64,7 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
 
         let chipText = 'VISIBLE';
         let chipColor = 'rgba(134,239,172,0.8)';
-        if (locked) { chipText = 'NO STARLIGHT'; chipColor = 'rgba(255, 209, 102,0.7)'; }
+        if (locked) { chipText = 'NO STARLIGHT'; chipColor = 'rgba(255, 179, 71,0.7)'; }
         else if (done) { chipText = 'SEALED'; chipColor = 'rgba(94, 234, 212,0.9)'; }
         else if (mission.difficulty === 'Expert') { chipText = 'CIRCUMPOLAR · 24H'; chipColor = 'rgba(255,255,255,0.4)'; }
         else if (mission.difficulty === 'Hard') { chipText = 'RISES LATE'; chipColor = 'rgba(255,255,255,0.4)'; }

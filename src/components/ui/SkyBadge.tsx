@@ -20,8 +20,8 @@ const config: Record<SkyCondition, { color: string; bg: string; border: string; 
   },
   maybe: {
     color: 'var(--terracotta)',
-    bg: 'rgba(255, 209, 102,0.1)',
-    border: 'rgba(255, 209, 102,0.25)',
+    bg: 'rgba(255, 179, 71,0.1)',
+    border: 'rgba(255, 179, 71,0.25)',
     defaultLabel: 'Partly Cloudy',
   },
   skip: {

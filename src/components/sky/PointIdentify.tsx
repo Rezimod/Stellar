@@ -379,7 +379,7 @@ function PreviewRadar() {
         y1={C}
         x2={C}
         y2={14}
-        stroke="rgba(255,209,102,0.45)"
+        stroke="rgba(255,179,71,0.45)"
         strokeWidth={1}
         strokeLinecap="round"
         className="point-id__preview-sweep"
@@ -421,7 +421,7 @@ function RadarSVG({ aim, candidates, confirmedId }: RadarSVGProps) {
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height="100%" aria-hidden="true">
       <defs>
         <radialGradient id="pid-bg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(255,209,102,0.10)" />
+          <stop offset="0%" stopColor="rgba(255,179,71,0.10)" />
           <stop offset="60%" stopColor="rgba(11,24,48,0.45)" />
           <stop offset="100%" stopColor="rgba(11,24,48,0.85)" />
         </radialGradient>
@@ -433,8 +433,8 @@ function RadarSVG({ aim, candidates, confirmedId }: RadarSVGProps) {
 
       {/* Sweeping radar arm */}
       <g className="point-id__sweep">
-        <line x1={C} y1={C} x2={C} y2={14} stroke="rgba(255,209,102,0.45)" strokeWidth="1.2" strokeLinecap="round" />
-        <line x1={C} y1={C} x2={C} y2={32} stroke="rgba(255,209,102,0.85)" strokeWidth="1.6" strokeLinecap="round" />
+        <line x1={C} y1={C} x2={C} y2={14} stroke="rgba(255,179,71,0.45)" strokeWidth="1.2" strokeLinecap="round" />
+        <line x1={C} y1={C} x2={C} y2={32} stroke="rgba(255,179,71,0.85)" strokeWidth="1.6" strokeLinecap="round" />
       </g>
 
       {/* Cardinal hints (relative to aim, only show the closest one) */}
@@ -457,7 +457,7 @@ function RadarSVG({ aim, candidates, confirmedId }: RadarSVGProps) {
         const inside = c.separation <= MAX_DEG;
         const opacity = inside ? Math.max(0.35, 1 - c.separation / MAX_DEG) : 0.25;
         const radius = c.kind === 'planet' || c.kind === 'moon' || c.kind === 'sun' ? 4.5 : 3;
-        const fill = c.kind === 'star' ? '#E8ECF1' : c.kind === 'dso' ? '#5EEAD4' : '#FFD166';
+        const fill = c.kind === 'star' ? '#E8ECF1' : c.kind === 'dso' ? '#5EEAD4' : '#FFB347';
         return (
           <g key={c.id} opacity={opacity}>
             {isLocked && (

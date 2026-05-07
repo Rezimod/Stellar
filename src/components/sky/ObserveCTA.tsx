@@ -28,7 +28,7 @@ export default function ObserveCTA() {
   if (score >= 50) {
     return (
       <div className="rounded-2xl p-5 text-center" style={{
-        background: 'linear-gradient(135deg, rgba(94, 234, 212,0.08), rgba(255, 209, 102,0.04))',
+        background: 'linear-gradient(135deg, rgba(94, 234, 212,0.08), rgba(255, 179, 71,0.04))',
         border: '1px solid rgba(94, 234, 212,0.2)',
       }}>
         <p className="text-text-primary font-semibold text-sm mb-1">Clear skies tonight</p>

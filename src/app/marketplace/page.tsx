@@ -237,16 +237,20 @@ export default function MarketplacePage() {
 
           {orderedVisible.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
-              {orderedVisible.map(p => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  dealerName={showDealer ? getDealerName(p.dealerId) : ''}
-                  solPerGEL={solPerGEL}
-                  solPriceUsd={solPriceUsd}
-                  featured={featured?.id === p.id}
-                />
-              ))}
+              {orderedVisible.map(p => {
+                const isFeatured = featured?.id === p.id;
+                return (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    dealerName={showDealer ? getDealerName(p.dealerId) : ''}
+                    solPerGEL={solPerGEL}
+                    solPriceUsd={solPriceUsd}
+                    featured={isFeatured}
+                    className={isFeatured ? 'md:col-span-2 md:row-span-2' : ''}
+                  />
+                );
+              })}
             </div>
           ) : (
             <p className="text-center text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">
@@ -281,7 +285,7 @@ export default function MarketplacePage() {
                       border: '1px solid rgba(232,230,221,0.10)',
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = 'rgba(255, 209, 102,0.32)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 179, 71,0.32)';
                       e.currentTarget.style.background = 'rgba(232,230,221,0.06)';
                     }}
                     onMouseLeave={e => {

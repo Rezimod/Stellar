@@ -126,12 +126,12 @@ export default function AstromanRedeemModal({ open, onClose, walletAddress, bala
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{ background: 'rgba(7,11,20,0.7)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 flex flex-col gap-4 max-h-[88vh] overflow-y-auto"
+        className="w-full max-w-md rounded-2xl p-5 flex flex-col gap-4 max-h-[88vh] overflow-y-auto"
         style={{ background: 'var(--canvas)', border: '1px solid rgba(255,255,255,0.08)' }}
         onClick={e => e.stopPropagation()}
       >
@@ -161,7 +161,7 @@ export default function AstromanRedeemModal({ open, onClose, walletAddress, bala
           <>
             <div
               className="rounded-md p-4 flex flex-col gap-2"
-              style={{ background: 'rgba(255,209,102,0.04)', border: '0.5px solid rgba(255,209,102,0.18)' }}
+              style={{ background: 'rgba(255,179,71,0.04)', border: '0.5px solid rgba(255,179,71,0.18)' }}
             >
               <div className="flex items-baseline justify-between">
                 <span className="text-[10px] tracking-[0.18em] uppercase text-[var(--terracotta)] font-medium">
@@ -247,7 +247,7 @@ export default function AstromanRedeemModal({ open, onClose, walletAddress, bala
               className="text-[36px] font-bold tracking-[0.2em] font-mono px-6 py-3 rounded-md"
               style={{
                 background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,209,102,0.4)',
+                border: '1px solid rgba(255,179,71,0.4)',
                 color: 'var(--terracotta)',
                 letterSpacing: '0.18em',
               }}

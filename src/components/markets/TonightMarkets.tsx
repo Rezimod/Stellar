@@ -259,8 +259,8 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
                       fontWeight: 700,
                       letterSpacing: '0.08em',
                       color: 'var(--stars)',
-                      background: 'rgba(255, 209, 102,0.10)',
-                      border: '1px solid rgba(255, 209, 102,0.32)',
+                      background: 'rgba(255, 179, 71,0.10)',
+                      border: '1px solid rgba(255, 179, 71,0.32)',
                       borderRadius: 999,
                       padding: '2px 6px',
                       textTransform: 'uppercase',
@@ -331,7 +331,7 @@ export default function TonightMarkets({ variant = 'full' }: { variant?: 'full' 
         style={{
           fontFamily: 'var(--font-display)',
           fontSize: 12,
-          color: 'rgba(255, 209, 102,0.85)',
+          color: 'rgba(255, 179, 71,0.85)',
           textDecoration: 'none',
           alignSelf: 'flex-start',
         }}

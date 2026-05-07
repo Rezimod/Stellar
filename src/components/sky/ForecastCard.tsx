@@ -43,8 +43,8 @@ const kindConfig: Record<SkyKind, {
     barColor: 'var(--success)',
   },
   maybe: {
-    badge:   { bg: 'rgba(255, 209, 102,0.12)', border: 'rgba(255, 209, 102,0.3)', color: 'var(--terracotta)', label: 'MAYBE' },
-    border:  'rgba(255, 209, 102,0.15)',
+    badge:   { bg: 'rgba(255, 179, 71,0.12)', border: 'rgba(255, 179, 71,0.3)', color: 'var(--terracotta)', label: 'MAYBE' },
+    border:  'rgba(255, 179, 71,0.15)',
     barColor: 'var(--terracotta)',
   },
   skip:  {
@@ -93,8 +93,8 @@ export default function ForecastCard({ day, isToday }: Props) {
       <div
         className="card-base p-5"
         style={{
-          borderColor: `rgba(255, 209, 102,0.25)`,
-          boxShadow: '0 0 0 1px rgba(255, 209, 102,0.06), 0 4px 16px rgba(0,0,0,0.3)',
+          borderColor: `rgba(255, 179, 71,0.25)`,
+          boxShadow: '0 0 0 1px rgba(255, 179, 71,0.06), 0 4px 16px rgba(0,0,0,0.3)',
           transition: 'transform 200ms ease-out',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)'; }}

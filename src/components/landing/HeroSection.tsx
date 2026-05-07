@@ -24,7 +24,7 @@ export default function HeroSection() {
   const greeting = ready && authenticated ? displayName : null;
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-32 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255, 209, 102,0.06)_0%,transparent_60%)]">
+    <section className="relative overflow-hidden py-20 md:py-32 bg-[radial-gradient(ellipse_at_50%_0%,rgba(255, 179, 71,0.06)_0%,transparent_60%)]">
       {STARS.map((s, i) => (
         <span
           key={i}

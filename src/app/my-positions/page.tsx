@@ -59,9 +59,9 @@ interface Row {
 }
 
 const CATEGORY_META: Record<string, { label: string; color: string; bg: string; border: string; emoji: string }> = {
-  sky_event: { label: 'SKY', color: 'var(--stl-gold)', bg: 'rgba(255, 209, 102,0.12)', border: 'rgba(255, 209, 102,0.25)', emoji: '🔭' },
+  sky_event: { label: 'SKY', color: 'var(--stl-gold)', bg: 'rgba(255, 179, 71,0.12)', border: 'rgba(255, 179, 71,0.25)', emoji: '🔭' },
   weather_event: { label: 'WEATHER', color: 'var(--seafoam)', bg: 'rgba(94, 234, 212,0.10)', border: 'rgba(94, 234, 212,0.25)', emoji: '🌧' },
-  natural_phenomenon: { label: 'NATURE', color: 'var(--terracotta)', bg: 'rgba(255, 209, 102,0.10)', border: 'rgba(255, 209, 102,0.25)', emoji: '⚡' },
+  natural_phenomenon: { label: 'NATURE', color: 'var(--terracotta)', bg: 'rgba(255, 179, 71,0.10)', border: 'rgba(255, 179, 71,0.25)', emoji: '⚡' },
 };
 
 function fmtInt(n: number): string {
@@ -294,7 +294,7 @@ export default function MyPositionsPage() {
                 marginTop: 4,
                 padding: '9px 16px',
                 borderRadius: 8,
-                border: '1px solid rgba(255, 209, 102,0.5)',
+                border: '1px solid rgba(255, 179, 71,0.5)',
                 background: 'var(--stl-gold)',
                 color: 'var(--canvas)',
                 fontFamily: 'var(--font-mono)',
@@ -370,7 +370,7 @@ export default function MyPositionsPage() {
               style={{
                 padding: '8px 14px',
                 borderRadius: 8,
-                border: '1px solid rgba(255, 209, 102,0.5)',
+                border: '1px solid rgba(255, 179, 71,0.5)',
                 background: 'var(--stl-gold)',
                 color: 'var(--canvas)',
                 fontFamily: 'var(--font-mono)',
@@ -451,9 +451,9 @@ function Stat({ label, value, accent = false }: { label: string; value: string; 
 }
 
 const BUCKET_META: Record<Bucket, { label: string; color: string; bg: string; border: string }> = {
-  won:     { label: 'Won',         color: 'var(--stl-gold)', bg: 'rgba(255, 209, 102,0.12)', border: 'rgba(255, 209, 102,0.30)' },
+  won:     { label: 'Won',         color: 'var(--stl-gold)', bg: 'rgba(255, 179, 71,0.12)', border: 'rgba(255, 179, 71,0.30)' },
   active:  { label: 'Active',      color: 'var(--terracotta)', bg: 'rgba(94, 234, 212,0.10)',  border: 'rgba(94, 234, 212,0.25)' },
-  cashed:  { label: 'Cashed out',  color: 'var(--terracotta)', bg: 'rgba(255, 209, 102,0.10)',  border: 'rgba(255, 209, 102,0.30)' },
+  cashed:  { label: 'Cashed out',  color: 'var(--terracotta)', bg: 'rgba(255, 179, 71,0.10)',  border: 'rgba(255, 179, 71,0.30)' },
   lost:    { label: 'Lost',        color: 'var(--negative)', bg: 'rgba(251, 113, 133, 0.10)', border: 'rgba(251, 113, 133, 0.25)' },
   claimed: { label: 'Claimed',     color: 'var(--text-muted)', bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.25)' },
 };
@@ -640,7 +640,7 @@ function PositionRow({
             style={{
               padding: '8px 14px',
               borderRadius: 8,
-              border: '1px solid rgba(255, 209, 102,0.5)',
+              border: '1px solid rgba(255, 179, 71,0.5)',
               background: 'var(--stl-gold)',
               color: 'var(--canvas)',
               fontFamily: 'var(--font-mono)',
@@ -701,8 +701,8 @@ function ObserverAdvantageBadge({
         fontWeight: 700,
         letterSpacing: '0.08em',
         color: 'var(--stl-gold)',
-        background: 'rgba(255, 209, 102,0.10)',
-        border: '1px solid rgba(255, 209, 102,0.32)',
+        background: 'rgba(255, 179, 71,0.10)',
+        border: '1px solid rgba(255, 179, 71,0.32)',
         borderRadius: 999,
         padding: compact ? '2.5px 7px' : '3.5px 9px',
         textTransform: 'uppercase',
@@ -711,7 +711,7 @@ function ObserverAdvantageBadge({
     >
       <span aria-hidden>🔭</span>
       <span>1.5×</span>
-      <span style={{ color: 'rgba(255, 209, 102,0.75)', fontWeight: 500, textTransform: 'none', letterSpacing: '0.02em' }}>
+      <span style={{ color: 'rgba(255, 179, 71,0.75)', fontWeight: 500, textTransform: 'none', letterSpacing: '0.02em' }}>
         {reason}
       </span>
     </span>
@@ -725,8 +725,8 @@ function ClaimResultCard({ result }: { result: ClaimResult }) {
       <div
         className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5"
         style={{
-          background: 'rgba(255, 209, 102,0.06)',
-          border: '1px solid rgba(255, 209, 102,0.3)',
+          background: 'rgba(255, 179, 71,0.06)',
+          border: '1px solid rgba(255, 179, 71,0.3)',
         }}
       >
         <div className="flex items-center justify-between" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
@@ -738,7 +738,7 @@ function ClaimResultCard({ result }: { result: ClaimResult }) {
           <span style={{ fontVariantNumeric: 'tabular-nums' }}>+{fmtInt(bonus)} ✦</span>
         </div>
         <div
-          style={{ height: 1, background: 'rgba(255, 209, 102,0.2)', margin: '2px 0' }}
+          style={{ height: 1, background: 'rgba(255, 179, 71,0.2)', margin: '2px 0' }}
         />
         <div className="flex items-center justify-between" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--stl-gold)', fontWeight: 700 }}>
           <span>Total</span>
@@ -878,7 +878,7 @@ function RedeemSection({
       className="rounded-xl p-4 flex flex-col gap-4"
       style={{
         background: 'var(--surface)',
-        border: '1px solid rgba(255, 209, 102,0.18)',
+        border: '1px solid rgba(255, 179, 71,0.18)',
       }}
     >
       <header className="flex items-start justify-between gap-3 flex-wrap">
@@ -934,8 +934,8 @@ function RedeemSection({
               key={t.tier}
               className="rounded-lg p-3 flex flex-col gap-2"
               style={{
-                background: unlocked ? 'rgba(255, 209, 102,0.06)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${unlocked ? 'rgba(255, 209, 102,0.28)' : 'rgba(255,255,255,0.06)'}`,
+                background: unlocked ? 'rgba(255, 179, 71,0.06)' : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${unlocked ? 'rgba(255, 179, 71,0.28)' : 'rgba(255,255,255,0.06)'}`,
                 opacity: unlocked ? 1 : 0.6,
               }}
             >
@@ -977,7 +977,7 @@ function RedeemSection({
                   marginTop: 'auto',
                   padding: '8px 12px',
                   borderRadius: 8,
-                  border: `1px solid ${unlocked ? 'rgba(255, 209, 102,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  border: `1px solid ${unlocked ? 'rgba(255, 179, 71,0.5)' : 'rgba(255,255,255,0.08)'}`,
                   background: unlocked ? 'var(--stl-gold)' : 'rgba(255,255,255,0.04)',
                   color: unlocked ? 'var(--canvas)' : 'rgba(255,255,255,0.5)',
                   fontFamily: 'var(--font-mono)',
@@ -1027,7 +1027,7 @@ function RedeemSection({
             className="rounded-xl p-5 flex flex-col gap-3 max-w-md w-full"
             style={{
               background: 'var(--surface)',
-              border: '1px solid rgba(255, 209, 102,0.35)',
+              border: '1px solid rgba(255, 179, 71,0.35)',
             }}
           >
             <div
@@ -1043,7 +1043,7 @@ function RedeemSection({
             </div>
             <div
               className="rounded-lg p-3 flex items-center justify-between gap-3"
-              style={{ background: 'rgba(255, 209, 102,0.08)', border: '1px solid rgba(255, 209, 102,0.3)' }}
+              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.3)' }}
             >
               <code
                 style={{
@@ -1061,7 +1061,7 @@ function RedeemSection({
                 style={{
                   padding: '6px 10px',
                   borderRadius: 6,
-                  border: '1px solid rgba(255, 209, 102,0.5)',
+                  border: '1px solid rgba(255, 179, 71,0.5)',
                   background: copied ? 'var(--terracotta)' : 'var(--stl-gold)',
                   color: 'var(--canvas)',
                   fontFamily: 'var(--font-mono)',
@@ -1099,7 +1099,7 @@ function RedeemSection({
                 style={{
                   padding: '8px 14px',
                   borderRadius: 8,
-                  border: '1px solid rgba(255, 209, 102,0.5)',
+                  border: '1px solid rgba(255, 179, 71,0.5)',
                   background: 'var(--stl-gold)',
                   color: 'var(--canvas)',
                   fontFamily: 'var(--font-mono)',

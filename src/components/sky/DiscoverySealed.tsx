@@ -110,8 +110,8 @@ export default function DiscoverySealed({
       className="relative min-h-full w-full overflow-hidden"
       style={{
         background: [
-          'radial-gradient(ellipse 480px 360px at 50% 20%, rgba(255, 209, 102,0.06) 0%, transparent 55%)',
-          'radial-gradient(ellipse 420px 320px at 50% 70%, rgba(255, 209, 102,0.06) 0%, transparent 60%)',
+          'radial-gradient(ellipse 480px 360px at 50% 20%, rgba(255, 179, 71,0.06) 0%, transparent 55%)',
+          'radial-gradient(ellipse 420px 320px at 50% 70%, rgba(255, 179, 71,0.06) 0%, transparent 60%)',
           'var(--canvas)',
         ].join(', '),
       }}
@@ -231,8 +231,8 @@ export default function DiscoverySealed({
             marginTop: 12,
             padding: '12px 16px',
             borderRadius: 16,
-            background: 'linear-gradient(145deg, rgba(255, 209, 102,0.1) 0%, rgba(255, 209, 102,0.02) 60%, transparent 100%)',
-            border: '1px solid rgba(255, 209, 102,0.3)',
+            background: 'linear-gradient(145deg, rgba(255, 179, 71,0.1) 0%, rgba(255, 179, 71,0.02) 60%, transparent 100%)',
+            border: '1px solid rgba(255, 179, 71,0.3)',
           }}
         >
           <div className="absolute inset-0 pointer-events-none opacity-40">
@@ -246,7 +246,7 @@ export default function DiscoverySealed({
             {streakMultiplier > 1 ? (
               <div
                 className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(255, 209, 102,0.18)', border: '1px solid rgba(255, 209, 102,0.35)' }}
+                style={{ background: 'rgba(255, 179, 71,0.18)', border: '1px solid rgba(255, 179, 71,0.35)' }}
               >
                 <svg width="10" height="10" viewBox="0 0 12 12">
                   <path d="M 6 1 A 5 5 0 1 0 10 8.5 A 4 4 0 1 1 6 1 Z" fill="#B5A3E8" />
@@ -270,7 +270,7 @@ export default function DiscoverySealed({
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 9,
-                color: 'rgba(255, 209, 102,0.6)',
+                color: 'rgba(255, 179, 71,0.6)',
                 letterSpacing: '0.2em',
                 fontWeight: 500,
               }}
@@ -399,8 +399,8 @@ export default function DiscoverySealed({
               aspectRatio: '21 / 9',
               borderRadius: 10,
               background: [
-                'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.18) 0%, rgba(255, 209, 102,0.08) 35%, transparent 60%)',
-                'radial-gradient(circle at 20% 30%, rgba(255, 209, 102,0.15) 0%, transparent 40%)',
+                'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.18) 0%, rgba(255, 179, 71,0.08) 35%, transparent 60%)',
+                'radial-gradient(circle at 20% 30%, rgba(255, 179, 71,0.15) 0%, transparent 40%)',
                 'linear-gradient(135deg, #080414 0%, #02050E 100%)',
               ].join(', '),
               border: '1px solid rgba(255,255,255,0.05)',
@@ -575,7 +575,7 @@ function SealStamp({ missionId }: { missionId: string }) {
         className="stl-seal-glow absolute inset-0"
         style={{
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255, 209, 102,0.25) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(255, 179, 71,0.25) 0%, transparent 65%)',
         }}
       />
 
@@ -588,13 +588,13 @@ function SealStamp({ missionId }: { missionId: string }) {
         <defs>
           <path id="stl-seal-circle" d="M 100,100 m -84,0 a 84,84 0 1,1 168,0 a 84,84 0 1,1 -168,0" />
         </defs>
-        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255, 209, 102,0.25)" strokeWidth="1" strokeDasharray="2 4" />
-        <text style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: 6, fill: 'rgba(255, 209, 102,0.7)' }}>
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255, 179, 71,0.25)" strokeWidth="1" strokeDasharray="2 4" />
+        <text style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: 6, fill: 'rgba(255, 179, 71,0.7)' }}>
           <textPath href="#stl-seal-circle" startOffset="0">
             STELLAR · OBSERVED ON SOLANA · SEALED ETERNAL ·
           </textPath>
         </text>
-        <g stroke="rgba(255, 209, 102,0.5)" strokeWidth="1">
+        <g stroke="rgba(255, 179, 71,0.5)" strokeWidth="1">
           <line x1="100" y1="10" x2="100" y2="14" />
           <line x1="100" y1="186" x2="100" y2="190" />
           <line x1="10" y1="100" x2="14" y2="100" />
@@ -612,8 +612,8 @@ function SealStamp({ missionId }: { missionId: string }) {
             'radial-gradient(circle at 30% 25%, rgba(255,232,164,0.2) 0%, transparent 50%)',
             'radial-gradient(circle at 50% 50%, #1a1408 0%, #0a0a14 100%)',
           ].join(', '),
-          border: '1px solid rgba(255, 209, 102,0.4)',
-          boxShadow: 'inset 0 0 30px rgba(255, 209, 102,0.12), 0 0 22px rgba(255, 209, 102,0.15)',
+          border: '1px solid rgba(255, 179, 71,0.4)',
+          boxShadow: 'inset 0 0 30px rgba(255, 179, 71,0.12), 0 0 22px rgba(255, 179, 71,0.15)',
         }}
       >
         <NFTPreviewArt missionId={missionId} sealMode />
@@ -655,7 +655,7 @@ function NFTPreviewArt({ missionId, sealMode = false }: { missionId: string; sea
     return (
       <div
         style={{
-          filter: sealMode ? 'drop-shadow(0 0 10px rgba(255, 209, 102,0.25))' : 'drop-shadow(0 0 12px rgba(184,212,255,0.4))',
+          filter: sealMode ? 'drop-shadow(0 0 10px rgba(255, 179, 71,0.25))' : 'drop-shadow(0 0 12px rgba(184,212,255,0.4))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

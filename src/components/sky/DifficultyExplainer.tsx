@@ -251,7 +251,7 @@ export default function DifficultyExplainer({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       style={{ background: 'rgba(7,11,20,0.55)', pointerEvents: 'auto' }}
       onClick={onClose}
     >
@@ -261,7 +261,7 @@ export default function DifficultyExplainer({
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
+        className="w-full max-w-md rounded-2xl p-5 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
         style={{
           background: 'var(--canvas)',
           border: '1px solid rgba(255,255,255,0.08)',

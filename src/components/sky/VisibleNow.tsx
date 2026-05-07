@@ -16,7 +16,7 @@ interface VisibleNowProps {
 }
 
 const PLANET_ICONS: Record<string, { emoji: string; bg: string }> = {
-  Jupiter: { emoji: '🪐', bg: 'rgba(255,209,102,0.12)' },
+  Jupiter: { emoji: '🪐', bg: 'rgba(255,179,71,0.12)' },
   Venus: { emoji: '☀', bg: 'rgba(240,229,192,0.12)' },
   Mars: { emoji: '●', bg: 'rgba(200,74,46,0.12)' },
   Saturn: { emoji: '🪐', bg: 'rgba(212,169,84,0.12)' },

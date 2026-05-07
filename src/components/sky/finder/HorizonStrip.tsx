@@ -28,7 +28,7 @@ const COMPASS_LABELS: { dir: string; az: number }[] = [
 ];
 
 const PLANET_ACCENT: Record<string, string> = {
-  sun:     '#ffd166',
+  sun:     '#FFB347',
   moon:    '#F8F4EC',
   mercury: '#d6cdb1',
   venus:   '#f7e7a8',
@@ -40,12 +40,12 @@ const PLANET_ACCENT: Record<string, string> = {
 };
 
 const PLANET_GLOW: Record<string, string> = {
-  sun:     '0 0 18px rgba(255,209,102,0.70), 0 0 36px rgba(255,123,26,0.25)',
+  sun:     '0 0 18px rgba(255,179,71,0.70), 0 0 36px rgba(255,123,26,0.25)',
   moon:    '0 0 14px rgba(244,237,224,0.55), 0 0 28px rgba(244,237,224,0.18)',
   mercury: '0 0 8px rgba(214,205,177,0.35)',
   venus:   '0 0 14px rgba(247,231,168,0.55), 0 0 26px rgba(247,231,168,0.18)',
   mars:    '0 0 12px rgba(255,123,84,0.50), 0 0 24px rgba(255,123,84,0.18)',
-  jupiter: '0 0 14px rgba(255,209,102,0.55), 0 0 28px rgba(255,209,102,0.20)',
+  jupiter: '0 0 14px rgba(255,179,71,0.55), 0 0 28px rgba(255,179,71,0.20)',
   saturn:  '0 0 12px rgba(212,165,116,0.50), 0 0 24px rgba(212,165,116,0.18)',
   uranus:  '0 0 10px rgba(154,212,212,0.40)',
   neptune: '0 0 10px rgba(141,183,232,0.40)',
@@ -58,7 +58,7 @@ function accentFor(o: SkyObject): string {
   if (o.type === 'star' || o.type === 'double') {
     if (o.magnitude <= -1) return '#5EEAD4';
     if (o.magnitude <= 0)  return '#F8F4EC';
-    if (o.magnitude <= 1)  return '#FFD166';
+    if (o.magnitude <= 1)  return '#FFB347';
     return '#e8d8b6';
   }
   if (o.type === 'nebula') return '#e8a39e';
@@ -237,7 +237,7 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
                 <div
                   className="horizon-strip__mark-label"
                   style={{
-                    color: isHl ? 'var(--terracotta, #ffd166)' : p.isAbove ? '#F8F4EC' : 'rgba(244,237,224,0.45)',
+                    color: isHl ? 'var(--terracotta, #FFB347)' : p.isAbove ? '#F8F4EC' : 'rgba(244,237,224,0.45)',
                     transform: `translate(-50%, ${-radius - 18}px)`,
                     fontWeight: isHl ? 600 : 500,
                   }}
@@ -247,7 +247,7 @@ export function HorizonStrip({ objects, highlightedId, onObjectClick }: HorizonS
                 <div
                   className="horizon-strip__mark-alt"
                   style={{
-                    color: isHl ? 'var(--terracotta, #ffd166)' : p.isAbove ? 'rgba(244,237,224,0.55)' : 'rgba(244,237,224,0.35)',
+                    color: isHl ? 'var(--terracotta, #FFB347)' : p.isAbove ? 'rgba(244,237,224,0.55)' : 'rgba(244,237,224,0.35)',
                     transform: `translate(-50%, ${radius / 2 + 6}px)`,
                   }}
                 >

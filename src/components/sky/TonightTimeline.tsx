@@ -302,7 +302,7 @@ export function TonightTimeline({ lat, lon }: TonightTimelineProps) {
           <line
             x1={scrubX} x2={scrubX}
             y1={PAD_TOP - 4} y2={SVG_H - PAD_BOTTOM + 4}
-            stroke="rgba(255,209,102,0.85)" strokeWidth="1.4"
+            stroke="rgba(255,179,71,0.85)" strokeWidth="1.4"
           />
 
           {/* Body dots at scrub time */}

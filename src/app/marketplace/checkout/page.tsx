@@ -483,7 +483,7 @@ function CheckoutContent() {
               className="relative w-[70px] h-[70px] rounded-md flex-shrink-0 overflow-hidden"
               style={{
                 background:
-                  'radial-gradient(ellipse at 50% 50%, rgba(255, 209, 102,0.05) 0%, transparent 70%), rgba(255,255,255,0.02)',
+                  'radial-gradient(ellipse at 50% 50%, rgba(255, 179, 71,0.05) 0%, transparent 70%), rgba(255,255,255,0.02)',
                 border: '0.5px solid rgba(232,230,221,0.06)',
               }}
             >

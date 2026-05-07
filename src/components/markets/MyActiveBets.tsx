@@ -763,7 +763,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           color: var(--stl-green, #5EEAD4);
         }
         .mab-pillrow-chip.locked .mab-pillrow-chip-payout {
-          color: var(--stl-gold, #FFD166);
+          color: var(--stl-gold, #FFB347);
         }
         .mab-pillrow-chip.cashed .mab-pillrow-chip-payout {
           color: var(--stl-text-dim, var(--stl-text2, rgba(255, 255, 255, 0.55)));
@@ -800,11 +800,11 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           animation: mabPulse 1.6s ease-in-out infinite;
         }
         .mab-pillrow-status.locked {
-          color: var(--stl-gold, #FFD166);
-          border-color: var(--stl-gold, rgba(255, 209, 102, 0.45));
+          color: var(--stl-gold, #FFB347);
+          border-color: var(--stl-gold, rgba(255, 179, 71, 0.45));
         }
         .mab-pillrow-status.locked .mab-pillrow-status-dot {
-          background: var(--stl-gold, #FFD166);
+          background: var(--stl-gold, #FFB347);
         }
         .mab-pillrow-status.cashed {
           color: var(--stl-text-dim, var(--stl-text3, rgba(255, 255, 255, 0.5)));
@@ -895,7 +895,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
           opacity: 0.6;
         }
         .mab-row.locked .mab-row-stat {
-          color: var(--stl-amber, rgba(255, 209, 102, 0.85));
+          color: var(--stl-amber, rgba(255, 179, 71, 0.85));
         }
         .mab-row-main {
           display: flex;
@@ -992,7 +992,7 @@ export default function MyActiveBets({ variant = 'compact', title }: Props) {
         .mab-btn.primary {
           background: var(--stl-accent, var(--terracotta));
           color: #fff;
-          border: 1px solid var(--stl-accent, rgba(255, 209, 102, 0.5));
+          border: 1px solid var(--stl-accent, rgba(255, 179, 71, 0.5));
         }
         .mab-btn.primary:hover:not(:disabled) {
           filter: brightness(1.05);

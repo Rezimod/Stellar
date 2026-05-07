@@ -397,7 +397,7 @@ function primaryBtnStyle(disabled: boolean): React.CSSProperties {
   return {
     padding: '12px 14px',
     borderRadius: 8,
-    background: disabled ? 'rgba(255, 209, 102,0.25)' : 'var(--stl-gold)',
+    background: disabled ? 'rgba(255, 179, 71,0.25)' : 'var(--stl-gold)',
     color: disabled ? 'rgba(0,0,0,0.55)' : 'var(--canvas)',
     fontFamily: 'var(--font-mono)',
     fontSize: 13,

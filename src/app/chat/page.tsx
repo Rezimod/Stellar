@@ -580,7 +580,7 @@ function ChatPageInner() {
             {lastSentRef.current && (
               <button
                 onClick={retryLastMessage}
-                style={{ fontSize: 12, color: 'var(--terracotta)', background: 'none', border: '1px solid rgba(255, 209, 102,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
+                style={{ fontSize: 12, color: 'var(--terracotta)', background: 'none', border: '1px solid rgba(255, 179, 71,0.3)', borderRadius: 8, padding: '4px 12px', cursor: 'pointer' }}
               >
                 Retry
               </button>

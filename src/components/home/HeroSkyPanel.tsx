@@ -165,10 +165,10 @@ export default function HeroSkyPanel() {
           </radialGradient>
           {/* sun corona */}
           <radialGradient id="sun-corona" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#FFD166" stopOpacity="0" />
-            <stop offset="55%"  stopColor="#FFD166" stopOpacity="0.18" />
+            <stop offset="0%"   stopColor="#FFB347" stopOpacity="0" />
+            <stop offset="55%"  stopColor="#FFB347" stopOpacity="0.18" />
             <stop offset="80%"  stopColor="#FF9933" stopOpacity="0.10" />
-            <stop offset="100%" stopColor="#FFD166" stopOpacity="0" />
+            <stop offset="100%" stopColor="#FFB347" stopOpacity="0" />
           </radialGradient>
           {/* limb darkening — applied to each planet for spherical depth */}
           <radialGradient id="limb" cx="50%" cy="50%" r="50%">
@@ -316,7 +316,7 @@ export default function HeroSkyPanel() {
           </g>
         </g>
         {/* sun edge tint — warm rim */}
-        <circle cx={CX} cy={CY} r={SUN_R} fill="none" stroke="#FFD166" strokeWidth="0.8" strokeOpacity="0.35" />
+        <circle cx={CX} cy={CY} r={SUN_R} fill="none" stroke="#FFB347" strokeWidth="0.8" strokeOpacity="0.35" />
         <circle cx={CX} cy={CY} r={SUN_R + 0.5} fill="none" stroke="#FF9933" strokeWidth="0.6" strokeOpacity="0.22" />
 
         {/* ═══════════════ PLANETS ═══════════════ */}

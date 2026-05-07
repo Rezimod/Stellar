@@ -8,7 +8,7 @@
   padding: 18px;
   border-radius: 16px;
   background:
-    radial-gradient(120% 80% at 0% 0%, rgba(255,209,102,0.04), transparent 60%),
+    radial-gradient(120% 80% at 0% 0%, rgba(255,179,71,0.04), transparent 60%),
     rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.06);
   overflow: hidden;
@@ -59,9 +59,9 @@
   cursor: pointer;
   white-space: nowrap;
   transition: transform 120ms ease, box-shadow 120ms ease;
-  box-shadow: 0 6px 18px rgba(255,209,102,0.18);
+  box-shadow: 0 6px 18px rgba(255,179,71,0.18);
 }
-.point-id__cta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(255,209,102,0.28); }
+.point-id__cta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(255,179,71,0.28); }
 .point-id__cta:active { transform: translateY(0); }
 
 .point-id__placeholder {
@@ -181,13 +181,13 @@
   transition: background 200ms ease, border-color 200ms ease;
 }
 .point-id__top--in {
-  background: rgba(255,209,102,0.08);
-  border-color: rgba(255,209,102,0.30);
+  background: rgba(255,179,71,0.08);
+  border-color: rgba(255,179,71,0.30);
 }
 .point-id__top--locked {
-  background: rgba(255,209,102,0.14);
-  border-color: rgba(255,209,102,0.55);
-  box-shadow: 0 0 0 1px rgba(255,209,102,0.30) inset;
+  background: rgba(255,179,71,0.14);
+  border-color: rgba(255,179,71,0.55);
+  box-shadow: 0 0 0 1px rgba(255,179,71,0.30) inset;
 }
 .point-id__top-name {
   font-family: var(--font-display, 'Source Serif 4', serif);
@@ -228,7 +228,7 @@
   display: inline-block;
   padding: 4px 9px;
   border-radius: 999px;
-  background: rgba(255,209,102,0.16);
+  background: rgba(255,179,71,0.16);
   color: var(--terracotta);
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: 10px;

@@ -15,7 +15,7 @@ export default function JupiterArt({ className }: { className?: string }) {
       </defs>
       <circle cx="200" cy="200" r="188" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
       <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" strokeDasharray="2 6" />
-      <circle cx="200" cy="200" r="118" fill="none" stroke="rgba(255, 209, 102,0.1)" strokeWidth="0.5" />
+      <circle cx="200" cy="200" r="118" fill="none" stroke="rgba(255, 179, 71,0.1)" strokeWidth="0.5" />
       <circle cx="200" cy="200" r="100" fill="url(#jup-body)" />
       <ellipse cx="200" cy="170" rx="96" ry="8" fill="url(#jup-band)" opacity="0.5" />
       <ellipse cx="200" cy="195" rx="99" ry="6" fill="url(#jup-band)" opacity="0.7" />

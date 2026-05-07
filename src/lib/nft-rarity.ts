@@ -9,7 +9,7 @@ export interface RarityInfo {
 }
 
 const RARITY_MAP: Record<NftRarity, Omit<RarityInfo, 'rarity'>> = {
-  Celestial: { color: '#FFD166', gradient: 'linear-gradient(135deg, #FFD166, #FFB347)',         label: 'Celestial', glyph: '✦' },
+  Celestial: { color: '#FFB347', gradient: 'linear-gradient(135deg, #FFB347, #FFB347)',         label: 'Celestial', glyph: '✦' },
   Astral:    { color: '#A855F7', gradient: 'linear-gradient(135deg, #A855F7, #8B5CF6)',         label: 'Astral',    glyph: '◆' },
   Stellar:   { color: '#8B5CF6', gradient: 'linear-gradient(135deg, #8B5CF6, #5EEAD4)',         label: 'Stellar',   glyph: '◇' },
   Common:    { color: '#64748B', gradient: 'linear-gradient(135deg, #64748B, #475569)',         label: 'Common',    glyph: '○' },

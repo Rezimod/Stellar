@@ -17,7 +17,7 @@ export default function MarketplaceSection() {
           </p>
           <Link
             href="/marketplace"
-            className="mt-6 inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(255, 209, 102,0.3)] bg-[rgba(255, 209, 102,0.12)] px-5 py-2.5 text-[12px] font-medium text-[var(--terracotta)] transition-colors hover:bg-[rgba(255, 209, 102,0.18)]"
+            className="mt-6 inline-flex items-center justify-center rounded-lg border-[0.5px] border-[rgba(255, 179, 71,0.3)] bg-[rgba(255, 179, 71,0.12)] px-5 py-2.5 text-[12px] font-medium text-[var(--terracotta)] transition-colors hover:bg-[rgba(255, 179, 71,0.18)]"
           >
             Browse marketplace  →
           </Link>
@@ -39,7 +39,7 @@ export default function MarketplaceSection() {
             />
           </div>
 
-          <div className="mt-3 flex items-center justify-between rounded-[10px] border-[0.5px] border-[rgba(255, 209, 102,0.2)] bg-[rgba(255, 209, 102,0.06)] p-[14px]">
+          <div className="mt-3 flex items-center justify-between rounded-[10px] border-[0.5px] border-[rgba(255, 179, 71,0.2)] bg-[rgba(255, 179, 71,0.06)] p-[14px]">
             <div className="min-w-0">
               <div className="font-display text-[12px] md:text-[13px] text-[#F8F4EC] truncate">
                 Celestron AstroMaster 70
@@ -75,8 +75,8 @@ function ProductCard({
   const styles =
     tone === 'gold'
       ? {
-          wrap: 'border-[rgba(255, 209, 102,0.18)] bg-[rgba(255, 209, 102,0.06)]',
-          chipOuter: 'bg-[rgba(255, 209, 102,0.18)]',
+          wrap: 'border-[rgba(255, 179, 71,0.18)] bg-[rgba(255, 179, 71,0.06)]',
+          chipOuter: 'bg-[rgba(255, 179, 71,0.18)]',
           chipInner: <span className="block w-3.5 h-3.5 rounded-full bg-[var(--terracotta)]" />,
         }
       : {

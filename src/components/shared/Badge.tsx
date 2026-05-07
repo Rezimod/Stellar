@@ -8,7 +8,7 @@ const colors = {
   emerald: 'bg-[var(--seafoam)]/20 text-[var(--seafoam)] border-[var(--seafoam)]/40',
   cyan: 'bg-[var(--terracotta)]/20 text-[var(--terracotta)] border-[var(--terracotta)]/40',
   purple: 'bg-[var(--terracotta)]/20 text-[var(--terracotta)] border-[var(--terracotta)]/40',
-  dim: 'bg-[var(--surface)] text-text-muted border-[rgba(255, 209, 102,0.12)]',
+  dim: 'bg-[var(--surface)] text-text-muted border-[rgba(255, 179, 71,0.12)]',
 };
 
 export default function Badge({ children, color = 'dim' }: BadgeProps) {

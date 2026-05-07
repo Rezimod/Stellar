@@ -124,7 +124,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   if (error === 'permission_denied') {
     return (
       <div className="flex flex-col items-center justify-center flex-1 min-h-0 text-center p-6">
-        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255, 209, 102,0.06)', border: '1px solid rgba(255, 209, 102,0.15)' }}>
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.15)' }}>
           <Camera size={22} className="text-[var(--terracotta)]/60" />
         </div>
         <p className="text-terracotta text-sm mb-2">Camera access required</p>
@@ -164,10 +164,10 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
 
         {/* Corner brackets */}
         {[
-          { top: '10%', left: '8%',    borderTop: '2px solid rgba(255, 209, 102,0.7)', borderLeft:  '2px solid rgba(255, 209, 102,0.7)' },
-          { top: '10%', right: '8%',   borderTop: '2px solid rgba(255, 209, 102,0.7)', borderRight: '2px solid rgba(255, 209, 102,0.7)' },
-          { bottom: '10%', left: '8%', borderBottom: '2px solid rgba(255, 209, 102,0.7)', borderLeft:  '2px solid rgba(255, 209, 102,0.7)' },
-          { bottom: '10%', right: '8%',borderBottom: '2px solid rgba(255, 209, 102,0.7)', borderRight: '2px solid rgba(255, 209, 102,0.7)' },
+          { top: '10%', left: '8%',    borderTop: '2px solid rgba(255, 179, 71,0.7)', borderLeft:  '2px solid rgba(255, 179, 71,0.7)' },
+          { top: '10%', right: '8%',   borderTop: '2px solid rgba(255, 179, 71,0.7)', borderRight: '2px solid rgba(255, 179, 71,0.7)' },
+          { bottom: '10%', left: '8%', borderBottom: '2px solid rgba(255, 179, 71,0.7)', borderLeft:  '2px solid rgba(255, 179, 71,0.7)' },
+          { bottom: '10%', right: '8%',borderBottom: '2px solid rgba(255, 179, 71,0.7)', borderRight: '2px solid rgba(255, 179, 71,0.7)' },
         ].map((s, i) => <div key={i} className="absolute w-5 h-5 pointer-events-none" style={s} />)}
 
         {/* Center reticle */}
@@ -285,7 +285,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
             <div key={tip.n} className="flex items-start gap-2">
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"
-                style={{ background: 'rgba(255, 209, 102,0.1)', color: 'var(--stars)', border: '1px solid rgba(255, 209, 102,0.2)' }}
+                style={{ background: 'rgba(255, 179, 71,0.1)', color: 'var(--stars)', border: '1px solid rgba(255, 179, 71,0.2)' }}
               >
                 {tip.n}
               </span>

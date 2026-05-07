@@ -99,7 +99,7 @@ export default function ObserveResultPage() {
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 209, 102,0.12)', border: '1px solid rgba(255, 209, 102,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
             Back to missions
           </Link>
@@ -157,9 +157,9 @@ export default function ObserveResultPage() {
             <div
               className="flex items-center gap-3 px-4 py-2 rounded-xl animate-cosmic-reveal"
               style={{
-                background: 'linear-gradient(135deg, rgba(255, 209, 102,0.95) 0%, rgba(255, 209, 102,0.95) 100%)',
+                background: 'linear-gradient(135deg, rgba(255, 179, 71,0.95) 0%, rgba(255, 179, 71,0.95) 100%)',
                 border: '1px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 12px 28px rgba(255, 209, 102,0.35)',
+                boxShadow: '0 12px 28px rgba(255, 179, 71,0.35)',
               }}
             >
               <span style={{ fontSize: 20, filter: 'drop-shadow(0 0 6px white)' }}>✦</span>
@@ -188,7 +188,7 @@ export default function ObserveResultPage() {
           {streakMultiplier > 1 && mintTier && (
             <div
               className="flex items-center gap-2 px-3 py-1.5 rounded-full self-start"
-              style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255, 209, 102,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
+              style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255, 179, 71,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
             >
               <MoonPhase phase={mintTier.phase} size={11} />
               <span>{mintTier.multiplier}× streak multiplier</span>
@@ -258,9 +258,9 @@ export default function ObserveResultPage() {
                       className="flex-1 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5"
                       style={{
                         background: !starName.trim() || starClaiming
-                          ? 'rgba(255, 209, 102,0.15)'
-                          : 'rgba(255, 209, 102,0.2)',
-                        border: '1px solid rgba(255, 209, 102,0.35)',
+                          ? 'rgba(255, 179, 71,0.15)'
+                          : 'rgba(255, 179, 71,0.2)',
+                        border: '1px solid rgba(255, 179, 71,0.35)',
                         color: 'var(--stars)',
                         opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                         cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
@@ -269,7 +269,7 @@ export default function ObserveResultPage() {
                       {starClaiming && (
                         <div
                           className="w-3 h-3 rounded-full border-2 animate-spin"
-                          style={{ borderColor: 'rgba(255, 209, 102,0.4)', borderTopColor: 'var(--stars)' }}
+                          style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--stars)' }}
                         />
                       )}
                       Inscribe

@@ -18,8 +18,8 @@ const DEFAULT_CATEGORY = {
   label: 'MARKET',
   emoji: '✦',
   color: 'var(--stars)',
-  bg: 'rgba(255, 209, 102,0.10)',
-  border: 'rgba(255, 209, 102,0.22)',
+  bg: 'rgba(255, 179, 71,0.10)',
+  border: 'rgba(255, 179, 71,0.22)',
 };
 
 const CATEGORY_META: Partial<
@@ -32,8 +32,8 @@ const CATEGORY_META: Partial<
     label: 'SKY EVENT',
     emoji: '🔭',
     color: 'var(--stars)',
-    bg: 'rgba(255, 209, 102,0.12)',
-    border: 'rgba(255, 209, 102,0.25)',
+    bg: 'rgba(255, 179, 71,0.12)',
+    border: 'rgba(255, 179, 71,0.25)',
   },
   weather_event: {
     label: 'WEATHER',
@@ -46,22 +46,22 @@ const CATEGORY_META: Partial<
     label: 'NATURE',
     emoji: '⚡',
     color: 'var(--terracotta)',
-    bg: 'rgba(255, 209, 102,0.10)',
-    border: 'rgba(255, 209, 102,0.25)',
+    bg: 'rgba(255, 179, 71,0.10)',
+    border: 'rgba(255, 179, 71,0.25)',
   },
   meteor: {
     label: 'METEOR',
     emoji: '☄',
     color: 'var(--stars)',
-    bg: 'rgba(255, 209, 102,0.12)',
-    border: 'rgba(255, 209, 102,0.25)',
+    bg: 'rgba(255, 179, 71,0.12)',
+    border: 'rgba(255, 179, 71,0.25)',
   },
   solar: {
     label: 'SOLAR',
     emoji: '☀',
     color: 'var(--terracotta)',
-    bg: 'rgba(255, 209, 102,0.10)',
-    border: 'rgba(255, 209, 102,0.25)',
+    bg: 'rgba(255, 179, 71,0.10)',
+    border: 'rgba(255, 179, 71,0.25)',
   },
   mission: {
     label: 'MISSION',
@@ -74,8 +74,8 @@ const CATEGORY_META: Partial<
     label: 'COMET',
     emoji: '🌠',
     color: 'var(--terracotta)',
-    bg: 'rgba(255, 209, 102,0.12)',
-    border: 'rgba(255, 209, 102,0.25)',
+    bg: 'rgba(255, 179, 71,0.12)',
+    border: 'rgba(255, 179, 71,0.25)',
   },
   discovery: {
     label: 'DISCOVERY',

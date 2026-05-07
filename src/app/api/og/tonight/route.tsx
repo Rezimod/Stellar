@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const highlight3 = searchParams.get('highlight3') ?? '';
   const location = searchParams.get('location') ?? 'Tbilisi';
 
-  const scoreColor = score >= 70 ? '#5EEAD4' : score >= 50 ? '#FFD166' : '#A8B4C8';
+  const scoreColor = score >= 70 ? '#5EEAD4' : score >= 50 ? '#FFB347' : '#A8B4C8';
   const emoji = score >= 90 ? '✨' : score >= 70 ? '🌟' : score >= 50 ? '⭐' : score >= 30 ? '🌤️' : '☁️';
 
   const highlights = [highlight1, highlight2, highlight3].filter(Boolean);

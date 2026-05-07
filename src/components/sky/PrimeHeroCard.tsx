@@ -35,8 +35,8 @@ export default function PrimeHeroCard({ mission, altitude, tagline, onStart, mag
     <div
       className="relative flex items-center gap-2.5 p-2.5 lg:p-3 overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(255, 209, 102,0.06), rgba(255, 209, 102,0.01) 60%, transparent)',
-        border: '1px solid rgba(255, 209, 102,0.22)',
+        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.06), rgba(255, 179, 71,0.01) 60%, transparent)',
+        border: '1px solid rgba(255, 179, 71,0.22)',
         borderRadius: 12,
       }}
     >

@@ -108,13 +108,17 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
         background: 'rgba(0,0,0,0.7)',
         backdropFilter: 'blur(4px)',
         WebkitBackdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
       }}
       onClick={onClose}
     >
       <div
         style={{
+          width: '100%',
           maxWidth: 512,
-          margin: '10vh auto 0',
           background: '#0D1321',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: '1rem',
