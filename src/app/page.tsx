@@ -351,10 +351,9 @@ function IPhone({
     size === 'sm'
       ? {
           width: 'w-[170px] md:w-[200px]',
-          chRound: 36, chPad: 5, scrRound: 30,
+          chRound: 30, chPad: 3, scrRound: 27,
           statH: 18, txt: 7.5,
-          diW: 60, diH: 16,
-          homeH: 14, homeW: 70, homeBarH: 3,
+          speakerW: 22, speakerH: 2,
           contentPad: 'px-2.5 pt-1.5',
           imgSizes: '(min-width:768px) 200px, 170px',
           showSignal: false,
@@ -362,20 +361,18 @@ function IPhone({
       : size === 'md'
       ? {
           width: 'w-[230px] md:w-[260px]',
-          chRound: 42, chPad: 6, scrRound: 35,
+          chRound: 36, chPad: 3.5, scrRound: 32,
           statH: 24, txt: 9,
-          diW: 80, diH: 22,
-          homeH: 18, homeW: 90, homeBarH: 3.5,
+          speakerW: 30, speakerH: 2.5,
           contentPad: 'px-3 pt-2',
           imgSizes: '(min-width:768px) 260px, 230px',
           showSignal: true,
         }
       : {
           width: 'w-[260px] md:w-[300px]',
-          chRound: 44, chPad: 7, scrRound: 37,
+          chRound: 40, chPad: 4, scrRound: 36,
           statH: 30, txt: 10.5,
-          diW: 96, diH: 26,
-          homeH: 24, homeW: 115, homeBarH: 4,
+          speakerW: 38, speakerH: 3,
           contentPad: 'px-4 pt-2.5',
           imgSizes: '(min-width:768px) 300px, 260px',
           showSignal: true,
@@ -383,34 +380,23 @@ function IPhone({
 
   return (
     <div className={`relative mx-auto ${cfg.width}`}>
-      {/* Side buttons */}
-      <div className="absolute -left-[3px] top-[14%] w-[3px] h-[3.5%] rounded-l-[2px] bg-[#0a0c12]" />
-      <div className="absolute -left-[3px] top-[20%] w-[3px] h-[7%] rounded-l-[2px] bg-[#0a0c12]" />
-      <div className="absolute -left-[3px] top-[29%] w-[3px] h-[7%] rounded-l-[2px] bg-[#0a0c12]" />
-      <div className="absolute -right-[3px] top-[22%] w-[3px] h-[10%] rounded-r-[2px] bg-[#0a0c12]" />
-
-      {/* Titanium chassis */}
+      {/* Solid dark chassis */}
       <div
         className="relative w-full"
         style={{
           padding: cfg.chPad,
           borderRadius: cfg.chRound,
-          background: 'linear-gradient(155deg, #2a2d36 0%, #161922 28%, #0a0d14 60%, #050709 100%)',
+          background: '#0a0d14',
           boxShadow:
-            '0 50px 100px -30px rgba(0,0,0,0.85), 0 20px 40px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.08)',
+            '0 50px 100px -30px rgba(0,0,0,0.85), 0 20px 40px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)',
         }}
       >
-        <div
-          className="absolute inset-[3px] ring-1 ring-white/[0.05] pointer-events-none"
-          style={{ borderRadius: cfg.chRound - 4 }}
-        />
-
         {/* Screen */}
         <div
           className="relative w-full overflow-hidden bg-black"
           style={{ borderRadius: cfg.scrRound }}
         >
-          {/* iOS status bar */}
+          {/* Status bar */}
           <div
             className="relative flex items-center justify-between bg-black z-10"
             style={{
@@ -426,10 +412,10 @@ function IPhone({
               9:41
             </span>
 
-            {/* Dynamic Island */}
-            <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black ring-1 ring-white/[0.04]"
-              style={{ width: cfg.diW, height: cfg.diH }}
+            {/* Speaker slit */}
+            <span
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10"
+              style={{ width: cfg.speakerW, height: cfg.speakerH }}
             />
 
             <span className="flex items-center" style={{ gap: Math.max(2, cfg.txt * 0.4) }}>
@@ -484,27 +470,6 @@ function IPhone({
               <PhoneBottomNav size={size} active={activeTab} />
             </div>
           )}
-
-          {/* Home indicator */}
-          <div
-            className="relative flex items-center justify-center bg-black"
-            style={{ height: cfg.homeH }}
-          >
-            <span
-              className="block rounded-full bg-white/85"
-              style={{ width: cfg.homeW, height: cfg.homeBarH }}
-            />
-          </div>
-
-          {/* Screen glare */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              borderRadius: cfg.scrRound,
-              background:
-                'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 22%, rgba(255,255,255,0) 78%, rgba(255,255,255,0.025) 100%)',
-            }}
-          />
         </div>
       </div>
     </div>
