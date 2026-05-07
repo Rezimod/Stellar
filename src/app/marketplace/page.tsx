@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useStarsBalance } from '@/hooks/useStarsBalance';
 import { useAppState } from '@/hooks/useAppState';
@@ -90,6 +91,11 @@ export default function MarketplacePage() {
   const [difficulty, setDifficulty] = useState<DifficultyFilter>('all');
   const [solPerGEL, setSolPerGEL] = useState(0);
   const [solPriceUsd, setSolPriceUsd] = useState(0);
+  const [navSlot, setNavSlot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setNavSlot(document.getElementById('nav-mobile-center'));
+  }, []);
 
   useEffect(() => {
     fetch('/api/price/sol')
@@ -198,21 +204,21 @@ export default function MarketplacePage() {
               })}
             </div>
 
-            {/* Balance + Region — compact, matching toolbar height. Smaller and tighter on mobile. */}
-            <div className="order-1 sm:order-2 flex items-center justify-end gap-[5px] sm:gap-[8px] flex-shrink-0">
+            {/* Balance + Region — desktop toolbar position. On mobile, these render in the nav header instead. */}
+            <div className="hidden md:order-2 md:flex items-center justify-end gap-[8px] flex-shrink-0">
               <span
-                className="inline-flex items-center h-[22px] sm:h-[34px] gap-[5px] sm:gap-[7px] px-[7px] sm:px-[11px] rounded-md uppercase cursor-default"
+                className="inline-flex items-center h-[34px] gap-[7px] px-[11px] rounded-md uppercase cursor-default"
                 style={{
                   background: 'rgba(15, 18, 28, 0.55)',
                   border: '1px solid rgba(255, 126, 54, 0.38)',
                   boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                 }}
               >
-                <span className="tracking-[0.1em] sm:tracking-[0.12em] text-white text-[8px] sm:text-[9.5px] font-semibold">Bal</span>
-                <span className="font-semibold tabular-nums tracking-[0.02em] text-[10.5px] sm:text-[12.5px]" style={{ color: 'var(--terracotta)' }}>
+                <span className="tracking-[0.12em] text-white text-[9.5px] font-semibold">Bal</span>
+                <span className="font-semibold tabular-nums tracking-[0.02em] text-[12.5px]" style={{ color: 'var(--terracotta)' }}>
                   {balance.toLocaleString()}
                 </span>
-                <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" className="w-[8px] h-[8px] sm:w-[10px] sm:h-[10px]">
+                <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" className="w-[10px] h-[10px]">
                   <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
                 </svg>
               </span>
@@ -298,6 +304,28 @@ export default function MarketplacePage() {
           </section>
         </div>
       </div>
+
+      {/* Mobile-only: balance + location pills blended into the nav header (centered). */}
+      {navSlot && createPortal(
+        <div className="flex items-center gap-[6px]">
+          <span
+            className="inline-flex items-center h-[22px] gap-[5px] px-[7px] rounded-lg uppercase cursor-default"
+            style={{
+              background: 'rgba(255, 179, 71, 0.07)',
+              border: '1px solid rgba(255, 179, 71, 0.20)',
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" style={{ width: 9, height: 9 }}>
+              <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
+            </svg>
+            <span className="font-semibold tabular-nums tracking-[0.02em] text-[10.5px]" style={{ color: 'var(--terracotta)' }}>
+              {balance.toLocaleString()}
+            </span>
+          </span>
+          <LocationPicker compact />
+        </div>,
+        navSlot,
+      )}
     </PageContainer>
   );
 }

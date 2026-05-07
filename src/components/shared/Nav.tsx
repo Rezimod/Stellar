@@ -143,6 +143,12 @@ export default function Nav() {
               </Link>
             </div>
 
+            {/* MIDDLE mobile slot: pages can portal compact controls here (md:hidden) */}
+            <div
+              id="nav-mobile-center"
+              className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5] flex items-center"
+            />
+
             {/* MIDDLE cluster: centered nav (md+) */}
             <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1">
               {NAV_ITEMS.map(tab => {
