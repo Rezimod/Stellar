@@ -18,14 +18,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SectionSub({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[15px] md:text-[18px] leading-[1.55] text-[#9BA3B4] max-w-[620px] mx-auto">
-      {children}
-    </p>
-  );
-}
-
 function PartnerLogo({
   src,
   alt,
@@ -694,12 +686,10 @@ function SkyForecastScreen() {
 function SkyFeatureSlot({
   step,
   title,
-  caption,
   children,
 }: {
   step?: string;
   title: string;
-  caption: string;
   children: React.ReactNode;
 }) {
   return (
@@ -713,10 +703,6 @@ function SkyFeatureSlot({
       <div className={`${step ? 'mt-1' : 'mt-5 md:mt-6'} text-white text-[14px] md:text-[15.5px] font-semibold tracking-[-0.005em]`}>
         {title}
       </div>
-      <div
-        className="mt-1.5 text-[#9BA3B4] text-[12.5px] md:text-[13.5px] leading-[1.5] max-w-[180px]"
-        dangerouslySetInnerHTML={{ __html: caption }}
-      />
     </div>
   );
 }
@@ -774,23 +760,15 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>How it works</Eyebrow>
             <SectionTitle>Three steps. One night.</SectionTitle>
-            <SectionSub>Sign in, step outside, get rewarded for what you find.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-2 md:order-1">
               <ul className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-                {[
-                  { title: 'Sign in',       caption: 'Email or Google.' },
-                  { title: 'Find a target', caption: 'We tell you where to look.' },
-                  { title: 'Earn Stars',    caption: 'Redeem for real telescopes.' },
-                ].map((s) => (
-                  <li key={s.title} className="py-3.5 md:py-5">
+                {['Sign in', 'Find a target', 'Earn Stars'].map((title) => (
+                  <li key={title} className="py-3.5 md:py-5">
                     <div className="text-white text-[16px] md:text-[19px] font-semibold leading-tight tracking-[-0.005em]">
-                      {s.title}
-                    </div>
-                    <div className="text-[#9BA3B4] text-[13px] md:text-[14.5px] leading-[1.5] mt-1">
-                      {s.caption}
+                      {title}
                     </div>
                   </li>
                 ))}
@@ -814,7 +792,6 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Missions</Eyebrow>
             <SectionTitle>Seven targets. Free scope.</SectionTitle>
-            <SectionSub>Stars are earned, not airdropped.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
@@ -825,21 +802,11 @@ export default function HomePage() {
             </div>
             <div className="order-2">
               <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-                {[
-                  { title: 'Pick a target',        caption: 'Sorted by what&rsquo;s up tonight.' },
-                  { title: 'Photograph it',        caption: 'Phone clip works on any scope.' },
-                  { title: 'Oracle verifies',      caption: 'Time + place must match.' },
-                  { title: 'Stars in your wallet', caption: 'Finish all seven — scope is free.' },
-                ].map((s) => (
-                  <li key={s.title} className="py-3 md:py-4">
-                    <div
-                      className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]"
-                      dangerouslySetInnerHTML={{ __html: s.title }}
-                    />
-                    <div
-                      className="text-[#9BA3B4] text-[13px] md:text-[14px] leading-[1.5] mt-1"
-                      dangerouslySetInnerHTML={{ __html: s.caption }}
-                    />
+                {['Pick a target', 'Photograph it', 'Oracle verifies', 'Stars in your wallet'].map((title) => (
+                  <li key={title} className="py-3 md:py-4">
+                    <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
+                      {title}
+                    </div>
                   </li>
                 ))}
               </ol>
@@ -859,26 +826,16 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>Learn</Eyebrow>
             <SectionTitle>Know what you&apos;re looking at.</SectionTitle>
-            <SectionSub>Field guide free. Quizzes pay Stars.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-2 md:order-1 text-center md:text-left">
               <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06] text-left">
-                {[
-                  { title: 'Tap an object',  caption: 'Real photos. Best time to see it.' },
-                  { title: 'Read the guide', caption: 'How to find it. What you&rsquo;ll see.' },
-                  { title: 'Take the quiz',  caption: '10 questions. 100 Stars per pass.' },
-                ].map((s) => (
-                  <li key={s.title} className="py-3 md:py-4">
-                    <div
-                      className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]"
-                      dangerouslySetInnerHTML={{ __html: s.title }}
-                    />
-                    <div
-                      className="text-[#9BA3B4] text-[13px] md:text-[14px] leading-[1.5] mt-1"
-                      dangerouslySetInnerHTML={{ __html: s.caption }}
-                    />
+                {['Tap an object', 'Read the guide', 'Take the quiz'].map((title) => (
+                  <li key={title} className="py-3 md:py-4">
+                    <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
+                      {title}
+                    </div>
                   </li>
                 ))}
               </ol>
@@ -903,17 +860,16 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-20">
             <Eyebrow>The Sky page</Eyebrow>
             <SectionTitle>Tonight, in three screens.</SectionTitle>
-            <SectionSub>Can I go out? Where do I aim?</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 md:gap-y-14 max-w-[920px] mx-auto">
-            <SkyFeatureSlot title="Live planet map" caption="Tap a planet to lock it.">
+            <SkyFeatureSlot title="Live planet map">
               <IPhone size="sm" activeTab="sky"><SkyMapScreen /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot title="AR finder" caption="Walk the reticle onto target.">
+            <SkyFeatureSlot title="AR finder">
               <IPhone size="sm" activeTab="sky"><SkyARScreen /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot title="7-day forecast" caption="Skip cloudy nights.">
+            <SkyFeatureSlot title="7-day forecast">
               <IPhone size="sm" activeTab="home"><SkyForecastScreen /></IPhone>
             </SkyFeatureSlot>
           </div>
@@ -932,7 +888,6 @@ export default function HomePage() {
           <div className="text-center mb-10 md:mb-14">
             <Eyebrow>Marketplace</Eyebrow>
             <SectionTitle>The shop is in the app.</SectionTitle>
-            <SectionSub>Pay by card, SOL, or the Stars you earned tonight.</SectionSub>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
@@ -1020,7 +975,6 @@ export default function HomePage() {
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>The difference</Eyebrow>
             <SectionTitle>Most apps show. Stellar pays.</SectionTitle>
-            <SectionSub>Plenty show the sky. One closes the loop.</SectionSub>
           </div>
 
           <div className="max-w-[960px] mx-auto rounded-[18px] border border-white/[0.07] bg-[#0F1A35]/50 px-5 md:px-10 py-9 md:py-12">
@@ -1088,29 +1042,19 @@ export default function HomePage() {
                 Stellar is the layer.
               </span>
             </SectionTitle>
-            <SectionSub>Utility first. Crypto invisible.</SectionSub>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Utility first</div>
-              <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
-                Real astronomy app. Email sign-in. No seed phrase, no gas.
-              </p>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">Utility first</div>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Earned, not airdropped</div>
-              <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
-                Sky oracle proves the photo. Stars redeem for telescopes.
-              </p>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">Earned, not airdropped</div>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white mb-3">Open to every shop</div>
-              <p className="text-[14px] leading-[1.6] text-[#9BA3B4]">
-                Astroman today. Every dealer tomorrow.
-              </p>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">Open to every shop</div>
             </div>
           </div>
         </div>
@@ -1123,10 +1067,7 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <Eyebrow>Start tonight</Eyebrow>
           <SectionTitle>The sky is open.</SectionTitle>
-          <p className="text-[15px] md:text-[18px] leading-[1.6] text-[#9BA3B4] max-w-[560px] mx-auto mb-8 md:mb-12">
-            Sign in with email. Step outside. Take your first observation.
-          </p>
-          <div className="inline-flex flex-wrap gap-3.5 justify-center">
+          <div className="inline-flex flex-wrap gap-3.5 justify-center mt-8 md:mt-12">
             <Link
               href="/missions"
               className="inline-flex items-center gap-2.5 px-9 text-white font-semibold text-[17px] rounded-[14px] transition-all hover:brightness-[1.08] active:translate-y-[0.5px] no-underline"
