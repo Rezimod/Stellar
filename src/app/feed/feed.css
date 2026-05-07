@@ -580,7 +580,7 @@
   animation: feed-pulse-skel 1.8s ease-in-out infinite;
 }
 
-.markets-card,
+.discoveries-card,
 .shop-card,
 .sky-card {
   background: var(--card-bg);
@@ -766,49 +766,52 @@
   line-height: 1.5;
 }
 
-.market-row {
+.discovery-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px dashed var(--hairline);
+  padding: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: padding 0.2s;
+  transition: background 0.2s;
   background: transparent;
-  border-left: none;
-  border-right: none;
-  border-top: none;
+  border: none;
   width: 100%;
   text-align: left;
   font-family: var(--feed-sans);
   color: inherit;
 }
-.market-row:last-child { border-bottom: none; }
-.market-row:hover { padding-left: 4px; }
-.market-icon {
-  width: 28px; height: 28px;
+.discovery-row:hover { background: var(--card-bg-hover); }
+.discovery-row + .discovery-row { margin-top: 2px; }
+.discovery-thumb {
+  width: 44px; height: 44px;
   border-radius: 8px;
-  display: grid; place-items: center;
-  font-size: 14px;
+  background: linear-gradient(135deg, rgba(132,101,203,0.18), rgba(56,240,255,0.10));
+  background-size: cover;
+  background-position: center;
   flex-shrink: 0;
-  color: var(--bone);
+  border: 1px solid var(--hairline);
 }
-.market-body { flex: 1; min-width: 0; }
-.market-question {
-  font-size: 11.5px; color: var(--slate-100);
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.discovery-body { flex: 1; min-width: 0; }
+.discovery-target {
+  font-size: 12px;
+  color: var(--slate-100);
+  line-height: 1.25;
+  margin-bottom: 3px;
   overflow: hidden;
-  margin-bottom: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.market-meta {
-  display: flex; align-items: center; gap: 8px;
+.discovery-meta {
+  display: flex; align-items: center; gap: 6px;
   font-family: var(--feed-mono);
-  font-size: 9px;
+  font-size: 10px;
   color: var(--slate-400);
+  letter-spacing: 0.02em;
 }
-.market-odds { color: var(--teal); font-weight: 500; }
-.market-volume::before { content: '·'; margin-right: 8px; color: var(--slate-500); }
+.discovery-dot {
+  width: 2px; height: 2px;
+  background: var(--slate-500);
+  border-radius: 50%;
+}
 
 .shop-product {
   display: flex; gap: 10px; align-items: center;

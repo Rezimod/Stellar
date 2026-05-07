@@ -15,7 +15,7 @@ import { AuthModal } from '@/components/auth/AuthModal'
 import { useLocation } from '@/lib/location'
 import FeedPostCard from '@/components/feed/FeedPostCard'
 import SkyWidget from '@/components/feed/SkyWidget'
-import { MarketsWidget, ShopWidget } from '@/components/feed/SidebarWidgets'
+import { DiscoveriesWidget, ShopWidget } from '@/components/feed/SidebarWidgets'
 import type { FeedPost } from '@/lib/feed/types'
 
 type FilterKey = 'latest' | 'following' | 'discoveries' | 'tonight'
@@ -333,7 +333,7 @@ export default function FeedPage() {
                   </button>
                 </div>
                 <button className="post-btn" disabled={!canPost} onClick={submitPost}>
-                  {posting ? 'Sending…' : 'Cosmos'}
+                  {posting ? 'Sending…' : 'Post'}
                 </button>
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function FeedPage() {
 
         <aside className="sidebar-right">
           <SkyWidget lat={lat} lon={lon} cityLabel={cityLabel} />
-          <MarketsWidget />
+          <DiscoveriesWidget />
           <ShopWidget />
         </aside>
       </div>

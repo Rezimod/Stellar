@@ -9,7 +9,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { avatarById } from '@/lib/avatars';
 import {
   CloudSun, ShoppingBag, Satellite, Search, BookOpen,
-  TrendingUp, Sparkles, Telescope, LayoutGrid, User, Gem, LogOut,
+  Sparkles, Telescope, LayoutGrid, User, Gem, LogOut,
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import SearchModal from './SearchModal';
@@ -18,7 +18,6 @@ const NAV_ITEMS = [
   { href: '/sky',         label: 'Sky',       icon: CloudSun },
   { href: '/missions',    label: 'Missions',  icon: Satellite },
   { href: '/feed',        label: 'Feed',      icon: Sparkles },
-  { href: '/markets',     label: 'Markets',   icon: TrendingUp },
   { href: '/learn',       label: 'Learning',  icon: BookOpen },
   { href: '/marketplace', label: 'Shop',      icon: ShoppingBag },
 ];
