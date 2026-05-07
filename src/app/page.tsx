@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import HeroSkyPanel from '@/components/home/HeroSkyPanelLazy';
+import HeroSaturn from '@/components/home/HeroSaturn';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -723,93 +723,15 @@ function SkyFeatureSlot({
 
 export default function HomePage() {
   return (
-    <div className="bg-[#0A1735] text-white -mt-14 pt-14 overflow-x-hidden">
+    <div className="bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
 
       {/* ============================================================
-          HERO — solar system animation, do not modify
+          HERO — Saturn parallax, screenshot redesign
          ============================================================ */}
-      <section className="relative px-4 md:px-8 pt-12 md:pt-20 pb-16 md:pb-24 overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at 70% 50%, rgba(255, 179, 71, 0.10) 0%, transparent 50%), radial-gradient(circle at 30% 60%, rgba(176, 127, 232, 0.08) 0%, transparent 50%)',
-          }}
-        />
-        <svg
-          className="absolute inset-0 pointer-events-none opacity-50 w-full h-full"
-          preserveAspectRatio="none"
-          viewBox="0 0 1200 700"
-        >
-          <g fill="#FFFFFF">
-            <circle cx="100"  cy="80"  r="0.8" opacity="0.6" />
-            <circle cx="240"  cy="160" r="1.2" opacity="0.8" />
-            <circle cx="380"  cy="60"  r="0.6" opacity="0.5" />
-            <circle cx="520"  cy="220" r="1.4" opacity="0.7" />
-            <circle cx="700"  cy="90"  r="0.8" opacity="0.6" />
-            <circle cx="880"  cy="180" r="1.0" opacity="0.7" />
-            <circle cx="1050" cy="120" r="0.6" opacity="0.5" />
-            <circle cx="60"   cy="320" r="1.0" opacity="0.6" />
-            <circle cx="200"  cy="420" r="0.6" opacity="0.4" />
-            <circle cx="340"  cy="500" r="1.2" opacity="0.7" />
-            <circle cx="480"  cy="380" r="0.8" opacity="0.5" />
-            <circle cx="620"  cy="540" r="1.4" opacity="0.8" />
-            <circle cx="780"  cy="440" r="0.6" opacity="0.5" />
-            <circle cx="940"  cy="500" r="1.0" opacity="0.6" />
-            <circle cx="1100" cy="380" r="0.8" opacity="0.5" />
-            <circle cx="160"  cy="600" r="0.8" opacity="0.6" />
-            <circle cx="420"  cy="660" r="0.6" opacity="0.4" />
-            <circle cx="700"  cy="640" r="1.0" opacity="0.6" />
-            <circle cx="1020" cy="640" r="0.8" opacity="0.5" />
-          </g>
-        </svg>
+      <HeroSaturn />
 
-        <div className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10 md:gap-12 items-center">
-          <div>
-            <h1 className="text-[36px] md:text-[72px] font-extrabold leading-[1.05] md:leading-[1] tracking-[-0.025em] text-white mb-5 md:mb-8">
-              Find every{' '}
-              <span className="bg-gradient-to-r from-[#B07FE8] to-[#5EEAD4] bg-clip-text text-transparent">
-                planet
-              </span>
-              . Earn rewards.
-            </h1>
-
-            <p className="text-[15px] md:text-[18px] leading-[1.65] text-[#9BA3B4] mb-7 md:mb-9 max-w-[440px]">
-              Find what&apos;s up tonight. Photograph it. Redeem Stars for a real telescope.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 max-w-[460px]">
-              <Link
-                href="/sky"
-                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white/90 font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:bg-white/[0.06] hover:text-white"
-                style={{
-                  fontFamily: 'var(--font-cta, var(--font-body))',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                }}
-              >
-                Start observing
-              </Link>
-              <Link
-                href="/missions"
-                className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:brightness-[1.08]"
-                style={{
-                  fontFamily: 'var(--font-cta, var(--font-body))',
-                  background: '#FFB347',
-                  boxShadow: '0 10px 32px rgba(255, 179, 71, 0.35), inset 0 1px 0 rgba(255,255,255,0.18)',
-                }}
-              >
-                Earn stars
-              </Link>
-            </div>
-          </div>
-
-          <div className="hidden md:flex relative items-center justify-center">
-            <HeroSkyPanel />
-          </div>
-        </div>
-
-        <div className="relative max-w-[960px] mx-auto mt-14 md:mt-24">
+      <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
+        <div className="relative max-w-[960px] mx-auto">
           <div className="text-center mb-5 md:mb-7 text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#6B7385]">
             Backed by Astroman — authorized dealer
           </div>

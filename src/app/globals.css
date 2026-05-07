@@ -264,10 +264,11 @@
   --color-yes: var(--yes);
   --color-no: var(--no);
 
-  /* Fonts — Fraunces display, Inter body, JetBrains Mono */
-  --font-display:  var(--font-display, 'Fraunces', Georgia, serif);
-  --font-body:     var(--font-body, 'Inter', system-ui, -apple-system, sans-serif);
-  --font-serif:    var(--font-display, 'Fraunces', Georgia, serif);
+  /* Fonts — Saira everywhere (display + body + CTA), JetBrains Mono for numbers */
+  --font-display:  var(--font-saira), system-ui, -apple-system, sans-serif;
+  --font-body:     var(--font-saira), system-ui, -apple-system, sans-serif;
+  --font-cta:      var(--font-saira), system-ui, -apple-system, sans-serif;
+  --font-serif:    var(--font-saira), system-ui, -apple-system, sans-serif;
   --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }
@@ -438,31 +439,32 @@ code, pre, .mono, [class*="font-mono"] {
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* === Astroman Club CTA tokens ===
-   Pulled from club.astroman.ge. Indigo→violet gradient pill primary,
-   dark pill secondary. Used by .btn-primary, .btn-ghost, .btn-stellar*,
-   and .icon-badge-gradient. */
+/* === CTA tokens ===
+   Solid orange primary, dark navy secondary. Rectangular with subtle
+   rounding. No gradients, no glow. Used by .btn-primary, .btn-ghost,
+   .btn-stellar*, and .icon-badge-gradient. */
 :root {
-  --cta-indigo: #5B6CFF;
-  --cta-violet: #8B5CF6;
-  --cta-orange-from: #FFB347;
-  --cta-orange-to:   #FFB347;
-  --cta-gradient: linear-gradient(135deg, var(--cta-indigo) 0%, var(--cta-violet) 100%);
-  --cta-gradient-orange: linear-gradient(135deg, var(--cta-orange-from) 0%, var(--cta-orange-to) 100%);
-  --cta-glow: 0 8px 24px rgba(91, 108, 255, 0.28), 0 0 0 1px rgba(139, 92, 246, 0.25) inset;
-  --cta-glow-strong: 0 10px 32px rgba(91, 108, 255, 0.45), 0 0 0 1px rgba(139, 92, 246, 0.35) inset;
-  --cta-secondary-bg: #161A28;
-  --cta-secondary-border: rgba(255,255,255,0.10);
-  --cta-radius: 14px;
+  --cta-orange:       #FF6A1A;
+  --cta-orange-hover: #FF7A2E;
+  --cta-orange-from:  #FF6A1A;
+  --cta-orange-to:    #FF6A1A;
+  --cta-gradient:        var(--cta-orange);
+  --cta-gradient-orange: var(--cta-orange);
+  --cta-glow:        none;
+  --cta-glow-strong: none;
+  --cta-secondary-bg:     #1A2540;
+  --cta-secondary-hover:  #223054;
+  --cta-secondary-border: rgba(255,255,255,0.06);
+  --cta-radius: 8px;
 }
 
-/* Button styles */
+/* Button styles — solid orange primary, dark navy secondary, rectangular */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--cta-gradient);
+  background: var(--cta-orange);
   color: #FFFFFF;
   font-family: var(--font-cta, var(--font-body));
   font-weight: 600;
@@ -473,12 +475,12 @@ code, pre, .mono, [class*="font-mono"] {
   padding: 12px 22px;
   min-height: 48px;
   cursor: pointer;
-  box-shadow: var(--cta-glow);
-  transition: filter var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
+  box-shadow: none;
+  transition: background var(--duration-fast), filter var(--duration-fast);
 }
-.btn-primary:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: var(--cta-glow-strong); }
-.btn-primary:active:not(:disabled) { transform: translateY(0); filter: brightness(1.02); }
-.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
+.btn-primary:hover:not(:disabled)  { background: var(--cta-orange-hover); }
+.btn-primary:active:not(:disabled) { filter: brightness(0.96); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .btn-ghost {
   display: inline-flex;
@@ -495,35 +497,38 @@ code, pre, .mono, [class*="font-mono"] {
   padding: 12px 22px;
   min-height: 48px;
   cursor: pointer;
-  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
-.btn-ghost:hover:not(:disabled) { background: #1C2235; border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
-.btn-ghost:active:not(:disabled) { transform: translateY(0); }
-.btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-ghost:hover:not(:disabled)  { background: var(--cta-secondary-hover); }
+.btn-ghost:active:not(:disabled) { filter: brightness(0.96); }
+.btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* Aliases for explicit Astroman-Club look (so a component can opt in
-   without depending on the .btn-primary alias staying gradient). */
-.btn-stellar       { /* primary alias */
+/* Aliases — same orange / navy treatment */
+.btn-stellar {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--cta-gradient); color: #FFFFFF;
+  background: var(--cta-orange); color: #FFFFFF;
   font-family: var(--font-cta, var(--font-body)); font-weight: 600; font-size: 14px;
   letter-spacing: 0.005em; border: none; border-radius: var(--cta-radius);
-  padding: 12px 22px; min-height: 48px; cursor: pointer; box-shadow: var(--cta-glow);
-  transition: filter var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
+  padding: 12px 22px; min-height: 48px; cursor: pointer; box-shadow: none;
+  transition: background var(--duration-fast), filter var(--duration-fast);
 }
-.btn-stellar:hover:not(:disabled)  { filter: brightness(1.08); transform: translateY(-1px); box-shadow: var(--cta-glow-strong); }
-.btn-stellar:active:not(:disabled) { transform: translateY(0); filter: brightness(1.02); }
+.btn-stellar:hover:not(:disabled)  { background: var(--cta-orange-hover); }
+.btn-stellar:active:not(:disabled) { filter: brightness(0.96); }
 
-.btn-stellar-ghost { /* secondary alias */
+.btn-stellar-ghost {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   background: var(--cta-secondary-bg); border: 1px solid var(--cta-secondary-border);
   color: var(--text-primary); font-family: var(--font-cta, var(--font-display));
   font-weight: 500; font-size: 14px; border-radius: var(--cta-radius);
   padding: 12px 22px; min-height: 48px; cursor: pointer;
-  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
-.btn-stellar-ghost:hover:not(:disabled)  { background: #1C2235; border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
-.btn-stellar-ghost:active:not(:disabled) { transform: translateY(0); }
+.btn-stellar-ghost:hover:not(:disabled)  { background: var(--cta-secondary-hover); }
+.btn-stellar-ghost:active:not(:disabled) { filter: brightness(0.96); }
+
+/* Home hero CTAs */
+.hero-cta-primary:hover   { background: #FF7A2E !important; }
+.hero-cta-secondary:hover { background: #223054 !important; }
 
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
    on club.astroman.ge. Use .icon-badge-gradient.is-orange for the third

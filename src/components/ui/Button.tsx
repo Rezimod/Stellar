@@ -22,21 +22,21 @@ const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
 
 const variantBase: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+    background: '#FF6A1A',
     color: '#FFFFFF',
     border: 'none',
     fontWeight: 600,
     fontFamily: 'var(--font-cta, var(--font-body))',
-    borderRadius: 14,
-    boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
+    borderRadius: 8,
+    boxShadow: 'none',
   },
   secondary: {
-    background: '#161A28',
-    border: '1px solid rgba(255,255,255,0.10)',
-    color: 'rgba(255,255,255,0.92)',
+    background: '#1A2540',
+    border: '1px solid rgba(255,255,255,0.06)',
+    color: 'rgba(255,255,255,0.96)',
     fontWeight: 500,
     fontFamily: 'var(--font-cta, var(--font-display))',
-    borderRadius: 14,
+    borderRadius: 8,
   },
   ghost: {
     background: 'transparent',
@@ -59,8 +59,8 @@ const variantBase: Record<ButtonVariant, React.CSSProperties> = {
 };
 
 const variantHover: Record<ButtonVariant, React.CSSProperties> = {
-  primary:   { filter: 'brightness(1.08)', boxShadow: '0 10px 32px rgba(91, 108, 255, 0.45)' },
-  secondary: { borderColor: 'rgba(255,255,255,0.18)', background: '#1C2235', color: '#fff' },
+  primary:   { background: '#FF7A2E' },
+  secondary: { background: '#223054', color: '#fff' },
   ghost:     { color: 'rgba(255,255,255,0.9)', background: 'rgba(255,255,255,0.04)' },
   danger:    { background: 'rgba(251, 113, 133,0.2)' },
   reward:    { filter: 'brightness(1.08)', boxShadow: '0 0 16px rgba(255, 179, 71,0.3)' },
@@ -94,7 +94,7 @@ export function Button({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    borderRadius: 'var(--radius-md, 12px)',
+    borderRadius: 8,
     fontFamily: 'var(--font-display)',
     cursor: disabled || loading ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.38 : 1,
