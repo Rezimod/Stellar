@@ -1111,24 +1111,24 @@ export default function HomePage() {
           <div className="text-center mb-14 md:mb-20">
             <Eyebrow>Vision</Eyebrow>
             <SectionTitle>
-              Find the sky.{' '}
+              Know what&apos;s up tonight.{' '}
               <span className="bg-gradient-to-r from-[#B07FE8] to-[#5EEAD4] bg-clip-text text-transparent">
-                Share what you see.
+                Find it together.
               </span>
             </SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">Find your target</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">Targets worth aiming at</div>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">Observe together</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">A community looking up</div>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">Earned, not airdropped</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">Verified by what you saw</div>
             </div>
           </div>
         </div>
