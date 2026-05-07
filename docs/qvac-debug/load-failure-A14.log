@@ -1,0 +1,97 @@
+05-07 21:40:37.357 26451 26776 I bare    : [sdk:server] 🐻 QVAC Worker (custom bundle)
+05-07 21:40:37.359 26451 26776 I bare    : [sdk:server] 📦 Plugins: 3
+05-07 21:40:37.380 26451 26776 I bare    : [sdk:server] Running in BareKit IPC mode
+05-07 21:40:37.382 26451 26776 I bare    : [sdk:server] Bare worker started and listening for RPC requests
+05-07 21:40:44.309 26451 26776 I bare    : [sdk:server] Loading from registry: unsloth/Llama-3.2-1B-Instruct-GGUF/blob/b69aef112e9f895e6f98d7ae0949f72ff09aa401/Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:40:44.344 26451 26776 I bare    : [sdk:server] 🔗 Creating new registry client...
+05-07 21:40:44.558 26451 26776 I bare    : [sdk:server] ✅ Registry client ready
+05-07 21:40:44.573 26451 26776 I bare    : [sdk:server] 📥 Downloading blob directly: Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:40:44.585 26451 26776 I bare    : [QVACRegistryClient] [INFO] Downloading blob directly {
+05-07 21:40:44.585 26451 26776 I bare    :   coreKey: '4035e6638834...',
+05-07 21:40:44.585 26451 26776 I bare    :   blockOffset: 168716,
+05-07 21:40:44.585 26451 26776 I bare    :   blockLength: 11796,
+05-07 21:40:44.585 26451 26776 I bare    :   byteLength: 773025824
+05-07 21:40:44.585 26451 26776 I bare    : }
+05-07 21:44:38.230 26451 26776 I bare    : [QVACRegistryClient] [INFO] Cleared blob blocks from corestore { start: 168716, end: 180512, blocks: 0 }
+05-07 21:44:38.232 26451 26776 I bare    : [QVACRegistryClient] [INFO] Blob download complete (direct)
+05-07 21:44:38.234 26451 26776 I bare    : [sdk:server] ✅ Downloaded to /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:44:49.612 26451 26776 I bare    : [sdk:server] ✅ Checksum validated for Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:44:49.615 26451 26776 I bare    : [sdk:server] Loaded Model to /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:44:49.743 26451 26776 I bare    : [sdk:server] llamacpp-completion: Loading model 31b329c97909457e...
+05-07 21:44:52.574 26451 26776 E bare    : [sdk:server] Error loading model: Error: Failed to initialize model
+05-07 21:44:52.574 26451 26776 E bare    :     at LlamaInterface.activate (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/addon.js:46:19)
+05-07 21:44:52.574 26451 26776 E bare    :     at LlmLlamacpp._load (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/index.js:155:24)
+05-07 21:44:52.574 26451 26776 E bare    :     at async LlmLlamacpp.load (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/node_modules/@qvac/infer-base/WeightsProvider/BaseInference.js:65:5)
+05-07 21:44:52.574 26451 26776 E bare    :     at async loadModel (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/bare/ops/load-model.js:65:9)
+05-07 21:44:52.574 26451 26776 E bare    :     at async handleLoadModel (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handlers/load-model/handler.js:71:28)
+05-07 21:44:52.574 26451 26776 E bare    :     at async executeProgressHandler (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handler-utils.js:94:24)
+05-07 21:44:52.574 26451 26776 E bare    :     at async executeHandler (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handler-utils.js:144:9)
+05-07 21:44:52.574 26451 26776 E bare    :     at async RPC.handleRequest (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handle-request.js:43:9)
+05-07 21:44:52.574 26451 26776 E bare    :     at asy
+05-07 21:47:56.476 26451 26776 I bare    : [sdk:server] Loading from registry: unsloth/Llama-3.2-1B-Instruct-GGUF/blob/b69aef112e9f895e6f98d7ae0949f72ff09aa401/Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:47:56.489 26451 26776 I bare    : [sdk:server] ✅ Model cached with correct size: /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:48:47.558 27428 27645 I bare    : [sdk:server] 🐻 QVAC Worker (custom bundle)
+05-07 21:48:47.560 27428 27645 I bare    : [sdk:server] 📦 Plugins: 3
+05-07 21:48:47.582 27428 27645 I bare    : [sdk:server] Running in BareKit IPC mode
+05-07 21:48:47.585 27428 27645 I bare    : [sdk:server] Bare worker started and listening for RPC requests
+05-07 21:48:50.285 27428 27645 I bare    : [sdk:server] Loading from registry: unsloth/Llama-3.2-1B-Instruct-GGUF/blob/b69aef112e9f895e6f98d7ae0949f72ff09aa401/Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:48:50.335 27428 27645 I bare    : [sdk:server] ✅ Model cached with correct size: /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:48:59.153 27428 27645 I bare    : [sdk:server] ✅ Model already cached and validated: /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:48:59.153 27428 27645 I bare    : [sdk:server] ✅ Using cached model: /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:48:59.173 27428 27645 I bare    : [sdk:server] Loaded Model to /data/user/0/com.stellar.field/files/.qvac/models/f2bade0bc5cd4a8c_Llama-3.2-1B-Instruct-Q4_0.gguf
+05-07 21:48:59.199 27428 27645 I bare    : [sdk:server] llamacpp-completion: Loading model ff3058b6e1f668a6...
+05-07 21:49:01.908 27428 27645 E bare    : [sdk:server] Error loading model: Error: Failed to initialize model
+05-07 21:49:01.908 27428 27645 E bare    :     at LlamaInterface.activate (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/addon.js:46:19)
+05-07 21:49:01.908 27428 27645 E bare    :     at LlmLlamacpp._load (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/index.js:155:24)
+05-07 21:49:01.908 27428 27645 E bare    :     at async LlmLlamacpp.load (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/node_modules/@qvac/infer-base/WeightsProvider/BaseInference.js:65:5)
+05-07 21:49:01.908 27428 27645 E bare    :     at async loadModel (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/bare/ops/load-model.js:65:9)
+05-07 21:49:01.908 27428 27645 E bare    :     at async handleLoadModel (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handlers/load-model/handler.js:71:28)
+05-07 21:49:01.908 27428 27645 E bare    :     at async executeProgressHandler (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handler-utils.js:94:24)
+05-07 21:49:01.908 27428 27645 E bare    :     at async executeHandler (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handler-utils.js:144:9)
+05-07 21:49:01.908 27428 27645 E bare    :     at async RPC.handleRequest (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handle-request.js:43:9)
+05-07 21:49:01.908 27428 27645 E bare    :     at asy
+05-07 21:53:04.956 27428 27645 I bare    : [sdk:server] Loading from registry: unsloth/Qwen3-0.6B-GGUF/blob/50968a4468ef4233ed78cd7c3de230dd1d61a56b/Qwen3-0.6B-Q4_0.gguf
+05-07 21:53:04.984 27428 27645 I bare    : [sdk:server] 🔗 Creating new registry client...
+05-07 21:53:05.322 27428 27645 I bare    : [sdk:server] ✅ Registry client ready
+05-07 21:53:05.338 27428 27645 I bare    : [sdk:server] 📥 Downloading blob directly: Qwen3-0.6B-Q4_0.gguf
+05-07 21:53:05.343 27428 27645 I bare    : [QVACRegistryClient] [INFO] Downloading blob directly {
+05-07 21:53:05.343 27428 27645 I bare    :   coreKey: '4035e6638834...',
+05-07 21:53:05.343 27428 27645 I bare    :   blockOffset: 380426,
+05-07 21:53:05.343 27428 27645 I bare    :   blockLength: 5832,
+05-07 21:53:05.343 27428 27645 I bare    :   byteLength: 382156480
+05-07 21:53:05.343 27428 27645 I bare    : }
+05-07 21:53:55.045 29810 30009 I bare    : [sdk:server] 🐻 QVAC Worker (custom bundle)
+05-07 21:53:55.046 29810 30009 I bare    : [sdk:server] 📦 Plugins: 3
+05-07 21:53:55.068 29810 30009 I bare    : [sdk:server] Running in BareKit IPC mode
+05-07 21:53:55.071 29810 30009 I bare    : [sdk:server] Bare worker started and listening for RPC requests
+05-07 21:53:57.696 29810 30009 I bare    : [sdk:server] Loading from registry: unsloth/Qwen3-0.6B-GGUF/blob/50968a4468ef4233ed78cd7c3de230dd1d61a56b/Qwen3-0.6B-Q4_0.gguf
+05-07 21:53:57.735 29810 30009 W bare    : [sdk:server] 🗑️ Removing incomplete cached file (expected 382156480, got 1114112): /data/user/0/com.stellar.field/files/.qvac/models/5b8aae816570a09d_Qwen3-0.6B-Q4_0.gguf
+05-07 21:53:57.739 29810 30009 I bare    : [sdk:server] 🔗 Creating new registry client...
+05-07 21:53:58.007 29810 30009 I bare    : [sdk:server] ✅ Registry client ready
+05-07 21:53:58.028 29810 30009 I bare    : [sdk:server] 📥 Downloading blob directly: Qwen3-0.6B-Q4_0.gguf
+05-07 21:53:58.040 29810 30009 I bare    : [QVACRegistryClient] [INFO] Downloading blob directly {
+05-07 21:53:58.040 29810 30009 I bare    :   coreKey: '4035e6638834...',
+05-07 21:53:58.040 29810 30009 I bare    :   blockOffset: 380426,
+05-07 21:53:58.040 29810 30009 I bare    :   blockLength: 5832,
+05-07 21:53:58.040 29810 30009 I bare    :   byteLength: 382156480
+05-07 21:53:58.040 29810 30009 I bare    : }
+05-07 21:55:06.133 29810 30009 I bare    : [QVACRegistryClient] [INFO] Cleared blob blocks from corestore { start: 380426, end: 386258, blocks: 0 }
+05-07 21:55:06.134 29810 30009 I bare    : [QVACRegistryClient] [INFO] Blob download complete (direct)
+05-07 21:55:06.135 29810 30009 I bare    : [sdk:server] ✅ Downloaded to /data/user/0/com.stellar.field/files/.qvac/models/5b8aae816570a09d_Qwen3-0.6B-Q4_0.gguf
+05-07 21:55:11.233 29810 30009 I bare    : [sdk:server] ✅ Checksum validated for Qwen3-0.6B-Q4_0.gguf
+05-07 21:55:11.234 29810 30009 I bare    : [sdk:server] Loaded Model to /data/user/0/com.stellar.field/files/.qvac/models/5b8aae816570a09d_Qwen3-0.6B-Q4_0.gguf
+05-07 21:55:11.254 29810 30009 I bare    : [sdk:server] llamacpp-completion: Loading model 61c49b1547034d56...
+05-07 21:55:13.607 29810 30009 E bare    : [sdk:server] Error loading model: Error: Failed to initialize model
+05-07 21:55:13.607 29810 30009 E bare    :     at LlamaInterface.activate (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/addon.js:46:19)
+05-07 21:55:13.607 29810 30009 E bare    :     at LlmLlamacpp._load (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/index.js:155:24)
+05-07 21:55:13.607 29810 30009 E bare    :     at async LlmLlamacpp.load (file:///worker.bundle/node_modules/@qvac/llm-llamacpp/node_modules/@qvac/infer-base/WeightsProvider/BaseInference.js:65:5)
+05-07 21:55:13.607 29810 30009 E bare    :     at async loadModel (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/bare/ops/load-model.js:65:9)
+05-07 21:55:13.607 29810 30009 E bare    :     at async handleLoadModel (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handlers/load-model/handler.js:71:28)
+05-07 21:55:13.607 29810 30009 E bare    :     at async executeProgressHandler (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handler-utils.js:94:24)
+05-07 21:55:13.607 29810 30009 E bare    :     at async executeHandler (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handler-utils.js:144:9)
+05-07 21:55:13.607 29810 30009 E bare    :     at async RPC.handleRequest (file:///worker.bundle/node_modules/@qvac/sdk/dist/server/rpc/handle-request.js:43:9)
+05-07 21:55:13.607 29810 30009 E bare    :     at asy
+---
+SM-A145F
+erd3830
+arm64-v8a,armeabi-v7a,armeabi

@@ -71,11 +71,13 @@ class QvacRuntime {
         });
 
         const sdk = await import('@qvac/sdk');
-        const { loadModel, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
+        const { loadModel, QWEN3_600M_INST_Q4, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
+        const modelSrc = QWEN3_600M_INST_Q4 ?? LLAMA_3_2_1B_INST_Q4_0;
 
         this.llmModelId = await loadModel({
-          modelSrc: LLAMA_3_2_1B_INST_Q4_0,
+          modelSrc,
           modelType: 'llm',
+          modelConfig: { gpu_layers: 0, ctx_size: 512, n_threads: 1, no_mmap: true },
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.llmTracker.emit({
               phase: 'downloading',

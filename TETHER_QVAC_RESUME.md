@@ -1,12 +1,74 @@
 # Tether QVAC restoration — resume plan
 
-**Last updated:** 2026-05-07 (afternoon, mid-session before Mac restart)
+**Last updated:** 2026-05-07 (evening, after A14 hardware-block)
 **Owner:** Rezi
-**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — pick up from "Resume after restart 2026-05-07" below.
+**Why this file exists:** We pivoted to a stripped APK to unblock hardware verification (commit `1abb18c`). To win the Tether prize we need the full QVAC integration restored and running on a real Android phone. This doc is the resume point — pick up from "Resume after A14 device-block 2026-05-07 evening" below.
 
 ---
 
-## Resume after restart 2026-05-07 (READ THIS FIRST)
+## Resume after A14 device-block 2026-05-07 evening (READ THIS FIRST)
+
+If you're a Claude opening this and Rezi says "continue QVAC" — **the situation is**:
+
+**The big thing already worked.** The whole gradle pipeline + bundle generation breakthrough that EAS Build couldn't deliver is verified and reproducible:
+
+- ✅ `apps/field/qvac/worker.bundle.js` (8.1MB) generates locally via `expo prebuild`
+- ✅ `apps/field/android/app/build/outputs/apk/debug/app-debug.apk` (271MB) builds clean (`./gradlew assembleDebug`, ~6 min with warm cache)
+- ✅ APK installs and launches on real phone (Samsung A14, SM-A145F)
+- ✅ QVAC bare-kit worker spawns: `🐻 QVAC Worker (custom bundle)` with 3 plugins
+- ✅ Models download + checksum-validate end-to-end (verified with both Llama 3.2 1B Q4_0 and Qwen3 0.6B Q4)
+
+**What's blocked: `LlamaInterface.activate()` fails on the Samsung A14 4G (Helio G80).**
+
+- Same generic `Error: Failed to initialize model` regardless of model (Llama 1B / Qwen 0.6B), `gpu_layers: 0`, `ctx_size: 512`, `n_threads: 1`, `no_mmap: true`. ~2.5s consistent fail time.
+- Native llama.cpp error message is suppressed by the SDK's `startLogBuffering(modelId)` mechanism — never surfaces in logcat. Only the JS-level rethrow is visible.
+- Device CPU features per `/proc/cpuinfo`: `fp asimd ... fphp asimdhp asimdrdm lrcpc dcpop` — **no `asimddp`** (no ARMv8.2 dot-product). Helio G80 = Cortex-A75+A55, neither has DOTPROD.
+- Strong hypothesis: GGML's runtime CPU detection picks `libqvac-ggml-cpu-android_armv8.2_2.so` (FP16-capable backend that *also* uses SDOT instructions) — first SDOT execution → SIGILL → caught and rethrown as generic init failure. **No JS-level config knob to override CPU backend selection** (verified: schema exposes `gpu_layers`, `n_threads`, `ctx_size`, `no_mmap`, but no backend/ISA hint).
+
+**State of the working tree (preserved for resume):**
+
+- `apps/field/lib/qvac.ts` is currently configured with the most-conservative load options: `{ gpu_layers: 0, ctx_size: 512, n_threads: 1, no_mmap: true }` and tries `QWEN3_600M_INST_Q4` first, falling back to `LLAMA_3_2_1B_INST_Q4_0`. **Revert this when a compatible phone arrives** — Llama 1B is the rep-validated demo model. To revert: change modelSrc back to `LLAMA_3_2_1B_INST_Q4_0` and drop the n_threads/no_mmap/ctx_size overrides (keep `gpu_layers` only as a defensive default).
+- `docs/qvac-debug/load-failure-A14.log` — clean 97-line dump for the rep
+- Metro bundler has been stopped (was running on `localhost:8081` with `adb reverse tcp:8081`)
+- ADB device authorization for SM-A145F is persisted (`adb devices` will see it on next plug-in if same cable)
+
+**Immediate pickup steps when a compatible phone arrives** (Pixel 6/7/8/9, Galaxy S22/23/24, Galaxy A52/A53/A54, OnePlus 9+, Pixel 7a — anything Snapdragon 7-series+ or Tensor — **avoid all Helio G-series**):
+
+1. **Revert `apps/field/lib/qvac.ts`** to clean Llama 1B + minimal config:
+   ```ts
+   const { loadModel, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
+   this.llmModelId = await loadModel({
+     modelSrc: LLAMA_3_2_1B_INST_Q4_0,
+     modelType: 'llm',
+     onProgress: ...
+   });
+   ```
+
+2. **Plug in the new phone.** USB debugging on, "Always allow" the RSA. Confirm with `adb devices`.
+
+3. **Start Metro + adb reverse + relaunch app:**
+   ```bash
+   adb reverse tcp:8081 tcp:8081
+   cd /Users/nika/Desktop/Stellar-rezimod/apps/field && npx expo start --dev-client --port 8081 &
+   adb install -r android/app/build/outputs/apk/debug/app-debug.apk    # if not yet installed
+   adb shell am force-stop com.stellar.field
+   adb shell monkey -p com.stellar.field -c android.intent.category.LAUNCHER 1
+   ```
+
+4. **Watch for "On-device AI ready"** — that's the green light. Then run the 9-step verification from `docs/qvac-demo-script.md`.
+
+5. **For the actual submission demo recording**, build a release APK (not debug — release doesn't need Metro):
+   ```bash
+   cd /Users/nika/Desktop/Stellar-rezimod/apps/field/android && ./gradlew assembleRelease
+   ```
+
+**If the rep replied with a fix** (e.g., a backend env var or an updated SDK), apply it BEFORE step 1, then proceed normally.
+
+**Do NOT keep grinding on the A14.** It's a chipset-level mismatch with QVAC's CPU backend selection logic; not solvable from the JS layer.
+
+---
+
+## Resume after restart 2026-05-07 (historical, superseded by section above)
 
 If you're a Claude opening this after Rezi restarts his Mac and says "continue QVAC", **the situation is**:
 
