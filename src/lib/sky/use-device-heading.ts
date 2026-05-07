@@ -169,7 +169,15 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
 }
 
 const OFFSET_KEY = 'stellar.sky.compass.offset';
-const MAX_OFFSET = 30;
+/**
+ * Range we accept for the user's calibration offset. ±180° covers any
+ * possible heading error (magnetic declination, indoor interference,
+ * sensor mis-zero, declination uncorrected on Android). Earlier we capped
+ * this at ±30°, which silently swallowed real-world offsets >30° — making
+ * the one-shot calibration look broken when the magnetic environment was
+ * skewed by more than that.
+ */
+const MAX_OFFSET = 180;
 
 function loadOffset(): number {
   if (typeof window === 'undefined') return 0;

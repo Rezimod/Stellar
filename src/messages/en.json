@@ -511,14 +511,10 @@
       "nudgeRight": "Nudge compass right",
       "nudgeNeutral": "Aligned",
       "lockTo": "Aim at {name}, tap to lock",
-      "calTilt": "Tilt {dir} {deg}° to {name}",
-      "calSweep": "Sweep {dir} {deg}° toward {name}",
-      "calReady": "Aim at {name} — tap to calibrate",
+      "calReady": "Point at the real {name} → tap",
+      "calRecal": "Re-calibrate to {name}",
+      "calMeta": "expects {deg}° · alt {alt}°",
       "calLocked": "Compass aligned to {name} ({deg}°)",
-      "up": "up",
-      "down": "down",
-      "left": "left",
-      "right": "right",
       "visible": "{count} visible"
     },
     "tour": {
@@ -529,10 +525,11 @@
       "dismiss": "Got it"
     },
     "posture": {
-      "aria": "How to point your phone",
-      "step1": "Hold your phone vertical, screen facing you, top edge up.",
-      "step2": "Aim the back of the phone at the {name} — the camera lens is the sight.",
+      "aria": "How to calibrate the compass",
+      "step1": "Find the {name} in the sky with your eyes — that's the reference point.",
+      "step2": "Hold the phone vertical, screen toward you, and aim the back camera at the {name}.",
       "overhead": "{name} is high overhead — tilt the phone backward until the back lens looks straight up at it.",
+      "step3": "Tap the green button. The compass snaps to wherever you're aimed.",
       "dismiss": "Got it"
     }
   },

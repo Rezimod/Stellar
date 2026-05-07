@@ -822,11 +822,9 @@ export function SkyMap({
         </div>
       )}
 
-      {isLive && calibrationAnchor && onNudge && hasTilt && (
+      {isLive && calibrationAnchor && onNudge && (
         <CalibrationBanner
           anchor={calibrationAnchor}
-          heading={heading ?? 0}
-          userAlt={userAltitude ?? 0}
           onLock={() => {
             const delta = headingDelta(calibrationAnchor.azimuth, heading ?? 0);
             onNudge(delta);
@@ -1139,35 +1137,27 @@ function CompassIcon() {
 
 interface CalibrationBannerProps {
   anchor: { id: string; name: string; azimuth: number; altitude: number };
-  heading: number;
-  userAlt: number;
   onLock: () => void;
   calibrationOffset: number;
 }
 
 /**
- * Self-narrating calibration prompt. Reads the user's current tilt and
- * azimuth, picks the next instruction (tilt → sweep → tap), and only
- * triggers the lock when the phone is roughly aimed at the anchor body.
+ * One-shot calibration. The user identifies the anchor body (Moon, Sun,
+ * etc.) by eye, points the back of the phone at it, taps the button. We
+ * snapshot the current heading, compute the offset to the anchor's true
+ * azimuth, and apply it.
  *
- * State machine:
- *   |Δalt| > 12°  → "Tilt up/down NN° to <name>"
- *   |Δaz|  > 25°  → "Sweep left/right NN° toward <name>"
- *   else          → "Aim at <name> · tap to calibrate" (button enabled)
- *
- * After the first lock, a quiet success pill shows the applied offset for
- * a few seconds, then the banner disappears so the chart is unobstructed.
+ * Earlier this was gated on the user first aiming where the app *thought*
+ * the body was — a circular dependency that prevented calibration from
+ * ever firing when the compass was off. The button is now always tappable;
+ * the user is the source of truth for "this is where the Moon really is."
  */
 function CalibrationBanner({
   anchor,
-  heading,
-  userAlt,
   onLock,
   calibrationOffset,
 }: CalibrationBannerProps) {
   const t = useTranslations('sky.skymap');
-  const tiltDelta = anchor.altitude - userAlt;
-  const azDelta = headingDelta(anchor.azimuth, heading);
   const [justLocked, setJustLocked] = useState(false);
 
   useEffect(() => {
@@ -1175,11 +1165,6 @@ function CalibrationBanner({
     const id = window.setTimeout(() => setJustLocked(false), 2400);
     return () => window.clearTimeout(id);
   }, [justLocked]);
-
-  // After calibration the banner gets out of the way. Pre-calibration
-  // (offset === 0) it stays visible to walk the user through tilt → sweep
-  // → tap. The only post-cal render is the brief success flash.
-  if (calibrationOffset !== 0 && !justLocked) return null;
 
   if (justLocked) {
     return (
@@ -1192,43 +1177,10 @@ function CalibrationBanner({
     );
   }
 
-  const tiltOff = Math.abs(tiltDelta) > 12;
-  const azOff = Math.abs(azDelta) > 25;
-
-  if (tiltOff) {
-    const dir = tiltDelta > 0 ? '↑' : '↓';
-    return (
-      <div className="sky-map__cal-banner sky-map__cal-banner--guide" role="status">
-        <span className="sky-map__cal-banner-icon" aria-hidden="true">{dir}</span>
-        <span className="sky-map__cal-banner-text">
-          {t('calTilt', {
-            dir: tiltDelta > 0 ? t('up') : t('down'),
-            deg: Math.abs(Math.round(tiltDelta)),
-            name: anchor.name,
-          })}
-        </span>
-      </div>
-    );
-  }
-  if (azOff) {
-    const dir = azDelta > 0 ? '→' : '←';
-    return (
-      <div className="sky-map__cal-banner sky-map__cal-banner--guide" role="status">
-        <span className="sky-map__cal-banner-icon" aria-hidden="true">{dir}</span>
-        <span className="sky-map__cal-banner-text">
-          {t('calSweep', {
-            dir: azDelta > 0 ? t('right') : t('left'),
-            deg: Math.abs(Math.round(azDelta)),
-            name: anchor.name,
-          })}
-        </span>
-      </div>
-    );
-  }
   return (
     <button
       type="button"
-      className="sky-map__cal-banner sky-map__cal-banner--ready"
+      className={`sky-map__cal-banner sky-map__cal-banner--ready${calibrationOffset !== 0 ? ' sky-map__cal-banner--secondary' : ''}`}
       onClick={() => {
         onLock();
         setJustLocked(true);
@@ -1236,11 +1188,20 @@ function CalibrationBanner({
           try { navigator.vibrate([10, 30, 10]); } catch { /* ignore */ }
         }
       }}
-      aria-label={t('calReady', { name: anchor.name })}
+      aria-label={t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
     >
       <span className="sky-map__cal-banner-icon" aria-hidden="true">⊕</span>
       <span className="sky-map__cal-banner-text">
-        {t('calReady', { name: anchor.name })}
+        {t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
+      </span>
+      {/* Tiny readout — power users can sanity-check what the app thinks
+          the anchor's bearing is (the number won't match the phone heading
+          until after this tap). Helps debug "wait, why is the dome off?". */}
+      <span className="sky-map__cal-banner-meta" aria-hidden="true">
+        {t('calMeta', {
+          deg: Math.round(((anchor.azimuth % 360) + 360) % 360),
+          alt: Math.round(anchor.altitude),
+        })}
       </span>
     </button>
   );

@@ -1312,16 +1312,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sky-map__cal-banner--guide {
-  border-color: rgba(232, 164, 102, 0.42);
-  color: rgba(255, 220, 184, 0.95);
-}
-.sky-map__cal-banner--guide .sky-map__cal-banner-icon {
-  color: var(--terracotta);
-  font-size: 13px;
-  line-height: 1;
-  animation: skymapCalNudge 1.4s ease-in-out infinite;
-}
 .sky-map__cal-banner--ready {
   cursor: pointer;
   background: rgba(120, 220, 170, 0.14);
@@ -1335,6 +1325,42 @@
 }
 .sky-map__cal-banner--ready:active { transform: translateX(-50%) scale(0.98); }
 .sky-map__cal-banner--ready .sky-map__cal-banner-icon { color: #7ed4a8; font-size: 12px; }
+/* Secondary post-cal variant — quieter so the user doesn't feel pressured
+   to recalibrate but the option stays one tap away. */
+.sky-map__cal-banner--ready.sky-map__cal-banner--secondary {
+  background: rgba(7, 11, 20, 0.65);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.65);
+}
+.sky-map__cal-banner--ready.sky-map__cal-banner--secondary .sky-map__cal-banner-icon {
+  color: rgba(255, 255, 255, 0.45);
+}
+.sky-map__cal-banner--ready.sky-map__cal-banner--secondary:hover {
+  background: rgba(7, 11, 20, 0.85);
+  border-color: rgba(120, 220, 170, 0.45);
+  color: #c8f3dc;
+}
+/* Quiet bearing readout — keeps the math visible without competing
+   with the green CTA. */
+.sky-map__cal-banner-meta {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-feature-settings: 'tnum' 1;
+  padding-left: 8px;
+  margin-left: 2px;
+  position: relative;
+}
+.sky-map__cal-banner-meta::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: rgba(255, 255, 255, 0.30);
+}
+@media (max-width: 640px) {
+  .sky-map__cal-banner-meta { display: none; }
+}
 .sky-map__cal-banner--locked {
   background: rgba(120, 220, 170, 0.18);
   border-color: rgba(120, 220, 170, 0.65);
@@ -1342,10 +1368,6 @@
   animation: skymapCalLocked 0.32s ease-out;
 }
 .sky-map__cal-banner--locked .sky-map__cal-banner-icon { color: #7ed4a8; }
-@keyframes skymapCalNudge {
-  0%, 100% { transform: translateY(0); opacity: 0.95; }
-  50%      { transform: translateY(-2px); opacity: 0.65; }
-}
 @keyframes skymapCalLocked {
   0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
   60%  { transform: translateX(-50%) scale(1.04); opacity: 1; }

@@ -419,14 +419,18 @@ function CompassPostureHint({ anchorName, highOverhead }: { anchorName: string; 
     setDismissed(true);
     try { window.localStorage.setItem(POSTURE_KEY, '1'); } catch { /* ignore */ }
   };
+  const steps: string[] = [
+    t('step1', { name: anchorName }),
+    t('step2', { name: anchorName }),
+    ...(highOverhead ? [t('overhead', { name: anchorName })] : []),
+    t('step3'),
+  ];
   return (
     <aside className="sky-posture" role="note" aria-label={t('aria')}>
       <ol className="sky-posture__steps">
-        <li><span className="sky-posture__num">1</span><span>{t('step1')}</span></li>
-        <li><span className="sky-posture__num">2</span><span>{t('step2', { name: anchorName })}</span></li>
-        {highOverhead && (
-          <li><span className="sky-posture__num">3</span><span>{t('overhead', { name: anchorName })}</span></li>
-        )}
+        {steps.map((s, i) => (
+          <li key={i}><span className="sky-posture__num">{i + 1}</span><span>{s}</span></li>
+        ))}
       </ol>
       <button type="button" className="sky-posture__dismiss" onClick={handleDismiss}>
         {t('dismiss')}
