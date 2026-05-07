@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { avatarById } from '@/lib/avatars';
@@ -31,7 +31,7 @@ const AVATAR_ITEMS: { href: string; label: string; icon: typeof User }[] = [
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = usePrivy();
+  const { logout } = useStellarAuth();
   const { authenticated, ready, displayName, email, initials, avatarId } = useDisplayProfile();
   const [searchOpen, setSearchOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);

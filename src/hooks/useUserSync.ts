@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useWallets } from '@privy-io/react-auth';
 
 const UPSERT_KEY_PREFIX = 'stellar:upserted:';
 
@@ -19,21 +18,48 @@ function runWhenIdle(cb: () => void) {
   }
 }
 
+// Embedded Solana wallets surface in `user.linkedAccounts` as soon as Privy
+// finishes login — earlier and more reliably than the
+// @privy-io/react-auth/solana `useWallets` hook, which is gated on the
+// Standard-Wallet adapter being ready. Reading from linkedAccounts also
+// avoids the wrong-import bug where `useWallets` from the root entry
+// returns Ethereum wallets only.
+type EmbeddedSolanaLinkedAccount = {
+  type: 'wallet';
+  chainType: 'solana';
+  walletClientType: string;
+  address: string;
+};
+
+function findEmbeddedSolanaAddress(
+  linkedAccounts: ReadonlyArray<{ type: string }> | undefined,
+): string | null {
+  if (!linkedAccounts) return null;
+  const match = linkedAccounts.find(
+    (a): a is EmbeddedSolanaLinkedAccount =>
+      a.type === 'wallet' &&
+      (a as { chainType?: string }).chainType === 'solana' &&
+      (a as { walletClientType?: string }).walletClientType === 'privy',
+  );
+  return match?.address ?? null;
+}
+
 export function useUserSync() {
   const { authenticated, user, getAccessToken } = usePrivy();
-  const { wallets } = useWallets();
 
   useEffect(() => {
     if (!authenticated || !user) return;
 
     const email = user.email?.address ?? null;
-    const solanaWallet = wallets.find(
-      (w) => w.walletClientType === 'privy' && (w as { chainType?: string }).chainType === 'solana',
-    );
-    const walletAddress = solanaWallet?.address ?? null;
+    const walletAddress = findEmbeddedSolanaAddress(user.linkedAccounts);
+
+    // Wait until the embedded Solana wallet exists before upserting. Privy
+    // creates it asynchronously after first login; firing now would persist
+    // walletAddress=null and (worse) overwrite a previously-saved address.
+    if (!walletAddress) return;
 
     // Dedupe: only upsert once per session per (privyId + walletAddress) combo.
-    const dedupeKey = UPSERT_KEY_PREFIX + user.id + ':' + (walletAddress ?? 'none');
+    const dedupeKey = UPSERT_KEY_PREFIX + user.id + ':' + walletAddress;
     try {
       if (sessionStorage.getItem(dedupeKey) === '1') return;
     } catch {}
@@ -60,5 +86,5 @@ export function useUserSync() {
     return () => {
       cancelled = true;
     };
-  }, [authenticated, user, wallets, getAccessToken]);
+  }, [authenticated, user, getAccessToken]);
 }

@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { PrivyClient } from '@privy-io/server-auth'
+import { sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { users } from '@/lib/schema'
 import { isValidEmail, isValidPublicKey, sanitizeString } from '@/lib/validate'
@@ -77,14 +78,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'no db' }, { status: 503 })
     }
 
-    // Use explicit returning columns so the query doesn't blow up if the
-    // production schema is missing any newly-added columns (e.g. avatar).
+    // Never let a partial sync (e.g. a re-login where the embedded Solana
+    // wallet hasn't surfaced yet) wipe a previously-recorded wallet_address
+    // or email. COALESCE keeps the existing value when the new payload is
+    // null.
     const [user] = await db
       .insert(users)
       .values({ privyId, email: cleanEmail, walletAddress: cleanWallet })
       .onConflictDoUpdate({
         target: users.privyId,
-        set: { email: cleanEmail, walletAddress: cleanWallet, updatedAt: new Date() },
+        set: {
+          email: sql`COALESCE(${cleanEmail}, ${users.email})`,
+          walletAddress: sql`COALESCE(${cleanWallet}, ${users.walletAddress})`,
+          updatedAt: new Date(),
+        },
       })
       .returning({
         id: users.id,

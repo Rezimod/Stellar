@@ -16,17 +16,44 @@ export interface StellarUser {
   ready: boolean;
 }
 
+type EmbeddedSolanaLinkedAccount = {
+  type: 'wallet';
+  chainType: 'solana';
+  walletClientType: string;
+  address: string;
+};
+
+function findEmbeddedSolanaAddress(
+  linkedAccounts: ReadonlyArray<{ type: string }> | undefined,
+): string | null {
+  if (!linkedAccounts) return null;
+  const match = linkedAccounts.find(
+    (a): a is EmbeddedSolanaLinkedAccount =>
+      a.type === 'wallet' &&
+      (a as { chainType?: string }).chainType === 'solana' &&
+      (a as { walletClientType?: string }).walletClientType === 'privy',
+  );
+  return match?.address ?? null;
+}
+
 export function useStellarUser(): StellarUser {
   const privy = usePrivy();
   const privySolana = usePrivySolanaWallets();
   const adapter = useWalletAdapter();
 
-  const privyEmbeddedAddress = useMemo(() => {
-    const embedded = privySolana.wallets.find(
-      (w) => (w as { walletClientType?: string }).walletClientType === 'privy',
-    );
-    return embedded?.address ?? privySolana.wallets[0]?.address ?? null;
-  }, [privySolana.wallets]);
+  // Prefer the address from `user.linkedAccounts` — it's available the moment
+  // Privy reports `authenticated`. The /solana useWallets hook is a strict
+  // upgrade path (returns the live signer) but lags behind login by a tick or
+  // two, which would otherwise leave us with `authenticated:true,address:null`.
+  const linkedEmbedded = useMemo(
+    () => findEmbeddedSolanaAddress(privy.user?.linkedAccounts),
+    [privy.user],
+  );
+
+  const liveSolanaAddress = useMemo(() => {
+    if (!privySolana.ready) return null;
+    return privySolana.wallets[0]?.address ?? null;
+  }, [privySolana.ready, privySolana.wallets]);
 
   return useMemo<StellarUser>(() => {
     const ready = privy.ready;
@@ -48,11 +75,12 @@ export function useStellarUser(): StellarUser {
         privy.user.email?.address ??
         (privy.user.linkedAccounts.find((a) => a.type === 'email') as { address?: string } | undefined)?.address ??
         null;
+      const address = liveSolanaAddress ?? linkedEmbedded;
       return {
         authenticated: true,
         source: 'privy',
-        address: privyEmbeddedAddress,
-        displayName: email ?? (privyEmbeddedAddress ? shortAddress(privyEmbeddedAddress) : null),
+        address,
+        displayName: email ?? (address ? shortAddress(address) : null),
         email,
         ready,
       };
@@ -70,7 +98,8 @@ export function useStellarUser(): StellarUser {
     privy.ready,
     privy.authenticated,
     privy.user,
-    privyEmbeddedAddress,
+    linkedEmbedded,
+    liveSolanaAddress,
     adapter.connected,
     adapter.publicKey,
     adapter.wallet,
