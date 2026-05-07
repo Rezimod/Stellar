@@ -129,7 +129,7 @@ export default function MarketplacePage() {
       <div className="marketplace-page-bg overflow-hidden">
         <div className="relative z-10">
           {/* Compact toolbar: filters left, balance + region right. Single row at sm+, stacked on mobile. */}
-          <div className="flex flex-col gap-[8px] sm:flex-row sm:items-center sm:justify-between sm:gap-[12px] mb-[14px] sm:mb-[18px]">
+          <div className="flex flex-col gap-[6px] sm:flex-row sm:items-center sm:justify-between sm:gap-[10px] mb-[10px] sm:mb-[12px]">
             {/* Filter chips — horizontal scroll on mobile, inline on desktop */}
             <div
               className="order-2 sm:order-1 flex items-center gap-[6px] flex-nowrap overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0 sm:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -140,7 +140,7 @@ export default function MarketplacePage() {
                   <button
                     key={c.key}
                     onClick={() => setFilter(c.key)}
-                    className="flex-shrink-0 h-[40px] px-[18px] text-[12px] tracking-[0.08em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 h-[34px] px-[14px] text-[11px] tracking-[0.08em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -163,7 +163,7 @@ export default function MarketplacePage() {
                   </button>
                 );
               })}
-              <span className="w-px h-[22px] bg-[rgba(255,255,255,0.18)] mx-[6px] flex-shrink-0" />
+              <span className="w-px h-[18px] bg-[rgba(255,255,255,0.18)] mx-[5px] flex-shrink-0" />
               {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
                 const active = difficulty === d;
                 const meta   = SKILL_META[d];
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
                   <button
                     key={d}
                     onClick={() => setDifficulty(active ? 'all' : d)}
-                    className="flex-shrink-0 inline-flex items-center gap-[8px] h-[40px] pl-[14px] pr-[16px] text-[11.5px] tracking-[0.1em] uppercase rounded-lg whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 inline-flex items-center gap-[7px] h-[34px] pl-[11px] pr-[13px] text-[10.5px] tracking-[0.1em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -201,18 +201,18 @@ export default function MarketplacePage() {
             {/* Balance + Region — compact, matching toolbar height */}
             <div className="order-1 sm:order-2 flex items-center justify-end gap-[8px] flex-shrink-0">
               <span
-                className="inline-flex items-center h-[40px] gap-[8px] px-[14px] rounded-lg text-[11px] uppercase cursor-default"
+                className="inline-flex items-center h-[34px] gap-[7px] px-[11px] rounded-md text-[10.5px] uppercase cursor-default"
                 style={{
                   background: 'rgba(15, 18, 28, 0.55)',
                   border: '1px solid rgba(255, 126, 54, 0.38)',
                   boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                 }}
               >
-                <span className="tracking-[0.12em] text-white text-[10px] font-semibold">Bal</span>
-                <span className="font-semibold tabular-nums tracking-[0.02em] text-[13.5px]" style={{ color: 'var(--terracotta)' }}>
+                <span className="tracking-[0.12em] text-white text-[9.5px] font-semibold">Bal</span>
+                <span className="font-semibold tabular-nums tracking-[0.02em] text-[12.5px]" style={{ color: 'var(--terracotta)' }}>
                   {balance.toLocaleString()}
                 </span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true">
                   <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
                 </svg>
               </span>

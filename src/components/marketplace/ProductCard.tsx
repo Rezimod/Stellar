@@ -103,7 +103,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
       <div className="flex gap-[8px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[8px] px-[14px] py-[10px] rounded-[8px] text-[13.5px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
           style={{
             background: 'var(--terracotta)',
             border: '1px solid var(--terracotta)',
@@ -112,7 +112,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
-          <svg width="14" height="14" viewBox="0 0 397 311" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 397 311" aria-hidden="true">
             <defs>
               <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stopColor="#9945FF" />
