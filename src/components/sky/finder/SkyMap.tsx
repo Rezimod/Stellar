@@ -24,6 +24,48 @@ function starColor(mag: number): string {
   return '#e8d8b6';
 }
 
+/**
+ * Per-star spectral tint — overrides the magnitude-only fallback for the
+ * brightest stars where the eye can actually pick out colour. Hot O/B
+ * stars read blue-white; K-type read warm orange; M-type red giants read
+ * deep orange-red. Matches what the eye sees through clean dark-sky air.
+ */
+const CONSTELLATION_NAMES: Record<string, string> = {
+  orion:      'ORION',
+  ursaMajor:  'URSA MAJOR',
+  cassiopeia: 'CASSIOPEIA',
+  cygnus:     'CYGNUS',
+  andromeda:  'ANDROMEDA',
+  lyra:       'LYRA',
+};
+
+const STAR_TINT: Record<string, string> = {
+  // Blue-white (B/A class)
+  sirius:    '#cfe1ff',
+  vega:      '#d4e4ff',
+  rigel:     '#cee0ff',
+  spica:     '#cfe0ff',
+  regulus:   '#d8e4f6',
+  bellatrix: '#d6e2f4',
+  alnilam:   '#d4e0f4',
+  alnitak:   '#d4e0f4',
+  mintaka:   '#d4e0f4',
+  // White (A/F)
+  altair:    '#f4f1e6',
+  deneb:     '#f0eee0',
+  procyon:   '#f4ede0',
+  castor:    '#ecedf0',
+  // Yellow / yellow-white (F/G)
+  capella:   '#fbe9ad',
+  pollux:    '#f3c98a',
+  // Orange (K)
+  arcturus:  '#f0a55c',
+  aldebaran: '#ec8b56',
+  // Red giants (M)
+  betelgeuse:'#e87454',
+  antares:   '#e36c4a',
+};
+
 function azimuthToCardinal(az: number): string {
   const n = ((az % 360) + 360) % 360;
   if (n >= 337.5 || n < 22.5) return 'N';
@@ -97,6 +139,10 @@ interface SkyMapProps {
   constellationLines?: Array<[string, string]>;
   /** When set, draws a dashed terracotta trail from anchor → active body. */
   hopAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
+  /** Best body the user can physically aim at to calibrate the compass — set
+   *  by the page (Moon &gt; bright planet &gt; Sun &gt; brightest visible). The
+   *  guided calibration banner uses this regardless of the selected target. */
+  calibrationAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
   /** Persistent calibration offset (degrees) — shown next to nudge controls. */
   calibrationOffset?: number;
   /** Apply ±degrees to the calibration offset. Optional — only renders the +/− pad when provided. */
@@ -196,6 +242,7 @@ export function SkyMap({
   constellationStars = [],
   constellationLines = [],
   hopAnchor = null,
+  calibrationAnchor = null,
   calibrationOffset = 0,
   onNudge,
   onProximityChange,
@@ -392,6 +439,27 @@ export function SkyMap({
     return null;
   }, [hopAnchor, active, constellationStars]);
 
+  // Centroid per constellation, in screen coords. Only computed for groups
+  // that have 2+ stars currently above the horizon, so a constellation
+  // half-set never gets a label drifting below the rim.
+  const constellationLabels = useMemo(() => {
+    const buckets = new Map<string, { x: number; y: number; n: number }>();
+    for (const s of projectedStars) {
+      const key = s.constellation;
+      if (!key || !CONSTELLATION_NAMES[key]) continue;
+      const b = buckets.get(key) ?? { x: 0, y: 0, n: 0 };
+      b.x += s.x;
+      b.y += s.y;
+      b.n += 1;
+      buckets.set(key, b);
+    }
+    const out: { key: string; x: number; y: number; n: number }[] = [];
+    buckets.forEach((b, key) => {
+      if (b.n >= 2) out.push({ key, x: b.x / b.n, y: b.y / b.n, n: b.n });
+    });
+    return out;
+  }, [projectedStars]);
+
   const hopTrail = useMemo(() => {
     if (!hopAnchor || !active) return null;
     if (hopAnchor.altitude <= 0) return null;
@@ -400,12 +468,21 @@ export function SkyMap({
     return { from, to };
   }, [hopAnchor, active, liveOffset]);
 
-  const cardinals: { dir: string; az: number }[] = [
-    { dir: 'N', az: 0 },
-    { dir: 'E', az: 90 },
-    { dir: 'S', az: 180 },
-    { dir: 'W', az: 270 },
+  const cardinals: { dir: string; az: number; tier: 'primary' | 'secondary' }[] = [
+    { dir: 'N',  az: 0,   tier: 'primary' },
+    { dir: 'NE', az: 45,  tier: 'secondary' },
+    { dir: 'E',  az: 90,  tier: 'primary' },
+    { dir: 'SE', az: 135, tier: 'secondary' },
+    { dir: 'S',  az: 180, tier: 'primary' },
+    { dir: 'SW', az: 225, tier: 'secondary' },
+    { dir: 'W',  az: 270, tier: 'primary' },
+    { dir: 'NW', az: 315, tier: 'secondary' },
   ];
+
+  // Tick marks every 15°. Long ticks at cardinals, medium at inter-cardinals,
+  // short for the rest. Sits just inside the rim so the dome reads as a real
+  // bearing wheel rather than a bare circle.
+  const ticks = Array.from({ length: 24 }, (_, i) => i * 15);
 
   // Compass accuracy is poor when iOS reports >15° or omits the field while
   // the user is live. Surfaces a calibration banner so the user knows why
@@ -487,6 +564,32 @@ export function SkyMap({
           className="sky-map__rim"
         />
 
+        {/* Constellation centroid labels — quietly identify the figure
+            you're looking at. Highlighted when the active body is in it. */}
+        {constellationLabels.length > 0 && (
+          <g pointerEvents="none">
+            {constellationLabels.map((c) => {
+              const isActive = activeConstellation === c.key;
+              return (
+                <text
+                  key={`cname-${c.key}`}
+                  x={c.x}
+                  y={c.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="9"
+                  fontFamily="var(--mono)"
+                  letterSpacing="0.22em"
+                  fill={isActive ? 'rgba(255,229,184,0.78)' : 'rgba(255,255,255,0.22)'}
+                  className="sky-map__cname"
+                >
+                  {CONSTELLATION_NAMES[c.key]}
+                </text>
+              );
+            })}
+          </g>
+        )}
+
         {/* Constellation stick figures + bright stars (drawn under the
             bodies so the planet glyphs sit on top). */}
         {constellationLines.length > 0 && (
@@ -512,14 +615,15 @@ export function SkyMap({
             {projectedStars.map((s) => {
               const isActive = activeConstellation && s.constellation === activeConstellation;
               const r = s.mag <= 1 ? 1.9 : s.mag <= 2 ? 1.55 : 1.2;
+              const tint = STAR_TINT[s.id] ?? (isActive ? '#fff1d2' : starColor(s.mag));
               return (
                 <circle
                   key={`cstar-${s.id}`}
                   cx={s.x}
                   cy={s.y}
                   r={r}
-                  fill={isActive ? '#fff1d2' : '#e8e2d2'}
-                  opacity={isActive ? 1 : 0.78}
+                  fill={tint}
+                  opacity={isActive ? 1 : 0.82}
                 />
               );
             })}
@@ -550,29 +654,66 @@ export function SkyMap({
         <text x={CX + 4} y={CY - R * (2 / 3) + 3} fill="rgba(255,255,255,0.30)" fontSize="8"
           fontFamily="var(--mono)" letterSpacing="0.05em" className="sky-map__alt-label">30°</text>
 
+        {/* Compass tick rose — bearings every 15° around the rim. */}
+        <g pointerEvents="none">
+          {ticks.map((az) => {
+            const isCardinal = az % 90 === 0;
+            const isInter = !isCardinal && az % 45 === 0;
+            const angleRad = ((az - liveOffset) * Math.PI) / 180;
+            const sx = Math.sin(angleRad);
+            const sy = -Math.cos(angleRad);
+            const len = isCardinal ? 6 : isInter ? 4 : 2.5;
+            const x1 = CX + (R - 1) * sx;
+            const y1 = CY + (R - 1) * sy;
+            const x2 = CX + (R - 1 - len) * sx;
+            const y2 = CY + (R - 1 - len) * sy;
+            return (
+              <line
+                key={`tick-${az}`}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke={isCardinal ? 'rgba(255,255,255,0.45)' : isInter ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.16)'}
+                strokeWidth={isCardinal ? 1.1 : 0.8}
+                strokeLinecap="round"
+              />
+            );
+          })}
+        </g>
+
         {cardinals.map((c) => {
           const angleRad = ((c.az - liveOffset) * Math.PI) / 180;
           const lx = CX + CARD_R * Math.sin(angleRad);
           const ly = CY - CARD_R * Math.cos(angleRad);
-          // Highlight whichever cardinal is currently nearest the user's
-          // facing direction so the rotating dome reads as "you are here."
           const distFromTop = Math.abs(((c.az - liveOffset + 540) % 360) - 180);
           const isFacing = isLive && distFromTop > 135;
+          const isPrimary = c.tier === 'primary';
+          // North gets a tiny upward arrow notch above the letter so it
+          // reads as the orienting tick at a glance.
+          const isNorth = c.dir === 'N';
           return (
-            <text
-              key={c.dir}
-              x={lx}
-              y={ly}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="var(--text)"
-              fontSize="13"
-              fontFamily="var(--mono)"
-              letterSpacing="0.16em"
-              className={`sky-map__cardinal${isFacing ? ' sky-map__cardinal--facing' : ''}${c.dir === 'N' ? ' sky-map__cardinal--primary' : ''}`}
-            >
-              {c.dir}
-            </text>
+            <g key={c.dir}>
+              {isNorth && (
+                <polygon
+                  points={`${lx - 3.5},${ly + 9} ${lx + 3.5},${ly + 9} ${lx},${ly + 4}`}
+                  fill="var(--terracotta)"
+                  opacity={0.78}
+                />
+              )}
+              <text
+                x={lx}
+                y={ly}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={isNorth ? 14 : isPrimary ? 12 : 9.5}
+                fontFamily="var(--mono)"
+                letterSpacing={isPrimary ? '0.14em' : '0.18em'}
+                className={`sky-map__cardinal sky-map__cardinal--${c.tier}${isFacing ? ' sky-map__cardinal--facing' : ''}${isNorth ? ' sky-map__cardinal--north' : ''}`}
+              >
+                {c.dir}
+              </text>
+            </g>
           );
         })}
 
@@ -598,9 +739,16 @@ export function SkyMap({
           />
         )}
 
-        {/* Bodies */}
+        {/* Bodies — opacity tapers near the horizon (atmospheric extinction).
+            Active body always renders at full opacity so the user can find it. */}
         {drawOrder.map((p) => {
           const isActive = p.obj.id === activeId;
+          const alt = p.obj.altitude;
+          const opacity = isActive
+            ? 1
+            : alt >= 25
+              ? 1
+              : Math.max(0.55, 0.55 + (alt / 25) * 0.45);
           return (
             <ObjectGlyph
               key={p.obj.id}
@@ -608,6 +756,7 @@ export function SkyMap({
               isActive={isActive}
               onSelect={onSelect}
               label={labelMap.get(p.obj.id) ?? null}
+              opacity={opacity}
             />
           );
         })}
@@ -673,48 +822,42 @@ export function SkyMap({
         </div>
       )}
 
+      {isLive && calibrationAnchor && onNudge && hasTilt && (
+        <CalibrationBanner
+          anchor={calibrationAnchor}
+          heading={heading ?? 0}
+          userAlt={userAltitude ?? 0}
+          onLock={() => {
+            const delta = headingDelta(calibrationAnchor.azimuth, heading ?? 0);
+            onNudge(delta);
+          }}
+          calibrationOffset={calibrationOffset}
+        />
+      )}
+
       {isLive && onNudge && (
-        <div className="sky-map__cal" role="group" aria-label={t('nudgeAria')}>
-          {active && heading != null && (
-            <button
-              type="button"
-              className="sky-map__cal-lock"
-              onClick={() => {
-                const delta = headingDelta(active.obj.azimuth, heading);
-                onNudge(delta);
-              }}
-              aria-label={t('lockTo', { name: active.obj.name })}
-              title={t('lockTo', { name: active.obj.name })}
-            >
-              <span className="sky-map__cal-lock-icon" aria-hidden="true">⊕</span>
-              <span className="sky-map__cal-lock-text">
-                {t('lockTo', { name: active.obj.name })}
-              </span>
-            </button>
-          )}
-          <div className="sky-map__nudge">
-            <button
-              type="button"
-              className="sky-map__nudge-btn"
-              onClick={() => onNudge(-1)}
-              aria-label={t('nudgeLeft')}
-            >
-              −1°
-            </button>
-            <span className="sky-map__nudge-val" aria-live="polite">
-              {calibrationOffset === 0
-                ? t('nudgeNeutral')
-                : `${calibrationOffset > 0 ? '+' : ''}${Math.round(calibrationOffset)}°`}
-            </span>
-            <button
-              type="button"
-              className="sky-map__nudge-btn"
-              onClick={() => onNudge(1)}
-              aria-label={t('nudgeRight')}
-            >
-              +1°
-            </button>
-          </div>
+        <div className="sky-map__nudge" role="group" aria-label={t('nudgeAria')}>
+          <button
+            type="button"
+            className="sky-map__nudge-btn"
+            onClick={() => onNudge(-1)}
+            aria-label={t('nudgeLeft')}
+          >
+            −1°
+          </button>
+          <span className="sky-map__nudge-val" aria-live="polite">
+            {calibrationOffset === 0
+              ? t('nudgeNeutral')
+              : `${calibrationOffset > 0 ? '+' : ''}${Math.round(calibrationOffset)}°`}
+          </span>
+          <button
+            type="button"
+            className="sky-map__nudge-btn"
+            onClick={() => onNudge(1)}
+            aria-label={t('nudgeRight')}
+          >
+            +1°
+          </button>
         </div>
       )}
     </div>
@@ -726,9 +869,10 @@ interface GlyphProps {
   isActive: boolean;
   onSelect: (id: ObjectId) => void;
   label: LabelPlacement | null;
+  opacity?: number;
 }
 
-function ObjectGlyph({ p, isActive, onSelect, label }: GlyphProps) {
+function ObjectGlyph({ p, isActive, onSelect, label, opacity = 1 }: GlyphProps) {
   const { obj, x, y } = p;
 
   const isPlanet = obj.type === 'planet' || obj.type === 'sun' || obj.type === 'moon';
@@ -746,7 +890,7 @@ function ObjectGlyph({ p, isActive, onSelect, label }: GlyphProps) {
   return (
     <g
       onClick={() => onSelect(obj.id)}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', opacity }}
       role="button"
       aria-label={obj.name}
     >
@@ -790,7 +934,7 @@ function renderBody(o: SkyObject, x: number, y: number, r: number) {
     );
   }
   if (o.type === 'star' || o.type === 'double') {
-    const c = starColor(o.magnitude);
+    const c = STAR_TINT[o.id] ?? starColor(o.magnitude);
     const veryBright = o.magnitude <= 0.6;
     const bright = o.magnitude <= 1.5;
     const spike = r * (veryBright ? 4.2 : 2.6);
@@ -990,5 +1134,113 @@ function CompassIcon() {
       <polygon points="8,3.5 9.5,8 8,7 6.5,8" fill="currentColor" />
       <polygon points="8,12.5 9.5,8 8,9 6.5,8" fill="currentColor" opacity={0.4} />
     </svg>
+  );
+}
+
+interface CalibrationBannerProps {
+  anchor: { id: string; name: string; azimuth: number; altitude: number };
+  heading: number;
+  userAlt: number;
+  onLock: () => void;
+  calibrationOffset: number;
+}
+
+/**
+ * Self-narrating calibration prompt. Reads the user's current tilt and
+ * azimuth, picks the next instruction (tilt → sweep → tap), and only
+ * triggers the lock when the phone is roughly aimed at the anchor body.
+ *
+ * State machine:
+ *   |Δalt| > 12°  → "Tilt up/down NN° to <name>"
+ *   |Δaz|  > 25°  → "Sweep left/right NN° toward <name>"
+ *   else          → "Aim at <name> · tap to calibrate" (button enabled)
+ *
+ * After the first lock, a quiet success pill shows the applied offset for
+ * a few seconds, then the banner disappears so the chart is unobstructed.
+ */
+function CalibrationBanner({
+  anchor,
+  heading,
+  userAlt,
+  onLock,
+  calibrationOffset,
+}: CalibrationBannerProps) {
+  const t = useTranslations('sky.skymap');
+  const tiltDelta = anchor.altitude - userAlt;
+  const azDelta = headingDelta(anchor.azimuth, heading);
+  const [justLocked, setJustLocked] = useState(false);
+
+  useEffect(() => {
+    if (!justLocked) return;
+    const id = window.setTimeout(() => setJustLocked(false), 2400);
+    return () => window.clearTimeout(id);
+  }, [justLocked]);
+
+  // Hide the banner entirely if user has already calibrated and is now
+  // off-aim — they don't need a second prompt cluttering the chart.
+  if (calibrationOffset !== 0 && !justLocked && Math.abs(azDelta) > 30) return null;
+
+  if (justLocked) {
+    return (
+      <div className="sky-map__cal-banner sky-map__cal-banner--locked" role="status">
+        <span className="sky-map__cal-banner-icon" aria-hidden="true">✓</span>
+        <span className="sky-map__cal-banner-text">
+          {t('calLocked', { name: anchor.name, deg: Math.round(calibrationOffset) })}
+        </span>
+      </div>
+    );
+  }
+
+  const tiltOff = Math.abs(tiltDelta) > 12;
+  const azOff = Math.abs(azDelta) > 25;
+
+  if (tiltOff) {
+    const dir = tiltDelta > 0 ? '↑' : '↓';
+    return (
+      <div className="sky-map__cal-banner sky-map__cal-banner--guide" role="status">
+        <span className="sky-map__cal-banner-icon" aria-hidden="true">{dir}</span>
+        <span className="sky-map__cal-banner-text">
+          {t('calTilt', {
+            dir: tiltDelta > 0 ? t('up') : t('down'),
+            deg: Math.abs(Math.round(tiltDelta)),
+            name: anchor.name,
+          })}
+        </span>
+      </div>
+    );
+  }
+  if (azOff) {
+    const dir = azDelta > 0 ? '→' : '←';
+    return (
+      <div className="sky-map__cal-banner sky-map__cal-banner--guide" role="status">
+        <span className="sky-map__cal-banner-icon" aria-hidden="true">{dir}</span>
+        <span className="sky-map__cal-banner-text">
+          {t('calSweep', {
+            dir: azDelta > 0 ? t('right') : t('left'),
+            deg: Math.abs(Math.round(azDelta)),
+            name: anchor.name,
+          })}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className="sky-map__cal-banner sky-map__cal-banner--ready"
+      onClick={() => {
+        onLock();
+        setJustLocked(true);
+        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+          try { navigator.vibrate([10, 30, 10]); } catch { /* ignore */ }
+        }
+      }}
+      aria-label={t('calReady', { name: anchor.name })}
+    >
+      <span className="sky-map__cal-banner-icon" aria-hidden="true">⊕</span>
+      <span className="sky-map__cal-banner-text">
+        {t('calReady', { name: anchor.name })}
+      </span>
+    </button>
   );
 }

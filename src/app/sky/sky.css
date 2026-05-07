@@ -1174,14 +1174,21 @@
   color: #7ed4a8;
 }
 
-/* Cardinal letter — the one nearest the user's facing direction
-   brightens, so the rotating dome reads as "you are here." */
+/* Cardinal labels — primary cardinals (N/E/S/W) read as the orientation
+   anchors; inter-cardinals (NE/SE/SW/NW) sit quieter so they don't compete
+   with bodies near the rim. North gets the orange notch + extra weight. */
 .sky-map__cardinal {
-  fill: rgba(255, 255, 255, 0.55);
   transition: fill 220ms ease;
 }
 .sky-map__cardinal--primary {
-  fill: rgba(255, 255, 255, 0.78);
+  fill: rgba(255, 255, 255, 0.85);
+}
+.sky-map__cardinal--secondary {
+  fill: rgba(255, 255, 255, 0.40);
+}
+.sky-map__cardinal--north {
+  fill: var(--text);
+  font-weight: 600;
 }
 .sky-map__cardinal--facing {
   fill: var(--text);
@@ -1274,63 +1281,81 @@
   100% { transform: scale(2.6);  opacity: 0; }
 }
 
-/* === Calibration cluster — lock-to-target button + nudge pad === */
-.sky-map__cal {
+/* === Guided calibration banner — top-center pill that walks the user
+   from "tilt" → "sweep" → "tap to calibrate" using the picked anchor body.
+   States: --guide (instruction), --ready (button, tap to apply),
+   --locked (transient confirmation). === */
+.sky-map__cal-banner {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  z-index: 2;
-}
-.sky-map__cal-lock {
-  appearance: none;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px 5px 8px;
+  gap: 8px;
+  padding: 7px 14px;
   border-radius: 999px;
-  background: rgba(232, 164, 102, 0.10);
-  border: 1px solid rgba(232, 164, 102, 0.42);
-  color: rgba(255, 220, 184, 0.95);
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  max-width: 220px;
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-.sky-map__cal-lock:hover {
-  background: rgba(232, 164, 102, 0.16);
-  border-color: rgba(232, 164, 102, 0.60);
-  color: var(--text);
-}
-.sky-map__cal-lock:active {
-  background: rgba(120, 220, 170, 0.16);
-  border-color: rgba(120, 220, 170, 0.60);
-  color: #c8f3dc;
-}
-.sky-map__cal-lock-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  font-size: 12px;
-  line-height: 1;
-  color: var(--terracotta);
-}
-.sky-map__cal-lock-text {
   white-space: nowrap;
+  background: rgba(7, 11, 20, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 4;
+  appearance: none;
+  cursor: default;
+  max-width: calc(100% - 24px);
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.sky-map__cal-banner--guide {
+  border-color: rgba(232, 164, 102, 0.42);
+  color: rgba(255, 220, 184, 0.95);
+}
+.sky-map__cal-banner--guide .sky-map__cal-banner-icon {
+  color: var(--terracotta);
+  font-size: 13px;
+  line-height: 1;
+  animation: skymapCalNudge 1.4s ease-in-out infinite;
+}
+.sky-map__cal-banner--ready {
+  cursor: pointer;
+  background: rgba(120, 220, 170, 0.14);
+  border-color: rgba(120, 220, 170, 0.55);
+  color: #c8f3dc;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.sky-map__cal-banner--ready:hover {
+  background: rgba(120, 220, 170, 0.22);
+  border-color: rgba(120, 220, 170, 0.75);
+}
+.sky-map__cal-banner--ready:active { transform: translateX(-50%) scale(0.98); }
+.sky-map__cal-banner--ready .sky-map__cal-banner-icon { color: #7ed4a8; font-size: 12px; }
+.sky-map__cal-banner--locked {
+  background: rgba(120, 220, 170, 0.18);
+  border-color: rgba(120, 220, 170, 0.65);
+  color: #c8f3dc;
+  animation: skymapCalLocked 0.32s ease-out;
+}
+.sky-map__cal-banner--locked .sky-map__cal-banner-icon { color: #7ed4a8; }
+@keyframes skymapCalNudge {
+  0%, 100% { transform: translateY(0); opacity: 0.95; }
+  50%      { transform: translateY(-2px); opacity: 0.65; }
+}
+@keyframes skymapCalLocked {
+  0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
+  60%  { transform: translateX(-50%) scale(1.04); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1);    opacity: 1; }
+}
+
 .sky-map__nudge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1340,6 +1365,7 @@
   border: 1px solid rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  z-index: 2;
 }
 .sky-map__nudge-btn {
   appearance: none;
@@ -2223,6 +2249,73 @@
   .sky-v3__tour-dismiss { align-self: flex-end; }
 }
 
+/* === Compass posture hint — appears below the dome the first time
+   the user grants compass access, until they calibrate or dismiss. === */
+.sky-posture {
+  margin-top: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(7, 11, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  position: relative;
+}
+.sky-posture__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+  min-width: 0;
+}
+.sky-posture__steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.78);
+}
+.sky-posture__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.78);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-feature-settings: 'tnum' 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.sky-posture__dismiss {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.sky-posture__dismiss:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
 /* ================================================================
    === Difficulty tier filter + Prime Target row                ===
    ================================================================ */
@@ -2590,9 +2683,10 @@
   /* Drop the small altitude tick text (60° / 30°) on mobile — it crowds
      the dome and isn't actionable for naked-eye targeting. */
   .sky-map__alt-label { display: none; }
-  /* Dim side cardinals so North reads as primary on a small screen. */
-  .sky-map__cardinal { fill: rgba(255, 255, 255, 0.45); }
-  .sky-map__cardinal--primary { fill: rgba(255, 255, 255, 0.78); }
+  /* Dim cardinals further on small screens; north still pops. */
+  .sky-map__cardinal--primary { fill: rgba(255, 255, 255, 0.72); }
+  .sky-map__cardinal--secondary { fill: rgba(255, 255, 255, 0.30); }
+  .sky-map__cardinal--north { fill: var(--text); }
   .sky-map__cardinal--facing { fill: var(--text); }
 
   /* Body table sits below the dome — drop the desktop split's sticky

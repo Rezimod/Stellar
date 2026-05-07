@@ -139,6 +139,25 @@ export default function SkyPage() {
     return [...candidates].sort((a, b) => a.magnitude - b.magnitude)[0];
   }, [finder]);
 
+  // The body the compass should be calibrated against — a big, obvious thing
+  // the user can physically aim at. Priority: Moon (works day or night),
+  // then Venus / Jupiter (very bright planets), then the Sun, then the
+  // brightest visible body. Below 5° we skip — refraction near the horizon
+  // makes precise aiming hopeless.
+  const calibrationAnchor = useMemo<SkyObject | null>(() => {
+    if (!finder) return null;
+    const visible = finder.objects.filter((o) => o.visible && o.altitude > 5);
+    const moon = visible.find((o) => o.id === 'moon');
+    if (moon) return moon;
+    const brightPlanet = visible
+      .filter((o) => o.type === 'planet' && (o.id === 'venus' || o.id === 'jupiter'))
+      .sort((a, b) => a.magnitude - b.magnitude)[0];
+    if (brightPlanet) return brightPlanet;
+    const sun = visible.find((o) => o.id === 'sun');
+    if (sun) return sun;
+    return [...visible].sort((a, b) => a.magnitude - b.magnitude)[0] ?? null;
+  }, [finder]);
+
   // Constellation stars projected once per finder refresh — the angular
   // drift across a few minutes is below dome resolution, so this is fine.
   const constellationStars = useMemo<ConstellationStar[]>(() => {
@@ -265,6 +284,12 @@ export default function SkyPage() {
                       azimuth: hopAnchor.azimuth,
                       altitude: hopAnchor.altitude,
                     } : null}
+                    calibrationAnchor={calibrationAnchor ? {
+                      id: calibrationAnchor.id,
+                      name: calibrationAnchor.name,
+                      azimuth: calibrationAnchor.azimuth,
+                      altitude: calibrationAnchor.altitude,
+                    } : null}
                   />
                   {compass.status !== 'unavailable' && (
                     <button
@@ -279,6 +304,9 @@ export default function SkyPage() {
                     </button>
                   )}
                 </div>
+                {compass.live && compass.offset === 0 && calibrationAnchor && (
+                  <CompassPostureHint anchorName={calibrationAnchor.name} highOverhead={calibrationAnchor.altitude > 65} />
+                )}
               </div>
               <TargetVisibleGrid
                 objects={finder.objects}
@@ -369,6 +397,38 @@ function FinderTour({ onDismiss }: { onDismiss: () => void }) {
         </li>
       </ol>
       <button type="button" className="sky-v3__tour-dismiss" onClick={onDismiss} aria-label={t('dismiss')}>
+        {t('dismiss')}
+      </button>
+    </aside>
+  );
+}
+
+const POSTURE_KEY = 'stellar.sky.posture.v1';
+
+function CompassPostureHint({ anchorName, highOverhead }: { anchorName: string; highOverhead: boolean }) {
+  const t = useTranslations('sky.posture');
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.localStorage.getItem(POSTURE_KEY)) setDismissed(true);
+    } catch { /* ignore */ }
+  }, []);
+  if (dismissed) return null;
+  const handleDismiss = () => {
+    setDismissed(true);
+    try { window.localStorage.setItem(POSTURE_KEY, '1'); } catch { /* ignore */ }
+  };
+  return (
+    <aside className="sky-posture" role="note" aria-label={t('aria')}>
+      <ol className="sky-posture__steps">
+        <li><span className="sky-posture__num">1</span><span>{t('step1')}</span></li>
+        <li><span className="sky-posture__num">2</span><span>{t('step2', { name: anchorName })}</span></li>
+        {highOverhead && (
+          <li><span className="sky-posture__num">3</span><span>{t('overhead', { name: anchorName })}</span></li>
+        )}
+      </ol>
+      <button type="button" className="sky-posture__dismiss" onClick={handleDismiss}>
         {t('dismiss')}
       </button>
     </aside>
