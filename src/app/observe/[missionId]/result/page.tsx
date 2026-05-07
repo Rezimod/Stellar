@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useStellarUser } from '@/hooks/useStellarUser';
+import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { MISSIONS } from '@/lib/constants';
 import { getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
@@ -19,6 +20,7 @@ export default function ObserveResultPage() {
   const mission = MISSIONS.find(m => m.id === missionId);
 
   const { address: stellarAddress } = useStellarUser();
+  const { displayName } = useDisplayProfile();
 
   const { state } = useAppState();
 
@@ -44,6 +46,8 @@ export default function ObserveResultPage() {
   const [starError, setStarError] = useState('');
   const [starSkipped, setStarSkipped] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [posting, setPosting] = useState(false);
+  const [posted, setPosted] = useState(false);
 
   useEffect(() => {
     if (!mission || !mintTxId) return;
@@ -148,6 +152,44 @@ export default function ObserveResultPage() {
     setToast('Saved to your collection');
   };
 
+  const handlePostToFeed = async () => {
+    if (!stellarAddress || !mission || posting || posted) return;
+    setPosting(true);
+    try {
+      const body = `Sealed ${mission.name} on Stellar ✦`;
+      const payload: Record<string, unknown> = {
+        authorWallet: stellarAddress,
+        authorName: displayName,
+        authorRank: null,
+        type: 'achievement',
+        body,
+        achievementTarget: mission.name,
+        achievementDifficulty: mission.difficulty,
+        achievementStars: starsBase + starsBonus,
+        achievementMintTx: isOnChain ? mintTxId : null,
+        observationTarget: mission.name,
+        observationLat: coords?.lat ? `${coords.lat.toFixed(2)}°` : null,
+        observationLon: coords?.lon ? `${coords.lon.toFixed(2)}°` : null,
+        observationNftAddress: isOnChain ? mintTxId : null,
+      };
+      const res = await fetch('/api/feed/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setPosted(true);
+        setToast('Posted to your feed');
+      } else {
+        setToast('Could not post — try again');
+      }
+    } catch {
+      setToast('Could not post — try again');
+    } finally {
+      setPosting(false);
+    }
+  };
+
   return (
     <PageContainer variant="fullscreen" className="relative z-10">
       {/* Cosmic bonus + weekly challenge inline banners (above seal) */}
@@ -210,6 +252,7 @@ export default function ObserveResultPage() {
         onShare={handleShare}
         onSave={handleSave}
         onContinue={() => router.push('/missions')}
+        onPostToFeed={isOnChain ? handlePostToFeed : undefined}
       />
 
       {/* Name a star — preserved below the seal */}
