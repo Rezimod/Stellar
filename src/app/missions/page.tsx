@@ -126,11 +126,12 @@ export default function MissionsPage() {
   const livePlanets = useMemo(() => getVisiblePlanets(lat, lon, now), [lat, lon, now]);
 
   // Current cloud cover for the LIVE gate. Pulled from the cached sky-forecast
-  // route; we just snap to the hour closest to now.
+  // route; we just snap to the hour closest to now. Re-fetched every 5 min so
+  // the gate tracks the actual sky as the night goes on.
   const [cloudCoverPct, setCloudCoverPct] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const fetchClouds = async () => {
       try {
         const res = await fetch(`/api/sky/forecast?lat=${lat}&lon=${lon}`);
         if (!res.ok) return;
@@ -147,8 +148,10 @@ export default function MissionsPage() {
         }
         setCloudCoverPct(typeof best.cloudCover === 'number' ? best.cloudCover : null);
       } catch { /* leave null — LIVE gate stays optimistic */ }
-    })();
-    return () => { cancelled = true; };
+    };
+    fetchClouds();
+    const id = window.setInterval(fetchClouds, 5 * 60_000);
+    return () => { cancelled = true; window.clearInterval(id); };
   }, [lat, lon]);
 
   const skyPositions = useMemo(() => {

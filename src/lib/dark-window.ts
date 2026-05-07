@@ -8,8 +8,13 @@ export interface TonightDarkWindow {
   isCurrentlyDark: boolean;
 }
 
-// Sun must be at -18° below horizon for true astronomical darkness.
-const ASTRONOMICAL_DEPRESSION = -18;
+// Practical "dark enough" threshold for visual observation. -18° is true
+// astronomical darkness (deep-sky imaging), but bright planets, the Moon,
+// and major DSOs are perfectly observable from end-of-nautical-twilight
+// onward — and at sub-tropical latitudes in summer the -18° window can be
+// short or non-existent. Using -12° matches the consumer "is it dark?"
+// expectation and avoids labelling 30+ min of usable sky as "Daylight".
+const ASTRONOMICAL_DEPRESSION = -12;
 
 /**
  * Returns the astronomical dark window for "tonight" at the given location.

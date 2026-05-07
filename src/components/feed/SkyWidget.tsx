@@ -80,18 +80,29 @@ export default function SkyWidget({ lat, lon, cityLabel }: Props) {
   const [planets, setPlanets] = useState<Planet[]>([])
   const [dark, setDark] = useState<TonightDarkWindow>(SSR_DARK)
 
+  // Recompute dark window every 5 min so the LIVE/tonight gate flips at the
+  // actual dusk/dawn boundary instead of staying frozen on the value computed
+  // when the page first loaded.
   useEffect(() => {
-    setDark(getTonightDarkWindow(lat, lon))
+    const recompute = () => setDark(getTonightDarkWindow(lat, lon))
+    recompute()
+    const id = window.setInterval(recompute, 5 * 60_000)
+    return () => window.clearInterval(id)
   }, [lat, lon])
 
   useEffect(() => {
     const q = `lat=${lat}&lng=${lon}`
     const planetQ = dark.isCurrentlyDark ? q : `${q}&tonight=1`
-    Promise.allSettled([
-      fetch(`/api/sky/forecast?${q}`).then(r => r.json()).then((d: Forecast) => setForecast(Array.isArray(d) ? d : [])),
-      fetch(`/api/sky/sun-moon?${q}`).then(r => r.json()).then(setSunMoon).catch(() => {}),
-      fetch(`/api/sky/planets?${planetQ}`).then(r => r.json()).then((d: Planet[]) => setPlanets(Array.isArray(d) ? d : [])),
-    ])
+    const fetchAll = () => {
+      Promise.allSettled([
+        fetch(`/api/sky/forecast?${q}`).then(r => r.json()).then((d: Forecast) => setForecast(Array.isArray(d) ? d : [])),
+        fetch(`/api/sky/sun-moon?${q}`).then(r => r.json()).then(setSunMoon).catch(() => {}),
+        fetch(`/api/sky/planets?${planetQ}`).then(r => r.json()).then((d: Planet[]) => setPlanets(Array.isArray(d) ? d : [])),
+      ])
+    }
+    fetchAll()
+    const id = window.setInterval(fetchAll, 5 * 60_000)
+    return () => window.clearInterval(id)
   }, [lat, lon, dark.isCurrentlyDark])
 
   const visible = planets
