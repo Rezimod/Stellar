@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocale } from 'next-intl';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
@@ -56,6 +57,8 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const rafRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const beepedAtRef = useRef<Set<number>>(new Set());
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   const q = quiz.questions[idx];
   const total = quiz.questions.length;
@@ -64,13 +67,23 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const stars = eligibleForStars ? score * quiz.starsPerCorrect : 0;
   const currentSeconds = questionSeconds(idx, total);
 
-  // Mount: load mute pref + reduced-motion
+  // Mount: load mute pref + reduced-motion, lock body scroll, mark portal-ready
   useEffect(() => {
+    setMounted(true);
     setReduced(prefersReducedMotion());
     if (typeof window !== 'undefined') {
       setMuted(localStorage.getItem(MUTE_KEY) !== '0');
     }
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
   }, []);
+
+  // Reset internal scroll on each phase/question change so the user always
+  // lands at the top (first-question header, result rewards, etc.)
+  useEffect(() => {
+    bodyRef.current?.scrollTo({ top: 0, behavior: 'auto' });
+  }, [phase, idx]);
 
   const playTick = (secondsLeft: number) => {
     if (muted) return;
@@ -232,8 +245,10 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const secondsLeft = Math.max(0, Math.ceil(currentSeconds - progress * currentSeconds));
   const ringStrokeColor = ringColor(secondsLeft);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-[var(--canvas)] flex flex-col overflow-hidden">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col overflow-hidden">
       {/* Top progress bar (questions completed) */}
       <div className="flex h-0.5 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.04)' }}>
         <div
@@ -274,10 +289,11 @@ export default function QuizActive({ quiz, onClose }: Props) {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col px-4 py-6 max-w-lg mx-auto w-full">
+      <div ref={bodyRef} className="flex-1 overflow-y-auto w-full">
+       <div className="flex flex-col px-4 py-6 max-w-lg mx-auto w-full min-h-full">
 
         {phase === 'result' ? (
-          <div className="flex flex-col items-center justify-center flex-1 gap-6 text-center">
+          <div className="flex flex-col items-center justify-center min-h-full gap-6 text-center py-4">
             <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
               style={{ background: 'rgba(255, 209, 102,0.08)', border: '1px solid rgba(255, 209, 102,0.2)' }}>
               {score >= 8 ? '🏆' : score >= 5 ? '⭐' : '🔭'}
@@ -451,7 +467,9 @@ export default function QuizActive({ quiz, onClose }: Props) {
             )}
           </>
         )}
+       </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
