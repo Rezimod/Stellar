@@ -71,13 +71,11 @@ class QvacRuntime {
         });
 
         const sdk = await import('@qvac/sdk');
-        const { loadModel, QWEN3_600M_INST_Q4, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
-        const modelSrc = QWEN3_600M_INST_Q4 ?? LLAMA_3_2_1B_INST_Q4_0;
+        const { loadModel, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
 
         this.llmModelId = await loadModel({
-          modelSrc,
+          modelSrc: LLAMA_3_2_1B_INST_Q4_0,
           modelType: 'llm',
-          modelConfig: { gpu_layers: 0, ctx_size: 512, n_threads: 1, no_mmap: true },
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.llmTracker.emit({
               phase: 'downloading',
@@ -135,7 +133,7 @@ class QvacRuntime {
 
         this.whisperModelId = await loadModel({
           modelSrc: whisperSrc,
-          modelType: 'transcription',
+          modelType: 'whisper',
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.whisperTracker.emit({
               phase: 'downloading',
@@ -189,11 +187,9 @@ class QvacRuntime {
     const transcribeFn = (sdk as any).transcribe;
     if (!transcribeFn) throw new Error('@qvac/sdk has no transcribe export');
 
-    const out = await transcribeFn({ modelId: this.whisperModelId, audioPath });
-    if (typeof out === 'string') return out;
-    if (out?.text) return out.text;
-    if (Array.isArray(out?.segments)) return out.segments.map((s: any) => s.text ?? '').join(' ');
-    return '';
+    const cleanPath = audioPath.startsWith('file://') ? audioPath.slice(7) : audioPath;
+    const out = await transcribeFn({ modelId: this.whisperModelId, audioChunk: cleanPath });
+    return typeof out === 'string' ? out : '';
   }
 
   hasEmbedder() {
