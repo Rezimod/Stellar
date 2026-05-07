@@ -970,128 +970,79 @@ export default function HomePage() {
       {/* ============================================================
           COMPARISON
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px]">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <Eyebrow>The difference</Eyebrow>
-            <SectionTitle>Most apps show. Stellar pays.</SectionTitle>
+      <section className="px-4 md:px-8 py-12 md:py-[120px]">
+        <div className="max-w-[720px] mx-auto">
+          <div className="text-center mb-8 md:mb-12">
+            <SectionTitle>
+              Other apps.{' '}
+              <span className="text-[#FFB347]">Stellar.</span>
+            </SectionTitle>
           </div>
 
-          <div className="max-w-[960px] mx-auto rounded-[20px] border border-white/[0.07] bg-[#0F1A35]/55 overflow-hidden">
+          <div className="rounded-[18px] border border-white/[0.07] bg-[#0F1A35]/55 overflow-hidden">
             {/* Header row */}
-            <div className="grid grid-cols-[1fr_1fr] md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,1fr)]">
-              <div className="hidden md:flex items-center px-7 py-5 border-b border-white/[0.06]">
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#5C6478]">
-                  8 measures · honest scoring
+            <div className="grid grid-cols-2 border-b border-white/[0.07]">
+              <div className="px-5 md:px-6 py-3 md:py-3.5 border-r border-white/[0.06]">
+                <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-white/40">
+                  Other apps
                 </span>
               </div>
-              <div className="px-5 md:px-7 py-4 md:py-5 border-b border-white/[0.06] border-r border-r-white/[0.05]">
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#5C6478]" />
-                  <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-[#6B7385]">
-                    Most apps
-                  </span>
-                </div>
-                <div className="mt-1 font-mono text-[9.5px] md:text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Stellarium · SkySafari
-                </div>
-              </div>
-              <div className="relative px-5 md:px-7 py-4 md:py-5 border-b border-white/[0.06] bg-[rgba(94,234,212,0.035)]">
-                <div
-                  className="absolute inset-x-0 top-0 h-px"
-                  style={{ background: 'linear-gradient(90deg, transparent, rgba(255,179,71,0.55), rgba(94,234,212,0.55), transparent)' }}
-                />
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#5EEAD4]" />
-                  <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-[#5EEAD4]">
-                    Stellar
-                  </span>
-                </div>
-                <div className="mt-1 font-mono text-[9.5px] md:text-[10px] uppercase tracking-[0.18em] text-white/40">
-                  Plan · prove · earn
-                </div>
+              <div className="px-5 md:px-6 py-3 md:py-3.5">
+                <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-[#FFB347]">
+                  Stellar
+                </span>
               </div>
             </div>
 
             {/* Comparison rows */}
             {[
-              { label: 'Sky catalog',     most: 'Massive, generic',  stellar: 'Curated for tonight',    win: 'even'    },
-              { label: '7-day forecast',  most: 'Today only',         stellar: 'Hourly · hyperlocal',    win: 'stellar' },
-              { label: 'AR finder',       most: 'Yes',                stellar: 'Yes',                    win: 'even'    },
-              { label: 'Photo proof',     most: null,                 stellar: 'On-chain attestation',   win: 'stellar' },
-              { label: 'Stars rewards',   most: null,                 stellar: 'Earn → redeem',          win: 'stellar' },
-              { label: 'Gear redemption', most: null,                 stellar: 'Real telescopes',        win: 'stellar' },
-              { label: 'Scope control',   most: 'Built-in',           stellar: 'Coming',                 win: 'others'  },
-              { label: 'Ad-free',         most: 'Ads · upsells',      stellar: 'Always',                 win: 'stellar' },
+              { label: 'Plan tonight',   most: 'Today only',     stellar: '7-day hourly',    emphasize: false },
+              { label: 'Photo proof',    most: null,             stellar: 'On-chain',        emphasize: false },
+              { label: 'Reward for observing', most: null,       stellar: 'Real telescopes', emphasize: true  },
+              { label: 'Ad-free',        most: 'Ads & upsells',  stellar: 'Always',          emphasize: false },
             ].map((r, i, arr) => (
               <div
                 key={r.label}
-                className={`grid grid-cols-[1fr_1fr] md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(0,1fr)] ${
-                  i < arr.length - 1 ? 'border-b border-white/[0.05]' : ''
+                className={`${i < arr.length - 1 ? 'border-b border-white/[0.05]' : ''} ${
+                  r.emphasize ? 'bg-[rgba(255,179,71,0.04)]' : ''
                 }`}
               >
-                {/* Feature label — desktop spans col 1, mobile shows above as full-width header */}
-                <div className="col-span-2 md:col-span-1 px-5 md:px-7 pt-4 md:py-5 md:flex md:items-center">
-                  <span className="font-mono text-[10.5px] md:text-[11px] uppercase tracking-[0.20em] text-white/85">
+                <div className="px-5 md:px-6 pt-3 md:pt-3.5">
+                  <span
+                    className={`font-mono text-[10.5px] md:text-[11px] uppercase tracking-[0.20em] ${
+                      r.emphasize ? 'text-[#FFB347]' : 'text-white/70'
+                    }`}
+                  >
                     {r.label}
                   </span>
                 </div>
-
-                {/* Others cell */}
-                <div className="px-5 md:px-7 py-3.5 md:py-5 border-r border-r-white/[0.05] flex items-center gap-2.5">
-                  {r.most === null ? (
-                    <>
-                      <span className="font-mono text-[13px] md:text-[14px] text-white/25 leading-none">—</span>
-                      <span className="font-mono text-[9.5px] md:text-[10px] uppercase tracking-[0.18em] text-white/30">
-                        not offered
+                <div className="grid grid-cols-2">
+                  <div className="px-5 md:px-6 pb-3 pt-1.5 md:pb-4 border-r border-white/[0.05] flex items-center gap-2">
+                    {r.most === null ? (
+                      <span className="font-mono text-[13px] text-white/25 leading-none">—</span>
+                    ) : (
+                      <span className="text-[13px] md:text-[14px] text-white/50 leading-snug">
+                        {r.most}
                       </span>
-                    </>
-                  ) : (
-                    <span className="text-[12.5px] md:text-[13px] text-white/55 leading-snug">
-                      {r.most}
+                    )}
+                  </div>
+                  <div className="px-5 md:px-6 pb-3 pt-1.5 md:pb-4 flex items-center gap-2">
+                    {r.emphasize ? (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="#FFB347" className="shrink-0">
+                        <polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9" />
+                      </svg>
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFB347" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                    <span className="text-[13px] md:text-[14px] text-white/90 leading-snug">
+                      {r.stellar}
                     </span>
-                  )}
-                </div>
-
-                {/* Stellar cell */}
-                <div className="relative px-5 md:px-7 py-3.5 md:py-5 bg-[rgba(94,234,212,0.025)] flex items-center gap-2.5">
-                  {r.win === 'stellar' && (
-                    <span
-                      className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-px h-5"
-                      style={{ background: 'linear-gradient(180deg, transparent, rgba(94,234,212,0.6), transparent)' }}
-                    />
-                  )}
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke={r.win === 'others' ? 'rgba(255,255,255,0.25)' : '#5EEAD4'}
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="shrink-0"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span
-                    className={`text-[12.5px] md:text-[13px] leading-snug ${
-                      r.win === 'others' ? 'text-white/55' : 'text-white/90'
-                    }`}
-                  >
-                    {r.stellar}
-                  </span>
+                  </div>
                 </div>
               </div>
             ))}
-
-            {/* Footnote */}
-            <div className="px-5 md:px-7 py-5 md:py-6 border-t border-white/[0.07] bg-[rgba(255,255,255,0.012)]">
-              <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.20em] text-[#6B7385] text-center leading-[1.7]">
-                Stellarium owns the catalog. SkySafari drives the mount.
-                <br className="hidden sm:inline" /> Stellar closes the loop after you saw it.
-              </p>
-            </div>
           </div>
         </div>
       </section>
