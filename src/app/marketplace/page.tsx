@@ -146,7 +146,7 @@ export default function MarketplacePage() {
                   <button
                     key={c.key}
                     onClick={() => setFilter(c.key)}
-                    className="flex-shrink-0 h-[34px] px-[14px] text-[11px] tracking-[0.08em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 h-[34px] px-[14px] text-[11px] tracking-[0.08em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -178,7 +178,7 @@ export default function MarketplacePage() {
                   <button
                     key={d}
                     onClick={() => setDifficulty(active ? 'all' : d)}
-                    className="flex-shrink-0 inline-flex items-center gap-[7px] h-[34px] pl-[11px] pr-[13px] text-[10.5px] tracking-[0.1em] uppercase rounded-md whitespace-nowrap transition-[background,color,border-color] duration-150"
+                    className="flex-shrink-0 inline-flex items-center gap-[7px] h-[34px] pl-[11px] pr-[13px] text-[10.5px] tracking-[0.1em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
                     style={
                       active
                         ? {
@@ -207,7 +207,7 @@ export default function MarketplacePage() {
             {/* Balance + Region — desktop toolbar position. On mobile, these render in the nav header instead. */}
             <div className="hidden md:order-2 md:flex items-center justify-end gap-[8px] flex-shrink-0">
               <span
-                className="inline-flex items-center h-[34px] gap-[7px] px-[11px] rounded-md uppercase cursor-default"
+                className="inline-flex items-center h-[34px] gap-[7px] px-[11px] rounded-none uppercase cursor-default"
                 style={{
                   background: 'rgba(15, 18, 28, 0.55)',
                   border: '1px solid rgba(255, 126, 54, 0.38)',
@@ -265,7 +265,7 @@ export default function MarketplacePage() {
                   <button
                     key={g.id}
                     onClick={() => { setFilter(g.category); setDifficulty(g.skill); }}
-                    className="group text-left rounded-xl p-[16px] transition-[background,border-color,transform] duration-150 hover:-translate-y-[1px]"
+                    className="group text-left rounded-none p-[16px] transition-[background,border-color,transform] duration-150 hover:-translate-y-[1px]"
                     style={{
                       background: 'rgba(232,230,221,0.035)',
                       border: '1px solid rgba(232,230,221,0.10)',

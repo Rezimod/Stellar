@@ -56,10 +56,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         aria-label={`View ${product.name} on dealer site`}
       >
         <div
-          className="relative w-full rounded-lg mb-[14px] overflow-hidden aspect-[1.25]"
-          style={{
-            background: 'rgba(232,230,221,0.92)',
-          }}
+          className="relative w-full mb-[14px] overflow-hidden aspect-[1.25]"
         >
           {product.image && (
             <Image
@@ -67,7 +64,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-              style={{ objectFit: 'contain', padding: '16px' }}
+              style={{ objectFit: 'cover' }}
               loading="lazy"
             />
           )}
@@ -103,7 +100,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
       <div className="flex gap-[8px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 inline-flex items-center justify-center gap-[8px] px-[14px] py-[10px] rounded-[8px] text-[13.5px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[8px] px-[14px] py-[10px] rounded-none text-[13.5px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
           style={{
             background: 'var(--terracotta)',
             border: '1px solid var(--terracotta)',
@@ -128,7 +125,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         </Link>
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-[8px] text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-none text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
           style={{
             background: '#1A2540',
             border: '1px solid rgba(255,255,255,0.10)',
