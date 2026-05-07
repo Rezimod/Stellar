@@ -194,8 +194,8 @@ function ChatPageInner() {
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: 12,
-        padding: '12px 16px',
+        gap: 16,
+        padding: '14px 18px',
         borderBottom: '1px solid var(--border-subtle)',
         background: 'rgba(7,11,20,0.85)',
         backdropFilter: 'blur(20px)',
@@ -204,110 +204,260 @@ function ChatPageInner() {
         top: 0,
         zIndex: 10,
       }}>
-        {/* ASTRA avatar */}
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%',
-          background: 'var(--accent-dim)',
-          border: '1px solid var(--accent-border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <span style={{ color: 'var(--accent)', fontSize: 14, fontFamily: 'var(--font-mono)' }}>✦</span>
-        </div>
-
         {/* Name + subtitle */}
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 17, color: 'var(--text-primary)', margin: 0, lineHeight: 1.1, letterSpacing: '-0.015em' }}>
             ASTRA
             <span className="sr-only"> — AI Space Companion</span>
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
             {t('subtitle')}
           </p>
         </div>
 
-        {/* Online indicator */}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span className="live-dot" />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Online</span>
+        {/* Field Mode + sky-tracking indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <Link
+            href="/field"
+            aria-label={tf('cta')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              textDecoration: 'none',
+              padding: '6px 8px',
+              borderRadius: 6,
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-teal)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+          >
+            <WifiOff size={12} strokeWidth={1.75} />
+            <span>Field</span>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.85 }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: '50%',
+              background: 'var(--accent-teal)',
+              boxShadow: '0 0 0 3px rgba(94, 234, 212, 0.10)',
+            }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              {locale === 'ka' ? 'ცის თვალთვალი' : 'Tracking sky'}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
 
-        {/* Sky card — show when only greeting present */}
-        {messages.length === 1 && skySummary && (
-          <div className="card-base p-3 mb-2">
-            <p style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 600,
-              fontSize: 12,
-              color: skySummary.verified ? 'var(--success)' : 'var(--warning)',
-              margin: '0 0 2px',
-            }}>
-              {skySummary.verified ? '✦ Good conditions tonight' : '◑ Cloudy tonight'}
-            </p>
-            <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: 0 }}>
-              {skySummary.cloudCover}% cloud · {skySummary.visibility} · Ask me what to observe
-            </p>
-          </div>
-        )}
-
-        {/* Field Mode banner — idle state only */}
+        {/* Idle Briefing — replaces greeting bubble + cloudy card + field banner */}
         {messages.length === 1 && (
-          <Link
-            href="/field"
-            aria-label={tf('cta')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '10px 14px',
-              borderRadius: 12,
-              border: '1px solid var(--accent-border)',
-              background: 'var(--accent-dim)',
-              textDecoration: 'none',
-              marginBottom: 8,
-            }}
-          >
-            <div style={{
-              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-              background: 'rgba(94, 234, 212, 0.10)',
-              border: '1px solid rgba(94, 234, 212, 0.20)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--accent)',
-            }}>
-              <WifiOff size={14} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            marginTop: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 26,
+            paddingTop: 16,
+            paddingBottom: 4,
+            maxWidth: 520,
+            width: '100%',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}>
+            {/* Verdict block */}
+            <section>
               <p style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 10,
-                color: 'var(--accent)',
+                color: 'var(--text-muted)',
                 textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                margin: '0 0 2px',
+                letterSpacing: '0.16em',
+                margin: '0 0 14px',
               }}>
-                {tf('label')}
+                {locale === 'ka' ? 'ამ საღამოს' : 'Tonight'}
+                {location.city ? ` · ${location.city}` : ''}
+              </p>
+
+              <h2 style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 500,
+                fontSize: 34,
+                lineHeight: 1.05,
+                color: 'var(--text-primary)',
+                margin: '0 0 10px',
+                letterSpacing: '-0.022em',
+              }}>
+                {skySummary
+                  ? skySummary.verified
+                    ? (locale === 'ka' ? 'მოწმენდილი ცა.' : 'Clear skies.')
+                    : (locale === 'ka' ? 'ღრუბლიანია.' : 'Cloudy.')
+                  : (locale === 'ka' ? 'ცის წაკითხვა…' : 'Reading the sky…')}
+              </h2>
+
+              <p style={{
+                color: 'var(--text-secondary)',
+                fontSize: 14.5,
+                lineHeight: 1.55,
+                margin: 0,
+                maxWidth: 460,
+              }}>
+                {skySummary
+                  ? skySummary.verified
+                    ? (locale === 'ka'
+                        ? 'პირობები ჩამოყალიბდა — მკითხე, რა ღირს ამ ღამეს დაყენებად.'
+                        : "Conditions are working in your favor. Ask me what's worth setting up for.")
+                    : (locale === 'ka'
+                        ? 'ეს ღამე დაყენებად არ ვარგა. მოდი ერთად დავგეგმოთ შენი შემდეგი მოწმენდილი ფანჯარა.'
+                        : "Not a night to set up. Let's plan your next clear window together.")
+                  : (locale === 'ka' ? 'ვუკავშირდები ლოკალურ პროგნოზს.' : 'Connecting to your local forecast.')}
+              </p>
+            </section>
+
+            {/* Stat strip */}
+            {skySummary && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 0,
+                borderTop: '1px solid var(--border-subtle)',
+                borderBottom: '1px solid var(--border-subtle)',
+              }}>
+                <div style={{ padding: '14px 16px 14px 0', borderRight: '1px solid var(--border-subtle)' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 26,
+                    fontWeight: 400,
+                    color: 'var(--text-primary)',
+                    fontVariantNumeric: 'tabular-nums',
+                    lineHeight: 1,
+                    marginBottom: 6,
+                    letterSpacing: '-0.02em',
+                  }}>
+                    {skySummary.cloudCover}<span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 3 }}>%</span>
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 10,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                  }}>
+                    {locale === 'ka' ? 'ღრუბლიანობა' : 'Cloud cover'}
+                  </div>
+                </div>
+                <div style={{ padding: '14px 0 14px 16px' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 26,
+                    fontWeight: 400,
+                    color: 'var(--text-primary)',
+                    lineHeight: 1,
+                    marginBottom: 6,
+                    letterSpacing: '-0.02em',
+                  }}>
+                    {skySummary.visibility.toLowerCase()}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 10,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                  }}>
+                    {locale === 'ka' ? 'ხილვადობა' : 'Visibility'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ASTRA voice */}
+            <div>
+              <p style={{
+                fontFamily: 'var(--font-display)',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                fontSize: 15,
+                lineHeight: 1.55,
+                color: 'var(--text-secondary)',
+                margin: '0 0 8px',
+                paddingLeft: 14,
+                borderLeft: '2px solid var(--accent-teal)',
+              }}>
+                {messages[0].content.replace(/\s*✦\s*$/, '').trim()}
               </p>
               <p style={{
-                fontSize: 12,
-                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9.5,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.16em',
                 margin: 0,
-                lineHeight: 1.4,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}>
-                {tf('body')}
-              </p>
+                paddingLeft: 16,
+              }}>— ASTRA</p>
             </div>
-            <ChevronRight size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
-          </Link>
+
+            {/* Ask ASTRA rail */}
+            <div>
+              <p style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 10,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.16em',
+                margin: '0 0 4px',
+              }}>
+                {locale === 'ka' ? 'ჰკითხე ASTRA-ს' : 'Ask ASTRA'}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => authenticated ? send(s) : setAuthOpen(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '13px 0',
+                      background: 'transparent',
+                      borderTop: 'none',
+                      borderLeft: 'none',
+                      borderRight: 'none',
+                      borderBottom: '1px solid var(--border-subtle)',
+                      color: 'var(--text-primary)',
+                      fontSize: 14,
+                      fontFamily: 'var(--font-body)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'color 0.18s, padding-left 0.18s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.color = 'var(--accent-teal)';
+                      e.currentTarget.style.paddingLeft = '6px';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                      e.currentTarget.style.paddingLeft = '0';
+                    }}
+                  >
+                    <span style={{ flex: 1, paddingRight: 12 }}>{s}</span>
+                    <ChevronRight size={15} color="var(--text-muted)" strokeWidth={1.75} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
 
         {displayMessages.map((m, i) => {
+          // In idle state, the greeting (i=0) is woven into the Briefing above — skip it here.
+          if (i === 0 && messages.length === 1) return null;
           const isStreamingThis = streamingMsgIdx === i && m.role === 'assistant';
           if (m.role === 'user') {
             return (
@@ -391,8 +541,9 @@ function ChatPageInner() {
           </div>
         )}
 
-        {/* Suggestion pills — show after every assistant response when not loading */}
-        {displayMessages[displayMessages.length - 1]?.role === 'assistant' && !loading && (
+        {/* Suggestion pills — show after every assistant response when not loading.
+            Skipped in idle state — the Briefing rail already lists these. */}
+        {messages.length > 1 && displayMessages[displayMessages.length - 1]?.role === 'assistant' && !loading && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
             {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
               <button
