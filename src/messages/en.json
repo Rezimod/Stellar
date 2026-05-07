@@ -116,15 +116,15 @@
       "setsAt": "Sets at",
       "staysUpAllNight": "Stays up all night",
       "tail": {
-        "sun": "The Sun — never observe directly without a solar filter.",
-        "moon": "Look for the {phase} disc.",
-        "jupiter": "Jupiter is the brightest object in that part of the sky.",
-        "saturn": "Saturn looks like a steady, golden-yellow point — through binoculars you'll glimpse the rings.",
-        "mars": "Mars has a distinct red-orange tint that sets it apart from the stars around it.",
-        "venus": "Venus looks like an extremely bright \"star\" near the horizon.",
-        "mercury": "Mercury looks like a bright \"star\" near the horizon — fast-mover, never far from the Sun.",
-        "uranus": "Faint and tricky — you'll need binoculars or a small telescope to actually see it.",
-        "neptune": "Faint — binoculars or a telescope only."
+        "sun": "Our nearest star — a 1.4-million-km plasma furnace, fusing 600 million tons of hydrogen every second.",
+        "moon": "Drifting 3.8 cm farther from Earth every year — slowly stretching the length of our day.",
+        "jupiter": "So massive it could swallow every other planet in the solar system combined — and its Great Red Spot has been raging for at least 350 years.",
+        "saturn": "Less dense than water — if you could find an ocean big enough, Saturn would float.",
+        "mars": "Home to Olympus Mons, a volcano nearly three times the height of Mount Everest.",
+        "venus": "The hottest world in the solar system — its CO₂ atmosphere traps heat at 465 °C, day and night.",
+        "mercury": "The smallest planet — its surface swings from 430 °C in sunlight to −180 °C at night.",
+        "uranus": "Tipped on its side — it rolls around the Sun instead of spinning upright.",
+        "neptune": "The windiest planet — supersonic storms tear across it at over 2,000 km/h."
       },
       "tailType": {
         "star": "A bright point of light — steady to the naked eye.",
