@@ -112,7 +112,7 @@ function CTA({
     <Link
       href={href}
       style={{ ...base, ...skin }}
-      className={`min-w-[180px] sm:min-w-[168px] py-2.5 px-5 sm:py-4 sm:px-7 ${tone === 'primary' ? 'hero-cta-primary' : 'hero-cta-secondary'}`}
+      className={`w-[210px] sm:w-[210px] py-2.5 px-5 sm:py-4 sm:px-7 ${tone === 'primary' ? 'hero-cta-primary' : 'hero-cta-secondary'}`}
     >
       {children}
     </Link>
