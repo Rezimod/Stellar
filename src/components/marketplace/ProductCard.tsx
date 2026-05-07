@@ -67,11 +67,11 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         href={product.externalUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="block"
+        className="flex flex-col flex-1 min-h-0"
         aria-label={`View ${product.name} on dealer site`}
       >
         <div
-          className="relative w-full aspect-[1.25] rounded-lg mb-[14px] overflow-hidden"
+          className={`relative w-full rounded-lg mb-[14px] overflow-hidden ${featured ? 'flex-1 min-h-[200px] md:min-h-0 aspect-[1.25] md:aspect-auto' : 'aspect-[1.25]'}`}
           style={{
             background: 'rgba(232,230,221,0.92)',
           }}
@@ -81,13 +81,13 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
               src={product.image}
               alt={product.name}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+              sizes={featured ? '(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 640px' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px'}
               style={{ objectFit: 'contain', padding: '16px' }}
               loading="lazy"
             />
           )}
         </div>
-        <p className="text-[15px] font-medium text-[#F8F4EC] leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors">
+        <p className={`font-medium text-[#F8F4EC] leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[15px] md:text-[18px]' : 'text-[15px]'}`}>
           {product.name}
         </p>
         <p className="text-[11px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)] mb-[10px] truncate">
