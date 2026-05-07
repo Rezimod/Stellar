@@ -4,8 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { priceToSol, type Product } from '@/lib/dealers';
 
-const STARS_VIOLET = '#8B5CF6';
-
 const formatPrice = (p: Product): string => {
   const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
   return `${n} ${p.currency}`;
@@ -32,37 +30,25 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
 
   const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
   const solAmount = solValue > 0 ? solValue : null;
-  const idleBg = featured ? 'rgba(255, 179, 71,0.05)' : 'rgba(232,230,221,0.045)';
-  const idleBorder = featured ? 'rgba(255, 179, 71,0.32)' : 'rgba(232,230,221,0.10)';
+  const idleBg = 'rgba(232,230,221,0.045)';
+  const idleBorder = 'rgba(232,230,221,0.10)';
 
   return (
     <div
-      className={`group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px] ${className}`}
+      className={`group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px] ${featured ? 'md:col-span-2' : ''} ${className}`}
       style={{
         background: idleBg,
         border: `1px solid ${idleBorder}`,
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'rgba(255, 179, 71,0.40)';
-        e.currentTarget.style.background = featured ? 'rgba(255, 179, 71,0.08)' : 'rgba(232,230,221,0.075)';
+        e.currentTarget.style.borderColor = 'rgba(232,230,221,0.22)';
+        e.currentTarget.style.background = 'rgba(232,230,221,0.075)';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = idleBorder;
         e.currentTarget.style.background = idleBg;
       }}
     >
-      {featured && (
-        <span
-          className="absolute top-[10px] right-[10px] z-10 px-[8px] py-[3px] rounded-md text-[9px] tracking-[0.22em] uppercase font-semibold"
-          style={{
-            background: 'rgba(255, 179, 71,0.16)',
-            border: '1px solid rgba(255, 179, 71,0.4)',
-            color: 'var(--terracotta)',
-          }}
-        >
-          Editor’s pick
-        </span>
-      )}
       <a
         href={product.externalUrl}
         target="_blank"
@@ -99,7 +85,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         style={{ borderTop: '1px solid rgba(232,230,221,0.10)' }}
       >
         <div className="flex flex-col gap-[2px] min-w-0">
-          <span className="text-[18px] font-semibold text-[var(--terracotta)] transition-colors group-hover:text-[#FFE08A] leading-none">
+          <span className="text-[18px] font-semibold text-white leading-none">
             {formatPrice(product)}
           </span>
           {solAmount !== null && (
@@ -108,10 +94,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
             </span>
           )}
         </div>
-        <span
-          className="text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap"
-          style={{ color: STARS_VIOLET }}
-        >
+        <span className="text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap text-white">
           ★ {product.starsPrice.toLocaleString()}
         </span>
       </div>
@@ -145,7 +128,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >
-          <span aria-hidden className="text-[13px] leading-none" style={{ color: STARS_VIOLET }}>★</span>
+          <span aria-hidden className="text-[13px] leading-none text-white">★</span>
           <span>Stars</span>
         </Link>
       </div>
