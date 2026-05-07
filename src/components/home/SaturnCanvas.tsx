@@ -75,7 +75,7 @@ export default function SaturnCanvas() {
 
 
     // ── Ring particles ───────────────────────────────────────────
-    const RING_COUNT = reduceMotion ? 2400 : 8200;
+    const RING_COUNT = reduceMotion ? 3600 : 12000;
     const innerR = 2.95;
     const outerR = 4.95;
 
@@ -96,10 +96,16 @@ export default function SaturnCanvas() {
       // Bias particles toward the visible Cassini-style banding pattern.
       const t = Math.pow(Math.random(), 0.85);
       const r = innerR + t * (outerR - innerR);
-      // Cassini gap — thin band ~70% across with reduced density
-      const gap = Math.abs(r - (innerR + (outerR - innerR) * 0.62));
-      if (gap < 0.05 && Math.random() < 0.7) {
-        i--; // resample — keep gap visible
+      // Cassini gap — wide band ~62% across, very visible
+      const cassini = Math.abs(r - (innerR + (outerR - innerR) * 0.62));
+      if (cassini < 0.06 && Math.random() < 0.85) {
+        i--;
+        continue;
+      }
+      // Encke gap — thin gap near outer edge for added realism
+      const encke = Math.abs(r - (innerR + (outerR - innerR) * 0.88));
+      if (encke < 0.02 && Math.random() < 0.9) {
+        i--;
         continue;
       }
       const angle = Math.random() * Math.PI * 2;
@@ -200,11 +206,32 @@ export default function SaturnCanvas() {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
+    // ── Moons (Titan-, Rhea-, Iapetus-inspired) ──────────────────
+    // Tilted to match the ring plane so they orbit in Saturn's equator.
+    const moonsGroup = new THREE.Group();
+    moonsGroup.rotation.z = THREE.MathUtils.degToRad(26.7);
+
+    type MoonData = { r: number; a: number; speed: number; size: number; color: number };
+    const moonsData: MoonData[] = [
+      { r: 5.6, a: Math.random() * Math.PI * 2, speed: 0.42, size: 0.18, color: 0xd9b487 }, // Titan-ish, warm hazy
+      { r: 6.5, a: Math.random() * Math.PI * 2, speed: 0.28, size: 0.12, color: 0xc8c8c8 }, // Rhea-ish, icy grey
+      { r: 7.6, a: Math.random() * Math.PI * 2, speed: 0.18, size: 0.10, color: 0x8c8478 }, // Iapetus-ish, dusky
+    ];
+    const moons: THREE.Mesh[] = moonsData.map((m) => {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(m.size, 18, 18),
+        new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.95, metalness: 0 }),
+      );
+      moonsGroup.add(mesh);
+      return mesh;
+    });
+
     // ── Saturn group offset (aspect-aware: cinematic crop on desktop,
     //    pulled back on portrait/mobile so it stays visible) ──────────
     const planetGroup = new THREE.Group();
     planetGroup.add(planet);
     planetGroup.add(rings);
+    planetGroup.add(moonsGroup);
     scene.add(planetGroup);
     const updatePlanetOffset = () => {
       const aspect = mount.clientWidth / Math.max(1, mount.clientHeight);
@@ -212,10 +239,10 @@ export default function SaturnCanvas() {
         planetGroup.position.x = 0.6;       // narrow mobile portrait
         planetGroup.scale.setScalar(0.7);   // smaller on mobile only
       } else {
-        planetGroup.scale.setScalar(1);
-        if (aspect < 1.3)      planetGroup.position.x = 2.4;   // tablet / square
-        else if (aspect < 1.7) planetGroup.position.x = 4.0;   // tight laptop
-        else                   planetGroup.position.x = 5.15;  // wide desktop
+        planetGroup.scale.setScalar(0.85);  // slightly smaller on desktop
+        if (aspect < 1.3)      planetGroup.position.x = 3.0;   // tablet / square
+        else if (aspect < 1.7) planetGroup.position.x = 4.8;   // tight laptop
+        else                   planetGroup.position.x = 6.0;   // wide desktop — pushed further right
       }
     };
     updatePlanetOffset();
@@ -276,6 +303,22 @@ export default function SaturnCanvas() {
       // Spin planet on its own axis (visible despite featureless texture via bands)
       planet.rotation.y += planetSpinSpeed * dt;
 
+      // Moons — orbit in the ring plane (moonsGroup is z-tilted), each at its own speed
+      if (!reduceMotion) {
+        for (let i = 0; i < moonsData.length; i++) {
+          const m = moonsData[i];
+          m.a += m.speed * dt * 0.25;
+          if (m.a > Math.PI * 2) m.a -= Math.PI * 2;
+          moons[i].position.set(Math.cos(m.a) * m.r, 0, Math.sin(m.a) * m.r);
+          moons[i].rotation.y += dt * 0.5;
+        }
+      } else {
+        for (let i = 0; i < moonsData.length; i++) {
+          const m = moonsData[i];
+          moons[i].position.set(Math.cos(m.a) * m.r, 0, Math.sin(m.a) * m.r);
+        }
+      }
+
       // Rotate the ring particles around Y. Vary speed by 1/sqrt(r) for
       // pseudo-Keplerian feel — inner particles outrun outer particles.
       for (let i = 0; i < RING_COUNT; i++) {
@@ -305,6 +348,10 @@ export default function SaturnCanvas() {
       starMat.dispose();
       planet.geometry.dispose();
       (planet.material as THREE.Material).dispose();
+      moons.forEach((m) => {
+        m.geometry.dispose();
+        (m.material as THREE.Material).dispose();
+      });
       surfaceTex.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) {
