@@ -89,7 +89,7 @@ export default function SaturnCanvas() {
     // ── Ring particles ───────────────────────────────────────────
     // Mobile gets ~5x fewer particles — the per-frame loop that updates
     // every position is the single hottest path here.
-    const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 12000;
+    const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 18000;
     const innerR = 2.95;
     const outerR = 4.95;
 
