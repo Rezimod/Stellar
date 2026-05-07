@@ -15,8 +15,10 @@ export default function HeroSaturn() {
     <section
       className="relative w-full overflow-hidden flex items-center"
       style={{
-        minHeight: '100vh',
-        height: '100vh',
+        // 100dvh tracks the dynamic viewport (no jump when the mobile URL bar
+        // collapses); fall back to 100vh on browsers without dvh support.
+        minHeight: '100dvh',
+        height: '100dvh',
         // Deep cosmic base + warm amber halo on the right matching Saturn's lit hemisphere
         background: [
           'radial-gradient(ellipse 78% 95% at 82% 52%, rgba(255, 168, 85, 0.18) 0%, rgba(255, 122, 58, 0.09) 26%, transparent 56%)',

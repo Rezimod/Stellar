@@ -16,10 +16,21 @@ export default function SaturnCanvas() {
     if (!mount) return;
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Mobile gets a much lighter scene: lower DPR, fewer particles, smaller sphere.
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    // Save-Data flag (some browsers expose it via connection) — treat as mobile-tier.
+    type NavWithConn = Navigator & { connection?: { saveData?: boolean; effectiveType?: string } };
+    const conn = (navigator as NavWithConn).connection;
+    const lowData = !!conn && (conn.saveData === true || conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g');
+    const lite = isMobile || lowData;
 
     // ── Renderer ─────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !lite,           // skip MSAA on mobile — fillrate-heavy
+      alpha: true,
+      powerPreference: 'high-performance',
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 2));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
@@ -62,8 +73,9 @@ export default function SaturnCanvas() {
     const surfaceTex = makeSaturnTexture();
     surfaceTex.colorSpace = THREE.SRGBColorSpace;
 
+    const sphereSegs = lite ? 48 : 96;
     const planet = new THREE.Mesh(
-      new THREE.SphereGeometry(2.45, 128, 128),
+      new THREE.SphereGeometry(2.45, sphereSegs, sphereSegs),
       new THREE.MeshStandardMaterial({
         map: surfaceTex,
         roughness: 0.92,
@@ -75,7 +87,9 @@ export default function SaturnCanvas() {
 
 
     // ── Ring particles ───────────────────────────────────────────
-    const RING_COUNT = reduceMotion ? 3600 : 12000;
+    // Mobile gets ~5x fewer particles — the per-frame loop that updates
+    // every position is the single hottest path here.
+    const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 12000;
     const innerR = 2.95;
     const outerR = 4.95;
 
@@ -165,7 +179,9 @@ export default function SaturnCanvas() {
     scene.add(rings);
 
     // ── Background star field ────────────────────────────────────
-    const STAR_COUNT = 380;
+    // CSS starfield in HeroSaturn covers the whole hero already; keep WebGL
+    // stars only on desktop where they parallax with the planet camera.
+    const STAR_COUNT = lite ? 0 : 220;
     const starPos = new Float32Array(STAR_COUNT * 3);
     const starSize = new Float32Array(STAR_COUNT);
     for (let i = 0; i < STAR_COUNT; i++) {
@@ -276,6 +292,19 @@ export default function SaturnCanvas() {
     };
     window.addEventListener('resize', onResize);
 
+    // ── Pause RAF when offscreen / tab hidden ───────────────────
+    // The hero is a fixed-viewport landing slab: as soon as the user
+    // scrolls past it there's no reason to keep simulating 12k particles.
+    let inView = true;
+    let docVisible = !document.hidden;
+    const io = new IntersectionObserver(
+      (entries) => { inView = entries[0]?.isIntersecting ?? true; },
+      { threshold: 0 },
+    );
+    io.observe(mount);
+    const onVis = () => { docVisible = !document.hidden; };
+    document.addEventListener('visibilitychange', onVis);
+
     // ── Animation loop ───────────────────────────────────────────
     let raf = 0;
     let last = performance.now();
@@ -285,6 +314,10 @@ export default function SaturnCanvas() {
 
     const render = (now: number) => {
       raf = requestAnimationFrame(render);
+      if (!inView || !docVisible) {
+        last = now; // reset dt so resume doesn't jump
+        return;
+      }
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
@@ -341,6 +374,8 @@ export default function SaturnCanvas() {
       window.removeEventListener('resize', onResize);
       mount.removeEventListener('mousemove', onMove);
       mount.removeEventListener('mouseleave', onLeave);
+      document.removeEventListener('visibilitychange', onVis);
+      io.disconnect();
 
       ringGeo.dispose();
       ringMat.dispose();
