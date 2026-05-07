@@ -161,10 +161,36 @@ export function VoiceLogScreen() {
     return `Saved locally — sync error: ${lastResult.error ?? 'unknown'}`;
   }, [lastResult]);
 
+  const whisperLabel =
+    whisperProgress.phase === 'ready'
+      ? 'WHISPER · READY'
+      : whisperProgress.phase === 'downloading'
+      ? 'DOWNLOADING WHISPER'
+      : whisperProgress.phase === 'loading'
+      ? 'WARMING WHISPER'
+      : whisperProgress.phase === 'error'
+      ? 'WHISPER UNAVAILABLE'
+      : 'IDLE · TAP MIC TO START';
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Voice Log</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Voice Log</Text>
+          <View
+            style={[
+              styles.statusDot,
+              whisperProgress.phase === 'ready'
+                ? { backgroundColor: '#14B8A6' }
+                : whisperProgress.phase === 'error'
+                ? { backgroundColor: '#F87171' }
+                : { backgroundColor: '#F59E0B' },
+            ]}
+          />
+        </View>
+        <Text style={styles.statusStrip}>
+          {whisperLabel}  ·  ON-DEVICE STT  ·  TETHER QVAC
+        </Text>
         <Text style={styles.subtitle}>
           Record observations at the eyepiece. Whisper transcribes locally — no signal needed.
         </Text>
@@ -260,8 +286,6 @@ export function VoiceLogScreen() {
           </View>
         )}
       </ScrollView>
-
-      <Text style={styles.footer}>Powered by Tether QVAC · Whisper · on-device STT</Text>
     </View>
   );
 }
@@ -276,10 +300,27 @@ function Hint({ label }: { label: string }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0B0E17' },
-  header: { paddingTop: Platform.OS === 'ios' ? 60 : 32, paddingHorizontal: 16, paddingBottom: 8 },
-  title: { color: '#E5E7EB', fontSize: 22, fontWeight: '600', letterSpacing: 0.3 },
-  subtitle: { color: '#9CA3AF', fontSize: 13, marginTop: 6, lineHeight: 18 },
-  body: { padding: 16, gap: 16, paddingBottom: 32 },
+  header: {
+    paddingTop: Platform.OS === 'ios' ? 12 : 16,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1A1F2E',
+  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  title: { color: '#E5E7EB', fontSize: 20, fontWeight: '600', letterSpacing: 0.3 },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusStrip: {
+    color: '#6B7280',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    marginTop: 4,
+    marginBottom: 8,
+    fontVariant: ['tabular-nums'],
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  subtitle: { color: '#9CA3AF', fontSize: 13, lineHeight: 18 },
+  body: { padding: 16, gap: 16, paddingBottom: 40 },
   warning: {
     color: '#F59E0B',
     fontSize: 13,
@@ -360,11 +401,4 @@ const styles = StyleSheet.create({
   queueItem: { paddingVertical: 6, borderTopWidth: 1, borderTopColor: '#252B3D' },
   queueTarget: { color: '#E5E7EB', fontSize: 13, fontWeight: '600' },
   queueNotes: { color: '#9CA3AF', fontSize: 12, marginTop: 2 },
-  footer: {
-    color: '#4B5563',
-    fontSize: 11,
-    textAlign: 'center',
-    paddingVertical: 8,
-    letterSpacing: 0.5,
-  },
 });

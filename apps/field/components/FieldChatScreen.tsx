@@ -100,6 +100,17 @@ export function FieldChatScreen() {
     }
   }
 
+  const statusLabel =
+    progress.phase === 'ready'
+      ? 'ON-DEVICE · READY'
+      : progress.phase === 'downloading'
+      ? 'DOWNLOADING MODEL'
+      : progress.phase === 'loading'
+      ? 'WARMING MODEL'
+      : progress.phase === 'error'
+      ? 'MODEL UNAVAILABLE'
+      : 'INITIALIZING';
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -107,7 +118,13 @@ export function FieldChatScreen() {
       keyboardVerticalOffset={20}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Stellar Field</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Stellar Field</Text>
+          <View style={[styles.statusDot, statusDotColor(progress.phase)]} />
+        </View>
+        <Text style={styles.statusStrip}>
+          {statusLabel}  ·  LLAMA 3.2 1B  ·  TETHER QVAC
+        </Text>
         <View style={styles.modeRow}>
           {(['auto', 'field', 'online'] as CompanionMode[]).map((m) => (
             <TouchableOpacity
@@ -125,11 +142,17 @@ export function FieldChatScreen() {
 
       <ModelLoadingBanner progress={progress} />
 
-      <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         {turns.length === 0 && progress.phase === 'ready' && (
           <View style={styles.starterWrap}>
             <Text style={styles.hint}>
-              Ask anything about the night sky. In FIELD mode, the LLM runs entirely on this device — no
+              Ask anything about the night sky. In FIELD mode the model runs entirely on this device — no
               signal needed.
             </Text>
             <View style={styles.starterChips}>
@@ -174,7 +197,7 @@ export function FieldChatScreen() {
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder={progress.phase === 'ready' ? 'Ask the sky...' : 'Loading on-device AI...'}
+          placeholder={progress.phase === 'ready' ? 'Ask the sky…' : 'Loading on-device AI…'}
           placeholderTextColor="#6B7280"
           style={styles.input}
           editable={!busy && progress.phase === 'ready'}
@@ -192,10 +215,19 @@ export function FieldChatScreen() {
           <Text style={styles.sendText}>{busy ? '…' : 'Send'}</Text>
         </TouchableOpacity>
       </View>
-
-      <Text style={styles.footer}>Powered by Tether QVAC · Llama 3.2 1B · on-device</Text>
     </KeyboardAvoidingView>
   );
+}
+
+function statusDotColor(phase: LoadProgress['phase']) {
+  switch (phase) {
+    case 'ready':
+      return { backgroundColor: '#14B8A6' };
+    case 'error':
+      return { backgroundColor: '#F87171' };
+    default:
+      return { backgroundColor: '#F59E0B' };
+  }
 }
 
 function AssistantFooter({
@@ -231,8 +263,24 @@ function AssistantFooter({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0B0E17' },
-  header: { paddingTop: 60, paddingHorizontal: 16, paddingBottom: 8 },
-  title: { color: '#E5E7EB', fontSize: 22, fontWeight: '600', letterSpacing: 0.3 },
+  header: {
+    paddingTop: Platform.OS === 'ios' ? 12 : 16,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1A1F2E',
+  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  title: { color: '#E5E7EB', fontSize: 20, fontWeight: '600', letterSpacing: 0.3 },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusStrip: {
+    color: '#6B7280',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    marginTop: 4,
+    fontVariant: ['tabular-nums'],
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
   modeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   modeChip: {
     paddingHorizontal: 12,
@@ -243,11 +291,11 @@ const styles = StyleSheet.create({
     borderColor: '#252B3D',
   },
   modeChipActive: { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
-  modeChipText: { color: '#9CA3AF', fontSize: 11, letterSpacing: 1 },
+  modeChipText: { color: '#9CA3AF', fontSize: 11, letterSpacing: 1, fontWeight: '600' },
   modeChipTextActive: { color: '#FFFFFF' },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, gap: 10, paddingBottom: 24 },
-  starterWrap: { gap: 12 },
+  scrollContent: { padding: 16, gap: 10, paddingBottom: 32 },
+  starterWrap: { gap: 14 },
   hint: { color: '#9CA3AF', fontSize: 14, lineHeight: 20, paddingHorizontal: 4 },
   starterChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   starterChip: {
@@ -262,7 +310,7 @@ const styles = StyleSheet.create({
   bubble: { padding: 12, borderRadius: 12, maxWidth: '88%' },
   userBubble: { backgroundColor: '#8B5CF6', alignSelf: 'flex-end' },
   aiBubble: { backgroundColor: '#1A1F2E', alignSelf: 'flex-start' },
-  bubbleText: { color: '#E5E7EB', fontSize: 15, lineHeight: 21 },
+  bubbleText: { color: '#E5E7EB', fontSize: 15, lineHeight: 22 },
   userBubbleText: { color: '#FFFFFF' },
   assistantFooter: {
     flexDirection: 'row',
@@ -298,7 +346,9 @@ const styles = StyleSheet.create({
   citationText: { color: '#9CA3AF', fontSize: 10 },
   composer: {
     flexDirection: 'row',
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 12,
     gap: 8,
     backgroundColor: '#0B0E17',
     borderTopWidth: 1,
@@ -321,11 +371,4 @@ const styles = StyleSheet.create({
   },
   sendBtnDisabled: { backgroundColor: '#1A1F2E' },
   sendText: { color: '#0B0E17', fontWeight: '700', fontSize: 14 },
-  footer: {
-    color: '#4B5563',
-    fontSize: 11,
-    textAlign: 'center',
-    paddingVertical: 8,
-    letterSpacing: 0.5,
-  },
 });
