@@ -795,8 +795,8 @@ export default function HomePage() {
                 className="flex-1 inline-flex items-center justify-center px-8 py-[18px] text-white font-semibold text-[15px] tracking-[0.005em] rounded-[14px] no-underline transition-all active:translate-y-[0.5px] hover:brightness-[1.08]"
                 style={{
                   fontFamily: 'var(--font-cta, var(--font-body))',
-                  background: 'linear-gradient(135deg, #FF8A1F 0%, #F25C05 100%)',
-                  boxShadow: '0 10px 32px rgba(242, 92, 5, 0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
+                  background: '#FFB347',
+                  boxShadow: '0 10px 32px rgba(255, 179, 71, 0.35), inset 0 1px 0 rgba(255,255,255,0.18)',
                 }}
               >
                 Earn stars
