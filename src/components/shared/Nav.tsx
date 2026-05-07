@@ -134,19 +134,11 @@ export default function Nav() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-14 relative flex items-center">
 
-            {/* LEFT cluster: hub + logo */}
+            {/* LEFT cluster: logo */}
             <div className="flex items-center flex-shrink-0 gap-2">
-              <Link
-                href="/hub"
-                className="hub-btn"
-                data-active={pathname.startsWith('/hub')}
-                aria-label="Hub"
-              >
-                <LayoutGrid size={17} strokeWidth={1.9} />
-              </Link>
               <Link href="/" title="Stellar" className="flex items-center">
-                <div style={{ filter: 'drop-shadow(0 0 18px rgba(255, 179, 71,0.6)) drop-shadow(0 0 36px rgba(255, 179, 71,0.25))' }}>
-                  <AstroLogo heightClass="h-8" size={30} />
+                <div style={{ filter: 'drop-shadow(0 0 14px rgba(255, 179, 71,0.55)) drop-shadow(0 0 28px rgba(255, 179, 71,0.22))' }}>
+                  <AstroLogo heightClass="h-6" size={22} />
                 </div>
               </Link>
             </div>
@@ -179,7 +171,7 @@ export default function Nav() {
               })}
             </div>
 
-            {/* RIGHT cluster: search + avatar (or sign-in) */}
+            {/* RIGHT cluster: search → hub → avatar/sign-in */}
             <div className="ml-auto flex items-center gap-2 flex-shrink-0 z-10">
               <button
                 onClick={() => setSearchOpen(true)}
@@ -189,6 +181,15 @@ export default function Nav() {
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
+
+              <Link
+                href="/hub"
+                className="hub-btn"
+                data-active={pathname.startsWith('/hub')}
+                aria-label="Hub"
+              >
+                <LayoutGrid size={17} strokeWidth={1.9} />
+              </Link>
 
               {!ready ? (
                 <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] animate-pulse shrink-0" style={{ aspectRatio: '1 / 1' }} />
