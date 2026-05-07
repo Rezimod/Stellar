@@ -536,32 +536,25 @@ export default function NftsPage() {
     <>
     {selectedNft && <NftDetailOverlay nft={selectedNft} onClose={() => setSelectedNft(null)} onRetryMint={(selectedNft.id.startsWith('sim') || state.completedMissions.some(m => m.txId === selectedNft.id && m.status !== 'gallery')) ? handleRetryMint : undefined} retrying={retrying} onRemove={() => handleRemove(selectedNft.id)} />}
     <PageTransition>
-    <PageContainer variant="wide" className="py-3 sm:py-5 flex flex-col gap-3 sm:gap-4">
+    <PageContainer variant="wide" className="py-3 sm:py-5 flex flex-col gap-4 sm:gap-5">
       <BackButton />
 
-      {/* Compact header — title + inline stats + sort, all in one row */}
-      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0 flex items-baseline gap-3 flex-wrap">
-          <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(20px, 2.4vw, 26px)',
-            fontWeight: 600,
-            letterSpacing: '-0.02em',
-            lineHeight: 1.1,
-            color: 'var(--text-primary)',
-            margin: 0,
-          }}>
+      {/* Header — home-page vibes: amber eyebrow + bold white title */}
+      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="min-w-0">
+          <div className="text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#FFB347] mb-2">
+            Your collection
+          </div>
+          <h1
+            className="text-white font-extrabold leading-[1.05] tracking-[-0.02em]"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(28px, 4vw, 44px)',
+              margin: 0,
+            }}
+          >
             My Observations
           </h1>
-          <span style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            letterSpacing: '0.08em',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-          }}>
-            Sealed on Solana
-          </span>
         </div>
 
         {!loading && allNfts.length > 0 && (
@@ -734,10 +727,10 @@ export default function NftsPage() {
                 style={{
                   transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s',
                   cursor: 'pointer',
-                  background: 'var(--color-bg-card)',
-                  borderRadius: 'var(--radius-xl)',
+                  background: 'rgba(255,255,255,0.025)',
+                  borderRadius: 14,
                   border: rarity.rarity === 'Common'
-                    ? '1px solid var(--color-border-subtle)'
+                    ? '1px solid rgba(255,255,255,0.07)'
                     : `1px solid ${rarity.color}40`,
                   boxShadow: rarity.rarity === 'Celestial' ? `0 0 24px ${rarity.color}20` : undefined,
                 }}
@@ -747,16 +740,16 @@ export default function NftsPage() {
                 tabIndex={0}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-card-hover)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
                   if (rarity.rarity === 'Common') {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-medium)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.16)';
                   }
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLElement).style.transform = '';
-                  (e.currentTarget as HTMLElement).style.background = 'var(--color-bg-card)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.025)';
                   if (rarity.rarity === 'Common') {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-subtle)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
                   }
                 }}
               >
