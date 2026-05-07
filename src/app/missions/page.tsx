@@ -58,10 +58,10 @@ const GRID: GridEntry[] = [
 ];
 
 const TIPS: { title: string; body: string; Icon: LucideIcon }[] = [
-  { title: 'Cool 30 min before',    body: 'Warm optics blur fine detail.',           Icon: Snowflake },
-  { title: 'Start at low power',    body: 'Find target wide. Then zoom in.',         Icon: LcTelescope },
-  { title: 'Align finder by day',   body: 'On a far tree. Saves 15 min at night.',   Icon: Crosshair },
-  { title: 'Dark-adapt 20 min',     body: 'Red light only. No phones.',              Icon: LcMoon },
+  { title: 'Let it cool',         body: 'Set it outside 30 min before viewing.',   Icon: Snowflake },
+  { title: 'Start zoomed out',    body: 'Use the lowest power eyepiece first.',    Icon: LcTelescope },
+  { title: 'Align finder by day', body: 'Aim at a distant tree or sign.',          Icon: Crosshair },
+  { title: 'Let your eyes adjust', body: '20 min in the dark. No phone screens.',  Icon: LcMoon },
 ];
 
 const LINEUP_KEYS = ['moon', 'jupiter', 'saturn', 'mars', 'venus', 'mercury'];
@@ -439,20 +439,19 @@ function TelescopeGuide({ tips }: { tips: { title: string; body: string; Icon: L
       <div className="mis-scope-photo">
         <Image
           src="/images/telescopes/refractor.jpg"
-          alt="70 mm refractor telescope"
+          alt="Celestron AstroMaster 70AZ refractor telescope"
           fill
           sizes="(max-width: 720px) 100vw, 360px"
           style={{ objectFit: 'cover' }}
           priority={false}
         />
-        <span className="mis-scope-photo-label">70 mm refractor</span>
+        <span className="mis-scope-photo-label">Celestron AstroMaster 70AZ</span>
       </div>
-      <ol className="mis-scope-steps">
-        {tips.map((tip, i) => {
+      <ul className="mis-scope-steps">
+        {tips.map((tip) => {
           const Icon = tip.Icon;
           return (
             <li key={tip.title} className="mis-scope-step">
-              <span className="mis-scope-step-num">{i + 1}</span>
               <span className="mis-scope-step-icon" aria-hidden>
                 <Icon size={14} strokeWidth={1.7} />
               </span>
@@ -463,7 +462,7 @@ function TelescopeGuide({ tips }: { tips: { title: string; body: string; Icon: L
             </li>
           );
         })}
-      </ol>
+      </ul>
     </div>
   );
 }
