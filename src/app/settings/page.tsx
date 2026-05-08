@@ -7,13 +7,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ChevronLeft, Sun, Moon, Bell, Telescope, Orbit, Sparkles, CloudSun,
+  ChevronLeft, Sun, Moon,
   Mail, Phone, Chrome,
   LogOut, Trash2, ChevronRight,
 } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useAppState } from '@/hooks/useAppState';
-import { useNotificationPrefs } from '@/hooks/useNotificationPrefs';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -137,7 +136,6 @@ export default function SettingsPage() {
   const { logout } = useStellarAuth();
   const { reset } = useAppState();
   const { theme, setTheme } = useTheme();
-  const { prefs, permission, toggleMaster, toggleCategory } = useNotificationPrefs();
   const router = useRouter();
 
   const [locale, setLocale] = useState('en');
@@ -168,53 +166,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-
-  const masterOn = prefs.master && permission === 'granted';
-  const permissionDenied = permission === 'denied';
-  const unsupported = permission === 'unsupported';
-
-  const notifSubcopy = unsupported
-    ? 'Not supported on this device'
-    : permissionDenied
-      ? 'Blocked — enable in browser settings'
-      : masterOn
-        ? 'Push enabled'
-        : 'Tap to enable push alerts';
-
-  const categories = [
-    {
-      key: 'tonightTargets' as const,
-      icon: <Telescope size={15} />,
-      iconBg: 'rgba(255, 179, 71,0.08)',
-      iconColor: 'var(--stars)',
-      label: "Tonight's Targets",
-      sublabel: 'Daily summary of what to observe',
-    },
-    {
-      key: 'planetAlerts' as const,
-      icon: <Orbit size={15} />,
-      iconBg: 'rgba(167,139,250,0.08)',
-      iconColor: 'var(--accent)',
-      label: 'Planet Alerts',
-      sublabel: 'Oppositions, close approaches, transits',
-    },
-    {
-      key: 'rareEvents' as const,
-      icon: <Sparkles size={15} />,
-      iconBg: 'rgba(94,234,212,0.08)',
-      iconColor: 'var(--success)',
-      label: 'Rare Events',
-      sublabel: 'Eclipses, meteor showers, comets',
-    },
-    {
-      key: 'clearSky' as const,
-      icon: <CloudSun size={15} />,
-      iconBg: 'rgba(56,189,248,0.08)',
-      iconColor: '#38BDF8',
-      label: 'Clear Sky',
-      sublabel: 'When the forecast flips to clear',
-    },
-  ];
 
   return (
     <div style={{ maxWidth: 480, margin: '0 auto', padding: '0 16px 48px' }}>
@@ -283,37 +234,6 @@ export default function SettingsPage() {
             last
           />
         )}
-      </Section>
-
-      {/* ── NOTIFICATIONS ── */}
-      <Section title="Notifications">
-        <Row
-          icon={<Bell size={15} />}
-          iconBg="rgba(255, 179, 71,0.08)"
-          iconColor="var(--stars)"
-          label="Push Notifications"
-          sublabel={notifSubcopy}
-          right={
-            <Toggle
-              on={masterOn}
-              onToggle={toggleMaster}
-              disabled={unsupported || permissionDenied}
-            />
-          }
-          last={!masterOn}
-        />
-        {masterOn && categories.map((c, i) => (
-          <Row
-            key={c.key}
-            icon={c.icon}
-            iconBg={c.iconBg}
-            iconColor={c.iconColor}
-            label={c.label}
-            sublabel={c.sublabel}
-            right={<Toggle on={prefs[c.key]} onToggle={() => toggleCategory(c.key)} />}
-            last={i === categories.length - 1}
-          />
-        ))}
       </Section>
 
       {/* ── APPEARANCE ── */}
