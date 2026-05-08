@@ -10,11 +10,14 @@ import {
   ChevronLeft, Sun, Moon,
   Mail, Phone, Chrome,
   LogOut, Trash2, ChevronRight,
+  Orbit, Sparkles, Cloud,
 } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useAppState } from '@/hooks/useAppState';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   return (
     <div style={{ marginBottom: 22 }}>
       <p style={{
@@ -31,13 +34,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <div style={{
         borderRadius: 16,
         overflow: 'hidden',
-        background:
-          'radial-gradient(ellipse 60% 100% at 0% 0%, rgba(167,139,250,0.06) 0%, transparent 60%), ' +
-          'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
-        border: '1px solid rgba(255,255,255,0.10)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 28px -18px rgba(0,0,0,0.55)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: isLight
+          ? '#FFFFFF'
+          : 'radial-gradient(ellipse 60% 100% at 0% 0%, rgba(167,139,250,0.06) 0%, transparent 60%), ' +
+            'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
+        border: isLight
+          ? '1px solid rgba(15,23,42,0.10)'
+          : '1px solid rgba(255,255,255,0.10)',
+        boxShadow: isLight
+          ? '0 1px 4px rgba(15,23,42,0.06), 0 10px 24px -18px rgba(15,23,42,0.18)'
+          : 'inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 28px -18px rgba(0,0,0,0.55)',
+        backdropFilter: isLight ? 'none' : 'blur(8px)',
+        WebkitBackdropFilter: isLight ? 'none' : 'blur(8px)',
       }}>
         {children}
       </div>
@@ -60,18 +68,23 @@ function Row({
   last?: boolean;
   disabled?: boolean;
 }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+  const dividerColor = isLight ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.06)';
+  const hoverBg = isLight ? 'rgba(15,23,42,0.04)' : 'rgba(255,255,255,0.03)';
+
   const inner = (
     <div
       onClick={disabled ? undefined : onClick}
       style={{
         display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px',
-        borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.06)',
+        borderBottom: last ? 'none' : `1px solid ${dividerColor}`,
         cursor: !disabled && (onClick || href) ? 'pointer' : 'default',
         background: 'transparent',
         opacity: disabled ? 0.5 : 1,
         transition: 'background 0.15s',
       }}
-      onMouseEnter={e => { if (!disabled && (onClick || href)) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
+      onMouseEnter={e => { if (!disabled && (onClick || href)) (e.currentTarget as HTMLElement).style.background = hoverBg; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
     >
       <div style={{
@@ -91,7 +104,7 @@ function Row({
           letterSpacing: '-0.005em',
         }}>{label}</p>
         {sublabel && <p style={{
-          color: 'var(--text-muted)',
+          color: 'var(--text-secondary)',
           fontFamily: 'var(--font-mono)',
           fontSize: 11, margin: '2px 0 0',
         }}>{sublabel}</p>}
@@ -105,6 +118,9 @@ function Row({
 }
 
 function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+  const offBg = isLight ? 'rgba(15,23,42,0.18)' : 'var(--border-default)';
   return (
     <button
       onClick={disabled ? undefined : onToggle}
@@ -113,7 +129,7 @@ function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void;
         width: 46, height: 26, borderRadius: 13, padding: 2,
         cursor: disabled ? 'not-allowed' : 'pointer',
         border: 'none',
-        background: on ? 'var(--accent)' : 'var(--border-default)',
+        background: on ? 'var(--accent)' : offBg,
         opacity: disabled ? 0.4 : 1,
         transition: 'background 0.2s',
         display: 'flex', alignItems: 'center',
@@ -121,10 +137,13 @@ function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void;
       }}
     >
       <div style={{
-        width: 22, height: 22, borderRadius: '50%', background: 'white',
+        width: 22, height: 22, borderRadius: '50%',
+        background: '#FFFFFF',
         transform: on ? 'translateX(20px)' : 'translateX(0)',
         transition: 'transform 0.2s',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        boxShadow: isLight
+          ? '0 1px 3px rgba(15,23,42,0.25)'
+          : '0 1px 3px rgba(0,0,0,0.3)',
       }} />
     </button>
   );
@@ -142,10 +161,61 @@ export default function SettingsPage() {
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
+  // Notification preferences — persisted in localStorage. Browser permission
+  // is requested lazily the first time any toggle is turned on.
+  const [notif, setNotif] = useState({
+    visiblePlanets: false,
+    skyEvents: false,
+    weatherAlerts: false,
+  });
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(
+    'default',
+  );
+
   useEffect(() => {
     const c = document.cookie.split(';').find(s => s.trim().startsWith('stellar_locale='));
     if (c) setLocale(c.split('=')[1]?.trim() ?? 'en');
+
+    try {
+      const raw = localStorage.getItem('stellar_notifications');
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<typeof notif>;
+        setNotif((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch {}
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotifPermission(Notification.permission);
+    } else {
+      setNotifPermission('unsupported');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const persistNotif = (next: typeof notif) => {
+    setNotif(next);
+    try {
+      localStorage.setItem('stellar_notifications', JSON.stringify(next));
+    } catch {}
+  };
+
+  const toggleNotif = async (key: keyof typeof notif) => {
+    const turningOn = !notif[key];
+    if (turningOn && notifPermission === 'default' && typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const result = await Notification.requestPermission();
+        setNotifPermission(result);
+        if (result !== 'granted') {
+          persistNotif({ ...notif, [key]: false });
+          return;
+        }
+      } catch {}
+    }
+    persistNotif({ ...notif, [key]: turningOn });
+  };
+
+  const notifBlocked = notifPermission === 'denied';
+  const notifUnsupported = notifPermission === 'unsupported';
 
   const switchLocale = (l: string) => {
     document.cookie = `stellar_locale=${l}; path=/; max-age=31536000`;
@@ -234,6 +304,63 @@ export default function SettingsPage() {
             last
           />
         )}
+      </Section>
+
+      {/* ── NOTIFICATIONS ── */}
+      <Section title="Notifications">
+        {notifBlocked && (
+          <div style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--border-default)',
+            background: 'var(--error-dim)',
+          }}>
+            <p style={{
+              margin: 0, color: 'var(--error)',
+              fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
+            }}>
+              Notifications are blocked. Enable them for this site in your browser settings to receive alerts.
+            </p>
+          </div>
+        )}
+        {notifUnsupported && (
+          <div style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--border-default)',
+            background: 'var(--warning-dim)',
+          }}>
+            <p style={{
+              margin: 0, color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
+            }}>
+              Push notifications aren&apos;t supported on this device.
+            </p>
+          </div>
+        )}
+        <Row
+          icon={<Orbit size={15} />}
+          iconBg="rgba(94, 234, 212,0.08)"
+          iconColor="var(--success)"
+          label="Visible Planets"
+          sublabel="Alert when Mars, Jupiter or Saturn rises tonight"
+          right={<Toggle on={notif.visiblePlanets} onToggle={() => toggleNotif('visiblePlanets')} disabled={notifBlocked || notifUnsupported} />}
+        />
+        <Row
+          icon={<Sparkles size={15} />}
+          iconBg="rgba(255, 179, 71,0.08)"
+          iconColor="var(--terracotta)"
+          label="Sky Events"
+          sublabel="Eclipses, meteor showers, ISS passes"
+          right={<Toggle on={notif.skyEvents} onToggle={() => toggleNotif('skyEvents')} disabled={notifBlocked || notifUnsupported} />}
+        />
+        <Row
+          icon={<Cloud size={15} />}
+          iconBg="rgba(255, 179, 71,0.08)"
+          iconColor="var(--terracotta)"
+          label="Weather Alerts"
+          sublabel="When tonight clears for observing"
+          right={<Toggle on={notif.weatherAlerts} onToggle={() => toggleNotif('weatherAlerts')} disabled={notifBlocked || notifUnsupported} />}
+          last
+        />
       </Section>
 
       {/* ── APPEARANCE ── */}

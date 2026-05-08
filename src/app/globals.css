@@ -142,8 +142,21 @@
   --duration-slow: 500ms;
 }
 
-/* ── Light / Day mode ── */
+/* ── Light / Day mode ──
+   Overrides the BASE tokens (--canvas, --text, --surface, --border, ...) so
+   anything that reads them via var() flips automatically. The alias overrides
+   below stay for components that still read --bg-card / --text-primary. */
 [data-theme="light"] {
+  /* Base tokens — these cascade to everything that reads var(--canvas) /
+     var(--text) / var(--surface) / var(--border) directly. */
+  --canvas: #EDF0F7;
+  --text: #0F172A;
+  --text-muted: #475569;
+  --surface: rgba(15, 23, 42, 0.04);
+  --surface-hover: rgba(15, 23, 42, 0.07);
+  --border: rgba(15, 23, 42, 0.10);
+  --negative: #DC2626;
+
   --bg-void: #EDF0F7;
   --bg-cosmos: #E2E8F5;
   --bg-deep: #F5F7FD;
@@ -153,17 +166,16 @@
   --bg-card-hover: #F4F7FF;
   --bg-elevated: #F0F4FF;
 
-  --border-glass: rgba(99, 102, 241, 0.2);
-  --border-glow: rgba(124, 58, 237, 0.3);
+  --border-glass: rgba(15, 23, 42, 0.10);
+  --border-glow: rgba(15, 23, 42, 0.14);
   --border-subtle: rgba(15, 23, 42, 0.06);
   --border-default: rgba(15, 23, 42, 0.1);
   --border-strong: rgba(15, 23, 42, 0.18);
 
   --text-primary: #0F172A;
   --text-secondary: #475569;
-  --text-dim: #94A3B8;
-  --text-muted: rgba(15, 23, 42, 0.4);
-  --text-faint: rgba(15, 23, 42, 0.2);
+  --text-dim: #64748B;
+  --text-faint: rgba(15, 23, 42, 0.35);
 
   --accent-dim: rgba(99, 102, 241, 0.1);
   --accent-glow: rgba(99, 102, 241, 0.18);
@@ -220,6 +232,55 @@
 [data-theme="light"] .glass-nav {
   background: rgba(237, 240, 247, 0.97);
   border-color: rgba(15,23,42,0.08);
+}
+
+/* design-tokens.css text/surface scale flip for light mode */
+[data-theme="light"] {
+  --color-space-black:  #EDF0F7;
+  --color-panel-dark:   #FFFFFF;
+  --color-card-surface: rgba(15, 23, 42, 0.04);
+  --color-card-hover:   rgba(15, 23, 42, 0.07);
+  --color-surface-mid:  rgba(15, 23, 42, 0.06);
+  --color-text-primary:   rgba(15, 23, 42, 0.92);
+  --color-text-secondary: rgba(15, 23, 42, 0.65);
+  --color-text-muted:     rgba(15, 23, 42, 0.45);
+  --color-text-disabled:  rgba(15, 23, 42, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* Stars / cosmic backdrop are dark-mode-only — hide in light mode */
+[data-theme="light"] .star { display: none; }
+[data-theme="light"] .hero-starfield,
+[data-theme="light"] .hero-starfield::before,
+[data-theme="light"] .hero-starfield::after { display: none; }
+
+/* Selection color flips to terracotta-on-dark-text */
+[data-theme="light"] ::selection {
+  background: rgba(255, 179, 71, 0.35);
+  color: #0F172A;
+}
+
+/* Buttons that hardcoded a dark navy bg need a light counterpart so labels
+   stay readable. .btn-ghost / .btn-stellar-ghost use --cta-secondary-bg. */
+[data-theme="light"] {
+  --cta-secondary-bg:     #FFFFFF;
+  --cta-secondary-hover:  #F4F7FF;
+  --cta-secondary-border: rgba(15, 23, 42, 0.12);
+}
+
+/* Inline-styled white-overlay surfaces (rgba(255,255,255,0.04)…) read fine on
+   the dark canvas but vanish on white. Overlay them with a faint dark tint
+   instead via a class wrapper isn't viable — components apply colors inline.
+   The base-token flip above (--surface, --border, --text) covers most cases.
+   This block patches a handful of common literals used across nav/cards. */
+[data-theme="light"] .glass-card {
+  background: rgba(15, 23, 42, 0.025);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+[data-theme="light"] .glass-card:hover {
+  background: rgba(15, 23, 42, 0.05);
+  border-color: rgba(255, 179, 71, 0.30);
 }
 
 @theme inline {
