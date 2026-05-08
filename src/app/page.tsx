@@ -1096,37 +1096,17 @@ export default async function HomePage() {
       {/* ============================================================
           VISION
          ============================================================ */}
-      <section className="relative px-4 md:px-8 py-16 md:py-[120px] overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at 50% 30%, rgba(107,63,160,0.18) 0%, transparent 55%)',
-          }}
-        />
-        <div className="relative max-w-[1200px] mx-auto">
-          <div className="text-center mb-14 md:mb-20">
-            <Eyebrow>{t('vision.eyebrow')}</Eyebrow>
-            <SectionTitle>
-              {t('vision.title1')}{' '}
-              <span className="bg-gradient-to-r from-[#B07FE8] to-[#5EEAD4] bg-clip-text text-transparent">
-                {t('vision.title2')}
-              </span>
-            </SectionTitle>
-          </div>
+      <section className="px-4 md:px-8 py-16 md:py-[120px]">
+        <div className="max-w-[880px] mx-auto flex flex-col items-center text-center">
+          <Eyebrow>{t('vision.eyebrow')}</Eyebrow>
+          <SectionTitle>
+            {t('vision.title1')}
+            <br />
+            {t('vision.title2')}
+          </SectionTitle>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-            <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">{t('vision.card1')}</div>
-            </div>
-
-            <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">{t('vision.card2')}</div>
-            </div>
-
-            <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">{t('vision.card3')}</div>
-            </div>
+          <div className="mt-12 md:mt-16">
+            <IPhone size="md" image="/landing/feed.png" imageAlt={t('vision.title2')} navLabels={navLabels} />
           </div>
         </div>
       </section>

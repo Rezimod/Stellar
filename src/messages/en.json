@@ -999,11 +999,8 @@
     },
     "vision": {
       "eyebrow": "Vision",
-      "title1": "Know what's up tonight.",
-      "title2": "Find it together.",
-      "card1": "Targets worth aiming at",
-      "card2": "A community looking up",
-      "card3": "Verified by what you saw"
+      "title1": "An app for stargazers.",
+      "title2": "Built around community."
     },
     "finalCta": {
       "eyebrow": "Start tonight",
