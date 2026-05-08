@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import SearchModal from './SearchModal';
-import LocaleToggle from './LocaleToggle';
 
 const NAV_ITEMS = [
   { href: '/sky',         key: 'sky',         icon: CloudSun },
@@ -187,8 +186,6 @@ export default function Nav() {
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
-
-              <LocaleToggle />
 
               <Link
                 href="/hub"

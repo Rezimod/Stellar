@@ -77,20 +77,20 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         </p>
       </a>
       <div
-        className="flex justify-between items-end pt-[10px] mb-[12px] gap-[10px]"
+        className="flex justify-between items-end pt-[10px] mb-[12px] gap-[8px]"
         style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
       >
         <div className="flex flex-col gap-[2px] min-w-0">
-          <span className="text-[18px] font-semibold text-white leading-none">
+          <span className="text-[16px] sm:text-[18px] font-semibold text-white leading-none whitespace-nowrap">
             {formatPrice(product)}
           </span>
           {solAmount !== null && (
-            <span className="text-[10px] tracking-[0.10em] uppercase text-white/70 leading-none mt-[4px]">
+            <span className="text-[10px] tracking-[0.10em] uppercase text-white/70 leading-none mt-[4px] whitespace-nowrap">
               ≈ <span className="text-white">{formatSol(solAmount)}</span> SOL
             </span>
           )}
         </div>
-        <span className="inline-flex items-center gap-[5px] text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap text-white">
+        <span className="inline-flex items-center gap-[5px] text-[11px] sm:text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap text-white">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
           </svg>
@@ -100,7 +100,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
       <div className="flex gap-[8px]">
         <Link
           href={checkoutHref('sol')}
-          className="flex-1 inline-flex items-center justify-center gap-[8px] px-[14px] py-[10px] rounded-none text-[13.5px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[7px] h-[40px] px-[14px] rounded-none text-[12.5px] sm:text-[13px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
           style={{
             background: 'var(--terracotta)',
             border: '1px solid var(--terracotta)',
@@ -109,7 +109,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
-          <svg width="17" height="17" viewBox="0 0 397 311" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 397 311" aria-hidden="true">
             <defs>
               <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stopColor="#9945FF" />
@@ -125,7 +125,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         </Link>
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 inline-flex items-center justify-center gap-[7px] px-[14px] py-[10px] rounded-none text-[12px] tracking-[0.02em] font-medium whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
+          className="flex-1 inline-flex items-center justify-center gap-[7px] h-[40px] px-[14px] rounded-none text-[12.5px] sm:text-[13px] tracking-[0.04em] font-bold whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
           style={{
             background: '#1A2540',
             border: '1px solid rgba(255,255,255,0.10)',
@@ -139,10 +139,10 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           }}
           aria-label={`Redeem ${product.name} with stars`}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="text-white">
             <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
           </svg>
-          <span>Stars</span>
+          <span>STARS</span>
         </Link>
       </div>
     </div>
