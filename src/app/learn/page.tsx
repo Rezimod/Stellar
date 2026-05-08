@@ -15,7 +15,7 @@ import { PLANETS, DSO, CONSTELLATIONS, ALL_EVENTS, daysFromNow, type Locale } fr
 import {
   Globe, Sparkles, Brain, Camera, BookOpen, Telescope, Map, Search,
   X, Star, Moon, Eye, ChevronDown, ChevronUp, Binoculars, Sun, Rocket,
-  ExternalLink, Compass, Headphones, Newspaper, Satellite, Youtube,
+  ExternalLink, Headphones, Youtube, Orbit,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -871,18 +871,6 @@ const MORE_RESOURCES: {
   external?: boolean;
 }[] = [
   {
-    Icon: Compass,
-    color: '#5EEAD4',
-    title: { en: 'Stellarium Web', ka: 'Stellarium Web' },
-    desc: {
-      en: 'Free open-source planetarium. See the sky from any location, any date — point and click to identify any star.',
-      ka: 'უფასო ღია პლანეტარიუმი. ცა ნებისმიერი ლოკაციიდან, ნებისმიერი თარიღით.',
-    },
-    meta: { en: 'Web · Free', ka: 'ვები · უფასო' },
-    href: 'https://stellarium-web.org/',
-    external: true,
-  },
-  {
     Icon: Camera,
     color: '#FFB347',
     title: { en: 'NASA Astronomy Picture of the Day', ka: 'NASA-ს დღის ფოტო' },
@@ -890,56 +878,68 @@ const MORE_RESOURCES: {
       en: 'A new image of our universe each day with a short explanation by a professional astronomer. Running since 1995.',
       ka: 'ყოველდღე ახალი ფოტო და მოკლე ახსნა პროფესიონალი ასტრონომისგან. 1995 წლიდან.',
     },
-    meta: { en: 'Daily · Free', ka: 'ყოველდღიური · უფასო' },
+    meta: { en: 'NASA · Daily', ka: 'NASA · ყოველდღიური' },
     href: 'https://apod.nasa.gov/apod/',
     external: true,
   },
   {
-    Icon: Satellite,
-    color: '#FB7185',
-    title: { en: 'Heavens-Above', ka: 'Heavens-Above' },
-    desc: {
-      en: 'When does the ISS pass over your house tonight? When is Starlink visible? This site has every satellite pass timed to the second.',
-      ka: 'როდის გადაივლის ISS შენთან თავზე? როდის ჩანს Starlink? ყველა სატელიტის გადასვლა წამის სიზუსტით.',
-    },
-    meta: { en: 'Web · Free', ka: 'ვები · უფასო' },
-    href: 'https://www.heavens-above.com/',
-    external: true,
-  },
-  {
     Icon: Youtube,
-    color: '#8B5CF6',
-    title: { en: "Dr. Becky's YouTube channel", ka: 'Dr. Becky-ს YouTube არხი' },
+    color: '#FB7185',
+    title: { en: 'NASA on YouTube', ka: 'NASA YouTube-ზე' },
     desc: {
-      en: 'Oxford astrophysicist Dr. Becky Smethurst breaks down the latest space news in 10-minute videos. Best beginner-friendly astronomy on YouTube.',
-      ka: 'ოქსფორდის ასტროფიზიკოსი Dr. Becky Smethurst უახლეს კოსმოსურ სიახლეებზე 10-წუთიან ვიდეოებში.',
+      en: 'Live rocket launches, ISS feeds, and full mission documentaries — straight from the agency. The single best free space channel online.',
+      ka: 'რაკეტების გაშვებები პირდაპირ ეთერში, ISS-ის კადრები და მისიების დოკუმენტურები — პირდაპირ NASA-დან.',
     },
-    meta: { en: 'YouTube · Free', ka: 'YouTube · უფასო' },
-    href: 'https://www.youtube.com/@DrBecky',
+    meta: { en: 'NASA · YouTube', ka: 'NASA · YouTube' },
+    href: 'https://www.youtube.com/@NASA',
     external: true,
   },
   {
-    Icon: BookOpen,
-    color: '#FFB347',
-    title: { en: 'Turn Left at Orion', ka: '"Turn Left at Orion"' },
-    desc: {
-      en: "Guy Consolmagno's classic beginner book. Hand-drawn views of 100+ deep sky objects exactly as they look through a small telescope — the gold standard reference.",
-      ka: 'Guy Consolmagno-ს კლასიკური წიგნი დამწყებთათვის. 100+ ღრმა ცის ობიექტი ხელით ნახატი ისე, როგორც ისინი ჩანს პატარა ტელესკოპში.',
-    },
-    meta: { en: 'Book · Beginner', ka: 'წიგნი · დამწყები' },
-    href: 'https://www.cambridge.org/9781108457569',
-    external: true,
-  },
-  {
-    Icon: Newspaper,
+    Icon: Telescope,
     color: '#5EEAD4',
-    title: { en: 'Sky & Telescope', ka: 'Sky & Telescope' },
+    title: { en: 'ESA / Hubble', ka: 'ESA / Hubble' },
     desc: {
-      en: "America's longest-running astronomy magazine. Monthly sky charts, observing tips, and equipment reviews you can trust.",
-      ka: 'ამერიკის ყველაზე ხანგრძლივი ასტრონომიული ჟურნალი. ცის რუკები, რჩევები და აღჭურვილობის მიმოხილვები.',
+      en: 'The European Space Agency\'s Hubble portal — three decades of images, papers, and explainers from humanity\'s most famous telescope.',
+      ka: 'ევროპული კოსმოსური სააგენტოს Hubble-ის პორტალი — სამი ათწლეული ფოტოებისა და მასალების ყველაზე ცნობილი ტელესკოპიდან.',
     },
-    meta: { en: 'Magazine · Web', ka: 'ჟურნალი · ვები' },
-    href: 'https://skyandtelescope.org/',
+    meta: { en: 'ESA · Web', ka: 'ESA · ვები' },
+    href: 'https://esahubble.org/',
+    external: true,
+  },
+  {
+    Icon: Sparkles,
+    color: '#8B5CF6',
+    title: { en: 'James Webb Space Telescope', ka: 'James Webb-ის ტელესკოპი' },
+    desc: {
+      en: 'The official JWST gallery from STScI. Infrared views of galaxies, nebulae, and exoplanet atmospheres in resolutions Hubble never reached.',
+      ka: 'JWST-ის ოფიციალური გალერია. გალაქტიკები, ნისლეულები და ეგზოპლანეტები ინფრაწითელ შუქში.',
+    },
+    meta: { en: 'NASA · ESA · CSA', ka: 'NASA · ESA · CSA' },
+    href: 'https://webbtelescope.org/resource-gallery/images',
+    external: true,
+  },
+  {
+    Icon: Rocket,
+    color: '#FFB347',
+    title: { en: 'SpaceX', ka: 'SpaceX' },
+    desc: {
+      en: 'Live launch webcasts, Starship test flights, and Starlink deployments. The most-watched rocket coverage on the internet — free, no signup.',
+      ka: 'რაკეტების გაშვებების პირდაპირი ეთერი, Starship-ის ტესტ-ფრენები და Starlink-ის გაშვებები.',
+    },
+    meta: { en: 'SpaceX · Live', ka: 'SpaceX · პირდაპირ' },
+    href: 'https://www.spacex.com/launches/',
+    external: true,
+  },
+  {
+    Icon: Orbit,
+    color: '#5EEAD4',
+    title: { en: 'NASA Eyes on the Solar System', ka: 'NASA Eyes — მზის სისტემა' },
+    desc: {
+      en: 'Fly through a real-time 3D model of our solar system built on actual NASA mission data. Track every planet, moon, and active spacecraft.',
+      ka: 'მზის სისტემის 3D მოდელი რეალურ დროში, NASA-ს მისიის მონაცემებზე აგებული. ნახეთ პლანეტები, მთვარეები და მოქმედი მისიები.',
+    },
+    meta: { en: 'NASA · Interactive', ka: 'NASA · ინტერაქტიული' },
+    href: 'https://eyes.nasa.gov/apps/solar-system/',
     external: true,
   },
 ];
