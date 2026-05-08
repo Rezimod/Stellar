@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 import { PublicKey } from '@solana/web3.js';
 import Anthropic from '@anthropic-ai/sdk';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 // TODO: after claim, regenerate NFT metadata URI to include star name attribute
 
@@ -48,6 +49,14 @@ Respond ONLY with: {"approved":true} or {"approved":false,"reason":"brief reason
 
 
 export async function POST(req: NextRequest) {
+  // Star-naming is gated on a paid NFT — the only callers (observe/result,
+  // MissionActive) all run inside the Privy-authenticated mission flow, so
+  // we can safely require a Privy session here.
+  const privyId = await verifyPrivy(req);
+  if (!privyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -78,6 +87,10 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid walletAddress' }, { status: 400 });
   }
+  const owns = await assertOwnsWallet(privyId, walletAddress);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
+  }
 
   if (typeof nftAddress !== 'string' || !nftAddress) {
     return NextResponse.json({ error: 'nftAddress is required' }, { status: 400 });
@@ -93,7 +106,7 @@ export async function POST(req: NextRequest) {
 
   const spaceIdx = catalogId.indexOf(' ');
   const prefix = spaceIdx !== -1 ? catalogId.slice(0, spaceIdx) : '';
-  const num = spaceIdx !== -1 ? parseInt(catalogId.slice(spaceIdx + 1)) : NaN;
+  const num = spaceIdx !== -1 ? parseInt(catalogId.slice(spaceIdx + 1), 10) : NaN;
   if (!prefix || isNaN(num)) {
     return NextResponse.json({ error: 'Invalid catalogId' }, { status: 400 });
   }

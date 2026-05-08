@@ -10,6 +10,7 @@ import bs58 from 'bs58';
 import { isValidPublicKey } from '@/lib/validate';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 export const maxDuration = 60;
 
@@ -36,6 +37,14 @@ function getLimiter(): Ratelimit | null {
 }
 
 export async function POST(req: NextRequest) {
+  // Require an authenticated Privy session. Stars-sync runs from
+  // WalletSync.tsx the moment the user has an address, so a token is
+  // available — and the route mints SPL tokens, so we can't leave it open.
+  const privyId = await verifyPrivy(req);
+  if (!privyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: { address?: unknown; expectedTotal?: unknown };
   try {
     body = await req.json();
@@ -46,6 +55,10 @@ export async function POST(req: NextRequest) {
   const address = typeof body.address === 'string' ? body.address : '';
   if (!isValidPublicKey(address)) {
     return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
+  }
+  const owns = await assertOwnsWallet(privyId, address);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   const expected = Number(body.expectedTotal);

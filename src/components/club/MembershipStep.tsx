@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { Shield } from 'lucide-react';
+import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
 
 export default function MembershipStep() {
   const { state, setMembership } = useAppState();
+  const { getAccessToken } = usePrivy();
   const unlocked = state.walletConnected;
   const done = state.membershipMinted;
   const [joining, setJoining] = useState(false);
@@ -18,9 +20,13 @@ export default function MembershipStep() {
     setJoining(true);
     setError('');
     try {
+      const authToken = await getAccessToken().catch(() => null);
       const res = await fetch('/api/club/activate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({ walletAddress: state.walletAddress }),
       });
       const data = await res.json();

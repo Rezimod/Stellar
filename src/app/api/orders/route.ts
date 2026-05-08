@@ -10,6 +10,7 @@ import { orders, users } from '@/lib/schema';
 import { isValidPublicKey } from '@/lib/validate';
 import { getStarsBalance } from '@/lib/solana';
 import { computeMaxBurn, validateBurn, starsToGEL } from '@/lib/stars-economy';
+import { assertOwnsWallet } from '@/lib/api-auth';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -62,6 +63,14 @@ export async function POST(req: NextRequest) {
   if (!currency) return NextResponse.json({ error: 'currency required' }, { status: 400 });
   if (!walletAddress || !isValidPublicKey(walletAddress)) {
     return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
+  }
+  // Match the GET path's ownership check — the wallet placing this order
+  // must be the one linked to the verified Privy session, otherwise a
+  // signed-in user could spend another wallet's Stars or sign up SOL
+  // payments under someone else's address.
+  const owns = await assertOwnsWallet(privyId, walletAddress);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
   if (method === 'sol' && (typeof amountSol !== 'number' || amountSol <= 0)) {
     return NextResponse.json({ error: 'amountSol must be a positive number' }, { status: 400 });

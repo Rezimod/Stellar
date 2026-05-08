@@ -3,6 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import { and, desc, eq, gt, inArray, lt, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { feedPosts, feedReactions, feedComments, feedFollows, users } from '@/lib/schema'
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth'
 
 const REACTION_TYPES = ['like', 'love', 'wow', 'sad', 'dislike', 'star', 'rocket', 'galaxy'] as const
 type ReactionType = typeof REACTION_TYPES[number]
@@ -154,12 +155,20 @@ export async function POST(req: NextRequest) {
   const db = getDb()
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
 
+  // Posting is gated on a Privy session and wallet ownership — otherwise any
+  // visitor could post as any wallet they choose.
+  const privyId = await verifyPrivy(req)
+  if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   let body: Record<string, unknown>
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
 
   const authorWallet = String(body.authorWallet ?? '')
   if (!isValidWallet(authorWallet)) {
     return NextResponse.json({ error: 'Invalid wallet' }, { status: 400 })
+  }
+  if (!(await assertOwnsWallet(privyId, authorWallet))) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 })
   }
 
   const type = String(body.type ?? '')

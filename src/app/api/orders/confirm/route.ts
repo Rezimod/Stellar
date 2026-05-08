@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { findReference } from '@solana/pay';
+import BigNumber from 'bignumber.js';
+import { findReference, validateTransfer } from '@solana/pay';
 import { PrivyClient } from '@privy-io/server-auth';
 import { eq, and } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
@@ -59,6 +60,27 @@ export async function POST(req: NextRequest) {
     signature = sig.signature;
   } catch {
     return NextResponse.json({ confirmed: false });
+  }
+
+  // findReference only proves *some* tx referenced this key. validate that
+  // the recipient/amount/SPL match what the order recorded — otherwise an
+  // attacker could send 1 lamport with the right reference and have the
+  // order flip to paid.
+  const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET;
+  if (!merchantWallet) {
+    return NextResponse.json({ confirmed: false, error: 'Merchant wallet not configured' }, { status: 503 });
+  }
+  try {
+    const recipient = new PublicKey(merchantWallet);
+    await validateTransfer(
+      connection,
+      signature,
+      { recipient, amount: new BigNumber(order.amountSol), reference: referenceKey },
+      { commitment: 'confirmed' },
+    );
+  } catch (err) {
+    console.warn('[orders/confirm] amount validation failed:', err instanceof Error ? err.message : err);
+    return NextResponse.json({ confirmed: false, error: 'Payment amount does not match order' }, { status: 400 });
   }
 
   // §4: orders that committed Stars for a discount cannot be marked paid

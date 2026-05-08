@@ -2,17 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { mintCompressedNFT } from '@/lib/mint-nft';
 
 export const maxDuration = 60; // Solana devnet confirmations can take 15-30s
-import { PrivyClient } from '@privy-io/server-auth';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
 import { mintRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { isValidPublicKey } from '@/lib/validate';
-
-const privy = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!,
-);
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -29,21 +24,19 @@ export async function POST(req: NextRequest) {
   // Abuse is bounded by /api/mint's per-wallet rate limits below.
   const isDevNoWallet = process.env.NODE_ENV === 'development' && isDemoMint && !body.userAddress;
   if (!isDevNoWallet) {
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    let privyOk = false;
-    if (token) {
-      try {
-        await privy.verifyAuthToken(token);
-        privyOk = true;
-      } catch {
-        privyOk = false;
-      }
-    }
-    if (!privyOk) {
-      const addr = typeof body.userAddress === 'string' ? body.userAddress : '';
+    const privyId = await verifyPrivy(req);
+    const addr = typeof body.userAddress === 'string' ? body.userAddress : '';
+    if (!privyId) {
+      // External-wallet path (Phantom/Solflare/Backpack). The wallet pubkey
+      // itself is the principal; rate limits below cap abuse.
       if (!isValidPublicKey(addr)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    } else if (addr) {
+      // Privy session present + wallet supplied: prove the wallet is theirs.
+      const owns = await assertOwnsWallet(privyId, addr);
+      if (!owns) {
+        return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
       }
     }
   }

@@ -4,6 +4,7 @@ import './feed.css'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { usePrivy } from '@privy-io/react-auth'
 import {
   Compass, Star, Sparkles, Calendar, Bookmark,
   Image as ImageIcon, Eye, MapPin, Gem, X,
@@ -53,6 +54,7 @@ export default function FeedPage() {
 
   const { authenticated, address } = useStellarUser()
   const { } = useStellarAuth()
+  const { getAccessToken } = usePrivy()
   const { location } = useLocation()
   const { displayName, firstName, initial: profileInitial, avatarGlyph, avatarId } = useDisplayProfile()
   const [authOpen, setAuthOpen] = useState(false)
@@ -181,9 +183,13 @@ export default function FeedPage() {
       if (observation?.nft) payload.observationNftAddress = observation.nft
     }
     try {
+      const authToken = await getAccessToken().catch(() => null)
       const res = await fetch('/api/feed/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify(payload),
       })
       if (res.ok) {
@@ -341,8 +347,8 @@ export default function FeedPage() {
                           if (last) {
                             setPendingObservation({
                               target: last.target,
-                              lat: last.lat?.toFixed(2) ?? '',
-                              lon: last.lon?.toFixed(2) ?? '',
+                              lat: last.lat != null ? last.lat.toFixed(2) : '',
+                              lon: last.lon != null ? last.lon.toFixed(2) : '',
                               nft: last.mintTx ?? undefined,
                             })
                           } else {

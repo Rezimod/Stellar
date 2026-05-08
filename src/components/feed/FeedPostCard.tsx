@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { MessageCircle, MoreHorizontal, Share2, Telescope, Trash2, Copy, Twitter } from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
 import FollowButton from '@/components/feed/FollowButton'
 import { Avatar } from '@/lib/avatars'
 import {
@@ -70,6 +71,7 @@ interface Props {
 }
 
 function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGlyph, myAvatarId, onDelete, onChange, authPrompt, index }: Props) {
+  const { getAccessToken } = usePrivy()
   const [showPicker, setShowPicker] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
@@ -123,9 +125,13 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
       : post.reactionCount + 1
     onChange({ ...post, myReaction: prev === reaction ? null : reaction, reactionCount: optimisticCount })
     try {
+      const authToken = await getAccessToken().catch(() => null)
       const res = await fetch('/api/feed/reactions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({ postId: post.id, wallet: myWallet, reaction }),
       })
       if (!res.ok) throw new Error('failed')
@@ -153,9 +159,13 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
     setComments(prev => [...prev, optimistic])
     onChange({ ...post, commentCount: post.commentCount + 1 })
     try {
+      const authToken = await getAccessToken().catch(() => null)
       const res = await fetch('/api/feed/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({ postId: post.id, authorWallet: myWallet, body: text }),
       })
       if (!res.ok) throw new Error('failed')

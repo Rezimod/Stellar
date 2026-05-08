@@ -481,7 +481,14 @@ Return ONLY valid JSON, no markdown, no preamble:
     deviceModel ?? '',
     isInternetSourced ? '1' : '0',
   ].join(':');
-  const verificationToken = createHmac('sha256', process.env.ANTHROPIC_API_KEY ?? '')
+  // Dedicated HMAC secret — falls back to ANTHROPIC_API_KEY for compat with
+  // tokens issued before the migration. If both are empty we refuse rather
+  // than sign with '' (which would be trivially forgeable).
+  const tokenSecret = process.env.OBSERVATION_TOKEN_SECRET || process.env.ANTHROPIC_API_KEY || '';
+  if (!tokenSecret) {
+    return NextResponse.json({ error: 'Server misconfigured: OBSERVATION_TOKEN_SECRET not set' }, { status: 503 });
+  }
+  const verificationToken = createHmac('sha256', tokenSecret)
     .update(tokenData)
     .digest('hex');
 

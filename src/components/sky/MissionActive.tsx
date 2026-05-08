@@ -472,9 +472,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     setStarClaiming(true);
     setStarError('');
     try {
+      const authToken = await getAccessToken().catch(() => null);
       const res = await fetch('/api/star/claim', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({
           catalogId: nearestStar.catalogId,
           chosenName: starName.trim(),

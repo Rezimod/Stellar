@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 
@@ -21,6 +22,7 @@ function runWhenIdle(cb: () => void) {
 
 export default function WalletSync() {
   const { address, source } = useStellarUser();
+  const { getAccessToken } = usePrivy();
   const { state, setWallet } = useAppState();
   const fundingRef = useRef<string | null>(null);
   const syncingRef = useRef<string | null>(null);
@@ -81,10 +83,17 @@ export default function WalletSync() {
       if (sessionStorage.getItem(SYNCED_KEY_PREFIX + address) === '1') return;
     } catch {}
     syncingRef.current = address;
-    runWhenIdle(() => {
+    runWhenIdle(async () => {
+      const token = await getAccessToken().catch(() => null);
+      if (!token) {
+        // External-wallet (Phantom/Solflare/Backpack) sessions have no Privy
+        // token. Stars-sync now requires one — skip silently for those users;
+        // they'll earn Stars per-mission via /api/award-stars instead.
+        return;
+      }
       fetch('/api/stars/sync', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ address, expectedTotal: expected }),
       })
         .then((r) => r.json().catch(() => null))

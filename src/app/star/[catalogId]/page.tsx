@@ -64,7 +64,7 @@ async function getStar(slug: string): Promise<StarRecord | null> {
   const dashIndex = slug.indexOf('-');
   if (dashIndex === -1) return null;
   const prefix = slug.slice(0, dashIndex).toUpperCase();
-  const num = parseInt(slug.slice(dashIndex + 1));
+  const num = parseInt(slug.slice(dashIndex + 1), 10);
   if (isNaN(num) || !isFinite(num)) return null;
 
   try {

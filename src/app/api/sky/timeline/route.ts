@@ -44,7 +44,8 @@ interface ObservableObjectPayload {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const lat = parseFloat(searchParams.get('lat') ?? '');
-  const lon = parseFloat(searchParams.get('lon') ?? '');
+  // Accept either `lon` or `lng` for parity with every other sky route.
+  const lon = parseFloat(searchParams.get('lon') ?? searchParams.get('lng') ?? '');
 
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
     return NextResponse.json({ error: 'lat and lon required' }, { status: 400 });

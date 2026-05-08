@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 60; // Solana devnet token mint can take 15-30s
-import { PrivyClient } from '@privy-io/server-auth';
 import { awardStarsRateLimit, awardStarsDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
@@ -9,30 +8,16 @@ import bs58 from 'bs58';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { and, eq } from 'drizzle-orm';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 const DEVNET_URL = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
-
-const privy = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!,
-);
 
 export async function POST(req: NextRequest) {
   // Auth: accept either a verified Privy token OR a valid wallet-adapter pubkey.
   // External-wallet users (Phantom, Solflare, etc.) have no Privy token but the
   // recipient is still a real on-chain address; abuse is bounded by the per-address
   // rate limit below.
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  let privyOk = false;
-  if (token) {
-    try {
-      await privy.verifyAuthToken(token);
-      privyOk = true;
-    } catch {
-      privyOk = false;
-    }
-  }
+  const privyId = await verifyPrivy(req);
 
   let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown; idempotencyKey?: unknown };
   try {
@@ -51,9 +36,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid recipientAddress' }, { status: 400 });
   }
 
-  // If no verified Privy session, the validated `recipientPublicKey` itself acts
-  // as the auth principal; the per-address rate limit below prevents drain.
-  void privyOk;
+  // If a Privy session is present, the recipient must be the wallet linked
+  // to that session. (External-wallet users have no Privy token; the wallet
+  // pubkey is the principal and the per-address rate limit caps abuse.)
+  if (privyId) {
+    const owns = await assertOwnsWallet(privyId, recipientAddress as string);
+    if (!owns) {
+      return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
+    }
+  }
 
   const { success, remaining } = await checkRateLimit(awardStarsRateLimit, recipientAddress as string);
   if (!success) {

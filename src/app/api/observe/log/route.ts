@@ -90,7 +90,11 @@ export async function POST(req: NextRequest) {
       body.deviceModel ?? '',
       body.isInternetSourced ? '1' : '0',
     ].join(':');
-    const expectedToken = createHmac('sha256', process.env.ANTHROPIC_API_KEY ?? '')
+    const tokenSecret = process.env.OBSERVATION_TOKEN_SECRET || process.env.ANTHROPIC_API_KEY || '';
+    if (!tokenSecret) {
+      return NextResponse.json({ logged: false, reason: 'Server misconfigured' }, { status: 503 });
+    }
+    const expectedToken = createHmac('sha256', tokenSecret)
       .update(expectedTokenData)
       .digest('hex');
     if (token !== expectedToken) {

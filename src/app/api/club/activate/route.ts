@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 
 export async function POST(req: NextRequest) {
+  // Club activation writes a memo tx paid for by the server's fee-payer
+  // wallet. Without auth, anyone could drain that wallet — require Privy.
+  const privyId = await verifyPrivy(req);
+  if (!privyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: { walletAddress?: unknown };
   try {
     body = await req.json();
@@ -17,6 +25,10 @@ export async function POST(req: NextRequest) {
     userKey = new PublicKey(body.walletAddress as string);
   } catch {
     return NextResponse.json({ error: 'Invalid walletAddress' }, { status: 400 });
+  }
+  const owns = await assertOwnsWallet(privyId, userKey.toString());
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   const privateKeyB58 = process.env.FEE_PAYER_PRIVATE_KEY;

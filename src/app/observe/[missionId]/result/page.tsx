@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { MISSIONS } from '@/lib/constants';
@@ -20,6 +21,7 @@ export default function ObserveResultPage() {
   const mission = MISSIONS.find(m => m.id === missionId);
 
   const { address: stellarAddress } = useStellarUser();
+  const { getAccessToken } = usePrivy();
   const { displayName } = useDisplayProfile();
 
   const { state } = useAppState();
@@ -69,9 +71,13 @@ export default function ObserveResultPage() {
     setStarClaiming(true);
     setStarError('');
     try {
+      const authToken = await getAccessToken().catch(() => null);
       const res = await fetch('/api/star/claim', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify({
           catalogId: nearestStar.catalogId,
           chosenName: starName.trim(),
@@ -168,13 +174,17 @@ export default function ObserveResultPage() {
         achievementStars: starsBase + starsBonus,
         achievementMintTx: isOnChain ? mintTxId : null,
         observationTarget: mission.name,
-        observationLat: coords?.lat ? `${coords.lat.toFixed(2)}°` : null,
-        observationLon: coords?.lon ? `${coords.lon.toFixed(2)}°` : null,
+        observationLat: coords?.lat != null ? `${coords.lat.toFixed(2)}°` : null,
+        observationLon: coords?.lon != null ? `${coords.lon.toFixed(2)}°` : null,
         observationNftAddress: isOnChain ? mintTxId : null,
       };
+      const authToken = await getAccessToken().catch(() => null);
       const res = await fetch('/api/feed/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       if (res.ok) {

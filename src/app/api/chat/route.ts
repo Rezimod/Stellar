@@ -5,12 +5,25 @@ import { fetchSkyForecast } from '@/lib/sky-data';
 import { getVisiblePlanets } from '@/lib/planets';
 import { chatRateLimit, chatDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 
-const privy = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!,
-);
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let _privy: PrivyClient | null = null;
+function getPrivy(): PrivyClient {
+  if (!_privy) {
+    _privy = new PrivyClient(
+      process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
+      process.env.PRIVY_APP_SECRET!,
+    );
+  }
+  return _privy;
+}
+
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+}
 
 const OPENAI_MODEL = 'gpt-4o-mini';
 
@@ -119,7 +132,7 @@ export async function POST(req: NextRequest) {
   }
   let userId: string;
   try {
-    const claims = await privy.verifyAuthToken(token);
+    const claims = await getPrivy().verifyAuthToken(token);
     userId = claims.userId;
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -201,7 +214,7 @@ export async function POST(req: NextRequest) {
   const MAX_TOOL_ROUNDS = 3;
   try {
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-      const res = await client.chat.completions.create({
+      const res = await getOpenAI().chat.completions.create({
         model: OPENAI_MODEL,
         max_tokens: 1024,
         messages,
@@ -268,7 +281,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Tool budget exhausted — force a final, no-tools streaming answer.
-    const stream = await client.chat.completions.create({
+    const stream = await getOpenAI().chat.completions.create({
       model: OPENAI_MODEL,
       max_tokens: 600,
       messages,

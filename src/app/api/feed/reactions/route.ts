@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { and, eq, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { feedPosts, feedReactions } from '@/lib/schema'
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth'
 
 const REACTION_TYPES = ['like', 'love', 'wow', 'sad', 'dislike', 'star', 'rocket', 'galaxy'] as const
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -9,6 +10,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export async function POST(req: NextRequest) {
   const db = getDb()
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+
+  const privyId = await verifyPrivy(req)
+  if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: { postId?: string; wallet?: string; reaction?: string }
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
@@ -24,6 +28,9 @@ export async function POST(req: NextRequest) {
   }
   if (!UUID_RE.test(postId)) {
     return NextResponse.json({ error: 'postId must be a UUID' }, { status: 400 })
+  }
+  if (!(await assertOwnsWallet(privyId, wallet))) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 })
   }
 
   const existing = await db
