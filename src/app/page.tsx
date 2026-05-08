@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroSaturn from '@/components/home/HeroSaturn';
+import TonightAtAGlance from '@/components/home/TonightAtAGlance';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -961,82 +962,16 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================
-          COMPARISON
+          TONIGHT AT A GLANCE
          ============================================================ */}
       <section className="px-4 md:px-8 py-12 md:py-[120px]">
         <div className="max-w-[720px] mx-auto">
           <div className="text-center mb-8 md:mb-12">
-            <SectionTitle>
-              Other apps.{' '}
-              <span className="text-[#FFB347]">Stellar.</span>
-            </SectionTitle>
+            <Eyebrow>Live from your sky</Eyebrow>
+            <SectionTitle>Tonight, at a glance.</SectionTitle>
           </div>
 
-          <div className="rounded-[18px] border border-white/[0.07] bg-[#0F1A35]/55 overflow-hidden">
-            {/* Header row */}
-            <div className="grid grid-cols-2 border-b border-white/[0.07]">
-              <div className="px-5 md:px-6 py-3 md:py-3.5 border-r border-white/[0.06]">
-                <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-white/40">
-                  Other apps
-                </span>
-              </div>
-              <div className="px-5 md:px-6 py-3 md:py-3.5">
-                <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-[#FFB347]">
-                  Stellar
-                </span>
-              </div>
-            </div>
-
-            {/* Comparison rows */}
-            {[
-              { label: 'Plan tonight',   most: 'Today only',     stellar: '7-day hourly',    emphasize: false },
-              { label: 'Photo proof',    most: null,             stellar: 'On-chain',        emphasize: false },
-              { label: 'Reward for observing', most: null,       stellar: 'Real telescopes', emphasize: true  },
-              { label: 'Ad-free',        most: 'Ads & upsells',  stellar: 'Always',          emphasize: false },
-            ].map((r, i, arr) => (
-              <div
-                key={r.label}
-                className={`${i < arr.length - 1 ? 'border-b border-white/[0.05]' : ''} ${
-                  r.emphasize ? 'bg-[rgba(255,179,71,0.04)]' : ''
-                }`}
-              >
-                <div className="px-5 md:px-6 pt-3 md:pt-3.5">
-                  <span
-                    className={`font-mono text-[10.5px] md:text-[11px] uppercase tracking-[0.20em] ${
-                      r.emphasize ? 'text-[#FFB347]' : 'text-white/70'
-                    }`}
-                  >
-                    {r.label}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2">
-                  <div className="px-5 md:px-6 pb-3 pt-1.5 md:pb-4 border-r border-white/[0.05] flex items-center gap-2">
-                    {r.most === null ? (
-                      <span className="font-mono text-[13px] text-white/25 leading-none">—</span>
-                    ) : (
-                      <span className="text-[13px] md:text-[14px] text-white/50 leading-snug">
-                        {r.most}
-                      </span>
-                    )}
-                  </div>
-                  <div className="px-5 md:px-6 pb-3 pt-1.5 md:pb-4 flex items-center gap-2">
-                    {r.emphasize ? (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="#FFB347" className="shrink-0">
-                        <polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9" />
-                      </svg>
-                    ) : (
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFB347" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                    <span className="text-[13px] md:text-[14px] text-white/90 leading-snug">
-                      {r.stellar}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TonightAtAGlance />
         </div>
       </section>
 
