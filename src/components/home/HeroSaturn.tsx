@@ -54,9 +54,9 @@ export default function HeroSaturn() {
               fontWeight: 500, /* Orbitron Medium */
             }}
           >
-            Tonight&apos;s sky,
+            Observe the sky.
             <br />
-            measured.
+            Earn rewards.
           </h1>
 
           <p
@@ -66,9 +66,7 @@ export default function HeroSaturn() {
               maxWidth: 520,
             }}
           >
-            Forecast, planets, and what&apos;s worth aiming
-            <br className="hidden sm:block" />
-            your telescope at — hour by hour.
+            Plan, photograph, redeem.
           </p>
 
           <div className="mt-9 md:mt-12 flex flex-col items-start sm:flex-row sm:flex-wrap gap-3 pointer-events-auto">
