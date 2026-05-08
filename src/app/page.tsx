@@ -1112,15 +1112,15 @@ export default async function HomePage() {
       </section>
 
       {/* ============================================================
-          FINAL CTA
+          COMMUNITY
          ============================================================ */}
       <section className="px-6 md:px-8 py-20 md:py-[120px] text-center">
         <div className="max-w-[1200px] mx-auto">
-          <Eyebrow>{t('finalCta.eyebrow')}</Eyebrow>
-          <SectionTitle>{t('finalCta.title')}</SectionTitle>
-          <div className="inline-flex flex-wrap gap-3.5 justify-center mt-8 md:mt-12">
+          <Eyebrow>{t('community.eyebrow')}</Eyebrow>
+          <SectionTitle>{t('community.title')}</SectionTitle>
+          <div className="mt-8 md:mt-12">
             <Link
-              href="/missions"
+              href="/feed"
               className="inline-flex items-center gap-2.5 px-9 text-white font-semibold text-[17px] rounded-[14px] transition-all hover:brightness-[1.08] active:translate-y-[0.5px] no-underline"
               style={{
                 paddingTop: 18,
@@ -1130,24 +1130,11 @@ export default async function HomePage() {
                 boxShadow: '0 12px 36px rgba(91, 108, 255, 0.40), inset 0 1px 0 rgba(255,255,255,0.10)',
               }}
             >
+              {t('community.cta')}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="3" />
+                <path d="M5 12h14" />
+                <path d="m13 5 7 7-7 7" />
               </svg>
-              {t('finalCta.primary')}
-            </Link>
-            <Link
-              href="/sky"
-              className="inline-flex items-center gap-2.5 px-9 text-white font-semibold text-[17px] rounded-[14px] transition-all hover:bg-[#1C2235] no-underline"
-              style={{
-                paddingTop: 18,
-                paddingBottom: 18,
-                fontFamily: 'var(--font-cta, var(--font-body))',
-                background: '#161A28',
-                border: '1px solid rgba(255,255,255,0.10)',
-              }}
-            >
-              {t('finalCta.secondary')}
             </Link>
           </div>
         </div>

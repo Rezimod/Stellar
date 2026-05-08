@@ -1001,11 +1001,10 @@
       "title1": "An app for stargazers.",
       "title2": "Built around community."
     },
-    "finalCta": {
-      "eyebrow": "Start tonight",
-      "title": "The sky is open.",
-      "primary": "Start observing",
-      "secondary": "Tonight's sky →"
+    "community": {
+      "eyebrow": "Community",
+      "title": "Looking up, together.",
+      "cta": "Open the feed"
     }
   }
 }
