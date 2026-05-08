@@ -9,7 +9,7 @@ import { Suspense, useState, useEffect, type CSSProperties } from 'react';
 import {
   Copy, Check, ExternalLink, Telescope, User, ChevronRight,
   Bell, Moon, LogOut, X, Camera, Package, Trash2,
-  Wallet, ShieldCheck, Mail,
+  Wallet, ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,8 +22,6 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Avatar } from '@/lib/avatars';
 import { AvatarPicker } from '@/components/profile/AvatarPicker';
 import { UsernameEditor } from '@/components/profile/UsernameEditor';
-import AstromanRedeemModal from '@/components/profile/AstromanRedeemModal';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { useProfile } from '@/hooks/useProfile';
 
 interface OrderRow {
@@ -156,18 +154,6 @@ function ProfilePageContent() {
   const [discoveryToDelete, setDiscoveryToDelete] = useState<string | null>(null);
   const { profile, saving, update } = useProfile();
   const [authOpen, setAuthOpen] = useState(false);
-  const [redeemOpen, setRedeemOpen] = useState(false);
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  // Auto-open the redeem modal when arriving from the marketplace CTA.
-  useEffect(() => {
-    if (searchParams?.get('redeem') === 'open' && authenticated) {
-      setRedeemOpen(true);
-      router.replace('/profile');
-    }
-  }, [searchParams, authenticated, router]);
 
   const [starsBalance, setStarsBalance] = useState<number>(0);
   const [lifetimeEarned, setLifetimeEarned] = useState<number>(0);
@@ -861,66 +847,10 @@ function ProfilePageContent() {
                     </Link>
                   ))}
                 </div>
-                <Link href="/settings#accounts" style={ROW_STYLE}>
-                  <div style={ICON_CHIP_STYLE}>
-                    <Mail size={14} color="var(--stl-text-bright)" />
-                  </div>
-                  <p style={ROW_LABEL_STYLE}>Connected accounts</p>
-                  <span style={{
-                    ...ROW_VALUE_STYLE,
-                    maxWidth: 140,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {email ?? '—'}
-                  </span>
-                  <ChevronRight size={14} color="var(--stl-text-dim)" />
-                </Link>
               </div>
             );
           })()}
         </section>
-
-        {/* REDEEM AT ASTROMAN — gold CTA, mirrors homepage primary button */}
-        <button
-          onClick={() => setRedeemOpen(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            padding: '16px 18px',
-            background: 'linear-gradient(180deg, rgba(255,179,71,0.16) 0%, rgba(255,179,71,0.05) 100%)',
-            border: '1px solid rgba(255,179,71,0.32)',
-            borderRadius: 14,
-            cursor: 'pointer',
-            textAlign: 'left',
-            width: '100%',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 30px -16px rgba(255,179,71,0.5)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            transition: 'transform 120ms ease, box-shadow 200ms ease',
-          }}
-        >
-          <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.16em',
-              color: '#FFB347',
-            }}>
-              Redeem at Astroman till
-            </span>
-            <span style={{ fontSize: 12, color: 'var(--stl-text-muted)' }}>
-              Burn Stars for store credit · 100 Stars = 1 ₾ · 7-day code
-            </span>
-          </span>
-          <span aria-hidden style={{
-            color: '#FFB347', fontSize: 18,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, borderRadius: 999,
-            background: 'rgba(255,179,71,0.12)',
-            border: '1px solid rgba(255,179,71,0.28)',
-          }}>→</span>
-        </button>
 
         {/* SIGN OUT */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginTop: 4 }}>
@@ -961,13 +891,6 @@ function ProfilePageContent() {
         </div>
 
       </PageContainer>
-
-      <AstromanRedeemModal
-        open={redeemOpen}
-        onClose={() => setRedeemOpen(false)}
-        walletAddress={address}
-        balance={starsBalance}
-      />
     </PageTransition>
   );
 }
