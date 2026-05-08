@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Sun, Target, Sparkles, BookOpen, MessageCircle,
   Trophy, Gem, ShoppingBag, Search, User,
@@ -10,12 +11,12 @@ import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
 type HubItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
   gradient: string;
   comingSoon?: boolean;
 };
-type HubSection = { label: string; items: HubItem[] };
+type HubSection = { labelKey: string; items: HubItem[] };
 
 const G = {
   amber:   'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
@@ -31,27 +32,28 @@ const G = {
 
 const SECTIONS: HubSection[] = [
   {
-    label: 'Explore',
+    labelKey: 'explore',
     items: [
-      { href: '/sky',         label: 'Sky Watcher',  icon: Sun,           gradient: G.amber },
-      { href: '/missions',    label: 'Missions',     icon: Target,        gradient: G.violet },
-      { href: '/marketplace', label: 'Marketplace',  icon: ShoppingBag,   gradient: G.indigo },
-      { href: '/chat',        label: 'ASTRA AI',     icon: MessageCircle, gradient: G.fuchsia },
-      { href: '/learn',       label: 'Learning',     icon: BookOpen,      gradient: G.blue },
-      { href: '/feed',        label: 'Feed',         icon: Sparkles,      gradient: G.orange },
-      { href: '/leaderboard', label: 'Leaderboard',  icon: Trophy,        gradient: G.amber,   comingSoon: true },
+      { href: '/sky',         labelKey: 'skyWatcher',  icon: Sun,           gradient: G.amber },
+      { href: '/missions',    labelKey: 'missions',    icon: Target,        gradient: G.violet },
+      { href: '/marketplace', labelKey: 'marketplace', icon: ShoppingBag,   gradient: G.indigo },
+      { href: '/chat',        labelKey: 'astraAi',     icon: MessageCircle, gradient: G.fuchsia },
+      { href: '/learn',       labelKey: 'learning',    icon: BookOpen,      gradient: G.blue },
+      { href: '/feed',        labelKey: 'feed',        icon: Sparkles,      gradient: G.orange },
+      { href: '/leaderboard', labelKey: 'leaderboard', icon: Trophy,        gradient: G.amber,   comingSoon: true },
     ],
   },
   {
-    label: 'You',
+    labelKey: 'you',
     items: [
-      { href: '/profile', label: 'Profile',      icon: User,      gradient: G.blue },
-      { href: '/nfts',    label: 'Discoveries',  icon: Gem,       gradient: G.rose },
+      { href: '/profile', labelKey: 'profile',     icon: User,  gradient: G.blue },
+      { href: '/nfts',    labelKey: 'discoveries', icon: Gem,   gradient: G.rose },
     ],
   },
 ];
 
 export default function HubPage() {
+  const t = useTranslations('hub');
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
@@ -61,10 +63,10 @@ export default function HubPage() {
           <button
             onClick={() => setSearchOpen(true)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-left text-[#A8B4C8] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors"
-            aria-label="Open search"
+            aria-label={t('openSearch')}
           >
             <Search size={16} strokeWidth={1.8} />
-            <span className="text-[13px] sm:text-[14px]">Search</span>
+            <span className="text-[13px] sm:text-[14px]">{t('search')}</span>
             <span
               className="ml-auto hidden sm:inline-flex items-center gap-1 text-[11px] text-white/40 px-1.5 py-0.5 rounded border border-white/[0.08]"
               style={{ fontFamily: 'var(--font-mono)' }}
@@ -75,13 +77,13 @@ export default function HubPage() {
         </header>
 
         {SECTIONS.map((section) => (
-          <section key={section.label} className="mb-6 sm:mb-8 last:mb-0">
+          <section key={section.labelKey} className="mb-6 sm:mb-8 last:mb-0">
             <div className="flex items-center gap-3 mb-3">
               <h2
                 className="text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] uppercase text-white/40"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                {section.label}
+                {t(section.labelKey)}
               </h2>
               <div className="flex-1 h-px bg-white/[0.06]" />
             </div>
@@ -105,7 +107,7 @@ export default function HubPage() {
                           fontFamily: 'var(--font-mono)',
                         }}
                       >
-                        Soon
+                        {t('soon')}
                       </span>
                     )}
                     <div
@@ -118,7 +120,7 @@ export default function HubPage() {
                       <Icon size={22} strokeWidth={2.2} color="#FFFFFF" />
                     </div>
                     <span className="text-[12px] sm:text-[13px] text-white font-medium leading-tight">
-                      {item.label}
+                      {t(item.labelKey)}
                     </span>
                   </Link>
                 );

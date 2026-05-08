@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useStarsBalance } from '@/hooks/useStarsBalance';
 import { useAppState } from '@/hooks/useAppState';
@@ -14,20 +15,20 @@ import { getProductsByRegion, getDealersByRegion, GLOBAL_FALLBACK } from '@/lib/
 type CategoryFilter = 'all' | 'telescope' | 'eyepiece' | 'binocular' | 'accessory';
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 
-const CATEGORIES: { key: CategoryFilter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'telescope', label: 'Telescopes' },
-  { key: 'eyepiece', label: 'Eyepieces' },
-  { key: 'binocular', label: 'Binoculars' },
-  { key: 'accessory', label: 'Accessories' },
+const CATEGORIES: { key: CategoryFilter; labelKey: string }[] = [
+  { key: 'all', labelKey: 'all' },
+  { key: 'telescope', labelKey: 'telescopes' },
+  { key: 'eyepiece', labelKey: 'eyepieces' },
+  { key: 'binocular', labelKey: 'binoculars' },
+  { key: 'accessory', labelKey: 'accessories' },
 ];
 
 type SkillKey = Exclude<DifficultyFilter, 'all'>;
 
-const SKILL_META: Record<SkillKey, { label: string; level: 1 | 2 | 3; activeColor: string }> = {
-  beginner:     { label: 'Beginner', level: 1, activeColor: 'var(--seafoam)' },
-  intermediate: { label: 'Mid',      level: 2, activeColor: 'var(--terracotta)' },
-  advanced:     { label: 'Advanced', level: 3, activeColor: 'var(--terracotta)' },
+const SKILL_META: Record<SkillKey, { labelKey: string; level: 1 | 2 | 3; activeColor: string }> = {
+  beginner:     { labelKey: 'skillBeginner',     level: 1, activeColor: 'var(--seafoam)' },
+  intermediate: { labelKey: 'skillIntermediate', level: 2, activeColor: 'var(--terracotta)' },
+  advanced:     { labelKey: 'skillAdvanced',     level: 3, activeColor: 'var(--terracotta)' },
 };
 
 const SKILL_BARS = (level: 1 | 2 | 3, color: string) => (
@@ -49,37 +50,18 @@ const SKILL_BARS = (level: 1 | 2 | 3, color: string) => (
 
 interface BuyingGuide {
   id: string;
-  title: string;
-  copy: string;
   category: CategoryFilter;
   skill: DifficultyFilter;
 }
 
 const BUYING_GUIDES: BuyingGuide[] = [
-  {
-    id: 'moon-planets',
-    title: 'Moon & planets',
-    copy: 'Bright, dependable targets. A small refractor and an alt-az mount get you craters and Saturn’s rings on night one.',
-    category: 'telescope',
-    skill: 'beginner',
-  },
-  {
-    id: 'deep-sky',
-    title: 'Galaxies & nebulae',
-    copy: 'Deeper sky needs more aperture and a darker site. Step up to a Dobsonian or a mid Newtonian on an EQ mount.',
-    category: 'telescope',
-    skill: 'intermediate',
-  },
-  {
-    id: 'astrophoto',
-    title: 'Astrophotography',
-    copy: 'Tracking mount, long exposures, patient framing. Specialised optics and accessories — start with a sturdy GoTo.',
-    category: 'telescope',
-    skill: 'advanced',
-  },
+  { id: 'moonPlanets', category: 'telescope', skill: 'beginner' },
+  { id: 'deepSky',     category: 'telescope', skill: 'intermediate' },
+  { id: 'astrophoto',  category: 'telescope', skill: 'advanced' },
 ];
 
 export default function MarketplacePage() {
+  const t = useTranslations('marketplacePage');
   const { address: stellarAddress } = useStellarUser();
   const { state } = useAppState();
   const { location } = useLocation();
@@ -165,7 +147,7 @@ export default function MarketplacePage() {
                           }
                     }
                   >
-                    {c.label}
+                    {t(c.labelKey)}
                   </button>
                 );
               })}
@@ -198,7 +180,7 @@ export default function MarketplacePage() {
                     }
                   >
                     {SKILL_BARS(meta.level, barColor)}
-                    {meta.label}
+                    {t(meta.labelKey)}
                   </button>
                 );
               })}
@@ -214,7 +196,7 @@ export default function MarketplacePage() {
                   boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset',
                 }}
               >
-                <span className="tracking-[0.12em] text-white text-[9.5px] font-semibold">Bal</span>
+                <span className="tracking-[0.12em] text-white text-[9.5px] font-semibold">{t('bal')}</span>
                 <span className="font-semibold tabular-nums tracking-[0.02em] text-[12.5px]" style={{ color: 'var(--terracotta)' }}>
                   {balance.toLocaleString()}
                 </span>
@@ -240,7 +222,7 @@ export default function MarketplacePage() {
             </div>
           ) : (
             <p className="text-center text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">
-              No items match these filters
+              {t('noItems')}
             </p>
           )}
 
@@ -251,10 +233,10 @@ export default function MarketplacePage() {
                 className="font-serif text-[18px] sm:text-[20px] tracking-[-0.005em] text-[#F8F4EC]"
                 style={{ fontWeight: 600 }}
               >
-                Not sure where to start?
+                {t('guideTitle')}
               </h2>
               <p className="hidden sm:block text-[10.5px] tracking-[0.18em] uppercase text-[rgba(232,230,221,0.5)]">
-                Pick a goal · we narrow the shop
+                {t('guideSubtitle')}
               </p>
             </div>
 
@@ -285,17 +267,17 @@ export default function MarketplacePage() {
                         className="text-[10px] tracking-[0.18em] uppercase font-semibold"
                         style={{ color: meta.activeColor }}
                       >
-                        {meta.label}
+                        {t(meta.labelKey)}
                       </span>
                     </div>
                     <p className="text-[15px] font-semibold text-[#F8F4EC] mb-[6px] leading-[1.25]">
-                      {g.title}
+                      {t(`guides.${g.id}.title`)}
                     </p>
                     <p className="text-[12.5px] leading-[1.5] text-[rgba(232,230,221,0.7)]">
-                      {g.copy}
+                      {t(`guides.${g.id}.copy`)}
                     </p>
                     <p className="mt-[12px] text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[rgba(232,230,221,0.55)] group-hover:text-[var(--terracotta)] transition-colors">
-                      Browse picks →
+                      {t('browsePicks')}
                     </p>
                   </button>
                 );

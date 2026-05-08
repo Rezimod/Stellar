@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ArrowUpRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { MISSIONS } from '@/lib/constants';
 
-interface SearchItem {
+interface ResolvedItem {
   type: 'mission' | 'page' | 'object';
   label: string;
   sub: string;
@@ -13,48 +14,63 @@ interface SearchItem {
   icon: string;
 }
 
-const STATIC_ITEMS: SearchItem[] = [
-  // Sky pages
-  { type: 'page', label: 'Sky Forecast', sub: '7-day cloud cover and seeing', href: '/sky', icon: '🌤' },
-  { type: 'page', label: 'Planet Tracker', sub: 'Mercury to Saturn + Moon', href: '/sky', icon: '🪐' },
-  { type: 'page', label: 'ASTRA AI', sub: 'Chat with your AI astronomer', href: '/chat', icon: '✦' },
-  { type: 'page', label: 'Astronomy Guide', sub: 'Planets, deep sky, quizzes, events', href: '/learn', icon: '📚' },
-  { type: 'page', label: 'NFT Gallery', sub: 'Your discovery attestations', href: '/nfts', icon: '🖼' },
-  // Celestial objects
-  { type: 'object', label: 'Moon', sub: "Earth's natural satellite, brightest object at night", href: '/sky', icon: '🌕' },
-  { type: 'object', label: 'Jupiter', sub: 'Largest planet, visible to naked eye', href: '/sky', icon: '🪐' },
-  { type: 'object', label: 'Saturn', sub: 'Ringed gas giant', href: '/sky', icon: '🪐' },
-  { type: 'object', label: 'Mars', sub: 'The Red Planet', href: '/sky', icon: '🔴' },
-  { type: 'object', label: 'Orion Nebula', sub: "M42 — stunning emission nebula in Orion's sword", href: '/missions', icon: '✨' },
-  { type: 'object', label: 'Pleiades', sub: 'M45 — Seven Sisters open cluster', href: '/missions', icon: '💫' },
-  { type: 'object', label: 'Andromeda Galaxy', sub: 'M31 — nearest large galaxy, 2.5M light years', href: '/missions', icon: '🌌' },
+interface StaticItem {
+  type: 'page' | 'object';
+  labelKey: string;
+  subKey: string;
+  href: string;
+  icon: string;
+}
+
+const STATIC_ITEMS: StaticItem[] = [
+  { type: 'page',   labelKey: 'skyForecast',   subKey: 'skyForecastSub',   href: '/sky',         icon: '🌤' },
+  { type: 'page',   labelKey: 'planetTracker', subKey: 'planetTrackerSub', href: '/sky',         icon: '🪐' },
+  { type: 'page',   labelKey: 'astraAi',       subKey: 'astraAiSub',       href: '/chat',        icon: '✦' },
+  { type: 'page',   labelKey: 'astroGuide',    subKey: 'astroGuideSub',    href: '/learn',       icon: '📚' },
+  { type: 'page',   labelKey: 'nftGallery',    subKey: 'nftGallerySub',    href: '/nfts',        icon: '🖼' },
+  { type: 'object', labelKey: 'moon',          subKey: 'moonSub',          href: '/sky',         icon: '🌕' },
+  { type: 'object', labelKey: 'jupiter',       subKey: 'jupiterSub',       href: '/sky',         icon: '🪐' },
+  { type: 'object', labelKey: 'saturn',        subKey: 'saturnSub',        href: '/sky',         icon: '🪐' },
+  { type: 'object', labelKey: 'mars',          subKey: 'marsSub',          href: '/sky',         icon: '🔴' },
+  { type: 'object', labelKey: 'orion',         subKey: 'orionSub',         href: '/missions',    icon: '✨' },
+  { type: 'object', labelKey: 'pleiades',      subKey: 'pleiadesSub',      href: '/missions',    icon: '💫' },
+  { type: 'object', labelKey: 'andromeda',     subKey: 'andromedaSub',     href: '/missions',    icon: '🌌' },
 ];
 
-const MISSION_ITEMS: SearchItem[] = MISSIONS.map(m => ({
-  type: 'mission' as const,
-  label: m.name,
-  sub: m.desc,
-  href: '/missions',
-  icon: m.emoji,
-}));
-
-const SEARCH_ITEMS: SearchItem[] = [...MISSION_ITEMS, ...STATIC_ITEMS];
-
-const TYPE_LABELS: Record<string, string> = {
-  mission: 'MISSIONS',
-  page: 'PAGES',
-  object: 'CELESTIAL OBJECTS',
-};
-
 const QUICK_LINKS = [
-  { icon: '🌤', label: 'Sky', href: '/sky' },
-  { icon: '🛸', label: 'Missions', href: '/missions' },
-  { icon: '✦', label: 'ASTRA', href: '/chat' },
-  { icon: '🛒', label: 'Shop', href: '/marketplace' },
+  { icon: '🌤', labelKey: 'qSky',      href: '/sky' },
+  { icon: '🛸', labelKey: 'qMissions', href: '/missions' },
+  { icon: '✦',  labelKey: 'qAstra',    href: '/chat' },
+  { icon: '🛒', labelKey: 'qShop',     href: '/marketplace' },
 ];
 
 export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter();
+  const t = useTranslations('searchModal');
+
+  const MISSION_ITEMS: ResolvedItem[] = MISSIONS.map(m => ({
+    type: 'mission',
+    label: m.name,
+    sub: m.desc,
+    href: '/missions',
+    icon: m.emoji,
+  }));
+
+  const STATIC_RESOLVED: ResolvedItem[] = STATIC_ITEMS.map(it => ({
+    type: it.type,
+    label: t(it.labelKey),
+    sub: t(it.subKey),
+    href: it.href,
+    icon: it.icon,
+  }));
+
+  const SEARCH_ITEMS: ResolvedItem[] = [...MISSION_ITEMS, ...STATIC_RESOLVED];
+
+  const TYPE_LABELS: Record<string, string> = {
+    mission: t('groupMissions'),
+    page: t('groupPages'),
+    object: t('groupObjects'),
+  };
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
@@ -93,7 +109,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
       ).slice(0, 8);
 
   // Group results by type
-  const grouped: Record<string, SearchItem[]> = {};
+  const grouped: Record<string, ResolvedItem[]> = {};
   for (const item of filtered) {
     if (!grouped[item.type]) grouped[item.type] = [];
     grouped[item.type].push(item);
@@ -140,7 +156,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
             onChange={e => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            placeholder="Search missions, telescopes, planets..."
+            placeholder={t('placeholder')}
             style={{
               flex: 1,
               background: 'transparent',
@@ -184,14 +200,14 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     cursor: 'pointer',
                   }}
                 >
-                  {q.icon} {q.label}
+                  {q.icon} {t(q.labelKey)}
                 </button>
               ))}
             </div>
           ) : filtered.length === 0 ? (
             /* Empty state */
             <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', padding: '24px 0' }}>
-              No results for &ldquo;{query}&rdquo;
+              {t('noResults', { query })}
             </p>
           ) : (
             /* Grouped results */

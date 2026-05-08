@@ -12,13 +12,19 @@
     "club": "Club",
     "missions": "Missions",
     "gallery": "My Discoveries",
+    "myDiscoveries": "My discoveries",
     "profile": "Profile",
     "sky": "Sky",
+    "feed": "Feed",
     "chat": "AI Chat",
-    "learn": "Learn",
-    "marketplace": "Marketplace",
+    "learn": "Learning",
+    "marketplace": "Shop",
     "observe": "Observe",
-    "signIn": "Sign In",
+    "search": "Search",
+    "hub": "Hub",
+    "openProfileMenu": "Open profile menu",
+    "signIn": "Sign in",
+    "signOutShort": "Sign out",
     "signOut": "Sign out & clear data"
   },
   "home": {
@@ -719,6 +725,290 @@
       "pathfinder": "Pathfinder",
       "celestial": "Celestial",
       "stellar": "Stellar"
+    }
+  },
+  "authModal": {
+    "aria": "Sign in to Stellar",
+    "close": "Close",
+    "welcome": "Welcome to Stellar",
+    "subtitle": "Sign in to start observing the night sky.",
+    "continueEmail": "Continue with email",
+    "emailHelp": "Email, Google, or SMS · embedded wallet created automatically",
+    "or": "or",
+    "connectWallet": "Connect wallet",
+    "walletList": "Phantom, Solflare, Backpack, Glow",
+    "metamaskNote": "MetaMask is Ethereum-only and can't sign Solana transactions here."
+  },
+  "searchModal": {
+    "placeholder": "Search missions, telescopes, planets...",
+    "noResults": "No results for “{query}”",
+    "groupMissions": "MISSIONS",
+    "groupPages": "PAGES",
+    "groupObjects": "CELESTIAL OBJECTS",
+    "qSky": "Sky",
+    "qMissions": "Missions",
+    "qAstra": "ASTRA",
+    "qShop": "Shop",
+    "skyForecast": "Sky Forecast",
+    "skyForecastSub": "7-day cloud cover and seeing",
+    "planetTracker": "Planet Tracker",
+    "planetTrackerSub": "Mercury to Saturn + Moon",
+    "astraAi": "ASTRA AI",
+    "astraAiSub": "Chat with your AI astronomer",
+    "astroGuide": "Astronomy Guide",
+    "astroGuideSub": "Planets, deep sky, quizzes, events",
+    "nftGallery": "NFT Gallery",
+    "nftGallerySub": "Your discovery attestations",
+    "moon": "Moon",
+    "moonSub": "Earth's natural satellite, brightest object at night",
+    "jupiter": "Jupiter",
+    "jupiterSub": "Largest planet, visible to naked eye",
+    "saturn": "Saturn",
+    "saturnSub": "Ringed gas giant",
+    "mars": "Mars",
+    "marsSub": "The Red Planet",
+    "orion": "Orion Nebula",
+    "orionSub": "M42 — stunning emission nebula in Orion's sword",
+    "pleiades": "Pleiades",
+    "pleiadesSub": "M45 — Seven Sisters open cluster",
+    "andromeda": "Andromeda Galaxy",
+    "andromedaSub": "M31 — nearest large galaxy, 2.5M light years"
+  },
+  "missionsPage": {
+    "auth": {
+      "title": "Sign in to start observing",
+      "body": "Complete sky missions, earn Stars, and mint discovery NFTs on Solana.",
+      "signIn": "Sign in",
+      "sub": "Email or connect a Solana wallet"
+    },
+    "sections": {
+      "tonight": "Missions tonight",
+      "tonightMeta": "{count} targets visible",
+      "upcoming": "Upcoming events this month",
+      "eventsCount": "{count, plural, one {# event} other {# events}}",
+      "rare": "Rare events in {year}",
+      "rareMeta": "{count} once-a-year",
+      "quizzes": "Knowledge quizzes",
+      "quizzesMeta": "{count} quizzes · earn while you wait",
+      "scope": "Using your telescope",
+      "scopeMeta": "4 quick rules"
+    },
+    "primeBadge": "Prime target tonight",
+    "observe": "Observe",
+    "scopeName": "Celestron AstroMaster 70AZ",
+    "whyHard": "Why {name} is hard",
+    "tile": {
+      "rises": "Rises",
+      "belowHorizon": "Below horizon",
+      "visibleAfter": "Visible after",
+      "notTonight": "Not visible tonight — set a reminder?",
+      "remind": "Remind me"
+    },
+    "liveStatus": {
+      "daytime": "Daylight — sky too bright",
+      "cloudy": "Overcast — nothing observable",
+      "nothingUp": "Nothing above the horizon",
+      "aria": "Live sky status",
+      "listAria": "Live visible targets",
+      "live": "LIVE",
+      "alt": "alt",
+      "mag": "mag"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "med": "Medium",
+      "hard": "Hard",
+      "expert": "Expert"
+    },
+    "equip": {
+      "naked": "Naked eye",
+      "telescope": "Telescope",
+      "binoculars": "Binoculars"
+    },
+    "grid": {
+      "moon":      { "name": "The Moon",          "desc": "Craters, seas, and the terminator line" },
+      "jupiter":   { "name": "Jupiter",           "desc": "Spot the four Galilean moons" },
+      "pleiades":  { "name": "Pleiades (M45)",    "desc": "Seven sisters — naked eye showpiece" },
+      "venus":     { "name": "Venus",             "desc": "Brightest planet — the evening star" },
+      "saturn":    { "name": "Saturn",            "desc": "The rings are unmistakable" },
+      "mars":      { "name": "Mars",              "desc": "Look for the polar ice cap" },
+      "orion":     { "name": "Orion Nebula (M42)", "desc": "A stellar nursery — glows in any scope" },
+      "andromeda": { "name": "Andromeda (M31)",   "desc": "2.5 million light-years — nearest spiral" },
+      "crab":      { "name": "Crab Nebula (M1)",  "desc": "Supernova remnant from 1054 AD" }
+    },
+    "tips": {
+      "cool":  { "title": "Let it cool",          "body": "Set it outside 30 min before viewing." },
+      "zoom":  { "title": "Start zoomed out",     "body": "Use the lowest power eyepiece first." },
+      "align": { "title": "Align finder by day",  "body": "Aim at a distant tree or sign." },
+      "eyes":  { "title": "Let your eyes adjust", "body": "20 min in the dark. No phone screens." }
+    },
+    "eventType": {
+      "eclipse-lunar": "Lunar eclipse",
+      "eclipse-solar": "Solar eclipse",
+      "conjunction":   "Conjunction",
+      "comet":         "Comet",
+      "opposition":    "Opposition",
+      "meteor-shower": "Meteor shower"
+    },
+    "eventDiff": {
+      "naked-eye":  "Naked eye",
+      "binoculars": "Binoculars",
+      "telescope":  "Telescope",
+      "expert":     "Expert"
+    },
+    "countdown": {
+      "today":    "today",
+      "tomorrow": "tomorrow",
+      "past":     "past",
+      "inDays":   "in {n}d",
+      "inMonths": "in {n}mo"
+    }
+  },
+  "marketplacePage": {
+    "all": "All",
+    "telescopes": "Telescopes",
+    "eyepieces": "Eyepieces",
+    "binoculars": "Binoculars",
+    "accessories": "Accessories",
+    "skillBeginner": "Beginner",
+    "skillIntermediate": "Mid",
+    "skillAdvanced": "Advanced",
+    "bal": "Bal",
+    "noItems": "No items match these filters",
+    "guideTitle": "Not sure where to start?",
+    "guideSubtitle": "Pick a goal · we narrow the shop",
+    "browsePicks": "Browse picks →",
+    "guides": {
+      "moonPlanets": {
+        "title": "Moon & planets",
+        "copy": "Bright, dependable targets. A small refractor and an alt-az mount get you craters and Saturn's rings on night one."
+      },
+      "deepSky": {
+        "title": "Galaxies & nebulae",
+        "copy": "Deeper sky needs more aperture and a darker site. Step up to a Dobsonian or a mid Newtonian on an EQ mount."
+      },
+      "astrophoto": {
+        "title": "Astrophotography",
+        "copy": "Tracking mount, long exposures, patient framing. Specialised optics and accessories — start with a sturdy GoTo."
+      }
+    }
+  },
+  "hub": {
+    "search": "Search",
+    "openSearch": "Open search",
+    "soon": "Soon",
+    "explore": "Explore",
+    "you": "You",
+    "skyWatcher": "Sky Watcher",
+    "missions": "Missions",
+    "marketplace": "Marketplace",
+    "astraAi": "ASTRA AI",
+    "learning": "Learning",
+    "feed": "Feed",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile",
+    "discoveries": "Discoveries"
+  },
+  "footer": {
+    "tagline": "The night-sky companion for anyone with a smartphone. Forecast, photograph, earn real optics.",
+    "colProduct": "Product",
+    "colCompany": "Company",
+    "colLegal": "Legal",
+    "sky": "Sky",
+    "missions": "Missions",
+    "learning": "Learning",
+    "shop": "Shop",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "contact": "Contact",
+    "rights": "© {year} Stellar. All rights reserved.",
+    "builtIn": "Built in Tbilisi"
+  },
+  "homepage": {
+    "homeTabLabel": "Home",
+    "hero": {
+      "headline1": "Observe the sky.",
+      "headline2": "Earn rewards.",
+      "subtitle": "Plan, photograph, redeem.",
+      "ctaPrimary": "Earn Rewards",
+      "ctaSecondary": "Start Observing"
+    },
+    "partners": "Partner brands",
+    "howItWorks": {
+      "eyebrow": "How it works",
+      "step1": "Sign in",
+      "step2": "Find a target",
+      "step3": "Earn Stars",
+      "cta": "Start observing →"
+    },
+    "missions": {
+      "eyebrow": "Missions",
+      "title": "Seven targets. Free scope.",
+      "step1": "Pick a target",
+      "step2": "Photograph it",
+      "step3": "Oracle verifies",
+      "step4": "Stars in your wallet",
+      "cta": "See all missions →",
+      "screenLabel": "Missions",
+      "screenTitle": "Seven targets.",
+      "screenSub": "Finish all seven → free telescope"
+    },
+    "learn": {
+      "eyebrow": "Learn",
+      "title": "Know what you're looking at.",
+      "step1": "Tap an object",
+      "step2": "Read the guide",
+      "step3": "Take the quiz",
+      "cta": "Open the field guide →",
+      "screenLabel": "Field guide",
+      "screenTitle": "Solar System",
+      "screenSub": "Tap a planet · take a quiz",
+      "featured": "Featured",
+      "upTonight": "Up tonight · 38°",
+      "quizLabel": "Quiz",
+      "quizSubject": "Constellations · 10 Q",
+      "uranus": "Uranus"
+    },
+    "skyPage": {
+      "eyebrow": "The Sky page",
+      "title": "Tonight, in three screens.",
+      "livePlanetMap": "Live planet map",
+      "arFinder": "AR finder",
+      "forecast7": "7-day forecast",
+      "cta": "Open the Sky page →",
+      "mapLocation": "Tbilisi",
+      "mapVisible": "7 visible",
+      "mapTitle": "Sky map",
+      "arLabel": "AR",
+      "forecastLabel": "7 days",
+      "forecastTonight": "Tonight: Go",
+      "forecastTitle": "Forecast",
+      "colCloud": "Cloud",
+      "colMoon": "Moon",
+      "colSee": "See"
+    },
+    "marketplace": {
+      "eyebrow": "Marketplace",
+      "title": "The shop is in the app.",
+      "cta": "Open the marketplace →"
+    },
+    "tonightAtAGlance": {
+      "eyebrow": "Live from your sky",
+      "title": "Tonight, at a glance."
+    },
+    "vision": {
+      "eyebrow": "Vision",
+      "title1": "Know what's up tonight.",
+      "title2": "Find it together.",
+      "card1": "Targets worth aiming at",
+      "card2": "A community looking up",
+      "card3": "Verified by what you saw"
+    },
+    "finalCta": {
+      "eyebrow": "Start tonight",
+      "title": "The sky is open.",
+      "primary": "Start observing",
+      "secondary": "Tonight's sky →"
     }
   }
 }

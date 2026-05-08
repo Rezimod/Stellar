@@ -2,35 +2,36 @@
 
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import AstroLogo from './AstroLogo';
 
-type FooterLink = { label: string; href: string; external?: boolean };
-type FooterColumn = { title: string; links: FooterLink[] };
+type FooterLink = { labelKey: string; label?: string; href: string; external?: boolean };
+type FooterColumn = { titleKey: string; links: FooterLink[] };
 
 const columns: FooterColumn[] = [
   {
-    title: 'Product',
+    titleKey: 'colProduct',
     links: [
-      { label: 'Sky',         href: '/sky' },
-      { label: 'Missions',    href: '/missions' },
-      { label: 'Learning',    href: '/learn' },
-      { label: 'Shop',        href: '/marketplace' },
+      { labelKey: 'sky',      href: '/sky' },
+      { labelKey: 'missions', href: '/missions' },
+      { labelKey: 'learning', href: '/learn' },
+      { labelKey: 'shop',     href: '/marketplace' },
     ],
   },
   {
-    title: 'Company',
+    titleKey: 'colCompany',
     links: [
-      { label: 'Astroman',    href: 'https://astroman.ge', external: true },
-      { label: 'GitHub',      href: 'https://github.com/Morningbriefrezi/Stellar', external: true },
-      { label: 'X',           href: 'https://x.com/StellarClub26', external: true },
+      { labelKey: 'astroman', label: 'Astroman', href: 'https://astroman.ge', external: true },
+      { labelKey: 'github',   label: 'GitHub',   href: 'https://github.com/Morningbriefrezi/Stellar', external: true },
+      { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true },
     ],
   },
   {
-    title: 'Legal',
+    titleKey: 'colLegal',
     links: [
-      { label: 'Terms',       href: '/terms' },
-      { label: 'Privacy',     href: '/privacy' },
-      { label: 'Contact',     href: '/contact' },
+      { labelKey: 'terms',    href: '/terms' },
+      { labelKey: 'privacy',  href: '/privacy' },
+      { labelKey: 'contact',  href: '/contact' },
     ],
   },
 ];
@@ -45,7 +46,7 @@ const linkBase: React.CSSProperties = {
   transition: 'color 150ms ease-out',
 };
 
-function FooterLinkItem({ link }: { link: FooterLink }) {
+function FooterLinkItem({ link, label }: { link: FooterLink; label: string }) {
   return (
     <li>
       <Link
@@ -56,7 +57,7 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.95)'; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; }}
       >
-        {link.label}
+        {label}
         {link.external && <ExternalLink size={11} style={{ opacity: 0.5 }} />}
       </Link>
     </li>
@@ -64,6 +65,7 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
 }
 
 export default function Footer() {
+  const t = useTranslations('footer');
   const year = new Date().getFullYear();
 
   return (
@@ -103,7 +105,7 @@ export default function Footer() {
                 fontFamily: 'var(--font-display)',
               }}
             >
-              The night-sky companion for anyone with a smartphone. Forecast, photograph, earn real optics.
+              {t('tagline')}
             </p>
           </div>
 
@@ -116,7 +118,7 @@ export default function Footer() {
             className="stellar-footer-cols"
           >
             {columns.map(col => (
-              <div key={col.title}>
+              <div key={col.titleKey}>
                 <p
                   style={{
                     fontSize: 11,
@@ -128,11 +130,15 @@ export default function Footer() {
                     fontFamily: 'var(--font-display)',
                   }}
                 >
-                  {col.title}
+                  {t(col.titleKey)}{/* */}
                 </p>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {col.links.map(link => (
-                    <FooterLinkItem key={link.href} link={link} />
+                    <FooterLinkItem
+                      key={link.href}
+                      link={link}
+                      label={link.label ?? t(link.labelKey)}
+                    />
                   ))}
                 </ul>
               </div>
@@ -154,10 +160,10 @@ export default function Footer() {
           }}
         >
           <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-            © {year} Stellar. All rights reserved.
+            {t('rights', { year })}
           </span>
           <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
-            Built in Tbilisi
+            {t('builtIn')}
           </span>
         </div>
       </div>

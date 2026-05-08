@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useTranslations } from 'next-intl';
 import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -13,23 +14,25 @@ import {
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import SearchModal from './SearchModal';
+import LocaleToggle from './LocaleToggle';
 
 const NAV_ITEMS = [
-  { href: '/sky',         label: 'Sky',       icon: CloudSun },
-  { href: '/missions',    label: 'Missions',  icon: Satellite },
-  { href: '/feed',        label: 'Feed',      icon: Sparkles },
-  { href: '/learn',       label: 'Learning',  icon: BookOpen },
-  { href: '/marketplace', label: 'Shop',      icon: ShoppingBag },
-];
+  { href: '/sky',         key: 'sky',         icon: CloudSun },
+  { href: '/missions',    key: 'missions',    icon: Satellite },
+  { href: '/feed',        key: 'feed',        icon: Sparkles },
+  { href: '/learn',       key: 'learn',       icon: BookOpen },
+  { href: '/marketplace', key: 'marketplace', icon: ShoppingBag },
+] as const;
 
-const AVATAR_ITEMS: { href: string; label: string; icon: typeof User }[] = [
-  { href: '/profile', label: 'Profile',         icon: User },
-  { href: '/nfts',    label: 'My discoveries',  icon: Gem },
-];
+const AVATAR_ITEMS = [
+  { href: '/profile', key: 'profile',       icon: User },
+  { href: '/nfts',    key: 'myDiscoveries', icon: Gem },
+] as const;
 
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('nav');
   const { logout } = useStellarAuth();
   const { authenticated, ready, displayName, email, initials, avatarId } = useDisplayProfile();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -151,7 +154,7 @@ export default function Nav() {
             {/* MIDDLE cluster: centered nav (md+) */}
             <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1">
               {NAV_ITEMS.map(tab => {
-                const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
+                const isActive = pathname.startsWith(tab.href);
                 return (
                   <Link
                     key={tab.href}
@@ -168,28 +171,30 @@ export default function Nav() {
                       textDecoration: 'none',
                     }}
                   >
-                    {tab.label}
+                    {t(tab.key)}
                   </Link>
                 );
               })}
             </div>
 
-            {/* RIGHT cluster: search → hub → avatar/sign-in */}
+            {/* RIGHT cluster: search → locale → hub → avatar/sign-in */}
             <div className="ml-auto flex items-center gap-2 flex-shrink-0 z-10">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="nav-icon-btn"
                 style={{ width: 32, height: 32, borderRadius: 8, color: 'rgba(255,255,255,0.85)' }}
-                aria-label="Search"
+                aria-label={t('search')}
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
+
+              <LocaleToggle />
 
               <Link
                 href="/hub"
                 className="hub-btn"
                 data-active={pathname.startsWith('/hub')}
-                aria-label="Hub"
+                aria-label={t('hub')}
               >
                 <LayoutGrid size={17} strokeWidth={1.9} />
               </Link>
@@ -212,7 +217,7 @@ export default function Nav() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Sign in
+                  {t('signIn')}
                 </button>
               ) : (
                 <div ref={avatarWrapRef} className="relative">
@@ -221,7 +226,7 @@ export default function Nav() {
                     onClick={() => setAvatarOpen(v => !v)}
                     className="avatar-btn"
                     data-active={avatarOpen || pathname.startsWith('/profile')}
-                    aria-label="Open profile menu"
+                    aria-label={t('openProfileMenu')}
                     aria-expanded={avatarOpen}
                     aria-controls="avatar-menu"
                     aria-haspopup="menu"
@@ -300,7 +305,7 @@ export default function Nav() {
                             }}
                           >
                             <Icon size={14} strokeWidth={1.75} />
-                            <span>{item.label}</span>
+                            <span>{t(item.key)}</span>
                           </Link>
                         );
                       })}
@@ -326,7 +331,7 @@ export default function Nav() {
                         }}
                       >
                         <LogOut size={14} strokeWidth={1.75} />
-                        <span>Sign out</span>
+                        <span>{t('signOutShort')}</span>
                       </button>
                     </div>
                   )}

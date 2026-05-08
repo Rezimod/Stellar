@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useStellarAuth } from '@/hooks/useStellarAuth';
 
 interface AuthModalProps {
@@ -11,6 +12,7 @@ interface AuthModalProps {
 
 export function AuthModal({ open, onClose }: AuthModalProps) {
   const { loginWithEmail, connectWallet } = useStellarAuth();
+  const t = useTranslations('authModal');
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +36,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Sign in to Stellar"
+      aria-label={t('aria')}
     >
       <div
         className="relative w-full max-w-[400px] mx-4 rounded-2xl p-6"
@@ -47,7 +49,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('close')}
           className="absolute top-4 right-4"
           style={{ color: 'rgba(232,230,221,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}
         >
@@ -64,10 +66,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             letterSpacing: '-0.01em',
           }}
         >
-          Welcome to Stellar
+          {t('welcome')}
         </h2>
         <p style={{ fontSize: 13, color: 'rgba(232,230,221,0.6)', margin: '0 0 24px', lineHeight: 1.4 }}>
-          Sign in to start observing the night sky.
+          {t('subtitle')}
         </p>
 
         <button
@@ -89,11 +91,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             cursor: 'pointer',
           }}
         >
-          Continue with email
+          {t('continueEmail')}
         </button>
 
         <p style={{ fontSize: 11, color: 'rgba(232,230,221,0.4)', textAlign: 'center', margin: '0 0 20px' }}>
-          Email, Google, or SMS · embedded wallet created automatically
+          {t('emailHelp')}
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 20px' }}>
@@ -106,7 +108,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               letterSpacing: '0.2em',
             }}
           >
-            or
+            {t('or')}
           </span>
           <div style={{ flex: 1, height: 1, background: 'rgba(232,230,221,0.08)' }} />
         </div>
@@ -129,14 +131,14 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             cursor: 'pointer',
           }}
         >
-          Connect wallet
+          {t('connectWallet')}
         </button>
 
         <p style={{ fontSize: 11, color: 'rgba(232,230,221,0.4)', textAlign: 'center', margin: '8px 0 0' }}>
-          Phantom, Solflare, Backpack, Glow
+          {t('walletList')}
         </p>
         <p style={{ fontSize: 10, color: 'rgba(232,230,221,0.3)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.45 }}>
-          MetaMask is Ethereum-only and can&rsquo;t sign Solana transactions here.
+          {t('metamaskNote')}
         </p>
       </div>
     </div>

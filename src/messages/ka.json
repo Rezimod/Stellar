@@ -12,13 +12,19 @@
     "club": "კლუბი",
     "missions": "მისიები",
     "gallery": "ჩემი აღმოჩენები",
+    "myDiscoveries": "ჩემი აღმოჩენები",
     "profile": "პროფილი",
     "sky": "ცა",
+    "feed": "ფიდი",
     "chat": "AI ჩათი",
     "learn": "სწავლა",
-    "marketplace": "მარკეტი",
+    "marketplace": "მაღაზია",
     "observe": "დაკვირვება",
+    "search": "ძებნა",
+    "hub": "ჰაბი",
+    "openProfileMenu": "პროფილის მენიუს გახსნა",
     "signIn": "შესვლა",
+    "signOutShort": "გასვლა",
     "signOut": "გასვლა და წაშლა"
   },
   "home": {
@@ -98,7 +104,7 @@
       "tonightTimeline": "ამაღამის დაკვირვების ვადა",
       "darkWindow": "ბნელი ფანჯარა",
       "noVisible": "ჰორიზონტს ზემოთ ნათელი ობიექტები ჯერ არ არის.",
-      "extendedForecast": "Extended forecast"
+      "extendedForecast": "გაფართოებული პროგნოზი"
     },
     "hero": {
       "face": "შემობრუნდი",
@@ -463,33 +469,33 @@
       }
     },
     "strip": {
-      "a11y": "Live sky state",
+      "a11y": "ცის ცოცხალი მდგომარეობა",
       "labels": {
-        "location": "Location",
-        "sky": "Sky",
-        "moon": "Moon",
-        "clouds": "Clouds",
-        "time": "Local time"
+        "location": "მდებარეობა",
+        "sky": "ცა",
+        "moon": "მთვარე",
+        "clouds": "ღრუბლები",
+        "time": "ადგილობრივი დრო"
       },
       "phase": {
-        "day": "Daylight",
-        "civil": "Civil twilight",
-        "nautical": "Nautical twilight",
-        "astronomical": "Astronomical twilight",
-        "dark": "Dark sky"
+        "day": "დღის სინათლე",
+        "civil": "სამოქალაქო ბინდი",
+        "nautical": "საზღვაო ბინდი",
+        "astronomical": "ასტრონომიული ბინდი",
+        "dark": "ბნელი ცა"
       },
-      "setsAt": "Sets {time}",
-      "darkIn": "Dark in {dur}",
-      "dawnAt": "Dawn at {time}",
-      "dawnIn": "Dawn in {dur}",
-      "moonAbove": "{illum}% · {alt}° up",
-      "moonBelow": "{illum}% · below horizon",
+      "setsAt": "ჩადის {time}",
+      "darkIn": "ბნელდება {dur}-ში",
+      "dawnAt": "გათენება {time}",
+      "dawnIn": "გათენება {dur}-ში",
+      "moonAbove": "{illum}% · {alt}° მაღლა",
+      "moonBelow": "{illum}% · ჰორიზონტს ქვემოთ",
       "clouds": {
-        "clear": "Clear",
-        "partly": "Partly cloudy",
-        "overcast": "Overcast"
+        "clear": "მოწმენდილი",
+        "partly": "ნაწილობრივ მოღრუბლული",
+        "overcast": "მოღრუბლული"
       },
-      "locationFallback": "Default — set your own"
+      "locationFallback": "ნაგულისხმევი — დააყენე საკუთარი"
     },
     "skymap": {
       "calibrate": "კომპასის კალიბრაცია",
@@ -531,10 +537,10 @@
       "dismiss": "გასაგებია"
     },
     "horizon": {
-      "label": "Your horizon — looking around",
-      "refresh": "Updates every minute",
-      "zenith": "ZENITH",
-      "below": "below"
+      "label": "შენი ჰორიზონტი — გარშემო ხედი",
+      "refresh": "ყოველ წუთში განახლება",
+      "zenith": "ზენიტი",
+      "below": "ქვემოთ"
     }
   },
   "planets": {
@@ -719,6 +725,290 @@
       "pathfinder": "გზამკვლევი",
       "celestial": "ციური",
       "stellar": "ვარსკვლავური"
+    }
+  },
+  "authModal": {
+    "aria": "Stellar-ში შესვლა",
+    "close": "დახურვა",
+    "welcome": "კეთილი იყოს შენი მობრძანება Stellar-ში",
+    "subtitle": "შედი ღამის ცის დასაკვირვებლად.",
+    "continueEmail": "ელ-ფოსტით გაგრძელება",
+    "emailHelp": "ელ-ფოსტა, Google ან SMS · საფულე იქმნება ავტომატურად",
+    "or": "ან",
+    "connectWallet": "საფულის დაკავშირება",
+    "walletList": "Phantom, Solflare, Backpack, Glow",
+    "metamaskNote": "MetaMask მხოლოდ Ethereum-ისთვისაა — Solana-ს ტრანზაქციებს ვერ აწერს ხელს."
+  },
+  "searchModal": {
+    "placeholder": "ძებნა მისიები, ტელესკოპები, პლანეტები...",
+    "noResults": "შედეგი ვერ მოიძებნა „{query}“-ისთვის",
+    "groupMissions": "მისიები",
+    "groupPages": "გვერდები",
+    "groupObjects": "ცის ობიექტები",
+    "qSky": "ცა",
+    "qMissions": "მისიები",
+    "qAstra": "ASTRA",
+    "qShop": "მაღაზია",
+    "skyForecast": "ცის პროგნოზი",
+    "skyForecastSub": "7-დღიანი ღრუბლიანობა და ხილვადობა",
+    "planetTracker": "პლანეტების ტრეკერი",
+    "planetTrackerSub": "მერკურიდან სატურნამდე + მთვარე",
+    "astraAi": "ASTRA AI",
+    "astraAiSub": "ისაუბრე AI ასტრონომთან",
+    "astroGuide": "ასტრონომიის გზამკვლევი",
+    "astroGuideSub": "პლანეტები, ღრმა ცა, ვიქტორინები, მოვლენები",
+    "nftGallery": "NFT გალერეა",
+    "nftGallerySub": "შენი აღმოჩენების მტკიცებულებები",
+    "moon": "მთვარე",
+    "moonSub": "დედამიწის ბუნებრივი თანამგზავრი — ღამის ყველაზე კაშკაშა ობიექტი",
+    "jupiter": "იუპიტერი",
+    "jupiterSub": "უდიდესი პლანეტა — ჩანს შიშველი თვალით",
+    "saturn": "სატურნი",
+    "saturnSub": "რგოლებიანი გაზის გიგანტი",
+    "mars": "მარსი",
+    "marsSub": "წითელი პლანეტა",
+    "orion": "ორიონის ნისლეული",
+    "orionSub": "M42 — ნათელი ემისიური ნისლეული ორიონის მახვილში",
+    "pleiades": "პლეადები",
+    "pleiadesSub": "M45 — შვიდი დის ღია გროვა",
+    "andromeda": "ანდრომედას გალაქტიკა",
+    "andromedaSub": "M31 — უახლოესი დიდი გალაქტიკა, 2.5 მლნ სინათლის წელი"
+  },
+  "missionsPage": {
+    "auth": {
+      "title": "შესვლა დაკვირვების დასაწყებად",
+      "body": "გაასრულე მისიები, მიიღე ვარსკვლავები და მოჭერი აღმოჩენის NFT-ები Solana-ზე.",
+      "signIn": "შესვლა",
+      "sub": "ელ-ფოსტით ან Solana საფულის დაკავშირებით"
+    },
+    "sections": {
+      "tonight": "ამაღამის მისიები",
+      "tonightMeta": "{count} ხილული სამიზნე",
+      "upcoming": "ამ თვის მოვლენები",
+      "eventsCount": "{count, plural, one {# მოვლენა} other {# მოვლენა}}",
+      "rare": "{year} წლის იშვიათი მოვლენები",
+      "rareMeta": "{count} წელიწადში ერთხელ",
+      "quizzes": "ცოდნის ვიქტორინები",
+      "quizzesMeta": "{count} ვიქტორინა · გამოიმუშავე ლოდინისას",
+      "scope": "ტელესკოპის გამოყენება",
+      "scopeMeta": "4 სწრაფი წესი"
+    },
+    "primeBadge": "ამაღამის მთავარი სამიზნე",
+    "observe": "დააკვირდი",
+    "scopeName": "Celestron AstroMaster 70AZ",
+    "whyHard": "რატომ არის {name} რთული",
+    "tile": {
+      "rises": "ამოდის",
+      "belowHorizon": "ჰორიზონტს ქვემოთ",
+      "visibleAfter": "ჩანს შემდეგ —",
+      "notTonight": "ამაღამ არ ჩანს — დააყენე შეხსენება?",
+      "remind": "შემახსენე"
+    },
+    "liveStatus": {
+      "daytime": "დღის სინათლე — ცა ძალიან ნათელია",
+      "cloudy": "ღრუბლიანია — დაკვირვება შეუძლებელია",
+      "nothingUp": "ჰორიზონტს ზემოთ არაფერია",
+      "aria": "ცის ცოცხალი სტატუსი",
+      "listAria": "ცოცხალი სამიზნეები",
+      "live": "ცოცხლად",
+      "alt": "სიმაღ",
+      "mag": "სიკაშკ"
+    },
+    "difficulty": {
+      "easy": "მარტივი",
+      "med": "საშუალო",
+      "hard": "რთული",
+      "expert": "ექსპერტული"
+    },
+    "equip": {
+      "naked": "შიშველი თვალი",
+      "telescope": "ტელესკოპი",
+      "binoculars": "ბინოკლი"
+    },
+    "grid": {
+      "moon":      { "name": "მთვარე",                  "desc": "კრატერები, ზღვები, ტერმინატორი" },
+      "jupiter":   { "name": "იუპიტერი",                "desc": "მონახე ოთხი გალილეური მთვარე" },
+      "pleiades":  { "name": "პლეადები (M45)",          "desc": "შვიდი და — ცის გამორჩეული გროვა" },
+      "venus":     { "name": "ვენერა",                  "desc": "ყველაზე კაშკაშა პლანეტა — საღამოს ვარსკვლავი" },
+      "saturn":    { "name": "სატურნი",                 "desc": "რგოლები აშკარაა" },
+      "mars":      { "name": "მარსი",                   "desc": "მონახე პოლარული ყინულის ქუდი" },
+      "orion":     { "name": "ორიონის ნისლეული (M42)",  "desc": "ვარსკვლავთა ბაგა — ანათებს ნებისმიერ ტელესკოპში" },
+      "andromeda": { "name": "ანდრომედა (M31)",         "desc": "2.5 მილიონი სინათლის წელი — უახლოესი სპირალი" },
+      "crab":      { "name": "კიბორჩხალას ნისლეული (M1)", "desc": "1054 წლის ზენოვის ნაშთი" }
+    },
+    "tips": {
+      "cool":  { "title": "მიეცი გასაცივებლად",       "body": "გაიტანე გარეთ 30 წუთით ადრე." },
+      "zoom":  { "title": "დაიწყე მცირე გადიდებით",   "body": "გამოიყენე ყველაზე სუსტი ოკულარი ჯერ." },
+      "align": { "title": "დააკალიბრე დღისით",         "body": "დაუმიზნე შორ ხეს ან ნიშანს." },
+      "eyes":  { "title": "მიეცი თვალს ადაპტაციის დრო", "body": "20 წუთი სიბნელეში. ეკრანი არა." }
+    },
+    "eventType": {
+      "eclipse-lunar": "მთვარის დაბნელება",
+      "eclipse-solar": "მზის დაბნელება",
+      "conjunction":   "კონიუნქცია",
+      "comet":         "კომეტა",
+      "opposition":    "ოპოზიცია",
+      "meteor-shower": "მეტეორთა წვიმა"
+    },
+    "eventDiff": {
+      "naked-eye":  "შიშველი თვალით",
+      "binoculars": "ბინოკლით",
+      "telescope":  "ტელესკოპით",
+      "expert":     "ექსპერტული"
+    },
+    "countdown": {
+      "today":    "დღეს",
+      "tomorrow": "ხვალ",
+      "past":     "გასულია",
+      "inDays":   "{n} დღეში",
+      "inMonths": "{n} თვეში"
+    }
+  },
+  "marketplacePage": {
+    "all": "ყველა",
+    "telescopes": "ტელესკოპები",
+    "eyepieces": "ოკულარები",
+    "binoculars": "ბინოკლები",
+    "accessories": "აქსესუარები",
+    "skillBeginner": "დამწყები",
+    "skillIntermediate": "საშუალო",
+    "skillAdvanced": "პროფი",
+    "bal": "ბალანსი",
+    "noItems": "ფილტრებს არცერთი არ ემთხვევა",
+    "guideTitle": "არ იცი საიდან დაიწყო?",
+    "guideSubtitle": "აარჩიე მიზანი — შეიკვეცება მაღაზია",
+    "browsePicks": "რეკომენდაციების ნახვა →",
+    "guides": {
+      "moonPlanets": {
+        "title": "მთვარე და პლანეტები",
+        "copy": "კაშკაშა, საიმედო სამიზნეები. პატარა რეფრაქტორი და ალტ-აზი მონტაჟი — და პირველივე ღამეს ნახავ მთვარის კრატერებსა და სატურნის რგოლებს."
+      },
+      "deepSky": {
+        "title": "გალაქტიკები და ნისლეულები",
+        "copy": "შორი ცა მოითხოვს მეტ აპერტურას და ბნელ ცას. გადმოდი დობსონიანზე ან საშუალო ნიუტონიანზე EQ მონტაჟით."
+      },
+      "astrophoto": {
+        "title": "ასტროფოტოგრაფია",
+        "copy": "თვალის მდევარი მონტაჟი, ხანგრძლივი ექსპოზიციები, მოთმინებიანი კადრირება. სპეციალიზებული ოპტიკა — დაიწყე საიმედო GoTo-თი."
+      }
+    }
+  },
+  "hub": {
+    "search": "ძებნა",
+    "openSearch": "ძებნის გახსნა",
+    "soon": "მალე",
+    "explore": "აღმოაჩინე",
+    "you": "შენ",
+    "skyWatcher": "ცის დამკვირვებელი",
+    "missions": "მისიები",
+    "marketplace": "მაღაზია",
+    "astraAi": "ASTRA AI",
+    "learning": "სწავლა",
+    "feed": "ფიდი",
+    "leaderboard": "ლიდერბორდი",
+    "profile": "პროფილი",
+    "discoveries": "აღმოჩენები"
+  },
+  "footer": {
+    "tagline": "ღამის ცის თანამგზავრი ნებისმიერი სმარტფონის მფლობელისთვის. დაიგეგმე, გადაიღე, მიიღე ნამდვილი ოპტიკა.",
+    "colProduct": "პროდუქტი",
+    "colCompany": "კომპანია",
+    "colLegal": "იურიდიული",
+    "sky": "ცა",
+    "missions": "მისიები",
+    "learning": "სწავლა",
+    "shop": "მაღაზია",
+    "terms": "პირობები",
+    "privacy": "კონფიდენციალურობა",
+    "contact": "კონტაქტი",
+    "rights": "© {year} Stellar. ყველა უფლება დაცულია.",
+    "builtIn": "აშენებულია თბილისში"
+  },
+  "homepage": {
+    "homeTabLabel": "მთავარი",
+    "hero": {
+      "headline1": "დააკვირდი ცას.",
+      "headline2": "მიიღე ჯილდო.",
+      "subtitle": "დაგეგმე, გადაიღე, გადაცვალე.",
+      "ctaPrimary": "მიიღე ჯილდო",
+      "ctaSecondary": "დაიწყე დაკვირვება"
+    },
+    "partners": "პარტნიორი ბრენდები",
+    "howItWorks": {
+      "eyebrow": "როგორ მუშაობს",
+      "step1": "შესვლა",
+      "step2": "მონახე სამიზნე",
+      "step3": "მიიღე ვარსკვლავები",
+      "cta": "დაიწყე დაკვირვება →"
+    },
+    "missions": {
+      "eyebrow": "მისიები",
+      "title": "შვიდი სამიზნე. უფასო ტელესკოპი.",
+      "step1": "აირჩიე სამიზნე",
+      "step2": "გადაიღე",
+      "step3": "ორაკული ადასტურებს",
+      "step4": "ვარსკვლავები შენს საფულეში",
+      "cta": "ყველა მისიის ნახვა →",
+      "screenLabel": "მისიები",
+      "screenTitle": "შვიდი სამიზნე.",
+      "screenSub": "გაასრულე ყველა შვიდი → უფასო ტელესკოპი"
+    },
+    "learn": {
+      "eyebrow": "სწავლა",
+      "title": "იცოდე, რასაც უყურებ.",
+      "step1": "შეეხე ობიექტს",
+      "step2": "წაიკითხე გზამკვლევი",
+      "step3": "ჩააბარე ვიქტორინა",
+      "cta": "გზამკვლევის გახსნა →",
+      "screenLabel": "გზამკვლევი",
+      "screenTitle": "მზის სისტემა",
+      "screenSub": "შეეხე პლანეტას · ჩააბარე ვიქტორინა",
+      "featured": "გამორჩეული",
+      "upTonight": "ამაღამ ცაშია · 38°",
+      "quizLabel": "ვიქტორინა",
+      "quizSubject": "თანავარსკვლავედები · 10 კითხვა",
+      "uranus": "ურანი"
+    },
+    "skyPage": {
+      "eyebrow": "Sky გვერდი",
+      "title": "ამაღამ — სამ ეკრანზე.",
+      "livePlanetMap": "ცოცხალი პლანეტარული რუკა",
+      "arFinder": "AR ხელსაწყო",
+      "forecast7": "7-დღიანი პროგნოზი",
+      "cta": "Sky გვერდის გახსნა →",
+      "mapLocation": "თბილისი",
+      "mapVisible": "7 ხილული",
+      "mapTitle": "ცის რუკა",
+      "arLabel": "AR",
+      "forecastLabel": "7 დღე",
+      "forecastTonight": "ამაღამ: გადი",
+      "forecastTitle": "პროგნოზი",
+      "colCloud": "ღრუბ.",
+      "colMoon": "მთვარე",
+      "colSee": "ხილ."
+    },
+    "marketplace": {
+      "eyebrow": "მაღაზია",
+      "title": "მაღაზია აპში.",
+      "cta": "მაღაზიის გახსნა →"
+    },
+    "tonightAtAGlance": {
+      "eyebrow": "ცოცხლად შენი ციდან",
+      "title": "ამაღამ — ერთ შეხედვაში."
+    },
+    "vision": {
+      "eyebrow": "ხედვა",
+      "title1": "იცოდე რა ჩანს ამაღამ.",
+      "title2": "აღმოაჩინეთ ერთად.",
+      "card1": "სამიზნეები, რომლებიც ღირს",
+      "card2": "ცაში მზერა — საზოგადოებასთან ერთად",
+      "card3": "შენი ნანახით დადასტურებული"
+    },
+    "finalCta": {
+      "eyebrow": "დაიწყე ამაღამ",
+      "title": "ცა ღიაა.",
+      "primary": "დაიწყე დაკვირვება",
+      "secondary": "ამაღამის ცა →"
     }
   }
 }

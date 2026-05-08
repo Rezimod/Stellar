@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import HeroSaturn from '@/components/home/HeroSaturn';
 import TonightAtAGlance from '@/components/home/TonightAtAGlance';
 
@@ -204,7 +205,15 @@ function PhoneTopBar({ size }: { size: IPhoneSize }) {
   );
 }
 
-function PhoneBottomNav({ size, active }: { size: IPhoneSize; active: AppTab }) {
+function PhoneBottomNav({
+  size,
+  active,
+  labels,
+}: {
+  size: IPhoneSize;
+  active: AppTab;
+  labels: Record<AppTab, string>;
+}) {
   const cfg =
     size === 'sm'
       ? { h: 32, icon: 12, label: 6, gap: 1.5, dashW: 10, dashH: 1.2, padTop: 4 }
@@ -213,13 +222,6 @@ function PhoneBottomNav({ size, active }: { size: IPhoneSize; active: AppTab }) 
       : { h: 48, icon: 18, label: 9, gap: 2.5, dashW: 16, dashH: 1.6, padTop: 6 };
 
   const tabs: AppTab[] = ['sky', 'missions', 'home', 'feed', 'hub'];
-  const labels: Record<AppTab, string> = {
-    sky: 'Sky',
-    missions: 'Missions',
-    home: 'Home',
-    feed: 'Feed',
-    hub: 'Hub',
-  };
 
   return (
     <div
@@ -280,6 +282,7 @@ function IPhone({
   imageAlt,
   imageSizes,
   activeTab = 'home',
+  navLabels,
   children,
 }: {
   size?: IPhoneSize;
@@ -287,6 +290,7 @@ function IPhone({
   imageAlt?: string;
   imageSizes?: string;
   activeTab?: AppTab;
+  navLabels: Record<AppTab, string>;
   children?: React.ReactNode;
 }) {
   const cfg =
@@ -422,7 +426,7 @@ function IPhone({
             >
               <PhoneTopBar size={size} />
               <div className={`flex-1 min-h-0 overflow-hidden ${cfg.contentPad}`}>{children}</div>
-              <PhoneBottomNav size={size} active={activeTab} />
+              <PhoneBottomNav size={size} active={activeTab} labels={navLabels} />
             </div>
           )}
         </div>
@@ -434,7 +438,7 @@ function IPhone({
 
 /* ─── Mockup screens (rendered inside IPhone) ────────────────────── */
 
-function MissionsScreen() {
+function MissionsScreen({ labels }: { labels: { label: string; title: string; sub: string } }) {
   const targets = [
     { name: 'Moon',      stars: 50,  img: '/sky/targets/moon.jpg',   done: true  },
     { name: 'Jupiter',   stars: 75,  img: '/sky/targets/jupiter.jpg', done: true  },
@@ -446,11 +450,11 @@ function MissionsScreen() {
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
-        <span className="text-white/60 text-[10px] font-mono uppercase tracking-wider">Missions</span>
+        <span className="text-white/60 text-[10px] font-mono uppercase tracking-wider">{labels.label}</span>
         <span className="text-[#FFB347] text-[9.5px] font-mono tabular-nums">2 / 7</span>
       </div>
-      <div className="mt-1 text-white text-[14px] font-bold leading-tight">Seven targets.</div>
-      <div className="text-white/50 text-[10px]">Finish all seven → free telescope</div>
+      <div className="mt-1 text-white text-[14px] font-bold leading-tight">{labels.title}</div>
+      <div className="text-white/50 text-[10px]">{labels.sub}</div>
 
       <div className="mt-2 h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
         <div className="h-full rounded-full bg-[#FFB347]" style={{ width: '28%' }} />
@@ -485,50 +489,65 @@ function MissionsScreen() {
   );
 }
 
-function LearnScreen() {
+function LearnScreen({
+  labels,
+  planetNames,
+}: {
+  labels: {
+    label: string;
+    title: string;
+    sub: string;
+    featured: string;
+    upTonight: string;
+    quizLabel: string;
+    quizSubject: string;
+    jupiterName: string;
+  };
+  planetNames: Record<'moon' | 'mercury' | 'venus' | 'mars' | 'saturn' | 'uranus', string>;
+}) {
   const planets = [
-    { name: 'Moon',    img: '/images/planets/moon.jpg' },
-    { name: 'Mercury', img: '/images/planets/mercury.jpg' },
-    { name: 'Venus',   img: '/images/planets/venus.jpg' },
-    { name: 'Mars',    img: '/images/planets/mars.jpg' },
-    { name: 'Saturn',  img: '/images/planets/saturn.jpg' },
-    { name: 'Uranus',  img: '/images/planets/uranus.jpg' },
+    { key: 'moon' as const,    img: '/images/planets/moon.jpg' },
+    { key: 'mercury' as const, img: '/images/planets/mercury.jpg' },
+    { key: 'venus' as const,   img: '/images/planets/venus.jpg' },
+    { key: 'mars' as const,    img: '/images/planets/mars.jpg' },
+    { key: 'saturn' as const,  img: '/images/planets/saturn.jpg' },
+    { key: 'uranus' as const,  img: '/images/planets/uranus.jpg' },
   ];
   return (
     <div className="flex flex-col">
-      <div className="text-white/60 text-[10px] font-mono uppercase tracking-wider">Field guide</div>
-      <div className="mt-1 text-white text-[14px] font-bold leading-tight">Solar System</div>
-      <div className="text-white/50 text-[10px]">Tap a planet · take a quiz</div>
+      <div className="text-white/60 text-[10px] font-mono uppercase tracking-wider">{labels.label}</div>
+      <div className="mt-1 text-white text-[14px] font-bold leading-tight">{labels.title}</div>
+      <div className="text-white/50 text-[10px]">{labels.sub}</div>
 
       <div className="mt-2.5 relative rounded-[10px] overflow-hidden border border-white/10">
         <div className="relative aspect-[16/9]">
-          <Image src="/images/planets/jupiter.jpg" alt="Jupiter" fill sizes="220px" className="object-cover" />
+          <Image src="/images/planets/jupiter.jpg" alt={labels.jupiterName} fill sizes="220px" className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-1.5 left-2 right-2 flex items-end justify-between">
             <div>
-              <div className="text-white text-[11px] font-bold leading-none">Jupiter</div>
-              <div className="text-white/70 text-[7.5px] font-mono mt-0.5 uppercase tracking-wider">Up tonight · 38°</div>
+              <div className="text-white text-[11px] font-bold leading-none">{labels.jupiterName}</div>
+              <div className="text-white/70 text-[7.5px] font-mono mt-0.5 uppercase tracking-wider">{labels.upTonight}</div>
             </div>
-            <span className="text-[#5EEAD4] text-[7.5px] font-mono uppercase tracking-wider">Featured</span>
+            <span className="text-[#5EEAD4] text-[7.5px] font-mono uppercase tracking-wider">{labels.featured}</span>
           </div>
         </div>
       </div>
 
       <div className="mt-2 grid grid-cols-3 gap-1.5">
         {planets.map((p) => (
-          <div key={p.name} className="flex flex-col items-center gap-1">
+          <div key={p.key} className="flex flex-col items-center gap-1">
             <div className="relative w-full aspect-square rounded-[8px] overflow-hidden bg-black/30">
-              <Image src={p.img} alt={p.name} fill sizes="60px" className="object-cover" />
+              <Image src={p.img} alt={planetNames[p.key]} fill sizes="60px" className="object-cover" />
             </div>
-            <span className="text-white/80 text-[8.5px] leading-none">{p.name}</span>
+            <span className="text-white/80 text-[8.5px] leading-none">{planetNames[p.key]}</span>
           </div>
         ))}
       </div>
 
       <div className="mt-2 rounded-[10px] bg-white/[0.04] border border-white/10 px-2.5 py-1.5 flex items-center justify-between">
         <div>
-          <div className="text-white/55 text-[8px] font-mono uppercase tracking-wider">Quiz</div>
-          <div className="text-white text-[10px] leading-tight">Constellations · 10 Q</div>
+          <div className="text-white/55 text-[8px] font-mono uppercase tracking-wider">{labels.quizLabel}</div>
+          <div className="text-white text-[10px] leading-tight">{labels.quizSubject}</div>
         </div>
         <span className="text-[#FFB347] font-mono text-[9.5px] tabular-nums">+100 ★</span>
       </div>
@@ -536,7 +555,7 @@ function LearnScreen() {
   );
 }
 
-function SkyMapScreen() {
+function SkyMapScreen({ labels }: { labels: { location: string; visible: string; title: string } }) {
   const stars: Array<[number, number, number]> = [
     [22, 28, 0.5], [70, 22, 0.7], [82, 58, 0.5], [33, 72, 0.6],
     [60, 78, 0.7], [18, 56, 0.5], [55, 18, 0.5], [78, 80, 0.5],
@@ -546,10 +565,10 @@ function SkyMapScreen() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
-        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">Tbilisi</span>
-        <span className="text-[#5EEAD4] text-[8px] font-mono">7 visible</span>
+        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">{labels.location}</span>
+        <span className="text-[#5EEAD4] text-[8px] font-mono">{labels.visible}</span>
       </div>
-      <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">Sky map</div>
+      <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">{labels.title}</div>
 
       <div className="relative mt-2 mx-auto w-full aspect-square">
         <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -589,11 +608,11 @@ function SkyMapScreen() {
   );
 }
 
-function SkyARScreen() {
+function SkyARScreen({ labels }: { labels: { label: string; jupiterName: string } }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
-        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">AR</span>
+        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">{labels.label}</span>
         <span className="text-[#FFB347] text-[8px] font-mono">SE 142°</span>
       </div>
 
@@ -630,7 +649,7 @@ function SkyARScreen() {
             <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
             <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
             <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
-              <div className="text-[#FFB347] text-[9px] font-bold leading-none">Jupiter</div>
+              <div className="text-[#FFB347] text-[9px] font-bold leading-none">{labels.jupiterName}</div>
               <div className="text-white/55 text-[7px] font-mono mt-0.5">alt 38° · mag −2.1</div>
             </div>
           </div>
@@ -640,23 +659,37 @@ function SkyARScreen() {
   );
 }
 
-function SkyForecastScreen() {
+function SkyForecastScreen({
+  labels,
+  badges,
+}: {
+  labels: {
+    label: string;
+    tonight: string;
+    title: string;
+    colCloud: string;
+    colMoon: string;
+    colSee: string;
+    seeingGood: string;
+  };
+  badges: { go: string; maybe: string; skip: string };
+}) {
   const days = [
-    { d: 'M', label: 'Go',    color: '#5EEAD4', pct: 88 },
-    { d: 'T', label: 'Go',    color: '#5EEAD4', pct: 82 },
-    { d: 'W', label: 'Maybe', color: '#FFB347', pct: 60 },
-    { d: 'T', label: 'Skip',  color: '#94A3B8', pct: 28 },
-    { d: 'F', label: 'Go',    color: '#5EEAD4', pct: 90 },
-    { d: 'S', label: 'Maybe', color: '#FFB347', pct: 55 },
-    { d: 'S', label: 'Go',    color: '#5EEAD4', pct: 84 },
+    { d: 'M', label: badges.go,    color: '#5EEAD4', pct: 88 },
+    { d: 'T', label: badges.go,    color: '#5EEAD4', pct: 82 },
+    { d: 'W', label: badges.maybe, color: '#FFB347', pct: 60 },
+    { d: 'T', label: badges.skip,  color: '#94A3B8', pct: 28 },
+    { d: 'F', label: badges.go,    color: '#5EEAD4', pct: 90 },
+    { d: 'S', label: badges.maybe, color: '#FFB347', pct: 55 },
+    { d: 'S', label: badges.go,    color: '#5EEAD4', pct: 84 },
   ];
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
-        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">7 days</span>
-        <span className="text-[#5EEAD4] text-[8px] font-mono">Tonight: Go</span>
+        <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">{labels.label}</span>
+        <span className="text-[#5EEAD4] text-[8px] font-mono">{labels.tonight}</span>
       </div>
-      <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">Forecast</div>
+      <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">{labels.title}</div>
 
       <div className="mt-2 flex flex-col gap-1">
         {days.map((d, i) => (
@@ -674,10 +707,10 @@ function SkyForecastScreen() {
 
       <div className="mt-2.5 rounded-[8px] bg-white/[0.04] border border-white/10 p-1.5">
         <div className="grid grid-cols-3 text-[6.5px] text-white/55 font-mono uppercase">
-          <span>Cloud</span><span>Moon</span><span>See</span>
+          <span>{labels.colCloud}</span><span>{labels.colMoon}</span><span>{labels.colSee}</span>
         </div>
         <div className="grid grid-cols-3 text-[9px] text-white mt-0.5 font-mono">
-          <span>14%</span><span>22%</span><span>Good</span>
+          <span>14%</span><span>22%</span><span>{labels.seeingGood}</span>
         </div>
       </div>
     </div>
@@ -708,7 +741,73 @@ function SkyFeatureSlot({
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations('homepage');
+  const tNav = await getTranslations('nav');
+  const tPlanets = await getTranslations('planets');
+  const tSky = await getTranslations('sky');
+
+  const navLabels = {
+    sky: tNav('sky'),
+    missions: tNav('missions'),
+    home: t('homeTabLabel'),
+    feed: tNav('feed'),
+    hub: tNav('hub'),
+  } as const;
+
+  const missionsLabels = {
+    label: t('missions.screenLabel'),
+    title: t('missions.screenTitle'),
+    sub: t('missions.screenSub'),
+  };
+
+  const learnLabels = {
+    label: t('learn.screenLabel'),
+    title: t('learn.screenTitle'),
+    sub: t('learn.screenSub'),
+    featured: t('learn.featured'),
+    upTonight: t('learn.upTonight'),
+    quizLabel: t('learn.quizLabel'),
+    quizSubject: t('learn.quizSubject'),
+    jupiterName: tPlanets('jupiter'),
+  };
+
+  const planetNames = {
+    moon: tPlanets('moon'),
+    mercury: tPlanets('mercury'),
+    venus: tPlanets('venus'),
+    mars: tPlanets('mars'),
+    saturn: tPlanets('saturn'),
+    uranus: t('learn.uranus'),
+  };
+
+  const skyMapLabels = {
+    location: t('skyPage.mapLocation'),
+    visible: t('skyPage.mapVisible'),
+    title: t('skyPage.mapTitle'),
+  };
+
+  const skyARLabels = {
+    label: t('skyPage.arLabel'),
+    jupiterName: tPlanets('jupiter'),
+  };
+
+  const skyForecastLabels = {
+    label: t('skyPage.forecastLabel'),
+    tonight: t('skyPage.forecastTonight'),
+    title: t('skyPage.forecastTitle'),
+    colCloud: t('skyPage.colCloud'),
+    colMoon: t('skyPage.colMoon'),
+    colSee: t('skyPage.colSee'),
+    seeingGood: tSky('header.conditions.good'),
+  };
+
+  const badges = {
+    go: tSky('forecast7.badge.go'),
+    maybe: tSky('forecast7.badge.maybe'),
+    skip: tSky('forecast7.badge.skip'),
+  };
+
   return (
     <div className="bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
 
@@ -720,7 +819,7 @@ export default function HomePage() {
       <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="relative max-w-[960px] mx-auto">
           <div className="text-center mb-5 md:mb-7 text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#6B7385]">
-            Partner brands
+            {t('partners')}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-y-2 md:gap-y-0">
             <PartnerLogo
@@ -759,21 +858,21 @@ export default function HomePage() {
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
-            <Eyebrow>How it works</Eyebrow>
+            <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
           </div>
 
           <div className="flex flex-col items-center gap-10 md:gap-14 max-w-[1000px] mx-auto">
-            <IPhone size="md" image="/landing/missions.png" imageAlt="Tonight's mission: Jupiter" />
+            <IPhone size="md" image="/landing/missions.png" imageAlt={t('missions.title')} navLabels={navLabels} />
 
             <div className="grid grid-cols-3 gap-4 md:gap-10 w-full max-w-[720px]">
-              {['Sign in', 'Find a target', 'Earn Stars'].map((title) => (
+              {[t('howItWorks.step1'), t('howItWorks.step2'), t('howItWorks.step3')].map((title) => (
                 <div key={title} className="text-center text-white text-[15px] md:text-[20px] font-semibold leading-tight tracking-[-0.005em]">
                   {title}
                 </div>
               ))}
             </div>
 
-            <SectionLink href="/missions">Start observing →</SectionLink>
+            <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
           </div>
         </div>
       </section>
@@ -784,19 +883,19 @@ export default function HomePage() {
       <section className="relative px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
-            <Eyebrow>Missions</Eyebrow>
-            <SectionTitle>Seven targets. Free scope.</SectionTitle>
+            <Eyebrow>{t('missions.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('missions.title')}</SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-1 mx-auto">
-              <IPhone size="md" activeTab="missions">
-                <MissionsScreen />
+              <IPhone size="md" activeTab="missions" navLabels={navLabels}>
+                <MissionsScreen labels={missionsLabels} />
               </IPhone>
             </div>
             <div className="order-2">
               <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-                {['Pick a target', 'Photograph it', 'Oracle verifies', 'Stars in your wallet'].map((title) => (
+                {[t('missions.step1'), t('missions.step2'), t('missions.step3'), t('missions.step4')].map((title) => (
                   <li key={title} className="py-3 md:py-4">
                     <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
                       {title}
@@ -805,7 +904,7 @@ export default function HomePage() {
                 ))}
               </ol>
               <div className="mt-5 md:mt-6">
-                <SectionLink href="/missions">See all missions →</SectionLink>
+                <SectionLink href="/missions">{t('missions.cta')}</SectionLink>
               </div>
             </div>
           </div>
@@ -818,14 +917,14 @@ export default function HomePage() {
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
-            <Eyebrow>Learn</Eyebrow>
-            <SectionTitle>Know what you&apos;re looking at.</SectionTitle>
+            <Eyebrow>{t('learn.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('learn.title')}</SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-2 md:order-1 text-center md:text-left">
               <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06] text-left">
-                {['Tap an object', 'Read the guide', 'Take the quiz'].map((title) => (
+                {[t('learn.step1'), t('learn.step2'), t('learn.step3')].map((title) => (
                   <li key={title} className="py-3 md:py-4">
                     <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
                       {title}
@@ -834,12 +933,12 @@ export default function HomePage() {
                 ))}
               </ol>
               <div className="mt-5 md:mt-6">
-                <SectionLink href="/learn">Open the field guide →</SectionLink>
+                <SectionLink href="/learn">{t('learn.cta')}</SectionLink>
               </div>
             </div>
             <div className="order-1 md:order-2 mx-auto">
-              <IPhone size="md" activeTab="hub">
-                <LearnScreen />
+              <IPhone size="md" activeTab="hub" navLabels={navLabels}>
+                <LearnScreen labels={learnLabels} planetNames={planetNames} />
               </IPhone>
             </div>
           </div>
@@ -852,24 +951,24 @@ export default function HomePage() {
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-20">
-            <Eyebrow>The Sky page</Eyebrow>
-            <SectionTitle>Tonight, in three screens.</SectionTitle>
+            <Eyebrow>{t('skyPage.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('skyPage.title')}</SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 md:gap-y-14 max-w-[920px] mx-auto">
-            <SkyFeatureSlot title="Live planet map">
-              <IPhone size="sm" activeTab="sky"><SkyMapScreen /></IPhone>
+            <SkyFeatureSlot title={t('skyPage.livePlanetMap')}>
+              <IPhone size="sm" activeTab="sky" navLabels={navLabels}><SkyMapScreen labels={skyMapLabels} /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot title="AR finder">
-              <IPhone size="sm" activeTab="sky"><SkyARScreen /></IPhone>
+            <SkyFeatureSlot title={t('skyPage.arFinder')}>
+              <IPhone size="sm" activeTab="sky" navLabels={navLabels}><SkyARScreen labels={skyARLabels} /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot title="7-day forecast">
-              <IPhone size="sm" activeTab="home"><SkyForecastScreen /></IPhone>
+            <SkyFeatureSlot title={t('skyPage.forecast7')}>
+              <IPhone size="sm" activeTab="home" navLabels={navLabels}><SkyForecastScreen labels={skyForecastLabels} badges={badges} /></IPhone>
             </SkyFeatureSlot>
           </div>
 
           <div className="mt-10 md:mt-16 text-center">
-            <SectionLink href="/sky">Open the Sky page →</SectionLink>
+            <SectionLink href="/sky">{t('skyPage.cta')}</SectionLink>
           </div>
         </div>
       </section>
@@ -880,8 +979,8 @@ export default function HomePage() {
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-10 md:mb-14">
-            <Eyebrow>Marketplace</Eyebrow>
-            <SectionTitle>The shop is in the app.</SectionTitle>
+            <Eyebrow>{t('marketplace.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('marketplace.title')}</SectionTitle>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
@@ -956,7 +1055,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-10 md:mt-12 text-center">
-            <SectionLink href="/marketplace">Open the marketplace →</SectionLink>
+            <SectionLink href="/marketplace">{t('marketplace.cta')}</SectionLink>
           </div>
         </div>
       </section>
@@ -967,8 +1066,8 @@ export default function HomePage() {
       <section className="px-4 md:px-8 py-12 md:py-[120px]">
         <div className="max-w-[720px] mx-auto">
           <div className="text-center mb-8 md:mb-12">
-            <Eyebrow>Live from your sky</Eyebrow>
-            <SectionTitle>Tonight, at a glance.</SectionTitle>
+            <Eyebrow>{t('tonightAtAGlance.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('tonightAtAGlance.title')}</SectionTitle>
           </div>
 
           <TonightAtAGlance />
@@ -988,26 +1087,26 @@ export default function HomePage() {
         />
         <div className="relative max-w-[1200px] mx-auto">
           <div className="text-center mb-14 md:mb-20">
-            <Eyebrow>Vision</Eyebrow>
+            <Eyebrow>{t('vision.eyebrow')}</Eyebrow>
             <SectionTitle>
-              Know what&apos;s up tonight.{' '}
+              {t('vision.title1')}{' '}
               <span className="bg-gradient-to-r from-[#B07FE8] to-[#5EEAD4] bg-clip-text text-transparent">
-                Find it together.
+                {t('vision.title2')}
               </span>
             </SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">Targets worth aiming at</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">{t('vision.card1')}</div>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">A community looking up</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">{t('vision.card2')}</div>
             </div>
 
             <div className="bg-[#0F1A35] border border-white/[0.07] rounded-[18px] p-6 md:p-8">
-              <div className="text-[20px] md:text-[22px] font-bold text-white">Verified by what you saw</div>
+              <div className="text-[20px] md:text-[22px] font-bold text-white">{t('vision.card3')}</div>
             </div>
           </div>
         </div>
@@ -1018,8 +1117,8 @@ export default function HomePage() {
          ============================================================ */}
       <section className="px-6 md:px-8 py-20 md:py-[120px] text-center">
         <div className="max-w-[1200px] mx-auto">
-          <Eyebrow>Start tonight</Eyebrow>
-          <SectionTitle>The sky is open.</SectionTitle>
+          <Eyebrow>{t('finalCta.eyebrow')}</Eyebrow>
+          <SectionTitle>{t('finalCta.title')}</SectionTitle>
           <div className="inline-flex flex-wrap gap-3.5 justify-center mt-8 md:mt-12">
             <Link
               href="/missions"
@@ -1036,7 +1135,7 @@ export default function HomePage() {
                 <circle cx="12" cy="12" r="10" />
                 <circle cx="12" cy="12" r="3" />
               </svg>
-              Start observing
+              {t('finalCta.primary')}
             </Link>
             <Link
               href="/sky"
@@ -1049,7 +1148,7 @@ export default function HomePage() {
                 border: '1px solid rgba(255,255,255,0.10)',
               }}
             >
-              Tonight&apos;s sky →
+              {t('finalCta.secondary')}
             </Link>
           </div>
         </div>

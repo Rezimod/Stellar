@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { type CSSProperties } from 'react';
+import { useTranslations } from 'next-intl';
 
 // Three.js bundle is large — load it client-side only, after first paint.
 const SaturnCanvas = dynamic(() => import('./SaturnCanvas'), {
@@ -11,6 +12,7 @@ const SaturnCanvas = dynamic(() => import('./SaturnCanvas'), {
 });
 
 export default function HeroSaturn() {
+  const t = useTranslations('homepage.hero');
   return (
     <section
       className="relative w-full overflow-hidden flex items-center"
@@ -54,9 +56,9 @@ export default function HeroSaturn() {
               fontWeight: 500, /* Orbitron Medium */
             }}
           >
-            Observe the sky.
+            {t('headline1')}
             <br />
-            Earn rewards.
+            {t('headline2')}
           </h1>
 
           <p
@@ -66,12 +68,12 @@ export default function HeroSaturn() {
               maxWidth: 520,
             }}
           >
-            Plan, photograph, redeem.
+            {t('subtitle')}
           </p>
 
           <div className="mt-9 md:mt-12 flex flex-col items-start sm:flex-row sm:flex-wrap gap-3 pointer-events-auto">
-            <CTA href="/missions" tone="primary">Earn Rewards</CTA>
-            <CTA href="/sky" tone="secondary">Start Observing</CTA>
+            <CTA href="/missions" tone="primary">{t('ctaPrimary')}</CTA>
+            <CTA href="/sky" tone="secondary">{t('ctaSecondary')}</CTA>
           </div>
         </div>
       </div>
