@@ -64,12 +64,15 @@ function CheckoutContent() {
   const product = useMemo(() => getProductById(productId), [productId]);
   const dealer = useMemo(() => product ? getDealerById(product.dealerId) : undefined, [product]);
 
-  const [solPerGEL, setSolPerGEL] = useState(0);
-  const [solPriceUsd, setSolPriceUsd] = useState(0);
+  // Fall back to the same constants /api/price/sol returns on network failure
+  // so the SOL pay button is never stuck on "Loading SOL price…" if CoinGecko
+  // is unreachable. Real price replaces these as soon as the fetch resolves.
+  const [solPerGEL, setSolPerGEL] = useState(0.00135);
+  const [solPriceUsd, setSolPriceUsd] = useState(137);
   useEffect(() => {
     fetch('/api/price/sol').then(r => r.json()).then(d => {
-      setSolPerGEL(d.solPerGEL ?? 0);
-      setSolPriceUsd(d.solPrice ?? 0);
+      if (d.solPerGEL > 0) setSolPerGEL(d.solPerGEL);
+      if (d.solPrice > 0) setSolPriceUsd(d.solPrice);
     }).catch(() => {});
   }, []);
 
@@ -359,16 +362,39 @@ function CheckoutContent() {
               <button
                 onClick={handlePay}
                 disabled={!canSubmit || submitting || pendingPay || burning}
-                className="inline-flex items-center justify-center gap-[8px] px-[22px] py-[13px] rounded-[14px] text-[13px] font-semibold tracking-[0.005em] text-white whitespace-nowrap transition-[filter,transform,box-shadow] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:filter-none"
-                style={{
-                  background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
-                  border: 'none',
-                  boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
-                }}
+                className="inline-flex items-center justify-center gap-[8px] px-[22px] py-[13px] rounded-[14px] text-[13px] font-semibold tracking-[0.005em] whitespace-nowrap transition-[filter,transform,box-shadow] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:filter-none"
+                style={
+                  mode === 'sol'
+                    ? {
+                        background: 'var(--terracotta)',
+                        border: '1px solid var(--terracotta)',
+                        color: '#1a1208',
+                        boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px rgba(255,179,71,0.28)',
+                      }
+                    : {
+                        background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+                        border: 'none',
+                        color: '#FFFFFF',
+                        boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
+                      }
+                }
               >
-                {mode === 'stars'
-                  ? <span aria-hidden className="text-[14px] leading-none">★</span>
-                  : <span aria-hidden className="text-[14px] leading-none">◎</span>}
+                {mode === 'sol' ? (
+                  <svg width="16" height="16" viewBox="0 0 397 311" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="sol-pay-grad" x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#9945FF" />
+                        <stop offset="50%" stopColor="#19FB9B" />
+                        <stop offset="100%" stopColor="#14F195" />
+                      </linearGradient>
+                    </defs>
+                    <path fill="url(#sol-pay-grad)" d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
+                    <path fill="url(#sol-pay-grad)" d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
+                    <path fill="url(#sol-pay-grad)" d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
+                  </svg>
+                ) : (
+                  <span aria-hidden className="text-[14px] leading-none">★</span>
+                )}
                 <span>
                   {burning
                     ? 'Burning Stars…'
@@ -380,7 +406,7 @@ function CheckoutContent() {
                           ? `Redeem ${product.starsPrice.toLocaleString()} stars`
                           : discountedSol > 0
                             ? `Pay ${formatSol(discountedSol)} SOL`
-                            : 'Loading SOL price…'}
+                            : 'Pay with SOL'}
                 </span>
               </button>
               {!authenticated && (

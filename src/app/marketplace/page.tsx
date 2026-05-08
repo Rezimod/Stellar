@@ -110,7 +110,19 @@ export default function MarketplacePage() {
     [inCategory, difficulty],
   );
 
-  const orderedVisible = visible;
+  // Lead with the most professional kit (advanced → intermediate → beginner),
+  // and within a tier the higher-priced flagship comes first. Matches what
+  // serious telescope buyers expect to see at the top of the page.
+  const SKILL_RANK: Record<string, number> = { advanced: 3, intermediate: 2, beginner: 1 };
+  const orderedVisible = useMemo(() => {
+    if (difficulty !== 'all') return visible;
+    return [...visible].sort((a, b) => {
+      const sa = SKILL_RANK[a.skillLevel ?? 'beginner'] ?? 0;
+      const sb = SKILL_RANK[b.skillLevel ?? 'beginner'] ?? 0;
+      if (sa !== sb) return sb - sa;
+      return b.price - a.price;
+    });
+  }, [visible, difficulty]);
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
