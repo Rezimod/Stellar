@@ -52,11 +52,15 @@ function ChatPageInner() {
   const [loading, setLoading] = useState(false);
   const [streamingMsgIdx, setStreamingMsgIdx] = useState<number | null>(null);
   const [error, setError] = useState('');
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSentRef = useRef('');
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [messages, loading]);
   useEffect(() => { setTimeout(() => textareaRef.current?.focus(), 200); }, []);
   useEffect(() => {
     fetch(`/api/sky/verify?lat=${location.lat}&lon=${location.lon}`)
@@ -276,7 +280,7 @@ function ChatPageInner() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+      <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
 
         {/* Idle Briefing — replaces greeting bubble + cloudy card + field banner */}
         {messages.length === 1 && (
@@ -593,7 +597,6 @@ function ChatPageInner() {
             )}
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       {/* Input bar */}
