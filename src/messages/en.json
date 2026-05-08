@@ -1015,7 +1015,9 @@
       "eyebrow": "Comparison",
       "title1": "What sets Stellar apart",
       "title2": "from other astronomy apps.",
-      "footnote": "Comparison reflects publicly documented features, May 2026.",
+      "otherApps": "Other apps",
+      "stellar": "Stellar",
+      "footnote": "Reflects features commonly available across leading astronomy apps, May 2026.",
       "features": {
         "skyMap": "Sky map & planet tracker",
         "forecast": "7-day clear-sky forecast",

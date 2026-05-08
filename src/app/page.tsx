@@ -1180,6 +1180,8 @@ export default async function HomePage() {
               rewards: t('comparison.features.rewards'),
               marketplace: t('comparison.features.marketplace'),
             }}
+            otherAppsLabel={t('comparison.otherApps')}
+            stellarLabel={t('comparison.stellar')}
             footnote={t('comparison.footnote')}
           />
         </div>
