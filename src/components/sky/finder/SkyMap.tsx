@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { angularSeparation, headingDelta, type HeadingStatus } from '@/lib/sky/use-device-heading';
+import { angularSeparation, type HeadingStatus } from '@/lib/sky/use-device-heading';
 import type { ObjectId, SkyObject } from './types';
 
 const PLANET_COLORS: Record<string, string> = {
@@ -139,14 +139,6 @@ interface SkyMapProps {
   constellationLines?: Array<[string, string]>;
   /** When set, draws a dashed terracotta trail from anchor → active body. */
   hopAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
-  /** Best body the user can physically aim at to calibrate the compass.
-   *  Defaults to highest-altitude among Moon/Sun/Jupiter/Venus. */
-  calibrationAnchor?: { id: string; name: string; azimuth: number; altitude: number } | null;
-  /** All currently-visible calibration candidates (Sun, Moon, bright planets).
-   *  Renders as a chip switcher inside the banner so the user can pick. */
-  calibrationCandidates?: Array<{ id: string; name: string; azimuth: number; altitude: number }>;
-  /** Called when the user picks a different anchor from the switcher. */
-  onCalibrationAnchorChange?: (id: string) => void;
   /** Persistent calibration offset (degrees) — shown next to nudge controls. */
   calibrationOffset?: number;
   /** Apply ±degrees to the calibration offset. Optional — only renders the +/− pad when provided. */
@@ -246,9 +238,6 @@ export function SkyMap({
   constellationStars = [],
   constellationLines = [],
   hopAnchor = null,
-  calibrationAnchor = null,
-  calibrationCandidates = [],
-  onCalibrationAnchorChange,
   calibrationOffset = 0,
   onNudge,
   onProximityChange,
@@ -828,19 +817,6 @@ export function SkyMap({
         </div>
       )}
 
-      {isLive && calibrationAnchor && onNudge && (
-        <CalibrationBanner
-          anchor={calibrationAnchor}
-          candidates={calibrationCandidates}
-          onAnchorChange={onCalibrationAnchorChange}
-          onLock={() => {
-            const delta = headingDelta(calibrationAnchor.azimuth, heading ?? 0);
-            onNudge(delta);
-          }}
-          calibrationOffset={calibrationOffset}
-        />
-      )}
-
       {isLive && onNudge && (
         <div className="sky-map__nudge" role="group" aria-label={t('nudgeAria')}>
           <button
@@ -1143,93 +1119,3 @@ function CompassIcon() {
   );
 }
 
-interface CalibrationBannerProps {
-  anchor: { id: string; name: string; azimuth: number; altitude: number };
-  candidates?: Array<{ id: string; name: string; azimuth: number; altitude: number }>;
-  onAnchorChange?: (id: string) => void;
-  onLock: () => void;
-  calibrationOffset: number;
-}
-
-/**
- * One-shot calibration. The user identifies the anchor body (Moon, Sun,
- * etc.) by eye, points the back of the phone at it, taps the button. We
- * snapshot the current heading, compute the offset to the anchor's true
- * azimuth, and apply it.
- *
- * Earlier this was gated on the user first aiming where the app *thought*
- * the body was — a circular dependency that prevented calibration from
- * ever firing when the compass was off. The button is now always tappable;
- * the user is the source of truth for "this is where the Moon really is."
- */
-function CalibrationBanner({
-  anchor,
-  candidates = [],
-  onAnchorChange,
-  onLock,
-  calibrationOffset,
-}: CalibrationBannerProps) {
-  const t = useTranslations('sky.skymap');
-  const [justLocked, setJustLocked] = useState(false);
-
-  useEffect(() => {
-    if (!justLocked) return;
-    const id = window.setTimeout(() => setJustLocked(false), 2400);
-    return () => window.clearTimeout(id);
-  }, [justLocked]);
-
-  if (justLocked) {
-    return (
-      <div className="sky-map__cal-banner sky-map__cal-banner--locked" role="status">
-        <span className="sky-map__cal-banner-icon" aria-hidden="true">✓</span>
-        <span className="sky-map__cal-banner-text">
-          {t('calLocked', { name: anchor.name, deg: Math.round(calibrationOffset) })}
-        </span>
-      </div>
-    );
-  }
-
-  const showSwitcher = candidates.length > 1 && onAnchorChange != null;
-  return (
-    <div className="sky-map__cal-cluster">
-      <button
-        type="button"
-        className={`sky-map__cal-banner sky-map__cal-banner--ready${calibrationOffset !== 0 ? ' sky-map__cal-banner--secondary' : ''}`}
-        onClick={() => {
-          onLock();
-          setJustLocked(true);
-          if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-            try { navigator.vibrate([10, 30, 10]); } catch { /* ignore */ }
-          }
-        }}
-        aria-label={t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
-      >
-        <span className="sky-map__cal-banner-icon" aria-hidden="true">⊕</span>
-        <span className="sky-map__cal-banner-text">
-          {t(calibrationOffset !== 0 ? 'calRecal' : 'calReady', { name: anchor.name })}
-        </span>
-        <span className="sky-map__cal-banner-meta" aria-hidden="true">
-          {t('calMeta', {
-            deg: Math.round(((anchor.azimuth % 360) + 360) % 360),
-            alt: Math.round(anchor.altitude),
-          })}
-        </span>
-      </button>
-      {showSwitcher && (
-        <div className="sky-map__cal-switcher" role="group" aria-label={t('calPick')}>
-          {candidates.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`sky-map__cal-chip${c.id === anchor.id ? ' is-active' : ''}`}
-              onClick={() => onAnchorChange?.(c.id)}
-              aria-pressed={c.id === anchor.id}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}

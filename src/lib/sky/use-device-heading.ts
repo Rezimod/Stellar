@@ -356,11 +356,6 @@ export function useDeviceHeading(): UseDeviceHeading {
   };
 }
 
-/** Signed shortest difference between two compass directions, in degrees [-180..+180]. */
-export function headingDelta(targetAz: number, fromAz: number): number {
-  return ((targetAz - fromAz + 540) % 360) - 180;
-}
-
 /**
  * Great-circle separation between two alt/az directions, in degrees.
  * Returns 0..180. This is what to use for "is the user pointing at the

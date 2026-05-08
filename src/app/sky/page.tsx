@@ -148,45 +148,6 @@ export default function SkyPage() {
     return [...candidates].sort((a, b) => a.magnitude - b.magnitude)[0];
   }, [finder]);
 
-  // Bodies the user can credibly aim at without binoculars — Sun, Moon, and
-  // the two brightest planets. Sorted by altitude so the highest one (the
-  // easiest to point at without horizon obstructions) sits first; the user
-  // can also tap a chip in the banner to switch.
-  const calibrationCandidates = useMemo<SkyObject[]>(() => {
-    if (!finder) return [];
-    return finder.objects
-      .filter(
-        (o) =>
-          o.visible &&
-          o.altitude > 5 &&
-          (o.id === 'moon' || o.id === 'sun' || o.id === 'jupiter' || o.id === 'venus'),
-      )
-      .sort((a, b) => b.altitude - a.altitude);
-  }, [finder]);
-
-  // The user's chosen anchor. Defaults to the highest-altitude candidate;
-  // resets if the candidates list churns and the previous pick is no longer
-  // visible. Persisted in URL? No — short-lived per session is fine.
-  const [calibrationAnchorId, setCalibrationAnchorId] = useState<string | null>(null);
-  useEffect(() => {
-    if (calibrationCandidates.length === 0) {
-      if (calibrationAnchorId !== null) setCalibrationAnchorId(null);
-      return;
-    }
-    const stillThere = calibrationAnchorId
-      ? calibrationCandidates.some((o) => o.id === calibrationAnchorId)
-      : false;
-    if (!stillThere) setCalibrationAnchorId(calibrationCandidates[0].id);
-  }, [calibrationCandidates, calibrationAnchorId]);
-
-  const calibrationAnchor = useMemo<SkyObject | null>(() => {
-    if (calibrationCandidates.length === 0) return null;
-    const found = calibrationAnchorId
-      ? calibrationCandidates.find((o) => o.id === calibrationAnchorId)
-      : null;
-    return found ?? calibrationCandidates[0];
-  }, [calibrationCandidates, calibrationAnchorId]);
-
   // Constellation stars projected once per finder refresh — the angular
   // drift across a few minutes is below dome resolution, so this is fine.
   const constellationStars = useMemo<ConstellationStar[]>(() => {
@@ -313,19 +274,6 @@ export default function SkyPage() {
                       azimuth: hopAnchor.azimuth,
                       altitude: hopAnchor.altitude,
                     } : null}
-                    calibrationAnchor={calibrationAnchor ? {
-                      id: calibrationAnchor.id,
-                      name: calibrationAnchor.name,
-                      azimuth: calibrationAnchor.azimuth,
-                      altitude: calibrationAnchor.altitude,
-                    } : null}
-                    calibrationCandidates={calibrationCandidates.map((o) => ({
-                      id: o.id,
-                      name: o.name,
-                      azimuth: o.azimuth,
-                      altitude: o.altitude,
-                    }))}
-                    onCalibrationAnchorChange={setCalibrationAnchorId}
                   />
                   {compass.status !== 'unavailable' && (
                     <button
@@ -340,9 +288,6 @@ export default function SkyPage() {
                     </button>
                   )}
                 </div>
-                {compass.live && compass.offset === 0 && calibrationAnchor && (
-                  <CompassPostureHint anchorName={calibrationAnchor.name} highOverhead={calibrationAnchor.altitude > 65} />
-                )}
               </div>
               <TargetVisibleGrid
                 objects={finder.objects}
@@ -444,38 +389,3 @@ function FinderTour({ onDismiss }: { onDismiss: () => void }) {
   );
 }
 
-const POSTURE_KEY = 'stellar.sky.posture.v1';
-
-function CompassPostureHint({ anchorName, highOverhead }: { anchorName: string; highOverhead: boolean }) {
-  const t = useTranslations('sky.posture');
-  const [dismissed, setDismissed] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (window.localStorage.getItem(POSTURE_KEY)) setDismissed(true);
-    } catch { /* ignore */ }
-  }, []);
-  if (dismissed) return null;
-  const handleDismiss = () => {
-    setDismissed(true);
-    try { window.localStorage.setItem(POSTURE_KEY, '1'); } catch { /* ignore */ }
-  };
-  const steps: string[] = [
-    t('step1', { name: anchorName }),
-    t('step2', { name: anchorName }),
-    ...(highOverhead ? [t('overhead', { name: anchorName })] : []),
-    t('step3'),
-  ];
-  return (
-    <aside className="sky-posture" role="note" aria-label={t('aria')}>
-      <ol className="sky-posture__steps">
-        {steps.map((s, i) => (
-          <li key={i}><span className="sky-posture__num">{i + 1}</span><span>{s}</span></li>
-        ))}
-      </ol>
-      <button type="button" className="sky-posture__dismiss" onClick={handleDismiss}>
-        {t('dismiss')}
-      </button>
-    </aside>
-  );
-}
