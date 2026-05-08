@@ -185,12 +185,15 @@ function ChatPageInner() {
   return (
     <PageContainer
       variant="content"
-      className="flex flex-col -mb-24 sm:mb-0"
-      style={{ height: 'calc(100dvh - 56px)', paddingTop: 16, paddingBottom: 16 }}
+      className="flex flex-col astra-page"
+      style={{ paddingTop: 16, paddingBottom: 16 }}
     >
       <style>{`
         @keyframes cursorBlink { 0%,100% { opacity:1 } 50% { opacity:0 } }
         .streaming-cursor { animation: cursorBlink 0.7s ease-in-out infinite; color: var(--accent); }
+        .astra-page {
+          height: calc(100dvh - 56px);
+        }
         .astra-panel {
           flex: 1;
           min-height: 0;
@@ -203,6 +206,9 @@ function ChatPageInner() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.18);
         }
         @media (max-width: 640px) {
+          .astra-page {
+            height: calc(100dvh - 56px - 88px);
+          }
           .astra-panel {
             border-radius: 14px;
           }
