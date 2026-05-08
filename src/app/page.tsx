@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import HeroSaturn from '@/components/home/HeroSaturn';
 import TonightAtAGlance from '@/components/home/TonightAtAGlance';
+import ComparisonTable from '@/components/home/ComparisonTable';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -659,58 +660,120 @@ function SkyARScreen({ labels }: { labels: { label: string; jupiterName: string 
   );
 }
 
-function SkyForecastScreen({
+type SkyEventKind = 'lunar' | 'solar' | 'meteors' | 'opp' | 'conj';
+
+function EventGlyph({ kind }: { kind: SkyEventKind }) {
+  switch (kind) {
+    case 'lunar':
+      return (
+        <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
+          <circle cx="6" cy="6" r="4.5" fill="#C84A2E" />
+          <circle cx="4.6" cy="5" r="0.7" fill="rgba(0,0,0,0.28)" />
+          <circle cx="6.8" cy="6.6" r="0.5" fill="rgba(0,0,0,0.22)" />
+        </svg>
+      );
+    case 'solar':
+      return (
+        <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
+          <circle cx="6" cy="6" r="5" fill="none" stroke="#FFE3A1" strokeWidth="1.1" />
+          <circle cx="6" cy="6" r="2.8" fill="#0A1224" />
+        </svg>
+      );
+    case 'meteors':
+      return (
+        <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
+          <line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="#FFE3A1" strokeWidth="1.4" strokeLinecap="round" />
+          <circle cx="9.5" cy="2.5" r="1" fill="#FFE3A1" />
+        </svg>
+      );
+    case 'opp':
+      return (
+        <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
+          <ellipse cx="6" cy="6" rx="5.2" ry="1.3" fill="none" stroke="#F4D78A" strokeWidth="0.9" />
+          <circle cx="6" cy="6" r="2.4" fill="#C89A3E" />
+        </svg>
+      );
+    case 'conj':
+      return (
+        <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
+          <circle cx="3.8" cy="6" r="1.8" fill="#C84A2E" />
+          <circle cx="8.2" cy="6" r="2.2" fill="#C89A3E" />
+        </svg>
+      );
+  }
+}
+
+function SkyEventsScreen({
   labels,
-  badges,
 }: {
   labels: {
     label: string;
-    tonight: string;
+    next: string;
     title: string;
-    colCloud: string;
+    colDate: string;
+    colType: string;
     colMoon: string;
-    colSee: string;
-    seeingGood: string;
+    typeConj: string;
+    names: {
+      lunar: string;
+      lyrids: string;
+      conj: string;
+      perseids: string;
+      solar: string;
+      saturnOpp: string;
+      geminids: string;
+    };
   };
-  badges: { go: string; maybe: string; skip: string };
 }) {
-  const days = [
-    { d: 'M', label: badges.go,    color: '#5EEAD4', pct: 88 },
-    { d: 'T', label: badges.go,    color: '#5EEAD4', pct: 82 },
-    { d: 'W', label: badges.maybe, color: '#FFB347', pct: 60 },
-    { d: 'T', label: badges.skip,  color: '#94A3B8', pct: 28 },
-    { d: 'F', label: badges.go,    color: '#5EEAD4', pct: 90 },
-    { d: 'S', label: badges.maybe, color: '#FFB347', pct: 55 },
-    { d: 'S', label: badges.go,    color: '#5EEAD4', pct: 84 },
+  const events: { kind: SkyEventKind; name: string; date: string; isNext?: boolean }[] = [
+    { kind: 'lunar',   name: labels.names.lunar,     date: 'Mar 3' },
+    { kind: 'meteors', name: labels.names.lyrids,    date: 'Apr 22' },
+    { kind: 'conj',    name: labels.names.conj,      date: 'May 12', isNext: true },
+    { kind: 'meteors', name: labels.names.perseids,  date: 'Aug 12' },
+    { kind: 'solar',   name: labels.names.solar,     date: 'Aug 12' },
+    { kind: 'opp',     name: labels.names.saturnOpp, date: 'Oct 4' },
+    { kind: 'meteors', name: labels.names.geminids,  date: 'Dec 13' },
   ];
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">{labels.label}</span>
-        <span className="text-[#5EEAD4] text-[8px] font-mono">{labels.tonight}</span>
+        <span className="text-[#5EEAD4] text-[8px] font-mono">{labels.next}</span>
       </div>
       <div className="mt-0.5 text-white text-[11px] font-bold leading-tight">{labels.title}</div>
 
-      <div className="mt-2 flex flex-col gap-1">
-        {days.map((d, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <span className="text-white/55 text-[8px] font-mono w-2.5">{d.d}</span>
-            <div className="flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${d.pct}%`, background: d.color }} />
-            </div>
-            <span className="text-[7px] font-mono uppercase w-7 text-right" style={{ color: d.color }}>
-              {d.label}
+      <div className="mt-2 flex flex-col gap-[3px]">
+        {events.map((e, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-1.5 rounded-[4px] px-1 py-[2px]"
+            style={e.isNext ? { background: 'rgba(94, 234, 212, 0.10)' } : undefined}
+          >
+            <span className="shrink-0 w-3 h-3 flex items-center justify-center">
+              <EventGlyph kind={e.kind} />
+            </span>
+            <span
+              className="flex-1 text-[7.5px] tracking-tight truncate leading-none"
+              style={{ color: e.isNext ? '#5EEAD4' : 'rgba(255,255,255,0.85)' }}
+            >
+              {e.name}
+            </span>
+            <span
+              className="text-[7px] font-mono tabular-nums"
+              style={{ color: e.isNext ? '#5EEAD4' : 'rgba(255,255,255,0.50)' }}
+            >
+              {e.date}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-2.5 rounded-[8px] bg-white/[0.04] border border-white/10 p-1.5">
+      <div className="mt-2 rounded-[8px] bg-white/[0.04] border border-white/10 p-1.5">
         <div className="grid grid-cols-3 text-[6.5px] text-white/55 font-mono uppercase">
-          <span>{labels.colCloud}</span><span>{labels.colMoon}</span><span>{labels.colSee}</span>
+          <span>{labels.colDate}</span><span>{labels.colType}</span><span>{labels.colMoon}</span>
         </div>
         <div className="grid grid-cols-3 text-[9px] text-white mt-0.5 font-mono">
-          <span>14%</span><span>22%</span><span>{labels.seeingGood}</span>
+          <span>May 12</span><span>{labels.typeConj}</span><span>4%</span>
         </div>
       </div>
     </div>
@@ -745,7 +808,6 @@ export default async function HomePage() {
   const t = await getTranslations('homepage');
   const tNav = await getTranslations('nav');
   const tPlanets = await getTranslations('planets');
-  const tSky = await getTranslations('sky');
 
   const navLabels = {
     sky: tNav('sky'),
@@ -792,20 +854,23 @@ export default async function HomePage() {
     jupiterName: tPlanets('jupiter'),
   };
 
-  const skyForecastLabels = {
-    label: t('skyPage.forecastLabel'),
-    tonight: t('skyPage.forecastTonight'),
-    title: t('skyPage.forecastTitle'),
-    colCloud: t('skyPage.colCloud'),
+  const skyEventsLabels = {
+    label: t('skyPage.eventsLabel'),
+    next: t('skyPage.eventsNext'),
+    title: t('skyPage.eventsTitle'),
+    colDate: t('skyPage.colDate'),
+    colType: t('skyPage.colType'),
     colMoon: t('skyPage.colMoon'),
-    colSee: t('skyPage.colSee'),
-    seeingGood: tSky('header.conditions.good'),
-  };
-
-  const badges = {
-    go: tSky('forecast7.badge.go'),
-    maybe: tSky('forecast7.badge.maybe'),
-    skip: tSky('forecast7.badge.skip'),
+    typeConj: t('skyPage.typeConj'),
+    names: {
+      lunar: t('skyPage.eventNames.lunar'),
+      lyrids: t('skyPage.eventNames.lyrids'),
+      conj: t('skyPage.eventNames.conj'),
+      perseids: t('skyPage.eventNames.perseids'),
+      solar: t('skyPage.eventNames.solar'),
+      saturnOpp: t('skyPage.eventNames.saturnOpp'),
+      geminids: t('skyPage.eventNames.geminids'),
+    },
   };
 
   return (
@@ -981,8 +1046,8 @@ export default async function HomePage() {
             <SkyFeatureSlot title={t('skyPage.arFinder')}>
               <IPhone size="sm" activeTab="sky" navLabels={navLabels}><SkyARScreen labels={skyARLabels} /></IPhone>
             </SkyFeatureSlot>
-            <SkyFeatureSlot title={t('skyPage.forecast7')}>
-              <IPhone size="sm" activeTab="home" navLabels={navLabels}><SkyForecastScreen labels={skyForecastLabels} badges={badges} /></IPhone>
+            <SkyFeatureSlot title={t('skyPage.events')}>
+              <IPhone size="sm" activeTab="sky" navLabels={navLabels}><SkyEventsScreen labels={skyEventsLabels} /></IPhone>
             </SkyFeatureSlot>
           </div>
 
@@ -1094,20 +1159,29 @@ export default async function HomePage() {
       </section>
 
       {/* ============================================================
-          VISION
+          COMPARISON
          ============================================================ */}
       <section className="px-4 md:px-8 py-16 md:py-[120px]">
-        <div className="max-w-[880px] mx-auto flex flex-col items-center text-center">
-          <Eyebrow>{t('vision.eyebrow')}</Eyebrow>
-          <SectionTitle>
-            {t('vision.title1')}
-            <br />
-            {t('vision.title2')}
-          </SectionTitle>
-
-          <div className="mt-12 md:mt-16">
-            <IPhone size="md" image="/landing/feed.png" imageAlt={t('vision.title2')} navLabels={navLabels} />
+        <div className="max-w-[880px] mx-auto">
+          <div className="text-center mb-10 md:mb-14">
+            <Eyebrow>{t('comparison.eyebrow')}</Eyebrow>
+            <SectionTitle>
+              {t('comparison.title1')}
+              <br />
+              {t('comparison.title2')}
+            </SectionTitle>
           </div>
+
+          <ComparisonTable
+            features={{
+              skyMap: t('comparison.features.skyMap'),
+              forecast: t('comparison.features.forecast'),
+              astra: t('comparison.features.astra'),
+              rewards: t('comparison.features.rewards'),
+              marketplace: t('comparison.features.marketplace'),
+            }}
+            footnote={t('comparison.footnote')}
+          />
         </div>
       </section>
 

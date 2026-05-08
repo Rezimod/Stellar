@@ -974,18 +974,28 @@
       "title": "Tonight, in three screens.",
       "livePlanetMap": "Live planet map",
       "arFinder": "AR finder",
-      "forecast7": "7-day forecast",
+      "events": "Rare events calendar",
       "cta": "Open the Sky page →",
       "mapLocation": "Tbilisi",
       "mapVisible": "7 visible",
       "mapTitle": "Sky map",
       "arLabel": "AR",
-      "forecastLabel": "7 days",
-      "forecastTonight": "Tonight: Go",
-      "forecastTitle": "Forecast",
-      "colCloud": "Cloud",
+      "eventsLabel": "Events",
+      "eventsNext": "Next: May 12",
+      "eventsTitle": "Sky calendar 2026",
+      "colDate": "Date",
+      "colType": "Type",
       "colMoon": "Moon",
-      "colSee": "See"
+      "typeConj": "Conj.",
+      "eventNames": {
+        "lunar": "Lunar Eclipse",
+        "lyrids": "Lyrids",
+        "conj": "Mars × Saturn",
+        "perseids": "Perseids",
+        "solar": "Solar Eclipse",
+        "saturnOpp": "Saturn Opp.",
+        "geminids": "Geminids"
+      }
     },
     "marketplace": {
       "eyebrow": "Marketplace",
@@ -1000,6 +1010,19 @@
       "eyebrow": "Vision",
       "title1": "An app for stargazers.",
       "title2": "Built around community."
+    },
+    "comparison": {
+      "eyebrow": "Comparison",
+      "title1": "What sets Stellar apart",
+      "title2": "from other astronomy apps.",
+      "footnote": "Comparison reflects publicly documented features, May 2026.",
+      "features": {
+        "skyMap": "Sky map & planet tracker",
+        "forecast": "7-day clear-sky forecast",
+        "astra": "AI astronomer companion",
+        "rewards": "Verified observations & rewards",
+        "marketplace": "Built-in telescope marketplace"
+      }
     },
     "community": {
       "eyebrow": "Community",
