@@ -2,17 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CloudSun, Satellite, Home, Sparkles, LayoutGrid } from 'lucide-react';
+import { CloudSun, Satellite, Home, ShoppingBag, LayoutGrid } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 type Tab = { href: string; label: string; icon: LucideIcon };
 
 const TABS: Tab[] = [
-  { href: '/sky',      label: 'Sky',      icon: CloudSun },
-  { href: '/missions', label: 'Missions', icon: Satellite },
-  { href: '/',         label: 'Home',     icon: Home },
-  { href: '/feed',     label: 'Feed',     icon: Sparkles },
-  { href: '/hub',      label: 'Hub',      icon: LayoutGrid },
+  { href: '/sky',         label: 'Sky',      icon: CloudSun },
+  { href: '/missions',    label: 'Missions', icon: Satellite },
+  { href: '/',            label: 'Home',     icon: Home },
+  { href: '/marketplace', label: 'Shop',     icon: ShoppingBag },
+  { href: '/hub',         label: 'Hub',      icon: LayoutGrid },
 ];
 
 export default function BottomNav() {
