@@ -4,7 +4,6 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import BackButton from '@/components/shared/BackButton';
-import ComingSoonOverlay from '@/components/shared/ComingSoonOverlay';
 import PageContainer from '@/components/layout/PageContainer';
 import type { NetworkObservation, NodeType } from '@/app/api/network/observations/route';
 
@@ -111,11 +110,6 @@ export default function NetworkPage() {
 
   return (
     <div className="py-4 sm:py-6" style={{ position: 'relative' }}>
-      <ComingSoonOverlay />
-      <div
-        aria-hidden
-        style={{ filter: 'blur(8px)', pointerEvents: 'none', userSelect: 'none' }}
-      >
       <style>{`
         @keyframes stl-live-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(94, 234, 212,0.55); }
@@ -382,7 +376,6 @@ export default function NetworkPage() {
           </Link>
         </div>
       </PageContainer>
-      </div>
     </div>
   );
 }
