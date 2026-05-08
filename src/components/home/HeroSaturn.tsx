@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 
 // Three.js bundle is large — load it client-side only, after first paint.
@@ -13,8 +13,25 @@ const SaturnCanvas = dynamic(() => import('./SaturnCanvas'), {
 
 export default function HeroSaturn() {
   const t = useTranslations('homepage.hero');
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  // Pause CSS starfield twinkle once the hero scrolls past — opacity tweens
+  // on viewport-sized gradient backgrounds repaint a lot.
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      (entries) => setPaused(!(entries[0]?.isIntersecting ?? true)),
+      { rootMargin: '0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
       className="relative w-full overflow-hidden flex items-center"
       style={{
         // 100dvh tracks the dynamic viewport (no jump when the mobile URL bar
@@ -30,7 +47,7 @@ export default function HeroSaturn() {
       }}
     >
       {/* === Static CSS starfield (covers full hero, behind WebGL) === */}
-      <div aria-hidden className="hero-starfield" />
+      <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
       {/* === WebGL Saturn (planet + orbiting ring particles + parallax) === */}
       <SaturnCanvas />

@@ -87,16 +87,18 @@ export default function SaturnCanvas() {
 
 
     // ── Ring particles ───────────────────────────────────────────
-    // Mobile gets ~5x fewer particles — the per-frame loop that updates
-    // every position is the single hottest path here.
+    // Rotation is computed in the vertex shader from a per-particle base
+    // angle + radius and a single uTime uniform — keeps the CPU out of the
+    // hot path entirely. Radius and base angle never change after init.
     const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 18000;
     const innerR = 2.95;
     const outerR = 4.95;
 
-    const positions = new Float32Array(RING_COUNT * 3);
+    const yJitter = new Float32Array(RING_COUNT);
     const colors = new Float32Array(RING_COUNT * 3);
     const sizes = new Float32Array(RING_COUNT);
-    const orbitData = new Float32Array(RING_COUNT * 2); // radius, angle
+    const radii = new Float32Array(RING_COUNT);
+    const baseAngles = new Float32Array(RING_COUNT);
 
     const palette = [
       new THREE.Color('#f5dcb6'),
@@ -122,13 +124,9 @@ export default function SaturnCanvas() {
         i--;
         continue;
       }
-      const angle = Math.random() * Math.PI * 2;
-      const jitterY = (Math.random() - 0.5) * 0.018;
-      positions[i * 3 + 0] = Math.cos(angle) * r;
-      positions[i * 3 + 1] = jitterY;
-      positions[i * 3 + 2] = Math.sin(angle) * r;
-      orbitData[i * 2 + 0] = r;
-      orbitData[i * 2 + 1] = angle;
+      radii[i] = r;
+      baseAngles[i] = Math.random() * Math.PI * 2;
+      yJitter[i] = (Math.random() - 0.5) * 0.018;
 
       const c = palette[Math.floor(Math.random() * palette.length)];
       const shade = 0.65 + Math.random() * 0.45;
@@ -139,10 +137,20 @@ export default function SaturnCanvas() {
       sizes[i] = 0.018 + Math.random() * 0.045;
     }
 
+    // Position attribute carries only Y jitter; X/Z come from radius+angle in the shader.
+    const positions = new Float32Array(RING_COUNT * 3);
+    for (let i = 0; i < RING_COUNT; i++) {
+      positions[i * 3 + 1] = yJitter[i];
+    }
+
     const ringGeo = new THREE.BufferGeometry();
     ringGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     ringGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     ringGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    ringGeo.setAttribute('aRadius', new THREE.BufferAttribute(radii, 1));
+    ringGeo.setAttribute('aBaseAngle', new THREE.BufferAttribute(baseAngles, 1));
+
+    const ringSpeed = reduceMotion ? 0.0 : 0.055; // rad/s mean
 
     const ringMat = new THREE.ShaderMaterial({
       transparent: true,
@@ -151,14 +159,24 @@ export default function SaturnCanvas() {
       vertexColors: true,
       uniforms: {
         uPixelRatio: { value: renderer.getPixelRatio() },
+        uTime: { value: 0 },
+        uSpeed: { value: ringSpeed },
       },
       vertexShader: /* glsl */ `
         attribute float size;
+        attribute float aRadius;
+        attribute float aBaseAngle;
         varying vec3 vColor;
         uniform float uPixelRatio;
+        uniform float uTime;
+        uniform float uSpeed;
         void main() {
           vColor = color;
-          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          // Pseudo-Keplerian: angular speed ~ 1/sqrt(r). Matches the previous
+          // CPU loop exactly so the ring rotates identically.
+          float a = aBaseAngle + (uSpeed / sqrt(aRadius)) * uTime;
+          vec3 pos = vec3(cos(a) * aRadius, position.y, sin(a) * aRadius);
+          vec4 mv = modelViewMatrix * vec4(pos, 1.0);
           gl_PointSize = size * uPixelRatio * (320.0 / -mv.z);
           gl_Position = projectionMatrix * mv;
         }
@@ -308,9 +326,8 @@ export default function SaturnCanvas() {
     // ── Animation loop ───────────────────────────────────────────
     let raf = 0;
     let last = performance.now();
-    const ringSpeed = reduceMotion ? 0.0 : 0.055; // rad/s mean
+    let ringTime = 0;
     const planetSpinSpeed = reduceMotion ? 0.0 : 0.045;
-    const positionAttr = ringGeo.getAttribute('position') as THREE.BufferAttribute;
 
     const render = (now: number) => {
       raf = requestAnimationFrame(render);
@@ -352,17 +369,9 @@ export default function SaturnCanvas() {
         }
       }
 
-      // Rotate the ring particles around Y. Vary speed by 1/sqrt(r) for
-      // pseudo-Keplerian feel — inner particles outrun outer particles.
-      for (let i = 0; i < RING_COUNT; i++) {
-        const r = orbitData[i * 2 + 0];
-        let a = orbitData[i * 2 + 1] + (ringSpeed / Math.sqrt(r)) * dt;
-        if (a > Math.PI * 2) a -= Math.PI * 2;
-        orbitData[i * 2 + 1] = a;
-        positions[i * 3 + 0] = Math.cos(a) * r;
-        positions[i * 3 + 2] = Math.sin(a) * r;
-      }
-      positionAttr.needsUpdate = true;
+      // Ring rotation runs entirely in the vertex shader — just advance time.
+      ringTime += dt;
+      ringMat.uniforms.uTime.value = ringTime;
 
       renderer.render(scene, camera);
     };

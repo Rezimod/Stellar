@@ -169,8 +169,27 @@ export default function MissionsPage() {
       } catch { /* leave null — LIVE gate stays optimistic */ }
     };
     fetchClouds();
-    const id = window.setInterval(fetchClouds, 5 * 60_000);
-    return () => { cancelled = true; window.clearInterval(id); };
+    let id: number | null = null;
+    const start = () => {
+      if (id !== null) return;
+      id = window.setInterval(fetchClouds, 5 * 60_000);
+    };
+    const stop = () => {
+      if (id === null) return;
+      window.clearInterval(id);
+      id = null;
+    };
+    if (typeof document === 'undefined' || !document.hidden) start();
+    const onVis = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVis);
+      stop();
+    };
   }, [lat, lon]);
 
   const skyPositions = useMemo(() => {

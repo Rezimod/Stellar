@@ -219,8 +219,26 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
 
   useEffect(() => {
     fetchAll();
-    const interval = setInterval(fetchAll, REFRESH_MS);
-    return () => clearInterval(interval);
+    let id: number | null = null;
+    const start = () => {
+      if (id !== null) return;
+      id = window.setInterval(fetchAll, REFRESH_MS);
+    };
+    const stop = () => {
+      if (id === null) return;
+      window.clearInterval(id);
+      id = null;
+    };
+    if (typeof document === 'undefined' || !document.hidden) start();
+    const onVis = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      stop();
+    };
   }, [fetchAll]);
 
   return { ...data, refresh: fetchAll };

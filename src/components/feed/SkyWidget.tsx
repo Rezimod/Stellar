@@ -86,8 +86,13 @@ export default function SkyWidget({ lat, lon, cityLabel }: Props) {
   useEffect(() => {
     const recompute = () => setDark(getTonightDarkWindow(lat, lon))
     recompute()
-    const id = window.setInterval(recompute, 5 * 60_000)
-    return () => window.clearInterval(id)
+    let id: number | null = null
+    const start = () => { if (id === null) id = window.setInterval(recompute, 5 * 60_000) }
+    const stop = () => { if (id !== null) { window.clearInterval(id); id = null } }
+    if (typeof document === 'undefined' || !document.hidden) start()
+    const onVis = () => { if (document.hidden) stop(); else start() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => { document.removeEventListener('visibilitychange', onVis); stop() }
   }, [lat, lon])
 
   useEffect(() => {
@@ -101,8 +106,13 @@ export default function SkyWidget({ lat, lon, cityLabel }: Props) {
       ])
     }
     fetchAll()
-    const id = window.setInterval(fetchAll, 5 * 60_000)
-    return () => window.clearInterval(id)
+    let id: number | null = null
+    const start = () => { if (id === null) id = window.setInterval(fetchAll, 5 * 60_000) }
+    const stop = () => { if (id !== null) { window.clearInterval(id); id = null } }
+    if (typeof document === 'undefined' || !document.hidden) start()
+    const onVis = () => { if (document.hidden) stop(); else start() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => { document.removeEventListener('visibilitychange', onVis); stop() }
   }, [lat, lon, dark.isCurrentlyDark])
 
   const visible = planets
