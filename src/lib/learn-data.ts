@@ -253,6 +253,19 @@ export const CONSTELLATIONS = [
     desc: { en: 'The Hunter — easiest constellation to find. Three bright stars form the famous belt.', ka: 'მონადირე — ყველაზე ადვილად მოსაძებნი. სამი კაშკაში ვარსკვლავი ქმნის სარტყელს.' },
     highlight: { en: 'Contains the Orion Nebula (M42) and red supergiant Betelgeuse', ka: 'შეიცავს ორიონის ნისლეულს (M42) და ბეთელგეიზეს' },
     color: '#f97316',
+    brightestStar: {
+      name: { en: 'Rigel (β Orionis)', ka: 'რიგელი (β Orionis)' },
+      magnitude: 0.13,
+      note: { en: 'Blue supergiant, 860 ly away', ka: 'ცისფერი ზეგიგანტი, 860 სინათლის წელი' },
+    },
+    mythology: {
+      en: 'A Greek hunter who boasted he could kill any beast on Earth. Gaia sent a scorpion to stop him — Zeus placed both in the sky on opposite sides, which is why Orion sets when Scorpius rises.',
+      ka: 'ბერძენი მონადირე, რომელიც იქადნიდა, რომ ნებისმიერ მხეცს მოკლავდა. გაიამ მის წინააღმდეგ მორიელი გაგზავნა — ზევსმა ორივე ცაზე მოათავსა საპირისპირო მხარეს.',
+    },
+    bestTime: {
+      en: 'Dec–Mar · southern sky after sunset',
+      ka: 'დეკ–მარტი · სამხრეთ ცა მზის ჩასვლის შემდეგ',
+    },
   },
   {
     id: 'ursa-major',
@@ -263,6 +276,19 @@ export const CONSTELLATIONS = [
     desc: { en: 'The Great Bear — contains the Big Dipper, which points to the North Star.', ka: 'დიდი დათვი — შეიცავს "დიდ ჩარხს", რომელიც ჩრდილოეთის ვარსკვლავისკენ მიუთითებს.' },
     highlight: { en: 'The two end stars of the Big Dipper always point toward Polaris', ka: 'ჩარხის ორი ბოლო ვარსკვლავი ყოველთვის პოლარისისკენ მიუთითებს' },
     color: '#5EEAD4',
+    brightestStar: {
+      name: { en: 'Alioth (ε Ursae Majoris)', ka: 'ალიოთი (ε Ursae Majoris)' },
+      magnitude: 1.77,
+      note: { en: 'White star in the Dipper\'s handle', ka: 'თეთრი ვარსკვლავი ჩარხის სახელურში' },
+    },
+    mythology: {
+      en: 'Zeus turned the nymph Callisto into a bear after his jealous wife Hera discovered their affair. Her son Arcas nearly killed her while hunting before Zeus placed them both in the sky.',
+      ka: 'ზევსმა ნიმფა კალისტო დათვად აქცია, როცა მისმა ცოლმა ჰერამ მათი რომანი აღმოაჩინა. მისი შვილი არკასი თითქმის მოკლავდა მას ნადირობისას, სანამ ზევსი ცაზე მოათავსებდა.',
+    },
+    bestTime: {
+      en: 'Year-round · high overhead in spring evenings',
+      ka: 'მთელი წელი · მაღლა გაზაფხულის საღამოებში',
+    },
   },
   {
     id: 'cassiopeia',
@@ -273,6 +299,19 @@ export const CONSTELLATIONS = [
     desc: { en: 'The Queen — W or M shape in the north sky. Never sets from Georgia.', ka: 'დედოფალი — W ან M ფორმა ჩრდილოეთ ცაზე. საქართველოდან არასოდეს ჩადის.' },
     highlight: { en: 'Opposite Ursa Major across the pole — use it when the Dipper is low', ka: 'პოლუსის მეორე მხარეს დიდი დათვის პირდაპირ — გამოიყენე, როდესაც ჩარხი დაბლაა' },
     color: '#8B5CF6',
+    brightestStar: {
+      name: { en: 'Schedar (α Cassiopeiae)', ka: 'შედარი (α Cassiopeiae)' },
+      magnitude: 2.24,
+      note: { en: 'Orange giant, 230 ly away', ka: 'ნარინჯისფერი გიგანტი, 230 სინათლის წელი' },
+    },
+    mythology: {
+      en: 'Vain queen of Aethiopia who boasted her beauty surpassed the sea nymphs\'. Poseidon punished her by binding her to a chair circling the celestial pole — half the year she hangs upside-down.',
+      ka: 'ეთიოპიის ამაყი დედოფალი, რომელიც იქადნიდა, რომ ზღვის ნიმფებს სილამაზით აღემატებოდა. პოსეიდონმა სკამზე მიაბა, რომელიც ცის პოლუსის გარშემო ბრუნავს.',
+    },
+    bestTime: {
+      en: 'Sep–Feb · north sky, opposite the Big Dipper',
+      ka: 'სექტ–თებ · ჩრდილოეთ ცა, დიდი დათვის საპირისპიროდ',
+    },
   },
   {
     id: 'scorpius',
@@ -283,6 +322,19 @@ export const CONSTELLATIONS = [
     desc: { en: 'The Scorpion — one of the most dramatic constellations with a curved tail dipping into the Milky Way.', ka: 'მორიელი — ერთ-ერთი ყველაზე დრამატული. მოხრილი კუდი ირმის ნახტომში ეშვება.' },
     highlight: { en: 'Antares is a red supergiant at its heart — 700× the Sun\'s diameter', ka: 'ანტარესი წითელი ზეგიგანტია — მზის 700-ჯერ დიდი' },
     color: '#ef4444',
+    brightestStar: {
+      name: { en: 'Antares (α Scorpii)', ka: 'ანტარესი (α Scorpii)' },
+      magnitude: 1.06,
+      note: { en: 'Red supergiant, 700× the Sun\'s diameter', ka: 'წითელი ზეგიგანტი, მზის 700-ჯერ დიდი' },
+    },
+    mythology: {
+      en: 'The scorpion sent by Gaia to kill Orion the hunter. The gods placed both on opposite sides of the sky so they\'d never meet — Scorpius rises just as Orion sinks below the horizon.',
+      ka: 'გაიას მიერ ორიონის წინააღმდეგ გაგზავნილი მორიელი. ღმერთებმა ცის საპირისპირო მხარეს მოათავსეს, რომ ერთმანეთს ვერ შეხვედროდნენ.',
+    },
+    bestTime: {
+      en: 'Jun–Aug · low in the southern sky',
+      ka: 'ივნ–აგვ · დაბლა სამხრეთ ცაზე',
+    },
   },
   {
     id: 'cygnus',
@@ -293,6 +345,19 @@ export const CONSTELLATIONS = [
     desc: { en: 'The Swan — forms a clear cross (Northern Cross) flying along the Milky Way.', ka: 'გედი — ნათელ ჯვარს ქმნის (ჩრდილოეთის ჯვარი) ირმის ნახტომში.' },
     highlight: { en: 'Deneb marks the tail — one of the most luminous stars visible to the naked eye', ka: 'დენები კუდს ნიშნავს — ერთ-ერთი ყველაზე ნათელი ვარსკვლავი' },
     color: '#FFB347',
+    brightestStar: {
+      name: { en: 'Deneb (α Cygni)', ka: 'დენები (α Cygni)' },
+      magnitude: 1.25,
+      note: { en: 'Blue supergiant, ~2,600 ly away', ka: 'ცისფერი ზეგიგანტი, ~2,600 სინათლის წელი' },
+    },
+    mythology: {
+      en: 'Zeus disguised himself as a swan to seduce the Spartan queen Leda. After their affair the swan was placed in the sky, gliding southward along the Milky Way each summer.',
+      ka: 'ზევსმა გედის სახე მიიღო სპარტის დედოფალ ლედას მოსატყუებლად. მათი რომანის შემდეგ გედი ცაზე მოათავსეს, ირმის ნახტომის გასწვრივ სამხრეთით.',
+    },
+    bestTime: {
+      en: 'Jul–Oct · directly overhead in late summer',
+      ka: 'ივლ–ოქტ · პირდაპირ თავზე გვიან ზაფხულში',
+    },
   },
   {
     id: 'leo',
@@ -303,6 +368,19 @@ export const CONSTELLATIONS = [
     desc: { en: 'The Lion — a prominent spring constellation with a backwards question-mark shape called the Sickle.', ka: 'ლომი — გაზაფხულის თვალსაჩინო თანავარსკვლავედი. კითხვის ნიშნის ფორმა "მამელს" ქმნის.' },
     highlight: { en: 'Regulus, its brightest star, sits almost exactly on the ecliptic', ka: 'რეგულუსი, ყველაზე კაშკაში ვარსკვლავი, ეკლიპტიკაზე ზის' },
     color: '#34d399',
+    brightestStar: {
+      name: { en: 'Regulus (α Leonis)', ka: 'რეგულუსი (α Leonis)' },
+      magnitude: 1.36,
+      note: { en: 'Blue-white star sitting on the ecliptic', ka: 'ცისფერ-თეთრი ვარსკვლავი ეკლიპტიკაზე' },
+    },
+    mythology: {
+      en: 'The Nemean Lion — an invulnerable beast killed by Hercules as the first of his Twelve Labors. He wore its golden hide as armor for the rest of his life.',
+      ka: 'ნემეას ლომი — უხილავი ცხოველი, რომელიც ჰერკულესმა მოკლა თავისი 12 ბრძანების პირველად. მისი ოქროს ტყავი ცხოვრების ბოლომდე ეცვა.',
+    },
+    bestTime: {
+      en: 'Mar–May · high in the southern sky',
+      ka: 'მარტ–მაი · მაღლა სამხრეთ ცაზე',
+    },
   },
 ];
 

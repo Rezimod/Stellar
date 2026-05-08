@@ -29,6 +29,7 @@ const QUIZ_HUB: Record<string, { Icon: LucideIcon; gradient: string }> = {
 
 type Tab = 'planets' | 'deepsky' | 'quizzes' | 'guide' | 'telescopes' | 'astrophoto';
 type Planet = typeof PLANETS[number];
+type Constellation = typeof CONSTELLATIONS[number];
 
 // ─── Planet Modal ──────────────────────────────────────────────────────────────
 
@@ -157,9 +158,148 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
   );
 }
 
+// ─── Constellation Modal ─────────────────────────────────────────────────────
+
+function ConstellationModal({ constellation, locale, onClose }: {
+  constellation: Constellation;
+  locale: Locale;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const c = constellation;
+
+  return createPortal(
+    <>
+      <div
+        className="fixed inset-0 z-[60]"
+        style={{ background: 'rgba(3,6,14,0.88)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+        onClick={onClose}
+      />
+
+      <div
+        className="fixed left-1/2 top-1/2 z-[61] rounded-2xl flex flex-col"
+        style={{
+          width: 'calc(100% - 32px)',
+          maxWidth: '520px',
+          maxHeight: 'calc(100vh - 48px)',
+          transform: 'translate(-50%, -50%)',
+          background: 'var(--canvas)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.9)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Hero image */}
+        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '16 / 9' }}>
+          <Image
+            src={c.img}
+            alt={c.name[locale]}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, 520px"
+            priority
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.9) 0%, rgba(7,11,20,0.2) 50%, transparent 100%)' }} />
+
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(7,11,20,0.7)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+            aria-label="Close"
+          >
+            <X size={14} color="rgba(255,255,255,0.85)" />
+          </button>
+
+          <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2">
+            <p className="text-text-primary font-bold text-xl leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+              {c.name[locale]}
+            </p>
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ background: `${c.color}25`, color: c.color, border: `1px solid ${c.color}40` }}
+            >
+              {c.season[locale]}
+            </span>
+          </div>
+        </div>
+
+        {/* Body — scrollable */}
+        <div className="overflow-y-auto px-4 py-3 flex flex-col gap-3" style={{ minHeight: 0 }}>
+          <p className="text-text-primary text-[13px] leading-relaxed">{c.desc[locale]}</p>
+
+          {/* Brightest star */}
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <Star size={10} color={c.color} />
+              <span className="text-[10px] uppercase tracking-widest text-text-muted">
+                {locale === 'ka' ? 'უმთავრესი ვარსკვლავი' : 'Brightest Star'}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
+              <p className="text-text-primary text-[13px] font-semibold">{c.brightestStar.name[locale]}</p>
+              <p className="text-[11px] tabular-nums" style={{ color: c.color, fontFamily: 'var(--font-mono)' }}>
+                {locale === 'ka' ? 'სიკაშკაშე' : 'mag'} {c.brightestStar.magnitude.toFixed(2)}
+              </p>
+            </div>
+            <p className="text-text-muted text-[11.5px] mt-0.5">{c.brightestStar.note[locale]}</p>
+          </div>
+
+          {/* Where to look */}
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <Eye size={10} color={c.color} />
+              <span className="text-[10px] uppercase tracking-widest text-text-muted">
+                {locale === 'ka' ? 'როდის ვნახო' : 'Where to look'}
+              </span>
+            </div>
+            <p className="text-text-primary text-[13px]">{c.bestTime[locale]}</p>
+          </div>
+
+          {/* Mythology */}
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <BookOpen size={10} color={c.color} />
+              <span className="text-[10px] uppercase tracking-widest text-text-muted">
+                {locale === 'ka' ? 'მითოლოგია' : 'Mythology'}
+              </span>
+            </div>
+            <p className="text-text-primary text-[12.5px] leading-relaxed">{c.mythology[locale]}</p>
+          </div>
+
+          {/* Highlight */}
+          <div className="rounded-xl px-3 py-2 flex items-start gap-2"
+            style={{ background: `${c.color}10`, border: `1px solid ${c.color}25` }}>
+            <Sparkles size={11} style={{ flexShrink: 0, marginTop: 2, color: c.color }} />
+            <span className="text-[12px] leading-relaxed" style={{ color: c.color }}>
+              {c.highlight[locale]}
+            </span>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
 // ─── Planets Tab ──────────────────────────────────────────────────────────────
 
-function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: boolean; onSelect: (p: Planet) => void }) {
+function PlanetsTab({ locale, kidsMode, onSelect, onSelectConstellation }: {
+  locale: Locale;
+  kidsMode: boolean;
+  onSelect: (p: Planet) => void;
+  onSelectConstellation: (c: Constellation) => void;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-text-muted text-[10px] uppercase tracking-widest">
@@ -205,26 +345,42 @@ function PlanetsTab({ locale, kidsMode, onSelect }: { locale: Locale; kidsMode: 
       {/* Constellations */}
       <div className="mt-1 pt-3 border-t border-white/[0.05]">
         <p className="text-[10px] uppercase tracking-widest text-text-muted mb-2">
-          {locale === 'ka' ? 'თანავარსკვლავედები' : 'Constellations'}
+          {locale === 'ka' ? 'თანავარსკვლავედები · შეეხე დეტალებისთვის' : 'Constellations · tap to explore'}
         </p>
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2.5">
           {CONSTELLATIONS.map(c => (
-            <div key={c.id} className="glass-card overflow-hidden">
-              <div className="relative w-full" style={{ height: '88px' }}>
-                <Image src={c.img} alt={c.name['en']} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(7,11,20,0.88) 45%, transparent 100%)' }} />
-                <div className="absolute inset-0 flex flex-col justify-center px-4 gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <p className="text-text-primary font-bold text-sm">{c.name[locale]}</p>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: `${c.color}20`, color: c.color, border: `1px solid ${c.color}30` }}>
-                      {c.season[locale]}
-                    </span>
-                  </div>
-                  <p className="text-text-muted text-[11px] leading-snug max-w-[220px] line-clamp-1">{c.desc[locale]}</p>
-                  <p className="text-[10px]" style={{ color: c.color }}>{c.highlight[locale]}</p>
+            <button
+              key={c.id}
+              onClick={() => onSelectConstellation(c)}
+              className="group text-left rounded-xl overflow-hidden relative transition-transform duration-200 hover:-translate-y-0.5"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <div className="relative w-full" style={{ aspectRatio: '4 / 3' }}>
+                <Image
+                  src={c.img}
+                  alt={c.name[locale]}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
+                />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.95) 0%, rgba(7,11,20,0.4) 50%, transparent 100%)' }} />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  style={{ boxShadow: `inset 0 0 0 1.5px ${c.color}80` }}
+                />
+                <span
+                  className="absolute top-2 left-2 text-[9px] px-1.5 py-0.5 rounded-full backdrop-blur-sm"
+                  style={{ background: `${c.color}25`, color: c.color, border: `1px solid ${c.color}40` }}
+                >
+                  {c.season[locale]}
+                </span>
+                <div className="absolute bottom-2 left-2.5 right-2.5">
+                  <p className="text-text-primary font-bold text-[13px] leading-tight" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+                    {c.name[locale]}
+                  </p>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -1021,6 +1177,7 @@ export default function LearnPage() {
     return false;
   });
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
+  const [selectedConstellation, setSelectedConstellation] = useState<Constellation | null>(null);
   const { state } = useAppState();
   const completedQuizzes = state.completedQuizzes ?? [];
 
@@ -1033,6 +1190,13 @@ export default function LearnPage() {
           locale={locale}
           kidsMode={kidsMode}
           onClose={() => setSelectedPlanet(null)}
+        />
+      )}
+      {selectedConstellation && (
+        <ConstellationModal
+          constellation={selectedConstellation}
+          locale={locale}
+          onClose={() => setSelectedConstellation(null)}
         />
       )}
 
@@ -1098,7 +1262,7 @@ export default function LearnPage() {
         </div>
 
         {/* Content */}
-        {tab === 'planets'    ? <PlanetsTab key="planets" locale={locale} kidsMode={kidsMode} onSelect={setSelectedPlanet} /> : null}
+        {tab === 'planets'    ? <PlanetsTab key="planets" locale={locale} kidsMode={kidsMode} onSelect={setSelectedPlanet} onSelectConstellation={setSelectedConstellation} /> : null}
         {tab === 'deepsky'    ? <DeepSkyTab key="deepsky" locale={locale} kidsMode={kidsMode} /> : null}
         {tab === 'telescopes' ? <TelescopesTab key="telescopes" /> : null}
         {tab === 'astrophoto' ? <AstroPhotoTab key="astrophoto" locale={locale} /> : null}
