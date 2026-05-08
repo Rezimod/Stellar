@@ -120,12 +120,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('stellar_location')
+    let cachedSource: UserLocation['source'] | null = null
     if (stored) {
-      try { setLocationState(JSON.parse(stored)) } catch {}
-      setGpsState('resolved')
-      return
+      try {
+        const parsed = JSON.parse(stored) as UserLocation
+        setLocationState(parsed)
+        setGpsState('resolved')
+        cachedSource = parsed.source ?? null
+      } catch {}
     }
-    requestLocation()
+    // Re-ask for live location on every app open. Browser shows the permission
+    // UI only on first grant; subsequent calls silently refresh coords. Skip
+    // when the user has manually picked a city via LocationPicker — that's an
+    // explicit override we shouldn't overwrite with GPS.
+    if (cachedSource !== 'manual') {
+      requestLocation()
+    }
   }, [requestLocation])
 
   const setLocation = useCallback((loc: UserLocation) => {
