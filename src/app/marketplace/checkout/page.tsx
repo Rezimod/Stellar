@@ -201,8 +201,13 @@ function CheckoutContent() {
           },
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Could not create order');
+      const text = await res.text();
+      let data: { orderId?: string; url?: string; requiresBurn?: boolean; burnStars?: number; error?: string } = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { /* non-JSON body → use raw text below */ }
+      if (!res.ok) {
+        throw new Error(data.error ?? (text ? text.slice(0, 200) : `Order failed (HTTP ${res.status})`));
+      }
+      if (!data.orderId) throw new Error('Order created but no ID returned — please try again');
       setOrderId(data.orderId);
 
       // §4: if the order committed Stars for a discount, burn them BEFORE
@@ -233,6 +238,7 @@ function CheckoutContent() {
       if (mode === 'stars') {
         setStep('done');
       } else {
+        if (!data.url) throw new Error('Server did not return a payment URL');
         setPayUrl(data.url);
         setStep('paying');
         startPolling(data.orderId);

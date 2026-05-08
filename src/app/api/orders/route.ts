@@ -29,6 +29,7 @@ async function authenticate(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const privyId = await authenticate(req);
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -228,6 +229,11 @@ export async function POST(req: NextRequest) {
     requiresBurn: burnStars > 0,
     status: 'pending',
   });
+  } catch (err) {
+    console.error('[orders/POST]', err);
+    const message = err instanceof Error ? err.message : 'Internal error';
+    return NextResponse.json({ error: `Order creation failed: ${message}` }, { status: 500 });
+  }
 }
 
 export async function GET(req: NextRequest) {
