@@ -927,18 +927,40 @@ export default async function HomePage() {
             <SectionTitle>{t('howItWorks.title')}</SectionTitle>
           </div>
 
-          <div className="flex flex-col items-center gap-10 md:gap-14 max-w-[1000px] mx-auto">
+          {/* Mobile: centered phone + horizontal step grid (unchanged) */}
+          <div className="flex flex-col items-center gap-10 max-w-[1000px] mx-auto md:hidden">
             <IPhone size="md" image="/landing/missions.png" imageAlt={t('missions.title')} navLabels={navLabels} />
 
-            <div className="grid grid-cols-3 gap-4 md:gap-10 w-full max-w-[720px]">
+            <div className="grid grid-cols-3 gap-4 w-full max-w-[720px]">
               {[t('howItWorks.step1'), t('howItWorks.step2'), t('howItWorks.step3')].map((title) => (
-                <div key={title} className="text-center text-white text-[15px] md:text-[20px] font-semibold leading-tight tracking-[-0.005em]">
+                <div key={title} className="text-center text-white text-[15px] font-semibold leading-tight tracking-[-0.005em]">
                   {title}
                 </div>
               ))}
             </div>
 
             <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
+          </div>
+
+          {/* Desktop: phone left, divider list + CTA right (matches MISSIONS) */}
+          <div className="hidden md:grid md:grid-cols-[auto_1fr] gap-16 items-center max-w-[1000px] mx-auto">
+            <div className="mx-auto">
+              <IPhone size="md" image="/landing/missions.png" imageAlt={t('missions.title')} navLabels={navLabels} />
+            </div>
+            <div>
+              <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+                {[t('howItWorks.step1'), t('howItWorks.step2'), t('howItWorks.step3')].map((title) => (
+                  <li key={title} className="py-4">
+                    <div className="text-white text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
+                      {title}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-6 text-left">
+                <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
+              </div>
+            </div>
           </div>
         </div>
       </section>
