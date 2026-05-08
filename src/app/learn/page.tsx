@@ -15,6 +15,7 @@ import { PLANETS, DSO, CONSTELLATIONS, ALL_EVENTS, daysFromNow, type Locale } fr
 import {
   Globe, Sparkles, Brain, Camera, BookOpen, Telescope, Map, Search,
   X, Star, Moon, Eye, ChevronDown, ChevronUp, Binoculars, Sun, Rocket,
+  ExternalLink, Compass, Headphones, Newspaper, Satellite, Youtube,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -858,6 +859,143 @@ function AstraPromo({ locale }: { locale: Locale }) {
   );
 }
 
+// ─── More Learning Material ───────────────────────────────────────────────────
+
+const MORE_RESOURCES: {
+  Icon: LucideIcon;
+  color: string;
+  title: { en: string; ka: string };
+  desc: { en: string; ka: string };
+  meta: { en: string; ka: string };
+  href: string;
+  external?: boolean;
+}[] = [
+  {
+    Icon: Compass,
+    color: '#5EEAD4',
+    title: { en: 'Stellarium Web', ka: 'Stellarium Web' },
+    desc: {
+      en: 'Free open-source planetarium. See the sky from any location, any date — point and click to identify any star.',
+      ka: 'უფასო ღია პლანეტარიუმი. ცა ნებისმიერი ლოკაციიდან, ნებისმიერი თარიღით.',
+    },
+    meta: { en: 'Web · Free', ka: 'ვები · უფასო' },
+    href: 'https://stellarium-web.org/',
+    external: true,
+  },
+  {
+    Icon: Camera,
+    color: '#FFB347',
+    title: { en: 'NASA Astronomy Picture of the Day', ka: 'NASA-ს დღის ფოტო' },
+    desc: {
+      en: 'A new image of our universe each day with a short explanation by a professional astronomer. Running since 1995.',
+      ka: 'ყოველდღე ახალი ფოტო და მოკლე ახსნა პროფესიონალი ასტრონომისგან. 1995 წლიდან.',
+    },
+    meta: { en: 'Daily · Free', ka: 'ყოველდღიური · უფასო' },
+    href: 'https://apod.nasa.gov/apod/',
+    external: true,
+  },
+  {
+    Icon: Satellite,
+    color: '#FB7185',
+    title: { en: 'Heavens-Above', ka: 'Heavens-Above' },
+    desc: {
+      en: 'When does the ISS pass over your house tonight? When is Starlink visible? This site has every satellite pass timed to the second.',
+      ka: 'როდის გადაივლის ISS შენთან თავზე? როდის ჩანს Starlink? ყველა სატელიტის გადასვლა წამის სიზუსტით.',
+    },
+    meta: { en: 'Web · Free', ka: 'ვები · უფასო' },
+    href: 'https://www.heavens-above.com/',
+    external: true,
+  },
+  {
+    Icon: Youtube,
+    color: '#8B5CF6',
+    title: { en: "Dr. Becky's YouTube channel", ka: 'Dr. Becky-ს YouTube არხი' },
+    desc: {
+      en: 'Oxford astrophysicist Dr. Becky Smethurst breaks down the latest space news in 10-minute videos. Best beginner-friendly astronomy on YouTube.',
+      ka: 'ოქსფორდის ასტროფიზიკოსი Dr. Becky Smethurst უახლეს კოსმოსურ სიახლეებზე 10-წუთიან ვიდეოებში.',
+    },
+    meta: { en: 'YouTube · Free', ka: 'YouTube · უფასო' },
+    href: 'https://www.youtube.com/@DrBecky',
+    external: true,
+  },
+  {
+    Icon: BookOpen,
+    color: '#FFB347',
+    title: { en: 'Turn Left at Orion', ka: '"Turn Left at Orion"' },
+    desc: {
+      en: "Guy Consolmagno's classic beginner book. Hand-drawn views of 100+ deep sky objects exactly as they look through a small telescope — the gold standard reference.",
+      ka: 'Guy Consolmagno-ს კლასიკური წიგნი დამწყებთათვის. 100+ ღრმა ცის ობიექტი ხელით ნახატი ისე, როგორც ისინი ჩანს პატარა ტელესკოპში.',
+    },
+    meta: { en: 'Book · Beginner', ka: 'წიგნი · დამწყები' },
+    href: 'https://www.cambridge.org/9781108457569',
+    external: true,
+  },
+  {
+    Icon: Newspaper,
+    color: '#5EEAD4',
+    title: { en: 'Sky & Telescope', ka: 'Sky & Telescope' },
+    desc: {
+      en: "America's longest-running astronomy magazine. Monthly sky charts, observing tips, and equipment reviews you can trust.",
+      ka: 'ამერიკის ყველაზე ხანგრძლივი ასტრონომიული ჟურნალი. ცის რუკები, რჩევები და აღჭურვილობის მიმოხილვები.',
+    },
+    meta: { en: 'Magazine · Web', ka: 'ჟურნალი · ვები' },
+    href: 'https://skyandtelescope.org/',
+    external: true,
+  },
+];
+
+function MoreLearningMaterial({ locale }: { locale: Locale }) {
+  return (
+    <section className="mt-2 flex flex-col gap-4">
+      <div>
+        <div className="text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#FFB347] mb-2">
+          {locale === 'ka' ? 'მეტი მასალა' : 'Beyond Stellar'}
+        </div>
+        <h2
+          className="text-white font-bold leading-tight tracking-[-0.01em] m-0"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 2.5vw, 26px)' }}
+        >
+          {locale === 'ka' ? 'სასარგებლო რესურსები' : 'More Learning Material'}
+        </h2>
+        <p className="mt-1.5 text-[12.5px] md:text-[13.5px] text-white/55 leading-snug max-w-[520px]">
+          {locale === 'ka'
+            ? 'ხელით შერჩეული უფასო ხელსაწყოები, ვიდეოები და წიგნები, რომელთაც ჩვენც ვიყენებთ.'
+            : 'Hand-picked free tools, videos, and books we actually use ourselves.'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {MORE_RESOURCES.map(r => (
+          <a
+            key={r.href}
+            href={r.href}
+            target={r.external ? '_blank' : undefined}
+            rel={r.external ? 'noopener noreferrer' : undefined}
+            className="glass-card p-4 flex flex-col gap-2 transition-all duration-200 hover:border-[var(--border)] hover:-translate-y-[1px]"
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: `${r.color}14`, border: `1px solid ${r.color}25`, color: r.color }}
+              >
+                <r.Icon size={16} strokeWidth={2.1} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-text-primary font-semibold text-sm leading-snug truncate">{r.title[locale]}</p>
+                  {r.external && <ExternalLink size={11} className="text-text-muted flex-shrink-0" />}
+                </div>
+                <p className="text-[10px] uppercase tracking-widest text-text-muted mt-0.5">{r.meta[locale]}</p>
+              </div>
+            </div>
+            <p className="text-text-muted text-[12px] leading-relaxed">{r.desc[locale]}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ─── Tab config with Lucide icons ─────────────────────────────────────────────
 
 const TAB_CONFIG: { id: Tab; Icon: React.FC<{ size?: number }>; en: string; ka: string }[] = [
@@ -901,27 +1039,8 @@ export default function LearnPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-page-enter flex flex-col gap-5">
         <BackButton />
 
-        {/* ── Header — home-page vibes: amber eyebrow + bold white title ── */}
-        <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-          <div className="min-w-0">
-            <div className="text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#FFB347] mb-2">
-              {locale === 'ka' ? 'სასწავლო ცენტრი' : 'Astronomy Academy'}
-            </div>
-            <h1
-              className="text-white font-extrabold leading-[1.05] tracking-[-0.02em] m-0"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(28px, 4.5vw, 48px)',
-              }}
-            >
-              {locale === 'ka' ? 'სწავლა' : 'Learn'}
-            </h1>
-            <p className="mt-2 text-[13px] md:text-[14.5px] text-white/55 leading-snug max-w-[480px]">
-              {locale === 'ka' ? 'ასტრონომია, ქვიზები, ASTRA AI.' : 'Astronomy guides, quizzes, and AI assistant.'}
-            </p>
-          </div>
-
-          {completedQuizzes.length > 0 && (
+        {completedQuizzes.length > 0 && (
+          <header className="flex justify-end">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex flex-col">
                 <span
@@ -947,8 +1066,8 @@ export default function LearnPage() {
                 </span>
               </div>
             </div>
-          )}
-        </header>
+          </header>
+        )}
 
         <TonightsBanner locale={locale} />
 
@@ -987,6 +1106,8 @@ export default function LearnPage() {
         {tab === 'guide'      ? <GuideTab key="guide" locale={locale} /> : null}
 
         <AstraPromo locale={locale} />
+
+        <MoreLearningMaterial locale={locale} />
       </div>
     </>
   );
