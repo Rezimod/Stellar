@@ -106,6 +106,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://api.open-meteo.com" />
         <link rel="dns-prefetch" href="https://astroman.ge" />
         <link rel="dns-prefetch" href="https://explorer-api.walletconnect.com" />
+        <meta name="apple-mobile-web-app-title" content="Stellar" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Prevent theme flash — read localStorage before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('stellar_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})()` }} />
       </head>
