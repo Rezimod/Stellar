@@ -896,8 +896,8 @@ export default async function HomePage() {
             </div>
             <div className="order-2">
               {/* Mobile: phone + horizontal step grid (matches HOW IT WORKS) */}
-              <div className="grid grid-cols-2 gap-x-4 gap-y-5 w-full max-w-[420px] mx-auto md:hidden">
-                {[t('missions.step1'), t('missions.step2'), t('missions.step3'), t('missions.step4')].map((title) => (
+              <div className="grid grid-cols-3 gap-x-3 w-full max-w-[420px] mx-auto md:hidden">
+                {[t('missions.step1'), t('missions.step2'), t('missions.step3')].map((title) => (
                   <div key={title} className="text-center text-white text-[15px] font-semibold leading-tight tracking-[-0.005em]">
                     {title}
                   </div>
@@ -905,7 +905,7 @@ export default async function HomePage() {
               </div>
               {/* Desktop: divider list */}
               <ol className="hidden md:block divide-y divide-white/[0.06] border-y border-white/[0.06]">
-                {[t('missions.step1'), t('missions.step2'), t('missions.step3'), t('missions.step4')].map((title) => (
+                {[t('missions.step1'), t('missions.step2'), t('missions.step3')].map((title) => (
                   <li key={title} className="py-3 md:py-4">
                     <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
                       {title}
