@@ -5,7 +5,7 @@ import { encodeURL } from '@solana/pay';
 import BigNumber from 'bignumber.js';
 import { PrivyClient } from '@privy-io/server-auth';
 import { eq, desc, and } from 'drizzle-orm';
-import { getDb } from '@/lib/db';
+import { getDb, ensureOrdersBurnColumns } from '@/lib/db';
 import { orders, users } from '@/lib/schema';
 import { isValidPublicKey } from '@/lib/validate';
 import { getStarsBalance } from '@/lib/solana';
@@ -89,6 +89,9 @@ export async function POST(req: NextRequest) {
   if (!db) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
   }
+  // Self-heal the §4 burn columns on first hit — keeps the API working even
+  // when a deploy ships new schema without the manual Neon ALTER.
+  await ensureOrdersBurnColumns().catch(() => { /* surface as insert error below */ });
 
   // ─── Optional Stars-for-discount burn (§4) ────────────────────────────────
   // Only valid for SOL-paid GEL-priced products. Discount is computed here so
@@ -240,9 +243,32 @@ export async function POST(req: NextRequest) {
   });
   } catch (err) {
     console.error('[orders/POST]', err);
-    const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: `Order creation failed: ${message}` }, { status: 500 });
+    // Drizzle wraps the underlying pg error; its top-level message is the SQL
+    // it tried to run, which is noisy and leaks DB structure to the UI. Walk
+    // the .cause chain to the original Postgres error and surface that.
+    const reason = extractDbErrorReason(err);
+    return NextResponse.json({ error: `Could not place order: ${reason}` }, { status: 500 });
   }
+}
+
+function extractDbErrorReason(err: unknown): string {
+  let cur: unknown = err;
+  // Walk up to 3 levels of cause; pg errors are usually 1–2 deep.
+  for (let i = 0; i < 3 && cur; i++) {
+    if (cur && typeof cur === 'object') {
+      const e = cur as { message?: string; detail?: string; code?: string; cause?: unknown };
+      // Postgres errors carry a `code` (e.g. '42703' undefined_column,
+      // '23505' unique_violation). When present, prefer their message
+      // over the wrapper's "Failed query: ..." dump.
+      if (e.code && typeof e.message === 'string' && !e.message.startsWith('Failed query')) {
+        return e.detail ? `${e.message} (${e.detail})` : e.message;
+      }
+      if (e.cause) { cur = e.cause; continue; }
+      if (typeof e.message === 'string' && !e.message.startsWith('Failed query')) return e.message;
+    }
+    break;
+  }
+  return 'database error — please retry, or contact support if it keeps happening';
 }
 
 export async function GET(req: NextRequest) {
