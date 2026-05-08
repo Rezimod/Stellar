@@ -222,8 +222,8 @@ export default function FeedPage() {
   const lon = location?.lon ?? 44.83
 
   const composerPlaceholder = authenticated && firstName
-    ? `What did the sky show you tonight, ${firstName}?`
-    : 'What did the sky show you tonight?'
+    ? `What did you see, ${firstName}?`
+    : 'What did you see tonight?'
 
   return (
     <div className="feed-page">
@@ -332,12 +332,20 @@ export default function FeedPage() {
                     style={{ display: 'none' }}
                     onChange={onPickPhoto}
                   />
-                  <button className={`tool-btn ${pendingImage ? 'active' : ''}`} disabled={posting} onClick={() => fileInputRef.current?.click()}>
+                  <button
+                    className={`tool-btn ${pendingImage ? 'active' : ''}`}
+                    disabled={posting}
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Add photo"
+                    title="Photo"
+                  >
                     <ImageIcon /> <span className="tool-btn-label">Photo</span>
                   </button>
                   <button
                     className={`tool-btn ${pendingObservation ? 'active' : ''}`}
                     disabled={posting}
+                    aria-label="Attach last observation"
+                    title="Observation"
                     onClick={async () => {
                       try {
                         const res = await fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address ?? '')}`)
@@ -360,14 +368,21 @@ export default function FeedPage() {
                   >
                     <Eye /> <span className="tool-btn-label">Observation</span>
                   </button>
-                  <button className={`tool-btn ${pendingLocation ? 'active' : ''}`} disabled={posting} onClick={requestLocation}>
+                  <button
+                    className={`tool-btn ${pendingLocation ? 'active' : ''}`}
+                    disabled={posting}
+                    onClick={requestLocation}
+                    aria-label="Attach current location"
+                    title="Location"
+                  >
                     <MapPin /> <span className="tool-btn-label">Location</span>
                   </button>
                   <button
                     className="tool-btn"
                     disabled={posting}
                     onClick={() => router.push('/nfts')}
-                    title="Open your discoveries to attach an NFT"
+                    aria-label="Attach an NFT from your discoveries"
+                    title="NFT"
                   >
                     <Gem /> <span className="tool-btn-label">NFT</span>
                   </button>

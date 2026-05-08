@@ -946,53 +946,48 @@
   .composer-preview { margin-top: 10px; gap: 8px; }
   .composer-thumb { width: 76px; height: 76px; }
 
-  /* Action row sits below input, divided like FB: Photo · Observation · Location · NFT · Send */
+  /* Action row — icon-only ghost buttons, single hairline above */
   .composer-actions {
     margin-top: 10px;
-    padding-top: 8px;
+    padding-top: 10px;
     border-top: 1px solid var(--hairline);
-    gap: 0;
+    gap: 8px;
   }
   .composer-tools {
-    flex: 1;
-    gap: 0;
+    gap: 2px;
     flex-wrap: nowrap;
-    justify-content: space-around;
+    justify-content: flex-start;
   }
   .tool-btn {
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    padding: 8px 4px;
-    min-width: 0;
-    min-height: 44px;
-    border-radius: 10px;
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    border-radius: 50%;
     border: none;
     background: transparent;
+    color: var(--slate-300);
   }
-  .tool-btn:hover { background: rgba(255,255,255,0.04); border: none; }
+  .tool-btn:hover { background: rgba(255,255,255,0.05); border: none; color: var(--slate-100); }
   .tool-btn.active {
-    background: rgba(255,179,71,0.08);
+    background: rgba(255,179,71,0.1);
     border: none;
     color: var(--brass);
   }
-  .tool-btn-label {
-    display: block;
-    font-size: 9.5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    opacity: 0.75;
-  }
+  .tool-btn-label { display: none; }
   .tool-btn svg { width: 18px; height: 18px; }
 
   .post-btn {
-    padding: 0 16px;
+    padding: 0 18px;
     height: 36px;
     min-height: 36px;
-    margin-left: 8px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
     border-radius: 999px;
     align-self: center;
   }
