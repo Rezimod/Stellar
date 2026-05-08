@@ -318,10 +318,6 @@ export default function MissionsPage() {
                   above={altitude > 0}
                   rise={pos?.rise ?? null}
                   onStart={() => startMission(g.routeId)}
-                  onExplain={(rect) => {
-                    setActiveExplainerAnchor(rect);
-                    setActiveExplainer({ kind: 'mission', id: g.id, title: g.name });
-                  }}
                 />
               );
             })}
@@ -806,13 +802,11 @@ function MissionTile({
   above,
   rise,
   onStart,
-  onExplain,
 }: {
   entry: GridEntry;
   above: boolean;
   rise: Date | null;
   onStart: () => void;
-  onExplain?: (rect: DOMRect) => void;
 }) {
   const [showReminder, setShowReminder] = useState(false);
   const riseTxt = above ? null : fmtRiseClock(rise);
@@ -865,17 +859,6 @@ function MissionTile({
         <div className="mis-tile-foot">
           <span className="mis-tile-foot-left">
             <span className={`mis-diff ${entry.diff}`}>{entry.diffLabel}</span>
-            {(entry.diff === 'hard' || entry.diff === 'expert') && onExplain && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onExplain((e.currentTarget as HTMLElement).getBoundingClientRect()); }}
-                aria-label={`Why ${entry.name} is hard`}
-                className="mis-info-dot"
-                style={{ marginLeft: 4 }}
-              >
-                i
-              </button>
-            )}
             <span className="mis-tile-equip">
               <EquipIcon kind={entry.equip} />
               <span>{entry.equip}</span>
