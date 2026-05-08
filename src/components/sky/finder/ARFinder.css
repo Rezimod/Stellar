@@ -6,7 +6,7 @@
   z-index: 1000;
   background: var(--canvas);
   color: var(--text);
-  font-family: var(--font-body, 'Public Sans'), system-ui, sans-serif;
+  font-family: var(--font-body, 'Geist'), system-ui, sans-serif;
   overscroll-behavior: contain;
   user-select: none;
   -webkit-user-select: none;
@@ -750,7 +750,7 @@
 }
 
 .ar-card__title {
-  font-family: var(--font-display, 'Source Serif 4'), serif;
+  font-family: var(--font-display, 'Orbitron'), serif;
   font-size: 22px;
   line-height: 1.2;
   color: var(--text);

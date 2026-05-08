@@ -6,11 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:smoke": "playwright test",
     "setup:bubblegum": "npx tsx scripts/setup-bubblegum.ts",
     "setup:token": "npx tsx scripts/create-stars-token.ts",
     "seed:demo": "npx tsx scripts/seed-demo-data.ts",
-    "seed:v2": "npx tsx scripts/seed-markets-v2.ts",
-    "resolve:markets": "npx tsx scripts/resolve-markets.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "setup:stars": "npx tsx scripts/import-star-catalog.ts"

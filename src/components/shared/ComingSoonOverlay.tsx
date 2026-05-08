@@ -49,7 +49,7 @@ export default function ComingSoonOverlay() {
         onTouchEnd={swallow}
         onKeyDown={swallow}
         style={{
-          fontFamily: '"Source Serif 4", Georgia, serif',
+          fontFamily: 'var(--font-display)',
           fontSize: 'clamp(1rem, 2.4vw, 1.25rem)',
           fontWeight: 400,
           letterSpacing: '0.02em',

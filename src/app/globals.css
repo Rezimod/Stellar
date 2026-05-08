@@ -132,7 +132,7 @@
   --radius-full: 9999px;
 
   /* Typography — values come from next/font on <html> in layout.tsx
-     (Source Serif 4 / Public Sans / JetBrains Mono / Noto Sans Georgian).
+     (Orbitron / Geist / JetBrains Mono / Noto Sans Georgian).
      Fallbacks live in the @theme block below. */
 
   /* Motion */

@@ -29,7 +29,7 @@
   margin: 0 0 6px;
 }
 .tl__title {
-  font-family: var(--font-display, 'Source Serif 4', serif);
+  font-family: var(--font-display, 'Orbitron', serif);
   font-size: 22px;
   line-height: 1.15;
   letter-spacing: -0.01em;

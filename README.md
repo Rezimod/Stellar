@@ -15,7 +15,7 @@ Get tonight's sky forecast, photograph what you see, earn rewards you can redeem
 3. **Earn** — Verified observations mint a compressed NFT on Solana (~$0.000005/mint) and award Stars, the on-chain reward token.
 4. **Redeem** — Spend Stars at Astroman: telescopes, eyepieces, Barlow lenses, moon lamps, books. Real products from a real store.
 
-That's the loop. Optional layers — Stargazer Challenges, sky missions, ASTRA AI — sit on top.
+That's the loop. Optional layers — sky missions and ASTRA AI — sit on top.
 
 ---
 
@@ -45,7 +45,6 @@ Sky atlases show you the sky. Stellar connects what you see to a real economy.
 - **Stars SPL token** — real on-chain token (not localStorage points), redeemable at Astroman.
 - **ASTRA AI Companion** — ask "what can I see tonight?" and ASTRA answers with live planet positions, weather, and Bortle context for your coordinates.
 - **Sky missions** — guided observations of the Moon, Jupiter, Saturn, Orion, Pleiades, Andromeda, the Crab. Each completion earns Stars + an NFT.
-- **Stargazer Challenges** — optional weekly leaderboards on celestial events (meteor shower peaks, clear-sky windows, solar activity). Stake Stars, place a position, win Stars back. Bonus mechanic, not the headline.
 - **Zero-crypto UX** — sign up with email via Privy, embedded Solana wallet, gasless transactions, no seed phrase, no Phantom install.
 
 ---
@@ -62,7 +61,7 @@ Astronomers travel to dark-sky sites — mountains, deserts, rural fields — wh
 
 The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on Claude (fast and broad), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
 
-[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Plan + status](TETHER_QVAC_TRACK.md)
+[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Plan + status](docs/archive/TETHER_QVAC_TRACK.md)
 
 ---
 
@@ -78,7 +77,7 @@ Every observation contributes a real datapoint — GPS coordinates, timestamp, p
 | **Observer** | Smartphone + eyes | Verified sky photo, AI-analyzed observation, cNFT proof | 50–250 ✦ |
 | **Advanced** | Telescope + camera | High-resolution captures, Bortle readings, deep-sky imagery | 100–500 ✦ |
 
-The network grows itself: more observers in more places means denser sky coverage, which makes the data more useful — for ASTRA's recommendations, for Stargazer Challenge resolution, and (eventually) for anyone who needs ground-truth observation data.
+The network grows itself: more observers in more places means denser sky coverage, which makes the data more useful — for ASTRA's recommendations and (eventually) for anyone who needs ground-truth observation data.
 
 Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.app/network).
 
@@ -92,8 +91,7 @@ Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.
 | Auth | Privy embedded Solana wallets (email/Google login) |
 | NFTs | Metaplex Bubblegum compressed NFTs |
 | Token | Stars SPL token (0 decimals) |
-| Markets program (for Challenges) | Custom Anchor program on Solana devnet |
-| AI (online) | Claude API — ASTRA persona with tool calling (sky data + Vision verification) |
+| AI (online) | OpenAI gpt-4o-mini for ASTRA chat (sky-data tool calling) · Claude Sonnet 4.6 for vision-based photo verification |
 | AI (offline, Field Mode) | Tether QVAC — Llama 3.2 1B + Whisper, on-device via `@qvac/sdk` (Expo / Android) |
 | Sky data | Open-Meteo (weather), astronomy-engine (celestial mechanics), NOAA SWPC (solar), IMO (meteors) |
 | Database | Neon Postgres via Drizzle ORM |
@@ -104,7 +102,6 @@ Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.
 
 ## On-Chain Addresses (Devnet)
 
-- **Markets / Challenges program:** `Bcufe9vy6V3Vn4eqBQqdmRKzJgEcHdVxHci6ursiTkvi`
 - **Stars Token:** `3cnZEZAu2ENujwNNtA5phyqSi3JvAaHpyzExQiXw1YwW`
 - **Fee Payer:** `BEGJbkPn7eEAKkjLTGh39usDiscM7P2BwQyXNToHdVVg`
 

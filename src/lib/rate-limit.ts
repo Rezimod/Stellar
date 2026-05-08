@@ -24,6 +24,16 @@ export const mintRateLimit = { limit: (id: string) => makeLimit('3600 s', 30, 'r
 export const awardStarsRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:award').limit(id) };
 export const redeemRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:redeem').limit(id) };
 
+// Daily ceilings (24h sliding) — bound the worst-case AI cost / token
+// issuance per user even if the per-minute / per-hour limits are saturated.
+// These are the numbers we cite in the pitch math:
+//   chat:    50 msg/day/user → ~$0.08/user/day worst-case OpenAI bill
+//   verify:  20 attempts/day → ~$0.40/user/day worst-case Claude bill
+//   award:   30 grants/day  → bounds Stars issuance through this route
+export const chatDailyLimit   = { limit: (id: string) => makeLimit('86400 s', 50, 'rl:chat:d').limit(id) };
+export const verifyDailyLimit = { limit: (id: string) => makeLimit('86400 s', 20, 'rl:verify:d').limit(id) };
+export const awardStarsDailyLimit = { limit: (id: string) => makeLimit('86400 s', 30, 'rl:award:d').limit(id) };
+
 export async function checkRateLimit(
   limiter: { limit: (id: string) => Promise<{ success: boolean; remaining: number; reset: number }> },
   identifier: string

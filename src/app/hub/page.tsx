@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Sun, TrendingUp, Target, Sparkles, BookOpen, Globe, MessageCircle,
-  Trophy, Gem, Telescope, ShoppingBag, Search, User,
+  Sun, Target, Sparkles, BookOpen, MessageCircle,
+  Trophy, Gem, ShoppingBag, Search, User,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
@@ -39,8 +39,6 @@ const SECTIONS: HubSection[] = [
       { href: '/chat',        label: 'ASTRA AI',     icon: MessageCircle, gradient: G.fuchsia },
       { href: '/learn',       label: 'Learning',     icon: BookOpen,      gradient: G.blue },
       { href: '/feed',        label: 'Feed',         icon: Sparkles,      gradient: G.orange },
-      { href: '/markets',     label: 'Markets',      icon: TrendingUp,    gradient: G.emerald, comingSoon: true },
-      { href: '/network',     label: 'Network',      icon: Globe,         gradient: G.teal,    comingSoon: true },
       { href: '/leaderboard', label: 'Leaderboard',  icon: Trophy,        gradient: G.amber,   comingSoon: true },
     ],
   },
@@ -48,7 +46,6 @@ const SECTIONS: HubSection[] = [
     label: 'You',
     items: [
       { href: '/profile', label: 'Profile',      icon: User,      gradient: G.blue },
-      { href: '/club',    label: 'My telescope', icon: Telescope, gradient: G.violet },
       { href: '/nfts',    label: 'Discoveries',  icon: Gem,       gradient: G.rose },
     ],
   },

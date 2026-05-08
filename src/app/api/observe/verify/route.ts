@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createHash, createHmac } from 'crypto';
-import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { verifyRateLimit, verifyDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { CLAUDE_MODEL } from '@/lib/ai-config';
 import type { PhotoVerificationResult, ObservationTarget, VerificationConfidence } from '@/lib/types';
 import { checkObjectVisibility } from '@/lib/astronomy-check';
@@ -68,6 +68,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Too many requests. Please wait before trying again.' },
       { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
+    );
+  }
+  // Daily ceiling — bounds Claude Vision spend per user/IP at ~$0.40/day worst case.
+  const daily = await checkRateLimit(verifyDailyLimit, rateLimitKey);
+  if (!daily.success) {
+    return NextResponse.json(
+      { error: "You've used today's verification quota. Come back tomorrow." },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(daily.remaining), 'X-RateLimit-Window': 'daily' } }
     );
   }
 

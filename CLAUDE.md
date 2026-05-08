@@ -14,8 +14,8 @@ Rezi (Revaz Modebadze) — founder of Astroman (astroman.ge), Georgia's first as
 ## Tech Stack
 - **Framework:** Next.js 15 + React 19 + TypeScript
 - **Styling:** Tailwind CSS 4
-- **Auth + Wallets:** Privy SDK (@privy-io/react-auth) — email/Google/SMS login, embedded Solana wallets, NO wallet-adapter
-- **AI:** Claude API (claude-sonnet-4-6) via @anthropic-ai/sdk
+- **Auth + Wallets:** Privy SDK (@privy-io/react-auth) — email/Google/SMS login, embedded Solana wallets. Solana wallet-adapter is also wired (legacy Phantom/Backpack/Solflare paths in /api/mint and /api/award-stars accept either Privy token or wallet pubkey).
+- **AI:** Mixed by route. ASTRA chat (`/api/chat`) uses **OpenAI gpt-4o-mini** with tool calling for sky forecast + planet positions. Photo verification (`/api/observe/verify`) uses **Claude Sonnet 4.6** via @anthropic-ai/sdk for vision analysis. Star naming (`/api/star/claim`) uses Claude Haiku 4.5.
 - **Sky Data:** Open-Meteo weather API (7-day forecast) + astronomy-engine (planet positions, celestial calculations)
 - **Blockchain:** @solana/web3.js, @solana/pay, @metaplex-foundation/mpl-bubblegum (compressed NFTs)
 - **Backend:** Supabase (users, orders, missions, observations)
@@ -53,10 +53,10 @@ For non-trivial tasks, use this order:
 - Consider loading, empty, and error states
 
 ## Key Architecture Decisions
-1. **Privy, NOT wallet-adapter.** Users sign up with email → embedded Solana wallet created automatically. No Phantom download, no seed phrases. Config: `embeddedWallets: { createOnLogin: 'users-without-wallets' }`
+1. **Privy-first auth, wallet-adapter as fallback.** Default flow: sign up with email → embedded Solana wallet created automatically (`embeddedWallets: { createOnLogin: 'users-without-wallets' }`). External-wallet paths (Phantom/Backpack/Solflare) remain wired through `WalletAdapterProvider` and the relevant API routes accept either Privy token or wallet pubkey. New flows should default to Privy.
 2. **Gasless transactions.** Server-side fee payer wallet covers all tx costs. Users never need SOL.
 3. **Card-first payments.** Default = credit card via Privy fiat onramp. SOL payment is secondary option.
-4. **All UI strings through next-intl.** Never hardcode English text. Use translation keys: `t('sky.cloudCover')` etc. Georgian translations in `messages/ka.json`.
+4. **i18n status: partial.** `next-intl` is wired (`messages/en.json` + `ka.json`). New components in `/sky`, `/missions`, parts of `/marketplace` use `useTranslations`. Older surfaces (home, hub, several landing sections, marketing copy) are still hardcoded English. When adding new strings, prefer translation keys; don't retroactively translate untouched files unless asked.
 5. **Dark cosmic theme.** Deep space background (#0B0E17), card surfaces (#1A1F2E), accent purple (#8B5CF6), teal (#14B8A6), amber (#F59E0B).
 
 ## App Structure
@@ -94,7 +94,7 @@ src/
 1. **Privy auth** — email/Google signup, embedded wallet, profile page showing account
 2. **7-day sky forecast** — Open-Meteo API, hourly cloud cover/seeing/transparency, Go/Maybe/Skip badges per day
 3. **Planet tracker** — astronomy-engine, Mercury-Saturn + Moon, rise/transit/set times, altitude, visibility
-4. **AI Space Companion** — Claude API chat with real-time sky data injected into system prompt, EN + KA
+4. **AI Space Companion (ASTRA)** — chat (`/api/chat`) backed by OpenAI gpt-4o-mini with tool calls into sky forecast + planet positions. Vision verification on the observe flow uses Claude.
 5. **Marketplace** — 10-15 Astroman products, card payment via Privy, dual GEL+SOL pricing (Jupiter API)
 
 ### P1 — Should ship (Week 3-4)
@@ -108,7 +108,7 @@ src/
 11. **Name a Star** — On-chain star naming NFT product
 
 ## API Routes
-- `POST /api/chat` — Claude API streaming chat with sky data context
+- `POST /api/chat` — OpenAI gpt-4o-mini chat with tool calls (sky forecast, planet positions)
 - `GET /api/sky/forecast` — 7-day Open-Meteo weather forecast
 - `GET /api/sky/planets` — Current planet positions via astronomy-engine
 - `GET /api/products` — Astroman product catalog from Supabase
@@ -134,20 +134,8 @@ FEE_PAYER_PRIVATE_KEY=           # Server wallet for gasless txs (devnet)
 - Every new page/component gets a commit with descriptive message
 - Keep components small — one file per component, max ~150 lines
 
-## Globalization Roadmap
-See `GLOBAL_PROMPTS.md` in the project root for Phase 2 prompts (G1–G6).
-
-Phase 2 repositions Stellar from Georgia-focused to global. Adds:
-- `src/lib/location.tsx` — GPS region detection (caucasus / north_america / global)
-- `src/lib/dealers.ts` — multi-dealer product system (Astroman + High Point Scientific)
-- `src/components/LocationPicker.tsx` — region selector pill/modal
-- Location-aware marketplace (G3), Free Observation mission (G4), global copy (G5), README (G6)
-
-**Prerequisite:** Phase 1 on-chain core (LATEST_PROMPTS.md, prompts 1–6) must be working on devnet first.
-
-**Conflicts to watch:**
-- `src/hooks/useLocation.ts` (current, lat/lng only) vs new `src/lib/location.tsx` (region-aware) — both can coexist; sky data keeps using the hook, marketplace uses the new context
-- `src/lib/products.ts` shape changes in G2 — `priceGEL` + bilingual names → `price` + `currency` + `dealerId` — marketplace components will need updates
+## Globalization Notes
+The app already supports multiple regions through `src/lib/location.tsx` (GPS region detection: caucasus / north_america / global), `src/lib/dealers.ts` (multi-dealer products), and `src/components/LocationPicker.tsx`. `src/hooks/useLocation.ts` (lat/lng only) also exists — sky data uses the hook, marketplace uses the region-aware context. Don't break either.
 
 ## Current Status
 - Hackathon started April 6, 2026

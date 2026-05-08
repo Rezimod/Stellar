@@ -15,8 +15,8 @@
   --teal-soft: rgba(56, 240, 255, 0.12);
   --rose: #F87171;
   --green: #34D399;
-  --serif: var(--font-display, 'Source Serif 4'), serif;
-  --sans: var(--font-body, 'Inter'), system-ui, sans-serif;
+  --serif: var(--font-display, 'Orbitron'), serif;
+  --sans: var(--font-body, 'Geist'), system-ui, sans-serif;
   --mono: var(--font-mono, 'JetBrains Mono'), monospace;
   color: var(--text);
   background: var(--bg);
@@ -2576,7 +2576,7 @@
   50% { opacity: 0.7; transform: scale(0.9); }
 }
 .prime-target__name {
-  font-family: var(--font-display, 'Source Serif 4', serif);
+  font-family: var(--font-display, 'Orbitron', serif);
   font-size: 17px;
   line-height: 1.1;
   color: var(--text);

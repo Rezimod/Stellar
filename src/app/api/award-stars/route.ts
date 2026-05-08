@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 60; // Solana devnet token mint can take 15-30s
 import { PrivyClient } from '@privy-io/server-auth';
-import { awardStarsRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { awardStarsRateLimit, awardStarsDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import bs58 from 'bs58';
@@ -62,15 +62,25 @@ export async function POST(req: NextRequest) {
       { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
     );
   }
+  // Daily ceiling per wallet — bounds Stars issuance independently of the
+  // per-hour limit so a single wallet cannot drain the program over a 24h window.
+  const daily = await checkRateLimit(awardStarsDailyLimit, recipientAddress as string);
+  if (!daily.success) {
+    return NextResponse.json(
+      { error: 'Daily Stars limit reached for this wallet. Come back tomorrow.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(daily.remaining), 'X-RateLimit-Window': 'daily' } }
+    );
+  }
 
-  // Validate amount
+  // Validate amount. 500 is the cap that covers every legitimate mission
+  // payout in MISSIONS / STAR_PAYOUT_BY_TIER (max 250 base × 2 event bonus).
   if (
     typeof amount !== 'number' ||
     !Number.isInteger(amount) ||
     amount < 1 ||
-    amount > 1000
+    amount > 500
   ) {
-    return NextResponse.json({ error: 'amount must be an integer between 1 and 1000' }, { status: 400 });
+    return NextResponse.json({ error: 'amount must be an integer between 1 and 500' }, { status: 400 });
   }
 
   // Validate reason

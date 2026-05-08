@@ -24,7 +24,6 @@ const NAV_ITEMS = [
 
 const AVATAR_ITEMS: { href: string; label: string; icon: typeof User }[] = [
   { href: '/profile', label: 'Profile',         icon: User },
-  { href: '/club',    label: 'My telescope',    icon: Telescope },
   { href: '/nfts',    label: 'My discoveries',  icon: Gem },
 ];
 

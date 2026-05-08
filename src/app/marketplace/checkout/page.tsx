@@ -12,7 +12,7 @@ import { useAppState } from '@/hooks/useAppState';
 import { useWallets as usePrivySolanaWallets } from '@privy-io/react-auth/solana';
 import { AuthModal } from '@/components/auth/AuthModal';
 import PageContainer from '@/components/layout/PageContainer';
-import { getProductById, getDealerById, priceToSol } from '@/lib/dealers';
+import { getProductById, getDealerById, getProductsByDealer, priceToSol, GLOBAL_FALLBACK } from '@/lib/dealers';
 import type { Product } from '@/lib/dealers';
 import {
   STARS_PER_GEL,
@@ -255,8 +255,8 @@ function CheckoutContent() {
   if (!productId) {
     return (
       <PageContainer variant="content" className="py-10 text-center">
-        <p className="stl-body" style={{ color: 'var(--stl-text-muted)' }}>No product selected.</p>
-        <Link href="/marketplace" className="stl-mono-data" style={{ color: 'var(--stl-green)' }}>
+        <p className="stl-body text-[#F8F4EC]">No product selected.</p>
+        <Link href="/marketplace" className="stl-mono-data text-[#F8F4EC]">
           ← Back to marketplace
         </Link>
       </PageContainer>
@@ -266,8 +266,8 @@ function CheckoutContent() {
   if (!product) {
     return (
       <PageContainer variant="content" className="py-10 text-center">
-        <p className="stl-body" style={{ color: 'var(--stl-text-muted)' }}>Product not found.</p>
-        <Link href="/marketplace" className="stl-mono-data" style={{ color: 'var(--stl-green)' }}>
+        <p className="stl-body text-[#F8F4EC]">Product not found.</p>
+        <Link href="/marketplace" className="stl-mono-data text-[#F8F4EC]">
           ← Back to marketplace
         </Link>
       </PageContainer>
@@ -299,21 +299,16 @@ function CheckoutContent() {
       `}</style>
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-[10px] tracking-[0.22em] uppercase text-[rgba(232,230,221,0.65)] hover:text-[#F8F4EC] transition-colors mb-[18px]"
+        aria-label="Back"
+        className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.18em] uppercase text-[#F8F4EC] hover:opacity-75 transition-opacity mb-[20px]"
       >
-        <ArrowLeft size={11} /> Back · Checkout
+        <ArrowLeft size={14} /> Back
       </button>
 
-      <header className="flex flex-col items-center gap-3 pb-[14px] mb-[22px] border-b border-[rgba(232,230,221,0.1)] text-center">
-        <div className="flex items-baseline justify-center gap-3">
-          <span className="text-[10px] tracking-[0.24em] uppercase text-[var(--seafoam)] font-medium">04 · 02</span>
-          <h1 className="text-[24px] font-semibold tracking-[-0.01em] text-[#F8F4EC] leading-none">
-            Checkout<span className="text-[var(--terracotta)]">.</span>
-          </h1>
-        </div>
-        <p className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">
-          {mode === 'stars' ? 'Redeem with stars' : 'Pay with SOL · Devnet'}
-        </p>
+      <header className="flex flex-col items-center pb-[18px] mb-[26px] border-b border-[rgba(248,244,236,0.08)] text-center">
+        <h1 className="text-[30px] font-semibold tracking-[-0.01em] text-[#F8F4EC] leading-none">
+          Checkout<span className="text-[var(--orange)]">.</span>
+        </h1>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-6 max-w-[920px] mx-auto">
@@ -321,7 +316,7 @@ function CheckoutContent() {
         <div className="flex flex-col gap-4">
           {step === 'form' && (
             <>
-              <h2 className="text-[14px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
+              <h2 className="text-[13px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
                 Delivery details
               </h2>
 
@@ -334,7 +329,7 @@ function CheckoutContent() {
               <Field label="Street address" value={shipping.address} onChange={v => setShipping(s => ({ ...s, address: v }))} required placeholder="123 Galaxy Ave, Apt 4" />
               <Field label="Delivery notes (optional)" value={shipping.notes} onChange={v => setShipping(s => ({ ...s, notes: v }))} multiline placeholder="Buzz code, doorman, leave at door, etc." />
               {dealer?.shipsTo && dealer.shipsTo.length > 0 && (
-                <p className="text-[10px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.55)]">
+                <p className="text-[10px] tracking-[0.14em] uppercase text-[#F8F4EC]/70">
                   {dealer.name} ships to: {dealer.shipsTo.slice(0, 8).join(' · ')}{dealer.shipsTo.length > 8 ? ' · …' : ''}
                 </p>
               )}
@@ -383,7 +378,7 @@ function CheckoutContent() {
                 </span>
               </button>
               {!authenticated && (
-                <p className="text-[11px] text-[rgba(232,230,221,0.6)]">
+                <p className="text-[11px] text-[#F8F4EC]/80">
                   You&apos;ll sign in first — payment continues automatically.
                 </p>
               )}
@@ -392,26 +387,26 @@ function CheckoutContent() {
 
           {step === 'paying' && (
             <div className="flex flex-col gap-4 items-center">
-              <h2 className="text-[14px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
+              <h2 className="text-[13px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
                 Scan to pay
               </h2>
               <div className="p-3 rounded-xl bg-white">
                 <QRCodeSVG value={payUrl} size={220} />
               </div>
-              <p className="text-[11px] tracking-[0.06em] text-[rgba(232,230,221,0.7)] text-center">
+              <p className="text-[11px] tracking-[0.06em] text-[#F8F4EC] text-center">
                 Open any Solana wallet (Phantom, Solflare, Backpack) and scan this code, or tap below to open your wallet directly.
               </p>
               <a
                 href={payUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.14em] uppercase text-[var(--terracotta)]"
+                className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]"
               >
                 Open in wallet app <ExternalLink size={11} />
               </a>
               <div className="flex items-center gap-2 mt-2">
-                <span className="w-3 h-3 rounded-full border-2 border-[var(--seafoam)] border-t-transparent animate-spin" />
-                <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">
+                <span className="w-3 h-3 rounded-full border-2 border-[var(--orange)] border-t-transparent animate-spin" />
+                <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
                   Waiting for confirmation…
                 </span>
               </div>
@@ -422,7 +417,7 @@ function CheckoutContent() {
                   setPayUrl('');
                   setOrderId(null);
                 }}
-                className="text-[10px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.55)] hover:text-[#F8F4EC] transition-colors"
+                className="text-[10px] tracking-[0.16em] uppercase text-[#F8F4EC]/70 hover:text-[#F8F4EC] transition-colors"
               >
                 Cancel and edit details
               </button>
@@ -438,7 +433,7 @@ function CheckoutContent() {
               <h2 className="text-[18px] font-semibold text-[#F8F4EC]">
                 {mode === 'stars' ? 'Stars redeemed' : 'Payment confirmed'}
               </h2>
-              <p className="text-[12px] tracking-[0.06em] text-[rgba(232,230,221,0.7)] max-w-sm">
+              <p className="text-[12px] tracking-[0.06em] text-[#F8F4EC] max-w-sm">
                 {mode === 'stars'
                   ? `${product.starsPrice.toLocaleString()} stars redeemed. ${dealer?.name ?? 'The dealer'} will reach out by phone to confirm shipping.`
                   : `Your order is on its way. ${dealer?.name ?? 'The dealer'} will reach out by phone to confirm shipping.`}
@@ -448,18 +443,18 @@ function CheckoutContent() {
                   href={`https://explorer.solana.com/tx/${signature}?cluster=${cluster}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.14em] uppercase text-[var(--seafoam)]"
+                  className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.14em] uppercase text-[#F8F4EC]"
                 >
                   View transaction <ExternalLink size={10} />
                 </a>
               )}
               <div className="flex gap-3 mt-4">
-                <Link href="/profile" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full"
-                  style={{ background: 'rgba(94, 234, 212,0.12)', border: '0.5px solid rgba(94, 234, 212,0.5)', color: 'var(--seafoam)' }}>
+                <Link href="/profile" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full text-[#F8F4EC]"
+                  style={{ background: 'rgba(255,179,71,0.10)', border: '0.5px solid rgba(255,179,71,0.45)' }}>
                   Order history
                 </Link>
-                <Link href="/marketplace" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full"
-                  style={{ border: '0.5px solid rgba(232,230,221,0.18)', color: 'rgba(232,230,221,0.85)' }}>
+                <Link href="/marketplace" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full text-[#F8F4EC]"
+                  style={{ border: '0.5px solid rgba(248,244,236,0.22)' }}>
                   Keep shopping
                 </Link>
               </div>
@@ -471,11 +466,11 @@ function CheckoutContent() {
         <aside
           className="rounded-xl p-4 h-fit"
           style={{
-            border: '0.5px solid rgba(232,230,221,0.1)',
+            border: '0.5px solid rgba(248,244,236,0.1)',
             background: 'rgba(255,255,255,0.015)',
           }}
         >
-          <p className="text-[10px] tracking-[0.24em] uppercase font-semibold text-[var(--seafoam)] mb-3">
+          <p className="text-[10px] tracking-[0.24em] uppercase font-semibold text-[#F8F4EC] mb-3">
             Order summary
           </p>
           <div className="flex gap-3 mb-3">
@@ -484,7 +479,7 @@ function CheckoutContent() {
               style={{
                 background:
                   'radial-gradient(ellipse at 50% 50%, rgba(255, 179, 71,0.05) 0%, transparent 70%), rgba(255,255,255,0.02)',
-                border: '0.5px solid rgba(232,230,221,0.06)',
+                border: '0.5px solid rgba(248,244,236,0.06)',
               }}
             >
               {product.image && (
@@ -494,29 +489,29 @@ function CheckoutContent() {
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-medium text-[#F8F4EC] leading-tight mb-1 truncate">{product.name}</p>
               {dealer?.name && (
-                <p className="text-[10px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.6)]">{dealer.name}</p>
+                <p className="text-[10px] tracking-[0.16em] uppercase text-[#F8F4EC]/80">{dealer.name}</p>
               )}
             </div>
           </div>
-          <div className="flex justify-between items-center pt-3 border-t border-[rgba(232,230,221,0.08)]">
-            <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">Price</span>
-            <span className="text-[13px] font-semibold text-[var(--terracotta)]">{formatPrice(product)}</span>
+          <div className="flex justify-between items-center pt-3 border-t border-[rgba(248,244,236,0.08)]">
+            <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">Price</span>
+            <span className="text-[13px] font-semibold text-[#F8F4EC]">{formatPrice(product)}</span>
           </div>
           {burnEligible && burnStars > 0 && (
             <>
               <div className="flex justify-between items-center mt-2">
-                <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">
+                <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
                   Stars burned
                 </span>
-                <span className="text-[13px] font-semibold text-[var(--seafoam)]">
+                <span className="text-[13px] font-semibold text-[var(--orange)]">
                   ✦ {burnStars.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center mt-1">
-                <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">
+                <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
                   Discount
                 </span>
-                <span className="text-[13px] font-semibold text-[var(--seafoam)]">
+                <span className="text-[13px] font-semibold text-[var(--orange)]">
                   −{gelDiscount.toFixed(2)} ₾
                 </span>
               </div>
@@ -524,26 +519,29 @@ function CheckoutContent() {
           )}
           {mode === 'stars' ? (
             <div className="flex justify-between items-center mt-2">
-              <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">Stars</span>
-              <span className="text-[13px] font-semibold text-[var(--seafoam)]">
+              <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">Stars</span>
+              <span className="text-[13px] font-semibold text-[#F8F4EC]">
                 ✦ {product.starsPrice.toLocaleString()}
               </span>
             </div>
           ) : (
             <div className="flex justify-between items-center mt-2">
-              <span className="text-[11px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)]">SOL</span>
+              <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">SOL</span>
               <span className="text-[13px] font-semibold text-[#F8F4EC]">
                 {discountedSol > 0 ? `${formatSol(discountedSol)} SOL` : '—'}
               </span>
             </div>
           )}
           {orderId && (
-            <p className="text-[9px] tracking-[0.16em] uppercase text-[rgba(232,230,221,0.5)] mt-3 break-all">
+            <p className="text-[9px] tracking-[0.16em] uppercase text-[#F8F4EC]/70 mt-3 break-all">
               Order · {orderId.slice(0, 8)}…
             </p>
           )}
         </aside>
       </div>
+
+      <SuggestedTelescopes currentId={product.id} dealerId={product.dealerId} />
+
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </PageContainer>
@@ -572,15 +570,15 @@ function BurnSlider({
     <div
       className="rounded-md p-4 flex flex-col gap-2"
       style={{
-        background: 'rgba(94, 234, 212, 0.04)',
-        border: '0.5px solid rgba(94, 234, 212, 0.18)',
+        background: 'rgba(255, 179, 71, 0.05)',
+        border: '0.5px solid rgba(255, 179, 71, 0.28)',
       }}
     >
       <div className="flex items-baseline justify-between">
-        <span className="text-[10px] tracking-[0.18em] uppercase text-[var(--seafoam)] font-medium">
+        <span className="text-[10px] tracking-[0.18em] uppercase text-[var(--orange)] font-medium">
           Burn Stars · up to {Math.round(MAX_BURN_RATIO * 100)}% off
         </span>
-        <span className="text-[10px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.55)] font-mono">
+        <span className="text-[10px] tracking-[0.14em] uppercase text-[#F8F4EC] font-mono">
           Balance ✦ {balance.toLocaleString()}
         </span>
       </div>
@@ -594,21 +592,21 @@ function BurnSlider({
         onChange={e => setBurnStars(Number(e.target.value))}
         disabled={burning || !!burnSig}
         className="w-full"
-        style={{ accentColor: 'var(--seafoam)' }}
+        style={{ accentColor: 'var(--orange)' }}
       />
 
       <div className="flex items-center justify-between text-[12px] font-mono">
-        <span style={{ color: 'rgba(232,230,221,0.7)' }}>
+        <span className="text-[#F8F4EC]">
           ✦ {burnStars.toLocaleString()} burning
         </span>
-        <span style={{ color: 'var(--seafoam)', fontWeight: 600 }}>
+        <span style={{ color: 'var(--orange)', fontWeight: 600 }}>
           −{gelOff.toFixed(2)} ₾
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-[rgba(232,230,221,0.08)]">
-        <span style={{ color: 'rgba(232,230,221,0.55)' }}>New total</span>
-        <span style={{ color: 'var(--stl-text-bright)', fontWeight: 600 }}>
+      <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-[rgba(255,179,71,0.18)]">
+        <span className="text-[#F8F4EC]">New total</span>
+        <span className="text-[#F8F4EC]" style={{ fontWeight: 600 }}>
           {newTotal.toFixed(2)} ₾
         </span>
       </div>
@@ -619,7 +617,7 @@ function BurnSlider({
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] tracking-[0.14em] uppercase mt-1"
-          style={{ color: 'var(--seafoam)' }}
+          style={{ color: 'var(--orange)' }}
         >
           Burn confirmed → view on Solana Explorer
         </a>
@@ -644,12 +642,12 @@ function Field({ label, value, onChange, required, multiline, type, placeholder 
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
     placeholder: placeholder ?? '',
     className:
-      'stl-checkout-field w-full px-[14px] py-[12px] text-[14px] rounded-[14px] outline-none transition-[border-color,background] duration-150 placeholder:text-[rgba(232,230,221,0.4)]',
+      'stl-checkout-field w-full px-[14px] py-[12px] text-[14px] rounded-[14px] outline-none transition-[border-color,background] duration-150 placeholder:text-[rgba(248,244,236,0.4)]',
   };
   return (
     <label className="flex flex-col gap-[7px]">
-      <span className="text-[10px] tracking-[0.18em] uppercase text-[rgba(232,230,221,0.65)]">
-        {label}{required && <span className="text-[var(--terracotta)] ml-1">*</span>}
+      <span className="text-[10px] tracking-[0.18em] uppercase text-[#F8F4EC]">
+        {label}{required && <span className="text-[var(--orange)] ml-1">*</span>}
       </span>
       {multiline ? (
         <textarea {...common} rows={2} />
@@ -657,6 +655,81 @@ function Field({ label, value, onChange, required, multiline, type, placeholder 
         <input {...common} type={type ?? 'text'} />
       )}
     </label>
+  );
+}
+
+interface SuggestedProps {
+  currentId: string;
+  dealerId: string;
+}
+
+function SuggestedTelescopes({ currentId, dealerId }: SuggestedProps) {
+  const items = useMemo(() => {
+    const sameDealer = getProductsByDealer(dealerId)
+      .filter(p => p.id !== currentId && p.category === 'telescope');
+    if (sameDealer.length >= 4) return sameDealer.slice(0, 4);
+    const seen = new Set([currentId, ...sameDealer.map(p => p.id)]);
+    const filler = GLOBAL_FALLBACK.filter(p => !seen.has(p.id) && p.category === 'telescope');
+    return [...sameDealer, ...filler].slice(0, 4);
+  }, [currentId, dealerId]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <section className="max-w-[920px] mx-auto mt-[44px] pt-[26px] border-t border-[rgba(248,244,236,0.08)]">
+      <header className="flex items-baseline justify-between mb-[18px]">
+        <h2 className="text-[13px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
+          Suggested telescopes
+        </h2>
+        <Link href="/marketplace" className="text-[10px] tracking-[0.18em] uppercase text-[#F8F4EC]/80 hover:text-[#F8F4EC] transition-colors">
+          See all →
+        </Link>
+      </header>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {items.map((p) => (
+          <SuggestedCard key={p.id} product={p} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SuggestedCard({ product }: { product: Product }) {
+  const href = `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=sol`;
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col rounded-xl p-[12px] transition-all duration-200 hover:-translate-y-[2px]"
+      style={{
+        background: 'rgba(248,244,236,0.025)',
+        border: '0.5px solid rgba(248,244,236,0.10)',
+      }}
+    >
+      <div
+        className="relative w-full rounded-md mb-[10px] overflow-hidden aspect-[1.2]"
+        style={{
+          background:
+            'radial-gradient(ellipse at 50% 50%, rgba(255,179,71,0.05) 0%, transparent 70%), rgba(255,255,255,0.02)',
+          border: '0.5px solid rgba(248,244,236,0.06)',
+        }}
+      >
+        {product.image && (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            style={{ objectFit: 'contain', padding: 8 }}
+            unoptimized
+          />
+        )}
+      </div>
+      <p className="text-[12px] font-medium text-[#F8F4EC] leading-tight line-clamp-2 mb-1">
+        {product.name}
+      </p>
+      <p className="text-[11px] font-mono text-[#F8F4EC] mt-auto pt-1">
+        {formatPrice(product)}
+      </p>
+    </Link>
   );
 }
 

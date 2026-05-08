@@ -30,7 +30,7 @@ export default function MarketsPage() {
         <h1
           style={{
             position: 'relative',
-            fontFamily: '"Source Serif 4", Georgia, serif',
+            fontFamily: 'var(--font-display)',
             fontWeight: 400,
             fontSize: 'clamp(2.75rem, 8vw, 5rem)',
             lineHeight: 1.05,

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrivyClient } from '@privy-io/server-auth';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import { getVisiblePlanets } from '@/lib/planets';
-import { chatRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { chatRateLimit, chatDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -126,11 +126,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { success, remaining } = await checkRateLimit(chatRateLimit, userId);
-    if (!success) {
+    const minute = await checkRateLimit(chatRateLimit, userId);
+    if (!minute.success) {
       return NextResponse.json(
         { error: "You're chatting a lot! Take a quick break and come back in a minute." },
-        { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } },
+        { status: 429, headers: { 'X-RateLimit-Remaining': String(minute.remaining) } },
+      );
+    }
+    const daily = await checkRateLimit(chatDailyLimit, userId);
+    if (!daily.success) {
+      return NextResponse.json(
+        { error: "You've reached today's free ASTRA limit. Come back tomorrow, or upgrade for unlimited chat." },
+        { status: 429, headers: { 'X-RateLimit-Remaining': String(daily.remaining), 'X-RateLimit-Window': 'daily' } },
       );
     }
   } catch (err) {
