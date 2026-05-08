@@ -30,7 +30,7 @@ python tests/detect_errors.py
 ### 3. API Smoke Tests — verify all endpoints
 ```bash
 python tests/test_api.py
-# Checks: /api/sky/verify, /api/mint, /api/award-stars, /api/darksky/data
+# Checks: /api/observe/verify, /api/mint, /api/award-stars, /api/darksky
 ```
 
 ### 4. Mint Flow Test — simulate full observation

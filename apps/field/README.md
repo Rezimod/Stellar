@@ -8,7 +8,7 @@ Built with **Expo (SDK 54)** + **[Tether QVAC](https://qvac.tether.io)** for loc
 
 Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. Stellar's web AI runs on the Claude API and goes dark the moment a user reaches the place they bought their telescope for. Stellar Field fixes that by running everything on the phone via QVAC.
 
-This is the Tether Frontier Hackathon side track entry. See [`../../TETHER_QVAC_TRACK.md`](../../TETHER_QVAC_TRACK.md) for the full plan.
+This is the Tether Frontier Hackathon side track entry. See [`../../docs/qvac-integration.md`](../../docs/qvac-integration.md) for the technical writeup, [`../../docs/qvac-submission.md`](../../docs/qvac-submission.md) for the Superteam Earn submission body, and [`../../docs/qvac-demo-script.md`](../../docs/qvac-demo-script.md) for the 75s demo recording shot list.
 
 ## Architecture
 
@@ -73,10 +73,12 @@ On first run, QVAC fetches **Llama 3.2 1B (Q4_0 quantized, ~700MB)**. Progress i
 
 ## QVAC packages used (so judges can grep)
 
-- `@qvac/sdk` — meta-package; `loadModel`, `completion`, `embed` (Day 1, this commit)
-- `@qvac/transcription-whispercpp` — voice observation logging (Day 3, not yet integrated)
-- `@qvac/tts-onnx` — hands-free sky guidance (Day 4, not yet integrated)
-- `@qvac/translation-nmtcpp` — offline EN↔KA (Day 6, optional)
+- `@qvac/sdk@0.9.2` — meta-package with bare-runtime worker; `loadModel`, `completion`, `embed`, `transcribe` ✅
+- `@qvac/llm-llamacpp` — Llama 3.2 1B Q4 streaming completion ✅
+- `@qvac/embed-llamacpp` — embeddings for hybrid RAG retrieval ✅
+- `@qvac/transcription-whispercpp` — voice observation logging ✅ (verified on Poco X3 NFC)
+- `@qvac/tts-onnx` — hands-free sky guidance (cut for May 11 deadline)
+- `@qvac/translation-nmtcpp` — offline EN↔KA (cut for May 11 deadline)
 
 ## Status
 
@@ -84,11 +86,11 @@ On first run, QVAC fetches **Llama 3.2 1B (Q4_0 quantized, ~700MB)**. Progress i
 |---|---|---|
 | 1 | Expo + QVAC + Privy + Supabase wiring, RAG seed corpus, chat UI | ✅ |
 | 2 | RAG quality pass: 72-chunk corpus, hybrid retrieval, citations in UI, build pipeline scaffold | ✅ |
-| 2.5 | Real-device verification (blocked by macOS-too-old for Xcode; Android Studio path TBD) | ⏳ |
+| 2.5 | Real-device verification on Poco X3 NFC (Snapdragon 732G, Cortex-A76+A55) | ✅ (2026-05-07) |
 | 3 | Whisper voice observation logging — record, transcribe on-device, target auto-extract, Supabase + offline queue, tab nav | ✅ |
-| 4 | TTS sky guidance | ⏳ |
-| 5 | Voice-note → cNFT mint via existing Bubblegum pipeline | ⏳ |
-| 6 | Demo video + submission polish | ⏳ |
+| 4 | TTS sky guidance | cut for May 11 |
+| 5 | Voice-note → cNFT mint via existing Bubblegum pipeline | cut for May 11 (web-side mint only) |
+| 6 | Demo video + submission polish | submission body ready (`docs/qvac-submission.md`); demo recording pending |
 
 ## Known gotchas
 
@@ -102,5 +104,6 @@ On first run, QVAC fetches **Llama 3.2 1B (Q4_0 quantized, ~700MB)**. Progress i
 - [x] Public GitHub repo (this monorepo)
 - [x] QVAC packages used in core functionality, not as wrappers
 - [x] Reproducible build instructions (this README)
-- [ ] Demo video walkthrough (Day 6)
-- [ ] Superteam Earn submission text (Day 6)
+- [x] Release APK published to GitHub releases
+- [x] Superteam Earn submission text drafted (`docs/qvac-submission.md`)
+- [ ] Demo video walkthrough (`docs/qvac-demo-script.md` is the shot list — record, upload to YouTube Unlisted, paste URL into submission)

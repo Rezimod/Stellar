@@ -39,12 +39,12 @@ Sky atlases show you the sky. Stellar connects what you see to a real economy.
 
 - **7-day sky forecast** — hourly cloud cover, seeing, transparency, dark window, Go/Maybe/Skip per night, location-aware (Open-Meteo + astronomy-engine).
 - **Live planet tracker** — Mercury–Saturn + Moon, rise/transit/set, altitude, naked-eye / binocular / telescope visibility.
-- **AR sky finder** — point your phone at the sky, the app overlays what you're aiming at.
-- **AI photo verification** — Claude Vision checks your capture against your GPS, timestamp, EXIF, and the deterministic Sky Oracle hash for your location and time.
+- **AI photo verification** — Claude Sonnet 4.6 vision checks your capture against your GPS, timestamp, EXIF, and the deterministic Sky Oracle hash for your location and time. Cross-wallet hash dedup, reverse-image lookup, and visibility check via `astronomy-engine` round out the pipeline.
 - **Compressed NFT proofs** — every verified observation sealed on Solana via Metaplex Bubblegum. ~$0.000005 per mint.
 - **Stars SPL token** — real on-chain token (not localStorage points), redeemable at Astroman.
-- **ASTRA AI Companion** — ask "what can I see tonight?" and ASTRA answers with live planet positions, weather, and Bortle context for your coordinates.
+- **ASTRA AI Companion** — ask "what can I see tonight?" and ASTRA answers with live planet positions, weather, and Bortle context for your coordinates. (OpenAI gpt-4o-mini on web with sky-data tool calls; on-device Llama 3.2 1B in Stellar Field for offline use.)
 - **Sky missions** — guided observations of the Moon, Jupiter, Saturn, Orion, Pleiades, Andromeda, the Crab. Each completion earns Stars + an NFT.
+- **Prediction markets on celestial events** — Anchor program on devnet (`Bcufe9vy6V3Vn4eqBQqdmRKzJgEcHdVxHci6ursiTkvi`) with auto-resolver oracle. Side activity that rewards observers, not the main loop.
 - **Zero-crypto UX** — sign up with email via Privy, embedded Solana wallet, gasless transactions, no seed phrase, no Phantom install.
 
 ---
@@ -55,13 +55,14 @@ Sky atlases show you the sky. Stellar connects what you see to a real economy.
 
 Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. The cloud AI in our web app dies the moment a user reaches the place they bought their telescope for. **Stellar Field** is the Android companion that runs Astra entirely on the phone, powered by Tether QVAC.
 
-- **Local LLM with RAG** — Llama 3.2 1B Q4_0 + a 72-chunk astronomy corpus (Messier catalog, constellation guide, telescope FAQ). Same Astra persona, no server. (`@qvac/llm-llamacpp` + `@qvac/embed-llamacpp`)
-- **Voice notes at the eyepiece** — press, speak the observation, release. Whisper transcribes on-device. Saves as a structured record, queues for sync, optionally mints as a Discovery Attestation cNFT. (`@qvac/transcription-whispercpp`)
-- **Background sky checker** — local QVAC loop watches planet altitudes via `astronomy-engine` and alerts when targets enter your scope's window — without a server round-trip.
+- **Local LLM with RAG** — Llama 3.2 1B Q4_0 + a 72-chunk astronomy corpus (Messier catalog, constellation guide, telescope FAQ). Same Astra persona, no server. Hybrid retrieval — cosine similarity over QVAC embeddings + keyword overlap + season-relevance bonus. Citation chips below every answer. (`@qvac/llm-llamacpp` + `@qvac/embed-llamacpp`)
+- **Voice notes at the eyepiece** — press, speak the observation ("M31 Andromeda, 25mm at 100x, seeing 7/10"), release. Whisper transcribes on-device. A second pass extracts target, magnification, and seeing into a structured record. Queues for sync; optionally mints as a Discovery Attestation cNFT. (`@qvac/transcription-whispercpp`)
+
+Verified end-to-end on a Poco X3 NFC (Snapdragon 732G, 6GB RAM, 2026-05-07): APK installs, Llama streams chat tokens, Whisper transcribes, voice-log target auto-extraction works, **and airplane-mode chat still streams** — the prize-eligible artifact.
 
 The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on Claude (fast and broad), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
 
-[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Plan + status](docs/archive/TETHER_QVAC_TRACK.md)
+[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
 
 ---
 
@@ -71,11 +72,12 @@ Stellar is a Decentralized Physical Infrastructure Network where the physical in
 
 Every observation contributes a real datapoint — GPS coordinates, timestamp, photo, EXIF, AI-validated subject identification, weather hash. Each one becomes a compressed NFT on-chain: an immutable, geolocated record of what was visible from where, at what time, under what conditions.
 
-| Node Type | Hardware | Data Contributed | Reward |
+| Mission tier | Hardware | Example targets | Reward |
 |---|---|---|---|
-| **Passive** | Smartphone | GPS + timestamp + weather confirmation | 5–25 ✦ |
-| **Observer** | Smartphone + eyes | Verified sky photo, AI-analyzed observation, cNFT proof | 50–250 ✦ |
-| **Advanced** | Telescope + camera | High-resolution captures, Bortle readings, deep-sky imagery | 100–500 ✦ |
+| **Beginner** | Smartphone, naked eye | Tonight's Sky, Moon, Pleiades | 25–60 ✦ |
+| **Intermediate** | Small telescope (4"+) | Jupiter, Saturn, Orion Nebula | 75–100 ✦ |
+| **Hard** | Telescope + dark skies | Andromeda Galaxy (M31) | 175 ✦ |
+| **Expert** | Large aperture (8"+) + Bortle ≤4 | Crab Nebula (M1) | 250 ✦ |
 
 The network grows itself: more observers in more places means denser sky coverage, which makes the data more useful — for ASTRA's recommendations and (eventually) for anyone who needs ground-truth observation data.
 

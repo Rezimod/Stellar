@@ -68,9 +68,8 @@ The web app at stellarrclub.vercel.app keeps using the Claude API for cloud sess
 What runs on the phone via QVAC:
 1. Local LLM with hybrid RAG (`@qvac/llm-llamacpp` + `@qvac/embed-llamacpp`) — cosine similarity over QVAC embeddings + keyword overlap + season-relevance bonus, with citation chips below every answer.
 2. Voice observation logging (`@qvac/transcription-whispercpp`) — press, speak ("M31 Andromeda, 25mm at 100x, seeing 7/10"), release. A second pass extracts target, magnification, and seeing into a structured record.
-3. Background sky-checker — a periodic on-device reasoning loop that cross-references the local planet tracker with the user's session and surfaces alerts ("Saturn is now above 30° altitude — your scope's optimal range") with no server round-trip.
 
-Multiple QVAC capabilities stacked in one pipeline: LLM, embeddings/RAG, and Whisper STT all serve a single coherent product. The voice → transcript → Astra-Q&A → cNFT flow uses three of them in sequence.
+Three QVAC capabilities stacked in one pipeline: LLM, embeddings/RAG, and Whisper STT all serve a single coherent product. The voice → transcript → Astra-Q&A → cNFT flow uses all three in sequence.
 
 The cost story:
 For an active observer who chats with the AI 20 times per night, 5 nights per month, that's ~1,200 Claude API calls/month — roughly $12/user/month at current rates. For Astroman (Georgia's astronomy retailer, the founder's other business with ~$150K inventory and 60K Facebook followers), that bleeds margin off every telescope sold. QVAC moves the cost to zero after the one-time model download.

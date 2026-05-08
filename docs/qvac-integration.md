@@ -60,12 +60,6 @@ At the eyepiece, hands on the focuser, eyes dark-adapted, you cannot type. Press
 
 - **Code:** [`apps/field/lib/voice-log.ts`](../apps/field/lib/voice-log.ts) (extraction in [`apps/field/lib/extract.ts`](../apps/field/lib/extract.ts))
 
-### 3. Background sky checker — local QVAC reasoning loop
-
-While the user is under the scope, a periodic on-device loop cross-references the planet tracker (via `astronomy-engine`) with the user's session and surfaces alerts: *"Saturn is now above 30° altitude — your scope's optimal range."* No server round-trip, no signal needed.
-
-This is the demonstration that QVAC is not just a cloud-LLM fallback — it enables features that cloud AI literally cannot serve.
-
 ## Why this is purposeful integration
 
 1. **Online and offline parity for one assistant.** Same persona, same prompt contract, same brand voice. Not a "lite mode."
@@ -94,9 +88,11 @@ Stellar-rezimod/
 │   └── app/
 │       ├── chat/             ← cloud Astra (Claude)
 │       └── field/            ← APK download landing
-├── docs/
-│   └── qvac-integration.md   ← this file
-└── TETHER_QVAC_TRACK.md      ← detailed plan, status, timeline
+└── docs/
+    ├── qvac-integration.md      ← this file (technical overview for judges)
+    ├── qvac-submission.md       ← Superteam Earn paste-ready submission body
+    ├── qvac-demo-script.md      ← 75s demo recording shot list
+    └── qvac-debug/              ← rep-bound bug reports + chipset compat notes
 ```
 
 ## Build and run (Android)
@@ -113,10 +109,10 @@ QVAC's docs note the SDK does not run on emulators — only physical Android dev
 ## Submission artifacts
 
 - **GitHub repo:** this repository (public)
-- **Demo video:** linked in the root README — 90 seconds, airplane-mode field shot
+- **Demo video:** linked in the root README — 75 seconds, airplane-mode field shot (script: [`qvac-demo-script.md`](./qvac-demo-script.md))
 - **APK:** download from the `/field` route on the web app (also linked in submission)
 - **This document:** technical overview for judges
-- **Plan + status:** [`TETHER_QVAC_TRACK.md`](../TETHER_QVAC_TRACK.md)
+- **Submission body:** [`qvac-submission.md`](./qvac-submission.md) — paste-ready Superteam Earn fields
 
 ## Packages used (judges grep for these)
 
