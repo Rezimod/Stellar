@@ -155,11 +155,11 @@ export default function HeroSection() {
           </span>
 
           <h1 className="home-hero-headline">
-            Astronomy, <em>on chain</em>
+            Observe the sky. <em>Earn rewards.</em>
           </h1>
 
           <p className="home-hero-subtitle">
-            The companion app for everyone with a sky above them and a camera in their pocket. Get tonight's forecast, photograph what you see, earn rewards you can redeem for real telescopes at Astroman.
+            Plan, photograph, redeem.
           </p>
 
           <div className="home-hero-cta-row">
