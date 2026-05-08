@@ -221,14 +221,19 @@ export default function MarketplacePage() {
           </div>
 
           {orderedVisible.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
-              {orderedVisible.map(p => (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px] auto-rows-[1fr]">
+              {orderedVisible.map((p, i) => (
                 <ProductCard
                   key={p.id}
                   product={p}
                   dealerName={showDealer ? getDealerName(p.dealerId) : ''}
                   solPerGEL={solPerGEL}
                   solPriceUsd={solPriceUsd}
+                  className={
+                    i === 0
+                      ? 'md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2'
+                      : ''
+                  }
                 />
               ))}
             </div>
