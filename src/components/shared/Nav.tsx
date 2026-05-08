@@ -181,7 +181,7 @@ export default function Nav() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="nav-icon-btn"
-                style={{ width: 32, height: 32, borderRadius: 8, color: 'rgba(255,255,255,0.85)' }}
+                style={{ width: 32, height: 32, borderRadius: 8, color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 aria-label={t('search')}
               >
                 <Search size={17} strokeWidth={1.9} />
