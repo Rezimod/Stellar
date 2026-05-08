@@ -3458,14 +3458,43 @@
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.04);
   }
-  /* On mobile, the split collapses to single column (rule already exists
-     above). Visible-cards + below-cards reuse the auto-fill grid to
-     keep parity with the previous TargetPicker layout. */
+  /* On mobile, force a 2-up grid for visible + below objects so the
+     planet list reads as a quick-scan card matrix instead of stacked
+     full-width rows. Matches the reference layout. */
   .target-cards--visible,
   .target-cards--below {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  /* Tighten the card so name + altitude + "sets" line all fit cleanly
+     in a half-width column on a 360px-wide phone. */
+  .target-cards--visible .target-card,
+  .target-cards--below .target-card {
+    grid-template-columns: 40px 1fr auto;
+    gap: 10px;
+    padding: 10px 11px;
+    border-radius: 14px;
+  }
+  .target-cards--visible .target-card__thumb,
+  .target-cards--below .target-card__thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+  .target-cards--visible .target-card__name,
+  .target-cards--below .target-card__name {
+    font-size: 14px;
+  }
+  .target-cards--visible .target-card__primary,
+  .target-cards--below .target-card__primary {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .target-cards--visible .target-card__secondary,
+  .target-cards--below .target-card__secondary {
+    font-size: 10px;
+    letter-spacing: 0.10em;
   }
   /* === Mobile-only layout order ===
      compass → status pills → filters → planets → below-horizon →
