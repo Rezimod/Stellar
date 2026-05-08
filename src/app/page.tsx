@@ -859,6 +859,7 @@ export default async function HomePage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('howItWorks.title')}</SectionTitle>
           </div>
 
           <div className="flex flex-col items-center gap-10 md:gap-14 max-w-[1000px] mx-auto">
