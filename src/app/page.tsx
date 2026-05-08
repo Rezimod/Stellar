@@ -895,7 +895,16 @@ export default async function HomePage() {
               </IPhone>
             </div>
             <div className="order-2">
-              <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+              {/* Mobile: phone + horizontal step grid (matches HOW IT WORKS) */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-5 w-full max-w-[420px] mx-auto md:hidden">
+                {[t('missions.step1'), t('missions.step2'), t('missions.step3'), t('missions.step4')].map((title) => (
+                  <div key={title} className="text-center text-white text-[15px] font-semibold leading-tight tracking-[-0.005em]">
+                    {title}
+                  </div>
+                ))}
+              </div>
+              {/* Desktop: divider list */}
+              <ol className="hidden md:block divide-y divide-white/[0.06] border-y border-white/[0.06]">
                 {[t('missions.step1'), t('missions.step2'), t('missions.step3'), t('missions.step4')].map((title) => (
                   <li key={title} className="py-3 md:py-4">
                     <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
@@ -904,7 +913,7 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ol>
-              <div className="mt-5 md:mt-6">
+              <div className="mt-5 md:mt-6 text-center md:text-left">
                 <SectionLink href="/missions">{t('missions.cta')}</SectionLink>
               </div>
             </div>
@@ -924,7 +933,16 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
             <div className="order-2 md:order-1 text-center md:text-left">
-              <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06] text-left">
+              {/* Mobile: phone + horizontal step grid (matches HOW IT WORKS) */}
+              <div className="grid grid-cols-3 gap-x-3 w-full max-w-[420px] mx-auto md:hidden">
+                {[t('learn.step1'), t('learn.step2'), t('learn.step3')].map((title) => (
+                  <div key={title} className="text-center text-white text-[15px] font-semibold leading-tight tracking-[-0.005em]">
+                    {title}
+                  </div>
+                ))}
+              </div>
+              {/* Desktop: divider list */}
+              <ol className="hidden md:block divide-y divide-white/[0.06] border-y border-white/[0.06] text-left">
                 {[t('learn.step1'), t('learn.step2'), t('learn.step3')].map((title) => (
                   <li key={title} className="py-3 md:py-4">
                     <div className="text-white text-[15px] md:text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
