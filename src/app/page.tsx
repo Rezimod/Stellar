@@ -1065,7 +1065,7 @@ export default async function HomePage() {
                       ₾
                     </span>
                   </span>
-                  <span className="font-mono text-[#8B5CF6] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
+                  <span className="font-mono text-[#FFB347] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
                     ★ {p.stars}
                   </span>
                 </div>
