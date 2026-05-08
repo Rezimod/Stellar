@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSkyData, type PlanetData } from '@/lib/use-sky-data';
+import { useMemo } from 'react';
+import { useSkyData, type PlanetData, type ForecastDay } from '@/lib/use-sky-data';
 
 const PLANET_IMG: Record<string, string> = {
   Mercury: '/images/planets/mercury.jpg',
@@ -31,7 +32,7 @@ type Verdict = 'GO' | 'MAYBE' | 'SKIP';
 function verdictFromScore(score: number): { v: Verdict; color: string } {
   if (score >= 70) return { v: 'GO',    color: '#5EEAD4' };
   if (score >= 40) return { v: 'MAYBE', color: '#FFB347' };
-  return { v: 'SKIP', color: 'rgba(255,255,255,0.55)' };
+  return { v: 'SKIP', color: '#94A3B8' };
 }
 
 function fmtTime(iso: string | null): string {
@@ -47,16 +48,33 @@ function pickTop3(planets: PlanetData[]): PlanetData[] {
   return visible.slice(0, 3);
 }
 
+const DAY_INITIAL = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+function dayLetter(iso: string, index: number): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return DAY_INITIAL[index % 7];
+  return DAY_INITIAL[d.getDay()];
+}
+
+function badgeColor(b: 'go' | 'maybe' | 'skip'): string {
+  if (b === 'go') return '#5EEAD4';
+  if (b === 'maybe') return '#FFB347';
+  return '#94A3B8';
+}
+
 export default function TonightAtAGlance() {
   const sky = useSkyData();
 
   if (sky.loading) {
     return (
-      <div className="animate-pulse text-center">
-        <div className="h-24 w-44 mx-auto bg-white/[0.05] rounded mb-6" />
-        <div className="h-2 w-full max-w-[440px] mx-auto bg-white/[0.04] rounded mb-3" />
-        <div className="h-4 w-64 mx-auto bg-white/[0.05] rounded mb-12" />
-        <div className="h-20 w-full bg-white/[0.04] rounded" />
+      <div className="animate-pulse">
+        <div className="aspect-square w-full max-w-[360px] mx-auto rounded-full bg-white/[0.04]" />
+        <div className="mt-8 h-3 w-72 max-w-full mx-auto bg-white/[0.05] rounded" />
+        <div className="mt-10 grid grid-cols-3 gap-3 max-w-[480px] mx-auto">
+          <div className="h-16 bg-white/[0.04] rounded" />
+          <div className="h-16 bg-white/[0.04] rounded" />
+          <div className="h-16 bg-white/[0.04] rounded" />
+        </div>
       </div>
     );
   }
@@ -72,26 +90,22 @@ export default function TonightAtAGlance() {
 
   return (
     <div>
-      {/* ── Verdict + sky-score gauge ─────────────────────────────── */}
-      <div className="flex flex-col items-center text-center">
-        <span
-          className="font-mono font-bold tracking-[0.04em] text-[64px] md:text-[96px] leading-none tabular-nums"
-          style={{ color }}
-        >
-          {v}
-        </span>
+      {/* ── Tonight Sky Dome — visual centerpiece ────────────────── */}
+      <SkyDome
+        planets={sky.planets}
+        verdict={v}
+        verdictColor={color}
+        score={score}
+      />
 
-        <ScoreBar score={score} color={color} />
-
-        {headline && (
-          <p className="mt-6 md:mt-7 text-[15px] md:text-[17px] text-white/70 leading-snug">
-            {headline}.
-          </p>
-        )}
-      </div>
+      {headline && (
+        <p className="mt-6 md:mt-7 text-center text-[14px] md:text-[15.5px] text-white/65 leading-snug max-w-[440px] mx-auto">
+          {headline}.
+        </p>
+      )}
 
       {/* ── 3 stats with mini visuals ─────────────────────────────── */}
-      <div className="mt-12 md:mt-16 grid grid-cols-3 gap-3 md:gap-10 max-w-[560px] mx-auto">
+      <div className="mt-10 md:mt-14 grid grid-cols-3 gap-3 md:gap-10 max-w-[560px] mx-auto">
         <Stat
           label="Cloud"
           value={cloud != null ? `${cloud}%` : '—'}
@@ -111,7 +125,7 @@ export default function TonightAtAGlance() {
 
       {/* ── Top 3 planets — realistic thumbnails ──────────────────── */}
       {top.length > 0 && (
-        <ul className="mt-12 md:mt-16 max-w-[520px] mx-auto divide-y divide-white/[0.06] border-y border-white/[0.06]">
+        <ul className="mt-10 md:mt-14 max-w-[520px] mx-auto divide-y divide-white/[0.06] border-y border-white/[0.06]">
           {top.map((p) => {
             const time = fmtTime(p.transitTime ?? p.riseTime);
             const img = PLANET_IMG[p.name];
@@ -153,6 +167,25 @@ export default function TonightAtAGlance() {
         </ul>
       )}
 
+      {/* ── 7-day forecast strip — bars not text ─────────────────── */}
+      {sky.forecast.length > 0 && (
+        <div className="mt-10 md:mt-14 max-w-[520px] mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/40">
+              7-day outlook
+            </span>
+            <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/25">
+              clear · maybe · skip
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {sky.forecast.slice(0, 7).map((d, i) => (
+              <ForecastRow key={d.date} day={d} index={i} highlight={i === 0} />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mt-10 md:mt-12 text-center">
         <Link
           href="/sky"
@@ -166,54 +199,218 @@ export default function TonightAtAGlance() {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Score bar — three-zone scale (skip/maybe/go) with marker dot.
-   The dot earns its position; thresholds are visible, not implied.
+   Sky Dome — circular visual centerpiece, mirrors the Sky page's
+   SkyMapScreen language: dark cosmic gradient, compass anchors,
+   altitude rings, stars + real planet positions tonight.
+
+   Replaces the previous 96px "SKIP/GO" text block. The verdict
+   becomes a small chip; the score sits inside the dome.
    ───────────────────────────────────────────────────────────────── */
-function ScoreBar({ score, color }: { score: number; color: string }) {
-  const clamped = Math.max(0, Math.min(100, score));
+function SkyDome({
+  planets,
+  verdict,
+  verdictColor,
+  score,
+}: {
+  planets: PlanetData[];
+  verdict: Verdict;
+  verdictColor: string;
+  score: number;
+}) {
+  // Stable star field — deterministic so SSR/CSR match. Anchored points
+  // give the dome texture without competing with planets.
+  const stars = useMemo(() => {
+    const seed = 17;
+    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
+    for (let i = 0; i < 36; i++) {
+      const a = (i * seed * 13) % 360;
+      const rad = ((i * 7 + 11) % 100) / 100;
+      const x = 50 + Math.cos((a * Math.PI) / 180) * (rad * 44);
+      const y = 50 + Math.sin((a * Math.PI) / 180) * (rad * 44);
+      const r = i % 5 === 0 ? 0.55 : 0.32;
+      const o = 0.32 + ((i * 3) % 5) * 0.1;
+      out.push({ x, y, r, o });
+    }
+    return out;
+  }, []);
+
+  // Project (azimuth, altitude) onto the 100x100 dome.
+  // Center = zenith (alt=90). Edge = horizon (alt=0).
+  // Azimuth: 0=N (up), 90=E (right), 180=S (down), 270=W (left).
+  function project(az: number, alt: number) {
+    const a = Math.max(0, Math.min(90, alt));
+    const dist = ((90 - a) / 90) * 44;
+    const rad = (az * Math.PI) / 180;
+    return {
+      x: 50 + Math.sin(rad) * dist,
+      y: 50 - Math.cos(rad) * dist,
+    };
+  }
+
+  const visible = planets.filter((p) => p.visible && p.altitude > 0);
+
   return (
-    <div className="mt-6 md:mt-8 w-full max-w-[440px]">
+    <div className="relative w-full max-w-[380px] md:max-w-[420px] mx-auto aspect-square">
+      <svg viewBox="0 0 100 100" className="w-full h-full">
+        <defs>
+          <radialGradient id="tonightDomeBg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#0a1430" />
+            <stop offset="60%" stopColor="#070D22" />
+            <stop offset="100%" stopColor="#04060F" />
+          </radialGradient>
+          <radialGradient id="tonightDomeGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={verdictColor} stopOpacity="0.10" />
+            <stop offset="55%" stopColor={verdictColor} stopOpacity="0.02" />
+            <stop offset="100%" stopColor={verdictColor} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Dome */}
+        <circle cx="50" cy="50" r="46" fill="url(#tonightDomeBg)" stroke="rgba(255,255,255,0.10)" strokeWidth="0.4" />
+        <circle cx="50" cy="50" r="46" fill="url(#tonightDomeGlow)" />
+
+        {/* Altitude rings */}
+        <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.3" />
+        <circle cx="50" cy="50" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.3" />
+
+        {/* Cardinal cross */}
+        <line x1="50" y1="6" x2="50" y2="94" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
+        <line x1="6" y1="50" x2="94" y2="50" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
+
+        {/* Compass labels */}
+        <text x="50" y="3.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">N</text>
+        <text x="96.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">E</text>
+        <text x="50" y="98.5" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">S</text>
+        <text x="3.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">W</text>
+
+        {/* Background stars */}
+        {stars.map((s, i) => (
+          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity={s.o} />
+        ))}
+
+        {/* Real planets */}
+        {visible.map((p) => {
+          const pos = project(p.azimuth, p.altitude);
+          const dot = PLANET_DOT[p.name] ?? '#FFFFFF';
+          const isBig = p.altitude > 30;
+          return (
+            <g key={p.name}>
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={isBig ? 2.2 : 1.6}
+                fill={dot}
+                opacity={0.95}
+              />
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={isBig ? 4.4 : 3.2}
+                fill="none"
+                stroke={dot}
+                strokeOpacity="0.18"
+                strokeWidth="0.4"
+              />
+              <text
+                x={pos.x}
+                y={pos.y - 4.6}
+                fill={dot}
+                opacity="0.85"
+                fontSize="2.6"
+                textAnchor="middle"
+                fontFamily="monospace"
+                fontWeight="bold"
+                letterSpacing="0.06em"
+              >
+                {p.name.slice(0, 3).toUpperCase()}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Center score puck */}
+        <g>
+          <circle cx="50" cy="50" r="9.5" fill="rgba(4,6,15,0.85)" stroke={verdictColor} strokeOpacity="0.55" strokeWidth="0.5" />
+          <text
+            x="50"
+            y="50.2"
+            fill={verdictColor}
+            fontSize="6"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="monospace"
+            fontWeight="700"
+            letterSpacing="0.04em"
+          >
+            {score}
+          </text>
+          <text
+            x="50"
+            y="56.6"
+            fill="rgba(255,255,255,0.35)"
+            fontSize="2"
+            textAnchor="middle"
+            fontFamily="monospace"
+            letterSpacing="0.18em"
+          >
+            /100
+          </text>
+        </g>
+      </svg>
+
+      {/* Verdict chip — positioned above the dome */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 -top-1 md:-top-2 px-3.5 py-1.5 rounded-full font-mono text-[11px] md:text-[12px] font-bold tracking-[0.22em]"
+        style={{
+          color: verdictColor,
+          background: 'rgba(7, 12, 28, 0.92)',
+          border: `1px solid ${verdictColor}40`,
+          boxShadow: `0 0 24px ${verdictColor}1a`,
+        }}
+      >
+        {verdict}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Forecast row — day initial + colored bar + badge dot.
+   Mirrors the SkyForecastScreen pattern in the homepage iPhone.
+   ───────────────────────────────────────────────────────────────── */
+function ForecastRow({
+  day,
+  index,
+  highlight,
+}: {
+  day: ForecastDay;
+  index: number;
+  highlight: boolean;
+}) {
+  const color = badgeColor(day.badge);
+  const pct = Math.max(4, 100 - day.cloudCoverPct);
+  const letter = dayLetter(day.date, index);
+  return (
+    <div className="grid grid-cols-[18px_minmax(0,1fr)_36px] items-center gap-2.5">
+      <span
+        className={`font-mono text-[11px] tabular-nums text-center ${
+          highlight ? 'text-white/85' : 'text-white/40'
+        }`}
+      >
+        {letter}
+      </span>
       <div className="relative h-[6px] rounded-full bg-white/[0.06] overflow-hidden">
-        {/* Threshold dividers */}
-        <span
-          aria-hidden
-          className="absolute inset-y-0 w-px bg-white/15"
-          style={{ left: '40%' }}
-        />
-        <span
-          aria-hidden
-          className="absolute inset-y-0 w-px bg-white/15"
-          style={{ left: '70%' }}
-        />
-        {/* Fill up to score */}
         <div
           className="h-full rounded-full transition-[width] duration-700"
-          style={{ width: `${clamped}%`, background: color }}
+          style={{ width: `${pct}%`, background: color }}
         />
       </div>
-
-      {/* Marker dot, sits on top of bar */}
-      <div className="relative -mt-[10px] h-[14px] mb-1">
-        <span
-          aria-hidden
-          className="absolute top-0 w-[14px] h-[14px] rounded-full"
-          style={{
-            left: `calc(${clamped}% - 7px)`,
-            background: color,
-            boxShadow: '0 0 0 3px #0A1735',
-          }}
-        />
-      </div>
-
-      <div className="mt-2 grid grid-cols-[40fr_30fr_30fr] font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
-        <span className="text-left">Skip</span>
-        <span className="text-center">Maybe</span>
-        <span className="text-right">Go</span>
-      </div>
-
-      <div className="mt-3 font-mono tabular-nums text-[13px] md:text-[14px] text-white/65 text-center">
-        {clamped}<span className="text-white/30"> / 100</span>
-      </div>
+      <span
+        className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-right tabular-nums"
+        style={{ color }}
+      >
+        {day.badge}
+      </span>
     </div>
   );
 }
