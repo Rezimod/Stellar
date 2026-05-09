@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Cloud, CloudRain, CloudSun, Droplets, Moon, Sun, Wind } from 'lucide-react';
 import type { ForecastDay } from '@/lib/use-sky-data';
+import { MoonGlyph, NightCloudStrip } from './visuals';
 
 interface SevenDayForecastProps {
   days: ForecastDay[];
@@ -99,7 +100,10 @@ function DayCard({
         <span className="forecast7__weekday">
           {isToday ? t('today') : dayFmt.format(date)}
         </span>
-        <span className="forecast7__date">{dateFmt.format(date)}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <MoonGlyph phase={day.moonPhase} size={11} />
+          <span className="forecast7__date">{dateFmt.format(date)}</span>
+        </span>
       </div>
 
       <div className={`forecast7__icon forecast7__icon--${day.badge}`} aria-hidden="true">
@@ -118,9 +122,7 @@ function DayCard({
       )}
 
       <div className="forecast7__cloud">
-        <span className="forecast7__cloud-track" aria-hidden="true">
-          <span className="forecast7__cloud-fill" style={{ width: `${cloudPct}%` }} />
-        </span>
+        <NightCloudStrip hours={day.nightHours} height={8} />
         <span className="forecast7__cloud-pct">{cloudPct}%</span>
       </div>
 

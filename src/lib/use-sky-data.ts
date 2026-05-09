@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { MoonPhase } from 'astronomy-engine';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 
 export interface PlanetData {
@@ -35,6 +36,13 @@ export interface TimelinePayload {
   excludedCount: number;
 }
 
+export interface NightHour {
+  /** Local hour 0–23, where 20–23 are evening of `date` and 0–4 are early morning of `date+1`. */
+  hour: number;
+  /** Cloud cover 0–100. */
+  cloudCover: number;
+}
+
 export interface ForecastDay {
   date: string;
   cloudCoverPct: number;
@@ -48,6 +56,12 @@ export interface ForecastDay {
   windKmh?: number;
   /** Average evening relative humidity, %. */
   humidityPct?: number;
+  /** Hourly cloud cover for the observing window (20:00 → 04:00 next day). */
+  nightHours: NightHour[];
+  /** 0 (new) → 0.5 (full) → 1 (new again). Used for the moon-phase glyph. */
+  moonPhase: number;
+  /** Moon illumination 0..1, derived from phase. */
+  moonIllumination: number;
 }
 
 export interface SkyConditions {
@@ -188,7 +202,9 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
           }
         : null;
 
-      const forecast: ForecastDay[] = forecastRaw.slice(0, 7).map(toForecastDay);
+      const forecast: ForecastDay[] = forecastRaw
+        .slice(0, 7)
+        .map((d, i) => toForecastDay(d, forecastRaw[i + 1]));
 
       setData({
         loading: false,
@@ -270,13 +286,53 @@ function averageEveningCloud(hours: RawSkyHour[]): number {
   return Math.round(pool.reduce((s, h) => s + h.cloudCover, 0) / pool.length);
 }
 
-function toForecastDay(d: RawSkyDay): ForecastDay {
+// 9-cell observing window: 20–23 of `date` then 0–4 of `date+1`.
+// If the next day is missing (last forecast row), pad with the last known
+// cloud-cover value so the strip still renders end-to-end.
+function buildNightHours(d: RawSkyDay, next: RawSkyDay | undefined): NightHour[] {
+  const hourAt = (day: RawSkyDay | undefined, hour: number): number | null => {
+    if (!day) return null;
+    const h = day.hours.find((x) => parseInt(x.time.slice(11, 13)) === hour);
+    return h ? h.cloudCover : null;
+  };
+  const cells: NightHour[] = [];
+  for (const hour of [20, 21, 22, 23]) {
+    const v = hourAt(d, hour);
+    if (v != null) cells.push({ hour, cloudCover: v });
+  }
+  for (const hour of [0, 1, 2, 3, 4]) {
+    const v = hourAt(next, hour) ?? hourAt(d, hour);
+    if (v != null) cells.push({ hour, cloudCover: v });
+  }
+  return cells;
+}
+
+// Moon phase at local midnight of `date`. Astronomy-engine returns a 0–360°
+// ecliptic angle; we normalise to 0..1 (0=new, 0.5=full).
+function moonPhaseFor(date: string): { phase: number; illumination: number } {
+  try {
+    const d = new Date(`${date}T00:00:00`);
+    const angle = MoonPhase(d) % 360;
+    const phase = ((angle + 360) % 360) / 360;
+    const illumination = (1 - Math.cos(phase * 2 * Math.PI)) / 2;
+    return { phase, illumination };
+  } catch {
+    return { phase: 0, illumination: 0 };
+  }
+}
+
+function toForecastDay(d: RawSkyDay, next: RawSkyDay | undefined): ForecastDay {
   const cloudCoverPct = averageEveningCloud(d.hours);
+  const nightHours = buildNightHours(d, next);
+  const { phase, illumination } = moonPhaseFor(d.date);
   return {
     date: d.date,
     cloudCoverPct,
     badge: cloudCoverPct < 30 ? 'go' : cloudCoverPct < 70 ? 'maybe' : 'skip',
     recommendation: cloudCoverPct < 30 ? 'Deep sky' : cloudCoverPct < 70 ? 'Bright targets' : 'Stay in',
+    nightHours,
+    moonPhase: phase,
+    moonIllumination: illumination,
   };
 }
 

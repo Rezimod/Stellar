@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useSkyData, type PlanetData, type ForecastDay } from '@/lib/use-sky-data';
+import { MoonGlyph, NightCloudStrip } from '@/components/sky/forecast/visuals';
 
 const PLANET_IMG: Record<string, string> = {
   Mercury: '/images/planets/mercury.jpg',
@@ -175,7 +176,7 @@ export default function TonightAtAGlance() {
               7-day outlook
             </span>
             <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/25">
-              clear · maybe · skip
+              moon · 20h → 04h · verdict
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -388,10 +389,9 @@ function ForecastRow({
   highlight: boolean;
 }) {
   const color = badgeColor(day.badge);
-  const pct = Math.max(4, 100 - day.cloudCoverPct);
   const letter = dayLetter(day.date, index);
   return (
-    <div className="grid grid-cols-[18px_minmax(0,1fr)_36px] items-center gap-2.5">
+    <div className="grid grid-cols-[14px_18px_minmax(0,1fr)_42px] items-center gap-2.5">
       <span
         className={`font-mono text-[11px] tabular-nums text-center ${
           highlight ? 'text-white/85' : 'text-white/40'
@@ -399,12 +399,10 @@ function ForecastRow({
       >
         {letter}
       </span>
-      <div className="relative h-[6px] rounded-full bg-white/[0.06] overflow-hidden">
-        <div
-          className="h-full rounded-full transition-[width] duration-700"
-          style={{ width: `${pct}%`, background: color }}
-        />
-      </div>
+      <span className="flex items-center justify-center" aria-hidden>
+        <MoonGlyph phase={day.moonPhase} size={14} />
+      </span>
+      <NightCloudStrip hours={day.nightHours} height={10} />
       <span
         className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-right tabular-nums"
         style={{ color }}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { ForecastDay } from '@/lib/use-sky-data';
+import { MoonPhase } from 'astronomy-engine';
+import type { ForecastDay, NightHour } from '@/lib/use-sky-data';
 
 interface UseForecast {
   days: ForecastDay[];
@@ -34,13 +35,49 @@ function avg(values: number[]): number {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-function toDay(d: RawSkyDay): ForecastDay {
+function buildNightHours(d: RawSkyDay, next: RawSkyDay | undefined): NightHour[] {
+  const hourAt = (day: RawSkyDay | undefined, hour: number): number | null => {
+    if (!day) return null;
+    const h = day.hours.find((x) => parseInt(x.time.slice(11, 13), 10) === hour);
+    return h ? h.cloudCover : null;
+  };
+  const cells: NightHour[] = [];
+  for (const hour of [20, 21, 22, 23]) {
+    const v = hourAt(d, hour);
+    if (v != null) cells.push({ hour, cloudCover: v });
+  }
+  for (const hour of [0, 1, 2, 3, 4]) {
+    const v = hourAt(next, hour) ?? hourAt(d, hour);
+    if (v != null) cells.push({ hour, cloudCover: v });
+  }
+  return cells;
+}
+
+function moonPhaseFor(date: string): { phase: number; illumination: number } {
+  try {
+    const d = new Date(`${date}T00:00:00`);
+    const angle = MoonPhase(d) % 360;
+    const phase = ((angle + 360) % 360) / 360;
+    const illumination = (1 - Math.cos(phase * 2 * Math.PI)) / 2;
+    return { phase, illumination };
+  } catch {
+    return { phase: 0, illumination: 0 };
+  }
+}
+
+function toDay(d: RawSkyDay, next: RawSkyDay | undefined): ForecastDay {
+  const nightHours = buildNightHours(d, next);
+  const { phase, illumination } = moonPhaseFor(d.date);
+
   if (!d.hours?.length) {
     return {
       date: d.date,
       cloudCoverPct: 50,
       badge: 'maybe',
       recommendation: 'Bright targets',
+      nightHours,
+      moonPhase: phase,
+      moonIllumination: illumination,
     };
   }
 
@@ -64,6 +101,9 @@ function toDay(d: RawSkyDay): ForecastDay {
     tempLow: eveningTemps.length ? Math.round(Math.min(...eveningTemps)) : undefined,
     windKmh: windValues.length ? Math.round(avg(windValues)) : undefined,
     humidityPct: humidityValues.length ? Math.round(avg(humidityValues)) : undefined,
+    nightHours,
+    moonPhase: phase,
+    moonIllumination: illumination,
   };
 }
 
@@ -85,7 +125,7 @@ export function useForecast(lat: number, lon: number): UseForecast {
         if (!res.ok) throw new Error('forecast fetch failed');
         const raw: RawSkyDay[] = await res.json();
         if (cancelled) return;
-        const days = raw.slice(0, 7).map(toDay);
+        const days = raw.slice(0, 7).map((d, i) => toDay(d, raw[i + 1]));
         setState({ days, loading: false, error: null });
       } catch (err) {
         if (cancelled) return;
