@@ -37,19 +37,35 @@ async function isOnline(): Promise<boolean> {
   }
 }
 
+// Llama 3.2 1B in QVAC ships with a small context window (~2k tokens).
+// Keep only the last few turns of dialogue and cap the RAG snippet so we
+// never exceed the budget regardless of how long the chat session runs.
+const MAX_HISTORY_TURNS = 6; // 3 user + 3 assistant
+const MAX_CONTEXT_CHARS = 1200;
+const MAX_USER_CHARS = 600;
+
 async function* fieldStream(
   userMessage: string,
   history: ChatMessage[],
   context: string,
 ): AsyncIterable<string> {
-  const augmentedSystem = context
-    ? `${SYSTEM_PROMPT}\n\nRelevant astronomy reference:\n${context}`
+  const trimmedContext =
+    context.length > MAX_CONTEXT_CHARS ? context.slice(0, MAX_CONTEXT_CHARS) + '…' : context;
+  const augmentedSystem = trimmedContext
+    ? `${SYSTEM_PROMPT}\n\nRelevant astronomy reference:\n${trimmedContext}`
     : SYSTEM_PROMPT;
+
+  const recentHistory = history
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .slice(-MAX_HISTORY_TURNS);
+
+  const trimmedUser =
+    userMessage.length > MAX_USER_CHARS ? userMessage.slice(0, MAX_USER_CHARS) + '…' : userMessage;
 
   const fullHistory: ChatMessage[] = [
     { role: 'system', content: augmentedSystem },
-    ...history,
-    { role: 'user', content: userMessage },
+    ...recentHistory,
+    { role: 'user', content: trimmedUser },
   ];
 
   yield* qvac.generate(fullHistory);
