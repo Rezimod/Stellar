@@ -37,13 +37,15 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
-        loginMethods: ['email', 'sms', 'google'],
+        loginMethods: ['wallet', 'email', 'sms', 'google'],
         appearance: {
           theme: 'dark',
           accentColor: '#FFB347',
           logo: '/brand/logo-mark.svg',
           loginMessage: 'Sign in to Stellar',
-          showWalletLoginFirst: false,
+          showWalletLoginFirst: true,
+          walletChainType: 'solana-only',
+          walletList: ['phantom', 'solflare', 'backpack', 'detected_solana_wallets'],
         },
         embeddedWallets: {
           ethereum: { createOnLogin: 'off' },
