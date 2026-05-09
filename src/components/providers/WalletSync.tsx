@@ -44,10 +44,14 @@ export default function WalletSync() {
       if (sessionStorage.getItem(FUND_KEY_PREFIX + address) === '1') return;
     } catch {}
     fundingRef.current = address;
-    runWhenIdle(() => {
+    runWhenIdle(async () => {
+      const token = await getAccessToken().catch(() => null);
       fetch('/api/wallet/fund', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ address }),
       })
         .then((r) => r.json().catch(() => null))
@@ -63,7 +67,7 @@ export default function WalletSync() {
           }
         });
     });
-  }, [address, source]);
+  }, [address, source, getAccessToken]);
 
   // Stars are minted to whichever wallet was active at the time the user
   // completed each mission. When the user switches wallets (e.g. signs in

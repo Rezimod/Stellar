@@ -480,6 +480,7 @@ Return ONLY valid JSON, no markdown, no preamble:
     deviceMake ?? '',
     deviceModel ?? '',
     isInternetSourced ? '1' : '0',
+    walletParam,
   ].join(':');
   // Dedicated HMAC secret — falls back to ANTHROPIC_API_KEY for compat with
   // tokens issued before the migration. If both are empty we refuse rather

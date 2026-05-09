@@ -8,6 +8,7 @@ import { createHmac } from 'crypto'
 import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit'
 import { eventsForTarget } from '@/lib/astro-events'
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants'
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth'
 
 // Server-side stars calculation — mirrors REWARD_TABLE in observe/verify
 const STARS_BY_CONFIDENCE: Record<string, { base: number; rare_bonus: number }> = {
@@ -19,6 +20,7 @@ const STARS_BY_CONFIDENCE: Record<string, { base: number; rare_bonus: number }> 
 const RARE_OBJECTS = ['saturn', 'jupiter', 'mars', 'venus', 'mercury', 'deep_sky']
 
 export async function POST(req: NextRequest) {
+  const privyId = await verifyPrivy(req);
   // Rate-limit by wallet (parsed from body after validation below)
   // Initial coarse limit by IP to prevent unauthenticated spam
   const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
@@ -73,6 +75,14 @@ export async function POST(req: NextRequest) {
     ? (body.confidence as string)
     : 'unknown';
 
+  // If authenticated, enforce the submitted wallet is linked to this session.
+  if (privyId) {
+    const owns = await assertOwnsWallet(privyId, wallet);
+    if (!owns) {
+      return NextResponse.json({ logged: false, reason: 'Wallet does not match session' }, { status: 403 });
+    }
+  }
+
   // Verify token for non-rejected observations (prevents clients from claiming arbitrary confidence)
   if (confidence !== 'rejected') {
     const token = body.verificationToken;
@@ -80,7 +90,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ logged: false, reason: 'Missing verification token' }, { status: 401 });
     }
     const capturedAt = body.capturedAt ?? '';
-    const expectedTokenData = [
+    const expectedTokenDataV2 = [
+      body.identifiedObject ?? body.target ?? '',
+      confidence,
+      capturedAt,
+      body.fileHash ?? '',
+      body.deviceTier ?? '',
+      body.deviceMake ?? '',
+      body.deviceModel ?? '',
+      body.isInternetSourced ? '1' : '0',
+      wallet,
+    ].join(':');
+    const expectedTokenDataLegacy = [
       body.identifiedObject ?? body.target ?? '',
       confidence,
       capturedAt,
@@ -94,10 +115,16 @@ export async function POST(req: NextRequest) {
     if (!tokenSecret) {
       return NextResponse.json({ logged: false, reason: 'Server misconfigured' }, { status: 503 });
     }
-    const expectedToken = createHmac('sha256', tokenSecret)
-      .update(expectedTokenData)
+    const expectedTokenV2 = createHmac('sha256', tokenSecret)
+      .update(expectedTokenDataV2)
       .digest('hex');
-    if (token !== expectedToken) {
+    // Temporary compatibility window for clients that haven't rolled to
+    // wallet-bound tokens yet. Set ALLOW_LEGACY_OBSERVE_TOKEN=false to disable.
+    const allowLegacy = process.env.ALLOW_LEGACY_OBSERVE_TOKEN !== 'false';
+    const expectedTokenLegacy = createHmac('sha256', tokenSecret)
+      .update(expectedTokenDataLegacy)
+      .digest('hex');
+    if (token !== expectedTokenV2 && (!allowLegacy || token !== expectedTokenLegacy)) {
       return NextResponse.json({ logged: false, reason: 'Invalid verification token' }, { status: 401 });
     }
   }
@@ -111,7 +138,11 @@ export async function POST(req: NextRequest) {
 
   // Event-window 2x bonus: when the observation timestamp is within ±24h of
   // an AstroEvent matching this target, double the Stars award.
-  const matchedEvents = eventsForTarget(identifiedForRare || target, new Date());
+  const capturedAtForEvents =
+    typeof body.capturedAt === 'string' && !isNaN(new Date(body.capturedAt).getTime())
+      ? new Date(body.capturedAt)
+      : new Date();
+  const matchedEvents = eventsForTarget(identifiedForRare || target, capturedAtForEvents);
   const eventBonusApplied = baseStars > 0 && matchedEvents.length > 0;
   const stars = eventBonusApplied ? baseStars * EVENT_BONUS_MULTIPLIER : baseStars;
   if (eventBonusApplied) {

@@ -183,6 +183,15 @@ function isCachedBurnError(err: unknown): boolean {
   return (err as { code?: string })?.code === '23505';
 }
 
+function decodeBurnAmount(ixData: Buffer): bigint | null {
+  // SPL Token Burn = discriminator 8 + u64 amount LE
+  // SPL Token BurnChecked = discriminator 15 + u64 amount LE + u8 decimals
+  if (!ixData || ixData.length < 9) return null;
+  const discriminator = ixData[0];
+  if (discriminator !== 8 && discriminator !== 15) return null;
+  return ixData.readBigUInt64LE(1);
+}
+
 export async function POST(req: NextRequest) {
   const privyId = await authenticate(req);
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -287,6 +296,13 @@ export async function POST(req: NextRequest) {
   }
   if (!burnIx.keys[2].pubkey.equals(owner)) {
     return NextResponse.json({ error: 'Burn authority must be the wallet owner' }, { status: 400 });
+  }
+  const burnAmount = decodeBurnAmount(Buffer.from(burnIx.data));
+  if (burnAmount === null) {
+    return NextResponse.json({ error: 'SPL token instruction must be Burn/BurnChecked' }, { status: 400 });
+  }
+  if (burnAmount !== BigInt(body.amount)) {
+    return NextResponse.json({ error: 'Burn amount in transaction does not match request amount' }, { status: 400 });
   }
 
   // (Re)validate eligibility just before submission — guards against price /

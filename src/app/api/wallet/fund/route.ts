@@ -11,6 +11,7 @@ import bs58 from 'bs58';
 import { isValidPublicKey } from '@/lib/validate';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 export const maxDuration = 30;
 
@@ -34,6 +35,7 @@ function getLimiter(): Ratelimit | null {
 }
 
 export async function POST(req: NextRequest) {
+  const privyId = await verifyPrivy(req);
   let body: { address?: unknown };
   try {
     body = await req.json();
@@ -43,6 +45,18 @@ export async function POST(req: NextRequest) {
   const address = typeof body.address === 'string' ? body.address : '';
   if (!isValidPublicKey(address)) {
     return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
+  }
+  // Compatibility window: allow unauthenticated calls for now so older clients
+  // still work. Set ALLOW_UNAUTH_WALLET_FUND=false to require auth.
+  const allowUnauthed = process.env.ALLOW_UNAUTH_WALLET_FUND !== 'false';
+  if (!privyId && !allowUnauthed) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (privyId) {
+    const owns = await assertOwnsWallet(privyId, address);
+    if (!owns) {
+      return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
+    }
   }
 
   const rpcUrl = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';

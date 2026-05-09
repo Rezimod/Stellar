@@ -1,4 +1,5 @@
 import type { Region } from '@/lib/location'
+import { computeMarketplaceStarsPrice } from '@/lib/stars-economy'
 
 export interface Dealer {
   id: string
@@ -1132,6 +1133,11 @@ const PRODUCTS: Product[] = [
   },
 ]
 
+function withMarketplaceStarsPrice(p: Product): Product {
+  if (p.kind === 'stars-only') return p
+  return { ...p, starsPrice: computeMarketplaceStarsPrice(p.price, p.currency) }
+}
+
 // Global fallback: 2 telescopes each from Astroman, Celestron, and Levenhuk
 function buildGlobalFallback(): Product[] {
   const ids = ['astroman', 'celestron-us', 'levenhuk-eu']
@@ -1139,7 +1145,7 @@ function buildGlobalFallback(): Product[] {
     PRODUCTS.filter((p) => p.dealerId === id && p.category === 'telescope')
       .sort((a, b) => a.price - b.price)
       .slice(0, 2)
-  )
+  ).map(withMarketplaceStarsPrice)
 }
 
 export const GLOBAL_FALLBACK = buildGlobalFallback()
@@ -1153,10 +1159,14 @@ export function getDealersByRegion(region: Region): Dealer[] {
 
 export function getProductsByRegion(region: Region): Product[] {
   if (region === 'global') return GLOBAL_FALLBACK
-  if (region === 'asia') return PRODUCTS.filter((p) => p.dealerId === 'astroman')
-  if (region === 'south_america') return PRODUCTS.filter((p) => p.dealerId === 'celestron-us')
+  if (region === 'asia') {
+    return PRODUCTS.filter((p) => p.dealerId === 'astroman').map(withMarketplaceStarsPrice)
+  }
+  if (region === 'south_america') {
+    return PRODUCTS.filter((p) => p.dealerId === 'celestron-us').map(withMarketplaceStarsPrice)
+  }
   const dealerIds = getDealersByRegion(region).map((d) => d.id)
-  return PRODUCTS.filter((p) => dealerIds.includes(p.dealerId))
+  return PRODUCTS.filter((p) => dealerIds.includes(p.dealerId)).map(withMarketplaceStarsPrice)
 }
 
 export function getDealerById(id: string): Dealer | undefined {
@@ -1164,11 +1174,12 @@ export function getDealerById(id: string): Dealer | undefined {
 }
 
 export function getProductById(id: string): Product | undefined {
-  return PRODUCTS.find((p) => p.id === id)
+  const p = PRODUCTS.find((x) => x.id === id)
+  return p ? withMarketplaceStarsPrice(p) : undefined
 }
 
 export function getProductsByDealer(dealerId: string): Product[] {
-  return PRODUCTS.filter((p) => p.dealerId === dealerId)
+  return PRODUCTS.filter((p) => p.dealerId === dealerId).map(withMarketplaceStarsPrice)
 }
 
 export function getAllDealers(): Dealer[] {

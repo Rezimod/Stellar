@@ -205,7 +205,10 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 if (solanaWallet?.address) {
                   fetch('/api/observe/log', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(verifyToken ? { Authorization: `Bearer ${verifyToken}` } : {}),
+                    },
                     body: JSON.stringify({
                       wallet: solanaWallet.address,
                       target: mission.name,
@@ -413,9 +416,13 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     // --- Log observation (use TOTAL stars so server records the full amount) ---
     if (solanaWallet?.address) {
       const pvm = photoVerification?.metadata;
+      const logToken = await getAccessToken().catch(() => null);
       fetch('/api/observe/log', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(logToken ? { Authorization: `Bearer ${logToken}` } : {}),
+        },
         body: JSON.stringify({
           wallet: solanaWallet.address,
           target: targetName,

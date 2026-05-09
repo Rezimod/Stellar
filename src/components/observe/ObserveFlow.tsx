@@ -162,11 +162,15 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     }
   };
 
-  const logObservation = (v: PhotoVerificationResult, mintTx: string | null = null) => {
+  const logObservation = async (v: PhotoVerificationResult, mintTx: string | null = null) => {
     if (!walletAddress) return;
+    const token = await getAccessToken().catch(() => null);
     fetch('/api/observe/log', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({
         wallet: walletAddress,
         target: v.identifiedObject,
@@ -237,14 +241,14 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
       setMintError('Minting unavailable — Stars still collected');
     }
     mintingRef.current = false;
-    logObservation(verification, txId || null);
+    void logObservation(verification, txId || null);
     setStep('done');
   };
 
   const handleCollectOnly = () => {
     if (!verification || mintingRef.current) return;
     mintingRef.current = true;
-    logObservation(verification);
+    void logObservation(verification);
     setStep('done');
   };
 

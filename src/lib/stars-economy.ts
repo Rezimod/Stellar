@@ -9,6 +9,32 @@ export const STARS_PER_GEL = 100;
 export const MAX_BURN_RATIO = 0.30;
 export const BURN_INCREMENT = 100;
 
+// Marketplace “pay in Stars” checkout (separate from §4 burn-for-discount).
+// Calibrated: 288 GEL ≈ 1,350 Stars. USD/EUR list prices → GEL equiv, then same rate.
+export const MARKETPLACE_GEL_PER_USD = 2.7;
+export const MARKETPLACE_USD_PER_EUR = 1.08;
+export const MARKETPLACE_REFERENCE_GEL = 288;
+export const MARKETPLACE_REFERENCE_STARS = 1350;
+/** Stars per 1 GEL of catalog list price (1350 / 288 ≈ 4.69). */
+export const MARKETPLACE_STARS_PER_GEL =
+  MARKETPLACE_REFERENCE_STARS / MARKETPLACE_REFERENCE_GEL;
+
+export function fiatGelEquivalent(price: number, currency: string): number {
+  if (!Number.isFinite(price)) return 0;
+  const c = currency.toUpperCase();
+  if (c === 'GEL') return price;
+  if (c === 'USD') return price * MARKETPLACE_GEL_PER_USD;
+  if (c === 'EUR') return price * MARKETPLACE_USD_PER_EUR * MARKETPLACE_GEL_PER_USD;
+  return price * MARKETPLACE_GEL_PER_USD;
+}
+
+/** Stars price for dual-price marketplace items (not Star Shop fixed tiers). */
+export function computeMarketplaceStarsPrice(price: number, currency: string): number {
+  if (!Number.isFinite(price) || price <= 0) return 0;
+  const gel = fiatGelEquivalent(price, currency);
+  return Math.max(1, Math.round(gel * MARKETPLACE_STARS_PER_GEL));
+}
+
 export function starsToGEL(stars: number): number {
   return stars / STARS_PER_GEL;
 }
