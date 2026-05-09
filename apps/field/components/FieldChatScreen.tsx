@@ -40,7 +40,7 @@ export function FieldChatScreen() {
     citations: Citation[];
   } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mode, setMode] = useState<CompanionMode>('auto');
+  const [mode, setMode] = useState<CompanionMode>('field');
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
