@@ -143,14 +143,11 @@ export default function FieldPage() {
               fontWeight: 600,
               fontSize: 18,
               color: 'var(--text-primary)',
-              margin: '0 0 6px',
+              margin: '0 0 20px',
             }}
           >
             {t('cta.title')}
           </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
-            {t('cta.body')}
-          </p>
           {apkAvailable ? (
             <a
               href={APK_URL}
