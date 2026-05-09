@@ -6,17 +6,11 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowUp, WifiOff, ChevronRight } from 'lucide-react';
+import { ArrowUp, WifiOff } from 'lucide-react';
 import Link from 'next/link';
-import { useLocation } from '@/lib/location';
 import PageContainer from '@/components/layout/PageContainer';
 
 interface Msg { role: 'user' | 'assistant'; content: string; }
-
-const DEMO_MESSAGES: Msg[] = [
-  { role: 'user', content: "What can I see tonight?" },
-  { role: 'assistant', content: "Tonight looks great for stargazing! Jupiter is rising in the east around 9 PM at 35° altitude. The Moon is at 40% illumination — minimal interference. Saturn follows at 10 PM. Want me to check cloud cover for your location?" },
-];
 
 export default function ChatPage() {
   return (
@@ -32,22 +26,14 @@ function ChatPageInner() {
   const [authOpen, setAuthOpen] = useState(false);
   const rawLocale = useLocale();
   const locale = rawLocale === 'ka' ? 'ka' : 'en';
-  const { location } = useLocation();
   const t = useTranslations('chat');
   const ts = useTranslations('chat.suggestions');
-  const tf = useTranslations('chat.fieldBanner');
+  const tNav = useTranslations('nav');
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q');
   const autoSentRef = useRef(false);
 
-  const [skySummary, setSkySummary] = useState<{ verified: boolean; cloudCover: number; visibility: string } | null>(null);
-
-  const [messages, setMessages] = useState<Msg[]>([{
-    role: 'assistant',
-    content: locale === 'ka'
-      ? "გამარჯობა, მეამბავე. მე ვარ ASTRA — შენი ასტრონომიული ასისტენტი. მკითხე ნებისმიერი კითხვა ტელესკოპების, ღამის ცის ან კოსმოსის შესახებ. ✦"
-      : "Hello, Observer. I'm ASTRA — your AI astronomer. Ask me anything about tonight's sky, telescopes, or the cosmos. ✦",
-  }]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streamingMsgIdx, setStreamingMsgIdx] = useState<number | null>(null);
@@ -62,12 +48,6 @@ function ChatPageInner() {
     el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
   useEffect(() => { setTimeout(() => textareaRef.current?.focus(), 200); }, []);
-  useEffect(() => {
-    fetch(`/api/sky/verify?lat=${location.lat}&lon=${location.lon}`)
-      .then(r => r.json())
-      .then(d => setSkySummary({ verified: d.verified, cloudCover: d.cloudCover, visibility: d.visibility }))
-      .catch(() => {});
-  }, [location.lat, location.lon]);
 
   // Auto-resize textarea
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -102,8 +82,6 @@ function ChatPageInner() {
           message: msg,
           history: next.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
           locale,
-          lat: location.lat,
-          lon: location.lon,
         }),
         signal: abortController.signal,
       });
@@ -164,7 +142,7 @@ function ChatPageInner() {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [input, loading, messages, locale, location.lat, location.lon, getAccessToken, login]);
+  }, [input, loading, messages, locale, getAccessToken, login]);
 
   useEffect(() => {
     if (!initialQuery || autoSentRef.current) return;
@@ -172,8 +150,6 @@ function ChatPageInner() {
     autoSentRef.current = true;
     send(initialQuery);
   }, [initialQuery, authenticated, loading, send]);
-
-  const displayMessages = authenticated ? messages : [messages[0], ...DEMO_MESSAGES];
 
   const retryLastMessage = () => {
     const msg = lastSentRef.current;
@@ -227,10 +203,9 @@ function ChatPageInner() {
         display: 'flex',
         alignItems: 'center',
         gap: 16,
-        padding: '14px 18px',
+        padding: '12px 18px',
         borderBottom: '1px solid var(--border-subtle)',
       }}>
-        {/* Name + subtitle */}
         <div style={{ minWidth: 0, flex: 1 }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 17, color: 'var(--text-primary)', margin: 0, lineHeight: 1.1, letterSpacing: '-0.015em' }}>
             ASTRA
@@ -241,195 +216,48 @@ function ChatPageInner() {
           </p>
         </div>
 
-        {/* Field Mode + sky-tracking indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <Link
-            href="/field"
-            aria-label={tf('cta')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              fontFamily: 'var(--font-mono)',
-              fontSize: 10,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              textDecoration: 'none',
-              padding: '6px 8px',
-              borderRadius: 6,
-              transition: 'color 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-teal)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
-          >
-            <WifiOff size={12} strokeWidth={1.75} />
-            <span>Field</span>
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.85 }}>
-            <span style={{
-              width: 5, height: 5, borderRadius: '50%',
-              background: 'var(--accent-teal)',
-              boxShadow: '0 0 0 3px rgba(94, 234, 212, 0.10)',
-            }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              {locale === 'ka' ? 'ცის თვალთვალი' : 'Tracking sky'}
-            </span>
-          </div>
-        </div>
+        <Link
+          href="/field"
+          aria-label={t('fieldLinkAria')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontFamily: 'var(--font-mono)',
+            fontSize: 10,
+            color: 'var(--text-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            textDecoration: 'none',
+            padding: '6px 8px',
+            borderRadius: 6,
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-accent-teal)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+        >
+          <WifiOff size={12} strokeWidth={1.75} />
+          <span>{t('fieldLink')}</span>
+        </Link>
       </div>
 
       {/* Messages */}
-      <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+      <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 min-h-0">
 
-        {/* Idle Briefing — replaces greeting bubble + cloudy card + field banner */}
-        {messages.length === 1 && (
-          <div style={{
-            marginTop: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 26,
-            paddingTop: 16,
-            paddingBottom: 4,
-            maxWidth: 520,
-            width: '100%',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-          }}>
-            {/* Verdict block */}
-            <section>
-              <p style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 10,
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.16em',
-                margin: '0 0 14px',
-              }}>
-                {locale === 'ka' ? 'ამ საღამოს' : 'Tonight'}
-                {location.city ? ` · ${location.city}` : ''}
-              </p>
+        {messages.length === 0 && (
+          <div className="flex-1 flex flex-col items-center justify-center px-2 py-6 min-h-[100px] gap-5">
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 14,
+              color: 'var(--text-muted)',
+              textAlign: 'center',
+              margin: 0,
+              lineHeight: 1.45,
+            }}>
+              {t('emptyHint')}
+            </p>
 
-              <h2 style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 500,
-                fontSize: 34,
-                lineHeight: 1.05,
-                color: 'var(--text-primary)',
-                margin: '0 0 10px',
-                letterSpacing: '-0.022em',
-              }}>
-                {skySummary
-                  ? skySummary.verified
-                    ? (locale === 'ka' ? 'მოწმენდილი ცა.' : 'Clear skies.')
-                    : (locale === 'ka' ? 'ღრუბლიანია.' : 'Cloudy.')
-                  : (locale === 'ka' ? 'ცის წაკითხვა…' : 'Reading the sky…')}
-              </h2>
-
-              <p style={{
-                color: 'var(--text-secondary)',
-                fontSize: 14.5,
-                lineHeight: 1.55,
-                margin: 0,
-                maxWidth: 460,
-              }}>
-                {skySummary
-                  ? skySummary.verified
-                    ? (locale === 'ka'
-                        ? 'პირობები ჩამოყალიბდა — მკითხე, რა ღირს ამ ღამეს დაყენებად.'
-                        : "Conditions are working in your favor. Ask me what's worth setting up for.")
-                    : (locale === 'ka'
-                        ? 'ეს ღამე დაყენებად არ ვარგა. მოდი ერთად დავგეგმოთ შენი შემდეგი მოწმენდილი ფანჯარა.'
-                        : "Not a night to set up. Let's plan your next clear window together.")
-                  : (locale === 'ka' ? 'ვუკავშირდები ლოკალურ პროგნოზს.' : 'Connecting to your local forecast.')}
-              </p>
-            </section>
-
-            {/* Stat strip */}
-            {skySummary && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 0,
-                borderTop: '1px solid var(--border-subtle)',
-                borderBottom: '1px solid var(--border-subtle)',
-              }}>
-                <div style={{ padding: '14px 16px 14px 0', borderRight: '1px solid var(--border-subtle)' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 26,
-                    fontWeight: 400,
-                    color: 'var(--text-primary)',
-                    fontVariantNumeric: 'tabular-nums',
-                    lineHeight: 1,
-                    marginBottom: 6,
-                    letterSpacing: '-0.02em',
-                  }}>
-                    {skySummary.cloudCover}<span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 3 }}>%</span>
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 10,
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                  }}>
-                    {locale === 'ka' ? 'ღრუბლიანობა' : 'Cloud cover'}
-                  </div>
-                </div>
-                <div style={{ padding: '14px 0 14px 16px' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 26,
-                    fontWeight: 400,
-                    color: 'var(--text-primary)',
-                    lineHeight: 1,
-                    marginBottom: 6,
-                    letterSpacing: '-0.02em',
-                  }}>
-                    {skySummary.visibility.toLowerCase()}
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 10,
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                  }}>
-                    {locale === 'ka' ? 'ხილვადობა' : 'Visibility'}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ASTRA voice */}
-            <div>
-              <p style={{
-                fontFamily: 'var(--font-display)',
-                fontStyle: 'italic',
-                fontWeight: 400,
-                fontSize: 15,
-                lineHeight: 1.55,
-                color: 'var(--text-secondary)',
-                margin: '0 0 8px',
-                paddingLeft: 14,
-                borderLeft: '2px solid var(--accent-teal)',
-              }}>
-                {messages[0].content.replace(/\s*✦\s*$/, '').trim()}
-              </p>
-              <p style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 9.5,
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.16em',
-                margin: 0,
-                paddingLeft: 16,
-              }}>— ASTRA</p>
-            </div>
-
-            {/* Ask ASTRA rail */}
-            <div>
+            <div style={{ width: '100%', maxWidth: 460, display: 'flex', flexDirection: 'column' }}>
               <p style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 10,
@@ -438,13 +266,17 @@ function ChatPageInner() {
                 letterSpacing: '0.16em',
                 margin: '0 0 4px',
               }}>
-                {locale === 'ka' ? 'ჰკითხე ASTRA-ს' : 'Ask ASTRA'}
+                {t('askAstra')}
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
+              {(['page_1', 'page_2', 'page_3'] as const).map(key => {
+                const label = ts(key);
+                return (
                   <button
-                    key={s}
-                    onClick={() => authenticated ? send(s) : setAuthOpen(true)}
+                    key={key}
+                    onClick={() => {
+                      if (!authenticated) { setAuthOpen(true); return; }
+                      send(label);
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -452,9 +284,7 @@ function ChatPageInner() {
                       width: '100%',
                       padding: '13px 0',
                       background: 'transparent',
-                      borderTop: 'none',
-                      borderLeft: 'none',
-                      borderRight: 'none',
+                      border: 'none',
                       borderBottom: '1px solid var(--border-subtle)',
                       color: 'var(--text-primary)',
                       fontSize: 14,
@@ -464,7 +294,7 @@ function ChatPageInner() {
                       transition: 'color 0.18s, padding-left 0.18s',
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.color = 'var(--accent-teal)';
+                      e.currentTarget.style.color = 'var(--color-accent-teal)';
                       e.currentTarget.style.paddingLeft = '6px';
                     }}
                     onMouseLeave={e => {
@@ -472,18 +302,16 @@ function ChatPageInner() {
                       e.currentTarget.style.paddingLeft = '0';
                     }}
                   >
-                    <span style={{ flex: 1, paddingRight: 12 }}>{s}</span>
-                    <ChevronRight size={15} color="var(--text-muted)" strokeWidth={1.75} />
+                    <span style={{ flex: 1, paddingRight: 12 }}>{label}</span>
+                    <ArrowUp size={14} color="var(--text-muted)" strokeWidth={1.75} style={{ transform: 'rotate(45deg)' }} />
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {displayMessages.map((m, i) => {
-          // In idle state, the greeting (i=0) is woven into the Briefing above — skip it here.
-          if (i === 0 && messages.length === 1) return null;
+        {messages.map((m, i) => {
           const isStreamingThis = streamingMsgIdx === i && m.role === 'assistant';
           if (m.role === 'user') {
             return (
@@ -511,7 +339,6 @@ function ChatPageInner() {
 
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-              {/* ASTRA avatar */}
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
                 background: 'rgba(94, 234, 212, 0.10)',
@@ -567,23 +394,6 @@ function ChatPageInner() {
           </div>
         )}
 
-        {/* Suggestion pills — show after every assistant response when not loading.
-            Skipped in idle state — the Briefing rail already lists these. */}
-        {messages.length > 1 && displayMessages[displayMessages.length - 1]?.role === 'assistant' && !loading && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-            {([ts('page_1'), ts('page_2'), ts('page_3'), ts('page_4')] as string[]).map(s => (
-              <button
-                key={s}
-                onClick={() => authenticated ? send(s) : setAuthOpen(true)}
-                className="btn-ghost"
-                style={{ fontSize: 11, padding: '6px 12px', minHeight: 'auto' }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
-
         {error && (
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: 12, color: 'var(--warning)', marginBottom: 8 }}>{error}</p>
@@ -609,9 +419,9 @@ function ChatPageInner() {
           borderTop: '1px solid var(--border-subtle)',
           padding: '12px 16px',
         }}>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, flex: 1 }}>Sign in to chat with ASTRA</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, flex: 1 }}>{t('signInPrompt')}</p>
           <button onClick={() => setAuthOpen(true)} className="btn-primary" style={{ padding: '8px 20px', fontSize: 13, minHeight: 40, flexShrink: 0 }}>
-            Sign In →
+            {tNav('signIn')} →
           </button>
           <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
         </div>
@@ -633,8 +443,8 @@ function ChatPageInner() {
                 send();
               }
             }}
-            placeholder={locale === 'ka' ? 'ჰკითხე ASTRA-ს ნებისმიერი რამ…' : 'Ask ASTRA anything about the sky…'}
-            aria-label={locale === 'ka' ? 'შეტყობინება ASTRA-სთვის' : 'Message ASTRA'}
+            placeholder={t('placeholder')}
+            aria-label={t('placeholder')}
             disabled={!authenticated}
             rows={1}
             style={{
@@ -665,7 +475,7 @@ function ChatPageInner() {
           <button
             onClick={() => send()}
             disabled={!input.trim() || loading || !authenticated}
-            aria-label={locale === 'ka' ? 'გაგზავნა' : 'Send message'}
+            aria-label={t('send')}
             style={{
               width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
               background: input.trim() && !loading && authenticated ? 'var(--gradient-primary)' : 'var(--color-bg-card)',

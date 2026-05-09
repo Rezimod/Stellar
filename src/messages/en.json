@@ -568,6 +568,11 @@
   "chat": {
     "title": "AI Companion",
     "subtitle": "AI Astronomer · Online",
+    "emptyHint": "Ask anything about the night sky.",
+    "askAstra": "Ask ASTRA",
+    "fieldLink": "Field",
+    "fieldLinkAria": "Field Mode — offline AI",
+    "signInPrompt": "Sign in to chat with ASTRA",
     "welcome": "Hello! I'm ASTRA, your personal astronomer. Ask me anything about tonight's sky, your telescope, or astronomy in general.",
     "placeholder": "Ask about tonight's sky…",
     "send": "Send",
