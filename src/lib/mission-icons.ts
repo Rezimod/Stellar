@@ -12,6 +12,9 @@ export type CelestialIconComponent = ComponentType<CelestialIconProps>;
 const MISSION_ICON_IDS: Record<string, string> = {
   "Tonight's Sky":     'night',
   'The Moon':          'moon',
+  'Mercury':           'mercury',
+  'Venus':             'venus',
+  'Mars':              'mars',
   'Jupiter':           'jupiter',
   'Saturn':            'saturn',
   'Orion Nebula':      'orion',
@@ -24,6 +27,9 @@ const MISSION_ICON_IDS: Record<string, string> = {
 export const MISSION_ICON_IDS_BY_ID: Record<string, string> = {
   'free-observation': 'night',
   'moon':             'moon',
+  'mercury':          'mercury',
+  'venus':            'venus',
+  'mars':             'mars',
   'jupiter':          'jupiter',
   'saturn':           'saturn',
   'orion':            'orion',
@@ -44,6 +50,9 @@ const MISSION_IMAGES: Record<string, string> = {
   'demo':             '/images/planets/saturn.jpg',
   'free-observation': '/images/planets/earth.jpg',
   'moon':             '/images/planets/moon.jpg',
+  'mercury':          '/images/planets/mercury.jpg',
+  'venus':            '/images/planets/venus.jpg',
+  'mars':             '/images/planets/mars.jpg',
   'jupiter':          '/images/planets/jupiter.jpg',
   'quick-jupiter':    '/images/planets/jupiter.jpg',
   'saturn':           '/images/planets/saturn.jpg',
@@ -61,6 +70,9 @@ export function getMissionImage(id: string): string {
 // Glow color per mission for hover effects
 export const MISSION_GLOW: Record<string, string> = {
   'moon':             'rgba(232,224,208,0.1)',
+  'mercury':          'rgba(180,160,140,0.1)',
+  'venus':            'rgba(245,210,160,0.1)',
+  'mars':             'rgba(224,118,77,0.1)',
   'jupiter':          'rgba(224,174,111,0.1)',
   'saturn':           'rgba(234,214,184,0.1)',
   'orion':            'rgba(255,107,157,0.1)',

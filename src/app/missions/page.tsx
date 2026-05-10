@@ -34,6 +34,39 @@ type DiffClass = 'easy' | 'med' | 'hard' | 'expert';
 
 type EquipKey = 'naked' | 'telescope' | 'binoculars';
 
+// Per-mission "remind me" reminders. Stored client-side; same shape (Set of
+// mission ids) is used by the settings page should we ever surface a list.
+const REMINDERS_STORAGE_KEY = 'stellar_target_reminders';
+
+function readReminders(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = localStorage.getItem(REMINDERS_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed: unknown = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeReminders(set: Set<string>) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify([...set]));
+  } catch {}
+}
+
+async function ensureNotifPermission(): Promise<NotificationPermission | 'unsupported'> {
+  if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
+  if (Notification.permission !== 'default') return Notification.permission;
+  try {
+    return await Notification.requestPermission();
+  } catch {
+    return 'denied';
+  }
+}
+
 interface GridEntry {
   id: string;
   stars: number;
@@ -42,19 +75,31 @@ interface GridEntry {
   routeId: string;
 }
 
-// Exactly 9 tiles in display order. Entries map to MISSIONS where possible;
-// venus + mars are synthetic tiles that route to the free-observation fallback.
+// 9 tiles in display order. Every entry maps to a real MISSIONS row in
+// src/lib/constants.ts so the briefing screen, AI verification, NFT name and
+// Stars reward all match what the tile advertises.
 const GRID: GridEntry[] = [
   { id: 'moon',      stars: 50,  diff: 'easy',   equip: 'naked',      routeId: 'moon' },
   { id: 'jupiter',   stars: 75,  diff: 'easy',   equip: 'telescope',  routeId: 'jupiter' },
   { id: 'pleiades',  stars: 60,  diff: 'easy',   equip: 'naked',      routeId: 'pleiades' },
-  { id: 'venus',     stars: 40,  diff: 'easy',   equip: 'naked',      routeId: 'free-observation' },
+  { id: 'venus',     stars: 40,  diff: 'easy',   equip: 'naked',      routeId: 'venus' },
   { id: 'saturn',    stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'saturn' },
-  { id: 'mars',      stars: 85,  diff: 'med',    equip: 'telescope',  routeId: 'free-observation' },
+  { id: 'mars',      stars: 85,  diff: 'med',    equip: 'telescope',  routeId: 'mars' },
   { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion' },
   { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda' },
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab' },
 ];
+
+// Live lineup keys -> their real mission ids. Mercury isn't in the GRID but
+// has a real mission entry so tapping it from the live strip works.
+const LINEUP_ROUTE_BY_KEY: Record<string, { routeId: string; stars: number }> = {
+  moon:    { routeId: 'moon',    stars: 50 },
+  jupiter: { routeId: 'jupiter', stars: 75 },
+  saturn:  { routeId: 'saturn',  stars: 100 },
+  mars:    { routeId: 'mars',    stars: 85 },
+  venus:   { routeId: 'venus',   stars: 40 },
+  mercury: { routeId: 'mercury', stars: 60 },
+};
 
 type TipKey = 'cool' | 'zoom' | 'align' | 'eyes';
 const TIPS: { key: TipKey; Icon: LucideIcon }[] = [
@@ -273,18 +318,18 @@ export default function MissionsPage() {
     for (const key of LINEUP_KEYS) {
       const p = map.get(key);
       if (!p || p.altitude <= 0) continue;
-      const entry = GRID.find((g) => g.id === key);
-      const localizedName = entry
-        ? t(`grid.${entry.id}.name`)
-        : key.charAt(0).toUpperCase() + key.slice(1);
+      const route = LINEUP_ROUTE_BY_KEY[key];
+      // Translation keys for every LINEUP_KEYS entry (incl. mercury, which has
+      // no GRID tile) live under `missionsPage.grid.<key>.name` in en/ka.
+      const localizedName = t(`grid.${key}.name`);
       items.push({
         key,
         name: localizedName,
         altitude: p.altitude,
         azimuthDir: p.azimuthDir,
         magnitude: p.magnitude,
-        routeId: entry?.routeId ?? 'free-observation',
-        stars: entry?.stars ?? 40,
+        routeId: route?.routeId ?? 'free-observation',
+        stars: route?.stars ?? 40,
       });
     }
     items.sort((a, b) => b.altitude - a.altitude);
@@ -379,6 +424,10 @@ export default function MissionsPage() {
                     visibleAfter: t('tile.visibleAfter'),
                     notTonight: t('tile.notTonight'),
                     remind: t('tile.remind'),
+                    reminderOn: t('tile.reminderOn'),
+                    reminderRemove: t('tile.reminderRemove'),
+                    reminderSet: t('tile.reminderSet'),
+                    reminderBlocked: t('tile.reminderBlocked'),
                   }}
                 />
               );
@@ -902,6 +951,8 @@ function fmtRiseClock(d: Date | null): string | null {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
+type ReminderFlash = 'set' | 'removed' | 'blocked' | null;
+
 function MissionTile({
   entry,
   above,
@@ -919,11 +970,21 @@ function MissionTile({
     visibleAfter: string;
     notTonight: string;
     remind: string;
+    reminderOn: string;
+    reminderRemove: string;
+    reminderSet: string;
+    reminderBlocked: string;
   };
 }) {
   const [showReminder, setShowReminder] = useState(false);
+  const [reminderOn, setReminderOn] = useState(false);
+  const [flash, setFlash] = useState<ReminderFlash>(null);
   const riseTxt = above ? null : fmtRiseClock(rise);
   const badgeTxt = above ? null : riseTxt ? `${labels.rises} ${riseTxt}` : labels.belowHorizon;
+
+  useEffect(() => {
+    setReminderOn(readReminders().has(entry.id));
+  }, [entry.id]);
 
   const handleActivate = () => {
     if (above) {
@@ -931,6 +992,7 @@ function MissionTile({
       return;
     }
     setShowReminder((v) => !v);
+    setFlash(null);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -940,10 +1002,49 @@ function MissionTile({
     }
   };
 
-  const onReminderClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // TODO: wire up reminder/notification system
+  const closeAfter = (ms: number) => {
+    window.setTimeout(() => {
+      setShowReminder(false);
+      setFlash(null);
+    }, ms);
   };
+
+  const onReminderClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const set = readReminders();
+
+    if (reminderOn) {
+      set.delete(entry.id);
+      writeReminders(set);
+      setReminderOn(false);
+      setFlash('removed');
+      closeAfter(700);
+      return;
+    }
+
+    const perm = await ensureNotifPermission();
+    if (perm === 'denied') {
+      setFlash('blocked');
+      closeAfter(1400);
+      return;
+    }
+
+    set.add(entry.id);
+    writeReminders(set);
+    setReminderOn(true);
+    setFlash('set');
+    closeAfter(900);
+  };
+
+  const reminderText =
+    flash === 'set' ? labels.reminderSet
+    : flash === 'blocked' ? labels.reminderBlocked
+    : flash === 'removed' ? labels.notTonight
+    : reminderOn ? labels.reminderOn
+    : riseTxt ? `${labels.visibleAfter} ${riseTxt}` : labels.notTonight;
+
+  const reminderBtnLabel = reminderOn ? labels.reminderRemove : labels.remind;
 
   return (
     <div
@@ -962,7 +1063,7 @@ function MissionTile({
         </span>
         {badgeTxt && (
           <span className="mis-tile-rise-badge" aria-hidden>
-            {badgeTxt}
+            {reminderOn && '🔔 '}{badgeTxt}
           </span>
         )}
       </div>
@@ -980,16 +1081,19 @@ function MissionTile({
           <span className="mis-tile-stars">+{entry.stars}</span>
         </div>
         {!above && showReminder && (
-          <div className="mis-tile-reminder" onClick={(e) => e.stopPropagation()}>
-            <span className="mis-tile-reminder-text">
-              {riseTxt ? `${labels.visibleAfter} ${riseTxt}` : labels.notTonight}
-            </span>
+          <div
+            className={`mis-tile-reminder${flash ? ` flash-${flash}` : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="mis-tile-reminder-text">{reminderText}</span>
             <button
               type="button"
-              className="mis-tile-reminder-btn"
+              className={`mis-tile-reminder-btn${reminderOn ? ' is-on' : ''}`}
               onClick={onReminderClick}
+              aria-pressed={reminderOn}
+              disabled={flash !== null}
             >
-              {labels.remind}
+              {flash === 'set' ? '✓' : flash === 'blocked' ? '✕' : reminderBtnLabel}
             </button>
           </div>
         )}

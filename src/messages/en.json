@@ -806,7 +806,11 @@
       "belowHorizon": "Below horizon",
       "visibleAfter": "Visible after",
       "notTonight": "Not visible tonight — set a reminder?",
-      "remind": "Remind me"
+      "remind": "Remind me",
+      "reminderOn": "Reminder on — we'll ping you when it's up",
+      "reminderRemove": "Remove",
+      "reminderSet": "Reminder set",
+      "reminderBlocked": "Notifications blocked — enable in browser settings"
     },
     "liveStatus": {
       "daytime": "Daylight — sky too bright",
@@ -831,6 +835,7 @@
     },
     "grid": {
       "moon":      { "name": "The Moon",          "desc": "Craters, seas, and the terminator line" },
+      "mercury":   { "name": "Mercury",           "desc": "Swiftest planet — catch it low at twilight" },
       "jupiter":   { "name": "Jupiter",           "desc": "Spot the four Galilean moons" },
       "pleiades":  { "name": "Pleiades (M45)",    "desc": "Seven sisters — naked eye showpiece" },
       "venus":     { "name": "Venus",             "desc": "Brightest planet — the evening star" },
