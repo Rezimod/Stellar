@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import HeroSaturn from '@/components/home/HeroSaturn';
-import TonightAtAGlance from '@/components/home/TonightAtAGlance';
+import TonightAtAGlance from '@/components/home/TonightAtAGlanceLazy';
 import ComparisonTable from '@/components/home/ComparisonTable';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
