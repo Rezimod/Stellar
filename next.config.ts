@@ -57,6 +57,17 @@ const nextConfig: NextConfig = {
       "frame-ancestors 'none'",
     ].join('; ');
 
+    // Page Cache-Control:
+    //   Per-user cookies (Privy session, locale) make CDN caching unsafe —
+    //   Vary: Cookie would miss on every unique session, and caching publicly
+    //   would leak the locale-specific HTML across users. Instead: drop
+    //   `no-store` so the browser can put pages in its back/forward cache
+    //   (bfcache), which makes back navigation effectively instant, while
+    //   keeping `private, max-age=0` to force the CDN to bypass and the
+    //   browser to revalidate on direct loads. Result: same TTFB on first
+    //   load, instant back/forward — no security or staleness risk.
+    const PAGE_CACHE = 'private, max-age=0, must-revalidate';
+
     return [
       {
         source: '/_next/static/(.*)',
@@ -72,6 +83,14 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=self, geolocation=self' },
           { key: 'Content-Security-Policy', value: csp },
+        ],
+      },
+      // All page routes — browser bfcache enabled, CDN bypass.
+      // (API routes set their own Cache-Control inside each handler.)
+      {
+        source: '/((?!api|_next).*)',
+        headers: [
+          { key: 'Cache-Control', value: PAGE_CACHE },
         ],
       },
     ];
