@@ -977,19 +977,11 @@
   max-width: 460px;
   aspect-ratio: 1 / 1;
   position: relative;
-  isolation: isolate;
-  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.28));
 }
 .sky-map__svg {
   width: 100%;
   height: 100%;
   display: block;
-}
-.sky-map__outer-rim {
-  opacity: 0.85;
-}
-.sky-map__inner-rim {
-  opacity: 0.9;
 }
 .sky-map__svg g[role="button"]:hover circle:first-of-type {
   filter: brightness(1.15);
@@ -1004,9 +996,6 @@
 }
 .sky-map__svg g[role="button"] text {
   transition: opacity 180ms ease, fill 180ms ease;
-}
-.sky-map__svg g[role="button"]:hover .sky-map__label {
-  fill: rgba(248, 244, 236, 0.92);
 }
 .sky-map__svg .sky-map__hit {
   cursor: pointer;
@@ -1041,10 +1030,11 @@
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  background: rgba(7, 10, 15, 0.92);
-  border: 1px solid rgba(248, 244, 236, 0.10);
-  box-shadow: inset 0 1px 0 rgba(248, 244, 236, 0.03), 0 10px 24px rgba(0, 0, 0, 0.22);
-  color: rgba(248, 244, 236, 0.76);
+  background: rgba(7, 11, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.75);
 }
 .sky-map__calibrate {
   cursor: pointer;
@@ -1053,21 +1043,21 @@
 }
 .sky-map__calibrate:hover {
   color: var(--text);
-  border-color: rgba(255, 179, 71, 0.32);
-  background: rgba(22, 15, 8, 0.95);
+  border-color: rgba(255, 179, 71, 0.45);
+  background: rgba(255, 179, 71, 0.08);
 }
 .sky-map__calibrate:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .sky-map__facing {
-  border-color: rgba(255, 179, 71, 0.24);
-  background: rgba(20, 14, 8, 0.94);
+  border-color: rgba(255, 179, 71, 0.40);
+  background: rgba(255, 179, 71, 0.06);
   color: var(--terracotta);
 }
 .sky-map__facing.is-locked {
-  border-color: rgba(120, 220, 170, 0.36);
-  background: rgba(10, 20, 18, 0.94);
+  border-color: rgba(120, 220, 170, 0.60);
+  background: rgba(120, 220, 170, 0.10);
   color: #5EEAD4;
 }
 .sky-map__facing-dot {
@@ -1075,9 +1065,11 @@
   height: 6px;
   border-radius: 999px;
   background: var(--terracotta);
+  box-shadow: 0 0 6px rgba(255, 179, 71, 0.7);
 }
 .sky-map__facing.is-locked .sky-map__facing-dot {
   background: #5EEAD4;
+  box-shadow: 0 0 6px rgba(120, 220, 170, 0.8);
 }
 .sky-map__facing-label {
   color: rgba(255, 255, 255, 0.50);
@@ -1095,8 +1087,8 @@
 
 .sky-map__aim-pill {
   margin-left: auto;
-  border-color: rgba(255, 179, 71, 0.24);
-  color: rgba(255, 179, 71, 0.88);
+  border-color: rgba(255, 179, 71, 0.35);
+  color: rgba(255, 179, 71, 0.95);
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
@@ -1166,15 +1158,15 @@
 }
 
 .sky-map__aim-pill.is-acquiring {
-  border-color: rgba(255, 179, 71, 0.36);
-  background: rgba(20, 14, 8, 0.94);
+  border-color: rgba(255, 179, 71, 0.55);
+  background: rgba(255, 179, 71, 0.08);
 }
 .sky-map__aim-pill.is-acquiring .sky-map__aim-pill-deg {
   color: #ffd870;
 }
 .sky-map__aim-pill.is-locked {
-  border-color: rgba(120, 220, 170, 0.38);
-  background: rgba(10, 20, 18, 0.94);
+  border-color: rgba(120, 220, 170, 0.60);
+  background: rgba(120, 220, 170, 0.10);
   color: #5EEAD4;
 }
 .sky-map__aim-pill.is-locked .sky-map__aim-pill-deg,
@@ -1187,16 +1179,12 @@
    with bodies near the rim. North gets the orange notch + extra weight. */
 .sky-map__cardinal {
   transition: fill 220ms ease;
-  paint-order: stroke fill;
-  stroke: rgba(4, 7, 13, 0.92);
-  stroke-width: 3px;
-  stroke-linejoin: round;
 }
 .sky-map__cardinal--primary {
-  fill: rgba(248, 244, 236, 0.82);
+  fill: rgba(255, 255, 255, 0.85);
 }
 .sky-map__cardinal--secondary {
-  fill: rgba(248, 244, 236, 0.34);
+  fill: rgba(255, 255, 255, 0.40);
 }
 .sky-map__cardinal--north {
   fill: var(--text);
@@ -1219,8 +1207,8 @@
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(18, 13, 8, 0.95);
-  border: 1px solid rgba(255, 179, 71, 0.28);
+  background: rgba(255, 179, 71, 0.08);
+  border: 1px solid rgba(255, 179, 71, 0.35);
   color: rgba(255, 220, 140, 0.95);
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -1228,7 +1216,6 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 3;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.24);
 }
 .sky-map__accuracy-icon {
   display: inline-block;
@@ -1437,9 +1424,10 @@
   gap: 4px;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(7, 10, 15, 0.92);
-  border: 1px solid rgba(248, 244, 236, 0.10);
-  box-shadow: inset 0 1px 0 rgba(248, 244, 236, 0.03), 0 10px 24px rgba(0, 0, 0, 0.22);
+  background: rgba(7, 11, 20, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 2;
 }
 .sky-map__nudge-btn {
@@ -1504,30 +1492,6 @@
 }
 .sky-strip-mini__sep {
   opacity: 0.35;
-}
-
-.sky-map__cname,
-.sky-map__alt-label,
-.sky-map__label {
-  paint-order: stroke fill;
-  stroke: rgba(4, 7, 13, 0.92);
-  stroke-linejoin: round;
-}
-.sky-map__cname {
-  stroke-width: 3px;
-}
-.sky-map__alt-label {
-  stroke-width: 4px;
-}
-.sky-map__label {
-  stroke-width: 4px;
-  font-weight: 500;
-}
-.sky-map__label.is-active {
-  font-weight: 600;
-}
-.sky-map__label.is-planet {
-  letter-spacing: 0.08em;
 }
 
 /* === Body list — simple card per object ===

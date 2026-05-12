@@ -20,7 +20,12 @@ import {
   angularSeparation,
   type HeadingStatus,
 } from '@/lib/sky/use-device-heading';
-import { CONSTELLATION_LINES, positionStars, type PositionedStar } from '@/lib/sky/stars';
+import {
+  CONSTELLATION_LINES,
+  STAR_TO_CONSTELLATION,
+  positionStars,
+  type PositionedStar,
+} from '@/lib/sky/stars';
 import type { ObjectId, SkyObject } from './types';
 import './ARFinder.css';
 
@@ -65,6 +70,58 @@ const COMPASS_TICKS = [
 const COMPASS_VISIBLE_DEG = 80;
 const HOLD_TO_LOCK_MS = 800;
 const POOR_ACCURACY_DEG = 15;
+const STAR_LABEL_LIMIT = 10;
+
+const CONSTELLATION_NAMES: Record<string, string> = {
+  orion: 'ORION',
+  ursaMajor: 'URSA MAJOR',
+  cassiopeia: 'CASSIOPEIA',
+  cygnus: 'CYGNUS',
+  andromeda: 'ANDROMEDA',
+  lyra: 'LYRA',
+};
+
+const STAR_TINT: Record<string, string> = {
+  sirius: '#d9e8ff',
+  vega: '#d4e4ff',
+  rigel: '#cee0ff',
+  spica: '#cfe0ff',
+  regulus: '#d8e4f6',
+  bellatrix: '#d6e2f4',
+  alnilam: '#d4e0f4',
+  alnitak: '#d4e0f4',
+  mintaka: '#d4e0f4',
+  altair: '#f4f1e6',
+  deneb: '#f0eee0',
+  procyon: '#f8f4ec',
+  castor: '#ecedf0',
+  capella: '#fbe9ad',
+  pollux: '#f3c98a',
+  arcturus: '#f0a55c',
+  aldebaran: '#ec8b56',
+  betelgeuse: '#e87454',
+  antares: '#e36c4a',
+};
+
+function starTint(id: string, mag: number): string {
+  if (STAR_TINT[id]) return STAR_TINT[id];
+  if (mag <= -1) return '#cfe7ff';
+  if (mag <= 0) return '#f8f4ec';
+  if (mag <= 1) return '#ffd39b';
+  return '#e8d8b6';
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const raw = hex.replace('#', '');
+  const normalized = raw.length === 3
+    ? raw.split('').map((ch) => ch + ch).join('')
+    : raw;
+  const value = Number.parseInt(normalized, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 /** Per-target lock radius (degrees). Mirrors SkyMap's tolerance ladder. */
 function lockRadiusDeg(obj: SkyObject): number {
@@ -169,11 +226,52 @@ export function ARFinder({
     return stars
       .filter((s) => s.altitude > -2)
       .map((s) => {
+        const skyStar = { ...s, constellation: STAR_TO_CONSTELLATION[s.id] };
         const { dAz, dAlt, screenX, screenY } = project(s.azimuth, s.altitude);
         const onScreen = Math.abs(dAz) <= hFov * 0.55 && Math.abs(dAlt) <= vFov * 0.55;
-        return { star: s, screenX, screenY, onScreen };
+        return { star: skyStar, screenX, screenY, onScreen };
       });
   }, [stars, project, hFov, vFov]);
+
+  const activeConstellation = useMemo(() => {
+    if (!activeBody) return null;
+    return STAR_TO_CONSTELLATION[activeBody.id] ?? null;
+  }, [activeBody]);
+
+  const constellationLabels = useMemo(() => {
+    const buckets = new Map<string, { x: number; y: number; n: number }>();
+    for (const row of positionedStars) {
+      if (!row.onScreen) continue;
+      const key = row.star.constellation;
+      if (!key || !CONSTELLATION_NAMES[key]) continue;
+      const bucket = buckets.get(key) ?? { x: 0, y: 0, n: 0 };
+      bucket.x += row.screenX;
+      bucket.y += row.screenY;
+      bucket.n += 1;
+      buckets.set(key, bucket);
+    }
+    const out: { key: string; x: number; y: number }[] = [];
+    buckets.forEach((bucket, key) => {
+      if (bucket.n < 2) return;
+      out.push({
+        key,
+        x: bucket.x / bucket.n,
+        y: bucket.y / bucket.n,
+      });
+    });
+    return out;
+  }, [positionedStars]);
+
+  const labeledStars = useMemo(() => {
+    return positionedStars
+      .filter(({ star, onScreen }) => {
+        if (!onScreen) return false;
+        if (star.mag <= 0.9) return true;
+        return !!activeConstellation && star.constellation === activeConstellation;
+      })
+      .sort((a, b) => a.star.mag - b.star.mag)
+      .slice(0, STAR_LABEL_LIMIT);
+  }, [positionedStars, activeConstellation]);
 
   const activeRow = useMemo(() => {
     if (!activeBody) return null;
@@ -289,7 +387,7 @@ export function ARFinder({
   }
 
   const constellationSegments = useMemo(() => {
-    const out: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    const out: { aId: string; bId: string; x1: number; y1: number; x2: number; y2: number }[] = [];
     for (const [aId, bId] of CONSTELLATION_LINES) {
       const a = starById.get(aId);
       const b = starById.get(bId);
@@ -300,7 +398,7 @@ export function ARFinder({
       const aOn = Math.abs(pa.dAz) <= hFov * 0.6 && Math.abs(pa.dAlt) <= vFov * 0.6;
       const bOn = Math.abs(pb.dAz) <= hFov * 0.6 && Math.abs(pb.dAlt) <= vFov * 0.6;
       if (!aOn && !bOn) continue;
-      out.push({ x1: pa.screenX, y1: pa.screenY, x2: pb.screenX, y2: pb.screenY });
+      out.push({ aId, bId, x1: pa.screenX, y1: pa.screenY, x2: pb.screenX, y2: pb.screenY });
     }
     return out;
   }, [starById, project, hFov, vFov]);
@@ -331,18 +429,38 @@ export function ARFinder({
         height={viewport.h}
         viewBox={`0 0 ${viewport.w} ${viewport.h}`}
       >
-        {constellationSegments.map((seg, i) => (
-          <line
-            key={i}
-            x1={seg.x1}
-            y1={seg.y1}
-            x2={seg.x2}
-            y2={seg.y2}
-            stroke="rgba(255,255,255,0.18)"
-            strokeWidth={1}
-            strokeLinecap="round"
-          />
-        ))}
+        {constellationSegments.map((seg, i) => {
+          const isActive =
+            !!activeConstellation &&
+            (STAR_TO_CONSTELLATION[seg.aId] === activeConstellation ||
+              STAR_TO_CONSTELLATION[seg.bId] === activeConstellation);
+          return (
+            <line
+              key={i}
+              x1={seg.x1}
+              y1={seg.y1}
+              x2={seg.x2}
+              y2={seg.y2}
+              stroke={isActive ? 'rgba(255,224,174,0.42)' : 'rgba(248,244,236,0.14)'}
+              strokeWidth={isActive ? 1.15 : 0.9}
+              strokeLinecap="round"
+            />
+          );
+        })}
+        {constellationLabels.map((label) => {
+          const isActive = activeConstellation === label.key;
+          return (
+            <text
+              key={label.key}
+              x={label.x}
+              y={label.y}
+              className={`ar-constellation-label${isActive ? ' is-active' : ''}`}
+              textAnchor="middle"
+            >
+              {CONSTELLATION_NAMES[label.key]}
+            </text>
+          );
+        })}
       </svg>
 
       <div className="ar-overlay__layer">
@@ -350,6 +468,10 @@ export function ARFinder({
           if (!onScreen) return null;
           const size = Math.max(1.5, 4 - star.mag * 0.6);
           const opacity = Math.max(0.45, 1 - star.mag * 0.18);
+          const tint = starTint(star.id, star.mag);
+          const glow = star.mag <= 0.6
+            ? `0 0 10px ${hexToRgba(tint, 0.62)}, 0 0 24px ${hexToRgba(tint, 0.24)}`
+            : `0 0 8px ${hexToRgba(tint, 0.35)}`;
           return (
             <div
               key={star.id}
@@ -360,11 +482,22 @@ export function ARFinder({
                 width: size,
                 height: size,
                 opacity,
+                background: tint,
+                boxShadow: glow,
               }}
               title={star.name}
             />
           );
         })}
+        {labeledStars.map(({ star, screenX, screenY }) => (
+          <div
+            key={`label-${star.id}`}
+            className={`ar-star-label${activeConstellation === star.constellation ? ' is-active' : ''}`}
+            style={{ left: screenX + 10, top: screenY - 12 }}
+          >
+            {star.name}
+          </div>
+        ))}
       </div>
 
       <div

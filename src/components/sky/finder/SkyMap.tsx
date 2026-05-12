@@ -493,20 +493,10 @@ export function SkyMap({
         aria-label="Sky map showing visible bodies"
       >
         <defs>
-          <radialGradient id="skymap-bg" cx="50%" cy="42%" r="78%">
-            <stop offset="0%" stopColor="#172132" />
-            <stop offset="50%" stopColor="#0a121e" />
-            <stop offset="100%" stopColor="#04070d" />
-          </radialGradient>
-          <radialGradient id="skymap-zenith-glow" cx="50%" cy="34%" r="62%">
-            <stop offset="0%" stopColor="rgba(236, 242, 248, 0.18)" />
-            <stop offset="55%" stopColor="rgba(132, 150, 184, 0.06)" />
-            <stop offset="100%" stopColor="rgba(132, 150, 184, 0)" />
-          </radialGradient>
-          <radialGradient id="skymap-horizon-glow" cx="50%" cy="100%" r="72%">
-            <stop offset="0%" stopColor="rgba(255, 179, 71, 0.18)" />
-            <stop offset="42%" stopColor="rgba(190, 112, 76, 0.08)" />
-            <stop offset="100%" stopColor="rgba(190, 112, 76, 0)" />
+          <radialGradient id="skymap-bg" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="#0e1a36" />
+            <stop offset="55%" stopColor="#070d22" />
+            <stop offset="100%" stopColor="#02060f" />
           </radialGradient>
           <clipPath id="skymap-clip">
             <circle cx={CX} cy={CY} r={R} />
@@ -529,30 +519,8 @@ export function SkyMap({
           r={R}
           fill="url(#skymap-bg)"
         />
-        <circle
-          cx={CX}
-          cy={CY}
-          r={R + 8}
-          fill="none"
-          stroke="rgba(248,244,236,0.06)"
-          strokeWidth={1}
-          className="sky-map__outer-rim"
-        />
 
         <g clipPath="url(#skymap-clip)" pointerEvents="none">
-          <circle
-            cx={CX}
-            cy={CY}
-            r={R * 0.96}
-            fill="url(#skymap-zenith-glow)"
-          />
-          <ellipse
-            cx={CX}
-            cy={CY + R * 0.72}
-            rx={R * 0.96}
-            ry={R * 0.28}
-            fill="url(#skymap-horizon-glow)"
-          />
           {starfield.map((s, i) => (
             <circle
               key={`bg-${i}`}
@@ -589,15 +557,6 @@ export function SkyMap({
           stroke="rgba(255,255,255,0.22)"
           strokeWidth={1}
           className="sky-map__rim"
-        />
-        <circle
-          cx={CX}
-          cy={CY}
-          r={R - 7}
-          fill="none"
-          stroke="rgba(248,244,236,0.06)"
-          strokeWidth={0.8}
-          className="sky-map__inner-rim"
         />
 
         {/* Constellation centroid labels — quietly identify the figure
@@ -935,7 +894,6 @@ function ObjectGlyph({ p, isActive, onSelect, label, opacity = 1 }: GlyphProps) 
           fontSize="9.5"
           fontFamily="var(--mono)"
           letterSpacing="0.06em"
-          className={`sky-map__label${isActive ? ' is-active' : ''}${isPlanet ? ' is-planet' : ''}`}
         >
           {label.text}
         </text>

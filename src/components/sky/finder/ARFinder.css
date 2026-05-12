@@ -14,6 +14,29 @@
   overflow: hidden;
 }
 
+.ar-overlay::before,
+.ar-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ar-overlay::before {
+  z-index: 0;
+  background:
+    radial-gradient(120% 120% at 50% -10%, rgba(235, 240, 248, 0.04), transparent 48%),
+    radial-gradient(150% 110% at 50% 115%, rgba(255, 190, 130, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(2, 4, 8, 0.06), rgba(2, 4, 8, 0.22));
+}
+
+.ar-overlay::after {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at center, transparent 48%, rgba(3, 5, 9, 0.18) 100%),
+    linear-gradient(180deg, rgba(3, 5, 9, 0.32) 0%, transparent 20%, transparent 78%, rgba(3, 5, 9, 0.34) 100%);
+}
+
 /* Night-sky backdrop. Three stacked layers:
    - .ar-overlay__starfield     — base gradient + dense pseudo-random stars
    - .ar-overlay__starfield-haze — warm horizon glow at the bottom
@@ -44,9 +67,9 @@
     radial-gradient(1px 1px   at 96% 88%, rgba(220,235,255,0.55), transparent 60%),
     radial-gradient(1.4px 1.4px at 17% 83%, rgba(255,255,255,0.7), transparent 60%),
     radial-gradient(1px 1px   at 73% 92%, rgba(255,250,235,0.55), transparent 60%),
-    radial-gradient(ellipse 120% 80% at 50% 110%, rgba(50,32,62,0.55), transparent 70%),
-    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(14,28,68,0.7), transparent 75%),
-    linear-gradient(180deg, #03060f 0%, #06112a 55%, #08182f 100%);
+    radial-gradient(ellipse 120% 80% at 50% 110%, rgba(50,32,62,0.46), transparent 70%),
+    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(14,28,68,0.56), transparent 75%),
+    linear-gradient(180deg, #01030a 0%, #07111f 56%, #0a1727 100%);
 }
 
 /* Diagonal milky-way ribbon. Soft, low-contrast, rotated band of dust
@@ -66,7 +89,7 @@
     );
   mix-blend-mode: screen;
   filter: blur(14px);
-  opacity: 0.85;
+  opacity: 0.92;
 }
 
 /* Warm horizon haze — a thin glow along the bottom edge so the sky has
@@ -100,7 +123,7 @@
     radial-gradient(1px 1px at 84% 81%, rgba(255,255,255,0.16), transparent 60%),
     radial-gradient(1px 1px at 92% 56%, rgba(255,255,255,0.14), transparent 60%);
   mix-blend-mode: screen;
-  animation: arStarfieldTwinkle 6.5s ease-in-out infinite;
+  animation: arStarfieldTwinkle 8.5s ease-in-out infinite;
 }
 
 @keyframes arStarfieldTwinkle {
@@ -122,7 +145,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transform: translate(-50%, -50%);
   /* Smooth pan: bodies slide instead of teleporting between heading
      samples. Short duration keeps the motion responsive rather than
@@ -138,7 +161,7 @@
 .ar-body__crosshair {
   position: absolute;
   inset: -10px;
-  border: 1px solid rgba(255,255,255,0.55);
+  border: 1px solid rgba(248,244,236,0.34);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -146,13 +169,13 @@
 .ar-body--focused .ar-body__crosshair {
   inset: -14px;
   border: 2px solid var(--terracotta);
-  box-shadow: 0 0 24px rgba(255,179,71,0.45);
+  box-shadow: 0 0 0 1px rgba(255,179,71,0.28), 0 0 26px rgba(255,179,71,0.28);
   animation: arFocus 1.6s ease-in-out infinite;
 }
 
 .ar-body--locked .ar-body__crosshair {
   border-color: #5EEAD4;
-  box-shadow: 0 0 28px rgba(120,220,170,0.55);
+  box-shadow: 0 0 0 1px rgba(120,220,170,0.32), 0 0 28px rgba(120,220,170,0.34);
   animation: none;
 }
 
@@ -195,8 +218,8 @@
 .ar-edge-arrow__label {
   display: inline-block;
   padding: 4px 10px;
-  background: rgba(7,11,20,0.72);
-  border: 0.5px solid rgba(255,179,71,0.45);
+  background: rgba(6,9,14,0.84);
+  border: 0.5px solid rgba(255,179,71,0.32);
   border-radius: 999px;
   color: var(--terracotta);
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
@@ -228,21 +251,20 @@
   min-height: 44px;
   padding: 0 14px;
   border-radius: 999px;
-  background: rgba(7, 11, 20, 0.72);
-  border: 0.5px solid rgba(255, 179, 71, 0.40);
+  background: rgba(6, 9, 14, 0.82);
+  border: 0.5px solid rgba(248, 244, 236, 0.14);
   color: var(--terracotta);
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 11px;
   letter-spacing: 0.10em;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   cursor: pointer;
   text-transform: uppercase;
   pointer-events: auto;
-  transition: background 140ms ease, border-color 140ms ease;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 .ar-picker__chip:hover {
-  background: rgba(255, 179, 71, 0.12);
+  background: rgba(18, 13, 8, 0.88);
+  border-color: rgba(255, 179, 71, 0.26);
 }
 
 .ar-picker__chip-label {
@@ -270,11 +292,9 @@
   width: max-content;
   min-width: 200px;
   max-width: 260px;
-  background: rgba(7, 11, 20, 0.88);
-  border: 0.5px solid rgba(255, 255, 255, 0.10);
+  background: rgba(6, 9, 14, 0.90);
+  border: 0.5px solid rgba(248, 244, 236, 0.12);
   border-radius: 14px;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   max-height: 50vh;
   overflow-y: auto;
@@ -334,8 +354,8 @@
   transform: translateX(-50%);
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255,179,71,0.10);
-  border: 1px solid rgba(255,179,71,0.40);
+  background: rgba(18, 13, 8, 0.90);
+  border: 1px solid rgba(255,179,71,0.28);
   color: rgba(255,220,140,0.95);
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 10.5px;
@@ -347,36 +367,36 @@
 
 .ar-body__label {
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
-  font-size: 11px;
-  letter-spacing: 0.10em;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text);
-  background: rgba(7,11,20,0.60);
-  padding: 2px 8px;
+  background: rgba(6,9,14,0.76);
+  padding: 3px 9px;
   border-radius: 999px;
-  border: 0.5px solid rgba(255,255,255,0.18);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  border: 0.5px solid rgba(248,244,236,0.14);
   white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
 }
 
 .ar-body--focused .ar-body__label {
-  color: var(--canvas);
-  background: var(--terracotta);
-  border-color: transparent;
+  color: var(--text);
+  background: rgba(18, 13, 8, 0.84);
+  border-color: rgba(255,179,71,0.34);
 }
 
 .ar-body__coords {
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 9px;
-  letter-spacing: 0.10em;
-  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.14em;
+  color: rgba(248,244,236,0.44);
   white-space: nowrap;
   margin-top: -2px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.55);
 }
 
 .ar-body--focused .ar-body__coords {
-  color: var(--terracotta);
+  color: rgba(255, 210, 146, 0.88);
 }
 
 /* === Stars === */
@@ -384,10 +404,27 @@
 .ar-star {
   position: absolute;
   border-radius: 50%;
-  background: #ffffff;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  box-shadow: 0 0 4px rgba(255,255,255,0.5);
+  mix-blend-mode: screen;
+}
+
+.ar-star-label {
+  position: absolute;
+  transform: translate(0, -50%);
+  pointer-events: none;
+  z-index: 1;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(248, 244, 236, 0.54);
+  text-shadow: 0 1px 2px rgba(3, 5, 9, 0.9);
+  white-space: nowrap;
+}
+
+.ar-star-label.is-active {
+  color: rgba(255, 222, 168, 0.88);
 }
 
 .ar-constellations {
@@ -395,6 +432,21 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+}
+
+.ar-constellation-label {
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  fill: rgba(248, 244, 236, 0.24);
+  paint-order: stroke fill;
+  stroke: rgba(3, 5, 9, 0.92);
+  stroke-width: 4px;
+}
+
+.ar-constellation-label.is-active {
+  fill: rgba(255, 224, 174, 0.56);
 }
 
 /* === Center reticle === */
@@ -409,7 +461,7 @@
   margin-top: -40px;
   pointer-events: none;
   z-index: 2;
-  opacity: 0.6;
+  opacity: 0.42;
 }
 
 .ar-center-reticle__h,
@@ -442,7 +494,7 @@
   margin-top: -2px;
   background: var(--terracotta);
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(255,179,71,0.6);
+  box-shadow: 0 0 10px rgba(255,179,71,0.34);
 }
 
 /* === Center readout (just below the reticle) === */
@@ -465,10 +517,8 @@
   align-items: baseline;
   gap: 6px;
   padding: 5px 12px;
-  background: rgba(7,11,20,0.65);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: 0.5px solid rgba(255,255,255,0.15);
+  background: rgba(6,9,14,0.76);
+  border: 0.5px solid rgba(248,244,236,0.12);
   border-radius: 999px;
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 11px;
@@ -506,7 +556,7 @@
   left: 0;
   right: 0;
   height: 0;
-  border-top: 1px dashed rgba(255,179,71,0.30);
+  border-top: 1px dashed rgba(255,194,120,0.24);
   pointer-events: none;
   z-index: 1;
 }
@@ -518,8 +568,8 @@
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 9px;
   letter-spacing: 0.10em;
-  color: rgba(255,179,71,0.65);
-  background: rgba(7,11,20,0.55);
+  color: rgba(255,210,146,0.62);
+  background: rgba(6,9,14,0.70);
   padding: 1px 6px;
   border-radius: 999px;
 }
@@ -568,7 +618,7 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(180deg, transparent 0%, var(--terracotta) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 179, 71, 0.72) 100%);
   transform: translateX(-50%);
 }
 
@@ -582,14 +632,14 @@
   transform: translateX(-50%);
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 11px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(248,244,236,0.82);
   letter-spacing: 0.08em;
 }
 
 .ar-compass-tick__mark {
   width: 1px;
   height: 8px;
-  background: rgba(255,255,255,0.5);
+  background: rgba(248,244,236,0.42);
 }
 
 .ar-compass-tick--cardinal .ar-compass-tick__mark {
@@ -615,7 +665,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(180deg, rgba(7,11,20,0.72) 0%, rgba(7,11,20,0) 100%);
+  background: linear-gradient(180deg, rgba(6,9,14,0.78) 0%, rgba(6,9,14,0.22) 58%, rgba(6,9,14,0) 100%);
   z-index: 3;
 }
 
@@ -624,13 +674,13 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text);
+  color: rgba(248,244,236,0.88);
 }
 
 .ar-topbar__heading {
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
   font-size: 11px;
-  color: var(--terracotta);
+  color: rgba(255, 214, 156, 0.78);
   letter-spacing: 0.10em;
   text-transform: uppercase;
 }
@@ -643,17 +693,15 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 0.5px solid rgba(255,255,255,0.18);
-  background: rgba(7,11,20,0.55);
+  border: 0.5px solid rgba(248,244,236,0.14);
+  background: rgba(6,9,14,0.72);
   color: var(--text);
   cursor: pointer;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   transition: background 140ms ease, border-color 140ms ease;
 }
 .ar-topbar__btn:active {
-  background: rgba(7,11,20,0.78);
-  border-color: rgba(255,255,255,0.34);
+  background: rgba(6,9,14,0.88);
+  border-color: rgba(248,244,236,0.28);
 }
 
 /* === Bottom hint — primary cue (big mono number or short verb) plus an
@@ -670,10 +718,8 @@
   align-items: center;
   gap: 2px;
   padding: 10px 18px;
-  background: rgba(7,11,20,0.72);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 0.5px solid rgba(255,255,255,0.14);
+  background: rgba(6,9,14,0.78);
+  border: 0.5px solid rgba(248,244,236,0.12);
   border-radius: 16px;
   color: var(--text);
   max-width: 92vw;
@@ -703,8 +749,8 @@
   color: rgba(255,255,255,0.62);
 }
 .ar-bottom-hint.is-locked {
-  border-color: rgba(120,220,170,0.55);
-  background: rgba(11,28,22,0.78);
+  border-color: rgba(120,220,170,0.42);
+  background: rgba(11,28,22,0.82);
 }
 .ar-bottom-hint.is-locked .ar-bottom-hint__primary {
   color: #5EEAD4;

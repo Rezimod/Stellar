@@ -229,11 +229,7 @@ export default function MarketplacePage() {
                   dealerName={showDealer ? getDealerName(p.dealerId) : ''}
                   solPerGEL={solPerGEL}
                   solPriceUsd={solPriceUsd}
-                  className={
-                    i === 0
-                      ? 'md:col-span-2 md:row-span-2 lg:col-span-2 lg:row-span-2'
-                      : ''
-                  }
+                  className={i === 0 ? 'md:col-span-2 lg:col-span-2' : ''}
                 />
               ))}
             </div>
