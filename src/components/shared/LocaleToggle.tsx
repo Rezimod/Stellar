@@ -45,7 +45,7 @@ export default function LocaleToggle() {
             aria-pressed={active}
             aria-label={option.ariaLabel}
             disabled={pending}
-            className="relative z-10 h-full rounded-full px-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812] disabled:cursor-default sm:px-2 sm:text-[11px] sm:tracking-[0.14em]"
+            className="relative z-10 flex h-full items-center justify-center rounded-full px-1 text-[10px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812] disabled:cursor-default sm:px-2 sm:text-[11px] sm:tracking-[0.14em]"
             style={{
               fontFamily: 'var(--font-body)',
               color: active ? '#FFF4DA' : 'rgba(255,255,255,0.56)',

@@ -11,7 +11,6 @@ import {
   Image as ImageIcon, Eye, MapPin, Gem, X,
 } from 'lucide-react'
 import { useStellarUser } from '@/hooks/useStellarUser'
-import { useStellarAuth } from '@/hooks/useStellarAuth'
 import { useDisplayProfile } from '@/hooks/useDisplayProfile'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useLocation } from '@/lib/location'
@@ -55,7 +54,6 @@ export default function FeedPage() {
   const filter = (searchParams?.get('filter') as FilterKey) ?? 'latest'
 
   const { authenticated, address } = useStellarUser()
-  const { } = useStellarAuth()
   const { getAccessToken } = usePrivy()
   const { location } = useLocation()
   const { displayName, firstName, initial: profileInitial, avatarGlyph, avatarId } = useDisplayProfile()
@@ -341,7 +339,7 @@ export default function FeedPage() {
                 <div className="composer-preview">
                   {pendingImage && (
                     <div className="composer-thumb" style={{ backgroundImage: `url(${pendingImage})` }}>
-                      <button className="composer-thumb-x" onClick={() => setPendingImage(null)} aria-label={copy.removeImage}>
+                      <button type="button" className="composer-thumb-x" onClick={() => setPendingImage(null)} aria-label={copy.removeImage}>
                         <X size={12} />
                       </button>
                     </div>
@@ -349,8 +347,12 @@ export default function FeedPage() {
                   {pendingObservation && (
                     <span className="composer-pill">
                       <MapPin size={12} /> {copy.linked}: {pendingObservation.target}
-                      <button onClick={() => setPendingObservation(null)} aria-label={copy.removeObservation}
-                        style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, marginLeft: 4 }}>
+                      <button
+                        type="button"
+                        className="composer-pill-x"
+                        onClick={() => setPendingObservation(null)}
+                        aria-label={copy.removeObservation}
+                      >
                         <X size={11} />
                       </button>
                     </span>
@@ -358,8 +360,12 @@ export default function FeedPage() {
                   {pendingLocation && !pendingObservation && (
                     <span className="composer-pill">
                       <MapPin size={12} /> {pendingLocation.lat}°, {pendingLocation.lon}°
-                      <button onClick={() => setPendingLocation(null)} aria-label={copy.removeLocation}
-                        style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, marginLeft: 4 }}>
+                      <button
+                        type="button"
+                        className="composer-pill-x"
+                        onClick={() => setPendingLocation(null)}
+                        aria-label={copy.removeLocation}
+                      >
                         <X size={11} />
                       </button>
                     </span>
@@ -377,6 +383,7 @@ export default function FeedPage() {
                     onChange={onPickPhoto}
                   />
                   <button
+                    type="button"
                     className={`tool-btn ${pendingImage ? 'active' : ''}`}
                     disabled={posting}
                     onClick={() => fileInputRef.current?.click()}
@@ -386,6 +393,7 @@ export default function FeedPage() {
                     <ImageIcon /> <span className="tool-btn-label">{copy.photo}</span>
                   </button>
                   <button
+                    type="button"
                     className={`tool-btn ${pendingObservation ? 'active' : ''}`}
                     disabled={posting}
                     aria-label={copy.attachObservation}
@@ -413,6 +421,7 @@ export default function FeedPage() {
                     <Eye /> <span className="tool-btn-label">{copy.observation}</span>
                   </button>
                   <button
+                    type="button"
                     className={`tool-btn ${pendingLocation ? 'active' : ''}`}
                     disabled={posting}
                     onClick={requestLocation}
@@ -422,6 +431,7 @@ export default function FeedPage() {
                     <MapPin /> <span className="tool-btn-label">{copy.location}</span>
                   </button>
                   <button
+                    type="button"
                     className="tool-btn"
                     disabled={posting}
                     onClick={() => router.push('/nfts')}
@@ -431,7 +441,7 @@ export default function FeedPage() {
                     <Gem /> <span className="tool-btn-label">NFT</span>
                   </button>
                 </div>
-                <button className="post-btn" disabled={!canPost} onClick={submitPost}>
+                <button type="button" className="post-btn" disabled={!canPost} onClick={submitPost}>
                   {posting ? copy.sending : copy.post}
                 </button>
               </div>
@@ -439,7 +449,7 @@ export default function FeedPage() {
           ) : (
             <div className="composer-auth">
               <span>{copy.signInToPost}</span>
-              <button className="post-btn" onClick={() => setAuthOpen(true)}>{copy.signIn}</button>
+              <button type="button" className="post-btn" onClick={() => setAuthOpen(true)}>{copy.signIn}</button>
             </div>
           )}
 
@@ -447,6 +457,7 @@ export default function FeedPage() {
             {TAB_FILTERS.map(t => (
               <button
                 key={t.key}
+                type="button"
                 className={`filter-tab ${filter === t.key ? 'active' : ''}`}
                 onClick={() => setFilter(t.key)}
               >
@@ -464,7 +475,7 @@ export default function FeedPage() {
           ) : posts.length === 0 ? (
             <div className="feed-empty">
               <p>{copy.empty.body}</p>
-              <button onClick={() => composerRef.current?.focus()}>{copy.empty.compose}</button>
+              <button type="button" onClick={() => composerRef.current?.focus()}>{copy.empty.compose}</button>
             </div>
           ) : (
             <>
