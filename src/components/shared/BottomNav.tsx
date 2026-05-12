@@ -1,5 +1,7 @@
 'use client';
 
+import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CloudSun, Satellite, Home, ShoppingBag, LayoutGrid } from 'lucide-react';
@@ -17,8 +19,13 @@ const TABS: Tab[] = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const nav = (
     <nav
       className="sm:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
@@ -107,4 +114,10 @@ export default function BottomNav() {
       </div>
     </nav>
   );
+
+  if (!mounted) return null;
+
+  // Keep the tab bar attached to the viewport even when a feature opens its
+  // own full-screen scroll container or temporarily scroll-locks the page.
+  return createPortal(nav, document.body);
 }

@@ -24,7 +24,7 @@ export default function LocaleToggle() {
     <div
       role="group"
       aria-label="Language"
-      className="relative inline-grid h-7 w-[62px] shrink-0 grid-cols-2 items-center rounded-full border border-white/10 bg-white/[0.03] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:h-8 sm:w-[74px]"
+      className="relative inline-grid h-7 w-[62px] shrink-0 grid-cols-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.03] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:h-8 sm:w-[74px]"
       style={{ opacity: pending ? 0.6 : 1 }}
     >
       <span
