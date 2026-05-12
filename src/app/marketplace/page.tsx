@@ -125,8 +125,8 @@ export default function MarketplacePage() {
   }, [visible, difficulty]);
   const featuredProduct = orderedVisible[0];
   const remainingProducts = orderedVisible.slice(1);
-  const featuredRowProducts = remainingProducts.slice(0, 2);
-  const catalogProducts = remainingProducts.slice(2);
+  const featuredRowProducts = remainingProducts.slice(0, 4);
+  const catalogProducts = remainingProducts.slice(4);
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
@@ -246,10 +246,10 @@ export default function MarketplacePage() {
                       dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
                       solPerGEL={solPerGEL}
                       solPriceUsd={solPriceUsd}
-                      className="w-[43%] flex-none"
+                      className="w-[41%] flex-none"
                     />
                     {featuredRowProducts.length > 0 ? (
-                      <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-[14px] sm:gap-[16px]">
+                      <div className="grid flex-1 grid-cols-2 gap-[14px] sm:gap-[16px] content-start">
                         {featuredRowProducts.map((p) => (
                           <ProductCard
                             key={p.id}
