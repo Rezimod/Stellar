@@ -51,10 +51,10 @@ export default function LocaleToggle() {
             }}
           >
             <span
-              className="block text-[10px] font-semibold uppercase leading-none tracking-[0.12em] sm:text-[11px] sm:tracking-[0.14em]"
+              className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold uppercase leading-none tracking-[0.12em] sm:text-[11px] sm:tracking-[0.14em]"
               style={{
                 fontFamily: 'var(--font-body)',
-                transform: 'translateY(-1px)',
+                transform: 'translateY(-2px)',
               }}
             >
               {option.label}
