@@ -125,6 +125,8 @@ export default function MarketplacePage() {
   }, [visible, difficulty]);
   const featuredProduct = orderedVisible[0];
   const remainingProducts = orderedVisible.slice(1);
+  const featuredRowProducts = remainingProducts.slice(0, 2);
+  const catalogProducts = remainingProducts.slice(2);
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
@@ -237,8 +239,8 @@ export default function MarketplacePage() {
               </div>
 
               {featuredProduct ? (
-                remainingProducts.length > 0 ? (
-                  <div className="hidden md:flex md:items-start gap-[14px] sm:gap-[16px]">
+                <div className="hidden md:flex md:flex-col gap-[14px] sm:gap-[16px]">
+                  <div className="flex items-start gap-[14px] sm:gap-[16px]">
                     <ProductCard
                       product={featuredProduct}
                       dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
@@ -246,8 +248,24 @@ export default function MarketplacePage() {
                       solPriceUsd={solPriceUsd}
                       className="w-[43%] flex-none"
                     />
-                    <div className="grid flex-1 grid-cols-2 gap-[14px] sm:gap-[16px]">
-                      {remainingProducts.map((p) => (
+                    {featuredRowProducts.length > 0 ? (
+                      <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-[14px] sm:gap-[16px]">
+                        {featuredRowProducts.map((p) => (
+                          <ProductCard
+                            key={p.id}
+                            product={p}
+                            dealerName={showDealer ? getDealerName(p.dealerId) : ''}
+                            solPerGEL={solPerGEL}
+                            solPriceUsd={solPriceUsd}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {catalogProducts.length > 0 ? (
+                    <div className="grid grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
+                      {catalogProducts.map((p) => (
                         <ProductCard
                           key={p.id}
                           product={p}
@@ -257,17 +275,8 @@ export default function MarketplacePage() {
                         />
                       ))}
                     </div>
-                  </div>
-                ) : (
-                  <div className="hidden md:block">
-                    <ProductCard
-                      product={featuredProduct}
-                      dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
-                      solPerGEL={solPerGEL}
-                      solPriceUsd={solPriceUsd}
-                    />
-                  </div>
-                )
+                  ) : null}
+                </div>
               ) : null}
             </>
           ) : (
