@@ -154,7 +154,7 @@
   /* Smooth pan: bodies slide instead of teleporting between heading
      samples. Short duration keeps the motion responsive rather than
      laggy when the user sweeps the phone. */
-  transition: left 90ms linear, top 90ms linear, opacity 240ms ease;
+  transition: opacity 180ms ease;
   will-change: left, top, opacity;
   cursor: pointer;
   pointer-events: auto;

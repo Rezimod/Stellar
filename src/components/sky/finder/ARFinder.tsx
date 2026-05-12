@@ -71,6 +71,13 @@ const COMPASS_VISIBLE_DEG = 80;
 const HOLD_TO_LOCK_MS = 800;
 const POOR_ACCURACY_DEG = 15;
 const STAR_LABEL_LIMIT = 10;
+const DISPLAY_DEADBAND_AZ = 0.14;
+const DISPLAY_DEADBAND_ALT = 0.10;
+const DISPLAY_ALPHA_STILL = 0.08;
+const DISPLAY_ALPHA_MOVE = 0.18;
+const DISPLAY_ALPHA_FAST = 0.3;
+const DISPLAY_SNAP_AZ = 22;
+const DISPLAY_SNAP_ALT = 16;
 
 const CONSTELLATION_NAMES: Record<string, string> = {
   orion: 'ORION',
@@ -129,6 +136,17 @@ function pickerPriority(obj: SkyObject): number {
   if (obj.type === 'planet') return 2;
   if (obj.type === 'star' || obj.type === 'double') return 3;
   return 4;
+}
+
+function wrap360(deg: number): number {
+  return ((deg % 360) + 360) % 360;
+}
+
+function displayAlpha(azDelta: number, altDelta: number): number {
+  const maxDelta = Math.max(Math.abs(azDelta), Math.abs(altDelta));
+  if (maxDelta >= 8) return DISPLAY_ALPHA_FAST;
+  if (maxDelta >= 2.5) return DISPLAY_ALPHA_MOVE;
+  return DISPLAY_ALPHA_STILL;
 }
 
 /** Per-target lock radius (degrees). Mirrors SkyMap's tolerance ladder. */
@@ -198,13 +216,73 @@ export function ARFinder({
     };
   }, []);
 
-  const phoneAim = useMemo(() => ({
+  const [renderAim, setRenderAim] = useState(() => ({
     azimuth: heading ?? 0,
     altitude: altitude ?? 0,
-  }), [heading, altitude]);
+  }));
+  const renderAimRef = useRef(renderAim);
+  const targetAimRef = useRef(renderAim);
 
   const hFov = DEFAULT_HORIZONTAL_FOV;
   const vFov = DEFAULT_VERTICAL_FOV;
+
+  useEffect(() => {
+    renderAimRef.current = renderAim;
+  }, [renderAim]);
+
+  useEffect(() => {
+    targetAimRef.current = {
+      azimuth: heading ?? renderAimRef.current.azimuth,
+      altitude: altitude ?? renderAimRef.current.altitude,
+    };
+    if (heading == null || altitude == null) {
+      const fallbackAim = targetAimRef.current;
+      renderAimRef.current = fallbackAim;
+      setRenderAim(fallbackAim);
+    }
+  }, [heading, altitude]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let raf = 0;
+    const tick = () => {
+      const current = renderAimRef.current;
+      const target = targetAimRef.current;
+      const azDelta = shortestAzDelta(target.azimuth, current.azimuth);
+      const altDelta = target.altitude - current.altitude;
+      const absAz = Math.abs(azDelta);
+      const absAlt = Math.abs(altDelta);
+
+      let nextAz = current.azimuth;
+      let nextAlt = current.altitude;
+
+      if (absAz >= DISPLAY_SNAP_AZ || absAlt >= DISPLAY_SNAP_ALT) {
+        nextAz = target.azimuth;
+        nextAlt = target.altitude;
+      } else {
+        const alpha = displayAlpha(azDelta, altDelta);
+        if (absAz >= DISPLAY_DEADBAND_AZ) nextAz = wrap360(current.azimuth + azDelta * alpha);
+        if (absAlt >= DISPLAY_DEADBAND_ALT) nextAlt = current.altitude + altDelta * alpha;
+      }
+
+      if (
+        Math.abs(shortestAzDelta(nextAz, current.azimuth)) >= 0.01 ||
+        Math.abs(nextAlt - current.altitude) >= 0.01
+      ) {
+        const nextAim = { azimuth: nextAz, altitude: nextAlt };
+        renderAimRef.current = nextAim;
+        setRenderAim(nextAim);
+      }
+
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, []);
+
+  const phoneAim = renderAim;
 
   const project = useCallback(
     (az: number, alt: number) => {

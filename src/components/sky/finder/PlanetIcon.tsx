@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { type CSSProperties, useId } from 'react';
 
 type PlanetId =
   | 'sun'
@@ -38,28 +38,35 @@ export interface PlanetIconProps {
 
 const PLANET_IDS = new Set<PlanetId>(['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
 
-const GRADIENTS: Record<PlanetId, string> = {
-  sun:     'radial-gradient(circle at 40% 40%, #fffbe1 0%, #FFB347 50%, #ff7b1a 90%)',
-  moon:    'radial-gradient(circle at 40% 40%, #F8F4EC 0%, #c8c2b5 60%, #6a665e 95%)',
-  mercury: 'radial-gradient(circle at 35% 35%, #e2dccd 0%, #a89e88 55%, #58523f 95%)',
-  venus:   'radial-gradient(circle at 35% 35%, #fff5d6 0%, #e7cd84 50%, #8a6b2a 95%)',
-  mars:    'radial-gradient(circle at 35% 35%, #ff7b54 0%, #c2451f 60%, #5a1d08 95%)',
-  jupiter: 'radial-gradient(circle at 35% 35%, #fbe9b7 0%, #d4a574 30%, #8b5a2b 65%, #3a1f0c 95%)',
-  saturn:  'radial-gradient(circle at 35% 35%, #f0dc9a 0%, #c89a3e 55%, #6b5020 95%)',
-  uranus:  'radial-gradient(circle at 35% 35%, #b9e8e2 0%, #5fa3a8 55%, #214550 95%)',
-  neptune: 'radial-gradient(circle at 35% 35%, #6fa0e0 0%, #2d5a9c 55%, #142a52 95%)',
+interface PlanetPalette {
+  light: string;
+  mid: string;
+  dark: string;
+  rim: string;
+}
+
+const PLANET_PALETTES: Record<PlanetId, PlanetPalette> = {
+  sun:     { light: '#fffbe1', mid: '#ffbf54', dark: '#ff7b1a', rim: '#7a3108' },
+  moon:    { light: '#f8f4ec', mid: '#cbc4b6', dark: '#676259', rim: '#2d3036' },
+  mercury: { light: '#e2dccd', mid: '#a89e88', dark: '#57503d', rim: '#292621' },
+  venus:   { light: '#fff2cd', mid: '#e1c272', dark: '#7f6124', rim: '#4a3312' },
+  mars:    { light: '#ee936d', mid: '#cf6038', dark: '#5a230f', rim: '#341208' },
+  jupiter: { light: '#faecc4', mid: '#d4a574', dark: '#52311b', rim: '#302014' },
+  saturn:  { light: '#f3e2a5', mid: '#c79a45', dark: '#695022', rim: '#362714' },
+  uranus:  { light: '#c9f0ea', mid: '#76c5cf', dark: '#2b6170', rim: '#123643' },
+  neptune: { light: '#89b9f0', mid: '#3d75c4', dark: '#18325e', rim: '#10203d' },
 };
 
-const GLOW: Record<PlanetId, string> = {
-  sun:     '0 0 32px rgba(255,179,71,0.55), 0 0 64px rgba(255,123,26,0.35)',
-  moon:    '0 0 24px rgba(244,237,224,0.30)',
-  mercury: '0 0 18px rgba(232,222,200,0.20)',
-  venus:   '0 0 26px rgba(255,232,160,0.30)',
-  mars:    '0 0 22px rgba(255,123,84,0.30)',
-  jupiter: '0 0 28px rgba(212,165,116,0.32)',
-  saturn:  '0 0 24px rgba(200,154,62,0.30)',
-  uranus:  '0 0 22px rgba(95,163,168,0.28)',
-  neptune: '0 0 22px rgba(111,160,224,0.30)',
+const GLOW_FILTERS: Record<PlanetId, string> = {
+  sun: 'drop-shadow(0 0 14px rgba(255,179,71,0.65)) drop-shadow(0 0 28px rgba(255,123,26,0.36))',
+  moon: 'drop-shadow(0 0 8px rgba(244,237,224,0.34))',
+  mercury: 'drop-shadow(0 0 7px rgba(232,222,200,0.24))',
+  venus: 'drop-shadow(0 0 10px rgba(255,232,160,0.34))',
+  mars: 'drop-shadow(0 0 10px rgba(255,123,84,0.30))',
+  jupiter: 'drop-shadow(0 0 11px rgba(212,165,116,0.30))',
+  saturn: 'drop-shadow(0 0 12px rgba(200,154,62,0.28))',
+  uranus: 'drop-shadow(0 0 9px rgba(95,163,168,0.30))',
+  neptune: 'drop-shadow(0 0 10px rgba(111,160,224,0.32))',
 };
 
 export function PlanetIcon({ id, type, magnitude, size = 88, phase = null, glow = true }: PlanetIconProps) {
@@ -81,128 +88,219 @@ export function PlanetIcon({ id, type, magnitude, size = 88, phase = null, glow 
   }
 
   const planetId = id as PlanetId;
-  const sphere: CSSProperties = {
-    width: size,
-    height: size,
-    borderRadius: '50%',
-    background: GRADIENTS[planetId],
-    boxShadow: glow ? GLOW[planetId] : 'none',
-    position: 'relative',
-    overflow: 'hidden',
-  };
-
-  if (planetId === 'moon') {
-    return (
-      <div style={wrap}>
-        <div style={sphere}>
-          <MoonShadow phase={phase ?? 0.5} size={size} />
-        </div>
-      </div>
-    );
-  }
-
-  if (planetId === 'jupiter') {
-    return (
-      <div style={wrap}>
-        <div style={sphere}>
-          <JupiterBands size={size} />
-        </div>
-      </div>
-    );
-  }
-
-  if (planetId === 'saturn') {
-    return (
-      <div style={wrap}>
-        <div style={sphere}>
-          <JupiterBands size={size} dim />
-        </div>
-        <SaturnRings size={size} />
-      </div>
-    );
-  }
-
   return (
-    <div style={wrap}>
-      <div style={sphere} />
+    <div style={{ ...wrap, filter: glow ? GLOW_FILTERS[planetId] : 'none' }}>
+      <PlanetSvg planetId={planetId} size={size} phase={phase ?? 0.5} />
     </div>
   );
 }
 
-function MoonShadow({ phase, size }: { phase: number; size: number }) {
-  // phase: 0=new, 0.25=first quarter, 0.5=full, 0.75=last quarter
-  // Cover the un-illuminated portion with a dark overlay positioned by phase.
-  // Render a circle the same size, offset so its overlap matches the dark side.
-  const p = ((phase % 1) + 1) % 1;
-  if (p < 0.03 || p > 0.97) {
-    // new moon — almost entirely dark
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(7,11,20,0.92)',
-        }}
-      />
-    );
-  }
-  if (p > 0.47 && p < 0.53) return null; // full
+function safeId(raw: string): string {
+  return raw.replace(/:/g, '');
+}
 
-  // Waxing (0..0.5): dark side on the LEFT, shrinks toward 0.5
-  // Waning (0.5..1): dark side on the RIGHT, grows toward 1
-  const waxing = p < 0.5;
-  const k = waxing ? p / 0.5 : (1 - p) / 0.5; // 0..1, where 1 = full
-  // offset: how far the shadow disc is shifted off the moon disc
-  // at k=0 (new) -> shadow exactly covers; at k=1 (full) -> shadow fully off
-  const offset = k * size;
+function PlanetSvg({ planetId, size, phase }: { planetId: PlanetId; size: number; phase: number }) {
+  const palette = PLANET_PALETTES[planetId];
+  const uid = safeId(useId());
+  const clipId = `${uid}-clip`;
+  const sphereId = `${uid}-sphere`;
+  const sheenId = `${uid}-sheen`;
+  const atmosphereId = `${uid}-atmos`;
+  const ringClipId = `${uid}-rings-front`;
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        [waxing ? 'left' : 'right']: -offset,
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        background: 'rgba(7,11,20,0.85)',
-      }}
-    />
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <clipPath id={clipId}>
+          <circle cx={50} cy={50} r={34} />
+        </clipPath>
+        <clipPath id={ringClipId}>
+          <rect x={0} y={50} width={100} height={50} />
+        </clipPath>
+        <radialGradient id={sphereId} cx="34%" cy="28%" r="74%">
+          <stop offset="0%" stopColor={palette.light} />
+          <stop offset="56%" stopColor={palette.mid} />
+          <stop offset="100%" stopColor={palette.dark} />
+        </radialGradient>
+        <radialGradient id={sheenId} cx="28%" cy="22%" r="62%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.52)" />
+          <stop offset="35%" stopColor="rgba(255,255,255,0.16)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        </radialGradient>
+        <radialGradient id={atmosphereId} cx="50%" cy="50%" r="62%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="76%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0.18)" />
+        </radialGradient>
+      </defs>
+
+      {planetId === 'sun' && (
+        <>
+          <circle cx={50} cy={50} r={42} fill="rgba(255,179,71,0.16)" />
+          <circle cx={50} cy={50} r={47} fill="rgba(255,179,71,0.06)" />
+        </>
+      )}
+
+      {planetId === 'saturn' && <SaturnRingsSvg front={false} tone={palette.mid} shadow={palette.dark} />}
+
+      <g clipPath={`url(#${clipId})`}>
+        <circle cx={50} cy={50} r={34} fill={`url(#${sphereId})`} />
+        <circle cx={50} cy={50} r={34} fill={`url(#${sheenId})`} />
+        {planetId === 'moon' && <MoonSurface phase={phase} />}
+        {planetId === 'mercury' && <MercurySurface />}
+        {planetId === 'venus' && <VenusSurface />}
+        {planetId === 'mars' && <MarsSurface />}
+        {planetId === 'jupiter' && <JupiterSurface />}
+        {planetId === 'saturn' && <SaturnSurface />}
+        {planetId === 'uranus' && <IceGiantBands tone="#8dd5d8" opacity={0.28} />}
+        {planetId === 'neptune' && <IceGiantBands tone="#a8caff" opacity={0.22} />}
+        {planetId === 'sun' && <SunSurface />}
+        <circle cx={50} cy={50} r={34} fill={`url(#${atmosphereId})`} />
+      </g>
+
+      <circle cx={50} cy={50} r={34} fill="none" stroke={palette.rim} strokeOpacity={0.24} />
+      {planetId === 'saturn' && <SaturnRingsSvg front={true} tone={palette.light} shadow={palette.dark} clipId={ringClipId} />}
+    </svg>
   );
 }
 
-function JupiterBands({ size, dim }: { size: number; dim?: boolean }) {
-  const bands = [
-    { y: 28, h: 6, op: dim ? 0.18 : 0.32 },
-    { y: 44, h: 8, op: dim ? 0.14 : 0.26 },
-    { y: 60, h: 5, op: dim ? 0.16 : 0.28 },
-    { y: 72, h: 4, op: dim ? 0.10 : 0.20 },
+function MoonSurface({ phase }: { phase: number }) {
+  const p = ((phase % 1) + 1) % 1;
+  if (p < 0.03 || p > 0.97) {
+    return (
+      <circle cx={50} cy={50} r={34} fill="rgba(7,11,20,0.92)" />
+    );
+  }
+  const craters = [
+    { x: 34, y: 36, r: 5.2, o: 0.18 },
+    { x: 58, y: 30, r: 3.4, o: 0.14 },
+    { x: 61, y: 54, r: 7.2, o: 0.16 },
+    { x: 38, y: 60, r: 4.4, o: 0.12 },
   ];
+  const waxing = p < 0.5;
+  const k = waxing ? p / 0.5 : (1 - p) / 0.5; // 0..1, where 1 = full
+  const shift = k * 68;
+
   return (
     <>
-      {bands.map((b, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: `${(b.y / 100) * size}px`,
-            height: `${(b.h / 100) * size}px`,
-            background: `rgba(80,45,20,${b.op})`,
-            mixBlendMode: 'multiply',
-          }}
+      {craters.map((c, i) => (
+        <g key={i}>
+          <circle cx={c.x} cy={c.y} r={c.r} fill={`rgba(90,88,86,${c.o})`} />
+          <circle cx={c.x - 0.8} cy={c.y - 0.8} r={c.r * 0.66} fill="rgba(255,255,255,0.10)" />
+        </g>
+      ))}
+      {!(p > 0.47 && p < 0.53) && (
+        <circle
+          cx={waxing ? 50 - shift : 50 + shift}
+          cy={50}
+          r={34}
+          fill="rgba(7,11,20,0.82)"
         />
+      )}
+    </>
+  );
+}
+
+function MercurySurface() {
+  return (
+    <>
+      {[32, 44, 57, 66].map((y, i) => (
+        <circle key={i} cx={26 + i * 11} cy={y} r={i % 2 === 0 ? 4.4 : 3.1} fill="rgba(72,68,62,0.22)" />
       ))}
     </>
   );
 }
 
-/**
- * Hero glyph for catalog targets (stars, doubles, clusters, nebulae, galaxies).
- * Aims for the same visual weight as PlanetIcon's planet sphere — sized for
- * the DirectionHero card.
- */
+function VenusSurface() {
+  return (
+    <g opacity={0.28} fill="#f3dfad">
+      <path d="M18 38c16-4 34-3 50 2l8 4v6c-18-7-38-8-58-3l-4 2v-7l4-4Z" />
+      <path d="M24 58c14-3 30-2 44 2l8 3v5c-16-5-34-6-50-2l-4 2v-5l2-5Z" />
+    </g>
+  );
+}
+
+function MarsSurface() {
+  return (
+    <g>
+      <path d="M31 34c8-6 17-6 25-2 4 2 8 2 11 0 2 6-1 13-8 17-6 4-13 5-20 2-5-2-8-8-8-17Z" fill="rgba(93,38,20,0.28)" />
+      <path d="M39 58c5-3 11-3 16 0 4 3 8 3 12 1 0 6-4 10-10 12-7 2-16 1-21-4-2-2-1-7 3-9Z" fill="rgba(64,24,13,0.24)" />
+      <ellipse cx={59} cy={28} rx={7} ry={4} fill="rgba(255,216,192,0.12)" />
+    </g>
+  );
+}
+
+function JupiterSurface() {
+  const bands = [
+    { y: 24, h: 8, fill: 'rgba(150,94,46,0.26)' },
+    { y: 37, h: 10, fill: 'rgba(122,69,30,0.18)' },
+    { y: 51, h: 7, fill: 'rgba(151,106,73,0.24)' },
+    { y: 63, h: 6, fill: 'rgba(96,62,32,0.18)' },
+  ];
+  return (
+    <g>
+      {bands.map((band, i) => (
+        <rect key={i} x={16} y={band.y} width={68} height={band.h} rx={band.h / 2} fill={band.fill} />
+      ))}
+      <ellipse cx={62} cy={55} rx={9} ry={5.5} fill="rgba(194,120,80,0.36)" />
+      <ellipse cx={62} cy={55} rx={5.5} ry={2.8} fill="rgba(238,196,164,0.22)" />
+    </g>
+  );
+}
+
+function SaturnSurface() {
+  return (
+    <g opacity={0.3}>
+      <rect x={20} y={31} width={60} height={8} rx={4} fill="rgba(121,86,31,0.18)" />
+      <rect x={18} y={48} width={64} height={7} rx={3.5} fill="rgba(121,86,31,0.22)" />
+      <rect x={24} y={61} width={54} height={5} rx={2.5} fill="rgba(121,86,31,0.16)" />
+    </g>
+  );
+}
+
+function IceGiantBands({ tone, opacity }: { tone: string; opacity: number }) {
+  return (
+    <g fill={tone} opacity={opacity}>
+      <rect x={20} y={34} width={60} height={4} rx={2} />
+      <rect x={16} y={50} width={68} height={5} rx={2.5} />
+      <rect x={24} y={63} width={52} height={4} rx={2} />
+    </g>
+  );
+}
+
+function SunSurface() {
+  return (
+    <g opacity={0.34}>
+      <circle cx={50} cy={50} r={24} fill="rgba(255,248,204,0.18)" />
+      <path d="M28 36c8-7 17-9 26-7 5 1 10 0 14-3 1 8-3 15-10 19-8 4-18 4-26 0-5-2-7-5-4-9Z" fill="rgba(255,235,145,0.28)" />
+      <path d="M30 58c9-4 19-5 29-3 4 1 8 0 12-2 0 7-5 12-12 15-10 4-21 3-28-3-2-2-2-5-1-7Z" fill="rgba(255,196,89,0.20)" />
+    </g>
+  );
+}
+
+function SaturnRingsSvg({
+  front,
+  tone,
+  shadow,
+  clipId,
+}: {
+  front: boolean;
+  tone: string;
+  shadow: string;
+  clipId?: string;
+}) {
+  const ring = (
+    <g transform="rotate(-14 50 50)">
+      <ellipse cx={50} cy={50} rx={43} ry={15} fill="none" stroke={tone} strokeWidth={6} strokeOpacity={front ? 0.7 : 0.34} />
+      <ellipse cx={50} cy={50} rx={35} ry={10.5} fill="none" stroke={shadow} strokeWidth={1.4} strokeOpacity={front ? 0.22 : 0.14} />
+    </g>
+  );
+  if (front && clipId) {
+    return <g clipPath={`url(#${clipId})`}>{ring}</g>;
+  }
+  return <g>{ring}</g>;
+}
+
 function CatalogGlyph({
   type,
   size,
@@ -214,6 +312,7 @@ function CatalogGlyph({
   magnitude?: number;
   glow?: boolean;
 }) {
+  const uid = safeId(useId());
   if (type === 'star' || type === 'double') {
     // Mag-to-radius: brighter star reads larger.
     const m = Math.max(-2, Math.min(4, magnitude));
@@ -274,46 +373,50 @@ function CatalogGlyph({
     );
   }
   if (type === 'galaxy') {
+    const coreId = `${uid}-galaxy-core`;
+    const armsId = `${uid}-galaxy-arms`;
     return (
       <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
         <defs>
-          <radialGradient id="cg-galaxy-core" cx="50%" cy="50%" r="50%">
+          <radialGradient id={coreId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#f4eef8" />
             <stop offset="40%" stopColor="rgba(220,210,240,0.7)" />
             <stop offset="100%" stopColor="rgba(170,180,220,0)" />
           </radialGradient>
-          <radialGradient id="cg-galaxy-arms" cx="50%" cy="50%" r="50%">
+          <radialGradient id={armsId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="rgba(216,224,248,0.85)" />
             <stop offset="55%" stopColor="rgba(150,170,210,0.40)" />
             <stop offset="100%" stopColor="rgba(110,130,170,0)" />
           </radialGradient>
         </defs>
         <g transform="rotate(-28 50 50)">
-          <ellipse cx={50} cy={50} rx={46} ry={16} fill="url(#cg-galaxy-arms)" />
-          <ellipse cx={50} cy={50} rx={28} ry={9} fill="url(#cg-galaxy-arms)" opacity={0.8} />
-          <circle cx={50} cy={50} r={12} fill="url(#cg-galaxy-core)" />
+          <ellipse cx={50} cy={50} rx={46} ry={16} fill={`url(#${armsId})`} />
+          <ellipse cx={50} cy={50} rx={28} ry={9} fill={`url(#${armsId})`} opacity={0.8} />
+          <circle cx={50} cy={50} r={12} fill={`url(#${coreId})`} />
           <circle cx={50} cy={50} r={3.5} fill="#fdf8ff" />
         </g>
       </svg>
     );
   }
   if (type === 'nebula') {
+    const nebulaId = `${uid}-nebula`;
+    const nebulaBlueId = `${uid}-nebula-blue`;
     return (
       <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
         <defs>
-          <radialGradient id="cg-nebula" cx="50%" cy="50%" r="55%">
+          <radialGradient id={nebulaId} cx="50%" cy="50%" r="55%">
             <stop offset="0%" stopColor="rgba(255,205,200,0.95)" />
             <stop offset="35%" stopColor="rgba(232,164,158,0.55)" />
             <stop offset="80%" stopColor="rgba(150,90,120,0.18)" />
             <stop offset="100%" stopColor="rgba(80,40,80,0)" />
           </radialGradient>
-          <radialGradient id="cg-nebula-blue" cx="60%" cy="40%" r="40%">
+          <radialGradient id={nebulaBlueId} cx="60%" cy="40%" r="40%">
             <stop offset="0%" stopColor="rgba(180,205,255,0.55)" />
             <stop offset="100%" stopColor="rgba(80,100,160,0)" />
           </radialGradient>
         </defs>
-        <circle cx={50} cy={50} r={48} fill="url(#cg-nebula)" />
-        <circle cx={58} cy={42} r={28} fill="url(#cg-nebula-blue)" />
+        <circle cx={50} cy={50} r={48} fill={`url(#${nebulaId})`} />
+        <circle cx={58} cy={42} r={28} fill={`url(#${nebulaBlueId})`} />
         <g fill="#fff8f0">
           <circle cx={50} cy={50} r={1.6} />
           <circle cx={42} cy={45} r={1.0} opacity={0.85} />
@@ -324,15 +427,16 @@ function CatalogGlyph({
     );
   }
   if (type === 'cluster') {
+    const clusterId = `${uid}-cluster-bg`;
     return (
       <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
         <defs>
-          <radialGradient id="cg-cluster-bg" cx="50%" cy="50%" r="50%">
+          <radialGradient id={clusterId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="rgba(241,228,184,0.30)" />
             <stop offset="100%" stopColor="rgba(241,228,184,0)" />
           </radialGradient>
         </defs>
-        <circle cx={50} cy={50} r={42} fill="url(#cg-cluster-bg)" />
+        <circle cx={50} cy={50} r={42} fill={`url(#${clusterId})`} />
         {/* Deterministic-ish star pattern */}
         {[
           [50,30,2.4],[40,40,1.6],[60,42,1.8],[35,55,1.4],[65,55,1.6],[50,55,2.0],
@@ -345,26 +449,4 @@ function CatalogGlyph({
     );
   }
   return null;
-}
-
-function SaturnRings({ size }: { size: number }) {
-  const ringW = size * 1.55;
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        width: ringW,
-        height: ringW,
-        marginTop: -ringW / 2,
-        marginLeft: -ringW / 2,
-        borderRadius: '50%',
-        border: '1.5px solid rgba(200,154,62,0.85)',
-        transform: 'rotate(-14deg) scaleY(0.18)',
-        boxShadow: '0 0 8px rgba(200,154,62,0.25)',
-        pointerEvents: 'none',
-      }}
-    />
-  );
 }
