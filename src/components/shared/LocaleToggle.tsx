@@ -24,7 +24,7 @@ export default function LocaleToggle() {
     <div
       role="group"
       aria-label="Language"
-      className="relative inline-grid h-7 w-[62px] shrink-0 grid-cols-2 overflow-hidden rounded-full border border-white/10 bg-white/[0.03] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:h-8 sm:w-[74px]"
+      className="relative inline-flex h-7 w-[62px] shrink-0 items-stretch overflow-hidden rounded-full border border-white/10 bg-white/[0.03] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:h-8 sm:w-[74px]"
       style={{ opacity: pending ? 0.6 : 1 }}
     >
       <span
@@ -45,13 +45,20 @@ export default function LocaleToggle() {
             aria-pressed={active}
             aria-label={option.ariaLabel}
             disabled={pending}
-            className="relative z-10 flex h-full items-center justify-center rounded-full px-1 text-[10px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812] disabled:cursor-default sm:px-2 sm:text-[11px] sm:tracking-[0.14em]"
+            className="relative z-10 flex h-full flex-1 items-center justify-center rounded-full px-1 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812] disabled:cursor-default"
             style={{
-              fontFamily: 'var(--font-body)',
               color: active ? '#FFF4DA' : 'rgba(255,255,255,0.56)',
             }}
           >
-            {option.label}
+            <span
+              className="block text-[10px] font-semibold uppercase leading-none tracking-[0.12em] sm:text-[11px] sm:tracking-[0.14em]"
+              style={{
+                fontFamily: 'var(--font-body)',
+                transform: 'translateY(-1px)',
+              }}
+            >
+              {option.label}
+            </span>
           </button>
         );
       })}

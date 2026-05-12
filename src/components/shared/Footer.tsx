@@ -77,7 +77,7 @@ export default function Footer() {
       }}
     >
       <div
-        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="stellar-footer-inner max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
         style={{
           paddingTop: 48,
           paddingBottom: 24,
@@ -93,9 +93,10 @@ export default function Footer() {
           }}
           className="stellar-footer-top"
         >
-          <div>
+          <div className="stellar-footer-brand">
             <AstroLogo size={28} variant="white" showWordmark />
             <p
+              className="stellar-footer-tagline"
               style={{
                 marginTop: 14,
                 color: 'rgba(255,255,255,0.5)',
@@ -118,8 +119,9 @@ export default function Footer() {
             className="stellar-footer-cols"
           >
             {columns.map(col => (
-              <div key={col.titleKey}>
+              <div key={col.titleKey} className="stellar-footer-col">
                 <p
+                  className="stellar-footer-col-title"
                   style={{
                     fontSize: 11,
                     fontWeight: 700,
@@ -132,7 +134,10 @@ export default function Footer() {
                 >
                   {t(col.titleKey)}{/* */}
                 </p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <ul
+                  className="stellar-footer-links"
+                  style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}
+                >
                   {col.links.map(link => (
                     <FooterLinkItem
                       key={link.href}
@@ -148,6 +153,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div
+          className="stellar-footer-bottom"
           style={{
             marginTop: 40,
             paddingTop: 20,
@@ -169,19 +175,46 @@ export default function Footer() {
       </div>
 
       <style>{`
-        @media (max-width: 720px) {
+        @media (max-width: 640px) {
+          .stellar-footer-inner {
+            padding-top: 36px !important;
+            padding-bottom: 20px !important;
+          }
           .stellar-footer-top {
             grid-template-columns: 1fr !important;
-            gap: 32px !important;
-          }
-          .stellar-footer-cols {
-            gap: 20px !important;
-          }
-        }
-        @media (max-width: 480px) {
-          .stellar-footer-cols {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 24px !important;
+          }
+          .stellar-footer-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+          }
+          .stellar-footer-tagline {
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .stellar-footer-cols {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+            justify-items: center;
+            text-align: center;
+          }
+          .stellar-footer-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          .stellar-footer-links {
+            align-items: center;
+          }
+          .stellar-footer-bottom {
+            margin-top: 28px !important;
+            padding-top: 16px !important;
+            flex-direction: column;
+            justify-content: center !important;
+            text-align: center;
+            gap: 8px !important;
           }
         }
       `}</style>
