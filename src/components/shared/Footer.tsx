@@ -195,18 +195,18 @@ export default function Footer() {
             margin-right: auto;
           }
           .stellar-footer-cols {
-            grid-template-columns: 1fr !important;
-            gap: 20px !important;
-            justify-items: center;
-            text-align: center;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 24px 20px !important;
+            align-items: start;
+            text-align: left;
           }
           .stellar-footer-col {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
           }
           .stellar-footer-links {
-            align-items: center;
+            align-items: flex-start;
           }
           .stellar-footer-bottom {
             margin-top: 28px !important;
