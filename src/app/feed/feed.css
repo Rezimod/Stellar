@@ -15,8 +15,8 @@
   --slate-500: rgba(255,255,255,0.28);
   --slate-600: rgba(255,255,255,0.14);
   --hairline: rgba(255,255,255,0.08);
-  --card-bg: rgba(255,255,255,0.025);
-  --card-bg-hover: rgba(255,255,255,0.045);
+  --card-bg: rgba(255,255,255,0.03);
+  --card-bg-hover: rgba(255,255,255,0.05);
   /* Page typography aligned with the global stack: Orbitron for display /
      headings, Geist for body, JetBrains Mono for numerics. No serif italic. */
   --feed-display: var(--font-display), system-ui, -apple-system, sans-serif;
@@ -94,20 +94,13 @@
 .feed-page .side-link.active .side-link-icon { opacity: 1; }
 
 .composer {
-  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+  background: rgba(255,255,255,0.03);
   border: 1px solid var(--hairline);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 18px;
   margin-bottom: 28px;
   position: relative;
   overflow: hidden;
-}
-.composer::before {
-  content: ''; position: absolute;
-  top: -40px; right: -40px;
-  width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(255,179,71,0.08), transparent 70%);
-  pointer-events: none;
 }
 .composer-row { display: flex; gap: 14px; align-items: flex-start; }
 .composer-avatar {
@@ -171,6 +164,17 @@
   padding: 6px 10px; border-radius: 999px;
   display: inline-flex; align-items: center; gap: 6px;
 }
+.composer-pill-x {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
 .composer-actions {
   display: flex; align-items: center; justify-content: space-between;
@@ -194,15 +198,16 @@
 
 .post-btn {
   padding: 8px 18px;
-  background: linear-gradient(135deg, var(--brass), var(--brass-dim));
+  min-height: 40px;
+  background: var(--brass);
   color: var(--ink);
   font-family: var(--feed-sans); font-size: 13px; font-weight: 600;
-  border: none; border-radius: 999px;
+  border: 1px solid rgba(255,179,71,0.45); border-radius: 999px;
   cursor: pointer; letter-spacing: 0.02em;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
-.post-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,179,71,0.25); }
+.post-btn:hover:not(:disabled) { transform: translateY(-1px); background: #ffc05d; box-shadow: 0 6px 20px rgba(255,179,71,0.16); }
 .post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .composer-auth {
@@ -229,13 +234,13 @@
   font-family: var(--feed-sans); transition: all 0.2s;
 }
 .filter-tab:hover { color: var(--slate-100); }
-.filter-tab.active { background: rgba(255,179,71,0.1); color: var(--brass); }
+.filter-tab.active { background: var(--brass); color: var(--ink); }
 
 .feed-post {
-  background: var(--card-bg); border: 1px solid var(--hairline);
-  border-radius: 18px; padding: 20px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--hairline);
+  border-radius: 16px; padding: 18px;
   margin-bottom: 18px; position: relative;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
   animation: feed-fade-up 0.32s ease backwards;
   /* Paint isolation + lazy off-screen rendering: huge win when the feed has
      dozens of posts. Browser skips paint/layout for posts outside viewport. */
@@ -243,7 +248,7 @@
   contain: layout style paint;
   contain-intrinsic-size: auto 480px;
 }
-.feed-post:hover { border-color: var(--slate-600); }
+.feed-post:hover { border-color: var(--slate-600); background: rgba(255,255,255,0.04); }
 
 .post-header {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -322,9 +327,7 @@
 .post-menu-dropdown {
   position: absolute; top: 32px; right: 0;
   z-index: 10;
-  background: rgba(11,17,32,0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(11,17,32,0.98);
   border: 1px solid var(--hairline);
   border-radius: 10px;
   padding: 6px;
@@ -334,10 +337,61 @@
   display: flex; align-items: center; gap: 8px;
   padding: 8px 12px; width: 100%;
   background: transparent; border: none; cursor: pointer;
-  color: var(--red); font-size: 12px; border-radius: 6px;
+  color: var(--slate-100); font-size: 12px; border-radius: 6px;
   font-family: var(--feed-sans);
+  min-height: 40px;
 }
-.post-menu-dropdown button:hover { background: rgba(248,113,113,0.08); }
+.post-menu-dropdown button:hover { background: rgba(255,255,255,0.05); }
+.post-menu-dropdown button:last-child { color: var(--red); }
+.post-menu-dropdown button:last-child:hover { background: rgba(248,113,113,0.08); }
+
+.post-edit-shell {
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--hairline);
+}
+.post-edit-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 88px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: rgba(7,11,20,0.45);
+  color: var(--slate-100);
+  padding: 12px 14px;
+  font: inherit;
+  line-height: 1.55;
+}
+.post-edit-input::placeholder { color: var(--slate-400); }
+.post-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.post-edit-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,179,71,0.4);
+  background: var(--brass);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.post-edit-btn.ghost {
+  background: transparent;
+  border-color: var(--hairline);
+  color: var(--slate-100);
+}
+.post-edit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 .post-text {
   font-size: 14.5px; line-height: 1.6;
@@ -361,6 +415,10 @@
   position: relative;
   aspect-ratio: 1 / 1;
   cursor: zoom-in;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  text-align: left;
 }
 .post-media img {
   width: 100%; height: 100%;
@@ -485,11 +543,27 @@
   cursor: pointer; transition: all 0.2s;
   position: relative;
   width: 100%;
+  min-height: 42px;
+  -webkit-tap-highlight-color: transparent;
 }
 .action:hover { background: var(--card-bg-hover); color: var(--slate-100); }
 .action svg { width: 16px; height: 16px; }
 .action.liked { color: var(--brass); }
 .action.liked svg { fill: var(--brass); color: var(--brass); }
+.action-count {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--hairline);
+  font-family: var(--feed-mono);
+  font-size: 10px;
+  color: var(--slate-300);
+}
 
 .reaction-picker {
   position: absolute;
@@ -896,13 +970,34 @@
 .feed-empty button {
   margin-top: 14px;
   padding: 8px 18px;
-  background: linear-gradient(135deg, var(--brass), var(--brass-dim));
+  background: var(--brass);
   color: var(--ink);
   font-weight: 600;
-  border: none;
+  border: 1px solid rgba(255,179,71,0.45);
   border-radius: 999px;
   cursor: pointer;
   font-family: var(--feed-sans);
+}
+
+.composer-input:focus-visible,
+.post-edit-input:focus-visible,
+.comment-input:focus-visible,
+.tool-btn:focus-visible,
+.post-btn:focus-visible,
+.filter-tab:focus-visible,
+.side-link:focus-visible,
+.follow-btn:focus-visible,
+.post-menu:focus-visible,
+.post-menu-dropdown button:focus-visible,
+.action:focus-visible,
+.reaction-pick:focus-visible,
+.share-sheet button:focus-visible,
+.more-comments:focus-visible,
+.composer-pill-x:focus-visible,
+.post-edit-btn:focus-visible,
+.feed-empty button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,179,71,0.65);
 }
 
 /* === MOBILE FACEBOOK-STYLE REDESIGN (max-width: 767px) ===
@@ -910,22 +1005,21 @@
    pill composer, divided action bar, long-press reaction picker. */
 @media (max-width: 767px) {
   .feed-page {
-    padding: 12px 0 120px;
+    padding: 8px 0 120px;
     max-width: 100%;
   }
   .feed-grid { gap: 0; }
 
   /* Composer — pill input + divided action row */
   .composer {
-    padding: 14px 14px 6px;
+    padding: 12px 12px 8px;
     border-radius: 16px;
-    margin: 0 12px 12px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    margin: 0 8px 8px;
+    background: rgba(255,255,255,0.03);
   }
-  .composer::before { display: none; }
   .composer-row {
     gap: 10px;
-    align-items: center;
+    align-items: flex-start;
   }
   .composer-avatar {
     width: 38px; height: 38px; font-size: 16px;
@@ -933,10 +1027,10 @@
   .composer-input {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--hairline);
-    border-radius: 999px;
-    padding: 10px 16px;
+    border-radius: 18px;
+    padding: 11px 14px;
     font-size: 14.5px;
-    min-height: 40px;
+    min-height: 42px;
   }
   .composer-input:focus {
     background: rgba(255,255,255,0.06);
@@ -948,16 +1042,20 @@
 
   /* Action row — icon-only ghost buttons, single hairline above */
   .composer-actions {
-    margin-top: 10px;
-    padding-top: 10px;
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px solid var(--hairline);
     gap: 8px;
+    align-items: center;
   }
   .composer-tools {
-    gap: 2px;
+    gap: 4px;
     flex-wrap: nowrap;
     justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .composer-tools::-webkit-scrollbar { display: none; }
   .tool-btn {
     flex: 0 0 auto;
     flex-direction: row;
@@ -995,52 +1093,51 @@
   .composer-auth {
     padding: 12px 14px;
     border-radius: 14px;
-    margin: 0 12px 12px;
+    margin: 0 8px 8px;
     flex-wrap: wrap;
     gap: 10px;
   }
 
   /* Filter tabs — segmented control, full width */
   .feed-filters {
-    margin: 0 12px 12px;
-    width: calc(100% - 24px);
+    margin: 0 8px 8px;
+    width: calc(100% - 16px);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
     scrollbar-width: none;
-    padding: 3px;
+    padding: 2px;
   }
   .feed-filters::-webkit-scrollbar { display: none; }
   .filter-tab {
     flex: 1;
-    padding: 9px 12px;
-    min-height: 36px;
-    font-size: 12.5px;
+    padding: 8px 12px;
+    min-height: 34px;
+    font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
     flex-shrink: 0;
   }
   .filter-tab.active {
-    background: linear-gradient(135deg, var(--brass), var(--brass-dim));
+    background: var(--brass);
     color: var(--ink);
     font-weight: 600;
   }
 
   /* Posts — fewer borders, bigger image, FB feel */
   .feed-post {
-    padding: 14px 14px 6px;
+    padding: 12px 12px 6px;
     border-radius: 14px;
-    margin: 0 12px 10px;
-    /* Slight elevation instead of just hairline */
+    margin: 0 8px 8px;
     background: rgba(255,255,255,0.035);
     border: 1px solid var(--hairline);
   }
   .feed-post:hover { border-color: var(--hairline); }
-  .post-header { margin-bottom: 10px; }
+  .post-header { margin-bottom: 8px; }
   .post-text {
     font-size: 14.5px;
     line-height: 1.55;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   .post-quote { font-size: 17px; padding: 4px 0 10px; }
   .author-avatar { width: 40px; height: 40px; font-size: 16px; }
@@ -1049,16 +1146,14 @@
 
   /* Image goes edge-to-edge inside the card (FB look) */
   .post-media {
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    margin: 0 -14px 10px;
-    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    margin: 0 0 10px;
+    aspect-ratio: 4 / 3.1;
   }
 
   /* Reactions summary — left-aligned bubble stack like FB */
   .reactions-summary {
-    padding: 6px 0 8px;
+    padding: 6px 0 7px;
     border-bottom: 1px solid var(--hairline);
     gap: 8px;
     font-size: 12px;
@@ -1074,26 +1169,33 @@
   .actions {
     gap: 0;
     padding: 2px 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .actions > * {
-    flex: 1;
     border-right: 1px solid var(--hairline);
   }
   .actions > *:last-child {
     border-right: none;
   }
   .action {
-    padding: 12px 6px;
-    gap: 6px;
-    font-size: 13px;
+    padding: 11px 6px;
+    gap: 5px;
+    font-size: 12.5px;
     font-weight: 500;
-    min-height: 46px;
+    min-height: 44px;
     border-radius: 0;
   }
   .action:hover { background: transparent; }
   .action:active { background: rgba(255,255,255,0.04); }
   .action svg { width: 16px; height: 16px; }
   .action.liked { color: var(--brass); font-weight: 600; }
+  .action-count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 9px;
+  }
 
   /* Mobile reaction picker — shown via long-press, larger emojis */
   .reaction-picker {
@@ -1104,7 +1206,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    max-width: calc(100vw - 24px);
+    max-width: calc(100vw - 32px);
     border-radius: 999px;
   }
   .reaction-picker::-webkit-scrollbar { display: none; }
@@ -1135,6 +1237,18 @@
     border-radius: 999px;
   }
   .comment-input { font-size: 13px; }
+  .post-edit-shell {
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+  .post-edit-input {
+    min-height: 80px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .post-edit-btn {
+    min-height: 36px;
+  }
 
   /* Achievements */
   .achievement {
@@ -1166,7 +1280,7 @@
 
   /* Skeletons match new card spacing */
   .feed-skeleton {
-    margin: 0 12px 10px;
+    margin: 0 8px 8px;
     border-radius: 14px;
   }
   .feed-empty { padding: 40px 20px; }

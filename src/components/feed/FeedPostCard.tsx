@@ -79,6 +79,9 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
   const [comments, setComments] = useState<FeedComment[]>(post.commentsPreview ?? [])
   const [allLoaded, setAllLoaded] = useState(false)
   const [draft, setDraft] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editDraft, setEditDraft] = useState(post.body ?? '')
+  const [savingEdit, setSavingEdit] = useState(false)
   const [lightbox, setLightbox] = useState(false)
   const pickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -103,6 +106,10 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
     }
   }, [showMenu, showShare, showPicker])
 
+  useEffect(() => {
+    setEditDraft(post.body ?? '')
+  }, [post.body])
+
   const isMine = !!myWallet && myWallet === post.authorWallet
   const liveName = isMine ? (myDisplayName?.trim() || null) : null
   const liveGlyph = isMine ? (myAvatarGlyph ?? null) : null
@@ -124,6 +131,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
       : prev ? post.reactionCount
       : post.reactionCount + 1
     onChange({ ...post, myReaction: prev === reaction ? null : reaction, reactionCount: optimisticCount })
+    navigator.vibrate?.(12)
     try {
       const authToken = await getAccessToken().catch(() => null)
       const res = await fetch('/api/feed/reactions', {
@@ -139,6 +147,38 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
       onChange({ ...post, myReaction: data.reaction, reactionCount: data.reactionCount, topReactions: data.topReactions })
     } catch {
       onChange({ ...post, myReaction: prev, reactionCount: post.reactionCount })
+    }
+  }
+
+  async function saveEdit() {
+    if (!myWallet) { authPrompt(); return }
+    const nextBody = editDraft.trim()
+    if (post.type === 'text' && !nextBody) return
+    setSavingEdit(true)
+    try {
+      const authToken = await getAccessToken().catch(() => null)
+      const res = await fetch(`/api/feed/posts/${post.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({ wallet: myWallet, body: nextBody }),
+      })
+      if (!res.ok) throw new Error('failed')
+      const updated = await res.json() as FeedPost
+      onChange({
+        ...post,
+        ...updated,
+        topReactions: updated.topReactions ?? post.topReactions,
+        myReaction: updated.myReaction ?? post.myReaction,
+        commentsPreview: updated.commentsPreview ?? post.commentsPreview,
+      })
+      setIsEditing(false)
+    } catch {
+      setEditDraft(post.body ?? '')
+    } finally {
+      setSavingEdit(false)
     }
   }
 
@@ -220,7 +260,11 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
     if (!myWallet || !onDelete) return
     setShowMenu(false)
     try {
-      const res = await fetch(`/api/feed/posts/${post.id}?wallet=${encodeURIComponent(myWallet)}`, { method: 'DELETE' })
+      const authToken = await getAccessToken().catch(() => null)
+      const res = await fetch(`/api/feed/posts/${post.id}`, {
+        method: 'DELETE',
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+      })
       if (res.ok) onDelete(post.id)
     } catch {}
   }
@@ -272,12 +316,22 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
           {!isMine && <FollowButton wallet={post.authorWallet} authPrompt={authPrompt} />}
           {isMine && (
             <div ref={menuRef} style={{ position: 'relative' }}>
-              <button className="post-menu" onClick={() => setShowMenu(s => !s)} aria-label="More">
+              <button type="button" className="post-menu" onClick={() => setShowMenu(s => !s)} aria-label="More">
                 <MoreHorizontal size={18} />
               </button>
               {showMenu && (
                 <div className="post-menu-dropdown">
-                  <button onClick={deletePost}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMenu(false)
+                      setIsEditing(true)
+                      setEditDraft(post.body ?? '')
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button type="button" onClick={deletePost}>
                     <Trash2 size={13} /> Delete
                   </button>
                 </div>
@@ -287,15 +341,52 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
         </div>
       </div>
 
-      {post.type === 'achievement' && post.body && (
-        <div className="post-quote">&ldquo;{post.body}&rdquo;</div>
-      )}
-      {post.type !== 'achievement' && post.body && (
-        <div className="post-text">{renderTextWithHashtags(post.body)}</div>
+      {isEditing ? (
+        <div className="post-edit-shell">
+          <textarea
+            className="post-edit-input"
+            value={editDraft}
+            maxLength={2000}
+            rows={post.type === 'text' ? 4 : 3}
+            autoFocus
+            placeholder={post.type === 'text' ? 'Refine your observation...' : 'Add a short caption...'}
+            onChange={(e) => setEditDraft(e.target.value)}
+          />
+          <div className="post-edit-actions">
+            <button
+              type="button"
+              className="post-edit-btn ghost"
+              disabled={savingEdit}
+              onClick={() => {
+                setIsEditing(false)
+                setEditDraft(post.body ?? '')
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="post-edit-btn"
+              disabled={savingEdit || (post.type === 'text' && !editDraft.trim())}
+              onClick={saveEdit}
+            >
+              {savingEdit ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {post.type === 'achievement' && post.body && (
+            <div className="post-quote">&ldquo;{post.body}&rdquo;</div>
+          )}
+          {post.type !== 'achievement' && post.body && (
+            <div className="post-text">{renderTextWithHashtags(post.body)}</div>
+          )}
+        </>
       )}
 
       {post.type === 'photo' && post.imageUrl && (
-        <div className="post-media" onClick={() => setLightbox(true)}>
+        <button type="button" className="post-media" onClick={() => setLightbox(true)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.imageUrl}
@@ -320,7 +411,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
               )}
             </div>
           )}
-        </div>
+        </button>
       )}
 
       {post.type === 'achievement' && post.achievementTarget && (
@@ -371,6 +462,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             <div className="reaction-picker">
               {REACTION_TYPES.map(r => (
                 <button
+                  type="button"
                   key={r}
                   className="reaction-pick"
                   style={{ background: REACTION_PICK_BG[r] }}
@@ -383,6 +475,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             </div>
           )}
           <button
+            type="button"
             className={`action ${myReaction ? 'liked' : ''}`}
             onClick={() => {
               if (longPressFired.current) { longPressFired.current = false; return }
@@ -394,7 +487,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
               longPressTimer.current = setTimeout(() => {
                 longPressFired.current = true
                 setShowPicker(true)
-              }, 350)
+              }, 260)
             }}
             onTouchEnd={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current) }}
             onTouchMove={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current) }}
@@ -405,23 +498,26 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             ) : (
               <span style={{ fontSize: 16 }}>👍</span>
             )}
-            {myReaction ? REACTION_LABEL[myReaction] : 'Like'}
+            <span>{myReaction ? REACTION_LABEL[myReaction] : 'Like'}</span>
+            {post.reactionCount > 0 && <span className="action-count">{post.reactionCount}</span>}
           </button>
         </div>
-        <button className="action" onClick={loadAllComments}>
+        <button type="button" className="action" onClick={loadAllComments}>
           <MessageCircle size={16} />
-          Comment
+          <span>Comment</span>
+          {post.commentCount > 0 && <span className="action-count">{post.commentCount}</span>}
         </button>
         <div ref={shareRef} style={{ flex: 1, position: 'relative' }}>
-          <button className="action" style={{ width: '100%' }} onClick={() => setShowShare(s => !s)}>
+          <button type="button" className="action" style={{ width: '100%' }} onClick={() => setShowShare(s => !s)}>
             <Share2 size={16} />
-            Share
+            <span>Share</span>
+            {post.shareCount > 0 && <span className="action-count">{post.shareCount}</span>}
           </button>
           {showShare && (
             <div className="share-sheet">
-              <button onClick={() => share('copy_link')}><Copy size={13} /> Copy link</button>
-              <button onClick={() => share('twitter')}><Twitter size={13} /> Share to X</button>
-              <button onClick={() => share('farcaster')}>
+              <button type="button" onClick={() => share('copy_link')}><Copy size={13} /> Copy link</button>
+              <button type="button" onClick={() => share('twitter')}><Twitter size={13} /> Share to X</button>
+              <button type="button" onClick={() => share('farcaster')}>
                 <svg width="13" height="13" viewBox="0 0 1000 1000" fill="currentColor"><path d="M257.778 155.556h484.444v688.889h-71.111v-315.556h-.703c-7.857-87.182-81.156-155.556-170.412-155.556s-162.555 68.374-170.41 155.556h-.704v315.556h-71.114V155.556z"/></svg>
                 Share to Farcaster
               </button>
@@ -452,7 +548,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             </div>
           ))}
           {!expandedComments && post.commentCount > comments.length && (
-            <button className="more-comments" onClick={loadAllComments}>
+            <button type="button" className="more-comments" onClick={loadAllComments}>
               View {post.commentCount - comments.length} more comments
             </button>
           )}

@@ -1,0 +1,11 @@
+---
+description: Auto-commit and push completed work for this repo
+alwaysApply: true
+---
+
+# Auto Push Workflow
+
+- After each completed user task in this repository, create a git commit and push it to `origin/main`.
+- Do not wait for a separate confirmation before committing or pushing completed work.
+- Keep commits scoped to the task that was just completed; avoid unrelated local changes.
+- After pushing, notify the user briefly that the work was pushed and Vercel will deploy from `main`.
