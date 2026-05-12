@@ -1,5 +1,6 @@
 import { ExternalLink, Mail } from 'lucide-react';
 import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Contact — Stellar',
@@ -38,18 +39,44 @@ const channels = [
   },
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const locale = await getLocale();
+  const isKa = locale === 'ka';
+  const intro = isKa
+    ? 'Stellar-ს თბილისიდან Rezi და პატარა გუნდი აშენებენ. ჩვენთან დასაკავშირებლად ყველაზე სწრაფი გზა ელფოსტაა. ყველაფერს ვკითხულობთ, თუნდაც პასუხს ერთი-ორი დღე დასჭირდეს.'
+    : 'Stellar is built by Rezi and a small team in Tbilisi. The fastest way to reach us is email. We read everything, even if a reply takes a day or two.';
+  const eyebrow = isKa ? 'მოგვწერე' : 'Talk to us';
+  const title = isKa ? 'კონტაქტი' : 'Contact';
+  const localizedChannels = channels.map((channel) => ({
+    ...channel,
+    label: isKa
+      ? ({
+          Email: 'ელფოსტა',
+          X: 'X',
+          GitHub: 'GitHub',
+          'Astroman store': 'Astroman მაღაზია',
+        } as Record<string, string>)[channel.label] ?? channel.label
+      : channel.label,
+    note: isKa
+      ? ({
+          'General questions, partnerships, press.': 'ზოგადი კითხვები, პარტნიორობა, პრესა.',
+          'Updates, sky alerts, behind-the-scenes.': 'განახლებები, ცის გაფრთხილებები, კულისებს მიღმა.',
+          'Bugs and feature requests welcome.': 'შეცდომები და ახალი ფუნქციების იდეები მისაღებია.',
+          'Physical store in Tbilisi, Georgia.': 'ფიზიკური მაღაზია თბილისში, საქართველოში.',
+        } as Record<string, string>)[channel.note] ?? channel.note
+      : channel.note,
+  }));
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
-      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">Talk to us</p>
-      <h1 className="font-display text-3xl sm:text-4xl mb-3">Contact</h1>
+      <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">{eyebrow}</p>
+      <h1 className="font-display text-3xl sm:text-4xl mb-3">{title}</h1>
       <p className="text-white/70 text-[15px] leading-relaxed mb-10 max-w-prose">
-        Stellar is built by Rezi and a small team in Tbilisi. The fastest way to reach
-        us is email. We read everything, even if a reply takes a day or two.
+        {intro}
       </p>
 
       <ul className="flex flex-col gap-3">
-        {channels.map((c) => {
+        {localizedChannels.map((c) => {
           const Icon = c.icon;
           return (
             <li key={c.label}>

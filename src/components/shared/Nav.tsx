@@ -13,6 +13,7 @@ import {
   Sparkles, Telescope, LayoutGrid, User, Gem, LogOut,
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
+import LocaleToggle from './LocaleToggle';
 import SearchModal from './SearchModal';
 
 const NAV_ITEMS = [
@@ -186,6 +187,8 @@ export default function Nav() {
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
+
+              <LocaleToggle />
 
               <Link
                 href="/hub"

@@ -3,6 +3,7 @@
 import './feed.css'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocale } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { usePrivy } from '@privy-io/react-auth'
 import {
@@ -24,18 +25,18 @@ const POST_BODY_MAX = 2000
 
 type FilterKey = 'latest' | 'following' | 'discoveries' | 'tonight'
 
-const SIDEBAR_FILTERS: Array<{ key: FilterKey; label: string; Icon: typeof Compass }> = [
-  { key: 'latest', label: 'All cosmos', Icon: Compass },
-  { key: 'following', label: 'Following', Icon: Star },
-  { key: 'discoveries', label: 'Discoveries', Icon: Sparkles },
-  { key: 'tonight', label: 'Tonight', Icon: Calendar },
+const SIDEBAR_FILTERS: Array<{ key: FilterKey; labelKey: FilterKey; Icon: typeof Compass }> = [
+  { key: 'latest', labelKey: 'latest', Icon: Compass },
+  { key: 'following', labelKey: 'following', Icon: Star },
+  { key: 'discoveries', labelKey: 'discoveries', Icon: Sparkles },
+  { key: 'tonight', labelKey: 'tonight', Icon: Calendar },
 ]
 
-const TAB_FILTERS: Array<{ key: FilterKey; label: string }> = [
-  { key: 'latest', label: 'Latest' },
-  { key: 'following', label: 'Following' },
-  { key: 'discoveries', label: 'Discoveries' },
-  { key: 'tonight', label: 'Tonight' },
+const TAB_FILTERS: Array<{ key: FilterKey; labelKey: FilterKey }> = [
+  { key: 'latest', labelKey: 'latest' },
+  { key: 'following', labelKey: 'following' },
+  { key: 'discoveries', labelKey: 'discoveries' },
+  { key: 'tonight', labelKey: 'tonight' },
 ]
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -48,6 +49,7 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 export default function FeedPage() {
+  const locale = useLocale() === 'ka' ? 'ka' : 'en'
   const router = useRouter()
   const searchParams = useSearchParams()
   const filter = (searchParams?.get('filter') as FilterKey) ?? 'latest'
@@ -76,6 +78,52 @@ export default function FeedPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const composerRef = useRef<HTMLTextAreaElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const copy = {
+    sidebarTitle: locale === 'ka' ? 'ფიდი' : 'Feed',
+    saved: locale === 'ka' ? 'შენახული' : 'Saved',
+    filters: {
+      latest: locale === 'ka' ? 'ყველა' : 'Latest',
+      following: locale === 'ka' ? 'გამოწერები' : 'Following',
+      discoveries: locale === 'ka' ? 'აღმოჩენები' : 'Discoveries',
+      tonight: locale === 'ka' ? 'ამაღამ' : 'Tonight',
+    } as Record<FilterKey, string>,
+    sidebarFilters: {
+      latest: locale === 'ka' ? 'ყველა კოსმოსი' : 'All cosmos',
+      following: locale === 'ka' ? 'გამოწერები' : 'Following',
+      discoveries: locale === 'ka' ? 'აღმოჩენები' : 'Discoveries',
+      tonight: locale === 'ka' ? 'ამაღამ' : 'Tonight',
+    } as Record<FilterKey, string>,
+    fileType: locale === 'ka' ? 'მხარდაჭერილია მხოლოდ JPEG, PNG და WebP სურათები.' : 'Only JPEG, PNG, or WebP images are supported.',
+    fileSize: locale === 'ka' ? 'სურათი 2MB-ზე ნაკლები უნდა იყოს.' : 'Image must be smaller than 2MB.',
+    failedPost: locale === 'ka' ? 'გამოქვეყნება ვერ მოხერხდა' : 'Failed to post',
+    noObservation: locale === 'ka' ? 'მისაბმელი ბოლო დაკვირვება ვერ მოიძებნა.' : 'No recent observations to attach.',
+    cityFallback: locale === 'ka' ? 'თბილისი' : 'Tbilisi',
+    composerPlaceholder: authenticated && firstName
+      ? (locale === 'ka' ? `რა დაინახე, ${firstName}?` : `What did you see, ${firstName}?`)
+      : (locale === 'ka' ? 'რა დაინახე ამაღამ?' : 'What did you see tonight?'),
+    photoAttached: locale === 'ka' ? 'ფოტო მიმაგრებულია · ⌘↵ გამოსაქვეყნებლად' : 'Photo attached · ⌘↵ to post',
+    shortcut: locale === 'ka' ? '⌘↵ გამოსაქვეყნებლად' : '⌘↵ to post',
+    removeImage: locale === 'ka' ? 'სურათის წაშლა' : 'Remove image',
+    linked: locale === 'ka' ? 'მიბმულია' : 'Linked',
+    removeObservation: locale === 'ka' ? 'დაკვირვების წაშლა' : 'Remove observation',
+    removeLocation: locale === 'ka' ? 'მდებარეობის წაშლა' : 'Remove location',
+    photo: locale === 'ka' ? 'ფოტო' : 'Photo',
+    observation: locale === 'ka' ? 'დაკვირვება' : 'Observation',
+    location: locale === 'ka' ? 'მდებარეობა' : 'Location',
+    addPhoto: locale === 'ka' ? 'ფოტოს დამატება' : 'Add photo',
+    attachObservation: locale === 'ka' ? 'ბოლო დაკვირვების მიმაგრება' : 'Attach last observation',
+    attachLocation: locale === 'ka' ? 'მიმდინარე მდებარეობის მიმაგრება' : 'Attach current location',
+    attachNft: locale === 'ka' ? 'აღმოჩენებიდან NFT-ის მიმაგრება' : 'Attach an NFT from your discoveries',
+    sending: locale === 'ka' ? 'იგზავნება…' : 'Sending…',
+    post: locale === 'ka' ? 'გამოქვეყნება' : 'Post',
+    signInToPost: locale === 'ka' ? 'შედი, რათა დაკვირვებები ფიდში გამოაქვეყნო.' : 'Sign in to post your observations to the feed.',
+    signIn: locale === 'ka' ? 'შესვლა' : 'Sign in',
+    empty: {
+      body: locale === 'ka' ? 'კოსმოსი ჩუმადაა. იყავი პირველი, ვინც დაწერს.' : 'The cosmos is quiet. Be the first to post.',
+      compose: locale === 'ka' ? 'დაწერა' : 'Compose',
+    },
+  } as const
 
   const setFilter = useCallback((key: FilterKey) => {
     const sp = new URLSearchParams(searchParams?.toString() ?? '')
@@ -131,11 +179,11 @@ export default function FeedPage() {
     e.target.value = ''
     if (!f) return
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
-      alert('Only JPEG, PNG, or WebP images are supported.')
+      alert(copy.fileType)
       return
     }
     if (f.size > 2 * 1024 * 1024) {
-      alert('Image must be smaller than 2MB.')
+      alert(copy.fileSize)
       return
     }
     const data = await fileToDataUrl(f)
@@ -202,7 +250,7 @@ export default function FeedPage() {
         if (composerRef.current) composerRef.current.style.height = 'auto'
       } else {
         const err = await res.json().catch(() => ({}))
-        alert(err.error ?? 'Failed to post')
+        alert(err.error ?? copy.failedPost)
       }
     } finally {
       setPosting(false)
@@ -217,32 +265,28 @@ export default function FeedPage() {
     setPosts(prev => prev.filter(p => p.id !== id))
   }, [])
 
-  const cityLabel = useMemo(() => location?.city ?? 'Tbilisi', [location])
+  const cityLabel = useMemo(() => location?.city ?? copy.cityFallback, [location, copy.cityFallback])
   const lat = location?.lat ?? 41.7
   const lon = location?.lon ?? 44.83
-
-  const composerPlaceholder = authenticated && firstName
-    ? `What did you see, ${firstName}?`
-    : 'What did you see tonight?'
 
   return (
     <div className="feed-page">
       <div className="feed-grid">
         <aside className="sidebar-left">
           <div className="side-section">
-            <div className="side-label">Feed</div>
-            {SIDEBAR_FILTERS.map(({ key, label, Icon }) => (
+            <div className="side-label">{copy.sidebarTitle}</div>
+            {SIDEBAR_FILTERS.map(({ key, labelKey, Icon }) => (
               <button
                 key={key}
                 type="button"
                 className={`side-link ${filter === key ? 'active' : ''}`}
                 onClick={() => setFilter(key)}
               >
-                <Icon className="side-link-icon" /> {label}
+                <Icon className="side-link-icon" /> {copy.sidebarFilters[labelKey]}
               </button>
             ))}
             <button type="button" className="side-link" onClick={() => router.push('/profile')}>
-              <Bookmark className="side-link-icon" /> Saved
+              <Bookmark className="side-link-icon" /> {copy.saved}
             </button>
           </div>
         </aside>
@@ -259,7 +303,7 @@ export default function FeedPage() {
                 <textarea
                   ref={composerRef}
                   className="composer-input"
-                  placeholder={composerPlaceholder}
+                  placeholder={copy.composerPlaceholder}
                   value={draft}
                   disabled={posting}
                   maxLength={POST_BODY_MAX + 200}
@@ -281,7 +325,7 @@ export default function FeedPage() {
               {(draft.length > POST_BODY_MAX - 200 || pendingImage) && (
                 <div className="composer-meta">
                   <span className="composer-meta-hint">
-                    {pendingImage ? 'Photo attached · ⌘↵ to post' : '⌘↵ to post'}
+                    {pendingImage ? copy.photoAttached : copy.shortcut}
                   </span>
                   {draft.length > POST_BODY_MAX - 200 && (
                     <span className={`composer-counter ${
@@ -297,15 +341,15 @@ export default function FeedPage() {
                 <div className="composer-preview">
                   {pendingImage && (
                     <div className="composer-thumb" style={{ backgroundImage: `url(${pendingImage})` }}>
-                      <button className="composer-thumb-x" onClick={() => setPendingImage(null)} aria-label="Remove image">
+                      <button className="composer-thumb-x" onClick={() => setPendingImage(null)} aria-label={copy.removeImage}>
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {pendingObservation && (
                     <span className="composer-pill">
-                      <MapPin size={12} /> Linked: {pendingObservation.target}
-                      <button onClick={() => setPendingObservation(null)} aria-label="Remove observation"
+                      <MapPin size={12} /> {copy.linked}: {pendingObservation.target}
+                      <button onClick={() => setPendingObservation(null)} aria-label={copy.removeObservation}
                         style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, marginLeft: 4 }}>
                         <X size={11} />
                       </button>
@@ -314,7 +358,7 @@ export default function FeedPage() {
                   {pendingLocation && !pendingObservation && (
                     <span className="composer-pill">
                       <MapPin size={12} /> {pendingLocation.lat}°, {pendingLocation.lon}°
-                      <button onClick={() => setPendingLocation(null)} aria-label="Remove location"
+                      <button onClick={() => setPendingLocation(null)} aria-label={copy.removeLocation}
                         style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, marginLeft: 4 }}>
                         <X size={11} />
                       </button>
@@ -336,16 +380,16 @@ export default function FeedPage() {
                     className={`tool-btn ${pendingImage ? 'active' : ''}`}
                     disabled={posting}
                     onClick={() => fileInputRef.current?.click()}
-                    aria-label="Add photo"
-                    title="Photo"
+                    aria-label={copy.addPhoto}
+                    title={copy.photo}
                   >
-                    <ImageIcon /> <span className="tool-btn-label">Photo</span>
+                    <ImageIcon /> <span className="tool-btn-label">{copy.photo}</span>
                   </button>
                   <button
                     className={`tool-btn ${pendingObservation ? 'active' : ''}`}
                     disabled={posting}
-                    aria-label="Attach last observation"
-                    title="Observation"
+                    aria-label={copy.attachObservation}
+                    title={copy.observation}
                     onClick={async () => {
                       try {
                         const res = await fetch(`/api/observe/history?walletAddress=${encodeURIComponent(address ?? '')}`)
@@ -360,42 +404,42 @@ export default function FeedPage() {
                               nft: last.mintTx ?? undefined,
                             })
                           } else {
-                            alert('No recent observations to attach.')
+                            alert(copy.noObservation)
                           }
                         }
                       } catch {}
                     }}
                   >
-                    <Eye /> <span className="tool-btn-label">Observation</span>
+                    <Eye /> <span className="tool-btn-label">{copy.observation}</span>
                   </button>
                   <button
                     className={`tool-btn ${pendingLocation ? 'active' : ''}`}
                     disabled={posting}
                     onClick={requestLocation}
-                    aria-label="Attach current location"
-                    title="Location"
+                    aria-label={copy.attachLocation}
+                    title={copy.location}
                   >
-                    <MapPin /> <span className="tool-btn-label">Location</span>
+                    <MapPin /> <span className="tool-btn-label">{copy.location}</span>
                   </button>
                   <button
                     className="tool-btn"
                     disabled={posting}
                     onClick={() => router.push('/nfts')}
-                    aria-label="Attach an NFT from your discoveries"
+                    aria-label={copy.attachNft}
                     title="NFT"
                   >
                     <Gem /> <span className="tool-btn-label">NFT</span>
                   </button>
                 </div>
                 <button className="post-btn" disabled={!canPost} onClick={submitPost}>
-                  {posting ? 'Sending…' : 'Post'}
+                  {posting ? copy.sending : copy.post}
                 </button>
               </div>
             </div>
           ) : (
             <div className="composer-auth">
-              <span>Sign in to post your observations to the feed.</span>
-              <button className="post-btn" onClick={() => setAuthOpen(true)}>Sign in</button>
+              <span>{copy.signInToPost}</span>
+              <button className="post-btn" onClick={() => setAuthOpen(true)}>{copy.signIn}</button>
             </div>
           )}
 
@@ -406,7 +450,7 @@ export default function FeedPage() {
                 className={`filter-tab ${filter === t.key ? 'active' : ''}`}
                 onClick={() => setFilter(t.key)}
               >
-                {t.label}
+                {copy.filters[t.labelKey]}
               </button>
             ))}
           </div>
@@ -419,8 +463,8 @@ export default function FeedPage() {
             </>
           ) : posts.length === 0 ? (
             <div className="feed-empty">
-              <p>The cosmos is quiet. Be the first to post.</p>
-              <button onClick={() => composerRef.current?.focus()}>Compose</button>
+              <p>{copy.empty.body}</p>
+              <button onClick={() => composerRef.current?.focus()}>{copy.empty.compose}</button>
             </div>
           ) : (
             <>

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 import { useSkyData, type PlanetData, type ForecastDay } from '@/lib/use-sky-data';
 import { MoonGlyph, NightCloudStrip } from '@/components/sky/forecast/visuals';
@@ -49,12 +50,11 @@ function pickTop3(planets: PlanetData[]): PlanetData[] {
   return visible.slice(0, 3);
 }
 
-const DAY_INITIAL = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
-function dayLetter(iso: string, index: number): string {
+function dayLetter(iso: string, index: number, locale: 'en' | 'ka'): string {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return DAY_INITIAL[index % 7];
-  return DAY_INITIAL[d.getDay()];
+  if (Number.isNaN(d.getTime())) return locale === 'ka' ? ['ო', 'ს', 'ო', 'ხ', 'პ', 'შ', 'კ'][index % 7] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'][index % 7];
+  const label = new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'short' }).format(d).replace('.', '');
+  return Array.from(label)[0]?.toUpperCase() ?? (locale === 'ka' ? 'ო' : 'S');
 }
 
 function badgeColor(b: 'go' | 'maybe' | 'skip'): string {
@@ -63,7 +63,84 @@ function badgeColor(b: 'go' | 'maybe' | 'skip'): string {
   return '#94A3B8';
 }
 
+const COPY = {
+  en: {
+    stats: {
+      cloud: 'Cloud',
+      bortle: 'Bortle',
+      planetsUp: 'Planets up',
+    },
+    outlook: '7-day outlook',
+    outlookMeta: 'moon · 20h → 04h · verdict',
+    openForecast: 'Open the 7-day forecast →',
+    verdict: {
+      GO: 'GO',
+      MAYBE: 'MAYBE',
+      SKIP: 'SKIP',
+    },
+    compass: { N: 'N', E: 'E', S: 'S', W: 'W' },
+    planetNames: {
+      Mercury: 'Mercury',
+      Venus: 'Venus',
+      Mars: 'Mars',
+      Jupiter: 'Jupiter',
+      Saturn: 'Saturn',
+      Uranus: 'Uranus',
+      Neptune: 'Neptune',
+      Moon: 'Moon',
+    } as Record<string, string>,
+    planetShort: {
+      Mercury: 'MER',
+      Venus: 'VEN',
+      Mars: 'MAR',
+      Jupiter: 'JUP',
+      Saturn: 'SAT',
+      Uranus: 'URA',
+      Neptune: 'NEP',
+      Moon: 'MON',
+    } as Record<string, string>,
+  },
+  ka: {
+    stats: {
+      cloud: 'ღრუბლები',
+      bortle: 'ბორტლი',
+      planetsUp: 'ხილული პლანეტები',
+    },
+    outlook: '7-ღამიანი პროგნოზი',
+    outlookMeta: 'მთვარე · 20სთ → 04სთ · შეფასება',
+    openForecast: 'გახსენი 7-ღამიანი პროგნოზი →',
+    verdict: {
+      GO: 'გადი',
+      MAYBE: 'შეიძლება',
+      SKIP: 'გამოტოვე',
+    },
+    compass: { N: 'ჩ', E: 'ა', S: 'ს', W: 'დ' },
+    planetNames: {
+      Mercury: 'მერკური',
+      Venus: 'ვენერა',
+      Mars: 'მარსი',
+      Jupiter: 'იუპიტერი',
+      Saturn: 'სატურნი',
+      Uranus: 'ურანი',
+      Neptune: 'ნეპტუნი',
+      Moon: 'მთვარე',
+    } as Record<string, string>,
+    planetShort: {
+      Mercury: 'მერ',
+      Venus: 'ვენ',
+      Mars: 'მარ',
+      Jupiter: 'იუპ',
+      Saturn: 'სატ',
+      Uranus: 'ურა',
+      Neptune: 'ნეპ',
+      Moon: 'მთვ',
+    } as Record<string, string>,
+  },
+} as const;
+
 export default function TonightAtAGlance() {
+  const locale = useLocale() === 'ka' ? 'ka' : 'en';
+  const copy = COPY[locale];
   const sky = useSkyData();
 
   if (sky.loading) {
@@ -97,28 +174,29 @@ export default function TonightAtAGlance() {
         verdict={v}
         verdictColor={color}
         score={score}
+        locale={locale}
       />
 
       {headline && (
         <p className="mt-6 md:mt-7 text-center text-[14px] md:text-[15.5px] text-white/65 leading-snug max-w-[440px] mx-auto">
-          {headline}.
+          {headline}
         </p>
       )}
 
       {/* ── 3 stats with mini visuals ─────────────────────────────── */}
       <div className="mt-10 md:mt-14 grid grid-cols-3 gap-3 md:gap-10 max-w-[560px] mx-auto">
         <Stat
-          label="Cloud"
+          label={copy.stats.cloud}
           value={cloud != null ? `${cloud}%` : '—'}
           visual={<CloudVisual pct={cloud} />}
         />
         <Stat
-          label="Bortle"
+          label={copy.stats.bortle}
           value={bortle != null ? String(bortle) : '—'}
           visual={<BortleVisual value={bortle} />}
         />
         <Stat
-          label="Planets up"
+          label={copy.stats.planetsUp}
           value={String(visibleCount)}
           visual={<PlanetsVisual planets={visiblePlanets.slice(0, 5)} />}
         />
@@ -154,7 +232,7 @@ export default function TonightAtAGlance() {
                   )}
                 </div>
                 <span className="text-left text-[14px] md:text-[15px] text-white/85">
-                  {p.name}
+                  {copy.planetNames[p.name] ?? p.name}
                 </span>
                 <span className="font-mono tabular-nums text-[12px] md:text-[12.5px] text-white/45">
                   {time}
@@ -173,15 +251,15 @@ export default function TonightAtAGlance() {
         <div className="mt-10 md:mt-14 max-w-[520px] mx-auto">
           <div className="flex items-center justify-between mb-3">
             <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/40">
-              7-day outlook
+              {copy.outlook}
             </span>
             <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/25">
-              moon · 20h → 04h · verdict
+              {copy.outlookMeta}
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
             {sky.forecast.slice(0, 7).map((d, i) => (
-              <ForecastRow key={d.date} day={d} index={i} highlight={i === 0} />
+              <ForecastRow key={d.date} day={d} index={i} highlight={i === 0} locale={locale} />
             ))}
           </div>
         </div>
@@ -192,7 +270,7 @@ export default function TonightAtAGlance() {
           href="/sky"
           className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
         >
-          Open the 7-day forecast →
+          {copy.openForecast}
         </Link>
       </div>
     </div>
@@ -212,12 +290,15 @@ function SkyDome({
   verdict,
   verdictColor,
   score,
+  locale,
 }: {
   planets: PlanetData[];
   verdict: Verdict;
   verdictColor: string;
   score: number;
+  locale: 'en' | 'ka';
 }) {
+  const copy = COPY[locale];
   // Stable star field — deterministic so SSR/CSR match. Anchored points
   // give the dome texture without competing with planets.
   const stars = useMemo(() => {
@@ -279,10 +360,10 @@ function SkyDome({
         <line x1="6" y1="50" x2="94" y2="50" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
 
         {/* Compass labels */}
-        <text x="50" y="3.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">N</text>
-        <text x="96.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">E</text>
-        <text x="50" y="98.5" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">S</text>
-        <text x="3.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">W</text>
+        <text x="50" y="3.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.N}</text>
+        <text x="96.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.E}</text>
+        <text x="50" y="98.5" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.S}</text>
+        <text x="3.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.W}</text>
 
         {/* Background stars */}
         {stars.map((s, i) => (
@@ -323,7 +404,7 @@ function SkyDome({
                 fontWeight="bold"
                 letterSpacing="0.06em"
               >
-                {p.name.slice(0, 3).toUpperCase()}
+                {(copy.planetShort[p.name] ?? p.name.slice(0, 3)).toUpperCase()}
               </text>
             </g>
           );
@@ -369,7 +450,7 @@ function SkyDome({
           boxShadow: `0 0 24px ${verdictColor}1a`,
         }}
       >
-        {verdict}
+        {copy.verdict[verdict]}
       </div>
     </div>
   );
@@ -383,13 +464,16 @@ function ForecastRow({
   day,
   index,
   highlight,
+  locale,
 }: {
   day: ForecastDay;
   index: number;
   highlight: boolean;
+  locale: 'en' | 'ka';
 }) {
   const color = badgeColor(day.badge);
-  const letter = dayLetter(day.date, index);
+  const letter = dayLetter(day.date, index, locale);
+  const copy = COPY[locale];
   return (
     <div className="grid grid-cols-[14px_18px_minmax(0,1fr)_42px] items-center gap-2.5">
       <span
@@ -407,7 +491,7 @@ function ForecastRow({
         className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-right tabular-nums"
         style={{ color }}
       >
-        {day.badge}
+        {copy.verdict[day.badge.toUpperCase() as Verdict]}
       </span>
     </div>
   );

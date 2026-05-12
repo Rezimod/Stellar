@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getLocale } from 'next-intl/server';
 
 export const metadata = {
   title: "Earn — Stellar",
@@ -69,31 +70,81 @@ const TONIGHT = [
   },
 ];
 
-export default function EarnPage() {
+export default async function EarnPage() {
+  const locale = await getLocale();
+  const isKa = locale === 'ka';
+  const tiers = isKa
+    ? [
+        {
+          key: 'phone',
+          label: 'ტელეფონი',
+          multiplier: '1.0×',
+          headline: 'შენი ტელეფონი უკვე ცის სენსორია.',
+          earn: [
+            { what: 'შენი მდებარეობისთვის ღრუბლიანობის დადასტურება', reward: '5–15 ✦' },
+            { what: 'ISS-ის საღამოს გადაფრენის დაფიქსირება', reward: '25–50 ✦' },
+            { what: 'ყოველდღიური streak check-in', reward: '+1 ✦/დღე' },
+          ],
+          note: 'არანაირი აღჭურვილობა არ გჭირდება. უბრალოდ გადი გარეთ.',
+        },
+        {
+          key: 'camera',
+          label: 'კამერა',
+          multiplier: '1.5×',
+          headline: 'დადასტურებული კადრები მეტ ჯილდოს იღებს.',
+          earn: [
+            { what: 'მთვარის, პლანეტის ან თანავარსკვლავედის გადაღება', reward: '38–75 ✦' },
+            { what: 'სპონსორირებული მისია (Astroman pilot)', reward: '100–500 ✦' },
+            { what: 'იშვიათი მოვლენების საბეჭდი ხარისხის კადრები', reward: 'როიალთის წილი' },
+          ],
+          note: 'EXIF და reverse-image შემოწმება ზრდის შენს კოეფიციენტს.',
+        },
+        {
+          key: 'telescope',
+          label: 'ტელესკოპი',
+          multiplier: '2.0×',
+          headline: 'პროფესიონალური მისიები და Astroman-ის რეალური ჯილდოები.',
+          earn: [
+            { what: 'ღრმა ცის და მაღალი გარჩევადობის კადრები', reward: '150–500 ✦' },
+            { what: 'Stargazer Markets (კვირის ლიდერბორდები)', reward: 'საპრიზო ფონდი' },
+            { what: 'Stars-ის გადაცვლა ტელესკოპებსა და აქსესუარებზე Astroman-ში', reward: 'რეალური პროდუქტი' },
+          ],
+          note: 'ბნელი ცის ადგილებში ბორტლის კალიბრაცია შენს ქულას ზრდის.',
+        },
+      ]
+    : TIERS;
+  const tonightItems = isKa
+    ? [
+        { title: 'ISS-ის გადაფრენა თბილისზე', when: '22:14 — ხილულია 5 წუთი', tier: 'ტელეფონი', reward: '50 ✦', sponsor: null },
+        { title: 'სატურნი საუკეთესო სიმაღლეზე', when: '22:30-დან, მთელი ღამე', tier: 'კამერა', reward: '75 ✦', sponsor: 'Astroman' },
+        { title: 'ახლავე დაადასტურე მოწმენდილი ცა', when: 'ღიაა მზის ამოსვლამდე', tier: 'ტელეფონი', reward: '10 ✦', sponsor: null },
+      ]
+    : TONIGHT;
   return (
     <main className="min-h-screen bg-[#0A1735] text-white">
       {/* Hero */}
       <section className="border-b border-white/10 px-6 py-16 sm:px-10 sm:py-24">
         <div className="mx-auto max-w-5xl">
           <p className="font-mono text-xs uppercase tracking-widest text-white/50">
-            How Stellar pays
+            {isKa ? 'როგორ გასცემს Stellar ჯილდოებს' : 'How Stellar pays'}
           </p>
           <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-6xl">
-            Three ways to earn from the night sky.
+            {isKa ? 'ღამის ციდან ჯილდოს მიღების სამი გზა.' : 'Three ways to earn from the night sky.'}
           </h1>
           <p className="mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
-            Phone, camera, telescope — every tier earns. Verified captures earn more. Stars
-            redeem for real telescopes at Astroman, or trade on-chain.
+            {isKa
+              ? 'ტელეფონი, კამერა, ტელესკოპი — ყველა დონე იღებს ჯილდოს. დადასტურებული კადრები მეტ ქულას გაძლევს. Stars შეგიძლია Astroman-ში რეალურ ტელესკოპებზე გადაცვალო.'
+              : 'Phone, camera, telescope — every tier earns. Verified captures earn more. Stars redeem for real telescopes at Astroman, or trade on-chain.'}
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/observe"
               className="rounded-md bg-white px-5 py-3 text-sm font-medium text-black hover:bg-white/90"
             >
-              Start earning tonight
+              {isKa ? 'დაიწყე ამაღამვე' : 'Start earning tonight'}
             </Link>
             <Link href="#tiers" className="text-sm text-white/70 hover:text-white">
-              See how each tier earns →
+              {isKa ? 'ნახე, როგორ მუშაობს თითოეული დონე →' : 'See how each tier earns →'}
             </Link>
           </div>
         </div>
@@ -103,7 +154,7 @@ export default function EarnPage() {
       <section id="tiers" className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-px overflow-hidden rounded-lg bg-white/10 md:grid-cols-3">
-            {TIERS.map((t) => (
+            {tiers.map((t) => (
               <article key={t.key} className="bg-[#0A1735] p-8">
                 <div className="flex items-baseline justify-between">
                   <h2 className="font-mono text-xs uppercase tracking-widest text-white/60">
@@ -138,15 +189,15 @@ export default function EarnPage() {
       <section className="border-t border-white/10 px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <div className="flex items-baseline justify-between">
-            <h2 className="font-serif text-2xl sm:text-3xl">Tonight, in your sky</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl">{isKa ? 'ამაღამ, შენს ცაზე' : 'Tonight, in your sky'}</h2>
             <span className="font-mono text-xs text-white/50">
               {/* TODO: wire to /api/sky/forecast + user GPS */}
-              Tbilisi, GE
+              {isKa ? 'თბილისი, საქართველო' : 'Tbilisi, GE'}
             </span>
           </div>
 
           <ul className="mt-8 divide-y divide-white/10 border-y border-white/10">
-            {TONIGHT.map((m) => (
+            {tonightItems.map((m) => (
               <li
                 key={m.title}
                 className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between"
@@ -158,7 +209,7 @@ export default function EarnPage() {
                     </span>
                     {m.sponsor && (
                       <span className="rounded-sm border border-amber-500/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-amber-300">
-                        Sponsored · {m.sponsor}
+                        {isKa ? `სპონსორი · ${m.sponsor}` : `Sponsored · ${m.sponsor}`}
                       </span>
                     )}
                   </div>
@@ -171,7 +222,7 @@ export default function EarnPage() {
                     href="/observe"
                     className="rounded-md border border-white/20 px-4 py-2 text-sm hover:border-white/60"
                   >
-                    Start
+                    {isKa ? 'დაწყება' : 'Start'}
                   </Link>
                 </div>
               </li>
@@ -185,37 +236,49 @@ export default function EarnPage() {
         <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-2">
           <div>
             <p className="font-mono text-xs uppercase tracking-widest text-white/50">
-              Stellar Pro
+              {isKa ? 'Stellar Pro' : 'Stellar Pro'}
             </p>
             <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">
-              Multi-night planning.
+              {isKa ? 'რამდენიმე ღამის დაგეგმვა.' : 'Multi-night planning.'}
               <br />
-              Custom alerts. No limits.
+              {isKa ? 'საკუთარი შეტყობინებები. ლიმიტის გარეშე.' : 'Custom alerts. No limits.'}
             </h2>
             <p className="mt-6 text-white/70">
-              For people who plan their nights around the sky. ASTRA AI without rate limits,
-              full export of your captures, exclusive Pro missions, and a 10% boost on every
-              reward.
+              {isKa
+                ? 'მათთვის, ვინც ღამეს ცის მიხედვით გეგმავს. ASTRA AI ლიმიტის გარეშე, კადრების სრული ექსპორტი, ექსკლუზიური Pro მისიები და ყოველ ჯილდოზე 10%-იანი ბონუსი.'
+                : 'For people who plan their nights around the sky. ASTRA AI without rate limits, full export of your captures, exclusive Pro missions, and a 10% boost on every reward.'}
             </p>
           </div>
           <div className="border border-white/10 p-8">
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-4xl tabular-nums">$7</span>
-              <span className="font-mono text-sm text-white/60">/ month</span>
+              <span className="font-mono text-sm text-white/60">{isKa ? '/ თვე' : '/ month'}</span>
             </div>
             <ul className="mt-6 space-y-3 text-sm text-white/80">
-              <li>+10% Stars on every verified capture</li>
-              <li>Unlimited ASTRA conversations</li>
-              <li>14-night sky planning, custom alerts</li>
-              <li>Pro-only Stargazer Markets</li>
-              <li>Cancel any time</li>
+              {isKa ? (
+                <>
+                  <li>+10% Stars ყოველ დადასტურებულ კადრზე</li>
+                  <li>ASTRA-სთან ულიმიტო საუბრები</li>
+                  <li>14-ღამიანი დაგეგმვა და საკუთარი შეტყობინებები</li>
+                  <li>Pro-ისთვის განკუთვნილი Stargazer Markets</li>
+                  <li>გაუქმება ნებისმიერ დროს</li>
+                </>
+              ) : (
+                <>
+                  <li>+10% Stars on every verified capture</li>
+                  <li>Unlimited ASTRA conversations</li>
+                  <li>14-night sky planning, custom alerts</li>
+                  <li>Pro-only Stargazer Markets</li>
+                  <li>Cancel any time</li>
+                </>
+              )}
             </ul>
             {/* TODO: wire to Stripe via Privy fiat onramp */}
             <button
               type="button"
               className="mt-8 w-full rounded-md bg-white py-3 text-sm font-medium text-black hover:bg-white/90"
             >
-              Upgrade to Pro
+              {isKa ? 'გახდი Pro მომხმარებელი' : 'Upgrade to Pro'}
             </button>
           </div>
         </div>
@@ -225,22 +288,23 @@ export default function EarnPage() {
       <section className="border-t border-white/10 px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <p className="font-mono text-xs uppercase tracking-widest text-white/50">
-            For brands
+            {isKa ? 'ბრენდებისთვის' : 'For brands'}
           </p>
           <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">
-            Run a Stargazer Market.
+            {isKa ? 'გაუშვი Stargazer Market.' : 'Run a Stargazer Market.'}
             <br />
-            Reach 60,000 astronomers.
+            {isKa ? 'მიაწვდინე ხმა 60,000 ასტრონომს.' : 'Reach 60,000 astronomers.'}
           </h2>
           <p className="mt-6 max-w-2xl text-white/70">
-            Telescope brands, camera makers, and astrotourism partners run sponsored missions
-            with branded prizes and verified capture data. Astroman is our flagship customer.
+            {isKa
+              ? 'ტელესკოპების ბრენდები, კამერების მწარმოებლები და ასტროტურიზმის პარტნიორები გვიერთდებიან სპონსორირებულ მისიებში ბრენდირებული პრიზებითა და დადასტურებული დაკვირვების მონაცემებით. Astroman ჩვენი მთავარი პარტნიორია.'
+              : 'Telescope brands, camera makers, and astrotourism partners run sponsored missions with branded prizes and verified capture data. Astroman is our flagship customer.'}
           </p>
           <Link
             href="mailto:hello@stellarrclub.com"
             className="mt-8 inline-block rounded-md border border-white/20 px-5 py-3 text-sm hover:border-white/60"
           >
-            Talk to us →
+            {isKa ? 'მოგვწერე →' : 'Talk to us →'}
           </Link>
         </div>
       </section>
@@ -249,10 +313,9 @@ export default function EarnPage() {
       <section className="border-t border-white/10 px-6 py-12 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <p className="font-mono text-xs leading-relaxed text-white/40">
-            Stars are an SPL token on Solana mainnet. Earnings are based on verified
-            observations — EXIF metadata, cross-wallet hash dedup, and reverse-image checks
-            gate the multiplier. Stock photos and EXIF-stripped uploads earn at 0.25× and do
-            not mint NFTs.
+            {isKa
+              ? 'Stars არის SPL ტოკენი Solana mainnet-ზე. ჯილდოები ეფუძნება დადასტურებულ დაკვირვებებს — EXIF მეტამონაცემები, wallet-ებს შორის hash dedup და reverse-image შემოწმება განსაზღვრავს კოეფიციენტს. სტოკ ფოტოები და EXIF-ის გარეშე ატვირთვები მხოლოდ 0.25× ჯილდოს იღებს და NFT-ს არ ქმნის.'
+              : 'Stars are an SPL token on Solana mainnet. Earnings are based on verified observations — EXIF metadata, cross-wallet hash dedup, and reverse-image checks gate the multiplier. Stock photos and EXIF-stripped uploads earn at 0.25× and do not mint NFTs.'}
           </p>
         </div>
       </section>

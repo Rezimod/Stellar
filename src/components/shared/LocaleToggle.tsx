@@ -4,10 +4,6 @@ import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 
-const ACTIVE_BG = '#FFB347';
-const ACTIVE_FG = '#0A1735';
-const INACTIVE_FG = 'rgba(255,255,255,0.55)';
-
 export default function LocaleToggle() {
   const locale = useLocale();
   const router = useRouter();
@@ -19,56 +15,45 @@ export default function LocaleToggle() {
     startTransition(() => router.refresh());
   }
 
-  const cellStyle = (active: boolean): React.CSSProperties => ({
-    padding: '0 8px',
-    height: '100%',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontFamily: 'var(--font-mono)',
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: '0.06em',
-    background: active ? ACTIVE_BG : 'transparent',
-    color: active ? ACTIVE_FG : INACTIVE_FG,
-    border: 'none',
-    cursor: active ? 'default' : 'pointer',
-    transition: 'background 0.15s ease, color 0.15s ease',
-  });
-
   return (
     <div
       role="group"
       aria-label="Language"
-      style={{
-        height: 26,
-        display: 'inline-flex',
-        alignItems: 'stretch',
-        borderRadius: 9999,
-        overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.12)',
-        background: 'transparent',
-        opacity: pending ? 0.6 : 1,
-      }}
+      className="inline-flex items-center rounded-full border border-white/12 bg-transparent px-1 py-0.5"
+      style={{ opacity: pending ? 0.6 : 1 }}
     >
       <button
         type="button"
         onClick={() => setLocale('en')}
         aria-pressed={locale === 'en'}
         aria-label="English"
-        style={cellStyle(locale === 'en')}
+        className="min-h-9 min-w-9 rounded-full px-2 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812]"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          color: locale === 'en' ? '#FFB347' : 'rgba(255,255,255,0.55)',
+        }}
       >
-        EN
+        en
       </button>
-      <span aria-hidden style={{ width: 1, background: 'rgba(255,255,255,0.12)' }} />
+      <span
+        aria-hidden
+        className="select-none text-[11px] uppercase tracking-[0.12em]"
+        style={{ color: 'rgba(255,255,255,0.28)', fontFamily: 'var(--font-mono)' }}
+      >
+        |
+      </span>
       <button
         type="button"
         onClick={() => setLocale('ka')}
         aria-pressed={locale === 'ka'}
         aria-label="ქართული"
-        style={cellStyle(locale === 'ka')}
+        className="min-h-9 min-w-9 rounded-full px-2 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812]"
+        style={{
+          fontFamily: 'var(--font-mono)',
+          color: locale === 'ka' ? '#FFB347' : 'rgba(255,255,255,0.55)',
+        }}
       >
-        KA
+        ka
       </button>
     </div>
   );

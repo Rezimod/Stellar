@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { MoonPhase } from 'astronomy-engine';
+import { useLocale } from 'next-intl';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 
 export interface PlanetData {
@@ -148,6 +149,7 @@ type RawTimeline = TimelinePayload;
 const REFRESH_MS = 5 * 60 * 1000;
 
 export function useSkyData(initialCoords?: { lat: number; lon: number; city?: string }) {
+  const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const [data, setData] = useState<SkyData>({
     loading: true,
     error: null,
@@ -164,7 +166,7 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
 
   const fetchAll = useCallback(async () => {
     try {
-      const coords = await resolveCoords(initialCoords);
+      const coords = await resolveCoords(initialCoords, locale);
 
       const dark = getTonightDarkWindow(coords.lat, coords.lon);
       const planetParam = dark.isCurrentlyDark ? '' : '&tonight=1';
@@ -187,7 +189,7 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
 
       const planets: PlanetData[] = planetsRaw.map(normalizePlanet);
 
-      const score = computeObservationScore(planets, verify, sunMoon);
+      const score = computeObservationScore(planets, verify, sunMoon, locale);
 
       const conditions: SkyConditions | null = verify
         ? {
@@ -204,7 +206,7 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
 
       const forecast: ForecastDay[] = forecastRaw
         .slice(0, 7)
-        .map((d, i) => toForecastDay(d, forecastRaw[i + 1]));
+        .map((d, i) => toForecastDay(d, forecastRaw[i + 1], locale));
 
       setData({
         loading: false,
@@ -231,7 +233,7 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
         error: err instanceof Error ? err.message : 'Failed to load sky data',
       }));
     }
-  }, [initialCoords]);
+  }, [initialCoords, locale]);
 
   useEffect(() => {
     fetchAll();
@@ -321,7 +323,11 @@ function moonPhaseFor(date: string): { phase: number; illumination: number } {
   }
 }
 
-function toForecastDay(d: RawSkyDay, next: RawSkyDay | undefined): ForecastDay {
+function toForecastDay(
+  d: RawSkyDay,
+  next: RawSkyDay | undefined,
+  locale: 'en' | 'ka' = 'en',
+): ForecastDay {
   const cloudCoverPct = averageEveningCloud(d.hours);
   const nightHours = buildNightHours(d, next);
   const { phase, illumination } = moonPhaseFor(d.date);
@@ -329,7 +335,18 @@ function toForecastDay(d: RawSkyDay, next: RawSkyDay | undefined): ForecastDay {
     date: d.date,
     cloudCoverPct,
     badge: cloudCoverPct < 30 ? 'go' : cloudCoverPct < 70 ? 'maybe' : 'skip',
-    recommendation: cloudCoverPct < 30 ? 'Deep sky' : cloudCoverPct < 70 ? 'Bright targets' : 'Stay in',
+    recommendation:
+      locale === 'ka'
+        ? cloudCoverPct < 30
+          ? 'ღრმა ცა'
+          : cloudCoverPct < 70
+            ? 'ნათელი სამიზნეები'
+            : 'სახლში დარჩი'
+        : cloudCoverPct < 30
+          ? 'Deep sky'
+          : cloudCoverPct < 70
+            ? 'Bright targets'
+            : 'Stay in',
     nightHours,
     moonPhase: phase,
     moonIllumination: illumination,
@@ -344,8 +361,15 @@ interface StoredLocation {
 
 async function resolveCoords(
   initial?: { lat: number; lon: number; city?: string },
+  locale: 'en' | 'ka' = 'en',
 ): Promise<{ lat: number; lon: number; city: string }> {
-  if (initial) return { lat: initial.lat, lon: initial.lon, city: initial.city || 'Your location' };
+  if (initial) {
+    return {
+      lat: initial.lat,
+      lon: initial.lon,
+      city: initial.city || (locale === 'ka' ? 'შენი მდებარეობა' : 'Your location'),
+    };
+  }
 
   // Honor the project-wide LocationProvider preference if the user has set one.
   if (typeof window !== 'undefined') {
@@ -354,7 +378,11 @@ async function resolveCoords(
       if (stored) {
         const parsed = JSON.parse(stored) as StoredLocation;
         if (Number.isFinite(parsed.lat) && Number.isFinite(parsed.lon)) {
-          return { lat: parsed.lat, lon: parsed.lon, city: parsed.city || 'Your location' };
+          return {
+            lat: parsed.lat,
+            lon: parsed.lon,
+            city: parsed.city || (locale === 'ka' ? 'შენი მდებარეობა' : 'Your location'),
+          };
         }
       }
     } catch {
@@ -367,19 +395,24 @@ async function resolveCoords(
       const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 4000 });
       });
-      return { lat: pos.coords.latitude, lon: pos.coords.longitude, city: 'Your location' };
+      return {
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        city: locale === 'ka' ? 'შენი მდებარეობა' : 'Your location',
+      };
     } catch {
       // fall through
     }
   }
 
-  return { lat: 41.6941, lon: 44.8337, city: 'Tbilisi' };
+  return { lat: 41.6941, lon: 44.8337, city: locale === 'ka' ? 'თბილისი' : 'Tbilisi' };
 }
 
 function computeObservationScore(
   planets: PlanetData[],
   verify: RawVerify | null,
   sunMoon: RawSunMoon | null,
+  locale: 'en' | 'ka' = 'en',
 ): ObservationScore {
   const cloudCover = verify?.cloudCover ?? 50;
   const moonIllum = sunMoon?.moonIllumination ?? 0.5;
@@ -395,10 +428,17 @@ function computeObservationScore(
   const score = Math.round(cloudScore + moonScore + targetScore);
 
   let headline = '';
-  if (score >= 75) headline = 'Clear night — go observe';
-  else if (score >= 50) headline = 'Decent conditions tonight';
-  else if (score >= 25) headline = 'Limited visibility — pick bright targets';
-  else headline = 'Poor conditions — better luck tomorrow';
+  if (locale === 'ka') {
+    if (score >= 75) headline = 'მოწმენდილია — დროა გახვიდე დასაკვირვებლად';
+    else if (score >= 50) headline = 'ამაღამ პირობები მისაღებია';
+    else if (score >= 25) headline = 'ხილვადობა შეზღუდულია — აირჩიე ნათელი სამიზნეები';
+    else headline = 'პირობები სუსტია — სცადე ხვალ';
+  } else {
+    if (score >= 75) headline = 'Clear night — go observe';
+    else if (score >= 50) headline = 'Decent conditions tonight';
+    else if (score >= 25) headline = 'Limited visibility — pick bright targets';
+    else headline = 'Poor conditions — better luck tomorrow';
+  }
 
   const ranked = planets
     .filter((p) => p.visible && p.altitude > 10)
@@ -408,12 +448,24 @@ function computeObservationScore(
 
   const moonRiseLabel = sunMoon?.moonRise ? formatHHmm(sunMoon.moonRise) : null;
   const moonNote = moonUp
-    ? `Moon ${Math.round(moonIllum * 100)}% illuminated`
+    ? locale === 'ka'
+      ? `მთვარე განათებულია ${Math.round(moonIllum * 100)}%-ით`
+      : `Moon ${Math.round(moonIllum * 100)}% illuminated`
     : moonRiseLabel
-    ? `No moon after ${moonRiseLabel}`
-    : 'Moonless';
-  const targetNote = ranked.length > 0 ? ` Best targets: ${ranked.join(', ')}.` : '';
-  const summary = `${cloudCover}% cloud, ${moonNote}.${targetNote}`;
+    ? locale === 'ka'
+      ? `მთვარე აღარ გამოჩნდება ${moonRiseLabel}-ის შემდეგ`
+      : `No moon after ${moonRiseLabel}`
+    : locale === 'ka'
+      ? 'მთვარის გარეშე'
+      : 'Moonless';
+  const targetNote = ranked.length > 0
+    ? locale === 'ka'
+      ? ` საუკეთესო სამიზნეებია: ${ranked.join(', ')}.`
+      : ` Best targets: ${ranked.join(', ')}.`
+    : '';
+  const summary = locale === 'ka'
+    ? `${cloudCover}% ღრუბლიანობა, ${moonNote}.${targetNote}`
+    : `${cloudCover}% cloud, ${moonNote}.${targetNote}`;
 
   return { score, headline, summary, bestTargets: ranked };
 }
