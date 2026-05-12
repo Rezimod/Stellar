@@ -69,7 +69,7 @@ const COMPASS_TICKS = [
 const COMPASS_VISIBLE_DEG = 80;
 const HOLD_TO_LOCK_MS = 800;
 const POOR_ACCURACY_DEG = 15;
-const STAR_LABEL_LIMIT = 10;
+const STAR_LABEL_LIMIT = 14;
 const DISPLAY_DEADBAND_AZ = 0.14;
 const DISPLAY_DEADBAND_ALT = 0.10;
 const DISPLAY_ALPHA_STILL = 0.08;
@@ -204,12 +204,8 @@ export function ARFinder({
     w: typeof window !== 'undefined' ? window.innerWidth : 360,
     h: typeof window !== 'undefined' ? window.innerHeight : 640,
   });
-  const [cameraState, setCameraState] = useState<'idle' | 'live' | 'denied' | 'unavailable'>('idle');
-  const [cameraReady, setCameraReady] = useState(false);
   const [alignment, setAlignment] = useState<AlignmentState>(() => loadAlignment());
   const [alignmentOpen, setAlignmentOpen] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
   // Stars are computed once when the immersive view opens. They drift
   // ~0.25°/min — plenty accurate for a session lasting a few minutes.
@@ -260,70 +256,6 @@ export function ARFinder({
       // Ignore private-mode/localStorage failures.
     }
   }, [alignment]);
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      setCameraState('unavailable');
-      return;
-    }
-
-    let cancelled = false;
-
-    const startCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            facingMode: { ideal: 'environment' },
-          },
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-        const video = videoRef.current;
-        if (video) {
-          video.srcObject = stream;
-          try {
-            await video.play();
-          } catch {
-            // Some browsers wait for loaded metadata; we still keep the stream.
-          }
-        }
-        setCameraState('live');
-      } catch (error) {
-        const denied =
-          error instanceof DOMException &&
-          (error.name === 'NotAllowedError' || error.name === 'SecurityError');
-        setCameraState(denied ? 'denied' : 'unavailable');
-      }
-    };
-
-    void startCamera();
-
-    return () => {
-      cancelled = true;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const onReady = () => setCameraReady(true);
-    const onWaiting = () => setCameraReady(false);
-    video.addEventListener('loadeddata', onReady);
-    video.addEventListener('playing', onReady);
-    video.addEventListener('waiting', onWaiting);
-    return () => {
-      video.removeEventListener('loadeddata', onReady);
-      video.removeEventListener('playing', onReady);
-      video.removeEventListener('waiting', onWaiting);
-    };
-  }, []);
 
   const [renderAim, setRenderAim] = useState(() => ({
     azimuth: heading ?? 0,
@@ -673,24 +605,8 @@ export function ARFinder({
   }, [objects]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
-  const cameraBadge = cameraReady && cameraState === 'live' ? t('cameraLive') : t('cameraFallback');
-
   return (
-    <div
-      className={`ar-overlay${cameraReady && cameraState === 'live' ? ' ar-overlay--camera-live' : ''}`}
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('title')}
-    >
-      <div className="ar-overlay__camera" aria-hidden="true">
-        <video
-          ref={videoRef}
-          className="ar-overlay__camera-video"
-          autoPlay
-          muted
-          playsInline
-        />
-      </div>
+    <div className="ar-overlay" role="dialog" aria-modal="true" aria-label={t('title')}>
       <div className="ar-overlay__starfield" aria-hidden="true">
         <div className="ar-overlay__starfield-haze" />
         <div className="ar-overlay__starfield-milkyway" />
@@ -742,12 +658,12 @@ export function ARFinder({
       <div className="ar-overlay__layer">
         {positionedStars.map(({ star, screenX, screenY, onScreen }) => {
           if (!onScreen) return null;
-          const size = Math.max(1.5, 4 - star.mag * 0.6);
-          const opacity = Math.max(0.45, 1 - star.mag * 0.18);
+          const size = Math.max(1.7, 4.8 - star.mag * 0.62);
+          const opacity = Math.max(0.56, 1 - star.mag * 0.16);
           const tint = starTint(star.id, star.mag);
           const glow = star.mag <= 0.6
-            ? `0 0 10px ${hexToRgba(tint, 0.62)}, 0 0 24px ${hexToRgba(tint, 0.24)}`
-            : `0 0 8px ${hexToRgba(tint, 0.35)}`;
+            ? `0 0 12px ${hexToRgba(tint, 0.72)}, 0 0 28px ${hexToRgba(tint, 0.28)}`
+            : `0 0 10px ${hexToRgba(tint, 0.42)}`;
           return (
             <div
               key={star.id}
@@ -791,7 +707,7 @@ export function ARFinder({
           const inFadeBand = Math.abs(dAz) <= hFov * 0.85 && Math.abs(dAlt) <= vFov * 0.85;
           if (!inFadeBand) return null;
           const isActive = obj.id === activeId;
-          const baseOpacity = onScreen ? (isActive ? 1 : 0.85) : 0;
+          const baseOpacity = onScreen ? (isActive ? 1 : 0.94) : 0;
           return (
             <button
               type="button"
@@ -930,9 +846,6 @@ export function ARFinder({
           <div className="ar-topbar__title">{t('title')}</div>
           <div className="ar-topbar__heading">
             {cardinal} · {Math.round(phoneAim.azimuth)}°
-          </div>
-          <div className={`ar-topbar__badge${cameraReady && cameraState === 'live' ? ' is-live' : ''}`}>
-            {cameraBadge}
           </div>
         </div>
         <button

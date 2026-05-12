@@ -4,7 +4,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: var(--canvas);
+  background: #020305;
   color: var(--text);
   font-family: var(--font-body, 'Geist'), system-ui, sans-serif;
   overscroll-behavior: contain;
@@ -25,37 +25,16 @@
 .ar-overlay::before {
   z-index: 1;
   background:
-    radial-gradient(120% 120% at 50% -10%, rgba(235, 240, 248, 0.04), transparent 48%),
-    radial-gradient(150% 110% at 50% 115%, rgba(255, 190, 130, 0.08), transparent 38%),
-    linear-gradient(180deg, rgba(2, 4, 8, 0.06), rgba(2, 4, 8, 0.22));
+    radial-gradient(120% 90% at 50% -8%, rgba(210, 224, 255, 0.028), transparent 44%),
+    radial-gradient(150% 100% at 50% 118%, rgba(120, 112, 188, 0.045), transparent 36%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.16));
 }
 
 .ar-overlay::after {
   z-index: 3;
   background:
-    radial-gradient(ellipse at center, transparent 48%, rgba(3, 5, 9, 0.18) 100%),
-    linear-gradient(180deg, rgba(3, 5, 9, 0.32) 0%, transparent 20%, transparent 78%, rgba(3, 5, 9, 0.34) 100%);
-}
-
-.ar-overlay__camera {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  background: #02060e;
-}
-
-.ar-overlay__camera-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.28) saturate(0.78) contrast(1.05);
-  opacity: 0;
-  transition: opacity 220ms ease-out;
-}
-
-.ar-overlay--camera-live .ar-overlay__camera-video {
-  opacity: 1;
+    radial-gradient(ellipse at center, transparent 44%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.24) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.26) 100%);
 }
 
 /* Night-sky backdrop. Three stacked layers:
@@ -70,32 +49,27 @@
   inset: 0;
   z-index: 2;
   background:
-    radial-gradient(1.6px 1.6px at  6% 12%, rgba(255,255,255,0.9), transparent 60%),
-    radial-gradient(1px 1px   at 14% 31%, rgba(220,230,255,0.55), transparent 60%),
-    radial-gradient(1.2px 1.2px at 22% 58%, rgba(255,255,255,0.7), transparent 60%),
-    radial-gradient(1px 1px   at 30% 78%, rgba(200,220,255,0.5), transparent 60%),
-    radial-gradient(2px 2px   at 36% 17%, rgba(255,250,235,0.85), transparent 60%),
-    radial-gradient(1px 1px   at 42% 41%, rgba(255,255,255,0.5), transparent 60%),
-    radial-gradient(1.4px 1.4px at 49% 64%, rgba(255,240,210,0.7), transparent 60%),
-    radial-gradient(1px 1px   at 55% 9%,  rgba(220,235,255,0.6), transparent 60%),
-    radial-gradient(1.6px 1.6px at 60% 33%, rgba(255,255,255,0.85), transparent 60%),
-    radial-gradient(1px 1px   at 66% 53%, rgba(210,230,255,0.55), transparent 60%),
-    radial-gradient(1.2px 1.2px at 71% 76%, rgba(255,250,235,0.7), transparent 60%),
-    radial-gradient(2px 2px   at 78% 21%, rgba(255,255,255,0.9), transparent 60%),
-    radial-gradient(1px 1px   at 83% 47%, rgba(220,230,255,0.55), transparent 60%),
-    radial-gradient(1.2px 1.2px at 88% 68%, rgba(255,250,235,0.7), transparent 60%),
-    radial-gradient(1px 1px   at 93% 14%, rgba(255,255,255,0.6), transparent 60%),
-    radial-gradient(1px 1px   at 96% 88%, rgba(220,235,255,0.55), transparent 60%),
-    radial-gradient(1.4px 1.4px at 17% 83%, rgba(255,255,255,0.7), transparent 60%),
-    radial-gradient(1px 1px   at 73% 92%, rgba(255,250,235,0.55), transparent 60%),
-    radial-gradient(ellipse 120% 80% at 50% 110%, rgba(50,32,62,0.46), transparent 70%),
-    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(14,28,68,0.56), transparent 75%),
-    linear-gradient(180deg, #01030a 0%, #07111f 56%, #0a1727 100%);
-  transition: opacity 220ms ease-out;
-}
-
-.ar-overlay--camera-live .ar-overlay__starfield {
-  opacity: 0.48;
+    radial-gradient(1.8px 1.8px at 8% 12%, rgba(255,255,255,0.92), transparent 58%),
+    radial-gradient(1.2px 1.2px at 14% 31%, rgba(226,234,255,0.62), transparent 60%),
+    radial-gradient(1.4px 1.4px at 22% 58%, rgba(255,255,255,0.74), transparent 60%),
+    radial-gradient(1px 1px at 30% 78%, rgba(214,226,255,0.54), transparent 60%),
+    radial-gradient(2px 2px at 36% 17%, rgba(255,246,226,0.88), transparent 58%),
+    radial-gradient(1px 1px at 42% 41%, rgba(255,255,255,0.58), transparent 60%),
+    radial-gradient(1.5px 1.5px at 49% 64%, rgba(255,236,206,0.74), transparent 60%),
+    radial-gradient(1px 1px at 55% 9%, rgba(226,236,255,0.62), transparent 60%),
+    radial-gradient(1.8px 1.8px at 60% 33%, rgba(255,255,255,0.88), transparent 58%),
+    radial-gradient(1px 1px at 66% 53%, rgba(214,226,255,0.56), transparent 60%),
+    radial-gradient(1.3px 1.3px at 71% 76%, rgba(255,246,226,0.74), transparent 60%),
+    radial-gradient(2px 2px at 78% 21%, rgba(255,255,255,0.92), transparent 58%),
+    radial-gradient(1px 1px at 83% 47%, rgba(226,234,255,0.6), transparent 60%),
+    radial-gradient(1.3px 1.3px at 88% 68%, rgba(255,246,226,0.72), transparent 60%),
+    radial-gradient(1px 1px at 93% 14%, rgba(255,255,255,0.62), transparent 60%),
+    radial-gradient(1px 1px at 96% 88%, rgba(226,236,255,0.56), transparent 60%),
+    radial-gradient(1.5px 1.5px at 17% 83%, rgba(255,255,255,0.76), transparent 60%),
+    radial-gradient(1px 1px at 73% 92%, rgba(255,246,226,0.56), transparent 60%),
+    radial-gradient(ellipse 115% 72% at 50% 100%, rgba(24, 26, 48, 0.38), transparent 72%),
+    radial-gradient(ellipse 92% 68% at 50% 0%, rgba(10, 18, 42, 0.34), transparent 76%),
+    linear-gradient(180deg, #000103 0%, #02050c 62%, #03060d 100%);
 }
 
 /* Diagonal milky-way ribbon. Soft, low-contrast, rotated band of dust
@@ -108,14 +82,14 @@
     linear-gradient(
       112deg,
       transparent 30%,
-      rgba(150, 170, 220, 0.06) 42%,
-      rgba(220, 210, 230, 0.10) 50%,
-      rgba(180, 190, 230, 0.06) 58%,
+      rgba(126, 142, 196, 0.04) 42%,
+      rgba(212, 220, 244, 0.075) 50%,
+      rgba(142, 154, 205, 0.04) 58%,
       transparent 70%
     );
   mix-blend-mode: screen;
-  filter: blur(14px);
-  opacity: 0.92;
+  filter: blur(18px);
+  opacity: 0.7;
 }
 
 /* Warm horizon haze — a thin glow along the bottom edge so the sky has
@@ -125,9 +99,9 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(120% 28% at 50% 100%, rgba(255, 184, 120, 0.06), transparent 70%),
-    radial-gradient(60% 18% at 22% 96%, rgba(120, 80, 140, 0.07), transparent 75%),
-    radial-gradient(60% 18% at 78% 96%, rgba(80, 110, 180, 0.06), transparent 75%);
+    radial-gradient(120% 28% at 50% 100%, rgba(92, 96, 138, 0.07), transparent 72%),
+    radial-gradient(60% 18% at 22% 96%, rgba(56, 64, 98, 0.08), transparent 76%),
+    radial-gradient(60% 18% at 78% 96%, rgba(46, 58, 96, 0.07), transparent 76%);
   mix-blend-mode: screen;
 }
 
@@ -138,18 +112,18 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(2px 2px at 8% 42%, rgba(255,255,255,0.22), transparent 60%),
-    radial-gradient(1px 1px at 18% 24%, rgba(255,255,255,0.18), transparent 60%),
-    radial-gradient(1px 1px at 26% 67%, rgba(255,255,255,0.16), transparent 60%),
-    radial-gradient(2px 2px at 38% 88%, rgba(255,255,255,0.20), transparent 60%),
-    radial-gradient(1px 1px at 47% 14%, rgba(255,255,255,0.16), transparent 60%),
-    radial-gradient(1px 1px at 53% 38%, rgba(255,255,255,0.14), transparent 60%),
-    radial-gradient(1px 1px at 62% 73%, rgba(255,255,255,0.14), transparent 60%),
-    radial-gradient(2px 2px at 75% 36%, rgba(255,255,255,0.22), transparent 60%),
-    radial-gradient(1px 1px at 84% 81%, rgba(255,255,255,0.16), transparent 60%),
-    radial-gradient(1px 1px at 92% 56%, rgba(255,255,255,0.14), transparent 60%);
+    radial-gradient(2px 2px at 8% 42%, rgba(255,255,255,0.18), transparent 60%),
+    radial-gradient(1px 1px at 18% 24%, rgba(255,255,255,0.12), transparent 60%),
+    radial-gradient(1px 1px at 26% 67%, rgba(255,255,255,0.1), transparent 60%),
+    radial-gradient(2px 2px at 38% 88%, rgba(255,255,255,0.14), transparent 60%),
+    radial-gradient(1px 1px at 47% 14%, rgba(255,255,255,0.11), transparent 60%),
+    radial-gradient(1px 1px at 53% 38%, rgba(255,255,255,0.1), transparent 60%),
+    radial-gradient(1px 1px at 62% 73%, rgba(255,255,255,0.1), transparent 60%),
+    radial-gradient(2px 2px at 75% 36%, rgba(255,255,255,0.16), transparent 60%),
+    radial-gradient(1px 1px at 84% 81%, rgba(255,255,255,0.11), transparent 60%),
+    radial-gradient(1px 1px at 92% 56%, rgba(255,255,255,0.1), transparent 60%);
   mix-blend-mode: screen;
-  animation: arStarfieldTwinkle 8.5s ease-in-out infinite;
+  animation: arStarfieldTwinkle 10s ease-in-out infinite;
 }
 
 .ar-overlay__starfield-comet {
@@ -159,7 +133,7 @@
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(208,228,255,0.18) 24%, rgba(255,255,255,0.92) 100%);
-  box-shadow: 0 0 20px rgba(208,228,255,0.22);
+  box-shadow: 0 0 16px rgba(208,228,255,0.16);
   opacity: 0;
   transform: rotate(-24deg);
   filter: blur(0.2px);
@@ -630,7 +604,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text);
-  background: rgba(6,9,14,0.76);
+  background: rgba(3,5,9,0.84);
   padding: 3px 9px;
   border-radius: 999px;
   border: 0.5px solid rgba(248,244,236,0.14);
@@ -640,7 +614,7 @@
 
 .ar-body--focused .ar-body__label {
   color: var(--text);
-  background: rgba(18, 13, 8, 0.84);
+  background: rgba(12, 10, 8, 0.88);
   border-color: rgba(255,179,71,0.34);
 }
 .ar-body:focus-visible .ar-body__label {
@@ -669,6 +643,7 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   mix-blend-mode: screen;
+  filter: saturate(1.08);
 }
 
 .ar-star-label {
@@ -680,8 +655,8 @@
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(248, 244, 236, 0.54);
-  text-shadow: 0 1px 2px rgba(3, 5, 9, 0.9);
+  color: rgba(248, 244, 236, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
   white-space: nowrap;
 }
 
@@ -701,9 +676,9 @@
   font-size: 10px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  fill: rgba(248, 244, 236, 0.24);
+  fill: rgba(248, 244, 236, 0.28);
   paint-order: stroke fill;
-  stroke: rgba(3, 5, 9, 0.92);
+  stroke: rgba(0, 0, 0, 0.96);
   stroke-width: 4px;
 }
 
@@ -962,26 +937,6 @@
   color: rgba(255, 214, 156, 0.78);
   letter-spacing: 0.10em;
   text-transform: uppercase;
-}
-
-.ar-topbar__badge {
-  display: inline-flex;
-  margin-top: 6px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(6,9,14,0.58);
-  border: 0.5px solid rgba(248,244,236,0.12);
-  color: rgba(248,244,236,0.72);
-  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.ar-topbar__badge.is-live {
-  color: rgba(152, 255, 214, 0.92);
-  border-color: rgba(94,234,212,0.28);
-  background: rgba(7,22,19,0.66);
 }
 
 .ar-topbar__btn {

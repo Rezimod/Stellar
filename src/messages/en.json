@@ -406,11 +406,10 @@
     },
     "ar": {
       "title": "Immersive Sky",
-      "permissionBody": "Stellar uses your motion sensors and rear camera to render the live night sky for your location.",
-      "permissionInstructions": "Hold your phone up and pan around — the Sun, Moon, planets, and constellations appear over the real sky.",
+      "permissionBody": "Stellar uses your motion sensors to render a live dark-sky view for your location.",
+      "permissionInstructions": "Hold your phone up and pan around — the Sun, Moon, planets, and constellations appear in the right place.",
       "permissionItems": {
         "motion": "Motion sensors (to track which way you face)",
-        "camera": "Rear camera (to place the sky over the real horizon)",
         "location": "Location (already enabled)"
       },
       "enable": "Enable Sky View",
@@ -443,11 +442,9 @@
       "guidanceOff": "No active guidance",
       "visibleNow": "Visible now",
       "belowHorizon": "Below horizon",
-      "cameraLive": "Camera live",
-      "cameraFallback": "Sky backdrop",
       "align": "Align",
       "alignment": "AR alignment",
-      "alignmentBody": "Fine-tune the overlay if your phone's compass or camera sits slightly off-center.",
+      "alignmentBody": "Fine-tune the overlay if your phone's compass sits slightly off-center.",
       "setFromTarget": "Match {object} to center",
       "resetAlignment": "Reset alignment",
       "yaw": "Yaw",
