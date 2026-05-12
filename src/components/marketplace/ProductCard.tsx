@@ -56,7 +56,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         aria-label={`View ${product.name} on dealer site`}
       >
         <div
-          className="relative w-full mb-[14px] overflow-hidden aspect-[1.25]"
+          className="relative w-full mb-[14px] overflow-hidden aspect-[1.25] bg-white"
         >
           {product.image && (
             <Image
@@ -64,7 +64,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-              style={{ objectFit: 'cover' }}
+              style={{ objectFit: 'contain', padding: '8px' }}
               loading="lazy"
             />
           )}

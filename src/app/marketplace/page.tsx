@@ -240,27 +240,23 @@ export default function MarketplacePage() {
 
               {featuredProduct ? (
                 <div className="hidden md:flex md:flex-col gap-[14px] sm:gap-[16px]">
-                  <div className="flex items-start gap-[14px] sm:gap-[16px]">
+                  <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_minmax(0,1fr)] gap-[14px] sm:gap-[16px] items-stretch">
                     <ProductCard
                       product={featuredProduct}
                       dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
                       solPerGEL={solPerGEL}
                       solPriceUsd={solPriceUsd}
-                      className="w-[41%] flex-none"
+                      className="row-span-2 h-full"
                     />
-                    {featuredRowProducts.length > 0 ? (
-                      <div className="grid flex-1 grid-cols-2 gap-[14px] sm:gap-[16px] content-start">
-                        {featuredRowProducts.map((p) => (
-                          <ProductCard
-                            key={p.id}
-                            product={p}
-                            dealerName={showDealer ? getDealerName(p.dealerId) : ''}
-                            solPerGEL={solPerGEL}
-                            solPriceUsd={solPriceUsd}
-                          />
-                        ))}
-                      </div>
-                    ) : null}
+                    {featuredRowProducts.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        dealerName={showDealer ? getDealerName(p.dealerId) : ''}
+                        solPerGEL={solPerGEL}
+                        solPriceUsd={solPriceUsd}
+                      />
+                    ))}
                   </div>
 
                   {catalogProducts.length > 0 ? (
