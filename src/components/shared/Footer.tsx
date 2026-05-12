@@ -26,14 +26,6 @@ const columns: FooterColumn[] = [
       { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true },
     ],
   },
-  {
-    titleKey: 'colLegal',
-    links: [
-      { labelKey: 'terms',    href: '/terms' },
-      { labelKey: 'privacy',  href: '/privacy' },
-      { labelKey: 'contact',  href: '/contact' },
-    ],
-  },
 ];
 
 const linkBase: React.CSSProperties = {
@@ -113,7 +105,7 @@ export default function Footer() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
               gap: 32,
             }}
             className="stellar-footer-cols"
@@ -187,18 +179,19 @@ export default function Footer() {
           .stellar-footer-brand {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
+            align-items: flex-start;
+            text-align: left;
           }
           .stellar-footer-tagline {
-            margin-left: auto;
-            margin-right: auto;
+            margin-left: 0;
+            margin-right: 0;
           }
           .stellar-footer-cols {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 24px 20px !important;
+            grid-template-columns: repeat(2, minmax(0, max-content)) !important;
+            gap: 24px 40px !important;
             align-items: start;
             text-align: left;
+            justify-content: start;
           }
           .stellar-footer-col {
             display: flex;
