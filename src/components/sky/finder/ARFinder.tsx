@@ -44,7 +44,7 @@ interface ARFinderProps {
    *  off-screen, hold-to-lock when centered. */
   activeId: ObjectId | null;
   /** Called when the user picks a different target from the in-view picker. */
-  onSelectActive: (id: ObjectId) => void;
+  onSelectActive: (id: ObjectId | null) => void;
   onClose: () => void;
 }
 
@@ -123,6 +123,14 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function pickerPriority(obj: SkyObject): number {
+  if (obj.id === 'sun') return 0;
+  if (obj.id === 'moon') return 1;
+  if (obj.type === 'planet') return 2;
+  if (obj.type === 'star' || obj.type === 'double') return 3;
+  return 4;
+}
+
 /** Per-target lock radius (degrees). Mirrors SkyMap's tolerance ladder. */
 function lockRadiusDeg(obj: SkyObject): number {
   if (obj.instrument === 'telescope') return 3;
@@ -168,6 +176,15 @@ export function ARFinder({
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   // Track viewport for FOV → pixel math.
   useEffect(() => {
@@ -356,6 +373,24 @@ export function ARFinder({
   const compassPxPerDeg = viewport.w / COMPASS_VISIBLE_DEG;
   const headingActive = heading != null && altitude != null;
   const poorAccuracy = headingActive && (accuracy == null || accuracy > POOR_ACCURACY_DEG);
+  const visibleBodyCount = useMemo(
+    () => objects.filter((o) => o.visible).length,
+    [objects],
+  );
+
+  const guidanceSteps = useMemo(() => {
+    if (!activeRow) return [];
+    const steps: string[] = [];
+    const horizontal = Math.round(Math.abs(activeRow.dAz));
+    const vertical = Math.round(Math.abs(activeRow.dAlt));
+    if (horizontal >= 1) {
+      steps.push(t(activeRow.dAz > 0 ? 'turnRight' : 'turnLeft', { deg: horizontal }));
+    }
+    if (vertical >= 1) {
+      steps.push(t(activeRow.dAlt > 0 ? 'tiltUp' : 'tiltDown', { deg: vertical }));
+    }
+    return steps;
+  }, [activeRow, t]);
 
   // Bottom hint is structured (primary cue + optional secondary) so the
   // mobile layout can render the angle as a big mono number with the
@@ -373,17 +408,21 @@ export function ARFinder({
     if (confirmedLock) {
       hint = { primary: t('found', { object: activeBody.name }), tone: 'lock' };
     } else if (activeRow.onScreen) {
-      hint = { primary: t('almostThere', { object: activeBody.name }) };
+      hint = {
+        primary: t('centerTarget', { object: activeBody.name }),
+        secondary: guidanceSteps.join(' · ') || t('holdSteady'),
+      };
     } else {
       hint = {
-        primary: `${Math.round(activeRow.sep)}°`,
-        secondary: t('panToward', { object: activeBody.name }),
+        primary: t('guideTo', { object: activeBody.name }),
+        secondary: guidanceSteps.join(' · ') || t('panTo', { deg: Math.round(activeRow.sep), object: activeBody.name }),
       };
     }
-  } else if ((altitude ?? 0) < 30) {
-    hint = { primary: t('liftPhone') };
   } else {
-    hint = { primary: t('panAround') };
+    hint = {
+      primary: t('browseSky'),
+      secondary: t('browseSkyBody'),
+    };
   }
 
   const constellationSegments = useMemo(() => {
@@ -403,14 +442,18 @@ export function ARFinder({
     return out;
   }, [starById, project, hFov, vFov]);
 
-  // List of bodies suitable for the in-AR target picker — visible only,
-  // sorted brightest first. Sun deliberately excluded so the user doesn't
-  // try to "find" it during a session that's by design after sunset.
+  // Picker lists every catalog object so the user can browse first, then
+  // opt into guidance. Visible bodies float to the top.
   const pickerBodies = useMemo(() => {
     return objects
-      .filter((o) => o.visible && o.id !== 'sun')
       .slice()
-      .sort((a, b) => a.magnitude - b.magnitude);
+      .sort((a, b) => {
+        if (a.visible !== b.visible) return a.visible ? -1 : 1;
+        const priority = pickerPriority(a) - pickerPriority(b);
+        if (priority !== 0) return priority;
+        if (a.visible && b.visible) return a.magnitude - b.magnitude || b.altitude - a.altitude;
+        return b.altitude - a.altitude;
+      });
   }, [objects]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -517,7 +560,8 @@ export function ARFinder({
           const isActive = obj.id === activeId;
           const baseOpacity = onScreen ? (isActive ? 1 : 0.85) : 0;
           return (
-            <div
+            <button
+              type="button"
               key={obj.id}
               className={`ar-body ${isActive ? 'ar-body--focused' : ''} ${isActive && confirmedLock ? 'ar-body--locked' : ''}`}
               style={{
@@ -525,10 +569,15 @@ export function ARFinder({
                 top: screenY,
                 opacity: baseOpacity,
               }}
+              onClick={() => onSelectActive(obj.id)}
+              aria-label={isActive ? t('centerTarget', { object: obj.name }) : obj.name}
+              aria-pressed={isActive}
             >
               <div className="ar-body__icon">
                 <PlanetIcon
                   id={obj.id}
+                  type={obj.type}
+                  magnitude={obj.magnitude}
                   size={isActive ? 56 : 40}
                   phase={obj.phase}
                   glow={true}
@@ -539,10 +588,12 @@ export function ARFinder({
                 )}
               </div>
               <div className="ar-body__label">{obj.name}</div>
-              <div className="ar-body__coords">
-                ALT {Math.round(obj.altitude)}° · AZ {Math.round(obj.azimuth)}°
-              </div>
-            </div>
+              {isActive && (
+                <div className="ar-body__coords">
+                  ALT {Math.round(obj.altitude)}° · AZ {Math.round(obj.azimuth)}°
+                </div>
+              )}
+            </button>
           );
         })}
       </div>
@@ -560,13 +611,14 @@ export function ARFinder({
         </div>
       )}
 
-      {!activeBody && (
-        <div className="ar-center-reticle" aria-hidden="true">
-          <span className="ar-center-reticle__h" />
-          <span className="ar-center-reticle__v" />
-          <span className="ar-center-reticle__dot" />
-        </div>
-      )}
+      <div
+        className={`ar-center-reticle${activeBody ? ' is-guiding' : ''}${confirmedLock ? ' is-locked' : ''}`}
+        aria-hidden="true"
+      >
+        <span className="ar-center-reticle__h" />
+        <span className="ar-center-reticle__v" />
+        <span className="ar-center-reticle__dot" />
+      </div>
 
       <div className="ar-center-readout">
         <div className="ar-center-readout__line">
@@ -620,6 +672,7 @@ export function ARFinder({
       <ARTargetPicker
         bodies={pickerBodies}
         activeId={activeId}
+        visibleCount={visibleBodyCount}
         open={pickerOpen}
         onToggle={() => setPickerOpen((v) => !v)}
         onSelect={(id) => {
@@ -692,12 +745,13 @@ function ArrowGlyph() {
 interface PickerProps {
   bodies: SkyObject[];
   activeId: ObjectId | null;
+  visibleCount: number;
   open: boolean;
   onToggle: () => void;
-  onSelect: (id: ObjectId) => void;
+  onSelect: (id: ObjectId | null) => void;
 }
 
-function ARTargetPicker({ bodies, activeId, open, onToggle, onSelect }: PickerProps) {
+function ARTargetPicker({ bodies, activeId, visibleCount, open, onToggle, onSelect }: PickerProps) {
   const t = useTranslations('sky.ar');
   const active = bodies.find((b) => b.id === activeId) ?? null;
 
@@ -712,12 +766,29 @@ function ARTargetPicker({ bodies, activeId, open, onToggle, onSelect }: PickerPr
       >
         <span className="ar-picker__chip-label">{t('targetLabel')}</span>
         <strong className="ar-picker__chip-name">
-          {active?.name ?? t('targetEmpty')}
+          {active?.name ?? t('showAll')}
         </strong>
+        <span className="ar-picker__chip-meta">{visibleCount} · {t('visibleNow')}</span>
         <ChevronDown size={14} className="ar-picker__chip-caret" aria-hidden="true" />
       </button>
       {open && (
         <ul className="ar-picker__list" role="listbox" aria-label={t('targetLabel')}>
+          <li>
+            <button
+              type="button"
+              className={`ar-picker__row ar-picker__row--all${activeId == null ? ' is-selected' : ''}`}
+              role="option"
+              aria-selected={activeId == null}
+              onClick={() => onSelect(null)}
+            >
+              <span className="ar-picker__row-main">
+                <span className="ar-picker__row-copy">
+                  <span className="ar-picker__row-name">{t('showAll')}</span>
+                  <span className="ar-picker__row-subtitle">{t('guidanceOff')}</span>
+                </span>
+              </span>
+            </button>
+          </li>
           {bodies.length === 0 && (
             <li className="ar-picker__empty">{t('noVisibleBodies')}</li>
           )}
@@ -732,9 +803,28 @@ function ARTargetPicker({ bodies, activeId, open, onToggle, onSelect }: PickerPr
                   aria-selected={selected}
                   onClick={() => onSelect(b.id)}
                 >
-                  <span className="ar-picker__row-name">{b.name}</span>
+                  <span className="ar-picker__row-main">
+                    <span className="ar-picker__row-icon" aria-hidden="true">
+                      <PlanetIcon
+                        id={b.id}
+                        type={b.type}
+                        magnitude={b.magnitude}
+                        size={24}
+                        phase={b.phase}
+                        glow={selected || b.visible}
+                      />
+                    </span>
+                    <span className="ar-picker__row-copy">
+                      <span className="ar-picker__row-name">{b.name}</span>
+                      <span className="ar-picker__row-subtitle">
+                        {b.visible ? t('visibleNow') : t('belowHorizon')}
+                      </span>
+                    </span>
+                  </span>
                   <span className="ar-picker__row-coords">
-                    {Math.round(b.altitude)}° · {b.compassDirection}
+                    {b.visible
+                      ? `${Math.round(b.altitude)}° · ${b.compassDirection}`
+                      : `${Math.abs(Math.round(b.altitude))}°`}
                   </span>
                 </button>
               </li>

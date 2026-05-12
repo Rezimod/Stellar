@@ -67,16 +67,19 @@ export default function SkyPage() {
   const [activeId, setActiveId] = useState<ObjectId | null>(null);
   const [tier, setTier] = useState<TierFilter>('all');
   const [arOpen, setArOpen] = useState(false);
+  const [arActiveId, setArActiveId] = useState<ObjectId | null>(null);
 
   // Immersive sky uses motion sensors only (no camera). Fire the iOS motion
   // prompt on tap so the overlay opens already tracking the user's heading.
   const handleArOpen = useCallback(() => {
     if (compass.heading == null) void compass.request();
+    setArActiveId(null);
     setArOpen(true);
   }, [compass]);
 
   const handleArClose = useCallback(() => {
     setArOpen(false);
+    setArActiveId(null);
   }, []);
 
   const fetchFinder = useCallback(async () => {
@@ -195,6 +198,11 @@ export default function SkyPage() {
 
   const handleSelect = useCallback((id: ObjectId) => {
     setActiveId(id);
+  }, []);
+
+  const handleArSelect = useCallback((id: ObjectId | null) => {
+    setArActiveId(id);
+    if (id) setActiveId(id);
   }, []);
 
   const fallbackUsed =
@@ -342,8 +350,8 @@ export default function SkyPage() {
           altitude={compass.altitude}
           accuracy={compass.accuracy}
           headingStatus={compass.status}
-          activeId={activeId}
-          onSelectActive={handleSelect}
+          activeId={arActiveId}
+          onSelectActive={handleArSelect}
           onClose={handleArClose}
         />
       )}

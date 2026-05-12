@@ -141,6 +141,10 @@
 /* === Bodies (one per visible planet/moon/sun) === */
 
 .ar-body {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -152,6 +156,15 @@
      laggy when the user sweeps the phone. */
   transition: left 90ms linear, top 90ms linear, opacity 240ms ease;
   will-change: left, top, opacity;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.ar-body:focus-visible,
+.ar-picker__chip:focus-visible,
+.ar-picker__row:focus-visible,
+.ar-topbar__btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 179, 71, 0.5);
 }
 
 .ar-body__icon {
@@ -164,6 +177,7 @@
   border: 1px solid rgba(248,244,236,0.34);
   border-radius: 50%;
   pointer-events: none;
+  opacity: 0;
 }
 
 .ar-body--focused .ar-body__crosshair {
@@ -171,6 +185,7 @@
   border: 2px solid var(--terracotta);
   box-shadow: 0 0 0 1px rgba(255,179,71,0.28), 0 0 26px rgba(255,179,71,0.28);
   animation: arFocus 1.6s ease-in-out infinite;
+  opacity: 1;
 }
 
 .ar-body--locked .ar-body__crosshair {
@@ -244,7 +259,8 @@
 
 .ar-picker__chip {
   appearance: none;
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: auto auto auto;
   align-items: center;
   gap: 8px;
   /* 44pt min-height — Apple HIG / WCAG 2.5.5 touch target. */
@@ -275,6 +291,11 @@
   color: var(--text);
   font-weight: 600;
   letter-spacing: 0.05em;
+}
+.ar-picker__chip-meta {
+  color: rgba(248, 244, 236, 0.46);
+  font-size: 10px;
+  letter-spacing: 0.12em;
 }
 .ar-picker__chip-caret {
   margin-left: 2px;
@@ -317,6 +338,26 @@
   cursor: pointer;
   text-align: left;
 }
+.ar-picker__row-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ar-picker__row-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ar-picker__row-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
 .ar-picker__row:hover {
   background: rgba(255, 179, 71, 0.06);
 }
@@ -324,9 +365,19 @@
   background: rgba(255, 179, 71, 0.14);
   color: var(--terracotta);
 }
+.ar-picker__row--all {
+  margin-bottom: 4px;
+}
 .ar-picker__row-name {
   font-size: 13px;
   font-weight: 500;
+}
+.ar-picker__row-subtitle {
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(248, 244, 236, 0.46);
 }
 .ar-picker__row-coords {
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
@@ -335,6 +386,7 @@
   color: rgba(255, 255, 255, 0.55);
   white-space: nowrap;
 }
+.ar-picker__row.is-selected .ar-picker__row-subtitle,
 .ar-picker__row.is-selected .ar-picker__row-coords {
   color: rgba(255, 179, 71, 0.75);
 }
@@ -383,6 +435,9 @@
   color: var(--text);
   background: rgba(18, 13, 8, 0.84);
   border-color: rgba(255,179,71,0.34);
+}
+.ar-body:focus-visible .ar-body__label {
+  border-color: rgba(255,179,71,0.42);
 }
 
 .ar-body__coords {
@@ -462,6 +517,23 @@
   pointer-events: none;
   z-index: 2;
   opacity: 0.42;
+}
+.ar-center-reticle.is-guiding {
+  opacity: 0.62;
+}
+.ar-center-reticle.is-guiding .ar-center-reticle__dot {
+  box-shadow: 0 0 14px rgba(255,179,71,0.46);
+}
+.ar-center-reticle.is-locked .ar-center-reticle__dot {
+  background: #5EEAD4;
+  box-shadow: 0 0 14px rgba(120,220,170,0.46);
+}
+.ar-center-reticle.is-locked .ar-center-reticle__h,
+.ar-center-reticle.is-locked .ar-center-reticle__v {
+  background: linear-gradient(90deg, transparent 0%, rgba(94,234,212,0.85) 30%, transparent 45%, transparent 55%, rgba(94,234,212,0.85) 70%, transparent 100%);
+}
+.ar-center-reticle.is-locked .ar-center-reticle__v {
+  background: linear-gradient(180deg, transparent 0%, rgba(94,234,212,0.85) 30%, transparent 45%, transparent 55%, rgba(94,234,212,0.85) 70%, transparent 100%);
 }
 
 .ar-center-reticle__h,
@@ -918,5 +990,16 @@
      gets the full chip width. */
   .ar-picker__chip-label {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-overlay__starfield-dust,
+  .ar-body,
+  .ar-body--focused .ar-body__crosshair,
+  .ar-edge-arrow,
+  .ar-picker__chip-caret {
+    animation: none !important;
+    transition: none !important;
   }
 }
