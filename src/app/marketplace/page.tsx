@@ -123,6 +123,8 @@ export default function MarketplacePage() {
       return b.price - a.price;
     });
   }, [visible, difficulty]);
+  const featuredProduct = orderedVisible[0];
+  const remainingProducts = orderedVisible.slice(1);
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
@@ -221,18 +223,53 @@ export default function MarketplacePage() {
           </div>
 
           {orderedVisible.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[14px] sm:gap-[16px] auto-rows-[1fr]">
-              {orderedVisible.map((p, i) => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  dealerName={showDealer ? getDealerName(p.dealerId) : ''}
-                  solPerGEL={solPerGEL}
-                  solPriceUsd={solPriceUsd}
-                  className={i === 0 ? 'md:col-span-2 lg:col-span-2' : ''}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-[14px] sm:gap-[16px] md:hidden">
+                {orderedVisible.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    dealerName={showDealer ? getDealerName(p.dealerId) : ''}
+                    solPerGEL={solPerGEL}
+                    solPriceUsd={solPriceUsd}
+                  />
+                ))}
+              </div>
+
+              {featuredProduct ? (
+                remainingProducts.length > 0 ? (
+                  <div className="hidden md:flex md:items-start gap-[14px] sm:gap-[16px]">
+                    <ProductCard
+                      product={featuredProduct}
+                      dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
+                      solPerGEL={solPerGEL}
+                      solPriceUsd={solPriceUsd}
+                      className="w-[43%] flex-none"
+                    />
+                    <div className="grid flex-1 grid-cols-2 gap-[14px] sm:gap-[16px]">
+                      {remainingProducts.map((p) => (
+                        <ProductCard
+                          key={p.id}
+                          product={p}
+                          dealerName={showDealer ? getDealerName(p.dealerId) : ''}
+                          solPerGEL={solPerGEL}
+                          solPriceUsd={solPriceUsd}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="hidden md:block">
+                    <ProductCard
+                      product={featuredProduct}
+                      dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
+                      solPerGEL={solPerGEL}
+                      solPriceUsd={solPriceUsd}
+                    />
+                  </div>
+                )
+              ) : null}
+            </>
           ) : (
             <p className="text-center text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">
               {t('noItems')}
