@@ -20,10 +20,18 @@ interface Props {
   dealerName: string;
   solPerGEL?: number;
   solPriceUsd?: number;
+  featured?: boolean;
   className?: string;
 }
 
-export default function ProductCard({ product, dealerName, solPerGEL = 0, solPriceUsd = 0, className = '' }: Props) {
+export default function ProductCard({
+  product,
+  dealerName,
+  solPerGEL = 0,
+  solPriceUsd = 0,
+  featured = false,
+  className = '',
+}: Props) {
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
 
@@ -56,20 +64,20 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
         aria-label={`View ${product.name} on dealer site`}
       >
         <div
-          className="relative w-full mb-[14px] overflow-hidden aspect-[1.25] bg-white"
+          className={`relative w-full mb-[14px] overflow-hidden bg-white ${featured ? 'aspect-[1.9]' : 'aspect-[1.25]'}`}
         >
           {product.image && (
             <Image
               src={product.image}
               alt={product.name}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-              style={{ objectFit: 'contain', padding: '8px' }}
+              sizes={featured ? '(max-width: 768px) 50vw, 640px' : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px'}
+              style={{ objectFit: 'contain', padding: featured ? '10px' : '8px' }}
               loading="lazy"
             />
           )}
         </div>
-        <p className="font-medium text-white leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors text-[15px]">
+        <p className={`font-medium text-white leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[16px]' : 'text-[15px]'}`}>
           {product.name}
         </p>
         <p className="text-[11px] tracking-[0.16em] uppercase text-white/85 mb-[10px] truncate">
@@ -109,7 +117,7 @@ export default function ProductCard({ product, dealerName, solPerGEL = 0, solPri
           }}
           aria-label={`Pay for ${product.name} with SOL`}
         >
-          <svg width="14" height="14" viewBox="0 0 397 311" aria-hidden="true" className="h-[14px] w-[14px] flex-shrink-0">
+          <svg width="16" height="16" viewBox="0 0 397 311" aria-hidden="true" className="h-[16px] w-[16px] flex-shrink-0">
             <defs>
               <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stopColor="#9945FF" />
