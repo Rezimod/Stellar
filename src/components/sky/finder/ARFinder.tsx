@@ -8,12 +8,11 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, RefreshCcw, SlidersHorizontal, X } from 'lucide-react';
 import { PlanetIcon } from './PlanetIcon';
 import {
-  DEFAULT_HORIZONTAL_FOV,
-  DEFAULT_VERTICAL_FOV,
   azimuthToCardinal,
+  effectiveFov,
   shortestAzDelta,
 } from '@/lib/sky/ar';
 import {
@@ -78,6 +77,10 @@ const DISPLAY_ALPHA_MOVE = 0.18;
 const DISPLAY_ALPHA_FAST = 0.3;
 const DISPLAY_SNAP_AZ = 22;
 const DISPLAY_SNAP_ALT = 16;
+const AR_ALIGNMENT_KEY = 'stellar.sky.ar.alignment.v1';
+const MAX_ALIGNMENT_YAW = 24;
+const MAX_ALIGNMENT_PITCH = 18;
+const ALIGNMENT_STEP = 0.5;
 
 const CONSTELLATION_NAMES: Record<string, string> = {
   orion: 'ORION',
@@ -142,6 +145,33 @@ function wrap360(deg: number): number {
   return ((deg % 360) + 360) % 360;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function clampAltitude(altitude: number): number {
+  return clamp(altitude, -89, 89);
+}
+
+interface AlignmentState {
+  yaw: number;
+  pitch: number;
+}
+
+function loadAlignment(): AlignmentState {
+  if (typeof window === 'undefined') return { yaw: 0, pitch: 0 };
+  try {
+    const raw = window.localStorage.getItem(AR_ALIGNMENT_KEY);
+    if (!raw) return { yaw: 0, pitch: 0 };
+    const parsed = JSON.parse(raw) as Partial<AlignmentState>;
+    const yaw = typeof parsed.yaw === 'number' ? clamp(parsed.yaw, -MAX_ALIGNMENT_YAW, MAX_ALIGNMENT_YAW) : 0;
+    const pitch = typeof parsed.pitch === 'number' ? clamp(parsed.pitch, -MAX_ALIGNMENT_PITCH, MAX_ALIGNMENT_PITCH) : 0;
+    return { yaw, pitch };
+  } catch {
+    return { yaw: 0, pitch: 0 };
+  }
+}
+
 function displayAlpha(azDelta: number, altDelta: number): number {
   const maxDelta = Math.max(Math.abs(azDelta), Math.abs(altDelta));
   if (maxDelta >= 8) return DISPLAY_ALPHA_FAST;
@@ -174,6 +204,12 @@ export function ARFinder({
     w: typeof window !== 'undefined' ? window.innerWidth : 360,
     h: typeof window !== 'undefined' ? window.innerHeight : 640,
   });
+  const [cameraState, setCameraState] = useState<'idle' | 'live' | 'denied' | 'unavailable'>('idle');
+  const [cameraReady, setCameraReady] = useState(false);
+  const [alignment, setAlignment] = useState<AlignmentState>(() => loadAlignment());
+  const [alignmentOpen, setAlignmentOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Stars are computed once when the immersive view opens. They drift
   // ~0.25°/min — plenty accurate for a session lasting a few minutes.
@@ -216,6 +252,79 @@ export function ARFinder({
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(AR_ALIGNMENT_KEY, JSON.stringify(alignment));
+    } catch {
+      // Ignore private-mode/localStorage failures.
+    }
+  }, [alignment]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setCameraState('unavailable');
+      return;
+    }
+
+    let cancelled = false;
+
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: { ideal: 'environment' },
+          },
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+        const video = videoRef.current;
+        if (video) {
+          video.srcObject = stream;
+          try {
+            await video.play();
+          } catch {
+            // Some browsers wait for loaded metadata; we still keep the stream.
+          }
+        }
+        setCameraState('live');
+      } catch (error) {
+        const denied =
+          error instanceof DOMException &&
+          (error.name === 'NotAllowedError' || error.name === 'SecurityError');
+        setCameraState(denied ? 'denied' : 'unavailable');
+      }
+    };
+
+    void startCamera();
+
+    return () => {
+      cancelled = true;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onReady = () => setCameraReady(true);
+    const onWaiting = () => setCameraReady(false);
+    video.addEventListener('loadeddata', onReady);
+    video.addEventListener('playing', onReady);
+    video.addEventListener('waiting', onWaiting);
+    return () => {
+      video.removeEventListener('loadeddata', onReady);
+      video.removeEventListener('playing', onReady);
+      video.removeEventListener('waiting', onWaiting);
+    };
+  }, []);
+
   const [renderAim, setRenderAim] = useState(() => ({
     azimuth: heading ?? 0,
     altitude: altitude ?? 0,
@@ -223,8 +332,10 @@ export function ARFinder({
   const renderAimRef = useRef(renderAim);
   const targetAimRef = useRef(renderAim);
 
-  const hFov = DEFAULT_HORIZONTAL_FOV;
-  const vFov = DEFAULT_VERTICAL_FOV;
+  const { horizontal: hFov, vertical: vFov } = useMemo(
+    () => effectiveFov(viewport.w, viewport.h),
+    [viewport],
+  );
 
   useEffect(() => {
     renderAimRef.current = renderAim;
@@ -282,7 +393,22 @@ export function ARFinder({
     return () => window.cancelAnimationFrame(raf);
   }, []);
 
-  const phoneAim = renderAim;
+  const phoneAim = useMemo(
+    () => ({
+      azimuth: wrap360(renderAim.azimuth + alignment.yaw),
+      altitude: clampAltitude(renderAim.altitude + alignment.pitch),
+    }),
+    [renderAim, alignment],
+  );
+
+  const nudgeAlignment = useCallback((axis: 'yaw' | 'pitch', delta: number) => {
+    setAlignment((prev) => {
+      if (axis === 'yaw') {
+        return { ...prev, yaw: clamp(prev.yaw + delta, -MAX_ALIGNMENT_YAW, MAX_ALIGNMENT_YAW) };
+      }
+      return { ...prev, pitch: clamp(prev.pitch + delta, -MAX_ALIGNMENT_PITCH, MAX_ALIGNMENT_PITCH) };
+    });
+  }, []);
 
   const project = useCallback(
     (az: number, alt: number) => {
@@ -372,6 +498,18 @@ export function ARFinder({
     if (!activeBody) return null;
     return bodies.find((b) => b.obj.id === activeBody.id) ?? null;
   }, [bodies, activeBody]);
+
+  const matchActiveTarget = useCallback(() => {
+    if (!activeRow) return;
+    setAlignment((prev) => ({
+      yaw: clamp(prev.yaw + activeRow.dAz, -MAX_ALIGNMENT_YAW, MAX_ALIGNMENT_YAW),
+      pitch: clamp(prev.pitch + activeRow.dAlt, -MAX_ALIGNMENT_PITCH, MAX_ALIGNMENT_PITCH),
+    }));
+  }, [activeRow]);
+
+  const resetAlignment = useCallback(() => {
+    setAlignment({ yaw: 0, pitch: 0 });
+  }, []);
 
   const lockRadius = activeBody ? lockRadiusDeg(activeBody) : 8;
   const insideLockCone = activeRow != null && heading != null && altitude != null && activeRow.sep <= lockRadius;
@@ -535,13 +673,30 @@ export function ARFinder({
   }, [objects]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
+  const cameraBadge = cameraReady && cameraState === 'live' ? t('cameraLive') : t('cameraFallback');
 
   return (
-    <div className="ar-overlay" role="dialog" aria-modal="true" aria-label={t('title')}>
+    <div
+      className={`ar-overlay${cameraReady && cameraState === 'live' ? ' ar-overlay--camera-live' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('title')}
+    >
+      <div className="ar-overlay__camera" aria-hidden="true">
+        <video
+          ref={videoRef}
+          className="ar-overlay__camera-video"
+          autoPlay
+          muted
+          playsInline
+        />
+      </div>
       <div className="ar-overlay__starfield" aria-hidden="true">
         <div className="ar-overlay__starfield-haze" />
         <div className="ar-overlay__starfield-milkyway" />
         <div className="ar-overlay__starfield-dust" />
+        <div className="ar-overlay__starfield-comet ar-overlay__starfield-comet--a" />
+        <div className="ar-overlay__starfield-comet ar-overlay__starfield-comet--b" />
       </div>
 
       <svg
@@ -759,11 +914,25 @@ export function ARFinder({
         }}
       />
 
+      <ARAlignmentPanel
+        open={alignmentOpen}
+        yaw={alignment.yaw}
+        pitch={alignment.pitch}
+        activeBodyName={activeBody?.name ?? null}
+        onToggle={() => setAlignmentOpen((value) => !value)}
+        onNudge={nudgeAlignment}
+        onMatchTarget={matchActiveTarget}
+        onReset={resetAlignment}
+      />
+
       <div className="ar-overlay__topbar">
         <div>
           <div className="ar-topbar__title">{t('title')}</div>
           <div className="ar-topbar__heading">
             {cardinal} · {Math.round(phoneAim.azimuth)}°
+          </div>
+          <div className={`ar-topbar__badge${cameraReady && cameraState === 'live' ? ' is-live' : ''}`}>
+            {cameraBadge}
           </div>
         </div>
         <button
@@ -909,6 +1078,89 @@ function ARTargetPicker({ bodies, activeId, visibleCount, open, onToggle, onSele
             );
           })}
         </ul>
+      )}
+    </div>
+  );
+}
+
+interface AlignmentPanelProps {
+  open: boolean;
+  yaw: number;
+  pitch: number;
+  activeBodyName: string | null;
+  onToggle: () => void;
+  onNudge: (axis: 'yaw' | 'pitch', delta: number) => void;
+  onMatchTarget: () => void;
+  onReset: () => void;
+}
+
+function ARAlignmentPanel({
+  open,
+  yaw,
+  pitch,
+  activeBodyName,
+  onToggle,
+  onNudge,
+  onMatchTarget,
+  onReset,
+}: AlignmentPanelProps) {
+  const t = useTranslations('sky.ar');
+
+  return (
+    <div className={`ar-align${open ? ' is-open' : ''}`}>
+      <button
+        type="button"
+        className="ar-align__chip"
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <SlidersHorizontal size={14} aria-hidden="true" />
+        <span>{t('align')}</span>
+      </button>
+      {open && (
+        <div className="ar-align__panel">
+          <div className="ar-align__title">{t('alignment')}</div>
+          <p className="ar-align__body">{t('alignmentBody')}</p>
+          {activeBodyName && (
+            <button type="button" className="ar-align__action" onClick={onMatchTarget}>
+              {t('setFromTarget', { object: activeBodyName })}
+            </button>
+          )}
+          <div className="ar-align__axes">
+            <div className="ar-align__axis">
+              <div className="ar-align__axis-head">
+                <span>{t('yaw')}</span>
+                <strong>{yaw >= 0 ? '+' : ''}{yaw.toFixed(1)}°</strong>
+              </div>
+              <div className="ar-align__controls">
+                <button type="button" className="ar-align__step" onClick={() => onNudge('yaw', -ALIGNMENT_STEP)}>
+                  {t('left')}
+                </button>
+                <button type="button" className="ar-align__step" onClick={() => onNudge('yaw', ALIGNMENT_STEP)}>
+                  {t('right')}
+                </button>
+              </div>
+            </div>
+            <div className="ar-align__axis">
+              <div className="ar-align__axis-head">
+                <span>{t('pitch')}</span>
+                <strong>{pitch >= 0 ? '+' : ''}{pitch.toFixed(1)}°</strong>
+              </div>
+              <div className="ar-align__controls">
+                <button type="button" className="ar-align__step" onClick={() => onNudge('pitch', ALIGNMENT_STEP)}>
+                  {t('up')}
+                </button>
+                <button type="button" className="ar-align__step" onClick={() => onNudge('pitch', -ALIGNMENT_STEP)}>
+                  {t('down')}
+                </button>
+              </div>
+            </div>
+          </div>
+          <button type="button" className="ar-align__reset" onClick={onReset}>
+            <RefreshCcw size={13} aria-hidden="true" />
+            <span>{t('resetAlignment')}</span>
+          </button>
+        </div>
       )}
     </div>
   );

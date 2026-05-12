@@ -23,7 +23,7 @@
 }
 
 .ar-overlay::before {
-  z-index: 0;
+  z-index: 1;
   background:
     radial-gradient(120% 120% at 50% -10%, rgba(235, 240, 248, 0.04), transparent 48%),
     radial-gradient(150% 110% at 50% 115%, rgba(255, 190, 130, 0.08), transparent 38%),
@@ -31,10 +31,31 @@
 }
 
 .ar-overlay::after {
-  z-index: 2;
+  z-index: 3;
   background:
     radial-gradient(ellipse at center, transparent 48%, rgba(3, 5, 9, 0.18) 100%),
     linear-gradient(180deg, rgba(3, 5, 9, 0.32) 0%, transparent 20%, transparent 78%, rgba(3, 5, 9, 0.34) 100%);
+}
+
+.ar-overlay__camera {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #02060e;
+}
+
+.ar-overlay__camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.28) saturate(0.78) contrast(1.05);
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+
+.ar-overlay--camera-live .ar-overlay__camera-video {
+  opacity: 1;
 }
 
 /* Night-sky backdrop. Three stacked layers:
@@ -47,7 +68,7 @@
 .ar-overlay__starfield {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   background:
     radial-gradient(1.6px 1.6px at  6% 12%, rgba(255,255,255,0.9), transparent 60%),
     radial-gradient(1px 1px   at 14% 31%, rgba(220,230,255,0.55), transparent 60%),
@@ -70,6 +91,11 @@
     radial-gradient(ellipse 120% 80% at 50% 110%, rgba(50,32,62,0.46), transparent 70%),
     radial-gradient(ellipse 90% 70% at 50% 0%, rgba(14,28,68,0.56), transparent 75%),
     linear-gradient(180deg, #01030a 0%, #07111f 56%, #0a1727 100%);
+  transition: opacity 220ms ease-out;
+}
+
+.ar-overlay--camera-live .ar-overlay__starfield {
+  opacity: 0.48;
 }
 
 /* Diagonal milky-way ribbon. Soft, low-contrast, rotated band of dust
@@ -126,15 +152,55 @@
   animation: arStarfieldTwinkle 8.5s ease-in-out infinite;
 }
 
+.ar-overlay__starfield-comet {
+  position: absolute;
+  width: 34vw;
+  max-width: 170px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(208,228,255,0.18) 24%, rgba(255,255,255,0.92) 100%);
+  box-shadow: 0 0 20px rgba(208,228,255,0.22);
+  opacity: 0;
+  transform: rotate(-24deg);
+  filter: blur(0.2px);
+  pointer-events: none;
+}
+
+.ar-overlay__starfield-comet--a {
+  top: 20%;
+  left: 8%;
+  animation: arCometA 15s ease-in-out infinite;
+}
+
+.ar-overlay__starfield-comet--b {
+  top: 38%;
+  right: 12%;
+  animation: arCometB 19s ease-in-out infinite;
+}
+
 @keyframes arStarfieldTwinkle {
   0%, 100% { opacity: 0.55; }
   50%      { opacity: 0.95; }
 }
 
+@keyframes arCometA {
+  0%, 70%, 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-24deg); }
+  73% { opacity: 0.18; }
+  80% { opacity: 0.72; transform: translate3d(46px, 28px, 0) rotate(-24deg); }
+  87% { opacity: 0; transform: translate3d(92px, 56px, 0) rotate(-24deg); }
+}
+
+@keyframes arCometB {
+  0%, 58%, 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-24deg); }
+  61% { opacity: 0.12; }
+  70% { opacity: 0.58; transform: translate3d(-38px, 22px, 0) rotate(-24deg); }
+  77% { opacity: 0; transform: translate3d(-76px, 44px, 0) rotate(-24deg); }
+}
+
 .ar-overlay__layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 5;
   pointer-events: none;
 }
 
@@ -162,7 +228,11 @@
 .ar-body:focus-visible,
 .ar-picker__chip:focus-visible,
 .ar-picker__row:focus-visible,
-.ar-topbar__btn:focus-visible {
+.ar-topbar__btn:focus-visible,
+.ar-align__chip:focus-visible,
+.ar-align__action:focus-visible,
+.ar-align__step:focus-visible,
+.ar-align__reset:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 179, 71, 0.5);
 }
@@ -221,7 +291,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  z-index: 3;
+  z-index: 6;
   pointer-events: none;
   filter: drop-shadow(0 0 8px rgba(255,179,71,0.45));
   animation: arEdgeArrowPulse 1.6s ease-in-out infinite;
@@ -250,7 +320,7 @@
   position: absolute;
   top: calc(60px + env(safe-area-inset-top));
   left: 14px;
-  z-index: 4;
+  z-index: 8;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -397,6 +467,143 @@
   text-align: center;
 }
 
+.ar-align {
+  position: absolute;
+  top: calc(60px + env(safe-area-inset-top));
+  right: 14px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: min(300px, calc(100vw - 28px));
+}
+
+.ar-align__chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 0.5px solid rgba(248,244,236,0.14);
+  background: rgba(6,9,14,0.82);
+  color: rgba(255,220,168,0.92);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.ar-align__panel {
+  width: min(300px, calc(100vw - 28px));
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(6,9,14,0.9);
+  border: 0.5px solid rgba(248,244,236,0.12);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.38);
+}
+
+.ar-align__title {
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,220,168,0.92);
+}
+
+.ar-align__body {
+  margin: 8px 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(248,244,236,0.66);
+}
+
+.ar-align__action,
+.ar-align__step,
+.ar-align__reset {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ar-align__action {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(255,179,71,0.12);
+  color: var(--terracotta);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.ar-align__axes {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.ar-align__axis {
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(248,244,236,0.08);
+}
+
+.ar-align__axis-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(248,244,236,0.66);
+}
+
+.ar-align__axis-head strong {
+  color: var(--text);
+  font-size: 11px;
+}
+
+.ar-align__controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ar-align__step {
+  min-height: 38px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(248,244,236,0.88);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.ar-align__reset {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(248,244,236,0.74);
+  background: transparent;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
 /* Compass calibration banner — same content as the dome's, anchored to
    bottom of the AR overlay above the compass strip. */
 .ar-accuracy-banner {
@@ -414,7 +621,7 @@
   letter-spacing: 0.10em;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 3;
+  z-index: 8;
 }
 
 .ar-body__label {
@@ -485,7 +692,7 @@
 .ar-constellations {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 4;
   pointer-events: none;
 }
 
@@ -515,7 +722,7 @@
   margin-left: -40px;
   margin-top: -40px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 6;
   opacity: 0.42;
 }
 .ar-center-reticle.is-guiding {
@@ -580,7 +787,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  z-index: 2;
+  z-index: 7;
   pointer-events: none;
 }
 
@@ -630,7 +837,7 @@
   height: 0;
   border-top: 1px dashed rgba(255,194,120,0.24);
   pointer-events: none;
-  z-index: 1;
+  z-index: 5;
 }
 
 .ar-horizon-line__label {
@@ -659,7 +866,7 @@
   align-items: flex-end;
   pointer-events: none;
   overflow: hidden;
-  z-index: 2;
+  z-index: 7;
   /* Soft edge fades so ticks ease into view rather than popping in/out
      at the screen edge — common in compass HUDs, easy on the eye. */
   -webkit-mask-image: linear-gradient(90deg,
@@ -738,7 +945,7 @@
   align-items: center;
   gap: 12px;
   background: linear-gradient(180deg, rgba(6,9,14,0.78) 0%, rgba(6,9,14,0.22) 58%, rgba(6,9,14,0) 100%);
-  z-index: 3;
+  z-index: 9;
 }
 
 .ar-topbar__title {
@@ -755,6 +962,26 @@
   color: rgba(255, 214, 156, 0.78);
   letter-spacing: 0.10em;
   text-transform: uppercase;
+}
+
+.ar-topbar__badge {
+  display: inline-flex;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(6,9,14,0.58);
+  border: 0.5px solid rgba(248,244,236,0.12);
+  color: rgba(248,244,236,0.72);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ar-topbar__badge.is-live {
+  color: rgba(152, 255, 214, 0.92);
+  border-color: rgba(94,234,212,0.28);
+  background: rgba(7,22,19,0.66);
 }
 
 .ar-topbar__btn {
@@ -796,7 +1023,7 @@
   color: var(--text);
   max-width: 92vw;
   text-align: center;
-  z-index: 3;
+  z-index: 8;
   transition: border-color 220ms ease, background 220ms ease;
 }
 .ar-bottom-hint__primary {
@@ -953,6 +1180,15 @@
     right: 12px;
     max-width: none;
   }
+  .ar-align {
+    top: calc(58px + env(safe-area-inset-top));
+    right: 12px;
+    left: 12px;
+    max-width: none;
+  }
+  .ar-align__panel {
+    width: min(100%, 320px);
+  }
   .ar-picker__list {
     width: 100%;
     max-width: none;
@@ -995,6 +1231,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ar-overlay__starfield-dust,
+  .ar-overlay__starfield-comet,
   .ar-body,
   .ar-body--focused .ar-body__crosshair,
   .ar-edge-arrow,

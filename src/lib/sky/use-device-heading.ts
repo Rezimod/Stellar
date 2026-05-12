@@ -1,6 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { model as geomagneticModel } from 'geomagnetism';
 
 /**
  * Live phone pointing — the (azimuth, altitude) the back of the device is
@@ -67,6 +69,10 @@ const FAR_DEG = 20;
 const FIRST_EVENT_TIMEOUT_MS = 2500;
 
 const DEG = Math.PI / 180;
+
+function wrap360(deg: number): number {
+  return ((deg % 360) + 360) % 360;
+}
 
 /** Circular-mean low pass — averages on the unit circle so 359°→1° stays smooth. */
 function smoothAngle(prev: number | null, next: number, alpha: number): number {
@@ -168,6 +174,22 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
   return { heading, altitude };
 }
 
+function eventToPointingWithDeclination(
+  e: DeviceOrientationEvent,
+  declinationDeg: number,
+): PointingResult | null {
+  const result = eventToPointing(e);
+  if (!result) return null;
+  const ev = e as unknown as { webkitCompassHeading?: number };
+  const hasWebkitCompass = typeof ev.webkitCompassHeading === 'number' && !Number.isNaN(ev.webkitCompassHeading);
+  if (hasWebkitCompass) return result;
+  if (result.heading == null) return result;
+  return {
+    ...result,
+    heading: wrap360(result.heading + declinationDeg),
+  };
+}
+
 const OFFSET_KEY = 'stellar.sky.compass.offset';
 /**
  * Range we accept for the user's calibration offset. ±180° covers any
@@ -207,7 +229,7 @@ function alphaForProximity(deg: number | null): number {
   return ALPHA_NEAR + (ALPHA_FAR - ALPHA_NEAR) * t;
 }
 
-export function useDeviceHeading(): UseDeviceHeading {
+export function useDeviceHeading(lat?: number | null, lon?: number | null): UseDeviceHeading {
   const [rawHeading, setRawHeading] = useState<number | null>(null);
   const [altitude, setAltitude] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
@@ -219,6 +241,16 @@ export function useDeviceHeading(): UseDeviceHeading {
   useEffect(() => {
     setOffset(loadOffset());
   }, []);
+
+  const declinationDeg = useMemo(() => {
+    if (lat == null || lon == null || !Number.isFinite(lat) || !Number.isFinite(lon)) return 0;
+    try {
+      const field = geomagneticModel(new Date(), { allowOutOfBoundsModel: true }).point([lat, lon]);
+      return Number.isFinite(field.decl) ? field.decl : 0;
+    } catch {
+      return 0;
+    }
+  }, [lat, lon]);
 
   const smoothedHeadingRef = useRef<number | null>(null);
   const smoothedAltRef = useRef<number | null>(null);
@@ -251,7 +283,7 @@ export function useDeviceHeading(): UseDeviceHeading {
     detach();
 
     const handle = (e: DeviceOrientationEvent) => {
-      const next = eventToPointing(e);
+      const next = eventToPointingWithDeclination(e, declinationDeg);
       if (!next) return;
       setLive(true);
 
@@ -284,7 +316,7 @@ export function useDeviceHeading(): UseDeviceHeading {
         setStatus('unavailable');
       }
     }, FIRST_EVENT_TIMEOUT_MS);
-  }, [detach]);
+  }, [declinationDeg, detach]);
 
   const request = useCallback(async () => {
     if (typeof window === 'undefined') return;

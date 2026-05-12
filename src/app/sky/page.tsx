@@ -37,7 +37,7 @@ export default function SkyPage() {
   const tErrors = useTranslations('sky.errors');
   const tAr = useTranslations('sky.ar');
 
-  const compass = useDeviceHeading();
+  const compass = useDeviceHeading(location.lat, location.lon);
   // Calibrate compass should also request browser location if we don't have it
   // yet. The browser will only show a single permission UI per origin so this
   // is safe to call any time the user wants to actually use the finder.
@@ -69,8 +69,8 @@ export default function SkyPage() {
   const [arOpen, setArOpen] = useState(false);
   const [arActiveId, setArActiveId] = useState<ObjectId | null>(null);
 
-  // Immersive sky uses motion sensors only (no camera). Fire the iOS motion
-  // prompt on tap so the overlay opens already tracking the user's heading.
+  // Fire the iOS motion prompt on tap so the AR view opens already tracking
+  // the user's heading.
   const handleArOpen = useCallback(() => {
     if (compass.heading == null) void compass.request();
     setArActiveId(null);

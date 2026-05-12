@@ -10,6 +10,7 @@
 // reasonably across iPhone and modern Android.
 export const DEFAULT_HORIZONTAL_FOV = 38;
 export const DEFAULT_VERTICAL_FOV = 60;
+export const DEFAULT_DIAGONAL_FOV = 78;
 
 /** Signed shortest difference between two compass directions, in degrees. */
 export function shortestAzDelta(targetAz: number, fromAz: number): number {
@@ -27,4 +28,26 @@ export function azimuthToCardinal(az: number): 'N' | 'NE' | 'E' | 'SE' | 'S' | '
   if (n < 247.5) return 'SW';
   if (n < 292.5) return 'W';
   return 'NW';
+}
+
+/**
+ * Approximate effective camera FOV for the current viewport using a nominal
+ * wide-lens diagonal FOV. This keeps the AR projection closer to a real phone
+ * camera than fixed constants, especially on very tall portrait screens.
+ */
+export function effectiveFov(
+  viewportWidth: number,
+  viewportHeight: number,
+  diagonalFov = DEFAULT_DIAGONAL_FOV,
+): { horizontal: number; vertical: number } {
+  const safeW = Math.max(1, viewportWidth);
+  const safeH = Math.max(1, viewportHeight);
+  const aspect = safeW / safeH;
+  const diagTan = Math.tan((diagonalFov * Math.PI) / 360);
+  const verticalTan = diagTan / Math.sqrt(1 + aspect * aspect);
+  const horizontalTan = aspect * verticalTan;
+  return {
+    horizontal: Math.max(DEFAULT_HORIZONTAL_FOV, (Math.atan(horizontalTan) * 360) / Math.PI),
+    vertical: Math.max(DEFAULT_VERTICAL_FOV, (Math.atan(verticalTan) * 360) / Math.PI),
+  };
 }
