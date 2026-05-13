@@ -463,6 +463,11 @@
       },
       "close": "Close"
     },
+    "solarFromSky": {
+      "short": "3D",
+      "label": "Solar system",
+      "title": "Open 3D solar system explorer"
+    },
     "picker": {
       "header": "Tonight's sky · {count} visible now",
       "auto": "AUTO",
@@ -781,6 +786,8 @@
     "skyForecastSub": "7-day cloud cover and seeing",
     "planetTracker": "Planet Tracker",
     "planetTrackerSub": "Mercury to Saturn + Moon",
+    "solarSystem3d": "3D Solar system",
+    "solarSystem3dSub": "Live orbits, time control, Galilean moons",
     "astraAi": "ASTRA AI",
     "astraAiSub": "Chat with your AI astronomer",
     "astroGuide": "Astronomy Guide",
@@ -801,6 +808,102 @@
     "pleiadesSub": "M45 — Seven Sisters open cluster",
     "andromeda": "Andromeda Galaxy",
     "andromedaSub": "M31 — nearest large galaxy, 2.5M light years"
+  },
+  "solarSystem": {
+    "title": "Solar system",
+    "subtitle": "Live positions from Astronomy Engine — drag to orbit, scroll to zoom, tap a body for facts.",
+    "backSky": "Back to sky",
+    "dragHint": "Drag to orbit · scroll to zoom · tap a body",
+    "controlsAria": "Simulation controls",
+    "time": {
+      "title": "Time",
+      "scrub": "Simulation date",
+      "play": "Play",
+      "pause": "Pause",
+      "now": "Now",
+      "speed": {
+        "realtime": "Live",
+        "1h": "+1 h/s",
+        "6h": "+6 h/s",
+        "1d": "+1 d/s",
+        "7d": "+7 d/s"
+      }
+    },
+    "view": {
+      "title": "View",
+      "scale": "Distance scale",
+      "orrery": "Orrery",
+      "linear": "True scale",
+      "pluto": "Show Pluto & dwarf belt context"
+    },
+    "detail": {
+      "title": "Selected body",
+      "placeholder": "Tap a planet, moon, or the Sun in the viewport.",
+      "meanRadius": "Mean radius",
+      "clear": "Clear selection"
+    },
+    "bodies": {
+      "sun": {
+        "name": "Sun",
+        "blurb": "G-type main-sequence star — light-time in this view is not corrected; geometry is for orientation."
+      },
+      "mercury": {
+        "name": "Mercury",
+        "blurb": "Smallest planet, fastest orbit, extreme day-night swings and no substantial atmosphere."
+      },
+      "venus": {
+        "name": "Venus",
+        "blurb": "Thick CO₂ atmosphere, runaway greenhouse, retrograde spin — brightest planet after the Moon."
+      },
+      "earth": {
+        "name": "Earth",
+        "blurb": "Only known habitable surface — liquid water, active geology, protective magnetic field."
+      },
+      "moon": {
+        "name": "Moon",
+        "blurb": "Earth's companion — tidally locked, drives ocean tides, preserves a fossil record of the early Solar System."
+      },
+      "mars": {
+        "name": "Mars",
+        "blurb": "Rust-colored desert world with polar caps, ancient river beds, and the highest volcano in the Solar System."
+      },
+      "jupiter": {
+        "name": "Jupiter",
+        "blurb": "Gas giant and gravitational hub — more mass than all other planets combined; shepherds many small bodies."
+      },
+      "saturn": {
+        "name": "Saturn",
+        "blurb": "Ringed ice-and-rock giant with a lower mean density than water; hundreds of structured ring features."
+      },
+      "uranus": {
+        "name": "Uranus",
+        "blurb": "Ice giant on its side — extreme axial tilt produces exotic seasonal lighting at the poles."
+      },
+      "neptune": {
+        "name": "Neptune",
+        "blurb": "Windiest planet — deep blue methane absorption and a system of faint rings and small moons."
+      },
+      "pluto": {
+        "name": "Pluto",
+        "blurb": "Kuiper Belt dwarf with a binary companion (Charon) — representative of the third zone of the Solar System."
+      },
+      "io": {
+        "name": "Io",
+        "blurb": "Jupiter's volcanically tortured moon — tidal heating powers hundreds of active silicate eruptions."
+      },
+      "europa": {
+        "name": "Europa",
+        "blurb": "Icy shell over a probable briny ocean — a prime target in the search for habitable environments."
+      },
+      "ganymede": {
+        "name": "Ganymede",
+        "blurb": "Largest moon in the Solar System — generates its own weak magnetic field inside a layered interior."
+      },
+      "callisto": {
+        "name": "Callisto",
+        "blurb": "Heavily cratered ice-rock world — one of the oldest surfaces, a witness plate for outer-belt bombardment."
+      }
+    }
   },
   "missionsPage": {
     "auth": {
@@ -933,6 +1036,7 @@
     "explore": "Explore",
     "you": "You",
     "skyWatcher": "Sky Watcher",
+    "solarSystem3d": "Solar system 3D",
     "missions": "Missions",
     "marketplace": "Marketplace",
     "astraAi": "ASTRA AI",

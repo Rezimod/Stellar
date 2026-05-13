@@ -2,7 +2,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Compass, Crosshair, Telescope, Hand } from 'lucide-react';
+import Link from 'next/link';
+import { Compass, Crosshair, Telescope, Hand, Orbit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
@@ -36,6 +37,7 @@ export default function SkyPage() {
   const { location, requestLocation, gpsState } = useLocation();
   const tErrors = useTranslations('sky.errors');
   const tAr = useTranslations('sky.ar');
+  const tSolar = useTranslations('sky.solarFromSky');
 
   const compass = useDeviceHeading(location.lat, location.lon);
   // Calibrate compass should also request browser location if we don't have it
@@ -283,6 +285,16 @@ export default function SkyPage() {
                       altitude: hopAnchor.altitude,
                     } : null}
                   />
+                  <div className="sky-v3__map-tools">
+                    <Link
+                      href="/solar-system"
+                      className="sky-v3__solar-launch"
+                      aria-label={tSolar('title')}
+                      title={tSolar('title')}
+                    >
+                      <Orbit size={14} aria-hidden="true" />
+                      <span className="sky-v3__solar-launch-label">{tSolar('short')}</span>
+                    </Link>
                   {compass.status !== 'unavailable' && (
                     <button
                       type="button"
@@ -295,6 +307,7 @@ export default function SkyPage() {
                       <span className="sky-v3__ar-launch-label">AR</span>
                     </button>
                   )}
+                  </div>
                 </div>
               </div>
               <TargetVisibleGrid

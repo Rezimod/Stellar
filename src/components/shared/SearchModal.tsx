@@ -25,6 +25,7 @@ interface StaticItem {
 const STATIC_ITEMS: StaticItem[] = [
   { type: 'page',   labelKey: 'skyForecast',   subKey: 'skyForecastSub',   href: '/sky',         icon: '🌤' },
   { type: 'page',   labelKey: 'planetTracker', subKey: 'planetTrackerSub', href: '/sky',         icon: '🪐' },
+  { type: 'page',   labelKey: 'solarSystem3d', subKey: 'solarSystem3dSub', href: '/solar-system', icon: '🛰' },
   { type: 'page',   labelKey: 'astraAi',       subKey: 'astraAiSub',       href: '/chat',        icon: '✦' },
   { type: 'page',   labelKey: 'astroGuide',    subKey: 'astroGuideSub',    href: '/learn',       icon: '📚' },
   { type: 'page',   labelKey: 'nftGallery',    subKey: 'nftGallerySub',    href: '/nfts',        icon: '🖼' },
