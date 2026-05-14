@@ -6,7 +6,10 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig: NextConfig = {
   compress: true,
   experimental: {
-    reactCompiler: true,
+    // Disabled: Vercel webpack occasionally crashed with
+    // `uncaughtException TypeError: Cannot read properties of undefined (reading 'length')`
+    // during "Creating an optimized production build" while this was enabled.
+    reactCompiler: false,
     optimizePackageImports: [
       'lucide-react',
       '@privy-io/react-auth',
@@ -17,7 +20,6 @@ const nextConfig: NextConfig = {
       '@metaplex-foundation/umi',
       '@metaplex-foundation/umi-bundle-defaults',
       '@solana/spl-token',
-      'astronomy-engine',
     ],
   },
   images: {
