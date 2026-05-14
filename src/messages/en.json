@@ -813,8 +813,11 @@
     "title": "Solar system",
     "subtitle": "Live positions from Astronomy Engine — drag to orbit, scroll to zoom, tap a body for facts.",
     "backSky": "Back to sky",
-    "dragHint": "Drag to orbit · scroll to zoom · tap a body",
+    "dragHint": "Drag · pinch zoom · tap a body",
     "controlsAria": "Simulation controls",
+    "immersive": {
+      "exit": "Exit solar system"
+    },
     "time": {
       "title": "Time",
       "scrub": "Simulation date",
@@ -827,7 +830,8 @@
         "6h": "+6 h/s",
         "1d": "+1 d/s",
         "7d": "+7 d/s"
-      }
+      },
+      "speedAria": "Time rate"
     },
     "view": {
       "title": "View",
@@ -840,7 +844,9 @@
       "title": "Selected body",
       "placeholder": "Tap a planet, moon, or the Sun in the viewport.",
       "meanRadius": "Mean radius",
-      "clear": "Clear selection"
+      "clear": "Clear selection",
+      "closeSheet": "Close details and return to full system view",
+      "cometRadius": "~10 km nucleus (illustrative)"
     },
     "bodies": {
       "sun": {
@@ -902,6 +908,10 @@
       "callisto": {
         "name": "Callisto",
         "blurb": "Heavily cratered ice-rock world — one of the oldest surfaces, a witness plate for outer-belt bombardment."
+      },
+      "comet": {
+        "name": "Comet (artistic)",
+        "blurb": "Highly elongated orbit for visual drama — not tied to a specific comet ephemeris; tap to follow in low-orbit camera."
       }
     }
   },

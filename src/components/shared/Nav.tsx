@@ -127,6 +127,7 @@ export default function Nav() {
       `}</style>
 
       <nav
+        data-stellar-chrome="top"
         className="fixed top-0 left-0 right-0 z-50"
         style={{
           background: '#050812',

@@ -62,6 +62,7 @@ export default function Footer() {
 
   return (
     <footer
+      data-stellar-chrome="footer"
       className="relative z-10 mt-auto"
       style={{
         background: 'rgba(10,22,40,0.92)',

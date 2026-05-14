@@ -1213,3 +1213,16 @@ input, select, textarea { font-size: 16px !important; }
   pointer-events: none;
   z-index: 0;
 }
+
+/* Solar system immersive: hide global chrome while /solar-system is active */
+body[data-solar-immersive="1"] [data-stellar-chrome="top"],
+body[data-solar-immersive="1"] [data-stellar-chrome="bottom"],
+body[data-solar-immersive="1"] [data-stellar-chrome="footer"],
+body[data-solar-immersive="1"] [data-stellar-chrome="starfield"] {
+  display: none !important;
+}
+
+body[data-solar-immersive="1"] #stellar-main {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}

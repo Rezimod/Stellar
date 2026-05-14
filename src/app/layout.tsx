@@ -124,7 +124,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <StarField />
                 <Nav />
                 <SwipeBack>
-                  <main className="relative z-10 flex-1 pt-14 pb-[88px]">
+                  <main id="stellar-main" className="relative z-10 flex-1 pt-14 pb-[88px]">
                     <PageTransition>{children}</PageTransition>
                   </main>
                 </SwipeBack>

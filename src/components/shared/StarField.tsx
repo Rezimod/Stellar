@@ -54,7 +54,7 @@ export default function StarField() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
+    <div data-stellar-chrome="starfield" className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
       {stars.map((s) => (
         <div
           key={s.id}

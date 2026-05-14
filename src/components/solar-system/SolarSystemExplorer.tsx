@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ArrowLeft,
   Gauge,
   Orbit,
   Pause,
   Play,
   RotateCcw,
+  Settings2,
   Sparkles,
+  X,
 } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
@@ -31,15 +33,23 @@ const SPEED_STEPS = [
 export default function SolarSystemExplorer() {
   const t = useTranslations('solarSystem');
   const format = useFormatter();
+  const router = useRouter();
 
   const [epochMs, setEpochMs] = useState(() => Date.now());
   const [scaleMode, setScaleMode] = useState<ScaleMode>('orrery');
   const [includePluto, setIncludePluto] = useState(true);
   const [selectedId, setSelectedId] = useState<SolarBodyId | null>(null);
+  const [focusId, setFocusId] = useState<SolarBodyId | null>(null);
   const [playing, setPlaying] = useState(false);
   const [speedIdx, setSpeedIdx] = useState(2);
+  const [viewOpen, setViewOpen] = useState(false);
 
   const simRate = SPEED_STEPS[speedIdx].simSecPerRealSec;
+
+  useEffect(() => {
+    document.body.setAttribute('data-solar-immersive', '1');
+    return () => document.body.removeAttribute('data-solar-immersive');
+  }, []);
 
   useEffect(() => {
     if (!playing) return;
@@ -58,8 +68,10 @@ export default function SolarSystemExplorer() {
   const dateLabel = useMemo(() => {
     try {
       return format.dateTime(new Date(epochMs), {
-        dateStyle: 'medium',
-        timeStyle: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     } catch {
       return new Date(epochMs).toISOString();
@@ -71,10 +83,25 @@ export default function SolarSystemExplorer() {
     setPlaying(false);
   }, []);
 
+  const handleBodyPick = useCallback((id: SolarBodyId | null) => {
+    setSelectedId(id);
+    if (id) setFocusId(id);
+    else setFocusId(null);
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    setSelectedId(null);
+    setFocusId(null);
+  }, []);
+
+  const exitToSky = useCallback(() => {
+    router.push('/sky');
+  }, [router]);
+
   const bodyCopy = useMemo(() => {
     const ids: SolarBodyId[] = [
       'sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn',
-      'uranus', 'neptune', 'pluto', 'io', 'europa', 'ganymede', 'callisto',
+      'uranus', 'neptune', 'pluto', 'io', 'europa', 'ganymede', 'callisto', 'comet',
     ];
     const o = {} as Record<SolarBodyId, { name: string; blurb: string }>;
     for (const id of ids) {
@@ -87,6 +114,7 @@ export default function SolarSystemExplorer() {
   }, [t]);
 
   const radiusLabel = (id: SolarBodyId) => {
+    if (id === 'comet') return t('detail.cometRadius');
     if (id === 'io' || id === 'europa' || id === 'ganymede' || id === 'callisto') {
       const km = GALILEAN_MEAN_RADIUS_KM[id];
       return `${km} km`;
@@ -98,109 +126,114 @@ export default function SolarSystemExplorer() {
   };
 
   return (
-    <div className="solar-system">
-      <header className="solar-system__header">
-        <Link href="/sky" className="solar-system__back" aria-label={t('backSky')}>
-          <ArrowLeft size={18} strokeWidth={2} aria-hidden />
-        </Link>
-        <div className="solar-system__headline">
-          <h1 className="solar-system__title">{t('title')}</h1>
-          <p className="solar-system__subtitle">{t('subtitle')}</p>
-        </div>
-        <div className="solar-system__header-meta" aria-live="polite">
-          <span className="solar-system__clock">{dateLabel}</span>
-        </div>
-      </header>
+    <div className="solar-system solar-system--immersive">
+      <div className="solar-system__chrome-float">
+        <button
+          type="button"
+          className="solar-system__fab solar-system__fab--close"
+          onClick={exitToSky}
+          aria-label={t('immersive.exit')}
+        >
+          <X size={20} strokeWidth={2.2} aria-hidden />
+        </button>
+        <span className="solar-system__mini-clock" aria-live="polite">{dateLabel}</span>
+      </div>
 
-      <div className="solar-system__main">
-        <div className="solar-system__viewport">
-          <SolarSystemCanvas
-            epochMs={epochMs}
-            scaleMode={scaleMode}
-            includePluto={includePluto}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
-          <div className="solar-system__viewport-hint">
-            <Orbit size={14} aria-hidden />
-            <span>{t('dragHint')}</span>
+      <div className="solar-system__viewport solar-system__viewport--fill">
+        <SolarSystemCanvas
+          epochMs={epochMs}
+          scaleMode={scaleMode}
+          includePluto={includePluto}
+          selectedId={selectedId}
+          focusBodyId={focusId}
+          onSelect={handleBodyPick}
+        />
+        <div className="solar-system__viewport-hint solar-system__viewport-hint--compact">
+          <Orbit size={14} aria-hidden />
+          <span>{t('dragHint')}</span>
+        </div>
+      </div>
+
+      <div className="solar-system__dock">
+        <div className="solar-system__dock-row solar-system__dock-row--controls">
+          <button
+            type="button"
+            className="solar-system__btn solar-system__btn--primary solar-system__btn--grow"
+            onClick={() => setPlaying((p) => !p)}
+            aria-pressed={playing}
+          >
+            {playing ? <Pause size={18} aria-hidden /> : <Play size={18} aria-hidden />}
+            {playing ? t('time.pause') : t('time.play')}
+          </button>
+          <button type="button" className="solar-system__btn" onClick={resetNow}>
+            <RotateCcw size={18} aria-hidden />
+            {t('time.now')}
+          </button>
+          <button
+            type="button"
+            className={`solar-system__iconbtn${viewOpen ? ' is-active' : ''}`}
+            onClick={() => setViewOpen((o) => !o)}
+            aria-expanded={viewOpen}
+            aria-label={t('view.title')}
+          >
+            <Settings2 size={20} aria-hidden />
+          </button>
+        </div>
+
+        <label className="solar-system__dock-label" htmlFor="solar-epoch-range">
+          {t('time.scrub')}
+        </label>
+        <input
+          id="solar-epoch-range"
+          className="solar-system__range"
+          type="range"
+          min={Date.now() - 1000 * 86400 * 365 * 2}
+          max={Date.now() + 1000 * 86400 * 365 * 2}
+          step={3600000}
+          value={epochMs}
+          onChange={(e) => {
+            setEpochMs(Number(e.target.value));
+            setPlaying(false);
+          }}
+        />
+
+        <div className="solar-system__speeds-wrap">
+          <div className="solar-system__speeds" role="tablist" aria-label={t('time.speedAria')}>
+            {SPEED_STEPS.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                className={`solar-system__chip${i === speedIdx ? ' is-active' : ''}`}
+                onClick={() => setSpeedIdx(i)}
+              >
+                {t(`time.speed.${s.id}`)}
+              </button>
+            ))}
           </div>
         </div>
 
-        <aside className="solar-system__panel" aria-label={t('controlsAria')}>
-          <section className="solar-system__section">
-            <h2 className="solar-system__section-title">
-              <Gauge size={14} aria-hidden />
-              {t('time.title')}
-            </h2>
-            <label className="solar-system__label" htmlFor="solar-epoch-range">
-              {t('time.scrub')}
-            </label>
-            <input
-              id="solar-epoch-range"
-              className="solar-system__range"
-              type="range"
-              min={Date.now() - 1000 * 86400 * 365 * 2}
-              max={Date.now() + 1000 * 86400 * 365 * 2}
-              step={3600000}
-              value={epochMs}
-              onChange={(e) => {
-                setEpochMs(Number(e.target.value));
-                setPlaying(false);
-              }}
-            />
-            <div className="solar-system__row">
+        {viewOpen && (
+          <div className="solar-system__view-pop">
+            <div className="solar-system__view-pop-head">
+              <Sparkles size={14} aria-hidden />
+              <span>{t('view.title')}</span>
+            </div>
+            <div className="solar-system__seg solar-system__seg--full">
               <button
                 type="button"
-                className="solar-system__btn solar-system__btn--primary"
-                onClick={() => setPlaying((p) => !p)}
-                aria-pressed={playing}
+                className={scaleMode === 'orrery' ? 'is-active' : ''}
+                onClick={() => setScaleMode('orrery')}
               >
-                {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
-                {playing ? t('time.pause') : t('time.play')}
+                {t('view.orrery')}
               </button>
-              <button type="button" className="solar-system__btn" onClick={resetNow}>
-                <RotateCcw size={16} aria-hidden />
-                {t('time.now')}
+              <button
+                type="button"
+                className={scaleMode === 'linear' ? 'is-active' : ''}
+                onClick={() => setScaleMode('linear')}
+              >
+                {t('view.linear')}
               </button>
-            </div>
-            <div className="solar-system__speeds">
-              {SPEED_STEPS.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={`solar-system__chip${i === speedIdx ? ' is-active' : ''}`}
-                  onClick={() => setSpeedIdx(i)}
-                >
-                  {t(`time.speed.${s.id}`)}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="solar-system__section">
-            <h2 className="solar-system__section-title">
-              <Sparkles size={14} aria-hidden />
-              {t('view.title')}
-            </h2>
-            <div className="solar-system__toggle-row">
-              <span className="solar-system__label">{t('view.scale')}</span>
-              <div className="solar-system__seg">
-                <button
-                  type="button"
-                  className={scaleMode === 'orrery' ? 'is-active' : ''}
-                  onClick={() => setScaleMode('orrery')}
-                >
-                  {t('view.orrery')}
-                </button>
-                <button
-                  type="button"
-                  className={scaleMode === 'linear' ? 'is-active' : ''}
-                  onClick={() => setScaleMode('linear')}
-                >
-                  {t('view.linear')}
-                </button>
-              </div>
             </div>
             <label className="solar-system__check">
               <input
@@ -210,30 +243,38 @@ export default function SolarSystemExplorer() {
               />
               {t('view.pluto')}
             </label>
-          </section>
-
-          <section className="solar-system__section solar-system__section--detail">
-            <h2 className="solar-system__section-title">{t('detail.title')}</h2>
-            {selectedId ? (
-              <div className="solar-system__detail">
-                <p className="solar-system__detail-name">{bodyCopy[selectedId].name}</p>
-                <p className="solar-system__detail-blurb">{bodyCopy[selectedId].blurb}</p>
-                <dl className="solar-system__dl">
-                  <div>
-                    <dt>{t('detail.meanRadius')}</dt>
-                    <dd>{radiusLabel(selectedId)}</dd>
-                  </div>
-                </dl>
-                <button type="button" className="solar-system__linkish" onClick={() => setSelectedId(null)}>
-                  {t('detail.clear')}
-                </button>
-              </div>
-            ) : (
-              <p className="solar-system__placeholder">{t('detail.placeholder')}</p>
-            )}
-          </section>
-        </aside>
+          </div>
+        )}
       </div>
+
+      {selectedId && (
+        <aside className="solar-system__sheet" aria-label={t('detail.title')}>
+          <div className="solar-system__sheet-head">
+            <h2 className="solar-system__sheet-title">
+              <Gauge size={14} aria-hidden />
+              {bodyCopy[selectedId].name}
+            </h2>
+            <button
+              type="button"
+              className="solar-system__sheet-x"
+              onClick={closeDetail}
+              aria-label={t('detail.closeSheet')}
+            >
+              <X size={20} strokeWidth={2} aria-hidden />
+            </button>
+          </div>
+          <p className="solar-system__sheet-blurb">{bodyCopy[selectedId].blurb}</p>
+          <dl className="solar-system__dl solar-system__dl--sheet">
+            <div>
+              <dt>{t('detail.meanRadius')}</dt>
+              <dd>{radiusLabel(selectedId)}</dd>
+            </div>
+          </dl>
+          <Link href="/sky" className="solar-system__sheet-link">
+            {t('backSky')}
+          </Link>
+        </aside>
+      )}
     </div>
   );
 }

@@ -26,7 +26,8 @@ export type SolarBodyId =
   | 'io'
   | 'europa'
   | 'ganymede'
-  | 'callisto';
+  | 'callisto'
+  | 'comet';
 
 export type ScaleMode = 'orrery' | 'linear';
 
@@ -43,6 +44,8 @@ export const MEAN_RADIUS_KM: Record<Exclude<SolarBodyId, 'io' | 'europa' | 'gany
   uranus: 25_362,
   neptune: 24_622,
   pluto: 1_188,
+  /** Illustrative nucleus scale (~few km); visual size is boosted in scene. */
+  comet: 5,
 };
 
 const MOON_RADIUS_KM = { io: 1_821.6, europa: 1_560.8, ganymede: 2_631.2, callisto: 2_410.3 } as const;
@@ -146,10 +149,29 @@ export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boo
     }
   }
 
+  const earthRef = HelioVector(Body.Earth, date);
+  const M = ((date.getTime() % 24_000_000) / 24_000_000) * Math.PI * 2;
+  const aAu = 14;
+  const e = 0.91;
+  const rAu = aAu * (1 - e * e) / (1 + e * Math.cos(M));
+  const cometEqj = new Vector(
+    rAu * Math.cos(M + 0.45),
+    rAu * 0.11 * Math.sin(M * 1.4),
+    rAu * Math.sin(M + 0.45),
+    earthRef.t,
+  );
+  const cometAu = helioEqjToThree(cometEqj).length();
+  out.push({
+    id: 'comet',
+    position: helioScenePosition(cometEqj, mode).clone(),
+    helioDistanceAu: cometAu,
+  });
+
   return out;
 }
 
 export function worldRadiusForBody(id: SolarBodyId): number {
+  if (id === 'comet') return 0.016;
   if (id === 'io' || id === 'europa' || id === 'ganymede' || id === 'callisto') {
     const km = MOON_RADIUS_KM[id];
     return 0.018 * Math.pow(km / 2_000, 0.38);
@@ -175,6 +197,7 @@ export function bodyColor(id: SolarBodyId): number {
     case 'europa': return 0xa8c4dc;
     case 'ganymede': return 0x8f9fb0;
     case 'callisto': return 0x6a5a4f;
+    case 'comet': return 0xc8dce8;
     default: return 0x8899aa;
   }
 }
