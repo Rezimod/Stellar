@@ -13,7 +13,7 @@ export default function PullToRefresh() {
   const pulling = useRef(false);
   const router = useRouter();
 
-  const disabled = pathname === '/solar-system';
+  const disabled = pathname.startsWith('/solar-system');
 
   const onTouchStart = useCallback((e: TouchEvent) => {
     if (disabled) return;

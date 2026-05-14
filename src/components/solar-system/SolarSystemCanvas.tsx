@@ -10,6 +10,7 @@ import {
   type SolarBodyId,
 } from '@/lib/solar-system/ephemeris';
 import { HERO_PLANET_TEXTURE_URL, HERO_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
+import { siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
 
 export interface SolarSystemCanvasProps {
@@ -81,9 +82,11 @@ export function SolarSystemCanvas({
       alpha: false,
       powerPreference: 'high-performance',
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.75 : 2.25));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.06;
     renderer.setClearColor(0x03060d, 1);
     mount.appendChild(renderer.domElement);
     renderer.domElement.style.display = 'block';
@@ -197,9 +200,12 @@ export function SolarSystemCanvas({
             return;
           }
           tex.colorSpace = THREE.SRGBColorSpace;
-          tex.anisotropy = Math.min(8, maxAniso);
-          tex.wrapS = THREE.RepeatWrapping;
+          tex.anisotropy = Math.min(16, maxAniso);
+          tex.wrapS = THREE.ClampToEdgeWrapping;
           tex.wrapT = THREE.ClampToEdgeWrapping;
+          tex.generateMipmaps = true;
+          tex.minFilter = THREE.LinearMipmapLinearFilter;
+          tex.magFilter = THREE.LinearFilter;
           textureById.set(id, tex);
           const mesh = meshById.get(id);
           if (mesh) {
@@ -215,35 +221,64 @@ export function SolarSystemCanvas({
     const earthDecor = new THREE.Group();
     earthDecor.name = 'earthDecor';
     bodies.add(earthDecor);
-    const satMat = new THREE.MeshStandardMaterial({
-      color: 0xc4ccd8,
-      metalness: 0.88,
-      roughness: 0.22,
-      emissive: new THREE.Color(0x1a2838),
-      emissiveIntensity: 0.45,
+
+    const busMat = new THREE.MeshStandardMaterial({
+      color: 0xb4becd,
+      metalness: 0.58,
+      roughness: 0.4,
     });
-    const satellites: THREE.Mesh[] = [];
-    for (let i = 0; i < 5; i++) {
-      const sat = new THREE.Mesh(
-        new THREE.BoxGeometry(0.024, 0.072, 0.024),
-        satMat,
-      );
-      sat.rotation.set(0.35 + i * 0.15, i * 1.9, 0.28);
-      sat.userData.orbit = {
-        base: (i / 5) * Math.PI * 2,
-        speed: 1.35 + i * 0.28,
-        radiusMul: 2.1 + i * 0.38,
-        tilt: 0.35 + i * 0.11,
-      };
-      satellites.push(sat);
-      earthDecor.add(sat);
-    }
+    const panelMat = new THREE.MeshStandardMaterial({
+      color: 0x2c3d55,
+      metalness: 0.78,
+      roughness: 0.3,
+      emissive: new THREE.Color(0x102a44),
+      emissiveIntensity: 0.2,
+    });
+    const dishMat = new THREE.MeshStandardMaterial({
+      color: 0xd0dff4,
+      metalness: 0.52,
+      roughness: 0.34,
+      side: THREE.DoubleSide,
+    });
+
+    const leoSat = new THREE.Group();
+    const bus = new THREE.Mesh(new THREE.CylinderGeometry(0.0038, 0.0038, 0.012, 14), busMat);
+    bus.rotation.z = Math.PI / 2;
+    leoSat.add(bus);
+    const panelGeo = new THREE.BoxGeometry(0.014, 0.00075, 0.006);
+    const pZ = new THREE.Mesh(panelGeo, panelMat);
+    pZ.position.set(0, 0, 0.0092);
+    const pZ2 = new THREE.Mesh(panelGeo, panelMat);
+    pZ2.position.set(0, 0, -0.0092);
+    leoSat.add(pZ, pZ2);
+    const dish = new THREE.Mesh(
+      new THREE.SphereGeometry(0.0026, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
+      dishMat,
+    );
+    dish.rotation.x = Math.PI / 2;
+    dish.position.set(0.0082, 0, 0);
+    leoSat.add(dish);
+    leoSat.scale.setScalar(0.92);
+    earthDecor.add(leoSat);
+
+    const disposeLeoSatMaterials = () => {
+      const mats = new Set<THREE.Material>();
+      leoSat.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) {
+          obj.geometry.dispose();
+          const m = obj.material;
+          if (Array.isArray(m)) m.forEach((x) => mats.add(x));
+          else mats.add(m);
+        }
+      });
+      mats.forEach((m) => m.dispose());
+    };
 
     let lastFocus: SolarBodyId | null = null;
 
     const makeBodyMesh = (id: SolarBodyId): THREE.Mesh => {
       const r = worldRadiusForBody(id);
-      const segs = lite ? 48 : 72;
+      const segs = lite ? 64 : 96;
       const geom = new THREE.SphereGeometry(r, segs, segs);
       const mat = createPlanetMaterial(id, lite, textureById.get(id) ?? null);
       const mesh = new THREE.Mesh(geom, mat);
@@ -504,16 +539,9 @@ export function SolarSystemCanvas({
     let raf = 0;
     const loop = () => {
       syncMeshes();
-      const spinT = epochRef.current * 0.0009;
       if (!reduceMotion) {
         meshById.forEach((mesh, id) => {
-          if (id === 'sun' || id === 'comet') return;
-          const s =
-            id === 'jupiter' ? 0.52 :
-            id === 'saturn' ? 0.46 :
-            id === 'moon' ? 1.08 :
-            1;
-          mesh.rotation.y = spinT * s;
+          mesh.rotation.y = siderealSpinY(id, epochRef.current);
         });
       }
 
@@ -521,22 +549,15 @@ export function SolarSystemCanvas({
       if (earthMesh) {
         earthDecor.position.copy(earthMesh.position);
         const re = worldRadiusForBody('earth');
-        const tOrb = reduceMotion ? 0 : epochRef.current * 0.00105;
-        for (const sat of satellites) {
-          const o = sat.userData.orbit as {
-            base: number;
-            speed: number;
-            radiusMul: number;
-            tilt: number;
-          };
-          const ang = o.base + tOrb * o.speed;
-          const rad = re * o.radiusMul;
-          sat.position.set(
-            Math.cos(ang) * rad,
-            Math.sin(ang * o.tilt) * rad * 0.4,
-            Math.sin(ang) * rad,
-          );
-        }
+        const tOrb = reduceMotion ? 0 : epochRef.current * 0.00042;
+        const rad = re * 2.42;
+        leoSat.position.set(
+          Math.cos(tOrb) * rad,
+          Math.sin(tOrb * 0.33) * rad * 0.26,
+          Math.sin(tOrb) * rad,
+        );
+        leoSat.rotation.y = tOrb * 2.1;
+        leoSat.rotation.x = Math.sin(tOrb * 0.7) * 0.12;
       } else {
         earthDecor.position.set(0, -9999, 0);
       }
@@ -570,12 +591,8 @@ export function SolarSystemCanvas({
       textureLoadsCancelled = true;
 
       bodies.remove(earthDecor);
-      earthDecor.clear();
-      for (const sat of satellites) {
-        sat.geometry.dispose();
-      }
-      satellites.length = 0;
-      satMat.dispose();
+      disposeLeoSatMaterials();
+
       textureById.clear();
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));

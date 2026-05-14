@@ -344,6 +344,20 @@
   overscroll-behavior: none;
 }
 
+.solar-system--immersive::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 85% 70% at 50% 45%,
+    transparent 0%,
+    transparent 42%,
+    rgba(2, 4, 10, 0.55) 100%
+  );
+}
+
 .solar-system__chrome-float {
   position: absolute;
   top: max(10px, env(safe-area-inset-top));
@@ -392,6 +406,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
+  z-index: 2;
 }
 
 .solar-system__viewport-hint--compact {
