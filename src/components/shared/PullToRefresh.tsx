@@ -1,25 +1,30 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const THRESHOLD = 72;
 
 export default function PullToRefresh() {
+  const pathname = usePathname();
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(0);
   const pulling = useRef(false);
   const router = useRouter();
 
+  const disabled = pathname === '/solar-system';
+
   const onTouchStart = useCallback((e: TouchEvent) => {
+    if (disabled) return;
     if (window.scrollY === 0) {
       startY.current = e.touches[0].clientY;
       pulling.current = true;
     }
-  }, []);
+  }, [disabled]);
 
   const onTouchMove = useCallback((e: TouchEvent) => {
+    if (disabled) return;
     if (!pulling.current) return;
     const delta = e.touches[0].clientY - startY.current;
     if (delta > 0 && window.scrollY === 0) {
@@ -28,9 +33,10 @@ export default function PullToRefresh() {
     } else if (delta <= 0) {
       setPullY(0);
     }
-  }, []);
+  }, [disabled]);
 
   const onTouchEnd = useCallback(() => {
+    if (disabled) return;
     pulling.current = false;
     if (pullY >= THRESHOLD && !refreshing) {
       setRefreshing(true);
@@ -44,9 +50,10 @@ export default function PullToRefresh() {
       setPullY(0);
     }
     startY.current = 0;
-  }, [pullY, refreshing, router]);
+  }, [disabled, pullY, refreshing, router]);
 
   useEffect(() => {
+    if (disabled) return;
     document.addEventListener('touchstart', onTouchStart, { passive: true });
     document.addEventListener('touchmove', onTouchMove, { passive: true });
     document.addEventListener('touchend', onTouchEnd);
@@ -55,8 +62,16 @@ export default function PullToRefresh() {
       document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('touchend', onTouchEnd);
     };
-  }, [onTouchStart, onTouchMove, onTouchEnd]);
+  }, [disabled, onTouchStart, onTouchMove, onTouchEnd]);
 
+  useEffect(() => {
+    if (!disabled) return;
+    setPullY(0);
+    setRefreshing(false);
+    pulling.current = false;
+  }, [disabled]);
+
+  if (disabled) return null;
   if (pullY === 0 && !refreshing) return null;
 
   const progress = Math.min(pullY / THRESHOLD, 1);

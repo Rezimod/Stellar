@@ -9,6 +9,7 @@ import {
   type ScaleMode,
   type SolarBodyId,
 } from '@/lib/solar-system/ephemeris';
+import { HERO_PLANET_TEXTURE_URL, HERO_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
 
 export interface SolarSystemCanvasProps {
@@ -39,7 +40,7 @@ function disposeMeshTree(root: THREE.Object3D) {
 
 /**
  * Three.js solar system: ephemeris, pinch zoom, invisible pick spheres,
- * low-orbit camera around `focusBodyId`, procedural planet textures.
+ * low-orbit camera around `focusBodyId`, hero equirectangular textures when available.
  */
 export function SolarSystemCanvas({
   epochMs,
@@ -181,13 +182,70 @@ export function SolarSystemCanvas({
 
     const meshById = new Map<SolarBodyId, THREE.Mesh>();
     const hitById = new Map<SolarBodyId, THREE.Mesh>();
+    const textureById = new Map<SolarBodyId, THREE.Texture>();
+    let textureLoadsCancelled = false;
+    const loader = new THREE.TextureLoader();
+    const maxAniso = renderer.capabilities.getMaxAnisotropy();
+    for (const id of HERO_TEXTURE_IDS) {
+      const url = HERO_PLANET_TEXTURE_URL[id];
+      if (!url) continue;
+      loader.load(
+        url,
+        (tex) => {
+          if (textureLoadsCancelled) {
+            tex.dispose();
+            return;
+          }
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.anisotropy = Math.min(8, maxAniso);
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.ClampToEdgeWrapping;
+          textureById.set(id, tex);
+          const mesh = meshById.get(id);
+          if (mesh) {
+            disposeMat(mesh.material as THREE.Material);
+            mesh.material = createPlanetMaterial(id, lite, tex);
+          }
+        },
+        undefined,
+        () => {},
+      );
+    }
+
+    const earthDecor = new THREE.Group();
+    earthDecor.name = 'earthDecor';
+    bodies.add(earthDecor);
+    const satMat = new THREE.MeshStandardMaterial({
+      color: 0xc4ccd8,
+      metalness: 0.88,
+      roughness: 0.22,
+      emissive: new THREE.Color(0x1a2838),
+      emissiveIntensity: 0.45,
+    });
+    const satellites: THREE.Mesh[] = [];
+    for (let i = 0; i < 5; i++) {
+      const sat = new THREE.Mesh(
+        new THREE.BoxGeometry(0.024, 0.072, 0.024),
+        satMat,
+      );
+      sat.rotation.set(0.35 + i * 0.15, i * 1.9, 0.28);
+      sat.userData.orbit = {
+        base: (i / 5) * Math.PI * 2,
+        speed: 1.35 + i * 0.28,
+        radiusMul: 2.1 + i * 0.38,
+        tilt: 0.35 + i * 0.11,
+      };
+      satellites.push(sat);
+      earthDecor.add(sat);
+    }
+
     let lastFocus: SolarBodyId | null = null;
 
     const makeBodyMesh = (id: SolarBodyId): THREE.Mesh => {
       const r = worldRadiusForBody(id);
-      const segs = lite ? 36 : 56;
+      const segs = lite ? 48 : 72;
       const geom = new THREE.SphereGeometry(r, segs, segs);
-      const mat = createPlanetMaterial(id, lite);
+      const mat = createPlanetMaterial(id, lite, textureById.get(id) ?? null);
       const mesh = new THREE.Mesh(geom, mat);
       mesh.userData.bodyId = id;
       return mesh;
@@ -446,6 +504,43 @@ export function SolarSystemCanvas({
     let raf = 0;
     const loop = () => {
       syncMeshes();
+      const spinT = epochRef.current * 0.0009;
+      if (!reduceMotion) {
+        meshById.forEach((mesh, id) => {
+          if (id === 'sun' || id === 'comet') return;
+          const s =
+            id === 'jupiter' ? 0.52 :
+            id === 'saturn' ? 0.46 :
+            id === 'moon' ? 1.08 :
+            1;
+          mesh.rotation.y = spinT * s;
+        });
+      }
+
+      const earthMesh = meshById.get('earth');
+      if (earthMesh) {
+        earthDecor.position.copy(earthMesh.position);
+        const re = worldRadiusForBody('earth');
+        const tOrb = reduceMotion ? 0 : epochRef.current * 0.00105;
+        for (const sat of satellites) {
+          const o = sat.userData.orbit as {
+            base: number;
+            speed: number;
+            radiusMul: number;
+            tilt: number;
+          };
+          const ang = o.base + tOrb * o.speed;
+          const rad = re * o.radiusMul;
+          sat.position.set(
+            Math.cos(ang) * rad,
+            Math.sin(ang * o.tilt) * rad * 0.4,
+            Math.sin(ang) * rad,
+          );
+        }
+      } else {
+        earthDecor.position.set(0, -9999, 0);
+      }
+
       const focus = focusRef.current;
       if (focus && meshById.has(focus)) {
         vTarget.copy(meshById.get(focus)!.position);
@@ -471,6 +566,17 @@ export function SolarSystemCanvas({
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
+
+      textureLoadsCancelled = true;
+
+      bodies.remove(earthDecor);
+      earthDecor.clear();
+      for (const sat of satellites) {
+        sat.geometry.dispose();
+      }
+      satellites.length = 0;
+      satMat.dispose();
+      textureById.clear();
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));
       meshById.clear();

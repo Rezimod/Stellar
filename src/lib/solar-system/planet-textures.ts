@@ -35,8 +35,40 @@ function noiseRoughness(ctx: CanvasRenderingContext2D, w: number, h: number, gra
   ctx.putImageData(img, 0, 0);
 }
 
-/** Procedural diffuse (+ optional roughness) for each body — no external assets. */
-export function createPlanetMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardMaterial {
+/** Procedural diffuse (+ optional hero equirectangular texture like homepage). */
+export function createPlanetMaterial(
+  id: SolarBodyId,
+  lite: boolean,
+  diffuseTexture?: THREE.Texture | null,
+): THREE.MeshStandardMaterial {
+  if (diffuseTexture) {
+    if (id === 'sun') {
+      return new THREE.MeshStandardMaterial({
+        map: diffuseTexture,
+        emissive: new THREE.Color(0xf6c15c),
+        emissiveMap: diffuseTexture,
+        emissiveIntensity: lite ? 1.02 : 1.25,
+        roughness: 0.9,
+        metalness: 0,
+      });
+    }
+    const rough =
+      id === 'moon' ? 0.93 :
+      id === 'earth' ? 0.7 :
+      id === 'mars' ? 0.86 :
+      id === 'jupiter' || id === 'saturn' ? 0.8 :
+      0.76;
+    const metal =
+      id === 'earth' ? 0.07 :
+      id === 'jupiter' || id === 'saturn' ? 0.045 :
+      0.03;
+    return new THREE.MeshStandardMaterial({
+      map: diffuseTexture,
+      roughness: rough,
+      metalness: metal,
+    });
+  }
+
   const base = bodyColor(id);
   const hex = `#${base.toString(16).padStart(6, '0')}`;
 

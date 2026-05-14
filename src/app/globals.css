@@ -1214,6 +1214,13 @@ input, select, textarea { font-size: 16px !important; }
   z-index: 0;
 }
 
+/* Solar system immersive: no rubber-band / pull-to-refresh gesture bleed */
+html:has(body[data-solar-immersive="1"]),
+body[data-solar-immersive="1"] {
+  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+}
+
 /* Solar system immersive: hide global chrome while /solar-system is active */
 body[data-solar-immersive="1"] [data-stellar-chrome="top"],
 body[data-solar-immersive="1"] [data-stellar-chrome="bottom"],

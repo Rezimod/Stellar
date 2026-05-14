@@ -133,6 +133,22 @@ export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boo
     out.push({ id, position: pos.clone(), helioDistanceAu: au });
   }
 
+  /* Moon sits almost on top of Earth in compressed orrery space — nudge outward
+   * so it reads as a distinct far orbit (still same ephemeris direction). */
+  const earthSample = out.find((s) => s.id === 'earth');
+  const moonSample = out.find((s) => s.id === 'moon');
+  if (earthSample && moonSample) {
+    const off = moonSample.position.clone().sub(earthSample.position);
+    const d = off.length();
+    const re = worldRadiusForBody('earth');
+    const minSep = re * 6.8;
+    if (d < minSep) {
+      if (d > 1e-8) off.normalize();
+      else off.set(0.62, 0.1, 0.78).normalize();
+      moonSample.position.copy(earthSample.position).add(off.multiplyScalar(minSep));
+    }
+  }
+
   const jupiterHelio = HelioVector(Body.Jupiter, date);
   const jupiterScene = helioScene.get('jupiter');
   if (jupiterScene) {

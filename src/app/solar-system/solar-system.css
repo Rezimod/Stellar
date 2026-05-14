@@ -341,6 +341,7 @@
   min-height: 100vh;
   background: #02040a;
   color: var(--text, #e8ecf4);
+  overscroll-behavior: none;
 }
 
 .solar-system__chrome-float {
