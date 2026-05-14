@@ -94,7 +94,7 @@ export function createPlanetMaterial(
 
   if (id === 'jupiter' || id === 'saturn') {
     const map = canvasTexture((ctx, w, h) => {
-      const bands = id === 'jupiter' ? 18 : 14;
+      const bands = id === 'jupiter' ? 22 : 16;
       for (let i = 0; i < bands; i++) {
         const y0 = (i / bands) * h;
         const y1 = ((i + 1) / bands) * h;
@@ -104,10 +104,16 @@ export function createPlanetMaterial(
         ctx.fillStyle = `rgb(${200 * shade * (1 - drift)},${170 * shade},${120 * shade})`;
         ctx.fillRect(0, y0, w, y1 - y0);
       }
-      ctx.globalAlpha = 0.12;
-      for (let x = 0; x < w; x += 6) {
+      ctx.globalAlpha = id === 'jupiter' ? 0.1 : 0.12;
+      for (let x = 0; x < w; x += 5) {
+        const u = (x / w) * Math.PI * 2;
         ctx.fillStyle = '#fff';
-        ctx.fillRect(x, (Math.sin(x * 0.02) * 0.5 + 0.5) * h * 0.3, 2, h * 0.4);
+        ctx.fillRect(
+          x,
+          (Math.sin(u * 4 + (id === 'jupiter' ? 0.7 : 0.2)) * 0.5 + 0.5) * h * 0.22,
+          2,
+          h * 0.48,
+        );
       }
       ctx.globalAlpha = 1;
     });
@@ -189,6 +195,55 @@ export function createPlanetMaterial(
       }
     });
     return new THREE.MeshStandardMaterial({ map, roughness: 0.94, metalness: 0.01 });
+  }
+
+  if (id === 'titan') {
+    const map = canvasTexture((ctx, w, h) => {
+      const g = ctx.createLinearGradient(0, 0, w, h * 0.7);
+      g.addColorStop(0, '#c9a06a');
+      g.addColorStop(0.45, '#8a6a3d');
+      g.addColorStop(1, '#4a3828');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+      noiseRoughness(ctx, w, h, 0.12);
+      ctx.fillStyle = 'rgba(40,55,70,0.18)';
+      for (let i = 0; i < 24; i++) {
+        ctx.fillRect(Math.random() * w, Math.random() * h, w * 0.35, 2 + Math.random() * 3);
+      }
+    }, 384, 192);
+    return new THREE.MeshStandardMaterial({ map, roughness: 0.88, metalness: 0.02 });
+  }
+
+  if (id === 'rhea' || id === 'dione') {
+    const map = canvasTexture((ctx, w, h) => {
+      ctx.fillStyle = id === 'dione' ? '#d8e4f0' : '#c8ccd4';
+      ctx.fillRect(0, 0, w, h);
+      noiseRoughness(ctx, w, h, 0.1);
+      ctx.fillStyle = 'rgba(90,100,115,0.2)';
+      for (let i = 0; i < 50; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * w, Math.random() * h, 1 + Math.random() * 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }, 256, 128);
+    return new THREE.MeshStandardMaterial({ map, roughness: 0.78, metalness: 0.03 });
+  }
+
+  if (id === 'iapetus') {
+    const map = canvasTexture((ctx, w, h) => {
+      ctx.fillStyle = '#6a5a52';
+      ctx.fillRect(0, 0, w * 0.52, h);
+      ctx.fillStyle = '#dcd8d4';
+      ctx.fillRect(w * 0.48, 0, w * 0.52, h);
+      noiseRoughness(ctx, w, h, 0.08);
+      ctx.strokeStyle = 'rgba(50,45,40,0.35)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.5, 0);
+      ctx.lineTo(w * 0.5, h);
+      ctx.stroke();
+    }, 256, 128);
+    return new THREE.MeshStandardMaterial({ map, roughness: 0.86, metalness: 0.02 });
   }
 
   if (id === 'uranus' || id === 'neptune') {

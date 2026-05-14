@@ -35,6 +35,15 @@ function disposeMeshTree(root: THREE.Object3D) {
       const m = obj.material;
       if (Array.isArray(m)) m.forEach(disposeMat);
       else disposeMat(m);
+    } else if (obj instanceof THREE.Points) {
+      obj.geometry.dispose();
+      const m = obj.material;
+      if (Array.isArray(m)) m.forEach((x) => x.dispose());
+      else (m as THREE.Material).dispose();
+    } else if (obj instanceof THREE.Sprite) {
+      const m = obj.material as THREE.SpriteMaterial;
+      m.map?.dispose();
+      m.dispose();
     }
   });
 }
@@ -124,8 +133,8 @@ export function SolarSystemCanvas({
     };
 
     const updateOrbitCamera = (target: THREE.Vector3, pr: number) => {
-      const minD = Math.max(pr * 2.8, 0.35);
-      const maxD = Math.max(pr * 48, 4.5);
+      const minD = Math.max(pr * 1.05, 0.06);
+      const maxD = Math.max(pr * 110, 8);
       orbDist = THREE.MathUtils.clamp(orbDist, minD, maxD);
       const st = Math.sin(orbPhi);
       vOffset.set(
@@ -218,60 +227,53 @@ export function SolarSystemCanvas({
       );
     }
 
+    const LEO_PERIOD_MS = 92.68 * 60 * 1000;
+
     const earthDecor = new THREE.Group();
     earthDecor.name = 'earthDecor';
     bodies.add(earthDecor);
 
-    const busMat = new THREE.MeshStandardMaterial({
-      color: 0xb4becd,
-      metalness: 0.58,
-      roughness: 0.4,
-    });
-    const panelMat = new THREE.MeshStandardMaterial({
-      color: 0x2c3d55,
-      metalness: 0.78,
-      roughness: 0.3,
-      emissive: new THREE.Color(0x102a44),
-      emissiveIntensity: 0.2,
-    });
-    const dishMat = new THREE.MeshStandardMaterial({
-      color: 0xd0dff4,
-      metalness: 0.52,
-      roughness: 0.34,
-      side: THREE.DoubleSide,
-    });
-
-    const leoSat = new THREE.Group();
-    const bus = new THREE.Mesh(new THREE.CylinderGeometry(0.0038, 0.0038, 0.012, 14), busMat);
-    bus.rotation.z = Math.PI / 2;
-    leoSat.add(bus);
-    const panelGeo = new THREE.BoxGeometry(0.014, 0.00075, 0.006);
-    const pZ = new THREE.Mesh(panelGeo, panelMat);
-    pZ.position.set(0, 0, 0.0092);
-    const pZ2 = new THREE.Mesh(panelGeo, panelMat);
-    pZ2.position.set(0, 0, -0.0092);
-    leoSat.add(pZ, pZ2);
-    const dish = new THREE.Mesh(
-      new THREE.SphereGeometry(0.0026, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
-      dishMat,
-    );
-    dish.rotation.x = Math.PI / 2;
-    dish.position.set(0.0082, 0, 0);
-    leoSat.add(dish);
-    leoSat.scale.setScalar(0.92);
-    earthDecor.add(leoSat);
-
-    const disposeLeoSatMaterials = () => {
-      const mats = new Set<THREE.Material>();
-      leoSat.traverse((obj) => {
-        if (obj instanceof THREE.Mesh) {
-          obj.geometry.dispose();
-          const m = obj.material;
-          if (Array.isArray(m)) m.forEach((x) => mats.add(x));
-          else mats.add(m);
+    let issSprite: THREE.Sprite | null = null;
+    loader.load(
+      '/satellites/iss-nasa.jpg',
+      (tex) => {
+        if (textureLoadsCancelled) {
+          tex.dispose();
+          return;
         }
-      });
-      mats.forEach((m) => m.dispose());
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = Math.min(8, maxAniso);
+        const mat = new THREE.SpriteMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.96,
+          depthTest: true,
+          depthWrite: false,
+        });
+        const spr = new THREE.Sprite(mat);
+        spr.name = 'issSprite';
+        issSprite = spr;
+        earthDecor.add(spr);
+      },
+      undefined,
+      () => {},
+    );
+
+    const hitPickRadiusMul = (id: SolarBodyId): number => {
+      switch (id) {
+        case 'io':
+        case 'europa':
+        case 'dione':
+        case 'rhea':
+          return 8.8;
+        case 'ganymede':
+        case 'callisto':
+        case 'titan':
+        case 'iapetus':
+          return 6.4;
+        default:
+          return 4.2;
+      }
     };
 
     let lastFocus: SolarBodyId | null = null;
@@ -320,7 +322,8 @@ export function SolarSystemCanvas({
           meshById.set(s.id, mesh);
           bodies.add(mesh);
 
-          const hGeom = new THREE.SphereGeometry(Math.max(worldRadiusForBody(s.id) * 4.2, 0.22), 20, 20);
+          const hRad = Math.max(worldRadiusForBody(s.id) * hitPickRadiusMul(s.id), 0.22);
+          const hGeom = new THREE.SphereGeometry(hRad, 20, 20);
           const hMat = new THREE.MeshBasicMaterial({
             transparent: true,
             opacity: 0,
@@ -331,21 +334,84 @@ export function SolarSystemCanvas({
           hitById.set(s.id, hit);
           bodies.add(hit);
 
+          if (s.id === 'sun') {
+            const sunR = worldRadiusForBody('sun');
+            const Nburst = lite ? 56 : 112;
+            const pos = new Float32Array(Nburst * 3);
+            const cdata = new Float32Array(Nburst * 3);
+            for (let i = 0; i < Nburst; i++) {
+              const phi = Math.random() * Math.PI * 2;
+              const ct = Math.cos(phi);
+              const st = Math.sin(phi);
+              const lat = (Math.random() - 0.5) * 1.55;
+              const cl = Math.cos(lat * 0.88);
+              const sl = Math.sin(lat * 0.88);
+              const rr = sunR * (1.04 + Math.random() * 0.52);
+              pos[i * 3] = rr * cl * ct;
+              pos[i * 3 + 1] = rr * sl;
+              pos[i * 3 + 2] = rr * cl * st;
+              const f = 0.55 + Math.random() * 0.45;
+              cdata[i * 3] = 1;
+              cdata[i * 3 + 1] = 0.75 + f * 0.22;
+              cdata[i * 3 + 2] = 0.35 + Math.random() * 0.35;
+            }
+            const bgeo = new THREE.BufferGeometry();
+            bgeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            bgeo.setAttribute('color', new THREE.BufferAttribute(cdata, 3));
+            const bmat = new THREE.PointsMaterial({
+              size: lite ? 0.16 : 0.12,
+              vertexColors: true,
+              transparent: true,
+              opacity: 0.42,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending,
+              sizeAttenuation: true,
+            });
+            const bursts = new THREE.Points(bgeo, bmat);
+            bursts.name = 'sunBursts';
+            mesh.add(bursts);
+          }
+
           if (s.id === 'saturn') {
             const sr = worldRadiusForBody('saturn');
             const ring = new THREE.Mesh(
-              new THREE.RingGeometry(sr * 1.25, sr * 2.15, 64),
+              new THREE.RingGeometry(sr * 1.25, sr * 2.15, 96),
               new THREE.MeshBasicMaterial({
                 color: 0xc8b896,
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.5,
+                opacity: 0.52,
                 depthWrite: false,
               }),
             );
+            ring.name = 'saturnRing';
             ring.rotation.x = Math.PI / 2;
             ring.rotation.z = THREE.MathUtils.degToRad(26.7);
-            mesh.add(ring);
+            const iceN = lite ? 900 : 3200;
+            const icePos = new Float32Array(iceN * 3);
+            for (let i = 0; i < iceN; i++) {
+              const a = Math.random() * Math.PI * 2;
+              const rad = sr * (1.24 + Math.random() * 0.98);
+              const z = (Math.random() - 0.5) * sr * 0.08;
+              icePos[i * 3] = rad * Math.cos(a);
+              icePos[i * 3 + 1] = z;
+              icePos[i * 3 + 2] = rad * Math.sin(a);
+            }
+            const iceGeo = new THREE.BufferGeometry();
+            iceGeo.setAttribute('position', new THREE.BufferAttribute(icePos, 3));
+            const iceMat = new THREE.PointsMaterial({
+              color: 0xe8f4ff,
+              size: lite ? 0.045 : 0.032,
+              transparent: true,
+              opacity: 0.62,
+              depthWrite: false,
+              sizeAttenuation: true,
+            });
+            const saturnIce = new THREE.Points(iceGeo, iceMat);
+            saturnIce.name = 'saturnIce';
+            saturnIce.rotation.x = Math.PI / 2;
+            saturnIce.rotation.z = THREE.MathUtils.degToRad(26.7);
+            mesh.add(ring, saturnIce);
           }
         }
         mesh.position.copy(s.position);
@@ -477,7 +543,7 @@ export function SolarSystemCanvas({
         const d = touchDist(e.touches);
         if (lastPinchDist > 4 && d > 4) {
           const factor = d / lastPinchDist;
-          if (focusRef.current) orbDist = THREE.MathUtils.clamp(orbDist / factor, 0.2, 200);
+          if (focusRef.current) orbDist = THREE.MathUtils.clamp(orbDist / factor, 0.04, 420);
           else sysRadius = THREE.MathUtils.clamp(sysRadius / factor, 5.2, 200);
         }
         lastPinchDist = d;
@@ -543,21 +609,42 @@ export function SolarSystemCanvas({
         meshById.forEach((mesh, id) => {
           mesh.rotation.y = siderealSpinY(id, epochRef.current);
         });
+        const saturnMesh = meshById.get('saturn');
+        if (saturnMesh) {
+          const t = epochRef.current * 0.000095;
+          const ring = saturnMesh.getObjectByName('saturnRing');
+          const ice = saturnMesh.getObjectByName('saturnIce');
+          const baseZ = THREE.MathUtils.degToRad(26.7);
+          if (ring instanceof THREE.Mesh) ring.rotation.z = baseZ + t * 1.25;
+          if (ice instanceof THREE.Points) ice.rotation.z = baseZ + t * 1.72;
+        }
+        const sunMesh = meshById.get('sun');
+        if (sunMesh) {
+          const bursts = sunMesh.getObjectByName('sunBursts');
+          if (bursts instanceof THREE.Points) {
+            bursts.rotation.y += 0.00055;
+            const bm = bursts.material as THREE.PointsMaterial;
+            bm.opacity = 0.32 + Math.abs(Math.sin(epochRef.current * 0.0018)) * 0.28;
+          }
+        }
       }
 
       const earthMesh = meshById.get('earth');
       if (earthMesh) {
         earthDecor.position.copy(earthMesh.position);
-        const re = worldRadiusForBody('earth');
-        const tOrb = reduceMotion ? 0 : epochRef.current * 0.00042;
-        const rad = re * 2.42;
-        leoSat.position.set(
-          Math.cos(tOrb) * rad,
-          Math.sin(tOrb * 0.33) * rad * 0.26,
-          Math.sin(tOrb) * rad,
-        );
-        leoSat.rotation.y = tOrb * 2.1;
-        leoSat.rotation.x = Math.sin(tOrb * 0.7) * 0.12;
+        if (issSprite) {
+          const re = worldRadiusForBody('earth');
+          issSprite.scale.setScalar(re * 0.78);
+          if (!reduceMotion) {
+            const phase = (epochRef.current / LEO_PERIOD_MS) * Math.PI * 2;
+            const rad = re * 2.42;
+            issSprite.position.set(
+              Math.cos(phase) * rad,
+              Math.sin(phase) * 0.11 * rad + Math.sin(phase * 2.1) * re * 0.04,
+              Math.sin(phase) * rad,
+            );
+          }
+        }
       } else {
         earthDecor.position.set(0, -9999, 0);
       }
@@ -591,7 +678,12 @@ export function SolarSystemCanvas({
       textureLoadsCancelled = true;
 
       bodies.remove(earthDecor);
-      disposeLeoSatMaterials();
+      if (issSprite) {
+        const sm = issSprite.material as THREE.SpriteMaterial;
+        sm.map?.dispose();
+        sm.dispose();
+        issSprite = null;
+      }
 
       textureById.clear();
 

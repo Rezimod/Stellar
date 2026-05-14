@@ -18,6 +18,7 @@ import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
 import {
   GALILEAN_MEAN_RADIUS_KM,
   MEAN_RADIUS_KM,
+  SATURN_MAJOR_MOON_RADIUS_KM,
   type ScaleMode,
   type SolarBodyId,
 } from '@/lib/solar-system/ephemeris';
@@ -91,7 +92,7 @@ export default function SolarSystemExplorer() {
 
   const closeDetail = useCallback(() => {
     setSelectedId(null);
-    setFocusId(null);
+    /* Keep focus so the camera stays on the body; user can zoom out and pick another. */
   }, []);
 
   const exitToSky = useCallback(() => {
@@ -101,7 +102,8 @@ export default function SolarSystemExplorer() {
   const bodyCopy = useMemo(() => {
     const ids: SolarBodyId[] = [
       'sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn',
-      'uranus', 'neptune', 'pluto', 'io', 'europa', 'ganymede', 'callisto', 'comet',
+      'uranus', 'neptune', 'pluto', 'io', 'europa', 'ganymede', 'callisto',
+      'titan', 'rhea', 'dione', 'iapetus', 'comet',
     ];
     const o = {} as Record<SolarBodyId, { name: string; blurb: string }>;
     for (const id of ids) {
@@ -115,6 +117,10 @@ export default function SolarSystemExplorer() {
 
   const radiusLabel = (id: SolarBodyId) => {
     if (id === 'comet') return t('detail.cometRadius');
+    if (id === 'titan' || id === 'rhea' || id === 'dione' || id === 'iapetus') {
+      const km = SATURN_MAJOR_MOON_RADIUS_KM[id];
+      return `${km} km`;
+    }
     if (id === 'io' || id === 'europa' || id === 'ganymede' || id === 'callisto') {
       const km = GALILEAN_MEAN_RADIUS_KM[id];
       return `${km} km`;

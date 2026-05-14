@@ -11,6 +11,8 @@ import {
 /** J2000 mean ecliptic → Three.js Y-up (ecliptic plane mostly XZ). */
 const ROT_EQJ_ECL = Rotation_EQJ_ECL();
 
+const MS_DAY = 86_400_000;
+
 export type SolarBodyId =
   | 'sun'
   | 'mercury'
@@ -27,30 +29,51 @@ export type SolarBodyId =
   | 'europa'
   | 'ganymede'
   | 'callisto'
+  | 'titan'
+  | 'rhea'
+  | 'dione'
+  | 'iapetus'
   | 'comet';
 
 export type ScaleMode = 'orrery' | 'linear';
 
+type MoonId = 'io' | 'europa' | 'ganymede' | 'callisto' | 'titan' | 'rhea' | 'dione' | 'iapetus';
+
+const JUPITER_KM = 69_911;
+const SATURN_KM = 58_232;
+
+const MOON_RADIUS_JUPITER_KM = {
+  io: 1_821.6,
+  europa: 1_560.8,
+  ganymede: 2_631.2,
+  callisto: 2_410.3,
+} as const;
+
+const MOON_RADIUS_SATURN_KM = {
+  titan: 2_574.7,
+  rhea: 763.8,
+  dione: 562.1,
+  iapetus: 734.5,
+} as const;
+
+export const GALILEAN_MEAN_RADIUS_KM = MOON_RADIUS_JUPITER_KM;
+export const SATURN_MAJOR_MOON_RADIUS_KM = MOON_RADIUS_SATURN_KM;
+
 /** Mean radii (km) for display sizing — not to scale with orbit compression. */
-export const MEAN_RADIUS_KM: Record<Exclude<SolarBodyId, 'io' | 'europa' | 'ganymede' | 'callisto'>, number> = {
+export const MEAN_RADIUS_KM: Record<Exclude<SolarBodyId, MoonId>, number> = {
   sun: 696_000,
   mercury: 2_439,
   venus: 6_052,
   earth: 6_371,
   moon: 1_737,
   mars: 3_390,
-  jupiter: 69_911,
-  saturn: 58_232,
+  jupiter: JUPITER_KM,
+  saturn: SATURN_KM,
   uranus: 25_362,
   neptune: 24_622,
   pluto: 1_188,
-  /** Illustrative nucleus scale (~few km); visual size is boosted in scene. */
   comet: 5,
 };
-
-const MOON_RADIUS_KM = { io: 1_821.6, europa: 1_560.8, ganymede: 2_631.2, callisto: 2_410.3 } as const;
-
-export const GALILEAN_MEAN_RADIUS_KM = MOON_RADIUS_KM;
 
 function helioEqjToThree(vec: Vector): THREE.Vector3 {
   const e = RotateVector(ROT_EQJ_ECL, vec);
@@ -80,6 +103,18 @@ function addEqj(a: Vector, bx: number, by: number, bz: number): Vector {
   return new Vector(a.x + bx, a.y + by, a.z + bz, a.t);
 }
 
+function parentSceneRadius(parent: 'jupiter' | 'saturn'): number {
+  const km = parent === 'jupiter' ? JUPITER_KM : SATURN_KM;
+  return 0.028 * Math.pow(km / 6_371, 0.36);
+}
+
+/** Scene radius for a major moon from its physical radius vs parent gas giant. */
+function moonSceneRadius(parent: 'jupiter' | 'saturn', moonKm: number): number {
+  const pKm = parent === 'jupiter' ? JUPITER_KM : SATURN_KM;
+  const pr = parentSceneRadius(parent);
+  return pr * (moonKm / pKm) * 5.4;
+}
+
 export interface BodySceneSample {
   id: SolarBodyId;
   position: THREE.Vector3;
@@ -94,9 +129,22 @@ const GALILEAN: { id: 'io' | 'europa' | 'ganymede' | 'callisto'; key: keyof Retu
   { id: 'callisto', key: 'callisto' },
 ];
 
+const SATURN_MOONS: {
+  id: 'titan' | 'rhea' | 'dione' | 'iapetus';
+  orbitMul: number;
+  periodDays: number;
+  phase0: number;
+  incl: number;
+}[] = [
+  { id: 'titan', orbitMul: 3.05, periodDays: 15.945, phase0: 0.2, incl: 0.04 },
+  { id: 'rhea', orbitMul: 1.98, periodDays: 4.518, phase0: 1.35, incl: 0.055 },
+  { id: 'dione', orbitMul: 1.58, periodDays: 2.737, phase0: 2.7, incl: 0.048 },
+  { id: 'iapetus', orbitMul: 4.35, periodDays: 79.3215, phase0: 4.0, incl: 0.12 },
+];
+
 /**
  * Positions for the main solar-system mesh graph at `date`.
- * Galilean moon offsets are exaggerated for legibility on small screens.
+ * Galilean moons use astronomy-engine; Saturn's four largest moons use simplified circular orbits.
  */
 export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boolean): BodySceneSample[] {
   const out: BodySceneSample[] = [];
@@ -123,6 +171,7 @@ export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boo
   if (includePluto) majors.push({ id: 'pluto', body: Body.Pluto });
 
   const helioScene = new Map<SolarBodyId, THREE.Vector3>();
+  let saturnHelioAu = 9.5;
 
   for (const { id, body } of majors) {
     const hv = HelioVector(body, date);
@@ -131,10 +180,10 @@ export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boo
     const pos = helioScenePosition(hv, mode);
     helioScene.set(id, pos);
     out.push({ id, position: pos.clone(), helioDistanceAu: au });
+    if (id === 'saturn') saturnHelioAu = au;
   }
 
-  /* Moon sits almost on top of Earth in compressed orrery space — nudge outward
-   * so it reads as a distinct far orbit (still same ephemeris direction). */
+  /* Moon sits almost on top of Earth in compressed orrery space — nudge outward */
   const earthSample = out.find((s) => s.id === 'earth');
   const moonSample = out.find((s) => s.id === 'moon');
   if (earthSample && moonSample) {
@@ -158,10 +207,28 @@ export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boo
       const combined = addEqj(jupiterHelio, sv.x, sv.y, sv.z);
       const trueOffset = helioScenePosition(combined, mode).sub(jupiterScene);
       const len = trueOffset.length();
-      const boost = len < 0.01 ? 18 : len < 0.22 ? 10 : 4.2;
+      const boost = len < 0.01 ? 18 : len < 0.22 ? 9.5 : 4.0;
       const pos = jupiterScene.clone().add(trueOffset.multiplyScalar(boost));
       const distAu = helioEqjToThree(combined).length();
       out.push({ id, position: pos, helioDistanceAu: distAu });
+    }
+  }
+
+  const saturnScene = helioScene.get('saturn');
+  if (saturnScene) {
+    const sr = parentSceneRadius('saturn');
+    const tMs = date.getTime();
+    for (const m of SATURN_MOONS) {
+      const ang = (tMs / (m.periodDays * MS_DAY)) * Math.PI * 2 + m.phase0;
+      const r = sr * m.orbitMul;
+      const dx = Math.cos(ang) * r * Math.cos(m.incl);
+      const dy = Math.sin(ang) * r * 0.38;
+      const dz = Math.sin(ang) * r * Math.cos(m.incl);
+      out.push({
+        id: m.id,
+        position: saturnScene.clone().add(new THREE.Vector3(dx, dy, dz)),
+        helioDistanceAu: saturnHelioAu,
+      });
     }
   }
 
@@ -188,9 +255,13 @@ export function sampleSolarSystem(date: Date, mode: ScaleMode, includePluto: boo
 
 export function worldRadiusForBody(id: SolarBodyId): number {
   if (id === 'comet') return 0.016;
-  if (id === 'io' || id === 'europa' || id === 'ganymede' || id === 'callisto') {
-    const km = MOON_RADIUS_KM[id];
-    return 0.018 * Math.pow(km / 2_000, 0.38);
+  if (id in MOON_RADIUS_JUPITER_KM) {
+    const km = MOON_RADIUS_JUPITER_KM[id as keyof typeof MOON_RADIUS_JUPITER_KM];
+    return moonSceneRadius('jupiter', km);
+  }
+  if (id in MOON_RADIUS_SATURN_KM) {
+    const km = MOON_RADIUS_SATURN_KM[id as keyof typeof MOON_RADIUS_SATURN_KM];
+    return moonSceneRadius('saturn', km);
   }
   const km = MEAN_RADIUS_KM[id as keyof typeof MEAN_RADIUS_KM];
   return 0.028 * Math.pow(km / 6_371, 0.36);
@@ -213,6 +284,10 @@ export function bodyColor(id: SolarBodyId): number {
     case 'europa': return 0xa8c4dc;
     case 'ganymede': return 0x8f9fb0;
     case 'callisto': return 0x6a5a4f;
+    case 'titan': return 0xc9a050;
+    case 'rhea': return 0xb8b8c2;
+    case 'dione': return 0xdde4f0;
+    case 'iapetus': return 0x6a5c52;
     case 'comet': return 0xc8dce8;
     default: return 0x8899aa;
   }

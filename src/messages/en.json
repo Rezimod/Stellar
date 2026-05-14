@@ -845,7 +845,7 @@
       "placeholder": "Tap a planet, moon, or the Sun in the viewport.",
       "meanRadius": "Mean radius",
       "clear": "Clear selection",
-      "closeSheet": "Close details and return to full system view",
+      "closeSheet": "Close details — camera stays on this body; zoom out to pick another",
       "cometRadius": "~10 km nucleus (illustrative)"
     },
     "bodies": {
@@ -908,6 +908,22 @@
       "callisto": {
         "name": "Callisto",
         "blurb": "Heavily cratered ice-rock world — one of the oldest surfaces, a witness plate for outer-belt bombardment."
+      },
+      "titan": {
+        "name": "Titan",
+        "blurb": "Saturn's largest moon — thick nitrogen atmosphere, methane lakes, and a subsurface water ocean candidate."
+      },
+      "rhea": {
+        "name": "Rhea",
+        "blurb": "Mid-sized icy moon of Saturn — heavily cratered surface and a tenuous ring system detected in orbit."
+      },
+      "dione": {
+        "name": "Dione",
+        "blurb": "Icy companion of Saturn — bright wispy terrain alongside older cratered plains."
+      },
+      "iapetus": {
+        "name": "Iapetus",
+        "blurb": "Two-toned moon — extreme albedo contrast between leading and trailing hemispheres."
       },
       "comet": {
         "name": "Comet (artistic)",

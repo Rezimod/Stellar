@@ -24,6 +24,10 @@ const SIDEREAL_ROTATION_MS: Partial<Record<SolarBodyId, number>> = {
   europa: MS_DAY * 3.551181,
   ganymede: MS_DAY * 7.15455296,
   callisto: MS_DAY * 16.6890184,
+  titan: MS_DAY * 15.945,
+  rhea: MS_DAY * 4.518,
+  dione: MS_DAY * 2.737,
+  iapetus: MS_DAY * 79.3215,
   comet: MS_DAY * 1.8,
 };
 
