@@ -11,6 +11,10 @@ export default function PageTransition({ children }: { children: ReactNode }) {
 
     const onEnd = () => {
       el.style.willChange = 'auto';
+      // `transform` on this wrapper makes `position: fixed` descendants use this box as
+      // their containing block (not the viewport). Clear it after enter so e.g. solar
+      // system can truly cover the screen and receive correct hit targets.
+      el.style.transform = 'none';
     };
     el.addEventListener('animationend', onEnd, { once: true });
     return () => el.removeEventListener('animationend', onEnd);

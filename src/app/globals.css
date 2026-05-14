@@ -1225,4 +1225,8 @@ body[data-solar-immersive="1"] [data-stellar-chrome="starfield"] {
 body[data-solar-immersive="1"] #stellar-main {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+  /* Main is z-10 by default; nav/bottom nav are z-50. Lift the page subtree so the
+     fixed solar layer paints above global chrome. */
+  position: relative;
+  z-index: 100 !important;
 }
