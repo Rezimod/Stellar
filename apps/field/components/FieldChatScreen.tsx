@@ -10,14 +10,13 @@ import {
   Platform,
 } from 'react-native';
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
-import { startChat, type CompanionMode, type ResolvedMode } from '../lib/companion';
+import { startChat } from '../lib/companion';
 import type { Citation } from '../lib/rag';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
 
 type AssistantTurn = {
   role: 'assistant';
   content: string;
-  resolvedMode: ResolvedMode;
   citations: Citation[];
 };
 
@@ -36,11 +35,9 @@ export function FieldChatScreen() {
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState<{
     text: string;
-    resolvedMode: ResolvedMode;
     citations: Citation[];
   } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mode, setMode] = useState<CompanionMode>('field');
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -69,19 +66,19 @@ export function FieldChatScreen() {
     setTurns(newTurns);
 
     try {
-      const { stream, citations, mode: resolvedMode } = await startChat(message, history, mode);
-      setStreaming({ text: '', resolvedMode, citations });
+      const { stream, citations } = await startChat(message, history);
+      setStreaming({ text: '', citations });
 
       let acc = '';
       for await (const tok of stream) {
         acc += tok;
-        setStreaming({ text: acc, resolvedMode, citations });
+        setStreaming({ text: acc, citations });
         scrollRef.current?.scrollToEnd({ animated: false });
       }
 
       setTurns([
         ...newTurns,
-        { role: 'assistant', content: acc, resolvedMode, citations },
+        { role: 'assistant', content: acc, citations },
       ]);
       setStreaming(null);
     } catch (err: any) {
@@ -90,7 +87,6 @@ export function FieldChatScreen() {
         {
           role: 'assistant',
           content: `Error: ${err?.message ?? err}`,
-          resolvedMode: 'field',
           citations: [],
         },
       ]);
@@ -123,21 +119,8 @@ export function FieldChatScreen() {
           <View style={[styles.statusDot, statusDotColor(progress.phase)]} />
         </View>
         <Text style={styles.statusStrip}>
-          {statusLabel}  ·  LLAMA 3.2 1B  ·  TETHER QVAC
+          {statusLabel}  ·  LLAMA 3.2 1B  ·  TETHER QVAC  ·  ON-DEVICE ONLY
         </Text>
-        <View style={styles.modeRow}>
-          {(['auto', 'field', 'online'] as CompanionMode[]).map((m) => (
-            <TouchableOpacity
-              key={m}
-              onPress={() => setMode(m)}
-              style={[styles.modeChip, mode === m && styles.modeChipActive]}
-            >
-              <Text style={[styles.modeChipText, mode === m && styles.modeChipTextActive]}>
-                {m.toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
       </View>
 
       <ModelLoadingBanner progress={progress} />
@@ -175,10 +158,7 @@ export function FieldChatScreen() {
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{m.content}</Text>
               </View>
-              <AssistantFooter
-                resolvedMode={(m as AssistantTurn).resolvedMode}
-                citations={(m as AssistantTurn).citations}
-              />
+              <AssistantFooter citations={(m as AssistantTurn).citations} />
             </View>
           ),
         )}
@@ -188,7 +168,7 @@ export function FieldChatScreen() {
             <View style={[styles.bubble, styles.aiBubble]}>
               <Text style={styles.bubbleText}>{streaming.text || '…'}</Text>
             </View>
-            <AssistantFooter resolvedMode={streaming.resolvedMode} citations={streaming.citations} />
+            <AssistantFooter citations={streaming.citations} />
           </View>
         )}
       </ScrollView>
@@ -230,25 +210,12 @@ function statusDotColor(phase: LoadProgress['phase']) {
   }
 }
 
-function AssistantFooter({
-  resolvedMode,
-  citations,
-}: {
-  resolvedMode: ResolvedMode;
-  citations: Citation[];
-}) {
-  if (citations.length === 0 && resolvedMode === 'online') return null;
+function AssistantFooter({ citations }: { citations: Citation[] }) {
+  if (citations.length === 0) return null;
   return (
     <View style={styles.assistantFooter}>
-      <View
-        style={[
-          styles.modeBadge,
-          resolvedMode === 'field' ? styles.modeBadgeField : styles.modeBadgeOnline,
-        ]}
-      >
-        <Text style={styles.modeBadgeText}>
-          {resolvedMode === 'field' ? 'ON-DEVICE' : 'CLAUDE'}
-        </Text>
+      <View style={[styles.modeBadge, styles.modeBadgeField]}>
+        <Text style={styles.modeBadgeText}>QVAC</Text>
       </View>
       {citations.slice(0, 3).map((c) => (
         <View key={c.id} style={styles.citation}>
@@ -281,18 +248,6 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
-  modeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  modeChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: '#1A1F2E',
-    borderWidth: 1,
-    borderColor: '#252B3D',
-  },
-  modeChipActive: { backgroundColor: '#8B5CF6', borderColor: '#8B5CF6' },
-  modeChipText: { color: '#9CA3AF', fontSize: 11, letterSpacing: 1, fontWeight: '600' },
-  modeChipTextActive: { color: '#FFFFFF' },
   scroll: { flex: 1 },
   scrollContent: { padding: 16, gap: 10, paddingBottom: 32 },
   starterWrap: { gap: 14 },
@@ -327,7 +282,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   modeBadgeField: { backgroundColor: '#14B8A622', borderWidth: 1, borderColor: '#14B8A655' },
-  modeBadgeOnline: { backgroundColor: '#8B5CF622', borderWidth: 1, borderColor: '#8B5CF655' },
   modeBadgeText: {
     color: '#E5E7EB',
     fontSize: 9,

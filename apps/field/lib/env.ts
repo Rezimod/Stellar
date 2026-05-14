@@ -11,5 +11,4 @@ export const env = {
   privyClientId: readExtra('EXPO_PUBLIC_PRIVY_CLIENT_ID'),
   supabaseUrl: readExtra('EXPO_PUBLIC_SUPABASE_URL'),
   supabaseAnonKey: readExtra('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
-  webChatEndpoint: readExtra('EXPO_PUBLIC_WEB_CHAT_ENDPOINT') ?? 'https://stellarsky.vercel.app/api/chat',
 };

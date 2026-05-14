@@ -16,11 +16,11 @@ This is the Tether Frontier Hackathon side track entry. See [`../../docs/qvac-in
 apps/field/
 ├── App.tsx                    Entry point. Wraps in PrivyProvider, mounts FieldChatScreen.
 ├── components/
-│   ├── FieldChatScreen.tsx    Main UI: mode toggle, chat transcript, composer.
+│   ├── FieldChatScreen.tsx    Main UI: chat transcript, composer, model banner.
 │   └── ModelLoadingBanner.tsx Download/load progress banner.
 ├── lib/
 │   ├── qvac.ts                QVAC SDK wrapper — model loading, completion stream, embeddings.
-│   ├── companion.ts           Routes between online (Claude) and offline (QVAC) chat.
+│   ├── companion.ts           QVAC-only chat: RAG context + local Llama completion.
 │   ├── rag.ts                 On-device RAG retrieval over the astronomy corpus.
 │   ├── privy.tsx              Embedded Solana wallet via @privy-io/expo.
 │   ├── supabase.ts            Shared backend with the web app.
@@ -30,13 +30,9 @@ apps/field/
 └── app.json                   Expo config (mic permission, dark theme, bundle ids).
 ```
 
-## Three companion modes
+## Chat runtime
 
-The chat screen has a mode toggle:
-
-- **AUTO** — pings the network; uses Claude API when online, QVAC when offline.
-- **FIELD** — forces on-device QVAC even when online. Use this for the demo; also useful for privacy or when conserving signal.
-- **ONLINE** — always Claude API; falls back gracefully if no network.
+All replies are generated on-device with **@qvac/llm-llamacpp** after **@qvac/embed-llamacpp** hybrid RAG retrieval. There is no cloud LLM proxy from the Field app.
 
 ## Local setup
 
@@ -69,7 +65,6 @@ On first run, QVAC fetches **Llama 3.2 1B (Q4_0 quantized, ~700MB)**. Progress i
 | `EXPO_PUBLIC_PRIVY_CLIENT_ID` | Privy client ID | No (recommended for prod) |
 | `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL | For observation logging |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key | For observation logging |
-| `EXPO_PUBLIC_WEB_CHAT_ENDPOINT` | Stellar web's `/api/chat` | Defaults to prod URL |
 
 ## QVAC packages used (so judges can grep)
 
