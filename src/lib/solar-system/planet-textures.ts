@@ -56,7 +56,8 @@ export function createPlanetMaterial(
       id === 'earth' ? 0.68 :
       id === 'mars' ? 0.84 :
       id === 'mercury' ? 0.9 :
-      id === 'jupiter' || id === 'saturn' ? 0.78 :
+      id === 'saturn' ? 0.68 :
+      id === 'jupiter' ? 0.78 :
       id === 'uranus' || id === 'neptune' ? 0.62 :
       0.74;
     const metal =

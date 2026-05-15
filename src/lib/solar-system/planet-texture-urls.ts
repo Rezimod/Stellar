@@ -14,7 +14,8 @@ export const NASA_PLANET_TEXTURE_URL: Record<SolarBodyId, string> = {
   earth: '/solar-system/planets/earth.jpg',
   mars: '/solar-system/planets/mars.jpg',
   jupiter: '/solar-system/planets/jupiter.jpg',
-  saturn: '/solar-system/planets/saturn.jpg',
+  /** 2K Cassini-style globe (Solar System Scope texture set, NASA-derived). */
+  saturn: '/solar-system/planets/saturn-2k.jpg',
   uranus: '/solar-system/planets/uranus.jpg',
   neptune: '/solar-system/planets/neptune.jpg',
   pluto: '/solar-system/planets/pluto.jpg',

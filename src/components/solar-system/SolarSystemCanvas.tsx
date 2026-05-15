@@ -12,7 +12,14 @@ import {
 import { siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
-import { saturnRingTexture } from '@/lib/solar-system/saturn-rings';
+import {
+  applySaturnRingTexture,
+  createSaturnRingMaterial,
+  disposeSaturnRingMaterial,
+  disposeSaturnRingTexture,
+  getSaturnRingTexture,
+  loadSaturnRingTexture,
+} from '@/lib/solar-system/saturn-rings';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 
 export interface SolarSystemCanvasProps {
@@ -26,6 +33,10 @@ export interface SolarSystemCanvasProps {
 }
 
 function disposeMat(m: THREE.Material) {
+  if (m instanceof THREE.MeshStandardMaterial && m.map === getSaturnRingTexture()) {
+    disposeSaturnRingMaterial(m);
+    return;
+  }
   if (m instanceof THREE.MeshStandardMaterial) disposePlanetMaterial(m);
   else m.dispose();
 }
@@ -249,13 +260,21 @@ export function SolarSystemCanvas({
       );
     }
 
+    loadSaturnRingTexture(loader, maxAniso).then((ringTex) => {
+      if (textureLoadsCancelled) return;
+      const saturnMesh = meshById.get('saturn');
+      if (saturnMesh) applySaturnRingTexture(saturnMesh, ringTex);
+    }).catch(() => { /* rings stay transparent until retry on remount */ });
+
     const hitPickRadiusMul = 4.2;
 
     let lastFocus: SolarBodyId | null = null;
 
     const makeBodyMesh = (id: SolarBodyId): THREE.Mesh => {
       const r = worldRadiusForBody(id);
-      const segs = lite ? 64 : 96;
+      const segs =
+        id === 'saturn' ? (lite ? 80 : 128) :
+        lite ? 64 : 96;
       const geom = new THREE.SphereGeometry(r, segs, segs);
       const mat = createPlanetMaterial(id, lite, textureById.get(id) ?? null);
       const mesh = new THREE.Mesh(geom, mat);
@@ -336,32 +355,34 @@ export function SolarSystemCanvas({
             const tilt = THREE.MathUtils.degToRad(26.7);
             mesh.rotation.z = tilt;
 
-            const ringTex = saturnRingTexture();
-            const ringMat = new THREE.MeshStandardMaterial({
-              map: ringTex,
-              transparent: true,
-              opacity: 1,
-              side: THREE.DoubleSide,
-              depthWrite: false,
-              roughness: 0.88,
-              metalness: 0.06,
-              alphaTest: 0.02,
-            });
-            ringMat.transparent = true;
+            const ringSegs = lite ? 192 : 256;
+            const ringLoaded = getSaturnRingTexture();
+            const ringMat = ringLoaded
+              ? createSaturnRingMaterial(ringLoaded)
+              : new THREE.MeshStandardMaterial({
+                  transparent: true,
+                  opacity: 0,
+                  side: THREE.DoubleSide,
+                  depthWrite: false,
+                });
 
             const ringInner = new THREE.Mesh(
-              new THREE.RingGeometry(sr * 1.22, sr * 2.38, 192),
+              new THREE.RingGeometry(sr * 1.235, sr * 2.352, ringSegs),
               ringMat,
             );
             ringInner.name = 'saturnRing';
             ringInner.rotation.x = Math.PI / 2;
+            ringInner.renderOrder = 1;
             mesh.add(ringInner);
 
             const ringBack = ringInner.clone();
             ringBack.name = 'saturnRingBack';
-            ringBack.material = ringMat.clone();
+            ringBack.material = ringMat instanceof THREE.MeshStandardMaterial
+              ? ringMat.clone()
+              : ringMat;
             ringBack.rotation.x = Math.PI / 2;
             ringBack.rotation.y = Math.PI;
+            ringBack.renderOrder = 1;
             mesh.add(ringBack);
           }
         }
@@ -437,10 +458,10 @@ export function SolarSystemCanvas({
       const focus = focusRef.current;
       if (focus) {
         orbTheta += dx * 0.006;
-        orbPhi = THREE.MathUtils.clamp(orbPhi + dy * 0.005, 0.12, Math.PI - 0.08);
+        orbPhi = THREE.MathUtils.clamp(orbPhi - dy * 0.005, 0.12, Math.PI - 0.08);
       } else {
         sysTheta += dx * 0.0055;
-        sysPhi = THREE.MathUtils.clamp(sysPhi + dy * 0.0045, 0.18, Math.PI - 0.12);
+        sysPhi = THREE.MathUtils.clamp(sysPhi - dy * 0.0045, 0.18, Math.PI - 0.12);
       }
     };
 
@@ -511,10 +532,10 @@ export function SolarSystemCanvas({
       const focus = focusRef.current;
       if (focus) {
         orbTheta += dx * 0.0065;
-        orbPhi = THREE.MathUtils.clamp(orbPhi + dy * 0.0055, 0.12, Math.PI - 0.08);
+        orbPhi = THREE.MathUtils.clamp(orbPhi - dy * 0.0055, 0.12, Math.PI - 0.08);
       } else {
         sysTheta += dx * 0.0065;
-        sysPhi = THREE.MathUtils.clamp(sysPhi + dy * 0.005, 0.18, Math.PI - 0.12);
+        sysPhi = THREE.MathUtils.clamp(sysPhi - dy * 0.005, 0.18, Math.PI - 0.12);
       }
       e.preventDefault();
     };
@@ -560,12 +581,6 @@ export function SolarSystemCanvas({
         meshById.forEach((mesh, id) => {
           mesh.rotation.y = siderealSpinY(id, epochRef.current);
         });
-        const saturnMesh = meshById.get('saturn');
-        if (saturnMesh) {
-          const t = epochRef.current * 0.000095;
-          const ring = saturnMesh.getObjectByName('saturnRing');
-          if (ring instanceof THREE.Mesh) ring.rotation.z = t * 0.85;
-        }
       }
 
       const sunMesh = meshById.get('sun');
@@ -600,6 +615,7 @@ export function SolarSystemCanvas({
       textureLoadsCancelled = true;
       textureById.forEach((tex) => tex.dispose());
       textureById.clear();
+      disposeSaturnRingTexture();
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));
       meshById.clear();
