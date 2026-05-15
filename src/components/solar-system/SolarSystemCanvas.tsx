@@ -12,7 +12,8 @@ import {
 import { siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
-import { saturnRingTexture, softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import { saturnRingTexture } from '@/lib/solar-system/saturn-rings';
+import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 
 export interface SolarSystemCanvasProps {
   epochMs: number;
@@ -332,23 +333,36 @@ export function SolarSystemCanvas({
 
           if (s.id === 'saturn') {
             const sr = worldRadiusForBody('saturn');
-            const ringTex = saturnRingTexture();
             const tilt = THREE.MathUtils.degToRad(26.7);
-            const ring = new THREE.Mesh(
-              new THREE.RingGeometry(sr * 1.32, sr * 2.28, 128),
-              new THREE.MeshBasicMaterial({
-                map: ringTex,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.92,
-                depthWrite: false,
-                alphaTest: 0.03,
-              }),
+            mesh.rotation.z = tilt;
+
+            const ringTex = saturnRingTexture();
+            const ringMat = new THREE.MeshStandardMaterial({
+              map: ringTex,
+              transparent: true,
+              opacity: 1,
+              side: THREE.DoubleSide,
+              depthWrite: false,
+              roughness: 0.88,
+              metalness: 0.06,
+              alphaTest: 0.02,
+            });
+            ringMat.transparent = true;
+
+            const ringInner = new THREE.Mesh(
+              new THREE.RingGeometry(sr * 1.22, sr * 2.38, 192),
+              ringMat,
             );
-            ring.name = 'saturnRing';
-            ring.rotation.x = Math.PI / 2;
-            ring.rotation.z = tilt;
-            mesh.add(ring);
+            ringInner.name = 'saturnRing';
+            ringInner.rotation.x = Math.PI / 2;
+            mesh.add(ringInner);
+
+            const ringBack = ringInner.clone();
+            ringBack.name = 'saturnRingBack';
+            ringBack.material = ringMat.clone();
+            ringBack.rotation.x = Math.PI / 2;
+            ringBack.rotation.y = Math.PI;
+            mesh.add(ringBack);
           }
         }
         mesh.position.copy(s.position);
@@ -422,11 +436,11 @@ export function SolarSystemCanvas({
       ly = e.clientY;
       const focus = focusRef.current;
       if (focus) {
-        orbTheta -= dx * 0.006;
-        orbPhi = THREE.MathUtils.clamp(orbPhi - dy * 0.005, 0.12, Math.PI - 0.08);
+        orbTheta += dx * 0.006;
+        orbPhi = THREE.MathUtils.clamp(orbPhi + dy * 0.005, 0.12, Math.PI - 0.08);
       } else {
-        sysTheta -= dx * 0.0055;
-        sysPhi = THREE.MathUtils.clamp(sysPhi - dy * 0.0045, 0.18, Math.PI - 0.12);
+        sysTheta += dx * 0.0055;
+        sysPhi = THREE.MathUtils.clamp(sysPhi + dy * 0.0045, 0.18, Math.PI - 0.12);
       }
     };
 
@@ -496,11 +510,11 @@ export function SolarSystemCanvas({
       ly = t.clientY;
       const focus = focusRef.current;
       if (focus) {
-        orbTheta -= dx * 0.0065;
-        orbPhi = THREE.MathUtils.clamp(orbPhi - dy * 0.0055, 0.12, Math.PI - 0.08);
+        orbTheta += dx * 0.0065;
+        orbPhi = THREE.MathUtils.clamp(orbPhi + dy * 0.0055, 0.12, Math.PI - 0.08);
       } else {
-        sysTheta -= dx * 0.0065;
-        sysPhi = THREE.MathUtils.clamp(sysPhi - dy * 0.005, 0.18, Math.PI - 0.12);
+        sysTheta += dx * 0.0065;
+        sysPhi = THREE.MathUtils.clamp(sysPhi + dy * 0.005, 0.18, Math.PI - 0.12);
       }
       e.preventDefault();
     };
@@ -550,8 +564,7 @@ export function SolarSystemCanvas({
         if (saturnMesh) {
           const t = epochRef.current * 0.000095;
           const ring = saturnMesh.getObjectByName('saturnRing');
-          const baseZ = THREE.MathUtils.degToRad(26.7);
-          if (ring instanceof THREE.Mesh) ring.rotation.z = baseZ + t * 0.85;
+          if (ring instanceof THREE.Mesh) ring.rotation.z = t * 0.85;
         }
       }
 
