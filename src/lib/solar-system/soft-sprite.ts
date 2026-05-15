@@ -23,6 +23,7 @@ export function softSpriteTexture(): THREE.CanvasTexture {
   return cached;
 }
 
+/** Matches `SaturnRingsSvg` in PlanetIcon — gold band + inner shadow. */
 export function saturnRingTexture(): THREE.CanvasTexture {
   const w = 512;
   const h = 128;
@@ -32,27 +33,24 @@ export function saturnRingTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.clearRect(0, 0, w, h);
-    const bands = [
-      { y0: 0, y1: 18, a: 0.05, c: '#8a7a68' },
-      { y0: 18, y1: 32, a: 0.35, c: '#c4b090' },
-      { y0: 32, y1: 48, a: 0.55, c: '#e8dcc4' },
-      { y0: 48, y1: 62, a: 0.42, c: '#d8c8a8' },
-      { y0: 62, y1: 78, a: 0.28, c: '#a89878' },
-      { y0: 78, y1: 96, a: 0.18, c: '#908070' },
-      { y0: 96, y1: h, a: 0.08, c: '#706050' },
-    ];
-    for (const b of bands) {
-      ctx.fillStyle = b.c;
-      ctx.globalAlpha = b.a;
-      ctx.fillRect(0, b.y0, w, b.y1 - b.y0);
-    }
-    ctx.globalAlpha = 0.12;
-    for (let x = 0; x < w; x += 6) {
-      const n = 0.85 + Math.sin(x * 0.08) * 0.15;
-      ctx.fillStyle = `rgba(255,248,235,${n})`;
-      ctx.fillRect(x, 28, 3, 44);
-    }
-    ctx.globalAlpha = 1;
+    const cx = w / 2;
+    const cy = h / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(1, 0.35);
+    ctx.strokeStyle = '#f3e2a5';
+    ctx.lineWidth = 28;
+    ctx.globalAlpha = 0.72;
+    ctx.beginPath();
+    ctx.arc(0, 0, w * 0.38, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#695022';
+    ctx.lineWidth = 6;
+    ctx.globalAlpha = 0.24;
+    ctx.beginPath();
+    ctx.arc(0, 0, w * 0.31, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   }
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;

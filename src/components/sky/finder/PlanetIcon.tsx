@@ -1,6 +1,7 @@
 'use client';
 
 import { type CSSProperties, useId } from 'react';
+import { PLANET_PALETTES as SOLAR_PALETTES, type PlanetPalette } from '@/lib/solar-system/planet-palettes';
 
 type PlanetId =
   | 'sun'
@@ -38,23 +39,16 @@ export interface PlanetIconProps {
 
 const PLANET_IDS = new Set<PlanetId>(['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
 
-interface PlanetPalette {
-  light: string;
-  mid: string;
-  dark: string;
-  rim: string;
-}
-
 const PLANET_PALETTES: Record<PlanetId, PlanetPalette> = {
-  sun:     { light: '#fffbe1', mid: '#ffbf54', dark: '#ff7b1a', rim: '#7a3108' },
-  moon:    { light: '#f8f4ec', mid: '#cbc4b6', dark: '#676259', rim: '#2d3036' },
-  mercury: { light: '#e2dccd', mid: '#a89e88', dark: '#57503d', rim: '#292621' },
-  venus:   { light: '#fff2cd', mid: '#e1c272', dark: '#7f6124', rim: '#4a3312' },
-  mars:    { light: '#ee936d', mid: '#cf6038', dark: '#5a230f', rim: '#341208' },
-  jupiter: { light: '#faecc4', mid: '#d4a574', dark: '#52311b', rim: '#302014' },
-  saturn:  { light: '#f3e2a5', mid: '#c79a45', dark: '#695022', rim: '#362714' },
-  uranus:  { light: '#c9f0ea', mid: '#76c5cf', dark: '#2b6170', rim: '#123643' },
-  neptune: { light: '#89b9f0', mid: '#3d75c4', dark: '#18325e', rim: '#10203d' },
+  sun: SOLAR_PALETTES.sun,
+  moon: { light: '#f8f4ec', mid: '#cbc4b6', dark: '#676259', rim: '#2d3036' },
+  mercury: SOLAR_PALETTES.mercury,
+  venus: SOLAR_PALETTES.venus,
+  mars: SOLAR_PALETTES.mars,
+  jupiter: SOLAR_PALETTES.jupiter,
+  saturn: SOLAR_PALETTES.saturn,
+  uranus: SOLAR_PALETTES.uranus,
+  neptune: SOLAR_PALETTES.neptune,
 };
 
 const GLOW_FILTERS: Record<PlanetId, string> = {
