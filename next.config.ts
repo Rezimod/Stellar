@@ -10,18 +10,10 @@ const nextConfig: NextConfig = {
     // `uncaughtException TypeError: Cannot read properties of undefined (reading 'length')`
     // during "Creating an optimized production build" while this was enabled.
     reactCompiler: false,
-    optimizePackageImports: [
-      'lucide-react',
-      '@privy-io/react-auth',
-      '@solana/wallet-adapter-react',
-      '@solana/wallet-adapter-react-ui',
-      '@solana/wallet-adapter-base',
-      '@metaplex-foundation/mpl-bubblegum',
-      '@metaplex-foundation/umi',
-      '@metaplex-foundation/umi-bundle-defaults',
-      '@solana/spl-token',
-    ],
+    // Privy/Solana barrel optimization can crash Vercel webpack (undefined `.length`).
+    optimizePackageImports: ['lucide-react'],
   },
+  serverExternalPackages: ['three', 'astronomy-engine'],
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -44,6 +36,9 @@ const nextConfig: NextConfig = {
       ...(config.resolve.alias ?? {}),
       '@farcaster/mini-app-solana': false,
     };
+    if (process.env.VERCEL) {
+      config.cache = false;
+    }
     return config;
   },
   async headers() {
