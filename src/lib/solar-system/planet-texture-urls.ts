@@ -1,19 +1,23 @@
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
 
 /**
- * NASA-style equirectangular maps (same assets as homepage hero / mission art).
- * Prefer `public/hero/planets` — higher resolution than `public/images/planets`.
+ * Equirectangular planet maps for the 3D solar system.
+ * Sources: NASA 3D Resources (GitHub), NASA SVS Blue Marble, NASA/Caltech JPL maps,
+ * and mission-based hero assets under `public/hero/planets`.
+ *
+ * @see public/solar-system/CREDITS.md
  */
-export const HERO_PLANET_TEXTURE_URL: Record<Exclude<SolarBodyId, 'pluto'>, string> = {
-  sun: '/hero/planets/sun.jpg',
-  mercury: '/hero/planets/mercury.jpg',
-  venus: '/hero/planets/venus.jpg',
-  earth: '/hero/planets/earth.jpg',
-  mars: '/hero/planets/mars.jpg',
-  jupiter: '/hero/planets/jupiter.jpg',
-  saturn: '/hero/planets/saturn.jpg',
-  uranus: '/hero/planets/uranus.jpg',
-  neptune: '/hero/planets/neptune.jpg',
+export const NASA_PLANET_TEXTURE_URL: Record<SolarBodyId, string> = {
+  sun: '/solar-system/planets/sun.jpg',
+  mercury: '/solar-system/planets/mercury.jpg',
+  venus: '/solar-system/planets/venus.jpg',
+  earth: '/solar-system/planets/earth.jpg',
+  mars: '/solar-system/planets/mars.jpg',
+  jupiter: '/solar-system/planets/jupiter.jpg',
+  saturn: '/solar-system/planets/saturn.jpg',
+  uranus: '/solar-system/planets/uranus.jpg',
+  neptune: '/solar-system/planets/neptune.jpg',
+  pluto: '/solar-system/planets/pluto.jpg',
 };
 
-export const HERO_TEXTURE_IDS = Object.keys(HERO_PLANET_TEXTURE_URL) as Exclude<SolarBodyId, 'pluto'>[];
+export const NASA_TEXTURE_IDS = Object.keys(NASA_PLANET_TEXTURE_URL) as SolarBodyId[];

@@ -10,8 +10,8 @@ import {
   type SolarBodyId,
 } from '@/lib/solar-system/ephemeris';
 import { siderealSpinY } from '@/lib/solar-system/planet-spin';
+import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
-import { disposeSvgStyleTextures, getSvgStylePlanetTexture } from '@/lib/solar-system/planet-svg-textures';
 import { saturnRingTexture, softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 
 export interface SolarSystemCanvasProps {
@@ -203,12 +203,49 @@ export function SolarSystemCanvas({
     const meshById = new Map<SolarBodyId, THREE.Mesh>();
     const hitById = new Map<SolarBodyId, THREE.Mesh>();
 
-    const allBodyIds: SolarBodyId[] = [
-      'sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto',
-    ];
-    const svgTextureById = new Map<SolarBodyId, THREE.Texture>();
-    for (const id of allBodyIds) {
-      svgTextureById.set(id, getSvgStylePlanetTexture(id));
+    const textureById = new Map<SolarBodyId, THREE.Texture>();
+    let textureLoadsCancelled = false;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+    const applyLoadedTexture = (id: SolarBodyId, tex: THREE.Texture) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = Math.min(16, maxAniso);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      textureById.set(id, tex);
+      const mesh = meshById.get(id);
+      if (mesh) {
+        disposeMat(mesh.material as THREE.Material);
+        mesh.material = createPlanetMaterial(id, lite, tex);
+      }
+    };
+
+    for (const id of NASA_TEXTURE_IDS) {
+      const url = NASA_PLANET_TEXTURE_URL[id];
+      loader.load(
+        url,
+        (tex) => {
+          if (textureLoadsCancelled) {
+            tex.dispose();
+            return;
+          }
+          applyLoadedTexture(id, tex);
+        },
+        undefined,
+        () => {
+          if (textureLoadsCancelled) return;
+          const mesh = meshById.get(id);
+          if (mesh) {
+            disposeMat(mesh.material as THREE.Material);
+            mesh.material = createPlanetMaterial(id, lite, null);
+          }
+        },
+      );
     }
 
     const hitPickRadiusMul = 4.2;
@@ -219,7 +256,7 @@ export function SolarSystemCanvas({
       const r = worldRadiusForBody(id);
       const segs = lite ? 64 : 96;
       const geom = new THREE.SphereGeometry(r, segs, segs);
-      const mat = createPlanetMaterial(id, lite, svgTextureById.get(id) ?? null);
+      const mat = createPlanetMaterial(id, lite, textureById.get(id) ?? null);
       const mesh = new THREE.Mesh(geom, mat);
       mesh.userData.bodyId = id;
       return mesh;
@@ -547,7 +584,9 @@ export function SolarSystemCanvas({
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
 
-      disposeSvgStyleTextures();
+      textureLoadsCancelled = true;
+      textureById.forEach((tex) => tex.dispose());
+      textureById.clear();
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));
       meshById.clear();
