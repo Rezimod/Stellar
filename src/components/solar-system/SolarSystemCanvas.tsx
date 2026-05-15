@@ -12,6 +12,7 @@ import {
 import { HERO_PLANET_TEXTURE_URL, HERO_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
+import { saturnRingTexture, softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 
 export interface SolarSystemCanvasProps {
   epochMs: number;
@@ -95,7 +96,7 @@ export function SolarSystemCanvas({
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.06;
+    renderer.toneMappingExposure = 1.12;
     renderer.setClearColor(0x03060d, 1);
     mount.appendChild(renderer.domElement);
     renderer.domElement.style.display = 'block';
@@ -148,13 +149,18 @@ export function SolarSystemCanvas({
 
     updateSystemCamera();
 
-    scene.add(new THREE.AmbientLight(0x1a2240, 0.32));
-    const key = new THREE.DirectionalLight(0xfff0dd, 1.2);
+    scene.add(new THREE.AmbientLight(0x1a2240, 0.38));
+    const key = new THREE.DirectionalLight(0xfff0dd, 0.55);
     key.position.set(12, 8, 18);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.2);
+    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.15);
     fill.position.set(-18, -6, -10);
     scene.add(fill);
+    const sunLight = new THREE.PointLight(0xfff4e0, 2.8, 220, 1.4);
+    sunLight.name = 'sunLight';
+    scene.add(sunLight);
+
+    const starSprite = softSpriteTexture();
 
     const STAR_N = lite ? 1200 : 4800;
     const starPos = new Float32Array(STAR_N * 3);
@@ -179,12 +185,14 @@ export function SolarSystemCanvas({
     const stars = new THREE.Points(
       starGeo,
       new THREE.PointsMaterial({
-        size: lite ? 0.055 : 0.04,
+        map: starSprite,
+        size: lite ? 0.14 : 0.11,
         vertexColors: true,
         transparent: true,
-        opacity: 0.92,
+        opacity: 0.88,
         depthWrite: false,
         sizeAttenuation: true,
+        alphaTest: 0.02,
       }),
     );
     scene.add(stars);
@@ -197,6 +205,7 @@ export function SolarSystemCanvas({
     const textureById = new Map<SolarBodyId, THREE.Texture>();
     let textureLoadsCancelled = false;
     const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
     for (const id of HERO_TEXTURE_IDS) {
       const url = HERO_PLANET_TEXTURE_URL[id];
@@ -289,82 +298,46 @@ export function SolarSystemCanvas({
 
           if (s.id === 'sun') {
             const sunR = worldRadiusForBody('sun');
-            const Nburst = lite ? 56 : 112;
-            const pos = new Float32Array(Nburst * 3);
-            const cdata = new Float32Array(Nburst * 3);
-            for (let i = 0; i < Nburst; i++) {
-              const phi = Math.random() * Math.PI * 2;
-              const ct = Math.cos(phi);
-              const st = Math.sin(phi);
-              const lat = (Math.random() - 0.5) * 1.55;
-              const cl = Math.cos(lat * 0.88);
-              const sl = Math.sin(lat * 0.88);
-              const rr = sunR * (1.04 + Math.random() * 0.52);
-              pos[i * 3] = rr * cl * ct;
-              pos[i * 3 + 1] = rr * sl;
-              pos[i * 3 + 2] = rr * cl * st;
-              const f = 0.55 + Math.random() * 0.45;
-              cdata[i * 3] = 1;
-              cdata[i * 3 + 1] = 0.75 + f * 0.22;
-              cdata[i * 3 + 2] = 0.35 + Math.random() * 0.35;
+            const glowLayers = [
+              { scale: 1.18, opacity: 0.16, color: 0xffe8a8 },
+              { scale: 1.42, opacity: 0.08, color: 0xffb84a },
+              { scale: 1.72, opacity: 0.035, color: 0xff9020 },
+            ];
+            for (const layer of glowLayers) {
+              const shell = new THREE.Mesh(
+                new THREE.SphereGeometry(sunR * layer.scale, 32, 32),
+                new THREE.MeshBasicMaterial({
+                  color: layer.color,
+                  transparent: true,
+                  opacity: layer.opacity,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending,
+                }),
+              );
+              shell.name = 'sunGlow';
+              mesh.add(shell);
             }
-            const bgeo = new THREE.BufferGeometry();
-            bgeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            bgeo.setAttribute('color', new THREE.BufferAttribute(cdata, 3));
-            const bmat = new THREE.PointsMaterial({
-              size: lite ? 0.16 : 0.12,
-              vertexColors: true,
-              transparent: true,
-              opacity: 0.42,
-              depthWrite: false,
-              blending: THREE.AdditiveBlending,
-              sizeAttenuation: true,
-            });
-            const bursts = new THREE.Points(bgeo, bmat);
-            bursts.name = 'sunBursts';
-            mesh.add(bursts);
           }
 
           if (s.id === 'saturn') {
             const sr = worldRadiusForBody('saturn');
+            const ringTex = saturnRingTexture();
+            const tilt = THREE.MathUtils.degToRad(26.7);
             const ring = new THREE.Mesh(
-              new THREE.RingGeometry(sr * 1.25, sr * 2.15, 96),
+              new THREE.RingGeometry(sr * 1.32, sr * 2.28, 128),
               new THREE.MeshBasicMaterial({
-                color: 0xc8b896,
+                map: ringTex,
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.52,
+                opacity: 0.92,
                 depthWrite: false,
+                alphaTest: 0.03,
               }),
             );
             ring.name = 'saturnRing';
             ring.rotation.x = Math.PI / 2;
-            ring.rotation.z = THREE.MathUtils.degToRad(26.7);
-            const iceN = lite ? 900 : 3200;
-            const icePos = new Float32Array(iceN * 3);
-            for (let i = 0; i < iceN; i++) {
-              const a = Math.random() * Math.PI * 2;
-              const rad = sr * (1.24 + Math.random() * 0.98);
-              const z = (Math.random() - 0.5) * sr * 0.08;
-              icePos[i * 3] = rad * Math.cos(a);
-              icePos[i * 3 + 1] = z;
-              icePos[i * 3 + 2] = rad * Math.sin(a);
-            }
-            const iceGeo = new THREE.BufferGeometry();
-            iceGeo.setAttribute('position', new THREE.BufferAttribute(icePos, 3));
-            const iceMat = new THREE.PointsMaterial({
-              color: 0xe8f4ff,
-              size: lite ? 0.045 : 0.032,
-              transparent: true,
-              opacity: 0.62,
-              depthWrite: false,
-              sizeAttenuation: true,
-            });
-            const saturnIce = new THREE.Points(iceGeo, iceMat);
-            saturnIce.name = 'saturnIce';
-            saturnIce.rotation.x = Math.PI / 2;
-            saturnIce.rotation.z = THREE.MathUtils.degToRad(26.7);
-            mesh.add(ring, saturnIce);
+            ring.rotation.z = tilt;
+            mesh.add(ring);
           }
         }
         mesh.position.copy(s.position);
@@ -566,21 +539,13 @@ export function SolarSystemCanvas({
         if (saturnMesh) {
           const t = epochRef.current * 0.000095;
           const ring = saturnMesh.getObjectByName('saturnRing');
-          const ice = saturnMesh.getObjectByName('saturnIce');
           const baseZ = THREE.MathUtils.degToRad(26.7);
-          if (ring instanceof THREE.Mesh) ring.rotation.z = baseZ + t * 1.25;
-          if (ice instanceof THREE.Points) ice.rotation.z = baseZ + t * 1.72;
-        }
-        const sunMesh = meshById.get('sun');
-        if (sunMesh) {
-          const bursts = sunMesh.getObjectByName('sunBursts');
-          if (bursts instanceof THREE.Points) {
-            bursts.rotation.y += 0.00055;
-            const bm = bursts.material as THREE.PointsMaterial;
-            bm.opacity = 0.32 + Math.abs(Math.sin(epochRef.current * 0.0018)) * 0.28;
-          }
+          if (ring instanceof THREE.Mesh) ring.rotation.z = baseZ + t * 0.85;
         }
       }
+
+      const sunMesh = meshById.get('sun');
+      if (sunMesh) sunLight.position.copy(sunMesh.position);
 
       const focus = focusRef.current;
       if (focus && meshById.has(focus)) {

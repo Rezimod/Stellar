@@ -45,22 +45,25 @@ export function createPlanetMaterial(
     if (id === 'sun') {
       return new THREE.MeshStandardMaterial({
         map: diffuseTexture,
-        emissive: new THREE.Color(0xf6c15c),
+        emissive: new THREE.Color(0xfff0cc),
         emissiveMap: diffuseTexture,
-        emissiveIntensity: lite ? 1.02 : 1.25,
-        roughness: 0.9,
+        emissiveIntensity: lite ? 1.15 : 1.35,
+        roughness: 0.92,
         metalness: 0,
       });
     }
     const rough =
-      id === 'earth' ? 0.7 :
-      id === 'mars' ? 0.86 :
-      id === 'jupiter' || id === 'saturn' ? 0.8 :
-      0.76;
+      id === 'earth' ? 0.68 :
+      id === 'mars' ? 0.84 :
+      id === 'mercury' ? 0.9 :
+      id === 'jupiter' || id === 'saturn' ? 0.78 :
+      id === 'uranus' || id === 'neptune' ? 0.62 :
+      0.74;
     const metal =
-      id === 'earth' ? 0.07 :
-      id === 'jupiter' || id === 'saturn' ? 0.045 :
-      0.03;
+      id === 'earth' ? 0.06 :
+      id === 'jupiter' || id === 'saturn' ? 0.04 :
+      id === 'uranus' || id === 'neptune' ? 0.05 :
+      0.02;
     return new THREE.MeshStandardMaterial({
       map: diffuseTexture,
       roughness: rough,
