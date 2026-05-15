@@ -227,54 +227,7 @@ export function SolarSystemCanvas({
       );
     }
 
-    const LEO_PERIOD_MS = 92.68 * 60 * 1000;
-
-    const earthDecor = new THREE.Group();
-    earthDecor.name = 'earthDecor';
-    bodies.add(earthDecor);
-
-    let issSprite: THREE.Sprite | null = null;
-    loader.load(
-      '/satellites/iss-nasa.jpg',
-      (tex) => {
-        if (textureLoadsCancelled) {
-          tex.dispose();
-          return;
-        }
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = Math.min(8, maxAniso);
-        const mat = new THREE.SpriteMaterial({
-          map: tex,
-          transparent: true,
-          opacity: 0.96,
-          depthTest: true,
-          depthWrite: false,
-        });
-        const spr = new THREE.Sprite(mat);
-        spr.name = 'issSprite';
-        issSprite = spr;
-        earthDecor.add(spr);
-      },
-      undefined,
-      () => {},
-    );
-
-    const hitPickRadiusMul = (id: SolarBodyId): number => {
-      switch (id) {
-        case 'io':
-        case 'europa':
-        case 'dione':
-        case 'rhea':
-          return 8.8;
-        case 'ganymede':
-        case 'callisto':
-        case 'titan':
-        case 'iapetus':
-          return 6.4;
-        default:
-          return 4.2;
-      }
-    };
+    const hitPickRadiusMul = 4.2;
 
     let lastFocus: SolarBodyId | null = null;
 
@@ -322,7 +275,7 @@ export function SolarSystemCanvas({
           meshById.set(s.id, mesh);
           bodies.add(mesh);
 
-          const hRad = Math.max(worldRadiusForBody(s.id) * hitPickRadiusMul(s.id), 0.22);
+          const hRad = Math.max(worldRadiusForBody(s.id) * hitPickRadiusMul, 0.22);
           const hGeom = new THREE.SphereGeometry(hRad, 20, 20);
           const hMat = new THREE.MeshBasicMaterial({
             transparent: true,
@@ -629,26 +582,6 @@ export function SolarSystemCanvas({
         }
       }
 
-      const earthMesh = meshById.get('earth');
-      if (earthMesh) {
-        earthDecor.position.copy(earthMesh.position);
-        if (issSprite) {
-          const re = worldRadiusForBody('earth');
-          issSprite.scale.setScalar(re * 0.78);
-          if (!reduceMotion) {
-            const phase = (epochRef.current / LEO_PERIOD_MS) * Math.PI * 2;
-            const rad = re * 2.42;
-            issSprite.position.set(
-              Math.cos(phase) * rad,
-              Math.sin(phase) * 0.11 * rad + Math.sin(phase * 2.1) * re * 0.04,
-              Math.sin(phase) * rad,
-            );
-          }
-        }
-      } else {
-        earthDecor.position.set(0, -9999, 0);
-      }
-
       const focus = focusRef.current;
       if (focus && meshById.has(focus)) {
         vTarget.copy(meshById.get(focus)!.position);
@@ -676,14 +609,6 @@ export function SolarSystemCanvas({
       el.removeEventListener('touchend', onTouchEnd);
 
       textureLoadsCancelled = true;
-
-      bodies.remove(earthDecor);
-      if (issSprite) {
-        const sm = issSprite.material as THREE.SpriteMaterial;
-        sm.map?.dispose();
-        sm.dispose();
-        issSprite = null;
-      }
 
       textureById.clear();
 

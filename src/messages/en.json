@@ -787,7 +787,7 @@
     "planetTracker": "Planet Tracker",
     "planetTrackerSub": "Mercury to Saturn + Moon",
     "solarSystem3d": "3D Solar system",
-    "solarSystem3dSub": "Live orbits, time control, Galilean moons",
+    "solarSystem3dSub": "Live orbits, time control, realistic planets",
     "astraAi": "ASTRA AI",
     "astraAiSub": "Chat with your AI astronomer",
     "astroGuide": "Astronomy Guide",
@@ -842,11 +842,10 @@
     },
     "detail": {
       "title": "Selected body",
-      "placeholder": "Tap a planet, moon, or the Sun in the viewport.",
+      "placeholder": "Tap a planet or the Sun in the viewport.",
       "meanRadius": "Mean radius",
       "clear": "Clear selection",
-      "closeSheet": "Close details — camera stays on this body; zoom out to pick another",
-      "cometRadius": "~10 km nucleus (illustrative)"
+      "closeSheet": "Close details — camera stays on this body; zoom out to pick another"
     },
     "bodies": {
       "sun": {
@@ -864,10 +863,6 @@
       "earth": {
         "name": "Earth",
         "blurb": "Only known habitable surface — liquid water, active geology, protective magnetic field."
-      },
-      "moon": {
-        "name": "Moon",
-        "blurb": "Earth's companion — tidally locked, drives ocean tides, preserves a fossil record of the early Solar System."
       },
       "mars": {
         "name": "Mars",
@@ -892,42 +887,6 @@
       "pluto": {
         "name": "Pluto",
         "blurb": "Kuiper Belt dwarf with a binary companion (Charon) — representative of the third zone of the Solar System."
-      },
-      "io": {
-        "name": "Io",
-        "blurb": "Jupiter's volcanically tortured moon — tidal heating powers hundreds of active silicate eruptions."
-      },
-      "europa": {
-        "name": "Europa",
-        "blurb": "Icy shell over a probable briny ocean — a prime target in the search for habitable environments."
-      },
-      "ganymede": {
-        "name": "Ganymede",
-        "blurb": "Largest moon in the Solar System — generates its own weak magnetic field inside a layered interior."
-      },
-      "callisto": {
-        "name": "Callisto",
-        "blurb": "Heavily cratered ice-rock world — one of the oldest surfaces, a witness plate for outer-belt bombardment."
-      },
-      "titan": {
-        "name": "Titan",
-        "blurb": "Saturn's largest moon — thick nitrogen atmosphere, methane lakes, and a subsurface water ocean candidate."
-      },
-      "rhea": {
-        "name": "Rhea",
-        "blurb": "Mid-sized icy moon of Saturn — heavily cratered surface and a tenuous ring system detected in orbit."
-      },
-      "dione": {
-        "name": "Dione",
-        "blurb": "Icy companion of Saturn — bright wispy terrain alongside older cratered plains."
-      },
-      "iapetus": {
-        "name": "Iapetus",
-        "blurb": "Two-toned moon — extreme albedo contrast between leading and trailing hemispheres."
-      },
-      "comet": {
-        "name": "Comet (artistic)",
-        "blurb": "Highly elongated orbit for visual drama — not tied to a specific comet ephemeris; tap to follow in low-orbit camera."
       }
     }
   },
