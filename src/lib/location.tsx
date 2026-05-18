@@ -1,6 +1,27 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import {
+  DEFAULT_OBSERVER,
+  GEO_FRESH,
+  GEO_RELAXED,
+  dispatchLocationUpdated,
+  isLocationStale,
+  movedSignificantly,
+  parseStoredLocation,
+  persistObserverLocation,
+  readGpsPosition,
+  reverseGeocode,
+  type StoredObserverLocation,
+} from '@/lib/observer-location'
 
 export type Region = 'caucasus' | 'north_america' | 'europe' | 'asia' | 'south_america' | 'global'
 
@@ -11,18 +32,18 @@ export interface UserLocation {
   lat: number
   lon: number
   source: 'gps' | 'manual' | 'default'
+  /** Epoch ms when this fix was written. */
+  updatedAt?: number
+  /** Horizontal accuracy from Geolocation API, metres. */
+  accuracyM?: number
 }
 
 const COUNTRY_TO_REGION: Record<string, Region> = {
-  // Caucasus + Middle East
   GE: 'caucasus', AM: 'caucasus', AZ: 'caucasus', TR: 'caucasus',
   IL: 'caucasus', JO: 'caucasus', LB: 'caucasus', IQ: 'caucasus',
-  // North America
   US: 'north_america', CA: 'north_america', MX: 'north_america',
-  // South America
   BR: 'south_america', AR: 'south_america', CL: 'south_america',
   CO: 'south_america', PE: 'south_america', VE: 'south_america',
-  // Europe
   DE: 'europe', AT: 'europe', CH: 'europe', FR: 'europe',
   IT: 'europe', NL: 'europe', BE: 'europe', PL: 'europe',
   ES: 'europe', PT: 'europe', SE: 'europe', NO: 'europe',
@@ -31,13 +52,11 @@ const COUNTRY_TO_REGION: Record<string, Region> = {
   SK: 'europe', SI: 'europe', IE: 'europe', GB: 'europe',
   UK: 'europe', UA: 'europe', RS: 'europe', LT: 'europe',
   LV: 'europe', EE: 'europe',
-  // Asia
   JP: 'asia', KR: 'asia', CN: 'asia', IN: 'asia',
   TH: 'asia', SG: 'asia', MY: 'asia', ID: 'asia',
   PH: 'asia', VN: 'asia', PK: 'asia', BD: 'asia',
   LK: 'asia', MM: 'asia', KZ: 'asia', UZ: 'asia',
   TW: 'asia', HK: 'asia', MN: 'asia',
-  // Australia/Oceania
   AU: 'global', NZ: 'global',
 }
 
@@ -45,121 +64,177 @@ export function getRegionForCountry(countryCode: string): Region {
   return COUNTRY_TO_REGION[countryCode.toUpperCase()] ?? 'global'
 }
 
-const DEFAULT_LOCATION: UserLocation = {
-  region: 'caucasus',
-  country: 'GE',
-  city: 'Tbilisi',
-  lat: 41.6941,
-  lon: 44.8337,
-  source: 'default',
-}
-
 export type GpsState = 'pending' | 'resolved' | 'denied' | 'unsupported' | 'failed'
 
 interface LocationContextValue {
   location: UserLocation
   setLocation: (loc: UserLocation) => void
+  /** True while an active geolocation read is in flight. */
   loading: boolean
+  /** True after localStorage hydration — safe to read cached coords. */
+  hydrated: boolean
+  /**
+   * True when sky/compass APIs may use `location` — manual picks are instant;
+   * GPS paths wait for the session's first fresh fix attempt to finish.
+   */
+  locationReady: boolean
   gpsState: GpsState
   isFallback: boolean
-  /** Re-prompt the browser for geolocation. Safe to call repeatedly. */
-  requestLocation: () => void
+  requestLocation: (opts?: { fresh?: boolean }) => void
 }
 
 const LocationContext = createContext<LocationContextValue | null>(null)
 
-export function LocationProvider({ children }: { children: React.ReactNode }) {
-  const [location, setLocationState] = useState<UserLocation>(DEFAULT_LOCATION)
-  const [loading, setLoading] = useState(false)
-  const [gpsState, setGpsState] = useState<GpsState>('pending')
+function toStored(loc: UserLocation, accuracyM?: number): StoredObserverLocation {
+  return {
+    ...loc,
+    updatedAt: Date.now(),
+    accuracyM,
+  }
+}
 
-  const requestLocation = useCallback(() => {
+export function LocationProvider({ children }: { children: React.ReactNode }) {
+  const [location, setLocationState] = useState<UserLocation>(DEFAULT_OBSERVER)
+  const [loading, setLoading] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+  const [locationReady, setLocationReady] = useState(false)
+  const [gpsState, setGpsState] = useState<GpsState>('pending')
+  const gpsInFlightRef = useRef(false)
+
+  const commitLocation = useCallback((loc: StoredObserverLocation) => {
+    persistObserverLocation(loc)
+    setLocationState(loc)
+    dispatchLocationUpdated(loc)
+  }, [])
+
+  const applyGpsFix = useCallback(
+    async (pos: GeolocationPosition) => {
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords
+      const { countryCode, city } = await reverseGeocode(lat, lon)
+      const loc: StoredObserverLocation = toStored(
+        {
+          region: getRegionForCountry(countryCode),
+          country: countryCode,
+          city,
+          lat,
+          lon,
+          source: 'gps',
+        },
+        Number.isFinite(accuracy) ? accuracy : undefined,
+      )
+      commitLocation(loc)
+      setGpsState('resolved')
+    },
+    [commitLocation],
+  )
+
+  const requestLocation = useCallback((opts?: { fresh?: boolean }) => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setGpsState('unsupported')
+      setLocationReady(true)
       return
     }
+    if (gpsInFlightRef.current) return
+    gpsInFlightRef.current = true
     setLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude: lat, longitude: lon } = pos.coords
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`
-          )
-          const data = await res.json()
-          const countryCode = (data.address?.country_code ?? '').toUpperCase()
-          const city =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.state ||
-            ''
-          const loc: UserLocation = {
-            region: getRegionForCountry(countryCode),
-            country: countryCode,
-            city,
-            lat,
-            lon,
-            source: 'gps',
-          }
-          localStorage.setItem('stellar_location', JSON.stringify(loc))
-          setLocationState(loc)
-          setGpsState('resolved')
-        } catch {
-          setGpsState('failed')
-        } finally {
-          setLoading(false)
-        }
-      },
-      (err) => {
-        setGpsState(err.code === err.PERMISSION_DENIED ? 'denied' : 'failed')
-        setLoading(false)
-      },
-      { timeout: 8000, maximumAge: 600000 }
-    )
-  }, [])
 
+    const options = opts?.fresh ? GEO_FRESH : GEO_RELAXED
+    readGpsPosition(options)
+      .then((pos) => applyGpsFix(pos))
+      .catch((err: GeolocationPositionError | Error) => {
+        const code = 'code' in err ? err.code : -1
+        if (code === 1) setGpsState('denied')
+        else setGpsState('failed')
+      })
+      .finally(() => {
+        gpsInFlightRef.current = false
+        setLoading(false)
+        setLocationReady(true)
+      })
+  }, [applyGpsFix])
+
+  // Session bootstrap: hydrate cache, then always attempt a fresh GPS fix
+  // unless the user explicitly picked a city (manual override).
   useEffect(() => {
-    const stored = localStorage.getItem('stellar_location')
-    let cachedSource: UserLocation['source'] | null = null
+    const stored = parseStoredLocation(
+      typeof window !== 'undefined' ? localStorage.getItem('stellar_location') : null,
+    )
+
     if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as UserLocation
-        setLocationState(parsed)
+      setLocationState(stored)
+      if (stored.source === 'manual') {
         setGpsState('resolved')
-        cachedSource = parsed.source ?? null
-      } catch {}
+        setHydrated(true)
+        setLocationReady(true)
+        return
+      }
+      // Show last-known coords immediately, but still refresh in background.
+      setHydrated(true)
+      requestLocation({ fresh: true })
+      return
     }
-    // Re-ask for live location on every app open. Browser shows the permission
-    // UI only on first grant; subsequent calls silently refresh coords. Skip
-    // when the user has manually picked a city via LocationPicker — that's an
-    // explicit override we shouldn't overwrite with GPS.
-    if (cachedSource !== 'manual') {
-      requestLocation()
-    }
+
+    setHydrated(true)
+    requestLocation({ fresh: true })
   }, [requestLocation])
 
-  const setLocation = useCallback((loc: UserLocation) => {
-    localStorage.setItem('stellar_location', JSON.stringify(loc))
-    setLocationState(loc)
-    setGpsState('resolved')
-  }, [])
+  // Re-sync observer position when the user returns to the tab.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState !== 'visible') return
+      if (location.source === 'manual') return
+      requestLocation({ fresh: true })
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [location.source, requestLocation])
 
-  const isFallback = location.source === 'default' && gpsState !== 'pending' && gpsState !== 'resolved'
+  const setLocation = useCallback(
+    (loc: UserLocation) => {
+      const stored = toStored({ ...loc, source: loc.source === 'default' ? 'manual' : loc.source })
+      commitLocation(stored)
+      setGpsState('resolved')
+      setLocationReady(true)
+    },
+    [commitLocation],
+  )
+
+  const isFallback =
+    locationReady &&
+    location.source !== 'manual' &&
+    (gpsState === 'denied' ||
+      gpsState === 'unsupported' ||
+      (gpsState === 'failed' && location.source === 'default'))
 
   const value = useMemo(
-    () => ({ location, setLocation, loading, gpsState, isFallback, requestLocation }),
-    [location, setLocation, loading, gpsState, isFallback, requestLocation],
+    () => ({
+      location,
+      setLocation,
+      loading,
+      hydrated,
+      locationReady,
+      gpsState,
+      isFallback,
+      requestLocation,
+    }),
+    [location, setLocation, loading, hydrated, locationReady, gpsState, isFallback, requestLocation],
   )
 
-  return (
-    <LocationContext.Provider value={value}>
-      {children}
-    </LocationContext.Provider>
-  )
+  return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>
 }
 
 export function useLocation(): LocationContextValue {
   const ctx = useContext(LocationContext)
   if (!ctx) throw new Error('useLocation must be used inside LocationProvider')
   return ctx
+}
+
+/** @internal — tests only */
+export function __locationMovedSignificantly(a: UserLocation, b: UserLocation): boolean {
+  return movedSignificantly(a, b)
+}
+
+/** @internal — tests only */
+export function __locationIsStale(loc: UserLocation): boolean {
+  return isLocationStale(loc)
 }

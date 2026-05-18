@@ -124,9 +124,8 @@ const REGION_TABS: { key: Region; label: string; emoji: string }[] = [
 const PANEL_WIDTH = 340
 
 export default function LocationPicker({ compact = false, ghost = false }: { compact?: boolean; ghost?: boolean }) {
-  const { location, setLocation } = useLocation()
+  const { location, setLocation, requestLocation, loading: gpsRefreshing } = useLocation()
   const [open, setOpen] = useState(false)
-  const [gpsLoading, setGpsLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<Region | 'all'>('all')
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null)
@@ -168,25 +167,10 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
   }, [open, updateAnchor])
 
   const handleGPS = useCallback(() => {
-    if (!navigator.geolocation || gpsLoading) return
-    setGpsLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude: lat, longitude: lon } = pos.coords
-          const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`)
-          const data = await res.json()
-          const countryCode = (data.address?.country_code ?? '').toUpperCase()
-          const city = data.address?.city || data.address?.town || data.address?.state || ''
-          setLocation({ region: getRegionForCountry(countryCode), country: countryCode, city, lat, lon, source: 'gps' })
-        } catch { /* ignore */ }
-        setGpsLoading(false)
-        setOpen(false)
-      },
-      () => { setGpsLoading(false); setOpen(false) },
-      { timeout: 8000 }
-    )
-  }, [gpsLoading, setLocation])
+    if (!navigator.geolocation || gpsRefreshing) return
+    requestLocation({ fresh: true })
+    setOpen(false)
+  }, [gpsRefreshing, requestLocation])
 
   function handlePreset(p: UserLocation) {
     setLocation(p)
@@ -500,9 +484,9 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           </div>
 
           <div style={{ padding: '8px 10px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-            <button className="loc-gps-btn" onClick={handleGPS} disabled={gpsLoading}>
-              <Navigation size={13} className={gpsLoading ? 'loc-spinning' : ''} />
-              {gpsLoading ? 'Detecting…' : 'Use my GPS location'}
+            <button className="loc-gps-btn" onClick={handleGPS} disabled={gpsRefreshing}>
+              <Navigation size={13} className={gpsRefreshing ? 'loc-spinning' : ''} />
+              {gpsRefreshing ? 'Detecting…' : 'Use my GPS location'}
             </button>
           </div>
         </div>,

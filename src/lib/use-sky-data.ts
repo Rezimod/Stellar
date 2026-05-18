@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { MoonPhase } from 'astronomy-engine';
 import { useLocale } from 'next-intl';
 import { getTonightDarkWindow } from '@/lib/dark-window';
+import { useLocation } from '@/lib/location';
+import { LOCATION_UPDATED_EVENT } from '@/lib/observer-location';
 
 export interface PlanetData {
   name: string;
@@ -148,8 +150,9 @@ type RawTimeline = TimelinePayload;
 
 const REFRESH_MS = 5 * 60 * 1000;
 
-export function useSkyData(initialCoords?: { lat: number; lon: number; city?: string }) {
+export function useSkyData() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
+  const { location, locationReady } = useLocation();
   const [data, setData] = useState<SkyData>({
     loading: true,
     error: null,
@@ -165,8 +168,13 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
   });
 
   const fetchAll = useCallback(async () => {
+    if (!locationReady) return;
     try {
-      const coords = await resolveCoords(initialCoords, locale);
+      const coords = {
+        lat: location.lat,
+        lon: location.lon,
+        city: location.city || (locale === 'ka' ? 'შენი მდებარეობა' : 'Your location'),
+      };
 
       const dark = getTonightDarkWindow(coords.lat, coords.lon);
       const planetParam = dark.isCurrentlyDark ? '' : '&tonight=1';
@@ -233,9 +241,10 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
         error: err instanceof Error ? err.message : 'Failed to load sky data',
       }));
     }
-  }, [initialCoords, locale]);
+  }, [location.lat, location.lon, location.city, locationReady, locale]);
 
   useEffect(() => {
+    if (!locationReady) return;
     fetchAll();
     let id: number | null = null;
     const start = () => {
@@ -257,7 +266,15 @@ export function useSkyData(initialCoords?: { lat: number; lon: number; city?: st
       document.removeEventListener('visibilitychange', onVis);
       stop();
     };
-  }, [fetchAll]);
+  }, [fetchAll, locationReady]);
+
+  useEffect(() => {
+    const onLocation = () => {
+      if (locationReady) void fetchAll();
+    };
+    window.addEventListener(LOCATION_UPDATED_EVENT, onLocation);
+    return () => window.removeEventListener(LOCATION_UPDATED_EVENT, onLocation);
+  }, [fetchAll, locationReady]);
 
   return { ...data, refresh: fetchAll };
 }

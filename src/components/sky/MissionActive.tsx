@@ -24,6 +24,7 @@ import { rollCosmicBonus, type CosmicBonus } from '@/lib/cosmic-bonus';
 import { urlToBlob } from '@/lib/data-url';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
+import { useLocation } from '@/lib/location';
 
 const MISSION_STEPS = [
   { label: 'Brief', keys: ['observing'] },
@@ -51,7 +52,12 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   const [step, setStep] = useState<MissionState>('observing');
   const [photo, setPhoto] = useState('');
   const [sky, setSky] = useState<SkyVerification | null>(null);
-  const [coords, setCoords] = useState({ lat: 41.7151, lon: 44.8271 });
+  const { location: observerLocation } = useLocation();
+  const [coords, setCoords] = useState({ lat: observerLocation.lat, lon: observerLocation.lon });
+
+  useEffect(() => {
+    setCoords({ lat: observerLocation.lat, lon: observerLocation.lon });
+  }, [observerLocation.lat, observerLocation.lon]);
   const [timestamp, setTimestamp] = useState('');
   const [mintDone, setMintDone] = useState(false);
   const [mintTxId, setMintTxId] = useState('');
@@ -121,16 +127,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     const ts = new Date().toISOString();
     setTimestamp(ts);
 
-    let lat = 41.7151, lon = 44.8271;
-    try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 })
-      );
-      lat = pos.coords.latitude;
-      lon = pos.coords.longitude;
-    } catch {
-      // GPS unavailable, using default Tbilisi coords
-    }
+    const lat = observerLocation.lat;
+    const lon = observerLocation.lon;
     setCoords({ lat, lon });
 
     if (!navigator.onLine) {

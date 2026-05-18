@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Compass, Crosshair, Telescope, Hand, Orbit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
 import { useForecast } from '@/lib/sky/use-forecast';
 import { CONSTELLATION_LINES, STAR_TO_CONSTELLATION, positionStars } from '@/lib/sky/stars';
@@ -29,12 +30,12 @@ import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
 
-const FALLBACK_COORDS = { lat: 41.6941, lon: 44.8337 };
 const REFRESH_MS = 60_000;
+const SKY_CLOCK_MS = 30_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
 
 export default function SkyPage() {
-  const { location, requestLocation, gpsState } = useLocation();
+  const { location, locationReady, requestLocation, gpsState, loading: locationLoading } = useLocation();
   const tErrors = useTranslations('sky.errors');
   const tAr = useTranslations('sky.ar');
   const tSolar = useTranslations('sky.solarFromSky');
@@ -84,7 +85,26 @@ export default function SkyPage() {
     setArActiveId(null);
   }, []);
 
+  const [skyTime, setSkyTime] = useState(() => new Date());
+
+  // Advance star positions between finder refreshes (Earth rotation).
+  useEffect(() => {
+    const id = window.setInterval(() => setSkyTime(new Date()), SKY_CLOCK_MS);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (finder?.generatedAt) setSkyTime(new Date(finder.generatedAt));
+  }, [finder?.generatedAt]);
+
+  // Start compass as soon as observer coords are confirmed for this session.
+  useEffect(() => {
+    if (!locationReady) return;
+    if (compass.status === 'idle') void compass.request();
+  }, [locationReady, compass]);
+
   const fetchFinder = useCallback(async () => {
+    if (!locationReady) return;
     setFinderError(null);
     try {
       const res = await fetch(`/api/sky/finder?lat=${location.lat}&lon=${location.lon}`);
@@ -103,11 +123,13 @@ export default function SkyPage() {
     } finally {
       setFinderLoading(false);
     }
-  }, [location.lat, location.lon, tErrors]);
+  }, [location.lat, location.lon, locationReady, tErrors]);
 
   useEffect(() => {
+    if (!locationReady) return;
+    setFinderLoading(true);
     fetchFinder();
-  }, [fetchFinder]);
+  }, [fetchFinder, locationReady]);
 
   // Re-fetch every minute so live state stays current — but skip the
   // refresh while the tab is hidden (no-one is looking) and resume on
@@ -157,8 +179,7 @@ export default function SkyPage() {
   // drift across a few minutes is below dome resolution, so this is fine.
   const constellationStars = useMemo<ConstellationStar[]>(() => {
     if (!finder) return [];
-    const t = new Date(finder.generatedAt);
-    return positionStars(location.lat, location.lon, t).map((s) => ({
+    return positionStars(location.lat, location.lon, skyTime).map((s) => ({
       id: s.id,
       name: s.name,
       altitude: s.altitude,
@@ -166,7 +187,7 @@ export default function SkyPage() {
       mag: s.mag,
       constellation: STAR_TO_CONSTELLATION[s.id],
     }));
-  }, [finder, location.lat, location.lon]);
+  }, [finder, location.lat, location.lon, skyTime]);
 
   // Hop anchor: prefer a catalog match (e.g. when the anchor is itself a
   // tracked target), otherwise fall back to the bright-star catalog so M31
@@ -209,8 +230,8 @@ export default function SkyPage() {
 
   const fallbackUsed =
     location.source === 'default' &&
-    location.lat === FALLBACK_COORDS.lat &&
-    location.lon === FALLBACK_COORDS.lon;
+    location.lat === DEFAULT_OBSERVER.lat &&
+    location.lon === DEFAULT_OBSERVER.lon;
 
   const locationLabel = location.city || (fallbackUsed ? 'Tbilisi' : '—');
 
@@ -223,7 +244,7 @@ export default function SkyPage() {
         {fallbackUsed && finder && (
           <div className="sky-v3__fallback">
             <span>{tErrors('locationFallback')}</span>
-            <button type="button" onClick={fetchFinder}>{tErrors('useMyLocation')}</button>
+            <button type="button" onClick={() => requestLocation({ fresh: true })}>{tErrors('useMyLocation')}</button>
           </div>
         )}
 
@@ -248,7 +269,7 @@ export default function SkyPage() {
           />
         )}
 
-        {finderLoading && !finder && (
+        {(locationLoading || !locationReady || (finderLoading && !finder)) && (
           <SkyLoadingSkeleton />
         )}
 

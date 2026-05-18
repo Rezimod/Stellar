@@ -6,9 +6,9 @@ import { useLocation } from '@/lib/location';
 import type { SkyScoreResult } from '@/lib/sky-score';
 
 export default function ObserveCTA() {
-  const { location, loading: locationLoading } = useLocation();
+  const { location, locationReady } = useLocation();
   const { lat, lon: lng, source } = location;
-  const ready = !locationLoading && source !== 'default';
+  const ready = locationReady && source !== 'default';
   const [scoreData, setScoreData] = useState<SkyScoreResult | null>(null);
 
   useEffect(() => {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
+import { useLocation } from '@/lib/location';
 import { Camera, ImagePlus, ArrowLeft, ExternalLink } from 'lucide-react';
 import type { PhotoVerificationResult } from '@/lib/types';
 
@@ -35,7 +36,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   const [mintTxId, setMintTxId] = useState('');
   const [mintError, setMintError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const { location: observerLocation, locationReady, requestLocation } = useLocation();
   const [analysisIdx, setAnalysisIdx] = useState(0);
   const [doubleCapture, setDoubleCapture] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -48,13 +49,9 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   const mintingRef = useRef(false);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      () => {}, // leave null — handleVerify falls back to user's stored location or null
-      { timeout: 8000 }
-    );
+    if (!locationReady) requestLocation({ fresh: true });
     return () => { streamRef.current?.getTracks().forEach(t => t.stop()); };
-  }, []);
+  }, [locationReady, requestLocation]);
 
   useEffect(() => {
     if (step !== 'uploading') return;
@@ -141,8 +138,8 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     if (!file) { setError('No photo selected'); setStep('capture'); return; }
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('lat', String(location?.lat ?? 0));
-    formData.append('lon', String(location?.lon ?? 0));
+    formData.append('lat', String(observerLocation.lat));
+    formData.append('lon', String(observerLocation.lon));
     formData.append('capturedAt', new Date().toISOString());
     if (walletAddress) formData.append('wallet', walletAddress);
     formData.append('uploadSource', firstFrameFile ? 'live-double' : 'live-single');

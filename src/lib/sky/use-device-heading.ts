@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { model as geomagneticModel } from 'geomagnetism';
+import { compassOffsetKey } from '@/lib/observer-location';
 
 /**
  * Live phone pointing — the (azimuth, altitude) the back of the device is
@@ -190,7 +191,7 @@ function eventToPointingWithDeclination(
   };
 }
 
-const OFFSET_KEY = 'stellar.sky.compass.offset';
+const LEGACY_OFFSET_KEY = 'stellar.sky.compass.offset';
 /**
  * Range we accept for the user's calibration offset. ±180° covers any
  * possible heading error (magnetic declination, indoor interference,
@@ -201,10 +202,13 @@ const OFFSET_KEY = 'stellar.sky.compass.offset';
  */
 const MAX_OFFSET = 180;
 
-function loadOffset(): number {
+function loadOffset(key: string): number {
   if (typeof window === 'undefined') return 0;
   try {
-    const raw = window.localStorage.getItem(OFFSET_KEY);
+    let raw = window.localStorage.getItem(key);
+    if (!raw && key !== LEGACY_OFFSET_KEY) {
+      raw = window.localStorage.getItem(LEGACY_OFFSET_KEY);
+    }
     const n = raw ? parseFloat(raw) : 0;
     if (!isFinite(n)) return 0;
     return Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, n));
@@ -212,10 +216,10 @@ function loadOffset(): number {
     return 0;
   }
 }
-function saveOffset(n: number) {
+function saveOffset(key: string, n: number) {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(OFFSET_KEY, String(n));
+    window.localStorage.setItem(key, String(n));
   } catch { /* ignore */ }
 }
 
@@ -236,11 +240,16 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
   const [status, setStatus] = useState<HeadingStatus>('idle');
   const [live, setLive] = useState(false);
   const [offset, setOffset] = useState<number>(0);
-
-  // Lazy-load offset on mount (client-only — localStorage isn't on the server).
+  const offsetKey =
+    lat != null && lon != null && Number.isFinite(lat) && Number.isFinite(lon)
+      ? compassOffsetKey(lat, lon)
+      : LEGACY_OFFSET_KEY;
+  // Per-site calibration — moving to a new observing site loads that site's offset.
   useEffect(() => {
-    setOffset(loadOffset());
-  }, []);
+    setOffset(loadOffset(offsetKey));
+    smoothedHeadingRef.current = null;
+    smoothedAltRef.current = null;
+  }, [offsetKey]);
 
   const declinationDeg = useMemo(() => {
     if (lat == null || lon == null || !Number.isFinite(lat) || !Number.isFinite(lon)) return 0;
@@ -354,15 +363,15 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
   const nudge = useCallback((delta: number) => {
     setOffset((prev) => {
       const next = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, prev + delta));
-      saveOffset(next);
+      saveOffset(offsetKey, next);
       return next;
     });
-  }, []);
+  }, [offsetKey]);
 
   const resetCalibration = useCallback(() => {
     setOffset(0);
-    saveOffset(0);
-  }, []);
+    saveOffset(offsetKey, 0);
+  }, [offsetKey]);
 
   const setProximityDeg = useCallback((deg: number | null) => {
     proximityRef.current = deg;

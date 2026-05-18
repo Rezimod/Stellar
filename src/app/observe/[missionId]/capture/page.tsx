@@ -8,8 +8,10 @@ import { MISSIONS } from '@/lib/constants';
 import { getMissionImage } from '@/lib/mission-icons';
 import { useObserveFlow, type UploadSource } from '../ObserveFlowContext';
 import PageContainer from '@/components/layout/PageContainer';
+import { useLocation } from '@/lib/location';
 
 export default function ObserveCapturePage() {
+  const { location } = useLocation();
   const router = useRouter();
   const params = useParams<{ missionId: string }>();
   const missionId = params?.missionId ?? '';
@@ -45,18 +47,7 @@ export default function ObserveCapturePage() {
     const ts = new Date().toISOString();
     setTimestamp(ts);
 
-    let lat = 41.7151;
-    let lon = 44.8271;
-    try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 })
-      );
-      lat = pos.coords.latitude;
-      lon = pos.coords.longitude;
-    } catch {
-      // GPS unavailable — use Tbilisi fallback
-    }
-    setCoords({ lat, lon });
+    setCoords({ lat: location.lat, lon: location.lon });
 
     router.push(`/observe/${missionId}/verify`);
   };
