@@ -1,8 +1,8 @@
-# Tether QVAC Track — Superteam Earn Submission
+# Tether QVAC Track — Superteam Earn Submission (ARCHIVED — WINNING ENTRY)
 
-**Status:** paste-ready. The only outstanding placeholder is `{{YOUTUBE_URL}}` — fill it after recording the demo and uploading as Unlisted.
+**Status:** **Track winner, May 2026.** This document archives the exact submission text used for the Tether Frontier Hackathon Track on Superteam Earn ([listing](https://superteam.fun/earn/listing/tether-frontier-hackathon-track), 127 submissions). Payout pending end of May 2026 via Tether sponsor process — contact: Telegram `@mariamgoya`.
 
-This file is the script for filling out the Superteam Earn form on Monday. Open the form in one window, this file in the other, and copy each block into its matching field.
+Original purpose: paste-ready script for filling out the Superteam Earn form. Preserved for reference, reuse in future grant applications, and Tether case-study material.
 
 ---
 
@@ -138,7 +138,7 @@ Twitter / contact: per Earn profile.
 
 ---
 
-## Submission checklist (do these in order)
+## Submission checklist (archived — all completed for Frontier track win)
 
 1. [x] App builds locally, prebuild succeeds end-to-end
 2. [x] Phone connected, `adb devices` shows it (Poco X3 NFC, persisted)
@@ -148,10 +148,13 @@ Twitter / contact: per Earn profile.
 6. [x] Create GitHub release with the APK as an asset
 7. [x] Set `NEXT_PUBLIC_FIELD_APK_URL` on Vercel and redeploy
 8. [x] Verify https://stellarrclub.vercel.app/field shows the Download button
-9. [ ] Record 75s demo on the Poco (see `docs/qvac-demo-script.md`)
-10. [ ] Upload to YouTube **Unlisted**, copy link, paste into `{{YOUTUBE_URL}}` above
-11. [ ] Open Superteam Earn form, copy each block from "Submission day — paste-ready field map" into the matching field
-12. [ ] Submit before May 11, 23:59 UTC
+9. [x] Demo recorded and uploaded to YouTube Unlisted
+10. [x] Superteam Earn form submitted
+11. [x] **Selected as Frontier track winner (May 2026)**
+
+## Next phase — tether.dev open grant ($12K USDT, 3 milestones)
+
+See `docs/tether-grant-handoff.md` and `~/Desktop/TETHER-GRANT-MASTERPLAN.md` for the Phase 2 application plan and concrete steps before submitting to https://tether.dev/grants/apply-for-a-grant/.
 
 ---
 

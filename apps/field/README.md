@@ -1,5 +1,7 @@
 # Stellar Field
 
+> **Winner — Tether Frontier Hackathon Track (May 2026).** Selected from 127 submissions on Superteam Earn. [Listing](https://superteam.fun/earn/listing/tether-frontier-hackathon-track) · [APK release](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Landing page](https://stellarrclub.vercel.app/field)
+
 Companion mobile app for [Stellar](https://stellarrclub.vercel.app) — runs on-device AI for astronomers in the field, where there is no signal.
 
 Built with **Expo (SDK 54)** + **[Tether QVAC](https://qvac.tether.io)** for local LLM inference, embeddings, and (later) Whisper STT + TTS. Shares Privy auth and Supabase backend with the Stellar web app.
@@ -8,7 +10,7 @@ Built with **Expo (SDK 54)** + **[Tether QVAC](https://qvac.tether.io)** for loc
 
 Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. Stellar's web AI runs on the Claude API and goes dark the moment a user reaches the place they bought their telescope for. Stellar Field fixes that by running everything on the phone via QVAC.
 
-This is the Tether Frontier Hackathon side track entry. See [`../../docs/qvac-integration.md`](../../docs/qvac-integration.md) for the technical writeup, [`../../docs/qvac-submission.md`](../../docs/qvac-submission.md) for the Superteam Earn submission body, and [`../../docs/qvac-demo-script.md`](../../docs/qvac-demo-script.md) for the 75s demo recording shot list.
+This is the **winning entry** for the Tether Frontier Hackathon Track. See [`../../docs/qvac-integration.md`](../../docs/qvac-integration.md) for the technical writeup, [`../../docs/qvac-submission.md`](../../docs/qvac-submission.md) for the Superteam Earn submission body, and [`../../docs/qvac-demo-script.md`](../../docs/qvac-demo-script.md) for the 75s demo recording shot list.
 
 ## Architecture
 

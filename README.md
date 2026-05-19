@@ -1,10 +1,12 @@
 # ✦ Stellar — Astronomy, on chain.
 
+> **Tether Frontier Hackathon Track — Winner (May 2026).** Stellar Field is the offline-mode Android companion proving on-device AI for astronomers at dark-sky sites. [Read more →](docs/qvac-integration.md)
+
 **The companion app for everyone with a sky above them and a camera in their pocket.**
 
 Get tonight's sky forecast, photograph what you see, earn rewards you can redeem for real telescopes and gear at [Astroman](https://astroman.ge), Georgia's first astronomy store. Built on Solana. Free to use.
 
-[Live App](https://stellarrclub.vercel.app) · [Colosseum Frontier 2026](https://www.colosseum.org) · [Tether Frontier Track](docs/qvac-integration.md) · [Twitter/X](https://x.com/StellarClub26)
+[Live App](https://stellarrclub.vercel.app) · [Stellar Field APK](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Tether Frontier Track Submission](docs/qvac-submission.md) · [Twitter/X](https://x.com/StellarClub26)
 
 ---
 
@@ -51,7 +53,7 @@ Sky atlases show you the sky. Stellar connects what you see to a real economy.
 
 ## Stellar Field — On-Device AI for Dark Sites
 
-*Tether Frontier Track submission ([technical writeup](docs/qvac-integration.md))*
+*Winner — Tether Frontier Hackathon Track, May 2026. ([technical writeup](docs/qvac-integration.md))*
 
 Astronomers travel to dark-sky sites — mountains, deserts, rural fields — where cell signal is exactly zero. The cloud AI in our web app dies the moment a user reaches the place they bought their telescope for. **Stellar Field** is the Android companion that runs Astra entirely on the phone, powered by Tether QVAC.
 
@@ -139,8 +141,9 @@ Required environment variables: see `.env.example`.
 
 ## Builder
 
-**Rezi (Revaz Modebadze)** — Founder of [Astroman](https://astroman.ge). Built solo for Colosseum Frontier 2026.
+**Rezi (Revaz Modebadze)** — Founder of [Astroman](https://astroman.ge). Built solo.
 
+- **Winner — Tether Frontier Hackathon Track (May 2026)** — Superteam Earn, 127 submissions
 - 2nd place + sponsor prize, Superteam Georgia Hackathon (March 2026)
 - [Twitter/X: @StellarClub26](https://x.com/StellarClub26)
 - Tbilisi, Georgia
