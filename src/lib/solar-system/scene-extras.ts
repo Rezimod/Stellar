@@ -722,115 +722,348 @@ interface SatelliteSpec {
   phase: number;
   /** Angular speed, rad/sec. Faster for lower orbits. */
   angularSpeed: number;
+  /** Slow self-spin (rad/sec) for visual interest. */
+  spinSpeed: number;
   /** Style of satellite mesh. */
-  kind: 'iss' | 'hubble' | 'cube' | 'rocket-stage';
+  kind: 'iss' | 'hubble' | 'starlink';
 }
 
-function buildIssLikeSatellite(scale: number): THREE.Group {
+/** Procedural solar-panel texture — grid of dark blue cells with thin gold gridlines. */
+function solarPanelTexture(): THREE.CanvasTexture {
+  const w = 256;
+  const h = 128;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d')!;
+  // Base — deep midnight blue with subtle gradient
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#15244a');
+  g.addColorStop(0.5, '#1c2c58');
+  g.addColorStop(1, '#101a36');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  // Cells
+  const cols = 32;
+  const rows = 8;
+  const cellW = w / cols;
+  const cellH = h / rows;
+  ctx.fillStyle = 'rgba(8, 12, 28, 0.55)';
+  for (let r = 0; r < rows; r++) {
+    for (let c2 = 0; c2 < cols; c2++) {
+      const x = c2 * cellW;
+      const y = r * cellH;
+      ctx.fillRect(x + cellW * 0.08, y + cellH * 0.08, cellW * 0.84, cellH * 0.84);
+    }
+  }
+  // Gold conductor grid lines
+  ctx.strokeStyle = 'rgba(196, 168, 110, 0.55)';
+  ctx.lineWidth = 0.5;
+  for (let c2 = 0; c2 <= cols; c2++) {
+    ctx.beginPath();
+    ctx.moveTo(c2 * cellW, 0);
+    ctx.lineTo(c2 * cellW, h);
+    ctx.stroke();
+  }
+  for (let r = 0; r <= rows; r++) {
+    ctx.beginPath();
+    ctx.moveTo(0, r * cellH);
+    ctx.lineTo(w, r * cellH);
+    ctx.stroke();
+  }
+  // Specular highlight band
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+  ctx.fillRect(0, h * 0.35, w, h * 0.08);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+/** Procedural MLI (multi-layer insulation) blanket — gold foil look. */
+function mliTexture(): THREE.CanvasTexture {
+  const w = 256;
+  const h = 128;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#caa056');
+  g.addColorStop(0.5, '#e8c987');
+  g.addColorStop(1, '#a87f3a');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  // Wrinkle highlights
+  ctx.globalAlpha = 0.5;
+  for (let i = 0; i < 60; i++) {
+    ctx.strokeStyle = i % 2 === 0 ? 'rgba(255, 240, 200, 0.18)' : 'rgba(80, 56, 24, 0.28)';
+    ctx.lineWidth = 0.6 + Math.random() * 1.2;
+    ctx.beginPath();
+    const y = Math.random() * h;
+    ctx.moveTo(0, y);
+    ctx.bezierCurveTo(w * 0.3, y + (Math.random() - 0.5) * 14, w * 0.6, y + (Math.random() - 0.5) * 14, w, y + (Math.random() - 0.5) * 14);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  return tex;
+}
+
+let _solarTex: THREE.CanvasTexture | null = null;
+let _mliTex: THREE.CanvasTexture | null = null;
+function sharedSolarTex(): THREE.CanvasTexture {
+  if (!_solarTex) _solarTex = solarPanelTexture();
+  return _solarTex;
+}
+function sharedMliTex(): THREE.CanvasTexture {
+  if (!_mliTex) _mliTex = mliTexture();
+  return _mliTex;
+}
+
+function disposeSharedTextures() {
+  _solarTex?.dispose();
+  _solarTex = null;
+  _mliTex?.dispose();
+  _mliTex = null;
+}
+
+/**
+ * International Space Station — long central truss running perpendicular to
+ * four pairs of large solar arrays, plus the pressurised modules at the
+ * centre. `s` is the overall length (along the truss).
+ */
+function buildIss(s: number): THREE.Group {
   const g = new THREE.Group();
-  // Main truss
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.55 * scale, 0.16 * scale, 0.16 * scale),
-    new THREE.MeshStandardMaterial({ color: 0xd5d2c8, roughness: 0.45, metalness: 0.7 }),
+  const solarTex = sharedSolarTex();
+  const mliTex = sharedMliTex();
+
+  // ── Central truss (long horizontal bar) ─────────
+  const trussLength = s;
+  const trussGirth = s * 0.04;
+  const truss = new THREE.Mesh(
+    new THREE.BoxGeometry(trussLength, trussGirth, trussGirth),
+    new THREE.MeshStandardMaterial({ color: 0xb6b1a4, roughness: 0.55, metalness: 0.7 }),
   );
-  g.add(body);
-  // Two solar panel wings
+  g.add(truss);
+
+  // ── Solar arrays: 4 pairs along the truss ───────
+  const panelW = s * 0.42;
+  const panelH = s * 0.13;
+  const panelThick = s * 0.008;
+  const panelPositions = [-0.42, -0.22, 0.22, 0.42]; // along x (truss axis)
+  for (const px of panelPositions) {
+    for (const side of [-1, 1]) {
+      const panel = new THREE.Mesh(
+        new THREE.BoxGeometry(panelThick, panelH, panelW),
+        new THREE.MeshStandardMaterial({
+          map: solarTex,
+          color: 0xffffff,
+          roughness: 0.35,
+          metalness: 0.4,
+          emissive: 0x0a1430,
+          emissiveIntensity: 0.18,
+        }),
+      );
+      panel.position.set(px * s, 0, side * (panelW / 2 + trussGirth * 0.6));
+      g.add(panel);
+    }
+  }
+
+  // ── Pressurised modules at centre (cylindrical) ─
+  const moduleR = s * 0.06;
+  const modules = new THREE.Mesh(
+    new THREE.CylinderGeometry(moduleR, moduleR, s * 0.36, 16),
+    new THREE.MeshStandardMaterial({ map: mliTex, color: 0xf4ecd6, roughness: 0.45, metalness: 0.45 }),
+  );
+  modules.rotation.x = Math.PI / 2;
+  g.add(modules);
+
+  // Smaller perpendicular module
+  const perpModule = new THREE.Mesh(
+    new THREE.CylinderGeometry(moduleR * 0.85, moduleR * 0.85, s * 0.22, 14),
+    new THREE.MeshStandardMaterial({ map: mliTex, color: 0xf0e6cd, roughness: 0.45, metalness: 0.45 }),
+  );
+  g.add(perpModule);
+
+  // ── Radiators (silver flat plates) ──────────────
   for (const side of [-1, 1]) {
-    const wing = new THREE.Mesh(
-      new THREE.BoxGeometry(0.04 * scale, 0.08 * scale, 0.85 * scale),
+    const radiator = new THREE.Mesh(
+      new THREE.BoxGeometry(s * 0.08, s * 0.004, s * 0.18),
       new THREE.MeshStandardMaterial({
-        color: 0x2c4870,
-        roughness: 0.25,
-        metalness: 0.55,
-        emissive: 0x0a1530,
-        emissiveIntensity: 0.35,
+        color: 0xd6dee0,
+        roughness: 0.3,
+        metalness: 0.85,
       }),
     );
-    wing.position.x = side * 0.32 * scale;
-    g.add(wing);
+    radiator.position.set(0, side * s * 0.07, 0);
+    g.add(radiator);
   }
+
   return g;
 }
 
-function buildHubbleLike(scale: number): THREE.Group {
+/**
+ * Hubble Space Telescope — large white cylindrical body with the dark
+ * aperture at one end, two solar arrays flanking the body, antenna dishes,
+ * and a gold MLI blanket section.
+ */
+function buildHubble(s: number): THREE.Group {
   const g = new THREE.Group();
+  const solarTex = sharedSolarTex();
+  const mliTex = sharedMliTex();
+
+  const bodyLength = s;
+  const bodyR = s * 0.18;
+
+  // Main tube (white)
   const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.13 * scale, 0.13 * scale, 0.48 * scale, 12),
-    new THREE.MeshStandardMaterial({ color: 0xe8e3d2, roughness: 0.4, metalness: 0.6 }),
+    new THREE.CylinderGeometry(bodyR, bodyR, bodyLength * 0.78, 18),
+    new THREE.MeshStandardMaterial({ color: 0xece6d2, roughness: 0.42, metalness: 0.55 }),
   );
   body.rotation.z = Math.PI / 2;
   g.add(body);
-  const lens = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.135 * scale, 0.13 * scale, 0.06 * scale, 12),
-    new THREE.MeshStandardMaterial({ color: 0x14171f, roughness: 0.2, metalness: 0.3 }),
+
+  // MLI gold rear section
+  const rear = new THREE.Mesh(
+    new THREE.CylinderGeometry(bodyR * 0.98, bodyR * 0.96, bodyLength * 0.18, 18),
+    new THREE.MeshStandardMaterial({ map: mliTex, color: 0xffffff, roughness: 0.4, metalness: 0.65 }),
   );
-  lens.rotation.z = Math.PI / 2;
-  lens.position.x = 0.27 * scale;
-  g.add(lens);
-  // Solar panels
+  rear.rotation.z = Math.PI / 2;
+  rear.position.x = -bodyLength * 0.46;
+  g.add(rear);
+
+  // Aperture (dark opening) at the front
+  const aperture = new THREE.Mesh(
+    new THREE.CylinderGeometry(bodyR * 0.95, bodyR * 0.95, bodyLength * 0.04, 18),
+    new THREE.MeshStandardMaterial({ color: 0x0b0d12, roughness: 0.95, metalness: 0.1 }),
+  );
+  aperture.rotation.z = Math.PI / 2;
+  aperture.position.x = bodyLength * 0.42;
+  g.add(aperture);
+
+  // Aperture door (white, slightly open)
+  const door = new THREE.Mesh(
+    new THREE.CylinderGeometry(bodyR * 1.02, bodyR * 1.02, bodyLength * 0.012, 18, 1, false, 0, Math.PI),
+    new THREE.MeshStandardMaterial({ color: 0xf2ecd8, roughness: 0.4, metalness: 0.6, side: THREE.DoubleSide }),
+  );
+  door.rotation.z = Math.PI / 2;
+  door.rotation.y = -0.45;
+  door.position.x = bodyLength * 0.46;
+  g.add(door);
+
+  // Two large solar arrays — long thin rectangles flanking the body
+  const panelW = bodyLength * 1.05;
+  const panelH = bodyLength * 0.32;
   for (const side of [-1, 1]) {
+    const arm = new THREE.Mesh(
+      new THREE.BoxGeometry(s * 0.005, bodyR * 0.18, bodyR * 0.18),
+      new THREE.MeshStandardMaterial({ color: 0xb0aa9c, roughness: 0.6, metalness: 0.5 }),
+    );
+    arm.position.set(0, side * bodyR * 1.05, 0);
+    g.add(arm);
+
     const panel = new THREE.Mesh(
-      new THREE.BoxGeometry(0.03 * scale, 0.06 * scale, 0.7 * scale),
+      new THREE.BoxGeometry(panelW, s * 0.008, panelH),
       new THREE.MeshStandardMaterial({
-        color: 0x1f3866,
-        roughness: 0.3,
-        metalness: 0.5,
-        emissive: 0x081024,
-        emissiveIntensity: 0.4,
+        map: solarTex,
+        color: 0xffffff,
+        roughness: 0.35,
+        metalness: 0.4,
+        emissive: 0x0a1430,
+        emissiveIntensity: 0.18,
       }),
     );
-    panel.position.x = side * 0.22 * scale;
+    panel.position.set(0, side * bodyR * 1.45, 0);
     g.add(panel);
   }
+
+  // Antenna dish
+  const dishMast = new THREE.Mesh(
+    new THREE.CylinderGeometry(s * 0.005, s * 0.005, s * 0.18, 6),
+    new THREE.MeshStandardMaterial({ color: 0x8a8378, roughness: 0.6, metalness: 0.5 }),
+  );
+  dishMast.position.set(0, 0, bodyR * 1.4);
+  g.add(dishMast);
+  const dish = new THREE.Mesh(
+    new THREE.CylinderGeometry(bodyR * 0.55, bodyR * 0.55, s * 0.012, 16),
+    new THREE.MeshStandardMaterial({ color: 0xe0d8c4, roughness: 0.5, metalness: 0.4 }),
+  );
+  dish.position.set(0, 0, bodyR * 1.55);
+  g.add(dish);
+
   return g;
 }
 
-function buildCubeSat(scale: number): THREE.Group {
+/**
+ * Starlink — flat phased-array spacecraft. Distinctive look: a thin flat
+ * rectangular bus with a single long solar panel that unfolds from one
+ * edge. We render that "flat panel + folded out solar wing" silhouette.
+ */
+function buildStarlink(s: number): THREE.Group {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.18 * scale, 0.18 * scale, 0.18 * scale),
+  const solarTex = sharedSolarTex();
+
+  // Main bus — flat rectangular phased-array antenna
+  const busW = s * 0.7;
+  const busL = s * 0.7;
+  const busH = s * 0.04;
+  const bus = new THREE.Mesh(
+    new THREE.BoxGeometry(busW, busH, busL),
     new THREE.MeshStandardMaterial({
-      color: 0xb89776,
+      color: 0xd2cfc6,
       roughness: 0.55,
-      metalness: 0.55,
+      metalness: 0.7,
     }),
   );
-  g.add(body);
-  const antenna = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.005 * scale, 0.005 * scale, 0.35 * scale, 6),
-    new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.4 }),
-  );
-  antenna.position.y = 0.22 * scale;
-  g.add(antenna);
-  return g;
-}
+  g.add(bus);
 
-function buildRocketStage(scale: number): THREE.Group {
-  // Spent upper stage: dented metallic cylinder + a charred nozzle.
-  const g = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.1 * scale, 0.1 * scale, 0.55 * scale, 14),
+  // Antenna face (dark phased array on the bottom)
+  const arrayFace = new THREE.Mesh(
+    new THREE.BoxGeometry(busW * 0.92, s * 0.003, busL * 0.92),
     new THREE.MeshStandardMaterial({
-      color: 0x8a8378,
-      roughness: 0.85,
-      metalness: 0.45,
-    }),
-  );
-  body.rotation.z = Math.PI / 2;
-  g.add(body);
-  const nozzle = new THREE.Mesh(
-    new THREE.ConeGeometry(0.12 * scale, 0.18 * scale, 14),
-    new THREE.MeshStandardMaterial({
-      color: 0x35302a,
-      roughness: 0.9,
+      color: 0x1a1c22,
+      roughness: 0.7,
       metalness: 0.3,
     }),
   );
-  nozzle.rotation.z = -Math.PI / 2;
-  nozzle.position.x = -0.36 * scale;
-  g.add(nozzle);
+  arrayFace.position.y = -busH * 0.55;
+  g.add(arrayFace);
+
+  // Big single solar panel unfurled to one side
+  const panelW = s * 0.06;
+  const panelL = s * 0.7;
+  const panelH = s * 1.1;
+  const panel = new THREE.Mesh(
+    new THREE.BoxGeometry(panelW, s * 0.006, panelH),
+    new THREE.MeshStandardMaterial({
+      map: solarTex,
+      color: 0xffffff,
+      roughness: 0.35,
+      metalness: 0.4,
+      emissive: 0x0a1430,
+      emissiveIntensity: 0.2,
+    }),
+  );
+  panel.position.set(busW * 0.5 + panelH * 0.5, 0, 0);
+  panel.rotation.y = Math.PI / 2;
+  g.add(panel);
+
+  // Hinge between bus and panel
+  const hinge = new THREE.Mesh(
+    new THREE.CylinderGeometry(s * 0.008, s * 0.008, panelL * 0.6, 8),
+    new THREE.MeshStandardMaterial({ color: 0x9a9388, roughness: 0.5, metalness: 0.6 }),
+  );
+  hinge.position.set(busW * 0.52, 0, 0);
+  hinge.rotation.x = Math.PI / 2;
+  g.add(hinge);
+
   return g;
 }
+
+/** Reusable scratch vector for satellite look-at maths (avoids per-frame alloc). */
+const _satTmpTarget = new THREE.Vector3();
 
 function satellitePosition(spec: SatelliteSpec, earthRadius: number, time: number): THREE.Vector3 {
   const r = earthRadius * spec.radiusMul;
@@ -853,30 +1086,37 @@ export function makeEarthOrbitals(earthRadius: number, lite: boolean): EarthOrbi
   const group = new THREE.Group();
   group.name = 'earthOrbitalsGroup';
 
-  // ── Named satellites ─────────────────────────────────────
+  // ── Three named satellites: ISS, Hubble, Starlink ────────
+  //
+  // Real LEO satellites are ~10⁻⁵ the diameter of Earth — invisible at
+  // this scale. We compromise: meshScale ≈ 12% of Earth radius so each
+  // satellite is a tiny but recognisable silhouette when the camera
+  // orbits in close. Slow angular speeds (~0.018-0.03 rad/sec → one
+  // full orbit every 3-6 min real time) keep the motion gentle.
   const sats: { mesh: THREE.Group; spec: SatelliteSpec }[] = [];
-  const meshScale = earthRadius * 1.4;
+  const meshScale = earthRadius * 0.12;
 
   const specs: SatelliteSpec[] = [
-    { radiusMul: 1.045, inclination: 0.9,  raan: 0.6, phase: 0,    angularSpeed: 0.6, kind: 'iss' },
-    { radiusMul: 1.062, inclination: 1.71, raan: 2.1, phase: 1.2,  angularSpeed: 0.46, kind: 'hubble' },
-    { radiusMul: 1.085, inclination: 0.35, raan: 3.4, phase: 2.4,  angularSpeed: 0.32, kind: 'cube' },
-    { radiusMul: 1.115, inclination: 1.34, raan: 4.7, phase: 3.5,  angularSpeed: 0.27, kind: 'rocket-stage' },
-    { radiusMul: 1.038, inclination: 0.58, raan: 5.5, phase: 0.9,  angularSpeed: 0.68, kind: 'cube' },
+    // ISS: 51.6° inclination, ~400 km altitude → close to Earth.
+    { radiusMul: 1.055, inclination: 0.901, raan: 0.6, phase: 0,   angularSpeed: 0.026, spinSpeed: 0.0, kind: 'iss' },
+    // Hubble: 28.5° inclination, ~540 km altitude.
+    { radiusMul: 1.085, inclination: 0.497, raan: 2.4, phase: 2.1, angularSpeed: 0.022, spinSpeed: 0.0, kind: 'hubble' },
+    // Starlink: 53° inclination, ~550 km altitude — different RAAN so it
+    // doesn't visually collide with Hubble.
+    { radiusMul: 1.10,  inclination: 0.925, raan: 4.4, phase: 4.2, angularSpeed: 0.020, spinSpeed: 0.0, kind: 'starlink' },
   ];
 
   for (const spec of specs) {
     let mesh: THREE.Group;
-    if (spec.kind === 'iss') mesh = buildIssLikeSatellite(meshScale);
-    else if (spec.kind === 'hubble') mesh = buildHubbleLike(meshScale);
-    else if (spec.kind === 'rocket-stage') mesh = buildRocketStage(meshScale);
-    else mesh = buildCubeSat(meshScale);
+    if (spec.kind === 'iss') mesh = buildIss(meshScale);
+    else if (spec.kind === 'hubble') mesh = buildHubble(meshScale);
+    else mesh = buildStarlink(meshScale);
     group.add(mesh);
     sats.push({ mesh, spec });
   }
 
   // ── Orbital debris (tiny points cloud) ───────────────────
-  const debrisCount = lite ? 220 : 520;
+  const debrisCount = lite ? 80 : 180;
   const debrisPos = new Float32Array(debrisCount * 3);
   const debrisCol = new Float32Array(debrisCount * 3);
   const debrisRadii = new Float32Array(debrisCount);
@@ -886,12 +1126,12 @@ export function makeEarthOrbitals(earthRadius: number, lite: boolean): EarthOrbi
   const debrisSpeed = new Float32Array(debrisCount);
 
   for (let i = 0; i < debrisCount; i++) {
-    const radiusMul = 1.03 + Math.random() * 0.18;
+    const radiusMul = 1.04 + Math.random() * 0.22;
     debrisRadii[i] = earthRadius * radiusMul;
     debrisInc[i] = (Math.random() - 0.5) * Math.PI * 0.7;
     debrisRaan[i] = Math.random() * Math.PI * 2;
     debrisPhase[i] = Math.random() * Math.PI * 2;
-    debrisSpeed[i] = (0.18 + Math.random() * 0.7) * (1 / radiusMul);
+    debrisSpeed[i] = (0.014 + Math.random() * 0.024) * (1 / radiusMul);
     const shade = 0.55 + Math.random() * 0.45;
     debrisCol[i * 3] = 0.84 * shade;
     debrisCol[i * 3 + 1] = 0.84 * shade;
@@ -903,10 +1143,10 @@ export function makeEarthOrbitals(earthRadius: number, lite: boolean): EarthOrbi
   debrisGeo.setAttribute('color', new THREE.BufferAttribute(debrisCol, 3));
 
   const debrisMat = new THREE.PointsMaterial({
-    size: earthRadius * 0.025,
+    size: earthRadius * 0.012,
     vertexColors: true,
     transparent: true,
-    opacity: 0.85,
+    opacity: 0.78,
     depthWrite: false,
     sizeAttenuation: true,
     blending: THREE.NormalBlending,
@@ -923,16 +1163,18 @@ export function makeEarthOrbitals(earthRadius: number, lite: boolean): EarthOrbi
     group,
     update(dtSec: number) {
       time += dtSec;
-      // Satellites
+      // Satellites — point each one along its velocity vector. The mesh's
+      // local +Z faces along the orbital motion. lookAt() works in world
+      // space, so the target has to account for the parent group's
+      // current world position (which the canvas keeps in sync with Earth).
+      _satTmpTarget.copy(group.position);
       for (const { mesh, spec } of sats) {
         const pos = satellitePosition(spec, earthRadius, time);
+        const next = satellitePosition(spec, earthRadius, time + 0.05);
         mesh.position.copy(pos);
-        // Orient body along velocity direction for the cylindrical sats.
-        if (spec.kind === 'hubble' || spec.kind === 'rocket-stage') {
-          const next = satellitePosition(spec, earthRadius, time + 0.05);
-          mesh.lookAt(next);
-        }
-        mesh.rotation.x += dtSec * 0.6;
+        _satTmpTarget.copy(group.position).add(next);
+        mesh.lookAt(_satTmpTarget);
+        if (spec.spinSpeed !== 0) mesh.rotateY(dtSec * spec.spinSpeed);
       }
       // Debris
       const arr = posAttr.array as Float32Array;
@@ -964,6 +1206,8 @@ export function makeEarthOrbitals(earthRadius: number, lite: boolean): EarthOrbi
       });
       debrisGeo.dispose();
       debrisMat.dispose();
+      // Solar + MLI textures are shared across builders; dispose once here.
+      disposeSharedTextures();
     },
   };
 }
