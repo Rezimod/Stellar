@@ -12,31 +12,25 @@ import {
 import { siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
-import {
-  applySaturnRingTexture,
-  createSaturnRingMaterial,
-  disposeSaturnRingMaterial,
-  disposeSaturnRingTexture,
-  getSaturnRingTexture,
-  loadSaturnRingTexture,
-} from '@/lib/solar-system/saturn-rings';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import {
   makeOrbitRings,
   disposeOrbitRings,
   makeAsteroidBelt,
   makeKuiperBelt,
-  makeComets,
   makeEarthExtras,
+  makeEarthOrbitals,
   makeAtmosphereShell,
   disposeAtmosphereShell,
   makeSunExtras,
   makeMilkyWayBand,
   disposeMilkyWayBand,
+  makeSaturnParticleRings,
   type BeltHandle,
-  type CometHandle,
   type EarthExtrasHandle,
+  type EarthOrbitalHandle,
   type SunExtrasHandle,
+  type SaturnRingsHandle,
 } from '@/lib/solar-system/scene-extras';
 
 export interface SolarSystemCanvasProps {
@@ -50,10 +44,6 @@ export interface SolarSystemCanvasProps {
 }
 
 function disposeMat(m: THREE.Material) {
-  if (m instanceof THREE.MeshStandardMaterial && m.map === getSaturnRingTexture()) {
-    disposeSaturnRingMaterial(m);
-    return;
-  }
   if (m instanceof THREE.MeshStandardMaterial) disposePlanetMaterial(m);
   else m.dispose();
 }
@@ -178,14 +168,14 @@ export function SolarSystemCanvas({
 
     updateSystemCamera();
 
-    scene.add(new THREE.AmbientLight(0x1a2240, 0.38));
-    const key = new THREE.DirectionalLight(0xfff0dd, 0.55);
+    scene.add(new THREE.AmbientLight(0x141a30, 0.22));
+    const key = new THREE.DirectionalLight(0xfff0dd, 0.4);
     key.position.set(12, 8, 18);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.15);
+    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.12);
     fill.position.set(-18, -6, -10);
     scene.add(fill);
-    const sunLight = new THREE.PointLight(0xfff4e0, 2.8, 220, 1.4);
+    const sunLight = new THREE.PointLight(0xfff4e0, 3.6, 260, 1.25);
     sunLight.name = 'sunLight';
     scene.add(sunLight);
 
@@ -238,13 +228,12 @@ export function SolarSystemCanvas({
     const kuiperBelt: BeltHandle = makeKuiperBelt(scaleRef.current, lite);
     scene.add(kuiperBelt.group);
 
-    const comets: CometHandle = makeComets(scaleRef.current, lite);
-    scene.add(comets.group);
-
     const sunExtras: SunExtrasHandle = makeSunExtras(worldRadiusForBody('sun'));
     scene.add(sunExtras.group);
 
     let earthExtras: EarthExtrasHandle | null = null;
+    let earthOrbitals: EarthOrbitalHandle | null = null;
+    let saturnRings: SaturnRingsHandle | null = null;
     const atmosphereShells = new Map<SolarBodyId, THREE.Mesh>();
 
     const bodies = new THREE.Group();
@@ -298,12 +287,6 @@ export function SolarSystemCanvas({
       );
     }
 
-    loadSaturnRingTexture(loader, maxAniso).then((ringTex) => {
-      if (textureLoadsCancelled) return;
-      const saturnMesh = meshById.get('saturn');
-      if (saturnMesh) applySaturnRingTexture(saturnMesh, ringTex);
-    }).catch(() => { /* rings stay transparent until retry on remount */ });
-
     const hitPickRadiusMul = 4.2;
 
     let lastFocus: SolarBodyId | null = null;
@@ -348,6 +331,16 @@ export function SolarSystemCanvas({
             bodies.remove(earthExtras.moonGroup);
             earthExtras.dispose();
             earthExtras = null;
+            if (earthOrbitals) {
+              bodies.remove(earthOrbitals.group);
+              earthOrbitals.dispose();
+              earthOrbitals = null;
+            }
+          }
+          if (id === 'saturn' && saturnRings) {
+            bodies.remove(saturnRings.group);
+            saturnRings.dispose();
+            saturnRings = null;
           }
         }
       }
@@ -402,6 +395,9 @@ export function SolarSystemCanvas({
             mesh.add(earthExtras.atmosphereMesh);
             // Moon group attached at scene level so it doesn't inherit Earth's spin.
             bodies.add(earthExtras.moonGroup);
+            // Satellites + debris orbiting Earth in an inertial frame.
+            earthOrbitals = makeEarthOrbitals(er, lite);
+            bodies.add(earthOrbitals.group);
           }
 
           if ((s.id === 'venus' || s.id === 'mars') && !atmosphereShells.has(s.id)) {
@@ -421,40 +417,21 @@ export function SolarSystemCanvas({
             mesh.add(shell);
           }
 
-          if (s.id === 'saturn') {
+          if (s.id === 'jupiter' && !atmosphereShells.has('jupiter')) {
+            const pr = worldRadiusForBody('jupiter');
+            const shell = makeAtmosphereShell(pr, 0xffd9a8, 1.035, 0.85, 2.8);
+            atmosphereShells.set('jupiter', shell);
+            mesh.add(shell);
+          }
+
+          if (s.id === 'saturn' && !saturnRings) {
             const sr = worldRadiusForBody('saturn');
             const tilt = THREE.MathUtils.degToRad(26.7);
             mesh.rotation.z = tilt;
-
-            const ringSegs = lite ? 192 : 256;
-            const ringLoaded = getSaturnRingTexture();
-            const ringMat = ringLoaded
-              ? createSaturnRingMaterial(ringLoaded)
-              : new THREE.MeshStandardMaterial({
-                  transparent: true,
-                  opacity: 0,
-                  side: THREE.DoubleSide,
-                  depthWrite: false,
-                });
-
-            const ringInner = new THREE.Mesh(
-              new THREE.RingGeometry(sr * 1.235, sr * 2.352, ringSegs),
-              ringMat,
-            );
-            ringInner.name = 'saturnRing';
-            ringInner.rotation.x = Math.PI / 2;
-            ringInner.renderOrder = 1;
-            mesh.add(ringInner);
-
-            const ringBack = ringInner.clone();
-            ringBack.name = 'saturnRingBack';
-            ringBack.material = ringMat instanceof THREE.MeshStandardMaterial
-              ? ringMat.clone()
-              : ringMat;
-            ringBack.rotation.x = Math.PI / 2;
-            ringBack.rotation.y = Math.PI;
-            ringBack.renderOrder = 1;
-            mesh.add(ringBack);
+            saturnRings = makeSaturnParticleRings(sr, lite);
+            saturnRings.group.rotation.z = tilt;
+            // Rings sit at scene level so they don't inherit Saturn's spin.
+            bodies.add(saturnRings.group);
           }
         }
         mesh.position.copy(s.position);
@@ -676,12 +653,20 @@ export function SolarSystemCanvas({
         asteroidBelt.update(dtSec);
         kuiperBelt.update(dtSec);
         earthExtras?.update(epochRef.current);
+        earthOrbitals?.update(dtSec);
+        saturnRings?.update(dtSec);
       }
       if (earthExtras) {
         const earthMesh = meshById.get('earth');
-        if (earthMesh) earthExtras.moonGroup.position.copy(earthMesh.position);
+        if (earthMesh) {
+          earthExtras.moonGroup.position.copy(earthMesh.position);
+          if (earthOrbitals) earthOrbitals.group.position.copy(earthMesh.position);
+        }
       }
-      comets.update(epochRef.current);
+      if (saturnRings) {
+        const saturnMesh = meshById.get('saturn');
+        if (saturnMesh) saturnRings.group.position.copy(saturnMesh.position);
+      }
       sunExtras.update(camera.position, sunMesh?.position ?? new THREE.Vector3(), dtSec);
 
       renderer.render(scene, camera);
@@ -704,18 +689,26 @@ export function SolarSystemCanvas({
       textureLoadsCancelled = true;
       textureById.forEach((tex) => tex.dispose());
       textureById.clear();
-      disposeSaturnRingTexture();
 
       if (earthExtras) {
         bodies.remove(earthExtras.moonGroup);
         earthExtras.dispose();
         earthExtras = null;
       }
+      if (earthOrbitals) {
+        bodies.remove(earthOrbitals.group);
+        earthOrbitals.dispose();
+        earthOrbitals = null;
+      }
+      if (saturnRings) {
+        bodies.remove(saturnRings.group);
+        saturnRings.dispose();
+        saturnRings = null;
+      }
       atmosphereShells.forEach((shell) => disposeAtmosphereShell(shell));
       atmosphereShells.clear();
       asteroidBelt.dispose();
       kuiperBelt.dispose();
-      comets.dispose();
       sunExtras.dispose();
       disposeOrbitRings(orbitRings);
       disposeMilkyWayBand(milkyWay);
