@@ -134,20 +134,33 @@ export default function SkyPage() {
   // Re-fetch every minute so live state stays current — but skip the
   // refresh while the tab is hidden (no-one is looking) and resume on
   // visibility change so we never go more than ~one minute stale once
-  // the user comes back.
+  // the user comes back. Also refetch on window focus so returning from a
+  // background tab gives the user a fresh sky immediately.
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const tick = () => {
-      if (document.visibilityState === 'visible') fetchFinder();
+      if (document.visibilityState === 'visible') {
+        setSkyTime(new Date());
+        fetchFinder();
+      }
     };
     const id = window.setInterval(tick, REFRESH_MS);
     const onVis = () => {
-      if (document.visibilityState === 'visible') fetchFinder();
+      if (document.visibilityState === 'visible') {
+        setSkyTime(new Date());
+        fetchFinder();
+      }
+    };
+    const onFocus = () => {
+      setSkyTime(new Date());
+      fetchFinder();
     };
     document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('focus', onFocus);
     return () => {
       window.clearInterval(id);
       document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('focus', onFocus);
     };
   }, [fetchFinder]);
 

@@ -8,13 +8,15 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, RefreshCcw, SlidersHorizontal, X } from 'lucide-react';
+import { Camera, CameraOff, ChevronDown, RefreshCcw, SlidersHorizontal, X } from 'lucide-react';
 import { PlanetIcon } from './PlanetIcon';
 import {
   azimuthToCardinal,
   effectiveFov,
   shortestAzDelta,
 } from '@/lib/sky/ar';
+import { projectBodyToScreen } from '@/lib/sky/projection';
+import { useCamera } from '@/hooks/useCamera';
 import {
   angularSeparation,
   type HeadingStatus,
@@ -207,6 +209,35 @@ export function ARFinder({
   const [alignment, setAlignment] = useState<AlignmentState>(() => loadAlignment());
   const [alignmentOpen, setAlignmentOpen] = useState(false);
 
+  // Live rear-camera feed. The AR experience auto-starts the camera when the
+  // overlay opens — that's what the user means by "point my phone's back
+  // camera and see exact positions". The camera layer sits underneath every
+  // marker, so projected bodies overlay the real sky.
+  const { videoRef, stream, error: cameraError, startCamera, stopCamera } = useCamera();
+  const cameraOn = stream != null;
+  const [cameraAllowed, setCameraAllowed] = useState(true);
+
+  useEffect(() => {
+    if (!cameraAllowed) return;
+    void startCamera('environment');
+    return () => {
+      stopCamera();
+    };
+    // We deliberately only start once on mount — restarting the stream on
+    // every render causes the iOS permission dialog to re-fire.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggleCamera = useCallback(() => {
+    if (cameraOn) {
+      stopCamera();
+      setCameraAllowed(false);
+    } else {
+      setCameraAllowed(true);
+      void startCamera('environment');
+    }
+  }, [cameraOn, startCamera, stopCamera]);
+
   // Stars are computed once when the immersive view opens. They drift
   // ~0.25°/min — plenty accurate for a session lasting a few minutes.
   const stars = useMemo<PositionedStar[]>(() => {
@@ -344,11 +375,22 @@ export function ARFinder({
 
   const project = useCallback(
     (az: number, alt: number) => {
-      const dAz = shortestAzDelta(az, phoneAim.azimuth);
-      const dAlt = alt - phoneAim.altitude;
-      const screenX = (dAz / hFov) * viewport.w + viewport.w / 2;
-      const screenY = -(dAlt / vFov) * viewport.h + viewport.h / 2;
-      return { dAz, dAlt, screenX, screenY };
+      const p = projectBodyToScreen(
+        { altitude: alt, azimuth: az },
+        { altitude: phoneAim.altitude, azimuth: phoneAim.azimuth },
+        hFov,
+        vFov,
+        viewport.w,
+        viewport.h,
+      );
+      return {
+        dAz: p.dAz,
+        dAlt: p.dAlt,
+        screenX: p.screenX,
+        screenY: p.screenY,
+        inFront: p.inFront,
+        sep: p.sep,
+      };
     },
     [phoneAim, hFov, vFov, viewport],
   );
@@ -360,12 +402,15 @@ export function ARFinder({
 
   const bodies = useMemo(() => {
     return objects.map((o) => {
-      const { dAz, dAlt, screenX, screenY } = project(o.azimuth, o.altitude);
-      const onScreen = Math.abs(dAz) <= hFov * 0.6 && Math.abs(dAlt) <= vFov * 0.6;
+      const { dAz, dAlt, screenX, screenY, inFront } = project(o.azimuth, o.altitude);
+      const onScreen =
+        inFront &&
+        screenX >= -8 && screenX <= viewport.w + 8 &&
+        screenY >= -8 && screenY <= viewport.h + 8;
       const sep = angularSeparation(o.altitude, o.azimuth, phoneAim.altitude, phoneAim.azimuth);
       return { obj: o, screenX, screenY, dAz, dAlt, sep, onScreen };
     });
-  }, [objects, project, hFov, vFov, phoneAim]);
+  }, [objects, project, viewport, phoneAim]);
 
   const bodiesSortedForRender = useMemo(() => {
     return bodies.slice().sort((a, b) => {
@@ -380,11 +425,14 @@ export function ARFinder({
       .filter((s) => s.altitude > -2)
       .map((s) => {
         const skyStar = { ...s, constellation: STAR_TO_CONSTELLATION[s.id] };
-        const { dAz, dAlt, screenX, screenY } = project(s.azimuth, s.altitude);
-        const onScreen = Math.abs(dAz) <= hFov * 0.55 && Math.abs(dAlt) <= vFov * 0.55;
+        const { screenX, screenY, inFront } = project(s.azimuth, s.altitude);
+        const onScreen =
+          inFront &&
+          screenX >= -4 && screenX <= viewport.w + 4 &&
+          screenY >= -4 && screenY <= viewport.h + 4;
         return { star: skyStar, screenX, screenY, onScreen };
       });
-  }, [stars, project, hFov, vFov]);
+  }, [stars, project, viewport]);
 
   const activeConstellation = useMemo(() => {
     if (!activeBody) return null;
@@ -575,6 +623,7 @@ export function ARFinder({
 
   const constellationSegments = useMemo(() => {
     const out: { aId: string; bId: string; x1: number; y1: number; x2: number; y2: number }[] = [];
+    const pad = 12;
     for (const [aId, bId] of CONSTELLATION_LINES) {
       const a = starById.get(aId);
       const b = starById.get(bId);
@@ -582,13 +631,14 @@ export function ARFinder({
       if (a.altitude < -1 || b.altitude < -1) continue;
       const pa = project(a.azimuth, a.altitude);
       const pb = project(b.azimuth, b.altitude);
-      const aOn = Math.abs(pa.dAz) <= hFov * 0.6 && Math.abs(pa.dAlt) <= vFov * 0.6;
-      const bOn = Math.abs(pb.dAz) <= hFov * 0.6 && Math.abs(pb.dAlt) <= vFov * 0.6;
+      if (!pa.inFront && !pb.inFront) continue;
+      const aOn = pa.inFront && pa.screenX >= -pad && pa.screenX <= viewport.w + pad && pa.screenY >= -pad && pa.screenY <= viewport.h + pad;
+      const bOn = pb.inFront && pb.screenX >= -pad && pb.screenX <= viewport.w + pad && pb.screenY >= -pad && pb.screenY <= viewport.h + pad;
       if (!aOn && !bOn) continue;
       out.push({ aId, bId, x1: pa.screenX, y1: pa.screenY, x2: pb.screenX, y2: pb.screenY });
     }
     return out;
-  }, [starById, project, hFov, vFov]);
+  }, [starById, project, viewport]);
 
   // Picker lists every catalog object so the user can browse first, then
   // opt into guidance. Visible bodies float to the top.
@@ -606,7 +656,20 @@ export function ARFinder({
 
   const [pickerOpen, setPickerOpen] = useState(false);
   return (
-    <div className="ar-overlay" role="dialog" aria-modal="true" aria-label={t('title')}>
+    <div
+      className={`ar-overlay${cameraOn ? ' ar-overlay--camera-on' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('title')}
+    >
+      <video
+        ref={videoRef}
+        className="ar-overlay__camera"
+        autoPlay
+        playsInline
+        muted
+        aria-hidden="true"
+      />
       <div className="ar-overlay__starfield" aria-hidden="true">
         <div className="ar-overlay__starfield-haze" />
         <div className="ar-overlay__starfield-milkyway" />
@@ -700,11 +763,13 @@ export function ARFinder({
       </div>
 
       <div className="ar-overlay__layer">
-        {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen, dAz, dAlt }) => {
+        {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen }) => {
           // Render bodies a bit beyond the viewport so they fade in/out
           // smoothly as the user pans, instead of popping when they
           // cross the edge.
-          const inFadeBand = Math.abs(dAz) <= hFov * 0.85 && Math.abs(dAlt) <= vFov * 0.85;
+          const inFadeBand =
+            screenX >= -120 && screenX <= viewport.w + 120 &&
+            screenY >= -120 && screenY <= viewport.h + 120;
           if (!inFadeBand) return null;
           const isActive = obj.id === activeId;
           const baseOpacity = onScreen ? (isActive ? 1 : 0.94) : 0;
@@ -848,15 +913,32 @@ export function ARFinder({
             {cardinal} · {Math.round(phoneAim.azimuth)}°
           </div>
         </div>
-        <button
-          type="button"
-          className="ar-topbar__btn"
-          aria-label={t('close')}
-          onClick={onClose}
-        >
-          <X size={18} />
-        </button>
+        <div className="ar-overlay__topbar-actions">
+          <button
+            type="button"
+            className={`ar-topbar__btn${cameraOn ? ' is-active' : ''}`}
+            aria-label={cameraOn ? 'Turn off camera' : 'Turn on camera'}
+            aria-pressed={cameraOn}
+            onClick={toggleCamera}
+          >
+            {cameraOn ? <Camera size={18} /> : <CameraOff size={18} />}
+          </button>
+          <button
+            type="button"
+            className="ar-topbar__btn"
+            aria-label={t('close')}
+            onClick={onClose}
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
+
+      {!cameraOn && cameraError === 'permission_denied' && (
+        <div className="ar-camera-banner" role="status">
+          Camera blocked — Stellar is showing simulated stars. Enable camera in browser settings, then tap the camera button.
+        </div>
+      )}
     </div>
   );
 }

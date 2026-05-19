@@ -3,14 +3,15 @@
 // which uses a quaternion path that doesn't break near vertical.
 
 // Effective on-screen FOV after a portrait phone's rear camera is rendered
-// with `object-fit: cover`. The lens is wide (~60°), but in portrait we crop
-// the horizontal sides to fill a tall screen, so the visible horizontal FOV
-// shrinks to roughly a third of the screen height. Vertical stays close to
-// the lens's native vertical FOV. These are conservative defaults that work
-// reasonably across iPhone and modern Android.
-export const DEFAULT_HORIZONTAL_FOV = 38;
-export const DEFAULT_VERTICAL_FOV = 60;
-export const DEFAULT_DIAGONAL_FOV = 78;
+// with `object-fit: cover`. The lens is wide (~65° diagonal on modern
+// phones), but in portrait we crop the horizontal sides to fill a tall
+// screen, so the visible horizontal FOV shrinks while vertical stays close
+// to the lens's native vertical FOV. These defaults are tuned so the AR
+// projection lines up with what a typical iPhone/Pixel rear camera sees
+// — a slightly conservative diagonal so off-centre objects sit accurately.
+export const DEFAULT_HORIZONTAL_FOV = 42;
+export const DEFAULT_VERTICAL_FOV = 65;
+export const DEFAULT_DIAGONAL_FOV = 73;
 
 /** Signed shortest difference between two compass directions, in degrees. */
 export function shortestAzDelta(targetAz: number, fromAz: number): number {
