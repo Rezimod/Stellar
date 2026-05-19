@@ -21,6 +21,23 @@ import {
   loadSaturnRingTexture,
 } from '@/lib/solar-system/saturn-rings';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import {
+  makeOrbitRings,
+  disposeOrbitRings,
+  makeAsteroidBelt,
+  makeKuiperBelt,
+  makeComets,
+  makeEarthExtras,
+  makeAtmosphereShell,
+  disposeAtmosphereShell,
+  makeSunExtras,
+  makeMilkyWayBand,
+  disposeMilkyWayBand,
+  type BeltHandle,
+  type CometHandle,
+  type EarthExtrasHandle,
+  type SunExtrasHandle,
+} from '@/lib/solar-system/scene-extras';
 
 export interface SolarSystemCanvasProps {
   epochMs: number;
@@ -209,6 +226,27 @@ export function SolarSystemCanvas({
     );
     scene.add(stars);
 
+    const milkyWay = makeMilkyWayBand(lite);
+    scene.add(milkyWay);
+
+    const orbitRings = makeOrbitRings(scaleRef.current, plutoRef.current);
+    scene.add(orbitRings);
+
+    const asteroidBelt: BeltHandle = makeAsteroidBelt(scaleRef.current, lite);
+    scene.add(asteroidBelt.group);
+
+    const kuiperBelt: BeltHandle = makeKuiperBelt(scaleRef.current, lite);
+    scene.add(kuiperBelt.group);
+
+    const comets: CometHandle = makeComets(scaleRef.current, lite);
+    scene.add(comets.group);
+
+    const sunExtras: SunExtrasHandle = makeSunExtras(worldRadiusForBody('sun'));
+    scene.add(sunExtras.group);
+
+    let earthExtras: EarthExtrasHandle | null = null;
+    const atmosphereShells = new Map<SolarBodyId, THREE.Mesh>();
+
     const bodies = new THREE.Group();
     scene.add(bodies);
 
@@ -305,6 +343,12 @@ export function SolarSystemCanvas({
             (h.material as THREE.Material).dispose();
             hitById.delete(id);
           }
+          atmosphereShells.delete(id);
+          if (id === 'earth' && earthExtras) {
+            bodies.remove(earthExtras.moonGroup);
+            earthExtras.dispose();
+            earthExtras = null;
+          }
         }
       }
 
@@ -331,8 +375,9 @@ export function SolarSystemCanvas({
           if (s.id === 'sun') {
             const sunR = worldRadiusForBody('sun');
             const glowLayers = [
-              { scale: 1.22, opacity: 0.16, color: 0xffb347 },
-              { scale: 1.48, opacity: 0.06, color: 0xffb347 },
+              { scale: 1.22, opacity: 0.18, color: 0xffb347 },
+              { scale: 1.5, opacity: 0.08, color: 0xffa040 },
+              { scale: 2.1, opacity: 0.03, color: 0xff8030 },
             ];
             for (const layer of glowLayers) {
               const shell = new THREE.Mesh(
@@ -348,6 +393,32 @@ export function SolarSystemCanvas({
               shell.name = 'sunGlow';
               mesh.add(shell);
             }
+          }
+
+          if (s.id === 'earth' && !earthExtras) {
+            const er = worldRadiusForBody('earth');
+            earthExtras = makeEarthExtras(er, lite);
+            mesh.add(earthExtras.cloudMesh);
+            mesh.add(earthExtras.atmosphereMesh);
+            // Moon group attached at scene level so it doesn't inherit Earth's spin.
+            bodies.add(earthExtras.moonGroup);
+          }
+
+          if ((s.id === 'venus' || s.id === 'mars') && !atmosphereShells.has(s.id)) {
+            const pr = worldRadiusForBody(s.id);
+            const color = s.id === 'venus' ? 0xffd9a0 : 0xff8c5a;
+            const intensity = s.id === 'venus' ? 1.3 : 0.85;
+            const shell = makeAtmosphereShell(pr, color, 1.05, intensity, 2.6);
+            atmosphereShells.set(s.id, shell);
+            mesh.add(shell);
+          }
+
+          if ((s.id === 'uranus' || s.id === 'neptune') && !atmosphereShells.has(s.id)) {
+            const pr = worldRadiusForBody(s.id);
+            const color = s.id === 'uranus' ? 0x9fe6ec : 0x6f93ff;
+            const shell = makeAtmosphereShell(pr, color, 1.045, 1.05, 2.4);
+            atmosphereShells.set(s.id, shell);
+            mesh.add(shell);
           }
 
           if (s.id === 'saturn') {
@@ -575,7 +646,12 @@ export function SolarSystemCanvas({
     window.addEventListener('resize', onResize);
 
     let raf = 0;
+    let lastFrame = performance.now();
     const loop = () => {
+      const now = performance.now();
+      const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
+      lastFrame = now;
+
       syncMeshes();
       if (!reduceMotion) {
         meshById.forEach((mesh, id) => {
@@ -594,7 +670,20 @@ export function SolarSystemCanvas({
       } else {
         updateSystemCamera();
       }
-      if (!reduceMotion) stars.rotation.y += 0.000055;
+      if (!reduceMotion) {
+        stars.rotation.y += 0.000055;
+        milkyWay.rotation.y += 0.000022;
+        asteroidBelt.update(dtSec);
+        kuiperBelt.update(dtSec);
+        earthExtras?.update(epochRef.current);
+      }
+      if (earthExtras) {
+        const earthMesh = meshById.get('earth');
+        if (earthMesh) earthExtras.moonGroup.position.copy(earthMesh.position);
+      }
+      comets.update(epochRef.current);
+      sunExtras.update(camera.position, sunMesh?.position ?? new THREE.Vector3(), dtSec);
+
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
     };
@@ -616,6 +705,20 @@ export function SolarSystemCanvas({
       textureById.forEach((tex) => tex.dispose());
       textureById.clear();
       disposeSaturnRingTexture();
+
+      if (earthExtras) {
+        bodies.remove(earthExtras.moonGroup);
+        earthExtras.dispose();
+        earthExtras = null;
+      }
+      atmosphereShells.forEach((shell) => disposeAtmosphereShell(shell));
+      atmosphereShells.clear();
+      asteroidBelt.dispose();
+      kuiperBelt.dispose();
+      comets.dispose();
+      sunExtras.dispose();
+      disposeOrbitRings(orbitRings);
+      disposeMilkyWayBand(milkyWay);
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));
       meshById.clear();
