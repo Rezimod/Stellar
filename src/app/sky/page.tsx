@@ -395,6 +395,7 @@ export default function SkyPage() {
           observerLon={location.lon}
           heading={compass.heading}
           altitude={compass.altitude}
+          roll={compass.roll}
           accuracy={compass.accuracy}
           headingStatus={compass.status}
           activeId={arActiveId}

@@ -39,6 +39,9 @@ interface ARFinderProps {
    *  immersive view picks up wherever the dome left off. */
   heading: number | null;
   altitude: number | null;
+  /** Camera roll in degrees, from the shared heading hook. Lets the AR
+   *  view rotate markers when the phone is held tilted laterally. */
+  roll: number | null;
   accuracy: number | null;
   headingStatus: HeadingStatus;
   /** When set, the view leads the user to this body — edge arrow when
@@ -194,6 +197,7 @@ export function ARFinder({
   observerLon,
   heading,
   altitude,
+  roll,
   accuracy,
   headingStatus,
   activeId,
@@ -382,6 +386,7 @@ export function ARFinder({
         vFov,
         viewport.w,
         viewport.h,
+        roll ?? 0,
       );
       return {
         dAz: p.dAz,
@@ -392,7 +397,7 @@ export function ARFinder({
         sep: p.sep,
       };
     },
-    [phoneAim, hFov, vFov, viewport],
+    [phoneAim, hFov, vFov, viewport, roll],
   );
 
   const activeBody = useMemo(() => {

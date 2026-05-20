@@ -31,6 +31,15 @@ export interface UseDeviceHeading {
    * −90 = straight down, 0 = horizon, +90 = zenith. Null until the first event.
    */
   altitude: number | null;
+  /**
+   * Signed roll of the camera around its forward axis, in degrees.
+   * 0 = top of screen aligned with world-up (image is right-side-up).
+   * Positive = phone rolled clockwise as seen from behind the camera, so the
+   * world appears rotated counter-clockwise in the camera image. The AR
+   * projection uses this to keep markers locked to real objects when the
+   * user holds the phone tilted.
+   */
+  roll: number | null;
   /** Has Stellar received any heading event yet? */
   live: boolean;
   status: HeadingStatus;
@@ -89,30 +98,70 @@ function smoothAngle(prev: number | null, next: number, alpha: number): number {
   return a;
 }
 
-/**
- * Back-of-phone unit vector in Earth frame (x=East, y=North, z=Up), built
- * from intrinsic ZXY Euler angles (W3C DeviceOrientationEvent convention).
- * The 3rd column of R = Rz(α)·Rx(β)·Ry(γ) is the device Z axis in world; the
- * back camera is the negation of that.
- */
-function backVectorWorld(alphaDeg: number, betaDeg: number, gammaDeg: number) {
-  const a = alphaDeg * DEG;
-  const b = betaDeg * DEG;
-  const g = gammaDeg * DEG;
-  const sa = Math.sin(a), ca = Math.cos(a);
-  const sb = Math.sin(b), cb = Math.cos(b);
-  const sg = Math.sin(g), cg = Math.cos(g);
-  const zx = ca * sg + sa * sb * cg;
-  const zy = sa * sg - ca * sb * cg;
-  const zz = cb * cg;
-  return { x: -zx, y: -zy, z: -zz };
-}
 
 interface PointingResult {
   /** Compass heading in degrees, 0=N, increasing clockwise. Null if alpha was missing. */
   heading: number | null;
   /** Altitude in degrees, [-90, +90]. */
   altitude: number;
+  /** Signed roll of the camera around its forward axis, in degrees. */
+  roll: number;
+}
+
+/**
+ * Build the back-of-phone forward vector + the device's screen-up vector
+ * in world ENU frame from intrinsic ZXY Euler angles, then derive the roll
+ * angle between the screen-up direction and the world-up direction
+ * projected onto the camera plane. Roll is what lets the AR projection
+ * rotate markers when the phone is held tilted laterally.
+ */
+function buildCameraFrame(alphaDeg: number, betaDeg: number, gammaDeg: number) {
+  const a = alphaDeg * DEG;
+  const b = betaDeg * DEG;
+  const g = gammaDeg * DEG;
+  const sa = Math.sin(a), ca = Math.cos(a);
+  const sb = Math.sin(b), cb = Math.cos(b);
+  const sg = Math.sin(g), cg = Math.cos(g);
+
+  // col2 of Rz(α)·Rx(β)·Ry(γ) — the device's screen-out (+Z) axis in world.
+  // Back of phone is the negation of that.
+  const fx = -(ca * sg + sa * sb * cg);
+  const fy = -(sa * sg - ca * sb * cg);
+  const fz = -(cb * cg);
+  // col1 — device's screen-up (+Y) axis in world.
+  const ux = -sa * cb;
+  const uy = ca * cb;
+  const uz = sb;
+
+  // Build the "ideal" image-up = world-up projected onto the plane
+  // perpendicular to the camera-forward direction, then normalised.
+  const dotFup = fx * 0 + fy * 0 + fz * 1; // shorthand for f · (0,0,1)
+  let ix = 0 - dotFup * fx;
+  let iy = 0 - dotFup * fy;
+  let iz = 1 - dotFup * fz;
+  const ilen = Math.hypot(ix, iy, iz);
+  if (ilen < 1e-3) {
+    // Camera is aimed straight up or straight down — world-up is parallel to
+    // forward. Fall back to "north" as the ideal image-up so roll stays defined.
+    ix = 0; iy = 1; iz = 0;
+  } else {
+    ix /= ilen; iy /= ilen; iz /= ilen;
+  }
+
+  // Signed angle from ideal-up → actual-up around the forward axis.
+  // dot = cos(roll); fwd · (ideal × actual) = sin(roll).
+  const dot = Math.max(-1, Math.min(1, ix * ux + iy * uy + iz * uz));
+  // cross = ideal × actual
+  const cx = iy * uz - iz * uy;
+  const cy = iz * ux - ix * uz;
+  const cz = ix * uy - iy * ux;
+  const sin = cx * fx + cy * fy + cz * fz;
+  const rollRad = Math.atan2(sin, dot);
+
+  return {
+    back: { x: fx, y: fy, z: fz },
+    rollDeg: rollRad / DEG,
+  };
 }
 
 /** Pull a stable (heading, altitude) pair out of a DeviceOrientationEvent across browsers. */
@@ -155,7 +204,8 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
     alphaWorld = alphaRaw != null && !Number.isNaN(alphaRaw) ? alphaRaw : 0;
   }
 
-  const v = backVectorWorld(alphaWorld, beta, gamma);
+  const frame = buildCameraFrame(alphaWorld, beta, gamma);
+  const v = frame.back;
   const altitude = Math.max(-90, Math.min(90, Math.asin(Math.max(-1, Math.min(1, v.z))) / DEG));
 
   // Heading = azimuth of the back-of-phone's horizontal projection, atan2(East, North).
@@ -172,7 +222,7 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
     heading = compass as number;
   }
 
-  return { heading, altitude };
+  return { heading, altitude, roll: frame.rollDeg };
 }
 
 function eventToPointingWithDeclination(
@@ -189,6 +239,20 @@ function eventToPointingWithDeclination(
     ...result,
     heading: wrap360(result.heading + declinationDeg),
   };
+}
+
+/** Linear low-pass for signed roll in degrees (no wrap needed — roll ∈ (-180, 180]). */
+function smoothRoll(prev: number | null, next: number, alpha: number): number {
+  if (prev === null) return next;
+  // Handle the (-180, +180] wrap so a roll snapping across the boundary
+  // doesn't average to the wrong direction.
+  let delta = next - prev;
+  if (delta > 180) delta -= 360;
+  else if (delta < -180) delta += 360;
+  let out = prev + delta * alpha;
+  if (out > 180) out -= 360;
+  else if (out < -180) out += 360;
+  return out;
 }
 
 const LEGACY_OFFSET_KEY = 'stellar.sky.compass.offset';
@@ -236,6 +300,7 @@ function alphaForProximity(deg: number | null): number {
 export function useDeviceHeading(lat?: number | null, lon?: number | null): UseDeviceHeading {
   const [rawHeading, setRawHeading] = useState<number | null>(null);
   const [altitude, setAltitude] = useState<number | null>(null);
+  const [roll, setRoll] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [status, setStatus] = useState<HeadingStatus>('idle');
   const [live, setLive] = useState(false);
@@ -249,6 +314,7 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
     setOffset(loadOffset(offsetKey));
     smoothedHeadingRef.current = null;
     smoothedAltRef.current = null;
+    smoothedRollRef.current = null;
   }, [offsetKey]);
 
   const declinationDeg = useMemo(() => {
@@ -263,6 +329,7 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
 
   const smoothedHeadingRef = useRef<number | null>(null);
   const smoothedAltRef = useRef<number | null>(null);
+  const smoothedRollRef = useRef<number | null>(null);
   const handlerRef = useRef<((e: DeviceOrientationEvent) => void) | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const proximityRef = useRef<number | null>(null);
@@ -310,6 +377,13 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
       smoothedAltRef.current = smoothedAlt;
       setAltitude(smoothedAlt);
 
+      // Roll changes slower than heading/altitude, but the user can still
+      // rotate the phone quickly. Use the same adaptive alpha so it tracks
+      // hand motion without jitter.
+      const smoothedRoll = smoothRoll(smoothedRollRef.current, next.roll, alphaSmooth);
+      smoothedRollRef.current = smoothedRoll;
+      setRoll(smoothedRoll);
+
       const acc = (e as unknown as { webkitCompassAccuracy?: number }).webkitCompassAccuracy;
       if (typeof acc === 'number' && acc >= 0) setAccuracy(acc);
     };
@@ -355,8 +429,10 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
     setLive(false);
     setRawHeading(null);
     setAltitude(null);
+    setRoll(null);
     smoothedHeadingRef.current = null;
     smoothedAltRef.current = null;
+    smoothedRollRef.current = null;
     setStatus('idle');
   }, [detach]);
 
@@ -385,6 +461,7 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
   return {
     heading,
     altitude,
+    roll,
     live,
     status,
     accuracy,

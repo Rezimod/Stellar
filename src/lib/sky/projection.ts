@@ -71,6 +71,10 @@ export function shortestAzDelta(targetAz: number, fromAz: number): number {
  * @param verticalFovDeg   Effective vertical FOV.
  * @param viewportWidth    Pixels.
  * @param viewportHeight   Pixels.
+ * @param rollDeg          Optional camera roll in degrees. Lets markers rotate
+ *                         with the phone when it's held tilted laterally. 0 (or
+ *                         omitted) means "phone held upright" — image-up
+ *                         aligns with world-up projected.
  */
 export function projectBodyToScreen(
   target: { altitude: number; azimuth: number },
@@ -79,6 +83,7 @@ export function projectBodyToScreen(
   verticalFovDeg: number,
   viewportWidth: number,
   viewportHeight: number,
+  rollDeg = 0,
 ): Projection {
   const t = altAzToVec(target.altitude, target.azimuth);
   const fwd = altAzToVec(cameraAim.altitude, cameraAim.azimuth);
@@ -118,8 +123,24 @@ export function projectBodyToScreen(
   // For points behind the camera, project onto the far side of the screen
   // along the angular direction so we can still draw edge arrows.
   const projZ = inFront ? zCam : Math.max(Math.abs(zCam), 1e-3) * -1;
-  const px = (xCam / projZ) / halfHFovTan;
-  const py = (yCam / projZ) / halfVFovTan;
+  // Angular tangents (isotropic image plane).
+  let ax = xCam / projZ;
+  let ay = yCam / projZ;
+
+  // Apply camera roll in angular space so the rotation is isotropic and
+  // doesn't smear horizontally when the phone aspect ratio is non-square.
+  if (rollDeg !== 0) {
+    const r = -rollDeg * DEG;
+    const cr = Math.cos(r);
+    const sr = Math.sin(r);
+    const nx = ax * cr - ay * sr;
+    const ny = ax * sr + ay * cr;
+    ax = nx;
+    ay = ny;
+  }
+
+  const px = ax / halfHFovTan;
+  const py = ay / halfVFovTan;
 
   const screenX = halfW + px * halfW;
   const screenY = halfH - py * halfH;
