@@ -52,19 +52,26 @@ export function createPlanetMaterial(
         metalness: 0,
       });
     }
+    // Per-body roughness/metalness tuned for the sharper space lighting in
+    // SolarSystemCanvas (low ambient + bright sun). Lower roughness on
+    // Earth/Jupiter/ice-giants gives a subtle ocean/cloud specular highlight
+    // when the sun grazes the limb; higher roughness on Mercury/Mars keeps
+    // their dry surfaces matte.
     const rough =
-      id === 'earth' ? 0.62 :
-      id === 'mars' ? 0.82 :
-      id === 'mercury' ? 0.92 :
-      id === 'saturn' ? 0.64 :
-      id === 'jupiter' ? 0.55 :
-      id === 'uranus' || id === 'neptune' ? 0.58 :
+      id === 'earth' ? 0.48 :
+      id === 'mars' ? 0.86 :
+      id === 'mercury' ? 0.94 :
+      id === 'saturn' ? 0.66 :
+      id === 'jupiter' ? 0.58 :
+      id === 'uranus' ? 0.52 :
+      id === 'neptune' ? 0.50 :
+      id === 'venus' ? 0.72 :
       0.74;
     const metal =
-      id === 'earth' ? 0.04 :
+      id === 'earth' ? 0.06 :
       id === 'jupiter' ? 0.02 :
       id === 'saturn' ? 0.03 :
-      id === 'uranus' || id === 'neptune' ? 0.04 :
+      id === 'uranus' || id === 'neptune' ? 0.05 :
       0.02;
     return new THREE.MeshStandardMaterial({
       map: diffuseTexture,

@@ -115,8 +115,8 @@ export function SolarSystemCanvas({
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
-    renderer.setClearColor(0x03060d, 1);
+    renderer.toneMappingExposure = 1.18;
+    renderer.setClearColor(0x01030a, 1);
     mount.appendChild(renderer.domElement);
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.width = '100%';
@@ -168,14 +168,17 @@ export function SolarSystemCanvas({
 
     updateSystemCamera();
 
-    scene.add(new THREE.AmbientLight(0x141a30, 0.22));
-    const key = new THREE.DirectionalLight(0xfff0dd, 0.4);
+    // Space lighting: the sun is the only real source. The ambient + fill
+    // are dialled way down so the night side of each planet reads truly
+    // dark and the terminator stays sharp.
+    scene.add(new THREE.AmbientLight(0x0a0e1c, 0.08));
+    const key = new THREE.DirectionalLight(0xfff0dd, 0.06);
     key.position.set(12, 8, 18);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.12);
+    const fill = new THREE.DirectionalLight(0x6a8cc8, 0.04);
     fill.position.set(-18, -6, -10);
     scene.add(fill);
-    const sunLight = new THREE.PointLight(0xfff4e0, 3.6, 260, 1.25);
+    const sunLight = new THREE.PointLight(0xfff4e0, 5.4, 380, 1.1);
     sunLight.name = 'sunLight';
     scene.add(sunLight);
 
@@ -184,6 +187,24 @@ export function SolarSystemCanvas({
     const STAR_N = lite ? 1200 : 4800;
     const starPos = new Float32Array(STAR_N * 3);
     const starCol = new Float32Array(STAR_N * 3);
+    // Spectral classes — rough population mix: most stars are cool M/K (red/orange),
+    // fewer are hot O/B (blue). Gives the sky a real, varied tint.
+    const SPECTRAL = [
+      { weight: 0.04, r: 0.66, g: 0.78, b: 1.00 }, // O/B — blue
+      { weight: 0.10, r: 0.84, g: 0.90, b: 1.00 }, // A — blue-white
+      { weight: 0.18, r: 0.98, g: 0.98, b: 1.00 }, // F — white
+      { weight: 0.18, r: 1.00, g: 0.96, b: 0.84 }, // G — sun yellow
+      { weight: 0.25, r: 1.00, g: 0.86, b: 0.66 }, // K — warm orange
+      { weight: 0.25, r: 1.00, g: 0.70, b: 0.52 }, // M — red
+    ];
+    const pickSpectral = () => {
+      let r = Math.random();
+      for (const s of SPECTRAL) {
+        if (r < s.weight) return s;
+        r -= s.weight;
+      }
+      return SPECTRAL[SPECTRAL.length - 1];
+    };
     for (let i = 0; i < STAR_N; i++) {
       const u = Math.random();
       const v = Math.random();
@@ -193,10 +214,11 @@ export function SolarSystemCanvas({
       starPos[i * 3] = r * Math.sin(p) * Math.cos(t);
       starPos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
       starPos[i * 3 + 2] = r * Math.cos(p);
-      const c = 0.55 + Math.random() * 0.45;
-      starCol[i * 3] = 0.82 * c;
-      starCol[i * 3 + 1] = 0.86 * c;
-      starCol[i * 3 + 2] = 1.0 * c;
+      const sp = pickSpectral();
+      const c = 0.45 + Math.random() * 0.55;
+      starCol[i * 3] = sp.r * c;
+      starCol[i * 3 + 1] = sp.g * c;
+      starCol[i * 3 + 2] = sp.b * c;
     }
     const starGeo = new THREE.BufferGeometry();
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));

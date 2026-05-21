@@ -10,6 +10,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { Camera, CameraOff, ChevronDown, RefreshCcw, SlidersHorizontal, X } from 'lucide-react';
 import { PlanetIcon } from './PlanetIcon';
+import { ARPlanet3DLayer, type PlanetPlacement } from './ARPlanet3DLayer';
 import {
   azimuthToCardinal,
   effectiveFov,
@@ -86,6 +87,12 @@ const AR_ALIGNMENT_KEY = 'stellar.sky.ar.alignment.v1';
 const MAX_ALIGNMENT_YAW = 24;
 const MAX_ALIGNMENT_PITCH = 18;
 const ALIGNMENT_STEP = 0.5;
+
+/** Bodies that get rendered as real 3D textured spheres by ARPlanet3DLayer
+ *  instead of the flat SVG glyph. Stars and DSOs keep the SVG fallback. */
+const PLANET3D_IDS = new Set([
+  'sun','moon','mercury','venus','earth','mars','jupiter','saturn','uranus','neptune',
+]);
 
 const CONSTELLATION_NAMES: Record<string, string> = {
   orion: 'ORION',
@@ -213,31 +220,19 @@ export function ARFinder({
   const [alignment, setAlignment] = useState<AlignmentState>(() => loadAlignment());
   const [alignmentOpen, setAlignmentOpen] = useState(false);
 
-  // Live rear-camera feed. The AR experience auto-starts the camera when the
-  // overlay opens — that's what the user means by "point my phone's back
-  // camera and see exact positions". The camera layer sits underneath every
-  // marker, so projected bodies overlay the real sky.
+  // Rear-camera feed is opt-in. The default AR experience is a pure black
+  // void with rendered 3D planets, so users see textured spheres exactly
+  // where each body sits in the sky. Tapping the camera button opts in to
+  // the live see-through view.
   const { videoRef, stream, error: cameraError, startCamera, stopCamera } = useCamera();
   const cameraOn = stream != null;
-  const [cameraAllowed, setCameraAllowed] = useState(true);
 
-  useEffect(() => {
-    if (!cameraAllowed) return;
-    void startCamera('environment');
-    return () => {
-      stopCamera();
-    };
-    // We deliberately only start once on mount — restarting the stream on
-    // every render causes the iOS permission dialog to re-fire.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => () => { stopCamera(); }, [stopCamera]);
 
   const toggleCamera = useCallback(() => {
     if (cameraOn) {
       stopCamera();
-      setCameraAllowed(false);
     } else {
-      setCameraAllowed(true);
       void startCamera('environment');
     }
   }, [cameraOn, startCamera, stopCamera]);
@@ -424,6 +419,32 @@ export function ARFinder({
       return b.sep - a.sep;
     });
   }, [bodies, activeId]);
+
+  // Placements fed to the 3D planet layer. Sizes match the SVG icon sizes
+  // used by the body buttons so the textured sphere sits inside the same
+  // tap target as the crosshair/label.
+  const planet3DPlacements = useMemo<PlanetPlacement[]>(() => {
+    const out: PlanetPlacement[] = [];
+    for (const row of bodies) {
+      if (!PLANET3D_IDS.has(row.obj.id)) continue;
+      const isActive = row.obj.id === activeId;
+      const size = isActive ? 56 : 40;
+      out.push({
+        id: row.obj.id,
+        screenX: row.screenX,
+        screenY: row.screenY,
+        size,
+        visible: row.onScreen,
+      });
+    }
+    return out;
+  }, [bodies, activeId]);
+
+  const sun3DScreen = useMemo(() => {
+    const sun = bodies.find((b) => b.obj.id === 'sun');
+    if (!sun) return null;
+    return { x: sun.screenX, y: sun.screenY };
+  }, [bodies]);
 
   const positionedStars = useMemo(() => {
     return stars
@@ -675,13 +696,6 @@ export function ARFinder({
         muted
         aria-hidden="true"
       />
-      <div className="ar-overlay__starfield" aria-hidden="true">
-        <div className="ar-overlay__starfield-haze" />
-        <div className="ar-overlay__starfield-milkyway" />
-        <div className="ar-overlay__starfield-dust" />
-        <div className="ar-overlay__starfield-comet ar-overlay__starfield-comet--a" />
-        <div className="ar-overlay__starfield-comet ar-overlay__starfield-comet--b" />
-      </div>
 
       <svg
         className="ar-constellations"
@@ -767,6 +781,13 @@ export function ARFinder({
         <span className="ar-horizon-line__label">{t('horizon')}</span>
       </div>
 
+      <ARPlanet3DLayer
+        width={viewport.w}
+        height={viewport.h}
+        planets={planet3DPlacements}
+        sunScreen={sun3DScreen}
+      />
+
       <div className="ar-overlay__layer">
         {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen }) => {
           // Render bodies a bit beyond the viewport so they fade in/out
@@ -793,14 +814,22 @@ export function ARFinder({
               aria-pressed={isActive}
             >
               <div className="ar-body__icon">
-                <PlanetIcon
-                  id={obj.id}
-                  type={obj.type}
-                  magnitude={obj.magnitude}
-                  size={isActive ? 56 : 40}
-                  phase={obj.phase}
-                  glow={true}
-                />
+                {PLANET3D_IDS.has(obj.id) ? (
+                  <div
+                    className="ar-body__icon-3d-slot"
+                    style={{ width: isActive ? 56 : 40, height: isActive ? 56 : 40 }}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <PlanetIcon
+                    id={obj.id}
+                    type={obj.type}
+                    magnitude={obj.magnitude}
+                    size={isActive ? 56 : 40}
+                    phase={obj.phase}
+                    glow={true}
+                  />
+                )}
                 <div className="ar-body__crosshair" />
                 {isActive && !confirmedLock && holdProgress > 0 && (
                   <HoldRing progress={holdProgress} size={isActive ? 70 : 54} />
