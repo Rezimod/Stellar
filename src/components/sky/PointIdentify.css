@@ -79,14 +79,6 @@
   display: block;
   margin: 0 auto;
 }
-.point-id__preview-sweep {
-  transform-origin: 110px 110px;
-  animation: pid-sweep 5s linear infinite;
-}
-@keyframes pid-sweep {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 
 .point-id__features {
   list-style: none;
@@ -138,11 +130,6 @@
   margin: 0 auto;
   aspect-ratio: 1 / 1;
 }
-.point-id__sweep {
-  transform-origin: 50% 50%;
-  animation: pid-sweep 3.2s linear infinite;
-}
-
 .point-id__readout {
   display: flex;
   flex-direction: column;

@@ -14,10 +14,47 @@ import {
   angularSeparation,
   type UseDeviceHeading,
 } from '@/lib/sky/use-device-heading';
-import { positionStars, type PositionedStar } from '@/lib/sky/stars';
+import { CONSTELLATION_LINES, positionStars, type PositionedStar } from '@/lib/sky/stars';
 import { azimuthToCardinal } from '@/lib/sky/ar';
 import type { SkyObject } from '@/components/sky/finder/types';
 import './PointIdentify.css';
+
+/** A tiny equirectangular texture URL by planet id — same hero assets the
+ *  3D solar system uses. Renders inside the finder scope as a textured disc
+ *  so planets read as real photographs, not generic dots. */
+const PLANET_TEXTURE_URL: Record<string, string> = {
+  sun:     '/solar-system/planets/sun.jpg',
+  moon:    '/images/planets/moon.jpg',
+  mercury: '/solar-system/planets/mercury.jpg',
+  venus:   '/solar-system/planets/venus.jpg',
+  mars:    '/solar-system/planets/mars.jpg',
+  jupiter: '/solar-system/planets/jupiter.jpg',
+  saturn:  '/solar-system/planets/saturn-2k.jpg',
+  uranus:  '/solar-system/planets/uranus.jpg',
+  neptune: '/solar-system/planets/neptune.jpg',
+};
+
+/** Spectral-class tints for catalog stars — same palette the AR finder uses.
+ *  Anything not in this map falls back to a magnitude-derived neutral tint. */
+const STAR_SPECTRAL_TINT: Record<string, string> = {
+  sirius: '#dde3ff', rigel: '#cee0ff', vega: '#dde3ff', spica: '#cfe0ff',
+  regulus: '#d8e4f6', bellatrix: '#d6e2f4', alnilam: '#d4e0f4',
+  alnitak: '#d4e0f4', mintaka: '#d4e0f4', altair: '#fbf7e6', deneb: '#f0eee0',
+  procyon: '#fbf7e6', castor: '#ecedf0', capella: '#fff2c8',
+  pollux: '#ffc89a', arcturus: '#ffb072', aldebaran: '#ffaa78',
+  betelgeuse: '#ff8c5a', antares: '#ff8260', hadar: '#cee0ff',
+  achernar: '#cee0ff', polaris: '#fbf7e6', canopus: '#fbf7e6',
+  rigil: '#fff2c8',
+};
+
+function starTint(id: string, mag: number): string {
+  const known = STAR_SPECTRAL_TINT[id];
+  if (known) return known;
+  if (mag <= -1) return '#cee0ff';
+  if (mag <= 0)  return '#f4eede';
+  if (mag <= 1)  return '#ffd6a6';
+  return '#e8d8b6';
+}
 
 interface PointIdentifyProps {
   objects: SkyObject[];
@@ -200,7 +237,13 @@ export function PointIdentify({ objects, observerLat, observerLon, compass }: Po
       {enabled && (
         <div className="point-id__stage">
           <div className="point-id__radar">
-            <RadarSVG aim={aim} candidates={candidates.slice(0, 8)} confirmedId={confirmedId} />
+            <FinderScopeSVG
+              aim={aim}
+              candidates={candidates.slice(0, 8)}
+              confirmedId={confirmedId}
+              stars={stars}
+              objects={objects}
+            />
           </div>
 
           <div className="point-id__readout">
@@ -319,14 +362,27 @@ function kindLabel(kind: Candidate['kind'], t: ReturnType<typeof useTranslations
  * empty rings + sweep that read as "nothing here yet."
  */
 function PreviewRadar() {
+  // Mini finder-scope preview matching the live view's aesthetic. Static
+  // sample bodies including a textured Jupiter so the user can see at a
+  // glance what the post-enable view will look like.
   const SIZE = 220;
   const C = SIZE / 2;
-  const samples: { x: number; y: number; r: number; fill: string; label: string }[] = [
-    { x: C - 24, y: C - 38, r: 4.5, fill: '#FFE6A6', label: 'Jupiter' },
-    { x: C + 36, y: C + 14, r: 3.2, fill: '#cfe1ff', label: 'Vega' },
-    { x: C + 10, y: C + 48, r: 2.6, fill: '#e8d8b6', label: 'Altair' },
-    { x: C - 46, y: C + 30, r: 2.2, fill: '#5EEAD4', label: 'M31' },
-  ];
+  const FOV_R = C - 8;
+  // Deterministic faint star sprinkle so the preview never looks empty.
+  const fieldStars = [
+    [C - 64,  C - 70, 0.9, '#d8e3ff', 0.55],
+    [C - 30,  C - 18, 0.7, '#fbf7e6', 0.65],
+    [C + 22,  C - 56, 1.1, '#dde3ff', 0.75],
+    [C + 58,  C - 30, 0.9, '#fff2c8', 0.6],
+    [C + 70,  C + 16, 0.8, '#ffd6a6', 0.55],
+    [C + 20,  C + 80, 0.8, '#e8ecf0', 0.5],
+    [C - 50,  C + 78, 1.0, '#ffaa7c', 0.7],
+    [C - 80,  C + 18, 0.7, '#f4eede', 0.5],
+    [C - 18,  C + 38, 0.6, '#e8d8b6', 0.5],
+    [C + 44,  C + 48, 0.7, '#d8e3ff', 0.55],
+    [C - 22,  C - 92, 0.7, '#cfe0ff', 0.5],
+    [C + 86,  C - 8,  0.8, '#ffd0a0', 0.55],
+  ] as const;
   return (
     <svg
       className="point-id__preview"
@@ -337,147 +393,466 @@ function PreviewRadar() {
     >
       <defs>
         <radialGradient id="pid-preview-bg" cx="50%" cy="50%" r="55%">
-          <stop offset="0%" stopColor="rgba(232,164,102,0.06)" />
-          <stop offset="60%" stopColor="rgba(11,24,48,0.30)" />
-          <stop offset="100%" stopColor="rgba(11,24,48,0.55)" />
+          <stop offset="0%"  stopColor="#0a0f22" />
+          <stop offset="55%" stopColor="#06091a" />
+          <stop offset="100%" stopColor="#020410" />
         </radialGradient>
+        <radialGradient id="pid-preview-vignette" cx="50%" cy="50%" r="50%">
+          <stop offset="55%"  stopColor="rgba(0,0,0,0)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.70)" />
+        </radialGradient>
+        <clipPath id="pid-preview-clip">
+          <circle cx={C} cy={C} r={FOV_R} />
+        </clipPath>
+        <radialGradient id="pid-preview-terminator" cx="33%" cy="30%" r="76%">
+          <stop offset="0%"  stopColor="rgba(255,255,255,0.16)" />
+          <stop offset="55%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="92%" stopColor="rgba(0,0,0,0.50)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.72)" />
+        </radialGradient>
+        <clipPath id="pid-preview-jupiter">
+          <circle cx={C - 24} cy={C - 38} r={9} />
+        </clipPath>
       </defs>
-      <circle cx={C} cy={C} r={C - 4} fill="url(#pid-preview-bg)" stroke="rgba(255,255,255,0.10)" />
-      <circle cx={C} cy={C} r={(C - 14) * 0.66} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="2 4" />
-      <circle cx={C} cy={C} r={(C - 14) * 0.33} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="2 4" />
 
-      {/* Reticle */}
-      <g>
-        <circle cx={C} cy={C} r={14} fill="none" stroke="var(--terracotta)" strokeWidth={1.3} />
-        <line x1={C - 22} y1={C} x2={C - 16} y2={C} stroke="var(--terracotta)" strokeWidth={1.3} />
-        <line x1={C + 16} y1={C} x2={C + 22} y2={C} stroke="var(--terracotta)" strokeWidth={1.3} />
-        <line x1={C} y1={C - 22} x2={C} y2={C - 16} stroke="var(--terracotta)" strokeWidth={1.3} />
-        <line x1={C} y1={C + 16} x2={C} y2={C + 22} stroke="var(--terracotta)" strokeWidth={1.3} />
-        <circle cx={C} cy={C} r={2} fill="var(--terracotta)" />
+      {/* Outer rim + degree ticks. */}
+      <circle cx={C} cy={C} r={FOV_R + 4} fill="none" stroke="rgba(232,216,184,0.22)" strokeWidth="1.2" />
+      {Array.from({ length: 24 }).map((_, i) => {
+        const ang = (i / 24) * Math.PI * 2 - Math.PI / 2;
+        const inner = i % 6 === 0 ? FOV_R + 2 : FOV_R + 4;
+        const outer = i % 6 === 0 ? FOV_R + 10 : FOV_R + 7;
+        return (
+          <line
+            key={i}
+            x1={C + Math.cos(ang) * inner}
+            y1={C + Math.sin(ang) * inner}
+            x2={C + Math.cos(ang) * outer}
+            y2={C + Math.sin(ang) * outer}
+            stroke={i % 6 === 0 ? 'rgba(232,216,184,0.55)' : 'rgba(232,216,184,0.22)'}
+            strokeWidth={i % 6 === 0 ? 1.2 : 0.8}
+          />
+        );
+      })}
+
+      <g clipPath="url(#pid-preview-clip)">
+        <circle cx={C} cy={C} r={FOV_R} fill="url(#pid-preview-bg)" />
+
+        {/* Field stars */}
+        {fieldStars.map((s, i) => (
+          <circle key={i} cx={s[0] as number} cy={s[1] as number} r={s[2] as number} fill={s[3] as string} opacity={s[4] as number} />
+        ))}
+
+        {/* Sample Jupiter — textured + terminator overlay. */}
+        <circle cx={C - 24} cy={C - 38} r={17} fill="#ffe6a6" opacity="0.16" />
+        <image
+          href="/solar-system/planets/jupiter.jpg"
+          x={C - 24 - 9}
+          y={C - 38 - 9}
+          width={18}
+          height={18}
+          preserveAspectRatio="xMidYMid slice"
+          clipPath="url(#pid-preview-jupiter)"
+        />
+        <circle cx={C - 24} cy={C - 38} r={9} fill="url(#pid-preview-terminator)" />
+        <circle cx={C - 24} cy={C - 38} r={9} fill="none" stroke="rgba(0,0,0,0.7)" strokeWidth="0.6" />
+        <text x={C - 24} y={C - 38 - 14} textAnchor="middle"
+          fontFamily="var(--font-sans, Inter)" fontSize="9"
+          fill="rgba(244,237,224,0.8)" fontWeight={500}>
+          Jupiter
+        </text>
+
+        {/* Sample bright star (Vega) */}
+        <circle cx={C + 36} cy={C + 14} r={9}   fill="#dde3ff" opacity="0.18" />
+        <circle cx={C + 36} cy={C + 14} r={4.5} fill="#dde3ff" opacity="0.40" />
+        <circle cx={C + 36} cy={C + 14} r={2.4} fill="#ffffff" />
+        <text x={C + 36} y={C + 14 - 11} textAnchor="middle"
+          fontFamily="var(--font-sans, Inter)" fontSize="9"
+          fill="rgba(244,237,224,0.78)" fontWeight={500}>
+          Vega
+        </text>
+
+        {/* Sample DSO (M31) */}
+        <ellipse cx={C - 46} cy={C + 30} rx={7.4} ry={4.4} fill="#5EEAD4" opacity="0.22" />
+        <ellipse cx={C - 46} cy={C + 30} rx={4.4} ry={2.8} fill="#5EEAD4" opacity="0.7" />
+        <text x={C - 46} y={C + 30 - 9} textAnchor="middle"
+          fontFamily="var(--font-sans, Inter)" fontSize="9"
+          fill="rgba(244,237,224,0.78)" fontWeight={500}>
+          M31
+        </text>
+
+        {/* Vignette */}
+        <circle cx={C} cy={C} r={FOV_R} fill="url(#pid-preview-vignette)" />
       </g>
 
-      {/* Sample bodies + labels */}
-      {samples.map((s, i) => (
-        <g key={i} opacity={0.85}>
-          <circle cx={s.x} cy={s.y} r={s.r} fill={s.fill} />
-          <text
-            x={s.x}
-            y={s.y - s.r - 4}
-            textAnchor="middle"
-            fontFamily="var(--font-sans, Inter)"
-            fontSize="9"
-            fill="rgba(255,255,255,0.70)"
-          >
-            {s.label}
-          </text>
-        </g>
-      ))}
-
-      {/* Subtle slow sweep so the preview feels alive without being noisy */}
-      <line
-        x1={C}
-        y1={C}
-        x2={C}
-        y2={14}
-        stroke="rgba(255,179,71,0.45)"
-        strokeWidth={1}
-        strokeLinecap="round"
-        className="point-id__preview-sweep"
-      />
+      {/* Reticle */}
+      <g clipPath="url(#pid-preview-clip)">
+        <circle cx={C} cy={C} r="13" fill="none" stroke="rgba(255,150,80,0.40)" strokeWidth="1.0" />
+        <line x1={C} y1={C - FOV_R + 4}  x2={C} y2={C - 18} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <line x1={C} y1={C + 18} x2={C} y2={C + FOV_R - 4} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <line x1={C - FOV_R + 4}  y1={C} x2={C - 18} y2={C} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <line x1={C + 18} y1={C} x2={C + FOV_R - 4}  y2={C} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <circle cx={C} cy={C} r="1.6" fill="rgba(255,150,80,0.95)" />
+      </g>
     </svg>
   );
 }
 
-interface RadarSVGProps {
+interface FinderScopeProps {
   aim: { az: number; alt: number };
   candidates: Candidate[];
   confirmedId: string | null;
+  /** All positioned stars from the parent — used for the field backdrop
+   *  (faint stars filling the eyepiece) and constellation line segments. */
+  stars: PositionedStar[];
+  /** Catalog bodies — used to draw DSOs in the FOV at their actual
+   *  positions, not just from the candidate list. */
+  objects: SkyObject[];
 }
 
-function RadarSVG({ aim, candidates, confirmedId }: RadarSVGProps) {
-  // Polar plot centered on the aim direction. Radius = angular distance,
-  // mapped from 0..30°. Anything beyond gets clipped — this is a "what's
-  // near my reticle" view, not a full sky map.
+/**
+ * Realistic telescope finder-scope view of the patch of sky the phone is
+ * aimed at. Replaces the abstract polar radar.
+ *
+ * Layers from back to front, inside a circular eyepiece clip:
+ *  • Deep navy gradient backdrop with mild edge vignette
+ *  • Hundreds of faint catalog field stars at their real angular offsets,
+ *    sized by magnitude, tinted by spectral class
+ *  • Constellation line segments that pass through the FOV
+ *  • DSOs as soft warm-cyan glows
+ *  • Candidate bodies on top:
+ *      planets/moon/sun → actual hero photo clipped into a circle with a
+ *        subtle directional terminator gradient for 3D feel
+ *      stars → bright disc with a coloured halo
+ *  • A telescope reticle (cross-hair with a centre gap + inner FOV ring)
+ *
+ * Degree ticks around the rim and an FOV caption underneath complete the
+ * "finder-scope" aesthetic.
+ */
+function FinderScopeSVG({ aim, candidates, confirmedId, stars, objects }: FinderScopeProps) {
   const SIZE = 240;
   const C = SIZE / 2;
-  const MAX_DEG = 30;
+  const FOV_R = C - 8;           // eyepiece radius (pixels)
+  const MAX_DEG = 26;            // half-angle of the visible field
+  const DEG_PER_PX = MAX_DEG / FOV_R;
 
-  function place(cAz: number, cAlt: number) {
+  // Map (az, alt) → pixel coords in the scope, with tangent-plane scaling
+  // around the aim direction. We use the small-angle equirectangular
+  // approximation — perfectly adequate at the 25° scale we're showing.
+  function place(cAz: number, cAlt: number): { x: number; y: number; r: number } {
     const dAlt = cAlt - aim.alt;
     let dAz = cAz - aim.az;
     while (dAz > 180) dAz -= 360;
     while (dAz < -180) dAz += 360;
-    const r = Math.hypot(dAz, dAlt);
-    if (r > MAX_DEG) {
-      // Clamp visually to the rim, but keep the angle.
-      const rr = MAX_DEG;
-      const ang = Math.atan2(dAlt, dAz);
-      return { x: C + Math.cos(ang) * (rr / MAX_DEG) * (C - 14), y: C - Math.sin(ang) * (rr / MAX_DEG) * (C - 14), r };
-    }
-    return { x: C + (dAz / MAX_DEG) * (C - 14), y: C - (dAlt / MAX_DEG) * (C - 14), r };
+    // Compress dAz by cos(alt) so the field doesn't smear near zenith.
+    const cosAlt = Math.cos(((aim.alt + cAlt) * 0.5) * Math.PI / 180);
+    const ang = Math.hypot(dAz * cosAlt, dAlt);
+    const x = C + (dAz * cosAlt) / DEG_PER_PX;
+    const y = C - dAlt / DEG_PER_PX;
+    return { x, y, r: ang };
+  }
+
+  // Identify candidate ids so we don't double-render them as field stars.
+  const candidateIds = new Set(candidates.map((c) => c.id));
+
+  // Star lookup for constellation lines.
+  const starById = new Map<string, PositionedStar>();
+  for (const s of stars) starById.set(s.id, s);
+
+  // Background field stars — every catalog star inside the FOV that isn't
+  // already a candidate. Cap to avoid runaway counts in dense fields.
+  type FieldStar = { id: string; x: number; y: number; r: number; size: number; tint: string; opacity: number; mag: number };
+  const fieldStars: FieldStar[] = [];
+  for (const s of stars) {
+    if (s.altitude < -2) continue;
+    if (candidateIds.has(s.id)) continue;
+    const p = place(s.azimuth, s.altitude);
+    if (p.r > MAX_DEG) continue;
+    const mag = s.mag;
+    if (mag > 5.0) continue;       // anything fainter blends into noise
+    const size = Math.max(0.6, 2.6 - mag * 0.42);
+    const opacity = THREE_clamp(0.25, 0.95, 1.05 - mag * 0.13);
+    fieldStars.push({
+      id: s.id, x: p.x, y: p.y, r: p.r, size, opacity,
+      tint: starTint(s.id, mag), mag,
+    });
+    if (fieldStars.length > 220) break;
+  }
+
+  // DSO ghosts — catalog galaxies/nebulae/clusters drawn at their position
+  // even when not the active candidate, so the field shows what's there.
+  type DsoGhost = { id: string; x: number; y: number; opacity: number; tint: string };
+  const dsoGhosts: DsoGhost[] = [];
+  for (const o of objects) {
+    if (candidateIds.has(o.id)) continue;
+    if (!(o.type === 'galaxy' || o.type === 'nebula' || o.type === 'cluster')) continue;
+    if (o.altitude < -2) continue;
+    const p = place(o.azimuth, o.altitude);
+    if (p.r > MAX_DEG) continue;
+    dsoGhosts.push({
+      id: o.id,
+      x: p.x,
+      y: p.y,
+      opacity: THREE_clamp(0.15, 0.6, 0.65 - o.magnitude * 0.07),
+      tint: o.type === 'galaxy' ? '#cfd9ff' : o.type === 'nebula' ? '#ffc8d4' : '#fff7d8',
+    });
+  }
+
+  // Constellation lines that touch the FOV.
+  type Seg = { x1: number; y1: number; x2: number; y2: number };
+  const constellationSegs: Seg[] = [];
+  for (const [aId, bId] of CONSTELLATION_LINES) {
+    const a = starById.get(aId);
+    const b = starById.get(bId);
+    if (!a || !b) continue;
+    if (a.altitude < -2 && b.altitude < -2) continue;
+    const pa = place(a.azimuth, a.altitude);
+    const pb = place(b.azimuth, b.altitude);
+    // Skip if both endpoints are far outside the FOV (rough cull).
+    if (pa.r > MAX_DEG * 1.5 && pb.r > MAX_DEG * 1.5) continue;
+    constellationSegs.push({ x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y });
   }
 
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height="100%" aria-hidden="true">
       <defs>
-        <radialGradient id="pid-bg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(255,179,71,0.10)" />
-          <stop offset="60%" stopColor="rgba(11,24,48,0.45)" />
-          <stop offset="100%" stopColor="rgba(11,24,48,0.85)" />
+        {/* Eyepiece backdrop — deep navy with a touch of warm core. */}
+        <radialGradient id="pid-bg" cx="50%" cy="50%" r="55%">
+          <stop offset="0%"  stopColor="#0a0f22" />
+          <stop offset="55%" stopColor="#06091a" />
+          <stop offset="100%" stopColor="#020410" />
         </radialGradient>
+        {/* Soft vignette darkening the eyepiece edge. */}
+        <radialGradient id="pid-vignette" cx="50%" cy="50%" r="50%">
+          <stop offset="55%"  stopColor="rgba(0,0,0,0)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.70)" />
+        </radialGradient>
+        {/* The eyepiece field clip. */}
+        <clipPath id="pid-fov-clip">
+          <circle cx={C} cy={C} r={FOV_R} />
+        </clipPath>
+        {/* Directional terminator gradient for planets — sells the sphere
+           shape without needing a separate per-planet shader. */}
+        <radialGradient id="pid-terminator" cx="33%" cy="30%" r="76%">
+          <stop offset="0%"  stopColor="rgba(255,255,255,0.16)" />
+          <stop offset="55%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="92%" stopColor="rgba(0,0,0,0.50)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.72)" />
+        </radialGradient>
+        {/* Per-candidate planet circle clips. */}
+        {candidates.map((c) => {
+          const radius = candidateRadius(c, /*active*/ c.id === confirmedId);
+          const p = place(c.azimuth, c.altitude);
+          return (
+            <clipPath id={`pid-clip-${c.id}`} key={`clip-${c.id}`}>
+              <circle cx={p.x} cy={p.y} r={radius} />
+            </clipPath>
+          );
+        })}
       </defs>
 
-      <circle cx={C} cy={C} r={C - 4} fill="url(#pid-bg)" stroke="rgba(255,255,255,0.10)" />
-      <circle cx={C} cy={C} r={(C - 14) * 0.66} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="2 4" />
-      <circle cx={C} cy={C} r={(C - 14) * 0.33} fill="none" stroke="rgba(255,255,255,0.06)" strokeDasharray="2 4" />
-
-      {/* Sweeping radar arm */}
-      <g className="point-id__sweep">
-        <line x1={C} y1={C} x2={C} y2={14} stroke="rgba(255,179,71,0.45)" strokeWidth="1.2" strokeLinecap="round" />
-        <line x1={C} y1={C} x2={C} y2={32} stroke="rgba(255,179,71,0.85)" strokeWidth="1.6" strokeLinecap="round" />
-      </g>
-
-      {/* Cardinal hints (relative to aim, only show the closest one) */}
-      <text x={C} y={12} textAnchor="middle" fontFamily="var(--font-mono, JetBrains Mono)" fontSize="10" fill="rgba(255,255,255,0.40)">↑ {Math.round(aim.az)}°</text>
-
-      {/* Reticle (always centered) */}
-      <g>
-        <circle cx={C} cy={C} r="14" fill="none" stroke="var(--terracotta)" strokeWidth="1.3" />
-        <line x1={C - 22} y1={C} x2={C - 16} y2={C} stroke="var(--terracotta)" strokeWidth="1.3" />
-        <line x1={C + 16} y1={C} x2={C + 22} y2={C} stroke="var(--terracotta)" strokeWidth="1.3" />
-        <line x1={C} y1={C - 22} x2={C} y2={C - 16} stroke="var(--terracotta)" strokeWidth="1.3" />
-        <line x1={C} y1={C + 16} x2={C} y2={C + 22} stroke="var(--terracotta)" strokeWidth="1.3" />
-        <circle cx={C} cy={C} r="2" fill="var(--terracotta)" />
-      </g>
-
-      {/* Candidate dots */}
-      {candidates.map((c) => {
-        const p = place(c.azimuth, c.altitude);
-        const isLocked = c.id === confirmedId;
-        const inside = c.separation <= MAX_DEG;
-        const opacity = inside ? Math.max(0.35, 1 - c.separation / MAX_DEG) : 0.25;
-        const radius = c.kind === 'planet' || c.kind === 'moon' || c.kind === 'sun' ? 4.5 : 3;
-        const fill = c.kind === 'star' ? '#E8ECF1' : c.kind === 'dso' ? '#5EEAD4' : '#FFB347';
+      {/* Outer rim + degree ticks. Sits outside the FOV clip so the rim
+          shows even when the eyepiece is dark. */}
+      <circle cx={C} cy={C} r={FOV_R + 4} fill="none" stroke="rgba(232,216,184,0.22)" strokeWidth="1.2" />
+      {Array.from({ length: 24 }).map((_, i) => {
+        const ang = (i / 24) * Math.PI * 2 - Math.PI / 2;
+        const inner = i % 6 === 0 ? FOV_R + 2 : FOV_R + 4;
+        const outer = i % 6 === 0 ? FOV_R + 10 : FOV_R + 7;
+        const cs = Math.cos(ang);
+        const sn = Math.sin(ang);
         return (
-          <g key={c.id} opacity={opacity}>
-            {isLocked && (
-              <circle cx={p.x} cy={p.y} r={radius + 6} fill="none" stroke="var(--terracotta)" strokeWidth="1.2" />
-            )}
-            <circle cx={p.x} cy={p.y} r={radius} fill={fill} />
-            <text
-              x={p.x}
-              y={p.y - radius - 4}
-              textAnchor="middle"
-              fontFamily="var(--font-sans, Inter)"
-              fontSize="9"
-              fill={isLocked ? 'var(--terracotta)' : 'rgba(255,255,255,0.75)'}
-              fontWeight={isLocked ? 600 : 400}
-            >
-              {c.name}
-            </text>
-          </g>
+          <line
+            key={i}
+            x1={C + cs * inner}
+            y1={C + sn * inner}
+            x2={C + cs * outer}
+            y2={C + sn * outer}
+            stroke={i % 6 === 0 ? 'rgba(232,216,184,0.55)' : 'rgba(232,216,184,0.22)'}
+            strokeWidth={i % 6 === 0 ? 1.2 : 0.8}
+          />
         );
       })}
+      {/* Cardinal pointer at the top — the direction the user is aiming. */}
+      <text x={C} y={11} textAnchor="middle"
+        fontFamily="var(--font-mono, JetBrains Mono)"
+        fontSize="9"
+        letterSpacing="0.18em"
+        fill="rgba(232,216,184,0.55)">
+        ↑ {Math.round(aim.az)}°
+      </text>
+
+      {/* Eyepiece field — everything inside the FOV clip. */}
+      <g clipPath="url(#pid-fov-clip)">
+        <circle cx={C} cy={C} r={FOV_R} fill="url(#pid-bg)" />
+
+        {/* Constellation line segments — faint, behind the stars. */}
+        <g stroke="rgba(168,184,216,0.16)" strokeWidth="0.7" strokeLinecap="round">
+          {constellationSegs.map((s, i) => (
+            <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2} />
+          ))}
+        </g>
+
+        {/* DSO ghosts. */}
+        {dsoGhosts.map((d) => (
+          <g key={d.id} opacity={d.opacity}>
+            <ellipse cx={d.x} cy={d.y} rx={6} ry={3.6} fill={d.tint} opacity="0.18" />
+            <ellipse cx={d.x} cy={d.y} rx={3.2} ry={2} fill={d.tint} opacity="0.55" />
+          </g>
+        ))}
+
+        {/* Field stars — soft halo + bright core, spectral-class tint. */}
+        {fieldStars.map((s) => (
+          <g key={s.id} opacity={s.opacity}>
+            {s.mag <= 2.4 && (
+              <circle cx={s.x} cy={s.y} r={s.size * 2.2} fill={s.tint} opacity="0.18" />
+            )}
+            <circle cx={s.x} cy={s.y} r={s.size} fill={s.tint} />
+          </g>
+        ))}
+
+        {/* Candidates on top. Planets/moon/sun use the actual hero
+            texture clipped to a disc, with a directional terminator
+            gradient layered on top for a 3D-shaded look. Stars get a
+            bright disc + tint-coloured halo. */}
+        {candidates.map((c) => {
+          const isLocked = c.id === confirmedId;
+          const p = place(c.azimuth, c.altitude);
+          const inside = c.separation <= MAX_DEG;
+          if (!inside) return null;
+          const radius = candidateRadius(c, isLocked);
+          const opacity = THREE_clamp(0.55, 1, 1 - c.separation / (MAX_DEG * 1.4));
+
+          if (c.kind === 'star') {
+            const tint = starTint(c.id, c.magnitude ?? 1);
+            return (
+              <g key={c.id} opacity={opacity}>
+                <circle cx={p.x} cy={p.y} r={radius * 3.0} fill={tint} opacity="0.18" />
+                <circle cx={p.x} cy={p.y} r={radius * 1.6} fill={tint} opacity="0.40" />
+                <circle cx={p.x} cy={p.y} r={radius * 0.9} fill="#ffffff" />
+                {isLocked && (
+                  <circle cx={p.x} cy={p.y} r={radius * 3.6} fill="none" stroke="var(--terracotta)" strokeWidth="1.1" />
+                )}
+                <CandidateLabel x={p.x} y={p.y - radius * 3.2 - 6} name={c.name} locked={isLocked} />
+              </g>
+            );
+          }
+
+          if (c.kind === 'dso') {
+            return (
+              <g key={c.id} opacity={opacity}>
+                <ellipse cx={p.x} cy={p.y} rx={radius * 1.9} ry={radius * 1.1} fill="#5EEAD4" opacity="0.22" />
+                <ellipse cx={p.x} cy={p.y} rx={radius * 1.1} ry={radius * 0.7} fill="#5EEAD4" opacity="0.7" />
+                {isLocked && (
+                  <ellipse cx={p.x} cy={p.y} rx={radius * 2.6} ry={radius * 1.7} fill="none" stroke="var(--terracotta)" strokeWidth="1.1" />
+                )}
+                <CandidateLabel x={p.x} y={p.y - radius * 1.8 - 6} name={c.name} locked={isLocked} />
+              </g>
+            );
+          }
+
+          // planet / moon / sun — textured disc with terminator overlay
+          const texUrl = PLANET_TEXTURE_URL[c.id];
+          return (
+            <g key={c.id} opacity={opacity}>
+              {/* Soft glow halo behind the disc. */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={radius * 1.9}
+                fill={c.id === 'sun' ? '#ffd27a' : c.id === 'moon' ? '#f3eedf' : '#ffe6a6'}
+                opacity={c.id === 'sun' ? 0.32 : 0.15}
+              />
+              {texUrl && (
+                <image
+                  href={texUrl}
+                  x={p.x - radius}
+                  y={p.y - radius}
+                  width={radius * 2}
+                  height={radius * 2}
+                  preserveAspectRatio="xMidYMid slice"
+                  clipPath={`url(#pid-clip-${c.id})`}
+                />
+              )}
+              {/* Terminator gradient overlay — only for non-sun bodies. */}
+              {c.id !== 'sun' && (
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={radius}
+                  fill="url(#pid-terminator)"
+                />
+              )}
+              {/* Crisp rim. */}
+              <circle cx={p.x} cy={p.y} r={radius} fill="none" stroke="rgba(0,0,0,0.7)" strokeWidth="0.6" />
+              {isLocked && (
+                <circle cx={p.x} cy={p.y} r={radius + 5} fill="none" stroke="var(--terracotta)" strokeWidth="1.3" />
+              )}
+              <CandidateLabel x={p.x} y={p.y - radius - 6} name={c.name} locked={isLocked} />
+            </g>
+          );
+        })}
+
+        {/* Vignette overlay last, so it darkens stars near the edge. */}
+        <circle cx={C} cy={C} r={FOV_R} fill="url(#pid-vignette)" />
+      </g>
+
+      {/* Reticle — sits above the field, inside the clip so the lines
+          don't extend past the rim. Cross with a centre gap + small
+          inner FOV ring; warm terracotta to read against the night-blue. */}
+      <g clipPath="url(#pid-fov-clip)">
+        <circle cx={C} cy={C} r="13" fill="none" stroke="rgba(255,150,80,0.40)" strokeWidth="1.0" />
+        <line x1={C} y1={C - FOV_R + 4}  x2={C} y2={C - 18} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <line x1={C} y1={C + 18} x2={C} y2={C + FOV_R - 4} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <line x1={C - FOV_R + 4}  y1={C} x2={C - 18} y2={C} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <line x1={C + 18} y1={C} x2={C + FOV_R - 4}  y2={C} stroke="rgba(255,150,80,0.65)" strokeWidth="1.1" strokeLinecap="round" />
+        <circle cx={C} cy={C} r="1.6" fill="rgba(255,150,80,0.95)" />
+      </g>
+
+      {/* Footer — FOV caption + altitude readout, like a real eyepiece. */}
+      <text x={14} y={SIZE - 8}
+        fontFamily="var(--font-mono, JetBrains Mono)"
+        fontSize="9"
+        letterSpacing="0.16em"
+        fill="rgba(232,216,184,0.55)">
+        FOV {MAX_DEG * 2}°
+      </text>
+      <text x={SIZE - 14} y={SIZE - 8}
+        textAnchor="end"
+        fontFamily="var(--font-mono, JetBrains Mono)"
+        fontSize="9"
+        letterSpacing="0.14em"
+        fill="rgba(232,216,184,0.55)">
+        ALT {Math.round(aim.alt)}°
+      </text>
     </svg>
   );
+}
+
+function candidateRadius(c: Candidate, active: boolean): number {
+  const base =
+    c.kind === 'sun' || c.kind === 'moon' ? 12 :
+    c.kind === 'planet' ? 9 :
+    c.kind === 'dso' ? 5 :
+    3.5;
+  return active ? base * 1.18 : base;
+}
+
+function CandidateLabel({ x, y, name, locked }: { x: number; y: number; name: string; locked: boolean }) {
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      fontFamily="var(--font-sans, Inter)"
+      fontSize="9"
+      letterSpacing="0.04em"
+      fill={locked ? 'var(--terracotta)' : 'rgba(244,237,224,0.78)'}
+      fontWeight={locked ? 600 : 500}
+    >
+      {name}
+    </text>
+  );
+}
+
+function THREE_clamp(lo: number, hi: number, x: number): number {
+  return Math.min(hi, Math.max(lo, x));
 }
