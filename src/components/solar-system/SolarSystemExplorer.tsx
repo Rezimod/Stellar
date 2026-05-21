@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
-import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
+import { SolarSystemCanvas, type CosmicView } from '@/components/solar-system/SolarSystemCanvas';
 import {
   MEAN_RADIUS_KM,
   type ScaleMode,
@@ -42,6 +42,16 @@ export default function SolarSystemExplorer() {
   const [playing, setPlaying] = useState(false);
   const [speedIdx, setSpeedIdx] = useState(2);
   const [viewOpen, setViewOpen] = useState(false);
+  const [cosmic, setCosmic] = useState<CosmicView>({
+    solar: 1, stellar: 0, galactic: 0, universe: 0,
+    sunScreen: null, milkyWayScreen: null,
+  });
+  const [zoomTo, setZoomTo] = useState<number | null>(null);
+  const handleZoomToSun = useCallback(() => {
+    // Snap back into the solar system tier — same default radius as load.
+    setZoomTo(26);
+  }, []);
+  const consumeZoomTo = useCallback(() => setZoomTo(null), []);
 
   const simRate = SPEED_STEPS[speedIdx].simSecPerRealSec;
 
@@ -141,7 +151,12 @@ export default function SolarSystemExplorer() {
           selectedId={selectedId}
           focusBodyId={focusId}
           onSelect={handleBodyPick}
+          onCosmicView={setCosmic}
+          onZoomToSun={handleZoomToSun}
+          zoomTo={zoomTo}
+          onZoomToConsumed={consumeZoomTo}
         />
+        <CosmicOverlay cosmic={cosmic} onZoomToSun={handleZoomToSun} />
         <div className="solar-system__viewport-hint solar-system__viewport-hint--compact">
           <Orbit size={14} aria-hidden />
           <span>{t('dragHint')}</span>
@@ -270,5 +285,59 @@ export default function SolarSystemExplorer() {
         </aside>
       )}
     </div>
+  );
+}
+
+/** Floating HTML labels driven by the per-frame projected positions:
+ *   - "Sun" pin appears once the user zooms past the solar tier.
+ *   - "Milky Way" chip appears at the galactic tier and is the only
+ *     selectable backdrop — tapping it eases the camera back to the Sun.
+ *
+ *  Rendered as siblings of the WebGL canvas so the DOM picks up clicks
+ *  cleanly without competing with three.js raycasting. */
+function CosmicOverlay({
+  cosmic,
+  onZoomToSun,
+}: {
+  cosmic: CosmicView;
+  onZoomToSun: () => void;
+}) {
+  const sunOpacity = Math.min(1, cosmic.stellar * 1.2);
+  const mwOpacity = Math.min(1, cosmic.galactic * 1.1);
+  return (
+    <>
+      {cosmic.sunScreen && sunOpacity > 0.05 && (
+        <div
+          className="cosmic-label cosmic-label--sun"
+          style={{
+            left: cosmic.sunScreen.x,
+            top: cosmic.sunScreen.y,
+            opacity: sunOpacity,
+          }}
+          aria-hidden="true"
+        >
+          <span className="cosmic-label__pin" />
+          <span className="cosmic-label__text">Sun</span>
+        </div>
+      )}
+      {cosmic.milkyWayScreen && mwOpacity > 0.05 && (
+        <button
+          type="button"
+          className="cosmic-label cosmic-label--mw"
+          style={{
+            left: cosmic.milkyWayScreen.x,
+            top: cosmic.milkyWayScreen.y,
+            opacity: mwOpacity,
+          }}
+          onClick={onZoomToSun}
+        >
+          <span className="cosmic-label__pin cosmic-label__pin--mw" />
+          <span className="cosmic-label__text cosmic-label__text--mw">
+            Milky Way
+            <span className="cosmic-label__hint">tap to zoom in</span>
+          </span>
+        </button>
+      )}
+    </>
   );
 }

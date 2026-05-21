@@ -32,6 +32,27 @@ import {
   type SunExtrasHandle,
   type SaturnRingsHandle,
 } from '@/lib/solar-system/scene-extras';
+import {
+  makeNearbyStars,
+  makeMilkyWayDisk,
+  makeOtherGalaxies,
+  tierBlendFromRadius,
+} from '@/lib/solar-system/galactic-scene';
+
+export interface CosmicView {
+  /** 0..1 — how zoomed into the solar system the camera is (1 = close). */
+  solar: number;
+  /** 0..1 — stellar neighbourhood layer presence. */
+  stellar: number;
+  /** 0..1 — Milky Way disk layer presence. */
+  galactic: number;
+  /** 0..1 — other-galaxy backdrop presence. */
+  universe: number;
+  /** Sun projected to screen-space CSS pixels (null = off-screen / behind camera). */
+  sunScreen: { x: number; y: number; depth: number } | null;
+  /** Milky Way label projected to screen (null when galactic tier hidden). */
+  milkyWayScreen: { x: number; y: number; depth: number } | null;
+}
 
 export interface SolarSystemCanvasProps {
   epochMs: number;
@@ -41,6 +62,44 @@ export interface SolarSystemCanvasProps {
   /** When set, camera orbits this body at low altitude (system view when null). */
   focusBodyId: SolarBodyId | null;
   onSelect: (id: SolarBodyId | null) => void;
+  /** Streams the cosmic tier blend + projected anchor screen positions every frame. */
+  onCosmicView?: (view: CosmicView) => void;
+  /** Fired when the user clicks the Milky Way disk at the galactic tier —
+   *  the page then animates the camera back into the solar system. */
+  onZoomToSun?: () => void;
+  /** Imperative zoom target: if non-null, the canvas eases `sysRadius` toward this value. */
+  zoomTo?: number | null;
+  onZoomToConsumed?: () => void;
+}
+
+/** Project a world-space point onto CSS pixel coords. Returns null when the
+ *  point is behind the camera so the overlay can hide its anchor. */
+function projectToScreen(
+  worldPos: THREE.Vector3,
+  camera: THREE.Camera,
+  cssWidth: number,
+  cssHeight: number,
+): { x: number; y: number; depth: number } | null {
+  const v = worldPos.clone().project(camera);
+  if (v.z > 1 || v.z < -1) return null;
+  return {
+    x: (v.x * 0.5 + 0.5) * cssWidth,
+    y: (-v.y * 0.5 + 0.5) * cssHeight,
+    depth: v.z,
+  };
+}
+
+function localToScreen(
+  local: THREE.Vector3,
+  parent: THREE.Object3D,
+  camera: THREE.Camera,
+  cssWidth: number,
+  cssHeight: number,
+): { x: number; y: number; depth: number } | null {
+  const world = local.clone();
+  parent.updateMatrixWorld();
+  world.applyMatrix4(parent.matrixWorld);
+  return projectToScreen(world, camera, cssWidth, cssHeight);
 }
 
 function disposeMat(m: THREE.Material) {
@@ -79,6 +138,10 @@ export function SolarSystemCanvas({
   selectedId,
   focusBodyId,
   onSelect,
+  onCosmicView,
+  onZoomToSun,
+  zoomTo,
+  onZoomToConsumed,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const epochRef = useRef(epochMs);
@@ -87,6 +150,10 @@ export function SolarSystemCanvas({
   const selectedRef = useRef(selectedId);
   const focusRef = useRef(focusBodyId);
   const onSelectRef = useRef(onSelect);
+  const onCosmicViewRef = useRef(onCosmicView);
+  const onZoomToSunRef = useRef(onZoomToSun);
+  const zoomToRef = useRef(zoomTo);
+  const onZoomToConsumedRef = useRef(onZoomToConsumed);
 
   epochRef.current = epochMs;
   scaleRef.current = scaleMode;
@@ -94,6 +161,10 @@ export function SolarSystemCanvas({
   selectedRef.current = selectedId;
   focusRef.current = focusBodyId;
   onSelectRef.current = onSelect;
+  onCosmicViewRef.current = onCosmicView;
+  onZoomToSunRef.current = onZoomToSun;
+  zoomToRef.current = zoomTo;
+  onZoomToConsumedRef.current = onZoomToConsumed;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -124,11 +195,13 @@ export function SolarSystemCanvas({
     renderer.domElement.style.touchAction = 'none';
 
     const scene = new THREE.Scene();
+    // Far plane is large enough to keep distant galaxies in view at the
+    // intergalactic tier (~10k units out).
     const camera = new THREE.PerspectiveCamera(
       42,
       mount.clientWidth / mount.clientHeight,
       0.02,
-      520,
+      24000,
     );
 
     let sysTheta = 0.72;
@@ -240,6 +313,20 @@ export function SolarSystemCanvas({
 
     const milkyWay = makeMilkyWayBand(lite);
     scene.add(milkyWay);
+
+    // Galactic-tier layers — start fully faded; the per-frame loop dials
+    // them up as the camera radius grows past the solar-system tier.
+    const nearbyStars = makeNearbyStars(lite);
+    nearbyStars.setFade(0);
+    scene.add(nearbyStars.group);
+
+    const galaxyDisk = makeMilkyWayDisk();
+    galaxyDisk.setFade(0);
+    scene.add(galaxyDisk.group);
+
+    const otherGalaxies = makeOtherGalaxies();
+    otherGalaxies.setFade(0);
+    scene.add(otherGalaxies.group);
 
     const orbitRings = makeOrbitRings(scaleRef.current, plutoRef.current);
     scene.add(orbitRings);
@@ -488,12 +575,26 @@ export function SolarSystemCanvas({
 
     const raycaster = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
+    // Cosmic tier blend, updated each frame from the camera's sysRadius.
+    // Used both for fading the galactic layers and for gating picking.
+    let currentTier = tierBlendFromRadius(sysRadius);
 
     const pick = (clientX: number, clientY: number) => {
       const rect = renderer.domElement.getBoundingClientRect();
       ndc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
       ndc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(ndc, camera);
+      // At the galactic tier the Milky Way disk is the only selectable
+      // object — tapping it kicks the camera back into the solar system.
+      // We use the live tier blend so the disk isn't pickable when it's
+      // still mostly faded out.
+      if (galaxyDisk.group.visible && currentTier.galactic > 0.5) {
+        const galaxyHit = raycaster.intersectObject(galaxyDisk.pickTarget, false);
+        if (galaxyHit.length > 0) {
+          onZoomToSunRef.current?.();
+          return;
+        }
+      }
       const hits = raycaster.intersectObjects([...hitById.values()], false);
       const first = hits[0]?.object as THREE.Mesh | undefined;
       const id = (first?.userData.bodyId as SolarBodyId | undefined) ?? null;
@@ -552,7 +653,10 @@ export function SolarSystemCanvas({
         orbDist *= f;
       } else {
         sysRadius *= f;
-        sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, 160);
+        // Extended clamp — the upper bound passes through the stellar
+        // neighbourhood, the Milky Way disk, and out into the
+        // intergalactic backdrop.
+        sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, 11000);
       }
     };
 
@@ -586,7 +690,7 @@ export function SolarSystemCanvas({
         if (lastPinchDist > 4 && d > 4) {
           const factor = d / lastPinchDist;
           if (focusRef.current) orbDist = THREE.MathUtils.clamp(orbDist / factor, 0.04, 420);
-          else sysRadius = THREE.MathUtils.clamp(sysRadius / factor, 5.2, 200);
+          else sysRadius = THREE.MathUtils.clamp(sysRadius / factor, 5.2, 11000);
         }
         lastPinchDist = d;
         pinchActive = true;
@@ -691,6 +795,51 @@ export function SolarSystemCanvas({
       }
       sunExtras.update(camera.position, sunMesh?.position ?? new THREE.Vector3(), dtSec);
 
+      // Imperative zoom (e.g. "zoom into Sun" from the galactic tier) —
+      // ease sysRadius toward the requested target, then clear the request.
+      const zoomReq = zoomToRef.current;
+      if (zoomReq != null && !focusRef.current) {
+        const diff = zoomReq - sysRadius;
+        if (Math.abs(diff) < Math.max(0.5, zoomReq * 0.01)) {
+          sysRadius = zoomReq;
+          zoomToRef.current = null;
+          onZoomToConsumedRef.current?.();
+        } else {
+          // Logarithmic easing — handles huge ratio gaps cleanly.
+          sysRadius = sysRadius * Math.pow(zoomReq / sysRadius, Math.min(1, dtSec * 2.4));
+        }
+      }
+
+      // Cosmic tier blend + galactic-layer fades.
+      currentTier = tierBlendFromRadius(sysRadius);
+      nearbyStars.setFade(currentTier.stellar);
+      galaxyDisk.setFade(currentTier.galactic);
+      otherGalaxies.setFade(currentTier.universe);
+      // The dense particle Milky Way ribbon at the solar tier overlaps
+      // visually with the new disk — fade it out once the disk takes over.
+      const milkyMat = milkyWay.material as THREE.PointsMaterial;
+      milkyMat.opacity = 0.55 * (1 - currentTier.galactic);
+
+      // Stream the view + projected anchor positions to the parent so it
+      // can place the Sun pin / Milky Way tap label as HTML overlays.
+      const onView = onCosmicViewRef.current;
+      if (onView) {
+        const width = mount.clientWidth;
+        const height = mount.clientHeight;
+        const sunWorld = sunMesh ? sunMesh.position : new THREE.Vector3();
+        const sunScreen = projectToScreen(sunWorld, camera, width, height);
+        // Milky-way label sits near the Sun on the disk — when zoomed out
+        // it visually points to "our solar system in the Milky Way".
+        const mwAnchor = galaxyDisk.group.visible
+          ? localToScreen(new THREE.Vector3(0, 0, 0), galaxyDisk.group, camera, width, height)
+          : null;
+        onView({
+          ...currentTier,
+          sunScreen,
+          milkyWayScreen: mwAnchor,
+        });
+      }
+
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
     };
@@ -734,6 +883,12 @@ export function SolarSystemCanvas({
       sunExtras.dispose();
       disposeOrbitRings(orbitRings);
       disposeMilkyWayBand(milkyWay);
+      scene.remove(nearbyStars.group);
+      scene.remove(galaxyDisk.group);
+      scene.remove(otherGalaxies.group);
+      nearbyStars.dispose();
+      galaxyDisk.dispose();
+      otherGalaxies.dispose();
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));
       meshById.clear();

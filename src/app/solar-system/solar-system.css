@@ -578,3 +578,85 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* ──────────────────── cosmic overlay (sun pin + milky way label) ──────────────────── */
+
+.cosmic-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: 0;
+  pointer-events: none;
+  transform: translate(8px, -50%);
+  font-family: var(--font-body, 'Geist'), system-ui, sans-serif;
+  transition: opacity 200ms ease;
+  z-index: 12;
+}
+
+.cosmic-label__pin {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ffd27a;
+  box-shadow:
+    0 0 0 1.5px rgba(20, 22, 30, 0.85),
+    0 0 12px rgba(255, 210, 122, 0.85),
+    0 0 24px rgba(255, 178, 64, 0.45);
+  flex-shrink: 0;
+}
+
+.cosmic-label__text {
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(244, 232, 200, 0.94);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.cosmic-label--mw {
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transform: translate(10px, -50%);
+  padding: 6px 10px 6px 8px;
+  border-radius: 999px;
+  background: rgba(14, 18, 28, 0.62);
+  border: 1px solid rgba(212, 196, 168, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.cosmic-label--mw:hover {
+  background: rgba(20, 26, 40, 0.78);
+  border-color: rgba(232, 216, 184, 0.5);
+}
+
+.cosmic-label__pin--mw {
+  width: 7px;
+  height: 7px;
+  background: #e8d8b6;
+  box-shadow:
+    0 0 0 1.5px rgba(20, 22, 30, 0.9),
+    0 0 14px rgba(232, 216, 184, 0.78),
+    0 0 28px rgba(180, 156, 110, 0.4);
+}
+
+.cosmic-label__text--mw {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cosmic-label__hint {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: rgba(180, 192, 212, 0.74);
+  font-weight: 400;
+}
