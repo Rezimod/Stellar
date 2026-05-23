@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { TrendingUp, TrendingDown, Newspaper, Flame, Clock3, Radio } from 'lucide-react';
 import PageTransition from '@/components/ui/PageTransition';
 
 type Category =
@@ -14,7 +15,8 @@ type Category =
   | 'crypto'
   | 'sports'
   | 'tech'
-  | 'weather';
+  | 'weather'
+  | 'nature';
 
 interface Market {
   id: string;
@@ -28,7 +30,15 @@ interface Market {
   oracle: string;
 }
 
-const TODAY = new Date('2026-05-21T00:00:00Z');
+interface NewsItem {
+  id: string;
+  source: string;
+  headline: string;
+  marketId?: string;
+  hoursAgo: number;
+}
+
+const TODAY = new Date('2026-05-23T00:00:00Z');
 
 const CATEGORIES: { key: Category | 'all'; label: string; emoji: string }[] = [
   { key: 'all',       label: 'All',          emoji: '✦' },
@@ -39,12 +49,14 @@ const CATEGORIES: { key: Category | 'all'; label: string; emoji: string }[] = [
   { key: 'mission',   label: 'Missions',     emoji: '🚀' },
   { key: 'discovery', label: 'Discoveries',  emoji: '🔭' },
   { key: 'weather',   label: 'Weather',      emoji: '⛅' },
+  { key: 'nature',    label: 'Earth',        emoji: '🌍' },
   { key: 'crypto',    label: 'Crypto',       emoji: '₿' },
   { key: 'sports',    label: 'Sports',       emoji: '⚽' },
   { key: 'tech',      label: 'Tech',         emoji: '⚙' },
 ];
 
 const MARKETS: Market[] = [
+  // SKY
   {
     id: 'sky-saturn-ringplane',
     category: 'sky',
@@ -79,6 +91,19 @@ const MARKETS: Market[] = [
     oracle: 'Heavens-Above',
   },
   {
+    id: 'sky-falcon9-cadence',
+    category: 'sky',
+    title: 'Falcon 9 logs ≥ 12 launches in June',
+    blurb: 'Cadence currently averaging 2.6 launches per week.',
+    resolvesAt: '2026-07-01',
+    yes: 0.71,
+    volume: 3140,
+    image: '/images/markets/sky-004-falcon9-cadence.jpg',
+    oracle: 'SpaceX manifest',
+  },
+
+  // SOLAR
+  {
     id: 'solar-xflare-jul',
     category: 'solar',
     title: 'X-class solar flare before Jul 1',
@@ -111,6 +136,19 @@ const MARKETS: Market[] = [
     image: '/images/markets/sky-006-kp5-geomagnetic.jpg',
     oracle: 'NOAA SWPC',
   },
+  {
+    id: 'solar-mclass-judging',
+    category: 'solar',
+    title: 'M-class flare during judging week (May 23 – Jun 1)',
+    blurb: 'Active region AR3895 climbed to βγδ classification.',
+    resolvesAt: '2026-06-01',
+    yes: 0.83,
+    volume: 1990,
+    image: '/images/markets/sky-005-mclass-flare-judging.jpg',
+    oracle: 'NOAA SWPC',
+  },
+
+  // METEOR
   {
     id: 'meteor-bootids',
     category: 'meteor',
@@ -145,6 +183,19 @@ const MARKETS: Market[] = [
     oracle: 'AMS / IMO',
   },
   {
+    id: 'meteor-eta-aquariids-replay',
+    category: 'meteor',
+    title: 'Eta Aquariids late peak (May 28) ZHR ≥ 30',
+    blurb: 'Halley dust trail — late stragglers possible.',
+    resolvesAt: '2026-05-30',
+    yes: 0.37,
+    volume: 880,
+    image: '/images/markets/meteor-002-eta-aquariids-zhr.jpg',
+    oracle: 'IMO global flux',
+  },
+
+  // COMET
+  {
     id: 'comet-r3-naked-eye',
     category: 'comet',
     title: 'C/2025 R3 brighter than magnitude 6.0 in June',
@@ -177,6 +228,30 @@ const MARKETS: Market[] = [
     image: '/images/markets/comet-005-c2026a1-survives.jpg',
     oracle: 'SOHO/JPL',
   },
+  {
+    id: 'comet-rubin-nea',
+    category: 'comet',
+    title: 'Rubin Observatory flags a hazardous NEA in 2026',
+    blurb: 'First-light survey already finding new bodies weekly.',
+    resolvesAt: '2026-12-31',
+    yes: 0.59,
+    volume: 1430,
+    image: '/images/markets/comet-003-rubin-nea.jpg',
+    oracle: 'MPC NEA confirmed',
+  },
+  {
+    id: 'comet-tianwen2-sample',
+    category: 'comet',
+    title: 'Tianwen-2 returns asteroid sample by year end',
+    blurb: 'Sample-return to Kamoʻoalewa — landing Q4.',
+    resolvesAt: '2026-12-31',
+    yes: 0.51,
+    volume: 1180,
+    image: '/images/markets/comet-004-tianwen2-sample.jpg',
+    oracle: 'CNSA confirmed return',
+  },
+
+  // MISSION
   {
     id: 'mission-artemis-ii',
     category: 'mission',
@@ -213,7 +288,7 @@ const MARKETS: Market[] = [
   {
     id: 'mission-change7',
     category: 'mission',
-    title: 'Chang’e-7 returns samples by Sep 30',
+    title: "Chang'e-7 returns samples by Sep 30",
     blurb: 'Lunar south-pole sample-return — launch window open.',
     resolvesAt: '2026-09-30',
     yes: 0.40,
@@ -221,6 +296,19 @@ const MARKETS: Market[] = [
     image: '/images/markets/mission-003-change7.jpg',
     oracle: 'CNSA / press release',
   },
+  {
+    id: 'mission-plato-ready',
+    category: 'mission',
+    title: 'ESA PLATO declared launch-ready before Dec 31',
+    blurb: 'Exoplanet hunter — payload integration in Toulouse.',
+    resolvesAt: '2026-12-31',
+    yes: 0.46,
+    volume: 1340,
+    image: '/images/markets/mission-005-plato.jpg',
+    oracle: 'ESA mission page',
+  },
+
+  // DISCOVERY
   {
     id: 'discovery-jwst-bio',
     category: 'discovery',
@@ -244,6 +332,41 @@ const MARKETS: Market[] = [
     oracle: 'LIGO/Virgo GraceDB',
   },
   {
+    id: 'discovery-gaia-dr4',
+    category: 'discovery',
+    title: 'Gaia DR4 data release before Q4',
+    blurb: '2 billion stars, full radial-velocity catalogue.',
+    resolvesAt: '2026-10-01',
+    yes: 0.32,
+    volume: 1010,
+    image: '/images/markets/discovery-004-gaia-dr4.jpg',
+    oracle: 'ESA Gaia archive',
+  },
+  {
+    id: 'discovery-nobel-cosmo',
+    category: 'discovery',
+    title: 'Nobel Physics 2026 awarded to cosmology work',
+    blurb: 'JWST early-galaxy results are favourites in Stockholm.',
+    resolvesAt: '2026-10-15',
+    yes: 0.28,
+    volume: 860,
+    image: '/images/markets/discovery-002-nobel-cosmo.jpg',
+    oracle: 'Nobel committee announcement',
+  },
+  {
+    id: 'discovery-laserseti',
+    category: 'discovery',
+    title: 'LaserSETI logs a confirmed pulsed candidate',
+    blurb: 'Two-station coincidence under 24h verification.',
+    resolvesAt: '2026-12-31',
+    yes: 0.09,
+    volume: 1620,
+    image: '/images/markets/discovery-005-laserseti.jpg',
+    oracle: 'SETI Institute press release',
+  },
+
+  // CRYPTO
+  {
     id: 'crypto-btc-150k',
     category: 'crypto',
     title: 'BTC closes ≥ $150,000 by Aug 1',
@@ -265,6 +388,30 @@ const MARKETS: Market[] = [
     image: '/images/markets/crypto-002-sol-300.jpg',
     oracle: 'Coinbase 23:59 UTC close',
   },
+  {
+    id: 'crypto-eth-flippening',
+    category: 'crypto',
+    title: 'ETH market cap > BTC at any 23:59 UTC close in 2026',
+    blurb: 'Spread currently 2.1× — flippening would be historic.',
+    resolvesAt: '2026-12-31',
+    yes: 0.07,
+    volume: 4230,
+    image: '/images/markets/crypto-003-eth-flippening.jpg',
+    oracle: 'CoinGecko close-of-day',
+  },
+  {
+    id: 'crypto-stable-volume',
+    category: 'crypto',
+    title: 'Stablecoin daily volume > $300B before Q4',
+    blurb: 'On-chain settlement up 40% YoY — Solana leads.',
+    resolvesAt: '2026-10-01',
+    yes: 0.58,
+    volume: 2780,
+    image: '/images/markets/crypto-004-stable-volume.png',
+    oracle: 'Artemis / DefiLlama',
+  },
+
+  // SPORTS
   {
     id: 'sports-world-cup',
     category: 'sports',
@@ -288,6 +435,30 @@ const MARKETS: Market[] = [
     oracle: 'NBA official',
   },
   {
+    id: 'sports-cl-final',
+    category: 'sports',
+    title: 'UEFA Champions League final is decided in extra time',
+    blurb: 'Munich, May 30 — historical 18% goes past 90.',
+    resolvesAt: '2026-05-30',
+    yes: 0.24,
+    volume: 5180,
+    image: '/images/markets/sports-001-cl-final.jpg',
+    oracle: 'UEFA official',
+  },
+  {
+    id: 'sports-f1-driver',
+    category: 'sports',
+    title: 'Max Verstappen wins 2026 F1 Drivers Championship',
+    blurb: 'Currently +37 points clear after Imola.',
+    resolvesAt: '2026-11-29',
+    yes: 0.62,
+    volume: 4620,
+    image: '/images/markets/sports-004-f1-driver.jpg',
+    oracle: 'FIA standings',
+  },
+
+  // TECH
+  {
     id: 'tech-gpt5',
     category: 'tech',
     title: 'OpenAI ships GPT-5 publicly by Sep 1',
@@ -309,11 +480,13 @@ const MARKETS: Market[] = [
     image: '/images/markets/discovery-002-nobel-cosmo.jpg',
     oracle: 'WWDC keynote',
   },
+
+  // WEATHER
   {
     id: 'weather-tbilisi-clear-week',
     category: 'weather',
     title: '≥ 3 clear nights in Tbilisi this week',
-    blurb: 'Cloud cover < 30 % between 22:00 and 02:00.',
+    blurb: 'Cloud cover < 30% between 22:00 and 02:00.',
     resolvesAt: '2026-05-28',
     yes: 0.58,
     volume: 720,
@@ -324,13 +497,132 @@ const MARKETS: Market[] = [
     id: 'weather-perseids-clear',
     category: 'weather',
     title: 'Perseids viewing clear from Caucasus on Aug 12',
-    blurb: 'Cloud cover < 40 % at observing latitude.',
+    blurb: 'Cloud cover < 40% at observing latitude.',
     resolvesAt: '2026-08-13',
     yes: 0.49,
     volume: 1830,
     image: '/images/markets/weather-005-perseids-europe.jpg',
     oracle: 'Open-Meteo',
   },
+  {
+    id: 'weather-tbilisi-warmday',
+    category: 'weather',
+    title: 'Tbilisi hits ≥ 32°C this week',
+    blurb: 'Caucasus heat dome strengthening per ECMWF.',
+    resolvesAt: '2026-05-30',
+    yes: 0.64,
+    volume: 540,
+    image: '/images/markets/weather-001-tbilisi-warm-day.jpg',
+    oracle: 'NOAA / Open-Meteo',
+  },
+  {
+    id: 'weather-georgia-bortle2',
+    category: 'weather',
+    title: 'Bortle 2 night logged from Tusheti this season',
+    blurb: 'SQM ≥ 21.7 mag/arcsec² reading verified.',
+    resolvesAt: '2026-09-30',
+    yes: 0.71,
+    volume: 410,
+    image: '/images/markets/weather-004-georgia-bortle2.jpg',
+    oracle: 'SQM device upload',
+  },
+
+  // NATURE
+  {
+    id: 'nature-volcanic-eruption',
+    category: 'nature',
+    title: 'New VEI ≥ 3 volcanic eruption before Aug 1',
+    blurb: 'Three candidates trending — Kilauea, Etna, Sakurajima.',
+    resolvesAt: '2026-08-01',
+    yes: 0.55,
+    volume: 1290,
+    image: '/images/markets/natural-003-new-volcanic-eruption.jpg',
+    oracle: 'Smithsonian GVP',
+  },
+  {
+    id: 'nature-reykjanes-swarm',
+    category: 'nature',
+    title: 'Reykjanes peninsula erupts again before Q4',
+    blurb: 'Magma chamber refilling — IMO raised alert May 18.',
+    resolvesAt: '2026-10-01',
+    yes: 0.67,
+    volume: 970,
+    image: '/images/markets/natural-006-reykjanes-swarm.jpg',
+    oracle: 'Icelandic Met Office',
+  },
+  {
+    id: 'nature-m6-judging',
+    category: 'nature',
+    title: 'M6.0+ earthquake during judging week',
+    blurb: 'USGS background rate ≈ 2.8 per week worldwide.',
+    resolvesAt: '2026-06-01',
+    yes: 0.83,
+    volume: 1140,
+    image: '/images/markets/natural-001-m6-judging-week.jpg',
+    oracle: 'USGS catalog',
+  },
+  {
+    id: 'nature-cyclone-named',
+    category: 'nature',
+    title: 'Named tropical cyclone in Atlantic before Jun 30',
+    blurb: 'NHC season opens June 1. Last year had three by July.',
+    resolvesAt: '2026-06-30',
+    yes: 0.39,
+    volume: 880,
+    image: '/images/markets/natural-005-named-tropical-cyclone.jpg',
+    oracle: 'NHC public advisory',
+  },
+];
+
+const NEWS: NewsItem[] = [
+  {
+    id: 'news-1',
+    source: 'NOAA SWPC',
+    headline: 'AR3895 region grows to βγδ classification — flare watch upgraded',
+    marketId: 'solar-xflare-jul',
+    hoursAgo: 4,
+  },
+  {
+    id: 'news-2',
+    source: 'IMO',
+    headline: 'Eta Aquariids late peak (May 28) — Halley trail still active',
+    marketId: 'meteor-eta-aquariids-replay',
+    hoursAgo: 9,
+  },
+  {
+    id: 'news-3',
+    source: 'NASA',
+    headline: 'Artemis II static-fire passes; integrated test on schedule',
+    marketId: 'mission-artemis-ii',
+    hoursAgo: 16,
+  },
+  {
+    id: 'news-4',
+    source: 'COBS',
+    headline: 'C/2025 R3 brightens to mag 6.5 — naked-eye window opening',
+    marketId: 'comet-r3-naked-eye',
+    hoursAgo: 22,
+  },
+  {
+    id: 'news-5',
+    source: 'Icelandic Met Office',
+    headline: 'Reykjanes magma intrusion accelerates — eruption likely',
+    marketId: 'nature-reykjanes-swarm',
+    hoursAgo: 31,
+  },
+  {
+    id: 'news-6',
+    source: 'Open-Meteo',
+    headline: 'Caucasus high-pressure ridge: 3 clear nights forecast over Tbilisi',
+    marketId: 'weather-tbilisi-clear-week',
+    hoursAgo: 38,
+  },
+];
+
+const FAKE_BETTORS = [
+  'astra_42', 'nika.eth', 'kalliope', 'm31_observer', 'photon7', 'sgr_a',
+  'tycho', 'lyra_n', 'cosmonshop', 'darkfield', 'kepler9', 'sirius_a',
+  'orion.gz', 'm42', 'ngc_628', 'rho.oph', 'caph', 'antares',
 ];
 
 function daysUntil(iso: string): number {
@@ -360,13 +652,37 @@ function formatVolume(n: number): string {
   return String(n);
 }
 
-const STORAGE_KEY = 'stellar.markets.bets.v1';
+const STORAGE_KEY = 'stellar.markets.bets.v2';
 
 interface Bet {
   marketId: string;
   side: 'yes' | 'no';
   stake: number;
   ts: number;
+}
+
+interface LiveBet {
+  id: string;
+  user: string;
+  market: Market;
+  side: 'yes' | 'no';
+  stake: number;
+}
+
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateLiveBet(seed: number): LiveBet {
+  const market = MARKETS[seed % MARKETS.length];
+  const stakeBuckets = [10, 25, 50, 75, 100, 150, 200, 250, 500, 750, 1000];
+  return {
+    id: `lb-${seed}-${Math.random()}`,
+    user: pick(FAKE_BETTORS),
+    market,
+    side: Math.random() < market.yes ? 'yes' : 'no',
+    stake: pick(stakeBuckets),
+  };
 }
 
 export default function MarketsPage() {
@@ -376,6 +692,8 @@ export default function MarketsPage() {
   const [side, setSide] = useState<'yes' | 'no'>('yes');
   const [bets, setBets] = useState<Bet[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [liveBets, setLiveBets] = useState<LiveBet[]>([]);
+  const seedRef = useRef(0);
 
   useEffect(() => {
     try {
@@ -390,6 +708,20 @@ export default function MarketsPage() {
     } catch {}
   }, [bets]);
 
+  // Seed initial live bets + tick new ones in
+  useEffect(() => {
+    const initial: LiveBet[] = Array.from({ length: 14 }, (_, i) => generateLiveBet(i));
+    seedRef.current = 14;
+    setLiveBets(initial);
+
+    const interval = setInterval(() => {
+      seedRef.current += 1;
+      setLiveBets(prev => [generateLiveBet(seedRef.current), ...prev].slice(0, 24));
+    }, 2200);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const upcoming = useMemo(
     () => MARKETS
       .filter(m => new Date(m.resolvesAt).getTime() >= TODAY.getTime())
@@ -403,7 +735,16 @@ export default function MarketsPage() {
   );
 
   const featured = upcoming[0];
-  const closingSoon = upcoming.slice(1, 6);
+  const closingSoon = upcoming.slice(1, 7);
+
+  const byCategory = useMemo(() => {
+    const groups = new Map<Category, Market[]>();
+    for (const m of filtered) {
+      if (!groups.has(m.category)) groups.set(m.category, []);
+      groups.get(m.category)!.push(m);
+    }
+    return Array.from(groups.entries());
+  }, [filtered]);
 
   const totalStaked = bets.reduce((sum, b) => sum + b.stake, 0);
 
@@ -418,9 +759,34 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
+      <style jsx global>{`
+        @keyframes marketsTicker {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marketsBetIn {
+          0%   { opacity: 0; transform: translateY(-6px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes marketsPulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.55; transform: scale(0.85); }
+        }
+        .markets-ticker-track {
+          display: flex;
+          gap: 10px;
+          width: max-content;
+          animation: marketsTicker 60s linear infinite;
+        }
+        .markets-ticker-track:hover { animation-play-state: paused; }
+        .markets-live-row { animation: marketsBetIn 320ms ease-out both; }
+        .markets-live-dot { animation: marketsPulseDot 1.6s ease-in-out infinite; }
+        .markets-scrollx::-webkit-scrollbar { display: none; }
+      `}</style>
+
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="flex items-start justify-between gap-4 mb-5">
           <div>
             <h1
               className="font-display"
@@ -464,8 +830,24 @@ export default function MarketsPage() {
           </div>
         </div>
 
-        {/* Closing-soon ticker */}
-        <div className="mb-6 -mx-4 px-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {/* Live bets ticker */}
+        <LiveBetsTicker bets={liveBets} />
+
+        {/* Featured market */}
+        {featured && (
+          <FeaturedCard
+            market={featured}
+            stake={stake}
+            side={side}
+            setStake={setStake}
+            setSide={setSide}
+            onBet={() => placeBet(featured.id)}
+          />
+        )}
+
+        {/* Closing-soon section */}
+        <SectionHeader icon={<Clock3 size={14} strokeWidth={1.8} />} title="Closing soon" />
+        <div className="mb-6 -mx-4 px-4 overflow-x-auto markets-scrollx" style={{ scrollbarWidth: 'none' }}>
           <div className="flex gap-2 w-max">
             {closingSoon.map(m => (
               <button
@@ -473,6 +855,7 @@ export default function MarketsPage() {
                 onClick={() => {
                   setFilter(m.category);
                   setExpanded(m.id);
+                  document.getElementById(`row-${m.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
                 className="text-left shrink-0 transition-all hover:scale-[1.02]"
                 style={{
@@ -506,20 +889,63 @@ export default function MarketsPage() {
           </div>
         </div>
 
-        {/* Featured market */}
-        {featured && (
-          <FeaturedCard
-            market={featured}
-            stake={stake}
-            side={side}
-            setStake={setStake}
-            setSide={setSide}
-            onBet={() => placeBet(featured.id)}
-          />
-        )}
+        {/* News section */}
+        <SectionHeader icon={<Newspaper size={14} strokeWidth={1.8} />} title="Sky news" subtitle="What the oracles are saying" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8">
+          {NEWS.map(n => {
+            const m = n.marketId ? MARKETS.find(x => x.id === n.marketId) : undefined;
+            return (
+              <button
+                key={n.id}
+                onClick={() => {
+                  if (m) {
+                    setFilter(m.category);
+                    setExpanded(m.id);
+                    document.getElementById(`row-${m.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+                className="text-left transition-colors hover:bg-white/[0.03]"
+                style={{
+                  padding: '10px 12px',
+                  border: '1px solid var(--border)',
+                  borderRadius: 10,
+                  background: 'var(--surface)',
+                }}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span style={{
+                    fontSize: 9,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--terracotta)',
+                    fontFamily: 'var(--font-mono, JetBrains Mono)',
+                  }}>
+                    {n.source}
+                  </span>
+                  <span style={{ width: 3, height: 3, borderRadius: 99, background: 'var(--text-faint)' }} />
+                  <span style={{ fontSize: 10, color: 'var(--text-faint)' }}>{n.hoursAgo}h ago</span>
+                  {m && (
+                    <span className="ml-auto" style={{
+                      fontSize: 9,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--text-secondary)',
+                    }}>
+                      → market
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.35 }}>
+                  {n.headline}
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Category chips */}
-        <div className="mt-8 mb-4 -mx-4 px-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        <SectionHeader icon={<Flame size={14} strokeWidth={1.8} />} title="All markets" />
+        <div className="mb-4 -mx-4 px-4 overflow-x-auto markets-scrollx" style={{ scrollbarWidth: 'none' }}>
           <div className="flex gap-2 w-max">
             {CATEGORIES.map(c => {
               const active = filter === c.key;
@@ -546,22 +972,49 @@ export default function MarketsPage() {
           </div>
         </div>
 
-        {/* Market list */}
-        <div className="flex flex-col gap-2">
-          {filtered.map(m => (
-            <MarketRow
-              key={m.id}
-              market={m}
-              expanded={expanded === m.id}
-              onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
-              stake={stake}
-              setStake={setStake}
-              side={side}
-              setSide={setSide}
-              onBet={() => placeBet(m.id)}
-            />
-          ))}
-        </div>
+        {/* Markets grouped by category */}
+        {byCategory.map(([cat, list]) => {
+          const meta = CATEGORIES.find(c => c.key === cat);
+          return (
+            <div key={cat} className="mb-6">
+              <div className="flex items-center gap-2 mb-2.5">
+                <span style={{ fontSize: 13 }}>{meta?.emoji}</span>
+                <h3 className="font-display" style={{
+                  fontSize: 13,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-primary)',
+                  margin: 0,
+                }}>
+                  {meta?.label}
+                </h3>
+                <span style={{
+                  fontSize: 10,
+                  color: 'var(--text-faint)',
+                  fontFamily: 'var(--font-mono, JetBrains Mono)',
+                }}>
+                  {list.length}
+                </span>
+                <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+              </div>
+              <div className="flex flex-col gap-2">
+                {list.map(m => (
+                  <MarketRow
+                    key={m.id}
+                    market={m}
+                    expanded={expanded === m.id}
+                    onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
+                    stake={stake}
+                    setStake={setStake}
+                    side={side}
+                    setSide={setSide}
+                    onBet={() => placeBet(m.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
 
         {/* My active bets */}
         {bets.length > 0 && (
@@ -650,6 +1103,119 @@ export default function MarketsPage() {
         </div>
       )}
     </PageTransition>
+  );
+}
+
+function SectionHeader({ icon, title, subtitle }: { icon?: React.ReactNode; title: string; subtitle?: string }) {
+  return (
+    <div className="flex items-baseline gap-3 mt-7 mb-3">
+      <div className="flex items-center gap-2">
+        {icon && <span style={{ color: 'var(--terracotta)' }}>{icon}</span>}
+        <h2 className="font-display" style={{
+          fontSize: 13,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: 'var(--text-primary)',
+          margin: 0,
+        }}>
+          {title}
+        </h2>
+      </div>
+      {subtitle && (
+        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{subtitle}</span>
+      )}
+      <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+    </div>
+  );
+}
+
+function LiveBetsTicker({ bets }: { bets: LiveBet[] }) {
+  if (bets.length === 0) return null;
+  // Duplicate the list so the marquee loops seamlessly
+  const doubled = [...bets.slice(0, 12), ...bets.slice(0, 12)];
+
+  return (
+    <div
+      className="relative mb-5 overflow-hidden"
+      style={{
+        padding: '10px 14px',
+        border: '1px solid var(--border)',
+        borderRadius: 14,
+        background: 'linear-gradient(180deg, var(--surface) 0%, var(--canvas) 100%)',
+      }}
+    >
+      <div className="flex items-center gap-2 mb-2.5">
+        <span className="markets-live-dot" style={{
+          width: 8, height: 8, borderRadius: 99,
+          background: 'var(--yes)',
+          boxShadow: '0 0 0 3px rgba(52,211,153,0.15)',
+        }} />
+        <span style={{
+          fontSize: 10,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--font-mono, JetBrains Mono)',
+        }}>
+          Live · {bets.length} active stakes
+        </span>
+        <Radio size={11} strokeWidth={1.8} style={{ color: 'var(--text-faint)', marginLeft: 'auto' }} />
+      </div>
+
+      <div className="overflow-hidden" style={{
+        maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+      }}>
+        <div className="markets-ticker-track">
+          {doubled.map((b, i) => (
+            <div
+              key={`${b.id}-${i}`}
+              className="markets-live-row flex items-center gap-2 shrink-0"
+              style={{
+                padding: '7px 12px',
+                borderRadius: 999,
+                border: `1px solid ${b.side === 'yes' ? 'var(--yes-border)' : 'var(--no-border)'}`,
+                background: b.side === 'yes' ? 'var(--yes-dim)' : 'var(--no-dim)',
+                fontSize: 12,
+                color: 'var(--text-secondary)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono, JetBrains Mono)',
+                fontSize: 11,
+              }}>
+                @{b.user}
+              </span>
+              <span style={{
+                color: b.side === 'yes' ? 'var(--yes)' : 'var(--no)',
+                fontWeight: 700,
+                fontSize: 11,
+                letterSpacing: '0.05em',
+              }}>
+                {b.side === 'yes' ? '▲ YES' : '▼ NO'}
+              </span>
+              <span style={{
+                color: 'var(--terracotta)',
+                fontFamily: 'var(--font-mono, JetBrains Mono)',
+                fontWeight: 600,
+              }}>
+                {b.stake}★
+              </span>
+              <span style={{
+                color: 'var(--text-secondary)',
+                maxWidth: 220,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>
+                {b.market.title}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -756,36 +1322,8 @@ function FeaturedCard({
 
         <div className="mt-5 flex flex-col sm:flex-row gap-3">
           <div className="flex gap-2 flex-1">
-            <button
-              onClick={() => setSide('yes')}
-              style={{
-                flex: 1,
-                padding: '12px 14px',
-                fontSize: 14,
-                borderRadius: 10,
-                background: side === 'yes' ? 'var(--yes-dim)' : 'transparent',
-                border: `1px solid ${side === 'yes' ? 'var(--yes-border)' : 'var(--border)'}`,
-                color: side === 'yes' ? 'var(--yes)' : 'var(--text-secondary)',
-                fontWeight: 600,
-              }}
-            >
-              YES · {yesPct}%
-            </button>
-            <button
-              onClick={() => setSide('no')}
-              style={{
-                flex: 1,
-                padding: '12px 14px',
-                fontSize: 14,
-                borderRadius: 10,
-                background: side === 'no' ? 'var(--no-dim)' : 'transparent',
-                border: `1px solid ${side === 'no' ? 'var(--no-border)' : 'var(--border)'}`,
-                color: side === 'no' ? 'var(--no)' : 'var(--text-secondary)',
-                fontWeight: 600,
-              }}
-            >
-              NO · {100 - yesPct}%
-            </button>
+            <SideButton variant="yes" active={side === 'yes'} pct={yesPct} onClick={() => setSide('yes')} />
+            <SideButton variant="no" active={side === 'no'} pct={100 - yesPct} onClick={() => setSide('no')} />
           </div>
 
           <div className="flex gap-2 items-center">
@@ -834,6 +1372,60 @@ function FeaturedCard({
         </div>
       </div>
     </div>
+  );
+}
+
+function SideButton({
+  variant,
+  active,
+  pct,
+  onClick,
+  compact = false,
+}: {
+  variant: 'yes' | 'no';
+  active: boolean;
+  pct: number;
+  onClick: () => void;
+  compact?: boolean;
+}) {
+  const isYes = variant === 'yes';
+  const color = isYes ? 'var(--yes)' : 'var(--no)';
+  const dim = isYes ? 'var(--yes-dim)' : 'var(--no-dim)';
+  const border = isYes ? 'var(--yes-border)' : 'var(--no-border)';
+  const Icon = isYes ? TrendingUp : TrendingDown;
+  const label = isYes ? 'YES' : 'NO';
+
+  return (
+    <button
+      onClick={onClick}
+      className="relative overflow-hidden flex items-center justify-center gap-2 transition-all"
+      style={{
+        flex: 1,
+        padding: compact ? '9px 10px' : '12px 14px',
+        fontSize: compact ? 13 : 14,
+        borderRadius: 10,
+        background: active
+          ? `linear-gradient(180deg, ${dim}, ${dim})`
+          : 'transparent',
+        border: `1px solid ${active ? border : 'var(--border)'}`,
+        color: active ? color : 'var(--text-secondary)',
+        fontWeight: 600,
+        boxShadow: active
+          ? `inset 0 1px 0 ${border}, 0 4px 12px -6px ${color}`
+          : 'none',
+        transform: active ? 'translateY(-1px)' : 'none',
+      }}
+    >
+      <Icon size={compact ? 14 : 16} strokeWidth={2.2} />
+      <span style={{ letterSpacing: '0.04em' }}>{label}</span>
+      <span style={{
+        fontFamily: 'var(--font-mono, JetBrains Mono)',
+        fontSize: compact ? 11 : 12,
+        opacity: active ? 1 : 0.7,
+      }}>
+        {pct}%
+      </span>
+    </button>
   );
 }
 
@@ -907,6 +1499,7 @@ function MarketRow({
 
   return (
     <div
+      id={`row-${market.id}`}
       style={{
         border: '1px solid var(--border)',
         borderRadius: 12,
@@ -973,36 +1566,8 @@ function MarketRow({
         >
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <div className="flex gap-2 flex-1">
-              <button
-                onClick={() => setSide('yes')}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  fontSize: 13,
-                  borderRadius: 8,
-                  background: side === 'yes' ? 'var(--yes-dim)' : 'transparent',
-                  border: `1px solid ${side === 'yes' ? 'var(--yes-border)' : 'var(--border)'}`,
-                  color: side === 'yes' ? 'var(--yes)' : 'var(--text-secondary)',
-                  fontWeight: 600,
-                }}
-              >
-                YES · {yesPct}%
-              </button>
-              <button
-                onClick={() => setSide('no')}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  fontSize: 13,
-                  borderRadius: 8,
-                  background: side === 'no' ? 'var(--no-dim)' : 'transparent',
-                  border: `1px solid ${side === 'no' ? 'var(--no-border)' : 'var(--border)'}`,
-                  color: side === 'no' ? 'var(--no)' : 'var(--text-secondary)',
-                  fontWeight: 600,
-                }}
-              >
-                NO · {100 - yesPct}%
-              </button>
+              <SideButton variant="yes" active={side === 'yes'} pct={yesPct} onClick={() => setSide('yes')} compact />
+              <SideButton variant="no" active={side === 'no'} pct={100 - yesPct} onClick={() => setSide('no')} compact />
             </div>
             <div className="flex gap-2">
               {[10, 50, 100, 500].map(q => (

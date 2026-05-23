@@ -635,6 +635,9 @@
   },
   "field": {
     "back": "Back to Astra",
+    "winnerBadge": "Tether Frontier Track Winner",
+    "winnerDetail": "Superteam Earn · Frontier Hackathon 2026 · Revaz Modebadze",
+    "poweredBy": "Powered by Tether QVAC",
     "eyebrow": "Stellar Field — Android preview",
     "title": "Astra. On the phone. Offline.",
     "lede": "Astronomers travel to dark-sky sites with no cell signal — exactly where the cloud AI fails. Field Mode runs Astra entirely on your phone, so the answers keep coming when the bars don't.",
@@ -669,7 +672,7 @@
       "soon": "Available shortly",
       "platform": "Android · physical device · ~700MB first-launch model download"
     },
-    "credit": "Built with Tether QVAC · on-chain proof on Solana"
+    "credit": "Tether Frontier Track Winner · Powered by QVAC · on-chain proof on Solana"
   },
   "marketplace": {
     "title": "Marketplace",
@@ -1023,6 +1026,7 @@
     "skyWatcher": "Sky Watcher",
     "solarSystem3d": "Solar system 3D",
     "missions": "Missions",
+    "markets": "Sky Markets",
     "marketplace": "Marketplace",
     "astraAi": "ASTRA AI",
     "learning": "Learning",

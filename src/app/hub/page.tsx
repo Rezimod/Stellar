@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   Sun, Target, Sparkles, BookOpen, MessageCircle,
-  Trophy, Gem, ShoppingBag, Search, User, Orbit,
+  Trophy, Gem, ShoppingBag, Search, User, Orbit, TrendingUp,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
@@ -37,6 +37,7 @@ const SECTIONS: HubSection[] = [
       { href: '/sky',           labelKey: 'skyWatcher',    icon: Sun,           gradient: G.amber },
       { href: '/solar-system',  labelKey: 'solarSystem3d', icon: Orbit,         gradient: G.blue },
       { href: '/missions',    labelKey: 'missions',    icon: Target,        gradient: G.violet },
+      { href: '/markets',     labelKey: 'markets',     icon: TrendingUp,    gradient: G.emerald },
       { href: '/marketplace', labelKey: 'marketplace', icon: ShoppingBag,   gradient: G.indigo },
       { href: '/chat',        labelKey: 'astraAi',     icon: MessageCircle, gradient: G.fuchsia },
       { href: '/learn',       labelKey: 'learning',    icon: BookOpen,      gradient: G.blue },

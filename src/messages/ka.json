@@ -635,6 +635,9 @@
   },
   "field": {
     "back": "ASTRA-სთან დაბრუნება",
+    "winnerBadge": "Tether Frontier Track-ის გამარჯვებული",
+    "winnerDetail": "Superteam Earn · Frontier Hackathon 2026 · რევაზ მოდებაძე",
+    "poweredBy": "Tether QVAC-ით",
     "eyebrow": "Stellar Field — Android-ისთვის",
     "title": "ASTRA. შენს ტელეფონში. ოფლაინ.",
     "lede": "ასტრონომები ბნელ ცაზე მიდიან, სადაც ფიჭური სიგნალი არ არის — სწორედ იქ, სადაც სერვერული AI ვერ მუშაობს. Field Mode ASTRA-ს მთლიანად შენს ტელეფონში გაუშვებს, რომ პასუხები მოდიოდეს მაშინაც, როცა ქსელი აღარ არის.",
@@ -669,7 +672,7 @@
       "soon": "მალე ხელმისაწვდომი იქნება",
       "platform": "Android · ფიზიკური მოწყობილობა · ~700MB მოდელის ჩამოტვირთვა პირველი გაშვებისას"
     },
-    "credit": "Tether QVAC-ით აგებული · ციფრული მტკიცებულება Solana-ზე"
+    "credit": "Tether Frontier Track-ის გამარჯვებული · QVAC · ციფრული მტკიცებულება Solana-ზე"
   },
   "marketplace": {
     "title": "მაღაზია",
@@ -993,6 +996,7 @@
     "skyWatcher": "ცის დამკვირვებელი",
     "solarSystem3d": "მზის სისტემა 3D",
     "missions": "მისიები",
+    "markets": "ცის ბაზრები",
     "marketplace": "მაღაზია",
     "astraAi": "ASTRA AI",
     "learning": "სწავლა",
