@@ -83,10 +83,12 @@ const DEG = Math.PI / 180;
 /**
  * Persistent branch state for the cos(β) test in `eventToPointing`. Module-
  * level because the underlying sensor is a singleton — there is only one
- * physical phone, regardless of how many hook instances exist. See the
- * long comment in `eventToPointing` for why this exists.
+ * physical phone, regardless of how many hook instances exist. `null` until
+ * the first non-dead-zone reading anchors it; this avoids picking the wrong
+ * branch when the user's first reading happens to land in the cb dead zone.
+ * See the long comment in `eventToPointing` for why this exists.
  */
-let lastBranchBackward = false;
+let lastBranchBackward: boolean | null = null;
 
 function wrap360(deg: number): number {
   return ((deg % 360) + 360) % 360;
@@ -213,7 +215,11 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
     let useBackwardBranch: boolean;
     if (cb > CB_DEADZONE) useBackwardBranch = false;
     else if (cb < -CB_DEADZONE) useBackwardBranch = true;
-    else useBackwardBranch = lastBranchBackward;
+    else if (lastBranchBackward !== null) useBackwardBranch = lastBranchBackward;
+    // First-ever reading lands inside the dead zone: fall back to the raw
+    // cb sign rather than a hard-coded default. The next non-dead-zone
+    // frame will anchor the latch correctly.
+    else useBackwardBranch = cb < 0;
     lastBranchBackward = useBackwardBranch;
     if (!useBackwardBranch) {
       alphaWorld = (360 - (compass as number) + 360) % 360;
@@ -355,6 +361,14 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
   const handlerRef = useRef<((e: DeviceOrientationEvent) => void) | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const proximityRef = useRef<number | null>(null);
+  // Count of consecutive frames where the new reading differs from the
+  // smoothed value by >150°. Single-frame jumps that big are almost always
+  // sensor glitches (magnetometer interference, iOS β/γ remap as the phone
+  // crosses vertical, screen-orientation transitions). If the same jump
+  // persists for FLIP_CONFIRM_FRAMES in a row, treat it as a real
+  // turn-around and snap the smoothed heading rather than letting
+  // circular smoothing crawl across an opposing direction.
+  const flipCountRef = useRef(0);
 
   const detach = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -388,8 +402,34 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
       const alphaSmooth = alphaForProximity(proximityRef.current);
 
       if (next.heading != null) {
-        smoothedHeadingRef.current = smoothAngle(smoothedHeadingRef.current, next.heading, alphaSmooth);
-        setRawHeading(smoothedHeadingRef.current);
+        const prev = smoothedHeadingRef.current;
+        if (prev == null) {
+          smoothedHeadingRef.current = next.heading;
+          setRawHeading(next.heading);
+          flipCountRef.current = 0;
+        } else {
+          const FLIP_THRESHOLD_DEG = 150;
+          const FLIP_CONFIRM_FRAMES = 3;
+          let diff = next.heading - prev;
+          diff = ((diff + 540) % 360) - 180;
+          if (Math.abs(diff) > FLIP_THRESHOLD_DEG) {
+            flipCountRef.current += 1;
+            if (flipCountRef.current >= FLIP_CONFIRM_FRAMES) {
+              // Sustained jump — accept the new heading and reset state.
+              // Snap (don't smooth) because circular smoothing across a
+              // near-180° gap produces an unstable midpoint that wanders
+              // through arbitrary directions.
+              smoothedHeadingRef.current = next.heading;
+              setRawHeading(next.heading);
+              flipCountRef.current = 0;
+            }
+            // Otherwise: drop this frame's heading (keep showing `prev`).
+          } else {
+            flipCountRef.current = 0;
+            smoothedHeadingRef.current = smoothAngle(prev, next.heading, alphaSmooth);
+            setRawHeading(smoothedHeadingRef.current);
+          }
+        }
       }
 
       const prevAlt = smoothedAltRef.current;
@@ -455,6 +495,8 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
     smoothedHeadingRef.current = null;
     smoothedAltRef.current = null;
     smoothedRollRef.current = null;
+    flipCountRef.current = 0;
+    lastBranchBackward = null;
     setStatus('idle');
   }, [detach]);
 
