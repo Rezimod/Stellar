@@ -133,6 +133,21 @@ export interface AzAlt {
   altitude: number;
 }
 
+/**
+ * Saemundsson's refraction model (Meeus 16.4) — degrees of apparent altitude
+ * gain for a true altitude `altDeg`. Standard 1010 mbar / 10°C atmosphere.
+ * Matches the model used for bright stars in `lib/sky/stars.ts` and the
+ * 'normal' mode of astronomy-engine's `Horizon` (used for planets). Without
+ * this, catalog stars/DSOs are drawn ~0.5° below where they actually appear,
+ * which puts Sirius and Arcturus visibly offset from their bright-star copy.
+ */
+function refractionDeg(altDeg: number): number {
+  if (altDeg < -1) return 0;
+  const a = altDeg + 10.3 / (altDeg + 5.11);
+  const r = 1.02 / Math.tan(a * DEG); // arc minutes
+  return r / 60;
+}
+
 export function raDecToAzAlt(
   raHours: number,
   decDeg: number,
@@ -154,7 +169,9 @@ export function raDecToAzAlt(
   let az = Math.atan2(sinAz, cosAz) / DEG;
   az = ((az % 360) + 360) % 360;
 
-  return { azimuth: az, altitude: alt / DEG };
+  const trueAlt = alt / DEG;
+  const apparentAlt = trueAlt + refractionDeg(trueAlt);
+  return { azimuth: az, altitude: apparentAlt };
 }
 
 export interface RiseSet {

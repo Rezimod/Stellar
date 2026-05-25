@@ -31,7 +31,6 @@ import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finde
 import './sky.css';
 
 const REFRESH_MS = 60_000;
-const SKY_CLOCK_MS = 30_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
 
 export default function SkyPage() {
@@ -87,12 +86,11 @@ export default function SkyPage() {
 
   const [skyTime, setSkyTime] = useState(() => new Date());
 
-  // Advance star positions between finder refreshes (Earth rotation).
-  useEffect(() => {
-    const id = window.setInterval(() => setSkyTime(new Date()), SKY_CLOCK_MS);
-    return () => window.clearInterval(id);
-  }, []);
-
+  // Star positions are driven exclusively by the finder's `generatedAt`, so
+  // bright-stars and the planet/DSO layer always reflect the same instant.
+  // Earlier we ticked an independent 30s clock here — that drifted the two
+  // layers up to half a minute apart between fetches (≈0.125° rotation) and
+  // produced subtle "stars marching past static planets" wobble.
   useEffect(() => {
     if (finder?.generatedAt) setSkyTime(new Date(finder.generatedAt));
   }, [finder?.generatedAt]);
@@ -190,16 +188,22 @@ export default function SkyPage() {
 
   // Constellation stars projected once per finder refresh — the angular
   // drift across a few minutes is below dome resolution, so this is fine.
+  // Any star id already present in the finder API response is dropped so
+  // the same body doesn't render twice (e.g. Sirius and Arcturus, which
+  // live in both the catalog and the bright-star list).
   const constellationStars = useMemo<ConstellationStar[]>(() => {
     if (!finder) return [];
-    return positionStars(location.lat, location.lon, skyTime).map((s) => ({
-      id: s.id,
-      name: s.name,
-      altitude: s.altitude,
-      azimuth: s.azimuth,
-      mag: s.mag,
-      constellation: STAR_TO_CONSTELLATION[s.id],
-    }));
+    const finderIds = new Set(finder.objects.map((o) => o.id));
+    return positionStars(location.lat, location.lon, skyTime)
+      .filter((s) => !finderIds.has(s.id))
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        altitude: s.altitude,
+        azimuth: s.azimuth,
+        mag: s.mag,
+        constellation: STAR_TO_CONSTELLATION[s.id],
+      }));
   }, [finder, location.lat, location.lon, skyTime]);
 
   // Hop anchor: prefer a catalog match (e.g. when the anchor is itself a

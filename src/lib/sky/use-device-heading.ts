@@ -80,6 +80,14 @@ const FIRST_EVENT_TIMEOUT_MS = 2500;
 
 const DEG = Math.PI / 180;
 
+/**
+ * Persistent branch state for the cos(β) test in `eventToPointing`. Module-
+ * level because the underlying sensor is a singleton — there is only one
+ * physical phone, regardless of how many hook instances exist. See the
+ * long comment in `eventToPointing` for why this exists.
+ */
+let lastBranchBackward = false;
+
 function wrap360(deg: number): number {
   return ((deg % 360) + 360) % 360;
 }
@@ -193,7 +201,21 @@ function eventToPointing(e: DeviceOrientationEvent): PointingResult | null {
   let alphaWorld: number;
   if (compassValid) {
     const cb = Math.cos(beta * DEG);
-    if (cb >= 0) {
+    // Hysteresis around β = ±90° (cb ≈ 0). The two branches above differ by
+    // a 180° rotation of alphaWorld, so any time sensor noise pushes the
+    // reported β across the 90° threshold, the heading flips 180° — and
+    // the moon (or whichever body the user is aiming at) jumps to the
+    // opposite side of the dome. The user holds the phone near-vertical
+    // for most observations, so β sits right on the boundary and the
+    // wobble is constant. Only switch branch when cb is unambiguously on
+    // one side; in the dead zone, keep the last decision.
+    const CB_DEADZONE = 0.15; // β within ~8.6° of vertical
+    let useBackwardBranch: boolean;
+    if (cb > CB_DEADZONE) useBackwardBranch = false;
+    else if (cb < -CB_DEADZONE) useBackwardBranch = true;
+    else useBackwardBranch = lastBranchBackward;
+    lastBranchBackward = useBackwardBranch;
+    if (!useBackwardBranch) {
       alphaWorld = (360 - (compass as number) + 360) % 360;
     } else {
       alphaWorld = (180 - (compass as number) + 360) % 360;

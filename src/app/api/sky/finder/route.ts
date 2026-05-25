@@ -216,8 +216,8 @@ export async function GET(req: NextRequest) {
     return {
       id: entry.id,
       name: entry.fallbackName,
-      altitude: Math.round(altitude * 10) / 10,
-      azimuth: Math.round(azimuth),
+      altitude: Math.round(altitude * 100) / 100,
+      azimuth: Math.round(azimuth * 100) / 100,
       magnitude: entry.magnitude,
       visible: altitude > 0,
       nakedEye: entry.magnitude <= 6,
