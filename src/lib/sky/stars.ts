@@ -61,12 +61,25 @@ export const BRIGHT_STARS: Star[] = [
   { id: 'segin',      name: 'Segin',      ra: 1.907,  dec:  63.670, mag:  3.35 },
   { id: 'sadr',       name: 'Sadr',       ra: 20.371, dec:  40.257, mag:  2.23 },
   { id: 'gienah',     name: 'Gienah',     ra: 20.770, dec:  33.970, mag:  2.48 },
-  { id: 'aljanah',    name: 'Aljanah',    ra: 20.770, dec:  33.971, mag:  2.46 },
+  { id: 'fawaris',    name: 'Fawaris',    ra: 19.749, dec:  45.131, mag:  2.87 },
   { id: 'albireo',    name: 'Albireo',    ra: 19.512, dec:  27.960, mag:  3.05 },
   // Andromeda — anchor stars used by the M31 star-hop.
   { id: 'alpheratz',  name: 'Alpheratz',  ra: 0.140,  dec:  29.090, mag:  2.06 },
   { id: 'mirach',     name: 'Mirach',     ra: 1.162,  dec:  35.621, mag:  2.05 },
   { id: 'almach',     name: 'Almach',     ra: 2.065,  dec:  42.330, mag:  2.10 },
+  // Orion second foot — completes the figure (was missing).
+  { id: 'saiph',      name: 'Saiph',      ra: 5.795,  dec:  -9.670, mag:  2.06 },
+  // Lyra parallelogram.
+  { id: 'sheliak',    name: 'Sheliak',    ra: 18.834, dec:  33.363, mag:  3.45 },
+  { id: 'sulafat',    name: 'Sulafat',    ra: 18.983, dec:  32.689, mag:  3.24 },
+  // Ursa Minor — pair with Polaris + Kochab.
+  { id: 'pherkad',    name: 'Pherkad',    ra: 15.345, dec:  71.834, mag:  3.05 },
+  // Leo lion figure.
+  { id: 'denebola',   name: 'Denebola',   ra: 11.818, dec:  14.572, mag:  2.11 },
+  { id: 'algieba',    name: 'Algieba',    ra: 10.333, dec:  19.842, mag:  2.08 },
+  { id: 'zosma',      name: 'Zosma',      ra: 11.235, dec:  20.524, mag:  2.56 },
+  // Scorpius head — pair with Antares + Shaula.
+  { id: 'dschubba',   name: 'Dschubba',   ra: 16.005, dec: -22.622, mag:  2.32 },
 ];
 
 /** Stick figures grouped by constellation, so the SkyMap can highlight a
@@ -78,7 +91,11 @@ export const CONSTELLATION_GROUPS: Record<string, Array<[string, string]>> = {
     ['bellatrix', 'mintaka'],
     ['mintaka', 'alnilam'],
     ['alnilam', 'alnitak'],
-    ['alnitak', 'rigel'],
+    // Belt-to-foot connections: west belt (Mintaka) to west foot (Rigel),
+    // east belt (Alnitak) to east foot (Saiph). Earlier we had
+    // alnitak→rigel which drew a crossing diagonal through the figure.
+    ['mintaka', 'rigel'],
+    ['alnitak', 'saiph'],
   ],
   ursaMajor: [
     ['dubhe', 'merak'],
@@ -89,6 +106,11 @@ export const CONSTELLATION_GROUPS: Record<string, Array<[string, string]>> = {
     ['mizar', 'alkaid'],
     ['megrez', 'dubhe'],
   ],
+  ursaMinor: [
+    ['polaris', 'kochab'],
+    ['kochab', 'pherkad'],
+    ['pherkad', 'polaris'],
+  ],
   cassiopeia: [
     ['caph', 'schedar'],
     ['schedar', 'gamma_cas'],
@@ -98,18 +120,33 @@ export const CONSTELLATION_GROUPS: Record<string, Array<[string, string]>> = {
   cygnus: [
     ['deneb', 'sadr'],
     ['sadr', 'albireo'],
+    // East wing → ε Cyg (Gienah). West wing → δ Cyg (Fawaris).
+    // Earlier we had two lines to "Aljanah" + "Gienah" which were the same
+    // star (both ε Cyg) — one wing was effectively missing.
     ['sadr', 'gienah'],
-    ['sadr', 'aljanah'],
+    ['sadr', 'fawaris'],
   ],
   andromeda: [
     ['alpheratz', 'mirach'],
     ['mirach', 'almach'],
   ],
   lyra: [
-    // Vega is the apex; we only have Vega + Albireo nearby in BRIGHT_STARS,
-    // so M57 lives "between" stars we don't catalog. Trail still anchors at
-    // Vega via hopFromId — the line-figure for Lyra needs more stars to be
-    // worth drawing, so leave it empty for now.
+    // Vega apex + Sheliak/Sulafat parallelogram. The IAU figure has two
+    // more stars (Zeta + Delta Lyr) too faint to keep in the bright-star
+    // catalog — three lines render the recognisable kite.
+    ['vega', 'sheliak'],
+    ['sheliak', 'sulafat'],
+    ['sulafat', 'vega'],
+  ],
+  leo: [
+    ['regulus', 'algieba'],
+    ['algieba', 'zosma'],
+    ['zosma', 'denebola'],
+    ['denebola', 'regulus'],
+  ],
+  scorpius: [
+    ['dschubba', 'antares'],
+    ['antares', 'shaula'],
   ],
 };
 

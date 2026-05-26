@@ -33,10 +33,13 @@ function starColor(mag: number): string {
 const CONSTELLATION_NAMES: Record<string, string> = {
   orion:      'ORION',
   ursaMajor:  'URSA MAJOR',
+  ursaMinor:  'URSA MINOR',
   cassiopeia: 'CASSIOPEIA',
   cygnus:     'CYGNUS',
   andromeda:  'ANDROMEDA',
   lyra:       'LYRA',
+  leo:        'LEO',
+  scorpius:   'SCORPIUS',
 };
 
 const STAR_TINT: Record<string, string> = {
@@ -61,9 +64,19 @@ const STAR_TINT: Record<string, string> = {
   // Orange (K)
   arcturus:  '#f0a55c',
   aldebaran: '#ec8b56',
+  algieba:   '#f3b079',
   // Red giants (M)
   betelgeuse:'#e87454',
   antares:   '#e36c4a',
+  // Additional figure stars.
+  saiph:     '#cee0ff',
+  fawaris:   '#d4e0f4',
+  sheliak:   '#d8e1f4',
+  sulafat:   '#d8e1f4',
+  pherkad:   '#f0eee0',
+  denebola:  '#d4e0f4',
+  zosma:     '#d8e1f4',
+  dschubba:  '#cee0ff',
 };
 
 function azimuthToCardinal(az: number): string {
