@@ -1323,6 +1323,18 @@ export default function MarketsPage() {
         .markets-live-row { animation: marketsBetIn 320ms ease-out both; }
         .markets-live-dot { animation: marketsPulseDot 1.6s ease-in-out infinite; }
         .markets-scrollx::-webkit-scrollbar { display: none; }
+        .markets-side-btn {
+          transition: transform 140ms ease, filter 140ms ease, background 200ms ease;
+        }
+        .markets-side-btn[data-active="false"]:hover,
+        .markets-side-btn[data-active="false"]:focus-visible {
+          filter: brightness(1.4);
+          transform: translateY(-1px) scale(1.01);
+          outline: none;
+        }
+        .markets-side-btn[data-active="true"] {
+          filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
+        }
       `}</style>
 
       <div className="max-w-5xl mx-auto px-4 py-6">
@@ -2006,7 +2018,7 @@ function FeaturedCard({
         <SplitOdds yes={market.yes} />
 
         <div className="mt-5 flex flex-col sm:flex-row gap-3">
-          <div className="flex gap-2 flex-1">
+          <div className="flex flex-1" style={{ gap: 2 }}>
             <SideButton variant="yes" active={side === 'yes'} pct={yesPct} onClick={() => setSide('yes')} />
             <SideButton variant="no" active={side === 'no'} pct={100 - yesPct} onClick={() => setSide('no')} />
           </div>
@@ -2076,33 +2088,42 @@ function SideButton({
   const isYes = variant === 'yes';
   const color = isYes ? 'var(--yes)' : 'var(--no)';
   const dim = isYes ? 'var(--yes-dim)' : 'var(--no-dim)';
-  const border = isYes ? 'var(--yes-border)' : 'var(--no-border)';
   const Icon = isYes ? TrendingUp : TrendingDown;
   const label = isYes ? 'YES' : 'NO';
+
+  // Chevron clip — YES points right, NO points left so the two buttons read
+  // as opposing arrows meeting in the middle.
+  const notch = compact ? 12 : 16;
+  const clipYes = `polygon(0 0, calc(100% - ${notch}px) 0, 100% 50%, calc(100% - ${notch}px) 100%, 0 100%)`;
+  const clipNo  = `polygon(${notch}px 0, 100% 0, 100% 100%, ${notch}px 100%, 0 50%)`;
 
   return (
     <button
       onClick={onClick}
-      className="relative overflow-hidden flex items-center justify-center gap-2 transition-all"
+      onMouseEnter={onClick}
+      onFocus={onClick}
+      className="markets-side-btn relative flex items-center justify-center gap-2 transition-all"
+      data-active={active ? 'true' : 'false'}
       style={{
         flex: 1,
-        padding: compact ? '9px 10px' : '12px 14px',
+        padding: compact
+          ? (isYes ? '11px 18px 11px 14px' : '11px 14px 11px 18px')
+          : (isYes ? '14px 22px 14px 18px' : '14px 18px 14px 22px'),
         fontSize: compact ? 13 : 14,
-        borderRadius: 10,
+        clipPath: isYes ? clipYes : clipNo,
         background: active
-          ? `linear-gradient(180deg, ${dim}, ${dim})`
-          : 'transparent',
-        border: `1px solid ${active ? border : 'var(--border)'}`,
+          ? `linear-gradient(180deg, ${color}33, ${dim})`
+          : 'var(--canvas)',
+        border: 'none',
         color: active ? color : 'var(--text-secondary)',
-        fontWeight: 600,
-        boxShadow: active
-          ? `inset 0 1px 0 ${border}, 0 4px 12px -6px ${color}`
-          : 'none',
+        fontWeight: 700,
+        letterSpacing: '0.04em',
         transform: active ? 'translateY(-1px)' : 'none',
+        cursor: 'pointer',
       }}
     >
-      <Icon size={compact ? 14 : 16} strokeWidth={2.2} />
-      <span style={{ letterSpacing: '0.04em' }}>{label}</span>
+      <Icon size={compact ? 14 : 16} strokeWidth={2.4} />
+      <span>{label}</span>
       <span style={{
         fontFamily: 'var(--font-mono, JetBrains Mono)',
         fontSize: compact ? 11 : 12,
@@ -2252,7 +2273,7 @@ function MarketRow({
           style={{ borderColor: 'var(--border)' }}
         >
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-            <div className="flex gap-2 flex-1">
+            <div className="flex flex-1" style={{ gap: 2 }}>
               <SideButton variant="yes" active={side === 'yes'} pct={yesPct} onClick={() => setSide('yes')} compact />
               <SideButton variant="no" active={side === 'no'} pct={100 - yesPct} onClick={() => setSide('no')} compact />
             </div>
