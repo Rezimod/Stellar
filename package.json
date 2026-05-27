@@ -55,7 +55,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
-    "three": "^0.184.0"
+    "three": "^0.184.0",
+    "twitter-api-v2": "^1.29.0"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.32.1",

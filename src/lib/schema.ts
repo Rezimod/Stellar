@@ -277,3 +277,19 @@ export const marketCashouts = pgTable('market_cashouts', {
   uniqueIndex('cashouts_wallet_market_side_unique').on(table.wallet, table.marketId, table.side),
   index('cashouts_wallet_idx').on(table.wallet),
 ])
+
+export const tweetDrafts = pgTable('tweet_drafts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  kind: text('kind').notNull(),
+  body: text('body').notNull(),
+  context: jsonb('context'),
+  status: text('status').notNull().default('pending'),
+  postedTweetId: text('posted_tweet_id'),
+  postedAt: timestamp('posted_at', { withTimezone: true }),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('tweet_drafts_status_idx').on(t.status),
+  index('tweet_drafts_created_idx').on(t.createdAt),
+])

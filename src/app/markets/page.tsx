@@ -1359,6 +1359,33 @@ export default function MarketsPage() {
       `}</style>
 
       <div className="max-w-5xl mx-auto px-4 py-6">
+        {/* Preview banner — markets UI is currently a preview; on-chain
+            settlement is wired post-hackathon. Surfacing this honestly so
+            users who try a bet and check Solscan don't feel misled. */}
+        <div
+          role="status"
+          style={{
+            marginBottom: 16,
+            padding: '10px 14px',
+            borderRadius: 10,
+            border: '1px solid rgba(245,158,11,0.28)',
+            background: 'rgba(245,158,11,0.08)',
+            color: 'rgba(245,222,179,0.92)',
+            fontSize: 12.5,
+            lineHeight: 1.45,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 10,
+          }}
+        >
+          <span aria-hidden style={{ fontSize: 14, lineHeight: 1, marginTop: 1 }}>◐</span>
+          <span>
+            <strong style={{ fontWeight: 600, color: 'rgba(252,211,77,1)' }}>Preview mode.</strong>{' '}
+            Markets and bets are simulated for now. On-chain settlement on Solana
+            devnet ships next — your bets here won&apos;t hit the chain yet.
+          </span>
+        </div>
+
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
