@@ -1,4 +1,4 @@
-import { TwitterApi } from 'twitter-api-v2'
+import { TwitterApi, EUploadMimeType } from 'twitter-api-v2'
 
 let cached: TwitterApi | null = null
 
@@ -22,7 +22,7 @@ export async function postTweet(
   const client = getTwitterClient()
   let mediaIds: [string] | undefined
   if (opts?.image) {
-    const mediaId = await client.v1.uploadMedia(opts.image, { mimeType: 'image/png' })
+    const mediaId = await client.v2.uploadMedia(opts.image, { media_type: EUploadMimeType.Png })
     mediaIds = [mediaId]
   }
   const { data } = await client.v2.tweet({
