@@ -23,6 +23,9 @@ export const verifyRateLimit = { limit: (id: string) => makeLimit('60 s', 5, 'rl
 export const mintRateLimit = { limit: (id: string) => makeLimit('3600 s', 30, 'rl:mint').limit(id) };
 export const awardStarsRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:award').limit(id) };
 export const redeemRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:redeem').limit(id) };
+// 60 req/min/IP — generous for legit users (page reload + a few region switches),
+// blocks scrapers from blowing through the Open-Meteo quota.
+export const skyForecastRateLimit = { limit: (id: string) => makeLimit('60 s', 60, 'rl:sky:f').limit(id) };
 
 // Daily ceilings (24h sliding) — bound the worst-case AI cost / token
 // issuance per user even if the per-minute / per-hour limits are saturated.

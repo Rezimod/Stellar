@@ -1,140 +1,67 @@
-# Stellar Field — QVAC Demo Recording Script
+# Stellar Field — Grant Demo Video (75–90s)
 
-**Target length:** 75 seconds.
-**Where it goes:** YouTube unlisted → Tether QVAC submission on Superteam Earn.
-**Filming:** phone in landscape on a stand (or held very steady), screen recording via Android System UI screen recorder. Record audio narration on a separate device or directly on phone if the recorder supports it.
+**Use for:** tether.dev grant `{{YOUTUBE_URL}}`, grant PDF, case study embed.  
+**Not for:** 3-minute Colosseum pitch — see `docs/archive/DEMO_SCRIPT.md`.
 
----
-
-## Setup before recording
-
-1. Charge phone to 80%+ (recording draws battery, and the LLM load uses CPU)
-2. Open the device's **screen recorder** (pull down quick-settings → Screen Record). Enable "show taps" and microphone audio.
-3. Have the app cleanly closed (force-stop, not just backgrounded) so the boot sequence is fresh.
-4. **Disable notifications during recording**: Do Not Disturb ON. No banner from messages mid-take.
-5. Open **Settings** in a second app slot so you can swipe to it for the airplane-mode beat without fumbling.
-6. Have these phrases mentally ready (or written on a sticky note off-camera):
-   - Chat query: **"What is M31?"**
-   - Voice log: **"M31 Andromeda 25mm at 100x seeing 7 of 10"**
-7. Practice the run-through dry once *without* recording. Critical because the model download (~5 min) only happens on first launch — second launch is instant. **For the actual recording, you want a clean fresh install** (uninstall + reinstall the APK before recording).
+**Upload:** YouTube **Unlisted**. Title: `Stellar Field — offline QVAC demo (Tether Frontier winner)`.  
+**Device:** Poco X3 NFC or known-good Snapdragon 7+ phone. **Show airplane mode in status bar** during Field segment.
 
 ---
 
-## EN narration script (primary — for Tether submission)
+## Shot list
 
-> **[0:00 — App icon visible on home screen]**
-> "Stellar Field is the offline-mode astronomy app for telescope owners observing from dark-sky sites. No cell signal. No paid AI calls. Everything runs on the device."
+| Time | Visual | Audio / on-screen |
+|------|--------|-------------------|
+| **0:00–0:08** | Night sky or telescope silhouette | *“Telescope owners go where there is no cell signal. Cloud AI stops working exactly when they need help.”* |
+| **0:08–0:15** | Web: `stellarrclub.vercel.app` — sky forecast, one planet row | *“Stellar plans at home on Solana — forecast, Astra, marketplace.”* (5s max — don’t linger on crypto UI) |
+| **0:15–0:22** | Cut to phone: **No Service** or drive-to-field B-roll | *“The observing session is offline.”* |
+| **0:22–0:28** | Open **Stellar Field** — header shows **Tether Frontier Track Winner** | On-screen text: `Stellar Field · Powered by Tether QVAC` |
+| **0:28–0:38** | Status bar: **Airplane mode ON** (keep visible) | *“Same assistant. On-device Llama 3.2 1B.”* |
+| **0:38–0:48** | Voice log: hold mic — *“M31 Andromeda, 25 millimeter, seeing seven of ten”* → transcript appears | *“Whisper runs locally at the eyepiece.”* |
+| **0:48–1:02** | Chat: type or say *“What should I look at next?”* — stream tokens + **citation chip** under answer | *“RAG over Messier, constellations, telescope FAQ — no server.”* |
+| **1:02–1:12** | Optional 3s: scroll citation / one more short reply | Stay in airplane mode |
+| **1:12–1:20** | End card (simple text on black) | `stellarrclub.vercel.app/field` · APK in description · `Tether QVAC` · `Frontier Track Winner` |
 
-> **[0:08 — Tap icon, app launches, dark cosmic UI appears]**
-> "On first launch it downloads a one-billion-parameter Llama model — about 700 megabytes — locally."
-
-> **[0:14 — "On-device AI ready" appears, model download bar disappears]**
-> "Once cached, no network is needed again."
-
-> **[0:18 — Tap chat input, type "What is M31?"]**
-> "Let me ask it about the Andromeda Galaxy."
-
-> **[0:22 — Streaming response begins, mentions Andromeda, dust lane, distance]**
-> "Streaming response, on the phone's CPU. The astronomy reference data is bundled in a local RAG index — so it cites real sources, not a guess."
-
-> **[0:32 — Citation chip appears below the answer, tap to expand]**
-> "There's the source citation."
-
-> **[0:35 — Switch to Voice Log tab, press-and-hold mic button]**
-> "Voice log uses Whisper, also local. I'll log my last observation."
-
-> **[0:38 — Speak clearly into phone]**
-> "M31 Andromeda. 25 millimeter eyepiece at 100x. Seeing 7 of 10."
-
-> **[0:46 — Release mic, transcript appears in review card, target auto-fills "M31"]**
-> "Real Whisper transcription. Target field auto-detected. Save."
-
-> **[0:52 — Tap Save, confirmation toast]**
-> "Stored locally, syncs when I'm back online."
-
-> **[0:55 — Pull down quick-settings, toggle Airplane Mode ON visibly. Show the airplane icon in status bar.]**
-> "And just to be clear — this all works offline."
-
-> **[1:00 — Open chat again, type "Best target tonight at magnitude 8 or brighter"]**
-> "Same query, no signal."
-
-> **[1:05 — Streaming response works identically]**
-> "Identical response. Cloud AI literally cannot reach this user."
-
-> **[1:12 — Hold on app, fade to logo card]**
-> "Stellar Field. Astronomy AI that works where astronomers actually work."
-
-> **[1:15 — End card]**
-
-**Final length:** 75 seconds.
+**Total:** ~75–80s. OK to hit 90s if voice log needs a second take.
 
 ---
 
-## KA narration (alternate — if submitting Georgian-localized version)
+## Recording checklist
 
-> **[0:00]** "Stellar Field არის ასტრონომიული აპლიკაცია ოფლაინ რეჟიმისთვის — ტელესკოპის მფლობელებისთვის, რომლებიც დაკვირვებას ბნელ ცაში ატარებენ. არც ფიჭური სიგნალი, არც ფასიანი AI ზარები. ყველაფერი მუშაობს თვით მოწყობილობაზე."
-
-> **[0:08]** "პირველად გაშვებისას გადმოწერს ერთი მილიარდი პარამეტრის Llama მოდელს — დაახლოებით 700 მეგაბაიტი — ლოკალურად."
-
-> **[0:14]** "ერთხელ დაქეშირებული, ქსელი აღარ სჭირდება."
-
-> **[0:18]** "ვკითხავ ანდრომედას გალაქტიკის შესახებ."
-
-> **[0:22]** "პასუხი ბრუნდება ნაკადად, ტელეფონის CPU-ზე. ასტრონომიული რეფერენსი ლოკალურ RAG ინდექსშია — ამიტომ წყაროებს მოიხმობს, არა გამოგონიდან."
-
-> **[0:32]** "აი წყაროს ციტატა."
-
-> **[0:35]** "ხმოვანი ჟურნალი იყენებს Whisper-ს, ის ასევე ლოკალურია. ჩავიწერ უკანასკნელ დაკვირვებას."
-
-> **[0:38]** *(speak in EN — astronomy terms)* "M31 Andromeda. 25 millimeter eyepiece at 100x. Seeing 7 of 10."
-
-> **[0:46]** "Whisper-ის ნამდვილი ტრანსკრიფცია. ობიექტის ველი ავტომატურად შეივსო — M31. Save."
-
-> **[0:52]** "ლოკალურად ინახება, ქსელის დაბრუნებისას სინქრონდება."
-
-> **[0:55]** "და დაუშვებლად — ყოველივე ეს ოფლაინ მუშაობს."
-
-> **[1:00]** "იგივე შეკითხვა, სიგნალის გარეშე."
-
-> **[1:05]** "იდენტური პასუხი. ღრუბლოვან AI-ს ფიზიკურად არ შეუძლია ამ მომხმარებამდე მოაღწიოს."
-
-> **[1:12]** "Stellar Field. ასტრონომიული AI, რომელიც იქ მუშაობს, სადაც ასტრონომები ნამდვილად მუშაობენ."
+- [ ] Battery >50%, screen brightness ~70%, Do Not Disturb on  
+- [ ] Models already downloaded (no first-launch progress bar on camera)  
+- [ ] Airplane mode **before** opening Field — prove no LTE cheat  
+- [ ] One clean voice-log take (no wind on mic)  
+- [ ] Chat question that triggers a citation (e.g. Messier object)  
+- [ ] Re-read VO once in quiet room — grant reviewers watch muted too; on-screen text must carry story  
 
 ---
 
-## Visual checklist (what must be visible on screen)
+## YouTube description (paste)
 
-These are the moments the Tether judges will pause on. Make sure each is on-screen for at least 2 seconds:
+```
+Stellar Field — offline Android companion for astronomers (Tether QVAC).
 
-- [ ] **Model download banner** with progress bar — proves it's actually downloading, not pre-bundled fake
-- [ ] **"On-device AI ready" status** — the explicit confirmation
-- [ ] **Streaming chat response** — words appearing one at a time, not all at once (proves real inference)
-- [ ] **Citation chip** below the answer — proves the RAG index is working
-- [ ] **Mic button held down** with waveform/pulse animation — proves voice capture is real
-- [ ] **Whisper transcript text appearing** — proves on-device speech recognition
-- [ ] **Airplane mode icon in status bar** — the most important shot in the whole video
-- [ ] **Streaming response while airplane mode is ON** — the prize-eligible artifact
+• Llama 3.2 1B Q4 + Whisper + hybrid RAG — airplane mode
+• Tether Frontier Hackathon Track winner (May 2026)
+• Built by Revaz Modebadze / Astroman.ge
 
-If any one of these is missing, the video isn't strong enough. Re-shoot.
-
----
-
-## Anti-patterns (don't do these)
-
-- **Don't speed up the video.** Tether judges will assume sped-up = pre-recorded fake. Real-time only.
-- **Don't cut to the response.** Show it streaming live. Cuts mid-stream look like the AI is faked.
-- **Don't have airplane mode pre-toggled.** Toggle it ON during the recording, visibly, mid-take. That's the proof.
-- **Don't use background music.** Sterile, technical. Voice narration only.
-- **Don't add captions in post.** Use the on-device caption feature (Live Caption) if needed for accessibility, but plain narration is best.
+APK: https://github.com/Rezimod/Stellar/releases/download/v0.1.0-field/app-release.apk
+Landing: https://stellarrclub.vercel.app/field
+Repo: https://github.com/Rezimod/Stellar
+```
 
 ---
 
-## Submission package
+## What NOT to show (grant version)
 
-Once recorded:
+- Prediction markets, Stars leaderboard gamification, mint animation (Solana noise)  
+- Emulator — arm64 device only  
+- Helio G80 / devices that fail llama.cpp  
+- Features you haven’t shipped (TTS, Georgian NMT — that’s Phase 2 / grant M2)
 
-1. Upload to YouTube **unlisted** (not public, not private — judges need a clickable link without it being indexed)
-2. Title: **"Stellar Field — Tether QVAC Track Demo (Frontier Hackathon)"**
-3. Description: paste the first 3 paragraphs of `docs/qvac-integration.md` and link to the GitHub repo + APK release
-4. Add the YouTube link + APK direct download URL to the Superteam Earn submission
-5. Submit before May 11 23:59 UTC
+---
+
+## If recording fails
+
+**Minimum viable demo (45s):** airplane mode → one voice log → one chat reply with citation → end card. Still enough for grant submit.

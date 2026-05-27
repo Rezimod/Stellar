@@ -32,6 +32,44 @@ export default function FieldPage() {
           <ChevronLeft size={14} /> {t('back')}
         </Link>
 
+        <div
+          className="card-base"
+          style={{
+            padding: '14px 16px',
+            marginBottom: 24,
+            borderColor: 'var(--accent-border)',
+            background: 'var(--accent-dim)',
+          }}
+        >
+          <p
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              color: 'var(--accent)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.14em',
+              margin: '0 0 6px',
+              fontWeight: 700,
+            }}
+          >
+            {t('winnerBadge')}
+          </p>
+          <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: '0 0 4px', lineHeight: 1.4 }}>
+            {t('poweredBy')}
+          </p>
+          <p
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              color: 'var(--text-muted)',
+              margin: 0,
+              letterSpacing: '0.06em',
+            }}
+          >
+            {t('winnerDetail')}
+          </p>
+        </div>
+
         <div style={{ marginBottom: 40 }}>
           <p
             style={{

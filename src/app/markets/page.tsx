@@ -1230,13 +1230,13 @@ export default function MarketsPage() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setBets(JSON.parse(raw));
-    } catch {}
+    } catch (e) { console.error('[markets] read bets', e); }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bets));
-    } catch {}
+    } catch (e) { console.error('[markets] save bets', e); }
   }, [bets]);
 
   // Seed initial live bets + tick new ones in

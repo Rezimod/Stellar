@@ -54,7 +54,7 @@ function writeReminders(set: Set<string>) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify([...set]));
-  } catch {}
+  } catch (e) { console.error('[missions] save reminders', e); }
 }
 
 async function ensureNotifPermission(): Promise<NotificationPermission | 'unsupported'> {

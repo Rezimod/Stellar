@@ -13,6 +13,7 @@ import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
 import type { Citation } from '../lib/rag';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
+import { TetherCobranding } from './TetherCobranding';
 
 type AssistantTurn = {
   role: 'assistant';
@@ -119,8 +120,9 @@ export function FieldChatScreen() {
           <View style={[styles.statusDot, statusDotColor(progress.phase)]} />
         </View>
         <Text style={styles.statusStrip}>
-          {statusLabel}  ·  LLAMA 3.2 1B  ·  TETHER QVAC  ·  ON-DEVICE ONLY
+          {statusLabel}  ·  LLAMA 3.2 1B  ·  ON-DEVICE ONLY
         </Text>
+        <TetherCobranding />
       </View>
 
       <ModelLoadingBanner progress={progress} />

@@ -430,7 +430,7 @@ export default function FeedPage() {
                             alert(copy.noObservation)
                           }
                         }
-                      } catch {}
+                      } catch (e) { console.error('[feed] open observation', e); }
                     }}
                   >
                     <Eye /> <span className="tool-btn-label">{copy.observation}</span>

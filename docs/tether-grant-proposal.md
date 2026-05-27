@@ -1,11 +1,7 @@
-# Tether Open Grant — Stellar Field Phase 2
+# tether.dev Open Grant — $12,000 USDT (Phase 2)
 
-**Submission target:** https://tether.dev/grants/apply-for-a-grant/
-**Applicant:** Revaz Modebadze (Rezi) · Tbilisi, Georgia
-**Status:** **Tether Frontier Hackathon Track winner, May 2026** (1 of 127 submissions)
-**Requested:** 12,000 USDT · 3 milestones · 1–3 months · Ecosystem: QVAC · Type: Application creation · Maturity: Production
-
-> This document is the paste-ready source for the Monday.com grant form fields. The same content compressed to 1 page also serves as the optional file upload (export as PDF).
+**Submit:** https://tether.dev/grants/apply-for-a-grant/  
+**Ops guide:** [`tether-grant-submit.md`](./tether-grant-submit.md)
 
 ---
 

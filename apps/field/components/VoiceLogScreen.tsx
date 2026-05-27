@@ -27,6 +27,7 @@ import {
 } from '../lib/observations';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
 import { MicButton } from './MicButton';
+import { TetherCobranding } from './TetherCobranding';
 import { useUserId } from '../lib/user';
 
 type Status = 'idle' | 'recording' | 'transcribing' | 'review' | 'saving';
@@ -189,8 +190,9 @@ export function VoiceLogScreen() {
           />
         </View>
         <Text style={styles.statusStrip}>
-          {whisperLabel}  ·  ON-DEVICE STT  ·  TETHER QVAC
+          {whisperLabel}  ·  ON-DEVICE STT
         </Text>
+        <TetherCobranding />
         <Text style={styles.subtitle}>
           Record observations at the eyepiece. Whisper transcribes locally — no signal needed.
         </Text>

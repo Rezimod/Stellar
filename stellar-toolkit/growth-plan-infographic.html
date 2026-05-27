@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STELLAR — Growth Plan 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Orbitron:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --canvas: #0A1735;
+      --surface: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.1);
+      --text: #F8F4EC;
+      --muted: #A8B4C8;
+      --amber: #FFB347;
+      --teal: #5EEAD4;
+      --purple: #8B5CF6;
+      --rose: #FB7185;
+      --green: #34D399;
+    }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--canvas);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 14mm 16mm;
+      page-break-after: always;
+      position: relative;
+      background: var(--canvas);
+      overflow: hidden;
+    }
+    .page:last-child { page-break-after: auto; }
+    .page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 100% 0%, rgba(139,92,246,0.12), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 0% 100%, rgba(94,234,212,0.08), transparent 45%);
+      pointer-events: none;
+    }
+    .content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+    h1, h2, h3, .display { font-family: 'Orbitron', sans-serif; font-weight: 600; letter-spacing: 0.02em; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .eyebrow {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--teal);
+      margin-bottom: 6px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 8px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    .tag.amber { border-color: rgba(255,179,71,0.4); color: var(--amber); }
+    .tag.teal { border-color: rgba(94,234,212,0.35); color: var(--teal); }
+
+    /* Cover */
+    .cover { justify-content: space-between; }
+    .cover-top .logo { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; }
+    .cover h1 { font-size: 32px; line-height: 1.15; margin: 24px 0 8px; max-width: 90%; }
+    .cover .subtitle { font-size: 15px; color: var(--muted); max-width: 85%; line-height: 1.5; }
+    .cover .goal {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .goal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .goal-card .val { font-family: 'Orbitron', sans-serif; font-size: 22px; color: var(--amber); }
+    .goal-card .lbl { font-size: 10px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 20px;
+    }
+    .stat {
+      text-align: center;
+      padding: 12px 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .stat .n { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--teal); }
+    .stat .l { font-size: 8px; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+    .cover-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 9px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Section headers */
+    .section-head { margin-bottom: 14px; }
+    .section-head h2 { font-size: 18px; margin-bottom: 4px; }
+    .section-head p { font-size: 10px; color: var(--muted); line-height: 1.45; max-width: 95%; }
+
+    /* Truth boxes */
+    .truth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
+    .truth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .truth-box .num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      color: var(--purple);
+      opacity: 0.5;
+      line-height: 1;
+    }
+    .truth-box h3 { font-size: 11px; margin: 8px 0 6px; color: var(--amber); }
+    .truth-box p { font-size: 9.5px; color: var(--muted); line-height: 1.5; }
+    .formula {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: rgba(94,234,212,0.08);
+      border: 1px solid rgba(94,234,212,0.25);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 11px;
+    }
+    .formula strong { color: var(--teal); }
+
+    /* 4 tracks */
+    .tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
+    .track {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .track .icon { font-size: 18px; margin-bottom: 6px; }
+    .track h3 { font-size: 10px; margin-bottom: 6px; }
+    .track ul { list-style: none; font-size: 8.5px; color: var(--muted); line-height: 1.45; }
+    .track ul li { padding-left: 10px; position: relative; margin-bottom: 3px; }
+    .track ul li::before { content: '→'; position: absolute; left: 0; color: var(--teal); font-size: 8px; }
+    .track.product { border-top: 3px solid var(--teal); }
+    .track.hack { border-top: 3px solid var(--amber); }
+    .track.grants { border-top: 3px solid var(--purple); }
+    .track.brand { border-top: 3px solid var(--rose); }
+    .timeline-bar {
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .timeline-bar .label { font-size: 8px; color: var(--muted); margin-bottom: 8px; }
+    .timeline {
+      display: flex;
+      gap: 4px;
+      align-items: stretch;
+    }
+    .tl-seg {
+      flex: 1;
+      text-align: center;
+      padding: 6px 4px;
+      border-radius: 4px;
+      font-size: 7px;
+      line-height: 1.3;
+    }
+    .tl-seg span { display: block; font-family: 'Orbitron', sans-serif; font-size: 7px; color: var(--amber); margin-bottom: 2px; }
+    .tl-seg:nth-child(1) { background: rgba(94,234,212,0.15); }
+    .tl-seg:nth-child(2) { background: rgba(255,179,71,0.15); }
+    .tl-seg:nth-child(3) { background: rgba(139,92,246,0.15); }
+    .tl-seg:nth-child(4) { background: rgba(52,211,153,0.15); }
+
+    /* Funding tiers */
+    .tier-list { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .tier {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .tier-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      text-align: center;
+      padding: 8px 4px;
+      border-radius: 6px;
+    }
+    .tier-a .tier-badge { background: rgba(255,179,71,0.2); color: var(--amber); }
+    .tier-b .tier-badge { background: rgba(94,234,212,0.15); color: var(--teal); }
+    .tier-c .tier-badge { background: rgba(139,92,246,0.15); color: var(--purple); }
+    .tier h4 { font-size: 10px; margin-bottom: 4px; }
+    .tier p { font-size: 8.5px; color: var(--muted); line-height: 1.4; }
+    .tier .items { font-size: 8px; color: var(--text); margin-top: 4px; }
+    .highlight-box {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--amber);
+      background: rgba(255,179,71,0.08);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    /* Valuation ladder */
+    .ladder { flex: 1; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+    .rung {
+      display: grid;
+      grid-template-columns: 72px 1fr 90px;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .rung .when { font-size: 8px; color: var(--muted); }
+    .rung .what { font-size: 9px; line-height: 1.35; }
+    .rung .val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      text-align: right;
+      color: var(--teal);
+    }
+    .rung.target { border-color: rgba(255,179,71,0.5); background: rgba(255,179,71,0.08); }
+    .rung.target .val { color: var(--amber); font-size: 12px; }
+
+    /* Actions + metrics */
+    .two-col { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; flex: 1; }
+    .action-list { list-style: none; }
+    .action-list li {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 9px;
+      line-height: 1.4;
+    }
+    .action-list li:last-child { border-bottom: none; }
+    .action-list .num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      color: var(--amber);
+    }
+    table.metrics {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8px;
+    }
+    table.metrics th, table.metrics td {
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    table.metrics th {
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 7px;
+    }
+    table.metrics td.mono { font-family: 'JetBrains Mono', monospace; color: var(--teal); }
+
+    /* Positioning + risks */
+    .quote {
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 11px;
+      line-height: 1.55;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .quote cite { display: block; margin-top: 8px; font-size: 8px; font-style: normal; color: var(--teal); }
+    .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
+    .risk {
+      padding: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 8.5px;
+      line-height: 1.4;
+    }
+    .risk strong { display: block; font-size: 9px; color: var(--rose); margin-bottom: 4px; }
+    .product-fixes { margin-top: 10px; }
+    .fix { display: flex; gap: 8px; padding: 6px 0; font-size: 8.5px; border-bottom: 1px solid var(--border); }
+    .fix .prio { font-family: 'Orbitron', sans-serif; font-size: 10px; color: var(--amber); min-width: 16px; }
+
+    .page-num {
+      position: absolute;
+      bottom: 10mm;
+      right: 16mm;
+      font-size: 8px;
+      color: var(--muted);
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: COVER -->
+  <section class="page cover">
+    <div class="content cover">
+      <div class="cover-top">
+        <div class="logo">STELLARR · GROWTH PLAN</div>
+        <h1>Roadmap to $1M<br/>then $5M</h1>
+        <p class="subtitle">A simple visual guide for Rezi Modebadze — how hackathon wins, mainnet, and 45K Astroman buyers turn into real company valuation.</p>
+        <div class="goal">
+          <div class="goal-card">
+            <div class="val">$1M</div>
+            <div class="lbl">Target valuation<br/>End of Q3 2026</div>
+          </div>
+          <div class="goal-card">
+            <div class="val">$5M</div>
+            <div class="lbl">Stretch zone<br/>2027 with revenue</div>
+          </div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><div class="n">45K</div><div class="l">Astroman email list</div></div>
+        <div class="stat"><div class="n">2</div><div class="l">Hackathon wins</div></div>
+        <div class="stat"><div class="n">$5K</div><div class="l">Prize cash so far</div></div>
+        <div class="stat"><div class="n">70K</div><div class="l">Social reach</div></div>
+      </div>
+      <div class="cover-footer">
+        <span>May 18, 2026 · stellarsky.vercel.app</span>
+        <span>Infographic summary · 8 pages</span>
+      </div>
+    </div>
+    <span class="page-num mono">01</span>
+  </section>
+
+  <!-- PAGE 2: TWO TRUTHS -->
+  <section class="page">
+    <div class="content">
+      <div class="section-head">
+        <div class="eyebrow">Start here</div>
+        <h2>Two truths before the plan</h2>
+        <p>Hackathons build credibility. Users and mainnet build valuation. You need both — but they are not the same thing.</p>
+      </div>
+      <div class="truth-grid">
+        <div class="truth-box">
+          <div class="num">01</div>
+          <h3>Prizes ≠ valuation</h3>
+          <p>Even five $10K hackathon wins do not make Stellar worth $1M. A priced seed round or convertible note does. Wins are proof points that earn the investor conversation.</p>
+        </div>
+        <div class="truth-box">
+          <div class="num">02</div>
+          <h3>Speed ≠ more hackathons</h3>
+          <p>The path is: ship mainnet → activate Astroman list → prove retention → raise a small round. Hackathons feed proof. Real users feed valuation.</p>
+        </div>
+      </div>
+      <div class="formula">
+        <strong>Winning formula:</strong> Mainnet launch + 200 beta users + 30% week-2 retention → $750K–$1.2M SAFE cap
+      </div>
+      <div class="highlight-box" style="margin-top:14px;">
+        <strong style="color:var(--amber);">One-line positioning (use everywhere):</strong><br/>
+        "Stellar is the loyalty layer for the $2.6B telescope retail market — built by Georgia's largest astronomy store founder with 45K buyers already on the list."
+      </div>
+    </div>
+    <span class="page-num mono">02</span>
+  </section>
+
+  <!-- PAGE 3: FOUR TRACKS -->
+  <section class="page">
+    <div class="content">
+      <div class="section-head">
+        <div class="eyebrow">12-month engine</div>
+        <h2>Four parallel tracks</div>
+        <p>Progress all four every week — not one at a time.</p>
+      </div>
+      <div class="tracks">
+        <div class="track product">
+          <div class="icon">🔭</div>
+          <h3>1 · Product</div>
+          <p style="font-size:8px;color:var(--teal);margin-bottom:6px;">Creates valuation</p>
+          <ul>
+            <li>May–Jun: Harden devnet, polish auth</li>
+            <li>Jun–Jul: 200 Astroman beta users</li>
+            <li>Jul–Aug: Mainnet prep + audit</li>
+            <li>Sep: Mainnet launch + 45K email blast</li>
+            <li>Oct+: Star maps, rentals, digital products</li>
+          </ul>
+        </div>
+        <div class="track hack">
+          <div class="icon">🏆</div>
+          <h3>2 · Hackathons</div>
+          <p style="font-size:8px;color:var(--amber);margin-bottom:6px;">Proof-point factory</p>
+          <ul>
+            <li>Fall Colosseum Frontier (Sep–Nov) — lead with traction</li>
+            <li>MONOLITH / mobile cycles — Field Mode v2</li>
+            <li>Tether QVAC follow-on — defend the title</li>
+            <li>Eternal Sprint — submit between events</li>
+          </ul>
+        </div>
+        <div class="track grants">
+          <div class="icon">💰</div>
+          <h3>3 · Grants</div>
+          <p style="font-size:8px;color:var(--purple);margin-bottom:6px;">Non-dilutive runway</p>
+          <ul>
+            <li>1 application per week (1–2 hrs each)</li>
+            <li>Target: ~$50K cash + $50K credits / year</li>
+            <li>Start: Anthropic, Solana Mobile, Anthology</li>
+          </ul>
+        </div>
+        <div class="track brand">
+          <div class="icon">📣</div>
+          <h3>4 · Brand</div>
+          <p style="font-size:8px;color:var(--rose);margin-bottom:6px;">Compounds everything</p>
+          <ul>
+            <li>1 technical post on X / week</li>
+            <li>1 screenshot or Field demo / week</li>
+            <li>1 ecosystem reply / week</li>
+            <li>1 long-form post / month</li>
+          </ul>
+        </div>
+      </div>
+      <div class="timeline-bar">
+        <div class="label">Product timeline (what judges & investors will ask about)</div>
+        <div class="timeline">
+          <div class="tl-seg"><span>MAY–JUN</span>Harden devnet</div>
+          <div class="tl-seg"><span>JUN–JUL</span>200 beta users</div>
+          <div class="tl-seg"><span>SEP</span>Mainnet launch</div>
+          <div class="tl-seg"><span>Q4</span>Scale + revenue</div>
+        </div>
+      </div>
+    </div>
+    <span class="page-num mono">03</span>
+  </section>
+
+  <!-- PAGE 4: FUNDING -->
+  <section class="page">
+    <div class="content">
+      <div class="section-head">
+        <div class="eyebrow">Capital map 2026</div>
+        <h2>Where to apply</h2>
+        <p>Stack Tier A first. Skip Tier D (commercial exclusions, wrong geography).</p>
+      </div>
+      <div class="tier-list">
+        <div class="tier tier-a">
+          <div class="tier-badge">A</div>
+          <div>
+            <h4>Highest probability · biggest leverage</h4>
+            <p class="items">Colosseum Fall ($30K+ prizes, accelerator $250K) · Solana Mobile Builder Grant ($10K) · SF Convertible Grant · Anthology Fund ($25K–$100K+) · Anthropic Startup ($25K credits)</p>
+          </div>
+        </div>
+        <div class="tier tier-b">
+          <div class="tier-badge">B</div>
+          <div>
+            <h4>Stack alongside A</h4>
+            <p class="items">Alchemy ($25K credits) · SafePal ($3M pool) · Superteam Earn bounties · Helius/Jupiter retro grants · AWS/Google cloud credits</p>
+          </div>
+        </div>
+        <div class="tier tier-c">
+          <div class="tier-badge">C</div>
+          <div>
+            <h4>Long-shot · high prestige</h4>
+            <p class="items">Permissionless Brooklyn (Jun 24–26) · TOKEN2049 side events · MONOLITH next cycle · AI for Science (stretch)</p>
+          </div>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <strong>8-week grant sprint:</strong> Week 1 Anthropic → Week 2 Solana Mobile → Week 3 Anthology → Week 4 Alchemy → Week 5 SF Convertible → Week 6 SafePal → Week 7 Cloud credits → Week 8 New opportunities
+      </div>
+    </div>
+    <span class="page-num mono">04</span>
+  </section>
+
+  <!-- PAGE 5: VALUATION -->
+  <section class="page">
+    <div class="content">
+      <div class="section-head">
+        <div class="eyebrow">Valuation ladder</div>
+        <h2>When each milestone hits</h2>
+        <p>Realistic baselines for consumer Solana teams with similar traction. Retention is the unlock.</p>
+      </div>
+      <div class="ladder">
+        <div class="rung">
+          <div class="when">Today<br/>May 2026</div>
+          <div class="what">Devnet live, 2 wins, distribution story</div>
+          <div class="val">$300–500K</div>
+        </div>
+        <div class="rung target">
+          <div class="when">Q3 2026<br/>Mainnet + beta</div>
+          <div class="what">200 users, 30% week-2 retention</div>
+          <div class="val">$750K–1.2M</div>
+        </div>
+        <div class="rung">
+          <div class="when">Accelerator</div>
+          <div class="what">Colosseum acceptance + $250K check</div>
+          <div class="val">$1.5–3M</div>
+        </div>
+        <div class="rung">
+          <div class="when">Revenue proof</div>
+          <div class="what">1K users + shop commission</div>
+          <div class="val">$2–4M</div>
+        </div>
+        <div class="rung">
+          <div class="when">2027</div>
+          <div class="what">5K users + rentals MVP</div>
+          <div class="val">$4–8M</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:16px;">
+        <strong>$1M</strong> is reachable by end of Q3 2026 if mainnet ships and beta users stick.<br/>
+        <strong>$5M</strong> is a 2027 conversation — not a 2026 promise.
+      </div>
+    </div>
+    <span class="page-num mono">05</span>
+  </section>
+
+  <!-- PAGE 6: THIS WEEK + METRICS -->
+  <section class="page">
+    <div class="content">
+      <div class="section-head">
+        <div class="eyebrow">Execute now</div>
+        <h2>This week + weekly dashboard</h2>
+      </div>
+      <div class="two-col">
+        <div>
+          <p class="eyebrow" style="margin-bottom:8px;">Top 6 actions (by impact)</p>
+          <ol class="action-list">
+            <li><span class="num">1</span><span>Add Tether QVAC 1st place to homepage, /field, bios — 30 min</span></li>
+            <li><span class="num">2</span><span>Submit Anthropic Startup Program (~2 hrs)</span></li>
+            <li><span class="num">3</span><span>Update pitch deck slide 6 with both wins</span></li>
+            <li><span class="num">4</span><span>Post Tether win on X — tag @paoloardoino @SuperteamEarn @solana</span></li>
+            <li><span class="num">5</span><span>Apply Solana Mobile Builder Grant with Field Mode (~4 hrs)</span></li>
+            <li><span class="num">6</span><span>Email 45K Astroman list for beta interest — target 200 replies</span></li>
+          </ol>
+        </div>
+        <div>
+          <p class="eyebrow" style="margin-bottom:8px;">Check every Monday</p>
+          <table class="metrics">
+            <thead>
+              <tr><th>Metric</th><th>30d</th><th>90d</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Beta signups</td><td class="mono">200</td><td class="mono">500</td></tr>
+              <tr><td>Wallets / week</td><td class="mono">+50</td><td class="mono">+200</td></tr>
+              <tr><td>Grants (cash+credits)</td><td class="mono">$30K</td><td class="mono">$100K</td></tr>
+              <tr><td>X followers</td><td class="mono">+200</td><td class="mono">+1K</td></tr>
+              <tr><td>Press mentions</td><td class="mono">3</td><td class="mono">10</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:8px;color:var(--muted);margin-top:10px;line-height:1.4;">If a number doesn't move for 2 weeks, change the strategy serving it.</p>
+        </div>
+      </div>
+    </div>
+    <span class="page-num mono">06</span>
+  </section>
+
+  <!-- PAGE 7: PRODUCT FIXES + RISKS -->
+  <section class="page">
+    <div class="content">
+      <div class="section-head">
+        <div class="eyebrow">Ship fast · stay honest</div>
+        <h2>Quick product wins + top risks</h2>
+      </div>
+      <p class="eyebrow" style="margin-bottom:6px;">Three fixes that unlock conversion</p>
+      <div class="product-fixes">
+        <div class="fix"><span class="prio">#1</span><span><strong>Surface /field & Tether win</strong> — strongest asset is buried. Top nav or homepage hero.</span></div>
+        <div class="fix"><span class="prio">#2</span><span><strong>Public feed preview</strong> — judges & investors hit a login wall. Show "Discoveries tonight" before auth.</span></div>
+        <div class="fix"><span class="prio">#3</span><span><strong>Populate leaderboard</strong> — even seed accounts beat "coming soon."</span></div>
+      </div>
+      <p class="eyebrow" style="margin:14px 0 8px;">Five risks to watch</p>
+      <div class="risk-grid">
+        <div class="risk"><strong>Beta retention fails</strong>45K buyers are warm but critical. 30% week-2 return is the bar.</div>
+        <div class="risk"><strong>Fall Colosseum is crowded</strong>Lead with traction data, not codebase.</div>
+        <div class="risk"><strong>Mainnet slips</strong>Q3 promise is in the pitch. Q4 slip hurts every grant talk.</div>
+        <div class="risk"><strong>Two products diverge</strong>Decide: Field = feature of Stellar or separate brand?</div>
+        <div class="risk"><strong>Solo tech bottleneck</strong>Plan second technical hire before Q4 feature crunch.</div>
+        <div class="risk" style="grid-column:span 2;background:rgba(94,234,212,0.06);border-color:rgba(94,234,212,0.2);"><strong style="color:var(--teal);">30-day loop</strong>Return with: metric update · grant apps submitted · /field with Tether badge · Astroman outreach results. Numbers in → plan adjustments out.</div>
+      </div>
+    </div>
+    <span class="page-num mono">07</span>
+  </section>
+
+</body>
+</html>

@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchSkyForecast } from '@/lib/sky-data';
+import { skyForecastRateLimit, checkRateLimit } from '@/lib/rate-limit';
 
 const DEFAULT_LAT = 41.6941;
 const DEFAULT_LNG = 44.8337;
 
 export async function GET(req: NextRequest) {
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown';
+
+  const { success, remaining } = await checkRateLimit(skyForecastRateLimit, ip);
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Try again in a minute.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } },
+    );
+  }
+
   const { searchParams } = req.nextUrl;
   const lat = parseFloat(searchParams.get('lat') ?? String(DEFAULT_LAT));
   const lng = parseFloat(searchParams.get('lng') ?? searchParams.get('lon') ?? String(DEFAULT_LNG));

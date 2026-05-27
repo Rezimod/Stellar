@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stellar Field — Companion</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Inter:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #050608;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+      font-family: Inter, system-ui, sans-serif;
+    }
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: #0B0E17;
+      border-radius: 40px;
+      border: 3px solid #1A1F2E;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+    .header { padding: 52px 16px 12px; border-bottom: 1px solid #1A1F2E; }
+    .title-row { display: flex; align-items: center; gap: 10px; }
+    .title { color: #E5E7EB; font-size: 20px; font-weight: 600; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #14B8A6; }
+    .status {
+      color: #6B7280;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      margin-top: 4px;
+    }
+    .cobrand { margin-top: 10px; padding-top: 10px; border-top: 1px solid #1A1F2E; }
+    .winner {
+      display: inline-block;
+      background: rgba(20,184,166,0.09);
+      border: 1px solid rgba(20,184,166,0.33);
+      color: #14B8A6;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .powered { color: #9CA3AF; font-size: 11px; margin-top: 6px; }
+    .track {
+      color: #6B7280;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .chat {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hint { color: #9CA3AF; font-size: 14px; line-height: 1.45; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+    .chip {
+      background: #1A1F2E;
+      border: 1px solid #252B3D;
+      color: #E5E7EB;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+    .bubble-user {
+      align-self: flex-end;
+      max-width: 88%;
+      background: #8B5CF6;
+      color: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .bubble-ai {
+      align-self: flex-start;
+      max-width: 88%;
+      background: #1A1F2E;
+      color: #E5E7EB;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .footer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      margin-left: 4px;
+    }
+    .badge-qvac {
+      background: rgba(20,184,166,0.13);
+      border: 1px solid rgba(20,184,166,0.33);
+      color: #E5E7EB;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .cite {
+      background: #0F1320;
+      border: 1px solid #1A1F2E;
+      color: #9CA3AF;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .composer {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid #1A1F2E;
+    }
+    .input {
+      flex: 1;
+      background: #1A1F2E;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #6B7280;
+      font-size: 15px;
+    }
+    .send {
+      background: #14B8A6;
+      color: #0B0E17;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      border-radius: 10px;
+      padding: 0 18px;
+    }
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding: 6px 8px 24px;
+      border-top: 1px solid #1A1F2E;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+    }
+    .tab.active { background: #1A1F2E; color: #E5E7EB; }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <header class="header">
+      <div class="title-row">
+        <h1 class="title">Stellar Field</h1>
+        <span class="dot"></span>
+      </div>
+      <p class="status">ON-DEVICE · READY · LLAMA 3.2 1B · ON-DEVICE ONLY</p>
+      <div class="cobrand">
+        <span class="winner">Tether Frontier Track Winner</span>
+        <p class="powered">Powered by Tether QVAC</p>
+        <p class="track">Superteam Earn · Frontier Hackathon 2026</p>
+      </div>
+    </header>
+    <main class="chat">
+      <p class="hint">Ask anything about the night sky. In FIELD mode the model runs entirely on this device — no signal needed.</p>
+      <div class="chips">
+        <span class="chip">What is M31?</span>
+        <span class="chip">Best telescope target tonight?</span>
+        <span class="chip">How do I collimate a Newtonian?</span>
+      </div>
+      <div class="bubble-user">What is M31?</div>
+      <div>
+        <div class="bubble-ai">M31 is the Andromeda Galaxy — the nearest major galaxy to the Milky Way, about 2.5 million light-years away. In autumn evenings it appears as a faint oval smudge in Andromeda; binoculars reveal its core more clearly than the naked eye.</div>
+        <div class="footer-meta">
+          <span class="badge-qvac">QVAC</span>
+          <span class="cite">Messier 31 — Andromeda</span>
+          <span class="cite">Constellation: Andromeda</span>
+        </div>
+      </div>
+    </main>
+    <div class="composer">
+      <input class="input" value="Ask the sky…" readonly />
+      <button class="send">Send</button>
+    </div>
+    <nav class="tabs">
+      <div class="tab active">Companion</div>
+      <div class="tab">Voice Log</div>
+    </nav>
+  </div>
+</body>
+</html>

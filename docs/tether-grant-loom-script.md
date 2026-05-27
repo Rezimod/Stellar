@@ -1,123 +1,84 @@
-# Tether Grant — Founder Loom Script
+# tether.dev Grant — Founder Loom (2:30)
 
-**Length:** 2:30–3:00 max. Tether reviewers see hundreds of applications. Get to the point.
-**Format:** Loom with face camera on (top-right), screen share for the product walkthrough section.
-**Distribution:** Unlisted Loom link in the grant form, **and** keep the product demo on YouTube Unlisted separately.
-**Why this exists:** The product demo proves Stellar Field works. This Loom proves **who is asking for the money** — Tether funds people, not features.
+**Use for:** `{{LOOM_URL}}` on grant form (founder intro / “who is building this”).  
+**Format:** Loom or selfie video — **face on camera** at least for hook + close. Screen share optional for 15s APK flash.  
+**Tone:** Calm, specific, retail-founder — not hackathon hype.
 
----
-
-## Setup before recording
-
-- [ ] Quiet room, daylight on face (window in front of you, not behind)
-- [ ] Wear something that reads "founder, not student" — solid color shirt is fine
-- [ ] Close Slack/iMessage/Discord (notifications)
-- [ ] Open these tabs in order, ready to switch:
-  1. https://stellarrclub.vercel.app/field
-  2. https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field
-  3. https://astroman.ge
-  4. Your existing product demo video (queued, muted)
-- [ ] Speak slowly. Pause between sentences. Don't apologize for accent — it's an asset, not a liability.
-- [ ] One take. Don't over-rehearse. Reviewers want to see a real founder.
+**Target length:** 2:15–2:45 (under 3:00 hard cap).
 
 ---
 
-## Script — speak naturally, this is a guide not a teleprompter
+## Script (read naturally; don’t rush)
 
-### Section 1 — Who I am (0:00–0:20)
+**[0:00–0:25] — Who you are**  
+Hi, I’m Revaz Modebadze — Rezi — from Tbilisi, Georgia.
 
-> "Hi, I'm Rezi Modebadze. I'm a solo builder based in Tbilisi, Georgia.
->
-> I founded Astroman — astroman.ge — Georgia's first astronomy e-commerce store. We have a physical showroom in Tbilisi, about 150 thousand dollars of telescope inventory, and 60 thousand followers on Facebook.
->
-> Two weeks ago, my project Stellar Field won the Tether Frontier Hackathon Track on Superteam Earn — one of 127 submissions."
+I run **Astroman**, the country’s first astronomy store: physical showroom, real telescope inventory, about sixty thousand people on Facebook who ask me every clear night — *“What should I point at?”*
 
-**Visual:** Face only. No screen share yet. Just talk.
+Stellar is the productized answer. **Stellar Field** is the piece that had to work with **zero phone signal** at the dark-sky site.
 
----
+**[0:25–0:55] — Why QVAC / why Tether**  
+Cloud AI — Claude on our web app — dies exactly when the customer drives two hours into the mountains. That’s not an edge case for astronomy. That’s the whole activity.
 
-### Section 2 — The problem (0:20–0:50)
+We integrated **Tether QVAC**: Llama on-device, Whisper for voice at the eyepiece, local RAG over the Messier catalog and telescope FAQs.
 
-> "Here's the problem we solved.
->
-> Astronomers don't use telescopes from their living room. They drive two, three hours out of the city — to mountains, to deserts, to Bortle one and Bortle two dark-sky sites. That's the entire point of owning a telescope.
->
-> But that's also where cell signal ends. No LTE. Often not even SMS.
->
-> Our web app uses cloud AI — Claude, OpenAI — to answer questions. The moment a user reaches the place they bought their telescope for, the cloud AI dies. That is the worst possible moment to lose the assistant."
+We shipped an APK, verified **airplane mode**, and **won the Tether Frontier track** on Superteam Earn — one hundred twenty-seven teams.
 
-**Visual:** Switch to screen share, briefly show stellarrclub.vercel.app/field landing page. Don't linger.
+I’m not applying for budget to *start* this. I’m applying to finish what retailers and QVAC developers need next.
 
----
+**[0:55–1:35] — What the $12K does (three beats)**  
+The grant is twelve thousand USDT in three milestones.
 
-### Section 3 — What we built with QVAC (0:50–1:30)
+**First — three thousand:** a public **Expo plus QVAC playbook** and a minimal starter repo. Every pain point we hit — NDK pin, arm64-only, peer-deps, Helio chipsets that fail silently — documented so the next team doesn’t lose a week.
 
-> "Stellar Field is the Android companion app. It uses Tether QVAC to run a full Llama 3.2 one-billion-parameter model and Whisper speech-to-text — entirely on the phone. No signal needed.
->
-> Same Astra persona as our web app. Same Privy wallet. Same Supabase backend. From the user's perspective, the cloud-to-edge split is invisible.
->
-> Three QVAC capabilities stacked in one product: local LLM, embeddings for retrieval over our astronomy corpus, and Whisper transcription for voice notes at the eyepiece.
->
-> Verified end-to-end on a Poco X3 NFC. Airplane mode on, chat still streams. That's the prize-eligible artifact."
+**Second — six thousand:** **Stellar Field v0.2** — text-to-speech so you don’t read the screen with a dark-adapted eye, and **Georgian neural translation** offline. Astroman’s buyers read Georgian first. The voice loop is: speak in Georgian, transcribe, answer, speak back — all on-device.
 
-**Visual:** Brief cut to the silent product demo video, playing the airplane-mode chat moment. 5–8 seconds max.
+**Third — three thousand:** a **case study with Tether** for qvac.tether.io, upstream fixes to the SDK, and a retail pilot — QR on every telescope box linking to the APK.
 
----
+**[1:35–2:05] — Why Tether should care**  
+Most QVAC demos are English-only developer toys.
 
-### Section 4 — Why Phase 2 — and why now (1:30–2:10)
+We have **distribution**: a store that already sells the hardware. Every sale is a future install.
 
-> "I'm applying for the Tether open grant for Phase 2, and here's the honest reason.
->
-> Phase 1 proves it works. Phase 2 makes it production-real for the global astronomy community — not just Georgia.
->
-> Three deliverables: a public Expo-plus-QVAC playbook so other developers can copy what we figured out, a version 0.2 with on-device text-to-speech and English-Georgian neural translation so the app talks back at the eyepiece in your own language, and a Tether-co-authored case study with documented upstream contributions to the QVAC packages.
->
-> Here's the unfair advantage: Astroman. I'm not just building software. I have a physical astronomy retail business with real telescope buyers walking through the door. Phase 2 means every Astroman customer becomes a Stellar Field user with a Tether-powered AI in their pocket. That's distribution Tether cannot get from any other grantee."
+And we have the cleanest story in consumer: **the user is literally outside cell range when the product matters.**
 
-**Visual:** Brief screen share of astroman.ge — show that it's a real, working store. Not a slide deck.
+I’m a solo builder. Phase one went from zero to winning APK in under two weeks. Phase two is one to three months — public artifacts, not slides.
+
+**[2:05–2:30] — Close**  
+Product demo is on YouTube — airplane mode, voice log, local chat.
+
+Code and APK are public on GitHub. Landing page is stellarrclub.vercel.app/field.
+
+I’d welcome a scope call to align milestones. Thank you.
 
 ---
 
-### Section 5 — The ask + close (2:10–2:30)
+## Recording tips
 
-> "I'm requesting twelve thousand USDT across three milestones over one to three months. The full breakdown is in the application.
->
-> I work fast — Stellar Field shipped, won, and went public in under two weeks of focused work. Phase 2 will be the same.
->
-> Thanks for watching. The GitHub repo is in the form, the product demo is linked separately, and I'm happy to do a scope call whenever you're ready.
->
-> Talk soon."
-
-**Visual:** Face back on, no screen. End on you, smiling, looking into the camera.
+- **Light:** face window or soft lamp — judges see you, not only code  
+- **Background:** bookshelf or telescope optional — one prop max  
+- **Audio:** phone mic OK in quiet room; clap once before take to sync if editing  
+- **Wardrobe:** solid shirt, no busy pattern  
+- **Do not:** apologize for solo founder; oversell Solana; mention prediction markets  
 
 ---
 
-## Post-recording checklist
+## Loom title + description
 
-- [ ] Trim dead air at start and end (Loom has a built-in trimmer)
-- [ ] Add a one-line description on the Loom: *"Stellar Field — Frontier track winner — Phase 2 grant application — Revaz Modebadze"*
-- [ ] Set sharing to: **Anyone with link** (Unlisted)
-- [ ] Copy the link
-- [ ] Drop it into the grant form, also save it in `docs/tether-grant-handoff.md` under §10
+**Title:** `Stellar Field Phase 2 — Revaz Modebadze (Tether Frontier winner)`
 
----
+**Description:**
+```
+Grant application: Phase 2 of Stellar Field (QVAC consumer reference app).
+$12K = Expo playbook ($3K) + v0.2 TTS/Georgian NMT ($6K) + case study ($3K).
 
-## What to NOT do in this video
-
-- Don't talk about Solana, Privy, prediction markets, or anything off-topic for Tether
-- Don't read the script verbatim — talk like you do on a sales call
-- Don't apologize for being solo, accent, time zones, or anything else
-- Don't say "I hope" or "I think this could be" — say "this is" and "we built"
-- Don't go past 3 minutes. If your first cut is 4 minutes, re-record.
+Product demo: {{YOUTUBE_URL}}
+Site: https://stellarrclub.vercel.app/field
+Repo: https://github.com/Rezimod/Stellar
+```
 
 ---
 
-## Optional B-roll if you have time
+## Optional 15s screen insert (after 0:55)
 
-If you want to spend an extra 30 minutes on production value:
-
-- Phone-in-hand shot at a telescope in your showroom (5 seconds) — establishes the physical-world tie
-- Astroman storefront exterior, daytime — shows the retail is real
-- Phone airplane-mode toggle close-up before Section 3 — visual proof for the offline claim
-
-These are bonuses. Do NOT delay submission for them. Plain face-to-camera is fine.
+If you screen-share: only **Field chat in airplane mode** + winner badge — no web marketplace, no wallet screens.

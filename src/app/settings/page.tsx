@@ -182,7 +182,7 @@ export default function SettingsPage() {
         const parsed = JSON.parse(raw) as Partial<typeof notif>;
         setNotif((prev) => ({ ...prev, ...parsed }));
       }
-    } catch {}
+    } catch (e) { console.error('[settings] read notif prefs', e); }
 
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setNotifPermission(Notification.permission);
@@ -196,7 +196,7 @@ export default function SettingsPage() {
     setNotif(next);
     try {
       localStorage.setItem('stellar_notifications', JSON.stringify(next));
-    } catch {}
+    } catch (e) { console.error('[settings] save notif prefs', e); }
   };
 
   const toggleNotif = async (key: keyof typeof notif) => {
@@ -209,7 +209,7 @@ export default function SettingsPage() {
           persistNotif({ ...notif, [key]: false });
           return;
         }
-      } catch {}
+      } catch (e) { console.error('[settings] notif permission', e); }
     }
     persistNotif({ ...notif, [key]: turningOn });
   };
