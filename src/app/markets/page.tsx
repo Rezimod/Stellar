@@ -1335,6 +1335,27 @@ export default function MarketsPage() {
         .markets-side-btn[data-active="true"] {
           filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
         }
+        .markets-split-odds {
+          transition: border-color 200ms ease, box-shadow 200ms ease;
+        }
+        button:hover .markets-split-odds,
+        .markets-split-odds:hover {
+          border-color: rgba(255,255,255,0.18);
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 4px 14px rgba(0,0,0,0.25);
+        }
+        button:hover .markets-split-odds .markets-split-fill-yes,
+        .markets-split-odds:hover .markets-split-fill-yes {
+          background: linear-gradient(to right, rgba(52,211,153,0.22), rgba(52,211,153,0.42));
+        }
+        button:hover .markets-split-odds .markets-split-fill-no,
+        .markets-split-odds:hover .markets-split-fill-no {
+          background: linear-gradient(to left, rgba(248,113,113,0.22), rgba(248,113,113,0.42));
+        }
+        button:hover .markets-split-odds .markets-split-divider,
+        .markets-split-odds:hover .markets-split-divider {
+          background: rgba(255,255,255,0.38);
+          box-shadow: 0 0 6px rgba(255,255,255,0.28);
+        }
       `}</style>
 
       <div className="max-w-5xl mx-auto px-4 py-6">
@@ -2140,41 +2161,51 @@ function SplitOdds({ yes }: { yes: number }) {
   const noPct = 100 - yesPct;
   return (
     <div
-      className="relative flex h-9 overflow-hidden"
-      style={{ borderRadius: 8, background: 'var(--canvas)' }}
+      className="markets-split-odds relative flex h-9 items-center"
+      style={{
+        borderRadius: 8,
+        background: 'var(--canvas)',
+        border: '1px solid var(--border)',
+        overflow: 'hidden',
+      }}
     >
       <div
+        className="markets-split-fill markets-split-fill-yes absolute inset-y-0 left-0"
         style={{
           width: `${yesPct}%`,
-          background: 'linear-gradient(to right, rgba(52,211,153,0.18), rgba(52,211,153,0.32))',
-          borderRight: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 12,
-          color: 'var(--yes)',
-          fontSize: 12,
-          fontWeight: 600,
-          fontFamily: 'var(--font-mono, JetBrains Mono)',
-          transition: 'width 600ms ease-out',
+          background: 'linear-gradient(to right, rgba(52,211,153,0.14), rgba(52,211,153,0.30))',
+          transition: 'width 500ms ease-out, background 200ms',
         }}
-      >
-        YES {yesPct}%
-      </div>
+      />
       <div
+        className="markets-split-fill markets-split-fill-no absolute inset-y-0 right-0"
         style={{
-          flex: 1,
-          background: 'linear-gradient(to left, rgba(248,113,113,0.18), rgba(248,113,113,0.32))',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          paddingRight: 12,
-          color: 'var(--no)',
-          fontSize: 12,
-          fontWeight: 600,
+          width: `${noPct}%`,
+          background: 'linear-gradient(to left, rgba(248,113,113,0.14), rgba(248,113,113,0.30))',
+          transition: 'width 500ms ease-out, background 200ms',
+        }}
+      />
+      <div
+        className="markets-split-divider absolute inset-y-0"
+        style={{
+          left: `calc(${yesPct}% - 0.5px)`,
+          width: 1,
+          background: 'rgba(255,255,255,0.18)',
+          transition: 'left 500ms ease-out, background 200ms, box-shadow 200ms',
+        }}
+      />
+      <div
+        className="relative z-10 flex items-center justify-between w-full pointer-events-none"
+        style={{
+          padding: '0 10px',
+          fontSize: 11,
           fontFamily: 'var(--font-mono, JetBrains Mono)',
+          fontWeight: 700,
+          letterSpacing: '0.02em',
         }}
       >
-        {noPct}% NO
+        <span style={{ color: 'var(--yes)' }}>YES {yesPct}%</span>
+        <span style={{ color: 'var(--no)' }}>{noPct}% NO</span>
       </div>
     </div>
   );
