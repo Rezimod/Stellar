@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const posted = await postTweet(draft.body)
+    const image = draft.imageBase64 ? Buffer.from(draft.imageBase64, 'base64') : undefined
+    const posted = await postTweet(draft.body, { image })
     const now = new Date()
     await db
       .update(tweetDrafts)

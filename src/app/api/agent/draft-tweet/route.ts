@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { tweetDrafts } from '@/lib/schema'
 import { draftTweet, pickKindForToday, type TweetKind } from '@/lib/tweet-agent'
-import { sendTelegram } from '@/lib/telegram'
+import { sendTelegram, sendTelegramPhoto } from '@/lib/telegram'
+import { generateTweetImage } from '@/lib/tweet-image'
 import { signAction } from '@/lib/agent-token'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+export const maxDuration = 120
 
 const VALID_KINDS: TweetKind[] = ['sky_verdict', 'space_news', 'product_spotlight', 'astro_fact']
 
@@ -36,16 +37,33 @@ async function handle(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 
+  const skipImage = req.nextUrl.searchParams.get('skipImage') === '1'
+  let imageBuf: Buffer | null = null
+  let imageBase64: string | null = null
+  if (!skipImage) {
+    try {
+      imageBuf = await generateTweetImage(drafted.kind, drafted.context)
+      imageBase64 = imageBuf.toString('base64')
+    } catch (err) {
+      console.error('[agent/draft-tweet] image generation failed — proceeding text-only', err)
+    }
+  }
+
   const [row] = await db
     .insert(tweetDrafts)
-    .values({ kind: drafted.kind, body: drafted.body, context: drafted.context })
+    .values({
+      kind: drafted.kind,
+      body: drafted.body,
+      context: drafted.context,
+      imageBase64,
+    })
     .returning()
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'
   const approveUrl = `${base}/api/agent/approve-tweet?id=${row.id}&sig=${signAction(row.id, 'approve')}`
   const rejectUrl = `${base}/api/agent/reject-tweet?id=${row.id}&sig=${signAction(row.id, 'reject')}`
 
-  const message = [
+  const caption = [
     `*Stellarr X draft — ${drafted.kind.replace('_', ' ')}*`,
     '',
     drafted.body,
@@ -55,12 +73,23 @@ async function handle(req: NextRequest) {
   ].join('\n')
 
   try {
-    await sendTelegram(message)
+    if (imageBuf) {
+      await sendTelegramPhoto(imageBuf, caption)
+    } else {
+      await sendTelegram(caption)
+    }
   } catch (err) {
     console.error('[agent/draft-tweet] telegram send failed', err)
   }
 
-  return NextResponse.json({ id: row.id, kind: drafted.kind, body: drafted.body, approveUrl, rejectUrl })
+  return NextResponse.json({
+    id: row.id,
+    kind: drafted.kind,
+    body: drafted.body,
+    hasImage: !!imageBase64,
+    approveUrl,
+    rejectUrl,
+  })
 }
 
 export const GET = handle

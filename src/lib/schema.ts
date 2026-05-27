@@ -283,6 +283,7 @@ export const tweetDrafts = pgTable('tweet_drafts', {
   kind: text('kind').notNull(),
   body: text('body').notNull(),
   context: jsonb('context'),
+  imageBase64: text('image_base64'),
   status: text('status').notNull().default('pending'),
   postedTweetId: text('posted_tweet_id'),
   postedAt: timestamp('posted_at', { withTimezone: true }),

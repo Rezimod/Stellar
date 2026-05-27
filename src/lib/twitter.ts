@@ -15,8 +15,19 @@ export function getTwitterClient(): TwitterApi {
   return cached
 }
 
-export async function postTweet(text: string): Promise<{ id: string; text: string }> {
+export async function postTweet(
+  text: string,
+  opts?: { image?: Buffer },
+): Promise<{ id: string; text: string }> {
   const client = getTwitterClient()
-  const { data } = await client.v2.tweet({ text })
+  let mediaIds: [string] | undefined
+  if (opts?.image) {
+    const mediaId = await client.v1.uploadMedia(opts.image, { mimeType: 'image/png' })
+    mediaIds = [mediaId]
+  }
+  const { data } = await client.v2.tweet({
+    text,
+    ...(mediaIds ? { media: { media_ids: mediaIds } } : {}),
+  })
   return { id: data.id, text: data.text }
 }
