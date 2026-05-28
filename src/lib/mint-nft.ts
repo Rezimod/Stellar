@@ -56,7 +56,7 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
 
   const name = `Stellar: ${params.target}`;
   // Metaplex URI limit is 200 bytes — use short keys, short path, truncated hash.
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club';
   const shortHash = (params.oracleHash ?? '').slice(0, 10);
   const tierSuffix = params.tier ? `&i=${params.tier}` : '';
   const uri = `${appUrl}/m/o?t=${encodeURIComponent(params.target)}&d=${params.timestampMs}&la=${params.lat.toFixed(4)}&lo=${params.lon.toFixed(4)}&cc=${params.cloudCover}&h=${shortHash}&s=${params.stars}&r=${encodeURIComponent(params.rarity ?? 'Common')}&m=${params.multiplier ?? 1}${tierSuffix}`;

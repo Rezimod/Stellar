@@ -76,8 +76,8 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     name: `Stellar: ${target}`,
     description: `Verified observation of ${target}. Cloud cover ${cc}%, oracle hash ${hash}. Sealed on Solana.`,
-    image: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'}/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat}&lon=${lon}&cc=${cc}&stars=${stars}&rarity=${encodeURIComponent(rarity)}`,
-    external_url: 'https://stellarrclub.vercel.app',
+    image: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'}/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat}&lon=${lon}&cc=${cc}&stars=${stars}&rarity=${encodeURIComponent(rarity)}`,
+    external_url: 'https://stellarr.club',
     attributes: [
       { trait_type: 'Target', value: target },
       { trait_type: 'Date', value: new Date(Number(ts)).toISOString().split('T')[0] },

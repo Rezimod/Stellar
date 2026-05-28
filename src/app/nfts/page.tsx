@@ -114,7 +114,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
   const ts = date ? new Date(date).getTime() : Date.now();
   const nftImageUrl = `/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat ?? 0}&lon=${lon ?? 0}&cc=${cc}&stars=${starCount || 0}`;
 
-  const appUrl = 'https://stellarrclub.vercel.app';
+  const appUrl = 'https://stellarr.club';
   const fullImageUrl = `${appUrl}${nftImageUrl}`;
   const twitterText = encodeURIComponent(`I observed ${target} and sealed it on Solana with @StellarClub26 ✦ #Astronomy #Solana`);
   const farcasterText = encodeURIComponent(`Observed ${target} and sealed it on Solana with @StellarClub26 ✦`);

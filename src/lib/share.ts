@@ -6,7 +6,7 @@ export function buildShareImageUrl(params: {
   date: string
   emoji: string
 }): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
   const q = new URLSearchParams({
     target: params.target,
     score: String(params.score),

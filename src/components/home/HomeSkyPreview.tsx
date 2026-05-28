@@ -270,7 +270,7 @@ export default function HomeSkyPreview() {
           {/* Share */}
           <button
             onClick={() => {
-              const text = `Tonight's Sky Score: ${skyScore.score}/100 ${skyScore.emoji} — ${skyScore.grade} conditions for stargazing · stellarrclub.vercel.app`;
+              const text = `Tonight's Sky Score: ${skyScore.score}/100 ${skyScore.emoji} — ${skyScore.grade} conditions for stargazing · stellarr.club`;
               if (navigator.share) { navigator.share({ text }).catch(() => {}); }
               else { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank'); }
             }}

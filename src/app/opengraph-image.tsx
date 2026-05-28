@@ -52,7 +52,7 @@ export default async function Image() {
             bottom: 40,
           }}
         >
-          stellarrclub.vercel.app · Colosseum Frontier 2026
+          stellarr.club · Colosseum Frontier 2026
         </div>
       </div>
     ),

@@ -77,7 +77,7 @@ Data:
 - Wind: ${Math.round(avg('wind'))} m/s
 - Up tonight: ${planetLine}
 
-Write one tweet that leads with the verdict in one word, then gives the why in one sentence and the best target. End with: stellarrclub.vercel.app/sky`,
+Write one tweet that leads with the verdict in one word, then gives the why in one sentence and the best target. End with: stellarr.club/sky`,
   )
   return {
     kind: 'sky_verdict',
@@ -114,27 +114,27 @@ const PRODUCT_SPOTLIGHTS = [
   {
     name: 'ASTRA',
     pitch: 'an AI companion that knows tonight\'s sky, your scope, and what you can actually see from where you stand',
-    url: 'https://stellarrclub.vercel.app/chat',
+    url: 'https://stellarr.club/chat',
   },
   {
     name: '7-day sky forecast',
     pitch: 'cloud cover, seeing, humidity, and moon phase scored into one verdict per night so you stop guessing',
-    url: 'https://stellarrclub.vercel.app/sky',
+    url: 'https://stellarr.club/sky',
   },
   {
     name: 'Discovery Attestations',
     pitch: 'verified observations minted on-chain. Proof you saw it, owned by you, not a platform',
-    url: 'https://stellarrclub.vercel.app/observe',
+    url: 'https://stellarr.club/observe',
   },
   {
     name: 'Name a Star',
     pitch: 'pick a real star from the Hipparcos catalog, name it, mint the certificate. The name is yours forever',
-    url: 'https://stellarrclub.vercel.app/star',
+    url: 'https://stellarr.club/star',
   },
   {
     name: 'Stellar Field',
     pitch: 'an offline Android app for dark-sky sites. AI companion runs on-device. No signal needed',
-    url: 'https://stellarrclub.vercel.app/field',
+    url: 'https://stellarr.club/field',
   },
 ]
 
@@ -186,7 +186,7 @@ Constellation: ${pick.constellation}
 Minimum scope: ${pick.minScope}
 What's interesting: ${pick.note}
 
-Open with what it is. One line on what scope you need and what you'll see. End with: stellarrclub.vercel.app/learn`,
+Open with what it is. One line on what scope you need and what you'll see. End with: stellarr.club/learn`,
   )
   return {
     kind: 'astro_fact',

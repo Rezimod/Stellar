@@ -6,8 +6,8 @@ export async function GET() {
     symbol: 'STLR',
     description:
       'Verified astronomical observations minted as compressed NFTs on Solana. Each attestation proves a real sky observation made with Stellar, the AI-powered astronomy companion.',
-    image: 'https://stellarrclub.vercel.app/collection-image.png',
-    external_url: 'https://stellarrclub.vercel.app',
+    image: 'https://stellarr.club/collection-image.png',
+    external_url: 'https://stellarr.club',
     seller_fee_basis_points: 0,
     properties: {
       category: 'image',

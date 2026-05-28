@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
             STELLAR
           </span>
           <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.35)' }}>
-            stellarrclub.vercel.app
+            stellarr.club
           </span>
         </div>
 

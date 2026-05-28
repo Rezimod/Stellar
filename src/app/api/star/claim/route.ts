@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Star already claimed' }, { status: 409 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club';
     const slug = catalogId.replace(' ', '-').toLowerCase();
     const proofUrl = `${appUrl}/star/${encodeURIComponent(slug)}`;
 

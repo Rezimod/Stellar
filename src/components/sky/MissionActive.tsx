@@ -507,7 +507,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   if (step === 'done') {
     const isOnChain = mintTxId && !mintTxId.startsWith('sim');
     const starsEarned = totalStarsEarned || (sky?.verified ? mission.stars : 0);
-    const appUrl = 'https://stellarrclub.vercel.app';
+    const appUrl = 'https://stellarr.club';
     const ogImageUrl = skyScore
       ? buildShareImageUrl({ target: mission.name, score: skyScore.score, grade: skyScore.grade, stars: starsEarned, date: new Date().toISOString().slice(0, 10), emoji: skyScore.emoji })
       : undefined;

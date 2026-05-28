@@ -110,7 +110,7 @@ export default async function StarProofPage({
   const slug = decodeURIComponent(rawParam);
   const star = await getStar(slug);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club';
   const pageUrl = `${appUrl}/star/${rawParam}`;
 
   const dashIndex = slug.indexOf('-');

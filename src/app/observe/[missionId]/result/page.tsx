@@ -133,7 +133,7 @@ export default function ObserveResultPage() {
 
   const handleShare = async () => {
     const shareText = `I just observed ${mission.name} on Stellar ✦ Sealed on Solana.`;
-    const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://stellarrclub.vercel.app';
+    const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://stellarr.club';
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({

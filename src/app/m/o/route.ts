@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const rarity = p.get('r') ?? p.get('rarity') ?? 'Common';
   const multiplier = p.get('m') ?? p.get('multiplier') ?? '1';
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club';
   const image = `${appUrl}/api/nft-image?target=${encodeURIComponent(target)}&ts=${ts}&lat=${lat}&lon=${lon}&cc=${cc}&stars=${stars}&rarity=${encodeURIComponent(rarity)}`;
 
   return NextResponse.json({

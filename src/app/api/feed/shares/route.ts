@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     .where(eq(feedPosts.id, postId))
     .limit(1)
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
   return NextResponse.json({
     shareCount: post?.shareCount ?? 0,
     shareUrl: `${baseUrl}/feed/post/${postId}`,

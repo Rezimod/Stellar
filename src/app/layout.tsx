@@ -62,7 +62,7 @@ export const metadata: Metadata = {
   title: 'Stellar — Astronomy, on chain',
   description:
     'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
-  metadataBase: new URL('https://stellarrclub.vercel.app'),
+  metadataBase: new URL('https://stellarr.club'),
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: 'Stellar — Astronomy, on chain',
     description:
       'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
-    url: 'https://stellarrclub.vercel.app',
+    url: 'https://stellarr.club',
     siteName: 'Stellar',
     images: ['/opengraph-image'],
   },
@@ -87,11 +87,11 @@ export const metadata: Metadata = {
   },
   other: {
     'fc:frame': 'vNext',
-    'fc:frame:image': 'https://stellarrclub.vercel.app/opengraph-image',
+    'fc:frame:image': 'https://stellarr.club/opengraph-image',
     'fc:frame:image:aspect_ratio': '1.91:1',
     'fc:frame:button:1': "Tonight's Sky →",
     'fc:frame:button:1:action': 'link',
-    'fc:frame:button:1:target': 'https://stellarrclub.vercel.app',
+    'fc:frame:button:1:target': 'https://stellarr.club',
   },
 };
 

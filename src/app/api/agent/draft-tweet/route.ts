@@ -59,7 +59,7 @@ async function handle(req: NextRequest) {
     })
     .returning()
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
   const approveUrl = `${base}/api/agent/approve-tweet?id=${row.id}&sig=${signAction(row.id, 'approve')}`
   const rejectUrl = `${base}/api/agent/reject-tweet?id=${row.id}&sig=${signAction(row.id, 'reject')}`
 

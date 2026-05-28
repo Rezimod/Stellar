@@ -77,7 +77,7 @@ export async function GET() {
           }}
         >
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>
-            stellarrclub.vercel.app
+            stellarr.club
           </span>
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.12)' }}>
             · Powered by Solana
