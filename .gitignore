@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# security audit reports (may detail live vulnerabilities — keep out of the repo)
+.superstack/
+
 # testing
 /coverage
 

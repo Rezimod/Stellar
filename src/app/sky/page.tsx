@@ -34,8 +34,12 @@ const REFRESH_MS = 60_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
 
 export default function SkyPage() {
-  const { location, locationReady, requestLocation, gpsState, loading: locationLoading } = useLocation();
+  const { location, locationReady, requestLocation, ensureLocation, gpsState, loading: locationLoading } = useLocation();
   const tErrors = useTranslations('sky.errors');
+
+  // Opening the sky finder is a clear intent to use the observer's position —
+  // prompt for GPS here rather than on site entry.
+  useEffect(() => { ensureLocation(); }, [ensureLocation]);
   const tAr = useTranslations('sky.ar');
   const tSolar = useTranslations('sky.solarFromSky');
 

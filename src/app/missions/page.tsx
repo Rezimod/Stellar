@@ -141,8 +141,12 @@ export default function MissionsPage() {
   const { authenticated } = useStellarUser();
   const [authOpen, setAuthOpen] = useState(false);
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
-  const { location } = useLocation();
+  const { location, ensureLocation } = useLocation();
   const t = useTranslations('missionsPage');
+
+  // Missions are location-aware (what's up tonight from here) — prompt for GPS
+  // on open rather than on site entry.
+  useEffect(() => { ensureLocation(); }, [ensureLocation]);
 
   const localize = useCallback(
     (entry: GridEntry): LocalizedGridEntry => ({

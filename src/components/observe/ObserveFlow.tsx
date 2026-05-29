@@ -36,7 +36,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   const [mintTxId, setMintTxId] = useState('');
   const [mintError, setMintError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
-  const { location: observerLocation, locationReady, requestLocation } = useLocation();
+  const { location: observerLocation, ensureLocation } = useLocation();
   const [analysisIdx, setAnalysisIdx] = useState(0);
   const [doubleCapture, setDoubleCapture] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -49,9 +49,9 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   const mintingRef = useRef(false);
 
   useEffect(() => {
-    if (!locationReady) requestLocation({ fresh: true });
+    ensureLocation();
     return () => { streamRef.current?.getTracks().forEach(t => t.stop()); };
-  }, [locationReady, requestLocation]);
+  }, [ensureLocation]);
 
   useEffect(() => {
     if (step !== 'uploading') return;

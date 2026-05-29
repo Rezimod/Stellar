@@ -81,6 +81,14 @@ interface LocationContextValue {
   gpsState: GpsState
   isFallback: boolean
   requestLocation: (opts?: { fresh?: boolean }) => void
+  /**
+   * Request a GPS fix once per session for a surface that genuinely needs the
+   * observer's position (sky / missions / marketplace / observe). No-op if the
+   * user already picked a city manually, or if we've already prompted this
+   * session. Entry pages (home, etc.) never call this — the permission prompt
+   * is deferred so first load stays barrier-free on iOS/Android.
+   */
+  ensureLocation: () => void
 }
 
 const LocationContext = createContext<LocationContextValue | null>(null)
@@ -100,6 +108,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [locationReady, setLocationReady] = useState(false)
   const [gpsState, setGpsState] = useState<GpsState>('pending')
   const gpsInFlightRef = useRef(false)
+  const autoPromptedRef = useRef(false)
 
   const commitLocation = useCallback((loc: StoredObserverLocation) => {
     persistObserverLocation(loc)
@@ -153,36 +162,33 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       })
   }, [applyGpsFix])
 
-  // Session bootstrap: hydrate cache, then always attempt a fresh GPS fix
-  // unless the user explicitly picked a city (manual override).
+  // Session bootstrap: hydrate cached coords only. We never prompt for GPS on
+  // entry — the browser permission request is deferred to ensureLocation(),
+  // which the sky / missions / marketplace / observe surfaces call when they
+  // actually need the observer's position. This keeps first load barrier-free
+  // on iOS/Android. With a stored fix we render those coords; without one we
+  // render the Tbilisi default. Either way locationReady flips true so data
+  // that gates on it (sky forecast, etc.) loads immediately with a fallback.
   useEffect(() => {
     const stored = parseStoredLocation(
       typeof window !== 'undefined' ? localStorage.getItem('stellar_location') : null,
     )
-
     if (stored) {
       setLocationState(stored)
-      if (stored.source === 'manual') {
-        setGpsState('resolved')
-        setHydrated(true)
-        setLocationReady(true)
-        return
-      }
-      // Show last-known coords immediately, but still refresh in background.
-      setHydrated(true)
-      requestLocation({ fresh: true })
-      return
+      setGpsState('resolved')
     }
-
     setHydrated(true)
-    requestLocation({ fresh: true })
-  }, [requestLocation])
+    setLocationReady(true)
+  }, [])
 
-  // Re-sync observer position when the user returns to the tab.
+  // Re-sync observer position when the user returns to the tab — but only for
+  // an already-granted GPS fix (re-reading needs no new prompt). Default and
+  // manual locations are left untouched so returning to a tab never triggers a
+  // permission request the user didn't ask for.
   useEffect(() => {
     const onVis = () => {
       if (document.visibilityState !== 'visible') return
-      if (location.source === 'manual') return
+      if (location.source !== 'gps') return
       requestLocation({ fresh: true })
     }
     document.addEventListener('visibilitychange', onVis)
@@ -192,12 +198,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const setLocation = useCallback(
     (loc: UserLocation) => {
       const stored = toStored({ ...loc, source: loc.source === 'default' ? 'manual' : loc.source })
+      // An explicit pick should never be overwritten by a deferred auto-prompt.
+      autoPromptedRef.current = true
       commitLocation(stored)
       setGpsState('resolved')
       setLocationReady(true)
     },
     [commitLocation],
   )
+
+  const ensureLocation = useCallback(() => {
+    if (!hydrated || autoPromptedRef.current) return
+    autoPromptedRef.current = true
+    // Respect an explicit manual city pick; otherwise request a fresh fix.
+    if (location.source === 'manual') return
+    requestLocation({ fresh: true })
+  }, [hydrated, location.source, requestLocation])
 
   const isFallback =
     locationReady &&
@@ -216,8 +232,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       gpsState,
       isFallback,
       requestLocation,
+      ensureLocation,
     }),
-    [location, setLocation, loading, hydrated, locationReady, gpsState, isFallback, requestLocation],
+    [location, setLocation, loading, hydrated, locationReady, gpsState, isFallback, requestLocation, ensureLocation],
   )
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>

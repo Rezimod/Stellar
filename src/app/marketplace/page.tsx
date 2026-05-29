@@ -64,8 +64,12 @@ export default function MarketplacePage() {
   const t = useTranslations('marketplacePage');
   const { address: stellarAddress } = useStellarUser();
   const { state } = useAppState();
-  const { location } = useLocation();
+  const { location, ensureLocation } = useLocation();
   const address = stellarAddress ?? state.walletAddress ?? null;
+
+  // The catalogue is region-aware (dealers + pricing) — prompt for GPS on open
+  // so we show the right regional storefront, rather than on site entry.
+  useEffect(() => { ensureLocation(); }, [ensureLocation]);
   const starsBalance = useStarsBalance(address);
   const balance = starsBalance ?? 0;
 
