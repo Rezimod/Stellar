@@ -274,6 +274,11 @@
       "azimuth": "Bearing",
       "altitude": "Altitude",
       "nearby": "Also nearby",
+      "stop": "Stop",
+      "alignStart": "Align to {name}",
+      "alignCancel": "Cancel align",
+      "alignHint": "Tap exactly where you see {name} in the camera view. We'll absorb the compass offset.",
+      "alignDone": "Calibrated by {deg}°",
       "kind": {
         "planet": "Planet",
         "moon": "Moon",
