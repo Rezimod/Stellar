@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 import { useSkyData, type PlanetData, type ForecastDay } from '@/lib/use-sky-data';
-import { MoonGlyph, NightCloudStrip } from '@/components/sky/forecast/visuals';
+import { MoonGlyph } from '@/components/sky/forecast/visuals';
 
 const PLANET_IMG: Record<string, string> = {
   Mercury: '/images/planets/mercury.jpg',
@@ -255,24 +255,6 @@ export default function TonightAtAGlance() {
             )}
           </div>
 
-          {/* Time axis — anchors every strip to 20h → 04h */}
-          <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 mb-1.5">
-            <span />
-            <span />
-            <span className="flex justify-between font-mono text-[9px] tracking-[0.1em] text-white/25 tabular-nums">
-              <span>20h</span>
-              <span>00h</span>
-              <span>04h</span>
-            </span>
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/25 text-right">
-              {copy.cloudCol}
-            </span>
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/25 text-right">
-              {copy.tempCol}
-            </span>
-            <span />
-          </div>
-
           <div className="flex flex-col divide-y divide-white/[0.05]">
             {sky.forecast.slice(0, 7).map((d, i) => (
               <ForecastRow key={d.date} day={d} highlight={i === 0} locale={locale} />
@@ -499,7 +481,7 @@ function ForecastRow({
   const short = dayShort(day.date, locale);
   const copy = COPY[locale];
   return (
-    <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 py-2">
+    <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 py-2.5">
       <span
         className={`font-mono text-[11px] tracking-[0.08em] ${
           highlight ? 'text-white/90' : 'text-white/45'
@@ -510,7 +492,7 @@ function ForecastRow({
       <span className="flex items-center justify-center" aria-hidden>
         <MoonGlyph phase={day.moonPhase} size={14} />
       </span>
-      <NightCloudStrip hours={day.nightHours} height={10} />
+      <NightSkyBand cloudCover={day.cloudCoverPct ?? 0} seed={day.date} />
       <span className="font-mono text-[11px] tabular-nums text-right text-white/55">
         {day.cloudCoverPct != null ? `${day.cloudCoverPct}%` : '—'}
       </span>
@@ -524,6 +506,86 @@ function ForecastRow({
         {copy.verdict[day.badge.toUpperCase() as Verdict]}
       </span>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   NightSkyBand — a literal window into the night sky for one night.
+   A cloud bank rolls in from the left covering a fraction of the band
+   equal to the cloud %, dimming the stars it passes over. Clear sky
+   on the right keeps its stars bright. Cosmic + cloud, read at a glance.
+   ───────────────────────────────────────────────────────────────── */
+function NightSkyBand({ cloudCover, seed }: { cloudCover: number; seed: string }) {
+  const W = 120;
+  const H = 24;
+  const cover = Math.max(0, Math.min(100, cloudCover)) / 100;
+  const coverX = cover * W;
+
+  const seedNum = useMemo(() => {
+    let s = 0;
+    for (let i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) % 9973;
+    return s;
+  }, [seed]);
+
+  const stars = useMemo(() => {
+    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
+    for (let i = 0; i < 11; i++) {
+      const x = 5 + ((i * 53 + seedNum * 7) % (W - 10));
+      const y = 4 + ((i * 29 + seedNum * 3) % (H - 8));
+      const r = i % 4 === 0 ? 0.95 : 0.6;
+      const o = 0.4 + ((i * 17) % 5) * 0.12;
+      out.push({ x, y, r, o });
+    }
+    return out;
+  }, [seedNum]);
+
+  // Cloud bank — overlapping soft puffs from the left edge to coverX,
+  // tapering on the right so the bank dissolves into clear sky.
+  const puffs = useMemo(() => {
+    if (coverX < 4) return [];
+    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
+    for (let x = -4; x <= coverX; x += 9) {
+      const taper = Math.max(0, Math.min(1, (coverX - x) / 14));
+      out.push({
+        x,
+        y: 12 + (((x + seedNum) * 5) % 7) - 3,
+        r: 7 + (((x + seedNum) * 3) % 4),
+        o: 0.22 + cover * 0.4 * taper,
+      });
+    }
+    return out;
+  }, [coverX, cover, seedNum]);
+
+  const fid = `cloudblur-${seedNum}`;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" aria-hidden>
+      <defs>
+        <filter id={fid} x="-20%" y="-40%" width="140%" height="180%">
+          <feGaussianBlur stdDeviation="1.4" />
+        </filter>
+        <radialGradient id={`${fid}-bg`} cx="50%" cy="120%" r="120%">
+          <stop offset="0%" stopColor="#101a36" />
+          <stop offset="100%" stopColor="#070c1d" />
+        </radialGradient>
+      </defs>
+
+      <rect x="0" y="0" width={W} height={H} rx="4" fill={`url(#${fid}-bg)`} />
+
+      {/* Stars — dimmed where the cloud bank covers them */}
+      {stars.map((s, i) => {
+        const covered = s.x < coverX;
+        const opacity = covered ? s.o * 0.12 : s.o;
+        return <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#dbe7ff" opacity={opacity} />;
+      })}
+
+      {/* Cloud bank */}
+      <g filter={`url(#${fid})`}>
+        {puffs.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#c4d2ee" opacity={p.o} />
+        ))}
+      </g>
+    </svg>
   );
 }
 
