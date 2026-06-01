@@ -109,6 +109,26 @@ class AuditLog {
     return { sessionId: this.sessionId, exportedAt: new Date().toISOString(), events: this.events };
   }
 
+  /**
+   * Write the full evidence bundle (device specs + every inference's timing) to
+   * a JSON file in the app's document directory. Returns the file URI so the UI
+   * can hand it to the OS share sheet for the hackathon submission.
+   */
+  async writeFile(): Promise<string> {
+    const device = await this.deviceInfo();
+    const payload = JSON.stringify({ device, ...this.toJSON() }, null, 2);
+    const { File, Paths } = await import('expo-file-system');
+    const file = new File(Paths.document, `qvac-audit-${this.sessionId}.json`);
+    try {
+      if (file.exists) file.delete();
+    } catch {
+      // fresh file — nothing to delete
+    }
+    file.create();
+    file.write(payload);
+    return file.uri;
+  }
+
   async deviceInfo(): Promise<Record<string, unknown>> {
     try {
       const Device = await import('expo-device');

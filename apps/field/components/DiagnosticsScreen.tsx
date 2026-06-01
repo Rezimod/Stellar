@@ -62,11 +62,24 @@ export function DiagnosticsScreen() {
   }
 
   async function onExport() {
-    const device = await audit.deviceInfo();
-    const payload = { device, ...audit.toJSON() };
-    const json = JSON.stringify(payload, null, 2);
-    await Clipboard.setStringAsync(json);
-    log(`📋 Audit log copied to clipboard — ${audit.getEvents().length} events, device: ${device.modelName ?? 'unknown'}`);
+    try {
+      const device = await audit.deviceInfo();
+      const json = JSON.stringify({ device, ...audit.toJSON() }, null, 2);
+      await Clipboard.setStringAsync(json);
+      log(`📋 Copied to clipboard — ${audit.getEvents().length} events · ${device.modelName ?? 'unknown device'}`);
+
+      const uri = await audit.writeFile();
+      log(`💾 Saved: ${uri}`);
+
+      const Sharing = await import('expo-sharing');
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: 'Stellar Field — QVAC audit log' });
+      } else {
+        log('ℹ️ Share unavailable — use the clipboard copy.');
+      }
+    } catch (e: any) {
+      log(`✖ export error: ${e?.message ?? e}`);
+    }
   }
 
   return (
