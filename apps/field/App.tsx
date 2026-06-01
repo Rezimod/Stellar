@@ -6,8 +6,9 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StellarPrivyProvider } from './lib/privy';
 import { FieldChatScreen } from './components/FieldChatScreen';
 import { VoiceLogScreen } from './components/VoiceLogScreen';
+import { DiagnosticsScreen } from './components/DiagnosticsScreen';
 
-type Tab = 'chat' | 'voice';
+type Tab = 'chat' | 'voice' | 'diag';
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('chat');
@@ -18,11 +19,12 @@ export default function App() {
         <SafeAreaView style={styles.root} edges={['top', 'bottom', 'left', 'right']}>
           <StatusBar style="light" />
           <View style={styles.screen}>
-            {tab === 'chat' ? <FieldChatScreen /> : <VoiceLogScreen />}
+            {tab === 'chat' ? <FieldChatScreen /> : tab === 'voice' ? <VoiceLogScreen /> : <DiagnosticsScreen />}
           </View>
           <View style={styles.tabBar}>
             <TabButton label="Companion" active={tab === 'chat'} onPress={() => setTab('chat')} />
             <TabButton label="Voice Log" active={tab === 'voice'} onPress={() => setTab('voice')} />
+            <TabButton label="Diagnostics" active={tab === 'diag'} onPress={() => setTab('diag')} />
           </View>
         </SafeAreaView>
       </StellarPrivyProvider>
