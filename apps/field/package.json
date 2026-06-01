@@ -24,6 +24,7 @@
     "@supabase/supabase-js": "^2.105.1",
     "@web-std/file": "^3.0.3",
     "apache-arrow": "^21.1.0",
+    "astronomy-engine": "^2.1.19",
     "axios": "^1.16.0",
     "bare-abort-controller": "^1.1.1",
     "bare-buffer": "^3.6.0",
