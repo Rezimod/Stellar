@@ -340,6 +340,29 @@ function moonPhaseFor(date: string): { phase: number; illumination: number } {
   }
 }
 
+// Night-window weather (20:00–04:00) — the conditions that actually matter
+// for an observer. Overnight low temp + average wind/humidity over the window.
+function eveningWeather(d: RawSkyDay, next: RawSkyDay | undefined): {
+  tempLow: number | undefined;
+  windKmh: number | undefined;
+  humidityPct: number | undefined;
+} {
+  const isEvening = (t: string) => {
+    const hr = parseInt(t.slice(11, 13));
+    return hr >= 20 || hr <= 4;
+  };
+  const pool = [
+    ...d.hours.filter((h) => parseInt(h.time.slice(11, 13)) >= 20),
+    ...(next ?? d).hours.filter((h) => parseInt(h.time.slice(11, 13)) <= 4),
+  ].filter((h) => isEvening(h.time));
+  const src = pool.length ? pool : d.hours;
+  if (!src.length) return { tempLow: undefined, windKmh: undefined, humidityPct: undefined };
+  const tempLow = Math.round(Math.min(...src.map((h) => h.temp)));
+  const windKmh = Math.round(src.reduce((s, h) => s + h.wind, 0) / src.length);
+  const humidityPct = Math.round(src.reduce((s, h) => s + h.humidity, 0) / src.length);
+  return { tempLow, windKmh, humidityPct };
+}
+
 function toForecastDay(
   d: RawSkyDay,
   next: RawSkyDay | undefined,
@@ -348,9 +371,13 @@ function toForecastDay(
   const cloudCoverPct = averageEveningCloud(d.hours);
   const nightHours = buildNightHours(d, next);
   const { phase, illumination } = moonPhaseFor(d.date);
+  const { tempLow, windKmh, humidityPct } = eveningWeather(d, next);
   return {
     date: d.date,
     cloudCoverPct,
+    tempLow,
+    windKmh,
+    humidityPct,
     badge: cloudCoverPct < 30 ? 'go' : cloudCoverPct < 70 ? 'maybe' : 'skip',
     recommendation:
       locale === 'ka'

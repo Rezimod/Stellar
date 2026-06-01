@@ -50,13 +50,6 @@ function pickTop3(planets: PlanetData[]): PlanetData[] {
   return visible.slice(0, 3);
 }
 
-function dayLetter(iso: string, index: number, locale: 'en' | 'ka'): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return locale === 'ka' ? ['ო', 'ს', 'ო', 'ხ', 'პ', 'შ', 'კ'][index % 7] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'][index % 7];
-  const label = new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'short' }).format(d).replace('.', '');
-  return Array.from(label)[0]?.toUpperCase() ?? (locale === 'ka' ? 'ო' : 'S');
-}
-
 function badgeColor(b: 'go' | 'maybe' | 'skip'): string {
   if (b === 'go') return '#5EEAD4';
   if (b === 'maybe') return '#FFB347';
@@ -70,8 +63,9 @@ const COPY = {
       bortle: 'Bortle',
       planetsUp: 'Planets up',
     },
-    outlook: '7-day outlook',
-    outlookMeta: 'moon · 20h → 04h · verdict',
+    outlook: '7-night outlook',
+    cloudCol: 'cloud',
+    tempCol: 'low',
     openForecast: 'Open the 7-day forecast →',
     verdict: {
       GO: 'GO',
@@ -107,7 +101,8 @@ const COPY = {
       planetsUp: 'ხილული პლანეტები',
     },
     outlook: '7-ღამიანი პროგნოზი',
-    outlookMeta: 'მთვარე · 20სთ → 04სთ · შეფასება',
+    cloudCol: 'ღრუბ.',
+    tempCol: 'მინ.',
     openForecast: 'გახსენი 7-ღამიანი პროგნოზი →',
     verdict: {
       GO: 'გადი',
@@ -246,20 +241,41 @@ export default function TonightAtAGlance() {
         </ul>
       )}
 
-      {/* ── 7-day forecast strip — bars not text ─────────────────── */}
+      {/* ── 7-night forecast — live weather, one row per night ───── */}
       {sky.forecast.length > 0 && (
         <div className="mt-10 md:mt-14 max-w-[520px] mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-baseline justify-between mb-2.5">
             <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/40">
               {copy.outlook}
             </span>
-            <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/25">
-              {copy.outlookMeta}
-            </span>
+            {sky.location?.city && (
+              <span className="font-mono text-[10px] md:text-[10.5px] tracking-[0.12em] text-white/30 truncate max-w-[180px]">
+                {sky.location.city}
+              </span>
+            )}
           </div>
-          <div className="flex flex-col gap-1.5">
+
+          {/* Time axis — anchors every strip to 20h → 04h */}
+          <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 mb-1.5">
+            <span />
+            <span />
+            <span className="flex justify-between font-mono text-[9px] tracking-[0.1em] text-white/25 tabular-nums">
+              <span>20h</span>
+              <span>00h</span>
+              <span>04h</span>
+            </span>
+            <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/25 text-right">
+              {copy.cloudCol}
+            </span>
+            <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/25 text-right">
+              {copy.tempCol}
+            </span>
+            <span />
+          </div>
+
+          <div className="flex flex-col divide-y divide-white/[0.05]">
             {sky.forecast.slice(0, 7).map((d, i) => (
-              <ForecastRow key={d.date} day={d} index={i} highlight={i === 0} locale={locale} />
+              <ForecastRow key={d.date} day={d} highlight={i === 0} locale={locale} />
             ))}
           </div>
         </div>
@@ -460,33 +476,47 @@ function SkyDome({
    Forecast row — day initial + colored bar + badge dot.
    Mirrors the SkyForecastScreen pattern in the homepage iPhone.
    ───────────────────────────────────────────────────────────────── */
+function dayShort(iso: string, locale: 'en' | 'ka'): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'short' })
+    .format(d)
+    .replace('.', '')
+    .slice(0, 3)
+    .toUpperCase();
+}
+
 function ForecastRow({
   day,
-  index,
   highlight,
   locale,
 }: {
   day: ForecastDay;
-  index: number;
   highlight: boolean;
   locale: 'en' | 'ka';
 }) {
   const color = badgeColor(day.badge);
-  const letter = dayLetter(day.date, index, locale);
+  const short = dayShort(day.date, locale);
   const copy = COPY[locale];
   return (
-    <div className="grid grid-cols-[14px_18px_minmax(0,1fr)_42px] items-center gap-2.5">
+    <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 py-2">
       <span
-        className={`font-mono text-[11px] tabular-nums text-center ${
-          highlight ? 'text-white/85' : 'text-white/40'
+        className={`font-mono text-[11px] tracking-[0.08em] ${
+          highlight ? 'text-white/90' : 'text-white/45'
         }`}
       >
-        {letter}
+        {short}
       </span>
       <span className="flex items-center justify-center" aria-hidden>
         <MoonGlyph phase={day.moonPhase} size={14} />
       </span>
       <NightCloudStrip hours={day.nightHours} height={10} />
+      <span className="font-mono text-[11px] tabular-nums text-right text-white/55">
+        {day.cloudCoverPct != null ? `${day.cloudCoverPct}%` : '—'}
+      </span>
+      <span className="font-mono text-[11px] tabular-nums text-right text-white/55">
+        {day.tempLow != null ? `${day.tempLow}°` : '—'}
+      </span>
       <span
         className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-right tabular-nums"
         style={{ color }}
