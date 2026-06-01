@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * and the declared hardware all corroborate each other.
  */
 
-export type InferenceKind = 'llm' | 'tool-call' | 'embed' | 'whisper' | 'tts' | 'nmt' | 'ocr';
+export type InferenceKind = 'llm' | 'tool-call' | 'embed' | 'whisper' | 'tts' | 'ocr';
 
 export type AuditEvent = {
   ts: string;
@@ -80,7 +80,7 @@ class AuditLog {
     });
   }
 
-  /** For non-streaming one-shot calls (TTS, NMT, OCR). */
+  /** For non-streaming one-shot calls (TTS, OCR). */
   async measure<T>(
     kind: InferenceKind,
     model: string,

@@ -1,5 +1,3 @@
-import * as langdetect from '@qvac/langdetect-text';
-
 /**
  * Day-1 de-risk gate. Probes each QVAC capability we plan to ship so we learn —
  * on real hardware, not from docs — exactly what runs before committing the
@@ -30,15 +28,7 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
   const sdk: any = await import('@qvac/sdk');
   const results: SmokeResult[] = [];
 
-  // 1. Language detection — pure JS, no model download. Confirms regional reach.
-  results.push(
-    await timed('langdetect', async () => {
-      const en = langdetect.detectOne('Which galaxies are visible tonight?');
-      return `EN→ ${en.language} (${en.code})`;
-    }, report),
-  );
-
-  // 2. Tool-calling LLM — the headline. Uses the purpose-built 1B tool model.
+  // 1. Tool-calling LLM — the headline. Uses the purpose-built 1B tool model.
   results.push(
     await timed('llm-tool-calling', async () => {
       const modelId = await sdk.loadModel({ modelSrc: sdk.LLAMA_TOOL_CALLING_1B_INST_Q4_K, modelType: 'llm' });
@@ -61,7 +51,7 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
-  // 3. Text-to-speech (English, Chatterbox). Note: TTS may require a composite
+  // 2. Text-to-speech (English, Chatterbox). Note: TTS may require a composite
   //    model config (decoder + embed-tokens + language-model). If this errors,
   //    the message tells us which assets the loader expects.
   results.push(
@@ -73,17 +63,7 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
-  // 4. Translation EN→RU (regional reach for Caucasus users; Georgian is not in
-  //    the Bergamot catalog, Russian/Azerbaijani/Turkish are).
-  results.push(
-    await timed('nmt-en-ru', async () => {
-      const nmtId = await sdk.loadModel({ modelSrc: sdk.BERGAMOT_EN_RU, modelType: 'nmt' });
-      const out = sdk.translate({ modelId: nmtId, text: 'The Moon rises at nine tonight.', from: 'en', to: 'ru', stream: false });
-      return await out.text;
-    }, report),
-  );
-
-  // 5. Embeddings via EmbeddingGemma — the constant qvac.ts currently probes for
+  // 3. Embeddings via EmbeddingGemma — the constant qvac.ts currently probes for
   //    (EMBED_NOMIC/EMBED_BGE) does not exist, so semantic RAG is silently off.
   results.push(
     await timed('embed-gemma', async () => {
