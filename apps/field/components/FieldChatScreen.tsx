@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
+import { runSkyAgent } from '../lib/agent';
 import type { Citation } from '../lib/rag';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
 import { TetherCobranding } from './TetherCobranding';
@@ -19,16 +20,28 @@ type AssistantTurn = {
   role: 'assistant';
   content: string;
   citations: Citation[];
+  toolsUsed?: string[];
 };
 
 type Turn = ChatMessage | AssistantTurn;
 
 const STARTER_PROMPTS = [
+  'Is Saturn up right now?',
+  'What can I see tonight?',
   'What is M31?',
-  'Best telescope target tonight?',
   'How do I collimate a Newtonian?',
-  'What can I see with binoculars?',
 ];
+
+// No GPS wired yet — default observer is Tbilisi (Astroman's home sky).
+const DEFAULT_OBSERVER = { lat: 41.7151, lon: 44.8271 };
+
+// Route to the live tool-calling agent when a question is about where/whether a
+// body is in the sky now; everything else stays on the RAG companion.
+const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
+const VIS_RE = /\b(visible|overhead|tonight|right now|what'?s up|where is|how high)\b/i;
+function looksLikeSkyQuery(m: string): boolean {
+  return BODY_RE.test(m) || VIS_RE.test(m);
+}
 
 export function FieldChatScreen() {
   const [progress, setProgress] = useState<LoadProgress>(qvac.getProgress());
@@ -37,6 +50,7 @@ export function FieldChatScreen() {
   const [streaming, setStreaming] = useState<{
     text: string;
     citations: Citation[];
+    toolsUsed?: string[];
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
@@ -66,22 +80,40 @@ export function FieldChatScreen() {
     const newTurns: Turn[] = [...turns, { role: 'user', content: message }];
     setTurns(newTurns);
 
+    const sky = looksLikeSkyQuery(message);
+    setStreaming({ text: sky ? 'Checking the live sky…' : '', citations: [] });
+
     try {
-      const { stream, citations } = await startChat(message, history);
-      setStreaming({ text: '', citations });
+      if (sky) {
+        const { stream, toolsUsed } = await runSkyAgent(
+          message,
+          history,
+          DEFAULT_OBSERVER.lat,
+          DEFAULT_OBSERVER.lon,
+        );
+        let acc = '';
+        setStreaming({ text: '', citations: [], toolsUsed });
+        for await (const tok of stream) {
+          acc += tok;
+          setStreaming({ text: acc, citations: [], toolsUsed });
+          scrollRef.current?.scrollToEnd({ animated: false });
+        }
+        setTurns([...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed }]);
+        setStreaming(null);
+      } else {
+        const { stream, citations } = await startChat(message, history);
+        setStreaming({ text: '', citations });
 
-      let acc = '';
-      for await (const tok of stream) {
-        acc += tok;
-        setStreaming({ text: acc, citations });
-        scrollRef.current?.scrollToEnd({ animated: false });
+        let acc = '';
+        for await (const tok of stream) {
+          acc += tok;
+          setStreaming({ text: acc, citations });
+          scrollRef.current?.scrollToEnd({ animated: false });
+        }
+
+        setTurns([...newTurns, { role: 'assistant', content: acc, citations }]);
+        setStreaming(null);
       }
-
-      setTurns([
-        ...newTurns,
-        { role: 'assistant', content: acc, citations },
-      ]);
-      setStreaming(null);
     } catch (err: any) {
       setTurns([
         ...newTurns,
@@ -160,7 +192,7 @@ export function FieldChatScreen() {
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{m.content}</Text>
               </View>
-              <AssistantFooter citations={(m as AssistantTurn).citations} />
+              <AssistantFooter citations={(m as AssistantTurn).citations} toolsUsed={(m as AssistantTurn).toolsUsed} />
             </View>
           ),
         )}
@@ -170,7 +202,7 @@ export function FieldChatScreen() {
             <View style={[styles.bubble, styles.aiBubble]}>
               <Text style={styles.bubbleText}>{streaming.text || '…'}</Text>
             </View>
-            <AssistantFooter citations={streaming.citations} />
+            <AssistantFooter citations={streaming.citations} toolsUsed={streaming.toolsUsed} />
           </View>
         )}
       </ScrollView>
@@ -212,7 +244,22 @@ function statusDotColor(phase: LoadProgress['phase']) {
   }
 }
 
-function AssistantFooter({ citations }: { citations: Citation[] }) {
+function AssistantFooter({ citations, toolsUsed }: { citations: Citation[]; toolsUsed?: string[] }) {
+  // Agent answer — grounded in live on-device ephemeris, not the RAG corpus.
+  if (toolsUsed && toolsUsed.length > 0) {
+    return (
+      <View style={styles.assistantFooter}>
+        <View style={[styles.modeBadge, styles.modeBadgeLive]}>
+          <Text style={styles.modeBadgeText}>LIVE EPHEMERIS</Text>
+        </View>
+        {toolsUsed.slice(0, 3).map((t) => (
+          <View key={t} style={styles.citation}>
+            <Text style={styles.citationText} numberOfLines={1}>{t}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  }
   if (citations.length === 0) return null;
   return (
     <View style={styles.assistantFooter}>
@@ -284,6 +331,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   modeBadgeField: { backgroundColor: '#14B8A622', borderWidth: 1, borderColor: '#14B8A655' },
+  modeBadgeLive: { backgroundColor: '#F59E0B22', borderWidth: 1, borderColor: '#F59E0B66' },
   modeBadgeText: {
     color: '#E5E7EB',
     fontSize: 9,
