@@ -180,9 +180,11 @@ export function SolarSystemCanvas({
     const renderer = new THREE.WebGLRenderer({
       antialias: !lite,
       alpha: false,
-      powerPreference: 'high-performance',
+      // 'default' avoids pinning the discrete GPU on for the tab's lifetime on
+      // dual-GPU laptops (macOS), which keeps the machine hot/slow.
+      powerPreference: 'default',
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.75 : 2.25));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 1.75));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;

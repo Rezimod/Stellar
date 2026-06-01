@@ -28,9 +28,14 @@ export default function SaturnCanvas() {
     const renderer = new THREE.WebGLRenderer({
       antialias: !lite,           // skip MSAA on mobile — fillrate-heavy
       alpha: true,
-      powerPreference: 'high-performance',
+      // 'default' lets the OS keep using the integrated GPU. 'high-performance'
+      // pins the discrete GPU on for the whole tab lifetime on dual-GPU laptops
+      // (macOS), which runs the machine hot/slow even while the hero is paused.
+      powerPreference: 'default',
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.5 : 2));
+    // Cap DPR at 1.5 — on a Retina display DPR 2 quadruples the shaded pixels
+    // for a decorative background, which is what spins up the fans.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lite ? 1.25 : 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor(0x000000, 0);
     mount.appendChild(renderer.domElement);
@@ -90,7 +95,7 @@ export default function SaturnCanvas() {
     // Rotation is computed in the vertex shader from a per-particle base
     // angle + radius and a single uTime uniform — keeps the CPU out of the
     // hot path entirely. Radius and base angle never change after init.
-    const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 18000;
+    const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 8000;
     const innerR = 2.95;
     const outerR = 4.95;
 
