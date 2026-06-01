@@ -12,6 +12,7 @@ import {
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
 import { runSkyAgent } from '../lib/agent';
+import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
 import type { Citation } from '../lib/rag';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
 import { TetherCobranding } from './TetherCobranding';
@@ -32,9 +33,6 @@ const STARTER_PROMPTS = [
   'How do I collimate a Newtonian?',
 ];
 
-// No GPS wired yet — default observer is Tbilisi (Astroman's home sky).
-const DEFAULT_OBSERVER = { lat: 41.7151, lon: 44.8271 };
-
 // Route to the live tool-calling agent when a question is about where/whether a
 // body is in the sky now; everything else stays on the RAG companion.
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
@@ -53,6 +51,7 @@ export function FieldChatScreen() {
     toolsUsed?: string[];
   } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [observer, setObserver] = useState<Observer>(DEFAULT_OBSERVER);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -64,6 +63,10 @@ export function FieldChatScreen() {
 
   useEffect(() => {
     qvac.ensureReady().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getObserverLocation().then(setObserver).catch(() => {});
   }, []);
 
   async function send(text: string) {
@@ -88,8 +91,8 @@ export function FieldChatScreen() {
         const { stream, toolsUsed } = await runSkyAgent(
           message,
           history,
-          DEFAULT_OBSERVER.lat,
-          DEFAULT_OBSERVER.lon,
+          observer.lat,
+          observer.lon,
         );
         let acc = '';
         setStreaming({ text: '', citations: [], toolsUsed });

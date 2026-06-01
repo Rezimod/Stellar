@@ -3,11 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import * as Clipboard from 'expo-clipboard';
 import { runSmokeTest } from '../lib/smoke';
 import { runSkyAgent } from '../lib/agent';
+import { getObserverLocation } from '../lib/location';
 import { audit } from '../lib/audit';
-
-// Default observer = Tbilisi (Astroman's home). The agent answers for this spot.
-const LAT = 41.7151;
-const LON = 44.8271;
 
 /**
  * On-device validation surface for the QVAC hackathon. One tap each:
@@ -45,9 +42,10 @@ export function DiagnosticsScreen() {
     clear();
     const q = 'Is Saturn visible right now, and what can I see tonight?';
     log(`▶ Agent: "${q}"`);
-    log(`(observer: Tbilisi ${LAT}, ${LON})`);
     try {
-      const { stream, toolsUsed } = await runSkyAgent(q, [], LAT, LON);
+      const obs = await getObserverLocation();
+      log(`(observer: ${obs.source === 'gps' ? 'GPS' : 'default Tbilisi'} ${obs.lat.toFixed(3)}, ${obs.lon.toFixed(3)})`);
+      const { stream, toolsUsed } = await runSkyAgent(q, [], obs.lat, obs.lon);
       log(`🛠 tools called: ${toolsUsed.length ? toolsUsed.join(', ') : '(none — answered directly)'}`);
       log('💬 …'); // placeholder; replaced as tokens stream in
       let acc = '';

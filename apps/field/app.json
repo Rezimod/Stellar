@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.stellar.field",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece. Audio is transcribed locally and never leaves your device."
+        "NSMicrophoneUsageDescription": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece. Audio is transcribed locally and never leaves your device.",
+        "NSLocationWhenInUseUsageDescription": "Stellar Field uses your location to compute which planets and deep-sky objects are above your horizon right now. Your location stays on your device."
       }
     },
     "android": {
@@ -31,7 +32,9 @@
       "permissions": [
         "RECORD_AUDIO",
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -47,6 +50,12 @@
       ],
       "expo-web-browser",
       "expo-asset",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Stellar Field uses your location to compute which planets and deep-sky objects are above your horizon right now. Your location stays on your device."
+        }
+      ],
       [
         "expo-build-properties",
         {
