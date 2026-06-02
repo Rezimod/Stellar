@@ -1,5 +1,6 @@
 import { qvac, type ChatMessage } from './qvac';
 import { retrieveContext, type Citation } from './rag';
+import { sanitizeUserText } from './sanitize';
 
 /** Field chat is QVAC-only — no cloud LLM proxy. */
 
@@ -44,7 +45,9 @@ async function* fieldStream(
   yield* qvac.generate(fullHistory);
 }
 
-export async function startChat(userMessage: string, history: ChatMessage[]): Promise<ChatResult> {
+export async function startChat(userMessageRaw: string, history: ChatMessage[]): Promise<ChatResult> {
+  // Untrusted input (typed or voice-transcribed) — defang prompt injection.
+  const userMessage = sanitizeUserText(userMessageRaw);
   const { context, citations } = await retrieveContext(userMessage);
   const stream = fieldStream(userMessage, history, context);
   return { stream, citations };

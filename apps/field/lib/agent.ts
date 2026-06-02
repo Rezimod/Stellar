@@ -1,5 +1,6 @@
 import { buildSkyTools } from './tools';
 import { audit } from './audit';
+import { sanitizeUserText } from './sanitize';
 import type { ChatMessage } from './qvac';
 
 /**
@@ -41,11 +42,13 @@ export type AgentResult = {
 };
 
 export async function runSkyAgent(
-  userMessage: string,
+  userMessageRaw: string,
   history: ChatMessage[],
   lat: number,
   lon: number,
 ): Promise<AgentResult> {
+  // Untrusted input (typed or voice-transcribed) — defang prompt injection.
+  const userMessage = sanitizeUserText(userMessageRaw);
   const sdk: any = await import('@qvac/sdk');
   const modelId = await ensureToolModel();
   const tools = buildSkyTools(lat, lon);
