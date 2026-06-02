@@ -69,8 +69,9 @@ Baseline from the May Tether Frontier submission, **not** counted in this hackat
 
 ## Build & run (reproducible)
 
+Run from the app directory — the repo root in this standalone repo, or `apps/field` in the Stellar monorepo:
+
 ```bash
-cd apps/field
 npm install --legacy-peer-deps
 npx expo prebuild --clean        # runs @qvac/sdk expo-plugin (bare-pack)
 npx expo run:android --device    # builds + installs on a connected phone
