@@ -1,0 +1,36 @@
+{
+  "app": "Stellar Field",
+  "summary": "All AI inference (LLM completion, tool calling, embeddings, transcription) runs on-device via the QVAC SDK. The app makes ZERO remote AI/LLM/embedding/transcription calls. The remote calls listed below are optional, non-AI infrastructure (authentication, observation sync) plus one-time QVAC model distribution. The app is fully functional offline.",
+  "ai_inference_calls": [],
+  "remote_calls": [
+    {
+      "service": "QVAC model distribution",
+      "category": "model-distribution",
+      "ai_inference": false,
+      "optional": false,
+      "purpose": "One-time download of on-device model weights (Llama 3.2 1B, LLAMA_TOOL_CALLING_1B, Whisper, EmbeddingGemma) on first launch; cached locally thereafter and never re-fetched.",
+      "when": "first launch, or first use of each capability",
+      "data_sent": "model identifiers only — no user data, no prompts"
+    },
+    {
+      "service": "Privy",
+      "endpoint": "Privy auth servers (via @privy-io/expo SDK)",
+      "category": "auth",
+      "ai_inference": false,
+      "optional": true,
+      "purpose": "Email/Google sign-in and embedded Solana wallet creation; shared account with the Stellar web app. The on-device AI features work without signing in.",
+      "when": "on user sign-in",
+      "data_sent": "authentication credentials and session tokens"
+    },
+    {
+      "service": "Supabase",
+      "endpoint": "EXPO_PUBLIC_SUPABASE_URL (user-configured; unset by default)",
+      "category": "database",
+      "ai_inference": false,
+      "optional": true,
+      "purpose": "Sync logged observations (target, notes, timestamp) to the shared backend when online. The app logs observations locally and works fully offline without this.",
+      "when": "after an observation is logged, only if Supabase is configured and the device is online",
+      "data_sent": "observation text records only — no audio, no images, no prompts"
+    }
+  ]
+}

@@ -88,7 +88,7 @@ Enable USB debugging on the phone and accept the "Allow USB debugging" prompt. F
 ## Verification artifacts (for the 3-stage review)
 
 - **Audit log** — Diagnostics → *Export audit log* → `qvac-audit-<session>.json` (device specs + every inference's prompt, tokens, TTFT, tokens/sec). Shareable via the OS share sheet.
-- **Remote-API manifest** — **AI inference: none** (100% on-device via QVAC). Non-AI services, optional and disclosed: Supabase (observation sync), Privy (auth). The Field app makes no cloud AI calls.
+- **Remote-API manifest** — [`remote-apis.json`](./remote-apis.json): **AI inference: none** (100% on-device via QVAC). Non-AI services, optional and disclosed: Supabase (observation sync), Privy (auth), plus one-time QVAC model downloads. The Field app makes no cloud AI calls.
 - **Demo video** — `{{YOUTUBE_UNLISTED_URL}}` (≤5 min, recorded in airplane mode).
 
 ## QVAC packages used (judges can grep)
