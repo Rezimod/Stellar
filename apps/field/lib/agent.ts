@@ -23,14 +23,19 @@ async function ensureToolModel(): Promise<string> {
   if (toolModelId) return toolModelId;
   if (loading) return loading;
   loading = (async () => {
-    const sdk: any = await import('@qvac/sdk');
-    const id: string = await sdk.loadModel({
-      modelSrc: sdk.LLAMA_TOOL_CALLING_1B_INST_Q4_K,
-      modelType: 'llm',
-    });
-    audit.modelLoad('LLAMA_TOOL_CALLING_1B_INST_Q4_K');
-    toolModelId = id;
-    return id;
+    try {
+      const sdk: any = await import('@qvac/sdk');
+      const id: string = await sdk.loadModel({
+        modelSrc: sdk.LLAMA_TOOL_CALLING_1B_INST_Q4_K,
+        modelType: 'llm',
+      });
+      audit.modelLoad('LLAMA_TOOL_CALLING_1B_INST_Q4_K');
+      toolModelId = id;
+      return id;
+    } catch (e) {
+      loading = null; // allow retry on a transient load/download failure
+      throw e;
+    }
   })();
   return loading;
 }
@@ -67,7 +72,9 @@ export async function runSkyAgent(
   let toolContext = '';
   for (const call of calls) {
     toolsUsed.push(call.name);
-    const result = call.invoke ? await call.invoke() : null;
+    // Prefer the SDK's invoke(); fall back to an inline result if the runtime
+    // already executed the handler (exact shape verified on-device).
+    const result = call.invoke ? await call.invoke() : (call.result ?? call.output ?? null);
     audit.record({ type: 'inference', kind: 'tool-call', model: call.name, promptPreview: userMessage, meta: { result } });
     toolContext += `\n- ${call.name} → ${JSON.stringify(result)}`;
   }

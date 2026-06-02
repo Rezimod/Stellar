@@ -59,7 +59,7 @@ The judged delta over the disclosed prior work below:
 
 ## Prior work (disclosed, built before June)
 
-Baseline from the May Tether Frontier submission, **not** counted in this hackathon's judging: the Expo + QVAC + Privy wiring (`lib/qvac.ts`, `lib/privy.tsx`), the RAG chat companion (`lib/companion.ts`, `lib/rag.ts`) and its astronomy corpus (`rag/corpus/`), and the Whisper voice-log pipeline (`lib/voice-log.ts`, `lib/extract.ts`).
+Baseline from the May Tether Frontier submission, **not** counted in this hackathon's judging: the Expo + QVAC + Privy wiring (`lib/qvac.ts`, `lib/privy.tsx`), the RAG chat companion (`lib/companion.ts`, `lib/rag.ts`) and its astronomy corpus (`rag/corpus/`), and the Whisper voice-log pipeline (`components/VoiceLogScreen.tsx`, `components/MicButton.tsx`, `lib/extract.ts`, transcription in `lib/qvac.ts`).
 
 ## Hardware requirements
 
