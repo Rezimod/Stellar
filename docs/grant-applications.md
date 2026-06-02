@@ -59,7 +59,7 @@ $25K in Claude credits + $100K investment to fund the Q3 2026 mainnet launch and
 ## APPLICATION 3 — Solana Mobile Builder Grant ($10K)
 
 **What we're building**
-Stellar (stellarr.club) is a mobile-first consumer astronomy app. Its standout feature, **Field Mode**, runs a complete AI astronomer entirely on-device — Llama 3.2 1B (Q4_0) with RAG over a 72-chunk astronomy corpus and Whisper voice notes — so it works at dark-sky observing sites where there is no cell signal and cloud AI fails. Field Mode won 1st place in the Tether Frontier Hackathon QVAC track (May 2026, 57 submissions).
+Stellar (stellarr.club) is a mobile-first consumer astronomy app. Its standout feature, **Field Mode**, runs a complete AI astronomer entirely on-device — Llama 3.2 1B (Q4_0) with semantic RAG over a 77-chunk astronomy corpus and Whisper voice notes — so it works at dark-sky observing sites where there is no cell signal and cloud AI fails. Field Mode won 1st place in the Tether Frontier Hackathon QVAC track (May 2026, 57 submissions).
 
 **Why mobile / why Solana Mobile**
 Astronomy happens outdoors, at night, far from infrastructure — the exact conditions where a mobile-first, offline-capable app matters most. Stellar uses Privy embedded Solana wallets (email signup, no seed phrases) and mints compressed-NFT observation attestations via Metaplex Bubblegum, with a server fee-payer covering all gas so users never touch SOL. Consumer-grade Solana UX designed for the phone in your pocket under the stars. We're targeting the Solana dApp Store as a distribution channel post-mainnet.

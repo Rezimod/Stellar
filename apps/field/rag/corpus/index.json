@@ -8,7 +8,12 @@
     "season": "winter",
     "hemisphere": "both",
     "instrument": "6inch",
-    "keywords": ["supernova remnant", "taurus", "crab", "pulsar"]
+    "keywords": [
+      "supernova remnant",
+      "taurus",
+      "crab",
+      "pulsar"
+    ]
   },
   {
     "id": "m13",
@@ -19,7 +24,11 @@
     "season": "summer",
     "hemisphere": "north",
     "instrument": "naked",
-    "keywords": ["globular cluster", "hercules", "great cluster"]
+    "keywords": [
+      "globular cluster",
+      "hercules",
+      "great cluster"
+    ]
   },
   {
     "id": "m22",
@@ -30,7 +39,10 @@
     "season": "summer",
     "hemisphere": "both",
     "instrument": "binocular",
-    "keywords": ["globular cluster", "sagittarius"]
+    "keywords": [
+      "globular cluster",
+      "sagittarius"
+    ]
   },
   {
     "id": "m27",
@@ -41,7 +53,11 @@
     "season": "summer",
     "hemisphere": "both",
     "instrument": "binocular",
-    "keywords": ["planetary nebula", "dumbbell", "vulpecula"]
+    "keywords": [
+      "planetary nebula",
+      "dumbbell",
+      "vulpecula"
+    ]
   },
   {
     "id": "m31",
@@ -52,18 +68,28 @@
     "season": "autumn",
     "hemisphere": "north",
     "instrument": "naked",
-    "keywords": ["galaxy", "spiral", "andromeda", "local group"]
+    "keywords": [
+      "galaxy",
+      "spiral",
+      "andromeda",
+      "local group"
+    ]
   },
   {
     "id": "m42",
     "source": "messier",
     "title": "M42 — Orion Nebula",
     "text": "M42, the Orion Nebula, is the closest large star-forming region at 1,344 light-years. Magnitude 4.0, visible naked-eye as the middle 'star' of Orion's sword. Best viewed November–March. At 100x in a 6-inch scope you will see the trapezium (four central young stars) and wispy nebulosity. A UHC or O-III filter dramatically increases contrast on the nebulosity. The whole complex extends across 24 light-years.",
-    "magnitude": 4.0,
+    "magnitude": 4,
     "season": "winter",
     "hemisphere": "both",
     "instrument": "naked",
-    "keywords": ["nebula", "orion", "star formation", "trapezium"]
+    "keywords": [
+      "nebula",
+      "orion",
+      "star formation",
+      "trapezium"
+    ]
   },
   {
     "id": "m44",
@@ -74,7 +100,12 @@
     "season": "spring",
     "hemisphere": "both",
     "instrument": "naked",
-    "keywords": ["open cluster", "beehive", "cancer", "praesepe"]
+    "keywords": [
+      "open cluster",
+      "beehive",
+      "cancer",
+      "praesepe"
+    ]
   },
   {
     "id": "m45",
@@ -85,7 +116,12 @@
     "season": "winter",
     "hemisphere": "both",
     "instrument": "naked",
-    "keywords": ["open cluster", "pleiades", "seven sisters", "taurus"]
+    "keywords": [
+      "open cluster",
+      "pleiades",
+      "seven sisters",
+      "taurus"
+    ]
   },
   {
     "id": "m51",
@@ -96,7 +132,12 @@
     "season": "spring",
     "hemisphere": "north",
     "instrument": "8inch",
-    "keywords": ["galaxy", "whirlpool", "spiral", "interacting"]
+    "keywords": [
+      "galaxy",
+      "whirlpool",
+      "spiral",
+      "interacting"
+    ]
   },
   {
     "id": "m57",
@@ -107,7 +148,11 @@
     "season": "summer",
     "hemisphere": "north",
     "instrument": "4inch",
-    "keywords": ["planetary nebula", "ring", "lyra"]
+    "keywords": [
+      "planetary nebula",
+      "ring",
+      "lyra"
+    ]
   },
   {
     "id": "m81-m82",
@@ -118,7 +163,13 @@
     "season": "spring",
     "hemisphere": "north",
     "instrument": "binocular",
-    "keywords": ["galaxy", "bode", "cigar", "ursa major", "pair"]
+    "keywords": [
+      "galaxy",
+      "bode",
+      "cigar",
+      "ursa major",
+      "pair"
+    ]
   },
   {
     "id": "m101",
@@ -129,40 +180,62 @@
     "season": "spring",
     "hemisphere": "north",
     "instrument": "8inch",
-    "keywords": ["galaxy", "pinwheel", "ursa major", "face-on"]
+    "keywords": [
+      "galaxy",
+      "pinwheel",
+      "ursa major",
+      "face-on"
+    ]
   },
   {
     "id": "m104",
     "source": "messier",
     "title": "M104 — Sombrero Galaxy",
     "text": "M104, the Sombrero Galaxy in Virgo, is a near-edge-on spiral with a striking dark dust lane. Magnitude 8.0, distance 30 million light-years. Best viewed March–June. In a 6-inch you'll see the bright bulge; the dust lane crossing it becomes obvious in 10-inch+ scopes from dark sites.",
-    "magnitude": 8.0,
+    "magnitude": 8,
     "season": "spring",
     "hemisphere": "both",
     "instrument": "6inch",
-    "keywords": ["galaxy", "sombrero", "virgo", "edge-on", "dust lane"]
+    "keywords": [
+      "galaxy",
+      "sombrero",
+      "virgo",
+      "edge-on",
+      "dust lane"
+    ]
   },
   {
     "id": "m8",
     "source": "messier",
     "title": "M8 — Lagoon Nebula",
     "text": "M8, the Lagoon Nebula in Sagittarius, is one of the brightest emission nebulae. Magnitude 6.0, naked-eye visible from dark sites. Best viewed June–September. Combine the embedded open cluster NGC 6530 with the surrounding pink hydrogen-alpha glow. UHC filter makes it dramatic in any scope.",
-    "magnitude": 6.0,
+    "magnitude": 6,
     "season": "summer",
     "hemisphere": "both",
     "instrument": "naked",
-    "keywords": ["nebula", "emission", "lagoon", "sagittarius"]
+    "keywords": [
+      "nebula",
+      "emission",
+      "lagoon",
+      "sagittarius"
+    ]
   },
   {
     "id": "m16-m17",
     "source": "messier",
     "title": "M16 Eagle + M17 Omega — Sagittarius Nebulae",
     "text": "M16, the Eagle Nebula (magnitude 6.0), contains the famous 'Pillars of Creation' photographed by Hubble. M17, the Omega/Swan Nebula (magnitude 6.0), sits 2.5° south. Both in Sagittarius/Serpens, best June–September. Use a UHC filter — M17 in particular shows a striking swan shape in a 6-inch.",
-    "magnitude": 6.0,
+    "magnitude": 6,
     "season": "summer",
     "hemisphere": "both",
     "instrument": "6inch",
-    "keywords": ["nebula", "eagle", "omega", "swan", "pillars of creation"]
+    "keywords": [
+      "nebula",
+      "eagle",
+      "omega",
+      "swan",
+      "pillars of creation"
+    ]
   },
   {
     "id": "m11",
@@ -173,7 +246,11 @@
     "season": "summer",
     "hemisphere": "both",
     "instrument": "binocular",
-    "keywords": ["open cluster", "wild duck", "scutum"]
+    "keywords": [
+      "open cluster",
+      "wild duck",
+      "scutum"
+    ]
   },
   {
     "id": "m3",
@@ -184,7 +261,10 @@
     "season": "spring",
     "hemisphere": "both",
     "instrument": "6inch",
-    "keywords": ["globular cluster", "canes venatici"]
+    "keywords": [
+      "globular cluster",
+      "canes venatici"
+    ]
   },
   {
     "id": "m5",
@@ -195,7 +275,10 @@
     "season": "summer",
     "hemisphere": "both",
     "instrument": "binocular",
-    "keywords": ["globular cluster", "serpens"]
+    "keywords": [
+      "globular cluster",
+      "serpens"
+    ]
   },
   {
     "id": "m35-m37",
@@ -206,7 +289,11 @@
     "season": "winter",
     "hemisphere": "both",
     "instrument": "binocular",
-    "keywords": ["open cluster", "auriga", "gemini"]
+    "keywords": [
+      "open cluster",
+      "auriga",
+      "gemini"
+    ]
   },
   {
     "id": "m20",
@@ -217,7 +304,13 @@
     "season": "summer",
     "hemisphere": "both",
     "instrument": "6inch",
-    "keywords": ["nebula", "trifid", "sagittarius", "emission", "reflection"]
+    "keywords": [
+      "nebula",
+      "trifid",
+      "sagittarius",
+      "emission",
+      "reflection"
+    ]
   },
   {
     "id": "m67",
@@ -228,115 +321,198 @@
     "season": "spring",
     "hemisphere": "both",
     "instrument": "binocular",
-    "keywords": ["open cluster", "cancer", "old"]
+    "keywords": [
+      "open cluster",
+      "cancer",
+      "old"
+    ]
   },
-
   {
     "id": "moon-tips",
     "source": "observation-tips",
     "title": "Observing the Moon",
     "text": "The terminator (shadow line between lit and dark sides) is where detail is sharpest. Don't observe the full moon at high magnification — surface detail vanishes in the flat lighting. Best craters and mountains visible 3 days after new moon and a few days after full moon. A neutral density or polarizing filter cuts the glare on a near-full moon. Tycho, Copernicus, and the Apennine Mountains are the classic landmarks.",
-    "keywords": ["moon", "lunar", "terminator", "filter"]
+    "keywords": [
+      "moon",
+      "lunar",
+      "terminator",
+      "filter"
+    ]
   },
   {
     "id": "saturn-tips",
     "source": "observation-tips",
     "title": "Observing Saturn",
     "text": "Saturn is the showpiece planet. At 100x you see the rings clearly. The Cassini Division (gap in the rings) becomes visible at 150x in steady seeing. Look for the shadow of the planet on the rings, and the shadow of the rings on the planet. Titan, the largest moon, is visible in any small telescope as a magnitude-8 point. Best viewed when at least 30 degrees above the horizon to escape atmospheric distortion.",
-    "keywords": ["saturn", "rings", "cassini division", "titan", "planet"]
+    "keywords": [
+      "saturn",
+      "rings",
+      "cassini division",
+      "titan",
+      "planet"
+    ]
   },
   {
     "id": "jupiter-tips",
     "source": "observation-tips",
     "title": "Observing Jupiter",
     "text": "Jupiter shows surface detail at any aperture. At 80x you will see the two main equatorial belts and the four Galilean moons (Io, Europa, Ganymede, Callisto). At 150x in steady seeing the Great Red Spot is visible if it's facing Earth — check a transit prediction app first. Moons cast shadows on the planet during transits, visible at 150x+ as black dots. The belts shift over months and years.",
-    "keywords": ["jupiter", "great red spot", "galilean moons", "belts", "planet"]
+    "keywords": [
+      "jupiter",
+      "great red spot",
+      "galilean moons",
+      "belts",
+      "planet"
+    ]
   },
   {
     "id": "mars-tips",
     "source": "observation-tips",
     "title": "Observing Mars",
     "text": "Mars rewards only around opposition (every ~26 months) when it appears 15–25 arcseconds wide. At 200x in steady seeing during opposition, you can see the polar ice caps, dark albedo features (Syrtis Major is the easiest), and dust storm activity. Outside of opposition, Mars looks like a tiny orange dot with no detail. Use a yellow or red filter to enhance contrast on surface features.",
-    "keywords": ["mars", "opposition", "polar caps", "syrtis major", "planet"]
+    "keywords": [
+      "mars",
+      "opposition",
+      "polar caps",
+      "syrtis major",
+      "planet"
+    ]
   },
   {
     "id": "venus-tips",
     "source": "observation-tips",
     "title": "Observing Venus",
     "text": "Venus is the brightest planet, often visible in daylight if you know where to look. Shows phases like the Moon — crescent when close to Earth, full on the far side of the Sun. No surface detail visible (cloud-shrouded). Best observed in twilight to reduce glare. A violet filter sometimes shows faint cloud structure.",
-    "keywords": ["venus", "phases", "evening star", "morning star", "planet"]
+    "keywords": [
+      "venus",
+      "phases",
+      "evening star",
+      "morning star",
+      "planet"
+    ]
   },
   {
     "id": "mercury-tips",
     "source": "observation-tips",
     "title": "Observing Mercury",
     "text": "Mercury is the hardest naked-eye planet because it never strays more than 28° from the Sun. Visible only in deep twilight, low on the horizon at greatest elongation (check an astronomy almanac). Shows phases in a telescope but no surface detail — atmospheric turbulence at low altitude smears everything.",
-    "keywords": ["mercury", "elongation", "twilight", "planet"]
+    "keywords": [
+      "mercury",
+      "elongation",
+      "twilight",
+      "planet"
+    ]
   },
   {
     "id": "uranus-neptune",
     "source": "observation-tips",
     "title": "Observing Uranus and Neptune",
     "text": "Uranus is naked-eye visible from dark sites at magnitude 5.7 but you need a finder chart — it looks like a star. In a telescope at 200x it's a tiny pale-cyan disk, ~3.5 arcseconds wide. Neptune is magnitude 7.8 and shows as a slightly larger blue dot at 250x. Neither shows surface detail in amateur scopes; finding them is the achievement.",
-    "keywords": ["uranus", "neptune", "ice giant", "planet"]
+    "keywords": [
+      "uranus",
+      "neptune",
+      "ice giant",
+      "planet"
+    ]
   },
   {
     "id": "iss-tips",
     "source": "observation-tips",
     "title": "Spotting the ISS and Bright Satellites",
     "text": "The International Space Station is brighter than any star (magnitude -3 at peaks) and crosses the sky in 5–7 minutes when it passes overhead. Use https://spotthestation.nasa.gov for predictions. In a tracking telescope at 200x you can see the solar panels and module structure. Iridium flares are gone (old sats deorbited), but Starlink trains are now common after launches.",
-    "keywords": ["ISS", "satellite", "starlink", "space station"]
+    "keywords": [
+      "ISS",
+      "satellite",
+      "starlink",
+      "space station"
+    ]
   },
   {
     "id": "averted-vision",
     "source": "observation-tips",
     "title": "Averted Vision",
     "text": "The center of your retina (fovea) has fewer rod cells, so faint deep-sky objects vanish when you stare directly at them. Look slightly to the side — about 10–15° — and the object becomes brighter. Practice on a faint galaxy: stare directly, then look beside it. The difference is dramatic. This is the single most important visual technique in deep-sky observing.",
-    "keywords": ["averted vision", "technique", "rods", "deep sky"]
+    "keywords": [
+      "averted vision",
+      "technique",
+      "rods",
+      "deep sky"
+    ]
   },
   {
     "id": "dark-adaptation",
     "source": "observation-tips",
     "title": "Dark Adaptation",
     "text": "Your eyes need 20–30 minutes in full darkness to reach maximum sensitivity to faint light. White light (phone screen, flashlight) destroys dark adaptation in seconds. Use a red flashlight or a phone screen with a deep red filter. Faint deep-sky objects (galaxies, nebulae) are dramatically more visible after full dark adaptation. Avoid looking at car headlights or your house porch light.",
-    "keywords": ["dark adaptation", "rhodopsin", "red light", "preparation"]
+    "keywords": [
+      "dark adaptation",
+      "rhodopsin",
+      "red light",
+      "preparation"
+    ]
   },
   {
     "id": "seeing-transparency",
     "source": "observation-tips",
     "title": "Seeing vs Transparency",
     "text": "Seeing is the steadiness of the air — affects how much detail you see on planets and the Moon. Good seeing means crisp views at 200x+. Transparency is how clear the sky is — affects how faint a deep-sky object you can see. A hazy night with steady air is good for planets but bad for galaxies. A crystal-clear windy night is the opposite. Both are rated 1–10 on most forecast sites.",
-    "keywords": ["seeing", "transparency", "atmosphere", "planning"]
+    "keywords": [
+      "seeing",
+      "transparency",
+      "atmosphere",
+      "planning"
+    ]
   },
   {
     "id": "bortle-scale",
     "source": "observation-tips",
     "title": "Bortle Scale and Light Pollution",
     "text": "The Bortle scale ranks night-sky darkness from 1 (pristine, Milky Way casts shadows) to 9 (inner-city, only Moon and bright planets). Class 4 is 'rural/suburban transition' — Milky Way visible but washed out near horizon. Class 6 suburban — galaxies become hard. Class 8+ inner city — most deep-sky impossible. Tools like lightpollutionmap.info show your zone. Drive 1–2 hours from city to drop 2–3 Bortle classes.",
-    "keywords": ["bortle scale", "light pollution", "dark sky", "site quality"]
+    "keywords": [
+      "bortle scale",
+      "light pollution",
+      "dark sky",
+      "site quality"
+    ]
   },
   {
     "id": "filters-uhc-oiii",
     "source": "observation-tips",
     "title": "UHC and O-III Filters for Nebulae",
     "text": "UHC (Ultra High Contrast) filters block most light pollution while passing the wavelengths emitted by hydrogen and oxygen in nebulae. They make a huge difference on emission nebulae like M42, M8, M16, M17. O-III filters are narrower — best on planetary nebulae and supernova remnants like M27, M57, M1. Filters do nothing for galaxies or star clusters. Don't waste money on cheap filters — Lumicon, Astronomik, or Optolong are the trusted brands.",
-    "keywords": ["filter", "UHC", "OIII", "nebula", "light pollution"]
+    "keywords": [
+      "filter",
+      "UHC",
+      "OIII",
+      "nebula",
+      "light pollution"
+    ]
   },
   {
     "id": "lunar-filter",
     "source": "observation-tips",
     "title": "Lunar and Polarizing Filters",
     "text": "A near-full Moon at high power is dazzling and reveals less detail than a half-Moon. A neutral-density (ND) lunar filter cuts brightness by 50–95%. A variable polarizing filter (two stacked polarizers) lets you dial brightness up and down. Both also cut glare on Venus and Jupiter when atmospheric seeing is poor.",
-    "keywords": ["filter", "moon", "lunar", "polarizing", "neutral density"]
+    "keywords": [
+      "filter",
+      "moon",
+      "lunar",
+      "polarizing",
+      "neutral density"
+    ]
   },
   {
     "id": "star-hopping",
     "source": "observation-tips",
     "title": "Star Hopping",
     "text": "Star hopping is finding faint objects by chaining short jumps from bright stars you know to fainter ones, using a finder chart. Example: to find M51, start at Alkaid (the end of the Big Dipper handle), drop ~3.5° southwest to a magnitude-5 star, then ~1° west to the galaxy. Faster than GoTo for nearby objects, and builds real sky knowledge. Use a Telrad or red-dot finder for the bright stars, then a low-power eyepiece for the fine hop.",
-    "keywords": ["star hopping", "finding objects", "technique", "finder"]
+    "keywords": [
+      "star hopping",
+      "finding objects",
+      "technique",
+      "finder"
+    ]
   },
-
   {
     "id": "ursa-major",
     "source": "constellation",
@@ -344,7 +520,12 @@
     "text": "Ursa Major contains the Big Dipper asterism. The Pointer Stars (Dubhe, Merak) point to Polaris. Mizar in the handle is a famous double star — its companion Alcor is naked-eye visible. Hosts M81/M82 galaxy pair, M101 Pinwheel Galaxy, and M97 Owl Nebula. Circumpolar from northern temperate latitudes — visible every clear night.",
     "season": "all",
     "hemisphere": "north",
-    "keywords": ["ursa major", "big dipper", "circumpolar", "polaris"]
+    "keywords": [
+      "ursa major",
+      "big dipper",
+      "circumpolar",
+      "polaris"
+    ]
   },
   {
     "id": "orion",
@@ -353,7 +534,13 @@
     "text": "Orion is the most recognizable winter constellation. Three belt stars (Alnitak, Alnilam, Mintaka) point south to Sirius. The sword below the belt contains M42, the Orion Nebula. Betelgeuse (red supergiant, top-left) and Rigel (blue supergiant, bottom-right) are the two brightest stars. Best viewed November–March. Contains M78, the Horsehead Nebula (very faint), and the Flame Nebula.",
     "season": "winter",
     "hemisphere": "both",
-    "keywords": ["orion", "betelgeuse", "rigel", "winter", "belt"]
+    "keywords": [
+      "orion",
+      "betelgeuse",
+      "rigel",
+      "winter",
+      "belt"
+    ]
   },
   {
     "id": "cassiopeia",
@@ -362,7 +549,11 @@
     "text": "Cassiopeia is the W-shaped circumpolar constellation opposite the Big Dipper across Polaris. Always visible from northern latitudes. Hosts open clusters M52, M103, NGC 457 (the Owl Cluster), and the Heart and Soul Nebulae. When the Big Dipper is low, Cassiopeia is high, and vice versa.",
     "season": "all",
     "hemisphere": "north",
-    "keywords": ["cassiopeia", "circumpolar", "W shape"]
+    "keywords": [
+      "cassiopeia",
+      "circumpolar",
+      "W shape"
+    ]
   },
   {
     "id": "lyra",
@@ -371,7 +562,13 @@
     "text": "Lyra is dominated by Vega, the 5th-brightest star, and forms part of the Summer Triangle (with Deneb in Cygnus and Altair in Aquila). Hosts M57 Ring Nebula, the famous Double Double (Epsilon Lyrae) — a quadruple star system that splits into two pairs at 200x — and M56 globular cluster. Best viewed June–October.",
     "season": "summer",
     "hemisphere": "north",
-    "keywords": ["lyra", "vega", "ring nebula", "summer triangle", "double double"]
+    "keywords": [
+      "lyra",
+      "vega",
+      "ring nebula",
+      "summer triangle",
+      "double double"
+    ]
   },
   {
     "id": "cygnus",
@@ -380,7 +577,13 @@
     "text": "Cygnus straddles the Milky Way and is rich in clusters and nebulae. Albireo at the swan's beak is the showcase double star — a stunning blue-and-gold contrast pair, visible at 50x in any scope. Contains the North America Nebula (NGC 7000), Veil Nebula supernova remnant, and many open clusters. Best viewed June–November.",
     "season": "summer",
     "hemisphere": "north",
-    "keywords": ["cygnus", "swan", "albireo", "milky way", "veil nebula"]
+    "keywords": [
+      "cygnus",
+      "swan",
+      "albireo",
+      "milky way",
+      "veil nebula"
+    ]
   },
   {
     "id": "sagittarius",
@@ -389,7 +592,12 @@
     "text": "Sagittarius points toward the center of the Milky Way and is the densest deep-sky region of the sky. Contains M8 Lagoon, M17 Omega, M20 Trifid, M22 globular, M55 globular, M28 globular, plus the Galactic Center itself. The 'teapot' asterism is the easiest pattern to find. Best viewed June–September from temperate northern latitudes (low on the southern horizon).",
     "season": "summer",
     "hemisphere": "both",
-    "keywords": ["sagittarius", "milky way center", "teapot", "summer"]
+    "keywords": [
+      "sagittarius",
+      "milky way center",
+      "teapot",
+      "summer"
+    ]
   },
   {
     "id": "scorpius",
@@ -398,7 +606,12 @@
     "text": "Scorpius is one of the few constellations that actually looks like its name — a clear scorpion shape with curved tail and Antares (red supergiant) as the heart. Contains M4 globular cluster (one of the closest, 7,200 light-years), M6 Butterfly Cluster, M7 Ptolemy Cluster. Sits very low for northern observers — best from latitudes south of 35°N.",
     "season": "summer",
     "hemisphere": "south",
-    "keywords": ["scorpius", "antares", "scorpion", "summer"]
+    "keywords": [
+      "scorpius",
+      "antares",
+      "scorpion",
+      "summer"
+    ]
   },
   {
     "id": "leo",
@@ -407,7 +620,12 @@
     "text": "Leo's backwards-question-mark asterism (the Sickle, with Regulus as the dot) is one of the easiest spring patterns. Hosts the Leo Triplet — M65, M66, NGC 3628 — three galaxies in the same low-power eyepiece field, plus M95, M96, M105. Best viewed February–June.",
     "season": "spring",
     "hemisphere": "both",
-    "keywords": ["leo", "regulus", "sickle", "leo triplet"]
+    "keywords": [
+      "leo",
+      "regulus",
+      "sickle",
+      "leo triplet"
+    ]
   },
   {
     "id": "andromeda-constellation",
@@ -416,7 +634,11 @@
     "text": "Andromeda is the constellation hosting M31, the Andromeda Galaxy, plus its companions M32 and M110. The Great Square of Pegasus borders it — start at Alpheratz (the corner shared with Pegasus) and hop two stars north, then two stars west to find M31. Best viewed September–January.",
     "season": "autumn",
     "hemisphere": "north",
-    "keywords": ["andromeda", "M31", "great square"]
+    "keywords": [
+      "andromeda",
+      "M31",
+      "great square"
+    ]
   },
   {
     "id": "pegasus",
@@ -425,7 +647,12 @@
     "text": "Pegasus's defining feature is the Great Square — four stars forming a near-perfect square, visible from suburban skies. Borders Andromeda. Contains M15, one of the densest globular clusters. The constellation is autumn's anchor for star-hopping. Best viewed September–December.",
     "season": "autumn",
     "hemisphere": "both",
-    "keywords": ["pegasus", "great square", "M15", "autumn"]
+    "keywords": [
+      "pegasus",
+      "great square",
+      "M15",
+      "autumn"
+    ]
   },
   {
     "id": "hercules",
@@ -434,7 +661,12 @@
     "text": "Hercules is a large but faint constellation between Lyra and Boötes. The Keystone asterism (four stars in a trapezoid) marks the body. M13, the brightest globular cluster in the northern hemisphere, sits on the western edge of the Keystone. M92, another fine globular, is in the head. Best viewed May–September.",
     "season": "summer",
     "hemisphere": "north",
-    "keywords": ["hercules", "keystone", "M13", "M92"]
+    "keywords": [
+      "hercules",
+      "keystone",
+      "M13",
+      "M92"
+    ]
   },
   {
     "id": "auriga",
@@ -443,178 +675,379 @@
     "text": "Auriga is the bright pentagon of stars high in winter skies, anchored by Capella (6th-brightest star). Hosts three Messier open clusters — M36, M37, M38 — all easy in binoculars. Best viewed November–March.",
     "season": "winter",
     "hemisphere": "north",
-    "keywords": ["auriga", "capella", "winter", "open clusters"]
+    "keywords": [
+      "auriga",
+      "capella",
+      "winter",
+      "open clusters"
+    ]
   },
-
   {
     "id": "telescope-collimation",
     "source": "telescope-faq",
     "title": "Collimating a Reflector",
     "text": "A Newtonian reflector needs collimation (mirror alignment) every few sessions, or after transport. Use a laser collimator or Cheshire eyepiece. Adjust the secondary mirror first to center the primary, then adjust the primary to center the secondary's reflection. A poorly collimated scope shows soft, comet-shaped stars at high power. Star test by defocusing slightly on a bright star — concentric rings indicate good collimation, distorted rings mean misalignment.",
-    "keywords": ["collimation", "newtonian", "reflector", "laser collimator", "alignment"]
+    "keywords": [
+      "collimation",
+      "newtonian",
+      "reflector",
+      "laser collimator",
+      "alignment"
+    ]
   },
   {
     "id": "telescope-eyepieces",
     "source": "telescope-faq",
     "title": "Choosing Eyepieces",
     "text": "Magnification = telescope focal length / eyepiece focal length. A 1200mm scope with a 25mm eyepiece gives 48x. Useful magnification range is roughly 30x to 50x per inch of aperture — beyond that, the image gets dim and atmospheric seeing limits detail. A good starting set: 25mm or 32mm wide-field for finding objects, 10mm for medium power, 6mm for planetary detail, plus a 2x Barlow. Wider apparent field (68°+) gives more immersive views than narrow Plossls (50°).",
-    "keywords": ["eyepiece", "magnification", "focal length", "barlow", "plossl"]
+    "keywords": [
+      "eyepiece",
+      "magnification",
+      "focal length",
+      "barlow",
+      "plossl"
+    ]
   },
   {
     "id": "telescope-cooldown",
     "source": "telescope-faq",
     "title": "Letting a Telescope Cool Down",
     "text": "A warm telescope brought outside into cold air shows poor image quality until the optics reach ambient temperature. Allow 30–60 minutes for a 6-inch scope, longer for larger apertures. Heat currents inside the tube cause shimmering even in steady seeing. Some Dobsonians have fans on the back of the primary mirror that speed cool-down to ~15 minutes.",
-    "keywords": ["cooldown", "thermal", "telescope", "primary mirror"]
+    "keywords": [
+      "cooldown",
+      "thermal",
+      "telescope",
+      "primary mirror"
+    ]
   },
   {
     "id": "telescope-types",
     "source": "telescope-faq",
     "title": "Refractor vs Reflector vs Cassegrain",
     "text": "Refractors use lenses — sharp, low-maintenance, no collimation, but expensive per inch of aperture. Reflectors (Newtonians, Dobsonians) use mirrors — most aperture per dollar, but need collimation and eyepiece sits at the top. Schmidt-Cassegrains and Maksutovs use both — compact tube, GoTo-ready, but more expensive than Newtonians and slower to cool down. For visual deep-sky on a budget: 8\" or 10\" Dobsonian. For planetary at any budget: a quality apochromatic refractor.",
-    "keywords": ["refractor", "reflector", "newtonian", "dobsonian", "schmidt cassegrain", "maksutov"]
+    "keywords": [
+      "refractor",
+      "reflector",
+      "newtonian",
+      "dobsonian",
+      "schmidt cassegrain",
+      "maksutov"
+    ]
   },
   {
     "id": "telescope-focal-ratio",
     "source": "telescope-faq",
     "title": "Focal Ratio (f/Number)",
     "text": "Focal ratio = focal length / aperture. f/4 to f/6 is 'fast' — wide field, good for deep-sky and astrophotography, but more sensitive to eyepiece quality. f/8 to f/15 is 'slow' — narrower field, more forgiving on eyepieces, traditionally better for planets. A fast scope demands well-corrected eyepieces (Naglers, Ethos, Morpheus). A slow scope works fine with cheap Plossls.",
-    "keywords": ["focal ratio", "f number", "fast scope", "slow scope"]
+    "keywords": [
+      "focal ratio",
+      "f number",
+      "fast scope",
+      "slow scope"
+    ]
   },
   {
     "id": "goto-vs-manual",
     "source": "telescope-faq",
     "title": "GoTo vs Manual Mounts",
     "text": "GoTo mounts find objects by typing or selecting from a database — great for short observing sessions, light-polluted skies, or for beginners. Downsides: power needed, alignment routine, and you don't learn the sky. Manual Dobsonians are 'point and look' — fastest to set up, no batteries, you build real sky knowledge. For tracking planets at high power, GoTo or equatorial drives become essential.",
-    "keywords": ["goto", "manual", "mount", "dobsonian", "equatorial"]
+    "keywords": [
+      "goto",
+      "manual",
+      "mount",
+      "dobsonian",
+      "equatorial"
+    ]
   },
   {
     "id": "polar-alignment",
     "source": "telescope-faq",
     "title": "Polar Alignment",
     "text": "An equatorial mount must be aligned to the celestial pole (Polaris in the north) so that one motor axis tracks the sky's east-west motion. Rough alignment: aim the mount's polar axis at Polaris using the latitude scale set to your latitude. Precise alignment (needed for astrophotography): use the polar scope reticle, or drift-alignment over 15–30 minutes. Visual observers can usually skip precise alignment.",
-    "keywords": ["polar alignment", "equatorial", "polaris", "tracking"]
+    "keywords": [
+      "polar alignment",
+      "equatorial",
+      "polaris",
+      "tracking"
+    ]
   },
   {
     "id": "dew-prevention",
     "source": "telescope-faq",
     "title": "Preventing Dew on Optics",
     "text": "Dew condenses on telescope optics on humid nights, especially refractors and SCTs (Newtonians are less affected because the primary is recessed). Fixes, in order: a dew shield (long lens hood) buys 1–2 hours; a dew heater strap (12V, low wattage) keeps optics 1–2°C above ambient indefinitely. Check the corrector plate regularly. A handheld 12V hairdryer on low can clear dew quickly without harming coatings.",
-    "keywords": ["dew", "humidity", "dew shield", "dew heater", "corrector plate"]
+    "keywords": [
+      "dew",
+      "humidity",
+      "dew shield",
+      "dew heater",
+      "corrector plate"
+    ]
   },
   {
     "id": "magnification-limits",
     "source": "telescope-faq",
     "title": "Maximum Useful Magnification",
     "text": "Maximum useful magnification is roughly 50x per inch of aperture in steady seeing — so a 6-inch scope tops out around 300x, an 8-inch around 400x. Beyond that, the image is just dimmer and softer with no new detail. On most nights, atmospheric seeing limits useful magnification to ~150–200x regardless of aperture. The sweet spot for most deep-sky is 50x–100x.",
-    "keywords": ["magnification", "maximum", "aperture", "seeing"]
+    "keywords": [
+      "magnification",
+      "maximum",
+      "aperture",
+      "seeing"
+    ]
   },
   {
     "id": "telescope-cleaning",
     "source": "telescope-faq",
     "title": "Cleaning Telescope Optics",
     "text": "Don't. Optical coatings tolerate a surprising amount of dust before image quality suffers — typically years of normal use. Cleaning risks scratches and coating damage. When you must: blow dust with a rocket blower first, never wipe dry. For oily fingerprints, use Baader Wonder Fluid or a 50/50 distilled water + isopropyl alcohol mix on a clean lens tissue, one wipe per tissue, no pressure. Mirrors only every 2–3 years. Eyepieces more often (lash and breath condensation accumulate).",
-    "keywords": ["cleaning", "optics", "mirror", "lens", "maintenance"]
+    "keywords": [
+      "cleaning",
+      "optics",
+      "mirror",
+      "lens",
+      "maintenance"
+    ]
   },
   {
     "id": "first-telescope",
     "source": "telescope-faq",
     "title": "Best First Telescope",
     "text": "For a complete beginner, an 8-inch Dobsonian (e.g. Sky-Watcher Classic 200P, Orion XT8, Astroman Astrolab 200) is the standard recommendation: most aperture per dollar, fast setup (~2 minutes), no batteries, no alignment routine. For grab-and-go and travel: a 70–80mm refractor on an alt-az mount. Avoid: small department-store reflectors with shaky tripods (everything wobbles, magnification claims are nonsense), cheap GoTo scopes under $400 (mounts can't track reliably).",
-    "keywords": ["beginner", "first telescope", "dobsonian", "recommendation"]
+    "keywords": [
+      "beginner",
+      "first telescope",
+      "dobsonian",
+      "recommendation"
+    ]
   },
-
   {
     "id": "astroman-shop",
     "source": "astroman",
     "title": "Astroman — Georgia's Astronomy Store",
     "text": "Astroman (astroman.ge) is Georgia's first dedicated astronomy retailer, based in Tbilisi. Stocks telescopes, mounts, eyepieces, filters, binoculars, and astrophotography gear from Sky-Watcher, Celestron, Bresser, Lacerta, ZWO, and others. Run by Revaz Modebadze. Physical showroom in Tbilisi for hands-on browsing and beginner consultation. Ships across Georgia and to neighboring countries.",
-    "keywords": ["astroman", "georgia", "tbilisi", "telescope shop", "retailer"]
+    "keywords": [
+      "astroman",
+      "georgia",
+      "tbilisi",
+      "telescope shop",
+      "retailer"
+    ]
   },
   {
     "id": "georgia-skies",
     "source": "astroman",
     "title": "Best Observing Sites in Georgia",
     "text": "Tbilisi is Bortle 7 (heavy light pollution). The Caucasus mountains 1.5–3 hours from Tbilisi reach Bortle 2–3 — among the darkest skies in Eastern Europe. Stepantsminda (Kazbegi region) and the Bakuriani / Borjomi area are popular astro-camping destinations. The high plateau around Abastumani Observatory is historically used by the Georgian National Astrophysical Observatory. Best months: October–April for clear, stable skies; July–September for warm summer Milky Way views.",
-    "keywords": ["georgia", "caucasus", "kazbegi", "abastumani", "dark skies"]
+    "keywords": [
+      "georgia",
+      "caucasus",
+      "kazbegi",
+      "abastumani",
+      "dark skies"
+    ]
   },
   {
     "id": "georgia-weather",
     "source": "astroman",
     "title": "When to Observe in Georgia",
     "text": "Georgia's summer (June–August) brings warm but humid nights and short darkness — sunset around 21:00, dawn around 04:00 means barely 4 hours of true dark. Autumn (September–October) is the sweet spot: long nights, moderate temperatures, generally clear. Winter (December–February) has the longest nights but cold and frequent cloud cover; the Caucasus mountains can be exceptional on clear nights. Spring is unpredictable.",
-    "keywords": ["georgia", "weather", "season", "observing time"]
+    "keywords": [
+      "georgia",
+      "weather",
+      "season",
+      "observing time"
+    ]
   },
   {
     "id": "beginner-budget",
     "source": "astroman",
     "title": "Beginner Telescope Budgets",
     "text": "Under $200: skip telescopes; buy 10x50 binoculars and a planisphere. You'll see craters, the Pleiades, M31, and large open clusters. Best learning investment. $300–$500: 6\" or 8\" Dobsonian (Sky-Watcher Classic 150P or 200P). $500–$1000: 10\" Dobsonian, or a quality 80mm apochromatic refractor on a tracking mount. $1500+: 12\" Dobsonian with goto, or a serious astrophotography setup (mount + scope + camera). Astroman can advise based on observing goals and Georgian sky conditions.",
-    "keywords": ["budget", "beginner", "dobsonian", "binoculars", "recommendation"]
+    "keywords": [
+      "budget",
+      "beginner",
+      "dobsonian",
+      "binoculars",
+      "recommendation"
+    ]
   },
   {
     "id": "binoculars-first",
     "source": "astroman",
     "title": "Why Binoculars Before a Telescope",
     "text": "10x50 or 7x50 binoculars are the most underrated astronomy tool. They show: craters on the Moon, the four Galilean moons of Jupiter, the Pleiades and Hyades clusters, M31 Andromeda Galaxy as a clear smudge, M13 Hercules cluster, the Milky Way as a river of stars from dark sites, comets when bright. Cheap (~$50–150 for decent quality), portable, no setup, no maintenance. Most beginners who buy a telescope first regret skipping binoculars.",
-    "keywords": ["binoculars", "beginner", "10x50", "starter"]
+    "keywords": [
+      "binoculars",
+      "beginner",
+      "10x50",
+      "starter"
+    ]
   },
   {
     "id": "kids-astronomy",
     "source": "astroman",
     "title": "Astronomy with Kids",
     "text": "For ages 5–10: start with the Moon (any binoculars), then Jupiter and Saturn through a borrowed telescope, then learning constellations from a planisphere. Avoid faint deep-sky targets — kids lose interest waiting in cold for a dim smudge. Best targets in order of impact: Moon at first quarter, Saturn's rings, Jupiter and moons, Pleiades, M42 Orion Nebula. For ages 10+: a tabletop Dobsonian (Heritage 130P, Astroman starter scopes) is the right starting telescope.",
-    "keywords": ["kids", "children", "beginner", "family", "tabletop"]
+    "keywords": [
+      "kids",
+      "children",
+      "beginner",
+      "family",
+      "tabletop"
+    ]
   },
-
   {
     "id": "astrophotography-intro",
     "source": "observation-tips",
     "title": "Astrophotography — Where to Start",
     "text": "Three paths: (1) Smartphone afocal — hold a phone over the eyepiece, capture the Moon and bright planets. Fastest entry. (2) DSLR + tripod — wide-field nightscapes (Milky Way arcs, star trails, meteor showers). 14–24mm lens, ISO 1600–3200, 15–25 second exposures. (3) Tracked deep-sky — equatorial mount + camera + telescope or telephoto lens. Steeper learning curve but the only way to capture galaxies and faint nebulae. Don't try (3) before mastering (2).",
-    "keywords": ["astrophotography", "beginner", "DSLR", "smartphone", "tracking"]
+    "keywords": [
+      "astrophotography",
+      "beginner",
+      "DSLR",
+      "smartphone",
+      "tracking"
+    ]
   },
   {
     "id": "milky-way-photo",
     "source": "observation-tips",
     "title": "Photographing the Milky Way",
     "text": "Need: dark sky (Bortle 4 or better), wide lens (14–24mm at f/2.8 or wider), camera with manual mode, sturdy tripod. Settings: ISO 3200, f/2.8, 20–25 seconds (longer = star trails). Focus manually on a bright star — autofocus fails in the dark. Best months for Milky Way core: April–October from the northern hemisphere; June–August is peak. Phone night-mode helps but won't match a real camera.",
-    "keywords": ["milky way", "photography", "wide angle", "tripod"]
+    "keywords": [
+      "milky way",
+      "photography",
+      "wide angle",
+      "tripod"
+    ]
   },
   {
     "id": "meteor-showers",
     "source": "observation-tips",
     "title": "Watching Meteor Showers",
     "text": "Best annual showers: Quadrantids (early January, ~120/hr peak), Lyrids (late April, ~20/hr), Eta Aquarids (early May, ~50/hr), Perseids (mid-August, ~100/hr — easiest because of warm weather), Orionids (late October, ~25/hr), Leonids (mid-November, variable, occasional storm), Geminids (mid-December, ~150/hr peak). Watch from a reclining chair, eyes naked, look 60–90° from the radiant for the longest trails. Moon phase matters more than instrument — bright moon kills meteor watching.",
-    "keywords": ["meteor", "shower", "perseids", "geminids", "leonids"]
+    "keywords": [
+      "meteor",
+      "shower",
+      "perseids",
+      "geminids",
+      "leonids"
+    ]
   },
   {
     "id": "occultations",
     "source": "observation-tips",
     "title": "Occultations and Conjunctions",
     "text": "An occultation is when the Moon passes in front of a star or planet. The disappearance/reappearance can be timed to the second and is fascinating in any telescope. A conjunction is a close pairing of two solar-system objects. Predict events with apps like SkySafari or Stellarium. Saturn-Jupiter great conjunction (December 2020, next in 2080) was visible in one telescope field — extremely rare.",
-    "keywords": ["occultation", "conjunction", "moon", "lunar"]
+    "keywords": [
+      "occultation",
+      "conjunction",
+      "moon",
+      "lunar"
+    ]
   },
   {
     "id": "double-stars",
     "source": "observation-tips",
     "title": "Double Stars Worth Seeing",
     "text": "Double stars are easy targets even in poor skies — light pollution doesn't matter much. Top picks: Albireo (Cygnus, blue+gold, 50x splits it), Mizar/Alcor (Big Dipper handle, naked-eye plus telescopic split), Cor Caroli (Canes Venatici, white+yellow), Almach (Andromeda, gold+blue), Castor (Gemini, twin white pair), the Double Double in Lyra (quadruple system, splits into two pairs at 200x), Polaris (faint companion at 100x).",
-    "keywords": ["double stars", "binary", "albireo", "mizar"]
+    "keywords": [
+      "double stars",
+      "binary",
+      "albireo",
+      "mizar"
+    ]
   },
   {
     "id": "variable-stars",
     "source": "observation-tips",
     "title": "Variable Stars — A Lifelong Hobby",
     "text": "Variable stars change brightness over hours, days, or years. Easy starter targets: Algol (Beta Persei, eclipsing binary, drops 1.3 magnitudes every 2.87 days for 10 hours — visible to the naked eye), Mira (Omicron Ceti, magnitude 3 at peak, 10 at minimum, 332-day period). The AAVSO maintains charts and accepts amateur observations that contribute to professional research.",
-    "keywords": ["variable stars", "algol", "mira", "AAVSO"]
+    "keywords": [
+      "variable stars",
+      "algol",
+      "mira",
+      "AAVSO"
+    ]
   },
-
   {
     "id": "field-mode-spec",
     "source": "telescope-faq",
     "title": "What Field Mode Means",
     "text": "Field Mode in Stellar runs the AI Space Companion entirely on your phone, with no internet required. The language model and astronomy reference data are downloaded once (about 700MB) and then work forever in airplane mode. Use Field Mode at dark-sky sites where there is no signal, when conserving cellular data, or when you want responses to stay private. Quality is slightly lower than the cloud Claude model but covers everything in the on-device astronomy corpus.",
-    "keywords": ["field mode", "offline", "QVAC", "on-device"]
+    "keywords": [
+      "field mode",
+      "offline",
+      "QVAC",
+      "on-device"
+    ]
+  },
+  {
+    "id": "messier-catalog",
+    "source": "messier",
+    "title": "The Messier Catalog",
+    "text": "The Messier catalog is a list of 110 deep-sky objects — galaxies, nebulae, and star clusters — compiled by French astronomer Charles Messier in the 1770s. Messier was a comet hunter who catalogued these fuzzy objects so he would not mistake them for comets. Today the Messier list is the classic checklist for amateur observers: most are visible in small telescopes or binoculars from a dark site, and several (M31, M42, M45, M13) are among the finest sights in the sky. Observing all 110 in a single night is the famous Messier marathon, best attempted in late March.",
+    "season": "all",
+    "hemisphere": "both",
+    "keywords": [
+      "messier",
+      "catalog",
+      "deep-sky",
+      "charles messier",
+      "marathon"
+    ]
+  },
+  {
+    "id": "telescope-focusing",
+    "source": "telescope-faq",
+    "title": "Focusing Your Telescope",
+    "text": "To focus, point at a bright star and turn the focuser slowly until the star shrinks to the smallest, sharpest point; slightly out of focus it grows into a fuzzy disk. Always focus at the magnification you will observe with, and refocus whenever you change eyepieces. Focus drifts as the scope and air cool, so re-check during the first hour. For planets, nudge the focuser in tiny increments during moments of steady seeing. A Bahtinov mask makes precise focus easy, especially for astrophotography.",
+    "keywords": [
+      "focus",
+      "focusing",
+      "focuser",
+      "sharp star",
+      "bahtinov"
+    ]
+  },
+  {
+    "id": "telescope-setup",
+    "source": "telescope-faq",
+    "title": "Setting Up for Your First Night",
+    "text": "Set up before dark while you can still see. Assemble the mount on firm, level ground, balance the telescope, and insert your lowest-power (longest focal length) eyepiece first for the widest field. Align the finderscope on a distant landmark or bright star so it points exactly where the main scope does. Let the scope cool to outside temperature for 30 to 60 minutes, start on an easy bright target like the Moon or Jupiter, then work up in magnification. Keep a red flashlight to protect your night vision.",
+    "keywords": [
+      "setup",
+      "first night",
+      "beginner",
+      "balance",
+      "low power"
+    ]
+  },
+  {
+    "id": "finder-alignment",
+    "source": "telescope-faq",
+    "title": "Aligning Your Finderscope",
+    "text": "A finderscope or red-dot finder must be aligned with the main telescope or you will never land on targets. Do it in daylight or twilight: center a distant object such as a chimney, antenna, or the Moon in the main scope using a low-power eyepiece, then adjust the finder screws until the same object sits on its crosshair or dot. Re-check after transport. A misaligned finder is the top reason beginners cannot find anything.",
+    "keywords": [
+      "finder",
+      "finderscope",
+      "red dot",
+      "alignment",
+      "aiming"
+    ]
+  },
+  {
+    "id": "realistic-expectations",
+    "source": "observation-tips",
+    "title": "Realistic Expectations at the Eyepiece",
+    "text": "Through a telescope, planets are small but detailed: Saturn rings, Jupiter belts and four moons, and lunar craters are genuinely impressive. Deep-sky objects, though, look like faint grey smudges, not the colorful Hubble images. Color in nebulae and galaxies needs a camera and long exposures; the human eye sees them in shades of grey. Bigger aperture and darker skies reveal more. Knowing this in advance turns disappointment into appreciation: what you see are real ancient photons, not a screen.",
+    "keywords": [
+      "expectations",
+      "beginner",
+      "visual",
+      "aperture",
+      "deep-sky"
+    ]
   }
 ]
