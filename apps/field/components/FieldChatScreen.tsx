@@ -13,6 +13,7 @@ import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
 import { runSkyAgent } from '../lib/agent';
 import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
+import { looksLikeSkyQuery } from '../lib/router';
 import type { Citation } from '../lib/rag';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
 import { TetherCobranding } from './TetherCobranding';
@@ -32,14 +33,6 @@ const STARTER_PROMPTS = [
   'What is M31?',
   'How do I collimate a Newtonian?',
 ];
-
-// Route to the live tool-calling agent when a question is about where/whether a
-// body is in the sky now; everything else stays on the RAG companion.
-const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
-const VIS_RE = /\b(visible|overhead|tonight|right now|what'?s up|where is|how high)\b/i;
-function looksLikeSkyQuery(m: string): boolean {
-  return BODY_RE.test(m) || VIS_RE.test(m);
-}
 
 export function FieldChatScreen() {
   const [progress, setProgress] = useState<LoadProgress>(qvac.getProgress());

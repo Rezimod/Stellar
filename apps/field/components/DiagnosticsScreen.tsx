@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import * as Clipboard from 'expo-clipboard';
 import { runSmokeTest } from '../lib/smoke';
 import { runSkyAgent } from '../lib/agent';
+import { runEval, writeEvalFile } from '../lib/eval';
 import { getObserverLocation } from '../lib/location';
 import { audit } from '../lib/audit';
 
@@ -61,6 +62,35 @@ export function DiagnosticsScreen() {
     }
   }
 
+  async function onEval() {
+    if (busy) return;
+    setBusy(true);
+    clear();
+    log('▶ Running eval set (16 questions, on-device). Loads both models; takes a few minutes.');
+    try {
+      const obs = await getObserverLocation();
+      log(`(observer: ${obs.source === 'gps' ? 'GPS' : 'default Tbilisi'} ${obs.lat.toFixed(3)}, ${obs.lon.toFixed(3)})`);
+      const { results, summary } = await runEval(obs, (r) => {
+        const route = r.routeOk ? '' : `route→${r.actualRoute} `;
+        const tool = r.toolOk === null ? '' : r.toolOk ? 'tool✓ ' : `tool✗(${r.toolsUsed.join(',') || 'none'}) `;
+        log(`${r.ok ? '✅' : '❌'} ${route}${tool}${r.ttftMs ?? '—'}ms · ${r.q}`);
+      });
+      log('— summary —');
+      log(`route ${summary.routePass}/${summary.total} · tool ${summary.toolPass}/${summary.toolCases} · overall ${summary.overallPass}/${summary.total}`);
+      log(`avg TTFT ${summary.avgTtftMs}ms · avg total ${summary.avgTotalMs}ms`);
+      const uri = await writeEvalFile(results, summary);
+      log(`💾 Saved eval: ${uri}`);
+      const Sharing = await import('expo-sharing');
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: 'Stellar Field — eval results' });
+      }
+    } catch (e: any) {
+      log(`✖ eval error: ${e?.message ?? e}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onExport() {
     try {
       const device = await audit.deviceInfo();
@@ -92,6 +122,7 @@ export function DiagnosticsScreen() {
       <View style={styles.actions}>
         <Btn label="Run smoke test" onPress={onSmoke} disabled={busy} />
         <Btn label="Ask agent" onPress={onAgent} disabled={busy} />
+        <Btn label="Run eval" onPress={onEval} disabled={busy} />
         <Btn label="Export audit log" onPress={onExport} disabled={busy} subtle />
       </View>
 
