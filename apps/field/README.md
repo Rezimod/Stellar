@@ -41,7 +41,6 @@ LLAMA_TOOL_CALLING_1B  ──calls──▶  get_body_position(saturn)
 | Tool-calling sky agent | `@qvac/llm-llamacpp` | `LLAMA_TOOL_CALLING_1B_INST_Q4_K` |
 | Embeddings (semantic RAG) | `@qvac/embed-llamacpp` | EmbeddingGemma 300M |
 | Voice transcription | `@qvac/transcription-whispercpp` | Whisper |
-| (registered, in validation) | `@qvac/sdk` onnx-tts, onnx-ocr | Chatterbox TTS, OCR |
 
 There is **no cloud LLM proxy** from the Field app. All inference is QVAC, on the device.
 
@@ -94,7 +93,7 @@ Enable USB debugging on the phone and accept the "Allow USB debugging" prompt. F
 
 ## QVAC packages used (judges can grep)
 
-`@qvac/sdk` · `@qvac/llm-llamacpp` · `@qvac/embed-llamacpp` · `@qvac/transcription-whispercpp` · `@qvac/sdk/onnx-tts/plugin` · `@qvac/sdk/onnx-ocr/plugin`
+`@qvac/sdk` · `@qvac/llm-llamacpp` · `@qvac/embed-llamacpp` · `@qvac/transcription-whispercpp`
 
 ## License
 

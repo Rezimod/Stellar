@@ -51,20 +51,7 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
-  // 2. Text-to-speech (English, Chatterbox). Note: TTS may require a composite
-  //    model config (decoder + embed-tokens + language-model). If this errors,
-  //    the message tells us which assets the loader expects.
-  results.push(
-    await timed('tts-en', async () => {
-      const ttsId = await sdk.loadModel({ modelSrc: sdk.TTS_LANGUAGE_MODEL_EN_CHATTERBOX_Q4, modelType: 'tts' });
-      const out = sdk.textToSpeech({ modelId: ttsId, text: 'Saturn is well placed tonight.' });
-      const buf = await out.buffer;
-      return `audio samples=${Array.isArray(buf) ? buf.length : 0}`;
-    }, report),
-  );
-
-  // 3. Embeddings via EmbeddingGemma — the constant qvac.ts currently probes for
-  //    (EMBED_NOMIC/EMBED_BGE) does not exist, so semantic RAG is silently off.
+  // 2. Embeddings via EmbeddingGemma — powers semantic RAG retrieval.
   results.push(
     await timed('embed-gemma', async () => {
       const embId = await sdk.loadModel({ modelSrc: sdk.EMBEDDINGGEMMA_300M_Q4_0, modelType: 'embed' });
