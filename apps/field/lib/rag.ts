@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { qvac } from './qvac';
 import corpusJson from '../rag/corpus/index.json';
 
@@ -37,6 +38,48 @@ export type RetrieveResult = {
 };
 
 const CHUNKS = corpusJson as RagChunk[];
+
+// The corpus ships without vectors (QVAC embeddings only run on-device), so we
+// embed all chunks once on the phone and cache them. Until that's ready,
+// retrieval gracefully falls back to keyword scoring.
+const EMB_CACHE_KEY = `rag.corpus.emb.v1.${CHUNKS.length}`;
+let corpusEmb: Map<string, number[]> | null = null;
+let embedInFlight: Promise<void> | null = null;
+
+export function warmCorpusEmbeddings(): Promise<void> {
+  if (corpusEmb) return Promise.resolve();
+  if (embedInFlight) return embedInFlight;
+  embedInFlight = (async () => {
+    try {
+      const cached = await AsyncStorage.getItem(EMB_CACHE_KEY);
+      if (cached) {
+        const obj = JSON.parse(cached) as Record<string, number[]>;
+        if (Object.keys(obj).length === CHUNKS.length) {
+          corpusEmb = new Map(Object.entries(obj));
+          return;
+        }
+      }
+    } catch {
+      // cache miss / parse error — recompute below
+    }
+    if (!qvac.hasEmbedder()) {
+      embedInFlight = null; // embedder not ready yet; allow a later retry
+      return;
+    }
+    const map = new Map<string, number[]>();
+    for (const c of CHUNKS) {
+      const v = await qvac.embed(`${c.title}. ${c.text}`);
+      if (v) map.set(c.id, v);
+    }
+    corpusEmb = map;
+    try {
+      await AsyncStorage.setItem(EMB_CACHE_KEY, JSON.stringify(Object.fromEntries(map)));
+    } catch {
+      // non-fatal: embeddings stay in memory for this session
+    }
+  })();
+  return embedInFlight;
+}
 
 const STOP = new Set([
   'the', 'and', 'for', 'with', 'that', 'this', 'are', 'was', 'has', 'have', 'how', 'what',
@@ -110,14 +153,21 @@ export async function retrieveContext(query: string, k = 3): Promise<RetrieveRes
 
   let cosineByChunk: Map<string, number> | null = null;
   if (qvac.hasEmbedder()) {
-    const queryVec = await qvac.embed(query);
-    if (queryVec) {
-      cosineByChunk = new Map();
-      for (const c of CHUNKS) {
-        if (c.embedding && c.embedding.length === queryVec.length) {
-          cosineByChunk.set(c.id, cosine(c.embedding, queryVec));
+    if (corpusEmb && corpusEmb.size > 0) {
+      const queryVec = await qvac.embed(query);
+      if (queryVec) {
+        cosineByChunk = new Map();
+        for (const c of CHUNKS) {
+          const emb = corpusEmb.get(c.id);
+          if (emb && emb.length === queryVec.length) {
+            cosineByChunk.set(c.id, cosine(emb, queryVec));
+          }
         }
       }
+    } else {
+      // Corpus not embedded yet — warm in the background; this call stays
+      // keyword-only and later calls become semantic once vectors are ready.
+      void warmCorpusEmbeddings();
     }
   }
 

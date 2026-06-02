@@ -14,6 +14,7 @@ import { startChat } from '../lib/companion';
 import { runSkyAgent } from '../lib/agent';
 import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
 import { looksLikeSkyQuery } from '../lib/router';
+import { warmCorpusEmbeddings } from '../lib/rag';
 import type { Citation } from '../lib/rag';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
 import { TetherCobranding } from './TetherCobranding';
@@ -55,7 +56,10 @@ export function FieldChatScreen() {
   }, []);
 
   useEffect(() => {
-    qvac.ensureReady().catch(() => {});
+    qvac
+      .ensureReady()
+      .then(() => warmCorpusEmbeddings())
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

@@ -89,7 +89,10 @@ class QvacRuntime {
         this.llmTracker.emit({ phase: 'loading', message: 'Warming model' });
 
         try {
-          const embedSrc = (sdk as any).EMBED_NOMIC_V1_5 ?? (sdk as any).EMBED_BGE_SMALL_EN ?? null;
+          const embedSrc =
+            (sdk as any).EMBEDDINGGEMMA_300M_Q4_0 ??
+            (sdk as any).EMBEDDINGGEMMA_300M_Q8_0 ??
+            null;
           if (embedSrc) {
             this.embedModelId = await loadModel({ modelSrc: embedSrc, modelType: 'embed' });
           }
