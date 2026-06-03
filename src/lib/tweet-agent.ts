@@ -4,7 +4,16 @@ import { calculateSkyScore } from './sky-score'
 import { getVisiblePlanets } from './planets'
 import { fetchTopSpaceNews, type SpaceNewsItem } from './space-news'
 
-export type TweetKind = 'sky_verdict' | 'space_news' | 'product_spotlight' | 'astro_fact'
+export type TweetKind =
+  | 'sky_verdict'
+  | 'space_news'
+  | 'product_spotlight'
+  | 'astro_fact'
+  | 'short_post'
+
+export type DailySlot = 'morning' | 'afternoon' | 'evening'
+
+const SITE = 'https://stellarr.club'
 
 export interface DraftedTweet {
   kind: TweetKind
@@ -14,15 +23,15 @@ export interface DraftedTweet {
 
 const TBILISI = { lat: 41.6941, lng: 44.8337, label: 'Tbilisi' }
 
-const BRAND_SYSTEM = `You write tweets for Stellarr (@stellarrclub) — an astronomy app for telescope owners.
+const BRAND_SYSTEM = `You write tweets for Stellar (@stellarrclub) — an astronomy app for telescope owners at ${SITE}.
 Voice: patient, precise, earned. Like NASA, not like a crypto influencer.
 Rules:
-- Max 270 characters total (leave room).
+- Max 270 characters total (leave room). Short posts: max 200 characters.
 - Plain text. No emojis unless one is genuinely informative (e.g. a moon phase). Default: zero emojis.
 - No hashtags unless explicitly asked.
-- Never hype. Never use words like "moon", "rocket", "bullish", "wagmi", "to the moon".
+- Never hype. Never use words like "rocket", "bullish", "wagmi", "to the moon" (crypto slang).
 - Numbers earn their place — only include a number if it's measured/real.
-- One idea per tweet. End with concrete pull (a link, a verdict, a target).
+- One idea per tweet. End with stellarr.club or a path on it when relevant.
 - Never start with "Did you know" or "Excited to share". Start with the substance.`
 
 function openai() {
@@ -77,7 +86,7 @@ Data:
 - Wind: ${Math.round(avg('wind'))} m/s
 - Up tonight: ${planetLine}
 
-Write one tweet that leads with the verdict in one word, then gives the why in one sentence and the best target. End with: stellarr.club/sky`,
+Write one tweet that leads with the verdict in one word, then gives the why in one sentence and the best target. End with: ${SITE}/sky`,
   )
   return {
     kind: 'sky_verdict',
@@ -114,27 +123,37 @@ const PRODUCT_SPOTLIGHTS = [
   {
     name: 'ASTRA',
     pitch: 'an AI companion that knows tonight\'s sky, your scope, and what you can actually see from where you stand',
-    url: 'https://stellarr.club/chat',
+    url: `${SITE}/chat`,
   },
   {
     name: '7-day sky forecast',
     pitch: 'cloud cover, seeing, humidity, and moon phase scored into one verdict per night so you stop guessing',
-    url: 'https://stellarr.club/sky',
+    url: `${SITE}/sky`,
   },
   {
     name: 'Discovery Attestations',
     pitch: 'verified observations minted on-chain. Proof you saw it, owned by you, not a platform',
-    url: 'https://stellarr.club/observe',
+    url: `${SITE}/observe`,
   },
   {
     name: 'Name a Star',
     pitch: 'pick a real star from the Hipparcos catalog, name it, mint the certificate. The name is yours forever',
-    url: 'https://stellarr.club/star',
+    url: `${SITE}/star`,
   },
   {
     name: 'Stellar Field',
     pitch: 'an offline Android app for dark-sky sites. AI companion runs on-device. No signal needed',
-    url: 'https://stellarr.club/field',
+    url: `${SITE}/field`,
+  },
+  {
+    name: 'Sky missions',
+    pitch: 'guided observation missions for the Moon, planets, and deep-sky targets — earn Stars as you complete them',
+    url: `${SITE}/missions`,
+  },
+  {
+    name: 'Learn',
+    pitch: 'Messier catalog, constellation guides, and observing tips built for people who actually use a telescope',
+    url: `${SITE}/learn`,
   },
 ]
 
@@ -186,7 +205,7 @@ Constellation: ${pick.constellation}
 Minimum scope: ${pick.minScope}
 What's interesting: ${pick.note}
 
-Open with what it is. One line on what scope you need and what you'll see. End with: stellarr.club/learn`,
+Open with what it is. One line on what scope you need and what you'll see. End with: ${SITE}/learn`,
   )
   return {
     kind: 'astro_fact',
@@ -195,14 +214,59 @@ Open with what it is. One line on what scope you need and what you'll see. End w
   }
 }
 
+const SHORT_HOOKS = [
+  { angle: 'app', prompt: 'Stellar (stellarr.club) bundles tonight\'s sky forecast, guided missions, and ASTRA — one app for people who actually observe.' },
+  { angle: 'field', prompt: 'Stellar Field runs your AI astronomer offline at Bortle 1–3 sites where cell service dies. stellarr.club/field' },
+  { angle: 'observe', prompt: 'Seal an observation on Solana, earn Stars, redeem at Astroman.ge — stellarr.club/observe' },
+  { angle: 'sky', prompt: 'Stop guessing if tonight is worth setting up the scope. Stellar scores cloud, seeing, and moon in one verdict. stellarr.club/sky' },
+  { angle: 'fact', prompt: 'Light from Andromeda (M31) left 2.5 million years ago — you see it as it was before humans existed.' },
+  { angle: 'fact', prompt: 'Saturn\'s rings are younger than the dinosaurs — probably formed 100 million years ago, not with the planet.' },
+  { angle: 'fact', prompt: 'A full moon washes out faint galaxies — plan deep-sky nights for the week before and after new moon.' },
+  { angle: 'tip', prompt: 'Let your telescope equalize 30 minutes outside before high-magnification work — tube currents lie about sharpness.' },
+  { angle: 'app', prompt: 'ASTRA on stellarr.club knows your location, tonight\'s planets, and what fits your aperture.' },
+  { angle: 'fact', prompt: 'The Hercules Cluster (M13) holds about 300,000 stars — visible as a fuzzy ball in binoculars from a dark yard.' },
+]
+
+async function buildShortPost(): Promise<DraftedTweet> {
+  const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24))
+  const pick = SHORT_HOOKS[day % SHORT_HOOKS.length]
+  const body = await generate(
+    `Write a SHORT tweet (max 200 characters, 1–2 sentences).
+Topic seed: ${pick.prompt}
+${pick.angle === 'app' ? 'This is about the Stellar app — be concrete, not salesy.' : 'This is a quick space fact or observing tip.'}
+End with stellarr.club or a path on it when it fits naturally.`,
+  )
+  return { kind: 'short_post', body: body.slice(0, 200), context: { angle: pick.angle } }
+}
+
 const BUILDERS: Record<TweetKind, () => Promise<DraftedTweet>> = {
   sky_verdict: buildSkyVerdict,
   space_news: buildSpaceNews,
   product_spotlight: buildProductSpotlight,
   astro_fact: buildAstroFact,
+  short_post: buildShortPost,
 }
 
 const ROTATION: TweetKind[] = ['sky_verdict', 'space_news', 'product_spotlight', 'astro_fact']
+
+/** Three posts per day — each slot has its own rotation (Tbilisi-friendly times via cron). */
+const SLOT_KINDS: Record<DailySlot, TweetKind[]> = {
+  morning: ['short_post', 'sky_verdict', 'short_post'],
+  afternoon: ['product_spotlight', 'product_spotlight', 'space_news'],
+  evening: ['astro_fact', 'space_news', 'astro_fact'],
+}
+
+export const SLOT_LABELS: Record<DailySlot, string> = {
+  morning: 'Morning (10:00 Tbilisi)',
+  afternoon: 'Afternoon (15:00 Tbilisi)',
+  evening: 'Evening (20:00 Tbilisi)',
+}
+
+export function pickKindForSlot(slot: DailySlot, date = new Date()): TweetKind {
+  const day = Math.floor(date.getTime() / (1000 * 60 * 60 * 24))
+  const kinds = SLOT_KINDS[slot]
+  return kinds[day % kinds.length]
+}
 
 export function pickKindForToday(date = new Date()): TweetKind {
   const day = Math.floor(date.getTime() / (1000 * 60 * 60 * 24))
@@ -211,5 +275,7 @@ export function pickKindForToday(date = new Date()): TweetKind {
 
 export async function draftTweet(kind?: TweetKind): Promise<DraftedTweet> {
   const k = kind ?? pickKindForToday()
-  return BUILDERS[k]()
+  const builder = BUILDERS[k]
+  if (!builder) throw new Error(`Unknown tweet kind: ${k}`)
+  return builder()
 }

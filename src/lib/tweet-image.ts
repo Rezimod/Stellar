@@ -35,6 +35,13 @@ const IMAGE_PROMPTS: Record<TweetKind, (ctx: Record<string, unknown>) => string>
 
   astro_fact: (ctx) =>
     `An ultra-detailed astrophotograph of ${String(ctx.name ?? 'a deep-sky object')} (${String(ctx.target ?? '')}) in the constellation ${String(ctx.constellation ?? '')}. Style: Hubble Space Telescope deep-field imagery, vivid natural colors of the actual object, surrounded by background stars, deep black space. Wide landscape composition. No text, no logos, no watermarks, no brand marks, no people.`,
+
+  short_post: (ctx) =>
+    `A minimal wide night-sky photograph — ${
+      ctx.angle === 'app'
+        ? 'a telescope silhouette under a star field with soft Milky Way glow'
+        : 'a single striking celestial subject (moon, planet, or nebula) in an otherwise dark sky'
+    }. Cinematic, calm, premium. No text, no logos, no watermarks, no people.`,
 }
 
 async function generateBasePhoto(kind: TweetKind, context: Record<string, unknown>): Promise<Buffer> {

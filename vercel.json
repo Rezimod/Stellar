@@ -1,8 +1,16 @@
 {
   "crons": [
     {
-      "path": "/api/agent/draft-tweet",
-      "schedule": "0 13 * * *"
+      "path": "/api/agent/draft-tweet?slot=morning",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/agent/draft-tweet?slot=afternoon",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/agent/draft-tweet?slot=evening",
+      "schedule": "0 16 * * *"
     }
   ]
 }
