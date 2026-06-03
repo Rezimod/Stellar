@@ -1,6 +1,6 @@
 # Tether QVAC Track — Superteam Earn Submission (ARCHIVED — WINNING ENTRY)
 
-**Status:** **Track winner, May 2026.** This document archives the exact submission text used for the Tether Frontier Hackathon Track on Superteam Earn ([listing](https://superteam.fun/earn/listing/tether-frontier-hackathon-track), 127 submissions). Payout pending end of May 2026 via Tether sponsor process — contact: Telegram `@mariamgoya`.
+**Status:** **Track winner, May 2026.** This document archives the exact submission text used for the Tether Frontier Hackathon Track on Superteam Earn ([listing](https://superteam.fun/earn/listing/tether-frontier-hackathon-track)). Payout pending end of May 2026 via Tether sponsor process — contact: Telegram `@mariamgoya`.
 
 Original purpose: paste-ready script for filling out the Superteam Earn form. Preserved for reference, reuse in future grant applications, and Tether case-study material.
 

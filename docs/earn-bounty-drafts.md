@@ -50,7 +50,7 @@ Same assistant (ASTRA), two homes:
 User doesn’t pick “edge vs cloud.” The product picks for them.
 
 **4/10 — Proof it’s real (not a slide deck)**  
-Tether Frontier Hackathon track — **winner**, May 2026 (127 submissions).
+Tether Frontier Hackathon track — **winner**, May 2026.
 
 Shipped: APK, GitHub release, airplane-mode chat + voice log on a mid-range phone (Poco X3 NFC).
 
@@ -250,7 +250,7 @@ WHAT I SHIPPED:
 • Facebook post on Astroman.ge (~60K followers) — Georgian + English links
 
 WHY THIS FITS THE BOUNTY:
-Summits grow the ecosystem when attendees see apps meant for real users — not only infra. Stellar is a consumer astronomy product on Solana (Privy, gasless, cNFT attestations, Stars). Stellar Field proves Solana-adjacent edge AI (Tether QVAC) where cloud fails. I won the Tether Frontier hackathon track (127 submissions) with this APK.
+Summits grow the ecosystem when attendees see apps meant for real users — not only infra. Stellar is a consumer astronomy product on Solana (Privy, gasless, cNFT attestations, Stars). Stellar Field proves Solana-adjacent edge AI (Tether QVAC) where cloud fails. I won the Tether Frontier hackathon track with this APK.
 
 LINKS:
 • Video: {{YOUTUBE_URL}}

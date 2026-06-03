@@ -81,7 +81,7 @@ Full milestone text → [`tether-grant-proposal.md`](./tether-grant-proposal.md)
 ## Pitch rules for Tether reviewers
 
 **Lead with:**
-- Frontier track **winner** (127 submissions), public APK, airplane-mode proof  
+- Frontier track **winner**, public APK, airplane-mode proof  
 - **QVAC where cloud fails** — dark-sky sites, zero LTE  
 - **Astroman distribution** — real store, 60K audience, Georgian customers for NMT  
 

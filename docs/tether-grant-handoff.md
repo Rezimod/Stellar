@@ -12,7 +12,7 @@
 - Founder of **Astroman** ([astroman.ge](https://astroman.ge)) — Georgia’s first astronomy e-commerce store (~$150K inventory, 60K Facebook followers, physical showroom)  
 - **Stellar** — AI-powered astronomy app on Solana (consumer utility; crypto is invisible: Privy email wallets, gasless devnet, card-first)  
 - **Superteam Georgia** — 2nd place + sponsor prize, March 2026  
-- **Tether Frontier Hackathon Track winner** — Superteam Earn, May 2026 ([listing](https://superteam.fun/earn/listing/tether-frontier-hackathon-track), 127 submissions, prizes: $5K / $3K / $2K USDT for 1st/2nd/3rd)
+- **Tether Frontier Hackathon Track winner** — Superteam Earn, May 2026 ([listing](https://superteam.fun/earn/listing/tether-frontier-hackathon-track), prizes: $5K / $3K / $2K USDT for 1st/2nd/3rd)
 
 ---
 
