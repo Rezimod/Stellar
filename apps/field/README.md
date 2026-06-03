@@ -37,8 +37,7 @@ LLAMA_TOOL_CALLING_1B  ──calls──▶  get_body_position(saturn)
 
 | Capability | QVAC package | Model |
 |---|---|---|
-| RAG chat companion | `@qvac/llm-llamacpp` | Llama 3.2 1B Q4_0 |
-| Tool-calling sky agent | `@qvac/llm-llamacpp` | `LLAMA_TOOL_CALLING_1B_INST_Q4_K` |
+| RAG chat **and** tool-calling agent (one shared model) | `@qvac/llm-llamacpp` | `LLAMA_TOOL_CALLING_1B_INST_Q4_K` |
 | Embeddings (semantic RAG) | `@qvac/embed-llamacpp` | EmbeddingGemma 300M |
 | Voice transcription | `@qvac/transcription-whispercpp` | Whisper |
 
@@ -80,8 +79,7 @@ Enable USB debugging on the phone and accept the "Allow USB debugging" prompt. F
 
 ## First-launch model downloads (one-time, cached)
 
-- Llama 3.2 1B Q4_0 — ~700 MB
-- `LLAMA_TOOL_CALLING_1B` — ~700 MB (loads on the first sky-position question)
+- `LLAMA_TOOL_CALLING_1B` Q4 — ~700 MB (one shared model for chat + agent)
 - Whisper — ~150 MB (loads on first voice log)
 - EmbeddingGemma 300M — loaded for semantic RAG
 

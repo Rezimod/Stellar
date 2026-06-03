@@ -71,17 +71,20 @@ class QvacRuntime {
         });
 
         const sdk = await import('@qvac/sdk');
-        const { loadModel, LLAMA_3_2_1B_INST_Q4_0 } = sdk as any;
+        // One model serves both the RAG chat and the tool-calling agent — the
+        // tool-calling 1B is instruction-tuned and answers general questions
+        // fine, so we avoid loading a second ~700MB model on constrained phones.
+        const { loadModel, LLAMA_TOOL_CALLING_1B_INST_Q4_K } = sdk as any;
 
         this.llmModelId = await loadModel({
-          modelSrc: LLAMA_3_2_1B_INST_Q4_0,
+          modelSrc: LLAMA_TOOL_CALLING_1B_INST_Q4_K,
           modelType: 'llm',
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.llmTracker.emit({
               phase: 'downloading',
               bytesDownloaded: p.downloaded,
               bytesTotal: p.total,
-              message: 'Downloading Llama 3.2 1B',
+              message: 'Downloading Llama 3.2 1B (tool-calling)',
             });
           },
         });
@@ -108,6 +111,13 @@ class QvacRuntime {
     })();
 
     return this.llmLoad;
+  }
+
+  /** Ensure the shared LLM is loaded and return its id (used by the agent). */
+  async ensureLlmModelId(): Promise<string> {
+    await this.ensureReady();
+    if (!this.llmModelId) throw new Error('LLM not loaded');
+    return this.llmModelId;
   }
 
   async ensureWhisperReady(): Promise<void> {

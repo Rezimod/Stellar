@@ -1,12 +1,15 @@
 import { buildSkyTools } from './tools';
 import { audit } from './audit';
 import { sanitizeUserText } from './sanitize';
-import type { ChatMessage } from './qvac';
+import { qvac, type ChatMessage } from './qvac';
 
 /**
  * Offline sky agent — the hackathon headline. Fully on-device:
  *   user question → tool-calling LLM decides → local ephemeris tool runs →
  *   model answers grounded in the result. No cloud, works in airplane mode.
+ *
+ * Reuses the single shared tool-calling model (also serves the RAG chat), so a
+ * constrained phone never loads a second ~700MB model.
  *
  * Two-pass loop (provider-agnostic, robust for a 1B model):
  *   1. completion(stream:false, tools) → which tool(s) to call
@@ -15,30 +18,6 @@ import type { ChatMessage } from './qvac';
  */
 
 const SYSTEM_PROMPT = `You are Stellar's Field companion, a precise, patient astronomy assistant for telescope owners observing at dark-sky sites. When a question is about whether or where an object is in the sky right now, or what is currently visible, call the provided tool. Keep answers to 2–4 short sentences. Use the live data; never invent positions.`;
-
-let toolModelId: string | null = null;
-let loading: Promise<string> | null = null;
-
-async function ensureToolModel(): Promise<string> {
-  if (toolModelId) return toolModelId;
-  if (loading) return loading;
-  loading = (async () => {
-    try {
-      const sdk: any = await import('@qvac/sdk');
-      const id: string = await sdk.loadModel({
-        modelSrc: sdk.LLAMA_TOOL_CALLING_1B_INST_Q4_K,
-        modelType: 'llm',
-      });
-      audit.modelLoad('LLAMA_TOOL_CALLING_1B_INST_Q4_K');
-      toolModelId = id;
-      return id;
-    } catch (e) {
-      loading = null; // allow retry on a transient load/download failure
-      throw e;
-    }
-  })();
-  return loading;
-}
 
 export type AgentResult = {
   stream: AsyncIterable<string>;
@@ -55,7 +34,7 @@ export async function runSkyAgent(
   // Untrusted input (typed or voice-transcribed) — defang prompt injection.
   const userMessage = sanitizeUserText(userMessageRaw);
   const sdk: any = await import('@qvac/sdk');
-  const modelId = await ensureToolModel();
+  const modelId = await qvac.ensureLlmModelId();
   const tools = buildSkyTools(lat, lon);
 
   const baseHistory: ChatMessage[] = [
