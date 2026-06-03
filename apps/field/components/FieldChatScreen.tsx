@@ -33,7 +33,6 @@ const STARTER_PROMPTS = [
   'Is Saturn up right now?',
   'What can I see tonight?',
   'What is M31?',
-  'How do I collimate a Newtonian?',
 ];
 
 export function FieldChatScreen() {
@@ -171,9 +170,9 @@ export function FieldChatScreen() {
         {turns.length === 0 && progress.phase === 'ready' && (
           <View style={styles.starterWrap}>
             <Text style={styles.hint}>
-              Ask anything about the night sky. In FIELD mode the model runs entirely on this device — no
-              signal needed.
+              Ask anything about the night sky — on-device, no signal needed.
             </Text>
+            <Text style={styles.starterLabel}>Try</Text>
             <View style={styles.starterChips}>
               {STARTER_PROMPTS.map((p) => (
                 <TouchableOpacity key={p} style={styles.starterChip} onPress={() => send(p)}>
@@ -310,18 +309,27 @@ const styles = StyleSheet.create({
   },
   scroll: { flex: 1 },
   scrollContent: { padding: 16, gap: 10, paddingBottom: 32 },
-  starterWrap: { gap: 14 },
+  starterWrap: { gap: 10 },
   hint: { color: '#9CA3AF', fontSize: 14, lineHeight: 20, paddingHorizontal: 4 },
+  starterLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    paddingHorizontal: 4,
+    marginTop: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
   starterChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   starterChip: {
-    backgroundColor: '#1A1F2E',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: '#141823',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#252B3D',
+    borderColor: '#222838',
   },
-  starterChipText: { color: '#E5E7EB', fontSize: 13 },
+  starterChipText: { color: '#9CA3AF', fontSize: 12 },
   bubble: { padding: 12, borderRadius: 12, maxWidth: '88%' },
   userBubble: { backgroundColor: '#8B5CF6', alignSelf: 'flex-end' },
   aiBubble: { backgroundColor: '#1A1F2E', alignSelf: 'flex-start' },
