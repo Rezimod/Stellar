@@ -21,14 +21,22 @@ chosen deliberately: if the offline AI holds up here, it holds up anywhere.
 
 ## Measured performance (on the device above)
 On-device eval over a 16-question mixed set (sky agent + RAG), captured by the
-in-app audit log (Diagnostics → Run eval → exported `qvac-eval-*.json`):
+in-app audit log on **2026-06-03**. Raw exports are committed under
+[`artifacts/`](./artifacts/) — every inference event carries `"backendDevice": "cpu"`,
+i.e. real on-device compute, no cloud.
 
-- **Accuracy:** routing 16/16, tool selection 8/8, overall 16/16
-- **Latency:** see the exported eval/audit JSON for per-query TTFT and tokens/sec
+- **Accuracy:** routing 16/16, tool selection 8/8, overall **16/16**
+- **Sky agent (tool-grounded):** TTFT ~2.6–2.9 s, full answer ~4–6 s, ~8–10.5 tok/s
+- **RAG companion (freeform):** TTFT ~7.6–10 s, full answer ~15–22 s (300–600-char answers)
+- **Set averages:** avg TTFT **5672 ms**, avg total **11705 ms**
+
+Committed evidence bundle:
+- [`artifacts/qvac-eval-2026-06-03.json`](./artifacts/qvac-eval-2026-06-03.json) — per-query route/tool/latency
+- [`artifacts/qvac-audit-2026-06-03.json`](./artifacts/qvac-audit-2026-06-03.json) — per-inference prompt, tokens, TTFT, tokens/sec, raw QVAC `sdkStats`
 
 > Reproduce: build per the README on a connected Android device, open the
 > **Diagnostics** tab, tap **Run eval**, and export the audit log. The numbers in
-> the demo video match the exported JSON.
+> the demo video match these exported JSON files.
 
 ## How to verify the hardware claim
 `adb shell getprop ro.product.model` → `M2007J20CG`

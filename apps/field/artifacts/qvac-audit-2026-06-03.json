@@ -1,0 +1,419 @@
+{
+  "device": {
+    "brand": "POCO",
+    "manufacturer": "Xiaomi",
+    "modelName": "M2007J20CG",
+    "osName": "Android",
+    "osVersion": "12",
+    "totalMemory": 5903437824,
+    "supportedCpuArchitectures": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "armeabi"
+    ]
+  },
+  "sessionId": "sess_1780514823389",
+  "exportedAt": "2026-06-03T19:40:50.337Z",
+  "events": [
+    {
+      "ts": "2026-06-03T19:27:37.924Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is Saturn up right now?",
+      "meta": {
+        "result": {
+          "name": "Saturn",
+          "altitude": -34,
+          "azimuth": 46,
+          "azimuthDir": "NE",
+          "aboveHorizon": false,
+          "daylight": false,
+          "observable": false,
+          "magnitude": 0.7,
+          "constellation": "Pisces",
+          "rise": "2026-06-03T22:47:26.521Z",
+          "set": "2026-06-04T11:11:58.923Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:27:42.845Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "Is Saturn up right now?",
+      "completionTokens": 16,
+      "ttftMs": 2862,
+      "totalMs": 4877,
+      "tokensPerSec": 7.94,
+      "sdkStats": {
+        "timeToFirstToken": 2796.031,
+        "tokensPerSecond": 8.409637654993563,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:27:49.465Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is moon up?",
+      "meta": {
+        "result": {
+          "name": "Moon",
+          "altitude": 0.3,
+          "azimuth": 125,
+          "azimuthDir": "SE",
+          "aboveHorizon": true,
+          "daylight": false,
+          "observable": true,
+          "magnitude": -11.6,
+          "constellation": "Sagittarius",
+          "rise": null,
+          "set": "2026-06-04T04:27:24.022Z",
+          "moonPhase": 0.6
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:27:53.616Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "Is moon up?",
+      "completionTokens": 11,
+      "ttftMs": 2814,
+      "totalMs": 4127,
+      "tokensPerSec": 8.38,
+      "sdkStats": {
+        "timeToFirstToken": 2762.9880000000003,
+        "tokensPerSecond": 8.37702714537569,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:34:50.534Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is Saturn up right now?",
+      "meta": {
+        "result": {
+          "name": "Saturn",
+          "altitude": -33,
+          "azimuth": 48,
+          "azimuthDir": "NE",
+          "aboveHorizon": false,
+          "daylight": false,
+          "observable": false,
+          "magnitude": 0.7,
+          "constellation": "Pisces",
+          "rise": "2026-06-03T22:47:26.521Z",
+          "set": "2026-06-04T11:11:58.946Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:34:54.770Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "Is Saturn up right now?",
+      "completionTokens": 13,
+      "ttftMs": 2927,
+      "totalMs": 4235,
+      "tokensPerSec": 9.94,
+      "sdkStats": {
+        "timeToFirstToken": 2860.959,
+        "tokensPerSecond": 10.39371388184426,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:34:54.782Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Where is Jupiter in the sky?",
+      "meta": {
+        "result": {
+          "name": "Jupiter",
+          "altitude": -1.6,
+          "azimuth": 302,
+          "azimuthDir": "NW",
+          "aboveHorizon": false,
+          "daylight": false,
+          "observable": false,
+          "magnitude": -1.9,
+          "constellation": "Gemini",
+          "rise": "2026-06-04T04:30:46.109Z",
+          "set": "2026-06-04T19:21:02.188Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:00.016Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "Where is Jupiter in the sky?",
+      "completionTokens": 24,
+      "ttftMs": 2915,
+      "totalMs": 5233,
+      "tokensPerSec": 10.35,
+      "sdkStats": {
+        "timeToFirstToken": 2854.996,
+        "tokensPerSecond": 10.460460765862635,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:00.032Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "How high is the Moon right now?",
+      "meta": {
+        "result": {
+          "name": "Moon",
+          "altitude": 1.2,
+          "azimuth": 127,
+          "azimuthDir": "SE",
+          "aboveHorizon": true,
+          "daylight": false,
+          "observable": true,
+          "magnitude": -11.6,
+          "constellation": "Sagittarius",
+          "rise": null,
+          "set": "2026-06-04T04:27:24.014Z",
+          "moonPhase": 0.6
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:04.864Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "How high is the Moon right now?",
+      "completionTokens": 21,
+      "ttftMs": 2820,
+      "totalMs": 4831,
+      "tokensPerSec": 10.44,
+      "sdkStats": {
+        "timeToFirstToken": 2791.222,
+        "tokensPerSecond": 10.490904385897426,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:04.872Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is Mars visible tonight?",
+      "meta": {
+        "result": {
+          "name": "Mars",
+          "altitude": -32.1,
+          "azimuth": 13,
+          "azimuthDir": "N",
+          "aboveHorizon": false,
+          "daylight": false,
+          "observable": false,
+          "magnitude": 1.3,
+          "constellation": "Aries",
+          "rise": "2026-06-03T23:51:55.003Z",
+          "set": "2026-06-04T13:47:45.296Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:09.398Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "Is Mars visible tonight?",
+      "completionTokens": 17,
+      "ttftMs": 2912,
+      "totalMs": 4524,
+      "tokensPerSec": 10.55,
+      "sdkStats": {
+        "timeToFirstToken": 2843.164,
+        "tokensPerSecond": 10.772331835979209,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:09.405Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "When does Venus set?",
+      "meta": {
+        "result": {
+          "name": "Venus",
+          "altitude": -3.5,
+          "azimuth": 308,
+          "azimuthDir": "NW",
+          "aboveHorizon": false,
+          "daylight": false,
+          "observable": false,
+          "magnitude": -4,
+          "constellation": "Gemini",
+          "rise": "2026-06-04T03:57:03.073Z",
+          "set": "2026-06-04T19:11:52.904Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:14.533Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "When does Venus set?",
+      "completionTokens": 24,
+      "ttftMs": 2814,
+      "totalMs": 5127,
+      "tokensPerSec": 10.38,
+      "sdkStats": {
+        "timeToFirstToken": 2801.927,
+        "tokensPerSecond": 10.556146162159118,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:14.600Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_visible_now",
+      "promptPreview": "What can I see right now?",
+      "meta": {
+        "result": {
+          "daylight": false,
+          "count": 1,
+          "bodies": [
+            {
+              "name": "Moon",
+              "altitude": 1.3,
+              "direction": "SE",
+              "magnitude": -11.6,
+              "observable": true,
+              "constellation": "Sagittarius"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:18.721Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "What can I see right now?",
+      "completionTokens": 15,
+      "ttftMs": 2611,
+      "totalMs": 4120,
+      "tokensPerSec": 9.94,
+      "sdkStats": {
+        "timeToFirstToken": 2598.339,
+        "tokensPerSecond": 10.335611072333428,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:18.786Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_visible_now",
+      "promptPreview": "What planets are visible tonight?",
+      "meta": {
+        "result": {
+          "daylight": false,
+          "count": 1,
+          "bodies": [
+            {
+              "name": "Moon",
+              "altitude": 1.3,
+              "direction": "SE",
+              "magnitude": -11.6,
+              "observable": true,
+              "constellation": "Sagittarius"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:24.922Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "What planets are visible tonight?",
+      "completionTokens": 36,
+      "ttftMs": 2615,
+      "totalMs": 6134,
+      "tokensPerSec": 10.23,
+      "sdkStats": {
+        "timeToFirstToken": 2604.077,
+        "tokensPerSecond": 10.488428641101702,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:24.993Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_visible_now",
+      "promptPreview": "What's up in the sky tonight?",
+      "meta": {
+        "result": {
+          "daylight": false,
+          "count": 1,
+          "bodies": [
+            {
+              "name": "Moon",
+              "altitude": 1.3,
+              "direction": "SE",
+              "magnitude": -11.6,
+              "observable": true,
+              "constellation": "Sagittarius"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ts": "2026-06-03T19:35:29.822Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "tool-model",
+      "promptPreview": "What's up in the sky tonight?",
+      "completionTokens": 22,
+      "ttftMs": 2716,
+      "totalMs": 4828,
+      "tokensPerSec": 10.42,
+      "sdkStats": {
+        "timeToFirstToken": 2651.687,
+        "tokensPerSecond": 10.630427860225337,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    }
+  ]
+}

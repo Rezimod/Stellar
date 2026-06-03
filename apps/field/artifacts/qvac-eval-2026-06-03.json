@@ -1,0 +1,243 @@
+{
+  "device": {
+    "brand": "POCO",
+    "manufacturer": "Xiaomi",
+    "modelName": "M2007J20CG",
+    "osName": "Android",
+    "osVersion": "12",
+    "totalMemory": 5903437824,
+    "supportedCpuArchitectures": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "armeabi"
+    ]
+  },
+  "ranAt": "2026-06-03T19:37:57.807Z",
+  "summary": {
+    "total": 16,
+    "routePass": 16,
+    "toolCases": 8,
+    "toolPass": 8,
+    "overallPass": 16,
+    "avgTtftMs": 5672,
+    "avgTotalMs": 11705
+  },
+  "results": [
+    {
+      "q": "Is Saturn up right now?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_body_position",
+      "toolsUsed": [
+        "get_body_position"
+      ],
+      "toolOk": true,
+      "ttftMs": 2939,
+      "totalMs": 4249,
+      "answerChars": 58,
+      "ok": true
+    },
+    {
+      "q": "Where is Jupiter in the sky?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_body_position",
+      "toolsUsed": [
+        "get_body_position"
+      ],
+      "toolOk": true,
+      "ttftMs": 2926,
+      "totalMs": 5245,
+      "answerChars": 108,
+      "ok": true
+    },
+    {
+      "q": "How high is the Moon right now?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_body_position",
+      "toolsUsed": [
+        "get_body_position"
+      ],
+      "toolOk": true,
+      "ttftMs": 2836,
+      "totalMs": 4848,
+      "answerChars": 58,
+      "ok": true
+    },
+    {
+      "q": "Is Mars visible tonight?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_body_position",
+      "toolsUsed": [
+        "get_body_position"
+      ],
+      "toolOk": true,
+      "ttftMs": 2920,
+      "totalMs": 4534,
+      "answerChars": 72,
+      "ok": true
+    },
+    {
+      "q": "When does Venus set?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_body_position",
+      "toolsUsed": [
+        "get_body_position"
+      ],
+      "toolOk": true,
+      "ttftMs": 2821,
+      "totalMs": 5135,
+      "answerChars": 107,
+      "ok": true
+    },
+    {
+      "q": "What can I see right now?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_visible_now",
+      "toolsUsed": [
+        "get_visible_now"
+      ],
+      "toolOk": true,
+      "ttftMs": 2678,
+      "totalMs": 4188,
+      "answerChars": 41,
+      "ok": true
+    },
+    {
+      "q": "What planets are visible tonight?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_visible_now",
+      "toolsUsed": [
+        "get_visible_now"
+      ],
+      "toolOk": true,
+      "ttftMs": 2681,
+      "totalMs": 6201,
+      "answerChars": 177,
+      "ok": true
+    },
+    {
+      "q": "What's up in the sky tonight?",
+      "expectRoute": "agent",
+      "actualRoute": "agent",
+      "routeOk": true,
+      "expectTool": "get_visible_now",
+      "toolsUsed": [
+        "get_visible_now"
+      ],
+      "toolOk": true,
+      "ttftMs": 2787,
+      "totalMs": 4900,
+      "answerChars": 97,
+      "ok": true
+    },
+    {
+      "q": "What is M31?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 7736,
+      "totalMs": 15976,
+      "answerChars": 346,
+      "ok": true
+    },
+    {
+      "q": "How do I collimate a Newtonian?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 7646,
+      "totalMs": 14885,
+      "answerChars": 375,
+      "ok": true
+    },
+    {
+      "q": "What eyepiece should I use for planets?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 8445,
+      "totalMs": 17798,
+      "answerChars": 368,
+      "ok": true
+    },
+    {
+      "q": "What is the difference between a refractor and a reflector?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 8634,
+      "totalMs": 22012,
+      "answerChars": 615,
+      "ok": true
+    },
+    {
+      "q": "How do I set up my telescope?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 8143,
+      "totalMs": 18495,
+      "answerChars": 426,
+      "ok": true
+    },
+    {
+      "q": "What causes light pollution?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 9964,
+      "totalMs": 21418,
+      "answerChars": 489,
+      "ok": true
+    },
+    {
+      "q": "What is the Messier catalog?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 8651,
+      "totalMs": 20409,
+      "answerChars": 464,
+      "ok": true
+    },
+    {
+      "q": "How do I focus on a star?",
+      "expectRoute": "companion",
+      "actualRoute": "companion",
+      "routeOk": true,
+      "toolsUsed": [],
+      "toolOk": null,
+      "ttftMs": 8939,
+      "totalMs": 16984,
+      "answerChars": 308,
+      "ok": true
+    }
+  ]
+}
