@@ -5,8 +5,8 @@ import path from 'node:path'
 import type { TweetKind } from './tweet-agent'
 
 const SIZE = { width: 1792, height: 1024 } as const
-const LOGO_WIDTH = 260
-const TOP_PAD = 16
+const LOGO_WIDTH = 300
+const TOP_PAD = 12
 
 function openai() {
   if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY missing')
@@ -25,16 +25,16 @@ const IMAGE_PROMPTS: Record<TweetKind, (ctx: Record<string, unknown>) => string>
       Array.isArray(ctx.planets) && ctx.planets.length
         ? `A bright planet (${(ctx.planets as string[])[0]}) glows distinctly above the horizon.`
         : ''
-    } Mountains silhouetted along the bottom edge. Cinematic, ultra-detailed, NASA APOD style. No people, no text, no logos.`,
+    } Mountains silhouetted along the bottom edge. Cinematic, ultra-detailed, NASA APOD style. No people, no text, no logos, no watermarks, no brand marks, no words anywhere in the image.`,
 
   space_news: (ctx) =>
-    `A wide cinematic illustration evoking this space story: "${String(ctx.title ?? 'space exploration')}". Style: dramatic deep-space photography aesthetic, dark cosmic background with stars and nebulae, single hero subject centered. NASA / ESA / JWST visual language. Ultra-detailed, no text, no logos, no people.`,
+    `A wide cinematic illustration evoking this space story: "${String(ctx.title ?? 'space exploration')}". Style: dramatic deep-space photography aesthetic, dark cosmic background with stars and nebulae, single hero subject centered. NASA / ESA / JWST visual language. Ultra-detailed, no text, no logos, no watermarks, no brand marks, no people.`,
 
   product_spotlight: (ctx) =>
-    `A stylized hero illustration for an astronomy app feature called "${String(ctx.feature ?? 'Stellarr')}". Dark cosmic background with a deep purple-to-teal gradient nebula. A single elegant glass-effect geometric shape (sphere, ring, or constellation lines) glowing softly at center. Minimal, premium, refined. No text, no logos, no people.`,
+    `A stylized hero illustration for an astronomy app feature. Dark cosmic background with a deep purple-to-teal gradient nebula. A single elegant glass-effect geometric shape (sphere, ring, or constellation lines) glowing softly at center. Minimal, premium, refined. No text, no logos, no watermarks, no brand marks, no words, no people.`,
 
   astro_fact: (ctx) =>
-    `An ultra-detailed astrophotograph of ${String(ctx.name ?? 'a deep-sky object')} (${String(ctx.target ?? '')}) in the constellation ${String(ctx.constellation ?? '')}. Style: Hubble Space Telescope deep-field imagery, vivid natural colors of the actual object, surrounded by background stars, deep black space. Wide landscape composition. No text, no logos, no people.`,
+    `An ultra-detailed astrophotograph of ${String(ctx.name ?? 'a deep-sky object')} (${String(ctx.target ?? '')}) in the constellation ${String(ctx.constellation ?? '')}. Style: Hubble Space Telescope deep-field imagery, vivid natural colors of the actual object, surrounded by background stars, deep black space. Wide landscape composition. No text, no logos, no watermarks, no brand marks, no people.`,
 }
 
 async function generateBasePhoto(kind: TweetKind, context: Record<string, unknown>): Promise<Buffer> {
@@ -89,7 +89,7 @@ async function pickLogoVariant(photo: Buffer): Promise<'white' | 'black'> {
 async function compositeLogo(photo: Buffer): Promise<Buffer> {
   const variant = await pickLogoVariant(photo)
   const wordmark = await loadWordmark(variant)
-  const logoPng = await sharp(wordmark).resize({ width: LOGO_WIDTH }).png().toBuffer()
+  const logoPng = await sharp(wordmark).trim().resize({ width: LOGO_WIDTH }).png().toBuffer()
   const meta = await sharp(logoPng).metadata()
   const logoW = meta.width ?? LOGO_WIDTH
   const logoH = meta.height ?? 40

@@ -68,7 +68,7 @@ async function handle(req: NextRequest) {
     '',
     drafted.body,
     '',
-    `[Approve & post](${approveUrl})`,
+    `[Post on X](${approveUrl})`,
     `[Reject](${rejectUrl})`,
   ].join('\n')
 

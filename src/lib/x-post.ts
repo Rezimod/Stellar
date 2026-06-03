@@ -1,7 +1,7 @@
 import { ApiResponseError } from 'twitter-api-v2'
 
 export function getTweetIntentUrl(text: string): string {
-  return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
+  return `https://x.com/compose/post?text=${encodeURIComponent(text)}`
 }
 
 export function isCreditsDepleted(err: unknown): boolean {

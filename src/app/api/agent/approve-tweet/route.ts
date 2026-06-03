@@ -5,12 +5,13 @@ import { tweetDrafts } from '@/lib/schema'
 import { verifyAction } from '@/lib/agent-token'
 import { postTweet } from '@/lib/twitter'
 import { sendTelegram } from '@/lib/telegram'
-import { formatXApiError, getTweetIntentUrl, isCreditsDepleted } from '@/lib/x-post'
+import { formatXApiError, isCreditsDepleted } from '@/lib/x-post'
+import { renderComposePage } from '@/lib/x-compose-page'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-const PAGE_STYLES = `body{font-family:system-ui,sans-serif;background:#0a0d18;color:#e7ecf3;margin:0;padding:48px 24px;display:flex;flex-direction:column;align-items:center;min-height:100vh}main{max-width:520px;width:100%}h1{font-size:20px;margin:0 0 16px}p{line-height:1.6;color:#aab2c2;font-size:15px}.body{background:#151a28;border:1px solid #232a3d;padding:16px;border-radius:12px;white-space:pre-wrap;margin:16px 0;font-size:14px;line-height:1.55;color:#e7ecf3}a{color:#8b5cf6;text-decoration:none}a:hover{text-decoration:underline}.btn{display:inline-block;margin:12px 8px 0 0;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:none;cursor:pointer;font-family:inherit}.btn-primary{background:#8b5cf6;color:#fff}.btn-secondary{background:#232a3d;color:#e7ecf3;border:1px solid #3d4663}.img-preview{max-width:100%;border-radius:12px;margin:16px 0;border:1px solid #232a3d}.hint{font-size:13px;color:#7a8499;margin-top:8px}`
+const PAGE_STYLES = `body{font-family:system-ui,sans-serif;background:#0a0d18;color:#e7ecf3;margin:0;padding:48px 24px}main{max-width:520px;margin:0 auto}h1{font-size:20px}p{color:#aab2c2;line-height:1.6}a{color:#8b5cf6}`
 
 function htmlResponse(title: string, body: string, status = 200) {
   return new NextResponse(
@@ -19,76 +20,25 @@ function htmlResponse(title: string, body: string, status = 200) {
   )
 }
 
-function composeFallbackPage(
-  draft: { body: string; imageBase64: string | null },
-  id: string,
-  sig: string,
-): NextResponse {
-  const intentUrl = getTweetIntentUrl(draft.body)
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
-  const markUrl = `${base}/api/agent/approve-tweet?id=${id}&sig=${encodeURIComponent(sig)}&done=1`
-  const imageUrl = `${base}/api/agent/draft-image?id=${id}&sig=${encodeURIComponent(sig)}`
-  const hasImage = !!draft.imageBase64
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
+}
 
-  const imageBlock = hasImage
-    ? `<img class="img-preview" src="data:image/png;base64,${draft.imageBase64}" alt="Tweet image" />`
-    : ''
-
-  const shareScript = hasImage
-    ? `<script>
-(function(){
-  var text = ${JSON.stringify(draft.body)};
-  var intentUrl = ${JSON.stringify(intentUrl)};
-  var imageUrl = ${JSON.stringify(imageUrl)};
-  async function postWithImage() {
-    try {
-      var resp = await fetch(imageUrl);
-      if (!resp.ok) throw new Error('Could not load image');
-      var blob = await resp.blob();
-      var file = new File([blob], 'stellarr-post.png', { type: 'image/png' });
-      var payload = { text: text, files: [file] };
-      if (navigator.share && (!navigator.canShare || navigator.canShare(payload))) {
-        await navigator.share(payload);
-        return;
-      }
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-    var a = document.createElement('a');
-    a.href = imageUrl;
-    a.download = 'stellarr-post.png';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function(){ window.open(intentUrl, '_blank'); }, 400);
-    alert('Image saved to your device. In X compose, tap the image icon and attach stellarr-post.png.');
-  }
-  var btn = document.getElementById('shareWithImage');
-  if (btn) btn.addEventListener('click', postWithImage);
-})();
-</script>`
-    : ''
-
-  const primaryBtn = hasImage
-    ? `<button type="button" class="btn btn-primary" id="shareWithImage">Post to X with image</button>`
-    : `<a class="btn btn-primary" href="${escapeHtml(intentUrl)}" target="_blank" rel="noopener noreferrer">Open X compose</a>`
-
-  const secondaryBtns = hasImage
-    ? `<a class="btn btn-secondary" href="${escapeHtml(intentUrl)}" target="_blank" rel="noopener noreferrer">Text only on X</a>
-<a class="btn btn-secondary" href="${escapeHtml(imageUrl)}" download="stellarr-post.png">Download image</a>`
-    : ''
-
-  return htmlResponse(
-    'Post on X',
-    `<p><strong>X API credits are empty.</strong> Use <strong>Post to X with image</strong> on your phone — it opens the share sheet so X receives the photo and text together. On desktop, download the image first, then open compose and attach it.</p>
-<div class="body">${escapeHtml(draft.body)}</div>
-${imageBlock}
-${primaryBtn}
-${secondaryBtns}
-<a class="btn btn-secondary" href="${escapeHtml(markUrl)}">I've posted — mark done</a>
-<p class="hint">X compose links cannot attach images automatically. To restore one-tap posting with image, add API credits at <a href="https://developer.x.com/en/portal/products">developer.x.com</a>.</p>
-${shareScript}`,
+function composePage(draft: { body: string; imageBase64: string | null }, id: string, sig: string) {
+  return new NextResponse(
+    renderComposePage({
+      draftId: id,
+      sig,
+      body: draft.body,
+      hasImage: !!draft.imageBase64,
+    }),
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
   )
+}
+
+/** Default: manual compose (API credits empty). Set X_USE_API_POST=1 to try API first. */
+function useApiPost(): boolean {
+  return process.env.X_USE_API_POST === '1'
 }
 
 export async function GET(req: NextRequest) {
@@ -129,8 +79,8 @@ export async function GET(req: NextRequest) {
     return htmlResponse('Marked posted', '<p>Draft marked as posted. Next cron run is tomorrow.</p>')
   }
 
-  if (req.nextUrl.searchParams.get('compose') === '1') {
-    return composeFallbackPage(draft, id, sig)
+  if (!useApiPost() || req.nextUrl.searchParams.get('compose') === '1') {
+    return composePage(draft, id, sig)
   }
 
   try {
@@ -152,25 +102,11 @@ export async function GET(req: NextRequest) {
     )
   } catch (err) {
     if (isCreditsDepleted(err)) {
-      return composeFallbackPage(draft, id, sig)
+      return composePage(draft, id, sig)
     }
 
     const msg = formatXApiError(err)
-    await db
-      .update(tweetDrafts)
-      .set({ status: 'failed', errorMessage: msg, reviewedAt: new Date() })
-      .where(eq(tweetDrafts.id, id))
     console.error('[agent/approve-tweet] post failed', err)
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
-    const composeUrl = `${base}/api/agent/approve-tweet?id=${id}&sig=${encodeURIComponent(sig)}&compose=1`
-    return htmlResponse(
-      'Post failed',
-      `<p>${escapeHtml(msg)}</p><p><a class="btn btn-primary" href="${escapeHtml(composeUrl)}">Post via X compose instead</a></p>`,
-      500,
-    )
+    return composePage(draft, id, sig)
   }
-}
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 }
