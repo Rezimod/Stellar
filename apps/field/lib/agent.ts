@@ -16,13 +16,24 @@ import { qvac, type ChatMessage } from './qvac';
  * computation, never the model's guess.
  */
 
-const SYSTEM_PROMPT = `You are Stellar's Field companion, a precise, patient astronomy assistant for telescope owners at dark-sky sites. Answer the user's question using ONLY the live sky data provided. Be concise — 2 to 3 short sentences. Never invent positions.
+const SYSTEM_PROMPT = `You are Stellar's Field companion, a precise astronomy assistant for telescope owners. Answer using ONLY the live sky data below. Be concise — 2 short sentences. Never invent positions.`;
 
-Read the data carefully:
-- "aboveHorizon" means the object is geometrically up.
-- "daylight": true means the Sun is up and the sky is too bright to observe anything.
-- "observable" true means it is actually viewable right now.
-If observable is false because it is daylight, say the object is technically up but not viewable until after dark. If it is below the horizon, say it is not up right now and mention when it rises if known.`;
+/** Compact, model-friendly grounding line (far fewer tokens than full JSON → lower TTFT). */
+function groundingText(live: LiveSky): string {
+  if (live.kind === 'body') {
+    const status = !live.aboveHorizon
+      ? 'below the horizon, not up right now'
+      : live.daylight
+        ? 'above the horizon but it is DAYTIME, so not viewable until after dark'
+        : 'above the horizon and viewable now (dark sky)';
+    return `${live.name}: altitude ${live.altitude}°, direction ${live.direction}, ${status}.`;
+  }
+  if (live.daylight) {
+    return `It is DAYTIME — nothing is observable now. After dark these would be up: ${live.bodies.map((b) => b.name).join(', ') || 'none'}.`;
+  }
+  if (live.bodies.length === 0) return 'Nothing is above the horizon right now.';
+  return 'Above the horizon now: ' + live.bodies.map((b) => `${b.name} (${b.altitude}°, ${b.direction})`).join('; ') + '.';
+}
 
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
 
@@ -103,12 +114,12 @@ export async function runSkyAgent(
   const sdk: any = await import('@qvac/sdk');
   const modelId = await qvac.ensureLlmModelId();
 
-  // Run the local ephemeris tool, then ground the model's answer in the result.
+  // Run the local ephemeris tool, then ground the model's answer in a compact
+  // summary of the result (full JSON bloats the prompt and slows TTFT).
   const tool = runLocalTool(userMessage, lat, lon);
   audit.record({ type: 'inference', kind: 'tool-call', model: tool.name, promptPreview: userMessage, meta: { result: tool.result } });
 
-  const groundedSystem =
-    `${SYSTEM_PROMPT}\n\nLive sky data computed on-device for the observer's location:\n- ${tool.name} → ${JSON.stringify(tool.result)}`;
+  const groundedSystem = `${SYSTEM_PROMPT}\n\nLive on-device sky data: ${groundingText(tool.live)}`;
 
   const answer = sdk.completion({
     modelId,
