@@ -109,6 +109,32 @@ export function getBodyPosition(name: string, lat: number, lon: number, date = n
   };
 }
 
+export type DsoPosition = {
+  altitude: number;
+  azimuth: number;
+  azimuthDir: string;
+  aboveHorizon: boolean;
+  daylight: boolean;
+  observable: boolean;
+};
+
+/** Live alt/az for a fixed RA(hours)/Dec(deg) catalog object — deep-sky or star. */
+export function getDsoPosition(ra: number, dec: number, lat: number, lon: number, date = new Date()): DsoPosition {
+  const observer = new Observer(lat, lon, 0);
+  const horiz = Horizon(date, observer, ra, dec, 'normal');
+  const sunAlt = sunAltitude(lat, lon, date);
+  const daylight = sunAlt > -6;
+  const aboveHorizon = horiz.altitude > 0;
+  return {
+    altitude: Math.round(horiz.altitude * 10) / 10,
+    azimuth: Math.round(horiz.azimuth),
+    azimuthDir: azDir(horiz.azimuth),
+    aboveHorizon,
+    daylight,
+    observable: aboveHorizon && !daylight,
+  };
+}
+
 /** Everything currently above the horizon, brightest/highest first (excludes the Sun). */
 export function getVisibleNow(lat: number, lon: number, date = new Date()): BodyPosition[] {
   return Object.keys(BODIES)

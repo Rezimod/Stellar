@@ -247,7 +247,7 @@ function statusDotColor(phase: LoadProgress['phase']) {
 }
 
 function formatLiveSky(live: LiveSky): string {
-  if (live.kind === 'body') {
+  if (live.kind === 'body' || live.kind === 'dso') {
     if (!live.aboveHorizon) return `${live.name} · below horizon · not up`;
     const status = live.daylight ? 'daytime · not viewable' : 'viewable now';
     return `${live.name} · ${live.altitude}° · ${live.direction} · ${status}`;

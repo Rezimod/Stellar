@@ -1,4 +1,5 @@
-import { getBodyPosition, getVisibleNow, sunAltitude } from './ephemeris';
+import { getBodyPosition, getVisibleNow, getDsoPosition, sunAltitude } from './ephemeris';
+import { findDso } from './dso';
 import { audit } from './audit';
 import { sanitizeUserText } from './sanitize';
 import { qvac, type ChatMessage } from './qvac';
@@ -20,13 +21,14 @@ const SYSTEM_PROMPT = `You are Stellar's Field companion, a precise astronomy as
 
 /** Compact, model-friendly grounding line (far fewer tokens than full JSON → lower TTFT). */
 function groundingText(live: LiveSky): string {
-  if (live.kind === 'body') {
+  if (live.kind === 'body' || live.kind === 'dso') {
     const status = !live.aboveHorizon
       ? 'below the horizon, not up right now'
       : live.daylight
         ? 'above the horizon but it is DAYTIME, so not viewable until after dark'
         : 'above the horizon and viewable now (dark sky)';
-    return `${live.name}: altitude ${live.altitude}°, direction ${live.direction}, ${status}.`;
+    const extra = live.kind === 'dso' && live.detail ? ` (${live.detail})` : '';
+    return `${live.name}${extra}: altitude ${live.altitude}°, direction ${live.direction}, ${status}.`;
   }
   if (live.daylight) {
     return `It is DAYTIME — nothing is observable now. After dark these would be up: ${live.bodies.map((b) => b.name).join(', ') || 'none'}.`;
@@ -38,16 +40,18 @@ function groundingText(live: LiveSky): string {
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
 
 /** Display-ready snapshot of the on-device computation, shown under the answer. */
+type Point = {
+  name: string;
+  altitude: number;
+  direction: string;
+  daylight: boolean;
+  observable: boolean;
+  aboveHorizon: boolean;
+};
+
 export type LiveSky =
-  | {
-      kind: 'body';
-      name: string;
-      altitude: number;
-      direction: string;
-      daylight: boolean;
-      observable: boolean;
-      aboveHorizon: boolean;
-    }
+  | ({ kind: 'body' } & Point)
+  | ({ kind: 'dso'; detail?: string } & Point)
   | {
       kind: 'sky';
       daylight: boolean;
@@ -60,6 +64,27 @@ function runLocalTool(
   lat: number,
   lon: number,
 ): { name: string; result: unknown; live: LiveSky } {
+  // Deep-sky object or named star (M31, Andromeda, Pleiades, Vega…)
+  const dso = findDso(message);
+  if (dso) {
+    const p = getDsoPosition(dso.ra, dso.dec, lat, lon);
+    const result = { name: dso.name, type: dso.type, constellation: dso.constellation, magnitude: dso.mag, ...p };
+    return {
+      name: 'get_dso_position',
+      result,
+      live: {
+        kind: 'dso',
+        name: dso.name,
+        altitude: p.altitude,
+        direction: p.azimuthDir,
+        daylight: p.daylight,
+        observable: p.observable,
+        aboveHorizon: p.aboveHorizon,
+        detail: `${dso.type} · mag ${dso.mag} · ${dso.constellation}`,
+      },
+    };
+  }
+
   const m = message.match(BODY_RE);
   if (m) {
     const body = m[1].toLowerCase();
