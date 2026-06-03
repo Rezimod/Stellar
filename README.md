@@ -143,7 +143,7 @@ Required environment variables: see `.env.example`.
 
 **Rezi (Revaz Modebadze)** — Founder of [Astroman](https://astroman.ge). Built solo.
 
-- **Winner — Tether Frontier Hackathon Track (May 2026)** — Superteam Earn, 127 submissions
+- **Winner — Tether Frontier Hackathon Track (May 2026)** — Superteam Earn
 - 2nd place + sponsor prize, Superteam Georgia Hackathon (March 2026)
 - [Twitter/X: @StellarClub26](https://x.com/StellarClub26)
 - Tbilisi, Georgia

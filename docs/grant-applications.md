@@ -3,7 +3,6 @@
 Live URL: **stellarr.club** · GitHub: github.com/Rezimod/Stellar
 
 > **Confirm before submitting:**
-> - "57 submissions" figure for the Tether/QVAC win
 > - Real audience numbers (this doc uses 45K+ buyers / 70K+ social; CLAUDE.md says 60K FB)
 > - Exact date/year of the Superteam Georgia placement (recorded as March 2026)
 >
@@ -29,7 +28,7 @@ Claude is our **trust layer** — the intelligence that makes our reward system 
 Two things: (a) scale Claude Vision verification to thousands of beta users without throttling during our most critical growth window, and (b) **migrate ASTRA, our conversational astronomer, onto Claude.** ASTRA currently runs on a smaller third-party model; credits let us move it to Claude Sonnet with tool calling (planet positions, 7-day sky quality) so a beginner's first night succeeds with real, location-specific guidance. Our worst-case AI cost is well under $1 per active user per month, so credits carry us through the Q3 2026 mainnet launch and the rollout to our Astroman customer list.
 
 **Stage & traction**
-- 1st place, Tether Frontier Hackathon — QVAC track (May 2026, 57 submissions)
+- 1st place, Tether Frontier Hackathon — QVAC track (May 2026)
 - 2nd place + sponsor prize, Superteam Georgia Hackathon (2026)
 - Full feature set live on devnet (missions, marketplace, ASTRA, Field Mode)
 - Distribution moat: built on Astroman.ge — 45K+ telescope buyers since 2018, 70K+ social audience, a physical Tbilisi store for redemption
@@ -59,7 +58,7 @@ $25K in Claude credits + $100K investment to fund the Q3 2026 mainnet launch and
 ## APPLICATION 3 — Solana Mobile Builder Grant ($10K)
 
 **What we're building**
-Stellar (stellarr.club) is a mobile-first consumer astronomy app. Its standout feature, **Field Mode**, runs a complete AI astronomer entirely on-device — Llama 3.2 1B (Q4_0) with semantic RAG over a 77-chunk astronomy corpus and Whisper voice notes — so it works at dark-sky observing sites where there is no cell signal and cloud AI fails. Field Mode won 1st place in the Tether Frontier Hackathon QVAC track (May 2026, 57 submissions).
+Stellar (stellarr.club) is a mobile-first consumer astronomy app. Its standout feature, **Field Mode**, runs a complete AI astronomer entirely on-device — Llama 3.2 1B (Q4_0) with semantic RAG over a 77-chunk astronomy corpus and Whisper voice notes — so it works at dark-sky observing sites where there is no cell signal and cloud AI fails. Field Mode won 1st place in the Tether Frontier Hackathon QVAC track (May 2026).
 
 **Why mobile / why Solana Mobile**
 Astronomy happens outdoors, at night, far from infrastructure — the exact conditions where a mobile-first, offline-capable app matters most. Stellar uses Privy embedded Solana wallets (email signup, no seed phrases) and mints compressed-NFT observation attestations via Metaplex Bubblegum, with a server fee-payer covering all gas so users never touch SOL. Consumer-grade Solana UX designed for the phone in your pocket under the stars. We're targeting the Solana dApp Store as a distribution channel post-mainnet.
