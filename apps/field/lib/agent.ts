@@ -26,12 +26,46 @@ If observable is false because it is daylight, say the object is technically up 
 
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
 
+/** Display-ready snapshot of the on-device computation, shown under the answer. */
+export type LiveSky =
+  | {
+      kind: 'body';
+      name: string;
+      altitude: number;
+      direction: string;
+      daylight: boolean;
+      observable: boolean;
+      aboveHorizon: boolean;
+    }
+  | {
+      kind: 'sky';
+      daylight: boolean;
+      bodies: { name: string; altitude: number; direction: string }[];
+    };
+
 /** Pick and run the right local tool for the question — pure on-device compute. */
-function runLocalTool(message: string, lat: number, lon: number): { name: string; result: unknown } {
+function runLocalTool(
+  message: string,
+  lat: number,
+  lon: number,
+): { name: string; result: unknown; live: LiveSky } {
   const m = message.match(BODY_RE);
   if (m) {
     const body = m[1].toLowerCase();
-    return { name: 'get_body_position', result: getBodyPosition(body, lat, lon) ?? { error: `unknown body: ${body}` } };
+    const p = getBodyPosition(body, lat, lon);
+    const result = p ?? { error: `unknown body: ${body}` };
+    const live: LiveSky = p
+      ? {
+          kind: 'body',
+          name: p.name,
+          altitude: p.altitude,
+          direction: p.azimuthDir,
+          daylight: p.daylight,
+          observable: p.observable,
+          aboveHorizon: p.aboveHorizon,
+        }
+      : { kind: 'body', name: body, altitude: 0, direction: '—', daylight: false, observable: false, aboveHorizon: false };
+    return { name: 'get_body_position', result, live };
   }
   const list = getVisibleNow(lat, lon);
   const daylight = sunAltitude(lat, lon) > -6;
@@ -42,6 +76,11 @@ function runLocalTool(message: string, lat: number, lon: number): { name: string
       count: list.length,
       bodies: list.map((b) => ({ name: b.name, altitude: b.altitude, direction: b.azimuthDir, magnitude: b.magnitude, observable: b.observable, constellation: b.constellation })),
     },
+    live: {
+      kind: 'sky',
+      daylight,
+      bodies: list.slice(0, 5).map((b) => ({ name: b.name, altitude: b.altitude, direction: b.azimuthDir })),
+    },
   };
 }
 
@@ -49,6 +88,8 @@ export type AgentResult = {
   stream: AsyncIterable<string>;
   /** The local tool(s) that produced the grounding data. */
   toolsUsed: string[];
+  /** Display-ready snapshot of the live on-device computation. */
+  live: LiveSky;
 };
 
 export async function runSkyAgent(
@@ -81,5 +122,6 @@ export async function runSkyAgent(
   return {
     stream: audit.instrument('llm', 'tool-model', userMessage, answer.tokenStream, answer.stats),
     toolsUsed: [tool.name],
+    live: tool.live,
   };
 }

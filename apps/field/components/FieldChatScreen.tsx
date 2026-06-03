@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
-import { runSkyAgent } from '../lib/agent';
+import { runSkyAgent, type LiveSky } from '../lib/agent';
 import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
 import { looksLikeSkyQuery } from '../lib/router';
 import { warmCorpusEmbeddings } from '../lib/rag';
@@ -24,6 +24,7 @@ type AssistantTurn = {
   content: string;
   citations: Citation[];
   toolsUsed?: string[];
+  live?: LiveSky;
 };
 
 type Turn = ChatMessage | AssistantTurn;
@@ -43,6 +44,7 @@ export function FieldChatScreen() {
     text: string;
     citations: Citation[];
     toolsUsed?: string[];
+    live?: LiveSky;
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [observer, setObserver] = useState<Observer>(DEFAULT_OBSERVER);
@@ -85,20 +87,20 @@ export function FieldChatScreen() {
 
     try {
       if (sky) {
-        const { stream, toolsUsed } = await runSkyAgent(
+        const { stream, toolsUsed, live } = await runSkyAgent(
           message,
           history,
           observer.lat,
           observer.lon,
         );
         let acc = '';
-        setStreaming({ text: '', citations: [], toolsUsed });
+        setStreaming({ text: '', citations: [], toolsUsed, live });
         for await (const tok of stream) {
           acc += tok;
-          setStreaming({ text: acc, citations: [], toolsUsed });
+          setStreaming({ text: acc, citations: [], toolsUsed, live });
           scrollRef.current?.scrollToEnd({ animated: false });
         }
-        setTurns([...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed }]);
+        setTurns([...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed, live }]);
         setStreaming(null);
       } else {
         const { stream, citations } = await startChat(message, history);
@@ -192,7 +194,7 @@ export function FieldChatScreen() {
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{m.content}</Text>
               </View>
-              <AssistantFooter citations={(m as AssistantTurn).citations} toolsUsed={(m as AssistantTurn).toolsUsed} />
+              <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} />
             </View>
           ),
         )}
@@ -202,7 +204,7 @@ export function FieldChatScreen() {
             <View style={[styles.bubble, styles.aiBubble]}>
               <Text style={styles.bubbleText}>{streaming.text || '…'}</Text>
             </View>
-            <AssistantFooter citations={streaming.citations} toolsUsed={streaming.toolsUsed} />
+            <AssistantFooter citations={streaming.citations} live={streaming.live} />
           </View>
         )}
       </ScrollView>
@@ -244,19 +246,28 @@ function statusDotColor(phase: LoadProgress['phase']) {
   }
 }
 
-function AssistantFooter({ citations, toolsUsed }: { citations: Citation[]; toolsUsed?: string[] }) {
-  // Agent answer — grounded in live on-device ephemeris, not the RAG corpus.
-  if (toolsUsed && toolsUsed.length > 0) {
+function formatLiveSky(live: LiveSky): string {
+  if (live.kind === 'body') {
+    if (!live.aboveHorizon) return `${live.name} · below horizon · not up`;
+    const status = live.daylight ? 'daytime · not viewable' : 'viewable now';
+    return `${live.name} · ${live.altitude}° · ${live.direction} · ${status}`;
+  }
+  if (live.daylight) return 'Daytime · nothing observable now';
+  if (live.bodies.length === 0) return 'Nothing above the horizon';
+  return 'Up: ' + live.bodies.map((b) => `${b.name} ${b.altitude}° ${b.direction}`).join(' · ');
+}
+
+function AssistantFooter({ citations, live }: { citations: Citation[]; live?: LiveSky }) {
+  // Agent answer — grounded in live, on-device sky data (not the RAG corpus).
+  if (live) {
     return (
       <View style={styles.assistantFooter}>
         <View style={[styles.modeBadge, styles.modeBadgeLive]}>
-          <Text style={styles.modeBadgeText}>LIVE EPHEMERIS</Text>
+          <Text style={styles.modeBadgeText}>LIVE SKY</Text>
         </View>
-        {toolsUsed.slice(0, 3).map((t) => (
-          <View key={t} style={styles.citation}>
-            <Text style={styles.citationText} numberOfLines={1}>{t}</Text>
-          </View>
-        ))}
+        <View style={styles.liveReadout}>
+          <Text style={styles.liveReadoutText} numberOfLines={2}>{formatLiveSky(live)}</Text>
+        </View>
       </View>
     );
   }
@@ -332,6 +343,21 @@ const styles = StyleSheet.create({
   },
   modeBadgeField: { backgroundColor: '#14B8A622', borderWidth: 1, borderColor: '#14B8A655' },
   modeBadgeLive: { backgroundColor: '#F59E0B22', borderWidth: 1, borderColor: '#F59E0B66' },
+  liveReadout: {
+    flex: 1,
+    backgroundColor: '#0F1320',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#F59E0B33',
+  },
+  liveReadoutText: {
+    color: '#F4C572',
+    fontSize: 10.5,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    letterSpacing: 0.2,
+  },
   modeBadgeText: {
     color: '#E5E7EB',
     fontSize: 9,
