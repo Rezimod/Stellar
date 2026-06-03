@@ -22,9 +22,18 @@ export default function App() {
             {tab === 'chat' ? <FieldChatScreen /> : tab === 'voice' ? <VoiceLogScreen /> : <DiagnosticsScreen />}
           </View>
           <View style={styles.tabBar}>
-            <TabButton label="Companion" active={tab === 'chat'} onPress={() => setTab('chat')} />
+            <TabButton
+              label="Companion"
+              active={tab === 'chat'}
+              onPress={() => setTab('chat')}
+              onLongPress={() => setTab('diag')}
+            />
             <TabButton label="Voice Log" active={tab === 'voice'} onPress={() => setTab('voice')} />
-            <TabButton label="Diagnostics" active={tab === 'diag'} onPress={() => setTab('diag')} />
+            {/* Diagnostics is a dev/testing surface (smoke test, eval, audit export) —
+                hidden from the shipped app; long-press the tab bar to reach it. */}
+            {__DEV__ && (
+              <TabButton label="Diagnostics" active={tab === 'diag'} onPress={() => setTab('diag')} />
+            )}
           </View>
         </SafeAreaView>
       </StellarPrivyProvider>
@@ -36,14 +45,18 @@ function TabButton({
   label,
   active,
   onPress,
+  onLongPress,
 }: {
   label: string;
   active: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
 }) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={700}
       style={[styles.tabBtn, active && styles.tabBtnActive]}
     >
       <Text style={[styles.tabBtnText, active && styles.tabBtnTextActive]}>{label}</Text>

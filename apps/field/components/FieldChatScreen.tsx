@@ -227,7 +227,7 @@ export function FieldChatScreen() {
             (busy || progress.phase !== 'ready' || !input.trim()) && styles.sendBtnDisabled,
           ]}
         >
-          <Text style={styles.sendText}>{busy ? '…' : 'Send'}</Text>
+          <Text style={styles.sendText}>{busy ? '…' : '↑'}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -330,9 +330,15 @@ const styles = StyleSheet.create({
     borderColor: '#222838',
   },
   starterChipText: { color: '#9CA3AF', fontSize: 12 },
-  bubble: { padding: 12, borderRadius: 12, maxWidth: '88%' },
-  userBubble: { backgroundColor: '#8B5CF6', alignSelf: 'flex-end' },
-  aiBubble: { backgroundColor: '#1A1F2E', alignSelf: 'flex-start' },
+  bubble: { paddingHorizontal: 14, paddingVertical: 11, borderRadius: 16, maxWidth: '88%' },
+  userBubble: { backgroundColor: '#7C5CFF', alignSelf: 'flex-end', borderBottomRightRadius: 6 },
+  aiBubble: {
+    backgroundColor: '#141B2A',
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 6,
+    borderWidth: 1,
+    borderColor: '#222C40',
+  },
   bubbleText: { color: '#E5E7EB', fontSize: 15, lineHeight: 22 },
   userBubbleText: { color: '#FFFFFF' },
   assistantFooter: {
@@ -384,29 +390,34 @@ const styles = StyleSheet.create({
   citationText: { color: '#9CA3AF', fontSize: 10 },
   composer: {
     flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 12,
     gap: 8,
     backgroundColor: '#0B0E17',
     borderTopWidth: 1,
-    borderTopColor: '#1A1F2E',
+    borderTopColor: '#1A2030',
   },
   input: {
     flex: 1,
-    backgroundColor: '#1A1F2E',
+    backgroundColor: '#141A28',
     color: '#E5E7EB',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#222B3D',
+    paddingHorizontal: 16,
+    paddingVertical: 11,
     fontSize: 15,
   },
   sendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#14B8A6',
-    paddingHorizontal: 18,
+    alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
   },
-  sendBtnDisabled: { backgroundColor: '#1A1F2E' },
-  sendText: { color: '#0B0E17', fontWeight: '700', fontSize: 14 },
+  sendBtnDisabled: { backgroundColor: '#1A2030' },
+  sendText: { color: '#06281F', fontWeight: '800', fontSize: 20, lineHeight: 22 },
 });
