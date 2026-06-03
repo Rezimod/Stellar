@@ -9,14 +9,16 @@ Daily agent that drafts a tweet, pings you on Telegram with one-tap Approve / Re
 
 ## 1. Get X API access (10 min)
 
-X free tier: 500 posts/month — plenty for one a day.
+**X Premium ≠ X API credits.** Premium is for the consumer app; posting via this agent uses the [Developer API](https://developer.x.com), which needs its own credits. If credits are empty, Approve opens **X compose** with the draft text (free) so you can still post manually.
+
+X free tier: 500 posts/month — plenty for one a day (when credits are loaded).
 
 1. Go to https://developer.x.com → sign in with the **@stellarrclub** account.
 2. Apply for a **Free** developer account (instant approval for most accounts).
 3. Inside the developer portal, create a **Project**, then inside it create an **App**.
 4. App settings → **User authentication settings** → Set up:
    - App permissions: **Read and write**
-   - Type of app: Web App (callback URL can be `https://stellarrclub.vercel.app`)
+   - Type of app: Web App (callback URL can be `https://stellarr.club`)
    - Save.
 5. **Keys and tokens** tab → generate / regenerate all four:
    - `API Key` → `X_API_KEY`
@@ -63,7 +65,7 @@ After deploy, hit the route by hand (with your `CRON_SECRET`):
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" \
-  https://stellarrclub.vercel.app/api/agent/draft-tweet
+  https://stellarr.club/api/agent/draft-tweet?skipImage=1
 ```
 
 You should:

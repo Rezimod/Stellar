@@ -5,14 +5,40 @@ import { tweetDrafts } from '@/lib/schema'
 import { verifyAction } from '@/lib/agent-token'
 import { postTweet } from '@/lib/twitter'
 import { sendTelegram } from '@/lib/telegram'
+import { formatXApiError, getTweetIntentUrl, isCreditsDepleted } from '@/lib/x-post'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
+const PAGE_STYLES = `body{font-family:system-ui,sans-serif;background:#0a0d18;color:#e7ecf3;margin:0;padding:48px 24px;display:flex;flex-direction:column;align-items:center;min-height:100vh}main{max-width:520px;width:100%}h1{font-size:20px;margin:0 0 16px}p{line-height:1.6;color:#aab2c2;font-size:15px}.body{background:#151a28;border:1px solid #232a3d;padding:16px;border-radius:12px;white-space:pre-wrap;margin:16px 0;font-size:14px;line-height:1.55;color:#e7ecf3}a{color:#8b5cf6;text-decoration:none}a:hover{text-decoration:underline}.btn{display:inline-block;margin:12px 8px 0 0;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none}.btn-primary{background:#8b5cf6;color:#fff}.btn-secondary{background:#232a3d;color:#e7ecf3;border:1px solid #3d4663}.img-preview{max-width:100%;border-radius:12px;margin:16px 0;border:1px solid #232a3d}.hint{font-size:13px;color:#7a8499;margin-top:8px}`
+
 function htmlResponse(title: string, body: string, status = 200) {
   return new NextResponse(
-    `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui,sans-serif;background:#0a0d18;color:#e7ecf3;margin:0;padding:48px 24px;display:flex;flex-direction:column;align-items:center;min-height:100vh}main{max-width:520px;width:100%}h1{font-size:20px;margin:0 0 16px}p{line-height:1.6;color:#aab2c2;font-size:15px}.body{background:#151a28;border:1px solid #232a3d;padding:16px;border-radius:12px;white-space:pre-wrap;margin:16px 0;font-size:14px;line-height:1.55;color:#e7ecf3}a{color:#8b5cf6;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><main><h1>${title}</h1>${body}</main></body></html>`,
+    `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>${PAGE_STYLES}</style></head><body><main><h1>${title}</h1>${body}</main></body></html>`,
     { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+  )
+}
+
+function composeFallbackPage(
+  draft: { body: string; imageBase64: string | null },
+  id: string,
+  sig: string,
+): NextResponse {
+  const intentUrl = getTweetIntentUrl(draft.body)
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
+  const markUrl = `${base}/api/agent/approve-tweet?id=${id}&sig=${encodeURIComponent(sig)}&done=1`
+  const imageBlock = draft.imageBase64
+    ? `<img class="img-preview" src="data:image/png;base64,${draft.imageBase64}" alt="Tweet image" /><p class="hint">Long-press or right-click to save the image, then attach it in X compose.</p>`
+    : ''
+
+  return htmlResponse(
+    'Post on X',
+    `<p><strong>X API credits are empty.</strong> X Premium does not include Developer API posting credits. Use the button below — it opens X compose with your draft text (no API credits needed).</p>
+<div class="body">${escapeHtml(draft.body)}</div>
+${imageBlock}
+<a class="btn btn-primary" href="${escapeHtml(intentUrl)}" target="_blank" rel="noopener noreferrer">Open X compose</a>
+<a class="btn btn-secondary" href="${escapeHtml(markUrl)}">I've posted — mark done</a>
+<p class="hint">To restore one-tap API posting, add credits at <a href="https://developer.x.com/en/portal/products">developer.x.com</a>.</p>`,
   )
 }
 
@@ -20,7 +46,15 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id')
   const sig = req.nextUrl.searchParams.get('sig')
   if (!id || !sig) return htmlResponse('Invalid link', '<p>Missing id or signature.</p>', 400)
-  if (!verifyAction(id, 'approve', sig)) return htmlResponse('Invalid signature', '<p>This approve link is invalid or has been tampered with.</p>', 403)
+
+  try {
+    if (!verifyAction(id, 'approve', sig)) {
+      return htmlResponse('Invalid signature', '<p>This approve link is invalid or has been tampered with.</p>', 403)
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Configuration error'
+    return htmlResponse('Agent not configured', `<p>${escapeHtml(msg)}</p>`, 500)
+  }
 
   const db = getDb()
   if (!db) return htmlResponse('Database unavailable', '<p>DATABASE_URL not configured.</p>', 500)
@@ -28,10 +62,26 @@ export async function GET(req: NextRequest) {
   const [draft] = await db.select().from(tweetDrafts).where(eq(tweetDrafts.id, id))
   if (!draft) return htmlResponse('Draft not found', '<p>No draft with that id.</p>', 404)
   if (draft.status === 'posted') {
-    return htmlResponse('Already posted', `<p>This draft was already posted${draft.postedTweetId ? ` as <a href="https://twitter.com/i/web/status/${draft.postedTweetId}">tweet ${draft.postedTweetId}</a>` : ''}.</p>`)
+    return htmlResponse(
+      'Already posted',
+      `<p>This draft was already posted${draft.postedTweetId && draft.postedTweetId !== 'manual' ? ` as <a href="https://twitter.com/i/web/status/${draft.postedTweetId}">tweet ${draft.postedTweetId}</a>` : ' manually on X'}.</p>`,
+    )
   }
   if (draft.status === 'rejected') {
     return htmlResponse('Already rejected', '<p>This draft was rejected and cannot be posted.</p>')
+  }
+
+  if (req.nextUrl.searchParams.get('done') === '1') {
+    const now = new Date()
+    await db
+      .update(tweetDrafts)
+      .set({ status: 'posted', postedTweetId: 'manual', postedAt: now, reviewedAt: now })
+      .where(eq(tweetDrafts.id, id))
+    return htmlResponse('Marked posted', '<p>Draft marked as posted. Next cron run is tomorrow.</p>')
+  }
+
+  if (req.nextUrl.searchParams.get('compose') === '1') {
+    return composeFallbackPage(draft, id, sig)
   }
 
   try {
@@ -52,13 +102,23 @@ export async function GET(req: NextRequest) {
       `<p>Live on X.</p><div class="body">${escapeHtml(draft.body)}</div><p><a href="https://twitter.com/i/web/status/${posted.id}">Open on X</a></p>`,
     )
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'unknown error'
+    if (isCreditsDepleted(err)) {
+      return composeFallbackPage(draft, id, sig)
+    }
+
+    const msg = formatXApiError(err)
     await db
       .update(tweetDrafts)
       .set({ status: 'failed', errorMessage: msg, reviewedAt: new Date() })
       .where(eq(tweetDrafts.id, id))
     console.error('[agent/approve-tweet] post failed', err)
-    return htmlResponse('Post failed', `<p>${escapeHtml(msg)}</p>`, 500)
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
+    const composeUrl = `${base}/api/agent/approve-tweet?id=${id}&sig=${encodeURIComponent(sig)}&compose=1`
+    return htmlResponse(
+      'Post failed',
+      `<p>${escapeHtml(msg)}</p><p><a class="btn btn-primary" href="${escapeHtml(composeUrl)}">Post via X compose instead</a></p>`,
+      500,
+    )
   }
 }
 

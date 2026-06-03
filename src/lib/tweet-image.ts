@@ -57,58 +57,59 @@ async function loadLogoSvg(): Promise<Buffer> {
   return cachedLogo
 }
 
-async function compositeLogo(photo: Buffer): Promise<Buffer> {
+const CORNER_PAD = 36
+const LOGO_MARK_W = 32
+const BADGE_W = 148
+const BADGE_H = 44
+
+async function buildCornerBadge(align: 'left' | 'right'): Promise<Buffer> {
   const logoSvg = await loadLogoSvg()
-  const logoWidth = 120
   const logoPng = await sharp(logoSvg, { density: 600 })
-    .resize({ width: logoWidth })
+    .resize({ width: LOGO_MARK_W })
     .png()
     .toBuffer()
   const logoMeta = await sharp(logoPng).metadata()
-  const logoHeight = logoMeta.height ?? logoWidth
+  const logoH = logoMeta.height ?? LOGO_MARK_W
+  const logoY = Math.round((BADGE_H - logoH) / 2)
+  const logoX = align === 'left' ? 10 : BADGE_W - LOGO_MARK_W - 10
+  const textX = align === 'left' ? LOGO_MARK_W + 22 : 14
+  const textAnchor = align === 'left' ? 'start' : 'end'
 
-  const padding = 48
-  const scrimPad = 24
-  const scrimWidth = logoWidth + 220
-  const scrimHeight = logoHeight + scrimPad * 2
-
-  const scrim = await sharp({
+  return sharp({
     create: {
-      width: scrimWidth,
-      height: scrimHeight,
+      width: BADGE_W,
+      height: BADGE_H,
       channels: 4,
-      background: { r: 10, g: 13, b: 24, alpha: 0.78 },
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
   })
     .composite([
       {
         input: Buffer.from(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="${scrimWidth}" height="${scrimHeight}">
-            <rect x="0" y="0" width="${scrimWidth}" height="${scrimHeight}" rx="20" ry="20" fill="rgba(10,13,24,0.78)" />
-            <text x="${logoWidth + 40}" y="${scrimHeight / 2 + 12}" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="600" fill="#F4EDE0">stellarr</text>
+          `<svg xmlns="http://www.w3.org/2000/svg" width="${BADGE_W}" height="${BADGE_H}">
+            <text x="${textX}" y="30" text-anchor="${textAnchor}" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#F4EDE0" opacity="0.92">Stellar</text>
           </svg>`,
         ),
         top: 0,
         left: 0,
       },
-      {
-        input: logoPng,
-        top: scrimPad,
-        left: scrimPad,
-      },
+      { input: logoPng, top: logoY, left: logoX },
     ])
     .png()
     .toBuffer()
+}
 
+async function compositeLogo(photo: Buffer): Promise<Buffer> {
   const resized = await sharp(photo).resize(SIZE.width, SIZE.height, { fit: 'cover' }).toBuffer()
+  const [topLeft, topRight] = await Promise.all([
+    buildCornerBadge('left'),
+    buildCornerBadge('right'),
+  ])
 
   return sharp(resized)
     .composite([
-      {
-        input: scrim,
-        top: SIZE.height - scrimHeight - padding,
-        left: SIZE.width - scrimWidth - padding,
-      },
+      { input: topLeft, top: CORNER_PAD, left: CORNER_PAD },
+      { input: topRight, top: CORNER_PAD, left: SIZE.width - BADGE_W - CORNER_PAD },
     ])
     .png({ quality: 90 })
     .toBuffer()
