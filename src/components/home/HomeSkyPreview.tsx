@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import type { SkyDay, SkyHour } from '@/lib/sky-data';
 import type { PlanetInfo } from '@/lib/planets';
 
@@ -161,8 +162,8 @@ export default function HomeSkyPreview() {
   const [skyScore, setSkyScore] = useState<SkyScoreData | null>(null);
 
   useEffect(() => {
-    const lat = location.lat || 41.6941;
-    const lng = location.lon || 44.8337;
+    const lat = location.lat ?? DEFAULT_OBSERVER.lat;
+    const lng = location.lon ?? DEFAULT_OBSERVER.lon;
     setForecast(null); setPlanets(null); setSelectedDay(0);
     fetch(`/api/sky/forecast?lat=${lat}&lng=${lng}`)
       .then(r => r.ok ? r.json() : null).then(setForecast).catch(() => setForecast([]));
@@ -174,7 +175,7 @@ export default function HomeSkyPreview() {
 
   function selectDay(index: number, dateStr: string) {
     setSelectedDay(index);
-    const lat = location.lat || 41.6941; const lng = location.lon || 44.8337;
+    const lat = location.lat ?? DEFAULT_OBSERVER.lat; const lng = location.lon ?? DEFAULT_OBSERVER.lon;
     setPlanetsLoading(true);
     const date = index === 0 ? new Date().toISOString() : `${dateStr}T21:00:00`;
     fetch(`/api/sky/planets?lat=${lat}&lng=${lng}&date=${encodeURIComponent(date)}`)

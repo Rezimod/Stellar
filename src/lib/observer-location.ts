@@ -13,6 +13,14 @@ export const DEFAULT_OBSERVER: UserLocation = {
   source: 'default',
 };
 
+/**
+ * Single source of truth for last-resort coordinates. Every client and server
+ * fallback derives from `DEFAULT_OBSERVER` — do not introduce ad-hoc literals
+ * (the app once carried three divergent "Tbilisi" pairs that disagreed by ~3 km).
+ */
+export const DEFAULT_LAT = DEFAULT_OBSERVER.lat;
+export const DEFAULT_LON = DEFAULT_OBSERVER.lon;
+
 /** Cached GPS/manual coords older than this are refreshed on app open. */
 export const LOCATION_STALE_MS = 15 * 60 * 1000;
 

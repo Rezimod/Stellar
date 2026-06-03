@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 
 interface ForecastHour {
   time: string;
@@ -100,8 +101,8 @@ export default function SkyOutlook() {
 
   useEffect(() => {
     let cancelled = false;
-    const lat = location.lat ?? 41.6941;
-    const lng = location.lon ?? 44.8337;
+    const lat = location.lat ?? DEFAULT_OBSERVER.lat;
+    const lng = location.lon ?? DEFAULT_OBSERVER.lon;
     fetch(`/api/sky/forecast?lat=${lat}&lng=${lng}`)
       .then((r) => r.json())
       .then((data) => {

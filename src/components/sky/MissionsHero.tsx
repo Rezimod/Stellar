@@ -6,6 +6,7 @@ import { useAppState } from '@/hooks/useAppState';
 import type { Mission } from '@/lib/types';
 import { getVisiblePlanets } from '@/lib/planets';
 import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import JupiterArt from '@/components/sky/art/JupiterArt';
 import SaturnArt from '@/components/sky/art/SaturnArt';
 import MoonArt from '@/components/sky/art/MoonArt';
@@ -63,7 +64,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
 
   useEffect(() => {
     try {
-      const res = getVisiblePlanets(location.lat ?? 41.7151, location.lon ?? 44.8271, new Date());
+      const res = getVisiblePlanets(location.lat ?? DEFAULT_OBSERVER.lat, location.lon ?? DEFAULT_OBSERVER.lon, new Date());
       const map: Record<string, { rise: string; transit: string; altitude: number }> = {};
       res.forEach(p => {
         const rise = p.rise instanceof Date ? p.rise : p.rise ? new Date(p.rise) : null;

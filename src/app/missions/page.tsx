@@ -9,6 +9,7 @@ import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { getVisiblePlanets, getWindowPlanets } from '@/lib/planets';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 import { getChartDeepSky } from '@/lib/sky-chart';
@@ -171,9 +172,9 @@ export default function MissionsPage() {
 
   useVisibleInterval(() => setNow(new Date()), 60_000);
 
-  const lat = location.lat ?? 41.7151;
-  const lon = location.lon ?? 44.8271;
-  const cityLabel = location.city || 'Tbilisi';
+  const lat = location.lat ?? DEFAULT_OBSERVER.lat;
+  const lon = location.lon ?? DEFAULT_OBSERVER.lon;
+  const cityLabel = location.city || DEFAULT_OBSERVER.city;
 
   const dark = useMemo(() => getTonightDarkWindow(lat, lon, now), [lat, lon, now]);
   const evalTime = dark.evalTime;

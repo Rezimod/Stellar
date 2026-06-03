@@ -9,14 +9,15 @@ import {
   Equator,
   Horizon,
 } from 'astronomy-engine';
+import { DEFAULT_LAT, DEFAULT_LON } from '@/lib/observer-location';
 
 function fmtHHmm(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 export async function GET(req: NextRequest) {
-  const lat = parseFloat(req.nextUrl.searchParams.get('lat') ?? '41.6941');
-  const lng = parseFloat(req.nextUrl.searchParams.get('lng') ?? req.nextUrl.searchParams.get('lon') ?? '44.8337');
+  const lat = parseFloat(req.nextUrl.searchParams.get('lat') ?? String(DEFAULT_LAT));
+  const lng = parseFloat(req.nextUrl.searchParams.get('lng') ?? req.nextUrl.searchParams.get('lon') ?? String(DEFAULT_LON));
   const now = new Date();
 
   const midnight = new Date(now);

@@ -6,6 +6,7 @@ import type { SkyScoreResult } from '@/lib/sky-score';
 import type { StreakTier } from '@/lib/constellation-streak';
 import type { RarityInfo } from '@/lib/nft-rarity';
 import type { CosmicBonus } from '@/lib/cosmic-bonus';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 
 export type UploadSource = 'camera' | 'upload';
 
@@ -67,7 +68,7 @@ export function ObserveFlowProvider({ children }: { children: ReactNode }) {
   const [photo, setPhoto] = useState('');
   const [source, setSource] = useState<UploadSource>('camera');
   const [timestamp, setTimestamp] = useState('');
-  const [coords, setCoords] = useState({ lat: 41.7151, lon: 44.8271 });
+  const [coords, setCoords] = useState({ lat: DEFAULT_OBSERVER.lat, lon: DEFAULT_OBSERVER.lon });
   const [sky, setSky] = useState<SkyVerification | null>(null);
   const [skyScore, setSkyScore] = useState<SkyScoreResult | null>(null);
   const [photoVerification, setPhotoVerification] = useState<PhotoVerificationResult | null>(null);

@@ -14,6 +14,7 @@ import { useStellarUser } from '@/hooks/useStellarUser'
 import { useDisplayProfile } from '@/hooks/useDisplayProfile'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useLocation } from '@/lib/location'
+import { DEFAULT_OBSERVER } from '@/lib/observer-location'
 import FeedPostCard from '@/components/feed/FeedPostCard'
 import SkyWidget from '@/components/feed/SkyWidget'
 import { DiscoveriesWidget, ShopWidget } from '@/components/feed/SidebarWidgets'
@@ -267,8 +268,8 @@ export default function FeedPage() {
   }, [])
 
   const cityLabel = useMemo(() => location?.city ?? copy.cityFallback, [location, copy.cityFallback])
-  const lat = location?.lat ?? 41.7
-  const lon = location?.lon ?? 44.83
+  const lat = location?.lat ?? DEFAULT_OBSERVER.lat
+  const lon = location?.lon ?? DEFAULT_OBSERVER.lon
 
   return (
     <div className="feed-page">

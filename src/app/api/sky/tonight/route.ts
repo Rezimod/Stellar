@@ -3,9 +3,7 @@ import { Body, Illumination, Observer, Equator, Horizon, SearchRiseSet } from 'a
 import { calculateSkyScore } from '@/lib/sky-score'
 import { fetchOpenMeteo } from '@/lib/open-meteo'
 import { activeMeteorShower } from '@/lib/meteor-showers'
-
-const DEFAULT_LAT = 41.72
-const DEFAULT_LON = 44.83
+import { DEFAULT_LAT, DEFAULT_LON } from '@/lib/observer-location'
 
 interface PlanetHighlight {
   type: 'planet' | 'moon'

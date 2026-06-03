@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getVisiblePlanets, getWindowPlanets } from '@/lib/planets';
 import { getTonightDarkWindow } from '@/lib/dark-window';
+import { DEFAULT_LAT, DEFAULT_LON } from '@/lib/observer-location';
 
 export async function GET(req: NextRequest) {
-  const lat = parseFloat(req.nextUrl.searchParams.get('lat') ?? '41.6941');
-  const lng = parseFloat(req.nextUrl.searchParams.get('lng') ?? req.nextUrl.searchParams.get('lon') ?? '44.8337');
+  const lat = parseFloat(req.nextUrl.searchParams.get('lat') ?? String(DEFAULT_LAT));
+  const lng = parseFloat(req.nextUrl.searchParams.get('lng') ?? req.nextUrl.searchParams.get('lon') ?? String(DEFAULT_LON));
 
   if (!isFinite(lat) || !isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return NextResponse.json({ error: 'Invalid coordinates' }, { status: 400 });

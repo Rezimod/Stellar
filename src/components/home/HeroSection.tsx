@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 
 type PlanetStatus = 'up' | 'setting' | 'down';
 
@@ -114,8 +115,8 @@ export default function HeroSection() {
 
   useEffect(() => {
     let cancelled = false;
-    const lat = location.lat ?? 41.6941;
-    const lng = location.lon ?? 44.8337;
+    const lat = location.lat ?? DEFAULT_OBSERVER.lat;
+    const lng = location.lon ?? DEFAULT_OBSERVER.lon;
 
     Promise.all([
       fetch(`/api/sky/planets?lat=${lat}&lng=${lng}`).then((r) => r.json()),

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import { skyForecastRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { DEFAULT_LAT, DEFAULT_LON } from '@/lib/observer-location';
 
-const DEFAULT_LAT = 41.6941;
-const DEFAULT_LNG = 44.8337;
+const DEFAULT_LNG = DEFAULT_LON;
 
 export async function GET(req: NextRequest) {
   const ip =

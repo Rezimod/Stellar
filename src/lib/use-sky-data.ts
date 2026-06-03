@@ -397,61 +397,6 @@ function toForecastDay(
   };
 }
 
-interface StoredLocation {
-  lat: number;
-  lon: number;
-  city?: string;
-}
-
-async function resolveCoords(
-  initial?: { lat: number; lon: number; city?: string },
-  locale: 'en' | 'ka' = 'en',
-): Promise<{ lat: number; lon: number; city: string }> {
-  if (initial) {
-    return {
-      lat: initial.lat,
-      lon: initial.lon,
-      city: initial.city || (locale === 'ka' ? 'შენი მდებარეობა' : 'Your location'),
-    };
-  }
-
-  // Honor the project-wide LocationProvider preference if the user has set one.
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = window.localStorage.getItem('stellar_location');
-      if (stored) {
-        const parsed = JSON.parse(stored) as StoredLocation;
-        if (Number.isFinite(parsed.lat) && Number.isFinite(parsed.lon)) {
-          return {
-            lat: parsed.lat,
-            lon: parsed.lon,
-            city: parsed.city || (locale === 'ka' ? 'შენი მდებარეობა' : 'Your location'),
-          };
-        }
-      }
-    } catch {
-      // fall through
-    }
-  }
-
-  if (typeof navigator !== 'undefined' && navigator.geolocation) {
-    try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 4000 });
-      });
-      return {
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-        city: locale === 'ka' ? 'შენი მდებარეობა' : 'Your location',
-      };
-    } catch {
-      // fall through
-    }
-  }
-
-  return { lat: 41.6941, lon: 44.8337, city: locale === 'ka' ? 'თბილისი' : 'Tbilisi' };
-}
-
 function computeObservationScore(
   planets: PlanetData[],
   verify: RawVerify | null,

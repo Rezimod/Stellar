@@ -4,6 +4,7 @@ import { PrivyClient } from '@privy-io/server-auth';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import { getVisiblePlanets } from '@/lib/planets';
 import { chatRateLimit, chatDailyLimit, checkRateLimit } from '@/lib/rate-limit';
+import { DEFAULT_LAT, DEFAULT_LON } from '@/lib/observer-location';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,9 +27,6 @@ function getOpenAI(): OpenAI {
 }
 
 const OPENAI_MODEL = 'gpt-4o-mini';
-
-const DEFAULT_LAT = 41.72;
-const DEFAULT_LON = 44.83;
 
 const SYSTEM_PROMPT = `You are ASTRA, the AI astronomer for Stellar — the companion app for telescope and smartphone owners. You have real-time access to sky conditions and planet positions.
 
