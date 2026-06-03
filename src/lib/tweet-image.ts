@@ -51,45 +51,36 @@ async function generateBasePhoto(kind: TweetKind, context: Record<string, unknow
   return Buffer.from(b64, 'base64')
 }
 
-let cachedWhite: Buffer | null = null
-let cachedBlack: Buffer | null = null
+let cachedWhiteLogo: Buffer | null = null
 
-async function loadWordmark(variant: 'white' | 'black'): Promise<Buffer> {
-  if (variant === 'white') {
-    if (!cachedWhite) {
-      cachedWhite = await readFile(path.join(process.cwd(), 'public', 'brand', 'logo-white.png'))
-    }
-    return cachedWhite
-  }
-  if (!cachedBlack) {
-    cachedBlack = await readFile(path.join(process.cwd(), 'public', 'brand', 'logo-black.png'))
-  }
-  return cachedBlack
-}
+/** White STELLAR wordmark with black background removed — used on every post image. */
+async function loadWhiteWordmark(): Promise<Buffer> {
+  if (cachedWhiteLogo) return cachedWhiteLogo
 
-/** Sample top band luminance; bright sky → black logo, dark sky → white logo. */
-async function pickLogoVariant(photo: Buffer): Promise<'white' | 'black'> {
-  const resized = await sharp(photo).resize(SIZE.width, SIZE.height, { fit: 'cover' }).toBuffer()
-  const bandHeight = Math.max(80, Math.round(SIZE.height * 0.12))
-  const { data, info } = await sharp(resized)
-    .extract({ left: 0, top: 0, width: SIZE.width, height: bandHeight })
-    .resize(64, 36, { fit: 'fill' })
-    .raw()
-    .toBuffer({ resolveWithObject: true })
-
-  let sum = 0
-  const channels = info.channels ?? 3
+  const raw = await readFile(path.join(process.cwd(), 'public', 'brand', 'logo-white.png'))
+  const { data, info } = await sharp(raw).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  const channels = info.channels ?? 4
   for (let i = 0; i < data.length; i += channels) {
-    sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]
+    const r = data[i]
+    const g = data[i + 1]
+    const b = data[i + 2]
+    if (r < 48 && g < 48 && b < 48 && channels === 4) {
+      data[i + 3] = 0
+    }
   }
-  const avg = sum / (data.length / channels)
-  return avg > 140 ? 'black' : 'white'
+
+  cachedWhiteLogo = await sharp(data, {
+    raw: { width: info.width, height: info.height, channels: channels as 4 },
+  })
+    .png()
+    .toBuffer()
+
+  return cachedWhiteLogo
 }
 
 async function compositeLogo(photo: Buffer): Promise<Buffer> {
-  const variant = await pickLogoVariant(photo)
-  const wordmark = await loadWordmark(variant)
-  const logoPng = await sharp(wordmark).trim().resize({ width: LOGO_WIDTH }).png().toBuffer()
+  const wordmark = await loadWhiteWordmark()
+  const logoPng = await sharp(wordmark).trim({ threshold: 10 }).resize({ width: LOGO_WIDTH }).png().toBuffer()
   const meta = await sharp(logoPng).metadata()
   const logoW = meta.width ?? LOGO_WIDTH
   const logoH = meta.height ?? 40
