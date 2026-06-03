@@ -5,6 +5,8 @@ import path from 'node:path'
 import type { TweetKind } from './tweet-agent'
 
 const SIZE = { width: 1792, height: 1024 } as const
+const LOGO_WIDTH = 260
+const TOP_PAD = 16
 
 function openai() {
   if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY missing')
@@ -49,68 +51,54 @@ async function generateBasePhoto(kind: TweetKind, context: Record<string, unknow
   return Buffer.from(b64, 'base64')
 }
 
-let cachedLogo: Buffer | null = null
-async function loadLogoSvg(): Promise<Buffer> {
-  if (cachedLogo) return cachedLogo
-  const filePath = path.join(process.cwd(), 'public', 'brand', 'logo-mark.svg')
-  cachedLogo = await readFile(filePath)
-  return cachedLogo
+let cachedWhite: Buffer | null = null
+let cachedBlack: Buffer | null = null
+
+async function loadWordmark(variant: 'white' | 'black'): Promise<Buffer> {
+  if (variant === 'white') {
+    if (!cachedWhite) {
+      cachedWhite = await readFile(path.join(process.cwd(), 'public', 'brand', 'logo-white.png'))
+    }
+    return cachedWhite
+  }
+  if (!cachedBlack) {
+    cachedBlack = await readFile(path.join(process.cwd(), 'public', 'brand', 'logo-black.png'))
+  }
+  return cachedBlack
 }
 
-const CORNER_PAD = 36
-const LOGO_MARK_W = 32
-const BADGE_W = 148
-const BADGE_H = 44
+/** Sample top band luminance; bright sky → black logo, dark sky → white logo. */
+async function pickLogoVariant(photo: Buffer): Promise<'white' | 'black'> {
+  const resized = await sharp(photo).resize(SIZE.width, SIZE.height, { fit: 'cover' }).toBuffer()
+  const bandHeight = Math.max(80, Math.round(SIZE.height * 0.12))
+  const { data, info } = await sharp(resized)
+    .extract({ left: 0, top: 0, width: SIZE.width, height: bandHeight })
+    .resize(64, 36, { fit: 'fill' })
+    .raw()
+    .toBuffer({ resolveWithObject: true })
 
-async function buildCornerBadge(align: 'left' | 'right'): Promise<Buffer> {
-  const logoSvg = await loadLogoSvg()
-  const logoPng = await sharp(logoSvg, { density: 600 })
-    .resize({ width: LOGO_MARK_W })
-    .png()
-    .toBuffer()
-  const logoMeta = await sharp(logoPng).metadata()
-  const logoH = logoMeta.height ?? LOGO_MARK_W
-  const logoY = Math.round((BADGE_H - logoH) / 2)
-  const logoX = align === 'left' ? 10 : BADGE_W - LOGO_MARK_W - 10
-  const textX = align === 'left' ? LOGO_MARK_W + 22 : 14
-  const textAnchor = align === 'left' ? 'start' : 'end'
-
-  return sharp({
-    create: {
-      width: BADGE_W,
-      height: BADGE_H,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite([
-      {
-        input: Buffer.from(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="${BADGE_W}" height="${BADGE_H}">
-            <text x="${textX}" y="30" text-anchor="${textAnchor}" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#F4EDE0" opacity="0.92">Stellar</text>
-          </svg>`,
-        ),
-        top: 0,
-        left: 0,
-      },
-      { input: logoPng, top: logoY, left: logoX },
-    ])
-    .png()
-    .toBuffer()
+  let sum = 0
+  const channels = info.channels ?? 3
+  for (let i = 0; i < data.length; i += channels) {
+    sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]
+  }
+  const avg = sum / (data.length / channels)
+  return avg > 140 ? 'black' : 'white'
 }
 
 async function compositeLogo(photo: Buffer): Promise<Buffer> {
+  const variant = await pickLogoVariant(photo)
+  const wordmark = await loadWordmark(variant)
+  const logoPng = await sharp(wordmark).resize({ width: LOGO_WIDTH }).png().toBuffer()
+  const meta = await sharp(logoPng).metadata()
+  const logoW = meta.width ?? LOGO_WIDTH
+  const logoH = meta.height ?? 40
+
   const resized = await sharp(photo).resize(SIZE.width, SIZE.height, { fit: 'cover' }).toBuffer()
-  const [topLeft, topRight] = await Promise.all([
-    buildCornerBadge('left'),
-    buildCornerBadge('right'),
-  ])
+  const left = Math.round((SIZE.width - logoW) / 2)
 
   return sharp(resized)
-    .composite([
-      { input: topLeft, top: CORNER_PAD, left: CORNER_PAD },
-      { input: topRight, top: CORNER_PAD, left: SIZE.width - BADGE_W - CORNER_PAD },
-    ])
+    .composite([{ input: logoPng, top: TOP_PAD, left }])
     .png({ quality: 90 })
     .toBuffer()
 }

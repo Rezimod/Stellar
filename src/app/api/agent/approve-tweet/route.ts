@@ -10,7 +10,7 @@ import { formatXApiError, getTweetIntentUrl, isCreditsDepleted } from '@/lib/x-p
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-const PAGE_STYLES = `body{font-family:system-ui,sans-serif;background:#0a0d18;color:#e7ecf3;margin:0;padding:48px 24px;display:flex;flex-direction:column;align-items:center;min-height:100vh}main{max-width:520px;width:100%}h1{font-size:20px;margin:0 0 16px}p{line-height:1.6;color:#aab2c2;font-size:15px}.body{background:#151a28;border:1px solid #232a3d;padding:16px;border-radius:12px;white-space:pre-wrap;margin:16px 0;font-size:14px;line-height:1.55;color:#e7ecf3}a{color:#8b5cf6;text-decoration:none}a:hover{text-decoration:underline}.btn{display:inline-block;margin:12px 8px 0 0;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none}.btn-primary{background:#8b5cf6;color:#fff}.btn-secondary{background:#232a3d;color:#e7ecf3;border:1px solid #3d4663}.img-preview{max-width:100%;border-radius:12px;margin:16px 0;border:1px solid #232a3d}.hint{font-size:13px;color:#7a8499;margin-top:8px}`
+const PAGE_STYLES = `body{font-family:system-ui,sans-serif;background:#0a0d18;color:#e7ecf3;margin:0;padding:48px 24px;display:flex;flex-direction:column;align-items:center;min-height:100vh}main{max-width:520px;width:100%}h1{font-size:20px;margin:0 0 16px}p{line-height:1.6;color:#aab2c2;font-size:15px}.body{background:#151a28;border:1px solid #232a3d;padding:16px;border-radius:12px;white-space:pre-wrap;margin:16px 0;font-size:14px;line-height:1.55;color:#e7ecf3}a{color:#8b5cf6;text-decoration:none}a:hover{text-decoration:underline}.btn{display:inline-block;margin:12px 8px 0 0;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:none;cursor:pointer;font-family:inherit}.btn-primary{background:#8b5cf6;color:#fff}.btn-secondary{background:#232a3d;color:#e7ecf3;border:1px solid #3d4663}.img-preview{max-width:100%;border-radius:12px;margin:16px 0;border:1px solid #232a3d}.hint{font-size:13px;color:#7a8499;margin-top:8px}`
 
 function htmlResponse(title: string, body: string, status = 200) {
   return new NextResponse(
@@ -27,18 +27,67 @@ function composeFallbackPage(
   const intentUrl = getTweetIntentUrl(draft.body)
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club'
   const markUrl = `${base}/api/agent/approve-tweet?id=${id}&sig=${encodeURIComponent(sig)}&done=1`
-  const imageBlock = draft.imageBase64
-    ? `<img class="img-preview" src="data:image/png;base64,${draft.imageBase64}" alt="Tweet image" /><p class="hint">Long-press or right-click to save the image, then attach it in X compose.</p>`
+  const imageUrl = `${base}/api/agent/draft-image?id=${id}&sig=${encodeURIComponent(sig)}`
+  const hasImage = !!draft.imageBase64
+
+  const imageBlock = hasImage
+    ? `<img class="img-preview" src="data:image/png;base64,${draft.imageBase64}" alt="Tweet image" />`
+    : ''
+
+  const shareScript = hasImage
+    ? `<script>
+(function(){
+  var text = ${JSON.stringify(draft.body)};
+  var intentUrl = ${JSON.stringify(intentUrl)};
+  var imageUrl = ${JSON.stringify(imageUrl)};
+  async function postWithImage() {
+    try {
+      var resp = await fetch(imageUrl);
+      if (!resp.ok) throw new Error('Could not load image');
+      var blob = await resp.blob();
+      var file = new File([blob], 'stellarr-post.png', { type: 'image/png' });
+      var payload = { text: text, files: [file] };
+      if (navigator.share && (!navigator.canShare || navigator.canShare(payload))) {
+        await navigator.share(payload);
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+    var a = document.createElement('a');
+    a.href = imageUrl;
+    a.download = 'stellarr-post.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ window.open(intentUrl, '_blank'); }, 400);
+    alert('Image saved to your device. In X compose, tap the image icon and attach stellarr-post.png.');
+  }
+  var btn = document.getElementById('shareWithImage');
+  if (btn) btn.addEventListener('click', postWithImage);
+})();
+</script>`
+    : ''
+
+  const primaryBtn = hasImage
+    ? `<button type="button" class="btn btn-primary" id="shareWithImage">Post to X with image</button>`
+    : `<a class="btn btn-primary" href="${escapeHtml(intentUrl)}" target="_blank" rel="noopener noreferrer">Open X compose</a>`
+
+  const secondaryBtns = hasImage
+    ? `<a class="btn btn-secondary" href="${escapeHtml(intentUrl)}" target="_blank" rel="noopener noreferrer">Text only on X</a>
+<a class="btn btn-secondary" href="${escapeHtml(imageUrl)}" download="stellarr-post.png">Download image</a>`
     : ''
 
   return htmlResponse(
     'Post on X',
-    `<p><strong>X API credits are empty.</strong> X Premium does not include Developer API posting credits. Use the button below — it opens X compose with your draft text (no API credits needed).</p>
+    `<p><strong>X API credits are empty.</strong> Use <strong>Post to X with image</strong> on your phone — it opens the share sheet so X receives the photo and text together. On desktop, download the image first, then open compose and attach it.</p>
 <div class="body">${escapeHtml(draft.body)}</div>
 ${imageBlock}
-<a class="btn btn-primary" href="${escapeHtml(intentUrl)}" target="_blank" rel="noopener noreferrer">Open X compose</a>
+${primaryBtn}
+${secondaryBtns}
 <a class="btn btn-secondary" href="${escapeHtml(markUrl)}">I've posted — mark done</a>
-<p class="hint">To restore one-tap API posting, add credits at <a href="https://developer.x.com/en/portal/products">developer.x.com</a>.</p>`,
+<p class="hint">X compose links cannot attach images automatically. To restore one-tap posting with image, add API credits at <a href="https://developer.x.com/en/portal/products">developer.x.com</a>.</p>
+${shareScript}`,
   )
 }
 
