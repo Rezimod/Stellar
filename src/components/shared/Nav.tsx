@@ -13,7 +13,6 @@ import {
   Sparkles, Telescope, LayoutGrid, User, Gem, LogOut,
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
-import LocaleToggle from './LocaleToggle';
 import SearchModal from './SearchModal';
 
 const NAV_ITEMS = [
@@ -178,7 +177,7 @@ export default function Nav() {
               })}
             </div>
 
-            {/* RIGHT cluster: search → locale → hub → avatar/sign-in */}
+            {/* RIGHT cluster: search → hub → avatar/sign-in */}
             <div className="ml-auto flex items-center gap-2 flex-shrink-0 z-10">
               <button
                 onClick={() => setSearchOpen(true)}
@@ -188,8 +187,6 @@ export default function Nav() {
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
-
-              <LocaleToggle />
 
               <Link
                 href="/hub"
