@@ -17,24 +17,32 @@ import { qvac, type ChatMessage } from './qvac';
  * computation, never the model's guess.
  */
 
-const SYSTEM_PROMPT = `You are Stellar's Field companion, a precise astronomy assistant for telescope owners. Answer using ONLY the live sky data below. Be concise — 2 short sentences. Never invent positions.`;
+const SYSTEM_PROMPT = `You are Stellar's Field companion, a precise astronomy assistant for telescope owners.
+You are given a VERDICT and live sky data computed on-device. Restate the verdict in one short, natural sentence, then add the altitude and compass direction.
+RULES: Never contradict the verdict. If it says NOT visible / below the horizon / daytime, you MUST say it is not visible right now — never say it is up. Keep it to 2 short sentences. Never invent numbers.`;
 
-/** Compact, model-friendly grounding line (far fewer tokens than full JSON → lower TTFT). */
+/**
+ * Compact, model-friendly grounding line. We compute the yes/no VERDICT here from
+ * real on-device data so the small model only has to restate it (not decide it) —
+ * this stops the 1B from flipping the answer's polarity. Far fewer tokens than
+ * full JSON, too, which keeps TTFT low.
+ */
 function groundingText(live: LiveSky): string {
   if (live.kind === 'body' || live.kind === 'dso') {
-    const status = !live.aboveHorizon
-      ? 'below the horizon, not up right now'
+    const verdict = !live.aboveHorizon
+      ? `VERDICT: No — ${live.name} is below the horizon and NOT visible right now.`
       : live.daylight
-        ? 'above the horizon but it is DAYTIME, so not viewable until after dark'
-        : 'above the horizon and viewable now (dark sky)';
-    const extra = live.kind === 'dso' && live.detail ? ` (${live.detail})` : '';
-    return `${live.name}${extra}: altitude ${live.altitude}°, direction ${live.direction}, ${status}.`;
+        ? `VERDICT: Not yet — ${live.name} is above the horizon but it is daytime, so it is NOT visible until after dark.`
+        : `VERDICT: Yes — ${live.name} is up and visible right now.`;
+    const detail = `Altitude ${live.altitude}°, direction ${live.direction}.`;
+    const extra = live.kind === 'dso' && live.detail ? ` It is a ${live.detail}.` : '';
+    return `${verdict} ${detail}${extra}`;
   }
   if (live.daylight) {
-    return `It is DAYTIME — nothing is observable now. After dark these would be up: ${live.bodies.map((b) => b.name).join(', ') || 'none'}.`;
+    return `VERDICT: It is daytime — nothing is visible yet. After dark these would be up: ${live.bodies.map((b) => b.name).join(', ') || 'none'}.`;
   }
-  if (live.bodies.length === 0) return 'Nothing is above the horizon right now.';
-  return 'Above the horizon now: ' + live.bodies.map((b) => `${b.name} (${b.altitude}°, ${b.direction})`).join('; ') + '.';
+  if (live.bodies.length === 0) return 'VERDICT: Nothing is above the horizon right now.';
+  return 'VERDICT: Up right now — ' + live.bodies.map((b) => `${b.name} (${b.altitude}°, ${b.direction})`).join('; ') + '.';
 }
 
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
@@ -136,8 +144,6 @@ export async function runSkyAgent(
 ): Promise<AgentResult> {
   // Untrusted input (typed or voice-transcribed) — defang prompt injection.
   const userMessage = sanitizeUserText(userMessageRaw);
-  const sdk: any = await import('@qvac/sdk');
-  const modelId = await qvac.ensureLlmModelId();
 
   // Run the local ephemeris tool, then ground the model's answer in a compact
   // summary of the result (full JSON bloats the prompt and slows TTFT).
@@ -146,14 +152,12 @@ export async function runSkyAgent(
 
   const groundedSystem = `${SYSTEM_PROMPT}\n\nLive on-device sky data: ${groundingText(tool.live)}`;
 
-  const answer = sdk.completion({
-    modelId,
-    history: [
-      { role: 'system', content: groundedSystem },
-      { role: 'user', content: userMessage },
-    ],
-    stream: true,
-  });
+  // Serialized through the QVAC single-job gate so it can't collide with the
+  // background embedding warm-up or any other in-flight inference.
+  const answer = await qvac.lockedCompletion([
+    { role: 'system', content: groundedSystem },
+    { role: 'user', content: userMessage },
+  ]);
 
   return {
     stream: audit.instrument('llm', 'tool-model', userMessage, answer.tokenStream, answer.stats),

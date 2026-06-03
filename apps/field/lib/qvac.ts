@@ -43,6 +43,19 @@ class QvacRuntime {
   private llmLoad: Promise<void> | null = null;
   private whisperLoad: Promise<void> | null = null;
 
+  // QVAC runs ONE inference at a time (single-job worker). Every completion,
+  // embedding, and transcription acquires this gate so a background job (e.g.
+  // corpus-embedding warm-up) never collides with a user's chat message.
+  private jobGate: Promise<void> = Promise.resolve();
+
+  private async acquire(): Promise<() => void> {
+    const prev = this.jobGate;
+    let release!: () => void;
+    this.jobGate = new Promise<void>((r) => (release = r));
+    await prev;
+    return release;
+  }
+
   getProgress() {
     return this.llmTracker.get();
   }
@@ -171,38 +184,79 @@ class QvacRuntime {
     await this.ensureReady();
     if (!this.llmModelId) throw new Error('LLM not loaded');
 
-    const sdk = await import('@qvac/sdk');
-    const { completion } = sdk as any;
-
-    const result = completion({ modelId: this.llmModelId, history, stream: true });
-    for await (const token of result.tokenStream) {
-      yield token as string;
+    const release = await this.acquire();
+    try {
+      const sdk = await import('@qvac/sdk');
+      const { completion } = sdk as any;
+      const result = completion({ modelId: this.llmModelId, history, stream: true });
+      for await (const token of result.tokenStream) {
+        yield token as string;
+      }
+    } finally {
+      release();
     }
+  }
+
+  /**
+   * Streaming completion that holds the single-job gate for the full stream and
+   * exposes the token stream + stats (used by the grounded sky agent). The lock
+   * releases when the returned stream is fully drained.
+   */
+  async lockedCompletion(
+    history: ChatMessage[],
+  ): Promise<{ tokenStream: AsyncIterable<string>; stats?: Promise<unknown> }> {
+    const modelId = await this.ensureLlmModelId();
+    const release = await this.acquire();
+    let result: any;
+    try {
+      const sdk = await import('@qvac/sdk');
+      result = (sdk as any).completion({ modelId, history, stream: true });
+    } catch (err) {
+      release();
+      throw err;
+    }
+    async function* drain(): AsyncIterable<string> {
+      try {
+        for await (const token of result.tokenStream) yield token as string;
+      } finally {
+        release();
+      }
+    }
+    return { tokenStream: drain(), stats: result.stats };
   }
 
   async embed(text: string): Promise<number[] | null> {
     await this.ensureReady();
     if (!this.embedModelId) return null;
 
-    const sdk = await import('@qvac/sdk');
-    const embedFn = (sdk as any).embed;
-    if (!embedFn) return null;
-
-    const out = await embedFn({ modelId: this.embedModelId, text });
-    return Array.isArray(out) ? out : (out?.vector ?? null);
+    const release = await this.acquire();
+    try {
+      const sdk = await import('@qvac/sdk');
+      const embedFn = (sdk as any).embed;
+      if (!embedFn) return null;
+      const out = await embedFn({ modelId: this.embedModelId, text });
+      return Array.isArray(out) ? out : (out?.vector ?? null);
+    } finally {
+      release();
+    }
   }
 
   async transcribe(audioPath: string): Promise<string> {
     await this.ensureWhisperReady();
     if (!this.whisperModelId) throw new Error('Whisper not loaded');
 
-    const sdk = await import('@qvac/sdk');
-    const transcribeFn = (sdk as any).transcribe;
-    if (!transcribeFn) throw new Error('@qvac/sdk has no transcribe export');
+    const release = await this.acquire();
+    try {
+      const sdk = await import('@qvac/sdk');
+      const transcribeFn = (sdk as any).transcribe;
+      if (!transcribeFn) throw new Error('@qvac/sdk has no transcribe export');
 
-    const cleanPath = audioPath.startsWith('file://') ? audioPath.slice(7) : audioPath;
-    const out = await transcribeFn({ modelId: this.whisperModelId, audioChunk: cleanPath });
-    return typeof out === 'string' ? out : '';
+      const cleanPath = audioPath.startsWith('file://') ? audioPath.slice(7) : audioPath;
+      const out = await transcribeFn({ modelId: this.whisperModelId, audioChunk: cleanPath });
+      return typeof out === 'string' ? out : '';
+    } finally {
+      release();
+    }
   }
 
   hasEmbedder() {
