@@ -10,8 +10,8 @@ chosen deliberately: if the offline AI holds up here, it holds up anywhere.
 | **SoC** | Qualcomm Snapdragon 732G (SM7150) |
 | **CPU** | 8 cores, arm64-v8a (2× Kryo 470 Gold @2.3GHz + 6× Silver) |
 | **RAM** | 5.5 GB |
-| **Storage** | 45 GB (10 GB free at test time) |
-| **OS** | Android 12 (API 31) |
+| **Storage** | 64 GB (50.7 GB free at test time) |
+| **OS** | Android 12 (API 31), MIUI Global 14.0.2, security patch 2023-06-01 |
 | **Connectivity during inference** | Airplane mode (no signal) |
 
 ## Models (all on-device via QVAC SDK)
