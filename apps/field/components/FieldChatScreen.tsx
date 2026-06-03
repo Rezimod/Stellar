@@ -16,18 +16,17 @@ import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/loc
 import { looksLikeSkyQuery } from '../lib/router';
 import { warmCorpusEmbeddings } from '../lib/rag';
 import type { Citation } from '../lib/rag';
+import {
+  loadConversations,
+  saveConversations,
+  titleFromTurns,
+  newConversationId,
+  type Conversation,
+  type Turn,
+  type AssistantTurn,
+} from '../lib/conversations';
 import { ModelLoadingBanner } from './ModelLoadingBanner';
-import { TetherCobranding } from './TetherCobranding';
-
-type AssistantTurn = {
-  role: 'assistant';
-  content: string;
-  citations: Citation[];
-  toolsUsed?: string[];
-  live?: LiveSky;
-};
-
-type Turn = ChatMessage | AssistantTurn;
+import { ChatDrawer } from './ChatDrawer';
 
 const STARTER_PROMPTS = [
   'Is Saturn up right now?',
@@ -47,6 +46,9 @@ export function FieldChatScreen() {
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [observer, setObserver] = useState<Observer>(DEFAULT_OBSERVER);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -55,6 +57,56 @@ export function FieldChatScreen() {
       unsub();
     };
   }, []);
+
+  // Load saved history once on mount (offline, on-device).
+  useEffect(() => {
+    loadConversations().then(setConversations).catch(() => {});
+  }, []);
+
+  // Persist the current chat after a completed turn; create on first message.
+  function persist(finalTurns: Turn[]) {
+    setConversations((prev) => {
+      const id = activeId ?? newConversationId();
+      if (!activeId) setActiveId(id);
+      const existing = prev.find((c) => c.id === id);
+      const conv: Conversation = {
+        id,
+        title: existing?.title || titleFromTurns(finalTurns),
+        updatedAt: Date.now(),
+        turns: finalTurns,
+      };
+      const next = [conv, ...prev.filter((c) => c.id !== id)].sort((a, b) => b.updatedAt - a.updatedAt);
+      saveConversations(next);
+      return next;
+    });
+  }
+
+  function newChat() {
+    setTurns([]);
+    setStreaming(null);
+    setActiveId(null);
+    setInput('');
+    setDrawerOpen(false);
+  }
+
+  function selectConversation(id: string) {
+    const conv = conversations.find((c) => c.id === id);
+    if (conv) {
+      setTurns(conv.turns);
+      setActiveId(id);
+      setStreaming(null);
+    }
+    setDrawerOpen(false);
+  }
+
+  function deleteConversation(id: string) {
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      saveConversations(next);
+      return next;
+    });
+    if (id === activeId) newChat();
+  }
 
   useEffect(() => {
     qvac
@@ -99,8 +151,10 @@ export function FieldChatScreen() {
           setStreaming({ text: acc, citations: [], toolsUsed, live });
           scrollRef.current?.scrollToEnd({ animated: false });
         }
-        setTurns([...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed, live }]);
+        const done: Turn[] = [...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed, live }];
+        setTurns(done);
         setStreaming(null);
+        persist(done);
       } else {
         const { stream, citations } = await startChat(message, history);
         setStreaming({ text: '', citations });
@@ -112,19 +166,19 @@ export function FieldChatScreen() {
           scrollRef.current?.scrollToEnd({ animated: false });
         }
 
-        setTurns([...newTurns, { role: 'assistant', content: acc, citations }]);
+        const done: Turn[] = [...newTurns, { role: 'assistant', content: acc, citations }];
+        setTurns(done);
         setStreaming(null);
+        persist(done);
       }
     } catch (err: any) {
-      setTurns([
+      const done: Turn[] = [
         ...newTurns,
-        {
-          role: 'assistant',
-          content: `Error: ${err?.message ?? err}`,
-          citations: [],
-        },
-      ]);
+        { role: 'assistant', content: `Error: ${err?.message ?? err}`, citations: [] },
+      ];
+      setTurns(done);
       setStreaming(null);
+      persist(done);
     } finally {
       setBusy(false);
     }
@@ -132,13 +186,13 @@ export function FieldChatScreen() {
 
   const statusLabel =
     progress.phase === 'ready'
-      ? 'ON-DEVICE · READY'
+      ? 'READY'
       : progress.phase === 'downloading'
-      ? 'DOWNLOADING MODEL'
+      ? 'DOWNLOADING'
       : progress.phase === 'loading'
-      ? 'WARMING MODEL'
+      ? 'WARMING UP'
       : progress.phase === 'error'
-      ? 'MODEL UNAVAILABLE'
+      ? 'UNAVAILABLE'
       : 'INITIALIZING';
 
   return (
@@ -149,13 +203,29 @@ export function FieldChatScreen() {
     >
       <View style={styles.header}>
         <View style={styles.titleRow}>
+          <TouchableOpacity
+            onPress={() => setDrawerOpen(true)}
+            style={styles.iconBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.menuIcon}>☰</Text>
+          </TouchableOpacity>
           <Text style={styles.title}>Stellar Field</Text>
           <View style={[styles.statusDot, statusDotColor(progress.phase)]} />
+          <Text style={styles.statusPill}>{statusLabel}</Text>
+          <TouchableOpacity
+            onPress={newChat}
+            style={styles.iconBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.newIcon}>✎</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.statusStrip}>
-          {statusLabel}  ·  LLAMA 3.2 1B  ·  ON-DEVICE ONLY
-        </Text>
-        <TetherCobranding />
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>Llama 3.2 1B</Text>
+          <Text style={styles.metaDot}>·</Text>
+          <Text style={styles.metaText}>Powered by Tether QVAC</Text>
+        </View>
       </View>
 
       <ModelLoadingBanner progress={progress} />
@@ -230,6 +300,17 @@ export function FieldChatScreen() {
           <Text style={styles.sendText}>{busy ? '…' : '↑'}</Text>
         </TouchableOpacity>
       </View>
+
+      <ChatDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        conversations={conversations}
+        activeId={activeId}
+        onSelect={selectConversation}
+        onNewChat={newChat}
+        onDelete={deleteConversation}
+        observer={observer}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -296,17 +377,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#1A1F2E',
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { color: '#E5E7EB', fontSize: 20, fontWeight: '600', letterSpacing: 0.3 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusStrip: {
-    color: '#6B7280',
-    fontSize: 10,
-    letterSpacing: 1.2,
-    marginTop: 4,
-    fontVariant: ['tabular-nums'],
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  iconBtn: { paddingHorizontal: 4, paddingVertical: 2 },
+  menuIcon: { color: '#9CA3AF', fontSize: 20, lineHeight: 22, marginTop: -1 },
+  newIcon: { color: '#9CA3AF', fontSize: 17, lineHeight: 20 },
+  title: { color: '#F3F4F6', fontSize: 20, fontWeight: '700', letterSpacing: 0.2 },
+  statusDot: { width: 7, height: 7, borderRadius: 4 },
+  statusPill: {
+    marginLeft: 'auto',
+    color: '#7DD3C4',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.4,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 5 },
+  metaText: { color: '#6B7280', fontSize: 11, letterSpacing: 0.2 },
+  metaDot: { color: '#374151', fontSize: 11 },
   scroll: { flex: 1 },
   scrollContent: { padding: 16, gap: 10, paddingBottom: 32 },
   starterWrap: { gap: 10 },
