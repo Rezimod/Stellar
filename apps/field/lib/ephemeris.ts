@@ -32,12 +32,24 @@ function azDir(az: number): string {
   return AZ_DIRS[Math.round(az / 45) % 8];
 }
 
+/** Sun altitude in degrees — drives the daylight/observable check. */
+export function sunAltitude(lat: number, lon: number, date = new Date()): number {
+  const observer = new Observer(lat, lon, 0);
+  const eq = Equator(Body.Sun, date, observer, true, true);
+  return Horizon(date, observer, eq.ra, eq.dec, 'normal').altitude;
+}
+
 export type BodyPosition = {
   name: string;
   altitude: number;
   azimuth: number;
   azimuthDir: string;
-  visible: boolean;
+  /** Geometrically above the horizon (altitude > 0). */
+  aboveHorizon: boolean;
+  /** Sky is dark enough to actually observe (Sun below civil twilight). */
+  daylight: boolean;
+  /** Practically viewable now: above the horizon AND not daylight. */
+  observable: boolean;
   magnitude: number;
   constellation: string | null;
   rise: string | null;
@@ -60,6 +72,11 @@ export function getBodyPosition(name: string, lat: number, lon: number, date = n
   const eq = Equator(body, date, observer, true, true);
   const horiz = Horizon(date, observer, eq.ra, eq.dec, 'normal');
 
+  // Daylight check: the Sun above civil twilight (−6°) washes the sky out.
+  const sunAlt = sunAltitude(lat, lon, date);
+  const daylight = sunAlt > -6;
+  const aboveHorizon = horiz.altitude > 0;
+
   let magnitude = 0;
   try { magnitude = Illumination(body, date).mag; } catch { /* Sun has no Illumination */ }
 
@@ -81,7 +98,9 @@ export function getBodyPosition(name: string, lat: number, lon: number, date = n
     altitude: Math.round(horiz.altitude * 10) / 10,
     azimuth: Math.round(horiz.azimuth),
     azimuthDir: azDir(horiz.azimuth),
-    visible: horiz.altitude > 0,
+    aboveHorizon,
+    daylight,
+    observable: aboveHorizon && !daylight,
     magnitude: Math.round(magnitude * 10) / 10,
     constellation,
     rise: rise ? rise.toISOString() : null,
@@ -90,11 +109,11 @@ export function getBodyPosition(name: string, lat: number, lon: number, date = n
   };
 }
 
-/** Everything currently above the horizon, brightest/highest first. Excludes the Sun if it's up (daytime). */
+/** Everything currently above the horizon, brightest/highest first (excludes the Sun). */
 export function getVisibleNow(lat: number, lon: number, date = new Date()): BodyPosition[] {
   return Object.keys(BODIES)
     .map((name) => getBodyPosition(name, lat, lon, date))
-    .filter((p): p is BodyPosition => p !== null && p.visible && p.name !== 'Sun')
+    .filter((p): p is BodyPosition => p !== null && p.aboveHorizon && p.name !== 'Sun')
     .sort((a, b) => b.altitude - a.altitude);
 }
 

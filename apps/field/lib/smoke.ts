@@ -28,33 +28,23 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
   const sdk: any = await import('@qvac/sdk');
   const results: SmokeResult[] = [];
 
-  // 1. Tool-calling LLM — the headline. Uses the purpose-built 1B tool model.
+  // 1. The real headline path: the offline sky agent (local ephemeris → grounded
+  //    LLM answer). Tests what we actually ship, end to end, on this device.
   results.push(
-    await timed('llm-tool-calling', async () => {
-      const modelId = await sdk.loadModel({ modelSrc: sdk.LLAMA_TOOL_CALLING_1B_INST_Q4_K, modelType: 'llm' });
-      const { z } = await import('zod');
-      const res = sdk.completion({
-        modelId,
-        history: [{ role: 'user', content: 'Is Saturn visible right now? Use the tool to check.' }],
-        stream: false,
-        tools: [
-          {
-            name: 'get_planet_altitude',
-            description: 'Returns the current altitude in degrees of a planet above the horizon',
-            parameters: z.object({ planet: z.string().describe('planet name, e.g. Saturn') }),
-            handler: async (a: any) => ({ planet: a.planet, altitudeDeg: 34 }),
-          },
-        ],
-      });
-      const calls = await res.toolCalls;
-      return `toolCalls=${calls.length}${calls[0] ? ` → ${calls[0].name}` : ' (model answered without calling)'}`;
+    await timed('sky-agent', async () => {
+      const { runSkyAgent } = await import('./agent');
+      const { stream, toolsUsed } = await runSkyAgent('Is Saturn up right now?', [], 41.7151, 44.8271);
+      let answer = '';
+      for await (const tok of stream) answer += tok;
+      const preview = answer.replace(/\s+/g, ' ').trim().slice(0, 80);
+      return `tool=${toolsUsed.join(',') || 'none'} · "${preview}${answer.length > 80 ? '…' : ''}"`;
     }, report),
   );
 
-  // 2. Embeddings via EmbeddingGemma — powers semantic RAG retrieval.
+  // 2. Embeddings via EmbeddingGemma — proves the capability for semantic RAG.
   results.push(
     await timed('embed-gemma', async () => {
-      const embId = await sdk.loadModel({ modelSrc: sdk.EMBEDDINGGEMMA_300M_Q4_0, modelType: 'embed' });
+      const embId = await sdk.loadModel({ modelSrc: sdk.EMBEDDINGGEMMA_300M_Q4_0, modelType: 'llamacpp-embedding' });
       const v = await sdk.embed({ modelId: embId, text: 'Andromeda galaxy M31' });
       const vec = Array.isArray(v) ? v : v?.vector;
       return `dim=${vec?.length ?? 0}`;
