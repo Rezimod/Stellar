@@ -15,6 +15,7 @@ import {
   GEO_RELAXED,
   dispatchLocationUpdated,
   isLocationStale,
+  locationBucket,
   movedSignificantly,
   parseStoredLocation,
   persistObserverLocation,
@@ -22,6 +23,7 @@ import {
   reverseGeocode,
   type StoredObserverLocation,
 } from '@/lib/observer-location'
+import { track } from '@/lib/track'
 
 export type Region = 'caucasus' | 'north_america' | 'europe' | 'asia' | 'south_america' | 'global'
 
@@ -109,11 +111,21 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [gpsState, setGpsState] = useState<GpsState>('pending')
   const gpsInFlightRef = useRef(false)
   const autoPromptedRef = useRef(false)
+  const lastTrackedBucketRef = useRef<string | null>(null)
 
   const commitLocation = useCallback((loc: StoredObserverLocation) => {
     persistObserverLocation(loc)
     setLocationState(loc)
     dispatchLocationUpdated(loc)
+    // Analytics: a real (non-default) location was set. De-noised by ~1km
+    // bucket so tab-focus GPS re-syncs at the same spot don't spam the funnel.
+    if (loc.source !== 'default') {
+      const bucket = locationBucket(loc.lat, loc.lon)
+      if (bucket !== lastTrackedBucketRef.current) {
+        lastTrackedBucketRef.current = bucket
+        track('location_set', { source: loc.source, city: loc.city, country: loc.country })
+      }
+    }
   }, [])
 
   const applyGpsFix = useCallback(

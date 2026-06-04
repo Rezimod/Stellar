@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
+import { HubTonightBand } from '@/components/hub/HubTonightBand';
 type HubItem = {
   href: string;
   labelKey: string;
@@ -77,6 +78,8 @@ export default function HubPage() {
             </span>
           </button>
         </header>
+
+        <HubTonightBand />
 
         {SECTIONS.map((section) => (
           <section key={section.labelKey} className="mb-6 sm:mb-8 last:mb-0">
