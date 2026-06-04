@@ -22,6 +22,8 @@ interface Props {
   solPriceUsd?: number;
   featured?: boolean;
   className?: string;
+  /** Current Stars balance — drives the "earn this" progress bar. */
+  balance?: number;
 }
 
 export default function ProductCard({
@@ -31,9 +33,16 @@ export default function ProductCard({
   solPriceUsd = 0,
   featured = false,
   className = '',
+  balance = 0,
 }: Props) {
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
+
+  const starsPrice = product.starsPrice;
+  const showProgress = starsPrice > 0 && balance > 0;
+  const affordable = balance >= starsPrice;
+  const pct = starsPrice > 0 ? Math.min(100, Math.round((balance / starsPrice) * 100)) : 0;
+  const remaining = Math.max(0, starsPrice - balance);
 
   const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
   const solAmount = solValue > 0 ? solValue : null;
@@ -105,6 +114,21 @@ export default function ProductCard({
           {product.starsPrice.toLocaleString()}
         </span>
       </div>
+
+      {showProgress && (
+        <div className="mb-[12px]">
+          <div className="flex items-center justify-between mb-[5px]">
+            <span className="text-[10px] tracking-[0.10em] uppercase" style={{ color: affordable ? '#5EEAD4' : 'rgba(255,255,255,0.55)' }}>
+              {affordable ? 'Ready to redeem' : `${remaining.toLocaleString()} ✦ to go`}
+            </span>
+            <span className="text-[10px] font-mono tabular-nums text-white/45">{pct}%</span>
+          </div>
+          <div className="h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: affordable ? '#5EEAD4' : '#FFD166' }} />
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-[6px]">
         <Link
           href={checkoutHref('sol')}

@@ -22,6 +22,7 @@ import {
   starsToGEL,
 } from '@/lib/stars-economy';
 import { executeBurn } from '@/lib/stars-burn-client';
+import { track } from '@/lib/track';
 
 type Step = 'form' | 'paying' | 'done';
 
@@ -212,6 +213,9 @@ function CheckoutContent() {
       }
       if (!data.orderId) throw new Error('Order created but no ID returned — please try again');
       setOrderId(data.orderId);
+      if (mode === 'stars') {
+        track('stars_spent', { source: 'redeem', amount: product.starsPrice, product: product.id }, walletAddress);
+      }
 
       // §4: if the order committed Stars for a discount, burn them BEFORE
       // showing the SOL pay QR. /api/orders/confirm refuses to mark the
@@ -231,6 +235,7 @@ function CheckoutContent() {
             orderId: data.orderId,
           });
           setBurnSig(result.signature);
+          track('stars_spent', { source: 'discount_burn', amount: data.burnStars ?? burnStars, product: product.id }, walletAddress);
         } catch (e) {
           throw new Error(`Stars burn failed: ${e instanceof Error ? e.message : 'unknown error'}`);
         } finally {

@@ -238,6 +238,7 @@ export default function MarketplacePage() {
                     dealerName={showDealer ? getDealerName(p.dealerId) : ''}
                     solPerGEL={solPerGEL}
                     solPriceUsd={solPriceUsd}
+                    balance={balance}
                   />
                 ))}
               </div>
@@ -250,6 +251,7 @@ export default function MarketplacePage() {
                       dealerName={showDealer ? getDealerName(featuredProduct.dealerId) : ''}
                       solPerGEL={solPerGEL}
                       solPriceUsd={solPriceUsd}
+                      balance={balance}
                       featured
                       className="col-span-2"
                     />
@@ -260,6 +262,7 @@ export default function MarketplacePage() {
                         dealerName={showDealer ? getDealerName(p.dealerId) : ''}
                         solPerGEL={solPerGEL}
                         solPriceUsd={solPriceUsd}
+                        balance={balance}
                       />
                     ))}
                   </div>
@@ -273,6 +276,7 @@ export default function MarketplacePage() {
                           dealerName={showDealer ? getDealerName(p.dealerId) : ''}
                           solPerGEL={solPerGEL}
                           solPriceUsd={solPriceUsd}
+                          balance={balance}
                         />
                       ))}
                     </div>
