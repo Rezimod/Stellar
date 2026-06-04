@@ -1237,3 +1237,24 @@ body[data-solar-immersive="1"] #stellar-main {
   position: relative;
   z-index: 100 !important;
 }
+
+/* ── Field mode — red-on-black night-vision ───────────────────────────────
+   A fixed multiply overlay tints the ENTIRE rendered UI red, crushing the blue
+   and green channels to protect dark-adapted vision at the eyepiece. Works
+   over hardcoded colors, gradients and photos alike — no per-component theming
+   needed. Real astronomers use exactly this kind of red filter. */
+html[data-field="on"] {
+  background: #000 !important;
+}
+html[data-field="on"] body {
+  background: #060000 !important;
+}
+html[data-field="on"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483646;
+  background: #ff1a05;
+  mix-blend-mode: multiply;
+}

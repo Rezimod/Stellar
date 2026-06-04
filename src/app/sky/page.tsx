@@ -7,7 +7,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Orbit } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight } from 'lucide-react';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
@@ -49,6 +50,7 @@ export default function SkyPage() {
 
   const { address } = useStellarUser();
   const { getAccessToken } = usePrivy();
+  const { field, toggleField } = useTheme();
   const compass = useDeviceHeading(location.lat, location.lon);
   // Calibrate compass should also request browser location if we don't have it
   // yet. The browser will only show a single permission UI per origin so this
@@ -407,6 +409,18 @@ export default function SkyPage() {
                       <span className="sky-v3__ar-launch-label">AR</span>
                     </button>
                   )}
+                  <button
+                    type="button"
+                    className="sky-v3__ar-launch"
+                    onClick={toggleField}
+                    aria-label="Field mode — red light"
+                    aria-pressed={field}
+                    title="Field mode — red light"
+                    style={field ? { color: '#FF3B30', borderColor: 'rgba(255,59,48,0.45)' } : undefined}
+                  >
+                    <Flashlight size={14} aria-hidden="true" />
+                    <span className="sky-v3__ar-launch-label">Red</span>
+                  </button>
                   </div>
                 </div>
               </div>

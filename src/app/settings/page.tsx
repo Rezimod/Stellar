@@ -12,7 +12,7 @@ import {
   ChevronLeft, Sun, Moon,
   Mail, Phone, Chrome,
   LogOut, Trash2, ChevronRight,
-  Orbit, Sparkles, Cloud,
+  Orbit, Sparkles, Cloud, Flashlight,
 } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useAppState } from '@/hooks/useAppState';
@@ -157,7 +157,7 @@ export default function SettingsPage() {
   const { location } = useLocation();
   const { logout } = useStellarAuth();
   const { reset } = useAppState();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, field, toggleField } = useTheme();
   const router = useRouter();
 
   const [locale, setLocale] = useState('en');
@@ -417,6 +417,14 @@ export default function SettingsPage() {
           label={theme === 'dark' ? 'Dark Mode' : 'Day Mode'}
           sublabel={theme === 'dark' ? 'Deep space theme' : 'Bright daytime theme'}
           right={<Toggle on={theme === 'dark'} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />}
+        />
+        <Row
+          icon={<Flashlight size={15} />}
+          iconBg="rgba(255, 59, 48,0.10)"
+          iconColor="#FF3B30"
+          label="Field Mode"
+          sublabel="Red-on-black to protect your night vision at the eyepiece"
+          right={<Toggle on={field} onToggle={toggleField} />}
           last
         />
       </Section>
