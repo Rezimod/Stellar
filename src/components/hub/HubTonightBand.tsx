@@ -171,7 +171,6 @@ export function HubTonightBand() {
               <p className="text-white text-[16px] sm:text-[17px] font-medium leading-snug">
                 <span className="text-white">{target.name}</span> {c.is} {target.placement}
               </p>
-              {/* TODO(M3): repoint to /find once the Compass Finder ships. */}
               <Link
                 href="/sky"
                 className="inline-flex items-center gap-1.5 mt-1.5 text-[#FFB347] text-[13px] font-medium no-underline hover:gap-2.5 transition-all"

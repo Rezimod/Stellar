@@ -162,6 +162,8 @@ interface SkyMapProps {
    * smoothing as the user closes in. Optional.
    */
   onProximityChange?: (deg: number | null) => void;
+  /** Fired once when the user confirms a held lock on the active target. */
+  onLock?: (id: string) => void;
 }
 
 interface Plotted {
@@ -254,6 +256,7 @@ export function SkyMap({
   calibrationOffset = 0,
   onNudge,
   onProximityChange,
+  onLock,
 }: SkyMapProps) {
   const t = useTranslations('sky.skymap');
   const liveOffset = heading ?? 0;
@@ -377,6 +380,7 @@ export function SkyMap({
       if (t >= 1) {
         if (!confirmedLock) {
           setConfirmedLock(true);
+          if (active) onLock?.(active.obj.id);
           if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
             try { navigator.vibrate([12, 40, 12]); } catch { /* ignore */ }
           }
@@ -387,7 +391,7 @@ export function SkyMap({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [insideLockCone, confirmedLock, holdProgress]);
+  }, [insideLockCone, confirmedLock, holdProgress, active, onLock]);
 
   // Where the phone is currently aimed, projected onto the rotated dome.
   // Always at angle 0 (top of dome) since the chart rotates with heading;

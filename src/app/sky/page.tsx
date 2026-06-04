@@ -1,8 +1,12 @@
 // src/app/sky/page.tsx
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePrivy } from '@privy-io/react-auth';
+import { useStellarUser } from '@/hooks/useStellarUser';
+import { toast } from '@/components/ui/Toast';
+import { track } from '@/lib/track';
 import { Compass, Crosshair, Telescope, Hand, Orbit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
@@ -43,6 +47,8 @@ export default function SkyPage() {
   const tAr = useTranslations('sky.ar');
   const tSolar = useTranslations('sky.solarFromSky');
 
+  const { address } = useStellarUser();
+  const { getAccessToken } = usePrivy();
   const compass = useDeviceHeading(location.lat, location.lon);
   // Calibrate compass should also request browser location if we don't have it
   // yet. The browser will only show a single permission UI per origin so this
@@ -178,6 +184,57 @@ export default function SkyPage() {
     if (!finder || !activeId) return null;
     return finder.objects.find((o) => o.id === activeId) ?? null;
   }, [finder, activeId]);
+
+  // ── Earn-on-aim: a held lock on a target (compass dome or AR) awards Stars
+  // once per target per night. Refs keep handleLock stable so the finders'
+  // lock effects don't churn. find_aimed fires for everyone; the award only
+  // runs when a wallet is present.
+  const awardedRef = useRef<Set<string>>(new Set());
+  const addressRef = useRef<string | null>(null);
+  addressRef.current = address;
+  const objectsRef = useRef<SkyObject[]>([]);
+  objectsRef.current = tableObjects;
+
+  const handleLock = useCallback((id: string) => {
+    if (awardedRef.current.has(id)) return;
+    awardedRef.current.add(id);
+    const name = objectsRef.current.find((o) => o.id === id)?.name ?? id;
+    const addr = addressRef.current;
+    track('find_aimed', { target: id }, addr);
+    if (!addr) {
+      toast.reward(`Found ${name}`);
+      return;
+    }
+    const dateStr = new Date().toISOString().slice(0, 10);
+    void (async () => {
+      let authToken: string | null = null;
+      try { authToken = await getAccessToken(); } catch { /* external wallet — no token */ }
+      try {
+        const res = await fetch('/api/award-stars', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            recipientAddress: addr,
+            amount: 10,
+            reason: `find:${id}`,
+            idempotencyKey: `find:${addr}:${id}:${dateStr}`,
+          }),
+        });
+        const data = res.ok ? await res.json().catch(() => null) : null;
+        if (res.ok && data && !data.cached) {
+          toast.reward(`+10 ✦ Found ${name}`);
+          window.dispatchEvent(new Event('stellar:stars-synced'));
+        } else {
+          toast.success(`Found ${name}`);
+        }
+      } catch {
+        toast.success(`Found ${name}`);
+      }
+    })();
+  }, [getAccessToken]);
 
   // The brightest, easiest non-Moon, non-Sun target above the horizon — the
   // single thing tonight a beginner should walk outside and look at first.
@@ -318,6 +375,7 @@ export default function SkyPage() {
                     calibrationOffset={compass.offset}
                     onNudge={compass.nudge}
                     onProximityChange={compass.setProximityDeg}
+                    onLock={handleLock}
                     constellationStars={constellationStars}
                     constellationLines={CONSTELLATION_LINES}
                     hopAnchor={hopAnchor ? {
@@ -408,6 +466,7 @@ export default function SkyPage() {
           headingStatus={compass.status}
           activeId={arActiveId}
           onSelectActive={handleArSelect}
+          onLock={handleLock}
           onClose={handleArClose}
         />
       )}

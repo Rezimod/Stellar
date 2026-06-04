@@ -50,6 +50,8 @@ interface ARFinderProps {
   activeId: ObjectId | null;
   /** Called when the user picks a different target from the in-view picker. */
   onSelectActive: (id: ObjectId | null) => void;
+  /** Fired once when the user confirms a held lock on the active target. */
+  onLock?: (id: string) => void;
   onClose: () => void;
 }
 
@@ -209,6 +211,7 @@ export function ARFinder({
   headingStatus,
   activeId,
   onSelectActive,
+  onLock,
   onClose,
 }: ARFinderProps) {
   const t = useTranslations('sky.ar');
@@ -551,6 +554,7 @@ export function ARFinder({
       if (tt >= 1) {
         if (!confirmedLock) {
           setConfirmedLock(true);
+          if (activeId) onLock?.(activeId);
           if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
             try { navigator.vibrate([12, 40, 12]); } catch { /* ignore */ }
           }
@@ -561,7 +565,7 @@ export function ARFinder({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [insideLockCone, confirmedLock, holdProgress]);
+  }, [insideLockCone, confirmedLock, holdProgress, activeId, onLock]);
 
   // Edge arrow: when active body is off-screen, project it and clamp to a
   // position just inside the viewport so the user knows which way to swing.
