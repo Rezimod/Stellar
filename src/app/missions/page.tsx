@@ -4,7 +4,9 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAppState } from '@/hooks/useAppState';
+import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
+import { DailyCheckInCard } from '@/components/missions/DailyCheckInCard';
 import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
@@ -139,7 +141,8 @@ type LocalizedGridEntry = GridEntry & {
 export default function MissionsPage() {
   const router = useRouter();
   const { state } = useAppState();
-  const { authenticated } = useStellarUser();
+  const { authenticated, address } = useStellarUser();
+  const { getAccessToken } = usePrivy();
   const [authOpen, setAuthOpen] = useState(false);
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { location, ensureLocation } = useLocation();
@@ -407,6 +410,8 @@ export default function MissionsPage() {
       </div>
 
       <div className="mis-content">
+        <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
+
         <section className="mis-section">
           <div className="mis-section-head">
             <h2 className="mis-section-title">{t('sections.tonight')}</h2>
