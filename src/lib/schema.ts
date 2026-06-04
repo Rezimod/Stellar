@@ -294,3 +294,20 @@ export const tweetDrafts = pgTable('tweet_drafts', {
   index('tweet_drafts_status_idx').on(t.status),
   index('tweet_drafts_created_idx').on(t.createdAt),
 ])
+
+// Product analytics — the core loop is unmeasurable without it. One row per
+// tracked event; `props` holds event-specific detail. `wallet` is set when the
+// user is authenticated, `anonId` is a stable client id for pre-auth sessions.
+export const analyticsEvent = pgTable('analytics_event', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  event: text('event').notNull(),
+  wallet: text('wallet'),
+  anonId: text('anon_id'),
+  path: text('path'),
+  props: jsonb('props'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('analytics_event_event_idx').on(t.event),
+  index('analytics_event_created_idx').on(t.createdAt),
+  index('analytics_event_wallet_idx').on(t.wallet),
+])

@@ -43,6 +43,7 @@ import { LocationProvider } from '@/lib/location';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AppStateProvider } from '@/hooks/useAppState';
 import WalletSync from '@/components/providers/WalletSync';
+import { AnalyticsBoot } from '@/components/providers/AnalyticsBoot';
 import SwipeBack from '@/components/providers/SwipeBack';
 import Nav from '@/components/shared/Nav';
 import StarField from '@/components/shared/StarField';
@@ -121,6 +122,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <LocationProvider>
               <AppStateProvider>
                 <WalletSync />
+                <AnalyticsBoot />
                 <StarField />
                 <Nav />
                 <SwipeBack>
