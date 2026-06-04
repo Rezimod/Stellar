@@ -88,35 +88,6 @@ export default function HeroSaturn() {
             {t('subtitle')}
           </p>
 
-          {/* Credibility — hackathon win. Teal accent (not the amber Stars color). */}
-          <div
-            className="mt-6 inline-flex items-center gap-2 rounded-full pointer-events-none"
-            style={{
-              padding: '6px 12px',
-              background: 'rgba(94, 234, 212, 0.08)',
-              border: '1px solid rgba(94, 234, 212, 0.22)',
-            }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#5EEAD4"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="8" r="5" />
-              <path d="M8.2 12.5 7 22l5-3 5 3-1.2-9.5" />
-            </svg>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, letterSpacing: '0.01em' }}>
-              <span style={{ color: '#5EEAD4', fontWeight: 600 }}>1st place</span>
-              <span style={{ color: 'rgba(255,255,255,0.65)' }}> — Tether Frontier Hackathon (QVAC track)</span>
-            </span>
-          </div>
-
           <div className="mt-9 md:mt-12 flex flex-col items-start sm:flex-row sm:flex-wrap gap-3 pointer-events-auto">
             <CTA href="/missions" tone="primary">{t('ctaPrimary')}</CTA>
             <CTA href="/sky" tone="secondary">{t('ctaSecondary')}</CTA>

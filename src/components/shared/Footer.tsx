@@ -101,6 +101,36 @@ export default function Footer() {
             >
               {t('tagline')}
             </p>
+
+            {/* Credibility — hackathon win (moved here from the hero). */}
+            <div
+              className="inline-flex items-center gap-2 rounded-full"
+              style={{
+                marginTop: 16,
+                padding: '5px 11px',
+                background: 'rgba(94, 234, 212, 0.08)',
+                border: '1px solid rgba(94, 234, 212, 0.22)',
+              }}
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#5EEAD4"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="5" />
+                <path d="M8.2 12.5 7 22l5-3 5 3-1.2-9.5" />
+              </svg>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 11.5, letterSpacing: '0.01em' }}>
+                <span style={{ color: '#5EEAD4', fontWeight: 600 }}>1st place</span>
+                <span style={{ color: 'rgba(255,255,255,0.6)' }}> — Tether Frontier Hackathon (QVAC track)</span>
+              </span>
+            </div>
           </div>
 
           <div
