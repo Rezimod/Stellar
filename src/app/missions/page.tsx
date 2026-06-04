@@ -7,6 +7,8 @@ import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { DailyCheckInCard } from '@/components/missions/DailyCheckInCard';
+import { CosmicDailyCard } from '@/components/missions/CosmicDailyCard';
+import { EarningLadder } from '@/components/missions/EarningLadder';
 import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
@@ -411,6 +413,8 @@ export default function MissionsPage() {
 
       <div className="mis-content">
         <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
+        <CosmicDailyCard address={address} getAccessToken={getAccessToken} />
+        <EarningLadder />
 
         <section className="mis-section">
           <div className="mis-section-head">
