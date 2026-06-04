@@ -311,3 +311,22 @@ export const analyticsEvent = pgTable('analytics_event', {
   index('analytics_event_created_idx').on(t.createdAt),
   index('analytics_event_wallet_idx').on(t.wallet),
 ])
+
+// Web Push subscriptions. One row per browser/device endpoint. `lat`/`lon`
+// drive the clear-sky trigger; `lastNotifiedDate` (YYYY-MM-DD) dedupes so a
+// device gets at most one push per day.
+export const pushSubscription = pgTable('push_subscription', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  endpoint: text('endpoint').notNull().unique(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  wallet: text('wallet'),
+  lat: doublePrecision('lat'),
+  lon: doublePrecision('lon'),
+  city: text('city'),
+  prefs: jsonb('prefs'),
+  lastNotifiedDate: text('last_notified_date'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('push_sub_wallet_idx').on(t.wallet),
+])

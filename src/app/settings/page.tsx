@@ -3,6 +3,8 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useStellarAuth } from '@/hooks/useStellarAuth';
+import { useLocation } from '@/lib/location';
+import { enablePush, disablePush } from '@/lib/push/client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -151,7 +153,8 @@ function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void;
 
 export default function SettingsPage() {
   const { user, linkEmail, linkPhone, unlinkEmail, unlinkPhone } = usePrivy();
-  const { authenticated } = useStellarUser();
+  const { authenticated, address } = useStellarUser();
+  const { location } = useLocation();
   const { logout } = useStellarAuth();
   const { reset } = useAppState();
   const { theme, setTheme } = useTheme();
@@ -171,6 +174,8 @@ export default function SettingsPage() {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(
     'default',
   );
+  // iOS only delivers Web Push to home-screen-installed PWAs.
+  const [iosNeedsInstall, setIosNeedsInstall] = useState(false);
 
   useEffect(() => {
     const c = document.cookie.split(';').find(s => s.trim().startsWith('stellar_locale='));
@@ -189,6 +194,15 @@ export default function SettingsPage() {
     } else {
       setNotifPermission('unsupported');
     }
+
+    try {
+      const ua = navigator.userAgent || '';
+      const isIos = /iphone|ipad|ipod/i.test(ua);
+      const standalone =
+        (navigator as Navigator & { standalone?: boolean }).standalone === true ||
+        window.matchMedia('(display-mode: standalone)').matches;
+      setIosNeedsInstall(isIos && !standalone);
+    } catch { /* ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -211,7 +225,24 @@ export default function SettingsPage() {
         }
       } catch (e) { console.error('[settings] notif permission', e); }
     }
-    persistNotif({ ...notif, [key]: turningOn });
+    const next = { ...notif, [key]: turningOn };
+    persistNotif(next);
+
+    // Sync the Web Push subscription: subscribe when any alert is on (and
+    // permission granted), unsubscribe when all are off. prefs are stored so
+    // the push cron only sends the categories the user kept on.
+    const anyOn = Object.values(next).some(Boolean);
+    if (anyOn && (typeof Notification !== 'undefined') && Notification.permission === 'granted') {
+      await enablePush({
+        wallet: address,
+        lat: location.lat,
+        lon: location.lon,
+        city: location.city,
+        prefs: next,
+      });
+    } else if (!anyOn) {
+      await disablePush();
+    }
   };
 
   const notifBlocked = notifPermission === 'denied';
@@ -333,6 +364,20 @@ export default function SettingsPage() {
               fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
             }}>
               Push notifications aren&apos;t supported on this device.
+            </p>
+          </div>
+        )}
+        {!notifUnsupported && iosNeedsInstall && (
+          <div style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--border-default)',
+            background: 'var(--warning-dim)',
+          }}>
+            <p style={{
+              margin: 0, color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
+            }}>
+              On iPhone, add Stellar to your Home Screen first (Share → Add to Home Screen) to receive alerts.
             </p>
           </div>
         )}

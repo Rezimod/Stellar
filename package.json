@@ -56,7 +56,8 @@
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
     "three": "^0.184.0",
-    "twitter-api-v2": "^1.29.0"
+    "twitter-api-v2": "^1.29.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.32.1",
@@ -67,6 +68,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.0.1",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
