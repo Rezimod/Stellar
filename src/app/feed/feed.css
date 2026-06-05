@@ -107,6 +107,10 @@
   grid-template-columns: 220px 1fr 320px;
   gap: 28px;
 }
+/* Without this the center column's default min-width:auto refuses to shrink
+   below its content, blowing the 2-column grid past the viewport and pushing
+   the right sidebar off-screen (posts get cut off on the right). */
+.feed-grid > main { min-width: 0; }
 @media (max-width: 1100px) { .feed-grid { grid-template-columns: 1fr 320px; } .feed-page .sidebar-left { display: none; } }
 @media (max-width: 820px) { .feed-grid { grid-template-columns: 1fr; } .feed-page .sidebar-right { display: none; } }
 

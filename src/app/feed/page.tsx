@@ -82,7 +82,6 @@ export default function FeedPage() {
     sidebarTitle: locale === 'ka' ? 'ფიდი' : 'Feed',
     headerTitle: locale === 'ka' ? 'ფიდი' : 'Feed',
     headerSubtitle: locale === 'ka' ? 'ცოცხალი დაკვირვებები მთელი მსოფლიოდან' : 'Real observations from astronomers worldwide',
-    live: locale === 'ka' ? 'ცოცხალი' : 'LIVE',
     saved: locale === 'ka' ? 'შენახული' : 'Saved',
     filters: {
       latest: locale === 'ka' ? 'ყველა' : 'Latest',
@@ -297,11 +296,6 @@ export default function FeedPage() {
           <header className="feed-header">
             <h1 className="feed-title">{copy.headerTitle}</h1>
             <div className="feed-header-meta">
-              <span className="feed-live">
-                <span className="feed-live-dot" />
-                {copy.live}
-              </span>
-              <span className="feed-header-meta-sep">·</span>
               <span>{copy.headerSubtitle}</span>
             </div>
           </header>
