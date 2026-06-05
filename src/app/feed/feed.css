@@ -42,10 +42,6 @@
 @keyframes feed-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes feed-pulse-skel { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 @keyframes feed-shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
-@keyframes feed-live-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(94,234,212,0.5); }
-  50% { opacity: 0.85; transform: scale(0.9); box-shadow: 0 0 0 6px rgba(94,234,212,0); }
-}
 
 /* === Page header === */
 .feed-header {
@@ -72,30 +68,10 @@
   color: var(--slate-400);
   flex-wrap: wrap;
 }
-.feed-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 9px 3px 7px;
-  border-radius: 999px;
-  background: rgba(94,234,212,0.07);
-  border: 1px solid rgba(94,234,212,0.22);
-  color: var(--teal);
-  letter-spacing: 0.14em;
-  font-size: 10px;
-  font-weight: 500;
-}
-.feed-live-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--teal);
-  animation: feed-live-pulse 2s ease-in-out infinite;
-}
-.feed-header-meta-sep { color: var(--slate-500); }
 @media (max-width: 767px) {
   .feed-header {
     padding: 4px 12px 14px;
-    margin: 0 8px 12px;
+    margin: 0 12px 12px;
     border-bottom: 1px solid var(--hairline);
   }
   .feed-title { font-size: 22px; margin-bottom: 6px; }
@@ -1157,7 +1133,7 @@
   .composer {
     padding: 12px 12px 8px;
     border-radius: 16px;
-    margin: 0 8px 8px;
+    margin: 0 12px 8px;
     background: rgba(255,255,255,0.03);
   }
   .composer-row {
@@ -1236,15 +1212,15 @@
   .composer-auth {
     padding: 12px 14px;
     border-radius: 14px;
-    margin: 0 8px 8px;
+    margin: 0 12px 8px;
     flex-wrap: wrap;
     gap: 10px;
   }
 
   /* Filter tabs — segmented control, full width */
   .feed-filters {
-    margin: 0 8px 8px;
-    width: calc(100% - 16px);
+    margin: 0 12px 8px;
+    width: calc(100% - 24px);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
@@ -1271,7 +1247,7 @@
   .feed-post {
     padding: 12px 12px 6px;
     border-radius: 14px;
-    margin: 0 8px 8px;
+    margin: 0 12px 8px;
     background: rgba(255,255,255,0.035);
     border: 1px solid var(--hairline);
   }
@@ -1426,7 +1402,7 @@
 
   /* Skeletons match new card spacing */
   .feed-skeleton {
-    margin: 0 8px 8px;
+    margin: 0 12px 8px;
     border-radius: 14px;
   }
   .feed-empty { padding: 40px 20px; }
