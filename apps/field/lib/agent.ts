@@ -3,7 +3,7 @@ import { findDso } from './dso';
 import { audit } from './audit';
 import { sanitizeUserText } from './sanitize';
 import { qvac, type ChatMessage } from './qvac';
-import { TOOL_DEFS, runTool, summarizeTool, type ToolCtx } from './skyTools';
+import { runTool, summarizeTool, type ToolCtx } from './skyTools';
 
 /**
  * Offline sky agent — the hackathon headline. Fully on-device, airplane-mode.
@@ -19,13 +19,14 @@ import { TOOL_DEFS, runTool, summarizeTool, type ToolCtx } from './skyTools';
  * orchestration on top, deterministic guarantee underneath.
  */
 
-const ORCH_SYSTEM = `You are Stellar's Field companion for telescope owners. You have NO sky data of your own — you MUST call tools to get it. Always call at least one tool before answering; for a planning question ("best target tonight", moon, dark window) call several.
-Tools: get_body_position (a planet, the Moon, or the Sun), get_object_position (a deep-sky object or star such as M31 or Vega), get_visible_now (what is up right now), get_moon_conditions (moonlight / interference), get_dark_window (tonight's dark hours).
-Call the tools now — do not answer from memory.`;
-
-const ANSWER_SYSTEM = `You are Stellar's Field companion. Answer in 2 short sentences using ONLY the live on-device data below. Lead with the verdict and never contradict it: if the data says NOT visible / below the horizon / daytime, you must say it is not viewable now. Never invent numbers.`;
+const ANSWER_SYSTEM = `You are Stellar's Field companion. Answer in 2–3 short sentences using ONLY the live on-device data below. Lead with the verdict and never contradict it: if the data says NOT visible / below the horizon / daytime, say it is not viewable now. Only name objects that actually appear in the data — never invent or recommend a target that is not listed. If nothing is observable now, say so and give the dark-window time. When Moon or dark-window data is present, include the Moon's illumination and the dark-window time so the observer can plan. Never invent numbers.`;
 
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
+// Planning intent → bring in visibility + moon + dark-window tools (true
+// multi-tool orchestration). "tonight" is intentionally NOT here — it's too
+// common; only genuine planning words trigger the wider tool set.
+const PLAN_RE = /\b(best|target|plan|observe|observing|recommend|good time|what should i|what to)\b/i;
+const MOON_RE = /\b(moon|moonlight|interfere|interference|faint|deep.?sky|dark window|darkness)\b/i;
 
 /** Display-ready snapshot of the on-device computation, shown under the answer. */
 type Point = {
@@ -44,6 +45,15 @@ export type LiveSky =
       kind: 'sky';
       daylight: boolean;
       bodies: { name: string; altitude: number; direction: string }[];
+    }
+  | {
+      kind: 'plan';
+      fromTime: string | null;
+      moonPct: number;
+      moonInterference: string;
+      darkStart: string | null;
+      darkEnd: string | null;
+      bodies: { name: string; altitude: number; direction: string }[];
     };
 
 /** One model-driven tool invocation — surfaced in the UI as the orchestration trace. */
@@ -60,6 +70,7 @@ export type AgentResult = {
 
 /** Authoritative verdict line for the primary object — guarantees correct polarity. */
 function groundingText(live: LiveSky): string {
+  if (live.kind === 'plan') return ''; // planning uses the tool summaries as the lead
   if (live.kind === 'body' || live.kind === 'dso') {
     const status = !live.aboveHorizon
       ? 'below the horizon, NOT visible right now'
@@ -113,6 +124,31 @@ function runLocalTool(message: string, lat: number, lon: number): { name: string
   };
 }
 
+/** Deterministic multi-tool plan for a query — what tools *should* run. */
+function planToolCalls(message: string): { name: string; args: Record<string, unknown> }[] {
+  const calls: { name: string; args: Record<string, unknown> }[] = [];
+  const dso = findDso(message);
+  const bodyM = message.match(BODY_RE);
+  const planning = PLAN_RE.test(message);
+
+  if (dso) calls.push({ name: 'get_object_position', args: { name: dso.name } });
+  else if (bodyM) calls.push({ name: 'get_body_position', args: { body: bodyM[1].toLowerCase() } });
+
+  if (planning) {
+    // "best target tonight" → what's actually up after dark + moon + dark window.
+    calls.push({ name: 'get_tonight_targets', args: {} });
+    calls.push({ name: 'get_moon_conditions', args: {} });
+    calls.push({ name: 'get_dark_window', args: {} });
+  } else if (!dso && !bodyM) {
+    calls.push({ name: 'get_visible_now', args: {} });
+  }
+  if (!planning && MOON_RE.test(message)) {
+    calls.push({ name: 'get_moon_conditions', args: {} });
+    calls.push({ name: 'get_dark_window', args: {} });
+  }
+  return calls;
+}
+
 export async function runSkyAgent(
   userMessageRaw: string,
   _history: ChatMessage[],
@@ -124,58 +160,57 @@ export async function runSkyAgent(
   const sdk: any = await import('@qvac/sdk');
   const modelId = await qvac.ensureLlmModelId();
 
-  // Hold the single-job gate across all passes (tool rounds + final answer).
+  // Hold the single-job gate for the answer stream.
   const release = await qvac.acquireJob();
   const steps: OrchestrationStep[] = [];
   const collected: { name: string; result: unknown }[] = [];
 
   try {
-    // 1) Model-driven orchestration: let it call (and chain) the native tools.
-    const convo: ChatMessage[] = [
-      { role: 'system', content: ORCH_SYSTEM },
-      { role: 'user', content: userMessage },
-    ];
-    const MAX_ROUNDS = 2;
-    for (let round = 0; round < MAX_ROUNDS; round += 1) {
-      const r = sdk.completion({ modelId, history: convo, stream: true, tools: TOOL_DEFS });
-      // Drain both streams (matches the SDK example) so the request fully
-      // completes and `toolCalls` resolves. Intermediate text is discarded —
-      // the user-facing answer is the grounded final pass below.
-      await Promise.all([
-        (async () => { for await (const _tok of r.tokenStream) { /* discard */ } })(),
-        (async () => { for await (const _evt of r.toolCallStream) { /* drained for completion */ } })(),
-      ]);
-      const calls: { id: string; name: string; arguments: Record<string, unknown> }[] = (await r.toolCalls) ?? [];
-      if (calls.length === 0) break;
-      convo.push({ role: 'assistant', content: (await r.text) ?? '' });
-      for (const call of calls) {
-        let result: unknown;
-        let ok = true;
-        try {
-          result = runTool(call.name, call.arguments ?? {}, ctx);
-        } catch (e) {
-          ok = false;
-          result = { error: String(e) };
-        }
-        steps.push({ tool: call.name, args: call.arguments ?? {}, ok });
-        collected.push({ name: call.name, result });
-        audit.record({ type: 'inference', kind: 'tool-call', model: call.name, promptPreview: userMessage, meta: { args: call.arguments, result } });
-        convo.push({ role: 'tool', content: JSON.stringify(result) });
-      }
+    // Deterministic multi-tool orchestration. Native QVAC tool-calling is wired
+    // and verified (Diagnostics smoke test), but a 1B is unreliable at *emitting*
+    // structured calls at runtime — it tends to describe the call in prose and
+    // burns a full generation doing it. So the planner selects and chains the
+    // right tools deterministically: reliable, correct, and fast (one model
+    // pass). The answer is grounded in their real results.
+    for (const pc of planToolCalls(userMessage)) {
+      if (collected.some((c) => c.name === pc.name)) continue;
+      const result = runTool(pc.name, pc.args, ctx);
+      steps.push({ tool: pc.name, args: pc.args, ok: true });
+      collected.push({ name: pc.name, result });
+      audit.record({ type: 'inference', kind: 'tool-call', model: pc.name, promptPreview: userMessage, meta: { args: pc.args, result } });
     }
 
-    // 2) Deterministic primary — the guaranteed verdict + the LIVE SKY badge.
-    const primary = runLocalTool(userMessage, lat, lon);
-    audit.record({ type: 'inference', kind: 'tool-call', model: `${primary.name} (deterministic)`, promptPreview: userMessage, meta: { result: primary.result } });
-    if (collected.length === 0) {
-      // Model orchestrated nothing — fall back so the answer is still grounded.
-      steps.push({ tool: primary.name, args: {}, ok: true });
-      collected.push({ name: primary.name, result: primary.result });
+    // Badge + lead verdict. A general planning question ("best target tonight")
+    // leads with what's actually up after dark; an object/simple question leads
+    // with that object's deterministic verdict (guaranteed correct polarity).
+    const planning = PLAN_RE.test(userMessage);
+    const hasObject = !!findDso(userMessage) || BODY_RE.test(userMessage);
+    let live: LiveSky;
+    let leadLine: string;
+    let primaryTool: string | null = null;
+    if (planning && !hasObject) {
+      const tt = collected.find((c) => c.name === 'get_tonight_targets')?.result as any;
+      const moon = collected.find((c) => c.name === 'get_moon_conditions')?.result as any;
+      const dark = collected.find((c) => c.name === 'get_dark_window')?.result as any;
+      live = {
+        kind: 'plan',
+        fromTime: tt?.fromTime ?? null,
+        moonPct: moon?.illumination ?? 0,
+        moonInterference: moon?.interference ?? 'none',
+        darkStart: dark?.darkStart ?? null,
+        darkEnd: dark?.darkEnd ?? null,
+        bodies: (tt?.bodies ?? []).slice(0, 4).map((b: any) => ({ name: b.name, altitude: b.altitude, direction: b.direction })),
+      };
+      leadLine = summarizeTool('get_tonight_targets', tt) || 'Planning targets for tonight.';
+    } else {
+      const primary = runLocalTool(userMessage, lat, lon);
+      live = primary.live;
+      leadLine = groundingText(primary.live);
+      primaryTool = primary.name;
     }
 
-    // 3) Ground the final answer: authoritative verdict first, then everything
-    //    the model gathered (moon, dark window, other objects).
-    const lines = [groundingText(primary.live)];
+    // Ground the final answer: lead line first, then the orchestrated tool results.
+    const lines = [leadLine];
     for (const c of collected) {
       const s = summarizeTool(c.name, c.result);
       if (s) lines.push(s);
@@ -183,6 +218,8 @@ export async function runSkyAgent(
     const grounded = `${ANSWER_SYSTEM}\n\nLive on-device sky data:\n- ${dedupe(lines).join('\n- ')}`;
 
     // Final answer pass — no tools, so it answers from the grounded data.
+    // Low temperature keeps it faithful to the data (no invented targets);
+    // a token cap keeps it short and fast on the 1B.
     const finalRes = sdk.completion({
       modelId,
       history: [
@@ -190,6 +227,7 @@ export async function runSkyAgent(
         { role: 'user', content: userMessage },
       ],
       stream: true,
+      generationParams: { temp: 0.2, top_p: 0.9, predict: 180 },
     });
     async function* drain(): AsyncIterable<string> {
       try {
@@ -201,11 +239,9 @@ export async function runSkyAgent(
 
     return {
       stream: audit.instrument('llm', 'orchestrator', userMessage, drain(), finalRes.stats),
-      // Always credit the deterministic primary tool too, so correctness tracking
-      // (eval) stays stable regardless of how the model orchestrated.
-      toolsUsed: [...new Set([...steps.map((s) => s.tool), primary.name])],
+      toolsUsed: [...new Set([...steps.map((s) => s.tool), ...(primaryTool ? [primaryTool] : [])])],
       steps,
-      live: primary.live,
+      live,
     };
   } catch (err) {
     release();

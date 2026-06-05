@@ -41,11 +41,14 @@ LLAMA_TOOL_CALLING_1B  ──orchestrates──▶  get_visible_now()
         └─ ORCHESTRATED trace shown · grounded in real computed positions
 ```
 
-**Why this design:** small models are unreliable at *deciding* a yes/no, so the
-SDK's native tool-calling (`completion({ tools })`, model loaded with
-`tools: true`) drives orchestration, while a deterministic ephemeris pass owns
-the verdict. Model-driven orchestration on top, deterministic guarantee
-underneath — the orchestration trace and the verdict are both visible in the UI.
+**Why this design:** native QVAC tool-calling is wired and verified — the model
+loads with `tools: true` and `completion({ tools })` accepts the five sky tools
+(see the Diagnostics **native-tool-calling** smoke probe). But a 1B is unreliable
+at *emitting* structured calls at runtime — it tends to describe the call in
+prose and burns a full generation doing it. So the **orchestration is driven
+deterministically**: a planner selects and chains the right tools for the query
+(reliable, correct, one model pass), and the answer is grounded in their real
+results. The ORCHESTRATED trace and the LIVE SKY verdict are both shown in the UI.
 
 ## On-device AI — all via the QVAC SDK, zero cloud inference
 
@@ -63,7 +66,7 @@ The judged delta over the disclosed prior work below:
 
 - **`lib/ephemeris.ts`** — pure on-device planet/Moon positions via `astronomy-engine` (altitude, azimuth, visibility, rise/set, constellation), plus **moon-interference** and **astronomical dark-window** computation. No network.
 - **`lib/skyTools.ts`** — five native QVAC tool descriptors (`get_body_position`, `get_object_position`, `get_visible_now`, `get_moon_conditions`, `get_dark_window`) with local handlers + compact result summaries for grounding.
-- **`lib/agent.ts`** — **multi-tool orchestration**: native QVAC tool-calling loop on `LLAMA_TOOL_CALLING_1B` (model decides + chains tools) with a deterministic ephemeris pass that guarantees the verdict, every step logged to the audit.
+- **`lib/agent.ts`** — **deterministic multi-tool orchestration**: a planner selects and chains the right sky tools per query, grounded in real ephemeris so the verdict can never flip; native QVAC tool-calling is wired + verified (smoke probe) but the 1B is unreliable at emitting structured calls, so orchestration is deterministic for reliability + speed. Every tool call logged to the audit.
 - **Orchestration trace + LIVE SKY badge** in `components/FieldChatScreen.tsx` — the UI shows which tools the model orchestrated and the guaranteed verdict; sky-position questions use the agent, everything else stays on RAG.
 - **Real GPS observer** (`lib/location.ts`, `expo-location`) — computes the sky for where you actually are; Tbilisi fallback on denial.
 - **`lib/audit.ts`** — inference audit log (model loads, TTFT, tokens/sec, raw QVAC stats) with JSON file + OS share-sheet export — the verification evidence bundle.

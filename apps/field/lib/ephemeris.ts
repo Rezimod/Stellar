@@ -220,4 +220,27 @@ export function getVisibleNow(lat: number, lon: number, date = new Date()): Body
     .sort((a, b) => b.altitude - a.altitude);
 }
 
+export type TonightTargets = {
+  /** ISO time the targets are computed for (dark-window start), or null if already dark. */
+  fromTime: string | null;
+  alreadyDark: boolean;
+  bodies: { name: string; altitude: number; direction: string; magnitude: number }[];
+};
+
+/**
+ * What's worth pointing a telescope at *tonight* — bodies above the horizon once
+ * the sky is actually dark (computed at the astronomical-dark start, not "now").
+ * This is what a "best target tonight" question really means.
+ */
+export function getTonightTargets(lat: number, lon: number, date = new Date()): TonightTargets {
+  const dw = getDarkWindow(lat, lon, date);
+  const at = dw.isDarkNow ? date : dw.darkStart ? new Date(dw.darkStart) : date;
+  const list = getVisibleNow(lat, lon, at);
+  return {
+    fromTime: dw.isDarkNow ? null : dw.darkStart,
+    alreadyDark: dw.isDarkNow,
+    bodies: list.slice(0, 6).map((b) => ({ name: b.name, altitude: b.altitude, direction: b.azimuthDir, magnitude: b.magnitude })),
+  };
+}
+
 export const SUPPORTED_BODIES = Object.keys(BODIES);

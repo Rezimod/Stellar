@@ -13,7 +13,7 @@ import { audit } from './audit';
 export type EvalCase = {
   q: string;
   expectRoute: Route;
-  expectTool?: 'get_body_position' | 'get_visible_now';
+  expectTool?: 'get_body_position' | 'get_visible_now' | 'get_tonight_targets';
 };
 
 export const EVAL_SET: EvalCase[] = [
@@ -30,7 +30,7 @@ export const EVAL_SET: EvalCase[] = [
   // Agent — compound orchestration (the model is expected to chain several
   // tools; the recorded `toolsUsed` reveals the orchestration). Pass is keyed to
   // the deterministic primary so the artifact stays consistent run-to-run.
-  { q: "What's the best target tonight, and when?", expectRoute: 'agent', expectTool: 'get_visible_now' },
+  { q: "What's the best target tonight, and when?", expectRoute: 'agent', expectTool: 'get_tonight_targets' },
   { q: 'Will the Moon interfere with faint targets tonight?', expectRoute: 'agent', expectTool: 'get_body_position' },
   // Companion — knowledge (RAG)
   { q: 'What is M31?', expectRoute: 'companion' },

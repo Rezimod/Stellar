@@ -327,7 +327,16 @@ function statusDotColor(phase: LoadProgress['phase']) {
   }
 }
 
+function fmtTime(iso: string | null): string {
+  return iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+}
+
 function formatLiveSky(live: LiveSky): string {
+  if (live.kind === 'plan') {
+    const when = live.darkStart ? `dark from ${fmtTime(live.darkStart)}` : 'dark now';
+    const targets = live.bodies.length ? live.bodies.map((b) => b.name).join(', ') : 'deep-sky objects';
+    return `Tonight · ${when} · Moon ${live.moonPct}% (${live.moonInterference}) · ${targets}`;
+  }
   if (live.kind === 'body' || live.kind === 'dso') {
     if (!live.aboveHorizon) return `${live.name} · below horizon · not up`;
     const status = live.daylight ? 'daytime · not viewable' : 'viewable now';
@@ -340,6 +349,7 @@ function formatLiveSky(live: LiveSky): string {
 
 const TOOL_LABELS: Record<string, string> = {
   get_visible_now: 'visible now',
+  get_tonight_targets: 'tonight',
   get_body_position: 'planet/moon',
   get_object_position: 'deep-sky',
   get_moon_conditions: 'moon',
@@ -367,10 +377,10 @@ function AssistantFooter({
             <Text style={styles.traceLabel}>ORCHESTRATED</Text>
             {steps.map((s, i) => (
               <View key={i} style={styles.traceItem}>
-                {i > 0 && <Text style={styles.traceArrow}>→</Text>}
                 <View style={[styles.toolChip, !s.ok && styles.toolChipErr]}>
                   <Text style={styles.toolChipText}>{toolLabel(s.tool)}</Text>
                 </View>
+                {i < steps.length - 1 && <Text style={styles.traceArrow}>→</Text>}
               </View>
             ))}
           </View>

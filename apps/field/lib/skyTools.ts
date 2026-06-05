@@ -4,6 +4,7 @@ import {
   getDsoPosition,
   getMoonConditions,
   getDarkWindow,
+  getTonightTargets,
   sunAltitude,
 } from './ephemeris';
 import { findDso } from './dso';
@@ -101,6 +102,21 @@ const TOOLS: SkyTool[] = [
         : r?.bodies?.length
           ? 'Up now: ' + r.bodies.map((b: any) => `${b.name} (${b.altitude}°, ${b.direction})`).join('; ') + '.'
           : 'Nothing above the horizon.',
+  },
+  {
+    def: {
+      type: 'function',
+      name: 'get_tonight_targets',
+      description: 'The bodies that will be above the horizon once the sky is dark TONIGHT (computed at the dark-window start) — what to actually plan to observe tonight.',
+      parameters: { type: 'object', properties: {} },
+    },
+    run: (_args, { lat, lon }) => getTonightTargets(lat, lon),
+    summarize: (r) => {
+      const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'now');
+      if (!r.bodies?.length) return `Tonight (from ${fmt(r.fromTime)}): no bright planets up — a good night for deep-sky objects.`;
+      const when = r.alreadyDark ? 'now (sky is dark)' : `from ${fmt(r.fromTime)}`;
+      return `Tonight ${when}: ` + r.bodies.map((b: any) => `${b.name} (${b.altitude}°, ${b.direction})`).join(', ') + '.';
+    },
   },
   {
     def: {

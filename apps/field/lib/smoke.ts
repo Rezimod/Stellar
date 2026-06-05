@@ -41,7 +41,32 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
-  // 2. Embeddings via EmbeddingGemma — proves the capability for semantic RAG.
+  // 2. Native QVAC tool-calling — proves the SDK tool API is wired: the model is
+  //    loaded with tools enabled and `completion({ tools })` accepts our real sky
+  //    tool descriptors and returns a toolCalls result. (At runtime we drive the
+  //    orchestration deterministically for reliability + speed; this verifies the
+  //    native path itself is live.)
+  results.push(
+    await timed('native-tool-calling', async () => {
+      const { qvac } = await import('./qvac');
+      const { TOOL_DEFS } = await import('./skyTools');
+      const modelId = await qvac.ensureLlmModelId();
+      const r = sdk.completion({
+        modelId,
+        history: [{ role: 'user', content: 'Where is Jupiter right now?' }],
+        stream: true,
+        tools: TOOL_DEFS,
+      });
+      await Promise.all([
+        (async () => { for await (const _t of r.tokenStream) { /* drain */ } })(),
+        (async () => { for await (const _e of r.toolCallStream) { /* drain */ } })(),
+      ]);
+      const calls = (await r.toolCalls) ?? [];
+      return `api ok · ${TOOL_DEFS.length} tools accepted · model emitted ${calls.length} call(s)`;
+    }, report),
+  );
+
+  // 3. Embeddings via EmbeddingGemma — proves the capability for semantic RAG.
   results.push(
     await timed('embed-gemma', async () => {
       const embId = await sdk.loadModel({ modelSrc: sdk.EMBEDDINGGEMMA_300M_Q4_0, modelType: 'llamacpp-embedding' });
