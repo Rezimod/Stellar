@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import type { Conversation } from '../lib/conversations';
 import { relativeTime } from '../lib/conversations';
 import type { Observer } from '../lib/location';
+import { qvac } from '../lib/qvac';
 
 const SCREEN_W = Dimensions.get('window').width;
 const PANEL_W = Math.min(320, Math.round(SCREEN_W * 0.84));
@@ -119,6 +120,7 @@ export function ChatDrawer({
         </ScrollView>
 
         <View style={styles.footer}>
+          <FieldMesh />
           <View style={styles.settingRow}>
             <Text style={styles.settingKey}>Location</Text>
             <Text style={styles.settingVal} numberOfLines={1}>{locLabel}</Text>
@@ -131,6 +133,45 @@ export function ChatDrawer({
         </View>
       </Animated.View>
     </View>
+  );
+}
+
+/** Field Mesh — seed the on-device model to nearby peers over P2P. */
+function FieldMesh() {
+  const [state, setState] = useState(qvac.getSeedingState().state);
+
+  async function toggle() {
+    if (state === 'seeding' || state === 'starting') return;
+    setState('starting');
+    try {
+      await qvac.startSeeding();
+    } catch {
+      /* state reflected below */
+    }
+    setState(qvac.getSeedingState().state);
+  }
+
+  const label =
+    state === 'seeding' ? 'Seeding · serving model to peers'
+    : state === 'starting' ? 'Starting mesh…'
+    : state === 'error' ? 'Mesh failed — tap to retry'
+    : 'Seed AI to nearby devices';
+
+  const active = state === 'seeding';
+
+  return (
+    <TouchableOpacity
+      style={[styles.mesh, active && styles.meshActive]}
+      onPress={toggle}
+      activeOpacity={0.85}
+      disabled={state === 'starting'}
+    >
+      <View style={[styles.meshDot, active && styles.meshDotOn]} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.meshTitle}>Field Mesh</Text>
+        <Text style={styles.meshSub} numberOfLines={1}>{label}</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -201,6 +242,23 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 7,
   },
+  mesh: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    backgroundColor: '#101826',
+    borderWidth: 1,
+    borderColor: '#1F2A3D',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  meshActive: { backgroundColor: '#0E2A22', borderColor: '#14B8A655' },
+  meshDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#3C4658' },
+  meshDotOn: { backgroundColor: '#14B8A6', shadowColor: '#14B8A6', shadowOpacity: 0.8, shadowRadius: 5, shadowOffset: { width: 0, height: 0 } },
+  meshTitle: { color: '#E5E7EB', fontSize: 13, fontWeight: '700', letterSpacing: 0.2 },
+  meshSub: { color: '#7B8498', fontSize: 11, marginTop: 2 },
   settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   settingKey: { color: '#6B7280', fontSize: 12 },
   settingVal: { color: '#9CA3AF', fontSize: 12, flexShrink: 1, textAlign: 'right' },

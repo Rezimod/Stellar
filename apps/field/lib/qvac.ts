@@ -43,6 +43,12 @@ class QvacRuntime {
   private llmLoad: Promise<void> | null = null;
   private whisperLoad: Promise<void> | null = null;
 
+  // Field Mesh: when seeding, this device serves the on-device model to nearby
+  // peers over QVAC's P2P transport (Hyperdrive), so a phone at a dark-sky site
+  // with no internet can pull the AI from a peer instead of the cloud.
+  private seedingState: 'off' | 'starting' | 'seeding' | 'error' = 'off';
+  private seedError = '';
+
   // QVAC runs ONE inference at a time (single-job worker). Every completion,
   // embedding, and transcription acquires this gate so a background job (e.g.
   // corpus-embedding warm-up) never collides with a user's chat message.
@@ -62,6 +68,34 @@ class QvacRuntime {
 
   subscribe(fn: Listener) {
     return this.llmTracker.subscribe(fn);
+  }
+
+  /** Field Mesh seeding state, for the UI. */
+  getSeedingState(): { state: 'off' | 'starting' | 'seeding' | 'error'; error: string } {
+    return { state: this.seedingState, error: this.seedError };
+  }
+
+  /**
+   * Start seeding the on-device model to nearby peers over P2P. The model is
+   * already cached locally, so this just begins announcing/serving it on the
+   * QVAC swarm — turning this phone into a source other Field devices can pull
+   * the model from with no internet.
+   */
+  async startSeeding(): Promise<void> {
+    if (this.seedingState === 'seeding' || this.seedingState === 'starting') return;
+    this.seedingState = 'starting';
+    try {
+      await this.ensureReady(); // model must be cached before we can seed it
+      const sdk = await import('@qvac/sdk');
+      const { downloadAsset, LLAMA_TOOL_CALLING_1B_INST_Q4_K } = sdk as any;
+      // seed:true serves the cached asset to peers; resolves once seeding starts.
+      await downloadAsset({ assetSrc: LLAMA_TOOL_CALLING_1B_INST_Q4_K, seed: true });
+      this.seedingState = 'seeding';
+    } catch (err: any) {
+      this.seedingState = 'error';
+      this.seedError = err?.message ?? String(err);
+      throw err;
+    }
   }
 
   getWhisperProgress() {
