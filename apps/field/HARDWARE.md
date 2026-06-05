@@ -20,18 +20,21 @@ chosen deliberately: if the offline AI holds up here, it holds up anywhere.
 - `EmbeddingGemma 300M` — embeddings (capability verified via the Diagnostics smoke test)
 
 ## Measured performance (on the device above)
-On-device eval over a 16-question mixed set (sky agent + RAG), captured by the
-in-app audit log on **2026-06-03**. Raw exports are committed under
-[`artifacts/`](./artifacts/) — every inference event carries `"backendDevice": "cpu"`,
-i.e. real on-device compute, no cloud.
+On-device eval over an 18-question mixed set (sky agent + multi-tool
+orchestration + RAG), captured by the in-app harness on **2026-06-05**. Raw
+exports are committed under [`artifacts/`](./artifacts/) — every audit inference
+event carries `"backendDevice": "cpu"`, i.e. real on-device compute, no cloud.
 
-- **Accuracy:** routing 16/16, tool selection 8/8, overall **16/16**
+- **Accuracy:** routing 18/18, tool selection 10/10, overall **18/18**
 - **Sky agent (tool-grounded):** TTFT ~2.6–2.9 s, full answer ~4–6 s, ~8–10.5 tok/s
+- **Multi-tool orchestration** (e.g. "best target tonight"): chains 3 tools
+  (`get_tonight_targets → get_moon_conditions → get_dark_window`), full answer ~7–10 s
 - **RAG companion (freeform):** TTFT ~7.6–10 s, full answer ~15–22 s (300–600-char answers)
-- **Set averages:** avg TTFT **5672 ms**, avg total **11705 ms**
+- **Set averages:** avg TTFT **6483 ms**, avg total **12123 ms**
 
 Committed evidence bundle:
-- [`artifacts/qvac-eval-2026-06-03.json`](./artifacts/qvac-eval-2026-06-03.json) — per-query route/tool/latency
+- [`artifacts/qvac-eval-2026-06-05.json`](./artifacts/qvac-eval-2026-06-05.json) — per-query route/tools/latency, incl. the orchestration cases (latest)
+- [`artifacts/qvac-eval-2026-06-03.json`](./artifacts/qvac-eval-2026-06-03.json) — earlier run
 - [`artifacts/qvac-audit-2026-06-03.json`](./artifacts/qvac-audit-2026-06-03.json) — per-inference prompt, tokens, TTFT, tokens/sec, raw QVAC `sdkStats`
 
 > Reproduce: build per the README on a connected Android device, open the
