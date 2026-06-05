@@ -152,10 +152,10 @@ function FieldMesh() {
   }
 
   const label =
-    state === 'seeding' ? 'Seeding · serving model to peers'
+    state === 'seeding' ? 'Seeding · nearby phones can pull the AI'
     : state === 'starting' ? 'Starting mesh…'
-    : state === 'error' ? 'Mesh failed — tap to retry'
-    : 'Seed AI to nearby devices';
+    : state === 'error' ? 'Mesh unavailable — tap to retry'
+    : 'Share the AI with nearby phones — no internet';
 
   const active = state === 'seeding';
 

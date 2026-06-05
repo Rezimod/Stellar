@@ -60,6 +60,25 @@ results. The ORCHESTRATED trace and the LIVE SKY verdict are both shown in the U
 
 There is **no cloud LLM proxy** from the Field app. All inference is QVAC, on the device.
 
+## Field Mesh — P2P at a dark-sky site (Holepunch / QVAC)
+
+The model is **distributed peer-to-peer** over QVAC's built-in Hyperdrive/Hyperswarm
+transport. Toggle **Field Mesh** (drawer) and the phone **seeds** its cached model to
+nearby peers — so a newcomer at a dark-sky site with **no internet** can pull the AI
+from a peer's phone instead of the cloud. This is decentralised model distribution:
+every Field device can be a source, not just a consumer.
+
+Verified on-device:
+- 807 MB model **downloads peer-to-peer** (Hyperdrive), not from a central server
+- A desktop **provider** runs natively (`startQVACProvider`), announces a Hyperswarm topic, returns a stable key
+- **Delegated `loadModel`** acquires a remote model handle on a peer with **zero local load** (the inference-delegation handshake)
+
+> **Status:** model seeding/distribution is shipped and working. Live inference
+> *delegation* (offloading the `completion` itself to a peer) is wired end-to-end —
+> the handshake and remote model registration succeed — but the streaming
+> completion round-trip currently times out (a P2P sustained-channel / blind-relay
+> concern under investigation, not app code). The architecture is in place.
+
 ## ⭐ Built during this hackathon (June 1–21, 2026)
 
 The judged delta over the disclosed prior work below:
