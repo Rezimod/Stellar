@@ -25,19 +25,22 @@ type DemoPost = {
   shareCount: number
 }
 
+// Amateur-astrophotography shots from Wikimedia Commons — telescope/DSLR
+// captures by hobbyists, not observatory-grade HQ renders. These match what a
+// real Stellar user (an Astroman telescope buyer) would actually post.
 const IMAGES = {
-  moon: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg',
-  jupiter: 'https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter_OPAL_2024.png',
-  saturn: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/3840px-Saturn_during_Equinox.jpg',
-  andromeda: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Andromeda_Galaxy_2025.png/3840px-Andromeda_Galaxy_2025.png',
-  orion: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/3840px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg',
-  pleiades: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/3840px-Pleiades_large.jpg',
-  eagle: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Eagle_Nebula_from_ESO.jpg/3840px-Eagle_Nebula_from_ESO.jpg',
-  crab: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/3840px-Crab_Nebula.jpg',
-  whirlpool: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Messier51_sRGB.jpg/3840px-Messier51_sRGB.jpg',
-  lagoon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/VST_images_the_Lagoon_Nebula.jpg/3840px-VST_images_the_Lagoon_Nebula.jpg',
-  ring: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Webb_captures_detailed_beauty_of_Ring_Nebula_%28NIRCam_image%29_%28weic2320b%29.jpg/3840px-Webb_captures_detailed_beauty_of_Ring_Nebula_%28NIRCam_image%29_%28weic2320b%29.jpg',
-  veil: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Veil_Nebula_-_NGC6960.jpg/3840px-Veil_Nebula_-_NGC6960.jpg',
+  moon: 'https://commons.wikimedia.org/wiki/Special:FilePath/Moon%20through%20amateur%20telescope.jpg?width=1100',
+  jupiter: 'https://commons.wikimedia.org/wiki/Special:FilePath/Jupiter%20and%20Io%20amateur%20telescope.jpg?width=1100',
+  saturn: 'https://commons.wikimedia.org/wiki/Special:FilePath/A%20photograph%20of%20Saturn%20taken%20with%20an%20amateur%20telescope.jpg?width=1100',
+  andromeda: 'https://commons.wikimedia.org/wiki/Special:FilePath/Andromeda%20galaxy%20nikon.jpg?width=1100',
+  orion: 'https://commons.wikimedia.org/wiki/Special:FilePath/The%20Great%20Orion%20Nebula%20in%20Narrowband.jpg?width=1100',
+  pleiades: 'https://commons.wikimedia.org/wiki/Special:FilePath/Pleiades-deddy-dayag-f2.jpg?width=1100',
+  eagle: 'https://commons.wikimedia.org/wiki/Special:FilePath/M16%20Eagle%20Nebula%20Widefield%20and%20Narrowbands.jpg?width=1100',
+  crab: 'https://commons.wikimedia.org/wiki/Special:FilePath/M1%20-%20Crab%20Nebula%20%288279238648%29.jpg?width=1100',
+  whirlpool: 'https://commons.wikimedia.org/wiki/Special:FilePath/M51%20Whirlpool%20Galaxy%20LRGB%20filtered.jpg?width=1100',
+  lagoon: 'https://commons.wikimedia.org/wiki/Special:FilePath/Lagoon%20and%20Trifid%20from%20Los%20Angeles%20.jpg?width=1100',
+  ring: 'https://commons.wikimedia.org/wiki/Special:FilePath/Ring%20Nebula%20%28Messier%2057%29.jpg?width=1100',
+  veil: 'https://commons.wikimedia.org/wiki/Special:FilePath/Veil%20Nebula%20%28SNR%29%20in%20Cygnus%20-%20Flickr%20-%20gjdonatiello.jpg?width=1100',
 } as const
 
 const POSTS: DemoPost[] = [

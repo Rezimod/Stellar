@@ -494,16 +494,18 @@
   margin-bottom: 14px;
   border: 1px solid var(--hairline);
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   cursor: zoom-in;
   width: 100%;
   padding: 0;
-  background: transparent;
+  /* Near-black so the letterboxing around a contained astrophoto blends into
+     the photo's own night-sky background instead of zoom-cropping the frame. */
+  background: #04060D;
   text-align: left;
 }
 .post-media img {
   width: 100%; height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 .media-badge {
