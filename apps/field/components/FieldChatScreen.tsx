@@ -30,7 +30,7 @@ import { ChatDrawer } from './ChatDrawer';
 
 const STARTER_PROMPTS = [
   'Is Saturn up right now?',
-  'What can I see tonight?',
+  'Best target tonight, and when?',
   'What is M31?',
 ];
 

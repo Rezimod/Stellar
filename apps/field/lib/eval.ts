@@ -27,6 +27,11 @@ export const EVAL_SET: EvalCase[] = [
   { q: 'What can I see right now?', expectRoute: 'agent', expectTool: 'get_visible_now' },
   { q: 'What planets are visible tonight?', expectRoute: 'agent', expectTool: 'get_visible_now' },
   { q: "What's up in the sky tonight?", expectRoute: 'agent', expectTool: 'get_visible_now' },
+  // Agent — compound orchestration (the model is expected to chain several
+  // tools; the recorded `toolsUsed` reveals the orchestration). Pass is keyed to
+  // the deterministic primary so the artifact stays consistent run-to-run.
+  { q: "What's the best target tonight, and when?", expectRoute: 'agent', expectTool: 'get_visible_now' },
+  { q: 'Will the Moon interfere with faint targets tonight?', expectRoute: 'agent', expectTool: 'get_body_position' },
   // Companion — knowledge (RAG)
   { q: 'What is M31?', expectRoute: 'companion' },
   { q: 'How do I collimate a Newtonian?', expectRoute: 'companion' },
