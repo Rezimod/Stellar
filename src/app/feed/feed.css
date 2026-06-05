@@ -494,17 +494,22 @@
   margin-bottom: 14px;
   border: 1px solid var(--hairline);
   position: relative;
-  aspect-ratio: 4 / 3;
   cursor: zoom-in;
   width: 100%;
   padding: 0;
-  /* Near-black so the letterboxing around a contained astrophoto blends into
-     the photo's own night-sky background instead of zoom-cropping the frame. */
+  /* Near-black so any letterbox around a capped photo blends into the photo's
+     own night-sky background. No fixed aspect-ratio: the image renders at its
+     natural shape (FB/X-style) and is only capped in height so it never takes
+     over the whole screen. */
   background: #04060D;
   text-align: left;
+  display: block;
+  line-height: 0;
 }
 .post-media img {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: auto;
+  max-height: 560px;
   object-fit: contain;
   display: block;
 }
@@ -1278,11 +1283,14 @@
   .author-name { font-size: 14px; gap: 6px; font-weight: 600; }
   .author-meta { font-size: 10px; gap: 6px; }
 
-  /* Image goes edge-to-edge inside the card (FB look) */
+  /* Image goes edge-to-edge inside the card (FB look), natural aspect ratio,
+     capped so the whole post (photo + caption + actions) stays scannable. */
   .post-media {
     border-radius: 12px;
     margin: 0 0 10px;
-    aspect-ratio: 4 / 3.1;
+  }
+  .post-media img {
+    max-height: 62vh;
   }
 
   /* Reactions summary — left-aligned bubble stack like FB */
