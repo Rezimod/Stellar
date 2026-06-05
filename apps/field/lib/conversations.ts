@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ChatMessage } from './qvac';
 import type { Citation } from './rag';
-import type { LiveSky } from './agent';
+import type { LiveSky, OrchestrationStep } from './agent';
 
 /**
  * On-device conversation history. Stored locally (AsyncStorage) so the Field
@@ -15,6 +15,7 @@ export type AssistantTurn = {
   citations: Citation[];
   toolsUsed?: string[];
   live?: LiveSky;
+  steps?: OrchestrationStep[];
 };
 
 export type Turn = ChatMessage | AssistantTurn;

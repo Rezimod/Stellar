@@ -18,20 +18,34 @@ Three tabs, all 100% on-device:
 - **Voice Log** — at the eyepiece, hands on the focuser, press and speak your observation. Whisper transcribes locally; a second pass extracts target, magnification, seeing.
 - **Diagnostics** — one-tap capability smoke test and **audit-log export** (the evidence bundle: device specs + per-inference TTFT/tokens-sec).
 
-### The headline loop (offline tool-calling agent)
+### The headline loop (offline multi-tool orchestration)
+
+The model orchestrates several **native QVAC tools** to answer a compound
+question, then a deterministic pass guarantees the verdict can never be wrong:
 
 ```
-"Is Saturn up right now?"  (airplane mode)
+"What's the best target tonight, and when?"   (airplane mode)
         │
         ▼
-LLAMA_TOOL_CALLING_1B  ──calls──▶  get_body_position(saturn)
+LLAMA_TOOL_CALLING_1B  ──orchestrates──▶  get_visible_now()
+ (native QVAC tools)   ──orchestrates──▶  get_moon_conditions()
+        │              ──orchestrates──▶  get_dark_window()
         │                          (local astronomy-engine, zero network)
         ▼
-"Saturn is below the horizon right now (−44°, due north). Jupiter is
- well placed, 31° up in the west — your best target tonight."
+ deterministic pass ── computes the primary verdict from real ephemeris
+        │             (the answer can never flip "below horizon" → "up")
+        ▼
+"The Moon is 78% lit and washes out faint targets until it sets ~02:10.
+ Jupiter is well placed (31° up, W); astronomical dark runs 22:40–04:05."
         │
-        └─ tagged LIVE EPHEMERIS · grounded in real computed positions
+        └─ ORCHESTRATED trace shown · grounded in real computed positions
 ```
+
+**Why this design:** small models are unreliable at *deciding* a yes/no, so the
+SDK's native tool-calling (`completion({ tools })`, model loaded with
+`tools: true`) drives orchestration, while a deterministic ephemeris pass owns
+the verdict. Model-driven orchestration on top, deterministic guarantee
+underneath — the orchestration trace and the verdict are both visible in the UI.
 
 ## On-device AI — all via the QVAC SDK, zero cloud inference
 
@@ -47,10 +61,10 @@ There is **no cloud LLM proxy** from the Field app. All inference is QVAC, on th
 
 The judged delta over the disclosed prior work below:
 
-- **`lib/ephemeris.ts`** — pure on-device planet/Moon positions via `astronomy-engine` (altitude, azimuth, visibility, rise/set, constellation). No network.
-- **`lib/tools.ts`** — QVAC tool descriptors `get_body_position` and `get_visible_now` with local handlers.
-- **`lib/agent.ts`** — two-pass tool-calling loop on `LLAMA_TOOL_CALLING_1B` (decide → run local tool → answer grounded), instrumented through the audit log.
-- **Chat routing + LIVE EPHEMERIS badge** in `components/FieldChatScreen.tsx` — sky-position questions use the agent; everything else stays on RAG.
+- **`lib/ephemeris.ts`** — pure on-device planet/Moon positions via `astronomy-engine` (altitude, azimuth, visibility, rise/set, constellation), plus **moon-interference** and **astronomical dark-window** computation. No network.
+- **`lib/skyTools.ts`** — five native QVAC tool descriptors (`get_body_position`, `get_object_position`, `get_visible_now`, `get_moon_conditions`, `get_dark_window`) with local handlers + compact result summaries for grounding.
+- **`lib/agent.ts`** — **multi-tool orchestration**: native QVAC tool-calling loop on `LLAMA_TOOL_CALLING_1B` (model decides + chains tools) with a deterministic ephemeris pass that guarantees the verdict, every step logged to the audit.
+- **Orchestration trace + LIVE SKY badge** in `components/FieldChatScreen.tsx` — the UI shows which tools the model orchestrated and the guaranteed verdict; sky-position questions use the agent, everything else stays on RAG.
 - **Real GPS observer** (`lib/location.ts`, `expo-location`) — computes the sky for where you actually are; Tbilisi fallback on denial.
 - **`lib/audit.ts`** — inference audit log (model loads, TTFT, tokens/sec, raw QVAC stats) with JSON file + OS share-sheet export — the verification evidence bundle.
 - **`lib/smoke.ts` + Diagnostics tab** — one-tap on-device capability probe.

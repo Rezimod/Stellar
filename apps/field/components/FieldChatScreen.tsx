@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
-import { runSkyAgent, type LiveSky } from '../lib/agent';
+import { runSkyAgent, type LiveSky, type OrchestrationStep } from '../lib/agent';
 import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
 import { looksLikeSkyQuery } from '../lib/router';
 import { warmCorpusEmbeddings } from '../lib/rag';
@@ -43,6 +43,7 @@ export function FieldChatScreen() {
     citations: Citation[];
     toolsUsed?: string[];
     live?: LiveSky;
+    steps?: OrchestrationStep[];
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [observer, setObserver] = useState<Observer>(DEFAULT_OBSERVER);
@@ -138,20 +139,20 @@ export function FieldChatScreen() {
 
     try {
       if (sky) {
-        const { stream, toolsUsed, live } = await runSkyAgent(
+        const { stream, toolsUsed, live, steps } = await runSkyAgent(
           message,
           history,
           observer.lat,
           observer.lon,
         );
         let acc = '';
-        setStreaming({ text: '', citations: [], toolsUsed, live });
+        setStreaming({ text: '', citations: [], toolsUsed, live, steps });
         for await (const tok of stream) {
           acc += tok;
-          setStreaming({ text: acc, citations: [], toolsUsed, live });
+          setStreaming({ text: acc, citations: [], toolsUsed, live, steps });
           scrollRef.current?.scrollToEnd({ animated: false });
         }
-        const done: Turn[] = [...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed, live }];
+        const done: Turn[] = [...newTurns, { role: 'assistant', content: acc, citations: [], toolsUsed, live, steps }];
         setTurns(done);
         setStreaming(null);
         persist(done);
@@ -263,7 +264,7 @@ export function FieldChatScreen() {
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{m.content}</Text>
               </View>
-              <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} />
+              <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} steps={(m as AssistantTurn).steps} />
             </View>
           ),
         )}
@@ -273,7 +274,7 @@ export function FieldChatScreen() {
             <View style={[styles.bubble, styles.aiBubble]}>
               <Text style={styles.bubbleText}>{streaming.text || '…'}</Text>
             </View>
-            <AssistantFooter citations={streaming.citations} live={streaming.live} />
+            <AssistantFooter citations={streaming.citations} live={streaming.live} steps={streaming.steps} />
           </View>
         )}
       </ScrollView>
@@ -337,16 +338,50 @@ function formatLiveSky(live: LiveSky): string {
   return 'Up: ' + live.bodies.map((b) => `${b.name} ${b.altitude}° ${b.direction}`).join(' · ');
 }
 
-function AssistantFooter({ citations, live }: { citations: Citation[]; live?: LiveSky }) {
+const TOOL_LABELS: Record<string, string> = {
+  get_visible_now: 'visible now',
+  get_body_position: 'planet/moon',
+  get_object_position: 'deep-sky',
+  get_moon_conditions: 'moon',
+  get_dark_window: 'dark window',
+};
+function toolLabel(name: string): string {
+  return TOOL_LABELS[name] ?? name.replace(/^get_/, '').replace(/_/g, ' ');
+}
+
+function AssistantFooter({
+  citations,
+  live,
+  steps,
+}: {
+  citations: Citation[];
+  live?: LiveSky;
+  steps?: OrchestrationStep[];
+}) {
   // Agent answer — grounded in live, on-device sky data (not the RAG corpus).
   if (live) {
     return (
-      <View style={styles.assistantFooter}>
-        <View style={[styles.modeBadge, styles.modeBadgeLive]}>
-          <Text style={styles.modeBadgeText}>LIVE SKY</Text>
-        </View>
-        <View style={styles.liveReadout}>
-          <Text style={styles.liveReadoutText} numberOfLines={2}>{formatLiveSky(live)}</Text>
+      <View style={styles.agentFooter}>
+        {steps && steps.length > 0 && (
+          <View style={styles.trace}>
+            <Text style={styles.traceLabel}>ORCHESTRATED</Text>
+            {steps.map((s, i) => (
+              <View key={i} style={styles.traceItem}>
+                {i > 0 && <Text style={styles.traceArrow}>→</Text>}
+                <View style={[styles.toolChip, !s.ok && styles.toolChipErr]}>
+                  <Text style={styles.toolChipText}>{toolLabel(s.tool)}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+        <View style={styles.assistantFooter}>
+          <View style={[styles.modeBadge, styles.modeBadgeLive]}>
+            <Text style={styles.modeBadgeText}>LIVE SKY</Text>
+          </View>
+          <View style={styles.liveReadout}>
+            <Text style={styles.liveReadoutText} numberOfLines={2}>{formatLiveSky(live)}</Text>
+          </View>
         </View>
       </View>
     );
@@ -428,14 +463,38 @@ const styles = StyleSheet.create({
   },
   bubbleText: { color: '#E5E7EB', fontSize: 15, lineHeight: 22 },
   userBubbleText: { color: '#FFFFFF' },
+  agentFooter: { marginTop: 4, marginLeft: 4, maxWidth: '92%', gap: 6 },
+  trace: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
+  traceLabel: {
+    color: '#5C6678',
+    fontSize: 8.5,
+    letterSpacing: 1.2,
+    fontWeight: '700',
+    marginRight: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  traceItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  traceArrow: { color: '#3C4658', fontSize: 11 },
+  toolChip: {
+    backgroundColor: '#14B8A614',
+    borderWidth: 1,
+    borderColor: '#14B8A640',
+    borderRadius: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  toolChipErr: { backgroundColor: '#F8717118', borderColor: '#F8717155' },
+  toolChipText: {
+    color: '#7DD3C4',
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
   assistantFooter: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
-    marginTop: 4,
-    marginLeft: 4,
-    maxWidth: '88%',
+    maxWidth: '100%',
   },
   modeBadge: {
     paddingHorizontal: 8,

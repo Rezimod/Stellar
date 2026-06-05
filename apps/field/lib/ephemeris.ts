@@ -135,6 +135,83 @@ export function getDsoPosition(ra: number, dec: number, lat: number, lon: number
   };
 }
 
+const PHASE_NAMES = [
+  'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+  'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent',
+];
+function moonPhaseName(deg: number): string {
+  return PHASE_NAMES[Math.round(deg / 45) % 8];
+}
+
+export type MoonConditions = {
+  altitude: number;
+  azimuthDir: string;
+  aboveHorizon: boolean;
+  /** Illuminated fraction, 0–100%. */
+  illumination: number;
+  phaseName: string;
+  /** How much the Moon washes out faint deep-sky targets right now. */
+  interference: 'none' | 'low' | 'moderate' | 'high';
+};
+
+/** Moon brightness + position → how much it interferes with faint-object observing now. */
+export function getMoonConditions(lat: number, lon: number, date = new Date()): MoonConditions {
+  const p = getBodyPosition('moon', lat, lon, date);
+  const deg = (((MoonPhase(date) % 360) + 360) % 360);
+  const illumination = Math.round(((1 - Math.cos((deg * Math.PI) / 180)) / 2) * 100);
+  const aboveHorizon = p?.aboveHorizon ?? false;
+  let interference: MoonConditions['interference'];
+  if (!aboveHorizon) interference = 'none';
+  else if (illumination < 25) interference = 'low';
+  else if (illumination < 55) interference = 'moderate';
+  else interference = 'high';
+  return {
+    altitude: p?.altitude ?? 0,
+    azimuthDir: p?.azimuthDir ?? '—',
+    aboveHorizon,
+    illumination,
+    phaseName: moonPhaseName(deg),
+    interference,
+  };
+}
+
+export type DarkWindow = {
+  isDarkNow: boolean;
+  /** ISO time astronomical darkness (Sun < −18°) begins, or null if already dark / never. */
+  darkStart: string | null;
+  /** ISO time darkness ends (dawn), or null. */
+  darkEnd: string | null;
+  sunAltitude: number;
+};
+
+/** Tonight's astronomical-dark window (Sun below −18°), sampled over the next 24h. */
+export function getDarkWindow(lat: number, lon: number, date = new Date()): DarkWindow {
+  const DARK = -18;
+  const STEP = 15 * 60 * 1000;
+  const nowAlt = sunAltitude(lat, lon, date);
+  const isDarkNow = nowAlt < DARK;
+  let darkStart: Date | null = isDarkNow ? date : null;
+  let darkEnd: Date | null = null;
+  let started = isDarkNow;
+  for (let i = 1; i <= 96; i += 1) {
+    const t = new Date(date.getTime() + i * STEP);
+    const a = sunAltitude(lat, lon, t);
+    if (!started && a < DARK) {
+      darkStart = t;
+      started = true;
+    } else if (started && a >= DARK) {
+      darkEnd = t;
+      break;
+    }
+  }
+  return {
+    isDarkNow,
+    darkStart: darkStart ? darkStart.toISOString() : null,
+    darkEnd: darkEnd ? darkEnd.toISOString() : null,
+    sunAltitude: Math.round(nowAlt * 10) / 10,
+  };
+}
+
 /** Everything currently above the horizon, brightest/highest first (excludes the Sun). */
 export function getVisibleNow(lat: number, lon: number, date = new Date()): BodyPosition[] {
   return Object.keys(BODIES)

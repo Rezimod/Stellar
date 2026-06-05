@@ -7,7 +7,9 @@
 import { findDso } from './dso';
 
 const BODY_RE = /\b(sun|moon|mercury|venus|mars|jupiter|saturn|uranus|neptune)\b/i;
-const VIS_RE = /\b(visible|overhead|tonight|right now|what'?s up|where is|how high)\b/i;
+// Visibility + planning cues — planning words ("observe", "best", "dark window")
+// route compound questions to the orchestrating agent, which can chain tools.
+const VIS_RE = /\b(visible|overhead|tonight|right now|what'?s up|where is|how high|observe|observing|best target|what should i|dark window|moonlight|good time)\b/i;
 // Positional cues — used to route a named deep-sky object to the live agent
 // ("is M31 up?") while leaving definition questions ("what is M31?") to RAG.
 const POS_RE = /\b(up|rise|rises|rising|sets?|setting|where|locate|find|point|see|high|altitude|overhead)\b/i;

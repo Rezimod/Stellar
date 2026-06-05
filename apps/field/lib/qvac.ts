@@ -8,7 +8,7 @@ export type LoadProgress = {
   error?: string;
 };
 
-export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+export type ChatMessage = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string };
 
 type Listener = (p: LoadProgress) => void;
 
@@ -92,6 +92,11 @@ class QvacRuntime {
         this.llmModelId = await loadModel({
           modelSrc: LLAMA_TOOL_CALLING_1B_INST_Q4_K,
           modelType: 'llm',
+          // Enable native tool-calling so the model can orchestrate the sky tools.
+          // (Without `tools: true` the model never emits tool calls — the cause of
+          // the earlier "answered without calling" behaviour.) Larger ctx holds the
+          // tool descriptors + multi-step tool results.
+          modelConfig: { ctx_size: 4096, tools: true },
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.llmTracker.emit({
               phase: 'downloading',
@@ -198,31 +203,12 @@ class QvacRuntime {
   }
 
   /**
-   * Streaming completion that holds the single-job gate for the full stream and
-   * exposes the token stream + stats (used by the grounded sky agent). The lock
-   * releases when the returned stream is fully drained.
+   * Acquire the single-job inference gate manually. The orchestrator holds it
+   * across several completion passes (tool rounds + final answer), releasing
+   * only once the final answer stream is fully drained. Returns a release fn.
    */
-  async lockedCompletion(
-    history: ChatMessage[],
-  ): Promise<{ tokenStream: AsyncIterable<string>; stats?: Promise<unknown> }> {
-    const modelId = await this.ensureLlmModelId();
-    const release = await this.acquire();
-    let result: any;
-    try {
-      const sdk = await import('@qvac/sdk');
-      result = (sdk as any).completion({ modelId, history, stream: true });
-    } catch (err) {
-      release();
-      throw err;
-    }
-    async function* drain(): AsyncIterable<string> {
-      try {
-        for await (const token of result.tokenStream) yield token as string;
-      } finally {
-        release();
-      }
-    }
-    return { tokenStream: drain(), stats: result.stats };
+  async acquireJob(): Promise<() => void> {
+    return this.acquire();
   }
 
   async embed(text: string): Promise<number[] | null> {
