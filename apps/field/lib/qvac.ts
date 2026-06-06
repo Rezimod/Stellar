@@ -1,4 +1,5 @@
 import 'react-native-get-random-values';
+import { audit } from './audit';
 
 export type LoadProgress = {
   phase: 'idle' | 'downloading' | 'loading' | 'ready' | 'error';
@@ -8,7 +9,11 @@ export type LoadProgress = {
   error?: string;
 };
 
-export type ChatMessage = { role: 'system' | 'user' | 'assistant' | 'tool'; content: string };
+export type ChatMessage = {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string;
+  imageUri?: string; // local file:// uri when the user attached a photo (Vision)
+};
 
 type Listener = (p: LoadProgress) => void;
 
@@ -36,12 +41,16 @@ class QvacRuntime {
   private llmModelId: string | null = null;
   private embedModelId: string | null = null;
   private whisperModelId: string | null = null;
+  private vlmModelId: string | null = null;
+  private vlmModelName = '';
 
   private llmTracker = new ProgressTracker();
   private whisperTracker = new ProgressTracker();
+  private vlmTracker = new ProgressTracker();
 
   private llmLoad: Promise<void> | null = null;
   private whisperLoad: Promise<void> | null = null;
+  private vlmLoad: Promise<void> | null = null;
 
   // Field Mesh: when seeding, this device serves the on-device model to nearby
   // peers over QVAC's P2P transport (Hyperdrive), so a phone at a dark-sky site
@@ -104,6 +113,109 @@ class QvacRuntime {
 
   subscribeWhisper(fn: Listener) {
     return this.whisperTracker.subscribe(fn);
+  }
+
+  getVlmProgress() {
+    return this.vlmTracker.get();
+  }
+
+  subscribeVlm(fn: Listener) {
+    return this.vlmTracker.subscribe(fn);
+  }
+
+  /**
+   * Lazily load the on-device vision-language model. Loaded only when the user
+   * first attaches a photo (it's a heavier model + projection), so phones that
+   * never use Vision don't pay the download. Prefers Qwen3-VL 2B (strong on
+   * equipment/sky recognition); falls back to the lighter SmolVLM2 500M.
+   */
+  async ensureVlmReady(): Promise<void> {
+    if (this.vlmTracker.get().phase === 'ready') return;
+    if (this.vlmLoad) return this.vlmLoad;
+
+    this.vlmLoad = (async () => {
+      try {
+        const sdk = await import('@qvac/sdk');
+        const s = sdk as any;
+        const { loadModel } = s;
+
+        const qwen = s.QWEN3VL_2B_MULTIMODAL_Q4_K;
+        const qwenProj = s.MMPROJ_QWEN3VL_2B_MULTIMODAL_Q4_K;
+        const smol = s.SMOLVLM2_500M_MULTIMODAL_Q8_0;
+        const smolProj = s.MMPROJ_SMOLVLM2_500M_MULTIMODAL_Q8_0;
+
+        const pick =
+          qwen && qwenProj
+            ? { modelSrc: qwen, projectionModelSrc: qwenProj, name: 'Qwen3-VL 2B' }
+            : smol && smolProj
+            ? { modelSrc: smol, projectionModelSrc: smolProj, name: 'SmolVLM2 500M' }
+            : null;
+        if (!pick) throw new Error('No multimodal model exported by @qvac/sdk');
+
+        this.vlmModelName = pick.name;
+        this.vlmTracker.emit({
+          phase: 'downloading',
+          message: `Fetching vision model — ${pick.name} (one-time)`,
+        });
+        audit.modelLoad(pick.name, { kind: 'vision' });
+
+        this.vlmModelId = await loadModel({
+          modelSrc: pick.modelSrc,
+          modelType: 'llm',
+          modelConfig: { ctx_size: 2048, projectionModelSrc: pick.projectionModelSrc },
+          onProgress: (p: { downloaded?: number; total?: number }) => {
+            this.vlmTracker.emit({
+              phase: 'downloading',
+              bytesDownloaded: p.downloaded,
+              bytesTotal: p.total,
+              message: `Downloading ${pick.name}`,
+            });
+          },
+        });
+
+        this.vlmTracker.emit({ phase: 'ready', message: 'Vision ready' });
+      } catch (err: any) {
+        this.vlmTracker.emit({ phase: 'error', error: err?.message ?? String(err) });
+        this.vlmLoad = null; // allow retry
+        throw err;
+      }
+    })();
+
+    return this.vlmLoad;
+  }
+
+  /**
+   * Stream a vision-language answer about an on-device image. Routes through the
+   * VLM with the photo attached; everything stays local. Holds the single-job
+   * gate so it never collides with a text completion or transcription.
+   */
+  async *seeImage(
+    prompt: string,
+    imagePath: string,
+    system?: string,
+  ): AsyncIterable<string> {
+    await this.ensureVlmReady();
+    if (!this.vlmModelId) throw new Error('Vision model not loaded');
+
+    const cleanPath = imagePath.startsWith('file://') ? imagePath.slice(7) : imagePath;
+    const history: any[] = [];
+    if (system) history.push({ role: 'system', content: system });
+    history.push({ role: 'user', content: prompt, attachments: [{ path: cleanPath }] });
+
+    const release = await this.acquire();
+    try {
+      const sdk = await import('@qvac/sdk');
+      const { completion } = sdk as any;
+      const result = completion({
+        modelId: this.vlmModelId,
+        history,
+        stream: true,
+        generationParams: { temp: 0.2, top_p: 0.9, predict: 220 },
+      });
+      yield* audit.instrument('vision', this.vlmModelName || 'vlm', prompt, result.tokenStream, result.stats);
+    } finally {
+      release();
+    }
   }
 
   async ensureReady(): Promise<void> {

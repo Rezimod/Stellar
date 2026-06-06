@@ -14,9 +14,20 @@ Astronomers travel to dark-sky sites — mountains, deserts, rural fields — wh
 
 Three tabs, all 100% on-device:
 
-- **Companion** — ask anything about the night sky. Questions about *where/whether* a body is up, or *what's visible tonight*, are routed to an **offline tool-calling agent** that computes real positions and answers grounded in them (tagged **LIVE EPHEMERIS**). General astronomy questions go to a **RAG companion** over a curated corpus (tagged **QVAC**, with citations).
+- **Companion** — ask anything about the night sky. Questions about *where/whether* a body is up, or *what's visible tonight*, are routed to an **offline tool-calling agent** that computes real positions and answers grounded in them (tagged **LIVE EPHEMERIS**). General astronomy questions go to a **RAG companion** over a curated corpus (tagged **QVAC**, with citations). Tap **＋** to attach a photo and the question is answered by the **on-device vision model** instead (tagged **VISION**).
 - **Voice Log** — at the eyepiece, hands on the focuser, press and speak your observation. Whisper transcribes locally; a second pass extracts target, magnification, seeing.
 - **Diagnostics** — one-tap capability smoke test and **audit-log export** (the evidence bundle: device specs + per-inference TTFT/tokens-sec).
+
+### Vision — "what am I looking at?" (offline VLM)
+
+Attach a photo in the Companion (camera or library) and a **multimodal model runs on
+the phone** to identify it — a telescope type, an eyepiece, a mount, a filter, or a
+sky object — and gives one practical tip. Built for real Astroman customers: beginners
+who own gear they can't yet name. The image is analysed **entirely on-device**; it
+never leaves the phone. Prefers **Qwen3-VL 2B** (`QWEN3VL_2B_MULTIMODAL_Q4_K` + its
+mmproj projection); falls back to **SmolVLM2 500M** on tighter devices. The model is
+loaded lazily — only the first time you attach a photo — so phones that never use
+Vision don't pay the download.
 
 ### The headline loop (offline multi-tool orchestration)
 
@@ -55,6 +66,7 @@ results. The ORCHESTRATED trace and the LIVE SKY verdict are both shown in the U
 | Capability | QVAC package | Model |
 |---|---|---|
 | RAG chat **and** tool-calling agent (one shared model) | `@qvac/llm-llamacpp` | `LLAMA_TOOL_CALLING_1B_INST_Q4_K` |
+| Vision — identify gear / sky from a photo | `@qvac/llm-llamacpp` (multimodal + mmproj) | `QWEN3VL_2B_MULTIMODAL_Q4_K` (SmolVLM2 500M fallback) |
 | Embeddings (semantic RAG) | `@qvac/embed-llamacpp` | EmbeddingGemma 300M |
 | Voice transcription | `@qvac/transcription-whispercpp` | Whisper |
 
@@ -86,6 +98,7 @@ The judged delta over the disclosed prior work below:
 - **`lib/ephemeris.ts`** — pure on-device planet/Moon positions via `astronomy-engine` (altitude, azimuth, visibility, rise/set, constellation), plus **moon-interference** and **astronomical dark-window** computation. No network.
 - **`lib/skyTools.ts`** — five native QVAC tool descriptors (`get_body_position`, `get_object_position`, `get_visible_now`, `get_moon_conditions`, `get_dark_window`) with local handlers + compact result summaries for grounding.
 - **`lib/agent.ts`** — **deterministic multi-tool orchestration**: a planner selects and chains the right sky tools per query, grounded in real ephemeris so the verdict can never flip; native QVAC tool-calling is wired + verified (smoke probe) but the 1B is unreliable at emitting structured calls, so orchestration is deterministic for reliability + speed. Every tool call logged to the audit.
+- **`lib/vision.ts` + VLM path in `lib/qvac.ts`** — **on-device vision**: attach a photo and a multimodal model (Qwen3-VL 2B, SmolVLM2 fallback) identifies telescopes/eyepieces/sky objects offline. Loaded lazily through the same single-job gate; each inference logged to the audit as `kind: 'vision'`. Image attach + thumbnail + VISION badge in `components/FieldChatScreen.tsx`; a `vision-vlm` smoke probe runs a known test image end to end.
 - **Orchestration trace + LIVE SKY badge** in `components/FieldChatScreen.tsx` — the UI shows which tools the model orchestrated and the guaranteed verdict; sky-position questions use the agent, everything else stays on RAG.
 - **Real GPS observer** (`lib/location.ts`, `expo-location`) — computes the sky for where you actually are; Tbilisi fallback on denial.
 - **`lib/audit.ts`** — inference audit log (model loads, TTFT, tokens/sec, raw QVAC stats) with JSON file + OS share-sheet export — the verification evidence bundle.
@@ -99,7 +112,7 @@ Baseline from the May Tether Frontier submission, **not** counted in this hackat
 
 - **Physical Android device only** — QVAC's native modules do not run on emulators or Expo Go.
 - **Chipset: Snapdragon 7+ / Google Tensor / Cortex-A76+ or better.** Avoid MediaTek **Helio G-series** — it silently breaks llama.cpp activation.
-- **~2 GB free storage** for the model downloads.
+- **~4 GB free storage** for the model downloads (the Vision model adds ~2 GB, fetched only if you use it).
 
 ## Build & run (reproducible)
 
@@ -118,6 +131,7 @@ Enable USB debugging on the phone and accept the "Allow USB debugging" prompt. F
 - `LLAMA_TOOL_CALLING_1B` Q4 — ~700 MB (one shared model for chat + agent)
 - Whisper — ~150 MB (loads on first voice log)
 - EmbeddingGemma 300M — loaded for semantic RAG
+- `QWEN3VL_2B_MULTIMODAL` Q4 + mmproj — ~2 GB (loads on first photo attach; Vision only)
 
 ## Verification artifacts (for the 3-stage review)
 

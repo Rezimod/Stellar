@@ -76,5 +76,27 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
+  // 4. Vision (multimodal) — writes a known test image to disk and asks the VLM
+  //    to describe it. Proves the on-device image→text path runs end to end.
+  results.push(
+    await timed('vision-vlm', async () => {
+      const { qvac } = await import('./qvac');
+      const { File, Paths } = await import('expo-file-system');
+      const file = new File(Paths.cache, `smoke-vision-${Date.now()}.png`);
+      file.write(TEST_IMAGE_PNG_BASE64, { encoding: 'base64' as any });
+      let answer = '';
+      for await (const tok of qvac.seeImage('Describe this image in one short sentence.', file.uri)) {
+        answer += tok;
+      }
+      const preview = answer.replace(/\s+/g, ' ').trim().slice(0, 90);
+      return `ok · "${preview}${answer.length > 90 ? '…' : ''}"`;
+    }, report),
+  );
+
   return results;
 }
+
+// 32×32 PNG: red top half, blue bottom half. Small, known, bundled — gives the
+// vision probe a deterministic image without shipping an asset file.
+const TEST_IMAGE_PNG_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAALklEQVR4nO3NQQkAAAgEMONcHPtjGFP4EAb7ryY5VQKBQCB4EaTnlEAgEAheBAtEsQBMPZNXHgAAAABJRU5ErkJggg==';

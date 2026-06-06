@@ -18,7 +18,9 @@
       "bundleIdentifier": "com.stellar.field",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Stellar Field uses the microphone for offline voice observation logging at the eyepiece. Audio is transcribed locally and never leaves your device.",
-        "NSLocationWhenInUseUsageDescription": "Stellar Field uses your location to compute which planets and deep-sky objects are above your horizon right now. Your location stays on your device."
+        "NSLocationWhenInUseUsageDescription": "Stellar Field uses your location to compute which planets and deep-sky objects are above your horizon right now. Your location stays on your device.",
+        "NSCameraUsageDescription": "Stellar Field uses the camera so you can point it at your telescope, eyepiece, or the sky and have the on-device AI identify it. Photos are analysed locally and never leave your device.",
+        "NSPhotoLibraryUsageDescription": "Stellar Field lets you attach a photo for the on-device AI to identify. Images are analysed locally and never leave your device."
       }
     },
     "android": {
@@ -34,7 +36,8 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA"
       ]
     },
     "web": {
@@ -60,6 +63,13 @@
         "expo-build-properties",
         {
           "android": { "minSdkVersion": 29 }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Stellar Field lets you attach a photo for the on-device AI to identify. Images are analysed locally and never leave your device.",
+          "cameraPermission": "Stellar Field uses the camera so you can point it at your telescope, eyepiece, or the sky and have the on-device AI identify it. Photos are analysed locally and never leave your device."
         }
       ],
       "@qvac/sdk/expo-plugin"

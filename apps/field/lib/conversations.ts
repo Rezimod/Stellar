@@ -16,6 +16,7 @@ export type AssistantTurn = {
   toolsUsed?: string[];
   live?: LiveSky;
   steps?: OrchestrationStep[];
+  vision?: boolean; // answer came from the on-device vision model (photo attached)
 };
 
 export type Turn = ChatMessage | AssistantTurn;

@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * and the declared hardware all corroborate each other.
  */
 
-export type InferenceKind = 'llm' | 'tool-call' | 'embed' | 'whisper' | 'tts' | 'ocr';
+export type InferenceKind = 'llm' | 'tool-call' | 'embed' | 'whisper' | 'tts' | 'ocr' | 'vision';
 
 export type AuditEvent = {
   ts: string;

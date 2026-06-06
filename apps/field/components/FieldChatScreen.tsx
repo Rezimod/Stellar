@@ -8,10 +8,14 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  Alert,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
 import { runSkyAgent, type LiveSky, type OrchestrationStep } from '../lib/agent';
+import { identifyImage } from '../lib/vision';
 import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
 import { looksLikeSkyQuery } from '../lib/router';
 import { warmCorpusEmbeddings } from '../lib/rag';
@@ -44,18 +48,23 @@ export function FieldChatScreen() {
     toolsUsed?: string[];
     live?: LiveSky;
     steps?: OrchestrationStep[];
+    vision?: boolean;
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [observer, setObserver] = useState<Observer>(DEFAULT_OBSERVER);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [attachment, setAttachment] = useState<string | null>(null);
+  const [vlmProgress, setVlmProgress] = useState<LoadProgress>(qvac.getVlmProgress());
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     const unsub = qvac.subscribe(setProgress);
+    const unsubVlm = qvac.subscribeVlm(setVlmProgress);
     return () => {
       unsub();
+      unsubVlm();
     };
   }, []);
 
@@ -120,7 +129,71 @@ export function FieldChatScreen() {
     getObserverLocation().then(setObserver).catch(() => {});
   }, []);
 
+  async function pickImage() {
+    if (busy || progress.phase !== 'ready') return;
+    Alert.alert('Identify a photo', 'Point the camera at your gear or the sky, or pick a photo.', [
+      {
+        text: 'Take photo',
+        onPress: async () => {
+          const perm = await ImagePicker.requestCameraPermissionsAsync();
+          if (!perm.granted) return;
+          const res = await ImagePicker.launchCameraAsync({ quality: 0.6, allowsEditing: true });
+          if (!res.canceled) setAttachment(res.assets[0].uri);
+        },
+      },
+      {
+        text: 'Choose photo',
+        onPress: async () => {
+          const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!perm.granted) return;
+          const res = await ImagePicker.launchImageLibraryAsync({ quality: 0.6, allowsEditing: true });
+          if (!res.canceled) setAttachment(res.assets[0].uri);
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }
+
+  async function sendImage(imageUri: string, text: string) {
+    setBusy(true);
+    setInput('');
+    setAttachment(null);
+
+    const newTurns: Turn[] = [...turns, { role: 'user', content: text, imageUri }];
+    setTurns(newTurns);
+    setStreaming({ text: 'Looking at your photo…', citations: [] });
+
+    try {
+      const { stream } = await identifyImage(imageUri, text);
+      let acc = '';
+      setStreaming({ text: '', citations: [], vision: true });
+      for await (const tok of stream) {
+        acc += tok;
+        setStreaming({ text: acc, citations: [], vision: true });
+        scrollRef.current?.scrollToEnd({ animated: false });
+      }
+      const done: Turn[] = [...newTurns, { role: 'assistant', content: acc, citations: [], vision: true }];
+      setTurns(done);
+      setStreaming(null);
+      persist(done);
+    } catch (err: any) {
+      const done: Turn[] = [
+        ...newTurns,
+        { role: 'assistant', content: `Vision error: ${err?.message ?? err}`, citations: [] },
+      ];
+      setTurns(done);
+      setStreaming(null);
+      persist(done);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function send(text: string) {
+    if (attachment) {
+      await sendImage(attachment, text.trim() || 'What is this?');
+      return;
+    }
     const message = text.trim();
     if (!message || busy) return;
     setInput('');
@@ -230,6 +303,9 @@ export function FieldChatScreen() {
       </View>
 
       <ModelLoadingBanner progress={progress} />
+      {vlmProgress.phase !== 'idle' && vlmProgress.phase !== 'ready' && (
+        <ModelLoadingBanner progress={vlmProgress} />
+      )}
 
       <ScrollView
         ref={scrollRef}
@@ -241,7 +317,8 @@ export function FieldChatScreen() {
         {turns.length === 0 && progress.phase === 'ready' && (
           <View style={styles.starterWrap}>
             <Text style={styles.hint}>
-              Ask anything about the night sky — on-device, no signal needed.
+              Ask anything about the night sky — on-device, no signal needed. Tap ＋ to
+              photograph your telescope, an eyepiece, or the sky and have Astra identify it.
             </Text>
             <Text style={styles.starterLabel}>Try</Text>
             <View style={styles.starterChips}>
@@ -257,14 +334,19 @@ export function FieldChatScreen() {
         {turns.map((m, i) =>
           m.role === 'user' ? (
             <View key={i} style={[styles.bubble, styles.userBubble]}>
-              <Text style={[styles.bubbleText, styles.userBubbleText]}>{m.content}</Text>
+              {(m as ChatMessage).imageUri && (
+                <Image source={{ uri: (m as ChatMessage).imageUri }} style={styles.bubbleImage} />
+              )}
+              {!!m.content && (
+                <Text style={[styles.bubbleText, styles.userBubbleText]}>{m.content}</Text>
+              )}
             </View>
           ) : (
             <View key={i}>
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{m.content}</Text>
               </View>
-              <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} steps={(m as AssistantTurn).steps} />
+              <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} steps={(m as AssistantTurn).steps} vision={(m as AssistantTurn).vision} />
             </View>
           ),
         )}
@@ -274,16 +356,40 @@ export function FieldChatScreen() {
             <View style={[styles.bubble, styles.aiBubble]}>
               <Text style={styles.bubbleText}>{streaming.text || '…'}</Text>
             </View>
-            <AssistantFooter citations={streaming.citations} live={streaming.live} steps={streaming.steps} />
+            <AssistantFooter citations={streaming.citations} live={streaming.live} steps={streaming.steps} vision={streaming.vision} />
           </View>
         )}
       </ScrollView>
 
+      {attachment && (
+        <View style={styles.attachStrip}>
+          <Image source={{ uri: attachment }} style={styles.attachThumb} />
+          <Text style={styles.attachLabel} numberOfLines={1}>Photo attached — Astra will identify it on-device</Text>
+          <TouchableOpacity onPress={() => setAttachment(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.attachRemove}>×</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.composer}>
+        <TouchableOpacity
+          onPress={pickImage}
+          disabled={busy || progress.phase !== 'ready'}
+          style={[styles.attachBtn, (busy || progress.phase !== 'ready') && styles.sendBtnDisabled]}
+          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+        >
+          <Text style={styles.attachIcon}>＋</Text>
+        </TouchableOpacity>
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder={progress.phase === 'ready' ? 'Ask the sky…' : 'Loading on-device AI…'}
+          placeholder={
+            progress.phase !== 'ready'
+              ? 'Loading on-device AI…'
+              : attachment
+              ? 'Add a question (optional)…'
+              : 'Ask the sky…'
+          }
           placeholderTextColor="#6B7280"
           style={styles.input}
           editable={!busy && progress.phase === 'ready'}
@@ -292,10 +398,10 @@ export function FieldChatScreen() {
         />
         <TouchableOpacity
           onPress={() => send(input)}
-          disabled={busy || progress.phase !== 'ready' || !input.trim()}
+          disabled={busy || progress.phase !== 'ready' || (!input.trim() && !attachment)}
           style={[
             styles.sendBtn,
-            (busy || progress.phase !== 'ready' || !input.trim()) && styles.sendBtnDisabled,
+            (busy || progress.phase !== 'ready' || (!input.trim() && !attachment)) && styles.sendBtnDisabled,
           ]}
         >
           <Text style={styles.sendText}>{busy ? '…' : '↑'}</Text>
@@ -363,11 +469,26 @@ function AssistantFooter({
   citations,
   live,
   steps,
+  vision,
 }: {
   citations: Citation[];
   live?: LiveSky;
   steps?: OrchestrationStep[];
+  vision?: boolean;
 }) {
+  // Vision answer — on-device VLM identified an attached photo.
+  if (vision) {
+    return (
+      <View style={styles.assistantFooter}>
+        <View style={[styles.modeBadge, styles.modeBadgeVision]}>
+          <Text style={styles.modeBadgeText}>VISION</Text>
+        </View>
+        <View style={styles.citation}>
+          <Text style={styles.citationText} numberOfLines={1}>on-device · photo never left your phone</Text>
+        </View>
+      </View>
+    );
+  }
   // Agent answer — grounded in live, on-device sky data (not the RAG corpus).
   if (live) {
     return (
@@ -473,6 +594,14 @@ const styles = StyleSheet.create({
   },
   bubbleText: { color: '#E5E7EB', fontSize: 15, lineHeight: 22 },
   userBubbleText: { color: '#FFFFFF' },
+  bubbleImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 6,
+    backgroundColor: '#0B0E17',
+    resizeMode: 'cover',
+  },
   agentFooter: { marginTop: 4, marginLeft: 4, maxWidth: '92%', gap: 6 },
   trace: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
   traceLabel: {
@@ -513,6 +642,7 @@ const styles = StyleSheet.create({
   },
   modeBadgeField: { backgroundColor: '#14B8A622', borderWidth: 1, borderColor: '#14B8A655' },
   modeBadgeLive: { backgroundColor: '#F59E0B22', borderWidth: 1, borderColor: '#F59E0B66' },
+  modeBadgeVision: { backgroundColor: '#7C5CFF22', borderWidth: 1, borderColor: '#7C5CFF66' },
   liveReadout: {
     flex: 1,
     backgroundColor: '#0F1320',
@@ -555,6 +685,28 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#1A2030',
   },
+  attachStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    backgroundColor: '#0B0E17',
+  },
+  attachThumb: { width: 38, height: 38, borderRadius: 8, backgroundColor: '#141A28' },
+  attachLabel: { flex: 1, color: '#9CA3AF', fontSize: 12 },
+  attachRemove: { color: '#6B7280', fontSize: 22, lineHeight: 24, paddingHorizontal: 4 },
+  attachBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#141A28',
+    borderWidth: 1,
+    borderColor: '#222B3D',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  attachIcon: { color: '#7DD3C4', fontSize: 22, lineHeight: 24, marginTop: -1 },
   input: {
     flex: 1,
     backgroundColor: '#141A28',
