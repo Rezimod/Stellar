@@ -18,6 +18,7 @@ chosen deliberately: if the offline AI holds up here, it holds up anywhere.
 - `LLAMA_TOOL_CALLING_1B_INST_Q4_K` — one shared 1B model for the RAG chat and the sky agent (~700 MB)
 - `@qvac/transcription-whispercpp` — Whisper voice notes (~150 MB)
 - `EmbeddingGemma 300M` — embeddings (capability verified via the Diagnostics smoke test)
+- **Vision (multimodal):** `SMOLVLM2_500M_MULTIMODAL_Q8_0` + its mmproj projection on this 5.5 GB device (~700 MB). The loader is **RAM-aware**: phones with ≥6.5 GB RAM get the stronger `QWEN3VL_2B_MULTIMODAL_Q4_K` (~2 GB) automatically; the smaller SmolVLM2 is chosen here so it never OOMs alongside the resident 1B. Loaded lazily — only on first photo attach. Verified by the `vision-vlm` Diagnostics smoke probe (bundled test image, image→text round-trip).
 
 ## Measured performance (on the device above)
 On-device eval over an 18-question mixed set (sky agent + multi-tool

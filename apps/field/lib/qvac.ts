@@ -144,12 +144,26 @@ class QvacRuntime {
         const smol = s.SMOLVLM2_500M_MULTIMODAL_Q8_0;
         const smolProj = s.MMPROJ_SMOLVLM2_500M_MULTIMODAL_Q8_0;
 
-        const pick =
-          qwen && qwenProj
-            ? { modelSrc: qwen, projectionModelSrc: qwenProj, name: 'Qwen3-VL 2B' }
-            : smol && smolProj
-            ? { modelSrc: smol, projectionModelSrc: smolProj, name: 'SmolVLM2 500M' }
-            : null;
+        // RAM-aware: Qwen3-VL 2B (~2GB, far better recognition) needs headroom on
+        // top of the resident 1B chat model, so reserve it for ≥6.5GB phones. On
+        // constrained devices use SmolVLM2 500M (~700MB) — it won't OOM. Honours
+        // the "runs on constrained devices" goal instead of crashing on them.
+        let totalBytes = 0;
+        try {
+          const Device = await import('expo-device');
+          totalBytes = (Device as any).totalMemory ?? 0;
+        } catch {
+          /* fall through to the smaller model */
+        }
+        const roomy = totalBytes >= 6.5 * 1024 * 1024 * 1024;
+
+        const qwenPick = qwen && qwenProj
+          ? { modelSrc: qwen, projectionModelSrc: qwenProj, name: 'Qwen3-VL 2B' }
+          : null;
+        const smolPick = smol && smolProj
+          ? { modelSrc: smol, projectionModelSrc: smolProj, name: 'SmolVLM2 500M' }
+          : null;
+        const pick = (roomy ? qwenPick : smolPick) ?? smolPick ?? qwenPick;
         if (!pick) throw new Error('No multimodal model exported by @qvac/sdk');
 
         this.vlmModelName = pick.name;

@@ -120,6 +120,7 @@ export function ChatDrawer({
         </ScrollView>
 
         <View style={styles.footer}>
+          <VisionModel />
           <FieldMesh />
           <View style={styles.settingRow}>
             <Text style={styles.settingKey}>Location</Text>
@@ -133,6 +134,55 @@ export function ChatDrawer({
         </View>
       </Animated.View>
     </View>
+  );
+}
+
+/** Vision model — pre-download the on-device VLM so photo ID is instant (and
+ *  demos have no progress bar mid-flow). Lazy by default; this just warms it. */
+function VisionModel() {
+  const [p, setP] = useState(qvac.getVlmProgress());
+
+  useEffect(() => {
+    const unsub = qvac.subscribeVlm(setP);
+    return () => {
+      unsub();
+    };
+  }, []);
+
+  async function download() {
+    if (p.phase === 'downloading' || p.phase === 'loading' || p.phase === 'ready') return;
+    try {
+      await qvac.ensureVlmReady();
+    } catch {
+      /* state reflected below */
+    }
+  }
+
+  const pct =
+    p.bytesDownloaded && p.bytesTotal ? Math.round((p.bytesDownloaded / p.bytesTotal) * 100) : null;
+  const label =
+    p.phase === 'ready' ? 'Ready · identify photos offline'
+    : p.phase === 'loading' ? 'Preparing vision model…'
+    : p.phase === 'downloading' ? `Downloading… ${pct != null ? pct + '%' : ''}`.trim()
+    : p.phase === 'error' ? 'Download failed — tap to retry'
+    : 'Download for offline photo identification';
+
+  const active = p.phase === 'ready';
+  const busy = p.phase === 'downloading' || p.phase === 'loading';
+
+  return (
+    <TouchableOpacity
+      style={[styles.mesh, active && styles.meshActive]}
+      onPress={download}
+      activeOpacity={0.85}
+      disabled={busy}
+    >
+      <View style={[styles.meshDot, active && styles.meshDotOn]} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.meshTitle}>Vision model</Text>
+        <Text style={styles.meshSub} numberOfLines={1}>{label}</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "app": "Stellar Field",
-  "summary": "All AI inference (LLM completion, tool calling, embeddings, transcription) runs on-device via the QVAC SDK. The app makes ZERO remote AI/LLM/embedding/transcription calls. The remote calls listed below are optional, non-AI infrastructure (authentication, observation sync) plus one-time QVAC model distribution. The app is fully functional offline.",
+  "summary": "All AI inference (LLM completion, tool calling, vision/multimodal, embeddings, transcription) runs on-device via the QVAC SDK. The app makes ZERO remote AI/LLM/embedding/transcription/vision calls — photos attached for identification are analysed on-device and never uploaded. The remote calls listed below are optional, non-AI infrastructure (authentication, observation sync) plus one-time QVAC model distribution. The app is fully functional offline.",
   "ai_inference_calls": [],
   "remote_calls": [
     {
@@ -8,8 +8,8 @@
       "category": "model-distribution",
       "ai_inference": false,
       "optional": false,
-      "purpose": "One-time download of on-device model weights (Llama 3.2 1B, LLAMA_TOOL_CALLING_1B, Whisper, EmbeddingGemma) on first launch; cached locally thereafter and never re-fetched.",
-      "when": "first launch, or first use of each capability",
+      "purpose": "One-time download of on-device model weights (LLAMA_TOOL_CALLING_1B, Whisper, EmbeddingGemma, and a multimodal VLM — Qwen3-VL 2B or SmolVLM2 500M depending on device RAM, fetched only on first photo attach) on first use; cached locally thereafter and never re-fetched.",
+      "when": "first launch, or first use of each capability (the VLM only if Vision is used)",
       "data_sent": "model identifiers only — no user data, no prompts"
     },
     {
