@@ -7,7 +7,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:rag": "tsx scripts/build-rag-index.ts"
+    "build:rag": "tsx scripts/build-rag-index.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
@@ -88,7 +89,8 @@
     "bare-pack": "^1.5.1",
     "expo-module-scripts": "^5.0.8",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.8"
   },
   "private": true
 }
