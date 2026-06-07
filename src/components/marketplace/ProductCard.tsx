@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { priceToSol, type Product } from '@/lib/dealers';
+import { priceToSol, priceToUsd, type Product } from '@/lib/dealers';
 
 const formatPrice = (p: Product): string => {
   const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
@@ -14,6 +14,9 @@ const formatSol = (sol: number): string => {
   if (sol >= 1)  return sol.toFixed(3);
   return sol.toFixed(4);
 };
+
+const formatUsd = (usd: number): string =>
+  usd >= 10 ? Math.round(usd).toLocaleString() : usd.toFixed(2);
 
 interface Props {
   product: Product;
@@ -46,6 +49,9 @@ export default function ProductCard({
 
   const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
   const solAmount = solValue > 0 ? solValue : null;
+  // USD equivalent for non-USD-listed gear — many buyers don't know GEL.
+  const usdValue = priceToUsd(product.price, product.currency, solPerGEL, solPriceUsd);
+  const usdAmount = product.currency !== 'USD' && usdValue > 0 ? usdValue : null;
   const idleBg = 'rgba(232,230,221,0.045)';
   const idleBorder = 'rgba(232,230,221,0.10)';
 
@@ -101,9 +107,16 @@ export default function ProductCard({
           <span className="text-[16px] sm:text-[18px] font-semibold text-white leading-none whitespace-nowrap">
             {formatPrice(product)}
           </span>
-          {solAmount !== null && (
+          {(usdAmount !== null || solAmount !== null) && (
             <span className="text-[10px] tracking-[0.10em] uppercase text-white/70 leading-none mt-[4px] whitespace-nowrap">
-              ≈ <span className="text-white">{formatSol(solAmount)}</span> SOL
+              ≈{' '}
+              {usdAmount !== null && (
+                <span className="text-white">${formatUsd(usdAmount)}</span>
+              )}
+              {usdAmount !== null && solAmount !== null && ' · '}
+              {solAmount !== null && (
+                <><span className="text-white">{formatSol(solAmount)}</span> SOL</>
+              )}
             </span>
           )}
         </div>

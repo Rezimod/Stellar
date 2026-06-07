@@ -7,6 +7,7 @@ import Badge from '@/components/shared/Badge';
 import Button from '@/components/shared/Button';
 import SolanaPayModal from './SolanaPayModal';
 import { Product } from '@/lib/products';
+import { MARKETPLACE_GEL_PER_USD } from '@/lib/stars-economy';
 
 interface Props {
   product: Product;
@@ -28,6 +29,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
   const name = locale === 'ka' ? product.name.ka : product.name.en;
   const description = locale === 'ka' ? product.description.ka : product.description.en;
   const solPrice = (product.priceGEL * solPerGEL).toFixed(3);
+  const usdPrice = Math.round(product.priceGEL / MARKETPLACE_GEL_PER_USD);
 
   const [visible, setVisible] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
@@ -149,7 +151,7 @@ export default function ProductDetail({ product, solPerGEL, onClose }: Props) {
           {/* Price */}
           <div>
             <p className="text-text-primary text-3xl font-bold">{product.priceGEL} ₾</p>
-            <p className="text-text-muted text-sm">≈ {solPrice} SOL</p>
+            <p className="text-text-muted text-sm">≈ ${usdPrice.toLocaleString()} · {solPrice} SOL</p>
           </div>
 
           {/* Order confirmation */}

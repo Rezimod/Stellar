@@ -1199,3 +1199,20 @@ export function priceToSol(
   if (currency === 'EUR' && solPriceUsd > 0) return (price * USD_PER_EUR) / solPriceUsd
   return 0
 }
+
+/**
+ * USD equivalent of a product price. GEL is bridged via the live SOL rate
+ * (GEL → SOL → USD) so the dollar figure tracks the same source as the SOL
+ * price. Lets non-Georgian buyers read GEL-listed gear at a glance.
+ */
+export function priceToUsd(
+  price: number,
+  currency: string,
+  solPerGEL: number,
+  solPriceUsd: number,
+): number {
+  if (currency === 'USD') return price
+  if (currency === 'EUR') return price * USD_PER_EUR
+  if (currency === 'GEL' && solPerGEL > 0 && solPriceUsd > 0) return price * solPerGEL * solPriceUsd
+  return 0
+}
