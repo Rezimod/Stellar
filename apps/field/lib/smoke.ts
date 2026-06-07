@@ -116,6 +116,19 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
+  // 6. TTS voice-out — synthesize a short phrase on-device and confirm a non-empty
+  //    WAV is produced. Proves the text→speech path runs locally.
+  results.push(
+    await timed('tts-voice', async () => {
+      const { qvac } = await import('./qvac');
+      const { File } = await import('expo-file-system');
+      const uri = await qvac.speak('Saturn is below the horizon right now.');
+      const bytes = new File(uri).size ?? 0;
+      if (bytes < 1000) throw new Error(`WAV too small (${bytes} bytes)`);
+      return `ok · ${(bytes / 1024).toFixed(0)} KB WAV synthesized`;
+    }, report),
+  );
+
   return results;
 }
 

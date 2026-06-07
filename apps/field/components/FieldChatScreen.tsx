@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { createAudioPlayer } from 'expo-audio';
 import { qvac, type ChatMessage, type LoadProgress } from '../lib/qvac';
 import { startChat } from '../lib/companion';
 import { runSkyAgent, type LiveSky, type OrchestrationStep } from '../lib/agent';
@@ -349,7 +350,10 @@ export function FieldChatScreen() {
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{m.content}</Text>
               </View>
-              <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} steps={(m as AssistantTurn).steps} vision={(m as AssistantTurn).vision} />
+              <View style={styles.aiActions}>
+                <AssistantFooter citations={(m as AssistantTurn).citations} live={(m as AssistantTurn).live} steps={(m as AssistantTurn).steps} vision={(m as AssistantTurn).vision} />
+                {!!m.content && <SpeakerButton text={m.content} />}
+              </View>
             </View>
           ),
         )}
@@ -422,6 +426,63 @@ export function FieldChatScreen() {
         observer={observer}
       />
     </KeyboardAvoidingView>
+  );
+}
+
+/** Read an assistant answer aloud with the on-device QVAC TTS voice (Supertonic). */
+function SpeakerButton({ text }: { text: string }) {
+  const [state, setState] = useState<'idle' | 'loading' | 'playing'>('idle');
+  const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
+
+  useEffect(
+    () => () => {
+      try {
+        playerRef.current?.remove();
+      } catch {
+        /* noop */
+      }
+    },
+    [],
+  );
+
+  async function onPress() {
+    if (state === 'loading') return;
+    if (state === 'playing') {
+      try {
+        playerRef.current?.remove();
+      } catch {
+        /* noop */
+      }
+      playerRef.current = null;
+      setState('idle');
+      return;
+    }
+    setState('loading');
+    try {
+      const uri = await qvac.speak(text.slice(0, 600));
+      const player = createAudioPlayer(uri);
+      playerRef.current = player;
+      player.addListener('playbackStatusUpdate', (s: { didJustFinish?: boolean }) => {
+        if (s?.didJustFinish) {
+          setState('idle');
+          try {
+            player.remove();
+          } catch {
+            /* noop */
+          }
+        }
+      });
+      player.play();
+      setState('playing');
+    } catch {
+      setState('idle');
+    }
+  }
+
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.speakBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+      <Text style={styles.speakIcon}>{state === 'loading' ? '…' : state === 'playing' ? '◼' : '🔊'}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -606,6 +667,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#0B0E17',
     resizeMode: 'cover',
   },
+  aiActions: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
+  speakBtn: {
+    marginTop: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#222C40',
+    backgroundColor: '#141B2A',
+  },
+  speakIcon: { fontSize: 12, color: '#9CA3AF' },
   agentFooter: { marginTop: 4, marginLeft: 4, maxWidth: '92%', gap: 6 },
   trace: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
   traceLabel: {

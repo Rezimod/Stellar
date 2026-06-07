@@ -43,14 +43,17 @@ class QvacRuntime {
   private whisperModelId: string | null = null;
   private vlmModelId: string | null = null;
   private vlmModelName = '';
+  private ttsModelId: string | null = null;
 
   private llmTracker = new ProgressTracker();
   private whisperTracker = new ProgressTracker();
   private vlmTracker = new ProgressTracker();
+  private ttsTracker = new ProgressTracker();
 
   private llmLoad: Promise<void> | null = null;
   private whisperLoad: Promise<void> | null = null;
   private vlmLoad: Promise<void> | null = null;
+  private ttsLoad: Promise<void> | null = null;
 
   // Field Mesh: when seeding, this device serves the on-device model to nearby
   // peers over QVAC's P2P transport (Hyperdrive), so a phone at a dark-sky site
@@ -234,6 +237,109 @@ class QvacRuntime {
     }
   }
 
+  getTtsProgress() {
+    return this.ttsTracker.get();
+  }
+
+  subscribeTts(fn: Listener) {
+    return this.ttsTracker.subscribe(fn);
+  }
+
+  /**
+   * Lazily load the on-device TTS voice (Supertonic — general-purpose English,
+   * no voice cloning). Loaded only when the user first taps "read aloud", so
+   * phones that never use voice-out don't pay the download.
+   */
+  async ensureTtsReady(): Promise<void> {
+    if (this.ttsTracker.get().phase === 'ready') return;
+    if (this.ttsLoad) return this.ttsLoad;
+
+    this.ttsLoad = (async () => {
+      try {
+        const sdk = await import('@qvac/sdk');
+        const s = sdk as any;
+        const enc = s.TTS_SUPERTONIC2_OFFICIAL_TEXT_ENCODER_SUPERTONE_FP32;
+        if (!enc) throw new Error('Supertonic TTS not exported by @qvac/sdk');
+
+        this.ttsTracker.emit({ phase: 'downloading', message: 'Fetching voice (Supertonic, one-time)' });
+        audit.modelLoad('Supertonic TTS', { kind: 'tts' });
+
+        this.ttsModelId = await s.loadModel({
+          modelSrc: enc.src,
+          modelType: 'tts',
+          modelConfig: {
+            ttsEngine: 'supertonic',
+            language: 'en',
+            speed: 1.05,
+            numInferenceSteps: 5,
+            supertonicMultilingual: false,
+            ttsTextEncoderSrc: enc.src,
+            ttsDurationPredictorSrc: s.TTS_SUPERTONIC2_OFFICIAL_DURATION_PREDICTOR_SUPERTONE_FP32.src,
+            ttsVectorEstimatorSrc: s.TTS_SUPERTONIC2_OFFICIAL_VECTOR_ESTIMATOR_SUPERTONE_FP32.src,
+            ttsVocoderSrc: s.TTS_SUPERTONIC2_OFFICIAL_VOCODER_SUPERTONE_FP32.src,
+            ttsUnicodeIndexerSrc: s.TTS_SUPERTONIC2_OFFICIAL_UNICODE_INDEXER_SUPERTONE_FP32.src,
+            ttsTtsConfigSrc: s.TTS_SUPERTONIC2_OFFICIAL_TTS_CONFIG_SUPERTONE.src,
+            ttsVoiceStyleSrc: s.TTS_SUPERTONIC2_OFFICIAL_VOICE_STYLE_SUPERTONE.src,
+          },
+          onProgress: (p: { downloaded?: number; total?: number }) => {
+            this.ttsTracker.emit({
+              phase: 'downloading',
+              bytesDownloaded: p.downloaded,
+              bytesTotal: p.total,
+              message: 'Downloading voice',
+            });
+          },
+        });
+
+        this.ttsTracker.emit({ phase: 'ready', message: 'Voice ready' });
+      } catch (err: any) {
+        this.ttsTracker.emit({ phase: 'error', error: err?.message ?? String(err) });
+        this.ttsLoad = null; // allow retry
+        throw err;
+      }
+    })();
+
+    return this.ttsLoad;
+  }
+
+  /**
+   * Synthesize speech for `text` on-device and return a playable WAV file uri.
+   * Builds the 16-bit PCM WAV in-memory (no Buffer/base64) and writes it to the
+   * cache. Holds the single-job gate during synthesis.
+   */
+  async speak(text: string): Promise<string> {
+    await this.ensureTtsReady();
+    if (!this.ttsModelId) throw new Error('TTS not loaded');
+
+    const release = await this.acquire();
+    const start = Date.now();
+    try {
+      const sdk = await import('@qvac/sdk');
+      const { textToSpeech } = sdk as any;
+      const result = textToSpeech({ modelId: this.ttsModelId, text, inputType: 'text', stream: false });
+      const samples: number[] = await result.buffer;
+
+      const SAMPLE_RATE = 44100;
+      const wav = pcm16ToWav(samples, SAMPLE_RATE);
+
+      const { File, Paths } = await import('expo-file-system');
+      const file = new File(Paths.cache, `astra-tts-${Date.now()}.wav`);
+      file.write(wav);
+
+      audit.record({
+        type: 'inference',
+        kind: 'tts',
+        model: 'Supertonic TTS',
+        promptPreview: text.slice(0, 160),
+        totalMs: Date.now() - start,
+        meta: { samples: samples.length, seconds: Number((samples.length / SAMPLE_RATE).toFixed(2)) },
+      });
+      return file.uri;
+    } finally {
+      release();
+    }
+  }
+
   async ensureReady(): Promise<void> {
     if (this.llmTracker.get().phase === 'ready') return;
     if (this.llmLoad) return this.llmLoad;
@@ -410,6 +516,34 @@ class QvacRuntime {
   hasEmbedder() {
     return this.embedModelId != null;
   }
+}
+
+/** Build a 16-bit PCM mono WAV (header + samples) as a Uint8Array — no Buffer. */
+function pcm16ToWav(samples: number[], sampleRate: number): Uint8Array {
+  const dataLen = samples.length * 2;
+  const buf = new ArrayBuffer(44 + dataLen);
+  const view = new DataView(buf);
+  const writeStr = (off: number, s: string) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i));
+  };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataLen, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true); // fmt chunk size
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, 1, true); // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // byte rate
+  view.setUint16(32, 2, true); // block align
+  view.setUint16(34, 16, true); // bits per sample
+  writeStr(36, 'data');
+  view.setUint32(40, dataLen, true);
+  for (let i = 0; i < samples.length; i++) {
+    const v = Math.max(-32768, Math.min(32767, Math.round(samples[i] ?? 0)));
+    view.setInt16(44 + i * 2, v, true);
+  }
+  return new Uint8Array(buf);
 }
 
 export const qvac = new QvacRuntime();

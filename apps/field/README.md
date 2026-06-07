@@ -68,7 +68,8 @@ results. The ORCHESTRATED trace and the LIVE SKY verdict are both shown in the U
 | RAG chat **and** tool-calling agent (one shared model) | `@qvac/llm-llamacpp` | `LLAMA_TOOL_CALLING_1B_INST_Q4_K` |
 | Vision — identify gear / sky from a photo | `@qvac/llm-llamacpp` (multimodal + mmproj) | `QWEN3VL_2B_MULTIMODAL_Q4_K` (SmolVLM2 500M fallback) |
 | Embeddings (semantic RAG) | `@qvac/embed-llamacpp` | EmbeddingGemma 300M |
-| Voice transcription | `@qvac/transcription-whispercpp` | Whisper |
+| Voice transcription (speech → text) | `@qvac/transcription-whispercpp` | Whisper |
+| Voice-out (text → speech) | `@qvac/tts-onnx` | Supertonic |
 
 There is **no cloud LLM proxy** from the Field app. All inference is QVAC, on the device.
 
@@ -99,6 +100,7 @@ The judged delta over the disclosed prior work below:
 - **`lib/skyTools.ts`** — five native QVAC tool descriptors (`get_body_position`, `get_object_position`, `get_visible_now`, `get_moon_conditions`, `get_dark_window`) with local handlers + compact result summaries for grounding.
 - **`lib/agent.ts`** — **deterministic multi-tool orchestration**: a planner selects and chains the right sky tools per query, grounded in real ephemeris so the verdict can never flip; native QVAC tool-calling is wired + verified (smoke probe) but the 1B is unreliable at emitting structured calls, so orchestration is deterministic for reliability + speed. Every tool call logged to the audit.
 - **`lib/vision.ts` + VLM path in `lib/qvac.ts`** — **on-device vision**: attach a photo and a multimodal model (Qwen3-VL 2B, SmolVLM2 fallback) identifies telescopes/eyepieces/sky objects offline. Loaded lazily through the same single-job gate; each inference logged to the audit as `kind: 'vision'`. Image attach + thumbnail + VISION badge in `components/FieldChatScreen.tsx`; a `vision-vlm` smoke probe runs a known test image end to end.
+- **`speak()` TTS voice-out in `lib/qvac.ts`** — tap 🔊 on any answer and an on-device voice (Supertonic, `@qvac/tts-onnx`) reads it aloud — hands on the focuser, eyes on the eyepiece, in the dark. Lazily loaded; the 16-bit PCM WAV is built in-RN (no Buffer) and played via expo-audio; logged to the audit as `kind: 'tts'`. Speaker button in `components/FieldChatScreen.tsx`; a `tts-voice` smoke probe synthesizes a phrase end to end.
 - **Prompt-injection resistance** (`lib/sanitize.ts`) — defence in depth across all three untrusted surfaces: typed/voice **user input** is defanged (`sanitizeUserText`), retrieved **RAG chunks** are fenced as untrusted reference (`wrapUntrusted`), **image text** is treated as scene data not commands, and every prompt carries a hardening clause (`INJECTION_GUARD`) telling the model to refuse role-changes, system-prompt exfiltration, and topic hijacks. A `prompt-injection` Diagnostics probe runs real attacks and verifies the model emits no canary / no prompt leak.
 - **Orchestration trace + LIVE SKY badge** in `components/FieldChatScreen.tsx` — the UI shows which tools the model orchestrated and the guaranteed verdict; sky-position questions use the agent, everything else stays on RAG.
 - **Real GPS observer** (`lib/location.ts`, `expo-location`) — computes the sky for where you actually are; Tbilisi fallback on denial.
