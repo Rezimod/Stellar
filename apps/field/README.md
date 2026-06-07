@@ -86,11 +86,16 @@ Verified on-device:
 - A desktop **provider** runs natively (`startQVACProvider`), announces a Hyperswarm topic, returns a stable key
 - **Delegated `loadModel`** acquires a remote model handle on a peer with **zero local load** (the inference-delegation handshake)
 
-> **Status:** model seeding/distribution is shipped and working. Live inference
-> *delegation* (offloading the `completion` itself to a peer) is wired end-to-end —
-> the handshake and remote model registration succeed — but the streaming
-> completion round-trip currently times out (a P2P sustained-channel / blind-relay
-> concern under investigation, not app code). The architecture is in place.
+> **Status (investigated in depth — see [`p2p/FINDINGS.md`](./p2p/FINDINGS.md)):**
+> model seeding/distribution is shipped and working. For live inference
+> *delegation*, we proved the **delegated `loadModel` registers a remote model in
+> ~9.2 s** (with a pre-warmed provider), and found+fixed two real bugs along the
+> way (a Node `QVAC_HYPERSWARM_SEED="undefined"` rejection, and a cold-cache
+> `loadModel` timeout). The remaining gap is the **streaming `completion`
+> round-trip, which times out** (`ETIMEDOUT`) in SDK 0.9.2 — reproduced
+> node↔node and phone↔laptop. So the app ships Field Mesh **seeding** (works) and
+> keeps all inference local with a `fallbackToLocal` posture; nothing depends on
+> the completion round-trip. A reproducible probe is committed under [`p2p/`](./p2p/).
 
 ## ⭐ Built during this hackathon (June 1–21, 2026)
 
