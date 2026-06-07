@@ -116,26 +116,32 @@ Baseline from the May Tether Frontier submission, **not** counted in this hackat
 
 ## Build & run (reproducible)
 
+**Prerequisites** (verified on macOS + a physical Android phone):
+- **Node 18+** and **JDK 17** (the Android Gradle build requires exactly JDK 17 — newer/older JDKs fail). Point `JAVA_HOME` at it, e.g. a standalone Temurin 17, or Android Studio's bundled JBR.
+- **Android SDK** (`ANDROID_HOME` set; platform-tools on `PATH` for `adb`).
+- USB debugging enabled on the phone.
+
 Run from the app directory — the repo root in this standalone repo, or `apps/field` in the Stellar monorepo:
 
 ```bash
-npm install --legacy-peer-deps
-npx expo prebuild --clean        # runs @qvac/sdk expo-plugin (bare-pack)
-npx expo run:android --device    # builds + installs on a connected phone
+export JAVA_HOME=/path/to/jdk-17    # e.g. Temurin 17; build fails on other majors
+npm install --legacy-peer-deps      # QVAC bare-pack pulls ~25 peer deps; --legacy-peer-deps is required
+npx expo prebuild --clean           # runs @qvac/sdk expo-plugin (bare-pack)
+npx expo run:android                # builds + installs on the connected phone
 ```
 
-Enable USB debugging on the phone and accept the "Allow USB debugging" prompt. First launch downloads the models with a progress banner; offline use works immediately after.
+Accept the "Allow USB debugging" prompt. First launch downloads the models with a progress banner; offline use works immediately after.
 
 ## First-launch model downloads (one-time, cached)
 
 - `LLAMA_TOOL_CALLING_1B` Q4 — ~700 MB (one shared model for chat + agent)
 - Whisper — ~150 MB (loads on first voice log)
 - EmbeddingGemma 300M — loaded for semantic RAG
-- `QWEN3VL_2B_MULTIMODAL` Q4 + mmproj — ~2 GB (loads on first photo attach; Vision only)
+- Vision VLM (loads on first photo attach; **RAM-aware**) — `QWEN3VL_2B_MULTIMODAL` Q4 + mmproj (~2 GB) on ≥6.5 GB phones, else `SMOLVLM2_500M_MULTIMODAL` (~700 MB)
 
 ## Verification artifacts (for the 3-stage review)
 
-- **Audit log** — Diagnostics → *Export audit log* → `qvac-audit-<session>.json` (device specs + every inference's prompt, tokens, TTFT, tokens/sec). Shareable via the OS share sheet.
+- **Audit log** — Diagnostics → *Export audit log* → `qvac-audit-<session>.json` (device specs + every inference's prompt, tokens, TTFT, tokens/sec). Shareable via the OS share sheet. Committed runs (incl. a live **vision** run) are under [`artifacts/`](./artifacts/).
 - **Remote-API manifest** — [`remote-apis.json`](./remote-apis.json): **AI inference: none** (100% on-device via QVAC). Non-AI services, optional and disclosed: Supabase (observation sync), Privy (auth), plus one-time QVAC model downloads. The Field app makes no cloud AI calls.
 - **Demo video** — `{{YOUTUBE_UNLISTED_URL}}` (≤5 min, recorded in airplane mode).
 

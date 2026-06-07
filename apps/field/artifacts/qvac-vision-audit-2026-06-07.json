@@ -1,0 +1,75 @@
+{
+  "sessionId": "sess_vision_1780662161755",
+  "exportedAt": "2026-06-07T12:22:43.382Z",
+  "note": "On-device VISION inference run (multimodal VLM via QVAC). Captured live from the device AsyncStorage audit on 2026-06-07. Every event carries backendDevice:cpu — real on-device compute, no cloud. The RAM-aware loader selected SmolVLM2 500M on this 5.5GB phone (Qwen3-VL 2B is auto-selected on >=6.5GB devices).",
+  "device": {
+    "modelName": "M2007J20CG (POCO X3 NFC)",
+    "manufacturer": "Xiaomi",
+    "boardPlatform": "sm6150 (Snapdragon 732G)",
+    "cpuAbi": "arm64-v8a",
+    "osVersion": "Android 12 (API 31)",
+    "totalMemoryBytes": 5903437824,
+    "connectivity": "airplane mode (offline)"
+  },
+  "events": [
+    {
+      "ts": "2026-06-07T12:01:19.778Z",
+      "type": "model_load",
+      "model": "SmolVLM2 500M",
+      "meta": {
+        "kind": "vision"
+      }
+    },
+    {
+      "ts": "2026-06-07T12:04:28.421Z",
+      "type": "inference",
+      "kind": "vision",
+      "model": "SmolVLM2 500M",
+      "promptPreview": "What is this?",
+      "completionTokens": 112,
+      "ttftMs": 19480,
+      "totalMs": 34093,
+      "tokensPerSec": 7.66,
+      "sdkStats": {
+        "timeToFirstToken": 18991.739,
+        "tokensPerSecond": 7.682891928326301,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-07T12:08:35.093Z",
+      "type": "inference",
+      "kind": "vision",
+      "model": "SmolVLM2 500M",
+      "promptPreview": "What is this?",
+      "completionTokens": 122,
+      "ttftMs": 18206,
+      "totalMs": 33602,
+      "tokensPerSec": 7.92,
+      "sdkStats": {
+        "timeToFirstToken": 17787.707000000002,
+        "tokensPerSecond": 7.974927351353401,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-07T12:14:22.911Z",
+      "type": "inference",
+      "kind": "vision",
+      "model": "SmolVLM2 500M",
+      "promptPreview": "What is this?",
+      "completionTokens": 13,
+      "ttftMs": 10888,
+      "totalMs": 12298,
+      "tokensPerSec": 9.22,
+      "sdkStats": {
+        "timeToFirstToken": 10438.131,
+        "tokensPerSecond": 9.909012399223437,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    }
+  ]
+}

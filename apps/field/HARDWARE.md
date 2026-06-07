@@ -32,9 +32,11 @@ event carries `"backendDevice": "cpu"`, i.e. real on-device compute, no cloud.
   (`get_tonight_targets → get_moon_conditions → get_dark_window`), full answer ~7–10 s
 - **RAG companion (freeform):** TTFT ~7.6–10 s, full answer ~15–22 s (300–600-char answers)
 - **Set averages:** avg TTFT **6483 ms**, avg total **12123 ms**
+- **Vision (multimodal, SmolVLM2 500M):** captured live on **2026-06-07** — TTFT **10.9–19.5 s** (image projection is processed before the first token), **~7.7–9.2 tok/s**, every event `backendDevice: "cpu"`. See [`artifacts/qvac-vision-audit-2026-06-07.json`](./artifacts/qvac-vision-audit-2026-06-07.json). The RAM-aware loader picked SmolVLM2 on this 5.5 GB phone; Qwen3-VL 2B auto-loads on ≥6.5 GB devices.
 
 Committed evidence bundle:
-- [`artifacts/qvac-eval-2026-06-05.json`](./artifacts/qvac-eval-2026-06-05.json) — per-query route/tools/latency, incl. the orchestration cases (latest)
+- [`artifacts/qvac-vision-audit-2026-06-07.json`](./artifacts/qvac-vision-audit-2026-06-07.json) — live on-device VISION inferences (model load + TTFT + tokens/sec, `backendDevice: cpu`)
+- [`artifacts/qvac-eval-2026-06-05.json`](./artifacts/qvac-eval-2026-06-05.json) — per-query route/tools/latency, incl. the orchestration cases
 - [`artifacts/qvac-eval-2026-06-03.json`](./artifacts/qvac-eval-2026-06-03.json) — earlier run
 - [`artifacts/qvac-audit-2026-06-03.json`](./artifacts/qvac-audit-2026-06-03.json) — per-inference prompt, tokens, TTFT, tokens/sec, raw QVAC `sdkStats`
 
