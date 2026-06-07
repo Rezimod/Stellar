@@ -322,6 +322,9 @@ export function FieldChatScreen() {
             </Text>
             <Text style={styles.starterLabel}>Try</Text>
             <View style={styles.starterChips}>
+              <TouchableOpacity style={[styles.starterChip, styles.starterChipVision]} onPress={pickImage}>
+                <Text style={styles.starterChipText}>📷 Identify my gear</Text>
+              </TouchableOpacity>
               {STARTER_PROMPTS.map((p) => (
                 <TouchableOpacity key={p} style={styles.starterChip} onPress={() => send(p)}>
                   <Text style={styles.starterChipText}>{p}</Text>
@@ -582,6 +585,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#222838',
   },
+  starterChipVision: { backgroundColor: '#171426', borderColor: '#3A2E5E' },
   starterChipText: { color: '#9CA3AF', fontSize: 12 },
   bubble: { paddingHorizontal: 14, paddingVertical: 11, borderRadius: 16, maxWidth: '88%' },
   userBubble: { backgroundColor: '#7C5CFF', alignSelf: 'flex-end', borderBottomRightRadius: 6 },
