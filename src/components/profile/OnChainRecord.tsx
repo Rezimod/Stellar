@@ -21,6 +21,19 @@ interface OnChainData {
     revokedCount: number;
   } | null;
   observations: OnChainObservation[];
+  passport: {
+    mint: string;
+    tier: string | null;
+  } | null;
+  reputation: {
+    tierName: string;
+    icon: string;
+    multiplier: number;
+    nextTier: string | null;
+    toNext: number;
+    progressPct: number;
+    hasPassport: boolean;
+  };
   cluster: string;
 }
 
@@ -150,6 +163,108 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
             </>
           )}
         </div>
+
+        {/* Reputation tier + Stars multiplier */}
+        {status === 'ready' && data?.reputation && (
+          <div
+            style={{
+              padding: '12px 16px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'var(--stl-text-bright)',
+                }}
+              >
+                {data.reputation.icon} {data.reputation.tierName}
+              </span>
+              {data.reputation.multiplier > 1 && (
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    color: 'var(--stl-gold)',
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                    background: 'rgba(255,179,71,0.10)',
+                    border: '1px solid rgba(255,179,71,0.25)',
+                  }}
+                >
+                  ✦ ×{data.reputation.multiplier} Stars
+                </span>
+              )}
+            </div>
+            {data.reputation.nextTier && (
+              <>
+                <div
+                  style={{
+                    height: 4,
+                    borderRadius: 999,
+                    overflow: 'hidden',
+                    background: 'rgba(0,0,0,0.35)',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${data.reputation.progressPct}%`,
+                      height: '100%',
+                      background: 'var(--stl-green)',
+                      transition: 'width 0.4s ease',
+                    }}
+                  />
+                </div>
+                <span style={MONO_DIM}>
+                  {data.reputation.toNext} more to {data.reputation.nextTier}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Soulbound Telescope Passport (Token-2022) */}
+        {status === 'ready' && data?.passport && (
+          <a
+            href={explorer(data.passport.mint)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 16px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              textDecoration: 'none',
+            }}
+          >
+            <span aria-hidden style={{ fontSize: 18 }}>🛰</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  color: 'var(--stl-text-bright)',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  margin: 0,
+                }}
+              >
+                Telescope Passport
+              </p>
+              <p style={{ ...MONO_DIM, margin: '2px 0 0' }}>
+                {data.passport.tier ?? '—'} · soulbound · {shortPda(data.passport.mint)}
+              </p>
+            </div>
+            <ExternalLink size={11} color="var(--stl-text-dim)" />
+          </a>
+        )}
 
         {/* Recent observation accounts */}
         {data?.observations && data.observations.length > 0 && (

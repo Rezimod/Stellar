@@ -5,6 +5,8 @@ import {
   fetchObservations,
   observerPda,
 } from '@/lib/observation-program'
+import { tierForCount } from '@/lib/reputation'
+import { getPassport } from '@/lib/telescope-passport'
 
 export const maxDuration = 30
 
@@ -20,15 +22,28 @@ export async function GET(
   }
 
   try {
-    const [profile, observations] = await Promise.all([
+    const [profile, observations, passport] = await Promise.all([
       fetchObserverProfile(wallet),
       fetchObservations(wallet),
+      getPassport(wallet),
     ])
+    const standing = tierForCount(profile?.totalObservations ?? 0)
     return NextResponse.json({
       wallet,
       profilePda: observerPda(wallet).toBase58(),
       profile,
       observations,
+      passport,
+      reputation: {
+        tier: standing.tier.key,
+        tierName: standing.tier.name,
+        icon: standing.tier.icon,
+        multiplier: standing.multiplier,
+        nextTier: standing.nextTier?.name ?? null,
+        toNext: standing.toNext,
+        progressPct: standing.progressPct,
+        hasPassport: standing.hasPassport,
+      },
       cluster: process.env.SOLANA_RPC_URL?.includes('mainnet') ? 'mainnet' : 'devnet',
     })
   } catch (err) {

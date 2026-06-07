@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { observationLog } from '@/lib/schema'
-import { and, eq, gte, sum } from 'drizzle-orm'
+import { and, eq, gte, sum, count, inArray } from 'drizzle-orm'
 import { PublicKey } from '@solana/web3.js'
 import { awardStarsOnChain, DAILY_STARS_CAP } from '@/lib/stars'
 import { createHmac } from 'crypto'
@@ -10,6 +10,8 @@ import { eventsForTarget } from '@/lib/astro-events'
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants'
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth'
 import { recordObservationOnChain } from '@/lib/observation-program'
+import { tierForCount, applyReputationMultiplier } from '@/lib/reputation'
+import { ensurePassport } from '@/lib/telescope-passport'
 
 // On-chain attestation can add a few seconds of devnet confirmation latency.
 export const maxDuration = 60
@@ -198,6 +200,25 @@ export async function POST(req: NextRequest) {
       todayStars = Number(rows[0]?.total ?? 0)
     }
 
+    // Reputation multiplier — based on the observer's standing BEFORE this
+    // observation (count of prior accepted observations). The on-chain
+    // ObserverProfile is the canonical mirror; the DB count is the fast path.
+    let priorAccepted = 0
+    if (wallet) {
+      const acc = await db
+        .select({ c: count() })
+        .from(observationLog)
+        .where(
+          and(
+            eq(observationLog.wallet, wallet),
+            inArray(observationLog.confidence, ['high', 'medium', 'low']),
+          ),
+        )
+      priorAccepted = Number(acc[0]?.c ?? 0)
+    }
+    const standing = tierForCount(priorAccepted)
+    const reputationStars = applyReputationMultiplier(stars, priorAccepted)
+
     // Per-object cooldown: user can only submit same target once per 24 hours
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recentSameTarget = await db
@@ -219,9 +240,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const starsToAward = todayStars + stars > DAILY_STARS_CAP
+    const starsToAward = todayStars + reputationStars > DAILY_STARS_CAP
       ? Math.max(DAILY_STARS_CAP - todayStars, 0)
-      : stars
+      : reputationStars
 
     // Proof-of-Observation: record the verified attestation on-chain (oracle-
     // signed, gasless). Best-effort with a timeout — an RPC hiccup never blocks
@@ -283,12 +304,36 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Soulbound Telescope Passport: mint/refresh only when this observation
+    // crosses a reputation-tier boundary (count goes priorAccepted → +1). Keeps
+    // it to one chain op per tier-up; best-effort, never blocks the response.
+    const newStanding = tierForCount(priorAccepted + 1)
+    if (
+      wallet &&
+      confidence !== 'rejected' &&
+      newStanding.hasPassport &&
+      newStanding.tierIndex !== standing.tierIndex
+    ) {
+      await withTimeout(
+        ensurePassport(wallet, priorAccepted + 1).catch((err) => {
+          console.error('[observe/log] passport ensure failed:', err)
+          return null
+        }),
+        25_000,
+      )
+    }
+
     return NextResponse.json({
       logged: true,
       starsAwarded: starsToAward,
       starsMinted: true,
       chainTx: chain?.txId ?? null,
       chainPda: chain?.pda ?? null,
+      reputation: {
+        tier: standing.tier.key,
+        tierName: standing.tier.name,
+        multiplier: standing.multiplier,
+      },
     })
   } catch (err) {
     console.error('[observe/log]', err)
