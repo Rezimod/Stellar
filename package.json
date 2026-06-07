@@ -9,6 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "vitest run",
     "test:smoke": "playwright test",
     "setup:bubblegum": "npx tsx scripts/setup-bubblegum.ts",
     "setup:token": "npx tsx scripts/create-stars-token.ts",
@@ -16,10 +17,12 @@
     "seed:feed": "npx tsx scripts/seed-feed-demo.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "setup:stars": "npx tsx scripts/import-star-catalog.ts"
+    "setup:stars": "npx tsx scripts/import-star-catalog.ts",
+    "setup:observations": "npx tsx scripts/setup-observation-program.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@coral-xyz/anchor": "^0.32.1",
     "@metaplex-foundation/mpl-bubblegum": "^4.4.0",
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
     "@metaplex-foundation/umi": "^1.5.1",
@@ -60,7 +63,6 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
-    "@coral-xyz/anchor": "^0.32.1",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",

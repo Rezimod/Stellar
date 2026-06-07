@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Avatar } from '@/lib/avatars';
 import { AvatarPicker } from '@/components/profile/AvatarPicker';
 import { UsernameEditor } from '@/components/profile/UsernameEditor';
+import { OnChainRecord } from '@/components/profile/OnChainRecord';
 import { useProfile } from '@/hooks/useProfile';
 
 interface OrderRow {
@@ -579,6 +580,9 @@ function ProfilePageContent() {
             );
           })}
         </div>
+
+        {/* ON-CHAIN RECORD — Proof of Observation registry (renders only when present) */}
+        {address && <OnChainRecord wallet={address} />}
 
         {/* MY DISCOVERIES */}
         <section>

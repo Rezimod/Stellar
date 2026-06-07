@@ -1,0 +1,761 @@
+{
+  "address": "t17oa4uuLXhSDZh2WSgYA4vDzUx3iCDDRnJ2iY5AywT",
+  "metadata": {
+    "name": "stellar_observations",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Proof-of-Observation registry for Stellar — on-chain attestations of verified astronomical observations"
+  },
+  "docs": [
+    "Stellar Proof-of-Observation registry.",
+    "",
+    "Records verified astronomical observations as on-chain attestations. Writes",
+    "are signed by a server-held `oracle_authority` — the same trust model as",
+    "Stellar's off-chain HMAC verification token and server-side Stars mint: only",
+    "the server (which runs Claude Vision + Open-Meteo + EXIF/dedup checks) can",
+    "attest an observation's confidence. Users never sign; the write is gasless."
+  ],
+  "instructions": [
+    {
+      "name": "initialize_registry",
+      "docs": [
+        "One-time setup. The signer becomes `admin`; `oracle_authority` is the",
+        "key allowed to record observations."
+      ],
+      "discriminator": [
+        189,
+        181,
+        20,
+        17,
+        174,
+        57,
+        249,
+        59
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "record_observation",
+      "docs": [
+        "Record a verified observation. The `Observation` PDA is seeded by the",
+        "photo's file hash, so re-recording the same photo fails the `init`",
+        "(on-chain dedup). `init_if_needed` upserts the observer's profile."
+      ],
+      "discriminator": [
+        37,
+        148,
+        41,
+        216,
+        83,
+        104,
+        162,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "observation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  98,
+                  115
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.file_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "observer_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  98,
+                  115,
+                  101,
+                  114,
+                  118,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "args.observer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle_authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "RecordObservationArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "revoke_observation",
+      "docs": [
+        "Anti-fraud clawback: mark an observation revoked and roll back the",
+        "observer's counters. Oracle/admin only."
+      ],
+      "discriminator": [
+        134,
+        66,
+        65,
+        59,
+        156,
+        73,
+        222,
+        210
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "observation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  98,
+                  115
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "file_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "observer_profile",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  98,
+                  115,
+                  101,
+                  114,
+                  118,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "observation.observer",
+                "account": "Observation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle_authority",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "_file_hash",
+          "type": {
+            "array": [
+              "u8",
+              20
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_oracle_authority",
+      "discriminator": [
+        39,
+        155,
+        66,
+        106,
+        213,
+        226,
+        114,
+        174
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_paused",
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Observation",
+      "discriminator": [
+        109,
+        190,
+        190,
+        95,
+        28,
+        172,
+        243,
+        74
+      ]
+    },
+    {
+      "name": "ObserverProfile",
+      "discriminator": [
+        111,
+        110,
+        252,
+        106,
+        206,
+        16,
+        218,
+        149
+      ]
+    },
+    {
+      "name": "Registry",
+      "discriminator": [
+        47,
+        174,
+        110,
+        246,
+        184,
+        182,
+        252,
+        218
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "ObservationRecorded",
+      "discriminator": [
+        233,
+        242,
+        174,
+        139,
+        15,
+        36,
+        175,
+        196
+      ]
+    },
+    {
+      "name": "ObservationRevoked",
+      "discriminator": [
+        240,
+        1,
+        254,
+        144,
+        63,
+        197,
+        232,
+        149
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not authorized for this action"
+    },
+    {
+      "code": 6001,
+      "name": "RegistryPaused",
+      "msg": "Registry is paused"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidConfidence",
+      "msg": "Confidence must be 0..=3"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidTarget",
+      "msg": "Target code must be 0..=5"
+    },
+    {
+      "code": 6004,
+      "name": "AlreadyRevoked",
+      "msg": "Observation already revoked"
+    }
+  ],
+  "types": [
+    {
+      "name": "Observation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "observer",
+            "type": "pubkey"
+          },
+          {
+            "name": "target_code",
+            "type": "u8"
+          },
+          {
+            "name": "identified_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "confidence",
+            "type": "u8"
+          },
+          {
+            "name": "lat_micro",
+            "type": "i32"
+          },
+          {
+            "name": "lon_micro",
+            "type": "i32"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "oracle_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "cloud_cover",
+            "type": "u8"
+          },
+          {
+            "name": "stars_awarded",
+            "type": "u32"
+          },
+          {
+            "name": "file_hash",
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          },
+          {
+            "name": "revoked",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ObservationRecorded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "observer",
+            "type": "pubkey"
+          },
+          {
+            "name": "file_hash",
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          },
+          {
+            "name": "target_code",
+            "type": "u8"
+          },
+          {
+            "name": "confidence",
+            "type": "u8"
+          },
+          {
+            "name": "stars_awarded",
+            "type": "u32"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ObservationRevoked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "observer",
+            "type": "pubkey"
+          },
+          {
+            "name": "file_hash",
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ObserverProfile",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "observer",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_observations",
+            "type": "u64"
+          },
+          {
+            "name": "total_stars",
+            "type": "u64"
+          },
+          {
+            "name": "first_seen",
+            "type": "i64"
+          },
+          {
+            "name": "last_seen",
+            "type": "i64"
+          },
+          {
+            "name": "revoked_count",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RecordObservationArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "observer",
+            "type": "pubkey"
+          },
+          {
+            "name": "file_hash",
+            "docs": [
+              "First 20 bytes of the sha256 image hash (matches the off-chain `0x…` id)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          },
+          {
+            "name": "target_code",
+            "docs": [
+              "0 moon · 1 planet · 2 stars · 3 constellation · 4 deep_sky · 5 unknown."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "identified_hash",
+            "docs": [
+              "sha256 of the identified object string."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "confidence",
+            "docs": [
+              "0 rejected · 1 low · 2 medium · 3 high."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "lat_micro",
+            "type": "i32"
+          },
+          {
+            "name": "lon_micro",
+            "type": "i32"
+          },
+          {
+            "name": "observed_at",
+            "type": "i64"
+          },
+          {
+            "name": "oracle_hash",
+            "docs": [
+              "Weather-oracle hash (Open-Meteo cloud-cover attestation)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "cloud_cover",
+            "type": "u8"
+          },
+          {
+            "name": "stars_awarded",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Registry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_observations",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

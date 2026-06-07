@@ -9,6 +9,14 @@ import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit'
 import { eventsForTarget } from '@/lib/astro-events'
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants'
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth'
+import { recordObservationOnChain } from '@/lib/observation-program'
+
+// On-chain attestation can add a few seconds of devnet confirmation latency.
+export const maxDuration = 60
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([p, new Promise<null>((res) => setTimeout(() => res(null), ms))])
+}
 
 // Server-side stars calculation — mirrors REWARD_TABLE in observe/verify
 const STARS_BY_CONFIDENCE: Record<string, { base: number; rare_bonus: number }> = {
@@ -118,9 +126,9 @@ export async function POST(req: NextRequest) {
     const expectedTokenV2 = createHmac('sha256', tokenSecret)
       .update(expectedTokenDataV2)
       .digest('hex');
-    // Temporary compatibility window for clients that haven't rolled to
-    // wallet-bound tokens yet. Set ALLOW_LEGACY_OBSERVE_TOKEN=false to disable.
-    const allowLegacy = process.env.ALLOW_LEGACY_OBSERVE_TOKEN !== 'false';
+    // Legacy tokens omitted wallet binding — disabled by default.
+    // Set ALLOW_LEGACY_OBSERVE_TOKEN=true only for rollback.
+    const allowLegacy = process.env.ALLOW_LEGACY_OBSERVE_TOKEN === 'true';
     const expectedTokenLegacy = createHmac('sha256', tokenSecret)
       .update(expectedTokenDataLegacy)
       .digest('hex');
@@ -215,6 +223,33 @@ export async function POST(req: NextRequest) {
       ? Math.max(DAILY_STARS_CAP - todayStars, 0)
       : stars
 
+    // Proof-of-Observation: record the verified attestation on-chain (oracle-
+    // signed, gasless). Best-effort with a timeout — an RPC hiccup never blocks
+    // the Stars/DB path; on failure chain_tx/chain_pda stay null and can be
+    // backfilled from observation_log later.
+    let chain: { txId: string; pda: string } | null = null;
+    if (wallet && confidence !== 'rejected' && typeof body.fileHash === 'string' && body.fileHash) {
+      chain = await withTimeout(
+        recordObservationOnChain({
+          observer: wallet,
+          fileHash: body.fileHash,
+          target,
+          identifiedObject: body.identifiedObject ?? target,
+          confidence,
+          lat: typeof body.lat === 'number' ? body.lat : 0,
+          lon: typeof body.lon === 'number' ? body.lon : 0,
+          observedAtMs: capturedAtForEvents.getTime(),
+          oracleHash: body.oracleHash ?? '',
+          cloudCover: 0,
+          stars: starsToAward,
+        }).catch((err) => {
+          console.error('[observe/log] on-chain record failed:', err);
+          return null;
+        }),
+        25_000,
+      );
+    }
+
     const exifTakenDate = typeof body.exifTakenAt === 'string' ? new Date(body.exifTakenAt) : null;
     await db.insert(observationLog).values({
       wallet,
@@ -237,6 +272,8 @@ export async function POST(req: NextRequest) {
       exifLon: typeof body.exifLon === 'number' && isFinite(body.exifLon) ? body.exifLon : null,
       exifTakenAt: exifTakenDate && !isNaN(exifTakenDate.getTime()) ? exifTakenDate : null,
       isInternetSourced: body.isInternetSourced === true,
+      chainTx: chain?.txId ?? null,
+      chainPda: chain?.pda ?? null,
     })
 
     // Award tokens on-chain (non-blocking — log still succeeds even if this fails)
@@ -246,7 +283,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ logged: true, starsAwarded: starsToAward, starsMinted: true })
+    return NextResponse.json({
+      logged: true,
+      starsAwarded: starsToAward,
+      starsMinted: true,
+      chainTx: chain?.txId ?? null,
+      chainPda: chain?.pda ?? null,
+    })
   } catch (err) {
     console.error('[observe/log]', err)
     return NextResponse.json({ logged: false, error: 'An unexpected error occurred' }, { status: 500 })

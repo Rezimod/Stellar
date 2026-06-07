@@ -104,6 +104,9 @@ export const observationLog = pgTable('observation_log', {
   exifTakenAt: timestamp('exif_taken_at', { withTimezone: true }),
   isInternetSourced: boolean('is_internet_sourced').default(false),
   verificationNotes: jsonb('verification_notes'),
+  // Proof-of-Observation registry: on-chain attestation tx + Observation PDA.
+  chainTx: text('chain_tx'),
+  chainPda: text('chain_pda'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (table) => [
   uniqueIndex('observation_log_wallet_mint_tx_unique').on(table.wallet, table.mintTx),
