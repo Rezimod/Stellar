@@ -1,7 +1,7 @@
 import { getBodyPosition, getVisibleNow, getDsoPosition, sunAltitude } from './ephemeris';
 import { findDso } from './dso';
 import { audit } from './audit';
-import { sanitizeUserText } from './sanitize';
+import { sanitizeUserText, INJECTION_GUARD } from './sanitize';
 import { qvac, type ChatMessage } from './qvac';
 import { runTool, summarizeTool, type ToolCtx } from './skyTools';
 
@@ -215,7 +215,7 @@ export async function runSkyAgent(
       const s = summarizeTool(c.name, c.result);
       if (s) lines.push(s);
     }
-    const grounded = `${ANSWER_SYSTEM}\n\nLive on-device sky data:\n- ${dedupe(lines).join('\n- ')}`;
+    const grounded = `${ANSWER_SYSTEM}\n\n${INJECTION_GUARD}\n\nLive on-device sky data:\n- ${dedupe(lines).join('\n- ')}`;
 
     // Final answer pass — no tools, so it answers from the grounded data.
     // Low temperature keeps it faithful to the data (no invented targets);

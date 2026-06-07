@@ -1,6 +1,6 @@
 import { qvac, type ChatMessage } from './qvac';
 import { retrieveContext, type Citation } from './rag';
-import { sanitizeUserText } from './sanitize';
+import { sanitizeUserText, INJECTION_GUARD, wrapUntrusted } from './sanitize';
 
 /** Field chat is QVAC-only — no cloud LLM proxy. */
 
@@ -25,9 +25,11 @@ async function* fieldStream(
 ): AsyncIterable<string> {
   const trimmedContext =
     context.length > MAX_CONTEXT_CHARS ? context.slice(0, MAX_CONTEXT_CHARS) + '…' : context;
+  // Retrieved corpus text is fenced as untrusted reference, and the guard tells
+  // the model not to obey any instructions that might be embedded in it.
   const augmentedSystem = trimmedContext
-    ? `${SYSTEM_PROMPT}\n\nRelevant astronomy reference:\n${trimmedContext}`
-    : SYSTEM_PROMPT;
+    ? `${SYSTEM_PROMPT}\n\n${INJECTION_GUARD}\n\n${wrapUntrusted('astronomy reference', trimmedContext)}`
+    : `${SYSTEM_PROMPT}\n\n${INJECTION_GUARD}`;
 
   const recentHistory = history
     .filter((m) => m.role === 'user' || m.role === 'assistant')
