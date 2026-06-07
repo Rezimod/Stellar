@@ -16,8 +16,8 @@ export default function NotFound() {
           <Link href="/sky" className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.1] rounded-full text-text-primary text-sm">
             Tonight&rsquo;s sky
           </Link>
-          <Link href="/markets" className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.1] rounded-full text-text-primary text-sm">
-            Markets
+          <Link href="/marketplace" className="px-4 py-2 bg-white/[0.06] hover:bg-white/[0.1] rounded-full text-text-primary text-sm">
+            Shop
           </Link>
         </div>
       </div>

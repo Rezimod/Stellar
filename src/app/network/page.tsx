@@ -359,21 +359,6 @@ export default function NetworkPage() {
           >
             Become an Observer →
           </Link>
-          <Link
-            href="/markets"
-            className="stl-label"
-            style={{
-              padding: '12px 22px',
-              borderRadius: 'var(--stl-r-md)',
-              background: 'transparent',
-              border: '1px solid var(--stl-border-strong)',
-              color: 'var(--stl-text-bright)',
-              textDecoration: 'none',
-              fontWeight: 600,
-            }}
-          >
-            Browse Markets →
-          </Link>
         </div>
       </PageContainer>
     </div>
