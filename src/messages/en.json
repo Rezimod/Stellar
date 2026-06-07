@@ -1068,9 +1068,13 @@
     "howItWorks": {
       "eyebrow": "How it works",
       "title": "Three steps. Real rewards.",
+      "subtitle": "Explore the night sky, complete observations, and earn Stars — it only takes three simple steps.",
       "step1": "Sign in",
+      "step1desc": "Create your free account and get started.",
       "step2": "Find a target",
+      "step2desc": "Discover planets and constellations visible tonight.",
       "step3": "Earn Stars",
+      "step3desc": "Complete your observations and earn Stars and rewards.",
       "cta": "Start observing →"
     },
     "missions": {

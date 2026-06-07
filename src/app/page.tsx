@@ -921,46 +921,60 @@ export default async function HomePage() {
           HOW IT WORKS
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
-        <div className="max-w-[1200px] mx-auto">
+        <div className="max-w-[1080px] mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
             <SectionTitle>{t('howItWorks.title')}</SectionTitle>
+            <p className="text-white/55 text-[15px] md:text-[17px] leading-relaxed max-w-[560px] mx-auto mt-1">
+              {t('howItWorks.subtitle')}
+            </p>
           </div>
 
-          {/* Mobile: centered phone + horizontal step grid (unchanged) */}
-          <div className="flex flex-col items-center gap-10 max-w-[1000px] mx-auto md:hidden">
-            <IPhone size="md" image="/landing/missions.png" imageAlt={t('missions.title')} navLabels={navLabels} />
+          {/* Numbered 1·2·3 stepper — distinct from the phone+list sections below */}
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 max-w-[960px] mx-auto">
+            {[
+              {
+                n: '1',
+                title: t('howItWorks.step1'),
+                desc: t('howItWorks.step1desc'),
+                icon: (
+                  <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M5 21a7 7 0 0 1 14 0" />
+                  </svg>
+                ),
+              },
+              {
+                n: '2',
+                title: t('howItWorks.step2'),
+                desc: t('howItWorks.step2desc'),
+                icon: <TabIcon kind="missions" color="rgba(255,255,255,0.85)" size={22} />,
+              },
+              {
+                n: '3',
+                title: t('howItWorks.step3'),
+                desc: t('howItWorks.step3desc'),
+                icon: <TabIcon kind="feed" color="rgba(255,255,255,0.85)" size={22} />,
+              },
+            ].map((step) => (
+              <li key={step.n} className="flex flex-col items-center text-center">
+                <span
+                  className="flex items-center justify-center w-[52px] h-[52px] rounded-full mb-5"
+                  style={{ border: '1px solid rgba(255,179,71,0.35)', background: 'rgba(255,179,71,0.06)' }}
+                >
+                  <span className="text-[15px] font-semibold text-[#FFB347] tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {step.n}
+                  </span>
+                </span>
+                <span className="mb-3">{step.icon}</span>
+                <h3 className="text-white text-[18px] font-semibold leading-tight mb-1.5">{step.title}</h3>
+                <p className="text-white/55 text-[14px] leading-relaxed max-w-[260px]">{step.desc}</p>
+              </li>
+            ))}
+          </ol>
 
-            <div className="grid grid-cols-3 gap-4 w-full max-w-[720px]">
-              {[t('howItWorks.step1'), t('howItWorks.step2'), t('howItWorks.step3')].map((title) => (
-                <div key={title} className="text-center text-white text-[15px] font-semibold leading-tight tracking-[-0.005em]">
-                  {title}
-                </div>
-              ))}
-            </div>
-
+          <div className="mt-12 md:mt-16 text-center">
             <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
-          </div>
-
-          {/* Desktop: phone left, divider list + CTA right (matches MISSIONS) */}
-          <div className="hidden md:grid md:grid-cols-[auto_1fr] gap-16 items-center max-w-[1000px] mx-auto">
-            <div className="mx-auto">
-              <IPhone size="md" image="/landing/missions.png" imageAlt={t('missions.title')} navLabels={navLabels} />
-            </div>
-            <div>
-              <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-                {[t('howItWorks.step1'), t('howItWorks.step2'), t('howItWorks.step3')].map((title) => (
-                  <li key={title} className="py-4">
-                    <div className="text-white text-[16.5px] font-semibold leading-tight tracking-[-0.005em]">
-                      {title}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-6 text-left">
-                <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
-              </div>
-            </div>
           </div>
         </div>
       </section>
