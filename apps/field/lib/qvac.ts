@@ -176,7 +176,9 @@ class QvacRuntime {
         this.vlmModelId = await loadModel({
           modelSrc: pick.modelSrc,
           modelType: 'llm',
-          modelConfig: { ctx_size: 2048, projectionModelSrc: pick.projectionModelSrc },
+          // Roomier context: the identify prompt (visual field-guide + 2 worked
+          // examples) plus the image projection tokens plus the answer need headroom.
+          modelConfig: { ctx_size: 3072, projectionModelSrc: pick.projectionModelSrc },
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.vlmTracker.emit({
               phase: 'downloading',
