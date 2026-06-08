@@ -1041,12 +1041,14 @@
         "tether": {
           "label": "Tether Frontier",
           "rank": "1-ლი ადგილი",
-          "date": "მაისი 2026"
+          "date": "მაისი 2026",
+          "linkLabel": "ნახე Tether Frontier ჰაკათონის ტრეკი Superteam Earn-ზე"
         },
         "superteam": {
           "label": "Superteam",
           "rank": "გრანტი",
-          "date": "2026"
+          "date": "2026",
+          "linkLabel": "ნახე Solana Foundation Georgia Grants Superteam Earn-ზე"
         }
       }
     },

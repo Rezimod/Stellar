@@ -1071,12 +1071,14 @@
         "tether": {
           "label": "Tether Frontier",
           "rank": "1st place",
-          "date": "May 2026"
+          "date": "May 2026",
+          "linkLabel": "View Tether Frontier Hackathon track on Superteam Earn"
         },
         "superteam": {
           "label": "Superteam",
           "rank": "Grant",
-          "date": "2026"
+          "date": "2026",
+          "linkLabel": "View Solana Foundation Georgia Grants on Superteam Earn"
         }
       }
     },

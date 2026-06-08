@@ -53,46 +53,64 @@ function PartnerLogo({
   );
 }
 
-function AchievementSeal({
+function AchievementBadge({
+  href,
+  logoSrc,
+  logoAlt,
+  logoWidth,
+  logoHeight,
   label,
   rank,
   date,
   color,
-  glyph,
+  linkLabel,
 }: {
+  href: string;
+  logoSrc: string;
+  logoAlt: string;
+  logoWidth: number;
+  logoHeight: number;
   label: string;
   rank: string;
   date: string;
   color: string;
-  glyph: React.ReactNode;
+  linkLabel: string;
 }) {
+  const isSvg = logoSrc.endsWith('.svg');
   return (
-    <div className="flex flex-col items-center text-center min-w-0 flex-1 max-w-[200px]">
-      <div
-        className="relative flex items-center justify-center w-[72px] h-[72px] md:w-[80px] md:h-[80px] rounded-full mb-3"
-        style={{
-          background: `${color}0D`,
-          border: `1.5px solid ${color}55`,
-          boxShadow: `inset 0 0 0 4px ${color}12`,
-        }}
-      >
-        <div
-          className="absolute inset-[5px] rounded-full"
-          style={{ border: `1px solid ${color}30` }}
-          aria-hidden="true"
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={linkLabel}
+      className="group flex flex-col items-center text-center min-w-0 flex-1 max-w-[300px] rounded-[16px] bg-white/[0.03] border border-white/[0.08] px-5 py-5 md:px-7 md:py-6 no-underline transition-colors hover:bg-white/[0.05] hover:[border-color:var(--accent-border)]"
+      style={{
+        ['--accent-border' as string]: `${color}66`,
+      }}
+    >
+      <div className="flex items-center justify-center w-full min-h-[52px] md:min-h-[60px] mb-4 md:mb-5">
+        <Image
+          src={logoSrc}
+          alt={logoAlt}
+          width={logoWidth}
+          height={logoHeight}
+          unoptimized={isSvg}
+          loading="lazy"
+          className="w-auto h-9 sm:h-10 md:h-12 max-w-[min(100%,220px)] opacity-95 group-hover:opacity-100 transition-opacity"
+          style={{ width: 'auto', height: 'auto', maxHeight: '48px' }}
         />
-        <div className="relative font-mono text-[15px] md:text-[16px] font-semibold tracking-tight" style={{ color }}>
-          {glyph}
-        </div>
       </div>
       <p className="text-white text-[14px] md:text-[15px] font-semibold tracking-[-0.01em] leading-tight">
         {label}
       </p>
-      <p className="text-[12px] md:text-[13px] font-medium mt-0.5" style={{ color }}>
+      <p className="text-[12px] md:text-[13px] font-semibold mt-1" style={{ color }}>
         {rank}
       </p>
       <p className="text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>
-    </div>
+      <span className="mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#FFB347]/80 transition-colors">
+        ↗
+      </span>
+    </a>
   );
 }
 
@@ -940,19 +958,29 @@ export default async function HomePage() {
   const achievements = [
     {
       key: 'tether',
-      color: '#2DD4BF',
+      color: '#16E3C1',
+      href: 'https://superteam.fun/earn/listing/tether-frontier-hackathon-track',
+      logoSrc: '/brand-partners/qvac.svg',
+      logoAlt: 'QVAC by Tether',
+      logoWidth: 218,
+      logoHeight: 24,
       label: t('achievements.items.tether.label'),
       rank: t('achievements.items.tether.rank'),
       date: t('achievements.items.tether.date'),
-      glyph: '1ST',
+      linkLabel: t('achievements.items.tether.linkLabel'),
     },
     {
       key: 'superteam',
       color: '#A78BFA',
+      href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
+      logoSrc: '/brand-partners/superteam.webp',
+      logoAlt: 'Superteam',
+      logoWidth: 160,
+      logoHeight: 48,
       label: t('achievements.items.superteam.label'),
       rank: t('achievements.items.superteam.rank'),
       date: t('achievements.items.superteam.date'),
-      glyph: '✦',
+      linkLabel: t('achievements.items.superteam.linkLabel'),
     },
   ] as const;
 
@@ -1060,28 +1088,26 @@ export default async function HomePage() {
           ACHIEVEMENTS / NEWS
          ============================================================ */}
       <section className="px-4 md:px-8 pt-14 md:pt-20 pb-2">
-        <div className="max-w-[560px] mx-auto">
+        <div className="max-w-[720px] mx-auto">
           <div className="text-center mb-8 md:mb-10">
             <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="flex items-start justify-center gap-8 md:gap-14">
-            {achievements.map((a, i) => (
-              <Fragment key={a.key}>
-                {i > 0 && (
-                  <div
-                    className="hidden sm:block w-px self-stretch min-h-[88px] bg-white/[0.08]"
-                    aria-hidden="true"
-                  />
-                )}
-                <AchievementSeal
-                  label={a.label}
-                  rank={a.rank}
-                  date={a.date}
-                  color={a.color}
-                  glyph={a.glyph}
-                />
-              </Fragment>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+            {achievements.map((a) => (
+              <AchievementBadge
+                key={a.key}
+                href={a.href}
+                logoSrc={a.logoSrc}
+                logoAlt={a.logoAlt}
+                logoWidth={a.logoWidth}
+                logoHeight={a.logoHeight}
+                label={a.label}
+                rank={a.rank}
+                date={a.date}
+                color={a.color}
+                linkLabel={a.linkLabel}
+              />
             ))}
           </div>
         </div>
