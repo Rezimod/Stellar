@@ -1,0 +1,165 @@
+/* Tonight's Verdict & Plan — answer card on the Sky page. */
+.verdict {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+/* ── Verdict badge ── */
+.verdict__badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 92px;
+  padding: 12px 0;
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--v) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--v) 40%, transparent);
+}
+.verdict__badge-v {
+  font-family: var(--sans);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--v);
+}
+.verdict__badge-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ── Body ── */
+.verdict__body { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.verdict__eyebrow {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.verdict__headline {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text);
+}
+.verdict__factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.verdict__factor {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.verdict__factor svg { color: var(--text-dim); flex-shrink: 0; }
+
+/* ── Best target ── */
+.verdict__target {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.verdict__target-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.verdict__target-btn {
+  appearance: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  text-align: left;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+.verdict__target-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-strong, rgba(255, 255, 255, 0.18));
+}
+.verdict__target-btn:active { transform: translateY(0.5px); }
+.verdict__target-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #0a1430;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.verdict__target-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.verdict__target-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.verdict__target-name {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.1;
+}
+.verdict__target-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.verdict__target-arrow { color: var(--v); flex-shrink: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  .verdict {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px 14px;
+  }
+  .verdict__badge { width: 76px; padding: 10px 0; }
+  .verdict__badge-v { font-size: 21px; }
+  /* Best target drops to a full-width row beneath the verdict + body. */
+  .verdict__target {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .verdict__target-btn { flex: 1; }
+}

@@ -27,7 +27,7 @@ import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
 import { ARFinder } from '@/components/sky/finder/ARFinder';
 import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
-import { PointIdentify } from '@/components/sky/PointIdentify';
+import { TonightVerdict } from '@/components/sky/TonightVerdict';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
@@ -360,6 +360,14 @@ export default function SkyPage() {
     setActiveId(id);
   }, []);
 
+  // Verdict CTA — select the recommended target and bring the dome into view.
+  const handleChooseTarget = useCallback((id: ObjectId) => {
+    setActiveId(id);
+    if (typeof document !== 'undefined') {
+      document.querySelector('.sky-obs__dome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
+
   const handleArSelect = useCallback((id: ObjectId | null) => {
     setArActiveId(id);
     if (id) setActiveId(id);
@@ -614,13 +622,14 @@ export default function SkyPage() {
           </>
         )}
 
-        {/* === Reverse compass: identify whatever the phone is aimed at === */}
+        {/* === Tonight's verdict & plan — the one clear answer === */}
         {finder && !finderError && (
-          <PointIdentify
-            objects={finder.objects}
-            observerLat={location.lat}
-            observerLon={location.lon}
-            compass={compass}
+          <TonightVerdict
+            cloudPct={cloudPct}
+            windowDuration={windowDuration}
+            moonIllum={moonIllum}
+            bestTarget={bestTargets[0] ?? null}
+            onChooseTarget={handleChooseTarget}
           />
         )}
 
