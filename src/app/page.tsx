@@ -820,32 +820,33 @@ export default async function HomePage() {
   const achievements = [
     {
       key: 'tether',
+      color: '#2DD4BF',
       tag: t('achievements.items.tether.tag'),
       date: t('achievements.items.tether.date'),
       title: t('achievements.items.tether.title'),
       desc: t('achievements.items.tether.desc'),
       icon: (
-        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#FFB347" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M6 4h12v3a6 6 0 0 1-12 0z" />
-          <path d="M6 5H4a2 2 0 0 0 2 4" />
-          <path d="M18 5h2a2 2 0 0 1-2 4" />
-          <path d="M9 17h6" />
-          <path d="M12 13v4" />
-          <path d="M8.5 21h7" />
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M8 21h8" />
+          <path d="M12 17v4" />
+          <path d="M7 4h10v5a5 5 0 0 1-10 0z" />
+          <path d="M17 5h2.5a1.5 1.5 0 0 1 0 5H17" />
+          <path d="M7 5H4.5a1.5 1.5 0 0 0 0 5H7" />
         </svg>
       ),
     },
     {
       key: 'superteam',
+      color: '#A78BFA',
       tag: t('achievements.items.superteam.tag'),
       date: t('achievements.items.superteam.date'),
       title: t('achievements.items.superteam.title'),
       desc: t('achievements.items.superteam.desc'),
       icon: (
-        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#FFB347" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="12" cy="9" r="6" />
-          <path d="M12 6.5l1 2 2.2.3-1.6 1.5.4 2.2L12 11.5l-2 1.2.4-2.2L8.8 8.8 11 8.5z" />
-          <path d="M8.5 14.5L7 22l5-2.5L17 22l-1.5-7.5" />
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="8" r="6" />
+          <path d="M8.5 13.5L7 22l5-2.6L17 22l-1.5-8.5" />
+          <path d="M12 5.5l1.1 2.2 2.4.2-1.8 1.6.5 2.4L12 12.6l-2.2 1.3.5-2.4L8.5 9.9l2.4-.2z" />
         </svg>
       ),
     },
@@ -955,48 +956,49 @@ export default async function HomePage() {
           ACHIEVEMENTS / NEWS
          ============================================================ */}
       <section className="px-4 md:px-8 pt-14 md:pt-20 pb-2">
-        <div className="max-w-[920px] mx-auto">
-          <div className="text-center mb-8 md:mb-12">
+        <div className="max-w-[880px] mx-auto">
+          <div className="text-center mb-7 md:mb-9">
             <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
             <SectionTitle>{t('achievements.title')}</SectionTitle>
-            <p className="text-white/55 text-[15px] md:text-[17px] leading-relaxed max-w-[520px] mx-auto mt-1">
+            <p className="text-white/55 text-[15px] md:text-[16px] leading-relaxed max-w-[480px] mx-auto mt-1">
               {t('achievements.subtitle')}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {achievements.map((a) => (
               <div
                 key={a.key}
-                className="group relative flex flex-col rounded-[16px] bg-white/[0.025] border border-white/[0.07] p-5 md:p-6 hover:border-[#FFB347]/30 hover:bg-white/[0.04] transition-colors"
+                className="group relative flex items-start gap-3.5 rounded-[14px] bg-white/[0.025] border border-white/[0.07] px-4 py-3.5 transition-colors"
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${a.color}55`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <span
-                    className="flex items-center justify-center w-[48px] h-[48px] rounded-[12px] shrink-0"
-                    style={{ border: '1px solid rgba(255,179,71,0.30)', background: 'rgba(255,179,71,0.06)' }}
-                  >
-                    {a.icon}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-[#FFB347]/10 border border-[#FFB347]/25">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FFB347]" />
-                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#FFB347]">
+                <span
+                  className="flex items-center justify-center w-[40px] h-[40px] rounded-[11px] shrink-0"
+                  style={{ background: `${a.color}1A`, border: `1px solid ${a.color}40` }}
+                >
+                  {a.icon}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.10em]"
+                      style={{ background: `${a.color}1A`, color: a.color }}
+                    >
                       {t('achievements.winner')}
                     </span>
-                  </span>
+                    <span className="text-[11.5px] text-white/45 truncate">
+                      {a.tag} · {a.date}
+                    </span>
+                  </div>
+                  <h3 className="text-white text-[15.5px] font-semibold leading-snug tracking-[-0.005em]">
+                    {a.title}
+                  </h3>
+                  <p className="text-white/50 text-[13px] leading-[1.5] mt-1">
+                    {a.desc}
+                  </p>
                 </div>
-
-                <div className="flex items-center gap-2.5 mb-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#6B7385]">
-                  <span>{a.tag}</span>
-                  <span className="w-1 h-1 rounded-full bg-white/20" />
-                  <span className="tabular-nums">{a.date}</span>
-                </div>
-
-                <h3 className="text-white text-[17px] md:text-[19px] font-semibold leading-snug tracking-[-0.01em] mb-2">
-                  {a.title}
-                </h3>
-                <p className="text-white/55 text-[14px] leading-relaxed">
-                  {a.desc}
-                </p>
               </div>
             ))}
           </div>
