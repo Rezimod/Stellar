@@ -7,18 +7,20 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin, Camera } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
+import { LOCATIONS } from '@/lib/darksky-locations';
 import { useDeviceHeading } from '@/lib/sky/use-device-heading';
 import { useForecast } from '@/lib/sky/use-forecast';
 import { CONSTELLATION_LINES, STAR_TO_CONSTELLATION, positionStars } from '@/lib/sky/stars';
 import type { ConstellationStar } from '@/components/sky/finder/SkyMap';
 import { azimuthToCompass, altitudeToFists } from '@/lib/sky/directions';
-import { LocationFallbackBanner } from '@/components/sky/LocationFallbackBanner';
 import EventBanner from '@/components/sky/EventBanner';
+import SkyAstraCta from '@/components/sky/SkyAstraCta';
+import SkyLocationModal from '@/components/sky/SkyLocationModal';
 import { DirectionHero } from '@/components/sky/finder/DirectionHero';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { SkyHeaderStrip } from '@/components/sky/finder/SkyHeaderStrip';
@@ -37,14 +39,58 @@ import './sky.css';
 
 const REFRESH_MS = 60_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
+const LOC_PROMPT_KEY = 'stellar.sky.locprompt.v1';
+
+function fmtClock(iso: string | null): string | null {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  } catch {
+    return null;
+  }
+}
+
+function fmtDuration(aISO: string | null, bISO: string | null): string | null {
+  if (!aISO || !bISO) return null;
+  try {
+    let ms = new Date(bISO).getTime() - new Date(aISO).getTime();
+    if (ms < 0) ms += 24 * 3600 * 1000; // wraps past midnight
+    const mins = Math.round(ms / 60000);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h}h ${String(m).padStart(2, '0')}m`;
+  } catch {
+    return null;
+  }
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function estimateBortle(lat: number, lon: number): number {
+  let minDist = Infinity;
+  let nearest = 5;
+  for (const loc of LOCATIONS) {
+    const d = haversineKm(lat, lon, loc.lat, loc.lon);
+    if (d < minDist) {
+      minDist = d;
+      nearest = loc.bortle;
+    }
+  }
+  return minDist <= 60 ? nearest : 5;
+}
 
 export default function SkyPage() {
-  const { location, locationReady, requestLocation, ensureLocation, gpsState, loading: locationLoading } = useLocation();
+  const { location, locationReady, requestLocation, gpsState, loading: locationLoading } = useLocation();
   const tErrors = useTranslations('sky.errors');
-
-  // Opening the sky finder is a clear intent to use the observer's position —
-  // prompt for GPS here rather than on site entry.
-  useEffect(() => { ensureLocation(); }, [ensureLocation]);
   const tAr = useTranslations('sky.ar');
   const tSolar = useTranslations('sky.solarFromSky');
 
@@ -52,6 +98,23 @@ export default function SkyPage() {
   const { getAccessToken } = usePrivy();
   const { field, toggleField } = useTheme();
   const compass = useDeviceHeading(location.lat, location.lon);
+
+  // First-entry location chooser. Replaces the inline location pill: prompt
+  // for an observing spot once per session if the user hasn't picked one.
+  const [showLocModal, setShowLocModal] = useState(false);
+  useEffect(() => {
+    if (!locationReady) return;
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.sessionStorage.getItem(LOC_PROMPT_KEY)) return;
+    } catch { /* private mode */ }
+    setShowLocModal(true);
+  }, [locationReady]);
+  const closeLocModal = useCallback(() => {
+    setShowLocModal(false);
+    try { window.sessionStorage.setItem(LOC_PROMPT_KEY, '1'); } catch { /* ignore */ }
+  }, []);
+
   // Calibrate compass should also request browser location if we don't have it
   // yet. The browser will only show a single permission UI per origin so this
   // is safe to call any time the user wants to actually use the finder.
@@ -100,9 +163,6 @@ export default function SkyPage() {
 
   // Star positions are driven exclusively by the finder's `generatedAt`, so
   // bright-stars and the planet/DSO layer always reflect the same instant.
-  // Earlier we ticked an independent 30s clock here — that drifted the two
-  // layers up to half a minute apart between fetches (≈0.125° rotation) and
-  // produced subtle "stars marching past static planets" wobble.
   useEffect(() => {
     if (finder?.generatedAt) setSkyTime(new Date(finder.generatedAt));
   }, [finder?.generatedAt]);
@@ -141,11 +201,8 @@ export default function SkyPage() {
     fetchFinder();
   }, [fetchFinder, locationReady]);
 
-  // Re-fetch every minute so live state stays current — but skip the
-  // refresh while the tab is hidden (no-one is looking) and resume on
-  // visibility change so we never go more than ~one minute stale once
-  // the user comes back. Also refetch on window focus so returning from a
-  // background tab gives the user a fresh sky immediately.
+  // Re-fetch every minute so live state stays current — skip while hidden,
+  // resume on visibility change and on window focus.
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const tick = () => {
@@ -188,9 +245,7 @@ export default function SkyPage() {
   }, [finder, activeId]);
 
   // ── Earn-on-aim: a held lock on a target (compass dome or AR) awards Stars
-  // once per target per night. Refs keep handleLock stable so the finders'
-  // lock effects don't churn. find_aimed fires for everyone; the award only
-  // runs when a wallet is present.
+  // once per target per night.
   const awardedRef = useRef<Set<string>>(new Set());
   const addressRef = useRef<string | null>(null);
   addressRef.current = address;
@@ -238,8 +293,7 @@ export default function SkyPage() {
     })();
   }, [getAccessToken]);
 
-  // The brightest, easiest non-Moon, non-Sun target above the horizon — the
-  // single thing tonight a beginner should walk outside and look at first.
+  // The brightest, easiest non-Moon, non-Sun target above the horizon.
   const primeTarget = useMemo<SkyObject | null>(() => {
     if (!finder) return null;
     const candidates = finder.objects.filter(
@@ -249,11 +303,6 @@ export default function SkyPage() {
     return [...candidates].sort((a, b) => a.magnitude - b.magnitude)[0];
   }, [finder]);
 
-  // Constellation stars projected once per finder refresh — the angular
-  // drift across a few minutes is below dome resolution, so this is fine.
-  // Any star id already present in the finder API response is dropped so
-  // the same body doesn't render twice (e.g. Sirius and Arcturus, which
-  // live in both the catalog and the bright-star list).
   const constellationStars = useMemo<ConstellationStar[]>(() => {
     if (!finder) return [];
     const finderIds = new Set(finder.objects.map((o) => o.id));
@@ -269,9 +318,6 @@ export default function SkyPage() {
       }));
   }, [finder, location.lat, location.lon, skyTime]);
 
-  // Hop anchor: prefer a catalog match (e.g. when the anchor is itself a
-  // tracked target), otherwise fall back to the bright-star catalog so M31
-  // can lean on Mirach even though Mirach isn't in the finder catalog.
   const hopAnchor = useMemo<SkyObject | null>(() => {
     if (!finder || !activeObject?.hopFromId) return null;
     const id = activeObject.hopFromId;
@@ -314,19 +360,19 @@ export default function SkyPage() {
     location.lon === DEFAULT_OBSERVER.lon;
 
   const locationLabel = location.city || (fallbackUsed ? 'Tbilisi' : '—');
+  const bortle = useMemo(() => estimateBortle(location.lat, location.lon), [location.lat, location.lon]);
+
+  // Observing window from twilight (astronomical dark → dawn).
+  const windowOpen = finder?.twilight?.astronomicalDusk ?? finder?.twilight?.nauticalDusk ?? finder?.twilight?.civilDusk ?? null;
+  const windowClose = finder?.twilight?.astronomicalDawn ?? finder?.twilight?.nauticalDawn ?? finder?.twilight?.civilDawn ?? null;
+  const windowDuration = fmtDuration(windowOpen, windowClose);
+
+  const heroObject = activeObject ?? primeTarget;
 
   return (
-    <div className="sky-page-v2 sky-v3">
-      <div className="sky-v3__container">
-        <LocationFallbackBanner />
+    <div className="sky-page-v2 sky-v3 sky-dash">
+      <div className="sky-dash__wrap">
         <EventBanner />
-
-        {fallbackUsed && finder && (
-          <div className="sky-v3__fallback">
-            <span>{tErrors('locationFallback')}</span>
-            <button type="button" onClick={() => requestLocation({ fresh: true })}>{tErrors('useMyLocation')}</button>
-          </div>
-        )}
 
         {finderError && (
           <div className="sky-v3__error">
@@ -337,27 +383,72 @@ export default function SkyPage() {
 
         {showTour && <FinderTour onDismiss={dismissTour} />}
 
-        {/* === Prime target + difficulty filters (centered above the split) === */}
-        {finder && !finderError && (
-          <TargetFilters
-            objects={finder.objects}
-            tier={tier}
-            onTierChange={setTier}
-            primeTarget={primeTarget}
-            primeActive={activeId === primeTarget?.id}
-            onPrimeSelect={() => primeTarget && setActiveId(primeTarget.id)}
-          />
-        )}
-
         {(locationLoading || !locationReady || (finderLoading && !finder)) && (
           <SkyLoadingSkeleton />
         )}
 
-        {/* === Split: dome chart on the left, visible targets on the right === */}
         {finder && !finderError && (
-          <>
-            <section className="sky-v3__split sky-v3__split--finder">
-              <div className="sky-v3__map-wrap">
+          <div className="sky-dash__grid">
+            {/* ── LEFT RAIL — prime target + tonight's targets ───────── */}
+            <aside className="sky-dash__rail sky-dash__rail--left">
+              {heroObject && (
+                <section className="sky-dash__card sky-dash__prime">
+                  <DirectionHero object={heroObject} />
+                  <div className="sky-dash__prime-actions">
+                    <Link href="/observe" className="sky-dash__observe">
+                      <Camera size={14} aria-hidden="true" />
+                      <span>Observe {heroObject.name}</span>
+                    </Link>
+                  </div>
+                </section>
+              )}
+
+              <section className="sky-dash__card sky-dash__targets">
+                <header className="sky-dash__targets-head">
+                  <span className="sky-dash__rail-label">Tonight&apos;s targets</span>
+                </header>
+                <TargetFilters
+                  objects={finder.objects}
+                  tier={tier}
+                  onTierChange={setTier}
+                />
+                <div className="sky-dash__targets-scroll">
+                  <TargetVisibleGrid
+                    objects={finder.objects}
+                    tier={tier}
+                    activeId={activeId}
+                    onSelect={handleSelect}
+                  />
+                  <TargetBelowGrid
+                    objects={finder.objects}
+                    tier={tier}
+                    activeId={activeId}
+                    onSelect={handleSelect}
+                  />
+                </div>
+              </section>
+            </aside>
+
+            {/* ── CENTER — the live sky map (dome + 3D + AR) ─────────── */}
+            <div className="sky-dash__center">
+              <header className="sky-dash__center-head">
+                <div className="sky-dash__center-titles">
+                  <h1 className="sky-dash__title">Sky tonight</h1>
+                  <button
+                    type="button"
+                    className="sky-dash__loc"
+                    onClick={() => setShowLocModal(true)}
+                    aria-label="Change observing location"
+                  >
+                    <MapPin size={12} aria-hidden="true" />
+                    <span>{locationLabel}</span>
+                    <span className="sky-dash__loc-sep" aria-hidden>·</span>
+                    <span>Bortle {bortle}</span>
+                  </button>
+                </div>
+              </header>
+
+              <div className="sky-dash__map-wrap">
                 <SkyHeaderStrip
                   locationLabel={locationLabel}
                   nowISO={finder.generatedAt}
@@ -397,54 +488,79 @@ export default function SkyPage() {
                       <Orbit size={14} aria-hidden="true" />
                       <span className="sky-v3__solar-launch-label">{tSolar('short')}</span>
                     </Link>
-                  {compass.status !== 'unavailable' && (
+                    {compass.status !== 'unavailable' && (
+                      <button
+                        type="button"
+                        className="sky-v3__ar-launch"
+                        onClick={handleArOpen}
+                        aria-label={tAr('openAr')}
+                        title={tAr('openAr')}
+                      >
+                        <Telescope size={14} aria-hidden="true" />
+                        <span className="sky-v3__ar-launch-label">AR</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="sky-v3__ar-launch"
-                      onClick={handleArOpen}
-                      aria-label={tAr('openAr')}
-                      title={tAr('openAr')}
+                      onClick={toggleField}
+                      aria-label="Field mode — red light"
+                      aria-pressed={field}
+                      title="Field mode — red light"
+                      style={field ? { color: '#FF3B30', borderColor: 'rgba(255,59,48,0.45)' } : undefined}
                     >
-                      <Telescope size={14} aria-hidden="true" />
-                      <span className="sky-v3__ar-launch-label">AR</span>
+                      <Flashlight size={14} aria-hidden="true" />
+                      <span className="sky-v3__ar-launch-label">Red</span>
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    className="sky-v3__ar-launch"
-                    onClick={toggleField}
-                    aria-label="Field mode — red light"
-                    aria-pressed={field}
-                    title="Field mode — red light"
-                    style={field ? { color: '#FF3B30', borderColor: 'rgba(255,59,48,0.45)' } : undefined}
-                  >
-                    <Flashlight size={14} aria-hidden="true" />
-                    <span className="sky-v3__ar-launch-label">Red</span>
-                  </button>
                   </div>
                 </div>
               </div>
-              <TargetVisibleGrid
-                objects={finder.objects}
-                tier={tier}
-                activeId={activeId}
-                onSelect={handleSelect}
-              />
-            </section>
+            </div>
 
-            <TargetBelowGrid
-              objects={finder.objects}
-              tier={tier}
-              activeId={activeId}
-              onSelect={handleSelect}
-            />
-
-            {activeObject && (
-              <section className="sky-v3__active">
-                <DirectionHero object={activeObject} />
+            {/* ── RIGHT RAIL — observing window + conditions + ASTRA ── */}
+            <aside className="sky-dash__rail sky-dash__rail--right">
+              <section className="sky-dash__card sky-dash__window">
+                <span className="sky-dash__rail-label">Observing window</span>
+                <p className="sky-dash__window-main">
+                  {windowDuration ? `Open · ${windowDuration}` : 'Dark window'}
+                </p>
+                {windowOpen && windowClose && (
+                  <p className="sky-dash__window-range">
+                    {fmtClock(windowOpen)} → {fmtClock(windowClose)}
+                  </p>
+                )}
+                {finder.conditions?.summary && (
+                  <p className="sky-dash__window-verdict">{finder.conditions.summary}</p>
+                )}
               </section>
-            )}
-          </>
+
+              <section className="sky-dash__card sky-dash__conditions">
+                <span className="sky-dash__rail-label">Conditions</span>
+                <div className="sky-dash__cond-grid">
+                  <div className="sky-dash__cond">
+                    <span className="sky-dash__cond-label">Clouds</span>
+                    <span className="sky-dash__cond-value">{finder.conditions?.cloudCoverPct ?? '—'}%</span>
+                  </div>
+                  <div className="sky-dash__cond">
+                    <span className="sky-dash__cond-label">Sky</span>
+                    <span className="sky-dash__cond-value">{finder.conditions?.quality ?? '—'}</span>
+                  </div>
+                  <div className="sky-dash__cond">
+                    <span className="sky-dash__cond-label">Bortle</span>
+                    <span className="sky-dash__cond-value">{bortle}<span className="sky-dash__cond-unit">/9</span></span>
+                  </div>
+                  <div className="sky-dash__cond">
+                    <span className="sky-dash__cond-label">Visible</span>
+                    <span className="sky-dash__cond-value">
+                      {tableObjects.filter((o) => o.visible && o.id !== 'sun').length}
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <SkyAstraCta />
+            </aside>
+          </div>
         )}
 
         {/* === Reverse compass: identify whatever the phone is aimed at === */}
@@ -467,6 +583,8 @@ export default function SkyPage() {
           locationLabel={locationLabel}
         />
       </div>
+
+      <SkyLocationModal open={showLocModal} onClose={closeLocModal} />
 
       {arOpen && finder && (
         <ARFinder
@@ -525,4 +643,3 @@ function FinderTour({ onDismiss }: { onDismiss: () => void }) {
     </aside>
   );
 }
-

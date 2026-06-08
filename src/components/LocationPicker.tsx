@@ -14,9 +14,9 @@ const REGION_LABELS: Record<Region, string> = {
   global: 'Global',
 }
 
-type PresetCity = UserLocation & { flag: string; nameEn: string }
+export type PresetCity = UserLocation & { flag: string; nameEn: string }
 
-const CITY_PRESETS: { region: Region; label: string; cities: PresetCity[] }[] = [
+export const CITY_PRESETS: { region: Region; label: string; cities: PresetCity[] }[] = [
   {
     region: 'caucasus',
     label: 'Caucasus & Middle East',

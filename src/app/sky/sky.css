@@ -3576,3 +3576,429 @@
   }
 }
 
+/* ================================================================
+   === SKY DASHBOARD — observatory layout (3-column, one screen) ===
+   === Left rail: prime + targets · Center: live sky map ·       ===
+   === Right rail: observing window + conditions + ASTRA.        ===
+   === Reuses all existing component visuals (DirectionHero,     ===
+   === SkyMap, target cards). Only the page shell is new.        ===
+   ================================================================ */
+
+.sky-dash .sky-dash__wrap {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 16px 22px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sky-dash__grid {
+  display: grid;
+  grid-template-columns: 322px minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.sky-dash__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.sky-dash__center {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sky-dash__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.sky-dash__rail-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* === Prime / selected target card — reuse finder-hero internals === */
+.sky-dash__prime .finder-hero {
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 0;
+}
+.sky-dash__prime-actions { margin-top: 14px; }
+.sky-dash__observe {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: rgba(255, 179, 71, 0.12);
+  border: 1px solid rgba(255, 179, 71, 0.34);
+  color: var(--terracotta);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+.sky-dash__observe:hover {
+  background: rgba(255, 179, 71, 0.2);
+  border-color: rgba(255, 179, 71, 0.55);
+}
+
+/* === Tonight's targets === */
+.sky-dash__targets { display: flex; flex-direction: column; gap: 12px; }
+.sky-dash__targets-head { display: flex; align-items: baseline; justify-content: space-between; }
+.sky-dash__targets-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 44vh;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+.sky-dash__targets-scroll::-webkit-scrollbar { width: 5px; }
+.sky-dash__targets-scroll::-webkit-scrollbar-track { background: transparent; }
+.sky-dash__targets-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+/* Force single-column target cards in the narrow rail (override the
+   desktop 2-up grid the cards normally use). */
+.sky-dash .sky-dash__targets .target-cards,
+.sky-dash .sky-dash__targets .target-cards--visible,
+.sky-dash .sky-dash__targets .target-cards--below {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.sky-dash .sky-dash__targets .target-filters {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+.sky-dash .sky-dash__targets .target-picker__tiers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sky-dash .sky-dash__targets .target-tier {
+  padding: 7px 11px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+/* === Center head — title + clickable location === */
+.sky-dash__center-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sky-dash__center-titles { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sky-dash__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.sky-dash__loc {
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.sky-dash__loc:hover { color: var(--text); }
+.sky-dash__loc svg { color: var(--terracotta); }
+.sky-dash__loc-sep { opacity: 0.4; }
+
+/* === Center map wrap === */
+.sky-dash .sky-dash__map-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 12px;
+}
+.sky-dash .sky-dash__map-wrap .sky-map { max-width: 520px; width: 100%; }
+
+/* === Right rail cards === */
+.sky-dash__window { display: flex; flex-direction: column; gap: 4px; }
+.sky-dash__window-main {
+  margin: 6px 0 0;
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--text);
+}
+.sky-dash__window-range {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  font-feature-settings: 'tnum' 1;
+}
+.sky-dash__window-verdict {
+  margin: 6px 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.sky-dash__conditions { display: flex; flex-direction: column; gap: 12px; }
+.sky-dash__cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sky-dash__cond { display: flex; flex-direction: column; gap: 4px; }
+.sky-dash__cond-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.sky-dash__cond-value {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1;
+}
+.sky-dash__cond-unit { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+
+/* === Responsive === */
+@media (max-width: 1100px) {
+  .sky-dash__grid { grid-template-columns: 300px minmax(0, 1fr); }
+  .sky-dash__rail--right {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .sky-dash__rail--right > * { flex: 1 1 240px; }
+}
+
+@media (max-width: 860px) {
+  .sky-dash .sky-dash__wrap { padding: 14px 14px 56px; }
+  .sky-dash__grid { grid-template-columns: 1fr; }
+  .sky-dash__rail--right { flex-direction: column; }
+  .sky-dash__targets-scroll { max-height: none; }
+  .sky-dash__center { order: -1; }
+}
+
+/* ================================================================
+   === Sky location modal (entry chooser) — rendered to <body>,  ===
+   === so these selectors are intentionally global (unscoped).   ===
+   ================================================================ */
+
+.skyloc {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.skyloc__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 6, 15, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.skyloc__panel {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 100%);
+  max-height: min(86vh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, rgba(18, 22, 38, 0.98), rgba(10, 14, 26, 0.99));
+  border: 1px solid rgba(255, 179, 71, 0.3);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 22px 20px 16px;
+  overflow: hidden;
+  font-family: var(--font-body, system-ui, sans-serif);
+  color: #f8f4ec;
+  animation: skyloc-in 0.18s ease-out;
+}
+@keyframes skyloc-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+.skyloc__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+.skyloc__close:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.skyloc__head { margin-bottom: 14px; padding-right: 28px; }
+.skyloc__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+}
+.skyloc__title {
+  margin: 8px 0 4px;
+  font-family: var(--font-display, serif);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.1;
+  color: #fff;
+}
+.skyloc__sub { margin: 0; font-size: 13px; line-height: 1.5; color: rgba(248, 244, 236, 0.6); }
+.skyloc__gps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin: 14px 0 12px;
+  background: rgba(255, 179, 71, 0.12);
+  border: 1px solid rgba(255, 179, 71, 0.34);
+  border-radius: 12px;
+  color: var(--terracotta);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.skyloc__gps:hover:not(:disabled) {
+  background: rgba(255, 179, 71, 0.2);
+  border-color: rgba(255, 179, 71, 0.55);
+}
+.skyloc__gps:disabled { opacity: 0.55; cursor: default; }
+.skyloc__spin { animation: skyloc-spin 0.8s linear infinite; }
+@keyframes skyloc-spin { to { transform: rotate(360deg); } }
+.skyloc__search { position: relative; display: flex; align-items: center; margin-bottom: 10px; }
+.skyloc__search svg { position: absolute; left: 11px; color: rgba(248, 244, 236, 0.5); pointer-events: none; }
+.skyloc__search input {
+  width: 100%;
+  padding: 9px 12px 9px 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(232, 230, 221, 0.14);
+  border-radius: 10px;
+  color: #f8f4ec;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+.skyloc__search input:focus { border-color: rgba(255, 179, 71, 0.55); }
+.skyloc__tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+.skyloc__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid rgba(232, 230, 221, 0.12);
+  color: rgba(248, 244, 236, 0.7);
+  cursor: pointer;
+}
+.skyloc__tab.is-active {
+  background: rgba(255, 179, 71, 0.14);
+  border-color: rgba(255, 179, 71, 0.45);
+  color: var(--terracotta);
+}
+.skyloc__list { flex: 1; overflow-y: auto; min-height: 120px; padding-right: 4px; }
+.skyloc__list::-webkit-scrollbar { width: 5px; }
+.skyloc__list::-webkit-scrollbar-thumb { background: rgba(255, 179, 71, 0.3); border-radius: 3px; }
+.skyloc__empty { color: rgba(248, 244, 236, 0.5); font-size: 12px; text-align: center; padding: 24px 0; }
+.skyloc__group { margin-bottom: 6px; }
+.skyloc__group-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 4px 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+}
+.skyloc__group-count { color: rgba(248, 244, 236, 0.45); font-weight: 500; }
+.skyloc__city {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.skyloc__city:hover { background: rgba(255, 255, 255, 0.05); }
+.skyloc__city.is-active { background: rgba(255, 179, 71, 0.14); border-color: rgba(255, 179, 71, 0.32); }
+.skyloc__flag { font-size: 16px; line-height: 1; flex-shrink: 0; }
+.skyloc__city-name { color: #f8f4ec; font-size: 13px; font-weight: 500; }
+.skyloc__city.is-active .skyloc__city-name { color: var(--terracotta); }
+.skyloc__city-country {
+  color: rgba(248, 244, 236, 0.5);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.skyloc__check { margin-left: auto; color: var(--terracotta); flex-shrink: 0; }
+

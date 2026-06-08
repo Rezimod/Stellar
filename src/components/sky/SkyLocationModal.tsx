@@ -1,0 +1,167 @@
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { MapPin, Navigation, Search, Check, X } from 'lucide-react';
+import { useLocation, type Region, type UserLocation } from '@/lib/location';
+import { CITY_PRESETS } from '@/components/LocationPicker';
+
+const REGION_TABS: { key: Region | 'all'; label: string; emoji: string }[] = [
+  { key: 'all', label: 'All', emoji: '✦' },
+  { key: 'caucasus', label: 'Caucasus', emoji: '🛰' },
+  { key: 'north_america', label: 'Americas', emoji: '🌎' },
+  { key: 'europe', label: 'Europe', emoji: '🌍' },
+  { key: 'asia', label: 'Asia', emoji: '🌏' },
+];
+
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
+/**
+ * Entry-point location chooser for the Sky page. Replaces the inline
+ * location chooser pill: when the observatory dashboard opens we ask the
+ * user, once, where they're observing from — GPS or a preset city.
+ */
+export default function SkyLocationModal({ open, onClose }: Props) {
+  const { location, setLocation, requestLocation, loading: gpsRefreshing } = useLocation();
+  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState<Region | 'all'>('all');
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setSearch('');
+      setTab('all');
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const id = window.setTimeout(() => searchRef.current?.focus(), 80);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKey);
+      window.clearTimeout(id);
+    };
+  }, [open, onClose]);
+
+  const q = search.trim().toLowerCase();
+  const groups = useMemo(
+    () =>
+      CITY_PRESETS
+        .filter((g) => tab === 'all' || g.region === tab)
+        .map((g) => ({
+          ...g,
+          cities: q
+            ? g.cities.filter(
+                (c) =>
+                  c.nameEn.toLowerCase().includes(q) ||
+                  c.country.toLowerCase().includes(q),
+              )
+            : g.cities,
+        }))
+        .filter((g) => g.cities.length > 0),
+    [tab, q],
+  );
+
+  const isActive = (p: UserLocation) =>
+    p.city === location.city && p.country === location.country;
+
+  if (!open || typeof document === 'undefined') return null;
+
+  const handleGPS = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    requestLocation({ fresh: true });
+    onClose();
+  };
+
+  const handlePreset = (p: UserLocation) => {
+    setLocation(p);
+    onClose();
+  };
+
+  return createPortal(
+    <div className="skyloc" role="dialog" aria-modal="true" aria-label="Choose your observing location">
+      <div className="skyloc__backdrop" onClick={onClose} />
+      <div className="skyloc__panel" role="document">
+        <button type="button" className="skyloc__close" onClick={onClose} aria-label="Close">
+          <X size={16} aria-hidden="true" />
+        </button>
+
+        <header className="skyloc__head">
+          <span className="skyloc__eyebrow">
+            <MapPin size={12} aria-hidden="true" /> Observing from
+          </span>
+          <h2 className="skyloc__title">Where are you tonight?</h2>
+          <p className="skyloc__sub">
+            We use your spot to compute rise/set times, the sky map and the
+            forecast. Pick a city or use your GPS.
+          </p>
+        </header>
+
+        <button type="button" className="skyloc__gps" onClick={handleGPS} disabled={gpsRefreshing}>
+          <Navigation size={14} className={gpsRefreshing ? 'skyloc__spin' : ''} aria-hidden="true" />
+          {gpsRefreshing ? 'Detecting your location…' : 'Use my GPS location'}
+        </button>
+
+        <div className="skyloc__search">
+          <Search size={14} aria-hidden="true" />
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Search city or country…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="skyloc__tabs">
+          {REGION_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={`skyloc__tab${tab === t.key ? ' is-active' : ''}`}
+              onClick={() => setTab(t.key)}
+            >
+              <span aria-hidden="true">{t.emoji}</span> {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="skyloc__list">
+          {groups.length === 0 ? (
+            <p className="skyloc__empty">No cities found</p>
+          ) : (
+            groups.map((g) => (
+              <div key={g.label} className="skyloc__group">
+                <p className="skyloc__group-label">
+                  <span>{g.label}</span>
+                  <span className="skyloc__group-count">{g.cities.length}</span>
+                </p>
+                {g.cities.map((c) => {
+                  const active = isActive(c);
+                  return (
+                    <button
+                      key={`${c.city}-${c.country}`}
+                      type="button"
+                      className={`skyloc__city${active ? ' is-active' : ''}`}
+                      onClick={() => handlePreset(c)}
+                    >
+                      <span className="skyloc__flag" aria-hidden="true">{c.flag}</span>
+                      <span className="skyloc__city-name">{c.city}</span>
+                      <span className="skyloc__city-country">{c.country}</span>
+                      {active && <Check size={14} aria-hidden="true" className="skyloc__check" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
