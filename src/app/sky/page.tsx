@@ -27,7 +27,7 @@ import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
 import { ARFinder } from '@/components/sky/finder/ARFinder';
 import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
-import { TonightVerdict } from '@/components/sky/TonightVerdict';
+import { TonightTimeline } from '@/components/sky/TonightTimeline';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
@@ -625,14 +625,14 @@ export default function SkyPage() {
           </>
         )}
 
-        {/* === Tonight's verdict & plan — the one clear answer === */}
+        {/* === Tonight's timeline — when, across the night, to observe === */}
         {finder && !finderError && (
-          <TonightVerdict
-            cloudPct={cloudPct}
-            windowDuration={windowDuration}
-            moonIllum={moonIllum}
-            bestTarget={bestTargets[0] ?? null}
-            onChooseTarget={handleChooseTarget}
+          <TonightTimeline
+            nowISO={finder.generatedAt}
+            twilight={finder.twilight}
+            objects={finder.objects}
+            nightHours={forecast.days[0]?.nightHours ?? []}
+            onSelect={handleChooseTarget}
           />
         )}
 

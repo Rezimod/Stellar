@@ -1,411 +1,187 @@
 // src/components/sky/TonightTimeline.tsx
 //
-// Drag-to-scrub timeline of tonight's dark window. For every observable body
-// we draw an altitude curve that arcs from rise → peak → set, and as the
-// scrubber moves, a dot rides each curve. The user instantly sees "Saturn
-// peaks at 11:42pm" — that's their window — without scrolling tables.
+// "Tonight's Timeline" — a dusk-to-dawn strip that answers WHEN to observe,
+// not just whether. One shared time axis (18:00 → 06:00) carries:
+//   • the real dark window (astronomical twilight → twilight)
+//   • hourly cloud cover overlaid on top of it (clear + dark = the gap)
+//   • a bar per planet/Moon showing when it's actually above the horizon
+// Tapping a body selects it on the dome above. No compass/camera needed.
 
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
+import type { ObjectId, SkyObject, TwilightTimes } from '@/components/sky/finder/types';
 import './TonightTimeline.css';
 
-interface TimelineObject {
-  name: string;
-  color: string;
-  visibleStart: string;
-  visibleEnd: string;
-  peakAt: string;
-  peakAlt: number;
-  peakAzimuth: number;
-}
-
-interface TimelineResponse {
-  darkWindow: { start: string; end: string } | null;
-  objects: TimelineObject[];
-  excludedCount: number;
-}
+interface NightHour { hour: number; cloudCover: number }
 
 interface TonightTimelineProps {
-  lat: number;
-  lon: number;
+  nowISO: string;
+  twilight?: TwilightTimes;
+  objects: SkyObject[];
+  nightHours: NightHour[];
+  onSelect: (id: ObjectId) => void;
 }
 
-const SVG_W = 720;
-const SVG_H = 240;
-const PAD_X = 28;
-const PAD_TOP = 26;
-const PAD_BOTTOM = 28;
-const SNAP_DEG = 0.04; // fraction of width — magnetic snap radius near peaks
+const BODY_COLOR: Record<string, string> = {
+  moon: '#E2D5B0', mercury: '#C9C2B0', venus: '#F4D9A0', mars: '#E8836A',
+  jupiter: '#C8A96E', saturn: '#D4BE8A', uranus: '#9FD8E5', neptune: '#6F8FE2',
+};
 
-export function TonightTimeline({ lat, lon }: TonightTimelineProps) {
-  const t = useTranslations('sky.timeline');
-  const [data, setData] = useState<TimelineResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [scrub, setScrub] = useState(0.5); // 0..1
+const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/sky/timeline?lat=${lat}&lon=${lon}`)
-      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`status ${r.status}`)))
-      .then((j: TimelineResponse) => { if (!cancelled) { setData(j); setLoading(false); } })
-      .catch(() => { if (!cancelled) { setError(t('error')); setLoading(false); } });
-    return () => { cancelled = true; };
-  }, [lat, lon, t]);
+function fmtClock(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
 
-  const dark = data?.darkWindow;
-  const objects = data?.objects ?? [];
+interface BodySeg {
+  id: ObjectId;
+  name: string;
+  color: string;
+  startF: number;
+  endF: number;
+  title: string;
+}
 
-  const startMs = dark ? new Date(dark.start).getTime() : 0;
-  const endMs = dark ? new Date(dark.end).getTime() : 0;
-  const span = endMs - startMs;
+export function TonightTimeline({ nowISO, twilight, objects, nightHours, onSelect }: TonightTimelineProps) {
+  const { start, span } = useMemo(() => {
+    const now = new Date(nowISO);
+    const s = new Date(now);
+    if (s.getHours() < 12) s.setDate(s.getDate() - 1); // small hours → night began last evening
+    s.setHours(18, 0, 0, 0);
+    const e = new Date(s.getTime() + 12 * 3600 * 1000); // 18:00 → 06:00
+    return { start: s, span: e.getTime() - s.getTime() };
+  }, [nowISO]);
 
-  // Initialize scrub at "now" if now is within the dark window.
-  useEffect(() => {
-    if (!dark || span <= 0) return;
-    const now = Date.now();
-    if (now >= startMs && now <= endMs) {
-      setScrub((now - startMs) / span);
-    } else {
-      setScrub(0.5);
-    }
-  }, [dark, span, startMs, endMs]);
+  const frac = (d: Date) => clamp01((d.getTime() - start.getTime()) / span);
+  const fracISO = (iso: string | null | undefined) => (iso ? frac(new Date(iso)) : null);
 
-  const scrubMs = startMs + scrub * span;
-
-  const planeW = SVG_W - PAD_X * 2;
-  const planeH = SVG_H - PAD_TOP - PAD_BOTTOM;
-
-  function tToX(ms: number) {
-    if (span <= 0) return PAD_X;
-    return PAD_X + ((ms - startMs) / span) * planeW;
-  }
-  function altToY(alt: number) {
-    // 0° → planeH (bottom of plane), 90° → 0 (top). Cap at 90.
-    const aa = Math.max(0, Math.min(90, alt));
-    return PAD_TOP + (1 - aa / 90) * planeH;
-  }
-
-  // Snap targets: each object's peak time, and start/end of the window.
-  const snapXs = useMemo(() => {
-    const xs: number[] = [];
-    if (dark && span > 0) {
-      xs.push(0);
-      xs.push(1);
-      objects.forEach((o) => {
-        const t = (new Date(o.peakAt).getTime() - startMs) / span;
-        if (t >= 0 && t <= 1) xs.push(t);
-      });
-    }
-    return xs.sort((a, b) => a - b);
-  }, [dark, objects, startMs, span]);
-
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const draggingRef = useRef(false);
-
-  function handlePointer(clientX: number) {
-    const svg = svgRef.current;
-    if (!svg || span <= 0) return;
-    const rect = svg.getBoundingClientRect();
-    const xLocal = ((clientX - rect.left) / rect.width) * SVG_W;
-    let f = (xLocal - PAD_X) / planeW;
-    f = Math.max(0, Math.min(1, f));
-    // Magnetic snap to nearest peak/edge
-    let snapped = f;
-    let bestDist = SNAP_DEG;
-    for (const sx of snapXs) {
-      const d = Math.abs(sx - f);
-      if (d < bestDist) {
-        bestDist = d;
-        snapped = sx;
-      }
-    }
-    setScrub(snapped);
-  }
-
-  // Parabolic altitude estimate for an object at time `t` (ms). Fits a curve
-  // through (start→0°), (peak→peakAlt), (end→0°). Cheap and visually correct
-  // for the scrubber.
-  function altAt(o: TimelineObject, ms: number): number {
-    const ts = new Date(o.visibleStart).getTime();
-    const tp = new Date(o.peakAt).getTime();
-    const te = new Date(o.visibleEnd).getTime();
-    if (ms < ts || ms > te) return 0;
-    // Use piecewise quadratic so peak isn't smeared if start/end are asymmetric.
-    if (ms <= tp) {
-      const u = (ms - ts) / Math.max(1, tp - ts);
-      return o.peakAlt * (1 - (1 - u) * (1 - u));
-    }
-    const u = (ms - tp) / Math.max(1, te - tp);
-    return o.peakAlt * (1 - u * u);
-  }
-
-  // Draw object's altitude curve as a polyline of 32 samples.
-  function curvePath(o: TimelineObject): string {
-    const ts = new Date(o.visibleStart).getTime();
-    const te = new Date(o.visibleEnd).getTime();
-    const N = 32;
-    const pts: string[] = [];
-    for (let i = 0; i <= N; i++) {
-      const ms = ts + ((te - ts) * i) / N;
-      const alt = altAt(o, ms);
-      pts.push(`${tToX(ms).toFixed(1)},${altToY(alt).toFixed(1)}`);
-    }
-    return `M ${pts.join(' L ')}`;
-  }
-
-  // Bodies above horizon at the scrub time, with current altitude/azimuth.
-  const aboveNow = useMemo(() => {
-    if (!data || span <= 0) return [];
-    return data.objects
-      .map((o) => ({ obj: o, alt: altAt(o, scrubMs) }))
-      .filter((row) => row.alt > 1)
-      .sort((a, b) => b.alt - a.alt);
-  }, [data, span, scrubMs]);
-
-  const scrubX = tToX(scrubMs);
-
-  const fmtTime = (ms: number) => {
-    if (!Number.isFinite(ms)) return '—';
-    return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  // Hour cell (e.g. 20, 0, 4) → fraction of its left edge along the axis.
+  const hourFrac = (hour: number) => {
+    const d = new Date(start);
+    if (hour < 12) d.setDate(d.getDate() + 1);
+    d.setHours(hour, 0, 0, 0);
+    return frac(d);
   };
 
-  if (loading) {
-    return (
-      <section className="tl" aria-busy="true">
-        <header className="tl__head">
-          <p className="tl__eyebrow">{t('eyebrow')}</p>
-          <h2 className="tl__title">{t('title')}</h2>
-        </header>
-        <div className="tl__skeleton" />
-      </section>
-    );
-  }
+  const duskISO = twilight?.astronomicalDusk ?? twilight?.nauticalDusk ?? twilight?.civilDusk ?? null;
+  const dawnISO = twilight?.astronomicalDawn ?? twilight?.nauticalDawn ?? twilight?.civilDawn ?? null;
+  const duskF = fracISO(duskISO);
+  const dawnF = fracISO(dawnISO);
+  const nowF = frac(new Date(nowISO));
 
-  if (error || !dark) {
-    return (
-      <section className="tl">
-        <header className="tl__head">
-          <p className="tl__eyebrow">{t('eyebrow')}</p>
-          <h2 className="tl__title">{t('title')}</h2>
-        </header>
-        <p className="tl__empty">{error ?? t('noWindow')}</p>
-      </section>
-    );
-  }
+  const bodies = useMemo<BodySeg[]>(() => {
+    const out: BodySeg[] = [];
+    for (const o of objects) {
+      if (o.id !== 'moon' && o.type !== 'planet') continue;
+      let s = fracISO(o.riseTime);
+      let e = fracISO(o.setTime);
+      if (o.circumpolar) { s = 0; e = 1; }
+      if (s == null && e == null) {
+        if (o.visible || o.altitude > 0) { s = 0; e = 1; } else continue;
+      } else if (s == null) {
+        s = 0;
+      } else if (e == null) {
+        e = 1;
+      }
+      if (e! < s!) e = 1; // rises in the evening, sets past our window
+      if (e! - s! < 0.012) continue;
+      const rise = fmtClock(o.riseTime);
+      const set = fmtClock(o.setTime);
+      out.push({
+        id: o.id,
+        name: o.name,
+        color: BODY_COLOR[o.id] ?? '#9FB2D6',
+        startF: s!,
+        endF: e!,
+        title: [rise ? `Rises ${rise}` : 'Up at dusk', set ? `Sets ${set}` : 'Up till dawn'].join(' · '),
+      });
+    }
+    return out.sort((a, b) => a.startF - b.startF).slice(0, 6);
+  }, [objects, start, span]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const ticks = [
+    { f: 0.25, label: '9 PM' },
+    { f: 0.5, label: '12 AM' },
+    { f: 0.75, label: '3 AM' },
+  ];
+
+  const darkRange =
+    duskISO && dawnISO ? `${fmtClock(duskISO)} – ${fmtClock(dawnISO)}` : 'Dusk to dawn';
 
   return (
-    <section className="tl" aria-label={t('aria')}>
+    <section className="tl" aria-label="Tonight's timeline">
       <header className="tl__head">
-        <div>
-          <p className="tl__eyebrow">{t('eyebrow')}</p>
-          <h2 className="tl__title">{t('title')}</h2>
-          <p className="tl__sub">{t('subtitle')}</p>
-        </div>
-        <div className="tl__windowChip">
-          <span>{fmtTime(startMs)}</span>
-          <span className="tl__windowDash">→</span>
-          <span>{fmtTime(endMs)}</span>
-        </div>
+        <p className="tl__eyebrow">Tonight&apos;s timeline</p>
+        <p className="tl__sub">Dark window · {darkRange}</p>
       </header>
 
-      <div className="tl__stage">
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          className="tl__svg"
-          role="application"
-          aria-label={t('chartAria')}
-          onPointerDown={(e) => {
-            draggingRef.current = true;
-            (e.target as Element).setPointerCapture?.(e.pointerId);
-            handlePointer(e.clientX);
-          }}
-          onPointerMove={(e) => { if (draggingRef.current) handlePointer(e.clientX); }}
-          onPointerUp={() => { draggingRef.current = false; }}
-          onPointerCancel={() => { draggingRef.current = false; }}
-        >
-          <defs>
-            <linearGradient id="tl-floor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.04)" />
-              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-            </linearGradient>
-          </defs>
-
-          {/* Plane background */}
-          <rect
-            x={PAD_X}
-            y={PAD_TOP}
-            width={planeW}
-            height={planeH}
-            fill="url(#tl-floor)"
-            stroke="rgba(255,255,255,0.05)"
-          />
-
-          {/* Altitude grid */}
-          {[30, 60].map((alt) => (
-            <g key={alt}>
-              <line
-                x1={PAD_X} x2={SVG_W - PAD_X}
-                y1={altToY(alt)} y2={altToY(alt)}
-                stroke="rgba(255,255,255,0.045)" strokeDasharray="2 5"
-              />
-              <text
-                x={PAD_X - 4}
-                y={altToY(alt) + 3}
-                textAnchor="end"
-                fontFamily="var(--font-mono, JetBrains Mono)"
-                fontSize="9"
-                fill="rgba(255,255,255,0.32)"
-              >
-                {alt}°
-              </text>
-            </g>
-          ))}
-          {/* Horizon */}
-          <line
-            x1={PAD_X} x2={SVG_W - PAD_X}
-            y1={altToY(0)} y2={altToY(0)}
-            stroke="rgba(255,255,255,0.18)"
-          />
-          <text
-            x={PAD_X - 4}
-            y={altToY(0) + 3}
-            textAnchor="end"
-            fontFamily="var(--font-mono, JetBrains Mono)"
-            fontSize="9"
-            fill="rgba(255,255,255,0.40)"
-          >
-            0°
-          </text>
-
-          {/* Time gridlines (every 1h, snapped to whole hours within window) */}
-          <HourGrid startMs={startMs} endMs={endMs} tToX={tToX} bottomY={SVG_H - PAD_BOTTOM + 12} />
-
-          {/* Object curves + peak markers */}
-          {objects.map((o) => {
-            const peakX = tToX(new Date(o.peakAt).getTime());
-            const peakY = altToY(o.peakAlt);
-            return (
-              <g key={o.name}>
-                <path d={curvePath(o)} fill="none" stroke={o.color} strokeWidth="1.4" opacity="0.55" />
-                <circle cx={peakX} cy={peakY} r="2.4" fill={o.color} opacity="0.75" />
-              </g>
-            );
-          })}
-
-          {/* Scrub line */}
-          <line
-            x1={scrubX} x2={scrubX}
-            y1={PAD_TOP - 4} y2={SVG_H - PAD_BOTTOM + 4}
-            stroke="rgba(255,179,71,0.85)" strokeWidth="1.4"
-          />
-
-          {/* Body dots at scrub time */}
-          {objects.map((o) => {
-            const alt = altAt(o, scrubMs);
-            if (alt <= 0) return null;
-            const x = scrubX;
-            const y = altToY(alt);
-            return (
-              <g key={`d-${o.name}`}>
-                <circle cx={x} cy={y} r="6" fill={o.color} opacity="0.20" />
-                <circle cx={x} cy={y} r="3.5" fill={o.color} />
-                <text
-                  x={x + 8}
-                  y={y + 3}
-                  fontFamily="var(--font-sans, Inter)"
-                  fontSize="10"
-                  fill="var(--text)"
-                  fontWeight={500}
-                >
-                  {o.name}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-
-        <div
-          className="tl__nowPanel"
-          aria-live="polite"
-        >
-          <div className="tl__nowTime">{fmtTime(scrubMs)}</div>
-          <div className="tl__nowLabel">{t('atThisMoment')}</div>
-          {aboveNow.length === 0 ? (
-            <p className="tl__noneUp">{t('noneUp')}</p>
-          ) : (
-            <ul className="tl__nowList">
-              {aboveNow.slice(0, 4).map(({ obj, alt }) => {
-                const peakMs = new Date(obj.peakAt).getTime();
-                const isPeakNear = Math.abs(peakMs - scrubMs) <= 6 * 60 * 1000;
-                return (
-                  <li key={obj.name} className="tl__nowItem">
-                    <span className="tl__nowDot" style={{ background: obj.color }} />
-                    <span className="tl__nowName">{obj.name}</span>
-                    <span className="tl__nowAlt">{Math.round(alt)}°</span>
-                    {isPeakNear && (
-                      <span className="tl__nowPeak">{t('peak')}</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+      <div className="tl__grid">
+        {/* Axis */}
+        <div className="tl__row tl__row--axis">
+          <span className="tl__label" aria-hidden />
+          <div className="tl__track tl__axis">
+            {ticks.map((t) => (
+              <span key={t.label} className="tl__tick" style={{ left: `${t.f * 100}%` }}>{t.label}</span>
+            ))}
+          </div>
         </div>
+
+        {/* Sky strip: dark window + hourly cloud + now */}
+        <div className="tl__row">
+          <span className="tl__label">Sky</span>
+          <div className="tl__track tl__sky">
+            {duskF != null && dawnF != null && dawnF > duskF && (
+              <div
+                className="tl__darkband"
+                style={{ left: `${duskF * 100}%`, width: `${(dawnF - duskF) * 100}%` }}
+                title={`Dark window ${darkRange}`}
+              />
+            )}
+            {nightHours.map((h) => (
+              <div
+                key={h.hour}
+                className="tl__cloud"
+                style={{
+                  left: `${hourFrac(h.hour) * 100}%`,
+                  width: `${(1 / 12) * 100}%`,
+                  opacity: Math.min(0.85, h.cloudCover / 115),
+                }}
+                title={`${h.cloudCover}% cloud`}
+              />
+            ))}
+            <span className="tl__now" style={{ left: `${nowF * 100}%` }} aria-label="Now" />
+          </div>
+        </div>
+
+        {/* Bodies */}
+        {bodies.map((b) => (
+          <button
+            key={b.id}
+            type="button"
+            className="tl__row tl__row--body"
+            onClick={() => onSelect(b.id)}
+            title={b.title}
+          >
+            <span className="tl__label tl__label--body">{b.name}</span>
+            <span className="tl__track">
+              <span
+                className="tl__bar"
+                style={{ left: `${b.startF * 100}%`, width: `${(b.endF - b.startF) * 100}%`, background: b.color }}
+              />
+            </span>
+          </button>
+        ))}
       </div>
 
       <div className="tl__legend">
-        <span>{t('legend.scrub')}</span>
-        <span className="tl__legendDot tl__legendDot--snap" /> <span>{t('legend.snap')}</span>
+        <span className="tl__leg"><i className="tl__leg-dot tl__leg-dot--dark" /> Dark</span>
+        <span className="tl__leg"><i className="tl__leg-dot tl__leg-dot--cloud" /> Cloud</span>
+        <span className="tl__leg"><i className="tl__leg-dot tl__leg-dot--now" /> Now</span>
       </div>
     </section>
-  );
-}
-
-interface HourGridProps {
-  startMs: number;
-  endMs: number;
-  tToX: (ms: number) => number;
-  bottomY: number;
-}
-function HourGrid({ startMs, endMs, tToX, bottomY }: HourGridProps) {
-  const ticks: { ms: number; label: string }[] = [];
-  const start = new Date(startMs);
-  const firstHour = new Date(start);
-  firstHour.setMinutes(0, 0, 0);
-  if (firstHour.getTime() < startMs) firstHour.setHours(firstHour.getHours() + 1);
-  for (let t = firstHour.getTime(); t <= endMs; t += 60 * 60 * 1000) {
-    ticks.push({
-      ms: t,
-      label: new Date(t).toLocaleTimeString([], { hour: '2-digit', hour12: false }),
-    });
-  }
-  return (
-    <g>
-      {ticks.map((tick) => (
-        <g key={tick.ms}>
-          <line
-            x1={tToX(tick.ms)} x2={tToX(tick.ms)}
-            y1={PAD_TOP} y2={SVG_H - PAD_BOTTOM}
-            stroke="rgba(255,255,255,0.04)"
-          />
-          <text
-            x={tToX(tick.ms)}
-            y={bottomY}
-            textAnchor="middle"
-            fontFamily="var(--font-mono, JetBrains Mono)"
-            fontSize="9"
-            fill="rgba(255,255,255,0.40)"
-          >
-            {tick.label}
-          </text>
-        </g>
-      ))}
-    </g>
   );
 }
