@@ -18,6 +18,23 @@ const formatSol = (sol: number): string => {
 const formatUsd = (usd: number): string =>
   usd >= 10 ? Math.round(usd).toLocaleString() : usd.toFixed(2);
 
+function SolMark({ id, className = '' }: { id: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 397 311" aria-hidden="true" className={className}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#9945FF" />
+          <stop offset="50%" stopColor="#19FB9B" />
+          <stop offset="100%" stopColor="#14F195" />
+        </linearGradient>
+      </defs>
+      <path fill={`url(#${id})`} d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
+      <path fill={`url(#${id})`} d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
+      <path fill={`url(#${id})`} d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
+    </svg>
+  );
+}
+
 interface Props {
   product: Product;
   dealerName: string;
@@ -115,7 +132,11 @@ export default function ProductCard({
               )}
               {usdAmount !== null && solAmount !== null && ' · '}
               {solAmount !== null && (
-                <><span className="text-white">{formatSol(solAmount)}</span> SOL</>
+                <span className="inline-flex items-center gap-[3px] align-middle">
+                  <span className="text-white">{formatSol(solAmount)}</span>
+                  <SolMark id={`sol-price-${product.id}`} className="h-[8px] w-[8px] flex-shrink-0" />
+                  <span>SOL</span>
+                </span>
               )}
             </span>
           )}
