@@ -7,7 +7,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin, Cloud } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin, Cloud, Wind } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
@@ -89,6 +89,16 @@ function bortleLabel(b: number): string {
   if (b === 6) return 'Bright suburb';
   if (b === 7) return 'Suburban/City';
   return 'City sky';
+}
+
+/** Plain-language light-pollution rating derived from the Bortle estimate.
+ *  Telescope buyers don't know what "Bortle 8" means — they know "Severe". */
+function lightPollutionLevel(b: number): { word: string; tone: 'good' | 'mid' | 'bad' } {
+  if (b <= 2) return { word: 'Pristine', tone: 'good' };
+  if (b <= 4) return { word: 'Low', tone: 'good' };
+  if (b === 5) return { word: 'Moderate', tone: 'mid' };
+  if (b <= 7) return { word: 'High', tone: 'bad' };
+  return { word: 'Severe', tone: 'bad' };
 }
 
 const MOON_NAMES: Record<string, string> = {
@@ -577,7 +587,7 @@ export default function SkyPage() {
               <ConditionCard label="Seeing">
                 <div className="sky-obs__metric">
                   <RingGauge pct={seeingArc != null ? 1 - (seeingArc - 1) / 4 : 0} color="var(--seafoam, #5EEAD4)">
-                    <span className="sky-obs__gauge-num">{seeingArc != null ? seeingArc.toFixed(1) : '—'}</span>
+                    <Wind size={17} aria-hidden="true" />
                   </RingGauge>
                   <div className="sky-obs__metric-body">
                     <span className="sky-obs__metric-value sky-obs__metric-value--sm">{seeingArc != null ? `${seeingArc.toFixed(1)}″` : '—'}</span>
@@ -586,19 +596,16 @@ export default function SkyPage() {
                 </div>
               </ConditionCard>
 
-              <ConditionCard label="Bortle scale">
-                <div className="sky-obs__bortle">
-                  <div className="sky-obs__bortle-scale" aria-hidden="true">
-                    {Array.from({ length: 9 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={`sky-obs__bortle-seg${i + 1 === bortle ? ' is-active' : ''}`}
-                        style={{ background: `hsl(${36 - i * 4} ${70 - i * 5}% ${30 + i * 6}%)` }}
-                      />
-                    ))}
-                  </div>
-                  <div className="sky-obs__bortle-body">
-                    <span className="sky-obs__metric-value">{bortle}</span>
+              <ConditionCard label="Light pollution">
+                <div className="sky-obs__metric">
+                  <LightPollutionSwatch bortle={bortle} />
+                  <div className="sky-obs__metric-body">
+                    <span
+                      className="sky-obs__metric-value sky-obs__metric-value--sm"
+                      data-tone={lightPollutionLevel(bortle).tone}
+                    >
+                      {lightPollutionLevel(bortle).word}
+                    </span>
                     <span className="sky-obs__metric-sub">{bortleLabel(bortle)}</span>
                   </div>
                 </div>
@@ -719,21 +726,56 @@ function ConditionCard({ label, children }: { label: string; children: React.Rea
 
 /* ── Circular progress ring with centred content ── */
 function RingGauge({ pct, color, children }: { pct: number; color: string; children: React.ReactNode }) {
-  const r = 26;
+  const r = 22;
   const c = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(1, pct));
   return (
     <span className="sky-obs__ring">
-      <svg width={64} height={64} viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx={32} cy={32} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={4} />
+      <svg width={52} height={52} viewBox="0 0 52 52" aria-hidden="true">
+        <circle cx={26} cy={26} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={3.5} />
         <circle
-          cx={32} cy={32} r={r} fill="none"
-          stroke={color} strokeWidth={4} strokeLinecap="round"
+          cx={26} cy={26} r={r} fill="none"
+          stroke={color} strokeWidth={3.5} strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={c * (1 - clamped)}
-          transform="rotate(-90 32 32)"
+          transform="rotate(-90 26 26)"
         />
       </svg>
       <span className="sky-obs__ring-center" style={{ color }}>{children}</span>
+    </span>
+  );
+}
+
+/* ── Light-pollution swatch — a literal patch of sky. As pollution rises,
+   skyglow creeps up from the horizon and fewer stars survive, so the
+   metric is understood at a glance without knowing the Bortle scale. ── */
+const LP_STARS: Array<[number, number, number]> = [
+  [12, 13, 0.9], [33, 10, 0.7], [22, 20, 0.6], [38, 22, 0.8],
+  [9, 26, 0.7], [28, 30, 0.6], [17, 33, 0.7], [40, 33, 0.5],
+  [24, 14, 0.5], [14, 19, 0.5], [34, 28, 0.6], [20, 26, 0.5],
+];
+function LightPollutionSwatch({ bortle }: { bortle: number }) {
+  const t = Math.max(0, Math.min(1, (bortle - 1) / 8)); // 0 = dark, 1 = bright
+  const visibleStars = Math.max(2, Math.round(LP_STARS.length * (1 - t * 0.8)));
+  return (
+    <span className="sky-obs__lp-swatch" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="48" height="48">
+        <defs>
+          <radialGradient id="lpSkyglow" cx="50%" cy="100%" r="95%">
+            <stop offset="0%" stopColor="#FFC074" stopOpacity={0.12 + t * 0.6} />
+            <stop offset="55%" stopColor="#FFB347" stopOpacity={t * 0.18} />
+            <stop offset="100%" stopColor="#FFB347" stopOpacity="0" />
+          </radialGradient>
+          <clipPath id="lpClip"><circle cx="24" cy="24" r="22" /></clipPath>
+        </defs>
+        <g clipPath="url(#lpClip)">
+          <rect x="0" y="0" width="48" height="48" fill="#0a1430" />
+          {LP_STARS.slice(0, visibleStars).map(([x, y, o], i) => (
+            <circle key={i} cx={x} cy={y} r={i % 4 === 0 ? 1 : 0.7} fill="#E8F0FF" opacity={o * (1 - t * 0.55)} />
+          ))}
+          <rect x="0" y="0" width="48" height="48" fill="url(#lpSkyglow)" />
+        </g>
+        <circle cx="24" cy="24" r="22" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+      </svg>
     </span>
   );
 }
