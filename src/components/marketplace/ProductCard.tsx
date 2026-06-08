@@ -108,6 +108,22 @@ export default function ProductCard({
               loading="lazy"
             />
           )}
+          {product.starsPrice > 0 && (
+            <span
+              className="absolute top-[6px] right-[6px] inline-flex items-center gap-[4px] rounded-full pl-[6px] pr-[8px] py-[3px] backdrop-blur-sm"
+              style={{
+                background: 'rgba(15,18,28,0.82)',
+                border: '1px solid rgba(255,255,255,0.12)',
+              }}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" className="flex-shrink-0">
+                <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
+              </svg>
+              <span className="text-[10.5px] font-bold tabular-nums tracking-[0.02em] text-white leading-none">
+                {product.starsPrice.toLocaleString()}
+              </span>
+            </span>
+          )}
         </div>
         <p className={`font-medium text-white leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[16px]' : 'text-[15px]'}`}>
           {product.name}
@@ -117,36 +133,29 @@ export default function ProductCard({
         </p>
       </a>
       <div
-        className="flex justify-between items-end pt-[10px] mb-[12px] gap-[8px]"
+        className="flex flex-col gap-[4px] pt-[10px] mb-[12px]"
         style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
       >
-        <div className="flex flex-col gap-[2px] min-w-0">
-          <span className="text-[16px] sm:text-[18px] font-semibold text-white leading-none whitespace-nowrap">
-            {formatPrice(product)}
-          </span>
-          {(usdAmount !== null || solAmount !== null) && (
-            <span className="text-[10px] tracking-[0.10em] uppercase text-white/70 leading-none mt-[4px] whitespace-nowrap">
-              ≈{' '}
-              {usdAmount !== null && (
-                <span className="text-white">${formatUsd(usdAmount)}</span>
-              )}
-              {usdAmount !== null && solAmount !== null && ' · '}
-              {solAmount !== null && (
-                <span className="inline-flex items-center gap-[3px] align-middle">
-                  <span className="text-white">{formatSol(solAmount)}</span>
-                  <SolMark id={`sol-price-${product.id}`} className="h-[8px] w-[8px] flex-shrink-0" />
-                  <span>SOL</span>
-                </span>
-              )}
-            </span>
-          )}
-        </div>
-        <span className="inline-flex items-center gap-[5px] text-[11px] sm:text-[12px] tracking-[0.10em] uppercase font-bold whitespace-nowrap text-white">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
-          </svg>
-          {product.starsPrice.toLocaleString()}
+        <span className="text-[16px] sm:text-[18px] font-semibold text-white leading-none whitespace-nowrap">
+          {formatPrice(product)}
         </span>
+        {(usdAmount !== null || solAmount !== null) && (
+          <span className="flex flex-wrap items-center gap-x-[6px] gap-y-[2px] text-[10px] tracking-[0.10em] uppercase text-white/70 leading-none">
+            {usdAmount !== null && (
+              <span><span className="text-white/55">≈ </span><span className="text-white">${formatUsd(usdAmount)}</span></span>
+            )}
+            {usdAmount !== null && solAmount !== null && (
+              <span className="text-white/30">·</span>
+            )}
+            {solAmount !== null && (
+              <span className="inline-flex items-center gap-[3px]">
+                <span className="text-white">{formatSol(solAmount)}</span>
+                <SolMark id={`sol-price-${product.id}`} className="h-[9px] w-[9px] flex-shrink-0" />
+                <span>SOL</span>
+              </span>
+            )}
+          </span>
+        )}
       </div>
 
       {showProgress && (
