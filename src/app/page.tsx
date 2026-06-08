@@ -969,9 +969,8 @@ export default async function HomePage() {
             {achievements.map((a) => (
               <div
                 key={a.key}
-                className="group relative flex items-start gap-3.5 rounded-[14px] bg-white/[0.025] border border-white/[0.07] px-4 py-3.5 transition-colors"
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${a.color}55`; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}
+                className="group relative flex items-start gap-3.5 rounded-[14px] bg-white/[0.025] border border-white/[0.07] px-4 py-3.5 transition-colors hover:bg-white/[0.04] hover:[border-color:var(--accent)]"
+                style={{ ['--accent' as string]: `${a.color}55` }}
               >
                 <span
                   className="flex items-center justify-center w-[40px] h-[40px] rounded-[11px] shrink-0"
