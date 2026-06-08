@@ -4085,10 +4085,10 @@
   text-align: left;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 26px 46px 1fr auto;
-  gap: 12px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 11px;
   align-items: center;
-  padding: 10px 8px;
+  padding: 9px 10px;
   border: 1px solid transparent;
   border-radius: 14px;
   background: transparent;
@@ -4097,17 +4097,10 @@
 }
 .sky-obs__target:hover { background: rgba(255, 255, 255, 0.04); border-color: var(--border); }
 .sky-obs__target.is-active { background: rgba(255, 179, 71, 0.08); border-color: rgba(255, 179, 71, 0.4); }
-.sky-obs__target-num {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--terracotta);
-  text-align: center;
-  font-feature-settings: 'tnum' 1;
-}
 .sky-obs__target-thumb {
-  width: 46px;
-  height: 46px;
+  position: relative;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.4);
@@ -4117,8 +4110,34 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 .sky-obs__target-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sky-obs__target-num {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 1;
+  min-width: 16px;
+  padding: 0 3px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 15px;
+  text-align: center;
+  color: var(--terracotta);
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  font-feature-settings: 'tnum' 1;
+  backdrop-filter: blur(2px);
+}
 .sky-obs__target-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sky-obs__target-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
 .sky-obs__target-name {
+  flex: 1;
+  min-width: 0;
   font-family: var(--sans);
   font-size: 15px;
   font-weight: 600;
@@ -4128,6 +4147,13 @@
   text-overflow: ellipsis;
 }
 .sky-obs__target.is-active .sky-obs__target-name { color: var(--terracotta); }
+.sky-obs__target-alt-val {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text);
+  font-feature-settings: 'tnum' 1;
+}
 .sky-obs__target-meta {
   font-family: var(--mono);
   font-size: 10.5px;
@@ -4138,17 +4164,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sky-obs__target-sep { margin: 0 6px; opacity: 0.4; }
-.sky-obs__target-alt {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  font-family: var(--mono);
-  font-feature-settings: 'tnum' 1;
-}
-.sky-obs__target-alt-val { font-size: 15px; color: var(--text); }
-.sky-obs__target-alt-dir { font-size: 9.5px; letter-spacing: 0.14em; color: var(--text-dim); text-transform: uppercase; }
+.sky-obs__target-sep { margin: 0 5px; opacity: 0.4; }
 
 /* === Bottom condition cards === */
 .sky-obs__cards {
@@ -4216,10 +4232,34 @@
 @media (max-width: 920px) {
   .sky-obs__main { grid-template-columns: 1fr; }
   .sky-obs__dome .sky-map { max-width: min(100%, 460px); }
+  /* Targets go full-width below the dome — lay them out as a compact
+     2-up grid so more of the night's list is visible without scrolling. */
+  .sky-obs__targets { padding: 14px 14px 12px; }
+  .sky-obs__target-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .sky-obs__target-list > li { flex: none; }
+  /* A lone trailing card (odd count) spans both columns so the grid never
+     leaves a dead gap. */
+  .sky-obs__target-list > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .sky-obs__target {
+    gap: 9px;
+    padding: 8px 9px;
+    background: rgba(255, 255, 255, 0.025);
+    border-color: var(--border);
+  }
 }
 @media (max-width: 680px) {
   .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }
   .sky-obs__cards { grid-template-columns: repeat(2, 1fr); }
+  .sky-obs__target-list { gap: 7px; }
+  .sky-obs__target { grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 7px 8px; }
+  .sky-obs__target-thumb { width: 40px; height: 40px; }
+  .sky-obs__target-name { font-size: 13.5px; }
+  .sky-obs__target-meta { font-size: 9.5px; }
+  .sky-obs__target-alt-val { font-size: 14px; }
   /* Keep the title + location on a single compact row to free vertical
      space for the dome and targets. */
   .sky-obs__top { align-items: center; gap: 10px; }

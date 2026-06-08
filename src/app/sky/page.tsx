@@ -685,12 +685,12 @@ function BestTargetRow({
   const setLabel = fmtClock(obj.setTime);
   const riseLabel = fmtClock(obj.riseTime);
   const timing = obj.circumpolar
-    ? 'Up all night'
+    ? 'All night'
     : setLabel
-      ? `Sets ${setLabel}`
+      ? `↓ ${setLabel}`
       : riseLabel
-        ? `Rises ${riseLabel}`
-        : 'Up all night';
+        ? `↑ ${riseLabel}`
+        : 'All night';
 
   return (
     <li>
@@ -700,8 +700,8 @@ function BestTargetRow({
         onClick={() => onSelect(obj.id)}
         aria-pressed={active}
       >
-        <span className="sky-obs__target-num">{String(index).padStart(2, '0')}</span>
         <span className="sky-obs__target-thumb">
+          <span className="sky-obs__target-num">{String(index).padStart(2, '0')}</span>
           {photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
@@ -710,16 +710,17 @@ function BestTargetRow({
           )}
         </span>
         <span className="sky-obs__target-body">
-          <span className="sky-obs__target-name">{obj.name}</span>
-          <span className="sky-obs__target-meta">
-            {obj.constellation || obj.type}
-            <span className="sky-obs__target-sep" aria-hidden>·</span>
-            {timing}
+          <span className="sky-obs__target-top">
+            <span className="sky-obs__target-name">{obj.name}</span>
+            <span className="sky-obs__target-alt-val">{Math.round(obj.altitude)}°</span>
           </span>
-        </span>
-        <span className="sky-obs__target-alt">
-          <span className="sky-obs__target-alt-val">{Math.round(obj.altitude)}°</span>
-          <span className="sky-obs__target-alt-dir">{obj.compassDirection}</span>
+          <span className="sky-obs__target-meta">
+            {timing}
+            <span className="sky-obs__target-sep" aria-hidden>·</span>
+            {obj.compassDirection}
+            <span className="sky-obs__target-sep" aria-hidden>·</span>
+            {obj.constellation || obj.type}
+          </span>
         </span>
       </button>
     </li>
