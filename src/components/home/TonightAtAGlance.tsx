@@ -140,13 +140,22 @@ export default function TonightAtAGlance() {
 
   if (sky.loading) {
     return (
-      <div className="animate-pulse">
-        <div className="aspect-square w-full max-w-[360px] mx-auto rounded-full bg-white/[0.04]" />
-        <div className="mt-8 h-3 w-72 max-w-full mx-auto bg-white/[0.05] rounded" />
-        <div className="mt-10 grid grid-cols-3 gap-3 max-w-[480px] mx-auto">
-          <div className="h-16 bg-white/[0.04] rounded" />
-          <div className="h-16 bg-white/[0.04] rounded" />
-          <div className="h-16 bg-white/[0.04] rounded" />
+      <div className="animate-pulse max-w-[1000px] mx-auto">
+        <div className="grid items-center gap-7 md:gap-14 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+          <div className="flex flex-col items-center">
+            <div className="aspect-square w-full max-w-[230px] md:max-w-[360px] mx-auto rounded-full bg-white/[0.04]" />
+            <div className="mt-5 h-3 w-60 max-w-full bg-white/[0.05] rounded" />
+            <div className="mt-5 grid grid-cols-3 gap-2 w-full max-w-[340px]">
+              <div className="h-14 bg-white/[0.04] rounded" />
+              <div className="h-14 bg-white/[0.04] rounded" />
+              <div className="h-14 bg-white/[0.04] rounded" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="h-7 bg-white/[0.03] rounded" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -162,114 +171,125 @@ export default function TonightAtAGlance() {
   const top = pickTop3(sky.planets);
 
   return (
-    <div>
-      {/* ── Tonight Sky Dome — visual centerpiece ────────────────── */}
-      <SkyDome
-        planets={sky.planets}
-        verdict={v}
-        verdictColor={color}
-        score={score}
-        locale={locale}
-      />
+    <div className="max-w-[1000px] mx-auto">
+      {/* Two columns on desktop so the whole section fits one screen with no
+          scroll; a tight single column on mobile. Left = sky dome + verdict +
+          stats. Right = top planets + 7-night forecast + CTA. */}
+      <div className="grid items-center gap-7 md:gap-14 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
 
-      {headline && (
-        <p className="mt-6 md:mt-7 text-center text-[14px] md:text-[15.5px] text-white/65 leading-snug max-w-[440px] mx-auto">
-          {headline}
-        </p>
-      )}
+        {/* ── Left: dome + headline + 3 stats ───────────────────────── */}
+        <div className="flex flex-col items-center">
+          <SkyDome
+            planets={sky.planets}
+            verdict={v}
+            verdictColor={color}
+            score={score}
+            locale={locale}
+          />
 
-      {/* ── 3 stats with mini visuals ─────────────────────────────── */}
-      <div className="mt-10 md:mt-14 grid grid-cols-3 gap-3 md:gap-10 max-w-[560px] mx-auto">
-        <Stat
-          label={copy.stats.cloud}
-          value={cloud != null ? `${cloud}%` : '—'}
-          visual={<CloudVisual pct={cloud} />}
-        />
-        <Stat
-          label={copy.stats.bortle}
-          value={bortle != null ? String(bortle) : '—'}
-          visual={<BortleVisual value={bortle} />}
-        />
-        <Stat
-          label={copy.stats.planetsUp}
-          value={String(visibleCount)}
-          visual={<PlanetsVisual planets={visiblePlanets.slice(0, 5)} />}
-        />
-      </div>
+          {headline && (
+            <p className="mt-4 md:mt-5 text-center text-[12.5px] md:text-[14px] text-white/65 leading-snug max-w-[340px]">
+              {headline}
+            </p>
+          )}
 
-      {/* ── Top 3 planets — realistic thumbnails ──────────────────── */}
-      {top.length > 0 && (
-        <ul className="mt-10 md:mt-14 max-w-[520px] mx-auto divide-y divide-white/[0.06] border-y border-white/[0.06]">
-          {top.map((p) => {
-            const time = fmtTime(p.transitTime ?? p.riseTime);
-            const img = PLANET_IMG[p.name];
-            const dot = PLANET_DOT[p.name] ?? 'rgba(255,255,255,0.35)';
-            return (
-              <li
-                key={p.name}
-                className="py-3 md:py-3.5 grid grid-cols-[32px_minmax(0,1fr)_auto_auto] items-center gap-x-3 md:gap-x-5"
-              >
-                <div
-                  className="relative w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden"
-                  style={{
-                    background: dot,
-                    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-                  }}
-                >
-                  {img && (
-                    <Image
-                      src={img}
-                      alt=""
-                      fill
-                      sizes="32px"
-                      className="object-cover"
-                    />
-                  )}
-                </div>
-                <span className="text-left text-[14px] md:text-[15px] text-white/85">
-                  {copy.planetNames[p.name] ?? p.name}
-                </span>
-                <span className="font-mono tabular-nums text-[12px] md:text-[12.5px] text-white/45">
-                  {time}
-                </span>
-                <span className="font-mono tabular-nums text-[12.5px] md:text-[13px] text-white/75 w-[40px] md:w-[48px] text-right">
-                  {Math.round(p.altitude)}°
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {/* ── 7-night forecast — live weather, one row per night ───── */}
-      {sky.forecast.length > 0 && (
-        <div className="mt-10 md:mt-14 max-w-[520px] mx-auto">
-          <div className="flex items-baseline justify-between mb-2.5">
-            <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/40">
-              {copy.outlook}
-            </span>
-            {sky.location?.city && (
-              <span className="font-mono text-[10px] md:text-[10.5px] tracking-[0.12em] text-white/30 truncate max-w-[180px]">
-                {sky.location.city}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col divide-y divide-white/[0.05]">
-            {sky.forecast.slice(0, 7).map((d, i) => (
-              <ForecastRow key={d.date} day={d} highlight={i === 0} locale={locale} />
-            ))}
+          <div className="mt-5 md:mt-6 grid grid-cols-3 gap-2 md:gap-5 w-full max-w-[340px]">
+            <Stat
+              label={copy.stats.cloud}
+              value={cloud != null ? `${cloud}%` : '—'}
+              visual={<CloudVisual pct={cloud} />}
+            />
+            <Stat
+              label={copy.stats.bortle}
+              value={bortle != null ? String(bortle) : '—'}
+              visual={<BortleVisual value={bortle} />}
+            />
+            <Stat
+              label={copy.stats.planetsUp}
+              value={String(visibleCount)}
+              visual={<PlanetsVisual planets={visiblePlanets.slice(0, 5)} />}
+            />
           </div>
         </div>
-      )}
 
-      <div className="mt-10 md:mt-12 text-center">
-        <Link
-          href="/sky"
-          className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
-        >
-          {copy.openForecast}
-        </Link>
+        {/* ── Right: top planets + 7-night forecast + CTA ───────────── */}
+        <div className="flex flex-col">
+
+          {/* Top 3 planets — realistic thumbnails */}
+          {top.length > 0 && (
+            <ul className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+              {top.map((p) => {
+                const time = fmtTime(p.transitTime ?? p.riseTime);
+                const img = PLANET_IMG[p.name];
+                const dot = PLANET_DOT[p.name] ?? 'rgba(255,255,255,0.35)';
+                return (
+                  <li
+                    key={p.name}
+                    className="py-2 md:py-2.5 grid grid-cols-[28px_minmax(0,1fr)_auto_auto] items-center gap-x-3 md:gap-x-5"
+                  >
+                    <div
+                      className="relative w-7 h-7 rounded-full overflow-hidden"
+                      style={{
+                        background: dot,
+                        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
+                      }}
+                    >
+                      {img && (
+                        <Image
+                          src={img}
+                          alt=""
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                    <span className="text-left text-[13.5px] md:text-[15px] text-white/85">
+                      {copy.planetNames[p.name] ?? p.name}
+                    </span>
+                    <span className="font-mono tabular-nums text-[12px] md:text-[12.5px] text-white/45">
+                      {time}
+                    </span>
+                    <span className="font-mono tabular-nums text-[12.5px] md:text-[13px] text-white/75 w-[40px] md:w-[48px] text-right">
+                      {Math.round(p.altitude)}°
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {/* 7-night forecast — live weather, one row per night */}
+          {sky.forecast.length > 0 && (
+            <div className="mt-5 md:mt-7">
+              <div className="flex items-baseline justify-between mb-1.5 md:mb-2">
+                <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/40">
+                  {copy.outlook}
+                </span>
+                {sky.location?.city && (
+                  <span className="font-mono text-[10px] md:text-[10.5px] tracking-[0.12em] text-white/30 truncate max-w-[180px]">
+                    {sky.location.city}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col divide-y divide-white/[0.05]">
+                {sky.forecast.slice(0, 7).map((d, i) => (
+                  <ForecastRow key={d.date} day={d} highlight={i === 0} locale={locale} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-5 md:mt-6 text-center md:text-left">
+            <Link
+              href="/sky"
+              className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
+            >
+              {copy.openForecast}
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -330,7 +350,7 @@ function SkyDome({
   const visible = planets.filter((p) => p.visible && p.altitude > 0);
 
   return (
-    <div className="relative w-full max-w-[380px] md:max-w-[420px] mx-auto aspect-square">
+    <div className="relative w-full max-w-[230px] md:max-w-[360px] mx-auto aspect-square">
       <svg viewBox="0 0 100 100" className="w-full h-full">
         <defs>
           <radialGradient id="tonightDomeBg" cx="50%" cy="50%" r="50%">
@@ -481,7 +501,7 @@ function ForecastRow({
   const short = dayShort(day.date, locale);
   const copy = COPY[locale];
   return (
-    <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 py-2.5">
+    <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 py-[7px] md:py-2">
       <span
         className={`font-mono text-[11px] tracking-[0.08em] ${
           highlight ? 'text-white/90' : 'text-white/45'
@@ -599,14 +619,14 @@ function Stat({
   visual: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <span className="font-mono text-[12px] uppercase tracking-[0.2em] text-white/40">
+    <div className="flex flex-col items-center gap-1.5">
+      <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.16em] md:tracking-[0.2em] text-white/40 text-center leading-tight">
         {label}
       </span>
-      <span className="font-mono tabular-nums text-[26px] md:text-[32px] text-white/92 leading-none">
+      <span className="font-mono tabular-nums text-[22px] md:text-[28px] text-white/92 leading-none">
         {value}
       </span>
-      <div className="mt-1.5 h-3 flex items-center justify-center">{visual}</div>
+      <div className="mt-1 h-3 flex items-center justify-center">{visual}</div>
     </div>
   );
 }

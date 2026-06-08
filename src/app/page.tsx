@@ -1270,9 +1270,9 @@ export default async function HomePage() {
       {/* ============================================================
           TONIGHT AT A GLANCE
          ============================================================ */}
-      <section className="px-4 md:px-8 py-12 md:py-[120px]">
-        <div className="max-w-[720px] mx-auto">
-          <div className="text-center mb-8 md:mb-12">
+      <section className="px-4 md:px-8 py-12 md:py-20">
+        <div className="max-w-[1040px] mx-auto">
+          <div className="text-center mb-7 md:mb-10">
             <Eyebrow>{t('tonightAtAGlance.eyebrow')}</Eyebrow>
             <SectionTitle>{t('tonightAtAGlance.title')}</SectionTitle>
           </div>
