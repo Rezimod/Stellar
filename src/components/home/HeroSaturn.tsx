@@ -68,9 +68,9 @@ export default function HeroSaturn() {
           <h1
             className="text-white leading-[1.02] tracking-[-0.01em]"
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               fontSize: 'clamp(34px, 5.4vw, 68px)',
-              fontWeight: 500, /* Orbitron Medium */
+              fontWeight: 600,
             }}
           >
             {t('headline1')}
@@ -112,7 +112,7 @@ function CTA({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-    fontFamily: 'var(--font-display)',
+    fontFamily: 'var(--font-body)',
     fontSize: 16,
     fontWeight: 600,
     letterSpacing: '0.005em',

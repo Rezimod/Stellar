@@ -909,7 +909,7 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
+    <div className="home-font bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
 
       {/* ============================================================
           HERO — Saturn parallax, screenshot redesign

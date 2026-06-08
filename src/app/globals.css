@@ -417,6 +417,13 @@ h1, h2, h3, h4, h5, h6, .display {
   letter-spacing: -0.01em;
 }
 
+/* Homepage override — unify every header to the body font (Geist),
+   intentionally overriding the global Orbitron heading rule above.
+   Scoped to the homepage root (.home-font) only. */
+.home-font :is(h1, h2, h3, h4, h5, h6, .display) {
+  font-family: var(--font-body);
+}
+
 code, pre, .mono, [class*="font-mono"] {
   font-family: var(--font-mono);
 }
