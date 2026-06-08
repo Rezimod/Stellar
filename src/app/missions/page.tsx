@@ -7,7 +7,6 @@ import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { DailyCheckInCard } from '@/components/missions/DailyCheckInCard';
-import { CosmicDailyCard } from '@/components/missions/CosmicDailyCard';
 import { EarningLadder } from '@/components/missions/EarningLadder';
 import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -387,35 +386,51 @@ export default function MissionsPage() {
     <div className="missions-page">
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
-      {/* Cosmic hero — always dark, full-width */}
+      {/* Compact hero — daylight status, prime target, and check-in on one line */}
       <div className="mis-hero">
         <div className="mis-hero-inner">
-          {primeEntry && (
-            <PrimeCard
-              entry={localize(primeEntry)}
-              altitude={skyPositions[primeEntry.id]?.altitude ?? null}
-              onStart={() => startMission(primeEntry.routeId)}
-              labels={{ badge: t('primeBadge'), observe: t('observe') }}
-            />
+          {liveStatus !== 'live' && (
+            <div
+              className={`mis-status-chip mis-status-chip--${liveStatus}`}
+              role="status"
+              aria-label={lineupLabels.aria}
+            >
+              <span className="mis-status-chip-dot" aria-hidden />
+              <span className="mis-status-chip-label">
+                {liveStatus === 'daytime' ? lineupLabels.daytime : lineupLabels.cloudy}
+              </span>
+              <span className="mis-status-chip-sep" aria-hidden>·</span>
+              <span className="mis-status-chip-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
+            </div>
           )}
 
-          <TonightLineup
-            items={lineup}
-            liveStatus={liveStatus}
-            headerTime={headerTime}
-            dateLabel={dateLabel}
-            cityLabel={cityLabel}
-            onStart={(routeId) => startMission(routeId)}
-            labels={lineupLabels}
-          />
+          <div className="mis-strip">
+            {primeEntry && (
+              <PrimeCard
+                entry={localize(primeEntry)}
+                altitude={skyPositions[primeEntry.id]?.altitude ?? null}
+                onStart={() => startMission(primeEntry.routeId)}
+                labels={{ badge: t('primeBadge'), observe: t('observe') }}
+              />
+            )}
+            <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
+          </div>
+
+          {liveStatus === 'live' && (
+            <TonightLineup
+              items={lineup}
+              liveStatus={liveStatus}
+              headerTime={headerTime}
+              dateLabel={dateLabel}
+              cityLabel={cityLabel}
+              onStart={(routeId) => startMission(routeId)}
+              labels={lineupLabels}
+            />
+          )}
         </div>
       </div>
 
       <div className="mis-content">
-        <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
-        <CosmicDailyCard address={address} getAccessToken={getAccessToken} />
-        <EarningLadder />
-
         <section className="mis-section">
           <div className="mis-section-head">
             <h2 className="mis-section-title">{t('sections.tonight')}</h2>
@@ -551,6 +566,13 @@ export default function MissionsPage() {
             }))}
             scopeName={t('scopeName')}
           />
+        </section>
+
+        <section className="mis-section">
+          <div className="mis-section-head">
+            <h2 className="mis-section-title">{t('sections.earn')}</h2>
+          </div>
+          <EarningLadder />
         </section>
       </div>
 

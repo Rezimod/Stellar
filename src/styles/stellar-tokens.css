@@ -4554,7 +4554,7 @@
 .mis-hero-inner {
   max-width: 72rem; /* matches nav max-w-6xl */
   margin: 0 auto;
-  padding: 16px 32px 22px; /* matches nav lg:px-8 */
+  padding: 14px 32px 16px; /* matches nav lg:px-8 */
   position: relative;
   z-index: 1;
 }
@@ -4629,6 +4629,26 @@
 }
 
 /* === Prime target card === */
+/* Hero command strip — prime target + daily check-in share one line. */
+.mis-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+.mis-strip > .mis-prime {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.mis-strip > .mis-checkin {
+  flex: 0 1 360px;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .mis-strip { flex-direction: column; gap: 8px; }
+  .mis-strip > .mis-checkin { flex: 1 1 auto; }
+}
+
 .mis-prime {
   display: flex;
   align-items: center;
@@ -4908,8 +4928,8 @@
 .missions-page .mis-hero-inner > .mis-status-chip {
   display: flex;
   width: max-content;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 100%;
+  margin: 0 0 10px;
 }
 @media (max-width: 540px) {
   .mis-status-chip {

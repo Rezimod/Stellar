@@ -116,7 +116,7 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
 
   return (
     <div
-      className="flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 sm:px-5 py-4 mb-5"
+      className="mis-checkin flex items-center gap-3.5 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5"
     >
       {/* Streak flame */}
       <div className="flex flex-col items-center justify-center shrink-0 w-[58px]">

@@ -915,7 +915,8 @@
       "quizzes": "Knowledge quizzes",
       "quizzesMeta": "{count} quizzes · earn while you wait",
       "scope": "Using your telescope",
-      "scopeMeta": "4 quick rules"
+      "scopeMeta": "4 quick rules",
+      "earn": "Ways to earn"
     },
     "primeBadge": "Prime target tonight",
     "observe": "Observe",
