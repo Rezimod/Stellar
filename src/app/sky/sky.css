@@ -15,7 +15,9 @@
   --teal-soft: rgba(56, 240, 255, 0.12);
   --rose: #F87171;
   --green: #34D399;
-  --serif: var(--font-display, 'Orbitron'), serif;
+  /* Sky page uses the homepage voice — Geist for display + body, mono for data. */
+  --font-display: var(--font-geist, 'Geist'), system-ui, sans-serif;
+  --serif: var(--font-geist, 'Geist'), system-ui, sans-serif;
   --sans: var(--font-body, 'Geist'), system-ui, sans-serif;
   --mono: var(--font-mono, 'JetBrains Mono'), monospace;
   color: var(--text);
@@ -4001,4 +4003,280 @@
   text-transform: uppercase;
 }
 .skyloc__check { margin-left: auto; color: var(--terracotta); flex-shrink: 0; }
+
+/* ================================================================
+   === SKY OBSERVATORY — reference dashboard (dome · best        ===
+   === targets · condition cards). Compact, single-screen.       ===
+   === Reuses the real SkyMap / map-tools / AR. Only shell new.  ===
+   ================================================================ */
+
+.sky-obs .sky-obs__wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 22px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* === Top bar === */
+.sky-obs__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.sky-obs__title-block { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.sky-obs__title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.sky-obs__date {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.sky-obs__loc {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+  white-space: nowrap;
+}
+.sky-obs__loc:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.05);
+}
+.sky-obs__loc svg { color: var(--terracotta); flex-shrink: 0; }
+.sky-obs__loc-city { color: var(--text); }
+.sky-obs__loc-coord { color: var(--text-dim); }
+
+/* === Main: dome + best targets === */
+.sky-obs__main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+.sky-obs__dome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 14px;
+  min-width: 0;
+}
+.sky-obs__dome .sky-v3__map-stage {
+  width: 100%;
+  max-width: none;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sky-obs__dome .sky-map { max-width: min(100%, 560px); width: 100%; }
+
+/* === Best targets panel === */
+.sky-obs__targets {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px 16px 10px;
+  min-width: 0;
+}
+.sky-obs__panel-head {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.sky-obs__target-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+}
+.sky-obs__target-list > li { display: flex; }
+.sky-obs__target-list > li { flex: 1; }
+.sky-obs__target-empty {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 20px 4px;
+}
+.sky-obs__target {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 26px 46px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+  transition: background 130ms ease, border-color 130ms ease;
+}
+.sky-obs__target:hover { background: rgba(255, 255, 255, 0.04); border-color: var(--border); }
+.sky-obs__target.is-active { background: rgba(255, 179, 71, 0.08); border-color: rgba(255, 179, 71, 0.4); }
+.sky-obs__target-num {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--terracotta);
+  text-align: center;
+  font-feature-settings: 'tnum' 1;
+}
+.sky-obs__target-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.sky-obs__target-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sky-obs__target-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sky-obs__target-name {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sky-obs__target.is-active .sky-obs__target-name { color: var(--terracotta); }
+.sky-obs__target-meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sky-obs__target-sep { margin: 0 6px; opacity: 0.4; }
+.sky-obs__target-alt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: var(--mono);
+  font-feature-settings: 'tnum' 1;
+}
+.sky-obs__target-alt-val { font-size: 15px; color: var(--text); }
+.sky-obs__target-alt-dir { font-size: 9.5px; letter-spacing: 0.14em; color: var(--text-dim); text-transform: uppercase; }
+
+/* === Bottom condition cards === */
+.sky-obs__cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.sky-obs__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.sky-obs__card-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.sky-obs__card-body { display: flex; align-items: center; }
+.sky-obs__window,
+.sky-obs__metric { display: flex; align-items: center; gap: 14px; width: 100%; min-width: 0; }
+
+.sky-obs__ring { position: relative; width: 64px; height: 64px; flex-shrink: 0; display: inline-flex; }
+.sky-obs__ring svg { display: block; }
+.sky-obs__ring-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.sky-obs__gauge-num { font-family: var(--mono); font-size: 14px; font-weight: 600; font-feature-settings: 'tnum' 1; }
+
+.sky-obs__window-body,
+.sky-obs__metric-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sky-obs__window-times {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  font-feature-settings: 'tnum' 1;
+  white-space: nowrap;
+}
+.sky-obs__window-dash { color: var(--text-dim); }
+.sky-obs__window-dur { font-family: var(--mono); font-size: 11px; color: var(--seafoam, #5EEAD4); letter-spacing: 0.06em; }
+
+.sky-obs__metric-value { font-family: var(--sans); font-size: 26px; font-weight: 600; line-height: 1; color: var(--text); }
+.sky-obs__metric-value--sm { font-size: 22px; }
+.sky-obs__metric-unit { font-family: var(--mono); font-size: 13px; color: var(--text-muted); margin-left: 2px; font-weight: 500; }
+.sky-obs__metric-sub { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; }
+.sky-obs__moon { width: 48px; height: 48px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+
+.sky-obs__bortle { display: flex; flex-direction: column; align-items: stretch; gap: 10px; width: 100%; }
+.sky-obs__bortle-scale { display: grid; grid-template-columns: repeat(9, 1fr); gap: 3px; width: 100%; }
+.sky-obs__bortle-seg { height: 10px; border-radius: 2px; opacity: 0.45; transition: opacity 140ms ease; }
+.sky-obs__bortle-seg.is-active { opacity: 1; box-shadow: 0 0 0 1.5px var(--text), 0 0 8px rgba(255, 179, 71, 0.5); }
+.sky-obs__bortle-body { display: flex; flex-direction: row; align-items: baseline; gap: 8px; }
+
+/* === Responsive === */
+@media (max-width: 1080px) {
+  .sky-obs__cards { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 920px) {
+  .sky-obs__main { grid-template-columns: 1fr; }
+  .sky-obs__dome .sky-map { max-width: min(100%, 460px); }
+}
+@media (max-width: 680px) {
+  .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 14px; }
+  .sky-obs__cards { grid-template-columns: repeat(2, 1fr); }
+  .sky-obs__top { flex-direction: column; gap: 10px; }
+  .sky-obs__title { letter-spacing: 0.2em; }
+}
 

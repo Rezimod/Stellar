@@ -3,16 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MapPin, Navigation, Search, Check, X } from 'lucide-react';
-import { useLocation, type Region, type UserLocation } from '@/lib/location';
+import { useLocation, type UserLocation } from '@/lib/location';
 import { CITY_PRESETS } from '@/components/LocationPicker';
-
-const REGION_TABS: { key: Region | 'all'; label: string; emoji: string }[] = [
-  { key: 'all', label: 'All', emoji: '✦' },
-  { key: 'caucasus', label: 'Caucasus', emoji: '🛰' },
-  { key: 'north_america', label: 'Americas', emoji: '🌎' },
-  { key: 'europe', label: 'Europe', emoji: '🌍' },
-  { key: 'asia', label: 'Asia', emoji: '🌏' },
-];
 
 interface Props {
   open: boolean;
@@ -27,13 +19,11 @@ interface Props {
 export default function SkyLocationModal({ open, onClose }: Props) {
   const { location, setLocation, requestLocation, loading: gpsRefreshing } = useLocation();
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<Region | 'all'>('all');
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) {
       setSearch('');
-      setTab('all');
       return;
     }
     document.body.style.overflow = 'hidden';
@@ -51,7 +41,6 @@ export default function SkyLocationModal({ open, onClose }: Props) {
   const groups = useMemo(
     () =>
       CITY_PRESETS
-        .filter((g) => tab === 'all' || g.region === tab)
         .map((g) => ({
           ...g,
           cities: q
@@ -63,7 +52,7 @@ export default function SkyLocationModal({ open, onClose }: Props) {
             : g.cities,
         }))
         .filter((g) => g.cities.length > 0),
-    [tab, q],
+    [q],
   );
 
   const isActive = (p: UserLocation) =>
@@ -115,19 +104,6 @@ export default function SkyLocationModal({ open, onClose }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
-
-        <div className="skyloc__tabs">
-          {REGION_TABS.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              className={`skyloc__tab${tab === t.key ? ' is-active' : ''}`}
-              onClick={() => setTab(t.key)}
-            >
-              <span aria-hidden="true">{t.emoji}</span> {t.label}
-            </button>
-          ))}
         </div>
 
         <div className="skyloc__list">

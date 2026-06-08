@@ -409,20 +409,24 @@ body::after {
   pointer-events: none;
 }
 
-/* Headings — Orbitron Medium across the app. Hero titles (h1) and all
-   subsequent heading levels use the same display font. */
+/* Headings — Geist Medium across the whole app (matches the homepage).
+   Per Nika's request the site no longer uses Orbitron for headings; every
+   header level uses the body font for one consistent voice. */
 h1, h2, h3, h4, h5, h6, .display {
-  font-family: var(--font-display);
-  font-weight: 500; /* Orbitron Medium */
+  font-family: var(--font-body);
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
-/* Homepage override — unify every header to the body font (Geist),
-   intentionally overriding the global Orbitron heading rule above.
-   Scoped to the homepage root (.home-font) only. */
+/* `.home-font` is now a no-op alias (headings are already Geist globally),
+   kept so existing markup that sets it keeps working. */
 .home-font :is(h1, h2, h3, h4, h5, h6, .display) {
   font-family: var(--font-body);
 }
+
+/* `.font-display` / `.font-serif` utilities and the display token now also
+   resolve to the body font so direct callers match the homepage too. */
+.font-display, .font-serif { font-family: var(--font-body) !important; }
 
 code, pre, .mono, [class*="font-mono"] {
   font-family: var(--font-mono);
