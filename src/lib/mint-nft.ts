@@ -7,6 +7,7 @@ import {
 import { base58 } from '@metaplex-foundation/umi/serializers';
 import { mintV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
 import { mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
+import { uploadJsonToIrys } from './irys';
 
 export interface ObservationMintParams {
   userAddress: string | null;
@@ -55,14 +56,36 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   const recipient = params.userAddress ? toPublicKey(params.userAddress) : keypair.publicKey;
 
   const name = `Stellar: ${params.target}`;
-  // Metaplex URI limit is 200 bytes — use short keys, short path, truncated hash.
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
   const shortHash = (params.oracleHash ?? '').slice(0, 10);
   const tierSuffix = params.tier ? `&i=${params.tier}` : '';
-  const uri = `${appUrl}/m/o?t=${encodeURIComponent(params.target)}&d=${params.timestampMs}&la=${params.lat.toFixed(4)}&lo=${params.lon.toFixed(4)}&cc=${params.cloudCover}&h=${shortHash}&s=${params.stars}&r=${encodeURIComponent(params.rarity ?? 'Common')}&m=${params.multiplier ?? 1}${tierSuffix}`;
-  if (uri.length > 200) {
-    console.error('[mint-nft] URI exceeds 200 bytes:', uri.length, uri);
-    throw new Error('Metadata URI too long');
+
+  // Metadata lives on Irys (permanent, decentralized). Fallback to the compact
+  // app URL so a storage hiccup never blocks a mint. The Metaplex URI limit is
+  // 200 bytes — Irys gateway URLs are ~60, the fallback stays short too.
+  const imageUrl = `${appUrl}/api/nft-image?target=${encodeURIComponent(params.target)}&ts=${params.timestampMs}&lat=${params.lat.toFixed(4)}&lon=${params.lon.toFixed(4)}&cc=${params.cloudCover}&stars=${params.stars}&rarity=${encodeURIComponent(params.rarity ?? 'Common')}`;
+  let uri = `${appUrl}/m/o?t=${encodeURIComponent(params.target)}&d=${params.timestampMs}&la=${params.lat.toFixed(4)}&lo=${params.lon.toFixed(4)}&cc=${params.cloudCover}&h=${shortHash}&s=${params.stars}&r=${encodeURIComponent(params.rarity ?? 'Common')}&m=${params.multiplier ?? 1}${tierSuffix}`;
+  try {
+    uri = await uploadJsonToIrys({
+      name,
+      symbol: 'STLR',
+      description: `Verified observation of ${params.target}. Cloud cover ${params.cloudCover}%, oracle hash ${shortHash}. Sealed on Solana.`,
+      image: imageUrl,
+      external_url: appUrl,
+      attributes: [
+        { trait_type: 'Target', value: params.target },
+        { trait_type: 'Date', value: new Date(params.timestampMs).toISOString().split('T')[0] },
+        { trait_type: 'Location', value: `${params.lat.toFixed(2)}, ${params.lon.toFixed(2)}` },
+        { trait_type: 'Cloud Cover', value: `${params.cloudCover}%` },
+        { trait_type: 'Oracle Hash', value: params.oracleHash ?? '' },
+        { trait_type: 'Stars Earned', value: params.stars },
+        { trait_type: 'Rarity', value: params.rarity ?? 'Common' },
+        { trait_type: 'Streak Multiplier', value: params.multiplier ?? 1 },
+        ...(params.tier ? [{ trait_type: 'Tier', value: params.tier }] : []),
+      ],
+    });
+  } catch (err) {
+    console.warn('[mint-nft] Irys upload failed, using app URL fallback:', err instanceof Error ? err.message : err);
   }
 
   // 'processed' commitment returns in ~1-2s vs 15-30s for 'confirmed'.

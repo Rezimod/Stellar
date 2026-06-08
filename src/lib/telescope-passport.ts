@@ -36,6 +36,7 @@ import { createHash } from 'node:crypto';
 import bs58 from 'bs58';
 import { getConnection } from './solana';
 import { tierForCount } from './reputation';
+import { uploadJsonToIrys } from './irys';
 
 const PASSPORT_NAME = 'Stellar Telescope Passport';
 const PASSPORT_SYMBOL = 'STLP';
@@ -153,11 +154,32 @@ export async function ensurePassport(
   }
 
   // ── Create path: mint the soulbound passport ──
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
+  // Metadata JSON on Irys (permanent). Live tier lives in the on-chain fields
+  // below; the uri JSON is the marketplace-facing record. Fall back to the app
+  // route if Irys is unavailable.
+  let uri = `${appUrl}/api/passport/${wallet}`;
+  try {
+    uri = await uploadJsonToIrys({
+      name: PASSPORT_NAME,
+      symbol: PASSPORT_SYMBOL,
+      description:
+        'Soulbound observer credential — non-transferable proof of verified astronomical observations on Stellar.',
+      image: `${appUrl}/apple-touch-icon.png`,
+      external_url: `${appUrl}/profile`,
+      attributes: [
+        { trait_type: 'Tier', value: standing.tier.name },
+        { trait_type: 'Soulbound', value: 'true' },
+      ],
+    });
+  } catch (err) {
+    console.warn('[passport] Irys upload failed, using app URL fallback:', err instanceof Error ? err.message : err);
+  }
   const metadata: TokenMetadata = {
     mint,
     name: PASSPORT_NAME,
     symbol: PASSPORT_SYMBOL,
-    uri: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app'}/api/passport/${wallet}`,
+    uri,
     additionalMetadata: [
       ['tier', standing.tier.name],
       ['observations', String(observations)],
