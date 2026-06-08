@@ -563,7 +563,10 @@ export default function SkyPage() {
                   </RingGauge>
                   <div className="sky-obs__window-body">
                     <span className="sky-obs__window-times">
-                      {fmtClock(windowOpen) ?? '—'} <span className="sky-obs__window-dash">–</span> {fmtClock(windowClose) ?? '—'}
+                      <span className="sky-obs__window-time">{fmtClock(windowOpen) ?? '—'}</span>
+                      <span className="sky-obs__window-time sky-obs__window-time--to">
+                        <span className="sky-obs__window-dash" aria-hidden>–</span> {fmtClock(windowClose) ?? '—'}
+                      </span>
                     </span>
                     <span className="sky-obs__window-dur">{windowDuration ?? 'Dark window'}</span>
                   </div>

@@ -4251,15 +4251,19 @@
 .sky-obs__window-body,
 .sky-obs__metric-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .sky-obs__window-times {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   font-family: var(--mono);
   font-size: 14px;
   letter-spacing: 0.01em;
   color: var(--text);
   font-feature-settings: 'tnum' 1;
-  white-space: nowrap;
 }
+.sky-obs__window-time { white-space: nowrap; }
+.sky-obs__window-time--to { color: var(--text-muted); }
 .sky-obs__window-dash { color: var(--text-dim); }
-.sky-obs__window-dur { font-family: var(--mono); font-size: 10.5px; color: var(--seafoam, #5EEAD4); letter-spacing: 0.06em; }
+.sky-obs__window-dur { font-family: var(--mono); font-size: 10.5px; color: var(--seafoam, #5EEAD4); letter-spacing: 0.06em; margin-top: 1px; }
 
 .sky-obs__metric-value { font-family: var(--sans); font-size: 24px; font-weight: 600; line-height: 1; color: var(--text); }
 .sky-obs__metric-value--sm { font-size: 18px; letter-spacing: 0.01em; }
