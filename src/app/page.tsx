@@ -817,6 +817,40 @@ export default async function HomePage() {
     hub: tNav('hub'),
   } as const;
 
+  const achievements = [
+    {
+      key: 'tether',
+      tag: t('achievements.items.tether.tag'),
+      date: t('achievements.items.tether.date'),
+      title: t('achievements.items.tether.title'),
+      desc: t('achievements.items.tether.desc'),
+      icon: (
+        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#FFB347" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M6 4h12v3a6 6 0 0 1-12 0z" />
+          <path d="M6 5H4a2 2 0 0 0 2 4" />
+          <path d="M18 5h2a2 2 0 0 1-2 4" />
+          <path d="M9 17h6" />
+          <path d="M12 13v4" />
+          <path d="M8.5 21h7" />
+        </svg>
+      ),
+    },
+    {
+      key: 'superteam',
+      tag: t('achievements.items.superteam.tag'),
+      date: t('achievements.items.superteam.date'),
+      title: t('achievements.items.superteam.title'),
+      desc: t('achievements.items.superteam.desc'),
+      icon: (
+        <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#FFB347" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="9" r="6" />
+          <path d="M12 6.5l1 2 2.2.3-1.6 1.5.4 2.2L12 11.5l-2 1.2.4-2.2L8.8 8.8 11 8.5z" />
+          <path d="M8.5 14.5L7 22l5-2.5L17 22l-1.5-7.5" />
+        </svg>
+      ),
+    },
+  ];
+
   const missionsLabels = {
     label: t('missions.screenLabel'),
     title: t('missions.screenTitle'),
@@ -913,6 +947,58 @@ export default async function HomePage() {
               width={300}
               height={60}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          ACHIEVEMENTS / NEWS
+         ============================================================ */}
+      <section className="px-4 md:px-8 pt-14 md:pt-20 pb-2">
+        <div className="max-w-[920px] mx-auto">
+          <div className="text-center mb-8 md:mb-12">
+            <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
+            <SectionTitle>{t('achievements.title')}</SectionTitle>
+            <p className="text-white/55 text-[15px] md:text-[17px] leading-relaxed max-w-[520px] mx-auto mt-1">
+              {t('achievements.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+            {achievements.map((a) => (
+              <div
+                key={a.key}
+                className="group relative flex flex-col rounded-[16px] bg-white/[0.025] border border-white/[0.07] p-5 md:p-6 hover:border-[#FFB347]/30 hover:bg-white/[0.04] transition-colors"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span
+                    className="flex items-center justify-center w-[48px] h-[48px] rounded-[12px] shrink-0"
+                    style={{ border: '1px solid rgba(255,179,71,0.30)', background: 'rgba(255,179,71,0.06)' }}
+                  >
+                    {a.icon}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-[#FFB347]/10 border border-[#FFB347]/25">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FFB347]" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#FFB347]">
+                      {t('achievements.winner')}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2.5 mb-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#6B7385]">
+                  <span>{a.tag}</span>
+                  <span className="w-1 h-1 rounded-full bg-white/20" />
+                  <span className="tabular-nums">{a.date}</span>
+                </div>
+
+                <h3 className="text-white text-[17px] md:text-[19px] font-semibold leading-snug tracking-[-0.01em] mb-2">
+                  {a.title}
+                </h3>
+                <p className="text-white/55 text-[14px] leading-relaxed">
+                  {a.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

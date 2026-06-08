@@ -1065,6 +1065,26 @@
       "ctaSecondary": "Start Observing"
     },
     "partners": "Partner brands",
+    "achievements": {
+      "eyebrow": "Recognition",
+      "title": "Milestones & momentum",
+      "subtitle": "What Stellar has earned along the way.",
+      "winner": "Winner",
+      "items": {
+        "tether": {
+          "tag": "Hackathon",
+          "date": "May 2026",
+          "title": "Tether Frontier Hackathon — Track Winner",
+          "desc": "Stellar Field, our offline on-device AI companion built on Tether QVAC, won the Frontier hackathon track."
+        },
+        "superteam": {
+          "tag": "Grant",
+          "date": "2026",
+          "title": "Superteam Grant Recipient",
+          "desc": "Backed by a Superteam grant to keep shipping real astronomy utility on Solana."
+        }
+      }
+    },
     "howItWorks": {
       "eyebrow": "How it works",
       "title": "Three steps. Real rewards.",

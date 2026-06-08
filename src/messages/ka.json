@@ -1035,6 +1035,26 @@
       "ctaSecondary": "დაიწყე დაკვირვება"
     },
     "partners": "პარტნიორი ბრენდები",
+    "achievements": {
+      "eyebrow": "აღიარება",
+      "title": "მიღწევები და მომენტუმი",
+      "subtitle": "რა მოიპოვა Stellar-მა გზად.",
+      "winner": "გამარჯვებული",
+      "items": {
+        "tether": {
+          "tag": "ჰაკათონი",
+          "date": "მაისი 2026",
+          "title": "Tether Frontier Hackathon — ტრეკის გამარჯვებული",
+          "desc": "Stellar Field — ჩვენი ოფლაინ, მოწყობილობაზე მომუშავე AI თანაშემწე Tether QVAC-ზე — გაიმარჯვა Frontier ჰაკათონის ტრეკში."
+        },
+        "superteam": {
+          "tag": "გრანტი",
+          "date": "2026",
+          "title": "Superteam-ის გრანტის მიმღები",
+          "desc": "Superteam-ის გრანტით მხარდაჭერილი, რათა Solana-ზე რეალური ასტრონომიული სარგებელი გავაგრძელოთ."
+        }
+      }
+    },
     "howItWorks": {
       "eyebrow": "როგორ მუშაობს",
       "title": "სამი ნაბიჯი. ნამდვილი ჯილდო.",
