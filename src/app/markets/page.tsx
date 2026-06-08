@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import Image from 'next/image';
 import { TrendingUp, TrendingDown, Newspaper, Flame, Clock3, Radio, Activity } from 'lucide-react';
 import PageTransition from '@/components/ui/PageTransition';
@@ -17,6 +18,7 @@ export default function MarketsPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [liveBets, setLiveBets] = useState<LiveBet[]>([]);
   const seedRef = useRef(0);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     try {
@@ -31,19 +33,16 @@ export default function MarketsPage() {
     } catch (e) { console.error('[markets] save bets', e); }
   }, [bets]);
 
-  // Seed initial live bets + tick new ones in
   useEffect(() => {
     const initial: LiveBet[] = Array.from({ length: 14 }, (_, i) => generateLiveBet(i));
     seedRef.current = 14;
     setLiveBets(initial);
-
-    const interval = setInterval(() => {
-      seedRef.current += 1;
-      setLiveBets(prev => [generateLiveBet(seedRef.current), ...prev].slice(0, 24));
-    }, 2200);
-
-    return () => clearInterval(interval);
   }, []);
+
+  useVisibleInterval(() => {
+    seedRef.current += 1;
+    setLiveBets(prev => [generateLiveBet(seedRef.current), ...prev].slice(0, 24));
+  }, 5000);
 
   const upcoming = useMemo(
     () => MARKETS
@@ -86,9 +85,14 @@ export default function MarketsPage() {
     setBets(prev => [{ marketId, side, stake, ts: Date.now() }, ...prev]);
     const m = MARKETS.find(x => x.id === marketId);
     setToast(`${stake}★ on ${side.toUpperCase()} — ${m?.title.slice(0, 40)}…`);
-    setTimeout(() => setToast(null), 2400);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 2400);
     setExpanded(null);
   }
+
+  useEffect(() => () => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+  }, []);
 
   return (
     <PageTransition>

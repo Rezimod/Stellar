@@ -691,7 +691,7 @@ code, pre, .mono, [class*="font-mono"] {
    gradient backgrounds force whole-hero recomposites every tick. */
 .hero-starfield[data-paused='true'],
 .hero-starfield[data-paused='true']::before,
-.hero-starfield[data-paused='true']::after { animation-play-state: paused; }
+.hero-starfield[data-paused='true']::after { animation: none; }
 
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
    on club.astroman.ge. Use .icon-badge-gradient.is-orange for the third
@@ -759,6 +759,11 @@ code, pre, .mono, [class*="font-mono"] {
   animation: twinkle 5s ease-in-out infinite;
   pointer-events: none;
   opacity: 0.3;
+}
+
+.star--static {
+  animation: none;
+  opacity: 0.32;
 }
 
 @keyframes twinkle {

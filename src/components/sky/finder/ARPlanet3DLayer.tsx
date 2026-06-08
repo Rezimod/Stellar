@@ -273,8 +273,34 @@ export function ARPlanet3DLayer({ width, height, planets, sunScreen }: Props) {
     // Render loop — keeps planets spinning even when device is still.
     let raf = 0;
     let last = performance.now();
+    let docVisible = !document.hidden;
     const tmpSunDir = new THREE.Vector3();
+
+    const stopLoop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const startLoop = () => {
+      if (raf || !docVisible || cancelled) return;
+      last = performance.now();
+      raf = requestAnimationFrame(loop);
+    };
+
+    const onVis = () => {
+      docVisible = !document.hidden;
+      if (docVisible) startLoop();
+      else stopLoop();
+    };
+    document.addEventListener('visibilitychange', onVis);
+
     const loop = () => {
+      if (!docVisible || cancelled) {
+        stopLoop();
+        return;
+      }
       const now = performance.now();
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
@@ -336,11 +362,12 @@ export function ARPlanet3DLayer({ width, height, planets, sunScreen }: Props) {
       s.renderer.render(s.scene, s.camera);
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+    startLoop();
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
+      stopLoop();
+      document.removeEventListener('visibilitychange', onVis);
       entries.forEach((entry) => {
         entry.body.geometry.dispose();
         if (entry.material instanceof THREE.ShaderMaterial) {

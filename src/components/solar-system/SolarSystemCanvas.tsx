@@ -752,7 +752,33 @@ export function SolarSystemCanvas({
 
     let raf = 0;
     let lastFrame = performance.now();
+    let docVisible = !document.hidden;
+
+    const stopLoop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const startLoop = () => {
+      if (raf || !docVisible) return;
+      lastFrame = performance.now();
+      raf = requestAnimationFrame(loop);
+    };
+
+    const onVis = () => {
+      docVisible = !document.hidden;
+      if (docVisible) startLoop();
+      else stopLoop();
+    };
+    document.addEventListener('visibilitychange', onVis);
+
     const loop = () => {
+      if (!docVisible) {
+        stopLoop();
+        return;
+      }
       const now = performance.now();
       const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
       lastFrame = now;
@@ -845,10 +871,11 @@ export function SolarSystemCanvas({
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
+      document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('resize', onResize);
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);

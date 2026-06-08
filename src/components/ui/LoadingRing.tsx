@@ -34,14 +34,18 @@ export default function LoadingRing({
 
   useEffect(() => {
     if (!facts.length) return;
+    let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
     const id = setInterval(() => {
       setVisible(false);
-      setTimeout(() => {
+      fadeTimeout = setTimeout(() => {
         setFactIndex(i => (i + 1) % facts.length);
         setVisible(true);
       }, 300);
     }, factInterval);
-    return () => clearInterval(id);
+    return () => {
+      clearInterval(id);
+      if (fadeTimeout) clearTimeout(fadeTimeout);
+    };
   }, [facts, factInterval]);
 
   const strokeWidth = Math.max(4, Math.round(size / 12));

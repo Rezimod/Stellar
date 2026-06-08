@@ -15,18 +15,42 @@ export default function HeroSaturn() {
   const t = useTranslations('homepage.hero');
   const sectionRef = useRef<HTMLElement | null>(null);
   const [paused, setPaused] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
 
-  // Pause CSS starfield twinkle once the hero scrolls past — opacity tweens
-  // on viewport-sized gradient backgrounds repaint a lot.
+  // Mount WebGL only while the hero is on-screen; pause CSS starfield when
+  // scrolled past or when the tab is backgrounded.
   useEffect(() => {
     const el = sectionRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    let inView = true;
+    let docVisible = !document.hidden;
+    const sync = () => {
+      const active = inView && docVisible;
+      setShowCanvas(active);
+      setPaused(!active);
+    };
+
     const io = new IntersectionObserver(
-      (entries) => setPaused(!(entries[0]?.isIntersecting ?? true)),
-      { rootMargin: '0px' },
+      (entries) => {
+        inView = entries[0]?.isIntersecting ?? true;
+        sync();
+      },
+      { threshold: 0 },
     );
     io.observe(el);
-    return () => io.disconnect();
+
+    const onVis = () => {
+      docVisible = !document.hidden;
+      sync();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    sync();
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, []);
 
   return (
@@ -49,8 +73,8 @@ export default function HeroSaturn() {
       {/* === Static CSS starfield (covers full hero, behind WebGL) === */}
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === WebGL Saturn (planet + orbiting ring particles + parallax) === */}
-      <SaturnCanvas />
+      {/* === WebGL Saturn — unmounted when hero leaves viewport === */}
+      {showCanvas ? <SaturnCanvas /> : null}
 
       {/* === Left-side vignette keeps the copy readable on bright Saturn === */}
       <div

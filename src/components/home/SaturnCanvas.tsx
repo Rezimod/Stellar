@@ -95,7 +95,7 @@ export default function SaturnCanvas() {
     // Rotation is computed in the vertex shader from a per-particle base
     // angle + radius and a single uTime uniform — keeps the CPU out of the
     // hot path entirely. Radius and base angle never change after init.
-    const RING_COUNT = reduceMotion ? 1500 : lite ? 2400 : 8000;
+    const RING_COUNT = reduceMotion ? 1200 : lite ? 2000 : 4000;
     const innerR = 2.95;
     const outerR = 4.95;
 
@@ -320,24 +320,37 @@ export default function SaturnCanvas() {
     // scrolls past it there's no reason to keep simulating 12k particles.
     let inView = true;
     let docVisible = !document.hidden;
-    const io = new IntersectionObserver(
-      (entries) => { inView = entries[0]?.isIntersecting ?? true; },
-      { threshold: 0 },
-    );
-    io.observe(mount);
-    const onVis = () => { docVisible = !document.hidden; };
-    document.addEventListener('visibilitychange', onVis);
 
     // ── Animation loop ───────────────────────────────────────────
+    // Only schedule RAF while visible — an idle loop still wakes the main
+    // thread ~60×/s and keeps the WebGL context hot on dual-GPU MacBooks.
     let raf = 0;
     let last = performance.now();
     let ringTime = 0;
     const planetSpinSpeed = reduceMotion ? 0.0 : 0.045;
 
-    const render = (now: number) => {
+    const stopLoop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const startLoop = () => {
+      if (raf || !inView || !docVisible) return;
+      last = performance.now();
       raf = requestAnimationFrame(render);
+    };
+
+    const syncLoop = () => {
+      if (inView && docVisible) startLoop();
+      else stopLoop();
+    };
+
+    const render = (now: number) => {
       if (!inView || !docVisible) {
-        last = now; // reset dt so resume doesn't jump
+        stopLoop();
+        last = now;
         return;
       }
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -379,8 +392,23 @@ export default function SaturnCanvas() {
       ringMat.uniforms.uTime.value = ringTime;
 
       renderer.render(scene, camera);
+      raf = requestAnimationFrame(render);
     };
-    raf = requestAnimationFrame(render);
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        inView = entries[0]?.isIntersecting ?? true;
+        syncLoop();
+      },
+      { threshold: 0 },
+    );
+    io.observe(mount);
+    const onVis = () => {
+      docVisible = !document.hidden;
+      syncLoop();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    syncLoop();
 
     // ── Cleanup ──────────────────────────────────────────────────
     return () => {
@@ -453,14 +481,14 @@ function makeSaturnTexture(): THREE.CanvasTexture {
   }
 
   // Subtle horizontal noise streaks for cloud texture
-  for (let i = 0; i < 6000; i++) {
+  for (let i = 0; i < 1800; i++) {
     const y = Math.random() * h;
     const x = Math.random() * w;
     const len = 6 + Math.random() * 40;
     ctx.fillStyle = `rgba(255, 230, 190, ${Math.random() * 0.04})`;
     ctx.fillRect(x, y, len, 1);
   }
-  for (let i = 0; i < 4000; i++) {
+  for (let i = 0; i < 1200; i++) {
     const y = Math.random() * h;
     const x = Math.random() * w;
     const len = 6 + Math.random() * 40;

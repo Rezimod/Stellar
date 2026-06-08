@@ -322,7 +322,25 @@ export function ARFinder({
     if (typeof window === 'undefined') return;
 
     let raf = 0;
+    let docVisible = !document.hidden;
+
+    const stop = () => {
+      if (raf) {
+        window.cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const start = () => {
+      if (raf || !docVisible) return;
+      raf = window.requestAnimationFrame(tick);
+    };
+
     const tick = () => {
+      if (!docVisible) {
+        stop();
+        return;
+      }
       const current = renderAimRef.current;
       const target = targetAimRef.current;
       const azDelta = shortestAzDelta(target.azimuth, current.azimuth);
@@ -354,8 +372,18 @@ export function ARFinder({
       raf = window.requestAnimationFrame(tick);
     };
 
-    raf = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(raf);
+    const onVis = () => {
+      docVisible = !document.hidden;
+      if (docVisible) start();
+      else stop();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    start();
+
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, []);
 
   const phoneAim = useMemo(

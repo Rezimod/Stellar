@@ -1,5 +1,6 @@
 'use client';
 import { useMemo, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface Star {
   id: number;
@@ -11,6 +12,7 @@ interface Star {
 }
 
 export default function StarField() {
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -33,10 +35,11 @@ export default function StarField() {
     };
   }, []);
 
-  // Cut from 30/14 — at this density the difference is invisible but each
-  // animated DOM node is its own compositor candidate. Pages also have their
-  // own gradient backgrounds; the field is a subtle ambient layer.
-  const starCount = reduceMotion ? 0 : isMobile ? 10 : 18;
+  // Homepage hero already has a full starfield + WebGL Saturn — skip the global
+  // layer there to avoid doubling compositor work. Elsewhere keep a small static
+  // sprinkle (no twinkle animation — opacity tweens wake the GPU every frame).
+  const onHome = pathname === '/';
+  const starCount = reduceMotion || onHome ? 0 : isMobile ? 6 : 10;
 
   const stars = useMemo<Star[]>(
     () =>
@@ -58,14 +61,12 @@ export default function StarField() {
       {stars.map((s) => (
         <div
           key={s.id}
-          className="star"
+          className="star star--static"
           style={{
             top: `${s.top}%`,
             left: `${s.left}%`,
             width: s.size,
             height: s.size,
-            animationDuration: `${s.duration}s`,
-            animationDelay: `${s.delay}s`,
           }}
         />
       ))}

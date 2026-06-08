@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import HeroSaturn from '@/components/home/HeroSaturn';
+import HomeHeroSaturn from '@/components/home/HomeHeroSaturn';
 import TonightAtAGlance from '@/components/home/TonightAtAGlanceLazy';
 import ComparisonTable from '@/components/home/ComparisonTable';
 
@@ -1046,7 +1046,7 @@ export default async function HomePage() {
       {/* ============================================================
           HERO — Saturn parallax, screenshot redesign
          ============================================================ */}
-      <HeroSaturn />
+      <HomeHeroSaturn />
 
       <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="relative max-w-[960px] mx-auto">

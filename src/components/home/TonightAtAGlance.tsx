@@ -576,14 +576,11 @@ function NightSkyBand({ cloudCover, seed }: { cloudCover: number; seed: string }
     return out;
   }, [coverX, cover, seedNum]);
 
-  const fid = `cloudblur-${seedNum}`;
+  const fid = `nightband-${seedNum}`;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" aria-hidden>
       <defs>
-        <filter id={fid} x="-20%" y="-40%" width="140%" height="180%">
-          <feGaussianBlur stdDeviation="1.4" />
-        </filter>
         <radialGradient id={`${fid}-bg`} cx="50%" cy="120%" r="120%">
           <stop offset="0%" stopColor="#101a36" />
           <stop offset="100%" stopColor="#070c1d" />
@@ -599,12 +596,10 @@ function NightSkyBand({ cloudCover, seed }: { cloudCover: number; seed: string }
         return <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#dbe7ff" opacity={opacity} />;
       })}
 
-      {/* Cloud bank */}
-      <g filter={`url(#${fid})`}>
-        {puffs.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#c4d2ee" opacity={p.o} />
-        ))}
-      </g>
+      {/* Cloud bank — soft overlapping circles (no SVG blur filter) */}
+      {puffs.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={p.r * 1.15} fill="#c4d2ee" opacity={p.o * 0.55} />
+      ))}
     </svg>
   );
 }

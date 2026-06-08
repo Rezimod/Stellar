@@ -1,16 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useEffect, useRef, useState } from 'react';
 
-// TonightAtAGlance lives ~80% of the way down the home page and pulls in
-// astronomy-engine (~100KB min) plus the sky-data hook. There is zero reason
-// to ship that JS in the initial bundle — defer until the client hydrates and
-// the user has scrolled near it. SSR is skipped because the component is
-// purely client-driven (geolocation + live planet positions) and renders a
-// skeleton that matches its own loading state during hydration.
 const TonightAtAGlance = dynamic(() => import('./TonightAtAGlance'), {
   ssr: false,
-  loading: () => (
+});
+
+function TonightSkeleton() {
+  return (
     <div className="animate-pulse max-w-[1000px] mx-auto" aria-hidden>
       <div className="grid items-center gap-7 md:gap-14 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <div className="flex flex-col items-center">
@@ -29,7 +27,36 @@ const TonightAtAGlance = dynamic(() => import('./TonightAtAGlance'), {
         </div>
       </div>
     </div>
-  ),
-});
+  );
+}
 
-export default TonightAtAGlance;
+export default function TonightAtAGlanceLazy() {
+  const gateRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const el = gateRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setReady(true);
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setReady(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '240px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div ref={gateRef}>
+      {ready ? <TonightAtAGlance /> : <TonightSkeleton />}
+    </div>
+  );
+}
