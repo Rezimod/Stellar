@@ -4022,25 +4022,33 @@
 /* === Top bar === */
 .sky-obs__top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
-.sky-obs__title-block { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.sky-obs__title-block {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 2px;
+  min-width: 0;
+}
 .sky-obs__title {
   margin: 0;
   font-family: var(--sans);
-  font-size: clamp(22px, 3vw, 30px);
+  font-size: clamp(16px, 3.4vw, 22px);
   font-weight: 600;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--text);
+  line-height: 1.1;
 }
 .sky-obs__date {
   margin: 0;
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
@@ -4049,18 +4057,19 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 7px;
+  padding: 6px 12px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .sky-obs__loc:hover {
   color: var(--text);
@@ -4274,9 +4283,14 @@
   .sky-obs__dome .sky-map { max-width: min(100%, 460px); }
 }
 @media (max-width: 680px) {
-  .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 14px; }
+  .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }
   .sky-obs__cards { grid-template-columns: repeat(2, 1fr); }
-  .sky-obs__top { flex-direction: column; gap: 10px; }
-  .sky-obs__title { letter-spacing: 0.2em; }
+  /* Keep the title + location on a single compact row to free vertical
+     space for the dome and targets. */
+  .sky-obs__top { align-items: center; gap: 10px; }
+  .sky-obs__title { letter-spacing: 0.14em; }
+  .sky-obs__date { font-size: 9.5px; letter-spacing: 0.08em; }
+  .sky-obs__loc { padding: 5px 9px; gap: 5px; }
+  .sky-obs__loc-coord { display: none; }
 }
 
