@@ -15,17 +15,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, and } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
-import { PrivyClient } from '@privy-io/server-auth';
 import { getDb } from '@/lib/db';
 import { redeemCodes, starsBurns } from '@/lib/schema';
 import { isValidPublicKey } from '@/lib/validate';
 import { redeemRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { starsToGEL } from '@/lib/stars-economy';
-
-const privy = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!,
-);
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 
 const CODE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -40,14 +35,8 @@ function generateCode(): string {
 }
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  try {
-    await privy.verifyAuthToken(token);
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const privyId = await verifyPrivy(req);
+  if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let body: { walletAddress?: unknown; stars?: unknown; burnSignature?: unknown };
   try {
@@ -61,6 +50,10 @@ export async function POST(req: NextRequest) {
   const burnSignature = body.burnSignature;
   if (typeof walletAddress !== 'string' || !isValidPublicKey(walletAddress)) {
     return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
+  }
+  const owns = await assertOwnsWallet(privyId, walletAddress);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
   if (typeof stars !== 'number' || !Number.isInteger(stars) || stars <= 0) {
     return NextResponse.json({ error: 'stars must be a positive integer' }, { status: 400 });
@@ -153,18 +146,16 @@ export async function POST(req: NextRequest) {
 
 // GET — list active codes for the signed-in wallet (for "your codes" view).
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  try {
-    await privy.verifyAuthToken(token);
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const privyId = await verifyPrivy(req);
+  if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const wallet = req.nextUrl.searchParams.get('walletAddress');
   if (!wallet || !isValidPublicKey(wallet)) {
     return NextResponse.json({ error: 'walletAddress required' }, { status: 400 });
+  }
+  const owns = await assertOwnsWallet(privyId, wallet);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   const db = getDb();

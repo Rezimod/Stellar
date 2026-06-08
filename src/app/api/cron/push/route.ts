@@ -5,6 +5,7 @@ import { pushSubscription } from '@/lib/schema';
 import { getTonightSky, type TonightSky } from '@/lib/tonight-sky';
 import { getUpcomingEvents } from '@/lib/astro-events';
 import { sendPush, pushConfigured, type PushPayload } from '@/lib/push/send';
+import { verifyCronSecret } from '@/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -18,13 +19,8 @@ function todayStr(): string {
 }
 
 export async function GET(req: NextRequest) {
-  // Vercel Cron sends the project's CRON_SECRET as a bearer token.
-  const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get('authorization');
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  if (!verifyCronSecret(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const db = getDb();

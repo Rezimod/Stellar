@@ -1,6 +1,12 @@
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
-import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token'
+import { getOrCreateAssociatedTokenAccount, mintTo, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import bs58 from 'bs58'
+
+// STARS is a Token-2022 mint with the NonTransferable extension — a closed
+// loyalty economy (earn by minting, spend by burning, never transferable).
+// Single source of truth for the token program; every STARS read/write must use
+// it, since classic SPL and Token-2022 derive different ATAs.
+export const STARS_TOKEN_PROGRAM_ID = TOKEN_2022_PROGRAM_ID
 
 // Max stars per confidence level — mirrors /api/observe/verify reward table
 export const MAX_STARS_BY_CONFIDENCE: Record<string, number> = {
@@ -32,7 +38,21 @@ export async function awardStarsOnChain(
     connection,
     feePayerKeypair,
     mintKey,
-    recipientKey
+    recipientKey,
+    false,
+    'confirmed',
+    undefined,
+    STARS_TOKEN_PROGRAM_ID,
   )
-  await mintTo(connection, feePayerKeypair, mintKey, ata.address, feePayerKeypair, BigInt(amount))
+  await mintTo(
+    connection,
+    feePayerKeypair,
+    mintKey,
+    ata.address,
+    feePayerKeypair,
+    BigInt(amount),
+    [],
+    undefined,
+    STARS_TOKEN_PROGRAM_ID,
+  )
 }

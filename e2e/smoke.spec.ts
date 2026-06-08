@@ -18,10 +18,10 @@ test.describe('smoke — golden routes', () => {
     const response = await page.goto('/');
     expect(response?.ok()).toBeTruthy();
 
-    // Bottom nav is rendered into every page on mobile-or-desktop.
-    // Its presence is the cheapest "layout didn't crash" signal we have.
-    await expect(page.getByRole('link', { name: /sky/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /missions/i })).toBeVisible();
+    // Top nav tabs — scoped to <nav> to avoid matching hero/footer Sky links.
+    const nav = page.getByRole('navigation');
+    await expect(nav.getByRole('link', { name: 'Sky', exact: true })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Missions', exact: true })).toBeVisible();
 
     expect(errors, `pageerrors on /: ${errors.join('\n')}`).toEqual([]);
   });

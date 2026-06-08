@@ -1,5 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js';
-import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
+import { getAssociatedTokenAddress, getAccount, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 export function getConnection(): Connection {
   const rpcUrl = process.env.SOLANA_RPC_URL;
@@ -21,8 +21,9 @@ export async function getStarsBalance(walletAddress: string): Promise<number> {
       new PublicKey(process.env.STARS_TOKEN_MINT),
       new PublicKey(walletAddress),
       true,
+      TOKEN_2022_PROGRAM_ID,
     );
-    const account = await getAccount(connection, ata);
+    const account = await getAccount(connection, ata, undefined, TOKEN_2022_PROGRAM_ID);
     return Number(account.amount);
   } catch {
     return 0;

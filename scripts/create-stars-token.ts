@@ -1,8 +1,20 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import bs58 from 'bs58';
-import { Keypair, Connection } from '@solana/web3.js';
-import { createMint } from '@solana/spl-token';
+import {
+  Keypair,
+  Connection,
+  SystemProgram,
+  Transaction,
+  sendAndConfirmTransaction,
+} from '@solana/web3.js';
+import {
+  ExtensionType,
+  getMintLen,
+  TOKEN_2022_PROGRAM_ID,
+  createInitializeNonTransferableMintInstruction,
+  createInitializeMintInstruction,
+} from '@solana/spl-token';
 
 // Load .env.local (tsx doesn't load it automatically)
 const envPath = path.join(process.cwd(), '.env.local');
@@ -34,19 +46,44 @@ async function main() {
   const secretKey = bs58.decode(privateKeyB58);
   const feePayerKeypair = Keypair.fromSecretKey(secretKey);
 
-  const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-
-  console.log('Creating Stars SPL token on devnet...');
-  const mint = await createMint(
-    connection,
-    feePayerKeypair,
-    feePayerKeypair.publicKey,
-    null, // no freeze authority
-    0    // 0 decimals
+  const connection = new Connection(
+    process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com',
+    'confirmed',
   );
 
-  const mintAddress = mint.toBase58();
-  console.log('Stars token created:', mintAddress);
+  console.log('Creating Stars Token-2022 (NonTransferable) mint on devnet...');
+  // NonTransferable = a closed loyalty economy: points can be minted (earned) and
+  // burned (spent) but never transferred between wallets. 0 decimals; mint
+  // authority is the fee payer (server-side, gasless); no freeze authority.
+  const mintKeypair = Keypair.generate();
+  const extensions = [ExtensionType.NonTransferable];
+  const mintLen = getMintLen(extensions);
+  const lamports = await connection.getMinimumBalanceForRentExemption(mintLen);
+
+  const tx = new Transaction().add(
+    SystemProgram.createAccount({
+      fromPubkey: feePayerKeypair.publicKey,
+      newAccountPubkey: mintKeypair.publicKey,
+      space: mintLen,
+      lamports,
+      programId: TOKEN_2022_PROGRAM_ID,
+    }),
+    // NonTransferable must be initialized BEFORE the mint itself.
+    createInitializeNonTransferableMintInstruction(mintKeypair.publicKey, TOKEN_2022_PROGRAM_ID),
+    createInitializeMintInstruction(
+      mintKeypair.publicKey,
+      0,
+      feePayerKeypair.publicKey,
+      null,
+      TOKEN_2022_PROGRAM_ID,
+    ),
+  );
+  await sendAndConfirmTransaction(connection, tx, [feePayerKeypair, mintKeypair], {
+    commitment: 'confirmed',
+  });
+
+  const mintAddress = mintKeypair.publicKey.toBase58();
+  console.log('Stars Token-2022 mint created:', mintAddress);
 
   let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
   envContent = setEnvVar(envContent, 'STARS_TOKEN_MINT', mintAddress);

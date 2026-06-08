@@ -4,11 +4,13 @@ export const maxDuration = 60; // Solana devnet token mint can take 15-30s
 import { awardStarsRateLimit, awardStarsDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
+import { STARS_TOKEN_PROGRAM_ID } from '@/lib/stars';
 import bs58 from 'bs58';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { and, eq } from 'drizzle-orm';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
+import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars-policy';
 
 const DEVNET_URL = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
 
@@ -78,6 +80,22 @@ export async function POST(req: NextRequest) {
   if (typeof reason !== 'string' || reason.trim().length === 0) {
     return NextResponse.json({ error: 'reason must be a non-empty string' }, { status: 400 });
   }
+  const reasonStr = (reason as string).trim();
+  if (!isAllowedAwardReason(reasonStr)) {
+    return NextResponse.json({ error: 'reason not allowed' }, { status: 400 });
+  }
+  const reasonMax = maxAwardAmountForReason(reasonStr);
+  if (typeof amount === 'number' && amount > reasonMax) {
+    return NextResponse.json(
+      { error: `amount exceeds maximum (${reasonMax}) for this reason` },
+      { status: 400 },
+    );
+  }
+
+  // Idempotency key is required — every legitimate client sends one.
+  if (typeof idempotencyKey !== 'string' || idempotencyKey.length === 0) {
+    return NextResponse.json({ error: 'idempotencyKey is required' }, { status: 400 });
+  }
 
   // Idempotency: claim slot BEFORE the Solana TX to prevent concurrent double-mints
   if (typeof idempotencyKey === 'string' && idempotencyKey.length > 0) {
@@ -86,7 +104,7 @@ export async function POST(req: NextRequest) {
       try {
         await db.insert(observationLog).values({
           wallet: recipientAddress as string,
-          target: reason as string,
+          target: reasonStr,
           stars: amount as number,
           confidence: 'pending',
           mintTx: idempotencyKey,
@@ -121,7 +139,11 @@ export async function POST(req: NextRequest) {
       connection,
       feePayerKeypair,
       mintPublicKey,
-      recipientPublicKey
+      recipientPublicKey,
+      false,
+      'confirmed',
+      undefined,
+      STARS_TOKEN_PROGRAM_ID,
     );
 
     console.log('[award-stars] Awarding', amount, 'stars to:', (recipientAddress as string).slice(0, 8) + '...', 'reason:', reason);
@@ -131,7 +153,10 @@ export async function POST(req: NextRequest) {
       mintPublicKey,
       ata.address,
       feePayerKeypair,
-      BigInt(amount)
+      BigInt(amount),
+      [],
+      undefined,
+      STARS_TOKEN_PROGRAM_ID,
     );
     console.log('[award-stars] Success, txId:', signature.slice(0, 16) + '...');
 

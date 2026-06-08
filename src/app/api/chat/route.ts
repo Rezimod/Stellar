@@ -152,8 +152,13 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (err) {
-    // Fail-open if Upstash is unreachable — better to answer than block all chat.
-    console.error('[AstroChat] Rate limit check failed (fail-open):', err);
+    console.error('[AstroChat] Rate limit check failed:', err);
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Chat is temporarily unavailable. Please try again shortly.' },
+        { status: 503 },
+      );
+    }
   }
 
   if (!process.env.OPENAI_API_KEY) {

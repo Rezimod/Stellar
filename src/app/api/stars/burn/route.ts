@@ -30,7 +30,6 @@ import {
 import {
   createBurnInstruction,
   getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import bs58 from 'bs58';
 import { eq, and } from 'drizzle-orm';
@@ -38,8 +37,10 @@ import { PrivyClient } from '@privy-io/server-auth';
 import { getDb } from '@/lib/db';
 import { orders, starsBurns } from '@/lib/schema';
 import { getStarsBalance } from '@/lib/solana';
+import { STARS_TOKEN_PROGRAM_ID } from '@/lib/stars';
 import { isValidPublicKey } from '@/lib/validate';
 import { computeMaxBurn, validateBurn } from '@/lib/stars-economy';
+import { assertOwnsWallet } from '@/lib/api-auth';
 
 export const maxDuration = 60;
 
@@ -154,7 +155,7 @@ async function buildBurnTx(args: {
   if (!feePayer || !mint) return null;
 
   const owner = new PublicKey(args.walletAddress);
-  const ata = await getAssociatedTokenAddress(mint, owner);
+  const ata = await getAssociatedTokenAddress(mint, owner, false, STARS_TOKEN_PROGRAM_ID);
 
   const burnIx: TransactionInstruction = createBurnInstruction(
     ata,
@@ -162,7 +163,7 @@ async function buildBurnTx(args: {
     owner,
     BigInt(args.amount),
     [],
-    TOKEN_PROGRAM_ID,
+    STARS_TOKEN_PROGRAM_ID,
   );
 
   const connection = new Connection(RPC, 'confirmed');
@@ -208,6 +209,10 @@ export async function POST(req: NextRequest) {
   }
   if (!isValidPublicKey(body.walletAddress)) {
     return NextResponse.json({ error: 'Invalid walletAddress' }, { status: 400 });
+  }
+  const owns = await assertOwnsWallet(privyId, body.walletAddress);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
   if (typeof body.amount !== 'number' || !Number.isInteger(body.amount) || body.amount <= 0) {
     return NextResponse.json({ error: 'amount must be a positive integer' }, { status: 400 });
@@ -279,10 +284,10 @@ export async function POST(req: NextRequest) {
   }
 
   const owner = new PublicKey(body.walletAddress);
-  const expectedAta = await getAssociatedTokenAddress(mint, owner);
+  const expectedAta = await getAssociatedTokenAddress(mint, owner, false, STARS_TOKEN_PROGRAM_ID);
 
   const burnIx = signedTx.instructions.find(
-    ix => ix.programId.equals(TOKEN_PROGRAM_ID),
+    ix => ix.programId.equals(STARS_TOKEN_PROGRAM_ID),
   );
   if (!burnIx) {
     return NextResponse.json({ error: 'No SPL token instruction in transaction' }, { status: 400 });
@@ -369,6 +374,10 @@ export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get('walletAddress');
   if (!orderId || !wallet || !isValidPublicKey(wallet)) {
     return NextResponse.json({ error: 'orderId + walletAddress required' }, { status: 400 });
+  }
+  const owns = await assertOwnsWallet(privyId, wallet);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
   const db = getDb();
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });

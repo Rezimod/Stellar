@@ -12,6 +12,7 @@ import {
 import { sendTelegram, sendTelegramPhoto } from '@/lib/telegram'
 import { generateTweetImage } from '@/lib/tweet-image'
 import { signAction } from '@/lib/agent-token'
+import { verifyCronSecret } from '@/lib/cron-auth'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -27,10 +28,7 @@ const VALID_KINDS: TweetKind[] = [
 const VALID_SLOTS: DailySlot[] = ['morning', 'afternoon', 'evening']
 
 function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
-  if (!secret) return true
-  const header = req.headers.get('authorization')
-  return header === `Bearer ${secret}`
+  return verifyCronSecret(req)
 }
 
 async function handle(req: NextRequest) {

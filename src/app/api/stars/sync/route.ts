@@ -6,11 +6,15 @@ import {
   getOrCreateAssociatedTokenAccount,
   mintTo,
 } from '@solana/spl-token';
+import { STARS_TOKEN_PROGRAM_ID } from '@/lib/stars';
 import bs58 from 'bs58';
 import { isValidPublicKey } from '@/lib/validate';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
+import { getDb } from '@/lib/db';
+import { observationLog } from '@/lib/schema';
+import { and, eq, ne, sum } from 'drizzle-orm';
 
 export const maxDuration = 60;
 
@@ -19,6 +23,18 @@ export const maxDuration = 60;
 // mint the gap between (current SPL balance) and (expectedTotal). Hard cap
 // prevents the client from claiming an absurd amount.
 const MAX_EXPECTED_TOTAL = 5000;
+// Small buffer for in-flight awards between observe/log and stars/sync.
+const SYNC_DRIFT_BUFFER = 50;
+
+async function getServerEarnedStars(wallet: string): Promise<number | null> {
+  const db = getDb();
+  if (!db) return null;
+  const rows = await db
+    .select({ total: sum(observationLog.stars) })
+    .from(observationLog)
+    .where(and(eq(observationLog.wallet, wallet), ne(observationLog.confidence, 'rejected')));
+  return Number(rows[0]?.total ?? 0);
+}
 // We allow one full sync per wallet per hour. Multiple bets/visits in quick
 // succession do not re-fire the mint — sync writes a sentinel record to
 // observation_log so subsequent calls become no-ops once balance ≥ expected.
@@ -65,7 +81,21 @@ export async function POST(req: NextRequest) {
   if (!Number.isFinite(expected) || !Number.isInteger(expected) || expected <= 0) {
     return NextResponse.json({ error: 'expectedTotal must be a positive integer' }, { status: 400 });
   }
-  const target = Math.min(expected, MAX_EXPECTED_TOTAL);
+  let target = Math.min(expected, MAX_EXPECTED_TOTAL);
+
+  const serverEarned = await getServerEarnedStars(address);
+  if (serverEarned !== null) {
+    if (serverEarned === 0 && target > 500) {
+      return NextResponse.json(
+        { error: 'expectedTotal exceeds earned stars on record' },
+        { status: 400 },
+      );
+    }
+    const maxAllowed = serverEarned + SYNC_DRIFT_BUFFER;
+    if (target > maxAllowed) {
+      target = Math.min(target, maxAllowed);
+    }
+  }
 
   const mintAddress = process.env.STARS_TOKEN_MINT;
   const privateKeyB58 = process.env.FEE_PAYER_PRIVATE_KEY;
@@ -84,8 +114,8 @@ export async function POST(req: NextRequest) {
     // and we don't burn any rate-limit budget.
     let currentBalance = 0;
     try {
-      const ata = await getAssociatedTokenAddress(mint, recipient, true);
-      const account = await getAccount(connection, ata);
+      const ata = await getAssociatedTokenAddress(mint, recipient, true, STARS_TOKEN_PROGRAM_ID);
+      const account = await getAccount(connection, ata, undefined, STARS_TOKEN_PROGRAM_ID);
       currentBalance = Number(account.amount);
     } catch {
       currentBalance = 0;
@@ -114,6 +144,10 @@ export async function POST(req: NextRequest) {
       feePayer,
       mint,
       recipient,
+      false,
+      'confirmed',
+      undefined,
+      STARS_TOKEN_PROGRAM_ID,
     );
     const sig = await mintTo(
       connection,
@@ -122,6 +156,9 @@ export async function POST(req: NextRequest) {
       ataInfo.address,
       feePayer,
       BigInt(diff),
+      [],
+      undefined,
+      STARS_TOKEN_PROGRAM_ID,
     );
 
     return NextResponse.json({

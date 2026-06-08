@@ -21,7 +21,7 @@
 
 import { NextRequest } from 'next/server';
 import { PrivyClient } from '@privy-io/server-auth';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { getDb } from './db';
 import { users } from './schema';
 
@@ -48,9 +48,10 @@ export async function verifyPrivy(req: NextRequest): Promise<string | null> {
   }
 }
 
-// Returns true if either no wallet is linked yet (allow), or the linked
-// wallet matches `walletAddress`. Returns false when a different wallet is
-// already linked to this Privy user.
+// Returns true when `walletAddress` matches the wallet linked to this Privy
+// user. On first use, atomically binds the wallet if the row exists but has
+// no address yet — prevents a session from hopping between wallets mid-flow.
+// If the user row hasn't been created yet (upsert still in flight), allow once.
 export async function assertOwnsWallet(
   privyId: string,
   walletAddress: string,
@@ -63,6 +64,23 @@ export async function assertOwnsWallet(
     .where(eq(users.privyId, privyId))
     .limit(1);
   const linked = rows[0]?.walletAddress ?? null;
-  if (!linked) return true;
-  return linked === walletAddress;
+  if (linked) return linked === walletAddress;
+
+  if (rows.length > 0) {
+    const bound = await db
+      .update(users)
+      .set({ walletAddress, updatedAt: new Date() })
+      .where(and(eq(users.privyId, privyId), isNull(users.walletAddress)))
+      .returning({ walletAddress: users.walletAddress });
+    if (bound.length > 0) return true;
+
+    const retry = await db
+      .select({ walletAddress: users.walletAddress })
+      .from(users)
+      .where(eq(users.privyId, privyId))
+      .limit(1);
+    return retry[0]?.walletAddress === walletAddress;
+  }
+
+  return true;
 }

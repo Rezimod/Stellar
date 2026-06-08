@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrivyClient } from '@privy-io/server-auth'
 import { getDb } from '@/lib/db'
-import { observationLog, users } from '@/lib/schema'
+import { observationLog } from '@/lib/schema'
+import { assertOwnsWallet } from '@/lib/api-auth'
 import { eq, desc } from 'drizzle-orm'
 import { isValidPublicKey } from '@/lib/validate'
 
@@ -39,14 +40,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ observations: [] })
   }
 
-  // Verify the requested wallet belongs to the authenticated user
-  const userRows = await db
-    .select({ walletAddress: users.walletAddress })
-    .from(users)
-    .where(eq(users.privyId, privyId))
-    .limit(1)
-
-  if (userRows.length > 0 && userRows[0].walletAddress && userRows[0].walletAddress !== walletAddress) {
+  const owns = await assertOwnsWallet(privyId, walletAddress)
+  if (!owns) {
     return NextResponse.json({ error: 'You can only view your own observation history' }, { status: 403 })
   }
 

@@ -6,11 +6,12 @@ import BigNumber from 'bignumber.js';
 import { PrivyClient } from '@privy-io/server-auth';
 import { eq, desc, and } from 'drizzle-orm';
 import { getDb, ensureOrdersBurnColumns } from '@/lib/db';
-import { orders, users } from '@/lib/schema';
+import { orders } from '@/lib/schema';
 import { isValidPublicKey } from '@/lib/validate';
 import { getStarsBalance } from '@/lib/solana';
-import { computeMaxBurn, validateBurn, starsToGEL } from '@/lib/stars-economy';
 import { assertOwnsWallet } from '@/lib/api-auth';
+import { validateOrderPricing } from '@/lib/order-pricing';
+import { fetchSolPriceRates } from '@/lib/sol-price';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -38,13 +39,13 @@ export async function POST(req: NextRequest) {
   if (!body) return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
 
   const {
-    productId, productName, productImage, dealerId,
+    productId, dealerId,
     paymentMethod, amountSol, amountStars, amountFiat, currency,
     walletAddress,
     shipping,
     burnStars: burnStarsRaw,
   } = body as {
-    productId?: string; productName?: string; productImage?: string; dealerId?: string;
+    productId?: string; dealerId?: string;
     paymentMethod?: 'sol' | 'stars';
     amountSol?: number; amountStars?: number; amountFiat?: number; currency?: string;
     walletAddress?: string;
@@ -54,8 +55,8 @@ export async function POST(req: NextRequest) {
 
   const method: 'sol' | 'stars' = paymentMethod === 'stars' ? 'stars' : 'sol';
 
-  if (!productId || !productName || !dealerId) {
-    return NextResponse.json({ error: 'productId, productName, dealerId required' }, { status: 400 });
+  if (!productId || !dealerId) {
+    return NextResponse.json({ error: 'productId, dealerId required' }, { status: 400 });
   }
   if (typeof amountFiat !== 'number' || amountFiat <= 0) {
     return NextResponse.json({ error: 'amountFiat must be a positive number' }, { status: 400 });
@@ -64,20 +65,36 @@ export async function POST(req: NextRequest) {
   if (!walletAddress || !isValidPublicKey(walletAddress)) {
     return NextResponse.json({ error: 'Valid walletAddress required' }, { status: 400 });
   }
-  // Match the GET path's ownership check — the wallet placing this order
-  // must be the one linked to the verified Privy session, otherwise a
-  // signed-in user could spend another wallet's Stars or sign up SOL
-  // payments under someone else's address.
   const owns = await assertOwnsWallet(privyId, walletAddress);
   if (!owns) {
     return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
-  if (method === 'sol' && (typeof amountSol !== 'number' || amountSol <= 0)) {
-    return NextResponse.json({ error: 'amountSol must be a positive number' }, { status: 400 });
-  }
   if (method === 'stars' && (typeof amountStars !== 'number' || amountStars <= 0 || !Number.isInteger(amountStars))) {
     return NextResponse.json({ error: 'amountStars must be a positive integer' }, { status: 400 });
   }
+
+  const starsBalance =
+    typeof burnStarsRaw === 'number' && burnStarsRaw > 0
+      ? await getStarsBalance(walletAddress).catch(() => 0)
+      : undefined;
+  const { solPerGEL, solPrice: solPriceUsd } = await fetchSolPriceRates();
+  const pricing = validateOrderPricing({
+    productId,
+    dealerId,
+    paymentMethod: method,
+    amountFiat,
+    currency,
+    amountSol: typeof amountSol === 'number' ? amountSol : undefined,
+    amountStars: typeof amountStars === 'number' ? amountStars : undefined,
+    burnStars: typeof burnStarsRaw === 'number' ? burnStarsRaw : undefined,
+    starsBalance,
+    solPerGEL,
+    solPriceUsd,
+  });
+  if (!pricing.ok) {
+    return NextResponse.json({ error: pricing.error }, { status: 400 });
+  }
+  const catalogProduct = pricing.product;
   const s = shipping ?? {};
   for (const k of ['name', 'phone', 'address', 'city', 'country'] as const) {
     if (!s[k] || typeof s[k] !== 'string' || (s[k] as string).trim().length === 0) {
@@ -93,40 +110,10 @@ export async function POST(req: NextRequest) {
   // when a deploy ships new schema without the manual Neon ALTER.
   await ensureOrdersBurnColumns().catch(() => { /* surface as insert error below */ });
 
-  // ─── Optional Stars-for-discount burn (§4) ────────────────────────────────
-  // Only valid for SOL-paid GEL-priced products. Discount is computed here so
-  // the resulting order row already carries the discounted amountFiat /
-  // amountSol; the actual SPL burn is signed via /api/stars/burn after order
-  // creation, before /api/orders/confirm marks the order paid.
-  let burnStars = 0;
-  let gelDiscount = 0;
-  let discountedFiat = amountFiat;
-  let discountedSol = typeof amountSol === 'number' ? amountSol : 0;
-  if (typeof burnStarsRaw === 'number' && burnStarsRaw > 0) {
-    if (method !== 'sol') {
-      return NextResponse.json({ error: 'Stars burn discount is only available for SOL-paid orders right now' }, { status: 400 });
-    }
-    if (currency !== 'GEL') {
-      return NextResponse.json({ error: 'Stars burn discount is only available for GEL-priced products right now' }, { status: 400 });
-    }
-    const balance = await getStarsBalance(walletAddress).catch(() => 0);
-    const v = validateBurn({ priceGEL: amountFiat, stars: burnStarsRaw, balance });
-    if (!v.ok) {
-      return NextResponse.json({ error: v.reason }, { status: 400 });
-    }
-    burnStars = burnStarsRaw;
-    gelDiscount = v.gelDiscount;
-    discountedFiat = Math.max(0, amountFiat - gelDiscount);
-    if (typeof amountSol === 'number' && amountFiat > 0) {
-      // Scale SOL proportionally — the client computed amountSol against the
-      // pre-discount price; divide by the same ratio to keep the SOL payment
-      // honest.
-      discountedSol = Number(((amountSol * discountedFiat) / amountFiat).toFixed(6));
-    }
-  }
-  // Cap burn helper for parity with /api/stars/burn — the validation above is
-  // already strict, this is just a defensive belt+suspenders.
-  void computeMaxBurn; void starsToGEL;
+  const burnStars = pricing.burnStars;
+  const gelDiscount = pricing.gelDiscount;
+  const discountedFiat = pricing.chargedFiat;
+  const discountedSol = pricing.chargedSol;
 
   // STARS PAYMENT: verify on-chain balance against pending+paid stars orders, then mark paid immediately.
   if (method === 'stars') {
@@ -150,8 +137,8 @@ export async function POST(req: NextRequest) {
     const inserted = await db
       .insert(orders)
       .values({
-        privyId, walletAddress, productId, productName,
-        productImage: productImage ?? null, dealerId,
+        privyId, walletAddress, productId, productName: catalogProduct.name,
+        productImage: catalogProduct.image, dealerId,
         paymentMethod: 'stars',
         amountSol: 0,
         amountStars: required,
@@ -197,8 +184,8 @@ export async function POST(req: NextRequest) {
   const inserted = await db
     .insert(orders)
     .values({
-      privyId, walletAddress, productId, productName,
-      productImage: productImage ?? null, dealerId,
+      privyId, walletAddress, productId, productName: catalogProduct.name,
+      productImage: catalogProduct.image, dealerId,
       paymentMethod: 'sol',
       amountSol: discountedSol,
       amountStars: 0,
@@ -223,9 +210,9 @@ export async function POST(req: NextRequest) {
     recipient,
     amount: new BigNumber(discountedSol),
     reference,
-    label: productName,
+    label: catalogProduct.name,
     memo: order.id,
-    message: `Stellarr · ${productName}`,
+    message: `Stellarr · ${catalogProduct.name}`,
   });
 
   return NextResponse.json({
@@ -283,13 +270,8 @@ export async function GET(req: NextRequest) {
   const db = getDb();
   if (!db) return NextResponse.json({ orders: [] });
 
-  // Verify wallet ownership
-  const userRows = await db
-    .select({ walletAddress: users.walletAddress })
-    .from(users)
-    .where(eq(users.privyId, privyId))
-    .limit(1);
-  if (userRows.length > 0 && userRows[0].walletAddress && userRows[0].walletAddress !== walletAddress) {
+  const owns = await assertOwnsWallet(privyId, walletAddress);
+  if (!owns) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
