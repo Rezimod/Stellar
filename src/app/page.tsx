@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
@@ -48,6 +49,49 @@ function PartnerLogo({
         className="h-7 md:h-9 w-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300"
         style={filter ? { filter, height: 'auto', maxHeight: '36px' } : { height: 'auto', maxHeight: '36px' }}
       />
+    </div>
+  );
+}
+
+function AchievementSeal({
+  label,
+  rank,
+  date,
+  color,
+  glyph,
+}: {
+  label: string;
+  rank: string;
+  date: string;
+  color: string;
+  glyph: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center text-center min-w-0 flex-1 max-w-[200px]">
+      <div
+        className="relative flex items-center justify-center w-[72px] h-[72px] md:w-[80px] md:h-[80px] rounded-full mb-3"
+        style={{
+          background: `${color}0D`,
+          border: `1.5px solid ${color}55`,
+          boxShadow: `inset 0 0 0 4px ${color}12`,
+        }}
+      >
+        <div
+          className="absolute inset-[5px] rounded-full"
+          style={{ border: `1px solid ${color}30` }}
+          aria-hidden="true"
+        />
+        <div className="relative font-mono text-[15px] md:text-[16px] font-semibold tracking-tight" style={{ color }}>
+          {glyph}
+        </div>
+      </div>
+      <p className="text-white text-[14px] md:text-[15px] font-semibold tracking-[-0.01em] leading-tight">
+        {label}
+      </p>
+      <p className="text-[12px] md:text-[13px] font-medium mt-0.5" style={{ color }}>
+        {rank}
+      </p>
+      <p className="text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>
     </div>
   );
 }
@@ -780,6 +824,82 @@ function SkyEventsScreen({
   );
 }
 
+function SignInScreen({ labels }: { labels: { title: string; subtitle: string; email: string; cta: string } }) {
+  return (
+    <div className="flex flex-col h-full justify-center px-1">
+      <div className="text-center">
+        <div className="mx-auto mb-2 w-8 h-8 rounded-full bg-[#FFB347]/15 border border-[#FFB347]/35 flex items-center justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB347" aria-hidden="true">
+            <path d="M12 1l1.5 3.5L17 5l-2.5 2L15 10.5 12 8.5 9 10.5l.5-3.5L7 5l3.5-.5z" />
+          </svg>
+        </div>
+        <div className="text-white text-[12px] font-bold leading-tight">{labels.title}</div>
+        <div className="text-white/50 text-[8.5px] mt-0.5">{labels.subtitle}</div>
+      </div>
+      <div className="mt-3 rounded-[7px] bg-white/[0.05] border border-white/10 px-2 py-1.5 text-white/35 text-[8px]">
+        {labels.email}
+      </div>
+      <div className="mt-2 rounded-[7px] bg-[#FFB347] text-[#0A1735] text-[8.5px] font-semibold text-center py-1.5">
+        {labels.cta}
+      </div>
+    </div>
+  );
+}
+
+function EarnStarsScreen({ labels }: { labels: { sealed: string; target: string; stars: string } }) {
+  return (
+    <div className="flex flex-col h-full justify-center items-center text-center px-1">
+      <div className="w-10 h-10 rounded-full bg-[#5EEAD4]/15 border border-[#5EEAD4]/40 flex items-center justify-center mb-2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </div>
+      <div className="text-[#5EEAD4] text-[8px] font-mono uppercase tracking-wider">{labels.sealed}</div>
+      <div className="text-white text-[13px] font-bold mt-1">{labels.target}</div>
+      <div className="text-[#FFB347] font-mono text-[11px] font-semibold tabular-nums mt-2">{labels.stars}</div>
+      <div className="mt-3 w-full rounded-[7px] bg-white/[0.04] border border-white/10 px-2 py-1.5 flex items-center justify-between">
+        <span className="text-white/50 text-[7.5px]">Solana</span>
+        <span className="text-[#5EEAD4] text-[7px] font-mono">✓ on-chain</span>
+      </div>
+    </div>
+  );
+}
+
+function HowItWorksStep({
+  step,
+  label,
+  activeTab,
+  navLabels,
+  children,
+}: {
+  step: string;
+  label: string;
+  activeTab: AppTab;
+  navLabels: Record<AppTab, string>;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center min-w-0 flex-1">
+      <div className="relative flex justify-center w-full h-[228px] sm:h-[268px] md:h-auto overflow-visible">
+        <span
+          className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#FFB347] tabular-nums"
+          style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
+        >
+          {step}
+        </span>
+        <div className="scale-[0.52] sm:scale-[0.68] md:scale-100 origin-top pt-7 md:pt-8">
+          <IPhone size="sm" activeTab={activeTab} navLabels={navLabels}>
+            {children}
+          </IPhone>
+        </div>
+      </div>
+      <p className="mt-1 md:mt-3 text-white text-[11.5px] sm:text-[13px] md:text-[15px] font-semibold leading-tight text-center tracking-[-0.01em]">
+        {label}
+      </p>
+    </div>
+  );
+}
+
 function SkyFeatureSlot({
   step,
   title,
@@ -821,36 +941,20 @@ export default async function HomePage() {
     {
       key: 'tether',
       color: '#2DD4BF',
-      tag: t('achievements.items.tether.tag'),
+      label: t('achievements.items.tether.label'),
+      rank: t('achievements.items.tether.rank'),
       date: t('achievements.items.tether.date'),
-      title: t('achievements.items.tether.title'),
-      desc: t('achievements.items.tether.desc'),
-      icon: (
-        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M8 21h8" />
-          <path d="M12 17v4" />
-          <path d="M7 4h10v5a5 5 0 0 1-10 0z" />
-          <path d="M17 5h2.5a1.5 1.5 0 0 1 0 5H17" />
-          <path d="M7 5H4.5a1.5 1.5 0 0 0 0 5H7" />
-        </svg>
-      ),
+      glyph: '1ST',
     },
     {
       key: 'superteam',
       color: '#A78BFA',
-      tag: t('achievements.items.superteam.tag'),
+      label: t('achievements.items.superteam.label'),
+      rank: t('achievements.items.superteam.rank'),
       date: t('achievements.items.superteam.date'),
-      title: t('achievements.items.superteam.title'),
-      desc: t('achievements.items.superteam.desc'),
-      icon: (
-        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="12" cy="8" r="6" />
-          <path d="M8.5 13.5L7 22l5-2.6L17 22l-1.5-8.5" />
-          <path d="M12 5.5l1.1 2.2 2.4.2-1.8 1.6.5 2.4L12 12.6l-2.2 1.3.5-2.4L8.5 9.9l2.4-.2z" />
-        </svg>
-      ),
+      glyph: '✦',
     },
-  ];
+  ] as const;
 
   const missionsLabels = {
     label: t('missions.screenLabel'),
@@ -956,111 +1060,93 @@ export default async function HomePage() {
           ACHIEVEMENTS / NEWS
          ============================================================ */}
       <section className="px-4 md:px-8 pt-14 md:pt-20 pb-2">
-        <div className="max-w-[880px] mx-auto">
-          <div className="text-center mb-7 md:mb-9">
+        <div className="max-w-[560px] mx-auto">
+          <div className="text-center mb-8 md:mb-10">
             <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('achievements.title')}</SectionTitle>
-            <p className="text-white/55 text-[15px] md:text-[16px] leading-relaxed max-w-[480px] mx-auto mt-1">
-              {t('achievements.subtitle')}
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {achievements.map((a) => (
-              <div
-                key={a.key}
-                className="group relative flex items-start gap-3.5 rounded-[14px] bg-white/[0.025] border border-white/[0.07] px-4 py-3.5 transition-colors hover:bg-white/[0.04] hover:[border-color:var(--accent)]"
-                style={{ ['--accent' as string]: `${a.color}55` }}
-              >
-                <span
-                  className="flex items-center justify-center w-[40px] h-[40px] rounded-[11px] shrink-0"
-                  style={{ background: `${a.color}1A`, border: `1px solid ${a.color}40` }}
-                >
-                  {a.icon}
-                </span>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-[0.10em]"
-                      style={{ background: `${a.color}1A`, color: a.color }}
-                    >
-                      {t('achievements.winner')}
-                    </span>
-                    <span className="text-[11.5px] text-white/45 truncate">
-                      {a.tag} · {a.date}
-                    </span>
-                  </div>
-                  <h3 className="text-white text-[15.5px] font-semibold leading-snug tracking-[-0.005em]">
-                    {a.title}
-                  </h3>
-                  <p className="text-white/50 text-[13px] leading-[1.5] mt-1">
-                    {a.desc}
-                  </p>
-                </div>
-              </div>
+          <div className="flex items-start justify-center gap-8 md:gap-14">
+            {achievements.map((a, i) => (
+              <Fragment key={a.key}>
+                {i > 0 && (
+                  <div
+                    className="hidden sm:block w-px self-stretch min-h-[88px] bg-white/[0.08]"
+                    aria-hidden="true"
+                  />
+                )}
+                <AchievementSeal
+                  label={a.label}
+                  rank={a.rank}
+                  date={a.date}
+                  color={a.color}
+                  glyph={a.glyph}
+                />
+              </Fragment>
             ))}
           </div>
         </div>
       </section>
 
       {/* ============================================================
-          HOW IT WORKS
+          HOW IT WORKS — three phones, one screen
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px]">
-        <div className="max-w-[1080px] mx-auto">
-          <div className="text-center mb-12 md:mb-16">
+      <section className="px-4 md:px-8 py-10 md:py-16">
+        <div className="max-w-[1080px] mx-auto md:min-h-[min(720px,88svh)] flex flex-col justify-center">
+          <div className="text-center mb-5 md:mb-8">
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('howItWorks.title')}</SectionTitle>
-            <p className="text-white/55 text-[15px] md:text-[17px] leading-relaxed max-w-[560px] mx-auto mt-1">
-              {t('howItWorks.subtitle')}
-            </p>
           </div>
 
-          {/* Numbered 1·2·3 stepper — distinct from the phone+list sections below */}
-          <ol className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 max-w-[960px] mx-auto">
-            {[
-              {
-                n: '1',
-                title: t('howItWorks.step1'),
-                desc: t('howItWorks.step1desc'),
-                icon: (
-                  <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="8" r="4" />
-                    <path d="M5 21a7 7 0 0 1 14 0" />
-                  </svg>
-                ),
-              },
-              {
-                n: '2',
-                title: t('howItWorks.step2'),
-                desc: t('howItWorks.step2desc'),
-                icon: <TabIcon kind="missions" color="rgba(255,255,255,0.85)" size={22} />,
-              },
-              {
-                n: '3',
-                title: t('howItWorks.step3'),
-                desc: t('howItWorks.step3desc'),
-                icon: <TabIcon kind="feed" color="rgba(255,255,255,0.85)" size={22} />,
-              },
-            ].map((step) => (
-              <li key={step.n} className="flex flex-col items-center text-center">
-                <span
-                  className="flex items-center justify-center w-[52px] h-[52px] rounded-full mb-5"
-                  style={{ border: '1px solid rgba(255,179,71,0.35)', background: 'rgba(255,179,71,0.06)' }}
-                >
-                  <span className="text-[15px] font-semibold text-[#FFB347] tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
-                    {step.n}
-                  </span>
-                </span>
-                <span className="mb-3">{step.icon}</span>
-                <h3 className="text-white text-[18px] font-semibold leading-tight mb-1.5">{step.title}</h3>
-                <p className="text-white/55 text-[14px] leading-relaxed max-w-[260px]">{step.desc}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="flex items-start justify-center gap-1 sm:gap-3 md:gap-6 max-w-[960px] mx-auto">
+            <HowItWorksStep
+              step="1"
+              label={t('howItWorks.step1')}
+              activeTab="home"
+              navLabels={navLabels}
+            >
+              <SignInScreen
+                labels={{
+                  title: t('howItWorks.signIn.title'),
+                  subtitle: t('howItWorks.signIn.subtitle'),
+                  email: t('howItWorks.signIn.email'),
+                  cta: t('howItWorks.signIn.cta'),
+                }}
+              />
+            </HowItWorksStep>
 
-          <div className="mt-12 md:mt-16 text-center">
+            <div className="hidden md:flex items-center self-center pt-16 text-white/20 text-xl font-mono" aria-hidden="true">
+              →
+            </div>
+
+            <HowItWorksStep
+              step="2"
+              label={t('howItWorks.step2')}
+              activeTab="sky"
+              navLabels={navLabels}
+            >
+              <SkyMapScreen labels={skyMapLabels} />
+            </HowItWorksStep>
+
+            <div className="hidden md:flex items-center self-center pt-16 text-white/20 text-xl font-mono" aria-hidden="true">
+              →
+            </div>
+
+            <HowItWorksStep
+              step="3"
+              label={t('howItWorks.step3')}
+              activeTab="missions"
+              navLabels={navLabels}
+            >
+              <EarnStarsScreen
+                labels={{
+                  sealed: t('howItWorks.earn.sealed'),
+                  target: tPlanets('jupiter'),
+                  stars: t('howItWorks.earn.stars'),
+                }}
+              />
+            </HowItWorksStep>
+          </div>
+
+          <div className="mt-6 md:mt-10 text-center">
             <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
           </div>
         </div>

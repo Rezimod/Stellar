@@ -1067,35 +1067,35 @@
     "partners": "Partner brands",
     "achievements": {
       "eyebrow": "Recognition",
-      "title": "Milestones & momentum",
-      "subtitle": "What Stellar has earned along the way.",
-      "winner": "Winner",
       "items": {
         "tether": {
-          "tag": "Hackathon",
-          "date": "May 2026",
-          "title": "Tether Frontier Hackathon — Track Winner",
-          "desc": "Stellar Field, our offline on-device AI companion built on Tether QVAC, won the Frontier hackathon track."
+          "label": "Tether Frontier",
+          "rank": "1st place",
+          "date": "May 2026"
         },
         "superteam": {
-          "tag": "Grant",
-          "date": "2026",
-          "title": "Superteam Grant Recipient",
-          "desc": "Backed by a Superteam grant to keep shipping real astronomy utility on Solana."
+          "label": "Superteam",
+          "rank": "Grant",
+          "date": "2026"
         }
       }
     },
     "howItWorks": {
       "eyebrow": "How it works",
-      "title": "Three steps. Real rewards.",
-      "subtitle": "Explore the night sky, complete observations, and earn Stars — it only takes three simple steps.",
       "step1": "Sign in",
-      "step1desc": "Create your free account and get started.",
       "step2": "Find a target",
-      "step2desc": "Discover planets and constellations visible tonight.",
       "step3": "Earn Stars",
-      "step3desc": "Complete your observations and earn Stars and rewards.",
-      "cta": "Start observing →"
+      "cta": "Start observing →",
+      "signIn": {
+        "title": "Welcome",
+        "subtitle": "Free account · auto wallet",
+        "email": "you@email.com",
+        "cta": "Continue"
+      },
+      "earn": {
+        "sealed": "Discovery sealed",
+        "stars": "+75 ✦"
+      }
     },
     "missions": {
       "eyebrow": "Missions",
