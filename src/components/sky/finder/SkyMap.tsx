@@ -427,6 +427,33 @@ export function SkyMap({
     return stars;
   }, []);
 
+  // Decorative deep-space field filling the square's corners (outside the
+  // horizon dome) so the whole panel reads as sky, not an empty box. Purely
+  // cosmetic — dimmer than the in-dome stars so the dome stays the focus.
+  const cornerField = useMemo(() => {
+    let seed = 8161;
+    const rand = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+    const stars: { x: number; y: number; r: number; o: number }[] = [];
+    const target = 90;
+    const outerR = R + 6;
+    let attempts = 0;
+    while (stars.length < target && attempts < target * 10) {
+      attempts++;
+      const x = rand() * SIZE;
+      const y = rand() * SIZE;
+      const dx = x - CX;
+      const dy = y - CY;
+      if (dx * dx + dy * dy < outerR * outerR) continue; // keep to the corners
+      const r = 0.3 + rand() * 0.9;
+      const o = 0.1 + rand() * 0.3;
+      stars.push({ x, y, r, o });
+    }
+    return stars;
+  }, []);
+
   const projectedStars = useMemo(() => {
     return constellationStars
       .filter((s) => s.altitude > 0)
@@ -528,7 +555,20 @@ export function SkyMap({
             <stop offset="55%" stopColor="rgba(150,170,210,0.30)" />
             <stop offset="100%" stopColor="rgba(110,130,170,0)" />
           </radialGradient>
+          <radialGradient id="skymap-square" cx="50%" cy="50%" r="75%">
+            <stop offset="0%" stopColor="#060c1d" />
+            <stop offset="70%" stopColor="#040810" />
+            <stop offset="100%" stopColor="#020409" />
+          </radialGradient>
         </defs>
+
+        {/* Deep-space backdrop filling the full square + corner starfield. */}
+        <rect x={0} y={0} width={SIZE} height={SIZE} fill="url(#skymap-square)" />
+        <g pointerEvents="none">
+          {cornerField.map((s, i) => (
+            <circle key={`corner-${i}`} cx={s.x} cy={s.y} r={s.r} fill="#DCE4F4" opacity={s.o} />
+          ))}
+        </g>
 
         <circle
           cx={CX}

@@ -1,0 +1,198 @@
+/* Daily telescope-imagery gallery on the Sky page. */
+.space-gal { display: flex; flex-direction: column; gap: 14px; }
+
+.space-gal__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.space-gal__eyebrow {
+  margin: 0 0 2px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.space-gal__title {
+  margin: 0;
+  font-family: var(--font-display, var(--sans));
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+.space-gal__sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.space-gal__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.space-gal__skel {
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  background-size: 200% 100%;
+  animation: skyShimmer 1.6s linear infinite;
+}
+
+.space-gal__card {
+  appearance: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+.space-gal__card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.space-gal__card:focus-visible { outline: 2px solid var(--terracotta, #FFB347); outline-offset: 2px; }
+
+.space-gal__thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: radial-gradient(120% 100% at 50% 0%, #10183a, #05080f);
+}
+.space-gal__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 220ms ease; }
+.space-gal__card:hover .space-gal__thumb img { transform: scale(1.04); }
+.space-gal__thumb-fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 60% at 30% 25%, rgba(120,150,230,0.35), transparent 70%),
+    radial-gradient(50% 50% at 75% 70%, rgba(232,131,106,0.28), transparent 70%),
+    #06091a;
+}
+
+.space-gal__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(3px);
+}
+.space-gal__badge--nasa { color: #ffd9a6; }
+.space-gal__badge--esa { color: #9fd8e5; }
+.space-gal__badge--webb { color: #f4b483; }
+.space-gal__badge--hubble { color: #c4d2ee; }
+
+.space-gal__card-body { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px 12px; }
+.space-gal__card-title {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.space-gal__card-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+/* === Popup === */
+.space-gal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(2, 4, 10, 0.78);
+  backdrop-filter: blur(6px);
+  animation: skyFade 160ms ease;
+}
+@keyframes skyFade { from { opacity: 0; } to { opacity: 1; } }
+.space-gal__modal {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: min(86vh, 760px);
+  overflow-y: auto;
+  background: var(--surface, #12182a);
+  border: 1px solid var(--border-strong, rgba(255,255,255,0.14));
+  border-radius: 20px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+.space-gal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+.space-gal__close:hover { background: rgba(0, 0, 0, 0.75); }
+.space-gal__modal-img { width: 100%; max-height: 440px; overflow: hidden; background: #05080f; border-radius: 20px 20px 0 0; }
+.space-gal__modal-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.space-gal__modal-body { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px 20px; }
+.space-gal__modal-body .space-gal__badge { position: static; align-self: flex-start; }
+.space-gal__modal-title {
+  margin: 0;
+  font-family: var(--font-display, var(--sans));
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--text);
+}
+.space-gal__modal-meta { margin: 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--text-dim); }
+.space-gal__modal-text { margin: 2px 0 6px; font-family: var(--body, var(--sans)); font-size: 13.5px; line-height: 1.55; color: var(--text-muted); }
+.space-gal__link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: var(--terracotta, #FFB347);
+  color: #1a1205;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: filter 140ms ease;
+}
+.space-gal__link:hover { filter: brightness(1.08); }
+
+@media (max-width: 1080px) {
+  .space-gal__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .space-gal__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .space-gal__head { align-items: flex-start; flex-direction: column; gap: 4px; }
+}

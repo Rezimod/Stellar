@@ -4344,8 +4344,10 @@
   .sky-obs__main > .sky-obs__cards { grid-area: cards; }
   .sky-obs__main > .forecast7--rail { grid-area: outlook; }
 
-  /* Bigger sky map */
-  .sky-obs__dome .sky-map { max-width: min(100%, 740px); }
+  /* Bigger sky map — fills the square panel; the corners now read as deep
+     space (cosmic field rendered in the SVG), not empty box. */
+  .sky-obs__dome { padding: 10px; }
+  .sky-obs__dome .sky-map { max-width: min(100%, 880px); }
 
   /* Best targets — two per row, no number badge */
   .sky-obs__targets { padding: 14px 14px 10px; }
@@ -4549,6 +4551,9 @@
   }
   .sky-page-v2 .ev {
     order: 20;
+  }
+  .sky-page-v2 .space-gal {
+    order: 22;
   }
   .sky-obs__card {
     padding: 9px 10px;

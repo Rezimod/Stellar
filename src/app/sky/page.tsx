@@ -7,7 +7,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin, Cloud, Wind } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin } from 'lucide-react';
+import { TelescopeIcon, CloudIcon, SeeingIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
@@ -29,6 +30,7 @@ import { ARFinder } from '@/components/sky/finder/ARFinder';
 import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
 import { TonightTimeline } from '@/components/sky/TonightTimeline';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
+import { SpaceGallery } from '@/components/sky/SpaceGallery';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
 
@@ -558,7 +560,7 @@ export default function SkyPage() {
                 <ConditionCard label="Observing window">
                   <div className="sky-obs__window">
                     <RingGauge pct={0.78} color="var(--seafoam, #5EEAD4)">
-                      <Telescope size={18} aria-hidden="true" />
+                      <TelescopeIcon size={20} />
                     </RingGauge>
                     <div className="sky-obs__window-body">
                       <span className="sky-obs__window-times">
@@ -575,7 +577,7 @@ export default function SkyPage() {
                 <ConditionCard label="Cloud cover">
                   <div className="sky-obs__metric">
                     <RingGauge pct={cloudPct != null ? cloudPct / 100 : 0} color="var(--terracotta, #FFB347)">
-                      <Cloud size={18} aria-hidden="true" />
+                      <CloudIcon size={20} />
                     </RingGauge>
                     <div className="sky-obs__metric-body">
                       <span className="sky-obs__metric-value">{cloudPct ?? '—'}<span className="sky-obs__metric-unit">%</span></span>
@@ -597,7 +599,7 @@ export default function SkyPage() {
                 <ConditionCard label="Seeing">
                   <div className="sky-obs__metric">
                     <RingGauge pct={seeingArc != null ? 1 - (seeingArc - 1) / 4 : 0} color="var(--seafoam, #5EEAD4)">
-                      <Wind size={17} aria-hidden="true" />
+                      <SeeingIcon size={20} />
                     </RingGauge>
                     <div className="sky-obs__metric-body">
                       <span className="sky-obs__metric-value sky-obs__metric-value--sm">{seeingArc != null ? `${seeingArc.toFixed(1)}″` : '—'}</span>
@@ -646,6 +648,9 @@ export default function SkyPage() {
 
         {/* === Year-in-the-sky 2026 events rail === */}
         <SkyEvents2026 />
+
+        {/* === Daily telescope imagery (NASA / ESA / Webb) === */}
+        <SpaceGallery />
       </div>
 
       <SkyLocationModal open={showLocModal} onClose={closeLocModal} />
