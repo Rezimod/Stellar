@@ -23,9 +23,11 @@ const VALID_KINDS: TweetKind[] = [
   'product_spotlight',
   'astro_fact',
   'short_post',
+  'build_update',
+  'solana_infra',
 ]
 
-const VALID_SLOTS: DailySlot[] = ['morning', 'afternoon', 'evening']
+const VALID_SLOTS: DailySlot[] = ['midday', 'evening']
 
 function authorized(req: NextRequest): boolean {
   return verifyCronSecret(req)
@@ -64,7 +66,7 @@ async function handle(req: NextRequest) {
   let imageBase64: string | null = null
   if (!skipImage) {
     try {
-      imageBuf = await generateTweetImage(drafted.kind, drafted.context)
+      imageBuf = await generateTweetImage(drafted.kind, drafted.context, drafted.body)
       imageBase64 = imageBuf.toString('base64')
     } catch (err) {
       console.error('[agent/draft-tweet] image generation failed — proceeding text-only', err)

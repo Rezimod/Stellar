@@ -10,8 +10,10 @@ export type TweetKind =
   | 'product_spotlight'
   | 'astro_fact'
   | 'short_post'
+  | 'build_update'
+  | 'solana_infra'
 
-export type DailySlot = 'morning' | 'afternoon' | 'evening'
+export type DailySlot = 'midday' | 'evening'
 
 const SITE = 'https://stellarr.club'
 
@@ -28,7 +30,7 @@ Voice: patient, precise, earned. Like NASA, not like a crypto influencer.
 Rules:
 - Max 270 characters total (leave room). Short posts: max 200 characters.
 - Plain text. No emojis unless one is genuinely informative (e.g. a moon phase). Default: zero emojis.
-- No hashtags unless explicitly asked.
+- Add 2-5 relevant hashtags at the end.
 - Never hype. Never use words like "rocket", "bullish", "wagmi", "to the moon" (crypto slang).
 - Numbers earn their place — only include a number if it's measured/real.
 - One idea per tweet. End with stellarr.club or a path on it when relevant.
@@ -171,6 +173,81 @@ Open with the concrete problem it solves. One line on how it works. End with the
   return { kind: 'product_spotlight', body, context: { feature: pick.name, url: pick.url } }
 }
 
+const BUILD_UPDATES = [
+  {
+    focus: 'daily sky verdicts',
+    detail: 'weather, lunar phase, target visibility, and planet positions compressed into Go / Maybe / Skip',
+    url: `${SITE}/sky`,
+  },
+  {
+    focus: 'ASTRA',
+    detail: 'the AI companion calls live sky tools before answering, so advice is tied to the observer location and tonight\'s sky',
+    url: `${SITE}/chat`,
+  },
+  {
+    focus: 'observation verification',
+    detail: 'uploaded sky photos are checked for astronomy context, EXIF signals, visibility, and duplicate hashes before rewards',
+    url: `${SITE}/observe`,
+  },
+  {
+    focus: 'Stellar Field',
+    detail: 'the Android companion is built for dark-sky sites where the useful answer must still work offline',
+    url: `${SITE}/field`,
+  },
+  {
+    focus: 'Astroman marketplace',
+    detail: 'real telescope products sit next to planning tools, so beginners can move from forecast to gear with less guesswork',
+    url: `${SITE}/marketplace`,
+  },
+]
+
+async function buildBuildUpdate(): Promise<DraftedTweet> {
+  const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24))
+  const pick = BUILD_UPDATES[day % BUILD_UPDATES.length]
+  const body = await generate(
+    `Write a build-in-public X post for Stellar.
+Focus: ${pick.focus}
+Implementation detail: ${pick.detail}
+Link: ${pick.url}
+
+Open with what changed or what is being built. Explain the user value in one concrete sentence. End with the link and relevant hashtags.`,
+  )
+  return { kind: 'build_update', body, context: { focus: pick.focus, detail: pick.detail, url: pick.url } }
+}
+
+const SOLANA_NOTES = [
+  {
+    focus: 'gasless onboarding',
+    detail: 'users sign in with email, get an embedded wallet, and Stellar pays devnet transaction fees server-side',
+  },
+  {
+    focus: 'Discovery Attestations',
+    detail: 'verified observations can become compressed NFTs, giving telescope owners portable proof without a crypto-first flow',
+  },
+  {
+    focus: 'Stars rewards',
+    detail: 'observation rewards can be tracked as tokenized reputation while the app still feels like a normal astronomy product',
+  },
+  {
+    focus: 'low-cost public records',
+    detail: 'Solana lets Stellar write small proof and reward events cheaply enough to keep the blockchain invisible to beginners',
+  },
+]
+
+async function buildSolanaInfra(): Promise<DraftedTweet> {
+  const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24))
+  const pick = SOLANA_NOTES[day % SOLANA_NOTES.length]
+  const body = await generate(
+    `Write an X post explaining why Stellar uses Solana.
+Focus: ${pick.focus}
+Technical background: ${pick.detail}
+Audience: telescope owners and astronomy app users, not crypto traders.
+
+Make Solana feel like quiet infrastructure. Mention Stellar. End with stellarr.club and relevant hashtags.`,
+  )
+  return { kind: 'solana_infra', body, context: { focus: pick.focus, detail: pick.detail, solana: true } }
+}
+
 const MESSIER_TARGETS = [
   { id: 'M13', name: 'Hercules Cluster', kind: 'globular cluster', minScope: '4-inch', note: 'best summer target — 300,000 stars packed into a fuzzy ball', constellation: 'Hercules' },
   { id: 'M31', name: 'Andromeda Galaxy', kind: 'spiral galaxy', minScope: 'binoculars', note: '2.5 million light years away — the farthest thing visible to the naked eye', constellation: 'Andromeda' },
@@ -245,21 +322,21 @@ const BUILDERS: Record<TweetKind, () => Promise<DraftedTweet>> = {
   product_spotlight: buildProductSpotlight,
   astro_fact: buildAstroFact,
   short_post: buildShortPost,
+  build_update: buildBuildUpdate,
+  solana_infra: buildSolanaInfra,
 }
 
-const ROTATION: TweetKind[] = ['sky_verdict', 'space_news', 'product_spotlight', 'astro_fact']
+const ROTATION: TweetKind[] = ['build_update', 'solana_infra', 'product_spotlight', 'astro_fact']
 
-/** Three posts per day — each slot has its own rotation (Tbilisi-friendly times via cron). */
+/** Two posts per day — each slot has its own Tbilisi-friendly rotation. */
 const SLOT_KINDS: Record<DailySlot, TweetKind[]> = {
-  morning: ['short_post', 'sky_verdict', 'short_post'],
-  afternoon: ['product_spotlight', 'product_spotlight', 'space_news'],
-  evening: ['astro_fact', 'space_news', 'astro_fact'],
+  midday: ['build_update', 'product_spotlight', 'short_post'],
+  evening: ['solana_infra', 'astro_fact', 'space_news', 'solana_infra'],
 }
 
 export const SLOT_LABELS: Record<DailySlot, string> = {
-  morning: 'Morning (10:00 Tbilisi)',
-  afternoon: 'Afternoon (15:00 Tbilisi)',
-  evening: 'Evening (20:00 Tbilisi)',
+  midday: 'Midday (12:01 Tbilisi)',
+  evening: 'Evening (18:00 Tbilisi)',
 }
 
 export function pickKindForSlot(slot: DailySlot, date = new Date()): TweetKind {

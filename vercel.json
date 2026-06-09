@@ -1,16 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/agent/draft-tweet?slot=morning",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/agent/draft-tweet?slot=afternoon",
-      "schedule": "0 11 * * *"
+      "path": "/api/agent/draft-tweet?slot=midday",
+      "schedule": "1 8 * * *"
     },
     {
       "path": "/api/agent/draft-tweet?slot=evening",
-      "schedule": "0 16 * * *"
+      "schedule": "0 14 * * *"
     },
     {
       "path": "/api/cron/push",

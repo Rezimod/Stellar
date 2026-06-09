@@ -1,0 +1,22 @@
+[
+  {
+    "id": "test-post-01",
+    "theme": "development",
+    "headline": "Tonight's sky, ranked before you unpack the telescope.",
+    "subhead": "Stellar combines weather, lunar phase, planet positions, and observing targets into one clear verdict.",
+    "body": "Building Stellar means starting with the question every telescope owner asks: can I actually observe tonight?\n\nThe app turns weather, Moon phase, planet positions, and target visibility into a simple Go / Maybe / Skip verdict before you leave home.\n\nUtility first. Crypto second.\n\n#Stellar #Astronomy #Astrophotography #Solana #BuildInPublic",
+    "hashtags": ["#Stellar", "#Astronomy", "#Astrophotography", "#Solana", "#BuildInPublic"],
+    "image": "images/test-post-01.png",
+    "background": "backgrounds/test-post-01-bg.png"
+  },
+  {
+    "id": "test-post-02",
+    "theme": "solana",
+    "headline": "Why Solana belongs under the telescope, not in the way.",
+    "subhead": "Embedded wallets, gasless rewards, and on-chain observation proofs keep the app useful for normal people.",
+    "body": "Why Solana for Stellar?\n\nBecause observation history, rewards, and discovery attestations should be portable, public, and cheap enough to feel invisible.\n\nUsers sign in with email. Stellar handles the wallet and gas behind the scenes.\n\n#Stellar #Solana #DePIN #Astronomy #Web3",
+    "hashtags": ["#Stellar", "#Solana", "#DePIN", "#Astronomy", "#Web3"],
+    "image": "images/test-post-02.png",
+    "background": "backgrounds/test-post-02-bg.png"
+  }
+]
