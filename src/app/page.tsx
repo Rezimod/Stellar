@@ -897,21 +897,21 @@ function HowItWorksStep({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center min-w-0 flex-1">
-      <div className="relative flex justify-center w-full h-[228px] sm:h-[268px] md:h-auto overflow-visible">
+    <div className="home-how-step flex flex-col items-center min-w-0 flex-1">
+      <div className="home-how-phone-wrap relative flex justify-center w-full h-[228px] sm:h-[268px] md:h-auto overflow-visible">
         <span
           className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#FFB347] tabular-nums"
           style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
         >
           {step}
         </span>
-        <div className="scale-[0.52] sm:scale-[0.68] md:scale-100 origin-top pt-7 md:pt-8">
+        <div className="home-how-phone-scale scale-[0.52] sm:scale-[0.68] md:scale-100 origin-top pt-7 md:pt-8">
           <IPhone size="sm" activeTab={activeTab} navLabels={navLabels}>
             {children}
           </IPhone>
         </div>
       </div>
-      <p className="mt-1 md:mt-3 text-white text-[11.5px] sm:text-[13px] md:text-[15px] font-semibold leading-tight text-center tracking-[-0.01em]">
+      <p className="home-how-label mt-1 md:mt-3 text-white text-[11.5px] sm:text-[13px] md:text-[15px] font-semibold leading-tight text-center tracking-[-0.01em]">
         {label}
       </p>
     </div>
@@ -1122,7 +1122,7 @@ export default async function HomePage() {
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="flex items-start justify-center gap-1 sm:gap-3 md:gap-6 max-w-[960px] mx-auto">
+          <div className="home-how-steps flex items-start justify-center gap-1 sm:gap-3 md:gap-6 max-w-[960px] mx-auto">
             <HowItWorksStep
               step="1"
               label={t('howItWorks.step1')}

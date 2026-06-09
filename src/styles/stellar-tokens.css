@@ -3340,6 +3340,33 @@
 }
 
 @media (max-width: 639px) {
+  .home-how-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 6px;
+    width: 100%;
+    max-width: 390px;
+  }
+
+  .home-how-step {
+    width: 100%;
+  }
+
+  .home-how-phone-wrap {
+    height: 184px;
+  }
+
+  .home-how-phone-scale {
+    transform: scale(0.5);
+  }
+
+  .home-how-label {
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
   .home-achievements-grid {
     grid-template-columns: repeat(2, minmax(0, 132px));
     justify-content: center;
