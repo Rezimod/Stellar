@@ -383,7 +383,10 @@ class QvacRuntime {
             (sdk as any).EMBEDDINGGEMMA_300M_Q8_0 ??
             null;
           if (embedSrc) {
-            this.embedModelId = await loadModel({ modelSrc: embedSrc, modelType: 'embed' });
+            // modelType must match the bundled plugin ('llamacpp-embedding'); the
+            // old 'embed' alias was PLUGIN_NOT_FOUND, which silently disabled
+            // semantic retrieval (RAG fell back to keyword matching).
+            this.embedModelId = await loadModel({ modelSrc: embedSrc, modelType: 'llamacpp-embedding' });
           }
         } catch {
           this.embedModelId = null;
@@ -489,7 +492,10 @@ class QvacRuntime {
       const embedFn = (sdk as any).embed;
       if (!embedFn) return null;
       const out = await embedFn({ modelId: this.embedModelId, text });
-      return Array.isArray(out) ? out : (out?.vector ?? null);
+      // embed() returns { embedding: number[] } — not { vector } and not a bare
+      // array. Reading the wrong field is what made retrieval see dim=0.
+      if (Array.isArray(out)) return out;
+      return out?.embedding ?? out?.vector ?? null;
     } finally {
       release();
     }

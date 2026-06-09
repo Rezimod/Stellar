@@ -71,7 +71,7 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     await timed('embed-gemma', async () => {
       const embId = await sdk.loadModel({ modelSrc: sdk.EMBEDDINGGEMMA_300M_Q4_0, modelType: 'llamacpp-embedding' });
       const v = await sdk.embed({ modelId: embId, text: 'Andromeda galaxy M31' });
-      const vec = Array.isArray(v) ? v : v?.vector;
+      const vec = Array.isArray(v) ? v : (v?.embedding ?? v?.vector);
       return `dim=${vec?.length ?? 0}`;
     }, report),
   );
