@@ -474,8 +474,9 @@ function SpeakerButton({ text }: { text: string }) {
       });
       player.play();
       setState('playing');
-    } catch {
+    } catch (err: any) {
       setState('idle');
+      Alert.alert('Voice unavailable', err?.message ?? 'Could not synthesize speech.');
     }
   }
 
