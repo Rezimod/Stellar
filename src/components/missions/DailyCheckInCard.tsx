@@ -116,15 +116,15 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
 
   return (
     <div
-      className="mis-checkin flex items-center gap-3.5 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-2.5"
+      className="mis-checkin flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3.5 py-2"
     >
       {/* Streak flame */}
-      <div className="flex flex-col items-center justify-center shrink-0 w-[58px]">
+      <div className="flex flex-col items-center justify-center shrink-0 w-[50px]">
         <div className="flex items-center gap-1">
-          <Flame size={16} className={streak > 0 ? 'text-[#FFB347]' : 'text-white/30'} strokeWidth={1.8} />
-          <span className="font-mono text-[20px] leading-none tabular-nums text-white/90">{streak}</span>
+          <Flame size={14} className={streak > 0 ? 'text-[#FFB347]' : 'text-white/30'} strokeWidth={1.8} />
+          <span className="font-mono text-[17px] leading-none tabular-nums text-white/90">{streak}</span>
         </div>
-        <span className="text-[9px] uppercase tracking-[0.14em] text-white/35 mt-1 text-center leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+        <span className="text-[8.5px] uppercase tracking-[0.14em] text-white/35 mt-0.5 text-center leading-tight" style={{ fontFamily: 'var(--font-body)' }}>
           {c.streakMany}
         </span>
       </div>
@@ -133,15 +133,15 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
 
       {/* Tier + next */}
       <div className="flex-1 min-w-0">
-        <span className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-white/40" style={{ fontFamily: 'var(--font-display)' }}>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/40" style={{ fontFamily: 'var(--font-body)' }}>
           {c.eyebrow}
         </span>
-        <p className="text-white text-[15px] font-medium leading-tight mt-0.5">
+        <p className="text-white text-[13.5px] font-medium leading-tight mt-0.5">
           {tier.name}
-          {tier.multiplier > 1 && <span className="text-[#FFB347] ml-1.5 font-mono text-[13px]">×{tier.multiplier}</span>}
+          {tier.multiplier > 1 && <span className="text-[#FFB347] ml-1.5 font-mono text-[12px]">×{tier.multiplier}</span>}
         </p>
         {tier.nextName && (
-          <p className="text-white/40 text-[11px] leading-tight mt-0.5 truncate">
+          <p className="text-white/40 text-[10.5px] leading-tight mt-0.5 truncate">
             {c.nextTier(tier.nextName, tier.nightsToNext)}
           </p>
         )}
@@ -149,8 +149,8 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
 
       {/* CTA */}
       {checked ? (
-        <div className="flex items-center gap-1.5 shrink-0 text-[#5EEAD4] text-[13px] font-medium">
-          <Check size={16} strokeWidth={2.2} />
+        <div className="flex items-center gap-1.5 shrink-0 text-[#5EEAD4] text-[12px] font-medium">
+          <Check size={15} strokeWidth={2.2} />
           <span className="hidden sm:inline">{c.checkedToday}</span>
         </div>
       ) : (
@@ -158,11 +158,11 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
           type="button"
           onClick={checkIn}
           disabled={busy}
-          className="shrink-0 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[14px] font-semibold text-[#0A0E1A] transition-all active:scale-[0.98] disabled:opacity-60"
+          className="shrink-0 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-[#0A0E1A] transition-all active:scale-[0.98] disabled:opacity-60"
           style={{ background: '#FFD166', fontFamily: 'var(--font-cta, var(--font-body))' }}
         >
           {c.checkInCta}
-          <span className="font-mono text-[13px]">{c.earned(pendingReward)}</span>
+          <span className="font-mono text-[12px]">{c.earned(pendingReward)}</span>
         </button>
       )}
     </div>
