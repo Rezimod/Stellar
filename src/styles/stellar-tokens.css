@@ -4903,24 +4903,40 @@
   gap: 4px;
 }
 
+/* === Hero row — sky status (left) + prime target & check-in (right) === */
+.mis-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.mis-hero-row > .mis-status-chip { margin: 0; flex: 0 1 auto; }
+.mis-hero-row > .mis-strip { flex: 0 1 auto; }
+@media (max-width: 860px) {
+  .mis-hero-row { flex-direction: column; align-items: stretch; gap: 8px; }
+}
+
 /* === Prime target card === */
-/* Hero command strip — prime target + daily check-in share one line. */
+/* Hero command strip — prime target + daily check-in share one line.
+   On desktop the strip sits on the right and sizes to content; below 860px
+   it stretches and stacks (mobile layout unchanged). */
 .mis-strip {
   display: flex;
   align-items: stretch;
   gap: 10px;
 }
 .mis-strip > .mis-prime {
-  flex: 1 1 0;
+  flex: 0 1 320px;
   min-width: 0;
   margin-bottom: 0;
 }
 .mis-strip > .mis-checkin {
-  flex: 0 1 360px;
+  flex: 0 1 auto;
   min-width: 0;
 }
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .mis-strip { flex-direction: column; gap: 8px; }
+  .mis-strip > .mis-prime { flex: 1 1 auto; }
   .mis-strip > .mis-checkin { flex: 1 1 auto; }
 }
 
@@ -5707,6 +5723,27 @@
   font-size: 12px;
   line-height: 1.45;
   color: var(--mis-t2, rgba(255, 255, 255, 0.62));
+}
+
+/* Telescope guide lives inside the center panel now — drop its own card
+   chrome (no nested cards) and use a tighter photo column. */
+.mis-col-center .mis-scope {
+  border: 0;
+  background: transparent;
+  border-radius: 12px;
+}
+@media (min-width: 720px) {
+  .mis-col-center .mis-scope { grid-template-columns: 200px 1fr; }
+  .mis-col-center .mis-scope-photo { min-height: 170px; border-radius: 12px; }
+}
+.mis-col-center .mis-scope-photo { border-radius: 12px; }
+.mis-col-center .mis-scope-steps { padding: 0 0 0 18px; }
+
+/* Upcoming-events rows stack in the right rail */
+.mis-events-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* === Rare events deck — once-a-year highlights === */

@@ -431,10 +431,10 @@ export default function MissionsPage() {
     <div className="missions-page">
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
-      {/* Compact hero — daylight status, prime target, and check-in on one line */}
+      {/* Compact hero — one line: sky status (left) + prime target & check-in (right) */}
       <div className="mis-hero">
         <div className="mis-hero-inner">
-          {liveStatus !== 'live' && (
+          <div className="mis-hero-row">
             <div
               className={`mis-status-chip mis-status-chip--${liveStatus}`}
               role="status"
@@ -442,23 +442,27 @@ export default function MissionsPage() {
             >
               <span className="mis-status-chip-dot" aria-hidden />
               <span className="mis-status-chip-label">
-                {liveStatus === 'daytime' ? lineupLabels.daytime : lineupLabels.cloudy}
+                {liveStatus === 'daytime'
+                  ? lineupLabels.daytime
+                  : liveStatus === 'cloudy'
+                    ? lineupLabels.cloudy
+                    : lineupLabels.live}
               </span>
               <span className="mis-status-chip-sep" aria-hidden>·</span>
               <span className="mis-status-chip-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
             </div>
-          )}
 
-          <div className="mis-strip">
-            {primeEntry && (
-              <PrimeCard
-                entry={localize(primeEntry)}
-                altitude={skyPositions[primeEntry.id]?.altitude ?? null}
-                onStart={() => startMission(primeEntry.routeId)}
-                labels={{ badge: t('primeBadge'), observe: t('observe') }}
-              />
-            )}
-            <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
+            <div className="mis-strip">
+              {primeEntry && (
+                <PrimeCard
+                  entry={localize(primeEntry)}
+                  altitude={skyPositions[primeEntry.id]?.altitude ?? null}
+                  onStart={() => startMission(primeEntry.routeId)}
+                  labels={{ badge: t('primeBadge'), observe: t('observe') }}
+                />
+              )}
+              <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
+            </div>
           </div>
 
           {liveStatus === 'live' && (
@@ -506,6 +510,18 @@ export default function MissionsPage() {
                     value: moonGlance
                       ? `${moonGlance.illum}% · ${tSky(`moonPhase.${moonGlance.key}`)}`
                       : t('glance.unknown'),
+                  },
+                  {
+                    Icon: Crosshair,
+                    label: t('glance.best'),
+                    value: primeEntry
+                      ? `${localize(primeEntry).name} · ${Math.round(skyPositions[primeEntry.id]?.altitude ?? 0)}°`
+                      : t('glance.unknown'),
+                  },
+                  {
+                    Icon: Star,
+                    label: t('glance.darkest'),
+                    value: dark.midpoint ? fmtClock(dark.midpoint) : t('glance.unknown'),
                   },
                   {
                     Icon: Eye,
@@ -576,6 +592,21 @@ export default function MissionsPage() {
                 })}
               </div>
             </section>
+
+            <section className="mis-panel">
+              <div className="mis-panel-head">
+                <h2 className="mis-panel-title">{t('sections.scope')}</h2>
+                <span className="mis-panel-meta">{t('sections.scopeMeta')}</span>
+              </div>
+              <TelescopeGuide
+                tips={TIPS.map((tip) => ({
+                  title: t(`tips.${tip.key}.title`),
+                  body: t(`tips.${tip.key}.body`),
+                  Icon: tip.Icon,
+                }))}
+                scopeName={t('scopeName')}
+              />
+            </section>
           </main>
 
           {/* RIGHT RAIL — rare events + quizzes */}
@@ -638,52 +669,37 @@ export default function MissionsPage() {
                 })}
               </div>
             </section>
+
+            {upcomingEvents.length > 0 && (
+              <section className="mis-panel">
+                <div className="mis-panel-head">
+                  <h2 className="mis-panel-title">{t('sections.upcoming')}</h2>
+                  <span className="mis-panel-meta">{t('sections.eventsCount', { count: upcomingEvents.length })}</span>
+                </div>
+                <div className="mis-events-deck">
+                  {upcomingEvents.map(ev => (
+                    <EventRow
+                      key={`${ev.date}-${ev.name}`}
+                      event={ev}
+                      typeLabel={t(`eventType.${ev.type}`)}
+                      difficultyLabel={t(`eventDiff.${ev.difficulty}`)}
+                      countdown={{ today: t('countdown.today'), tomorrow: t('countdown.tomorrow'), inDays: (n) => t('countdown.inDays', { n }) }}
+                      whyAria={t('whyHard', { name: ev.name })}
+                      onOpen={(rect) => {
+                        setActiveEventAnchor(rect);
+                        setActiveEvent(ev);
+                      }}
+                      onExplain={(rect) => {
+                        setActiveExplainerAnchor(rect);
+                        setActiveExplainer({ kind: 'event', id: ev.name, title: ev.name, eventType: ev.type });
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
           </aside>
         </div>
-
-        {upcomingEvents.length > 0 && (
-          <section className="mis-section">
-            <div className="mis-section-head">
-              <h2 className="mis-section-title">{t('sections.upcoming')}</h2>
-              <span className="mis-section-meta">{t('sections.eventsCount', { count: upcomingEvents.length })}</span>
-            </div>
-            <div className="mis-events-deck">
-              {upcomingEvents.map(ev => (
-                <EventRow
-                  key={`${ev.date}-${ev.name}`}
-                  event={ev}
-                  typeLabel={t(`eventType.${ev.type}`)}
-                  difficultyLabel={t(`eventDiff.${ev.difficulty}`)}
-                  countdown={{ today: t('countdown.today'), tomorrow: t('countdown.tomorrow'), inDays: (n) => t('countdown.inDays', { n }) }}
-                  whyAria={t('whyHard', { name: ev.name })}
-                  onOpen={(rect) => {
-                    setActiveEventAnchor(rect);
-                    setActiveEvent(ev);
-                  }}
-                  onExplain={(rect) => {
-                    setActiveExplainerAnchor(rect);
-                    setActiveExplainer({ kind: 'event', id: ev.name, title: ev.name, eventType: ev.type });
-                  }}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="mis-section">
-          <div className="mis-section-head">
-            <h2 className="mis-section-title">{t('sections.scope')}</h2>
-            <span className="mis-section-meta">{t('sections.scopeMeta')}</span>
-          </div>
-          <TelescopeGuide
-            tips={TIPS.map((tip) => ({
-              title: t(`tips.${tip.key}.title`),
-              body: t(`tips.${tip.key}.body`),
-              Icon: tip.Icon,
-            }))}
-            scopeName={t('scopeName')}
-          />
-        </section>
       </div>
 
       <EventInfoSheet
@@ -1215,7 +1231,6 @@ function MissionTile({
       </div>
       <div className="mis-tile-info">
         <span className="mis-tile-name">{entry.name}</span>
-        <span className="mis-tile-desc">{entry.desc}</span>
         <div className="mis-tile-foot">
           <span className="mis-tile-foot-left">
             <span className={`mis-diff ${entry.diff}`}>{entry.diffLabel}</span>

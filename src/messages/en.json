@@ -932,6 +932,8 @@
       "dark": "Astronomical dark",
       "noDark": "No full darkness",
       "moon": "Moon",
+      "best": "Best target",
+      "darkest": "Darkest at",
       "visible": "Targets up",
       "conditions": "Conditions",
       "clear": "Clear skies",
