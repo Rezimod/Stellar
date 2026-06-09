@@ -4462,17 +4462,36 @@
   }
 
   .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }
-  .sky-obs__main { order: 2; }
+  .sky-obs__main {
+    display: contents;
+  }
+  .sky-obs__dome {
+    order: 2;
+  }
   .sky-obs__cards {
     order: 3;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  .sky-page-v2 .timeline-panel {
+  .sky-obs__rail {
+    display: contents;
+  }
+  .sky-obs__targets {
     order: 4;
   }
+  .sky-page-v2 .timeline-panel {
+    order: 5;
+  }
   .sky-page-v2 .tl {
-    order: 4;
+    order: 5;
+  }
+  .sky-page-v2 .forecast7--rail {
+    order: 6;
+    padding: 11px 12px 7px;
+    border-radius: 14px;
+  }
+  .sky-page-v2 .ev {
+    order: 20;
   }
   .sky-obs__card {
     padding: 9px 10px;
@@ -4511,9 +4530,39 @@
   .sky-obs__target-list { gap: 7px; }
   .sky-obs__target { grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 7px 8px; }
   .sky-obs__target-thumb { width: 40px; height: 40px; }
+  .sky-obs__target-num { display: none; }
   .sky-obs__target-name { font-size: 13.5px; }
   .sky-obs__target-meta { font-size: 9.5px; }
   .sky-obs__target-alt-val { font-size: 14px; }
+  .forecast7--rail .forecast7__head {
+    padding-bottom: 8px;
+    margin-bottom: 2px;
+  }
+  .forecast7__rrow {
+    grid-template-columns: 54px 18px minmax(0, 1fr) 34px;
+    gap: 7px;
+    padding: 6px 2px;
+  }
+  .forecast7__rrow .forecast7__rtemp {
+    display: none;
+  }
+  .forecast7__rdate {
+    display: none;
+  }
+  .forecast7__rday {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+  }
+  .forecast7__rmoon svg {
+    width: 16px;
+    height: 16px;
+  }
+  .forecast7__rbar {
+    height: 5px;
+  }
+  .forecast7__rpct {
+    font-size: 11px;
+  }
   /* Keep the title + location on a single compact row to free vertical
      space for the dome and targets. */
   .sky-obs__top { align-items: center; gap: 10px; }
