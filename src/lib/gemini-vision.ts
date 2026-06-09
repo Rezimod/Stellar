@@ -3,7 +3,7 @@
 // (paid) Claude Sonnet vision call. Get a free key at
 // https://aistudio.google.com/apikey and set GEMINI_API_KEY.
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 export interface GeminiImage {
   mimeType: string;
@@ -34,27 +34,36 @@ export async function geminiVisionJSON(opts: {
   }));
   parts.push({ text: opts.prompt });
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    signal: opts.signal,
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: opts.system }] },
-      contents: [{ role: 'user', parts }],
-      generationConfig: {
-        maxOutputTokens: opts.maxOutputTokens ?? 500,
-        temperature: 0,
-        responseMimeType: 'application/json',
-      },
-    }),
+  const body = JSON.stringify({
+    system_instruction: { parts: [{ text: opts.system }] },
+    contents: [{ role: 'user', parts }],
+    generationConfig: {
+      maxOutputTokens: opts.maxOutputTokens ?? 500,
+      temperature: 0,
+      responseMimeType: 'application/json',
+    },
   });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`Gemini ${res.status}: ${errText.slice(0, 200)}`);
+  // Gemini free tier returns transient 429/503/500 under load ("high demand").
+  // Retry a few times with backoff so a spike doesn't reject a legitimate photo.
+  // The caller's AbortSignal bounds total time.
+  const TRANSIENT = new Set([429, 500, 503]);
+  let lastErr = '';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: opts.signal,
+      body,
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const outParts: Array<{ text?: string }> = json?.candidates?.[0]?.content?.parts ?? [];
+      return outParts.map((p) => p.text ?? '').join('');
+    }
+    lastErr = `Gemini ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`;
+    if (!TRANSIENT.has(res.status) || attempt === 2) break;
+    await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
   }
-
-  const json = await res.json();
-  const parts2: Array<{ text?: string }> = json?.candidates?.[0]?.content?.parts ?? [];
-  return parts2.map((p) => p.text ?? '').join('');
+  throw new Error(lastErr || 'Gemini request failed');
 }
