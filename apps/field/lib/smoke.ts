@@ -66,13 +66,15 @@ export async function runSmokeTest(report?: Reporter): Promise<SmokeResult[]> {
     }, report),
   );
 
-  // 3. Embeddings via EmbeddingGemma — proves the capability for semantic RAG.
+  // 3. Embeddings via EmbeddingGemma — proves semantic RAG works. Uses the app's
+  //    gated embed path (not a raw second model load) so it serializes behind any
+  //    in-flight corpus warming instead of colliding on the single-job worker.
   results.push(
     await timed('embed-gemma', async () => {
-      const embId = await sdk.loadModel({ modelSrc: sdk.EMBEDDINGGEMMA_300M_Q4_0, modelType: 'llamacpp-embedding' });
-      const v = await sdk.embed({ modelId: embId, text: 'Andromeda galaxy M31' });
-      const vec = Array.isArray(v) ? v : (v?.embedding ?? v?.vector);
-      return `dim=${vec?.length ?? 0}`;
+      const { qvac } = await import('./qvac');
+      const vec = await qvac.embed('Andromeda galaxy M31');
+      if (!vec || vec.length === 0) throw new Error('embedder returned no vector (dim=0)');
+      return `dim=${vec.length} · semantic RAG live`;
     }, report),
   );
 
