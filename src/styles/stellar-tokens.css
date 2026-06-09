@@ -6085,6 +6085,298 @@
 
 /* === Mobile-only: compact, pill/button-style hero strips === */
 @media (max-width: 640px) {
+  .missions-page {
+    min-height: 100vh;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .missions-page .mis-hero-inner {
+    padding: 10px 12px 12px;
+  }
+
+  .missions-page .mis-hero-inner > .mis-status-chip {
+    margin-bottom: 8px;
+  }
+
+  .missions-page .mis-status-chip {
+    justify-content: center;
+    min-height: 34px;
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .missions-page .mis-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 116px;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .missions-page .mis-strip > .mis-prime,
+  .missions-page .mis-strip > .mis-checkin {
+    min-height: 68px;
+  }
+
+  .missions-page .mis-prime {
+    padding: 8px 8px 8px 11px;
+    gap: 8px;
+    border-radius: 14px;
+  }
+
+  .missions-page .mis-prime::before {
+    top: 12px;
+    bottom: 12px;
+  }
+
+  .missions-page .mis-prime-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .missions-page .mis-prime-badge {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .missions-page .mis-prime-name {
+    font-size: 15px;
+    line-height: 1.08;
+  }
+
+  .missions-page .mis-prime-desc {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .missions-page .mis-prime-cta {
+    align-self: center;
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 10px;
+    border-radius: 999px;
+  }
+
+  .missions-page .mis-checkin {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    border-radius: 14px;
+    padding: 7px 8px;
+    text-align: center;
+  }
+
+  .missions-page .mis-checkin > div:first-child {
+    width: auto;
+  }
+
+  .missions-page .mis-checkin > div:nth-child(2) {
+    display: none;
+  }
+
+  .missions-page .mis-checkin > div:nth-child(3) {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+
+  .missions-page .mis-checkin > div:nth-child(3) > span {
+    display: none;
+  }
+
+  .missions-page .mis-checkin > div:nth-child(3) > p:first-of-type {
+    margin-top: 1px;
+    font-size: 11px;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .missions-page .mis-checkin > div:nth-child(3) > p:last-of-type {
+    display: none;
+  }
+
+  .missions-page .mis-checkin > button {
+    width: 100%;
+    min-height: 32px;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 0 8px;
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  .missions-page .mis-checkin > button span {
+    font-size: 10px;
+  }
+
+  .missions-page .mis-dashboard {
+    gap: 10px;
+    padding: 12px 12px 0;
+    border-bottom: 0;
+  }
+
+  .missions-page .mis-col {
+    gap: 10px;
+  }
+
+  .missions-page .mis-panel {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .missions-page .mis-panel-head {
+    align-items: flex-start;
+    text-align: left;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .missions-page .mis-col-center .mis-panel-head {
+    display: grid;
+    grid-template-columns: minmax(86px, 0.42fr) minmax(0, 1fr);
+  }
+
+  .missions-page .mis-panel-title {
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .missions-page .mis-panel-sub {
+    margin: 0 0 10px;
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .missions-page .mis-filters {
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .missions-page .mis-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .missions-page .mis-filter-chip {
+    min-height: 40px;
+    padding: 0 13px;
+    font-size: 10px;
+    flex: 0 0 auto;
+  }
+
+  .missions-page .mis-col-center .mis-deck {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .missions-page .mis-tile {
+    border-radius: 16px;
+  }
+
+  .missions-page .mis-tile-sky {
+    height: 72px;
+  }
+
+  .missions-page .mis-tile .mis-tile-art {
+    transform: scale(0.72);
+  }
+
+  .missions-page .mis-tile-glow {
+    width: 52px;
+    height: 52px;
+    filter: blur(13px);
+  }
+
+  .missions-page .mis-tile-info {
+    align-items: flex-start;
+    text-align: left;
+    padding: 8px 9px 9px;
+    gap: 5px;
+  }
+
+  .missions-page .mis-tile-name {
+    width: 100%;
+    font-size: 13px;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .missions-page .mis-tile-foot {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .missions-page .mis-tile-foot-left {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .missions-page .mis-diff {
+    font-size: 8.5px;
+    padding: 2px 7px;
+  }
+
+  .missions-page .mis-tile-equip {
+    max-width: 76px;
+    font-size: 8.5px;
+  }
+
+  .missions-page .mis-tile-stars {
+    font-size: 12px;
+  }
+
+  .missions-page .mis-tile-rise-badge {
+    top: 6px;
+    right: 6px;
+    max-width: calc(100% - 12px);
+    font-size: 8px;
+    padding: 3px 6px;
+  }
+
+  .missions-page .mis-tile-reminder {
+    align-items: stretch;
+    text-align: left;
+    padding: 8px;
+  }
+
+  .missions-page .mis-tile-reminder-text {
+    text-align: left;
+  }
+
+  .missions-page .mis-tile-reminder-btn {
+    min-height: 34px;
+  }
+
+  .missions-page .mis-col-left,
+  .missions-page .mis-col-right {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .missions-page .mis-glance-row {
+    padding: 7px 0;
+  }
+
+  .missions-page .mis-quiz-row {
+    min-height: 48px;
+    padding: 7px 8px;
+  }
+
   .missions-page .mis-stats-bar { gap: 8px; margin-bottom: 10px; }
   .missions-page .mis-stats-title { font-size: 19px; }
   .missions-page .mis-stats-left { gap: 6px; }
@@ -6128,3 +6420,32 @@
   .missions-page .mis-lineup-empty-sub { display: none; }
 }
 
+@media (max-width: 380px) {
+  .missions-page .mis-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .missions-page .mis-checkin {
+    min-height: 54px;
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .missions-page .mis-checkin > div:nth-child(3) {
+    flex: 1 1 auto;
+  }
+
+  .missions-page .mis-checkin > button {
+    width: auto;
+    min-width: 96px;
+  }
+
+  .missions-page .mis-col-center .mis-panel-head {
+    grid-template-columns: 1fr;
+  }
+
+  .missions-page .mis-filters {
+    justify-content: flex-start;
+  }
+}
