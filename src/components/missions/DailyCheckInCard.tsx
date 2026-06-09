@@ -116,13 +116,13 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
 
   return (
     <div
-      className="mis-checkin flex items-center gap-3.5 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3.5"
+      className="mis-checkin flex items-center gap-3.5 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-2.5"
     >
       {/* Streak flame */}
       <div className="flex flex-col items-center justify-center shrink-0 w-[58px]">
         <div className="flex items-center gap-1">
-          <Flame size={18} className={streak > 0 ? 'text-[#FFB347]' : 'text-white/30'} strokeWidth={1.8} />
-          <span className="font-mono text-[24px] leading-none tabular-nums text-white/90">{streak}</span>
+          <Flame size={16} className={streak > 0 ? 'text-[#FFB347]' : 'text-white/30'} strokeWidth={1.8} />
+          <span className="font-mono text-[20px] leading-none tabular-nums text-white/90">{streak}</span>
         </div>
         <span className="text-[9px] uppercase tracking-[0.14em] text-white/35 mt-1 text-center leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
           {c.streakMany}

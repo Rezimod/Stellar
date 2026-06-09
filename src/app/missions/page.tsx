@@ -23,8 +23,9 @@ import EventInfoSheet from '@/components/sky/EventInfoSheet';
 import DifficultyExplainer from '@/components/sky/DifficultyExplainer';
 import { getRareEvents, getUpcomingEvents, type AstroEvent } from '@/lib/astro-events';
 import type { QuizDef } from '@/lib/quizzes';
-import { Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe, Rocket } from 'lucide-react';
+import { Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe, Rocket, Clock, Eye, Cloud } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Body, Illumination, MoonPhase } from 'astronomy-engine';
 
 const HUB_GRADIENTS = {
   amber:   'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
@@ -94,6 +95,23 @@ const GRID: GridEntry[] = [
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab' },
 ];
 
+// Synodic phase (0 = new, 0.5 = full) → the moonPhase key under the `sky` i18n
+// namespace. Same thresholds as lib/tonight-sky moonPhaseName.
+function moonPhaseKey(phase: number): string {
+  if (phase < 0.03 || phase > 0.97) return 'new';
+  if (phase < 0.22) return 'thinCrescent';
+  if (phase < 0.28) return 'firstQuarter';
+  if (phase < 0.47) return 'waxingGibbous';
+  if (phase < 0.53) return 'full';
+  if (phase < 0.72) return 'waningGibbous';
+  if (phase < 0.78) return 'lastQuarter';
+  return 'thinWaning';
+}
+
+function fmtClock(d: Date): string {
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
 type MissionFilter = 'all' | 'visible' | 'naked' | 'deep';
 const MISSION_FILTERS: MissionFilter[] = ['all', 'visible', 'naked', 'deep'];
 const DEEP_SKY = new Set(['pleiades', 'orion', 'andromeda', 'crab']);
@@ -152,6 +170,7 @@ export default function MissionsPage() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { location, ensureLocation } = useLocation();
   const t = useTranslations('missionsPage');
+  const tSky = useTranslations('sky');
 
   // Missions are location-aware (what's up tonight from here) — prompt for GPS
   // on open rather than on site entry.
@@ -186,6 +205,16 @@ export default function MissionsPage() {
 
   const dark = useMemo(() => getTonightDarkWindow(lat, lon, now), [lat, lon, now]);
   const evalTime = dark.evalTime;
+
+  const moonGlance = useMemo(() => {
+    try {
+      const illum = Math.round(Illumination(Body.Moon, evalTime).phase_fraction * 100);
+      const phase = (MoonPhase(evalTime) % 360) / 360;
+      return { illum, key: moonPhaseKey(phase) };
+    } catch {
+      return null;
+    }
+  }, [evalTime]);
 
   // Window-based visibility: best altitude any planet/object reaches during
   // tonight's astronomical-dark window. This drives the "Missions tonight"
@@ -448,7 +477,7 @@ export default function MissionsPage() {
 
       <div className="mis-content">
         <div className="mis-dashboard">
-          {/* LEFT RAIL — ways to earn */}
+          {/* LEFT RAIL — ways to earn + tonight conditions */}
           <aside className="mis-col mis-col-left">
             <section className="mis-panel">
               <div className="mis-panel-head">
@@ -456,6 +485,44 @@ export default function MissionsPage() {
                 <span className="mis-panel-meta">{t('sections.earnMeta', { count: 6 })}</span>
               </div>
               <EarningLadder />
+            </section>
+
+            <section className="mis-panel">
+              <div className="mis-panel-head">
+                <h2 className="mis-panel-title">{t('glance.title')}</h2>
+              </div>
+              <TonightGlance
+                rows={[
+                  {
+                    Icon: Clock,
+                    label: t('glance.dark'),
+                    value: dark.duskStart && dark.dawnEnd
+                      ? `${fmtClock(dark.duskStart)}–${fmtClock(dark.dawnEnd)}`
+                      : t('glance.noDark'),
+                  },
+                  {
+                    Icon: LcMoon,
+                    label: t('glance.moon'),
+                    value: moonGlance
+                      ? `${moonGlance.illum}% · ${tSky(`moonPhase.${moonGlance.key}`)}`
+                      : t('glance.unknown'),
+                  },
+                  {
+                    Icon: Eye,
+                    label: t('glance.visible'),
+                    value: `${visibleCount}/${GRID.length}`,
+                  },
+                  {
+                    Icon: Cloud,
+                    label: t('glance.conditions'),
+                    value: cloudCoverPct == null
+                      ? t('glance.unknown')
+                      : cloudCoverPct < 20
+                        ? t('glance.clear')
+                        : t('glance.cloud', { pct: cloudCoverPct }),
+                  },
+                ]}
+              />
             </section>
           </aside>
 
@@ -1207,6 +1274,31 @@ function EquipIcon({ kind }: { kind: string }) {
       <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8s-2.5 4.5-6.5 4.5S1.5 8 1.5 8z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
       <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2" />
     </svg>
+  );
+}
+
+// ---- Tonight at a glance (left-rail stat card) ----
+
+function TonightGlance({
+  rows,
+}: {
+  rows: { Icon: LucideIcon; label: string; value: string }[];
+}) {
+  return (
+    <ul className="mis-glance">
+      {rows.map((r) => {
+        const Icon = r.Icon;
+        return (
+          <li key={r.label} className="mis-glance-row">
+            <span className="mis-glance-icon" aria-hidden>
+              <Icon size={13} strokeWidth={1.8} />
+            </span>
+            <span className="mis-glance-label">{r.label}</span>
+            <span className="mis-glance-value">{r.value}</span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

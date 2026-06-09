@@ -927,6 +927,18 @@
       "naked": "Naked eye",
       "deep": "Deep sky"
     },
+    "glance": {
+      "title": "Tonight at a glance",
+      "dark": "Astronomical dark",
+      "noDark": "No full darkness",
+      "moon": "Moon",
+      "visible": "Targets up",
+      "conditions": "Conditions",
+      "clear": "Clear skies",
+      "cloud": "{pct}% cloud",
+      "lit": "{pct}% lit",
+      "unknown": "—"
+    },
     "primeBadge": "Prime target tonight",
     "observe": "Observe",
     "scopeName": "Celestron AstroMaster 70AZ",

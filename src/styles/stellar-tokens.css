@@ -4606,6 +4606,50 @@
 /* Right rail forces single-column rare deck */
 .mis-col-right .mis-rare-deck { grid-template-columns: 1fr; }
 
+/* Tonight at a glance — left-rail stat rows */
+.mis-glance {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mis-glance-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--mis-bd);
+}
+.mis-glance-row:last-child { border-bottom: 0; }
+.mis-glance-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--mis-t2);
+}
+.mis-glance-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--mis-t2);
+  letter-spacing: -0.005em;
+}
+.mis-glance-value {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--mis-t1);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  letter-spacing: 0.01em;
+}
+
 /* Quiz list — right-rail rows */
 .mis-quiz-list {
   display: flex;
@@ -4816,7 +4860,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 7px 12px;
   border-radius: 14px;
   margin-bottom: 12px;
   cursor: pointer;
@@ -4841,8 +4885,8 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .mis-prime-icon {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 10px;
   background: linear-gradient(160deg, #0B1022, var(--canvas));
   border: 1px solid var(--border);
@@ -5247,7 +5291,7 @@
 
 .mis-tile-sky {
   position: relative;
-  height: 96px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5285,9 +5329,9 @@
   position: absolute;
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
-  width: 70px; height: 70px;
+  width: 54px; height: 54px;
   border-radius: 50%;
-  filter: blur(18px);
+  filter: blur(16px);
   opacity: 0.16;
   pointer-events: none;
 }
@@ -5311,12 +5355,12 @@
 }
 
 .mis-tile-info {
-  padding: 10px 12px 11px;
+  padding: 8px 11px 9px;
   background: linear-gradient(180deg, rgba(8,12,24,0.95), rgba(12,18,36,0.98));
   border-top: 1px solid rgba(255,255,255,0.04);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 .mis-tile-name {
   font-size: 12.5px;
