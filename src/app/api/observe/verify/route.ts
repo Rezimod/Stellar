@@ -13,6 +13,7 @@ import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
+import { getObservationTokenSecret } from '@/lib/observation-token';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -482,10 +483,9 @@ Return ONLY valid JSON, no markdown, no preamble:
     isInternetSourced ? '1' : '0',
     walletParam,
   ].join(':');
-  // Dedicated HMAC secret — falls back to ANTHROPIC_API_KEY for compat with
-  // tokens issued before the migration. If both are empty we refuse rather
-  // than sign with '' (which would be trivially forgeable).
-  const tokenSecret = process.env.OBSERVATION_TOKEN_SECRET || process.env.ANTHROPIC_API_KEY || '';
+  // Dedicated HMAC secret (shared with /api/observe/log + /api/mint validators).
+  // If unset we refuse rather than sign with '' (which would be trivially forgeable).
+  const tokenSecret = getObservationTokenSecret();
   if (!tokenSecret) {
     return NextResponse.json({ error: 'Server misconfigured: OBSERVATION_TOKEN_SECRET not set' }, { status: 503 });
   }

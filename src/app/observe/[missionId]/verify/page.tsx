@@ -249,6 +249,10 @@ export default function ObserveVerifyPage() {
           rarity: rarityInfo.rarity,
           multiplier: tier.multiplier,
           demo: mission.demo === true,
+          verificationToken: photoVerification?.verificationToken,
+          identifiedObject: photoVerification?.identifiedObject,
+          confidence: photoVerification?.confidence,
+          capturedAt: photoVerification?.metadata?.capturedAt,
           fileHash: photoVerification?.metadata?.fileHash,
           uploadSource: photoVerification?.metadata?.uploadSource,
           deviceTier: photoVerification?.metadata?.deviceTier,
@@ -390,6 +394,17 @@ export default function ObserveVerifyPage() {
         sky: sky!,
         status: txId.startsWith('sim') ? 'pending' : 'completed',
         method: txId.startsWith('sim') ? 'simulated' : 'onchain',
+        verification: photoVerification?.verificationToken ? {
+          token: photoVerification.verificationToken,
+          identifiedObject: photoVerification.identifiedObject,
+          confidence: photoVerification.confidence,
+          capturedAt: photoVerification.metadata.capturedAt,
+          fileHash: photoVerification.metadata.fileHash,
+          deviceTier: photoVerification.metadata.deviceTier,
+          deviceMake: photoVerification.metadata.deviceMake,
+          deviceModel: photoVerification.metadata.deviceModel,
+          isInternetSourced: photoVerification.metadata.isInternetSourced,
+        } : undefined,
       });
 
       setStage('done');

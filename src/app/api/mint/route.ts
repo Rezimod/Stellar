@@ -8,6 +8,8 @@ import { eq, and, gte, isNotNull } from 'drizzle-orm';
 import { mintRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { isValidPublicKey } from '@/lib/validate';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
+import { verifyObservationToken } from '@/lib/observation-token';
+import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -15,6 +17,7 @@ export async function POST(req: NextRequest) {
     userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo,
     fileHash, deviceTier, deviceMake, deviceModel, exifLat, exifLon, exifTakenAt,
     isInternetSourced, uploadSource,
+    verificationToken, identifiedObject, confidence, capturedAt,
   } = body;
 
   const isDemoMint = demo === true;
@@ -66,6 +69,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Verification gate: a real (non-demo) mint must carry the HMAC token issued by
+  // /api/observe/verify. Without it a client could mint a "verified observation"
+  // NFT from fabricated data. Demo mints skip the token but are constrained below
+  // (Common rarity, ≤50 Stars, Demo attribute).
+  if (!isDemoMint) {
+    const tokenCheck = verifyObservationToken(
+      typeof verificationToken === 'string' ? verificationToken : undefined,
+      {
+        identifiedObject: typeof identifiedObject === 'string' ? identifiedObject : (typeof target === 'string' ? target : ''),
+        confidence: typeof confidence === 'string' ? confidence : '',
+        capturedAt: typeof capturedAt === 'string' ? capturedAt : '',
+        fileHash: typeof fileHash === 'string' ? fileHash : '',
+        deviceTier: typeof deviceTier === 'string' ? deviceTier : '',
+        deviceMake: typeof deviceMake === 'string' ? deviceMake : '',
+        deviceModel: typeof deviceModel === 'string' ? deviceModel : '',
+        isInternetSourced: isInternetSourced === true,
+        wallet: typeof userAddress === 'string' ? userAddress : '',
+      },
+    );
+    if (!tokenCheck.ok) {
+      // Fail closed if the signing secret is unset (503); otherwise the token is
+      // missing/forged → the observation is not verified (403).
+      if (tokenCheck.status === 503) {
+        return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
+      }
+      return NextResponse.json({ error: 'Observation not verified' }, { status: 403 });
+    }
+  }
+
   // Upstash rate limit: 2 mints per wallet per hour — skipped for demo missions
   if (!isDemoMint && userAddress) {
     const { success, remaining } = await checkRateLimit(mintRateLimit, userAddress);
@@ -77,9 +109,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Validate rarity
+  // Validate rarity. Demo mints are always Common with Stars capped at 50.
   const VALID_RARITIES = ['Common', 'Stellar', 'Astral', 'Celestial'] as const;
-  const rarityVal = VALID_RARITIES.includes(rarity as typeof VALID_RARITIES[number]) ? (rarity as string) : 'Common';
+  const rarityVal = isDemoMint
+    ? 'Common'
+    : (VALID_RARITIES.includes(rarity as typeof VALID_RARITIES[number]) ? (rarity as string) : 'Common');
+  const effectiveStars = isDemoMint ? Math.min(stars, 50) : stars;
 
   // DB rate limit: one NFT per wallet+target per hour — skipped for demo missions
   const db = getDb();
@@ -113,9 +148,27 @@ export async function POST(req: NextRequest) {
     deviceTier === 'smartphone' ? 'S' :
     deviceTier === 'unknown' ? 'U' : undefined;
 
+  // Re-derive the sky-oracle hash server-side. The observation may straddle the
+  // hour boundary, so accept the client value if it matches the current OR
+  // previous slot; otherwise fall back to the server value and warn. Never trust
+  // the client hash blindly — it ends up in immutable NFT metadata.
+  const slot = currentHourSlot();
+  const [hashNow, hashPrev] = await Promise.all([
+    computeOracleHash(lat, lon, cloudCover, slot),
+    computeOracleHash(lat, lon, cloudCover, slot - 1),
+  ]);
+  const clientHash = typeof oracleHash === 'string' ? oracleHash : '';
+  const effectiveOracleHash = (clientHash === hashNow || clientHash === hashPrev) ? clientHash : hashNow;
+  if (effectiveOracleHash !== clientHash) {
+    console.warn('[mint] oracle hash mismatch — using server-computed value', {
+      client: clientHash.slice(0, 12),
+      expected: hashNow.slice(0, 12),
+    });
+  }
+
   try {
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target, isDemoMint ? '(demo)' : '');
-    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity: rarityVal, tier: tierChar });
+    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
@@ -125,7 +178,7 @@ export async function POST(req: NextRequest) {
       db.insert(observationLog).values({
         wallet: userAddress,
         target,
-        stars,
+        stars: effectiveStars,
         confidence: 'minted',
         mintTx: txId,
         observedDate: new Date().toISOString().split('T')[0],

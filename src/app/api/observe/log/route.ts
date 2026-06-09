@@ -4,7 +4,7 @@ import { observationLog } from '@/lib/schema'
 import { and, eq, gte, sum, count, inArray } from 'drizzle-orm'
 import { PublicKey } from '@solana/web3.js'
 import { awardStarsOnChain, DAILY_STARS_CAP } from '@/lib/stars'
-import { createHmac } from 'crypto'
+import { verifyObservationToken } from '@/lib/observation-token'
 import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit'
 import { eventsForTarget } from '@/lib/astro-events'
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants'
@@ -95,47 +95,19 @@ export async function POST(req: NextRequest) {
 
   // Verify token for non-rejected observations (prevents clients from claiming arbitrary confidence)
   if (confidence !== 'rejected') {
-    const token = body.verificationToken;
-    if (!token) {
-      return NextResponse.json({ logged: false, reason: 'Missing verification token' }, { status: 401 });
-    }
-    const capturedAt = body.capturedAt ?? '';
-    const expectedTokenDataV2 = [
-      body.identifiedObject ?? body.target ?? '',
+    const tokenCheck = verifyObservationToken(body.verificationToken, {
+      identifiedObject: body.identifiedObject ?? body.target ?? '',
       confidence,
-      capturedAt,
-      body.fileHash ?? '',
-      body.deviceTier ?? '',
-      body.deviceMake ?? '',
-      body.deviceModel ?? '',
-      body.isInternetSourced ? '1' : '0',
+      capturedAt: body.capturedAt ?? '',
+      fileHash: body.fileHash ?? '',
+      deviceTier: body.deviceTier ?? '',
+      deviceMake: body.deviceMake ?? '',
+      deviceModel: body.deviceModel ?? '',
+      isInternetSourced: body.isInternetSourced === true,
       wallet,
-    ].join(':');
-    const expectedTokenDataLegacy = [
-      body.identifiedObject ?? body.target ?? '',
-      confidence,
-      capturedAt,
-      body.fileHash ?? '',
-      body.deviceTier ?? '',
-      body.deviceMake ?? '',
-      body.deviceModel ?? '',
-      body.isInternetSourced ? '1' : '0',
-    ].join(':');
-    const tokenSecret = process.env.OBSERVATION_TOKEN_SECRET || process.env.ANTHROPIC_API_KEY || '';
-    if (!tokenSecret) {
-      return NextResponse.json({ logged: false, reason: 'Server misconfigured' }, { status: 503 });
-    }
-    const expectedTokenV2 = createHmac('sha256', tokenSecret)
-      .update(expectedTokenDataV2)
-      .digest('hex');
-    // Legacy tokens omitted wallet binding — disabled by default.
-    // Set ALLOW_LEGACY_OBSERVE_TOKEN=true only for rollback.
-    const allowLegacy = process.env.ALLOW_LEGACY_OBSERVE_TOKEN === 'true';
-    const expectedTokenLegacy = createHmac('sha256', tokenSecret)
-      .update(expectedTokenDataLegacy)
-      .digest('hex');
-    if (token !== expectedTokenV2 && (!allowLegacy || token !== expectedTokenLegacy)) {
-      return NextResponse.json({ logged: false, reason: 'Invalid verification token' }, { status: 401 });
+    });
+    if (!tokenCheck.ok) {
+      return NextResponse.json({ logged: false, reason: tokenCheck.reason }, { status: tokenCheck.status });
     }
   }
 

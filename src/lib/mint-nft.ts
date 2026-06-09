@@ -21,6 +21,7 @@ export interface ObservationMintParams {
   rarity?: string;
   multiplier?: number;
   tier?: 'C' | 'S' | 'U';
+  demo?: boolean;
 }
 
 export async function mintCompressedNFT(params: ObservationMintParams): Promise<{ txId: string }> {
@@ -82,6 +83,7 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
         { trait_type: 'Rarity', value: params.rarity ?? 'Common' },
         { trait_type: 'Streak Multiplier', value: params.multiplier ?? 1 },
         ...(params.tier ? [{ trait_type: 'Tier', value: params.tier }] : []),
+        ...(params.demo ? [{ trait_type: 'Demo', value: 'true' }] : []),
       ],
     });
   } catch (err) {

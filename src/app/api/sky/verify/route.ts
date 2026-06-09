@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SkyVerification } from '@/lib/types';
 import { fetchOpenMeteo } from '@/lib/open-meteo';
 import { estimateBortle } from '@/lib/light-pollution';
+import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
 
 const CARDINALS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 function azimuthToCardinal(az: number): string {
@@ -50,10 +51,7 @@ export async function GET(req: NextRequest) {
     else if (cloudCover < 60) conditions = `Partly cloudy (${cloudCover}% clouds), visibility ${(visMeters / 1000).toFixed(1)} km`;
     else conditions = `Cloudy (${cloudCover}% cover), limited visibility`;
 
-    const hourSlot = Math.floor(Date.now() / 3600000);
-    const hashInput = `${Number(lat).toFixed(4)},${Number(lon).toFixed(4)},${cloudCover},${hourSlot}`;
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(hashInput));
-    const oracleHash = '0x' + Array.from(new Uint8Array(hashBuffer)).slice(0, 20).map(b => b.toString(16).padStart(2, '0')).join('');
+    const oracleHash = await computeOracleHash(lat, lon, cloudCover, currentHourSlot());
 
     const result: SkyVerification = {
       verified: cloudCover < 70,

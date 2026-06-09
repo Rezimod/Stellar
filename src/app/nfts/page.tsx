@@ -380,6 +380,10 @@ export default function NftsPage() {
     setRetrying(true);
     try {
       const authToken = await getAccessToken().catch(() => null);
+      // Re-prove the observation with the token stored at completion time.
+      // Records minted before this field existed have no token and will be
+      // rejected by /api/mint (403) — there is nothing to re-prove with.
+      const v = mission.verification;
       const res = await fetch('/api/mint', {
         method: 'POST',
         headers: {
@@ -395,6 +399,17 @@ export default function NftsPage() {
           cloudCover: mission.sky?.cloudCover ?? 0,
           oracleHash: mission.sky?.oracleHash ?? 'retry',
           stars: mission.stars,
+          ...(v ? {
+            verificationToken: v.token,
+            identifiedObject: v.identifiedObject,
+            confidence: v.confidence,
+            capturedAt: v.capturedAt,
+            fileHash: v.fileHash,
+            deviceTier: v.deviceTier,
+            deviceMake: v.deviceMake,
+            deviceModel: v.deviceModel,
+            isInternetSourced: v.isInternetSourced,
+          } : {}),
         }),
       });
       if (res.ok) {

@@ -46,6 +46,19 @@ export interface CompletedMission {
   sky: SkyVerification | null;
   status: 'completed' | 'pending' | 'gallery';
   method?: 'onchain' | 'simulated';
+  // Verification token + signed fields, stored so a later retry-mint (e.g. from
+  // /nfts) can re-prove the observation to /api/mint without re-running verify.
+  verification?: {
+    token: string;
+    identifiedObject: string;
+    confidence: string;
+    capturedAt: string;
+    fileHash: string;
+    deviceTier?: string;
+    deviceMake?: string | null;
+    deviceModel?: string | null;
+    isInternetSourced?: boolean;
+  };
 }
 
 export interface QuizResult {
