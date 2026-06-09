@@ -3866,7 +3866,48 @@
   box-sizing: border-box;
 }
 .skyloc__search input:focus { border-color: rgba(255, 179, 71, 0.55); }
-.skyloc__select { display: none; }
+
+/* City picker is a dropdown at every size; the full list only appears while
+   the user is actively searching for a city not in the presets. */
+.skyloc__select {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+.skyloc__select-label {
+  margin-left: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+}
+.skyloc__select select {
+  appearance: none;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 42px 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 179, 71, 0.34);
+  background: rgba(255, 179, 71, 0.10);
+  color: #f8f4ec;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+.skyloc__select select:focus { border-color: rgba(255, 179, 71, 0.6); }
+.skyloc__select svg {
+  position: absolute;
+  right: 13px;
+  bottom: 14px;
+  color: var(--terracotta);
+  pointer-events: none;
+}
+.skyloc__list:not(.is-searching) { display: none; }
+.skyloc__list.is-searching { max-height: 220px; min-height: 0; }
 .skyloc__tabs {
   display: flex;
   gap: 4px;
@@ -4230,6 +4271,11 @@
 .sky-obs__lp-swatch { width: 48px; height: 48px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
 .sky-obs__lp-swatch svg { display: block; }
 
+/* Soft cosmic glow on the condition glyphs — lifts them off the card. */
+.sky-obs__ring-center svg { filter: drop-shadow(0 0 4px currentColor); }
+.sky-obs__moon { filter: drop-shadow(0 0 8px rgba(244, 217, 160, 0.5)); }
+.sky-obs__lp-swatch { filter: drop-shadow(0 0 6px rgba(255, 176, 100, 0.28)); }
+
 /* === 7-night outlook — compact vertical list variant for the rail === */
 .forecast7--rail {
   margin-top: 0;
@@ -4338,16 +4384,21 @@
       "dome outlook";
     gap: 16px;
     align-items: start;
+    /* Keep the dome + rail within the first screen; the outlook rail
+       scrolls internally if the night's list is long. */
+    max-height: calc(100vh - 128px);
   }
-  .sky-obs__main > .sky-obs__dome { grid-area: dome; align-self: stretch; }
+  .sky-obs__main > .forecast7--rail { min-height: 0; overflow: hidden; align-self: stretch; display: flex; flex-direction: column; }
+  .sky-obs__main > .sky-obs__dome { grid-area: dome; align-self: start; }
   .sky-obs__main > .sky-obs__targets { grid-area: targets; }
   .sky-obs__main > .sky-obs__cards { grid-area: cards; }
   .sky-obs__main > .forecast7--rail { grid-area: outlook; }
 
-  /* Bigger sky map — fills the square panel; the corners now read as deep
-     space (cosmic field rendered in the SVG), not empty box. */
+  /* Sky map sized to fit the first screen: the square never exceeds ~58% of
+     the viewport height, so the whole dome + rail are visible on entry. The
+     corners read as deep space (cosmic field rendered in the SVG). */
   .sky-obs__dome { padding: 10px; }
-  .sky-obs__dome .sky-map { max-width: min(100%, 880px); }
+  .sky-obs__dome .sky-map { max-width: min(100%, 560px, 58vh); }
 
   /* Best targets — two per row, no number badge */
   .sky-obs__targets { padding: 14px 14px 10px; }
@@ -4386,6 +4437,13 @@
   .sky-obs__metric-sub { font-size: 9px; }
   .sky-obs__window-times { font-size: 12.5px; }
   .sky-obs__window-dur { font-size: 9.5px; }
+
+  /* Compact the outlook rail so the dome + rail fit the first screen. */
+  .forecast7--rail { padding: 12px 14px 5px; }
+  .forecast7--rail .forecast7__head { padding-bottom: 9px; margin-bottom: 2px; }
+  .forecast7__rrow { padding: 6px 4px; }
+  .sky-obs__targets { padding: 13px 14px 9px; }
+  .sky-obs__panel-head { padding-bottom: 9px; margin-bottom: 4px; }
 }
 
 /* === Responsive === */
