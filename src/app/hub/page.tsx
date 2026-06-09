@@ -42,7 +42,7 @@ const SECTIONS: HubSection[] = [
       { href: '/chat',        labelKey: 'astraAi',     icon: MessageCircle, gradient: G.fuchsia },
       { href: '/learn',       labelKey: 'learning',    icon: BookOpen,      gradient: G.blue },
       { href: '/feed',        labelKey: 'feed',        icon: Sparkles,      gradient: G.orange },
-      { href: '/leaderboard', labelKey: 'leaderboard', icon: Trophy,        gradient: G.amber,   comingSoon: true },
+      { href: '/leaderboard', labelKey: 'leaderboard', icon: Trophy,        gradient: G.amber },
     ],
   },
   {
@@ -60,11 +60,11 @@ export default function HubPage() {
 
   return (
     <>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <header className="mb-6 sm:mb-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <header className="mb-4">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-left text-[#A8B4C8] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/[0.08] bg-white/[0.02] text-left text-[#A8B4C8] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors"
             aria-label={t('openSearch')}
           >
             <Search size={16} strokeWidth={1.8} />
@@ -81,8 +81,8 @@ export default function HubPage() {
         <HubTonightBand />
 
         {SECTIONS.map((section) => (
-          <section key={section.labelKey} className="mb-6 sm:mb-8 last:mb-0">
-            <div className="flex items-center gap-3 mb-3">
+          <section key={section.labelKey} className="mb-4 last:mb-0">
+            <div className="flex items-center gap-3 mb-2.5">
               <h2
                 className="text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] uppercase text-white/40"
                 style={{ fontFamily: 'var(--font-display)' }}
@@ -91,7 +91,7 @@ export default function HubPage() {
               </h2>
               <div className="flex-1 h-px bg-white/[0.06]" />
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-8 gap-2 sm:gap-2.5">
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const dimmed = item.comingSoon;
@@ -99,11 +99,11 @@ export default function HubPage() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`relative flex flex-col items-center justify-center gap-2.5 p-4 sm:p-5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline text-center ${dimmed ? 'opacity-70' : ''}`}
+                    className={`relative flex flex-col items-center justify-center gap-2 px-1.5 py-3 sm:py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline text-center ${dimmed ? 'opacity-70' : ''}`}
                   >
                     {item.comingSoon && (
                       <span
-                        className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[8px] font-semibold tracking-[0.18em] uppercase"
+                        className="absolute top-1.5 right-1.5 px-1 py-0.5 rounded text-[7.5px] font-semibold tracking-[0.16em] uppercase"
                         style={{
                           color: 'rgba(255,179,71,0.85)',
                           background: 'rgba(255,179,71,0.08)',
@@ -115,15 +115,15 @@ export default function HubPage() {
                       </span>
                     )}
                     <div
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0"
                       style={{
                         background: item.gradient,
                         boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
                       }}
                     >
-                      <Icon size={22} strokeWidth={2.2} color="#FFFFFF" />
+                      <Icon size={20} strokeWidth={2.2} color="#FFFFFF" />
                     </div>
-                    <span className="text-[12px] sm:text-[13px] text-white font-medium leading-tight">
+                    <span className="text-[11px] sm:text-[12px] text-white font-medium leading-tight">
                       {t(item.labelKey)}
                     </span>
                   </Link>
