@@ -3866,6 +3866,7 @@
   box-sizing: border-box;
 }
 .skyloc__search input:focus { border-color: rgba(255, 179, 71, 0.55); }
+.skyloc__select { display: none; }
 .skyloc__tabs {
   display: flex;
   gap: 4px;
@@ -4357,8 +4358,156 @@
   }
 }
 @media (max-width: 680px) {
+  .skyloc {
+    align-items: flex-start;
+    padding: 72px 18px 18px;
+  }
+
+  .skyloc__panel {
+    width: min(360px, 100%);
+    max-height: none;
+    border-radius: 16px;
+    padding: 16px 14px 14px;
+  }
+
+  .skyloc__close {
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .skyloc__head {
+    margin-bottom: 10px;
+    padding-right: 38px;
+  }
+
+  .skyloc__eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+
+  .skyloc__title {
+    margin-top: 6px;
+    font-size: 19px;
+  }
+
+  .skyloc__sub {
+    display: none;
+  }
+
+  .skyloc__gps {
+    min-height: 44px;
+    margin: 10px 0 8px;
+    padding: 9px 12px;
+    border-radius: 11px;
+  }
+
+  .skyloc__search {
+    margin-bottom: 8px;
+  }
+
+  .skyloc__search input {
+    min-height: 42px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .skyloc__select {
+    position: relative;
+    display: grid;
+    gap: 5px;
+    font-family: var(--font-body, system-ui, sans-serif);
+  }
+
+  .skyloc__select-label {
+    margin-left: 4px;
+    font-family: var(--font-mono, monospace);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+  }
+
+  .skyloc__select select {
+    appearance: none;
+    width: 100%;
+    min-height: 46px;
+    padding: 0 42px 0 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 179, 71, 0.34);
+    background: rgba(255, 179, 71, 0.10);
+    color: #f8f4ec;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .skyloc__select svg {
+    position: absolute;
+    right: 13px;
+    bottom: 14px;
+    color: var(--terracotta);
+    pointer-events: none;
+  }
+
+  .skyloc__list:not(.is-searching) {
+    display: none;
+  }
+
+  .skyloc__list.is-searching {
+    max-height: 188px;
+    min-height: 0;
+  }
+
   .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }
-  .sky-obs__cards { grid-template-columns: repeat(2, 1fr); }
+  .sky-obs__main { order: 2; }
+  .sky-obs__cards {
+    order: 3;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .sky-page-v2 .timeline-panel {
+    order: 4;
+  }
+  .sky-page-v2 .tl {
+    order: 4;
+  }
+  .sky-obs__card {
+    padding: 9px 10px;
+    border-radius: 13px;
+    gap: 6px;
+  }
+  .sky-obs__card-label {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+  .sky-obs__window,
+  .sky-obs__metric {
+    gap: 8px;
+  }
+  .sky-obs__ring {
+    width: 42px;
+    height: 42px;
+  }
+  .sky-obs__moon svg {
+    width: 42px;
+    height: 42px;
+  }
+  .sky-obs__window-times {
+    font-size: 12px;
+  }
+  .sky-obs__window-dur,
+  .sky-obs__metric-sub {
+    font-size: 9px;
+  }
+  .sky-obs__metric-value {
+    font-size: 24px;
+  }
+  .sky-obs__metric-value--sm {
+    font-size: 16px;
+  }
   .sky-obs__target-list { gap: 7px; }
   .sky-obs__target { grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 7px 8px; }
   .sky-obs__target-thumb { width: 40px; height: 40px; }
@@ -4373,4 +4522,3 @@
   .sky-obs__loc { padding: 5px 9px; gap: 5px; }
   .sky-obs__loc-coord { display: none; }
 }
-

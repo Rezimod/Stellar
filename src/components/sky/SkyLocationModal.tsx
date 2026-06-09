@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MapPin, Navigation, Search, Check, X } from 'lucide-react';
+import { ChevronDown, MapPin, Navigation, Search, Check, X } from 'lucide-react';
 import { useLocation, type UserLocation } from '@/lib/location';
 import { CITY_PRESETS } from '@/components/LocationPicker';
 
@@ -38,6 +38,16 @@ export default function SkyLocationModal({ open, onClose }: Props) {
   }, [open, onClose]);
 
   const q = search.trim().toLowerCase();
+  const flatCities = useMemo(
+    () => CITY_PRESETS.flatMap((g) => g.cities),
+    [],
+  );
+  const isActive = (p: UserLocation) =>
+    p.city === location.city && p.country === location.country;
+  const selectedValue = useMemo(() => {
+    const active = flatCities.find(isActive);
+    return active ? `${active.city}|${active.country}` : '';
+  }, [flatCities, location.city, location.country]);
   const groups = useMemo(
     () =>
       CITY_PRESETS
@@ -55,9 +65,6 @@ export default function SkyLocationModal({ open, onClose }: Props) {
     [q],
   );
 
-  const isActive = (p: UserLocation) =>
-    p.city === location.city && p.country === location.country;
-
   if (!open || typeof document === 'undefined') return null;
 
   const handleGPS = () => {
@@ -69,6 +76,12 @@ export default function SkyLocationModal({ open, onClose }: Props) {
   const handlePreset = (p: UserLocation) => {
     setLocation(p);
     onClose();
+  };
+
+  const handleSelect = (value: string) => {
+    const [city, country] = value.split('|');
+    const preset = flatCities.find((c) => c.city === city && c.country === country);
+    if (preset) handlePreset(preset);
   };
 
   return createPortal(
@@ -100,13 +113,31 @@ export default function SkyLocationModal({ open, onClose }: Props) {
           <input
             ref={searchRef}
             type="text"
-            placeholder="Search city or country…"
+            placeholder="Search if your city is not shown…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="skyloc__list">
+        {!q && (
+          <label className="skyloc__select">
+            <span className="skyloc__select-label">City</span>
+            <select value={selectedValue} onChange={(e) => handleSelect(e.target.value)}>
+              {CITY_PRESETS.map((g) => (
+                <optgroup key={g.label} label={g.label}>
+                  {g.cities.map((c) => (
+                    <option key={`${c.city}-${c.country}`} value={`${c.city}|${c.country}`}>
+                      {c.flag} {c.city}, {c.country}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <ChevronDown size={16} aria-hidden="true" />
+          </label>
+        )}
+
+        <div className={`skyloc__list${q ? ' is-searching' : ''}`}>
           {groups.length === 0 ? (
             <p className="skyloc__empty">No cities found</p>
           ) : (
