@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { createHash, createHmac } from 'crypto';
 import { verifyRateLimit, verifyDailyLimit, checkRateLimit } from '@/lib/rate-limit';
-import { CLAUDE_MODEL } from '@/lib/ai-config';
+import { geminiVisionJSON, type GeminiImage } from '@/lib/gemini-vision';
 import type { PhotoVerificationResult, ObservationTarget, VerificationConfidence } from '@/lib/types';
 import { checkObjectVisibility } from '@/lib/astronomy-check';
 import { extractExif } from '@/lib/exif';
@@ -14,8 +13,6 @@ import { observationLog } from '@/lib/schema';
 import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
 import { getObservationTokenSecret } from '@/lib/observation-token';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 interface ClaudeAnalysis {
   target: ObservationTarget;
@@ -270,14 +267,10 @@ export async function POST(req: NextRequest) {
   }
   const isDoubleCapture = file2Base64 !== null;
 
-  // Build user message content
-  type ImageBlock = { type: 'image'; source: { type: 'base64'; media_type: typeof mediaType; data: string } };
-  type TextBlock = { type: 'text'; text: string };
-  const userContent: (ImageBlock | TextBlock)[] = [
-    { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-  ];
+  // Build the image list for the vision model
+  const images: GeminiImage[] = [{ mimeType: mediaType, data: base64 }];
   if (isDoubleCapture && file2Base64) {
-    userContent.push({ type: 'image', source: { type: 'base64', media_type: file2MediaType, data: file2Base64 } });
+    images.push({ mimeType: file2MediaType, data: file2Base64 });
   }
 
   const singleImagePrompt = `Analyze this image. The user claims it was taken at coordinates ${lat}, ${lon} at ${capturedAt}.
@@ -340,30 +333,25 @@ Return ONLY valid JSON, no markdown, no preamble:
     ? `\nThis is a HIGH-VALUE observation target. Be MORE careful about authenticity. Require clear identifying features visible (rings for Saturn, cloud bands for Jupiter, etc.). If the image is too blurry to confirm the specific target, mark confidence as 'low' rather than 'medium'.`
     : `\nBe generous with phone photos. A blurry phone photo is valid if the celestial object is recognizable.`;
 
-  userContent.push({ type: 'text', text: (isDoubleCapture ? doubleImagePrompt : singleImagePrompt) + strictnessNote });
+  const visionPrompt = (isDoubleCapture ? doubleImagePrompt : singleImagePrompt) + strictnessNote;
 
-  // Claude Vision call
+  // Vision call — Gemini free tier (gemini-2.0-flash). responseMimeType=json
+  // means the model returns raw JSON we can parse directly.
   let analysis: ClaudeAnalysis;
   let verificationFailed = false;
   try {
-    const message = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 500,
+    const text = await geminiVisionJSON({
       system: 'You are an astronomy image verification system. You analyze photos of the night sky to determine what celestial object is shown and whether the image is authentic. Be generous but honest — phone photos of the moon are valid even if blurry. Screenshots and AI-generated images are not valid.',
-      messages: [
-        {
-          role: 'user',
-          content: userContent as Anthropic.MessageParam['content'],
-        },
-      ],
+      prompt: visionPrompt,
+      images,
+      maxOutputTokens: 500,
+      signal: AbortSignal.timeout(30000),
     });
-
-    const text = message.content[0].type === 'text' ? message.content[0].text : '';
     const parsed = parseClaudeResponse(text);
     analysis = parsed.analysis;
     verificationFailed = parsed.isFallback;
   } catch (err) {
-    console.error('[observe/verify] Claude error:', err);
+    console.error('[observe/verify] Gemini vision error:', err);
     return NextResponse.json({ error: 'Verification service unavailable' }, { status: 500 });
   }
 
