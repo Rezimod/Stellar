@@ -83,12 +83,12 @@ function AchievementBadge({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={linkLabel}
-      className="group flex flex-col items-center text-center min-w-0 flex-1 max-w-[300px] rounded-[16px] bg-white/[0.03] border border-white/[0.08] px-5 py-5 md:px-7 md:py-6 no-underline transition-colors hover:bg-white/[0.05] hover:[border-color:var(--accent-border)]"
+      className="home-achievement-card group flex flex-col items-center text-center min-w-0 flex-1 max-w-[300px] rounded-[16px] bg-white/[0.03] border border-white/[0.08] px-5 py-5 md:px-7 md:py-6 no-underline transition-colors hover:bg-white/[0.05] hover:[border-color:var(--accent-border)]"
       style={{
         ['--accent-border' as string]: `${color}66`,
       }}
     >
-      <div className="flex items-center justify-center w-full min-h-[52px] md:min-h-[60px] mb-4 md:mb-5">
+      <div className="home-achievement-logo flex items-center justify-center w-full min-h-[52px] md:min-h-[60px] mb-4 md:mb-5">
         <Image
           src={logoSrc}
           alt={logoAlt}
@@ -96,18 +96,18 @@ function AchievementBadge({
           height={logoHeight}
           unoptimized={isSvg}
           loading="lazy"
-          className="w-auto h-9 sm:h-10 md:h-12 max-w-[min(100%,220px)] opacity-95 group-hover:opacity-100 transition-opacity"
+          className="home-achievement-image w-auto h-9 sm:h-10 md:h-12 max-w-[min(100%,220px)] opacity-95 group-hover:opacity-100 transition-opacity"
           style={{ width: 'auto', height: 'auto', maxHeight: '48px' }}
         />
       </div>
-      <p className="text-white text-[14px] md:text-[15px] font-semibold tracking-[-0.01em] leading-tight">
+      <p className="home-achievement-label text-white text-[14px] md:text-[15px] font-semibold tracking-[-0.01em] leading-tight">
         {label}
       </p>
-      <p className="text-[12px] md:text-[13px] font-semibold mt-1" style={{ color }}>
+      <p className="home-achievement-rank text-[12px] md:text-[13px] font-semibold mt-1" style={{ color }}>
         {rank}
       </p>
-      <p className="text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>
-      <span className="mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#FFB347]/80 transition-colors">
+      <p className="home-achievement-date text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>
+      <span className="home-achievement-arrow mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#FFB347]/80 transition-colors">
         ↗
       </span>
     </a>
@@ -1093,7 +1093,7 @@ export default async function HomePage() {
             <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+          <div className="home-achievements-grid grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
             {achievements.map((a) => (
               <AchievementBadge
                 key={a.key}

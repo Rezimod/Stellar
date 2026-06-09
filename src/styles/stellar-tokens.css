@@ -3339,6 +3339,47 @@
   .home-astra-cta { width: 100%; text-align: center; }
 }
 
+@media (max-width: 639px) {
+  .home-achievements-grid {
+    grid-template-columns: repeat(2, minmax(0, 132px));
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .home-achievement-card {
+    max-width: 132px;
+    min-height: 154px;
+    border-radius: 14px;
+    padding: 14px 8px 12px;
+  }
+
+  .home-achievement-logo {
+    min-height: 38px;
+    margin-bottom: 10px;
+  }
+
+  .home-achievement-image {
+    max-width: 96px;
+    max-height: 34px !important;
+  }
+
+  .home-achievement-label {
+    font-size: 12px;
+  }
+
+  .home-achievement-rank {
+    font-size: 11px;
+  }
+
+  .home-achievement-date {
+    font-size: 10px;
+  }
+
+  .home-achievement-arrow {
+    margin-top: 8px;
+  }
+}
+
 /* ========================================================================
    SKY PAGE — Planetarium redesign (hero starfield + light body + planets)
    ======================================================================== */
