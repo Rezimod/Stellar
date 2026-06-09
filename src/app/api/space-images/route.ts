@@ -27,7 +27,8 @@ const CURATED: SpaceImage[] = [
     date: '2022-07-12',
     summary:
       'The edge of the young star-forming region NGC 3324, captured in near-infrared by the James Webb Space Telescope.',
-    imageUrl: 'https://stsci-opo.org/STScI-01G8GZQ3ZFEFE2FY0NB6JT22T4.png',
+    imageUrl:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/NASA%E2%80%99s_Webb_Reveals_Cosmic_Cliffs%2C_Glittering_Landscape_of_Star_Birth.jpg/1280px-NASA%E2%80%99s_Webb_Reveals_Cosmic_Cliffs%2C_Glittering_Landscape_of_Star_Birth.jpg',
     source: 'Webb',
     sourceUrl: 'https://webbtelescope.org/contents/media/images/2022/031/01G77PKB8NKR7S8Z6HBXKSPUS5',
     credit: 'NASA, ESA, CSA, STScI',
@@ -38,7 +39,8 @@ const CURATED: SpaceImage[] = [
     date: '2022-10-19',
     summary:
       "Webb's near-infrared view of the iconic pillars in the Eagle Nebula, where new stars are forming inside dense clouds of gas and dust.",
-    imageUrl: 'https://stsci-opo.org/STScI-01GFNN3PWJMY4RQXKZ585FTML7.png',
+    imageUrl:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Pillars_of_Creation_%28NIRCam_Image%29.jpg/1280px-Pillars_of_Creation_%28NIRCam_Image%29.jpg',
     source: 'Webb',
     sourceUrl: 'https://webbtelescope.org/contents/media/images/2022/052/01GF423GBQSK6ANC89NTFJW8VM',
     credit: 'NASA, ESA, CSA, STScI',
@@ -49,7 +51,8 @@ const CURATED: SpaceImage[] = [
     date: '2022-07-12',
     summary:
       'A dying star cloaked in shells of gas and dust, resolved in unprecedented detail by Webb.',
-    imageUrl: 'https://stsci-opo.org/STScI-01G7DB1FHPMJCCY59CQGZC1YJQ.png',
+    imageUrl:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Southern_Ring_Nebula_by_Webb_Telescope_%282022%29.jpg/1280px-Southern_Ring_Nebula_by_Webb_Telescope_%282022%29.jpg',
     source: 'Webb',
     sourceUrl: 'https://webbtelescope.org/contents/media/images/2022/033/01G709QXZPFH83NZFAFP66WVCZ',
     credit: 'NASA, ESA, CSA, STScI',
@@ -60,7 +63,8 @@ const CURATED: SpaceImage[] = [
     date: '2022-07-12',
     summary:
       'A visual grouping of five galaxies, four locked in a cosmic dance of repeated close encounters.',
-    imageUrl: 'https://stsci-opo.org/STScI-01G7JGD4SDDV90D3PVB0YV5BD9.png',
+    imageUrl:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Stephan%27s_Quintet_taken_by_James_Webb_Space_Telescope.jpg/1280px-Stephan%27s_Quintet_taken_by_James_Webb_Space_Telescope.jpg",
     source: 'Webb',
     sourceUrl: 'https://webbtelescope.org/contents/media/images/2022/034/01G70AD79VKD9NHRP3SDA70AS0',
     credit: 'NASA, ESA, CSA, STScI',
@@ -71,7 +75,8 @@ const CURATED: SpaceImage[] = [
     date: '2022-09-06',
     summary:
       'The largest and brightest star-forming region in our galactic neighbourhood, imaged in infrared by Webb.',
-    imageUrl: 'https://stsci-opo.org/STScI-01GA76Q01D09HFEV174SVMRBME.png',
+    imageUrl:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Tarantula_Nebula_by_JWST.jpg/1280px-Tarantula_Nebula_by_JWST.jpg',
     source: 'Webb',
     sourceUrl: 'https://webbtelescope.org/contents/media/images/2022/041/01GA76MYFN0FMkD3KWDxXC4F22',
     credit: 'NASA, ESA, CSA, STScI',
