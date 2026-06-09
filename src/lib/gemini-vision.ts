@@ -48,8 +48,9 @@ export async function geminiVisionJSON(opts: {
   // Retry a few times with backoff so a spike doesn't reject a legitimate photo.
   // The caller's AbortSignal bounds total time.
   const TRANSIENT = new Set([429, 500, 503]);
+  const MAX_ATTEMPTS = 4;
   let lastErr = '';
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,8 +63,8 @@ export async function geminiVisionJSON(opts: {
       return outParts.map((p) => p.text ?? '').join('');
     }
     lastErr = `Gemini ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`;
-    if (!TRANSIENT.has(res.status) || attempt === 2) break;
-    await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+    if (!TRANSIENT.has(res.status) || attempt === MAX_ATTEMPTS - 1) break;
+    await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
   }
   throw new Error(lastErr || 'Gemini request failed');
 }

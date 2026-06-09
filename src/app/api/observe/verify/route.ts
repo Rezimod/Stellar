@@ -14,6 +14,9 @@ import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
 import { getObservationTokenSecret } from '@/lib/observation-token';
 
+// Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
+export const maxDuration = 60;
+
 interface ClaudeAnalysis {
   target: ObservationTarget;
   identifiedObject: string;
@@ -345,7 +348,7 @@ Return ONLY valid JSON, no markdown, no preamble:
       prompt: visionPrompt,
       images,
       maxOutputTokens: 500,
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(45000),
     });
     const parsed = parseClaudeResponse(text);
     analysis = parsed.analysis;
