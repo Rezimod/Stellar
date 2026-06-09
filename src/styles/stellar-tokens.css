@@ -4502,6 +4502,169 @@
   margin: 0 auto;
 }
 
+/* === Dashboard grid — ways-to-earn | missions | rare+quizzes === */
+.mis-dashboard {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr) 332px;
+  gap: 16px;
+  align-items: start;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--mis-bd);
+}
+.mis-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+@media (max-width: 1100px) {
+  .mis-dashboard { grid-template-columns: 1fr; gap: 14px; }
+  .mis-col-center { order: -1; }
+}
+@media (max-width: 1023px) {
+  .mis-dashboard { padding-left: 24px; padding-right: 24px; }
+}
+@media (max-width: 639px) {
+  .mis-dashboard { padding-left: 16px; padding-right: 16px; }
+}
+
+/* Panel — bordered card container for each dashboard block */
+.mis-panel {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.015);
+  padding: 16px;
+}
+.mis-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.mis-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mis-t1);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.mis-panel-meta {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--mis-t3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mis-panel-sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mis-t2);
+  letter-spacing: 0.02em;
+  margin: -6px 0 12px;
+}
+
+/* Filter chips */
+.mis-filters {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.mis-filter-chip {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--mis-bd2);
+  background: transparent;
+  color: var(--mis-t2);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.mis-filter-chip:hover {
+  color: var(--mis-t1);
+  border-color: var(--mis-t3);
+}
+.mis-filter-chip.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--mis-t1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Center deck packs 3 across inside the dashboard column */
+.mis-col-center .mis-deck { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1100px) { .mis-col-center .mis-deck { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 820px)  { .mis-col-center .mis-deck { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  { .mis-col-center .mis-deck { grid-template-columns: 1fr; } }
+
+/* Right rail forces single-column rare deck */
+.mis-col-right .mis-rare-deck { grid-template-columns: 1fr; }
+
+/* Quiz list — right-rail rows */
+.mis-quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mis-quiz-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--mis-bd);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.mis-quiz-row:hover {
+  border-color: var(--mis-bd2);
+  background: rgba(255, 255, 255, 0.045);
+}
+.mis-quiz-row-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mis-quiz-row-body { flex: 1; min-width: 0; }
+.mis-quiz-row-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mis-t1);
+  line-height: 1.2;
+}
+.mis-quiz-row-done { color: var(--mis-grn); margin-left: 6px; font-size: 11px; }
+.mis-quiz-row-meta {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--mis-t3);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+.mis-quiz-row-reward {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--terracotta);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
 .mis-section {
   padding: 20px 32px; /* matches nav lg:px-8 */
   border-bottom: 1px solid var(--mis-bd);

@@ -94,6 +94,10 @@ const GRID: GridEntry[] = [
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab' },
 ];
 
+type MissionFilter = 'all' | 'visible' | 'naked' | 'deep';
+const MISSION_FILTERS: MissionFilter[] = ['all', 'visible', 'naked', 'deep'];
+const DEEP_SKY = new Set(['pleiades', 'orion', 'andromeda', 'crab']);
+
 // Live lineup keys -> their real mission ids. Mercury isn't in the GRID but
 // has a real mission entry so tapping it from the live strip works.
 const LINEUP_ROUTE_BY_KEY: Record<string, { routeId: string; stars: number }> = {
@@ -274,6 +278,18 @@ export default function MissionsPage() {
     [skyPositions],
   );
 
+  const [missionFilter, setMissionFilter] = useState<MissionFilter>('all');
+  const filteredGrid = useMemo(
+    () =>
+      GRID.filter((g) => {
+        if (missionFilter === 'visible') return (skyPositions[g.id]?.altitude ?? -90) > 0;
+        if (missionFilter === 'naked') return g.equip === 'naked';
+        if (missionFilter === 'deep') return DEEP_SKY.has(g.id);
+        return true;
+      }),
+    [missionFilter, skyPositions],
+  );
+
   const primeEntry = useMemo(() => {
     const visible = GRID
       .filter((g) => !completedIds.has(g.id))
@@ -431,38 +447,132 @@ export default function MissionsPage() {
       </div>
 
       <div className="mis-content">
-        <section className="mis-section">
-          <div className="mis-section-head">
-            <h2 className="mis-section-title">{t('sections.tonight')}</h2>
-            <span className="mis-section-meta">{t('sections.tonightMeta', { count: visibleCount })}</span>
-          </div>
-          <div className="mis-deck">
-            {GRID.map((g) => {
-              const pos = skyPositions[g.id];
-              const altitude = pos?.altitude ?? -90;
-              return (
-                <MissionTile
-                  key={g.id}
-                  entry={localize(g)}
-                  above={altitude > 0}
-                  rise={pos?.rise ?? null}
-                  onStart={() => startMission(g.routeId)}
-                  labels={{
-                    rises: t('tile.rises'),
-                    belowHorizon: t('tile.belowHorizon'),
-                    visibleAfter: t('tile.visibleAfter'),
-                    notTonight: t('tile.notTonight'),
-                    remind: t('tile.remind'),
-                    reminderOn: t('tile.reminderOn'),
-                    reminderRemove: t('tile.reminderRemove'),
-                    reminderSet: t('tile.reminderSet'),
-                    reminderBlocked: t('tile.reminderBlocked'),
-                  }}
-                />
-              );
-            })}
-          </div>
-        </section>
+        <div className="mis-dashboard">
+          {/* LEFT RAIL — ways to earn */}
+          <aside className="mis-col mis-col-left">
+            <section className="mis-panel">
+              <div className="mis-panel-head">
+                <h2 className="mis-panel-title">{t('sections.earn')}</h2>
+                <span className="mis-panel-meta">{t('sections.earnMeta', { count: 6 })}</span>
+              </div>
+              <EarningLadder />
+            </section>
+          </aside>
+
+          {/* CENTER — missions tonight */}
+          <main className="mis-col mis-col-center">
+            <section className="mis-panel">
+              <div className="mis-panel-head">
+                <h2 className="mis-panel-title">{t('sections.tonight')}</h2>
+                <div className="mis-filters" role="tablist" aria-label={t('sections.tonight')}>
+                  {MISSION_FILTERS.map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      role="tab"
+                      aria-selected={missionFilter === f}
+                      className={`mis-filter-chip${missionFilter === f ? ' is-active' : ''}`}
+                      onClick={() => setMissionFilter(f)}
+                    >
+                      {t(`filters.${f}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <span className="mis-panel-sub">
+                {t('sections.tonightCount', { total: GRID.length, visible: visibleCount })}
+              </span>
+              <div className="mis-deck">
+                {filteredGrid.map((g) => {
+                  const pos = skyPositions[g.id];
+                  const altitude = pos?.altitude ?? -90;
+                  return (
+                    <MissionTile
+                      key={g.id}
+                      entry={localize(g)}
+                      above={altitude > 0}
+                      rise={pos?.rise ?? null}
+                      onStart={() => startMission(g.routeId)}
+                      labels={{
+                        rises: t('tile.rises'),
+                        belowHorizon: t('tile.belowHorizon'),
+                        visibleAfter: t('tile.visibleAfter'),
+                        notTonight: t('tile.notTonight'),
+                        remind: t('tile.remind'),
+                        reminderOn: t('tile.reminderOn'),
+                        reminderRemove: t('tile.reminderRemove'),
+                        reminderSet: t('tile.reminderSet'),
+                        reminderBlocked: t('tile.reminderBlocked'),
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          </main>
+
+          {/* RIGHT RAIL — rare events + quizzes */}
+          <aside className="mis-col mis-col-right">
+            {rareEvents.length > 0 && (
+              <section className="mis-panel">
+                <div className="mis-panel-head">
+                  <h2 className="mis-panel-title">{t('sections.rare', { year: new Date().getFullYear() })}</h2>
+                  <span className="mis-panel-meta">{t('sections.rareMeta', { count: rareEvents.length })}</span>
+                </div>
+                <div className="mis-rare-deck">
+                  {rareEvents.map(ev => (
+                    <RareEventCard
+                      key={`${ev.date}-${ev.name}`}
+                      event={ev}
+                      typeLabel={t(`eventType.${ev.type}`)}
+                      countdown={{
+                        today: t('countdown.today'),
+                        tomorrow: t('countdown.tomorrow'),
+                        past: t('countdown.past'),
+                        inDays: (n) => t('countdown.inDays', { n }),
+                        inMonths: (n) => t('countdown.inMonths', { n }),
+                      }}
+                      onOpen={(rect) => {
+                        setActiveEventAnchor(rect);
+                        setActiveEvent(ev);
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="mis-panel">
+              <div className="mis-panel-head">
+                <h2 className="mis-panel-title">{t('sections.quizzes')}</h2>
+                <span className="mis-panel-meta">{t('sections.quizzesMetaShort')}</span>
+              </div>
+              <div className="mis-quiz-list">
+                {QUIZZES.map((quiz) => {
+                  const ui = QUIZ_UI[quiz.id];
+                  if (!ui) return null;
+                  const result = completedQuizIds.get(quiz.id);
+                  const score = result?.score ?? 0;
+                  const total = quiz.questions.length;
+                  const title = quiz.title[locale] ?? quiz.title.en;
+                  const desc = locale === 'ka' ? ui.descKa : ui.descEn;
+                  return (
+                    <QuizRow
+                      key={quiz.id}
+                      Icon={ui.Icon}
+                      gradient={ui.gradient}
+                      title={title}
+                      meta={desc}
+                      reward={ui.reward}
+                      done={score > 0 && score >= total}
+                      onClick={() => setActiveQuiz(quiz)}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          </aside>
+        </div>
 
         {upcomingEvents.length > 0 && (
           <section className="mis-section">
@@ -493,66 +603,6 @@ export default function MissionsPage() {
           </section>
         )}
 
-        {rareEvents.length > 0 && (
-          <section className="mis-section">
-            <div className="mis-section-head">
-              <h2 className="mis-section-title">{t('sections.rare', { year: new Date().getFullYear() })}</h2>
-              <span className="mis-section-meta">{t('sections.rareMeta', { count: rareEvents.length })}</span>
-            </div>
-            <div className="mis-rare-deck">
-              {rareEvents.map(ev => (
-                <RareEventCard
-                  key={`${ev.date}-${ev.name}`}
-                  event={ev}
-                  typeLabel={t(`eventType.${ev.type}`)}
-                  countdown={{
-                    today: t('countdown.today'),
-                    tomorrow: t('countdown.tomorrow'),
-                    past: t('countdown.past'),
-                    inDays: (n) => t('countdown.inDays', { n }),
-                    inMonths: (n) => t('countdown.inMonths', { n }),
-                  }}
-                  onOpen={(rect) => {
-                    setActiveEventAnchor(rect);
-                    setActiveEvent(ev);
-                  }}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="mis-section">
-          <div className="mis-section-head">
-            <h2 className="mis-section-title">{t('sections.quizzes')}</h2>
-            <span className="mis-section-meta">{t('sections.quizzesMeta', { count: QUIZZES.length })}</span>
-          </div>
-          <div className="mis-quiz-deck">
-            {QUIZZES.map((quiz) => {
-              const ui = QUIZ_UI[quiz.id];
-              if (!ui) return null;
-              const result = completedQuizIds.get(quiz.id);
-              const score = result?.score ?? 0;
-              const total = quiz.questions.length;
-              const title = quiz.title[locale] ?? quiz.title.en;
-              const desc = locale === 'ka' ? ui.descKa : ui.descEn;
-              return (
-                <QuizTile
-                  key={quiz.id}
-                  Icon={ui.Icon}
-                  gradient={ui.gradient}
-                  title={title}
-                  meta={desc}
-                  reward={ui.reward}
-                  score={score}
-                  total={total}
-                  onClick={() => setActiveQuiz(quiz)}
-                />
-              );
-            })}
-          </div>
-        </section>
-
         <section className="mis-section">
           <div className="mis-section-head">
             <h2 className="mis-section-title">{t('sections.scope')}</h2>
@@ -566,13 +616,6 @@ export default function MissionsPage() {
             }))}
             scopeName={t('scopeName')}
           />
-        </section>
-
-        <section className="mis-section">
-          <div className="mis-section-head">
-            <h2 className="mis-section-title">{t('sections.earn')}</h2>
-          </div>
-          <EarningLadder />
         </section>
       </div>
 
@@ -1167,16 +1210,15 @@ function EquipIcon({ kind }: { kind: string }) {
   );
 }
 
-// ---- Quiz tile ----
+// ---- Quiz row (right-rail list item) ----
 
-function QuizTile({
+function QuizRow({
   Icon,
   gradient,
   title,
   meta,
   reward,
-  score,
-  total,
+  done,
   onClick,
 }: {
   Icon: LucideIcon;
@@ -1184,51 +1226,29 @@ function QuizTile({
   title: string;
   meta: string;
   reward: number;
-  score: number;
-  total: number;
+  done: boolean;
   onClick: () => void;
 }) {
-  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
-  const done = score > 0 && score >= total;
   return (
-    <button type="button" className="mis-qtile" onClick={onClick}>
-      <span className="mis-qtile-play" aria-hidden>
-        <PlayIcon />
-      </span>
+    <button type="button" className="mis-quiz-row" onClick={onClick}>
       <span
-        className="mis-qtile-icon"
+        className="mis-quiz-row-icon"
         style={{
           background: gradient,
           boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
         }}
       >
-        <Icon size={22} strokeWidth={2.2} color="#FFFFFF" />
+        <Icon size={18} strokeWidth={2.2} color="#FFFFFF" />
       </span>
-      <span className="mis-qtile-name">{title}</span>
-      <span className="mis-qtile-meta">{meta}</span>
-      <span className="mis-qtile-reward">+{reward} ✦</span>
-      <span className="mis-qtile-progress">
-        <span className="mis-qtile-progress-bar">
-          {score > 0 && (
-            <span
-              className={done ? 'done' : ''}
-              style={{ width: `${pct}%` }}
-            />
-          )}
+      <span className="mis-quiz-row-body">
+        <span className="mis-quiz-row-title">
+          {title}
+          {done && <span className="mis-quiz-row-done" aria-hidden>✓</span>}
         </span>
-        <span className="mis-qtile-progress-text">{score}/{total}</span>
+        <span className="mis-quiz-row-meta">{meta}</span>
       </span>
+      <span className="mis-quiz-row-reward">+{reward} ✦</span>
     </button>
-  );
-}
-
-// ---- Inline SVG icons ----
-
-function PlayIcon() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
-      <path d="M3 2L8 5L3 8V2Z" fill="currentColor" />
-    </svg>
   );
 }
 

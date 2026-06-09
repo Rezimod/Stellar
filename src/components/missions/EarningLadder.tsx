@@ -30,18 +30,18 @@ export function EarningLadder() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+    <div className="flex flex-col gap-1.5">
       {RUNGS.map((r) => {
         const inner = (
           <>
-            <span className="w-6 h-6 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0">
-              <r.Icon size={13} strokeWidth={1.8} className="text-white/50" />
+            <span className="w-7 h-7 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0">
+              <r.Icon size={14} strokeWidth={1.8} className="text-white/55" />
             </span>
-            <span className="flex-1 min-w-0 truncate text-white/80 text-[12px] leading-tight">{r.label[locale]}</span>
-            <span className="font-mono text-[#FFD166] text-[11.5px] tabular-nums shrink-0">{r.reward} ✦</span>
+            <span className="flex-1 min-w-0 truncate text-white/80 text-[13px] leading-tight">{r.label[locale]}</span>
+            <span className="font-mono text-[#FFD166] text-[12px] tabular-nums shrink-0">{r.reward} ✦</span>
           </>
         );
-        const cls = 'flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-2.5 py-2';
+        const cls = 'flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5';
         return r.href ? (
           <Link key={r.label.en} href={r.href} className={`${cls} no-underline transition-colors hover:bg-white/[0.04]`}>
             {inner}

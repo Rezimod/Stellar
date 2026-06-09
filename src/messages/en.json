@@ -908,6 +908,9 @@
     "sections": {
       "tonight": "Missions tonight",
       "tonightMeta": "{count} targets visible",
+      "tonightCount": "{total} targets · {visible} visible tonight",
+      "earnMeta": "{count} actions",
+      "quizzesMetaShort": "earn while you wait",
       "upcoming": "Upcoming events this month",
       "eventsCount": "{count, plural, one {# event} other {# events}}",
       "rare": "Rare events in {year}",
@@ -917,6 +920,12 @@
       "scope": "Using your telescope",
       "scopeMeta": "4 quick rules",
       "earn": "Ways to earn"
+    },
+    "filters": {
+      "all": "All",
+      "visible": "Visible",
+      "naked": "Naked eye",
+      "deep": "Deep sky"
     },
     "primeBadge": "Prime target tonight",
     "observe": "Observe",
