@@ -467,74 +467,6 @@ export default function SkyPage() {
               </button>
             </header>
 
-            <div className="sky-obs__cards">
-              <ConditionCard label="Observing window">
-                <div className="sky-obs__window">
-                  <RingGauge pct={0.78} color="var(--seafoam, #5EEAD4)">
-                    <Telescope size={18} aria-hidden="true" />
-                  </RingGauge>
-                  <div className="sky-obs__window-body">
-                    <span className="sky-obs__window-times">
-                      <span className="sky-obs__window-time">{fmtClock(windowOpen) ?? '—'}</span>
-                      <span className="sky-obs__window-time sky-obs__window-time--to">
-                        <span className="sky-obs__window-dash" aria-hidden>–</span> {fmtClock(windowClose) ?? '—'}
-                      </span>
-                    </span>
-                    <span className="sky-obs__window-dur">{windowDuration ?? 'Dark window'}</span>
-                  </div>
-                </div>
-              </ConditionCard>
-
-              <ConditionCard label="Cloud cover">
-                <div className="sky-obs__metric">
-                  <RingGauge pct={cloudPct != null ? cloudPct / 100 : 0} color="var(--terracotta, #FFB347)">
-                    <Cloud size={18} aria-hidden="true" />
-                  </RingGauge>
-                  <div className="sky-obs__metric-body">
-                    <span className="sky-obs__metric-value">{cloudPct ?? '—'}<span className="sky-obs__metric-unit">%</span></span>
-                    <span className="sky-obs__metric-sub">{cloudLabel}</span>
-                  </div>
-                </div>
-              </ConditionCard>
-
-              <ConditionCard label="Moon phase">
-                <div className="sky-obs__metric">
-                  <span className="sky-obs__moon"><MoonGlyph phase={moonPhase} size={48} /></span>
-                  <div className="sky-obs__metric-body">
-                    <span className="sky-obs__metric-value">{moonIllum}<span className="sky-obs__metric-unit">%</span></span>
-                    <span className="sky-obs__metric-sub">{moonName}</span>
-                  </div>
-                </div>
-              </ConditionCard>
-
-              <ConditionCard label="Seeing">
-                <div className="sky-obs__metric">
-                  <RingGauge pct={seeingArc != null ? 1 - (seeingArc - 1) / 4 : 0} color="var(--seafoam, #5EEAD4)">
-                    <Wind size={17} aria-hidden="true" />
-                  </RingGauge>
-                  <div className="sky-obs__metric-body">
-                    <span className="sky-obs__metric-value sky-obs__metric-value--sm">{seeingArc != null ? `${seeingArc.toFixed(1)}″` : '—'}</span>
-                    <span className="sky-obs__metric-sub">{seeingLabel}</span>
-                  </div>
-                </div>
-              </ConditionCard>
-
-              <ConditionCard label="Light pollution">
-                <div className="sky-obs__metric">
-                  <LightPollutionSwatch bortle={bortle} />
-                  <div className="sky-obs__metric-body">
-                    <span
-                      className="sky-obs__metric-value sky-obs__metric-value--sm"
-                      data-tone={lightPollutionLevel(bortle).tone}
-                    >
-                      {lightPollutionLevel(bortle).word}
-                    </span>
-                    <span className="sky-obs__metric-sub">{bortleLabel(bortle)}</span>
-                  </div>
-                </div>
-              </ConditionCard>
-            </div>
-
             <div className="sky-obs__main">
               <div className="sky-obs__dome">
                 <div className="sky-v3__map-stage">
@@ -604,32 +536,98 @@ export default function SkyPage() {
                 />
               </div>
 
-              <div className="sky-obs__rail">
-                <section className="sky-obs__targets">
-                  <header className="sky-obs__panel-head">Tonight&apos;s best targets</header>
-                  <ol className="sky-obs__target-list">
-                    {bestTargets.length === 0 && (
-                      <li className="sky-obs__target-empty">Nothing above the horizon right now.</li>
-                    )}
-                    {bestTargets.map((o, i) => (
-                      <BestTargetRow
-                        key={o.id}
-                        index={i + 1}
-                        obj={o}
-                        active={o.id === activeId}
-                        onSelect={handleSelect}
-                      />
-                    ))}
-                  </ol>
-                </section>
+              <section className="sky-obs__targets">
+                <header className="sky-obs__panel-head">Tonight&apos;s best targets</header>
+                <ol className="sky-obs__target-list">
+                  {bestTargets.length === 0 && (
+                    <li className="sky-obs__target-empty">Nothing above the horizon right now.</li>
+                  )}
+                  {bestTargets.map((o, i) => (
+                    <BestTargetRow
+                      key={o.id}
+                      index={i + 1}
+                      obj={o}
+                      active={o.id === activeId}
+                      onSelect={handleSelect}
+                    />
+                  ))}
+                </ol>
+              </section>
 
-                <SevenDayForecast
-                  variant="rail"
-                  days={forecast.days}
-                  loading={forecast.loading}
-                  locationLabel={locationLabel}
-                />
+              <div className="sky-obs__cards">
+                <ConditionCard label="Observing window">
+                  <div className="sky-obs__window">
+                    <RingGauge pct={0.78} color="var(--seafoam, #5EEAD4)">
+                      <Telescope size={18} aria-hidden="true" />
+                    </RingGauge>
+                    <div className="sky-obs__window-body">
+                      <span className="sky-obs__window-times">
+                        <span className="sky-obs__window-time">{fmtClock(windowOpen) ?? '—'}</span>
+                        <span className="sky-obs__window-time sky-obs__window-time--to">
+                          <span className="sky-obs__window-dash" aria-hidden>–</span> {fmtClock(windowClose) ?? '—'}
+                        </span>
+                      </span>
+                      <span className="sky-obs__window-dur">{windowDuration ?? 'Dark window'}</span>
+                    </div>
+                  </div>
+                </ConditionCard>
+
+                <ConditionCard label="Cloud cover">
+                  <div className="sky-obs__metric">
+                    <RingGauge pct={cloudPct != null ? cloudPct / 100 : 0} color="var(--terracotta, #FFB347)">
+                      <Cloud size={18} aria-hidden="true" />
+                    </RingGauge>
+                    <div className="sky-obs__metric-body">
+                      <span className="sky-obs__metric-value">{cloudPct ?? '—'}<span className="sky-obs__metric-unit">%</span></span>
+                      <span className="sky-obs__metric-sub">{cloudLabel}</span>
+                    </div>
+                  </div>
+                </ConditionCard>
+
+                <ConditionCard label="Moon phase">
+                  <div className="sky-obs__metric">
+                    <span className="sky-obs__moon"><MoonGlyph phase={moonPhase} size={48} /></span>
+                    <div className="sky-obs__metric-body">
+                      <span className="sky-obs__metric-value">{moonIllum}<span className="sky-obs__metric-unit">%</span></span>
+                      <span className="sky-obs__metric-sub">{moonName}</span>
+                    </div>
+                  </div>
+                </ConditionCard>
+
+                <ConditionCard label="Seeing">
+                  <div className="sky-obs__metric">
+                    <RingGauge pct={seeingArc != null ? 1 - (seeingArc - 1) / 4 : 0} color="var(--seafoam, #5EEAD4)">
+                      <Wind size={17} aria-hidden="true" />
+                    </RingGauge>
+                    <div className="sky-obs__metric-body">
+                      <span className="sky-obs__metric-value sky-obs__metric-value--sm">{seeingArc != null ? `${seeingArc.toFixed(1)}″` : '—'}</span>
+                      <span className="sky-obs__metric-sub">{seeingLabel}</span>
+                    </div>
+                  </div>
+                </ConditionCard>
+
+                <ConditionCard label="Light pollution">
+                  <div className="sky-obs__metric">
+                    <LightPollutionSwatch bortle={bortle} />
+                    <div className="sky-obs__metric-body">
+                      <span
+                        className="sky-obs__metric-value sky-obs__metric-value--sm"
+                        data-tone={lightPollutionLevel(bortle).tone}
+                      >
+                        {lightPollutionLevel(bortle).word}
+                      </span>
+                      <span className="sky-obs__metric-sub">{bortleLabel(bortle)}</span>
+                    </div>
+                  </div>
+                </ConditionCard>
               </div>
+
+              <SevenDayForecast
+                variant="rail"
+                days={forecast.days}
+                loading={forecast.loading}
+                locationLabel={locationLabel}
+              />
             </div>
 
           </>

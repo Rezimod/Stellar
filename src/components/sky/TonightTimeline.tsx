@@ -166,11 +166,14 @@ export function TonightTimeline({ nowISO, twilight, objects, nightHours, onSelec
             onClick={() => onSelect(b.id)}
             title={b.title}
           >
-            <span className="tl__label tl__label--body">{b.name}</span>
+            <span className="tl__label tl__label--body">
+              <i className="tl__dot" style={{ background: b.color, color: b.color }} aria-hidden="true" />
+              {b.name}
+            </span>
             <span className="tl__track">
               <span
                 className="tl__bar"
-                style={{ left: `${b.startF * 100}%`, width: `${(b.endF - b.startF) * 100}%`, background: b.color }}
+                style={{ left: `${b.startF * 100}%`, width: `${(b.endF - b.startF) * 100}%`, background: b.color, color: b.color }}
               />
             </span>
           </button>

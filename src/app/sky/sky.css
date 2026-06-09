@@ -4014,12 +4014,16 @@
 .sky-obs__loc-city { color: var(--text); }
 .sky-obs__loc-coord { color: var(--text-dim); }
 
-/* === Main: dome + best targets === */
+/* === Main: dome + right rail (targets · conditions · outlook) ===
+   Desktop layout (grid) lives in the min-width:921px block below. At ≤920
+   this is a plain flex column; ≤680 flattens it into the wrap via
+   `display:contents` + per-child `order` (the existing mobile system), so
+   phones render exactly as before. No `order` rules here — they would
+   out-rank the mobile block's and break the stack. */
 .sky-obs__main {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-  align-items: stretch;
 }
 .sky-obs__dome {
   display: flex;
@@ -4226,17 +4230,6 @@
 .sky-obs__lp-swatch { width: 48px; height: 48px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
 .sky-obs__lp-swatch svg { display: block; }
 
-/* === Right rail: best targets stacked over the 7-night outlook === */
-.sky-obs__rail {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-  min-height: 0;
-}
-.sky-obs__rail .sky-obs__targets { flex: 0 0 auto; }
-.sky-obs__rail .forecast7--rail { flex: 1 1 auto; }
-
 /* === 7-night outlook — compact vertical list variant for the rail === */
 .forecast7--rail {
   margin-top: 0;
@@ -4331,13 +4324,77 @@
   animation: skyShimmer 1.6s linear infinite;
 }
 
+/* === Desktop (≥921px) — dome on the left, a stacked rail on the right:
+   best targets (2-up) → compact conditions → 7-night outlook. Mobile keeps
+   the flex-column stack defined above and is untouched by this block. === */
+@media (min-width: 921px) {
+  .sky-obs__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.85fr) minmax(330px, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "dome targets"
+      "dome cards"
+      "dome outlook";
+    gap: 16px;
+    align-items: start;
+  }
+  .sky-obs__main > .sky-obs__dome { grid-area: dome; align-self: stretch; }
+  .sky-obs__main > .sky-obs__targets { grid-area: targets; }
+  .sky-obs__main > .sky-obs__cards { grid-area: cards; }
+  .sky-obs__main > .forecast7--rail { grid-area: outlook; }
+
+  /* Bigger sky map */
+  .sky-obs__dome .sky-map { max-width: min(100%, 740px); }
+
+  /* Best targets — two per row, no number badge */
+  .sky-obs__targets { padding: 14px 14px 10px; }
+  .sky-obs__target-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    flex: none;
+  }
+  .sky-obs__target-list > li { flex: none; }
+  .sky-obs__target-list > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .sky-obs__target-num { display: none; }
+  .sky-obs__target { padding: 8px 10px; }
+
+  /* Conditions — compact cards tucked under the targets */
+  .sky-obs__cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-content: start;
+  }
+  .sky-obs__cards .sky-obs__card:first-child { grid-column: 1 / -1; }
+  .sky-obs__card { padding: 9px 11px; gap: 6px; border-radius: 13px; }
+  .sky-obs__card-label { font-size: 8px; letter-spacing: 0.13em; }
+  .sky-obs__window,
+  .sky-obs__metric { gap: 9px; }
+  .sky-obs__ring,
+  .sky-obs__ring svg { width: 38px; height: 38px; }
+  .sky-obs__moon,
+  .sky-obs__moon svg { width: 34px; height: 34px; }
+  .sky-obs__lp-swatch,
+  .sky-obs__lp-swatch svg { width: 34px; height: 34px; }
+  .sky-obs__metric-value { font-size: 18px; }
+  .sky-obs__metric-value--sm { font-size: 14px; }
+  .sky-obs__metric-unit { font-size: 10px; }
+  .sky-obs__metric-sub { font-size: 9px; }
+  .sky-obs__window-times { font-size: 12.5px; }
+  .sky-obs__window-dur { font-size: 9.5px; }
+}
+
 /* === Responsive === */
 @media (max-width: 1080px) {
   .sky-obs__cards { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 920px) {
-  .sky-obs__main { grid-template-columns: 1fr; }
   .sky-obs__dome .sky-map { max-width: min(100%, 460px); }
+  /* Conditions ride above the dome in the single-column stack (as before).
+     ≤680 re-flattens via display:contents; this keeps the 681–920 band right. */
+  .sky-obs__cards { order: -1; }
   /* Targets go full-width below the dome — lay them out as a compact
      2-up grid so more of the night's list is visible without scrolling. */
   .sky-obs__targets { padding: 14px 14px 12px; }
