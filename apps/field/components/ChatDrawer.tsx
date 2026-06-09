@@ -121,6 +121,7 @@ export function ChatDrawer({
 
         <View style={styles.footer}>
           <VisionModel />
+          <VoiceModel />
           <FieldMesh />
           <View style={styles.settingRow}>
             <Text style={styles.settingKey}>Location</Text>
@@ -180,6 +181,55 @@ function VisionModel() {
       <View style={[styles.meshDot, active && styles.meshDotOn]} />
       <View style={{ flex: 1 }}>
         <Text style={styles.meshTitle}>Vision model</Text>
+        <Text style={styles.meshSub} numberOfLines={1}>{label}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+/** Voice — pre-download the on-device TTS voice so read-aloud is instant (no
+ *  download mid-demo). Lazy by default; this just warms it. */
+function VoiceModel() {
+  const [p, setP] = useState(qvac.getTtsProgress());
+
+  useEffect(() => {
+    const unsub = qvac.subscribeTts(setP);
+    return () => {
+      unsub();
+    };
+  }, []);
+
+  async function download() {
+    if (p.phase === 'downloading' || p.phase === 'loading' || p.phase === 'ready') return;
+    try {
+      await qvac.ensureTtsReady();
+    } catch {
+      /* state reflected below */
+    }
+  }
+
+  const pct =
+    p.bytesDownloaded && p.bytesTotal ? Math.round((p.bytesDownloaded / p.bytesTotal) * 100) : null;
+  const label =
+    p.phase === 'ready' ? 'Ready · reads answers aloud offline'
+    : p.phase === 'loading' ? 'Preparing voice…'
+    : p.phase === 'downloading' ? `Downloading… ${pct != null ? pct + '%' : ''}`.trim()
+    : p.phase === 'error' ? 'Download failed — tap to retry'
+    : 'Download for offline read-aloud';
+
+  const active = p.phase === 'ready';
+  const busy = p.phase === 'downloading' || p.phase === 'loading';
+
+  return (
+    <TouchableOpacity
+      style={[styles.mesh, active && styles.meshActive]}
+      onPress={download}
+      activeOpacity={0.85}
+      disabled={busy}
+    >
+      <View style={[styles.meshDot, active && styles.meshDotOn]} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.meshTitle}>Voice</Text>
         <Text style={styles.meshSub} numberOfLines={1}>{label}</Text>
       </View>
     </TouchableOpacity>
