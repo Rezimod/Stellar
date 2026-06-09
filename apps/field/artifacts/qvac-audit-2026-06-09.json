@@ -1,7 +1,7 @@
 {
   "sessionId": "sess_demo_2026-06-09",
-  "exportedAt": "2026-06-09T10:05:45.683Z",
-  "note": "Standard demo-run audit captured live from the device on 2026-06-09: multi-tool sky orchestration (tool-call -> grounded LLM) plus on-device TTS read-aloud (Supertonic synthesized 2.86s of audio in 2.56s — faster than real time). Complements the vision-only run in qvac-vision-audit-2026-06-07.json. All on-device via QVAC.",
+  "exportedAt": "2026-06-09T10:13:48.206Z",
+  "note": "Comprehensive single-session demo-run audit, pulled live from the device 2026-06-09. One session exercises FOUR on-device QVAC inference paths: multi-tool sky orchestration (tool-call -> grounded LLM, ~5s TTFT, 7-10 tok/s), multimodal VISION (SmolVLM2 500M), and TTS read-aloud (Supertonic, ~2.5s for ~3s of audio). All on-device, backendDevice cpu. Note: vision TTFT is higher here than the dedicated vision run (qvac-vision-audit-2026-06-07.json, ~7-9 tok/s) because three models are co-resident on a 5.5GB phone during the full pipeline — an honest look at memory pressure on constrained hardware.",
   "device": {
     "modelName": "M2007J20CG (POCO X3 NFC)",
     "manufacturer": "Xiaomi",
@@ -115,6 +115,115 @@
         "tokensPerSecond": 10.247313211405487,
         "cacheTokens": 0,
         "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:04:19.625Z",
+      "type": "model_load",
+      "model": "SmolVLM2 500M",
+      "meta": {
+        "kind": "vision"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:07:38.720Z",
+      "type": "inference",
+      "kind": "vision",
+      "model": "SmolVLM2 500M",
+      "promptPreview": "Describe this image in one short sentence.",
+      "completionTokens": 27,
+      "ttftMs": 29750,
+      "totalMs": 195059,
+      "tokensPerSec": 0.16,
+      "sdkStats": {
+        "timeToFirstToken": 29595.121,
+        "tokensPerSecond": 0.1633007716433218,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:07:41.482Z",
+      "type": "inference",
+      "kind": "tts",
+      "model": "Supertonic TTS",
+      "promptPreview": "Saturn is below the horizon right now.",
+      "totalMs": 2759,
+      "meta": {
+        "samples": 135168,
+        "seconds": 3.07
+      }
+    },
+    {
+      "ts": "2026-06-09T10:07:57.783Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is Saturn up right now?",
+      "meta": {
+        "args": {
+          "body": "saturn"
+        },
+        "result": {
+          "name": "Saturn",
+          "altitude": 8.2,
+          "azimuth": 267,
+          "azimuthDir": "W",
+          "aboveHorizon": true,
+          "daylight": true,
+          "observable": false,
+          "magnitude": 0.7,
+          "constellation": "Pisces",
+          "rise": "2026-06-09T22:24:57.250Z",
+          "set": "2026-06-09T10:54:10.709Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-09T10:08:04.724Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "orchestrator",
+      "promptPreview": "Is Saturn up right now?",
+      "completionTokens": 9,
+      "ttftMs": 5924,
+      "totalMs": 6932,
+      "tokensPerSec": 8.93,
+      "sdkStats": {
+        "timeToFirstToken": 5819.991,
+        "tokensPerSecond": 8.739085852779418,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:12:48.446Z",
+      "type": "inference",
+      "kind": "vision",
+      "model": "SmolVLM2 500M",
+      "promptPreview": "Describe this image in one short sentence.",
+      "completionTokens": 27,
+      "ttftMs": 12738,
+      "totalMs": 236533,
+      "tokensPerSec": 0.12,
+      "sdkStats": {
+        "timeToFirstToken": 12514.791000000001,
+        "tokensPerSecond": 0.12060173350519705,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:12:51.222Z",
+      "type": "inference",
+      "kind": "tts",
+      "model": "Supertonic TTS",
+      "promptPreview": "Saturn is below the horizon right now.",
+      "totalMs": 2774,
+      "meta": {
+        "samples": 135168,
+        "seconds": 3.07
       }
     }
   ]

@@ -35,7 +35,8 @@ event carries `"backendDevice": "cpu"`, i.e. real on-device compute, no cloud.
 - **Vision (multimodal, SmolVLM2 500M):** captured live on **2026-06-07** — TTFT **10.9–19.5 s** (image projection is processed before the first token), **~7.7–9.2 tok/s**, every event `backendDevice: "cpu"`. See [`artifacts/qvac-vision-audit-2026-06-07.json`](./artifacts/qvac-vision-audit-2026-06-07.json). The RAM-aware loader picked SmolVLM2 on this 5.5 GB phone; Qwen3-VL 2B auto-loads on ≥6.5 GB devices.
 
 Committed evidence bundle:
-- [`artifacts/qvac-audit-2026-06-09.json`](./artifacts/qvac-audit-2026-06-09.json) — standard demo-run: sky orchestration (tool-call → grounded LLM) + on-device **TTS** read-aloud (2.86 s audio synthesized in 2.56 s, faster than real time)
+- [`artifacts/qvac-audit-2026-06-09.json`](./artifacts/qvac-audit-2026-06-09.json) — comprehensive single-session run: sky orchestration + **vision** + on-device **TTS** read-aloud (2.86 s audio synthesized in 2.56 s, faster than real time)
+- [`artifacts/smoke-test-2026-06-09.png`](./artifacts/smoke-test-2026-06-09.png) — on-device Diagnostics smoke test: every capability green, incl. **`prompt-injection` resisted 2/2** and `vision-vlm` correctly describing the bundled test image
 - [`artifacts/qvac-vision-audit-2026-06-07.json`](./artifacts/qvac-vision-audit-2026-06-07.json) — live on-device VISION inferences (model load + TTFT + tokens/sec, `backendDevice: cpu`)
 - [`artifacts/qvac-eval-2026-06-05.json`](./artifacts/qvac-eval-2026-06-05.json) — per-query route/tools/latency, incl. the orchestration cases
 - [`artifacts/qvac-eval-2026-06-03.json`](./artifacts/qvac-eval-2026-06-03.json) — earlier run
