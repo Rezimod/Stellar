@@ -1,0 +1,121 @@
+{
+  "sessionId": "sess_demo_2026-06-09",
+  "exportedAt": "2026-06-09T10:05:45.683Z",
+  "note": "Standard demo-run audit captured live from the device on 2026-06-09: multi-tool sky orchestration (tool-call -> grounded LLM) plus on-device TTS read-aloud (Supertonic synthesized 2.86s of audio in 2.56s — faster than real time). Complements the vision-only run in qvac-vision-audit-2026-06-07.json. All on-device via QVAC.",
+  "device": {
+    "modelName": "M2007J20CG (POCO X3 NFC)",
+    "manufacturer": "Xiaomi",
+    "boardPlatform": "sm6150 (Snapdragon 732G)",
+    "cpuAbi": "arm64-v8a",
+    "osVersion": "Android 12 (API 31)",
+    "totalMemoryBytes": 5903437824
+  },
+  "events": [
+    {
+      "ts": "2026-06-09T10:02:15.420Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is Saturn up right now?",
+      "meta": {
+        "args": {
+          "body": "saturn"
+        },
+        "result": {
+          "name": "Saturn",
+          "altitude": 9.2,
+          "azimuth": 266,
+          "azimuthDir": "W",
+          "aboveHorizon": true,
+          "daylight": true,
+          "observable": false,
+          "magnitude": 0.7,
+          "constellation": "Pisces",
+          "rise": "2026-06-09T22:25:01.117Z",
+          "set": "2026-06-09T10:54:14.502Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-09T10:02:21.926Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "orchestrator",
+      "promptPreview": "Is Saturn up right now?",
+      "completionTokens": 9,
+      "ttftMs": 5273,
+      "totalMs": 6486,
+      "tokensPerSec": 7.42,
+      "sdkStats": {
+        "timeToFirstToken": 5206.036,
+        "tokensPerSecond": 7.566496896895551,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:02:22.768Z",
+      "type": "model_load",
+      "model": "Supertonic TTS",
+      "meta": {
+        "kind": "tts"
+      }
+    },
+    {
+      "ts": "2026-06-09T10:02:27.327Z",
+      "type": "inference",
+      "kind": "tts",
+      "model": "Supertonic TTS",
+      "promptPreview": "\nNo, Saturn is below the horizon.",
+      "totalMs": 2556,
+      "meta": {
+        "samples": 125952,
+        "seconds": 2.86
+      }
+    },
+    {
+      "ts": "2026-06-09T10:03:27.172Z",
+      "type": "inference",
+      "kind": "tool-call",
+      "model": "get_body_position",
+      "promptPreview": "Is Saturn up right now?",
+      "meta": {
+        "args": {
+          "body": "saturn"
+        },
+        "result": {
+          "name": "Saturn",
+          "altitude": 9,
+          "azimuth": 266,
+          "azimuthDir": "W",
+          "aboveHorizon": true,
+          "daylight": true,
+          "observable": false,
+          "magnitude": 0.7,
+          "constellation": "Pisces",
+          "rise": "2026-06-09T22:24:57.250Z",
+          "set": "2026-06-09T10:54:10.709Z",
+          "moonPhase": null
+        }
+      }
+    },
+    {
+      "ts": "2026-06-09T10:03:33.106Z",
+      "type": "inference",
+      "kind": "llm",
+      "model": "orchestrator",
+      "promptPreview": "Is Saturn up right now?",
+      "completionTokens": 9,
+      "ttftMs": 5020,
+      "totalMs": 5926,
+      "tokensPerSec": 9.93,
+      "sdkStats": {
+        "timeToFirstToken": 4984.0830000000005,
+        "tokensPerSecond": 10.247313211405487,
+        "cacheTokens": 0,
+        "backendDevice": "cpu"
+      }
+    }
+  ]
+}
