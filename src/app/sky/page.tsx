@@ -19,6 +19,7 @@ import { useForecast } from '@/lib/sky/use-forecast';
 import { CONSTELLATION_LINES, STAR_TO_CONSTELLATION, positionStars } from '@/lib/sky/stars';
 import type { ConstellationStar } from '@/components/sky/finder/SkyMap';
 import { azimuthToCompass, altitudeToFists, moonPhaseKey } from '@/lib/sky/directions';
+import { zoneForLocation } from '@/lib/sky/timezones';
 import { getTargetPhoto } from '@/lib/sky/target-photos';
 import EventBanner from '@/components/sky/EventBanner';
 import SkyLocationModal from '@/components/sky/SkyLocationModal';
@@ -38,11 +39,11 @@ const REFRESH_MS = 60_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
 const LOC_PROMPT_KEY = 'stellar.sky.locprompt.v1';
 
-function fmtClock(iso: string | null): string | null {
+function fmtClock(iso: string | null, tz?: string): string | null {
   if (!iso) return null;
   try {
     const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
   } catch {
     return null;
   }
@@ -381,6 +382,7 @@ export default function SkyPage() {
     location.lon === DEFAULT_OBSERVER.lon;
 
   const locationLabel = location.city || (fallbackUsed ? 'Tbilisi' : '—');
+  const tz = useMemo(() => zoneForLocation(location), [location]);
   const coordLabel = `${Math.abs(location.lat).toFixed(2)}°${location.lat >= 0 ? 'N' : 'S'} · ${Math.abs(location.lon).toFixed(2)}°${location.lon >= 0 ? 'E' : 'W'}`;
   const bortle = useMemo(() => estimateBortle(location.lat, location.lon), [location.lat, location.lon]);
 
@@ -428,9 +430,9 @@ export default function SkyPage() {
     : 'Overcast';
 
   const dateLabel = skyTime
-    .toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+    .toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz })
     .toUpperCase();
-  const timeLabel = skyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const timeLabel = skyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
 
   return (
     <div className="sky-page-v2 sky-v3 sky-obs">
@@ -535,6 +537,7 @@ export default function SkyPage() {
                   nowISO={finder.generatedAt}
                   visibleCount={tableObjects.filter((o) => o.visible && o.id !== 'sun').length}
                   activeName={activeObject?.name ?? null}
+                  timeZone={tz}
                 />
               </div>
 
@@ -551,6 +554,7 @@ export default function SkyPage() {
                       obj={o}
                       active={o.id === activeId}
                       onSelect={handleSelect}
+                      tz={tz}
                     />
                   ))}
                 </ol>
@@ -564,9 +568,9 @@ export default function SkyPage() {
                     </RingGauge>
                     <div className="sky-obs__window-body">
                       <span className="sky-obs__window-times">
-                        <span className="sky-obs__window-time">{fmtClock(windowOpen) ?? '—'}</span>
+                        <span className="sky-obs__window-time">{fmtClock(windowOpen, tz) ?? '—'}</span>
                         <span className="sky-obs__window-time sky-obs__window-time--to">
-                          <span className="sky-obs__window-dash" aria-hidden>–</span> {fmtClock(windowClose) ?? '—'}
+                          <span className="sky-obs__window-dash" aria-hidden>–</span> {fmtClock(windowClose, tz) ?? '—'}
                         </span>
                       </span>
                       <span className="sky-obs__window-dur">{windowDuration ?? 'Dark window'}</span>
@@ -681,15 +685,17 @@ function BestTargetRow({
   obj,
   active,
   onSelect,
+  tz,
 }: {
   index: number;
   obj: SkyObject;
   active: boolean;
   onSelect: (id: ObjectId) => void;
+  tz?: string;
 }) {
   const photo = getTargetPhoto(obj.id);
-  const setLabel = fmtClock(obj.setTime);
-  const riseLabel = fmtClock(obj.riseTime);
+  const setLabel = fmtClock(obj.setTime, tz);
+  const riseLabel = fmtClock(obj.riseTime, tz);
   const timing = obj.circumpolar
     ? 'All night'
     : setLabel

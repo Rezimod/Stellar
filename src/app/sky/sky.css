@@ -4376,7 +4376,10 @@
 @media (min-width: 921px) {
   .sky-obs__main {
     display: grid;
-    grid-template-columns: minmax(0, 1.85fr) minmax(330px, 1fr);
+    /* Left column is a square sized to the viewport height, so the sky map
+       fills the whole panel (no empty gutter) yet still fits the first
+       screen. Right column (rail) takes the remainder. */
+    grid-template-columns: min(66vh, 660px) minmax(320px, 1fr);
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
       "dome targets"
@@ -4386,7 +4389,7 @@
     align-items: start;
     /* Keep the dome + rail within the first screen; the outlook rail
        scrolls internally if the night's list is long. */
-    max-height: calc(100vh - 128px);
+    max-height: calc(100vh - 124px);
   }
   .sky-obs__main > .forecast7--rail { min-height: 0; overflow: hidden; align-self: stretch; display: flex; flex-direction: column; }
   .sky-obs__main > .sky-obs__dome { grid-area: dome; align-self: start; }
@@ -4394,11 +4397,12 @@
   .sky-obs__main > .sky-obs__cards { grid-area: cards; }
   .sky-obs__main > .forecast7--rail { grid-area: outlook; }
 
-  /* Sky map sized to fit the first screen: the square never exceeds ~58% of
-     the viewport height, so the whole dome + rail are visible on entry. The
-     corners read as deep space (cosmic field rendered in the SVG). */
-  .sky-obs__dome { padding: 10px; }
-  .sky-obs__dome .sky-map { max-width: min(100%, 560px, 58vh); }
+  /* The map fills the square dome panel edge-to-edge (corners read as deep
+     space via the SVG cosmic field). The dome column already caps the size to
+     the viewport, so the map just fills its column. */
+  .sky-obs__dome { padding: 8px; }
+  .sky-obs__dome .sky-v3__map-stage { max-width: 100%; }
+  .sky-obs__dome .sky-map { max-width: 100%; }
 
   /* Best targets — two per row, no number badge */
   .sky-obs__targets { padding: 14px 14px 10px; }

@@ -7,20 +7,22 @@ interface Props {
   nowISO: string;
   visibleCount: number;
   activeName: string | null;
+  /** IANA timezone of the observing location; falls back to the browser zone. */
+  timeZone?: string;
 }
 
-function formatLocalTime(iso: string): string {
+function formatLocalTime(iso: string, timeZone?: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone });
   } catch {
     return '—';
   }
 }
 
-export function SkyHeaderStrip({ locationLabel, nowISO, visibleCount, activeName }: Props) {
+export function SkyHeaderStrip({ locationLabel, nowISO, visibleCount, activeName, timeZone }: Props) {
   const t = useTranslations('sky.skymap');
-  const time = formatLocalTime(nowISO);
+  const time = formatLocalTime(nowISO, timeZone);
   return (
     <div className="sky-strip-mini" role="presentation">
       <span className="sky-strip-mini__cell">{locationLabel}</span>
