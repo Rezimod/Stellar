@@ -36,7 +36,7 @@ event carries `"backendDevice": "cpu"`, i.e. real on-device compute, no cloud.
 
 Committed evidence bundle:
 - [`artifacts/qvac-audit-2026-06-09.json`](./artifacts/qvac-audit-2026-06-09.json) — comprehensive single-session run: sky orchestration + **vision** + on-device **TTS** read-aloud (2.86 s audio synthesized in 2.56 s, faster than real time)
-- [`artifacts/smoke-test-2026-06-09.png`](./artifacts/smoke-test-2026-06-09.png) — on-device Diagnostics smoke test: every capability green, incl. **`prompt-injection` resisted 2/2** and `vision-vlm` correctly describing the bundled test image
+- [`artifacts/smoke-test-2026-06-09.png`](./artifacts/smoke-test-2026-06-09.png) — on-device Diagnostics smoke test: every capability green — `sky-agent`, `native-tool-calling`, **`embed-gemma dim=768` (semantic RAG live)**, **`prompt-injection` resisted 2/2**, `vision-vlm` (describes the bundled test image), `tts-voice`
 - [`artifacts/qvac-vision-audit-2026-06-07.json`](./artifacts/qvac-vision-audit-2026-06-07.json) — live on-device VISION inferences (model load + TTFT + tokens/sec, `backendDevice: cpu`)
 - [`artifacts/qvac-eval-2026-06-05.json`](./artifacts/qvac-eval-2026-06-05.json) — per-query route/tools/latency, incl. the orchestration cases
 - [`artifacts/qvac-eval-2026-06-03.json`](./artifacts/qvac-eval-2026-06-03.json) — earlier run
