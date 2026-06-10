@@ -3,15 +3,23 @@
 // which uses a quaternion path that doesn't break near vertical.
 
 // Effective on-screen FOV after a portrait phone's rear camera is rendered
-// with `object-fit: cover`. The lens is wide (~65° diagonal on modern
-// phones), but in portrait we crop the horizontal sides to fill a tall
-// screen, so the visible horizontal FOV shrinks while vertical stays close
-// to the lens's native vertical FOV. These defaults are tuned so the AR
-// projection lines up with what a typical iPhone/Pixel rear camera sees
-// — a slightly conservative diagonal so off-centre objects sit accurately.
-export const DEFAULT_HORIZONTAL_FOV = 42;
-export const DEFAULT_VERTICAL_FOV = 65;
+// with `object-fit: cover`. We model the lens by a single nominal diagonal
+// FOV (~73° on modern phones) and split it into horizontal/vertical
+// components for the current viewport aspect ratio via pinhole geometry: the
+// diagonal tangent is distributed across both axes, so a tall portrait
+// viewport yields a narrow horizontal FOV and a wide vertical one, matching
+// how `object-fit: cover` crops the sides to fill the screen. The derived
+// values are used as-is; we only clamp to sanity bounds to guard against
+// degenerate viewport sizes.
 export const DEFAULT_DIAGONAL_FOV = 73;
+
+/** Sanity bounds for a derived axis FOV (degrees). */
+const MIN_FOV = 20;
+const MAX_FOV = 120;
+
+function clampFov(deg: number): number {
+  return Math.min(MAX_FOV, Math.max(MIN_FOV, deg));
+}
 
 /** Signed shortest difference between two compass directions, in degrees. */
 export function shortestAzDelta(targetAz: number, fromAz: number): number {
@@ -48,7 +56,7 @@ export function effectiveFov(
   const verticalTan = diagTan / Math.sqrt(1 + aspect * aspect);
   const horizontalTan = aspect * verticalTan;
   return {
-    horizontal: Math.max(DEFAULT_HORIZONTAL_FOV, (Math.atan(horizontalTan) * 360) / Math.PI),
-    vertical: Math.max(DEFAULT_VERTICAL_FOV, (Math.atan(verticalTan) * 360) / Math.PI),
+    horizontal: clampFov((Math.atan(horizontalTan) * 360) / Math.PI),
+    vertical: clampFov((Math.atan(verticalTan) * 360) / Math.PI),
   };
 }
