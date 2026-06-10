@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import { Flame, Check } from 'lucide-react';
-import { hasCheckedInToday, saveCheckIn, getStreakDays } from '@/lib/daily-checkin';
+import { hasCheckedInToday, saveCheckIn, getStreakDays, DAILY_CHECKIN_BASE_REWARD } from '@/lib/daily-checkin';
 import { getTierForStreak } from '@/lib/constellation-streak';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
@@ -16,7 +16,7 @@ interface DailyCheckInCardProps {
 }
 
 /** Base Stars for a check-in, before the streak multiplier (×1.0 → ×3.0). */
-const BASE_REWARD = 5;
+const BASE_REWARD = DAILY_CHECKIN_BASE_REWARD;
 
 const COPY = {
   en: {

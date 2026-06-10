@@ -13,6 +13,9 @@ const BONUS_TABLE: Record<NftRarity, { chance: number; amount: number }> = {
   Celestial: { chance: 0.35, amount: 100 },
 };
 
+/** Largest cosmic bonus payout (Celestial rarity). */
+export const MAX_COSMIC_BONUS = Math.max(...Object.values(BONUS_TABLE).map((b) => b.amount));
+
 const MESSAGES = [
   'Cosmic winds favor you',
   'Shooting star crosses your path',

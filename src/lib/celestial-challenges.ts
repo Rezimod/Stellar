@@ -20,6 +20,9 @@ const CHALLENGES: Challenge[] = [
   { id: 'trio',         name: 'Celestial Trio',    description: 'Observe 3 different targets this week',    glyph: '⋆', goal: 3, bonusStars: 175, condition: 'unique_targets' },
 ];
 
+/** Largest weekly-challenge payout in the catalog (Devoted Observer). */
+export const MAX_CHALLENGE_BONUS = Math.max(...CHALLENGES.map((c) => c.bonusStars));
+
 interface Progress {
   weekId: number;
   challengeId: string;

@@ -14,6 +14,12 @@ export interface QuizDef {
   questions: QuizQuestion[];
 }
 
+/** Maximum Stars a single quiz can pay (all questions correct), derived from
+ *  the catalog so the award-stars policy cap can never drift from the data. */
+export function maxQuizStars(): number {
+  return Math.max(...QUIZZES.map((q) => q.questions.length * q.starsPerCorrect));
+}
+
 export const QUIZZES: QuizDef[] = [
   {
     id: 'solar-system',

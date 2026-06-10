@@ -1,5 +1,8 @@
 const CHECKIN_KEY = 'stellar-daily-checkins'
 
+/** Base Stars for a daily check-in, before the streak multiplier. */
+export const DAILY_CHECKIN_BASE_REWARD = 5
+
 export interface DailyCheckIn {
   date: string        // YYYY-MM-DD
   skyScore?: number

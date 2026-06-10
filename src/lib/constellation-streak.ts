@@ -18,6 +18,9 @@ const TIERS = [
   { min: 21, mult: 3.0, name: 'Full Moon',         phase: 'full' as const,     next: null },
 ];
 
+/** Highest streak multiplier any observer can reach (Full Moon tier). */
+export const MAX_STREAK_MULTIPLIER = Math.max(...TIERS.map((t) => t.mult));
+
 export function getTierForStreak(streak: number): StreakTier {
   const tier = [...TIERS].reverse().find(t => streak >= t.min) ?? TIERS[0];
   const nextTier = TIERS.find(t => t.min > streak);
