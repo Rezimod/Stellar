@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
 
 export interface PlanetPlacement {
@@ -11,11 +11,16 @@ export interface PlanetPlacement {
   visible: boolean;
 }
 
+/** Imperative handle — the AR finder's RAF loop pushes placements straight
+ *  into the layer's refs each frame, so updating planet positions never
+ *  re-renders React. */
+export interface ARPlanet3DHandle {
+  update(planets: PlanetPlacement[], sunScreen: { x: number; y: number } | null): void;
+}
+
 interface Props {
   width: number;
   height: number;
-  planets: PlanetPlacement[];
-  sunScreen: { x: number; y: number } | null;
 }
 
 const PLANET_IDS = ['sun','moon','mercury','venus','earth','mars','jupiter','saturn','uranus','neptune'] as const;
@@ -81,7 +86,10 @@ interface PlanetEntry {
   isSun: boolean;
 }
 
-export function ARPlanet3DLayer({ width, height, planets, sunScreen }: Props) {
+export const ARPlanet3DLayer = forwardRef<ARPlanet3DHandle, Props>(function ARPlanet3DLayer(
+  { width, height },
+  ref,
+) {
   const mountRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -94,13 +102,19 @@ export function ARPlanet3DLayer({ width, height, planets, sunScreen }: Props) {
     dimsRef: { current: { w: number; h: number } };
   } | null>(null);
 
-  // Stash latest props in refs so the rAF loop reads them without restart.
-  const planetsRef = useRef(planets);
-  planetsRef.current = planets;
-  const sunRef = useRef(sunScreen);
-  sunRef.current = sunScreen;
+  // Latest placements live in refs so the rAF loop reads them without a
+  // React render. The parent pushes them imperatively via the handle below.
+  const planetsRef = useRef<PlanetPlacement[]>([]);
+  const sunRef = useRef<{ x: number; y: number } | null>(null);
   const dimsRef = useRef({ w: width, h: height });
   dimsRef.current = { w: width, h: height };
+
+  useImperativeHandle(ref, () => ({
+    update(planets, sunScreen) {
+      planetsRef.current = planets;
+      sunRef.current = sunScreen;
+    },
+  }), []);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -407,4 +421,4 @@ export function ARPlanet3DLayer({ width, height, planets, sunScreen }: Props) {
   }, [width, height]);
 
   return <div ref={mountRef} className="ar-planet3d-layer" aria-hidden="true" />;
-}
+});

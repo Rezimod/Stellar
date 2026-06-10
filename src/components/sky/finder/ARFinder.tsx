@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -10,7 +11,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { Camera, CameraOff, ChevronDown, RefreshCcw, SlidersHorizontal, X } from 'lucide-react';
 import { PlanetIcon } from './PlanetIcon';
-import { ARPlanet3DLayer, type PlanetPlacement } from './ARPlanet3DLayer';
+import { ARPlanet3DLayer, type ARPlanet3DHandle, type PlanetPlacement } from './ARPlanet3DLayer';
 import {
   azimuthToCardinal,
   effectiveFov,
@@ -74,6 +75,18 @@ const COMPASS_TICKS = [
   { deg: 330, label: '330',cardinal: false },
 ];
 
+/** Pre-expanded compass ticks (each tick at -360/0/+360 so the strip wraps
+ *  smoothly). Rendered once as stable nodes; the RAF loop only updates each
+ *  tick's `left` and visibility. */
+const COMPASS_TICK_INSTANCES = COMPASS_TICKS.flatMap((tick) =>
+  [-360, 0, 360].map((wrap) => ({
+    key: `${tick.label}-${wrap}`,
+    deg: tick.deg + wrap,
+    label: tick.label,
+    cardinal: tick.cardinal,
+  })),
+);
+
 const COMPASS_VISIBLE_DEG = 80;
 const HOLD_TO_LOCK_MS = 800;
 const POOR_ACCURACY_DEG = 15;
@@ -85,6 +98,9 @@ const DISPLAY_ALPHA_MOVE = 0.18;
 const DISPLAY_ALPHA_FAST = 0.3;
 const DISPLAY_SNAP_AZ = 22;
 const DISPLAY_SNAP_ALT = 16;
+/** Below this per-frame aim/roll change we skip the imperative DOM update —
+ *  sub-pixel motion the eye can't see isn't worth the layout writes. */
+const DISPLAY_APPLY_EPS = 0.05;
 const AR_ALIGNMENT_KEY = 'stellar.sky.ar.alignment.v1';
 const MAX_ALIGNMENT_YAW = 24;
 const MAX_ALIGNMENT_PITCH = 18;
@@ -200,6 +216,31 @@ function lockRadiusDeg(obj: SkyObject): number {
   return 8;
 }
 
+/** Scene star — sky-fixed (its alt/az don't change as the phone moves), so
+ *  it lives in a stable list. The RAF loop projects it each frame. */
+interface SceneStar extends PositionedStar {
+  constellation: string | undefined;
+}
+
+/** A constellation line segment whose endpoints are above the horizon — a
+ *  stable node; only its x1/y1/x2/y2 + visibility update per frame. */
+interface SceneSegment {
+  key: number;
+  a: PositionedStar;
+  b: PositionedStar;
+  isActive: boolean;
+}
+
+interface ActiveRow {
+  obj: SkyObject;
+  screenX: number;
+  screenY: number;
+  dAz: number;
+  dAlt: number;
+  sep: number;
+  onScreen: boolean;
+}
+
 export function ARFinder({
   objects,
   observerLat,
@@ -222,6 +263,7 @@ export function ARFinder({
   });
   const [alignment, setAlignment] = useState<AlignmentState>(() => loadAlignment());
   const [alignmentOpen, setAlignmentOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   // Rear-camera feed is opt-in. The default AR experience is a pure black
   // void with rendered 3D planets, so users see textured spheres exactly
@@ -290,39 +332,433 @@ export function ARFinder({
     }
   }, [alignment]);
 
-  const [renderAim, setRenderAim] = useState(() => ({
-    azimuth: heading ?? 0,
-    altitude: altitude ?? 0,
-  }));
-  const renderAimRef = useRef(renderAim);
-  const targetAimRef = useRef(renderAim);
-
   const { horizontal: hFov, vertical: vFov } = useMemo(
     () => effectiveFov(viewport.w, viewport.h),
     [viewport],
   );
 
-  useEffect(() => {
-    renderAimRef.current = renderAim;
-  }, [renderAim]);
+  // ── Aim lives in refs, not React state ───────────────────────────────────
+  // The RAF loop smooths renderAimRef toward targetAimRef and pushes the
+  // result straight to the DOM via applyFrame(); it never calls setState, so
+  // panning the phone causes zero React renders.
+  const renderAimRef = useRef({ azimuth: heading ?? 0, altitude: altitude ?? 0 });
+  const targetAimRef = useRef(renderAimRef.current);
 
+  // ── Scene-level derived data (independent of where the phone is aimed) ────
+  const activeBody = useMemo(() => {
+    if (!activeId) return null;
+    return objects.find((o) => o.id === activeId) ?? null;
+  }, [objects, activeId]);
+
+  const activeConstellation = useMemo(() => {
+    if (!activeBody) return null;
+    return STAR_TO_CONSTELLATION[activeBody.id] ?? null;
+  }, [activeBody]);
+
+  // Stars visible-ish this session (their sky altitude doesn't change with
+  // aim). Projection happens per frame in applyFrame.
+  const sceneStars = useMemo<SceneStar[]>(() => {
+    return stars
+      .filter((s) => s.altitude > -2)
+      .map((s) => ({ ...s, constellation: STAR_TO_CONSTELLATION[s.id] }));
+  }, [stars]);
+
+  // Stars eligible for a name label, in brightness order. The frame loop
+  // shows the first STAR_LABEL_LIMIT of these that land on-screen.
+  const labelCandidates = useMemo<SceneStar[]>(() => {
+    return sceneStars
+      .filter((s) => s.mag <= 0.9 || (!!activeConstellation && s.constellation === activeConstellation))
+      .slice()
+      .sort((a, b) => a.mag - b.mag);
+  }, [sceneStars, activeConstellation]);
+
+  const sceneSegments = useMemo<SceneSegment[]>(() => {
+    const out: SceneSegment[] = [];
+    let key = 0;
+    for (const [aId, bId] of CONSTELLATION_LINES) {
+      const a = starById.get(aId);
+      const b = starById.get(bId);
+      if (!a || !b) continue;
+      if (a.altitude < -1 || b.altitude < -1) continue;
+      const isActive =
+        !!activeConstellation &&
+        (STAR_TO_CONSTELLATION[aId] === activeConstellation ||
+          STAR_TO_CONSTELLATION[bId] === activeConstellation);
+      out.push({ key: key++, a, b, isActive });
+    }
+    return out;
+  }, [starById, activeConstellation]);
+
+  const constLabelKeys = useMemo<string[]>(() => {
+    const present = new Set<string>();
+    for (const s of sceneStars) {
+      if (s.constellation && CONSTELLATION_NAMES[s.constellation]) present.add(s.constellation);
+    }
+    return Array.from(present);
+  }, [sceneStars]);
+
+  // Picker lists every catalog object so the user can browse first, then
+  // opt into guidance. Visible bodies float to the top.
+  const pickerBodies = useMemo(() => {
+    return objects
+      .slice()
+      .sort((a, b) => {
+        if (a.visible !== b.visible) return a.visible ? -1 : 1;
+        const priority = pickerPriority(a) - pickerPriority(b);
+        if (priority !== 0) return priority;
+        if (a.visible && b.visible) return a.magnitude - b.magnitude || b.altitude - a.altitude;
+        return b.altitude - a.altitude;
+      });
+  }, [objects]);
+
+  const visibleBodyCount = useMemo(
+    () => objects.filter((o) => o.visible).length,
+    [objects],
+  );
+
+  const headingActive = heading != null && altitude != null;
+  const poorAccuracy = headingActive && (accuracy == null || accuracy > POOR_ACCURACY_DEG);
+
+  // ── Lock / hold-to-lock state (discrete events only) ─────────────────────
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [confirmedLock, setConfirmedLock] = useState(false);
+  const [insideLockCone, setInsideLockCone] = useState(false);
+  const holdStartRef = useRef<number | null>(null);
+  const lastActiveIdRef = useRef<string | null>(null);
+  const insideConeRef = useRef(false);
+
+  // ── Latest values mirrored into refs so applyFrame reads them with no
+  //    stale closure and no need to restart the RAF loop. ──────────────────
+  const alignmentRef = useRef(alignment); alignmentRef.current = alignment;
+  const rollRef = useRef(roll); rollRef.current = roll;
+  const fovRef = useRef({ h: hFov, v: vFov }); fovRef.current = { h: hFov, v: vFov };
+  const viewportRef = useRef(viewport); viewportRef.current = viewport;
+  const activeIdRef = useRef(activeId); activeIdRef.current = activeId;
+  const activeBodyRef = useRef(activeBody); activeBodyRef.current = activeBody;
+  const headingActiveRef = useRef(headingActive); headingActiveRef.current = headingActive;
+  const headingStatusRef = useRef(headingStatus); headingStatusRef.current = headingStatus;
+  const confirmedLockRef = useRef(confirmedLock); confirmedLockRef.current = confirmedLock;
+  const tRef = useRef(t); tRef.current = t;
+  const objectsRef = useRef(objects); objectsRef.current = objects;
+  const sceneStarsRef = useRef(sceneStars); sceneStarsRef.current = sceneStars;
+  const labelCandidatesRef = useRef(labelCandidates); labelCandidatesRef.current = labelCandidates;
+  const sceneSegmentsRef = useRef(sceneSegments); sceneSegmentsRef.current = sceneSegments;
+  const constLabelKeysRef = useRef(constLabelKeys); constLabelKeysRef.current = constLabelKeys;
+  const activeRowRef = useRef<ActiveRow | null>(null);
+
+  // ── DOM node handles — populated by ref callbacks, written each frame. ────
+  const bodyNodes = useRef(new Map<string, HTMLButtonElement>()).current;
+  const starNodes = useRef(new Map<string, HTMLDivElement>()).current;
+  const starLabelNodes = useRef(new Map<string, HTMLDivElement>()).current;
+  const segmentNodes = useRef(new Map<number, SVGLineElement>()).current;
+  const constLabelNodes = useRef(new Map<string, SVGTextElement>()).current;
+  const compassTickNodes = useRef(new Map<string, HTMLDivElement>()).current;
+  const edgeArrowRef = useRef<HTMLDivElement>(null);
+  const edgeArrowLabelRef = useRef<HTMLSpanElement>(null);
+  const horizonRef = useRef<HTMLDivElement>(null);
+  const topbarHeadingRef = useRef<HTMLDivElement>(null);
+  const centerAltRef = useRef<HTMLElement>(null);
+  const centerAzRef = useRef<HTMLElement>(null);
+  const bottomHintRef = useRef<HTMLDivElement>(null);
+  const hintPrimaryRef = useRef<HTMLSpanElement>(null);
+  const hintSecondaryRef = useRef<HTMLSpanElement>(null);
+  const planet3DRef = useRef<ARPlanet3DHandle>(null);
+
+  // ── The per-frame imperative paint. Reads everything from refs, so its
+  //    identity is stable and it never closes over stale props. ────────────
+  const applyFrame = useCallback(() => {
+    const { w, h } = viewportRef.current;
+    const align = alignmentRef.current;
+    const rollDeg = rollRef.current ?? 0;
+    const { h: hFovL, v: vFovL } = fovRef.current;
+    const aim = renderAimRef.current;
+    const phoneAz = wrap360(aim.azimuth + align.yaw);
+    const phoneAlt = clampAltitude(aim.altitude + align.pitch);
+    const cameraAim = { altitude: phoneAlt, azimuth: phoneAz };
+    const activeIdNow = activeIdRef.current;
+    const tt = tRef.current;
+
+    const project = (az: number, alt: number) =>
+      projectBodyToScreen({ altitude: alt, azimuth: az }, cameraAim, hFovL, vFovL, w, h, rollDeg);
+
+    // Stars — project once, cache screen coords for the label + constellation
+    // passes that follow.
+    const starScreen = new Map<string, { x: number; y: number; onScreen: boolean }>();
+    for (const s of sceneStarsRef.current) {
+      const p = project(s.azimuth, s.altitude);
+      const onScreen =
+        p.inFront &&
+        p.screenX >= -4 && p.screenX <= w + 4 &&
+        p.screenY >= -4 && p.screenY <= h + 4;
+      starScreen.set(s.id, { x: p.screenX, y: p.screenY, onScreen });
+      const node = starNodes.get(s.id);
+      if (!node) continue;
+      if (!onScreen) { node.style.display = 'none'; continue; }
+      node.style.display = '';
+      node.style.left = `${p.screenX}px`;
+      node.style.top = `${p.screenY}px`;
+    }
+
+    // Star labels — brightest on-screen first, capped.
+    let shownLabels = 0;
+    for (const s of labelCandidatesRef.current) {
+      const node = starLabelNodes.get(s.id);
+      if (!node) continue;
+      const sc = starScreen.get(s.id);
+      if (!sc || !sc.onScreen || shownLabels >= STAR_LABEL_LIMIT) {
+        node.style.display = 'none';
+        continue;
+      }
+      node.style.display = '';
+      node.style.left = `${sc.x + 10}px`;
+      node.style.top = `${sc.y - 12}px`;
+      shownLabels += 1;
+    }
+
+    // Constellation labels — centroid of the on-screen stars in each group.
+    for (const key of constLabelKeysRef.current) {
+      const node = constLabelNodes.get(key);
+      if (!node) continue;
+      let sx = 0, sy = 0, n = 0;
+      for (const s of sceneStarsRef.current) {
+        if (s.constellation !== key) continue;
+        const sc = starScreen.get(s.id);
+        if (sc && sc.onScreen) { sx += sc.x; sy += sc.y; n += 1; }
+      }
+      if (n < 2) { node.style.display = 'none'; continue; }
+      node.style.display = '';
+      node.setAttribute('x', String(sx / n));
+      node.setAttribute('y', String(sy / n));
+    }
+
+    // Constellation line segments.
+    const pad = 12;
+    for (const seg of sceneSegmentsRef.current) {
+      const node = segmentNodes.get(seg.key);
+      if (!node) continue;
+      const pa = project(seg.a.azimuth, seg.a.altitude);
+      const pb = project(seg.b.azimuth, seg.b.altitude);
+      if (!pa.inFront && !pb.inFront) { node.style.display = 'none'; continue; }
+      const aOn = pa.inFront && pa.screenX >= -pad && pa.screenX <= w + pad && pa.screenY >= -pad && pa.screenY <= h + pad;
+      const bOn = pb.inFront && pb.screenX >= -pad && pb.screenX <= w + pad && pb.screenY >= -pad && pb.screenY <= h + pad;
+      if (!aOn && !bOn) { node.style.display = 'none'; continue; }
+      node.style.display = '';
+      node.setAttribute('x1', String(pa.screenX));
+      node.setAttribute('y1', String(pa.screenY));
+      node.setAttribute('x2', String(pb.screenX));
+      node.setAttribute('y2', String(pb.screenY));
+    }
+
+    // Bodies — position/opacity/z-order + capture the active row for the
+    // edge arrow, hint and lock cone.
+    const bodyScreen = new Map<string, { x: number; y: number; onScreen: boolean }>();
+    let activeRow: ActiveRow | null = null;
+    for (const obj of objectsRef.current) {
+      const p = project(obj.azimuth, obj.altitude);
+      const onScreen =
+        p.inFront &&
+        p.screenX >= -8 && p.screenX <= w + 8 &&
+        p.screenY >= -8 && p.screenY <= h + 8;
+      bodyScreen.set(obj.id, { x: p.screenX, y: p.screenY, onScreen });
+      const isActive = obj.id === activeIdNow;
+      const sep = angularSeparation(obj.altitude, obj.azimuth, phoneAlt, phoneAz);
+      if (isActive) {
+        activeRow = { obj, screenX: p.screenX, screenY: p.screenY, dAz: p.dAz, dAlt: p.dAlt, sep, onScreen };
+      }
+      const node = bodyNodes.get(obj.id);
+      if (!node) continue;
+      // Render a bit beyond the viewport so bodies fade in/out smoothly as
+      // the user pans, instead of popping when they cross the edge.
+      const inFade =
+        p.screenX >= -120 && p.screenX <= w + 120 &&
+        p.screenY >= -120 && p.screenY <= h + 120;
+      if (!inFade) { node.style.display = 'none'; continue; }
+      node.style.display = '';
+      node.style.left = `${p.screenX}px`;
+      node.style.top = `${p.screenY}px`;
+      node.style.opacity = onScreen ? (isActive ? '1' : '0.94') : '0';
+      // Nearer bodies (and the active one) paint on top.
+      node.style.zIndex = isActive ? '50' : String(Math.max(1, Math.round(40 - sep / 10)));
+    }
+    activeRowRef.current = activeRow;
+
+    // 3D planet layer — push placements straight into its refs.
+    const placements: PlanetPlacement[] = [];
+    for (const obj of objectsRef.current) {
+      if (!PLANET3D_IDS.has(obj.id)) continue;
+      const bs = bodyScreen.get(obj.id);
+      if (!bs) continue;
+      placements.push({
+        id: obj.id,
+        screenX: bs.x,
+        screenY: bs.y,
+        size: obj.id === activeIdNow ? 56 : 40,
+        visible: bs.onScreen,
+      });
+    }
+    const sunBs = bodyScreen.get('sun');
+    planet3DRef.current?.update(placements, sunBs ? { x: sunBs.x, y: sunBs.y } : null);
+
+    // Edge arrow toward an off-screen active target.
+    const arrow = edgeArrowRef.current;
+    if (arrow) {
+      const ab = activeBodyRef.current;
+      if (ab && activeRow && !activeRow.onScreen) {
+        const cx = w / 2;
+        const cy = h / 2;
+        let dx = activeRow.screenX - cx;
+        let dy = activeRow.screenY - cy;
+        if (Math.abs(activeRow.dAz) > 90) { dx = -dx; dy = -dy; }
+        const norm = Math.hypot(dx, dy) || 1;
+        const ux = dx / norm;
+        const uy = dy / norm;
+        const margin = 70;
+        const halfW = cx - margin;
+        const halfH = cy - margin;
+        const tx = ux > 0 ? halfW / ux : -halfW / ux;
+        const ty = uy > 0 ? halfH / uy : -halfH / uy;
+        const tEdge = Math.min(Math.abs(tx), Math.abs(ty));
+        const ax = cx + ux * tEdge;
+        const ay = cy + uy * tEdge;
+        const angleDeg = (Math.atan2(uy, ux) * 180) / Math.PI;
+        arrow.style.display = '';
+        arrow.style.left = `${ax}px`;
+        arrow.style.top = `${ay}px`;
+        arrow.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg)`;
+        if (edgeArrowLabelRef.current) {
+          edgeArrowLabelRef.current.style.transform = `rotate(${-angleDeg}deg)`;
+        }
+      } else {
+        arrow.style.display = 'none';
+      }
+    }
+
+    // Center readout, horizon, compass, topbar heading.
+    if (centerAltRef.current) {
+      centerAltRef.current.textContent = `${phoneAlt >= 0 ? '+' : ''}${phoneAlt.toFixed(1)}°`;
+    }
+    if (centerAzRef.current) {
+      centerAzRef.current.textContent = `${phoneAz.toFixed(1)}°`;
+    }
+    if (horizonRef.current) {
+      const horizonY = (phoneAlt / vFovL) * h + h / 2;
+      horizonRef.current.style.top = `${Math.max(-1, Math.min(h + 1, horizonY))}px`;
+    }
+    if (topbarHeadingRef.current) {
+      topbarHeadingRef.current.textContent = `${azimuthToCardinal(phoneAz)} · ${Math.round(phoneAz)}°`;
+    }
+    const pxPerDeg = w / COMPASS_VISIBLE_DEG;
+    for (const inst of COMPASS_TICK_INSTANCES) {
+      const node = compassTickNodes.get(inst.key);
+      if (!node) continue;
+      const delta = shortestAzDelta(inst.deg, phoneAz);
+      if (Math.abs(delta) > COMPASS_VISIBLE_DEG / 2 + 5) { node.style.display = 'none'; continue; }
+      node.style.display = '';
+      node.style.left = `${w / 2 + delta * pxPerDeg}px`;
+    }
+
+    // Bottom hint — structured cue. Recomputed per frame so the degree
+    // countdown and the on-screen/off-screen flip stay live.
+    const hintEl = bottomHintRef.current;
+    const primaryEl = hintPrimaryRef.current;
+    const secondaryEl = hintSecondaryRef.current;
+    if (hintEl && primaryEl && secondaryEl) {
+      const ab = activeBodyRef.current;
+      const status = headingStatusRef.current;
+      const confirmed = confirmedLockRef.current;
+      let primary: string;
+      let secondary: string | undefined;
+      let lockTone = false;
+      if (!headingActiveRef.current) {
+        if (status === 'denied') { primary = tt('denied.title'); secondary = tt('denied.body'); }
+        else if (status === 'unavailable') { primary = tt('fallbacks.noSensors'); }
+        else { primary = tt('liftPhone'); }
+      } else if (ab && activeRow) {
+        const steps: string[] = [];
+        const horizontal = Math.round(Math.abs(activeRow.dAz));
+        const vertical = Math.round(Math.abs(activeRow.dAlt));
+        if (horizontal >= 1) steps.push(tt(activeRow.dAz > 0 ? 'turnRight' : 'turnLeft', { deg: horizontal }));
+        if (vertical >= 1) steps.push(tt(activeRow.dAlt > 0 ? 'tiltUp' : 'tiltDown', { deg: vertical }));
+        if (confirmed) {
+          primary = tt('found', { object: ab.name });
+          lockTone = true;
+        } else if (activeRow.onScreen) {
+          primary = tt('centerTarget', { object: ab.name });
+          secondary = steps.join(' · ') || tt('holdSteady');
+        } else {
+          primary = tt('guideTo', { object: ab.name });
+          secondary = steps.join(' · ') || tt('panTo', { deg: Math.round(activeRow.sep), object: ab.name });
+        }
+      } else {
+        primary = tt('browseSky');
+        secondary = tt('browseSkyBody');
+      }
+      primaryEl.textContent = primary;
+      if (secondary) {
+        secondaryEl.textContent = secondary;
+        secondaryEl.style.display = '';
+      } else {
+        secondaryEl.style.display = 'none';
+      }
+      hintEl.classList.toggle('is-locked', lockTone);
+      hintEl.classList.toggle('has-secondary', !!secondary);
+    }
+
+    // Lock cone — flip the discrete React state only on a boundary crossing.
+    const ab = activeBodyRef.current;
+    const lockRadius = ab ? lockRadiusDeg(ab) : 8;
+    const cone = headingActiveRef.current && activeRow != null && activeRow.sep <= lockRadius;
+    if (cone !== insideConeRef.current) {
+      insideConeRef.current = cone;
+      setInsideLockCone(cone);
+    }
+  }, [bodyNodes, starNodes, starLabelNodes, segmentNodes, constLabelNodes, compassTickNodes]);
+
+  // Feed the smoother its target whenever the sensor reports new pointing.
   useEffect(() => {
     targetAimRef.current = {
       azimuth: heading ?? renderAimRef.current.azimuth,
       altitude: altitude ?? renderAimRef.current.altitude,
     };
     if (heading == null || altitude == null) {
-      const fallbackAim = targetAimRef.current;
-      renderAimRef.current = fallbackAim;
-      setRenderAim(fallbackAim);
+      renderAimRef.current = targetAimRef.current;
+      applyFrame();
     }
-  }, [heading, altitude]);
+  }, [heading, altitude, applyFrame]);
 
+  // Reposition everything after any scene change (active target, alignment,
+  // viewport/FOV, object/star set, lock state). Runs before paint so newly
+  // structured nodes never flash at the wrong spot.
+  useLayoutEffect(() => {
+    applyFrame();
+  }, [
+    applyFrame,
+    viewport,
+    hFov,
+    vFov,
+    alignment,
+    activeId,
+    objects,
+    sceneStars,
+    labelCandidates,
+    sceneSegments,
+    constLabelKeys,
+    confirmedLock,
+    headingActive,
+    headingStatus,
+    activeConstellation,
+  ]);
+
+  // The display smoother. Writes renderAimRef every frame; only paints when
+  // the aim or roll actually moved more than a sub-pixel amount.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     let raf = 0;
     let docVisible = !document.hidden;
+    let lastAz = renderAimRef.current.azimuth;
+    let lastAlt = renderAimRef.current.altitude;
+    let lastRoll = rollRef.current ?? 0;
 
     const stop = () => {
       if (raf) {
@@ -360,13 +796,18 @@ export function ARFinder({
         if (absAlt >= DISPLAY_DEADBAND_ALT) nextAlt = current.altitude + altDelta * alpha;
       }
 
-      if (
-        Math.abs(shortestAzDelta(nextAz, current.azimuth)) >= 0.01 ||
-        Math.abs(nextAlt - current.altitude) >= 0.01
-      ) {
-        const nextAim = { azimuth: nextAz, altitude: nextAlt };
-        renderAimRef.current = nextAim;
-        setRenderAim(nextAim);
+      renderAimRef.current = { azimuth: nextAz, altitude: nextAlt };
+
+      const rollNow = rollRef.current ?? 0;
+      const movedAim =
+        Math.abs(shortestAzDelta(nextAz, lastAz)) >= DISPLAY_APPLY_EPS ||
+        Math.abs(nextAlt - lastAlt) >= DISPLAY_APPLY_EPS;
+      const movedRoll = Math.abs(rollNow - lastRoll) >= DISPLAY_APPLY_EPS;
+      if (movedAim || movedRoll) {
+        lastAz = nextAz;
+        lastAlt = nextAlt;
+        lastRoll = rollNow;
+        applyFrame();
       }
 
       raf = window.requestAnimationFrame(tick);
@@ -384,15 +825,7 @@ export function ARFinder({
       stop();
       document.removeEventListener('visibilitychange', onVis);
     };
-  }, []);
-
-  const phoneAim = useMemo(
-    () => ({
-      azimuth: wrap360(renderAim.azimuth + alignment.yaw),
-      altitude: clampAltitude(renderAim.altitude + alignment.pitch),
-    }),
-    [renderAim, alignment],
-  );
+  }, [applyFrame]);
 
   const nudgeAlignment = useCallback((axis: 'yaw' | 'pitch', delta: number) => {
     setAlignment((prev) => {
@@ -403,157 +836,18 @@ export function ARFinder({
     });
   }, []);
 
-  const project = useCallback(
-    (az: number, alt: number) => {
-      const p = projectBodyToScreen(
-        { altitude: alt, azimuth: az },
-        { altitude: phoneAim.altitude, azimuth: phoneAim.azimuth },
-        hFov,
-        vFov,
-        viewport.w,
-        viewport.h,
-        roll ?? 0,
-      );
-      return {
-        dAz: p.dAz,
-        dAlt: p.dAlt,
-        screenX: p.screenX,
-        screenY: p.screenY,
-        inFront: p.inFront,
-        sep: p.sep,
-      };
-    },
-    [phoneAim, hFov, vFov, viewport, roll],
-  );
-
-  const activeBody = useMemo(() => {
-    if (!activeId) return null;
-    return objects.find((o) => o.id === activeId) ?? null;
-  }, [objects, activeId]);
-
-  const bodies = useMemo(() => {
-    return objects.map((o) => {
-      const { dAz, dAlt, screenX, screenY, inFront } = project(o.azimuth, o.altitude);
-      const onScreen =
-        inFront &&
-        screenX >= -8 && screenX <= viewport.w + 8 &&
-        screenY >= -8 && screenY <= viewport.h + 8;
-      const sep = angularSeparation(o.altitude, o.azimuth, phoneAim.altitude, phoneAim.azimuth);
-      return { obj: o, screenX, screenY, dAz, dAlt, sep, onScreen };
-    });
-  }, [objects, project, viewport, phoneAim]);
-
-  const bodiesSortedForRender = useMemo(() => {
-    return bodies.slice().sort((a, b) => {
-      if (a.obj.id === activeId) return 1;
-      if (b.obj.id === activeId) return -1;
-      return b.sep - a.sep;
-    });
-  }, [bodies, activeId]);
-
-  // Placements fed to the 3D planet layer. Sizes match the SVG icon sizes
-  // used by the body buttons so the textured sphere sits inside the same
-  // tap target as the crosshair/label.
-  const planet3DPlacements = useMemo<PlanetPlacement[]>(() => {
-    const out: PlanetPlacement[] = [];
-    for (const row of bodies) {
-      if (!PLANET3D_IDS.has(row.obj.id)) continue;
-      const isActive = row.obj.id === activeId;
-      const size = isActive ? 56 : 40;
-      out.push({
-        id: row.obj.id,
-        screenX: row.screenX,
-        screenY: row.screenY,
-        size,
-        visible: row.onScreen,
-      });
-    }
-    return out;
-  }, [bodies, activeId]);
-
-  const sun3DScreen = useMemo(() => {
-    const sun = bodies.find((b) => b.obj.id === 'sun');
-    if (!sun) return null;
-    return { x: sun.screenX, y: sun.screenY };
-  }, [bodies]);
-
-  const positionedStars = useMemo(() => {
-    return stars
-      .filter((s) => s.altitude > -2)
-      .map((s) => {
-        const skyStar = { ...s, constellation: STAR_TO_CONSTELLATION[s.id] };
-        const { screenX, screenY, inFront } = project(s.azimuth, s.altitude);
-        const onScreen =
-          inFront &&
-          screenX >= -4 && screenX <= viewport.w + 4 &&
-          screenY >= -4 && screenY <= viewport.h + 4;
-        return { star: skyStar, screenX, screenY, onScreen };
-      });
-  }, [stars, project, viewport]);
-
-  const activeConstellation = useMemo(() => {
-    if (!activeBody) return null;
-    return STAR_TO_CONSTELLATION[activeBody.id] ?? null;
-  }, [activeBody]);
-
-  const constellationLabels = useMemo(() => {
-    const buckets = new Map<string, { x: number; y: number; n: number }>();
-    for (const row of positionedStars) {
-      if (!row.onScreen) continue;
-      const key = row.star.constellation;
-      if (!key || !CONSTELLATION_NAMES[key]) continue;
-      const bucket = buckets.get(key) ?? { x: 0, y: 0, n: 0 };
-      bucket.x += row.screenX;
-      bucket.y += row.screenY;
-      bucket.n += 1;
-      buckets.set(key, bucket);
-    }
-    const out: { key: string; x: number; y: number }[] = [];
-    buckets.forEach((bucket, key) => {
-      if (bucket.n < 2) return;
-      out.push({
-        key,
-        x: bucket.x / bucket.n,
-        y: bucket.y / bucket.n,
-      });
-    });
-    return out;
-  }, [positionedStars]);
-
-  const labeledStars = useMemo(() => {
-    return positionedStars
-      .filter(({ star, onScreen }) => {
-        if (!onScreen) return false;
-        if (star.mag <= 0.9) return true;
-        return !!activeConstellation && star.constellation === activeConstellation;
-      })
-      .sort((a, b) => a.star.mag - b.star.mag)
-      .slice(0, STAR_LABEL_LIMIT);
-  }, [positionedStars, activeConstellation]);
-
-  const activeRow = useMemo(() => {
-    if (!activeBody) return null;
-    return bodies.find((b) => b.obj.id === activeBody.id) ?? null;
-  }, [bodies, activeBody]);
-
   const matchActiveTarget = useCallback(() => {
-    if (!activeRow) return;
+    const ar = activeRowRef.current;
+    if (!ar) return;
     setAlignment((prev) => ({
-      yaw: clamp(prev.yaw + activeRow.dAz, -MAX_ALIGNMENT_YAW, MAX_ALIGNMENT_YAW),
-      pitch: clamp(prev.pitch + activeRow.dAlt, -MAX_ALIGNMENT_PITCH, MAX_ALIGNMENT_PITCH),
+      yaw: clamp(prev.yaw + ar.dAz, -MAX_ALIGNMENT_YAW, MAX_ALIGNMENT_YAW),
+      pitch: clamp(prev.pitch + ar.dAlt, -MAX_ALIGNMENT_PITCH, MAX_ALIGNMENT_PITCH),
     }));
-  }, [activeRow]);
+  }, []);
 
   const resetAlignment = useCallback(() => {
     setAlignment({ yaw: 0, pitch: 0 });
   }, []);
-
-  const lockRadius = activeBody ? lockRadiusDeg(activeBody) : 8;
-  const insideLockCone = activeRow != null && heading != null && altitude != null && activeRow.sep <= lockRadius;
-  const [holdProgress, setHoldProgress] = useState(0);
-  const [confirmedLock, setConfirmedLock] = useState(false);
-  const holdStartRef = useRef<number | null>(null);
-  const lastActiveIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (activeBody?.id !== lastActiveIdRef.current) {
@@ -595,124 +889,6 @@ export function ARFinder({
     return () => cancelAnimationFrame(raf);
   }, [insideLockCone, confirmedLock, holdProgress, activeId, onLock]);
 
-  // Edge arrow: when active body is off-screen, project it and clamp to a
-  // position just inside the viewport so the user knows which way to swing.
-  const edgeArrow = useMemo(() => {
-    if (!activeRow || activeRow.onScreen) return null;
-    const cx = viewport.w / 2;
-    const cy = viewport.h / 2;
-    let dx = activeRow.screenX - cx;
-    let dy = activeRow.screenY - cy;
-    if (Math.abs(activeRow.dAz) > 90) {
-      dx = -dx;
-      dy = -dy;
-    }
-    const norm = Math.hypot(dx, dy) || 1;
-    const ux = dx / norm;
-    const uy = dy / norm;
-    const margin = 70;
-    const halfW = cx - margin;
-    const halfH = cy - margin;
-    const tx = ux > 0 ? halfW / ux : -halfW / ux;
-    const ty = uy > 0 ? halfH / uy : -halfH / uy;
-    const tt = Math.min(Math.abs(tx), Math.abs(ty));
-    const ax = cx + ux * tt;
-    const ay = cy + uy * tt;
-    const angleDeg = (Math.atan2(uy, ux) * 180) / Math.PI;
-    return { x: ax, y: ay, angleDeg };
-  }, [activeRow, viewport]);
-
-  const horizonY = (phoneAim.altitude / vFov) * viewport.h + viewport.h / 2;
-  const cardinal = azimuthToCardinal(phoneAim.azimuth);
-  const compassPxPerDeg = viewport.w / COMPASS_VISIBLE_DEG;
-  const headingActive = heading != null && altitude != null;
-  const poorAccuracy = headingActive && (accuracy == null || accuracy > POOR_ACCURACY_DEG);
-  const visibleBodyCount = useMemo(
-    () => objects.filter((o) => o.visible).length,
-    [objects],
-  );
-
-  const guidanceSteps = useMemo(() => {
-    if (!activeRow) return [];
-    const steps: string[] = [];
-    const horizontal = Math.round(Math.abs(activeRow.dAz));
-    const vertical = Math.round(Math.abs(activeRow.dAlt));
-    if (horizontal >= 1) {
-      steps.push(t(activeRow.dAz > 0 ? 'turnRight' : 'turnLeft', { deg: horizontal }));
-    }
-    if (vertical >= 1) {
-      steps.push(t(activeRow.dAlt > 0 ? 'tiltUp' : 'tiltDown', { deg: vertical }));
-    }
-    return steps;
-  }, [activeRow, t]);
-
-  // Bottom hint is structured (primary cue + optional secondary) so the
-  // mobile layout can render the angle as a big mono number with the
-  // verbal direction as a quieter line beneath it.
-  let hint: { primary: string; secondary?: string; tone?: 'normal' | 'lock' };
-  if (!headingActive) {
-    if (headingStatus === 'denied') {
-      hint = { primary: t('denied.title'), secondary: t('denied.body') };
-    } else if (headingStatus === 'unavailable') {
-      hint = { primary: t('fallbacks.noSensors') };
-    } else {
-      hint = { primary: t('liftPhone') };
-    }
-  } else if (activeBody && activeRow) {
-    if (confirmedLock) {
-      hint = { primary: t('found', { object: activeBody.name }), tone: 'lock' };
-    } else if (activeRow.onScreen) {
-      hint = {
-        primary: t('centerTarget', { object: activeBody.name }),
-        secondary: guidanceSteps.join(' · ') || t('holdSteady'),
-      };
-    } else {
-      hint = {
-        primary: t('guideTo', { object: activeBody.name }),
-        secondary: guidanceSteps.join(' · ') || t('panTo', { deg: Math.round(activeRow.sep), object: activeBody.name }),
-      };
-    }
-  } else {
-    hint = {
-      primary: t('browseSky'),
-      secondary: t('browseSkyBody'),
-    };
-  }
-
-  const constellationSegments = useMemo(() => {
-    const out: { aId: string; bId: string; x1: number; y1: number; x2: number; y2: number }[] = [];
-    const pad = 12;
-    for (const [aId, bId] of CONSTELLATION_LINES) {
-      const a = starById.get(aId);
-      const b = starById.get(bId);
-      if (!a || !b) continue;
-      if (a.altitude < -1 || b.altitude < -1) continue;
-      const pa = project(a.azimuth, a.altitude);
-      const pb = project(b.azimuth, b.altitude);
-      if (!pa.inFront && !pb.inFront) continue;
-      const aOn = pa.inFront && pa.screenX >= -pad && pa.screenX <= viewport.w + pad && pa.screenY >= -pad && pa.screenY <= viewport.h + pad;
-      const bOn = pb.inFront && pb.screenX >= -pad && pb.screenX <= viewport.w + pad && pb.screenY >= -pad && pb.screenY <= viewport.h + pad;
-      if (!aOn && !bOn) continue;
-      out.push({ aId, bId, x1: pa.screenX, y1: pa.screenY, x2: pb.screenX, y2: pb.screenY });
-    }
-    return out;
-  }, [starById, project, viewport]);
-
-  // Picker lists every catalog object so the user can browse first, then
-  // opt into guidance. Visible bodies float to the top.
-  const pickerBodies = useMemo(() => {
-    return objects
-      .slice()
-      .sort((a, b) => {
-        if (a.visible !== b.visible) return a.visible ? -1 : 1;
-        const priority = pickerPriority(a) - pickerPriority(b);
-        if (priority !== 0) return priority;
-        if (a.visible && b.visible) return a.magnitude - b.magnitude || b.altitude - a.altitude;
-        return b.altitude - a.altitude;
-      });
-  }, [objects]);
-
-  const [pickerOpen, setPickerOpen] = useState(false);
   return (
     <div
       className={`ar-overlay${cameraOn ? ' ar-overlay--camera-on' : ''}`}
@@ -735,43 +911,31 @@ export function ARFinder({
         height={viewport.h}
         viewBox={`0 0 ${viewport.w} ${viewport.h}`}
       >
-        {constellationSegments.map((seg, i) => {
-          const isActive =
-            !!activeConstellation &&
-            (STAR_TO_CONSTELLATION[seg.aId] === activeConstellation ||
-              STAR_TO_CONSTELLATION[seg.bId] === activeConstellation);
-          return (
-            <line
-              key={i}
-              x1={seg.x1}
-              y1={seg.y1}
-              x2={seg.x2}
-              y2={seg.y2}
-              stroke={isActive ? 'rgba(255,224,174,0.42)' : 'rgba(248,244,236,0.14)'}
-              strokeWidth={isActive ? 1.15 : 0.9}
-              strokeLinecap="round"
-            />
-          );
-        })}
-        {constellationLabels.map((label) => {
-          const isActive = activeConstellation === label.key;
-          return (
-            <text
-              key={label.key}
-              x={label.x}
-              y={label.y}
-              className={`ar-constellation-label${isActive ? ' is-active' : ''}`}
-              textAnchor="middle"
-            >
-              {CONSTELLATION_NAMES[label.key]}
-            </text>
-          );
-        })}
+        {sceneSegments.map((seg) => (
+          <line
+            key={seg.key}
+            ref={(el) => { if (el) segmentNodes.set(seg.key, el); else segmentNodes.delete(seg.key); }}
+            stroke={seg.isActive ? 'rgba(255,224,174,0.42)' : 'rgba(248,244,236,0.14)'}
+            strokeWidth={seg.isActive ? 1.15 : 0.9}
+            strokeLinecap="round"
+            style={{ display: 'none' }}
+          />
+        ))}
+        {constLabelKeys.map((key) => (
+          <text
+            key={key}
+            ref={(el) => { if (el) constLabelNodes.set(key, el); else constLabelNodes.delete(key); }}
+            className={`ar-constellation-label${activeConstellation === key ? ' is-active' : ''}`}
+            textAnchor="middle"
+            style={{ display: 'none' }}
+          >
+            {CONSTELLATION_NAMES[key]}
+          </text>
+        ))}
       </svg>
 
       <div className="ar-overlay__layer">
-        {positionedStars.map(({ star, screenX, screenY, onScreen }) => {
-          if (!onScreen) return null;
+        {sceneStars.map((star) => {
           const size = Math.max(1.7, 4.8 - star.mag * 0.62);
           const opacity = Math.max(0.56, 1 - star.mag * 0.16);
           const tint = starTint(star.id, star.mag);
@@ -781,66 +945,52 @@ export function ARFinder({
           return (
             <div
               key={star.id}
+              ref={(el) => { if (el) starNodes.set(star.id, el); else starNodes.delete(star.id); }}
               className="ar-star"
               style={{
-                left: screenX,
-                top: screenY,
                 width: size,
                 height: size,
                 opacity,
                 background: tint,
                 boxShadow: glow,
+                display: 'none',
               }}
               title={star.name}
             />
           );
         })}
-        {labeledStars.map(({ star, screenX, screenY }) => (
+        {labelCandidates.map((star) => (
           <div
             key={`label-${star.id}`}
+            ref={(el) => { if (el) starLabelNodes.set(star.id, el); else starLabelNodes.delete(star.id); }}
             className={`ar-star-label${activeConstellation === star.constellation ? ' is-active' : ''}`}
-            style={{ left: screenX + 10, top: screenY - 12 }}
+            style={{ display: 'none' }}
           >
             {star.name}
           </div>
         ))}
       </div>
 
-      <div
-        className="ar-horizon-line"
-        style={{ top: Math.max(-1, Math.min(viewport.h + 1, horizonY)) }}
-      >
+      <div className="ar-horizon-line" ref={horizonRef} style={{ top: 0 }}>
         <span className="ar-horizon-line__label">{t('horizon')}</span>
       </div>
 
       <ARPlanet3DLayer
+        ref={planet3DRef}
         width={viewport.w}
         height={viewport.h}
-        planets={planet3DPlacements}
-        sunScreen={sun3DScreen}
       />
 
       <div className="ar-overlay__layer">
-        {bodiesSortedForRender.map(({ obj, screenX, screenY, onScreen }) => {
-          // Render bodies a bit beyond the viewport so they fade in/out
-          // smoothly as the user pans, instead of popping when they
-          // cross the edge.
-          const inFadeBand =
-            screenX >= -120 && screenX <= viewport.w + 120 &&
-            screenY >= -120 && screenY <= viewport.h + 120;
-          if (!inFadeBand) return null;
+        {objects.map((obj) => {
           const isActive = obj.id === activeId;
-          const baseOpacity = onScreen ? (isActive ? 1 : 0.94) : 0;
           return (
             <button
               type="button"
               key={obj.id}
+              ref={(el) => { if (el) bodyNodes.set(obj.id, el); else bodyNodes.delete(obj.id); }}
               className={`ar-body ${isActive ? 'ar-body--focused' : ''} ${isActive && confirmedLock ? 'ar-body--locked' : ''}`}
-              style={{
-                left: screenX,
-                top: screenY,
-                opacity: baseOpacity,
-              }}
+              style={{ display: 'none' }}
               onClick={() => onSelectActive(obj.id)}
               aria-label={isActive ? t('centerTarget', { object: obj.name }) : obj.name}
               aria-pressed={isActive}
@@ -878,14 +1028,15 @@ export function ARFinder({
         })}
       </div>
 
-      {edgeArrow && activeBody && (
+      {activeBody && (
         <div
           className="ar-edge-arrow"
-          style={{ left: edgeArrow.x, top: edgeArrow.y, transform: `translate(-50%, -50%) rotate(${edgeArrow.angleDeg}deg)` }}
+          ref={edgeArrowRef}
+          style={{ display: 'none' }}
           aria-hidden="true"
         >
           <ArrowGlyph />
-          <span className="ar-edge-arrow__label" style={{ transform: `rotate(${-edgeArrow.angleDeg}deg)` }}>
+          <span className="ar-edge-arrow__label" ref={edgeArrowLabelRef}>
             {activeBody.name}
           </span>
         </div>
@@ -903,41 +1054,33 @@ export function ARFinder({
       <div className="ar-center-readout">
         <div className="ar-center-readout__line">
           <span>ALT</span>
-          <strong>{phoneAim.altitude >= 0 ? '+' : ''}{phoneAim.altitude.toFixed(1)}°</strong>
+          <strong ref={centerAltRef} />
           <span>·</span>
           <span>AZ</span>
-          <strong>{phoneAim.azimuth.toFixed(1)}°</strong>
+          <strong ref={centerAzRef} />
         </div>
       </div>
 
       <div className="ar-compass-strip" aria-hidden="true">
         <div className="ar-compass-strip__inner">
           <div className="ar-compass-strip__center" />
-          {COMPASS_TICKS.flatMap((tick) => {
-            return [-360, 0, 360].map((wrap) => {
-              const delta = shortestAzDelta(tick.deg + wrap, phoneAim.azimuth);
-              if (Math.abs(delta) > COMPASS_VISIBLE_DEG / 2 + 5) return null;
-              const x = viewport.w / 2 + delta * compassPxPerDeg;
-              return (
-                <div
-                  key={`${tick.label}-${wrap}`}
-                  className={`ar-compass-tick ${tick.cardinal ? 'ar-compass-tick--cardinal' : ''}`}
-                  style={{ left: x }}
-                >
-                  <span className="ar-compass-tick__mark" />
-                  <span>{tick.label}</span>
-                </div>
-              );
-            });
-          })}
+          {COMPASS_TICK_INSTANCES.map((inst) => (
+            <div
+              key={inst.key}
+              ref={(el) => { if (el) compassTickNodes.set(inst.key, el); else compassTickNodes.delete(inst.key); }}
+              className={`ar-compass-tick ${inst.cardinal ? 'ar-compass-tick--cardinal' : ''}`}
+              style={{ display: 'none' }}
+            >
+              <span className="ar-compass-tick__mark" />
+              <span>{inst.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className={`ar-bottom-hint${hint.tone === 'lock' ? ' is-locked' : ''}${hint.secondary ? ' has-secondary' : ''}`}>
-        <span className="ar-bottom-hint__primary">{hint.primary}</span>
-        {hint.secondary && (
-          <span className="ar-bottom-hint__secondary">{hint.secondary}</span>
-        )}
+      <div className="ar-bottom-hint" ref={bottomHintRef}>
+        <span className="ar-bottom-hint__primary" ref={hintPrimaryRef} />
+        <span className="ar-bottom-hint__secondary" ref={hintSecondaryRef} />
       </div>
 
       {poorAccuracy && (
@@ -975,9 +1118,7 @@ export function ARFinder({
       <div className="ar-overlay__topbar">
         <div>
           <div className="ar-topbar__title">{t('title')}</div>
-          <div className="ar-topbar__heading">
-            {cardinal} · {Math.round(phoneAim.azimuth)}°
-          </div>
+          <div className="ar-topbar__heading" ref={topbarHeadingRef} />
         </div>
         <div className="ar-overlay__topbar-actions">
           <button
