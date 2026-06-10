@@ -213,7 +213,7 @@
 }
 
 .wallet-adapter-modal-title {
-  font-family: var(--font-serif), serif !important;
+  font-family: var(--font-display), serif !important;
   color: #E8E6DD !important;
   font-weight: 500 !important;
   letter-spacing: -0.01em !important;

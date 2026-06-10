@@ -289,7 +289,7 @@ export default function SettingsPage() {
         </button>
         <h1 style={{
           color: 'var(--text-primary)',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-display)',
           fontWeight: 500,
           fontSize: 22,
           margin: 0,

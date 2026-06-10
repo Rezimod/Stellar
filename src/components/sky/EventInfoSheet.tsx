@@ -115,7 +115,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
             <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)] font-mono">
               {TYPE_LABEL[event.type]} · {DIFFICULTY_LABEL[event.difficulty]}
             </p>
-            <h2 className="text-text-primary text-lg font-semibold mt-1" style={{ fontFamily: 'var(--font-serif)' }}>
+            <h2 className="text-text-primary text-lg font-semibold mt-1" style={{ fontFamily: 'var(--font-display)' }}>
               {event.name}
             </h2>
             <p className="text-text-muted text-xs mt-1 font-mono">{eventDate}</p>

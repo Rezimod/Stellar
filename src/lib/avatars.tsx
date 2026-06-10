@@ -256,7 +256,7 @@ export function Avatar({ avatarId, initial = '✦', size = 72, style }: AvatarPr
         <span
           style={{
             position: 'relative',
-            fontFamily: 'var(--font-serif)',
+            fontFamily: 'var(--font-display)',
             fontWeight: 600,
             fontSize: Math.round(size * 0.42),
             color: '#FFFFFF',

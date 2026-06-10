@@ -192,7 +192,7 @@ export default function DifficultyExplainer({
           <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)] font-mono">
             Why this is hard
           </p>
-          <h3 className="text-text-primary text-base font-semibold mt-0.5" style={{ fontFamily: 'var(--font-serif)' }}>
+          <h3 className="text-text-primary text-base font-semibold mt-0.5" style={{ fontFamily: 'var(--font-display)' }}>
             {title}
           </h3>
         </div>

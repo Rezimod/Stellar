@@ -128,7 +128,7 @@ export default async function EarnPage() {
           <p className="font-mono text-xs uppercase tracking-widest text-white/50">
             {isKa ? 'როგორ გასცემს Stellar ჯილდოებს' : 'How Stellar pays'}
           </p>
-          <h1 className="mt-4 font-serif text-4xl leading-[1.05] sm:text-6xl">
+          <h1 className="mt-4 font-display text-4xl leading-[1.05] sm:text-6xl">
             {isKa ? 'ღამის ციდან ჯილდოს მიღების სამი გზა.' : 'Three ways to earn from the night sky.'}
           </h1>
           <p className="mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
@@ -164,7 +164,7 @@ export default async function EarnPage() {
                     {t.multiplier}
                   </span>
                 </div>
-                <p className="mt-6 font-serif text-xl leading-snug">{t.headline}</p>
+                <p className="mt-6 font-display text-xl leading-snug">{t.headline}</p>
                 <ul className="mt-8 divide-y divide-white/10">
                   {t.earn.map((row) => (
                     <li
@@ -189,7 +189,7 @@ export default async function EarnPage() {
       <section className="border-t border-white/10 px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <div className="flex items-baseline justify-between">
-            <h2 className="font-serif text-2xl sm:text-3xl">{isKa ? 'ამაღამ, შენს ცაზე' : 'Tonight, in your sky'}</h2>
+            <h2 className="font-display text-2xl sm:text-3xl">{isKa ? 'ამაღამ, შენს ცაზე' : 'Tonight, in your sky'}</h2>
             <span className="font-mono text-xs text-white/50">
               {/* TODO: wire to /api/sky/forecast + user GPS */}
               {isKa ? 'თბილისი, საქართველო' : 'Tbilisi, GE'}
@@ -238,7 +238,7 @@ export default async function EarnPage() {
             <p className="font-mono text-xs uppercase tracking-widest text-white/50">
               {isKa ? 'Stellar Pro' : 'Stellar Pro'}
             </p>
-            <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">
+            <h2 className="mt-4 font-display text-3xl leading-tight sm:text-4xl">
               {isKa ? 'რამდენიმე ღამის დაგეგმვა.' : 'Multi-night planning.'}
               <br />
               {isKa ? 'საკუთარი შეტყობინებები. ლიმიტის გარეშე.' : 'Custom alerts. No limits.'}
@@ -290,7 +290,7 @@ export default async function EarnPage() {
           <p className="font-mono text-xs uppercase tracking-widest text-white/50">
             {isKa ? 'ბრენდებისთვის' : 'For brands'}
           </p>
-          <h2 className="mt-4 font-serif text-3xl leading-tight sm:text-4xl">
+          <h2 className="mt-4 font-display text-3xl leading-tight sm:text-4xl">
             {isKa ? 'გაუშვი Stargazer Market.' : 'Run a Stargazer Market.'}
             <br />
             {isKa ? 'მიაწვდინე ხმა 60,000 ასტრონომს.' : 'Reach 60,000 astronomers.'}

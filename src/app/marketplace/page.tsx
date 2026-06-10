@@ -294,7 +294,7 @@ export default function MarketplacePage() {
           <section className="mt-[36px] sm:mt-[52px]">
             <div className="flex items-baseline justify-between mb-[16px]">
               <h2
-                className="font-serif text-[18px] sm:text-[20px] tracking-[-0.005em] text-[#F8F4EC]"
+                className="font-display text-[18px] sm:text-[20px] tracking-[-0.005em] text-[#F8F4EC]"
                 style={{ fontWeight: 600 }}
               >
                 {t('guideTitle')}

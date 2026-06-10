@@ -330,7 +330,6 @@
   --font-display:  var(--font-orbitron), system-ui, -apple-system, sans-serif;
   --font-body:     var(--font-geist), system-ui, -apple-system, sans-serif;
   --font-cta:      var(--font-geist), system-ui, -apple-system, sans-serif;
-  --font-serif:    var(--font-orbitron), system-ui, -apple-system, sans-serif;
   --font-mono:     var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
   --font-georgian: var(--font-georgian, 'Noto Sans Georgian', system-ui, sans-serif);
 }
@@ -424,10 +423,6 @@ h1, h2, h3, h4, h5, h6, .display {
   font-family: var(--font-body);
 }
 
-/* `.font-display` / `.font-serif` utilities and the display token now also
-   resolve to the body font so direct callers match the homepage too. */
-.font-display, .font-serif { font-family: var(--font-body) !important; }
-
 code, pre, .mono, [class*="font-mono"] {
   font-family: var(--font-mono);
 }
@@ -437,10 +432,9 @@ code, pre, .mono, [class*="font-mono"] {
   font-family: var(--font-mono);
 }
 
-/* Typography utilities */
+/* Typography utilities — Orbitron for display, Geist for body */
 .font-display  { font-family: var(--font-display); }
 .font-body     { font-family: var(--font-body); }
-.font-serif    { font-family: var(--font-display); }
 .font-georgian { font-family: var(--font-georgian); }
 
 /* Card base */

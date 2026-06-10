@@ -232,7 +232,7 @@ function ProfilePageContent() {
           <h1
             style={{
               color: 'var(--stl-text-bright)',
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 18,
               fontWeight: 500,
               margin: '0 0 8px',
@@ -458,7 +458,7 @@ function ProfilePageContent() {
             <div style={{
               flex: 1, minWidth: 0,
               display: 'flex', flexDirection: 'column', gap: 6,
-              fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 500,
+              fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 500,
               alignItems: 'flex-start',
             }}>
               <UsernameEditor

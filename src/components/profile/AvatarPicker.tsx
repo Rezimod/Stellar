@@ -85,7 +85,7 @@ export function AvatarPicker({ open, current, initial, saving, onClose, onSelect
           </div>
           <p
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: 19, fontWeight: 500,
               color: 'var(--stl-text-bright)',
               margin: 0, lineHeight: 1.15,
