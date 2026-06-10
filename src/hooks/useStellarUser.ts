@@ -5,6 +5,12 @@ import { useWallets as usePrivySolanaWallets } from '@privy-io/react-auth/solana
 import { useWallet as useWalletAdapter } from '@solana/wallet-adapter-react';
 import { useMemo } from 'react';
 
+// ⚠️ TEMP DEMO BYPASS — lets anyone see every feature without signing in.
+// Set back to `false` to restore real authentication. (Single source of truth.)
+const DEMO_BYPASS_AUTH = true;
+// Harmless placeholder address so address-gated UIs render (no real wallet/data).
+const DEMO_ADDRESS = '11111111111111111111111111111111';
+
 export type StellarAuthSource = 'privy' | 'wallet-adapter' | null;
 
 export interface StellarUser {
@@ -57,6 +63,17 @@ export function useStellarUser(): StellarUser {
 
   return useMemo<StellarUser>(() => {
     const ready = privy.ready;
+
+    if (DEMO_BYPASS_AUTH) {
+      return {
+        authenticated: true,
+        source: 'privy',
+        address: DEMO_ADDRESS,
+        displayName: 'Demo Explorer',
+        email: 'demo@stellar.app',
+        ready: true,
+      };
+    }
 
     if (adapter.connected && adapter.publicKey) {
       const address = adapter.publicKey.toBase58();
