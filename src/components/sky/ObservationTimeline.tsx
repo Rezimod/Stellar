@@ -3,16 +3,10 @@
 
 import { useMemo } from 'react';
 import type { TimelinePayload } from '@/lib/use-sky-data';
+import { azimuthToCardinal } from '@/lib/sky/ar';
 
 interface ObservationTimelineProps {
   data: TimelinePayload;
-}
-
-const AZ_DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] as const;
-
-function azimuthToCardinal(az: number): (typeof AZ_DIRS)[number] {
-  const n = ((az % 360) + 360) % 360;
-  return AZ_DIRS[Math.floor(((n + 22.5) % 360) / 45)];
 }
 
 function fmtHHmm(d: Date): string {

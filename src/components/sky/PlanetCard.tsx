@@ -3,11 +3,11 @@
 
 import type { PlanetData } from '@/lib/use-sky-data';
 import {
-  azimuthToCardinal,
   equipmentForMagnitude,
   equipmentLabel,
   formatLocalTime,
 } from '@/lib/sky-utils';
+import { azimuthToCardinal } from '@/lib/sky/ar';
 
 interface PlanetCardProps {
   planet: PlanetData;

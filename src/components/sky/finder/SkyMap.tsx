@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { angularSeparation, type HeadingStatus } from '@/lib/sky/use-device-heading';
+import { azimuthToCardinal } from '@/lib/sky/ar';
+import { CONSTELLATION_NAMES, STAR_TINT } from '@/lib/sky/palette';
 import type { ObjectId, SkyObject } from './types';
 
 const PLANET_COLORS: Record<string, string> = {
@@ -22,73 +24,6 @@ function starColor(mag: number): string {
   if (mag <= 0)  return '#F8F4EC';
   if (mag <= 1)  return '#FFB347';
   return '#e8d8b6';
-}
-
-/**
- * Per-star spectral tint — overrides the magnitude-only fallback for the
- * brightest stars where the eye can actually pick out colour. Hot O/B
- * stars read blue-white; K-type read warm orange; M-type red giants read
- * deep orange-red. Matches what the eye sees through clean dark-sky air.
- */
-const CONSTELLATION_NAMES: Record<string, string> = {
-  orion:      'ORION',
-  ursaMajor:  'URSA MAJOR',
-  ursaMinor:  'URSA MINOR',
-  cassiopeia: 'CASSIOPEIA',
-  cygnus:     'CYGNUS',
-  andromeda:  'ANDROMEDA',
-  lyra:       'LYRA',
-  leo:        'LEO',
-  scorpius:   'SCORPIUS',
-};
-
-const STAR_TINT: Record<string, string> = {
-  // Blue-white (B/A class)
-  sirius:    '#cfe1ff',
-  vega:      '#d4e4ff',
-  rigel:     '#cee0ff',
-  spica:     '#cfe0ff',
-  regulus:   '#d8e4f6',
-  bellatrix: '#d6e2f4',
-  alnilam:   '#d4e0f4',
-  alnitak:   '#d4e0f4',
-  mintaka:   '#d4e0f4',
-  // White (A/F)
-  altair:    '#f4f1e6',
-  deneb:     '#f0eee0',
-  procyon:   '#F8F4EC',
-  castor:    '#ecedf0',
-  // Yellow / yellow-white (F/G)
-  capella:   '#fbe9ad',
-  pollux:    '#f3c98a',
-  // Orange (K)
-  arcturus:  '#f0a55c',
-  aldebaran: '#ec8b56',
-  algieba:   '#f3b079',
-  // Red giants (M)
-  betelgeuse:'#e87454',
-  antares:   '#e36c4a',
-  // Additional figure stars.
-  saiph:     '#cee0ff',
-  fawaris:   '#d4e0f4',
-  sheliak:   '#d8e1f4',
-  sulafat:   '#d8e1f4',
-  pherkad:   '#f0eee0',
-  denebola:  '#d4e0f4',
-  zosma:     '#d8e1f4',
-  dschubba:  '#cee0ff',
-};
-
-function azimuthToCardinal(az: number): string {
-  const n = ((az % 360) + 360) % 360;
-  if (n >= 337.5 || n < 22.5) return 'N';
-  if (n < 67.5) return 'NE';
-  if (n < 112.5) return 'E';
-  if (n < 157.5) return 'SE';
-  if (n < 202.5) return 'S';
-  if (n < 247.5) return 'SW';
-  if (n < 292.5) return 'W';
-  return 'NW';
 }
 
 const SIZE = 380;

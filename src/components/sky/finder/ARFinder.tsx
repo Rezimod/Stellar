@@ -29,6 +29,7 @@ import {
   positionStars,
   type PositionedStar,
 } from '@/lib/sky/stars';
+import { CONSTELLATION_NAMES, hexToRgba, starTint } from '@/lib/sky/palette';
 import type { ObjectId, SkyObject } from './types';
 import './ARFinder.css';
 
@@ -111,57 +112,6 @@ const ALIGNMENT_STEP = 0.5;
 const PLANET3D_IDS = new Set([
   'sun','moon','mercury','venus','earth','mars','jupiter','saturn','uranus','neptune',
 ]);
-
-const CONSTELLATION_NAMES: Record<string, string> = {
-  orion: 'ORION',
-  ursaMajor: 'URSA MAJOR',
-  cassiopeia: 'CASSIOPEIA',
-  cygnus: 'CYGNUS',
-  andromeda: 'ANDROMEDA',
-  lyra: 'LYRA',
-};
-
-const STAR_TINT: Record<string, string> = {
-  sirius: '#d9e8ff',
-  vega: '#d4e4ff',
-  rigel: '#cee0ff',
-  spica: '#cfe0ff',
-  regulus: '#d8e4f6',
-  bellatrix: '#d6e2f4',
-  alnilam: '#d4e0f4',
-  alnitak: '#d4e0f4',
-  mintaka: '#d4e0f4',
-  altair: '#f4f1e6',
-  deneb: '#f0eee0',
-  procyon: '#f8f4ec',
-  castor: '#ecedf0',
-  capella: '#fbe9ad',
-  pollux: '#f3c98a',
-  arcturus: '#f0a55c',
-  aldebaran: '#ec8b56',
-  betelgeuse: '#e87454',
-  antares: '#e36c4a',
-};
-
-function starTint(id: string, mag: number): string {
-  if (STAR_TINT[id]) return STAR_TINT[id];
-  if (mag <= -1) return '#cfe7ff';
-  if (mag <= 0) return '#f8f4ec';
-  if (mag <= 1) return '#ffd39b';
-  return '#e8d8b6';
-}
-
-function hexToRgba(hex: string, alpha: number): string {
-  const raw = hex.replace('#', '');
-  const normalized = raw.length === 3
-    ? raw.split('').map((ch) => ch + ch).join('')
-    : raw;
-  const value = Number.parseInt(normalized, 16);
-  const r = (value >> 16) & 255;
-  const g = (value >> 8) & 255;
-  const b = value & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 function pickerPriority(obj: SkyObject): number {
   if (obj.id === 'sun') return 0;

@@ -3,11 +3,11 @@
 
 import type { PlanetData } from '@/lib/use-sky-data';
 import {
-  azimuthToCardinal,
   azimuthToArrow,
   equipmentForMagnitude,
   formatLocalTime,
 } from '@/lib/sky-utils';
+import { azimuthToCardinal } from '@/lib/sky/ar';
 
 interface VisibleNowProps {
   planets: PlanetData[];

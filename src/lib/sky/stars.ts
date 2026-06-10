@@ -237,10 +237,20 @@ export function raDecToAzAlt(
   const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
 
   const cosAlt = Math.cos(alt);
-  const sinAz = -Math.cos(dec) * Math.sin(ha) / cosAlt;
-  const cosAz = (Math.sin(dec) - Math.sin(alt) * Math.sin(lat)) / (cosAlt * Math.cos(lat));
-  let az = Math.atan2(sinAz, cosAz) / DEG;
-  az = ((az % 360) + 360) % 360;
+  let az: number;
+  if (cosAlt < 1e-9) {
+    // Body sits at the zenith — azimuth is undefined there. Pin it to 0
+    // rather than dividing by ~0 (which yields Infinity/NaN).
+    az = 0;
+  } else {
+    // At the poles cos(lat) → 0, which would blow up the cosAz denominator.
+    // Floor it at an epsilon so the result stays finite.
+    const cosLat = Math.max(Math.cos(lat), 1e-9);
+    const sinAz = -Math.cos(dec) * Math.sin(ha) / cosAlt;
+    const cosAz = (Math.sin(dec) - Math.sin(alt) * Math.sin(lat)) / (cosAlt * cosLat);
+    az = Math.atan2(sinAz, cosAz) / DEG;
+    az = ((az % 360) + 360) % 360;
+  }
 
   const trueAlt = alt / DEG;
   const apparentAlt = trueAlt + refractionDeg(trueAlt);

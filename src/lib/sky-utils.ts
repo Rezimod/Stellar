@@ -48,16 +48,6 @@ export function altAzToCompassSVG(
 }
 
 /**
- * Convert azimuth to a cardinal abbreviation.
- */
-export function azimuthToCardinal(az: number): string {
-  const normalized = ((az % 360) + 360) % 360;
-  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-  const idx = Math.round(normalized / 45) % 8;
-  return dirs[idx];
-}
-
-/**
  * Convert azimuth to an arrow character pointing in that direction.
  */
 export function azimuthToArrow(az: number): string {
