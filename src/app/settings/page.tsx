@@ -12,144 +12,11 @@ import {
   ChevronLeft, Sun, Moon,
   Mail, Phone, Chrome,
   LogOut, Trash2, ChevronRight,
-  Orbit, Sparkles, Cloud, Flashlight,
+  Orbit, Sparkles, Cloud, Flashlight, Wallet, ShieldCheck,
 } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useAppState } from '@/hooks/useAppState';
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
-  return (
-    <div style={{ marginBottom: 22 }}>
-      <p style={{
-        color: 'var(--text-muted)',
-        fontFamily: 'var(--font-mono)',
-        fontSize: 10,
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.18em',
-        margin: '0 0 10px 4px',
-      }}>
-        {title}
-      </p>
-      <div style={{
-        borderRadius: 16,
-        overflow: 'hidden',
-        background: isLight
-          ? '#FFFFFF'
-          : 'radial-gradient(ellipse 60% 100% at 0% 0%, rgba(167,139,250,0.06) 0%, transparent 60%), ' +
-            'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
-        border: isLight
-          ? '1px solid rgba(15,23,42,0.10)'
-          : '1px solid rgba(255,255,255,0.10)',
-        boxShadow: isLight
-          ? '0 1px 4px rgba(15,23,42,0.06), 0 10px 24px -18px rgba(15,23,42,0.18)'
-          : 'inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 28px -18px rgba(0,0,0,0.55)',
-        backdropFilter: isLight ? 'none' : 'blur(8px)',
-        WebkitBackdropFilter: isLight ? 'none' : 'blur(8px)',
-      }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Row({
-  icon, iconBg, iconColor, label, sublabel, right, onClick, href, danger, last, disabled,
-}: {
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
-  label: string;
-  sublabel?: string;
-  right?: React.ReactNode;
-  onClick?: () => void;
-  href?: string;
-  danger?: boolean;
-  last?: boolean;
-  disabled?: boolean;
-}) {
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
-  const dividerColor = isLight ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.06)';
-  const hoverBg = isLight ? 'rgba(15,23,42,0.04)' : 'rgba(255,255,255,0.03)';
-
-  const inner = (
-    <div
-      onClick={disabled ? undefined : onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px',
-        borderBottom: last ? 'none' : `1px solid ${dividerColor}`,
-        cursor: !disabled && (onClick || href) ? 'pointer' : 'default',
-        background: 'transparent',
-        opacity: disabled ? 0.5 : 1,
-        transition: 'background 0.15s',
-      }}
-      onMouseEnter={e => { if (!disabled && (onClick || href)) (e.currentTarget as HTMLElement).style.background = hoverBg; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-    >
-      <div style={{
-        width: 36, height: 36, borderRadius: 10,
-        background: iconBg,
-        border: `1px solid ${iconColor}33`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-      }}>
-        <span style={{ color: iconColor }}>{icon}</span>
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{
-          color: danger ? 'var(--error)' : 'var(--text-primary)',
-          fontFamily: 'var(--font-display)',
-          fontSize: 14, fontWeight: 500, margin: 0,
-          letterSpacing: '-0.005em',
-        }}>{label}</p>
-        {sublabel && <p style={{
-          color: 'var(--text-secondary)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 11, margin: '2px 0 0',
-        }}>{sublabel}</p>}
-      </div>
-      {right && <div style={{ flexShrink: 0 }}>{right}</div>}
-      {(onClick || href) && !right && !disabled && <ChevronRight size={15} color="var(--text-muted)" />}
-    </div>
-  );
-
-  return href ? <Link href={href} style={{ textDecoration: 'none' }}>{inner}</Link> : inner;
-}
-
-function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) {
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
-  const offBg = isLight ? 'rgba(15,23,42,0.18)' : 'var(--border-default)';
-  return (
-    <button
-      onClick={disabled ? undefined : onToggle}
-      disabled={disabled}
-      style={{
-        width: 46, height: 26, borderRadius: 13, padding: 2,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        border: 'none',
-        background: on ? 'var(--accent)' : offBg,
-        opacity: disabled ? 0.4 : 1,
-        transition: 'background 0.2s',
-        display: 'flex', alignItems: 'center',
-        flexShrink: 0,
-      }}
-    >
-      <div style={{
-        width: 22, height: 22, borderRadius: '50%',
-        background: '#FFFFFF',
-        transform: on ? 'translateX(20px)' : 'translateX(0)',
-        transition: 'transform 0.2s',
-        boxShadow: isLight
-          ? '0 1px 3px rgba(15,23,42,0.25)'
-          : '0 1px 3px rgba(0,0,0,0.3)',
-      }} />
-    </button>
-  );
-}
+import { Section, Row, Toggle } from '@/components/shared/SettingsList';
 
 export default function SettingsPage() {
   const { user, linkEmail, linkPhone, unlinkEmail, unlinkPhone } = usePrivy();
@@ -206,6 +73,13 @@ export default function SettingsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.hash) return;
+    const id = window.location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [authenticated]);
+
   const persistNotif = (next: typeof notif) => {
     setNotif(next);
     try {
@@ -258,6 +132,7 @@ export default function SettingsPage() {
     (user?.linkedAccounts.find(a => a.type === 'email') as { address?: string } | undefined)?.address;
   const phone = (user?.linkedAccounts.find(a => a.type === 'phone') as { number?: string } | undefined)?.number;
   const hasGoogle = user?.linkedAccounts.some(a => a.type === 'google_oauth');
+  const addrShort = address ? `${address.slice(0, 4)}…${address.slice(-4)}` : null;
 
   if (!authenticated) {
     return (
@@ -338,7 +213,7 @@ export default function SettingsPage() {
       </Section>
 
       {/* ── NOTIFICATIONS ── */}
-      <Section title="Notifications">
+      <Section id="notifications" title="Notifications">
         {notifBlocked && (
           <div style={{
             padding: '12px 16px',
@@ -409,7 +284,7 @@ export default function SettingsPage() {
       </Section>
 
       {/* ── APPEARANCE ── */}
-      <Section title="Appearance">
+      <Section id="appearance" title="Appearance">
         <Row
           icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
@@ -425,6 +300,43 @@ export default function SettingsPage() {
           label="Field Mode"
           sublabel="Red-on-black to protect your night vision at the eyepiece"
           right={<Toggle on={field} onToggle={toggleField} />}
+          last
+        />
+      </Section>
+
+      {/* ── WALLET ── */}
+      <Section id="wallet" title="Wallet">
+        <Row
+          icon={<Wallet size={15} />}
+          iconBg="rgba(94, 234, 212,0.08)"
+          iconColor="var(--success)"
+          label={addrShort ?? 'No wallet yet'}
+          sublabel={address ? 'Embedded Solana wallet · view on Solscan' : 'Sign in to create your wallet'}
+          onClick={address ? () => window.open(`https://solscan.io/account/${address}?cluster=devnet`, '_blank', 'noopener,noreferrer') : undefined}
+          right={address ? <ChevronRight size={15} color="var(--text-muted)" /> : undefined}
+          last
+        />
+      </Section>
+
+      {/* ── PRIVACY ── */}
+      <Section id="privacy" title="Privacy & Data">
+        <Row
+          icon={<ShieldCheck size={15} />}
+          iconBg="rgba(94, 234, 212,0.08)"
+          iconColor="var(--success)"
+          label="Privacy Policy"
+          sublabel="How we handle your data"
+          href="/privacy"
+          right={<ChevronRight size={15} color="var(--text-muted)" />}
+        />
+        <Row
+          icon={<ShieldCheck size={15} />}
+          iconBg="rgba(255, 179, 71,0.08)"
+          iconColor="var(--terracotta)"
+          label="Terms of Service"
+          sublabel="Usage rules and disclaimers"
+          href="/terms"
+          right={<ChevronRight size={15} color="var(--text-muted)" />}
           last
         />
       </Section>
