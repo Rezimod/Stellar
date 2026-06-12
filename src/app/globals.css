@@ -969,11 +969,6 @@ input, select, textarea { font-size: 16px !important; }
     -webkit-backdrop-filter: blur(8px) !important;
   }
 
-  /* Bottom-nav clearance safety net for any ad-hoc page main */
-  main {
-    padding-bottom: max(88px, calc(80px + env(safe-area-inset-bottom)));
-  }
-
   /* Top safe-area awareness for fixed nav bars */
   nav.fixed.top-0 {
     top: env(safe-area-inset-top);

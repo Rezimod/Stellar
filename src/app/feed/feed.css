@@ -1123,7 +1123,7 @@
    pill composer, divided action bar, long-press reaction picker. */
 @media (max-width: 767px) {
   .feed-page {
-    padding: 8px 0 120px;
+    padding: 8px 0 24px;
     max-width: 100%;
   }
   .feed-grid { gap: 0; }
