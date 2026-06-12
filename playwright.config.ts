@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
+const useRemote = Boolean(process.env.PLAYWRIGHT_BASE_URL);
+
 export default defineConfig({
   testDir: '.',
   testMatch: ['e2e/**/*.spec.ts'],
@@ -7,7 +10,7 @@ export default defineConfig({
   retries: 1,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     screenshot: 'only-on-failure',
     video: 'off',
     actionTimeout: 10000,
@@ -18,10 +21,14 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run start',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 60000,
-  },
+  ...(useRemote
+    ? {}
+    : {
+        webServer: {
+          command: 'npm run start',
+          url: 'http://localhost:3000',
+          reuseExistingServer: true,
+          timeout: 120000,
+        },
+      }),
 });

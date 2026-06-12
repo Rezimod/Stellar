@@ -179,9 +179,7 @@ class QvacRuntime {
         this.vlmModelId = await loadModel({
           modelSrc: pick.modelSrc,
           modelType: 'llm',
-          // Roomier context: the identify prompt (visual field-guide + 2 worked
-          // examples) plus the image projection tokens plus the answer need headroom.
-          modelConfig: { ctx_size: 3072, projectionModelSrc: pick.projectionModelSrc },
+          modelConfig: { ctx_size: 2048, projectionModelSrc: pick.projectionModelSrc },
           onProgress: (p: { downloaded?: number; total?: number }) => {
             this.vlmTracker.emit({
               phase: 'downloading',
@@ -229,7 +227,7 @@ class QvacRuntime {
         modelId: this.vlmModelId,
         history,
         stream: true,
-        generationParams: { temp: 0.2, top_p: 0.9, predict: 220 },
+        generationParams: { temp: 0.2, top_p: 0.9, predict: 90 },
       });
       yield* audit.instrument('vision', this.vlmModelName || 'vlm', prompt, result.tokenStream, result.stats);
     } finally {
@@ -464,7 +462,12 @@ class QvacRuntime {
     try {
       const sdk = await import('@qvac/sdk');
       const { completion } = sdk as any;
-      const result = completion({ modelId: this.llmModelId, history, stream: true });
+      const result = completion({
+        modelId: this.llmModelId,
+        history,
+        stream: true,
+        generationParams: { temp: 0.25, top_p: 0.9, predict: 130 },
+      });
       for await (const token of result.tokenStream) {
         yield token as string;
       }

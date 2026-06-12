@@ -46,7 +46,7 @@ export default async function StarIndexPage() {
   const recent = await getRecentNamedStars();
 
   return (
-    <div style={{ minHeight: '100vh', color: '#fff' }}>
+    <div style={{ color: '#fff' }}>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 64px' }}>
         <Link
           href="/"

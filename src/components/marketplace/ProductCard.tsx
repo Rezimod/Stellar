@@ -125,7 +125,7 @@ export default function ProductCard({
             </span>
           )}
         </div>
-        <p className={`font-medium text-white leading-[1.25] truncate mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[16px]' : 'text-[15px]'}`}>
+        <p className={`font-medium text-white leading-[1.25] line-clamp-2 min-h-[2.5em] mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[16px]' : 'text-[15px]'}`}>
           {product.name}
         </p>
         <p className="text-[11px] tracking-[0.16em] uppercase text-white/85 mb-[10px] truncate">

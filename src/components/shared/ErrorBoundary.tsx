@@ -21,10 +21,10 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <p className="text-[var(--terracotta)] text-4xl mb-4">✦</p>
-            <h1 className="text-text-primary text-xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className="text-text-primary text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-display)' }}>
               Something went wrong
             </h1>
-            <p className="text-text-muted text-sm mb-6">{this.state.error.message}</p>
+            <p className="text-text-muted text-sm mb-6 break-words">{this.state.error.message}</p>
             <button
               onClick={() => window.location.reload()}
               className="px-6 py-2.5 rounded-xl text-sm font-semibold text-black"

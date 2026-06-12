@@ -227,7 +227,7 @@ export async function runSkyAgent(
         { role: 'user', content: userMessage },
       ],
       stream: true,
-      generationParams: { temp: 0.2, top_p: 0.9, predict: 180 },
+      generationParams: { temp: 0.2, top_p: 0.9, predict: 110 },
     });
     async function* drain(): AsyncIterable<string> {
       try {

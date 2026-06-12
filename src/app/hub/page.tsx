@@ -91,15 +91,24 @@ export default function HubPage() {
               </h2>
               <div className="flex-1 h-px bg-white/[0.06]" />
             </div>
-            <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-8 gap-2 sm:gap-2.5">
+            <div
+              className={
+                section.items.length <= 2
+                  ? 'grid grid-cols-2 gap-2 sm:gap-2.5'
+                  : 'grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-8 gap-2 sm:gap-2.5'
+              }
+            >
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const dimmed = item.comingSoon;
+                const wide = section.items.length <= 2;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`relative flex flex-col items-center justify-center gap-2 px-1.5 py-3 sm:py-3.5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline text-center ${dimmed ? 'opacity-70' : ''}`}
+                    className={`relative flex items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline text-center ${
+                      wide ? 'flex-row gap-3 px-3 py-3' : 'flex-col gap-2 px-1.5 py-3 sm:py-3.5'
+                    } ${dimmed ? 'opacity-70' : ''}`}
                   >
                     {item.comingSoon && (
                       <span

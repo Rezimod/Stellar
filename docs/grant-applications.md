@@ -6,11 +6,13 @@ Live URL: **stellarr.club** · GitHub: github.com/Rezimod/Stellar
 > - Real audience numbers (this doc uses 45K+ buyers / 70K+ social; CLAUDE.md says 60K FB)
 > - Exact date/year of the Superteam Georgia placement (recorded as March 2026)
 >
-> **Accuracy note (important for the Anthropic apps):** Claude is the *trust layer*
-> (photo verification = Sonnet 4.6 vision; star naming = Haiku 4.5). ASTRA chat
-> currently runs on OpenAI gpt-4o-mini — framed honestly below as a credits-funded
-> migration to Claude. Do not claim Claude powers the chat today; the public repo
-> shows otherwise.
+> **Accuracy note (important for the Anthropic apps — updated June 2026):** As of
+> commit `0a66168`, photo verification runs on **Gemini 2.5 Flash** (free tier),
+> not Claude — it was migrated off Claude Sonnet vision purely for cost. The only
+> Claude usage live today is **star naming (Haiku 4.5)**. ASTRA chat runs on
+> OpenAI gpt-4o-mini. Frame both verification and chat as **credits-funded
+> migrations back/onto Claude** — do not claim Claude powers them today; the
+> public repo shows otherwise.
 
 ---
 
@@ -20,12 +22,11 @@ Live URL: **stellarr.club** · GitHub: github.com/Rezimod/Stellar
 Stellar (stellarr.club) is a consumer astronomy app that turns telescope sessions into verified discoveries. Users complete sky-observation missions — the Moon, Jupiter, Saturn, deep-sky targets — and earn rewards redeemable at Astroman.ge, Georgia's largest astronomy retailer. The app pairs a 7-day sky forecast and real-time planet tracker with ASTRA, an AI astronomer, and Field Mode, an offline on-device AI companion for dark-sky sites with no signal.
 
 **How we use Claude**
-Claude is our **trust layer** — the intelligence that makes our reward system credible:
-1. **Photo verification (Claude Sonnet 4.6, vision).** Claude analyzes every observation photo to confirm a genuine night-sky capture of the claimed target, rejecting screenshots, AI-generated images, and daytime photos. This is the anti-cheat backbone of the entire reward economy — without it, the rewards are not trustworthy. It runs behind deterministic pre-checks (EXIF, hash dedup, rate limits) so Claude is called only on real candidates.
-2. **Star naming (Claude Haiku 4.5).** Claude generates the on-chain inscription when a user names a star tied to a verified observation.
+1. **Star naming (Claude Haiku 4.5, live today).** Claude moderates and generates the on-chain inscription when a user names a star tied to a verified observation.
+2. **Photo verification (built on Claude, migrated for cost).** Our anti-cheat vision pipeline — confirming a genuine night-sky capture of the claimed target, rejecting screenshots, AI-generated images, and daytime photos — was built and shipped on Claude Sonnet vision. We moved it to a free-tier model purely to survive on zero budget; the deterministic pre-checks (EXIF, hash dedup, rate limits) mean the vision model is called only on real candidates. Credits let us bring it back to Claude for the beta launch.
 
 **How credits will be used**
-Two things: (a) scale Claude Vision verification to thousands of beta users without throttling during our most critical growth window, and (b) **migrate ASTRA, our conversational astronomer, onto Claude.** ASTRA currently runs on a smaller third-party model; credits let us move it to Claude Sonnet with tool calling (planet positions, 7-day sky quality) so a beginner's first night succeeds with real, location-specific guidance. Our worst-case AI cost is well under $1 per active user per month, so credits carry us through the Q3 2026 mainnet launch and the rollout to our Astroman customer list.
+Two things: (a) **return photo verification to Claude Vision** and scale it to thousands of beta users during our most critical growth window, and (b) **migrate ASTRA, our conversational astronomer, onto Claude.** ASTRA currently runs on a smaller third-party model; credits let us move it to Claude Sonnet with tool calling (planet positions, 7-day sky quality) so a beginner's first night succeeds with real, location-specific guidance. Our worst-case AI cost is well under $1 per active user per month, so credits carry us through the Q3 2026 mainnet launch and the rollout to our Astroman customer list.
 
 **Stage & traction**
 - 1st place, Tether Frontier Hackathon — QVAC track (May 2026)

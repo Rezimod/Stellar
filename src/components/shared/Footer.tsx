@@ -26,6 +26,14 @@ const columns: FooterColumn[] = [
       { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true },
     ],
   },
+  {
+    titleKey: 'colLegal',
+    links: [
+      { labelKey: 'terms',   href: '/terms' },
+      { labelKey: 'privacy', href: '/privacy' },
+      { labelKey: 'contact', href: '/contact' },
+    ],
+  },
 ];
 
 const linkBase: React.CSSProperties = {
@@ -172,7 +180,8 @@ export default function Footer() {
         @media (max-width: 640px) {
           .stellar-footer-inner {
             padding-top: 36px !important;
-            padding-bottom: 20px !important;
+            /* clear the fixed BottomNav (70px + safe area) so legal links stay reachable */
+            padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
           }
           .stellar-footer-top {
             grid-template-columns: 1fr !important;

@@ -164,7 +164,7 @@ type LocalizedGridEntry = GridEntry & {
 export default function MissionsPage() {
   const router = useRouter();
   const { state } = useAppState();
-  const { authenticated, address } = useStellarUser();
+  const { authenticated, address } = useStellarUser({ ignoreDemoBypass: true });
   const { getAccessToken } = usePrivy();
   const [authOpen, setAuthOpen] = useState(false);
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
@@ -607,6 +607,55 @@ export default function MissionsPage() {
                 scopeName={t('scopeName')}
               />
             </section>
+
+            <section className="mis-panel mis-observer-panel">
+              <div className="mis-panel-head">
+                <h2 className="mis-panel-title">{t('sections.observer')}</h2>
+                <span className="mis-panel-meta">{t('sections.observerMeta')}</span>
+              </div>
+              <ObserverAssist
+                items={[
+                  {
+                    Icon: Clock,
+                    label: t('observer.dark.label'),
+                    value: dark.duskStart && dark.dawnEnd
+                      ? `${fmtClock(dark.duskStart)}–${fmtClock(dark.dawnEnd)}`
+                      : t('glance.unknown'),
+                    body: t('observer.dark.body'),
+                  },
+                  {
+                    Icon: LcMoon,
+                    label: t('observer.moon.label'),
+                    value: moonGlance
+                      ? t('observer.moon.value', { pct: moonGlance.illum })
+                      : t('glance.unknown'),
+                    body: t('observer.moon.body'),
+                  },
+                  {
+                    Icon: Crosshair,
+                    label: t('observer.target.label'),
+                    value: primeEntry
+                      ? t('observer.target.value', { deg: Math.round(skyPositions[primeEntry.id]?.altitude ?? 0) })
+                      : t('glance.unknown'),
+                    body: t('observer.target.body'),
+                  },
+                  {
+                    Icon: Cloud,
+                    label: t('observer.comfort.label'),
+                    value: cloudCoverPct == null
+                      ? t('glance.unknown')
+                      : t('observer.comfort.value', { pct: cloudCoverPct }),
+                    body: t('observer.comfort.body'),
+                  },
+                  {
+                    Icon: Eye,
+                    label: t('observer.phone.label'),
+                    value: t('observer.phone.value'),
+                    body: t('observer.phone.body'),
+                  },
+                ]}
+              />
+            </section>
           </main>
 
           {/* RIGHT RAIL — rare events + quizzes */}
@@ -760,6 +809,32 @@ function TelescopeGuide({
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+function ObserverAssist({
+  items,
+}: {
+  items: { label: string; value: string; body: string; Icon: LucideIcon }[];
+}) {
+  return (
+    <div className="mis-observer-grid">
+      {items.map((item) => {
+        const Icon = item.Icon;
+        return (
+          <div key={item.label} className="mis-observer-item">
+            <span className="mis-observer-icon" aria-hidden>
+              <Icon size={14} strokeWidth={1.8} />
+            </span>
+            <span className="mis-observer-copy">
+              <span className="mis-observer-label">{item.label}</span>
+              <span className="mis-observer-value">{item.value}</span>
+              <span className="mis-observer-body">{item.body}</span>
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1358,4 +1433,3 @@ function QuizRow({
     </button>
   );
 }
-

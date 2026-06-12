@@ -49,3 +49,16 @@ stellar-toolkit/auth.json
 
 # playwright test results
 test-results/
+
+# Claude Code runtime state
+.claude/scheduled_tasks.lock
+
+# Stellar Field transient debug artifacts (audit/eval JSONs ARE committed)
+apps/field/artifacts/current-screen.png
+
+# duplicate of .claude/skills generated for other agent tools
+.agents/
+
+# transient audit/debug scripts and shots
+*.tmp.mjs
+*.tmp.png

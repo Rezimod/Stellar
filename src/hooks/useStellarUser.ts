@@ -42,7 +42,8 @@ function findEmbeddedSolanaAddress(
   return match?.address ?? null;
 }
 
-export function useStellarUser(): StellarUser {
+export function useStellarUser(opts?: { ignoreDemoBypass?: boolean }): StellarUser {
+  const ignoreDemoBypass = opts?.ignoreDemoBypass ?? false;
   const privy = usePrivy();
   const privySolana = usePrivySolanaWallets();
   const adapter = useWalletAdapter();
@@ -64,7 +65,7 @@ export function useStellarUser(): StellarUser {
   return useMemo<StellarUser>(() => {
     const ready = privy.ready;
 
-    if (DEMO_BYPASS_AUTH) {
+    if (DEMO_BYPASS_AUTH && !ignoreDemoBypass) {
       return {
         authenticated: true,
         source: 'privy',
@@ -112,6 +113,7 @@ export function useStellarUser(): StellarUser {
       ready,
     };
   }, [
+    ignoreDemoBypass,
     privy.ready,
     privy.authenticated,
     privy.user,

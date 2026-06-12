@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { Telescope, Trophy } from 'lucide-react';
 import BackButton from '@/components/shared/BackButton';
-import ComingSoonOverlay from '@/components/shared/ComingSoonOverlay';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import PageContainer from '@/components/layout/PageContainer';
@@ -189,9 +188,6 @@ export default function LeaderboardPage() {
   ];
 
   return (
-    <div style={{ position: 'relative' }}>
-      <ComingSoonOverlay />
-      <div aria-hidden style={{ filter: 'blur(8px)', pointerEvents: 'none', userSelect: 'none' }}>
     <PageContainer variant="content" className="py-6 sm:py-10 animate-page-enter flex flex-col gap-5">
       <BackButton />
 
@@ -297,7 +293,7 @@ export default function LeaderboardPage() {
               ))}
             </div>
           ) : (
-            <div className="flex items-end gap-2 sm:gap-3">
+            <div className="flex items-end gap-2 sm:gap-3 overflow-x-clip">
               {podiumSlots.map(({ entry, cfg }, slotIndex) => {
                 if (!entry) return <div key={slotIndex} className="flex-1" />;
                 const rankLabel = RANK_LABELS[entry.rank] ?? RANK_LABELS['Stargazer'];
@@ -484,7 +480,5 @@ export default function LeaderboardPage() {
         </Link>
       </div>
     </PageContainer>
-      </div>
-    </div>
   );
 }

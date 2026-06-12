@@ -4922,7 +4922,7 @@
    it stretches and stacks (mobile layout unchanged). */
 .mis-strip {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 10px;
 }
 .mis-strip > .mis-prime {
@@ -4935,7 +4935,7 @@
   min-width: 0;
 }
 @media (max-width: 860px) {
-  .mis-strip { flex-direction: column; gap: 8px; }
+  .mis-strip { flex-direction: column; align-items: stretch; gap: 8px; }
   .mis-strip > .mis-prime { flex: 1 1 auto; }
   .mis-strip > .mis-checkin { flex: 1 1 auto; }
 }
@@ -4943,13 +4943,16 @@
 .mis-prime {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 6px 11px;
-  border-radius: 13px;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: 12px;
   margin-bottom: 12px;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease;
-  background: rgba(255, 255, 255, 0.035);
+  background:
+    radial-gradient(120px 70px at 10% 0%, rgba(94, 234, 212, 0.08), transparent 62%),
+    radial-gradient(120px 80px at 92% 20%, rgba(255, 179, 71, 0.10), transparent 66%),
+    rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.10);
   text-align: left;
   width: 100%;
@@ -4969,8 +4972,8 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .mis-prime-icon {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 9px;
   background: linear-gradient(160deg, #0B1022, var(--canvas));
   border: 1px solid var(--border);
@@ -5013,15 +5016,7 @@
   line-height: 1.15;
 }
 .mis-prime-desc {
-  font-size: 10.5px;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.3;
-  margin-top: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  display: none;
 }
 .mis-prime-cta {
   flex-shrink: 0;
@@ -5032,7 +5027,7 @@
   background: var(--terracotta);
   border: 0;
   border-radius: 999px;
-  padding: 6px 12px;
+  padding: 5px 10px;
   cursor: pointer;
   transition: filter 0.15s ease, transform 0.15s ease;
   display: inline-flex;
@@ -5044,6 +5039,60 @@
 }
 .mis-prime-cta:hover { filter: brightness(1.10); transform: translateY(-1px); }
 .mis-prime-cta:active { transform: translateY(0); filter: brightness(1.05); }
+
+.missions-page .mis-checkin {
+  min-height: 48px;
+  border-radius: 12px;
+  border-color: rgba(255,255,255,0.10);
+  background:
+    radial-gradient(120px 80px at 8% 0%, rgba(94, 234, 212, 0.08), transparent 62%),
+    radial-gradient(120px 80px at 95% 20%, rgba(255, 179, 71, 0.10), transparent 66%),
+    rgba(255,255,255,0.025);
+  padding: 5px 10px;
+}
+.missions-page .mis-checkin p {
+  margin: 0;
+}
+.missions-page .mis-checkin > div:first-child {
+  width: 42px;
+}
+.missions-page .mis-checkin > div:first-child span:first-of-type {
+  font-size: 14px;
+}
+.missions-page .mis-checkin > div:first-child > span:last-child {
+  display: none;
+}
+.missions-page .mis-checkin > div:nth-child(3) {
+  flex: 1 1 96px;
+  max-width: 110px;
+}
+.missions-page .mis-checkin > div:nth-child(3) > span {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.missions-page .mis-checkin > div:nth-child(3) > p:first-of-type {
+  font-size: 12.5px;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.missions-page .mis-checkin > div:nth-child(3) > p:last-of-type {
+  display: none;
+}
+.missions-page .mis-checkin > button {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.missions-page .mis-checkin > button span {
+  font-size: 10.5px;
+}
 
 /* === Sky map (rounded, inside hero) === */
 /* === Tonight's lineup (replaces sky map) === */
@@ -5739,6 +5788,81 @@
 .mis-col-center .mis-scope-photo { border-radius: 12px; }
 .mis-col-center .mis-scope-steps { padding: 0 0 0 18px; }
 
+.mis-observer-panel {
+  background:
+    radial-gradient(420px 160px at 10% 0%, rgba(94, 234, 212, 0.055), transparent 60%),
+    radial-gradient(360px 180px at 100% 30%, rgba(255, 179, 71, 0.055), transparent 64%),
+    rgba(255, 255, 255, 0.015);
+}
+.mis-observer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.mis-observer-item {
+  min-width: 0;
+  min-height: 118px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background:
+    radial-gradient(90px 70px at 50% 0%, rgba(255,255,255,0.045), transparent 70%),
+    rgba(9, 15, 32, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mis-observer-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--seafoam);
+  background: rgba(94, 234, 212, 0.08);
+  border: 1px solid rgba(94, 234, 212, 0.18);
+}
+.mis-observer-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mis-observer-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mis-t3);
+}
+.mis-observer-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mis-t1);
+  line-height: 1.15;
+}
+.mis-observer-body {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--mis-t2);
+}
+@media (max-width: 900px) {
+  .mis-observer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .mis-observer-grid {
+    grid-template-columns: 1fr;
+  }
+  .mis-observer-item {
+    min-height: auto;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
 /* Upcoming-events rows stack in the right rail */
 .mis-events-deck {
   display: flex;
@@ -6192,7 +6316,7 @@
 @media (max-width: 640px) {
   .missions-page {
     min-height: 100vh;
-    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    padding-bottom: 24px;
   }
 
   .missions-page .mis-hero-inner {
@@ -6360,7 +6484,7 @@
   }
 
   .missions-page .mis-filters {
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-wrap: nowrap;
     overflow-x: auto;
     padding-bottom: 2px;

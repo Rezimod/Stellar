@@ -28,10 +28,9 @@
   font-size: 14px;
   line-height: 1.55;
   position: relative;
-  min-height: 100vh;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 20px 120px;
+  padding: 24px 20px 32px;
 }
 
 /* Background gradients moved to global StarField + body. The feed page used

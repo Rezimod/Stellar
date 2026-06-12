@@ -18,5 +18,15 @@
     "hashtags": ["#Stellar", "#Solana", "#DePIN", "#Astronomy", "#Web3"],
     "image": "images/test-post-02.png",
     "background": "backgrounds/test-post-02-bg.png"
+  },
+  {
+    "id": "midday-draft-2026-06-12",
+    "theme": "development",
+    "headline": "ASTRA checks the sky before it answers.",
+    "subhead": "Location-aware sky tools keep telescope advice tied to tonight, not generic chat.",
+    "body": "ASTRA now checks live sky tools before it answers, so telescope advice is tied to your location and tonight's actual conditions instead of generic chat. Built for observers, not demos. stellarr.club/chat #Stellar #Astronomy #BuildInPublic #Solana",
+    "hashtags": ["#Stellar", "#Astronomy", "#BuildInPublic", "#Solana"],
+    "image": "images/midday-draft-2026-06-12.png",
+    "background": "backgrounds/test-post-01-bg.png"
   }
 ]

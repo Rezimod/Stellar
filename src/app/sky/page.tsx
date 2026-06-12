@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
 import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin } from 'lucide-react';
@@ -132,7 +133,9 @@ export default function SkyPage() {
   const tAr = useTranslations('sky.ar');
   const tSolar = useTranslations('sky.solarFromSky');
 
-  const { address } = useStellarUser();
+  const { address, authenticated, ready } = useStellarUser({ ignoreDemoBypass: true });
+  const tAuth = useTranslations('sky.auth');
+  const [authOpen, setAuthOpen] = useState(false);
   const { getAccessToken } = usePrivy();
   const { field, toggleField } = useTheme();
   const compass = useDeviceHeading(location.lat, location.lon);
@@ -433,6 +436,28 @@ export default function SkyPage() {
     .toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz })
     .toUpperCase();
   const timeLabel = skyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
+
+  if (ready && !authenticated) {
+    return (
+      <div className="sky-page-v2 sky-v3 sky-obs">
+        <div className="sky-obs__wrap">
+          <div className="sky-auth-gate">
+            <h1 className="sky-auth-gate__title">{tAuth('title')}</h1>
+            <p className="sky-auth-gate__body">{tAuth('body')}</p>
+            <button
+              type="button"
+              className="sky-auth-gate__btn"
+              onClick={() => setAuthOpen(true)}
+            >
+              {tAuth('signIn')}
+            </button>
+            <p className="sky-auth-gate__sub">{tAuth('sub')}</p>
+          </div>
+        </div>
+        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="sky-page-v2 sky-v3 sky-obs">

@@ -33,9 +33,9 @@ const STATIC_ITEMS: StaticItem[] = [
   { type: 'object', labelKey: 'jupiter',       subKey: 'jupiterSub',       href: '/sky',         icon: '🪐' },
   { type: 'object', labelKey: 'saturn',        subKey: 'saturnSub',        href: '/sky',         icon: '🪐' },
   { type: 'object', labelKey: 'mars',          subKey: 'marsSub',          href: '/sky',         icon: '🔴' },
-  { type: 'object', labelKey: 'orion',         subKey: 'orionSub',         href: '/missions',    icon: '✨' },
-  { type: 'object', labelKey: 'pleiades',      subKey: 'pleiadesSub',      href: '/missions',    icon: '💫' },
-  { type: 'object', labelKey: 'andromeda',     subKey: 'andromedaSub',     href: '/missions',    icon: '🌌' },
+  { type: 'object', labelKey: 'orion',         subKey: 'orionSub',         href: '/observe/orion',    icon: '✨' },
+  { type: 'object', labelKey: 'pleiades',      subKey: 'pleiadesSub',      href: '/observe/pleiades', icon: '💫' },
+  { type: 'object', labelKey: 'andromeda',     subKey: 'andromedaSub',     href: '/observe/andromeda', icon: '🌌' },
 ];
 
 const QUICK_LINKS = [
@@ -53,7 +53,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     type: 'mission',
     label: m.name,
     sub: m.desc,
-    href: '/missions',
+    href: `/observe/${m.id}`,
     icon: m.emoji,
   }));
 

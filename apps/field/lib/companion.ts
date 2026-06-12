@@ -9,13 +9,13 @@ export type ChatResult = {
   citations: Citation[];
 };
 
-const SYSTEM_PROMPT = `You are Stellar's Space Companion, a precise and patient astronomy assistant for telescope owners. Answer questions about the night sky, telescope use, and observation planning. Use the provided context when relevant and cite catalog IDs (e.g., M31, NGC 7000) when applicable. Be concise — 2 to 5 short sentences. If asked something outside astronomy, say so politely.`;
+const SYSTEM_PROMPT = `You are Stellar's Space Companion for telescope owners. Answer astronomy, telescope, and observing questions from the provided context when relevant. Be concise: 2-4 short sentences. Cite catalog IDs when useful. If outside astronomy, say so briefly.`;
 
 // Llama 3.2 1B in QVAC ships with a small context window (~2k tokens).
 // Keep only the last few turns of dialogue and cap the RAG snippet so we
 // never exceed the budget regardless of how long the chat session runs.
-const MAX_HISTORY_TURNS = 6; // 3 user + 3 assistant
-const MAX_CONTEXT_CHARS = 1200;
+const MAX_HISTORY_TURNS = 4;
+const MAX_CONTEXT_CHARS = 850;
 const MAX_USER_CHARS = 600;
 
 async function* fieldStream(

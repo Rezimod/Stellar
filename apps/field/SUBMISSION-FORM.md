@@ -3,7 +3,7 @@
 Everything the QVAC Hackathon I form asks for, in one place. Fill the two
 `{{...}}` placeholders (video + system-profiler screenshot) on submission day.
 
-> **Deadline:** June 21, 2026 23:59 UTC · **Early-bird bonus:** complete submission **before June 14** · **Track:** Mobile
+> **Deadline:** June 21, 2026 23:59 UTC · **Early-bird bonus:** complete submission **before June 17** (per official prizes page) · **Track:** Mobile
 
 ---
 
@@ -46,4 +46,4 @@ Stellar Field is a mobile companion for telescope owners at dark-sky sites with 
 - [ ] Repo public, Apache 2.0, README builds out-of-the-box (JDK 17 noted)
 - [ ] `#AstraField` posted on X tagging @QVAC (join + weekly updates)
 - [ ] Joined QVAC **Discord** (non-negotiable) + present on Keet (social vote)
-- [ ] Submitted on DoraHacks **before June 14** (early-bird)
+- [ ] Submitted on DoraHacks **before June 17** (early-bird)

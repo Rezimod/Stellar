@@ -69,6 +69,12 @@
     }
   },
   "sky": {
+    "auth": {
+      "title": "Sign in to open the sky",
+      "body": "See tonight's targets, planet positions, and your 7-night forecast — then earn Stars for every object you find.",
+      "signIn": "Sign in",
+      "sub": "Email or connect a Solana wallet"
+    },
     "title": "Sky Forecast",
     "today": "Today",
     "cloudCover": "Cloud Cover",
@@ -944,6 +950,8 @@
       "quizzesMeta": "{count} quizzes · earn while you wait",
       "scope": "Using your telescope",
       "scopeMeta": "4 quick rules",
+      "observer": "Before you step out",
+      "observerMeta": "field checklist",
       "earn": "Ways to earn"
     },
     "filters": {
@@ -1019,6 +1027,32 @@
       "zoom":  { "title": "Start zoomed out",     "body": "Use the lowest power eyepiece first." },
       "align": { "title": "Align finder by day",  "body": "Aim at a distant tree or sign." },
       "eyes":  { "title": "Let your eyes adjust", "body": "20 min in the dark. No phone screens." }
+    },
+    "observer": {
+      "dark": {
+        "label": "Dark window",
+        "body": "Arrive 15 minutes early so your eyes and optics settle."
+      },
+      "moon": {
+        "label": "Moon glare",
+        "value": "{pct}% lit",
+        "body": "For faint objects, stand where the Moon is blocked."
+      },
+      "target": {
+        "label": "Prime altitude",
+        "value": "{deg}° up",
+        "body": "Keep buildings and trees below the target line."
+      },
+      "comfort": {
+        "label": "Sky cover",
+        "value": "{pct}% cloud",
+        "body": "Bring a warm layer and wait for clear gaps."
+      },
+      "phone": {
+        "label": "Phone mode",
+        "value": "Dim screen",
+        "body": "Lower brightness before opening the camera."
+      }
     },
     "eventType": {
       "eclipse-lunar": "Lunar eclipse",

@@ -121,7 +121,7 @@ export default async function EarnPage() {
       ]
     : TONIGHT;
   return (
-    <main className="min-h-screen bg-[#0A1735] text-white">
+    <main className="bg-[#0A1735] text-white">
       {/* Hero */}
       <section className="border-b border-white/10 px-6 py-16 sm:px-10 sm:py-24">
         <div className="mx-auto max-w-5xl">
@@ -293,7 +293,7 @@ export default async function EarnPage() {
           <h2 className="mt-4 font-display text-3xl leading-tight sm:text-4xl">
             {isKa ? 'გაუშვი Stargazer Market.' : 'Run a Stargazer Market.'}
             <br />
-            {isKa ? 'მიაწვდინე ხმა 60,000 ასტრონომს.' : 'Reach 60,000 astronomers.'}
+            {isKa ? 'მიაწვდინე ხმა 70,000+ ასტრონომს.' : 'Reach 70,000+ astronomers.'}
           </h2>
           <p className="mt-6 max-w-2xl text-white/70">
             {isKa

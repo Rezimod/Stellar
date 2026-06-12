@@ -1425,7 +1425,7 @@ export default async function HomePage() {
       {/* ============================================================
           COMMUNITY
          ============================================================ */}
-      <section className="px-6 md:px-8 py-20 md:py-[120px] text-center">
+      <section className="px-6 md:px-8 py-14 md:py-[120px] text-center">
         <div className="max-w-[1200px] mx-auto">
           <Eyebrow>{t('community.eyebrow')}</Eyebrow>
           <SectionTitle>{t('community.title')}</SectionTitle>

@@ -19,7 +19,6 @@ import { runSkyAgent, type LiveSky, type OrchestrationStep } from '../lib/agent'
 import { identifyImage } from '../lib/vision';
 import { getObserverLocation, DEFAULT_OBSERVER, type Observer } from '../lib/location';
 import { looksLikeSkyQuery } from '../lib/router';
-import { warmCorpusEmbeddings } from '../lib/rag';
 import type { Citation } from '../lib/rag';
 import {
   loadConversations,
@@ -58,7 +57,13 @@ export function FieldChatScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [attachment, setAttachment] = useState<string | null>(null);
   const [vlmProgress, setVlmProgress] = useState<LoadProgress>(qvac.getVlmProgress());
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [autoVoiceState, setAutoVoiceState] = useState<'idle' | 'loading' | 'playing'>('idle');
   const scrollRef = useRef<ScrollView>(null);
+  const voiceModeRef = useRef(false);
+  const mountedRef = useRef(true);
+  const autoPlayerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
+  const autoVoiceTokenRef = useRef(0);
 
   useEffect(() => {
     const unsub = qvac.subscribe(setProgress);
@@ -120,15 +125,67 @@ export function FieldChatScreen() {
   }
 
   useEffect(() => {
-    qvac
-      .ensureReady()
-      .then(() => warmCorpusEmbeddings())
-      .catch(() => {});
+    qvac.ensureReady().catch(() => {});
   }, []);
 
   useEffect(() => {
     getObserverLocation().then(setObserver).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    voiceModeRef.current = voiceMode;
+    if (!voiceMode) stopAutoVoice();
+  }, [voiceMode]);
+
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+      stopAutoVoice(false);
+    },
+    [],
+  );
+
+  function stopAutoVoice(updateState = true) {
+    autoVoiceTokenRef.current += 1;
+    try {
+      autoPlayerRef.current?.remove();
+    } catch {
+      /* noop */
+    }
+    autoPlayerRef.current = null;
+    if (updateState && mountedRef.current) setAutoVoiceState('idle');
+  }
+
+  async function speakInVoiceMode(text: string) {
+    if (!voiceModeRef.current || !text.trim()) return;
+    const token = autoVoiceTokenRef.current + 1;
+    autoVoiceTokenRef.current = token;
+    if (mountedRef.current) setAutoVoiceState('loading');
+    try {
+      const uri = await qvac.speak(text.slice(0, 600));
+      if (!mountedRef.current || !voiceModeRef.current || autoVoiceTokenRef.current !== token) return;
+      const player = createAudioPlayer(uri);
+      autoPlayerRef.current = player;
+      player.addListener('playbackStatusUpdate', (s: { didJustFinish?: boolean }) => {
+        if (s?.didJustFinish && mountedRef.current && autoVoiceTokenRef.current === token) {
+          setAutoVoiceState('idle');
+          try {
+            player.remove();
+          } catch {
+            /* noop */
+          }
+          autoPlayerRef.current = null;
+        }
+      });
+      player.play();
+      if (mountedRef.current) setAutoVoiceState('playing');
+    } catch (err: any) {
+      if (mountedRef.current && autoVoiceTokenRef.current === token) {
+        setAutoVoiceState('idle');
+        Alert.alert('Voice unavailable', err?.message ?? 'Could not synthesize speech.');
+      }
+    }
+  }
 
   async function pickImage() {
     if (busy || progress.phase !== 'ready') return;
@@ -138,7 +195,7 @@ export function FieldChatScreen() {
         onPress: async () => {
           const perm = await ImagePicker.requestCameraPermissionsAsync();
           if (!perm.granted) return;
-          const res = await ImagePicker.launchCameraAsync({ quality: 0.6, allowsEditing: true });
+          const res = await ImagePicker.launchCameraAsync({ quality: 0.35, allowsEditing: false, exif: false });
           if (!res.canceled) setAttachment(res.assets[0].uri);
         },
       },
@@ -147,7 +204,7 @@ export function FieldChatScreen() {
         onPress: async () => {
           const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!perm.granted) return;
-          const res = await ImagePicker.launchImageLibraryAsync({ quality: 0.6, allowsEditing: true });
+          const res = await ImagePicker.launchImageLibraryAsync({ quality: 0.35, allowsEditing: false, exif: false });
           if (!res.canceled) setAttachment(res.assets[0].uri);
         },
       },
@@ -177,6 +234,7 @@ export function FieldChatScreen() {
       setTurns(done);
       setStreaming(null);
       persist(done);
+      void speakInVoiceMode(acc);
     } catch (err: any) {
       const done: Turn[] = [
         ...newTurns,
@@ -230,6 +288,7 @@ export function FieldChatScreen() {
         setTurns(done);
         setStreaming(null);
         persist(done);
+        void speakInVoiceMode(acc);
       } else {
         const { stream, citations } = await startChat(message, history);
         setStreaming({ text: '', citations });
@@ -245,6 +304,7 @@ export function FieldChatScreen() {
         setTurns(done);
         setStreaming(null);
         persist(done);
+        void speakInVoiceMode(acc);
       }
     } catch (err: any) {
       const done: Turn[] = [
@@ -300,6 +360,22 @@ export function FieldChatScreen() {
           <Text style={styles.metaText}>Llama 3.2 1B</Text>
           <Text style={styles.metaDot}>·</Text>
           <Text style={styles.metaText}>Powered by Tether QVAC</Text>
+        </View>
+        <View style={styles.modeSwitch}>
+          <TouchableOpacity
+            onPress={() => setVoiceMode(false)}
+            style={[styles.modeOption, !voiceMode && styles.modeOptionActive]}
+          >
+            <Text style={[styles.modeOptionText, !voiceMode && styles.modeOptionTextActive]}>Chat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setVoiceMode(true)}
+            style={[styles.modeOption, voiceMode && styles.modeOptionActive]}
+          >
+            <Text style={[styles.modeOptionText, voiceMode && styles.modeOptionTextActive]}>
+              {autoVoiceState === 'loading' ? 'Voice loading' : autoVoiceState === 'playing' ? 'Voice playing' : 'Voice'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -625,6 +701,34 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 5 },
   metaText: { color: '#6B7280', fontSize: 11, letterSpacing: 0.2 },
   metaDot: { color: '#374151', fontSize: 11 },
+  modeSwitch: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    padding: 3,
+    borderRadius: 9,
+    backgroundColor: '#111827',
+    borderWidth: 1,
+    borderColor: '#222B3D',
+  },
+  modeOption: {
+    minHeight: 34,
+    minWidth: 112,
+    paddingHorizontal: 12,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modeOptionActive: { backgroundColor: '#14B8A6' },
+  modeOptionText: {
+    color: '#8B95A7',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  modeOptionTextActive: { color: '#06281F' },
   scroll: { flex: 1 },
   scrollContent: { padding: 16, gap: 10, paddingBottom: 32 },
   starterWrap: { gap: 10 },
