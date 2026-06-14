@@ -195,4 +195,6 @@
 @media (max-width: 720px) {
   .space-gal__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .space-gal__head { align-items: flex-start; flex-direction: column; gap: 4px; }
+  /* Cap the grid at four images on phones — a clean 2×2. */
+  .space-gal__card:nth-child(n + 5) { display: none; }
 }

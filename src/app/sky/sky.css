@@ -4019,37 +4019,29 @@
   color: var(--text);
   line-height: 1.1;
 }
-.sky-obs__date {
-  margin: 0;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
 .sky-obs__loc {
   appearance: none;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255, 179, 71, 0.1);
+  border: 1px solid rgba(255, 179, 71, 0.32);
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text);
   transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .sky-obs__loc:hover {
-  color: var(--text);
-  border-color: var(--border-strong);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 179, 71, 0.55);
+  background: rgba(255, 179, 71, 0.17);
 }
 .sky-obs__loc svg { color: var(--terracotta); flex-shrink: 0; }
 .sky-obs__loc-city { color: var(--text); }
@@ -4370,6 +4362,112 @@
   animation: skyShimmer 1.6s linear infinite;
 }
 
+/* === 4-night strip — compact mobile-only outlook ===
+   Hidden by default; the ≤680 block flips it on and hides the 7-night rail.
+   A row of four cells, each just weekday over cloud % (two lines) with a
+   small moon glyph and a verdict-tinted bar. */
+.fcstrip {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px 14px 12px;
+}
+.fcstrip__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 11px;
+  border-bottom: 1px solid var(--border);
+}
+.fcstrip__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fcstrip__loc {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fcstrip__row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.fcstrip__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.fcstrip__cell.is-today {
+  border-color: rgba(255, 179, 71, 0.4);
+  background: rgba(255, 179, 71, 0.07);
+}
+.fcstrip__day {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+.fcstrip__cell.is-today .fcstrip__day { color: var(--terracotta); }
+.fcstrip__moon {
+  display: inline-flex;
+  filter: drop-shadow(0 0 4px rgba(244, 217, 160, 0.22));
+}
+.fcstrip__pct {
+  font-family: var(--mono);
+  font-feature-settings: 'tnum' 1;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+.fcstrip__pct em { font-style: normal; font-size: 9px; font-weight: 600; opacity: 0.55; margin-left: 1px; }
+.fcstrip__cell--go .fcstrip__pct { color: #8fe3c0; }
+.fcstrip__cell--maybe .fcstrip__pct { color: #ffce80; }
+.fcstrip__cell--skip .fcstrip__pct { color: #e9a7a7; }
+.fcstrip__bar {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.fcstrip__bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
+.fcstrip__cell--go .fcstrip__bar-fill { background: #8fe3c0; }
+.fcstrip__cell--maybe .fcstrip__bar-fill { background: var(--terracotta, #FFB347); }
+.fcstrip__cell--skip .fcstrip__bar-fill { background: #e9a7a7; }
+.fcstrip__skel {
+  height: 80px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  background-size: 200% 100%;
+  animation: skyShimmer 1.6s linear infinite;
+}
+.fcstrip__empty { font-family: var(--mono); font-size: 12px; color: var(--text-dim); padding: 16px 4px; }
+
 /* === Desktop (≥921px) — dome on the left, a stacked rail on the right:
    best targets (2-up) → compact conditions → 7-night outlook. Mobile keeps
    the flex-column stack defined above and is untouched by this block. === */
@@ -4589,16 +4687,17 @@
   .sky-obs__dome {
     order: 2;
   }
-  .sky-obs__cards {
+  /* Targets ride directly under the sky map; conditions follow. */
+  .sky-obs__targets {
     order: 3;
+  }
+  .sky-obs__cards {
+    order: 4;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
   .sky-obs__rail {
     display: contents;
-  }
-  .sky-obs__targets {
-    order: 4;
   }
   .sky-page-v2 .timeline-panel {
     order: 5;
@@ -4606,10 +4705,13 @@
   .sky-page-v2 .tl {
     order: 5;
   }
+  /* The 7-night rail is desktop-only; phones get the compact 4-night strip. */
   .sky-page-v2 .forecast7--rail {
+    display: none;
+  }
+  .sky-page-v2 .fcstrip {
+    display: block;
     order: 6;
-    padding: 11px 12px 7px;
-    border-radius: 14px;
   }
   .sky-page-v2 .ev {
     order: 20;
@@ -4658,41 +4760,11 @@
   .sky-obs__target-name { font-size: 13.5px; }
   .sky-obs__target-meta { font-size: 9.5px; }
   .sky-obs__target-alt-val { font-size: 14px; }
-  .forecast7--rail .forecast7__head {
-    padding-bottom: 8px;
-    margin-bottom: 2px;
-  }
-  .forecast7__rrow {
-    grid-template-columns: 54px 18px minmax(0, 1fr) 34px;
-    gap: 7px;
-    padding: 6px 2px;
-  }
-  .forecast7__rrow .forecast7__rtemp {
-    display: none;
-  }
-  .forecast7__rdate {
-    display: none;
-  }
-  .forecast7__rday {
-    font-size: 9.5px;
-    letter-spacing: 0.08em;
-  }
-  .forecast7__rmoon svg {
-    width: 16px;
-    height: 16px;
-  }
-  .forecast7__rbar {
-    height: 5px;
-  }
-  .forecast7__rpct {
-    font-size: 11px;
-  }
   /* Keep the title + location on a single compact row to free vertical
      space for the dome and targets. */
   .sky-obs__top { align-items: center; gap: 10px; }
   .sky-obs__title { letter-spacing: 0.14em; }
-  .sky-obs__date { font-size: 9.5px; letter-spacing: 0.08em; }
-  .sky-obs__loc { padding: 5px 9px; gap: 5px; }
+  .sky-obs__loc { padding: 7px 11px; gap: 6px; }
   .sky-obs__loc-coord { display: none; }
 }
 

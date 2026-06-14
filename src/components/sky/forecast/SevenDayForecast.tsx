@@ -120,6 +120,70 @@ function OutlookRow({
   );
 }
 
+/**
+ * Compact 4-night outlook strip — mobile only.
+ *
+ * A horizontal row of four day cells, each just two text lines (weekday over
+ * cloud %) with a small moon glyph and a verdict-tinted bar. Far slimmer than
+ * the 7-row rail; the rail still carries the full week on desktop.
+ */
+export function FourNightStrip({ days, loading = false, locationLabel }: Omit<SevenDayForecastProps, 'variant'>) {
+  const t = useTranslations('sky.forecast7');
+  const t4 = useTranslations('sky.forecast4');
+  const locale = useLocale();
+
+  const dayFmt = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(locale, { weekday: 'short' });
+    } catch {
+      return new Intl.DateTimeFormat('en', { weekday: 'short' });
+    }
+  }, [locale]);
+
+  const four = days.slice(0, 4);
+
+  return (
+    <section className="fcstrip" aria-label={t4('label')}>
+      <div className="fcstrip__head">
+        <span className="fcstrip__label">{t4('label')}</span>
+        {locationLabel && <span className="fcstrip__loc">{locationLabel}</span>}
+      </div>
+      {loading && days.length === 0 ? (
+        <div className="fcstrip__row" aria-hidden="true">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <span key={i} className="fcstrip__skel" />
+          ))}
+        </div>
+      ) : four.length === 0 ? (
+        <div className="fcstrip__empty">{t('empty')}</div>
+      ) : (
+        <ol className="fcstrip__row">
+          {four.map((d, i) => {
+            const date = new Date(d.date);
+            const cloudPct = Math.max(0, Math.min(100, d.cloudCoverPct));
+            return (
+              <li
+                key={d.date}
+                className={`fcstrip__cell fcstrip__cell--${d.badge}${i === 0 ? ' is-today' : ''}`}
+                aria-label={`${i === 0 ? t('today') : dayFmt.format(date)} — ${t(`badge.${d.badge}`)} — ${cloudPct}% ${t('clouds')}`}
+              >
+                <span className="fcstrip__day">{i === 0 ? t('today') : dayFmt.format(date)}</span>
+                <span className="fcstrip__moon" aria-hidden="true">
+                  <MoonGlyph phase={d.moonPhase} size={18} />
+                </span>
+                <span className="fcstrip__pct">{cloudPct}<em>%</em></span>
+                <span className="fcstrip__bar" aria-hidden="true">
+                  <span className="fcstrip__bar-fill" style={{ width: `${cloudPct}%` }} />
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </section>
+  );
+}
+
 function DayCard({
   day,
   isToday,

@@ -29,7 +29,7 @@ import { SkyHeaderStrip } from '@/components/sky/finder/SkyHeaderStrip';
 import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
 import { ARFinder } from '@/components/sky/finder/ARFinder';
-import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
+import { SevenDayForecast, FourNightStrip } from '@/components/sky/forecast/SevenDayForecast';
 import { TonightTimeline } from '@/components/sky/TonightTimeline';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import { SpaceGallery } from '@/components/sky/SpaceGallery';
@@ -116,8 +116,9 @@ const MOON_NAMES: Record<string, string> = {
   thinWaning: 'Waning Crescent',
 };
 
-/** Priority for the "best targets" rail: Moon → bright planets → DSO/stars. */
+/** Priority for the "best targets" rail: Sun (daytime) → Moon → bright planets → DSO/stars. */
 function targetRank(o: SkyObject): number {
+  if (o.id === 'sun') return -1;
   if (o.id === 'moon') return 0;
   const planets: Record<string, number> = {
     venus: 10, jupiter: 11, mars: 12, saturn: 13, mercury: 14, uranus: 15, neptune: 16,
@@ -394,11 +395,13 @@ export default function SkyPage() {
   const windowClose = finder?.twilight?.astronomicalDawn ?? finder?.twilight?.nauticalDawn ?? finder?.twilight?.civilDawn ?? null;
   const windowDuration = fmtDuration(windowOpen, windowClose);
 
-  // Top five targets above the horizon, ranked Moon → planets → DSO.
+  // Top five targets above the horizon, ranked Sun (daytime) → Moon → planets → DSO.
+  // The Sun only joins the list while it is up — at night it drops out and the
+  // night targets take over.
   const bestTargets = useMemo<SkyObject[]>(() => {
     if (!finder) return [];
     return finder.objects
-      .filter((o) => o.visible && o.id !== 'sun')
+      .filter((o) => o.visible)
       .sort((a, b) => {
         const ra = targetRank(a);
         const rb = targetRank(b);
@@ -431,11 +434,6 @@ export default function SkyPage() {
     : cloudPct < 50 ? 'Partly cloudy'
     : cloudPct < 80 ? 'Mostly cloudy'
     : 'Overcast';
-
-  const dateLabel = skyTime
-    .toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz })
-    .toUpperCase();
-  const timeLabel = skyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
 
   if (ready && !authenticated) {
     return (
@@ -482,7 +480,6 @@ export default function SkyPage() {
             <header className="sky-obs__top">
               <div className="sky-obs__title-block">
                 <h1 className="sky-obs__title">Sky Tonight</h1>
-                <p className="sky-obs__date">{dateLabel} · {timeLabel}</p>
               </div>
               <button
                 type="button"
@@ -655,6 +652,11 @@ export default function SkyPage() {
 
               <SevenDayForecast
                 variant="rail"
+                days={forecast.days}
+                loading={forecast.loading}
+                locationLabel={locationLabel}
+              />
+              <FourNightStrip
                 days={forecast.days}
                 loading={forecast.loading}
                 locationLabel={locationLabel}

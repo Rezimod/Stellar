@@ -508,6 +508,9 @@
         "skip": "Skip"
       }
     },
+    "forecast4": {
+      "label": "4-night outlook"
+    },
     "strip": {
       "a11y": "Live sky state",
       "labels": {
