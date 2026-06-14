@@ -8,8 +8,8 @@ import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Orbit, Flashlight, MapPin } from 'lucide-react';
-import { TelescopeIcon, CloudIcon, SeeingIcon } from '@/components/sky/CosmicIcons';
+import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset, Search, UserRound } from 'lucide-react';
+import { TelescopeIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
@@ -25,12 +25,10 @@ import { getTargetPhoto } from '@/lib/sky/target-photos';
 import EventBanner from '@/components/sky/EventBanner';
 import SkyLocationModal from '@/components/sky/SkyLocationModal';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
-import { SkyHeaderStrip } from '@/components/sky/finder/SkyHeaderStrip';
 import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
 import { ARFinder } from '@/components/sky/finder/ARFinder';
 import { SevenDayForecast, FourNightStrip } from '@/components/sky/forecast/SevenDayForecast';
-import { TonightTimeline } from '@/components/sky/TonightTimeline';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import { SpaceGallery } from '@/components/sky/SpaceGallery';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
@@ -85,26 +83,6 @@ function estimateBortle(lat: number, lon: number): number {
   return minDist <= 60 ? nearest : 5;
 }
 
-function bortleLabel(b: number): string {
-  if (b <= 2) return 'Truly dark';
-  if (b === 3) return 'Rural';
-  if (b === 4) return 'Rural/Suburban';
-  if (b === 5) return 'Suburban';
-  if (b === 6) return 'Bright suburb';
-  if (b === 7) return 'Suburban/City';
-  return 'City sky';
-}
-
-/** Plain-language light-pollution rating derived from the Bortle estimate.
- *  Telescope buyers don't know what "Bortle 8" means — they know "Severe". */
-function lightPollutionLevel(b: number): { word: string; tone: 'good' | 'mid' | 'bad' } {
-  if (b <= 2) return { word: 'Pristine', tone: 'good' };
-  if (b <= 4) return { word: 'Low', tone: 'good' };
-  if (b === 5) return { word: 'Moderate', tone: 'mid' };
-  if (b <= 7) return { word: 'High', tone: 'bad' };
-  return { word: 'Severe', tone: 'bad' };
-}
-
 const MOON_NAMES: Record<string, string> = {
   new: 'New Moon',
   thinCrescent: 'Waxing Crescent',
@@ -131,10 +109,9 @@ function targetRank(o: SkyObject): number {
 export default function SkyPage() {
   const { location, locationReady, requestLocation, gpsState, loading: locationLoading } = useLocation();
   const tErrors = useTranslations('sky.errors');
-  const tAr = useTranslations('sky.ar');
-  const tSolar = useTranslations('sky.solarFromSky');
+  const tDir = useTranslations('sky.directions.compass');
 
-  const { address, authenticated, ready } = useStellarUser({ ignoreDemoBypass: true });
+  const { address, authenticated, ready } = useStellarUser({ ignoreDemoBypass: false });
   const tAuth = useTranslations('sky.auth');
   const [authOpen, setAuthOpen] = useState(false);
   const { getAccessToken } = usePrivy();
@@ -367,14 +344,6 @@ export default function SkyPage() {
     setActiveId(id);
   }, []);
 
-  // Verdict CTA — select the recommended target and bring the dome into view.
-  const handleChooseTarget = useCallback((id: ObjectId) => {
-    setActiveId(id);
-    if (typeof document !== 'undefined') {
-      document.querySelector('.sky-obs__dome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, []);
-
   const handleArSelect = useCallback((id: ObjectId | null) => {
     setArActiveId(id);
     if (id) setActiveId(id);
@@ -387,17 +356,25 @@ export default function SkyPage() {
 
   const locationLabel = location.city || (fallbackUsed ? 'Tbilisi' : '—');
   const tz = useMemo(() => zoneForLocation(location), [location]);
-  const coordLabel = `${Math.abs(location.lat).toFixed(2)}°${location.lat >= 0 ? 'N' : 'S'} · ${Math.abs(location.lon).toFixed(2)}°${location.lon >= 0 ? 'E' : 'W'}`;
   const bortle = useMemo(() => estimateBortle(location.lat, location.lon), [location.lat, location.lon]);
+
+  // Header date + time, in the observing location's zone.
+  const dateLabel = skyTime
+    .toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz })
+    .toUpperCase();
+  const timeLabel = skyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
 
   // Observing window from twilight (astronomical dark → dawn).
   const windowOpen = finder?.twilight?.astronomicalDusk ?? finder?.twilight?.nauticalDusk ?? finder?.twilight?.civilDusk ?? null;
   const windowClose = finder?.twilight?.astronomicalDawn ?? finder?.twilight?.nauticalDawn ?? finder?.twilight?.civilDawn ?? null;
   const windowDuration = fmtDuration(windowOpen, windowClose);
 
-  // Top five targets above the horizon, ranked Sun (daytime) → Moon → planets → DSO.
-  // The Sun only joins the list while it is up — at night it drops out and the
-  // night targets take over.
+  // Sun rise/set for the summary strip + night-overview bar.
+  const sunObj = finder?.objects.find((o) => o.id === 'sun') ?? null;
+  const sunsetISO = sunObj?.setTime ?? finder?.twilight?.civilDusk ?? null;
+  const sunriseISO = sunObj?.riseTime ?? finder?.twilight?.civilDawn ?? null;
+
+  // Objects above the horizon, ranked Sun (daytime) → Moon → planets → DSO.
   const bestTargets = useMemo<SkyObject[]>(() => {
     if (!finder) return [];
     return finder.objects
@@ -408,32 +385,49 @@ export default function SkyPage() {
         if (ra !== rb) return ra - rb;
         return b.altitude - a.altitude;
       })
-      .slice(0, 5);
+      .slice(0, 6);
   }, [finder]);
 
-  // Moon phase for the conditions card.
+  const visibleCount = useMemo(
+    () => tableObjects.filter((o) => o.visible && o.id !== 'sun').length,
+    [tableObjects],
+  );
+
+  // Moon phase + illumination.
   const moonObj = finder?.objects.find((o) => o.id === 'moon') ?? null;
   const moonPhase = moonObj?.phase ?? forecast.days[0]?.moonPhase ?? 0.5;
   const moonIllum = Math.round(((1 - Math.cos(moonPhase * 2 * Math.PI)) / 2) * 100);
   const moonName = MOON_NAMES[moonPhaseKey(moonPhase)] ?? 'Moon';
 
-  // Seeing estimate from tonight's evening wind (lower wind ⇒ steadier air).
-  const windKmh = forecast.days[0]?.windKmh;
-  const seeingArc = windKmh != null ? Math.min(5, Math.max(1, 1.2 + windKmh * 0.06)) : null;
-  const seeingLabel =
-    seeingArc == null ? '—'
-    : seeingArc < 2 ? 'Excellent'
-    : seeingArc < 2.8 ? 'Good'
-    : seeingArc < 3.6 ? 'Fair'
-    : 'Poor';
-
   const cloudPct = finder?.conditions?.cloudCoverPct ?? null;
-  const cloudLabel =
-    cloudPct == null ? '—'
-    : cloudPct < 20 ? 'Clear'
-    : cloudPct < 50 ? 'Partly cloudy'
-    : cloudPct < 80 ? 'Mostly cloudy'
-    : 'Overcast';
+
+  // Sky-quality score (1–10): the finder verdict, dragged down by cloud cover,
+  // moonlight, and light pollution — the four things that actually limit a night.
+  const skyScore = useMemo(() => {
+    const base = ({ Excellent: 9.2, Good: 8, Fair: 5.2, Poor: 3 } as Record<string, number>)[finder?.conditions?.quality ?? 'Good'] ?? 7;
+    let s = base;
+    if (cloudPct != null) s -= (cloudPct / 100) * 2.5;
+    s -= (moonIllum / 100) * 1.2;
+    s -= Math.max(0, bortle - 4) * 0.35;
+    return Math.max(1, Math.min(10, Math.round(s)));
+  }, [finder?.conditions?.quality, cloudPct, moonIllum, bortle]);
+  const skyWord = skyScore >= 9 ? 'Excellent' : skyScore >= 7 ? 'Very good' : skyScore >= 5 ? 'Fair' : 'Poor';
+
+  // Dark-window quality note for the "next best time" card.
+  const darkNote = moonIllum < 35 ? 'Milky Way visible' : moonIllum < 70 ? 'Some moonlight' : 'Bright moon tonight';
+
+  // Contextual tips, derived from the night's conditions and targets.
+  const tips = useMemo<string[]>(() => {
+    const out: string[] = [];
+    const planet = bestTargets.find((o) => o.type === 'planet' && o.nakedEye && o.altitude > 5);
+    if (planet) out.push(`Look ${tDir(planet.compassDirection)} after dark for bright ${planet.name}, about ${Math.round(planet.altitude)}° up.`);
+    if (moonIllum < 30) out.push('Near-new Moon — faint nebulae and the Milky Way are at their best. Let your eyes adapt for 20 minutes.');
+    else if (moonIllum > 70) out.push(`A ${moonName.toLowerCase()} lights the sky — favour the Moon, planets, and bright double stars tonight.`);
+    const scope = bestTargets.find((o) => o.instrument === 'telescope' && o.altitude > 5);
+    if (scope) out.push(`Aim a telescope ${tDir(scope.compassDirection)}, about ${Math.round(scope.altitude)}° up, to catch ${scope.name}.`);
+    if (cloudPct != null && cloudPct > 60) out.push(`${cloudPct}% cloud cover tonight — watch for clear gaps and keep your gear covered.`);
+    return out.length ? out : ['Clear skies make all the difference — find a spot away from direct lights and let your eyes adapt.'];
+  }, [bestTargets, moonIllum, moonName, cloudPct, tDir]);
 
   if (ready && !authenticated) {
     return (
@@ -458,8 +452,23 @@ export default function SkyPage() {
   }
 
   return (
-    <div className="sky-page-v2 sky-v3 sky-obs">
+    <div className="sky-page-v2 sky-v3 sky-obs skx">
       <div className="sky-obs__wrap">
+        <header className="skx__topbar">
+          <Link href="/" className="skx__brand" aria-label="Stellar home">
+            <span className="skx__comet" aria-hidden="true" />
+            <span>STELLAR</span>
+          </Link>
+          <div className="skx__top-actions">
+            <Link href="/hub" className="skx__icon-btn" aria-label="Open hub">
+              <Search size={21} aria-hidden="true" />
+            </Link>
+            <Link href="/profile" className="skx__avatar" aria-label="Open profile">
+              <UserRound size={18} aria-hidden="true" />
+            </Link>
+          </div>
+        </header>
+
         <EventBanner />
 
         {finderError && (
@@ -477,204 +486,206 @@ export default function SkyPage() {
 
         {finder && !finderError && (
           <>
-            <header className="sky-obs__top">
-              <div className="sky-obs__title-block">
-                <h1 className="sky-obs__title">Sky Tonight</h1>
+            {/* ── Header ── */}
+            <header className="skx__head">
+              <div className="skx__head-titles">
+                <h1 className="skx__title">Sky Tonight</h1>
+                <p className="skx__subtitle">{dateLabel} · {timeLabel}</p>
               </div>
               <button
                 type="button"
-                className="sky-obs__loc"
+                className="skx__loc"
                 onClick={() => setShowLocModal(true)}
                 aria-label="Change observing location"
               >
-                <MapPin size={13} aria-hidden="true" />
-                <span className="sky-obs__loc-city">{locationLabel}</span>
-                <span className="sky-obs__loc-coord">{coordLabel}</span>
+                <MapPin size={14} aria-hidden="true" />
+                <span className="skx__loc-city">{locationLabel}</span>
+                <ChevronRight size={15} aria-hidden="true" />
               </button>
             </header>
 
-            <div className="sky-obs__main">
-              <div className="sky-obs__dome">
-                <div className="sky-v3__map-stage">
-                  <SkyMap
-                    objects={tableObjects}
-                    activeId={activeId}
-                    onSelect={handleSelect}
-                    heading={compass.heading}
-                    userAltitude={compass.altitude}
-                    headingStatus={compass.status}
-                    accuracy={compass.accuracy}
-                    onCalibrate={handleCalibrate}
-                    calibrationOffset={compass.offset}
-                    onNudge={compass.nudge}
-                    onProximityChange={compass.setProximityDeg}
-                    onLock={handleLock}
-                    constellationStars={constellationStars}
-                    constellationLines={CONSTELLATION_LINES}
-                    hopAnchor={hopAnchor ? {
-                      id: hopAnchor.id,
-                      name: hopAnchor.name,
-                      azimuth: hopAnchor.azimuth,
-                      altitude: hopAnchor.altitude,
-                    } : null}
-                  />
-                  <div className="sky-v3__map-tools">
-                    <Link
-                      href="/solar-system"
-                      className="sky-v3__solar-launch"
-                      aria-label={tSolar('title')}
-                      title={tSolar('title')}
-                    >
-                      <Orbit size={14} aria-hidden="true" />
-                      <span className="sky-v3__solar-launch-label">{tSolar('short')}</span>
-                    </Link>
-                    {compass.status !== 'unavailable' && (
-                      <button
-                        type="button"
-                        className="sky-v3__ar-launch"
-                        onClick={handleArOpen}
-                        aria-label={tAr('openAr')}
-                        title={tAr('openAr')}
-                      >
-                        <Telescope size={14} aria-hidden="true" />
-                        <span className="sky-v3__ar-launch-label">AR</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="sky-v3__ar-launch"
-                      onClick={toggleField}
-                      aria-label="Field mode — red light"
-                      aria-pressed={field}
-                      title="Field mode — red light"
-                      style={field ? { color: '#FF3B30', borderColor: 'rgba(255,59,48,0.45)' } : undefined}
-                    >
-                      <Flashlight size={14} aria-hidden="true" />
-                      <span className="sky-v3__ar-launch-label">Red</span>
-                    </button>
+            {/* ── Summary strip — visible · moon · sky quality · sun ── */}
+            <section className="skx__summary" aria-label="Tonight at a glance">
+              <div className="skx__sum-cell skx__sum-cell--lead">
+                <span className="skx__sum-lead-top">
+                  <span className="skx__sum-count">{visibleCount}</span>
+                  <Eye size={15} aria-hidden="true" />
+                  <span className="skx__sum-head">Visible now</span>
+                </span>
+                <span className="skx__sum-sub">Best targets to see</span>
+              </div>
+
+              <div className="skx__sum-cell">
+                <span className="skx__sum-icon skx__sum-moon"><MoonGlyph phase={moonPhase} size={40} /></span>
+                <span className="skx__sum-body">
+                  <span className="skx__sum-head">{moonName}</span>
+                  <span className="skx__sum-val">{moonIllum}<em>%</em></span>
+                  <span className="skx__sum-sub">Illumination</span>
+                </span>
+              </div>
+
+              <div className="skx__sum-cell">
+                <QualityRing score={skyScore} />
+                <span className="skx__sum-body">
+                  <span className="skx__sum-head">Sky quality</span>
+                  <span className="skx__sum-val">{skyScore}<em>/10</em></span>
+                  <span className="skx__sum-sub" data-tone={skyScore >= 7 ? 'good' : skyScore >= 5 ? 'mid' : 'bad'}>{skyWord}</span>
+                </span>
+              </div>
+
+              <div className="skx__sum-cell">
+                <span className="skx__sum-icon skx__sum-sunic"><Sunset size={22} aria-hidden="true" /></span>
+                <span className="skx__sum-body">
+                  <span className="skx__sum-head">Sunset</span>
+                  <span className="skx__sum-val skx__sum-val--time">{fmtClock(sunsetISO, tz) ?? '—'}</span>
+                  <span className="skx__sum-sub">Sunrise {fmtClock(sunriseISO, tz) ?? '—'}</span>
+                </span>
+              </div>
+            </section>
+
+            {/* ── Sky map ── */}
+            <section className="skx__map">
+              <div className="sky-v3__map-stage">
+                <SkyMap
+                  objects={tableObjects}
+                  activeId={activeId}
+                  onSelect={handleSelect}
+                  heading={compass.heading}
+                  userAltitude={compass.altitude}
+                  headingStatus={compass.status}
+                  accuracy={compass.accuracy}
+                  onCalibrate={handleCalibrate}
+                  calibrationOffset={compass.offset}
+                  onNudge={compass.nudge}
+                  onProximityChange={compass.setProximityDeg}
+                  onLock={handleLock}
+                  constellationStars={constellationStars}
+                  constellationLines={CONSTELLATION_LINES}
+                  hopAnchor={hopAnchor ? {
+                    id: hopAnchor.id,
+                    name: hopAnchor.name,
+                    azimuth: hopAnchor.azimuth,
+                    altitude: hopAnchor.altitude,
+                  } : null}
+                />
+                <div className="sky-v3__map-tools">
+                  <Link
+                    href="/solar-system"
+                    className="sky-v3__solar-launch"
+                    aria-label="3D solar system"
+                    title="3D solar system"
+                  >
+                    <Box size={14} aria-hidden="true" />
+                    <span className="sky-v3__solar-launch-label">3D View</span>
+                  </Link>
+                  <button
+                    type="button"
+                    className="sky-v3__ar-launch"
+                    onClick={toggleField}
+                    aria-label="Night mode — red light"
+                    aria-pressed={field}
+                    title="Night mode — red light"
+                    style={field ? { color: '#FF3B30', borderColor: 'rgba(255,59,48,0.45)' } : undefined}
+                  >
+                    <Lightbulb size={14} aria-hidden="true" />
+                    <span className="sky-v3__ar-launch-label">Night</span>
+                  </button>
+                </div>
+              </div>
+              <AzimuthStrip activeObject={activeObject} />
+            </section>
+
+            {/* ── Next best time · what to look for ── */}
+            <div className="skx__duo">
+              <section className="skx__card skx__nbt">
+                <span className="skx__card-label">Next best time</span>
+                <div className="skx__nbt-row">
+                  <RingGauge pct={0.82} color="var(--seafoam, #5EEAD4)">
+                    <TelescopeIcon size={20} />
+                  </RingGauge>
+                  <div className="skx__nbt-body">
+                    <strong className="skx__nbt-window">{fmtClock(windowOpen, tz) ?? '—'} – {fmtClock(windowClose, tz) ?? '—'}</strong>
+                    <span className="skx__nbt-dur">{windowDuration ?? 'Dark window'} window</span>
+                    <span className="skx__nbt-note"><Sparkles size={13} aria-hidden="true" /> {darkNote}</span>
                   </div>
                 </div>
-                <SkyHeaderStrip
-                  locationLabel={locationLabel}
-                  nowISO={finder.generatedAt}
-                  visibleCount={tableObjects.filter((o) => o.visible && o.id !== 'sun').length}
-                  activeName={activeObject?.name ?? null}
-                  timeZone={tz}
-                />
-              </div>
-
-              <section className="sky-obs__targets">
-                <header className="sky-obs__panel-head">Tonight&apos;s best targets</header>
-                <ol className="sky-obs__target-list">
-                  {bestTargets.length === 0 && (
-                    <li className="sky-obs__target-empty">Nothing above the horizon right now.</li>
-                  )}
-                  {bestTargets.map((o, i) => (
-                    <BestTargetRow
-                      key={o.id}
-                      index={i + 1}
-                      obj={o}
-                      active={o.id === activeId}
-                      onSelect={handleSelect}
-                      tz={tz}
-                    />
-                  ))}
-                </ol>
               </section>
 
-              <div className="sky-obs__cards">
-                <ConditionCard label="Observing window">
-                  <div className="sky-obs__window">
-                    <RingGauge pct={0.78} color="var(--seafoam, #5EEAD4)">
-                      <TelescopeIcon size={20} />
-                    </RingGauge>
-                    <div className="sky-obs__window-body">
-                      <span className="sky-obs__window-times">
-                        <span className="sky-obs__window-time">{fmtClock(windowOpen, tz) ?? '—'}</span>
-                        <span className="sky-obs__window-time sky-obs__window-time--to">
-                          <span className="sky-obs__window-dash" aria-hidden>–</span> {fmtClock(windowClose, tz) ?? '—'}
-                        </span>
-                      </span>
-                      <span className="sky-obs__window-dur">{windowDuration ?? 'Dark window'}</span>
-                    </div>
-                  </div>
-                </ConditionCard>
-
-                <ConditionCard label="Cloud cover">
-                  <div className="sky-obs__metric">
-                    <RingGauge pct={cloudPct != null ? cloudPct / 100 : 0} color="var(--terracotta, #FFB347)">
-                      <CloudIcon size={20} />
-                    </RingGauge>
-                    <div className="sky-obs__metric-body">
-                      <span className="sky-obs__metric-value">{cloudPct ?? '—'}<span className="sky-obs__metric-unit">%</span></span>
-                      <span className="sky-obs__metric-sub">{cloudLabel}</span>
-                    </div>
-                  </div>
-                </ConditionCard>
-
-                <ConditionCard label="Moon phase">
-                  <div className="sky-obs__metric">
-                    <span className="sky-obs__moon"><MoonGlyph phase={moonPhase} size={48} /></span>
-                    <div className="sky-obs__metric-body">
-                      <span className="sky-obs__metric-value">{moonIllum}<span className="sky-obs__metric-unit">%</span></span>
-                      <span className="sky-obs__metric-sub">{moonName}</span>
-                    </div>
-                  </div>
-                </ConditionCard>
-
-                <ConditionCard label="Seeing">
-                  <div className="sky-obs__metric">
-                    <RingGauge pct={seeingArc != null ? 1 - (seeingArc - 1) / 4 : 0} color="var(--seafoam, #5EEAD4)">
-                      <SeeingIcon size={20} />
-                    </RingGauge>
-                    <div className="sky-obs__metric-body">
-                      <span className="sky-obs__metric-value sky-obs__metric-value--sm">{seeingArc != null ? `${seeingArc.toFixed(1)}″` : '—'}</span>
-                      <span className="sky-obs__metric-sub">{seeingLabel}</span>
-                    </div>
-                  </div>
-                </ConditionCard>
-
-                <ConditionCard label="Light pollution">
-                  <div className="sky-obs__metric">
-                    <LightPollutionSwatch bortle={bortle} />
-                    <div className="sky-obs__metric-body">
-                      <span
-                        className="sky-obs__metric-value sky-obs__metric-value--sm"
-                        data-tone={lightPollutionLevel(bortle).tone}
+              <section className="skx__card skx__look">
+                <span className="skx__card-label">What to look for</span>
+                <ul className="skx__look-list">
+                  {bestTargets.length === 0 && (
+                    <li className="skx__look-empty">Nothing above the horizon right now.</li>
+                  )}
+                  {bestTargets.slice(0, 3).map((o) => (
+                    <li key={o.id}>
+                      <button
+                        type="button"
+                        className={`skx__look-row${o.id === activeId ? ' is-active' : ''}`}
+                        onClick={() => handleSelect(o.id)}
+                        aria-pressed={o.id === activeId}
                       >
-                        {lightPollutionLevel(bortle).word}
-                      </span>
-                      <span className="sky-obs__metric-sub">{bortleLabel(bortle)}</span>
-                    </div>
-                  </div>
-                </ConditionCard>
-              </div>
-
-              <SevenDayForecast
-                variant="rail"
-                days={forecast.days}
-                loading={forecast.loading}
-                locationLabel={locationLabel}
-              />
-              <FourNightStrip
-                days={forecast.days}
-                loading={forecast.loading}
-                locationLabel={locationLabel}
-              />
+                        <span className="skx__look-dot" style={{ background: objectAccent(o) }} aria-hidden="true" />
+                        <span className="skx__look-name">{o.name}</span>
+                        <span className="skx__look-where">{lookPhrase(o, tDir)}</span>
+                        <span className="skx__look-ic" aria-hidden="true">
+                          {o.instrument === 'naked' ? <Eye size={14} /> : <Telescope size={14} />}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             </div>
 
-          </>
-        )}
+            {/* ── Visible now rail ── */}
+            <section className="skx__visible" aria-label="Visible now">
+              <header className="skx__sec-head">
+                <h2 className="skx__sec-title">Visible now <span className="skx__sec-count">({visibleCount})</span></h2>
+                {compass.status !== 'unavailable' && (
+                  <button type="button" className="skx__viewall" onClick={handleArOpen}>
+                    View all <ChevronRight size={14} aria-hidden="true" />
+                  </button>
+                )}
+              </header>
+              <ol className="skx__vis-rail">
+                {bestTargets.length === 0 && (
+                  <li className="skx__vis-empty">Nothing above the horizon right now.</li>
+                )}
+                {bestTargets.map((o, i) => (
+                  <VisCard
+                    key={o.id}
+                    obj={o}
+                    active={o.id === activeId}
+                    top={i === 0}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </ol>
+            </section>
 
-        {/* === Tonight's timeline — when, across the night, to observe === */}
-        {finder && !finderError && (
-          <TonightTimeline
-            nowISO={finder.generatedAt}
-            twilight={finder.twilight}
-            objects={finder.objects}
-            nightHours={forecast.days[0]?.nightHours ?? []}
-            onSelect={handleChooseTarget}
-          />
+            {/* ── Tonight overview · tips ── */}
+            <div className="skx__duo">
+              <section className="skx__card skx__overview">
+                <span className="skx__card-label">Tonight overview</span>
+                <NightOverview sunsetISO={sunsetISO} sunriseISO={sunriseISO} openISO={windowOpen} closeISO={windowClose} tz={tz} />
+              </section>
+              <TipsCard tips={tips} />
+            </div>
+
+            {/* ── Multi-day outlook (retained below the new hero) ── */}
+            <SevenDayForecast
+              variant="rail"
+              days={forecast.days}
+              loading={forecast.loading}
+              locationLabel={locationLabel}
+            />
+            <FourNightStrip
+              days={forecast.days}
+              loading={forecast.loading}
+              locationLabel={locationLabel}
+            />
+          </>
         )}
 
         {/* === Year-in-the-sky 2026 events rail === */}
@@ -706,73 +717,110 @@ export default function SkyPage() {
   );
 }
 
-/* ── Best-target row — number · photo · name · constellation · timing ── */
-function BestTargetRow({
-  index,
-  obj,
-  active,
-  onSelect,
-  tz,
-}: {
-  index: number;
+/* ── Accent colour for an object's dot — by catalog type. ── */
+function objectAccent(o: SkyObject): string {
+  if (o.id === 'moon') return '#CFD6E4';
+  if (o.id === 'sun') return '#FFD166';
+  if (o.type === 'planet') return '#F4D98C';
+  if (o.type === 'nebula' || o.type === 'galaxy' || o.type === 'cluster') return '#B98CFF';
+  return '#FF9B54'; // stars / doubles
+}
+
+/* ── Plain-language "where to look" for the what-to-look-for list. ── */
+function lookPhrase(o: SkyObject, tDir: (k: string) => string): string {
+  if (o.instrument === 'telescope') return 'Telescope';
+  if (o.instrument === 'binoculars') return 'Binoculars';
+  const dir = tDir(o.compassDirection);
+  if (o.altitude >= 50) return `High in the ${dir}`;
+  if (o.altitude >= 20) return `In the ${dir}`;
+  return `Low in the ${dir}`;
+}
+
+/* ── Visible-now badge — best / good / telescope / later. ── */
+function visBadge(o: SkyObject, top: boolean): { label: string; tone: string } {
+  if (o.instrument === 'telescope') return { label: 'Telescope', tone: 'scope' };
+  if (o.instrument === 'binoculars') return { label: 'Binoculars', tone: 'scope' };
+  if (o.altitude < 18) return { label: 'Later', tone: 'later' };
+  if (top) return { label: 'Best now', tone: 'best' };
+  return { label: 'Good', tone: 'good' };
+}
+
+/* ── Sky-quality ring — arc fills to score/10. ── */
+function QualityRing({ score }: { score: number }) {
+  const r = 18;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(1, score / 10));
+  const color = score >= 7 ? 'var(--seafoam, #5EEAD4)' : score >= 5 ? 'var(--terracotta, #FFB347)' : '#FF8A6A';
+  return (
+    <span className="skx__qring" aria-hidden="true">
+      <svg width={44} height={44} viewBox="0 0 44 44">
+        <circle cx={22} cy={22} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={3.5} />
+        <circle
+          cx={22} cy={22} r={r} fill="none"
+          stroke={color} strokeWidth={3.5} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
+          transform="rotate(-90 22 22)"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/* ── Azimuth ruler under the map — marks where the active target sits along
+   the southern arc (E → S → W), the band where most objects culminate. ── */
+function AzimuthStrip({ activeObject }: { activeObject: SkyObject | null }) {
+  const ticks: Array<{ dir: string; deg: number }> = [
+    { dir: 'E', deg: 90 }, { dir: 'SE', deg: 135 }, { dir: 'S', deg: 180 },
+    { dir: 'SW', deg: 225 }, { dir: 'W', deg: 270 },
+  ];
+  const az = activeObject?.azimuth ?? null;
+  // Map 90..270 → 0..1; objects in the northern half clamp to the nearest end.
+  const marker = az == null ? null : Math.max(0, Math.min(1, (az - 90) / 180));
+  return (
+    <div className="skx__azim" role="presentation">
+      {marker != null && (
+        <span className="skx__azim-marker" style={{ left: `${marker * 100}%` }} aria-hidden="true" />
+      )}
+      {ticks.map((t) => (
+        <span key={t.dir} className="skx__azim-tick">
+          <span className="skx__azim-dir">{t.dir}</span>
+          <span className="skx__azim-deg">{t.deg}°</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ── Visible-now card — photo · name · direction·altitude · badge. ── */
+function VisCard({ obj, active, top, onSelect }: {
   obj: SkyObject;
   active: boolean;
+  top: boolean;
   onSelect: (id: ObjectId) => void;
-  tz?: string;
 }) {
   const photo = getTargetPhoto(obj.id);
-  const setLabel = fmtClock(obj.setTime, tz);
-  const riseLabel = fmtClock(obj.riseTime, tz);
-  const timing = obj.circumpolar
-    ? 'All night'
-    : setLabel
-      ? `↓ ${setLabel}`
-      : riseLabel
-        ? `↑ ${riseLabel}`
-        : 'All night';
-
+  const badge = visBadge(obj, top);
   return (
     <li>
       <button
         type="button"
-        className={`sky-obs__target${active ? ' is-active' : ''}`}
+        className={`skx__vis-card${active ? ' is-active' : ''}`}
         onClick={() => onSelect(obj.id)}
         aria-pressed={active}
       >
-        <span className="sky-obs__target-thumb">
-          <span className="sky-obs__target-num">{String(index).padStart(2, '0')}</span>
+        <span className="skx__vis-thumb">
           {photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
           ) : (
-            <PlanetIcon id={obj.id} type={obj.type} magnitude={obj.magnitude} phase={obj.phase} size={42} glow={false} />
+            <PlanetIcon id={obj.id} type={obj.type} magnitude={obj.magnitude} phase={obj.phase} size={48} glow={false} />
           )}
         </span>
-        <span className="sky-obs__target-body">
-          <span className="sky-obs__target-top">
-            <span className="sky-obs__target-name">{obj.name}</span>
-            <span className="sky-obs__target-alt-val">{Math.round(obj.altitude)}°</span>
-          </span>
-          <span className="sky-obs__target-meta">
-            {timing}
-            <span className="sky-obs__target-sep" aria-hidden>·</span>
-            {obj.compassDirection}
-            <span className="sky-obs__target-sep" aria-hidden>·</span>
-            {obj.constellation || obj.type}
-          </span>
-        </span>
+        <span className="skx__vis-name">{obj.name}</span>
+        <span className="skx__vis-pos">{obj.compassDirection} · {Math.round(obj.altitude)}°</span>
+        <span className={`skx__vis-badge skx__vis-badge--${badge.tone}`}>{badge.label}</span>
       </button>
     </li>
-  );
-}
-
-/* ── Small condition card shell ── */
-function ConditionCard({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <section className="sky-obs__card">
-      <span className="sky-obs__card-label">{label}</span>
-      <div className="sky-obs__card-body">{children}</div>
-    </section>
   );
 }
 
@@ -782,7 +830,7 @@ function RingGauge({ pct, color, children }: { pct: number; color: string; child
   const c = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(1, pct));
   return (
-    <span className="sky-obs__ring">
+    <span className="skx__ring">
       <svg width={52} height={52} viewBox="0 0 52 52" aria-hidden="true">
         <circle cx={26} cy={26} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={3.5} />
         <circle
@@ -792,43 +840,88 @@ function RingGauge({ pct, color, children }: { pct: number; color: string; child
           transform="rotate(-90 26 26)"
         />
       </svg>
-      <span className="sky-obs__ring-center" style={{ color }}>{children}</span>
+      <span className="skx__ring-center" style={{ color }}>{children}</span>
     </span>
   );
 }
 
-/* ── Light-pollution swatch — a literal patch of sky. As pollution rises,
-   skyglow creeps up from the horizon and fewer stars survive, so the
-   metric is understood at a glance without knowing the Bortle scale. ── */
-const LP_STARS: Array<[number, number, number]> = [
-  [12, 13, 0.9], [33, 10, 0.7], [22, 20, 0.6], [38, 22, 0.8],
-  [9, 26, 0.7], [28, 30, 0.6], [17, 33, 0.7], [40, 33, 0.5],
-  [24, 14, 0.5], [14, 19, 0.5], [34, 28, 0.6], [20, 26, 0.5],
-];
-function LightPollutionSwatch({ bortle }: { bortle: number }) {
-  const t = Math.max(0, Math.min(1, (bortle - 1) / 8)); // 0 = dark, 1 = bright
-  const visibleStars = Math.max(2, Math.round(LP_STARS.length * (1 - t * 0.8)));
+/* ── Night overview bar — sunset → sunrise with the dark window highlighted. ── */
+function NightOverview({ sunsetISO, sunriseISO, openISO, closeISO, tz }: {
+  sunsetISO: string | null;
+  sunriseISO: string | null;
+  openISO: string | null;
+  closeISO: string | null;
+  tz?: string;
+}) {
+  const sunset = sunsetISO ? new Date(sunsetISO).getTime() : null;
+  let sunrise = sunriseISO ? new Date(sunriseISO).getTime() : null;
+  if (sunset != null && sunrise != null && sunrise <= sunset) sunrise += 24 * 3600 * 1000;
+  const span = sunset != null && sunrise != null ? sunrise - sunset : null;
+  const frac = (iso: string | null): number | null => {
+    if (!iso || sunset == null || !span) return null;
+    let t = new Date(iso).getTime();
+    if (t < sunset) t += 24 * 3600 * 1000;
+    return Math.max(0, Math.min(1, (t - sunset) / span));
+  };
+  const a = frac(openISO);
+  const b = frac(closeISO);
+  const hasWindow = a != null && b != null && b > a;
   return (
-    <span className="sky-obs__lp-swatch" aria-hidden="true">
-      <svg viewBox="0 0 48 48" width="48" height="48">
-        <defs>
-          <radialGradient id="lpSkyglow" cx="50%" cy="100%" r="95%">
-            <stop offset="0%" stopColor="#FFC074" stopOpacity={0.12 + t * 0.6} />
-            <stop offset="55%" stopColor="#FFB347" stopOpacity={t * 0.18} />
-            <stop offset="100%" stopColor="#FFB347" stopOpacity="0" />
-          </radialGradient>
-          <clipPath id="lpClip"><circle cx="24" cy="24" r="22" /></clipPath>
-        </defs>
-        <g clipPath="url(#lpClip)">
-          <rect x="0" y="0" width="48" height="48" fill="#0a1430" />
-          {LP_STARS.slice(0, visibleStars).map(([x, y, o], i) => (
-            <circle key={i} cx={x} cy={y} r={i % 4 === 0 ? 1 : 0.7} fill="#E8F0FF" opacity={o * (1 - t * 0.55)} />
+    <div className="skx__ov">
+      <div className="skx__ov-track" aria-hidden="true">
+        {hasWindow && (
+          <span className="skx__ov-window" style={{ left: `${a * 100}%`, width: `${(b - a) * 100}%` }}>
+            <span className="skx__ov-window-label">Best window</span>
+          </span>
+        )}
+      </div>
+      <div className="skx__ov-ends">
+        <span className="skx__ov-end">
+          <Sunset size={14} aria-hidden="true" />
+          <span className="skx__ov-end-time">{fmtClock(sunsetISO, tz) ?? '—'}</span>
+          <span className="skx__ov-end-label">Sunset</span>
+        </span>
+        {hasWindow && (
+          <span className="skx__ov-mid">{fmtClock(openISO, tz)} – {fmtClock(closeISO, tz)}</span>
+        )}
+        <span className="skx__ov-end skx__ov-end--right">
+          <Sunrise size={14} aria-hidden="true" />
+          <span className="skx__ov-end-time">{fmtClock(sunriseISO, tz) ?? '—'}</span>
+          <span className="skx__ov-end-label">Sunrise</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Tips card — rotates through contextual advice for tonight. ── */
+function TipsCard({ tips }: { tips: string[] }) {
+  const [i, setI] = useState(0);
+  useEffect(() => { setI(0); }, [tips]);
+  useEffect(() => {
+    if (tips.length < 2) return;
+    const id = window.setInterval(() => setI((p) => (p + 1) % tips.length), 7000);
+    return () => window.clearInterval(id);
+  }, [tips.length]);
+  const current = tips[Math.min(i, tips.length - 1)] ?? '';
+  return (
+    <section className="skx__card skx__tips">
+      <span className="skx__card-label"><Lightbulb size={13} aria-hidden="true" /> Tips for tonight</span>
+      <p className="skx__tips-text">{current}</p>
+      {tips.length > 1 && (
+        <div className="skx__tips-dots">
+          {tips.map((_, n) => (
+            <button
+              key={n}
+              type="button"
+              className={`skx__tips-dot${n === i ? ' is-active' : ''}`}
+              onClick={() => setI(n)}
+              aria-label={`Tip ${n + 1}`}
+            />
           ))}
-          <rect x="0" y="0" width="48" height="48" fill="url(#lpSkyglow)" />
-        </g>
-        <circle cx="24" cy="24" r="22" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-      </svg>
-    </span>
+        </div>
+      )}
+    </section>
   );
 }
 

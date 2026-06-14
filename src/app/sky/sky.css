@@ -2,26 +2,31 @@
    Scoped under .sky-page-v2 so tokens and rules don't leak globally. */
 
 .sky-page-v2 {
-  --bg: #06122B;
-  --bg-2: #0A1735;
-  --surface: rgba(255, 255, 255, 0.025);
-  --surface-2: rgba(255, 255, 255, 0.04);
+  --bg: #07090F;
+  --bg-2: #0B1020;
+  --surface: #0E1320;
+  --surface-2: #131A2A;
   --border: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.12);
-  --text: #E8ECF1;
-  --text-muted: #8A93A6;
-  --text-dim: #5A6275;
-  --teal: #5EEAD4;
-  --teal-soft: rgba(56, 240, 255, 0.12);
+  --text: #F4F6FB;
+  --text-muted: #9AA4B6;
+  --text-dim: #5C6678;
+  --teal: #22B8CF;
+  --teal-soft: rgba(34, 184, 207, 0.12);
   --rose: #F87171;
-  --green: #34D399;
+  --green: #22C55E;
+  --sky-blue: #2D6CFF;
+  --amber: #F5A623;
   /* Sky page uses the homepage voice — Geist for display + body, mono for data. */
   --font-display: var(--font-geist, 'Geist'), system-ui, sans-serif;
   --serif: var(--font-geist, 'Geist'), system-ui, sans-serif;
   --sans: var(--font-body, 'Geist'), system-ui, sans-serif;
   --mono: var(--font-mono, 'JetBrains Mono'), monospace;
   color: var(--text);
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(45, 108, 255, 0.12), transparent 28rem),
+    radial-gradient(circle at 90% 12%, rgba(245, 166, 35, 0.08), transparent 22rem),
+    var(--bg);
   min-height: 100vh;
 }
 
@@ -3994,279 +3999,6 @@
   gap: 16px;
 }
 
-/* === Top bar === */
-.sky-obs__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.sky-obs__title-block {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  column-gap: 12px;
-  row-gap: 2px;
-  min-width: 0;
-}
-.sky-obs__title {
-  margin: 0;
-  font-family: var(--sans);
-  font-size: clamp(16px, 3.4vw, 22px);
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text);
-  line-height: 1.1;
-}
-.sky-obs__loc {
-  appearance: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border-radius: 12px;
-  background: rgba(255, 179, 71, 0.1);
-  border: 1px solid rgba(255, 179, 71, 0.32);
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text);
-  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.sky-obs__loc:hover {
-  border-color: rgba(255, 179, 71, 0.55);
-  background: rgba(255, 179, 71, 0.17);
-}
-.sky-obs__loc svg { color: var(--terracotta); flex-shrink: 0; }
-.sky-obs__loc-city { color: var(--text); }
-.sky-obs__loc-coord { color: var(--text-dim); }
-
-/* === Main: dome + right rail (targets · conditions · outlook) ===
-   Desktop layout (grid) lives in the min-width:921px block below. At ≤920
-   this is a plain flex column; ≤680 flattens it into the wrap via
-   `display:contents` + per-child `order` (the existing mobile system), so
-   phones render exactly as before. No `order` rules here — they would
-   out-rank the mobile block's and break the stack. */
-.sky-obs__main {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.sky-obs__dome {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 14px;
-  min-width: 0;
-}
-.sky-obs__dome .sky-v3__map-stage {
-  width: 100%;
-  max-width: none;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.sky-obs__dome .sky-map { max-width: min(100%, 560px); width: 100%; }
-
-/* === Best targets panel === */
-.sky-obs__targets {
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 16px 16px 10px;
-  min-width: 0;
-}
-.sky-obs__panel-head {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding-bottom: 12px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.sky-obs__target-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 4px;
-}
-.sky-obs__target-list > li { display: flex; }
-.sky-obs__target-list > li { flex: 1; }
-.sky-obs__target-empty {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-dim);
-  padding: 20px 4px;
-}
-.sky-obs__target {
-  appearance: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 11px;
-  align-items: center;
-  padding: 9px 10px;
-  border: 1px solid transparent;
-  border-radius: 14px;
-  background: transparent;
-  color: var(--text);
-  transition: background 130ms ease, border-color 130ms ease;
-}
-.sky-obs__target:hover { background: rgba(255, 255, 255, 0.04); border-color: var(--border); }
-.sky-obs__target.is-active { background: rgba(255, 179, 71, 0.08); border-color: rgba(255, 179, 71, 0.4); }
-.sky-obs__target-thumb {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-.sky-obs__target-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sky-obs__target-num {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  z-index: 1;
-  min-width: 16px;
-  padding: 0 3px;
-  font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  line-height: 15px;
-  text-align: center;
-  color: var(--terracotta);
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 6px;
-  font-feature-settings: 'tnum' 1;
-  backdrop-filter: blur(2px);
-}
-.sky-obs__target-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.sky-obs__target-top {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-}
-.sky-obs__target-name {
-  flex: 1;
-  min-width: 0;
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sky-obs__target.is-active .sky-obs__target-name { color: var(--terracotta); }
-.sky-obs__target-alt-val {
-  flex-shrink: 0;
-  font-family: var(--mono);
-  font-size: 15px;
-  color: var(--text);
-  font-feature-settings: 'tnum' 1;
-}
-.sky-obs__target-meta {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.04em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sky-obs__target-sep { margin: 0 5px; opacity: 0.4; }
-
-/* === Bottom condition cards === */
-.sky-obs__cards {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-}
-.sky-obs__card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 12px 13px;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  min-width: 0;
-}
-.sky-obs__card-label {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-.sky-obs__card-body { display: flex; align-items: center; }
-.sky-obs__window,
-.sky-obs__metric { display: flex; align-items: center; gap: 11px; width: 100%; min-width: 0; }
-
-.sky-obs__ring { position: relative; width: 52px; height: 52px; flex-shrink: 0; display: inline-flex; }
-.sky-obs__ring svg { display: block; }
-.sky-obs__ring-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-
-.sky-obs__window-body,
-.sky-obs__metric-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.sky-obs__window-times {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  font-family: var(--mono);
-  font-size: 14px;
-  letter-spacing: 0.01em;
-  color: var(--text);
-  font-feature-settings: 'tnum' 1;
-}
-.sky-obs__window-time { white-space: nowrap; }
-.sky-obs__window-time--to { color: var(--text-muted); }
-.sky-obs__window-dash { color: var(--text-dim); }
-.sky-obs__window-dur { font-family: var(--mono); font-size: 10.5px; color: var(--seafoam, #5EEAD4); letter-spacing: 0.06em; margin-top: 1px; }
-
-.sky-obs__metric-value { font-family: var(--sans); font-size: 24px; font-weight: 600; line-height: 1; color: var(--text); }
-.sky-obs__metric-value--sm { font-size: 18px; letter-spacing: 0.01em; }
-.sky-obs__metric-value[data-tone="good"] { color: var(--seafoam, #5EEAD4); }
-.sky-obs__metric-value[data-tone="mid"]  { color: var(--terracotta, #FFB347); }
-.sky-obs__metric-value[data-tone="bad"]  { color: #FF8A6A; }
-.sky-obs__metric-unit { font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin-left: 2px; font-weight: 500; }
-.sky-obs__metric-sub { font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; color: var(--text-muted); text-transform: uppercase; }
-.sky-obs__moon { width: 46px; height: 46px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
-.sky-obs__lp-swatch { width: 48px; height: 48px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
-.sky-obs__lp-swatch svg { display: block; }
-
-/* Soft cosmic glow on the condition glyphs — lifts them off the card. */
-.sky-obs__ring-center svg { filter: drop-shadow(0 0 4px currentColor); }
-.sky-obs__moon { filter: drop-shadow(0 0 8px rgba(244, 217, 160, 0.5)); }
-.sky-obs__lp-swatch { filter: drop-shadow(0 0 6px rgba(255, 176, 100, 0.28)); }
 
 /* === 7-night outlook — compact vertical list variant for the rail === */
 .forecast7--rail {
@@ -4468,114 +4200,6 @@
 }
 .fcstrip__empty { font-family: var(--mono); font-size: 12px; color: var(--text-dim); padding: 16px 4px; }
 
-/* === Desktop (≥921px) — dome on the left, a stacked rail on the right:
-   best targets (2-up) → compact conditions → 7-night outlook. Mobile keeps
-   the flex-column stack defined above and is untouched by this block. === */
-@media (min-width: 921px) {
-  .sky-obs__main {
-    display: grid;
-    /* Left column is a square sized to the viewport height, so the sky map
-       fills the whole panel (no empty gutter) yet still fits the first
-       screen. Right column (rail) takes the remainder. */
-    grid-template-columns: min(66vh, 660px) minmax(320px, 1fr);
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas:
-      "dome targets"
-      "dome cards"
-      "dome outlook";
-    gap: 16px;
-    align-items: start;
-    /* Keep the dome + rail within the first screen; the outlook rail
-       scrolls internally if the night's list is long. */
-    max-height: calc(100vh - 124px);
-  }
-  .sky-obs__main > .forecast7--rail { min-height: 0; overflow: hidden; align-self: stretch; display: flex; flex-direction: column; }
-  .sky-obs__main > .sky-obs__dome { grid-area: dome; align-self: start; }
-  .sky-obs__main > .sky-obs__targets { grid-area: targets; }
-  .sky-obs__main > .sky-obs__cards { grid-area: cards; }
-  .sky-obs__main > .forecast7--rail { grid-area: outlook; }
-
-  /* The map fills the square dome panel edge-to-edge (corners read as deep
-     space via the SVG cosmic field). The dome column already caps the size to
-     the viewport, so the map just fills its column. */
-  .sky-obs__dome { padding: 8px; }
-  .sky-obs__dome .sky-v3__map-stage { max-width: 100%; }
-  .sky-obs__dome .sky-map { max-width: 100%; }
-
-  /* Best targets — two per row, no number badge */
-  .sky-obs__targets { padding: 14px 14px 10px; }
-  .sky-obs__target-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    flex: none;
-  }
-  .sky-obs__target-list > li { flex: none; }
-  .sky-obs__target-list > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  .sky-obs__target-num { display: none; }
-  .sky-obs__target { padding: 8px 10px; }
-
-  /* Conditions — compact cards tucked under the targets */
-  .sky-obs__cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    align-content: start;
-  }
-  .sky-obs__cards .sky-obs__card:first-child { grid-column: 1 / -1; }
-  .sky-obs__card { padding: 9px 11px; gap: 6px; border-radius: 13px; }
-  .sky-obs__card-label { font-size: 8px; letter-spacing: 0.13em; }
-  .sky-obs__window,
-  .sky-obs__metric { gap: 9px; }
-  .sky-obs__ring,
-  .sky-obs__ring svg { width: 38px; height: 38px; }
-  .sky-obs__moon,
-  .sky-obs__moon svg { width: 34px; height: 34px; }
-  .sky-obs__lp-swatch,
-  .sky-obs__lp-swatch svg { width: 34px; height: 34px; }
-  .sky-obs__metric-value { font-size: 18px; }
-  .sky-obs__metric-value--sm { font-size: 14px; }
-  .sky-obs__metric-unit { font-size: 10px; }
-  .sky-obs__metric-sub { font-size: 9px; }
-  .sky-obs__window-times { font-size: 12.5px; }
-  .sky-obs__window-dur { font-size: 9.5px; }
-
-  /* Compact the outlook rail so the dome + rail fit the first screen. */
-  .forecast7--rail { padding: 12px 14px 5px; }
-  .forecast7--rail .forecast7__head { padding-bottom: 9px; margin-bottom: 2px; }
-  .forecast7__rrow { padding: 6px 4px; }
-  .sky-obs__targets { padding: 13px 14px 9px; }
-  .sky-obs__panel-head { padding-bottom: 9px; margin-bottom: 4px; }
-}
-
-/* === Responsive === */
-@media (max-width: 1080px) {
-  .sky-obs__cards { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 920px) {
-  .sky-obs__dome .sky-map { max-width: min(100%, 460px); }
-  /* Conditions ride above the dome in the single-column stack (as before).
-     ≤680 re-flattens via display:contents; this keeps the 681–920 band right. */
-  .sky-obs__cards { order: -1; }
-  /* Targets go full-width below the dome — lay them out as a compact
-     2-up grid so more of the night's list is visible without scrolling. */
-  .sky-obs__targets { padding: 14px 14px 12px; }
-  .sky-obs__target-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .sky-obs__target-list > li { flex: none; }
-  /* A lone trailing card (odd count) spans both columns so the grid never
-     leaves a dead gap. */
-  .sky-obs__target-list > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  .sky-obs__target {
-    gap: 9px;
-    padding: 8px 9px;
-    background: rgba(255, 255, 255, 0.025);
-    border-color: var(--border);
-  }
-}
 @media (max-width: 680px) {
   .skyloc {
     align-items: flex-start;
@@ -4681,91 +4305,10 @@
   }
 
   .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }
-  .sky-obs__main {
-    display: contents;
-  }
-  .sky-obs__dome {
-    order: 2;
-  }
-  /* Targets ride directly under the sky map; conditions follow. */
-  .sky-obs__targets {
-    order: 3;
-  }
-  .sky-obs__cards {
-    order: 4;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .sky-obs__rail {
-    display: contents;
-  }
-  .sky-page-v2 .timeline-panel {
-    order: 5;
-  }
-  .sky-page-v2 .tl {
-    order: 5;
-  }
+
   /* The 7-night rail is desktop-only; phones get the compact 4-night strip. */
-  .sky-page-v2 .forecast7--rail {
-    display: none;
-  }
-  .sky-page-v2 .fcstrip {
-    display: block;
-    order: 6;
-  }
-  .sky-page-v2 .ev {
-    order: 20;
-  }
-  .sky-page-v2 .space-gal {
-    order: 22;
-  }
-  .sky-obs__card {
-    padding: 9px 10px;
-    border-radius: 13px;
-    gap: 6px;
-  }
-  .sky-obs__card-label {
-    font-size: 8px;
-    letter-spacing: 0.14em;
-  }
-  .sky-obs__window,
-  .sky-obs__metric {
-    gap: 8px;
-  }
-  .sky-obs__ring {
-    width: 42px;
-    height: 42px;
-  }
-  .sky-obs__moon svg {
-    width: 42px;
-    height: 42px;
-  }
-  .sky-obs__window-times {
-    font-size: 12px;
-  }
-  .sky-obs__window-dur,
-  .sky-obs__metric-sub {
-    font-size: 9px;
-  }
-  .sky-obs__metric-value {
-    font-size: 24px;
-  }
-  .sky-obs__metric-value--sm {
-    font-size: 16px;
-  }
-  .sky-obs__target-list { gap: 7px; }
-  .sky-obs__target { grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 7px 8px; }
-  .sky-obs__target-thumb { width: 40px; height: 40px; }
-  .sky-obs__target-num { display: none; }
-  .sky-obs__target-name { font-size: 13.5px; }
-  .sky-obs__target-meta { font-size: 9.5px; }
-  .sky-obs__target-alt-val { font-size: 14px; }
-  /* Keep the title + location on a single compact row to free vertical
-     space for the dome and targets. */
-  .sky-obs__top { align-items: center; gap: 10px; }
-  .sky-obs__title { letter-spacing: 0.14em; }
-  .sky-obs__loc { padding: 7px 11px; gap: 6px; }
-  .sky-obs__loc-coord { display: none; }
+  .sky-page-v2 .forecast7--rail { display: none; }
+  .sky-page-v2 .fcstrip { display: block; }
 }
 
 /* ── Sign-in gate — Sky requires authentication ── */
@@ -4810,4 +4353,581 @@
   margin: 12px 0 0;
   font-size: 11px;
   color: var(--text-dim);
+}
+
+/* ================================================================
+   === SKY — redesigned dashboard (skx). Mobile-first; the same    ===
+   === sections reflow on wider screens. Reuses the real SkyMap,   ===
+   === map tools, RingGauge, MoonGlyph, PlanetIcon.                ===
+   ================================================================ */
+.skx {
+  --terracotta: var(--amber);
+  --seafoam: var(--green);
+}
+.skx .sky-obs__wrap {
+  max-width: 1180px;
+  gap: 16px;
+  padding-top: 0;
+}
+
+.skx__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-inline: -2px;
+  padding: 12px 2px;
+  background: rgba(7, 9, 15, 0.92);
+  backdrop-filter: blur(16px);
+}
+.skx__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-family: var(--sans);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.skx__comet {
+  position: relative;
+  width: 28px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.skx__comet::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--amber);
+  box-shadow: 0 0 16px rgba(245, 166, 35, 0.65);
+}
+.skx__comet::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 22px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.95));
+  transform: rotate(-18deg);
+  transform-origin: right center;
+}
+.skx__top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.skx__icon-btn,
+.skx__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.skx__icon-btn {
+  border: 1px solid transparent;
+  background: transparent;
+}
+.skx__avatar {
+  border: 1px solid rgba(45, 108, 255, 0.42);
+  background: var(--surface);
+}
+.skx__icon-btn:hover,
+.skx__avatar:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-strong);
+}
+.skx__icon-btn:active,
+.skx__avatar:active { transform: scale(0.97); }
+
+/* shared ring used by the "next best time" card */
+.skx__ring { position: relative; width: 52px; height: 52px; flex-shrink: 0; display: inline-flex; }
+.skx__ring svg { display: block; }
+.skx__ring-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.skx__ring-center svg { filter: drop-shadow(0 0 4px currentColor); }
+
+/* shared card shell */
+.skx__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.skx__card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.skx__card-label svg { color: var(--terracotta); }
+
+/* ── Header ── */
+.skx__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 2px;
+}
+.skx__title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: clamp(28px, 7vw, 42px);
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--text);
+  line-height: 0.95;
+}
+.skx__subtitle {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.skx__loc {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  min-height: 44px;
+  border-radius: 999px;
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.32);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+.skx__loc:hover { background: rgba(245, 166, 35, 0.17); border-color: rgba(245, 166, 35, 0.55); }
+.skx__loc svg:first-child { color: var(--terracotta); }
+.skx__loc svg:last-child { color: var(--text-muted); margin-left: -2px; }
+
+/* ── Summary strip ── */
+.skx__summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.skx__sum-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  min-width: 0;
+}
+.skx__sum-cell + .skx__sum-cell { border-left: 1px solid var(--border); }
+.skx__sum-cell--lead { flex-direction: column; align-items: flex-start; gap: 5px; justify-content: center; }
+.skx__sum-lead-top { display: inline-flex; align-items: center; gap: 7px; }
+.skx__sum-count {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--seafoam, #5EEAD4);
+}
+.skx__sum-cell--lead .skx__sum-lead-top svg { color: var(--seafoam, #5EEAD4); }
+.skx__sum-icon { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.skx__sum-moon { filter: drop-shadow(0 0 8px rgba(244, 217, 160, 0.4)); }
+.skx__sum-sunic { width: 40px; height: 40px; color: var(--terracotta); filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.3)); }
+.skx__sum-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.skx__sum-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skx__sum-val {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+}
+.skx__sum-val em { font-style: normal; font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text-muted); margin-left: 1px; }
+.skx__sum-val--time { font-size: 17px; }
+.skx__sum-sub {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.skx__sum-sub[data-tone="good"] { color: var(--seafoam, #5EEAD4); }
+.skx__sum-sub[data-tone="mid"]  { color: var(--terracotta, #FFB347); }
+.skx__sum-sub[data-tone="bad"]  { color: #FF8A6A; }
+.skx__qring { flex-shrink: 0; display: inline-flex; }
+.skx__qring svg { display: block; filter: drop-shadow(0 0 4px rgba(94, 234, 212, 0.3)); }
+
+/* ── Sky map ── */
+.skx__map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  min-width: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.skx__map .sky-v3__map-stage { max-width: none; width: 100%; }
+.skx__map .sky-map { max-width: min(100%, 560px); width: 100%; }
+.skx__map .sky-v3__solar-launch,
+.skx__map .sky-v3__ar-launch {
+  min-height: 44px;
+  border-radius: 999px;
+  background: rgba(7, 9, 15, 0.7);
+  border-color: var(--border-strong);
+}
+
+/* azimuth ruler under the map */
+.skx__azim {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 6px 3px;
+  border-top: 1px solid var(--border);
+}
+.skx__azim-marker {
+  position: absolute;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--terracotta, #FFB347);
+  box-shadow: 0 0 8px rgba(255, 179, 71, 0.7);
+  transform: translateX(-50%);
+  transition: left 400ms ease;
+}
+.skx__azim-tick { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.skx__azim-dir {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.skx__azim-deg {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ── Two-up card row ── */
+.skx__duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* next best time */
+.skx__nbt-row { display: flex; align-items: center; gap: 12px; margin-top: 11px; }
+.skx__nbt-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.skx__nbt-window {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 4.4vw, 20px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  white-space: nowrap;
+}
+.skx__nbt-dur { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--seafoam, #5EEAD4); }
+.skx__nbt-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.skx__nbt-note svg { color: var(--terracotta); }
+
+/* what to look for */
+.skx__look-list { list-style: none; margin: 11px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.skx__look-row {
+  appearance: none;
+  width: 100%;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 10px minmax(68px, auto) minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  transition: background 130ms ease, border-color 130ms ease;
+}
+.skx__look-row:hover { background: rgba(255, 255, 255, 0.04); }
+.skx__look-row.is-active { background: rgba(245, 166, 35, 0.08); border-color: rgba(245, 166, 35, 0.35); }
+.skx__look-dot { width: 9px; height: 9px; border-radius: 50%; }
+.skx__look-name { font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.skx__look-where {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skx__look-ic { display: inline-flex; justify-content: center; color: var(--text-muted); }
+.skx__look-empty, .skx__vis-empty { font-family: var(--mono); font-size: 12px; color: var(--text-dim); padding: 14px 4px; }
+
+/* ── Visible now rail ── */
+.skx__sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.skx__sec-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.skx__sec-count { color: var(--text-dim); font-family: var(--mono); font-size: 12px; }
+.skx__viewall {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  min-height: 44px;
+  padding-inline: 4px;
+}
+.skx__viewall:hover { filter: brightness(1.12); }
+.skx__vis-rail {
+  list-style: none;
+  margin: 11px 0 0;
+  padding: 2px 2px 6px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.skx__vis-rail::-webkit-scrollbar { display: none; }
+.skx__vis-rail > li { flex: 0 0 auto; scroll-snap-align: start; }
+.skx__vis-card {
+  appearance: none;
+  cursor: pointer;
+  width: 124px;
+  min-height: 172px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  transition: border-color 130ms ease, background 130ms ease, transform 130ms ease;
+}
+.skx__vis-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.skx__vis-card.is-active { border-color: rgba(245, 166, 35, 0.45); background: rgba(245, 166, 35, 0.07); }
+.skx__vis-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.skx__vis-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.skx__vis-name {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skx__vis-pos {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-feature-settings: 'tnum' 1;
+}
+.skx__vis-badge {
+  margin-top: 1px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.skx__vis-badge--best  { color: #72E09B; background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); }
+.skx__vis-badge--good  { color: #72E09B; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.22); }
+.skx__vis-badge--scope { color: #80A9FF; background: rgba(45, 108, 255, 0.1); border: 1px solid rgba(45, 108, 255, 0.28); }
+.skx__vis-badge--later { color: #c9a6ff; background: rgba(201, 166, 255, 0.1); border: 1px solid rgba(201, 166, 255, 0.28); }
+
+/* ── Tonight overview bar ── */
+.skx__ov { margin-top: 12px; }
+.skx__ov-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+.skx__ov-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.58), rgba(34, 184, 207, 0.9));
+  border-radius: 999px;
+}
+.skx__ov-window-label { position: absolute; inset: 0; }
+.skx__ov-ends { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-top: 9px; }
+.skx__ov-end { display: flex; flex-direction: column; gap: 1px; color: var(--text-muted); }
+.skx__ov-end svg { color: var(--terracotta); }
+.skx__ov-end--right { align-items: flex-end; text-align: right; }
+.skx__ov-end-time { font-family: var(--mono); font-size: 13px; color: var(--text); font-feature-settings: 'tnum' 1; }
+.skx__ov-end-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+.skx__ov-mid {
+  align-self: center;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--seafoam, #5EEAD4);
+  text-align: center;
+}
+
+/* ── Tips card ── */
+.skx__tips { display: flex; flex-direction: column; }
+.skx__tips-text {
+  margin: 11px 0 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  flex: 1;
+}
+.skx__tips-dots { display: flex; gap: 6px; margin-top: 11px; }
+.skx__tips-dot {
+  appearance: none;
+  cursor: pointer;
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background 140ms ease, transform 140ms ease;
+}
+.skx__tips-dot.is-active { background: var(--terracotta); transform: scale(1.15); }
+
+.skx__icon-btn:focus-visible,
+.skx__avatar:focus-visible,
+.skx__loc:focus-visible,
+.skx__look-row:focus-visible,
+.skx__viewall:focus-visible,
+.skx__vis-card:focus-visible,
+.skx__tips-dot:focus-visible {
+  outline: 2px solid rgba(245, 166, 35, 0.75);
+  outline-offset: 3px;
+}
+
+/* ── Wider screens — the same sections, roomier ── */
+@media (min-width: 721px) {
+  .skx__vis-card { width: 140px; }
+  .skx__vis-thumb { width: 64px; height: 64px; }
+}
+@media (min-width: 921px) {
+  .skx .sky-obs__wrap { max-width: 1100px; }
+  .skx__map .sky-map { max-width: min(100%, 680px); }
+  .skx__summary { padding: 16px 10px; }
+}
+@media (min-width: 1120px) {
+  .skx .sky-obs__wrap { max-width: 1180px; }
+  .skx__map .sky-map { max-width: min(100%, 720px); }
+  .skx__duo { gap: 16px; }
+}
+
+/* ── Phones — tighten the summary + duos ── */
+@media (max-width: 560px) {
+  .skx .sky-obs__wrap { padding-inline: 14px; }
+  .skx__topbar { margin-inline: -14px; padding-inline: 14px; }
+  .skx__brand { font-size: 21px; }
+  .skx__icon-btn,
+  .skx__avatar { width: 42px; height: 42px; }
+  .skx__head { align-items: stretch; flex-direction: column; }
+  .skx__loc { width: fit-content; max-width: 100%; }
+  .skx__summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .skx__sum-cell { padding: 10px 11px; }
+  /* second column of each row gets the divider; rows get a top divider */
+  .skx__sum-cell + .skx__sum-cell { border-left: none; }
+  .skx__sum-cell:nth-child(2n) { border-left: 1px solid var(--border); }
+  .skx__sum-cell:nth-child(n + 3) { border-top: 1px solid var(--border); }
+}
+@media (max-width: 480px) {
+  .skx__duo { grid-template-columns: 1fr; }
+  .skx__title { font-size: 24px; }
+  .skx__look-row { grid-template-columns: 10px minmax(0, 1fr) 18px; }
+  .skx__look-where { display: none; }
 }
