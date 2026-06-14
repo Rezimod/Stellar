@@ -959,10 +959,62 @@
     },
     "filters": {
       "all": "All",
-      "visible": "Visible",
+      "visible": "Visible now",
       "naked": "Naked eye",
+      "telescope": "Telescope",
+      "binoculars": "Binoculars",
+      "rare": "Rare",
       "deep": "Deep sky"
     },
+    "progress": {
+      "title": "Tonight",
+      "complete": "Complete",
+      "starsEarned": "Stars earned",
+      "nextReward": "Next reward",
+      "continue": "Continue mission",
+      "start": "Start tonight's sweep",
+      "allDone": "All targets observed"
+    },
+    "quest": {
+      "badge": "Tonight's main quest",
+      "bestViewing": "Best viewing",
+      "reward": "Reward",
+      "visibility": "Visibility",
+      "observe": "Observe",
+      "anytime": "All night",
+      "comingLater": "Rises {time}"
+    },
+    "nearby": {
+      "title": "Nearby sky events",
+      "viewAll": "View all",
+      "now": "Now",
+      "after": "After {time}",
+      "empty": "Nothing above the horizon right now"
+    },
+    "list": {
+      "min": "{n} min",
+      "visibleNow": "Visible now",
+      "after": "After {time}",
+      "comingLater": "Coming later",
+      "observe": "Observe",
+      "viewAll": "View all missions",
+      "showLess": "Show less"
+    },
+    "weather": {
+      "title": "Weather",
+      "clear": "Clear",
+      "partly": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "cloudCover": "Cloud cover",
+      "seeing": "Seeing",
+      "good": "Great night for observing",
+      "poor": "Poor conditions tonight",
+      "unknown": "—"
+    },
+    "tipTitle": "Tonight tip",
+    "streakTitle": "Streak",
+    "resetsMidnight": "Resets at midnight",
+    "quickObserve": "Quick observe",
     "glance": {
       "title": "Tonight at a glance",
       "dark": "Astronomical dark",

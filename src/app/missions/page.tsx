@@ -7,7 +7,6 @@ import { useAppState } from '@/hooks/useAppState';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { DailyCheckInCard } from '@/components/missions/DailyCheckInCard';
-import { EarningLadder } from '@/components/missions/EarningLadder';
 import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
@@ -23,7 +22,10 @@ import EventInfoSheet from '@/components/sky/EventInfoSheet';
 import DifficultyExplainer from '@/components/sky/DifficultyExplainer';
 import { getRareEvents, getUpcomingEvents, type AstroEvent } from '@/lib/astro-events';
 import type { QuizDef } from '@/lib/quizzes';
-import { Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe, Rocket, Clock, Eye, Cloud } from 'lucide-react';
+import {
+  Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe,
+  Rocket, Clock, Eye, Cloud, Gift, ChevronRight, Plus, Lightbulb,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Body, Illumination, MoonPhase } from 'astronomy-engine';
 
@@ -39,60 +41,29 @@ type DiffClass = 'easy' | 'med' | 'hard' | 'expert';
 
 type EquipKey = 'naked' | 'telescope' | 'binoculars';
 
-// Per-mission "remind me" reminders. Stored client-side; same shape (Set of
-// mission ids) is used by the settings page should we ever surface a list.
-const REMINDERS_STORAGE_KEY = 'stellar_target_reminders';
-
-function readReminders(): Set<string> {
-  if (typeof window === 'undefined') return new Set();
-  try {
-    const raw = localStorage.getItem(REMINDERS_STORAGE_KEY);
-    if (!raw) return new Set();
-    const parsed: unknown = JSON.parse(raw);
-    return new Set(Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function writeReminders(set: Set<string>) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify([...set]));
-  } catch (e) { console.error('[missions] save reminders', e); }
-}
-
-async function ensureNotifPermission(): Promise<NotificationPermission | 'unsupported'> {
-  if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
-  if (Notification.permission !== 'default') return Notification.permission;
-  try {
-    return await Notification.requestPermission();
-  } catch {
-    return 'denied';
-  }
-}
-
 interface GridEntry {
   id: string;
   stars: number;
   diff: DiffClass;
   equip: EquipKey;
   routeId: string;
+  estMin: number;
 }
 
 // 9 tiles in display order. Every entry maps to a real MISSIONS row in
 // src/lib/constants.ts so the briefing screen, AI verification, NFT name and
-// Stars reward all match what the tile advertises.
+// Stars reward all match what the tile advertises. estMin = suggested time at
+// the eyepiece — observing guidance, not a countdown.
 const GRID: GridEntry[] = [
-  { id: 'moon',      stars: 50,  diff: 'easy',   equip: 'naked',      routeId: 'moon' },
-  { id: 'jupiter',   stars: 75,  diff: 'easy',   equip: 'telescope',  routeId: 'jupiter' },
-  { id: 'pleiades',  stars: 60,  diff: 'easy',   equip: 'naked',      routeId: 'pleiades' },
-  { id: 'venus',     stars: 40,  diff: 'easy',   equip: 'naked',      routeId: 'venus' },
-  { id: 'saturn',    stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'saturn' },
-  { id: 'mars',      stars: 85,  diff: 'med',    equip: 'telescope',  routeId: 'mars' },
-  { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion' },
-  { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda' },
-  { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab' },
+  { id: 'moon',      stars: 50,  diff: 'easy',   equip: 'naked',      routeId: 'moon',      estMin: 5  },
+  { id: 'jupiter',   stars: 75,  diff: 'easy',   equip: 'telescope',  routeId: 'jupiter',   estMin: 8  },
+  { id: 'pleiades',  stars: 60,  diff: 'easy',   equip: 'naked',      routeId: 'pleiades',  estMin: 6  },
+  { id: 'venus',     stars: 40,  diff: 'easy',   equip: 'naked',      routeId: 'venus',     estMin: 5  },
+  { id: 'saturn',    stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'saturn',    estMin: 10 },
+  { id: 'mars',      stars: 85,  diff: 'med',    equip: 'telescope',  routeId: 'mars',      estMin: 12 },
+  { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion',     estMin: 10 },
+  { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda', estMin: 12 },
+  { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab',      estMin: 15 },
 ];
 
 // Synodic phase (0 = new, 0.5 = full) → the moonPhase key under the `sky` i18n
@@ -112,12 +83,35 @@ function fmtClock(d: Date): string {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-type MissionFilter = 'all' | 'visible' | 'naked' | 'deep';
-const MISSION_FILTERS: MissionFilter[] = ['all', 'visible', 'naked', 'deep'];
+function clampDate(d: Date, min: Date, max: Date): Date {
+  if (d.getTime() < min.getTime()) return min;
+  if (d.getTime() > max.getTime()) return max;
+  return d;
+}
+
+// 0–5 visibility rating from peak altitude tonight. Real measurement, not theatre.
+function visibilityStars(alt: number): number {
+  if (alt >= 60) return 5;
+  if (alt >= 45) return 4;
+  if (alt >= 30) return 3;
+  if (alt >= 15) return 2;
+  if (alt > 0) return 1;
+  return 0;
+}
+
+// Confidence % derived from peak altitude — higher in the sky reads cleaner.
+function visibilityPct(alt: number): number {
+  if (alt <= 0) return 0;
+  return Math.min(99, Math.max(60, Math.round(60 + alt * 0.45)));
+}
+
+type MissionFilter = 'all' | 'visible' | 'naked' | 'telescope' | 'binoculars' | 'rare';
+const MISSION_FILTERS: MissionFilter[] = ['all', 'visible', 'naked', 'telescope', 'binoculars', 'rare'];
 const DEEP_SKY = new Set(['pleiades', 'orion', 'andromeda', 'crab']);
+const LIST_PREVIEW = 5;
 
 // Live lineup keys -> their real mission ids. Mercury isn't in the GRID but
-// has a real mission entry so tapping it from the live strip works.
+// has a real mission entry so tapping it from the nearby strip works.
 const LINEUP_ROUTE_BY_KEY: Record<string, { routeId: string; stars: number }> = {
   moon:    { routeId: 'moon',    stars: 50 },
   jupiter: { routeId: 'jupiter', stars: 75 },
@@ -126,6 +120,7 @@ const LINEUP_ROUTE_BY_KEY: Record<string, { routeId: string; stars: number }> = 
   venus:   { routeId: 'venus',   stars: 40 },
   mercury: { routeId: 'mercury', stars: 60 },
 };
+const LINEUP_KEYS = ['moon', 'jupiter', 'saturn', 'mars', 'venus', 'mercury'];
 
 type TipKey = 'cool' | 'zoom' | 'align' | 'eyes';
 const TIPS: { key: TipKey; Icon: LucideIcon }[] = [
@@ -134,8 +129,6 @@ const TIPS: { key: TipKey; Icon: LucideIcon }[] = [
   { key: 'align', Icon: Crosshair },
   { key: 'eyes',  Icon: LcMoon },
 ];
-
-const LINEUP_KEYS = ['moon', 'jupiter', 'saturn', 'mars', 'venus', 'mercury'];
 
 interface QuizUi {
   key: 'solar-system' | 'constellations' | 'telescopes' | 'universe' | 'space-exploration';
@@ -154,12 +147,9 @@ const QUIZ_UI: Record<string, QuizUi> = {
   'space-exploration': { key: 'space-exploration', Icon: Rocket,      gradient: HUB_GRADIENTS.rose,    reward: 100, descEn: '10 questions · missions, probes, astronauts',  descKa: '10 კითხვა · მისიები, ზონდები, ასტრონავტები' },
 };
 
-type LocalizedGridEntry = GridEntry & {
-  name: string;
-  desc: string;
-  diffLabel: string;
-  equipLabel: string;
-};
+interface SkyPos { altitude: number; azimuth: number; rise: Date | null; transit: Date | null; }
+
+type LocalizedGridEntry = GridEntry & { name: string; desc: string; diffLabel: string; equipLabel: string };
 
 export default function MissionsPage() {
   const router = useRouter();
@@ -193,6 +183,9 @@ export default function MissionsPage() {
   const [activeEventAnchor, setActiveEventAnchor] = useState<DOMRect | null>(null);
   const [activeExplainer, setActiveExplainer] = useState<{ kind: 'mission' | 'event'; id: string; title: string; eventType?: string } | null>(null);
   const [activeExplainerAnchor, setActiveExplainerAnchor] = useState<DOMRect | null>(null);
+  const [missionFilter, setMissionFilter] = useState<MissionFilter>('all');
+  const [showAllMissions, setShowAllMissions] = useState(false);
+  const [tipIndex, setTipIndex] = useState(0);
 
   const upcomingEvents = useMemo(() => getUpcomingEvents(new Date(), 30), []);
   const rareEvents = useMemo(() => getRareEvents(new Date(), 5), []);
@@ -217,9 +210,9 @@ export default function MissionsPage() {
   }, [evalTime]);
 
   // Window-based visibility: best altitude any planet/object reaches during
-  // tonight's astronomical-dark window. This drives the "Missions tonight"
-  // grid + visible count, so it stays accurate during daylight or cloudy
-  // weather — it's a forecast of *tonight*, not a live readout.
+  // tonight's astronomical-dark window. Drives the mission deck + visible count,
+  // so it stays accurate during daylight or cloudy weather — a forecast of
+  // *tonight*, not a live readout.
   const tonightWindowPlanets = useMemo(() => {
     if (dark.duskStart && dark.dawnEnd) {
       return getWindowPlanets(lat, lon, dark.duskStart, dark.dawnEnd);
@@ -227,21 +220,18 @@ export default function MissionsPage() {
     return getVisiblePlanets(lat, lon, evalTime);
   }, [lat, lon, evalTime, dark.duskStart, dark.dawnEnd]);
 
-  // Live positions: where planets actually are right now. Only used to fill
-  // the LIVE strip when the sky is dark *and* clear.
-  const livePlanets = useMemo(() => getVisiblePlanets(lat, lon, now), [lat, lon, now]);
-
-  // Current cloud cover for the LIVE gate. Pulled from the cached sky-forecast
-  // route; we just snap to the hour closest to now. Re-fetched every 5 min so
-  // the gate tracks the actual sky as the night goes on.
+  // Current cloud cover + temperature for the live conditions card. Pulled from
+  // the cached sky-forecast route, snapped to the hour closest to now, refreshed
+  // every 5 min so the readout tracks the actual sky as the night goes on.
   const [cloudCoverPct, setCloudCoverPct] = useState<number | null>(null);
+  const [tempC, setTempC] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
-    const fetchClouds = async () => {
+    const fetchConditions = async () => {
       try {
         const res = await fetch(`/api/sky/forecast?lat=${lat}&lon=${lon}`);
         if (!res.ok) return;
-        const days: { hours: { time: string; cloudCover: number }[] }[] = await res.json();
+        const days: { hours: { time: string; cloudCover: number; temp: number }[] }[] = await res.json();
         if (cancelled) return;
         const flat = days.flatMap((d) => d.hours ?? []);
         if (!flat.length) return;
@@ -253,13 +243,14 @@ export default function MissionsPage() {
           if (diff < bestDiff) { bestDiff = diff; best = h; }
         }
         setCloudCoverPct(typeof best.cloudCover === 'number' ? best.cloudCover : null);
-      } catch { /* leave null — LIVE gate stays optimistic */ }
+        setTempC(typeof best.temp === 'number' ? Math.round(best.temp) : null);
+      } catch { /* leave null — conditions card stays neutral */ }
     };
-    fetchClouds();
+    fetchConditions();
     let id: number | null = null;
     const start = () => {
       if (id !== null) return;
-      id = window.setInterval(fetchClouds, 5 * 60_000);
+      id = window.setInterval(fetchConditions, 5 * 60_000);
     };
     const stop = () => {
       if (id === null) return;
@@ -267,10 +258,7 @@ export default function MissionsPage() {
       id = null;
     };
     if (typeof document === 'undefined' || !document.hidden) start();
-    const onVis = () => {
-      if (document.hidden) stop();
-      else start();
-    };
+    const onVis = () => { if (document.hidden) stop(); else start(); };
     document.addEventListener('visibilitychange', onVis);
     return () => {
       cancelled = true;
@@ -280,14 +268,15 @@ export default function MissionsPage() {
   }, [lat, lon]);
 
   const skyPositions = useMemo(() => {
-    const out: Record<string, { altitude: number; azimuth: number; rise: Date | null }> = {};
+    const out: Record<string, SkyPos> = {};
     for (const p of tonightWindowPlanets) {
       const rise = p.rise instanceof Date ? p.rise : null;
-      out[p.key] = { altitude: p.altitude, azimuth: p.azimuth, rise };
+      const transit = p.transit instanceof Date ? p.transit : (p.transit ? new Date(p.transit) : null);
+      out[p.key] = { altitude: p.altitude, azimuth: p.azimuth, rise, transit };
     }
     const ds = getChartDeepSky(lat, lon, evalTime, 200, 100, 180);
     for (const d of ds) {
-      out[d.id] = { altitude: d.altitude, azimuth: d.azimuth, rise: null };
+      out[d.id] = { altitude: d.altitude, azimuth: d.azimuth, rise: null, transit: null };
     }
     return out;
   }, [lat, lon, evalTime, tonightWindowPlanets]);
@@ -307,44 +296,65 @@ export default function MissionsPage() {
     [skyPositions],
   );
 
-  const [missionFilter, setMissionFilter] = useState<MissionFilter>('all');
+  // Tonight's progress — earned / total Stars across the deck, completion %,
+  // and a 0–5 star rating. All derived from real completed missions.
+  const totalStars = useMemo(() => GRID.reduce((s, g) => s + g.stars, 0), []);
+  const earnedStars = useMemo(
+    () => GRID.filter((g) => completedIds.has(g.id)).reduce((s, g) => s + g.stars, 0),
+    [completedIds],
+  );
+  const completePct = totalStars ? Math.round((earnedStars / totalStars) * 100) : 0;
+  const rating = completePct <= 0 ? 0 : Math.min(5, Math.max(1, Math.round(completePct / 20)));
+
+  // Main quest = best target to do next: prefer a visible, incomplete, highest
+  // target; fall back to the highest-value incomplete one.
+  const questEntry = useMemo(() => {
+    const incomplete = GRID.filter((g) => !completedIds.has(g.id));
+    const pool = incomplete.length ? incomplete : GRID;
+    const visible = pool
+      .filter((g) => (skyPositions[g.id]?.altitude ?? -90) > 10)
+      .sort((a, b) => (skyPositions[b.id]?.altitude ?? -90) - (skyPositions[a.id]?.altitude ?? -90));
+    if (visible.length) return visible[0];
+    return [...pool].sort((a, b) => b.stars - a.stars)[0] ?? GRID[0];
+  }, [completedIds, skyPositions]);
+
   const filteredGrid = useMemo(
     () =>
       GRID.filter((g) => {
         if (missionFilter === 'visible') return (skyPositions[g.id]?.altitude ?? -90) > 0;
         if (missionFilter === 'naked') return g.equip === 'naked';
-        if (missionFilter === 'deep') return DEEP_SKY.has(g.id);
+        if (missionFilter === 'telescope') return g.equip === 'telescope';
+        if (missionFilter === 'binoculars') return g.equip === 'binoculars';
+        if (missionFilter === 'rare') return DEEP_SKY.has(g.id);
         return true;
       }),
     [missionFilter, skyPositions],
   );
 
-  const primeEntry = useMemo(() => {
-    const visible = GRID
-      .filter((g) => !completedIds.has(g.id))
-      .filter((g) => (skyPositions[g.id]?.altitude ?? -90) > 10);
-    if (visible.length === 0) return null;
-    visible.sort((a, b) => (skyPositions[b.id]?.altitude ?? -90) - (skyPositions[a.id]?.altitude ?? -90));
-    return visible[0];
-  }, [completedIds, skyPositions]);
+  // Nearby planets to point at right now / soon — visible first, by altitude.
+  const nearby = useMemo(() => {
+    const items = LINEUP_KEYS.map((key) => {
+      const pos = skyPositions[key];
+      if (!pos) return null;
+      const route = LINEUP_ROUTE_BY_KEY[key];
+      return {
+        key,
+        name: t(`grid.${key}.name`),
+        above: pos.altitude > 0,
+        rise: pos.rise,
+        altitude: pos.altitude,
+        stars: route?.stars ?? 40,
+        routeId: route?.routeId ?? key,
+      };
+    }).filter((x): x is NonNullable<typeof x> => x !== null);
+    items.sort((a, b) => (b.above ? 1 : 0) - (a.above ? 1 : 0) || b.altitude - a.altitude);
+    return items;
+  }, [skyPositions, t]);
 
   const headerTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const dateLabel = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
-  const lineupLabels = {
-    daytime: t('liveStatus.daytime'),
-    cloudy: t('liveStatus.cloudy'),
-    nothingUp: t('liveStatus.nothingUp'),
-    aria: t('liveStatus.aria'),
-    listAria: t('liveStatus.listAria'),
-    live: t('liveStatus.live'),
-    alt: t('liveStatus.alt'),
-    mag: t('liveStatus.mag'),
-  };
-
-  // LIVE gate: only show real-time planets when it is actually astronomical
-  // dark *and* the sky isn't overcast. Anything else collapses the lineup to
-  // an empty state so users aren't misled into pointing a scope at clouds.
+  // Conditions gate — same logic as before, used for the status chip label.
   const CLOUD_OVERCAST_PCT = 70;
   const isCloudy = cloudCoverPct != null && cloudCoverPct >= CLOUD_OVERCAST_PCT;
   const liveStatus: 'live' | 'daytime' | 'cloudy' = !dark.isCurrentlyDark
@@ -352,404 +362,359 @@ export default function MissionsPage() {
     : isCloudy
       ? 'cloudy'
       : 'live';
+  const statusLabel = liveStatus === 'daytime'
+    ? t('liveStatus.daytime')
+    : liveStatus === 'cloudy'
+      ? t('liveStatus.cloudy')
+      : t('liveStatus.live');
 
   const startMission = useCallback((routeId: string) => {
     router.push(`/observe/${routeId}`);
   }, [router]);
 
-  const lineup = useMemo(() => {
-    if (liveStatus !== 'live') return [];
-    const map = new Map(livePlanets.map((p) => [p.key, p] as const));
-    const items: {
-      key: string;
-      name: string;
-      altitude: number;
-      azimuthDir: string;
-      magnitude: number;
-      routeId: string;
-      stars: number;
-    }[] = [];
-    for (const key of LINEUP_KEYS) {
-      const p = map.get(key);
-      if (!p || p.altitude <= 0) continue;
-      const route = LINEUP_ROUTE_BY_KEY[key];
-      // Translation keys for every LINEUP_KEYS entry (incl. mercury, which has
-      // no GRID tile) live under `missionsPage.grid.<key>.name` in en/ka.
-      const localizedName = t(`grid.${key}.name`);
-      items.push({
-        key,
-        name: localizedName,
-        altitude: p.altitude,
-        azimuthDir: p.azimuthDir,
-        magnitude: p.magnitude,
-        routeId: route?.routeId ?? 'free-observation',
-        stars: route?.stars ?? 40,
-      });
+  // Best-viewing window for a target: 90-minute span centred on its peak,
+  // clamped to tonight's dark window. Falls back to "all night" / rise time.
+  const viewingWindow = useCallback((id: string): { kind: 'window'; text: string } | { kind: 'anytime' } | { kind: 'later'; time: string } | null => {
+    const pos = skyPositions[id];
+    if (!pos) return null;
+    const above = pos.altitude > 0;
+    if (dark.duskStart && dark.dawnEnd && pos.transit) {
+      const start = clampDate(new Date(pos.transit.getTime() - 45 * 60_000), dark.duskStart, dark.dawnEnd);
+      const end = clampDate(new Date(pos.transit.getTime() + 45 * 60_000), dark.duskStart, dark.dawnEnd);
+      if (end.getTime() > start.getTime()) return { kind: 'window', text: `${fmtClock(start)}–${fmtClock(end)}` };
     }
-    items.sort((a, b) => b.altitude - a.altitude);
-    return items;
-  }, [liveStatus, livePlanets, t]);
+    if (above) return { kind: 'anytime' };
+    if (pos.rise) return { kind: 'later', time: fmtClock(pos.rise) };
+    return null;
+  }, [skyPositions, dark.duskStart, dark.dawnEnd]);
 
   // ---- Auth gate ----
   if (!authenticated) {
     return (
       <div className="missions-page">
-        <div className="mis-hero">
-          <div className="mis-hero-inner">
-            <TonightLineup
-              items={lineup}
-              liveStatus={liveStatus}
-              headerTime={headerTime}
-              dateLabel={dateLabel}
-              cityLabel={cityLabel}
-              onStart={() => undefined}
-              labels={lineupLabels}
-            />
+        <div className="mis-shell">
+          <div className="mis-statusbar" role="status">
+            <span className={`mis-statusbar-dot mis-statusbar-dot--${liveStatus}`} aria-hidden />
+            <span className="mis-statusbar-label">{statusLabel}</span>
+            <span className="mis-statusbar-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
           </div>
-        </div>
-
-        <div className="mis-content">
-          <section className="mis-section">
-            <div className="mis-auth-card">
-              <h2 className="mis-auth-title">{t('auth.title')}</h2>
-              <p className="mis-auth-body">
-                {t('auth.body')}
-              </p>
-              <button type="button" className="mis-auth-btn" onClick={() => setAuthOpen(true)}>
-                {t('auth.signIn')}
-              </button>
-              <p className="mis-auth-sub">{t('auth.sub')}</p>
-            </div>
-          </section>
+          <div className="mis-auth-card">
+            <h2 className="mis-auth-title">{t('auth.title')}</h2>
+            <p className="mis-auth-body">{t('auth.body')}</p>
+            <button type="button" className="mis-auth-btn" onClick={() => setAuthOpen(true)}>
+              {t('auth.signIn')}
+            </button>
+            <p className="mis-auth-sub">{t('auth.sub')}</p>
+          </div>
         </div>
         <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </div>
     );
   }
 
+  const questLocal = localize(questEntry);
+  const questPos = skyPositions[questEntry.id];
+  const questWin = viewingWindow(questEntry.id);
+  const questStars = visibilityStars(questPos?.altitude ?? -90);
+  const visibleMissions = showAllMissions ? filteredGrid : filteredGrid.slice(0, LIST_PREVIEW);
+  const tip = TIPS[tipIndex];
+
   return (
     <div className="missions-page">
       {activeQuiz && <QuizActive quiz={activeQuiz} onClose={() => setActiveQuiz(null)} />}
 
-      {/* Compact hero — one line: sky status (left) + prime target & check-in (right) */}
-      <div className="mis-hero">
-        <div className="mis-hero-inner">
-          <div className="mis-hero-row">
-            <div
-              className={`mis-status-chip mis-status-chip--${liveStatus}`}
-              role="status"
-              aria-label={lineupLabels.aria}
-            >
-              <span className="mis-status-chip-dot" aria-hidden />
-              <span className="mis-status-chip-label">
-                {liveStatus === 'daytime'
-                  ? lineupLabels.daytime
-                  : liveStatus === 'cloudy'
-                    ? lineupLabels.cloudy
-                    : lineupLabels.live}
-              </span>
-              <span className="mis-status-chip-sep" aria-hidden>·</span>
-              <span className="mis-status-chip-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
-            </div>
+      <div className="mis-shell">
+        {/* Status bar */}
+        <div className="mis-statusbar" role="status">
+          <span className={`mis-statusbar-dot mis-statusbar-dot--${liveStatus}`} aria-hidden />
+          <span className="mis-statusbar-label">{statusLabel}</span>
+          <span className="mis-statusbar-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
+        </div>
 
-            <div className="mis-strip">
-              {primeEntry && (
-                <PrimeCard
-                  entry={localize(primeEntry)}
-                  altitude={skyPositions[primeEntry.id]?.altitude ?? null}
-                  onStart={() => startMission(primeEntry.routeId)}
-                  labels={{ badge: t('primeBadge'), observe: t('observe') }}
-                />
-              )}
-              <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
-            </div>
+        {/* Progress + Main quest */}
+        <div className="mis-top-grid">
+          <ProgressCard
+            pct={completePct}
+            earned={earnedStars}
+            total={totalStars}
+            rating={rating}
+            nextName={questLocal.name}
+            nextStars={questEntry.stars}
+            allDone={completePct >= 100}
+            onContinue={() => startMission(questEntry.routeId)}
+            labels={{
+              title: t('progress.title'),
+              complete: t('progress.complete'),
+              starsEarned: t('progress.starsEarned'),
+              nextReward: t('progress.nextReward'),
+              continue: completePct >= 100 ? t('progress.allDone') : t('progress.continue'),
+            }}
+          />
+
+          <MainQuestCard
+            entry={questLocal}
+            altitude={questPos?.altitude ?? null}
+            window={questWin}
+            visibilityStars={questStars}
+            onObserve={() => startMission(questEntry.routeId)}
+            labels={{
+              badge: t('quest.badge'),
+              bestViewing: t('quest.bestViewing'),
+              reward: t('quest.reward'),
+              visibility: t('quest.visibility'),
+              observe: t('quest.observe'),
+              anytime: t('quest.anytime'),
+              later: (time: string) => t('quest.comingLater', { time }),
+            }}
+          />
+        </div>
+
+        {/* Nearby sky events */}
+        <section className="mis-block">
+          <div className="mis-block-head">
+            <h2 className="mis-block-title">{t('nearby.title')}</h2>
           </div>
-
-          {liveStatus === 'live' && (
-            <TonightLineup
-              items={lineup}
-              liveStatus={liveStatus}
-              headerTime={headerTime}
-              dateLabel={dateLabel}
-              cityLabel={cityLabel}
-              onStart={(routeId) => startMission(routeId)}
-              labels={lineupLabels}
-            />
+          {nearby.length === 0 ? (
+            <p className="mis-empty">{t('nearby.empty')}</p>
+          ) : (
+            <div className="mis-nearby-rail">
+              {nearby.map((n) => (
+                <button key={n.key} type="button" className="mis-nearby-card" onClick={() => startMission(n.routeId)}>
+                  <span className="mis-nearby-art"><PlanetViz name={n.key} size="medium" /></span>
+                  <span className="mis-nearby-name">{n.name}</span>
+                  <span className={`mis-nearby-badge${n.above ? ' is-now' : ''}`}>
+                    {n.above ? t('nearby.now') : n.rise ? t('nearby.after', { time: fmtClock(n.rise) }) : t('quest.anytime')}
+                  </span>
+                  <span className="mis-nearby-stars"><Star size={11} strokeWidth={2} className="mis-star-icn" />+{n.stars}</span>
+                </button>
+              ))}
+            </div>
           )}
+        </section>
+
+        {/* Side cards — streak, weather, tip */}
+        <div className="mis-side-grid">
+          <section className="mis-card mis-card--streak">
+            <div className="mis-card-head">
+              <span className="mis-card-eyebrow">{t('streakTitle')}</span>
+            </div>
+            <DailyCheckInCard lat={lat} lon={lon} address={address} getAccessToken={getAccessToken} />
+            <span className="mis-card-foot">{t('resetsMidnight')}</span>
+          </section>
+
+          <WeatherCard
+            cloudCoverPct={cloudCoverPct}
+            tempC={tempC}
+            labels={{
+              title: t('weather.title'),
+              clear: t('weather.clear'),
+              partly: t('weather.partly'),
+              cloudy: t('weather.cloudy'),
+              cloudCover: t('weather.cloudCover'),
+              good: t('weather.good'),
+              poor: t('weather.poor'),
+              unknown: t('weather.unknown'),
+            }}
+          />
+
+          <section className="mis-card mis-card--tip">
+            <div className="mis-card-head">
+              <span className="mis-card-eyebrow"><Lightbulb size={12} strokeWidth={1.9} /> {t('tipTitle')}</span>
+            </div>
+            <div className="mis-tip-body">
+              <span className="mis-tip-icon" aria-hidden><tip.Icon size={16} strokeWidth={1.7} /></span>
+              <div>
+                <p className="mis-tip-title">{t(`tips.${tip.key}.title`)}</p>
+                <p className="mis-tip-text">{t(`tips.${tip.key}.body`)}</p>
+              </div>
+            </div>
+            <div className="mis-tip-dots" role="tablist" aria-label={t('tipTitle')}>
+              {TIPS.map((tp, i) => (
+                <button
+                  key={tp.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === tipIndex}
+                  aria-label={t(`tips.${tp.key}.title`)}
+                  className={`mis-tip-dot${i === tipIndex ? ' is-active' : ''}`}
+                  onClick={() => setTipIndex(i)}
+                />
+              ))}
+            </div>
+          </section>
         </div>
+
+        {/* Missions tonight */}
+        <section className="mis-block">
+          <div className="mis-block-head">
+            <h2 className="mis-block-title">{t('sections.tonight')}</h2>
+            <span className="mis-block-meta">{t('sections.tonightCount', { total: GRID.length, visible: visibleCount })}</span>
+          </div>
+          <div className="mis-chips" role="tablist" aria-label={t('sections.tonight')}>
+            {MISSION_FILTERS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                role="tab"
+                aria-selected={missionFilter === f}
+                className={`mis-chip${missionFilter === f ? ' is-active' : ''}`}
+                onClick={() => { setMissionFilter(f); setShowAllMissions(false); }}
+              >
+                {t(`filters.${f}`)}
+              </button>
+            ))}
+          </div>
+          <div className="mis-list">
+            {visibleMissions.map((g) => {
+              const pos = skyPositions[g.id];
+              const above = (pos?.altitude ?? -90) > 0;
+              return (
+                <MissionRow
+                  key={g.id}
+                  entry={localize(g)}
+                  above={above}
+                  pct={visibilityPct(pos?.altitude ?? -90)}
+                  rise={pos?.rise ?? null}
+                  onStart={() => startMission(g.routeId)}
+                  labels={{
+                    visibleNow: t('list.visibleNow'),
+                    after: (time: string) => t('list.after', { time }),
+                    comingLater: t('list.comingLater'),
+                    observe: t('list.observe'),
+                    min: (n: number) => t('list.min', { n }),
+                  }}
+                />
+              );
+            })}
+          </div>
+          {filteredGrid.length > LIST_PREVIEW && (
+            <button type="button" className="mis-viewall" onClick={() => setShowAllMissions((v) => !v)}>
+              {showAllMissions ? t('list.showLess') : t('list.viewAll')}
+              <ChevronRight size={14} strokeWidth={2} className={showAllMissions ? 'mis-viewall-up' : ''} />
+            </button>
+          )}
+        </section>
+
+        {/* Knowledge quizzes */}
+        <section className="mis-block">
+          <div className="mis-block-head">
+            <h2 className="mis-block-title">{t('sections.quizzes')}</h2>
+            <span className="mis-block-meta">{t('sections.quizzesMetaShort')}</span>
+          </div>
+          <div className="mis-quiz-list">
+            {QUIZZES.map((quiz) => {
+              const ui = QUIZ_UI[quiz.id];
+              if (!ui) return null;
+              const result = completedQuizIds.get(quiz.id);
+              const score = result?.score ?? 0;
+              const total = quiz.questions.length;
+              const title = quiz.title[locale] ?? quiz.title.en;
+              const desc = locale === 'ka' ? ui.descKa : ui.descEn;
+              return (
+                <QuizRow
+                  key={quiz.id}
+                  Icon={ui.Icon}
+                  gradient={ui.gradient}
+                  title={title}
+                  meta={desc}
+                  reward={ui.reward}
+                  done={score > 0 && score >= total}
+                  onClick={() => setActiveQuiz(quiz)}
+                />
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Rare events */}
+        {rareEvents.length > 0 && (
+          <section className="mis-block">
+            <div className="mis-block-head">
+              <h2 className="mis-block-title">{t('sections.rare', { year: new Date().getFullYear() })}</h2>
+              <span className="mis-block-meta">{t('sections.rareMeta', { count: rareEvents.length })}</span>
+            </div>
+            <div className="mis-rare-deck">
+              {rareEvents.map((ev) => (
+                <RareEventCard
+                  key={`${ev.date}-${ev.name}`}
+                  event={ev}
+                  typeLabel={t(`eventType.${ev.type}`)}
+                  countdown={{
+                    today: t('countdown.today'),
+                    tomorrow: t('countdown.tomorrow'),
+                    past: t('countdown.past'),
+                    inDays: (n) => t('countdown.inDays', { n }),
+                    inMonths: (n) => t('countdown.inMonths', { n }),
+                  }}
+                  onOpen={(rect) => { setActiveEventAnchor(rect); setActiveEvent(ev); }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Upcoming events */}
+        {upcomingEvents.length > 0 && (
+          <section className="mis-block">
+            <div className="mis-block-head">
+              <h2 className="mis-block-title">{t('sections.upcoming')}</h2>
+              <span className="mis-block-meta">{t('sections.eventsCount', { count: upcomingEvents.length })}</span>
+            </div>
+            <div className="mis-events-deck">
+              {upcomingEvents.map((ev) => (
+                <EventRow
+                  key={`${ev.date}-${ev.name}`}
+                  event={ev}
+                  typeLabel={t(`eventType.${ev.type}`)}
+                  difficultyLabel={t(`eventDiff.${ev.difficulty}`)}
+                  countdown={{ today: t('countdown.today'), tomorrow: t('countdown.tomorrow'), inDays: (n) => t('countdown.inDays', { n }) }}
+                  whyAria={t('whyHard', { name: ev.name })}
+                  onOpen={(rect) => { setActiveEventAnchor(rect); setActiveEvent(ev); }}
+                  onExplain={(rect) => {
+                    setActiveExplainerAnchor(rect);
+                    setActiveExplainer({ kind: 'event', id: ev.name, title: ev.name, eventType: ev.type });
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Using your telescope */}
+        <section className="mis-block">
+          <div className="mis-block-head">
+            <h2 className="mis-block-title">{t('sections.scope')}</h2>
+            <span className="mis-block-meta">{t('sections.scopeMeta')}</span>
+          </div>
+          <TelescopeGuide
+            tips={TIPS.map((tp) => ({ title: t(`tips.${tp.key}.title`), body: t(`tips.${tp.key}.body`), Icon: tp.Icon }))}
+            scopeName={t('scopeName')}
+          />
+        </section>
+
+        {/* Before you step out */}
+        <section className="mis-block">
+          <div className="mis-block-head">
+            <h2 className="mis-block-title">{t('sections.observer')}</h2>
+            <span className="mis-block-meta">{t('sections.observerMeta')}</span>
+          </div>
+          <ObserverAssist
+            items={[
+              { Icon: Clock, label: t('observer.dark.label'), value: dark.duskStart && dark.dawnEnd ? `${fmtClock(dark.duskStart)}–${fmtClock(dark.dawnEnd)}` : t('glance.unknown'), body: t('observer.dark.body') },
+              { Icon: LcMoon, label: t('observer.moon.label'), value: moonGlance ? t('observer.moon.value', { pct: moonGlance.illum }) : t('glance.unknown'), body: t('observer.moon.body') },
+              { Icon: Crosshair, label: t('observer.target.label'), value: questPos ? t('observer.target.value', { deg: Math.round(questPos.altitude) }) : t('glance.unknown'), body: t('observer.target.body') },
+              { Icon: Cloud, label: t('observer.comfort.label'), value: cloudCoverPct == null ? t('glance.unknown') : t('observer.comfort.value', { pct: cloudCoverPct }), body: t('observer.comfort.body') },
+              { Icon: Eye, label: t('observer.phone.label'), value: t('observer.phone.value'), body: t('observer.phone.body') },
+            ]}
+          />
+        </section>
       </div>
 
-      <div className="mis-content">
-        <div className="mis-dashboard">
-          {/* LEFT RAIL — ways to earn + tonight conditions */}
-          <aside className="mis-col mis-col-left">
-            <section className="mis-panel">
-              <div className="mis-panel-head">
-                <h2 className="mis-panel-title">{t('sections.earn')}</h2>
-                <span className="mis-panel-meta">{t('sections.earnMeta', { count: 6 })}</span>
-              </div>
-              <EarningLadder />
-            </section>
-
-            <section className="mis-panel">
-              <div className="mis-panel-head">
-                <h2 className="mis-panel-title">{t('glance.title')}</h2>
-              </div>
-              <TonightGlance
-                rows={[
-                  {
-                    Icon: Clock,
-                    label: t('glance.dark'),
-                    value: dark.duskStart && dark.dawnEnd
-                      ? `${fmtClock(dark.duskStart)}–${fmtClock(dark.dawnEnd)}`
-                      : t('glance.noDark'),
-                  },
-                  {
-                    Icon: LcMoon,
-                    label: t('glance.moon'),
-                    value: moonGlance
-                      ? `${moonGlance.illum}% · ${tSky(`moonPhase.${moonGlance.key}`)}`
-                      : t('glance.unknown'),
-                  },
-                  {
-                    Icon: Crosshair,
-                    label: t('glance.best'),
-                    value: primeEntry
-                      ? `${localize(primeEntry).name} · ${Math.round(skyPositions[primeEntry.id]?.altitude ?? 0)}°`
-                      : t('glance.unknown'),
-                  },
-                  {
-                    Icon: Star,
-                    label: t('glance.darkest'),
-                    value: dark.midpoint ? fmtClock(dark.midpoint) : t('glance.unknown'),
-                  },
-                  {
-                    Icon: Eye,
-                    label: t('glance.visible'),
-                    value: `${visibleCount}/${GRID.length}`,
-                  },
-                  {
-                    Icon: Cloud,
-                    label: t('glance.conditions'),
-                    value: cloudCoverPct == null
-                      ? t('glance.unknown')
-                      : cloudCoverPct < 20
-                        ? t('glance.clear')
-                        : t('glance.cloud', { pct: cloudCoverPct }),
-                  },
-                ]}
-              />
-            </section>
-          </aside>
-
-          {/* CENTER — missions tonight */}
-          <main className="mis-col mis-col-center">
-            <section className="mis-panel">
-              <div className="mis-panel-head">
-                <h2 className="mis-panel-title">{t('sections.tonight')}</h2>
-                <div className="mis-filters" role="tablist" aria-label={t('sections.tonight')}>
-                  {MISSION_FILTERS.map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      role="tab"
-                      aria-selected={missionFilter === f}
-                      className={`mis-filter-chip${missionFilter === f ? ' is-active' : ''}`}
-                      onClick={() => setMissionFilter(f)}
-                    >
-                      {t(`filters.${f}`)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <span className="mis-panel-sub">
-                {t('sections.tonightCount', { total: GRID.length, visible: visibleCount })}
-              </span>
-              <div className="mis-deck">
-                {filteredGrid.map((g) => {
-                  const pos = skyPositions[g.id];
-                  const altitude = pos?.altitude ?? -90;
-                  return (
-                    <MissionTile
-                      key={g.id}
-                      entry={localize(g)}
-                      above={altitude > 0}
-                      rise={pos?.rise ?? null}
-                      onStart={() => startMission(g.routeId)}
-                      labels={{
-                        rises: t('tile.rises'),
-                        belowHorizon: t('tile.belowHorizon'),
-                        visibleAfter: t('tile.visibleAfter'),
-                        notTonight: t('tile.notTonight'),
-                        remind: t('tile.remind'),
-                        reminderOn: t('tile.reminderOn'),
-                        reminderRemove: t('tile.reminderRemove'),
-                        reminderSet: t('tile.reminderSet'),
-                        reminderBlocked: t('tile.reminderBlocked'),
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="mis-panel">
-              <div className="mis-panel-head">
-                <h2 className="mis-panel-title">{t('sections.scope')}</h2>
-                <span className="mis-panel-meta">{t('sections.scopeMeta')}</span>
-              </div>
-              <TelescopeGuide
-                tips={TIPS.map((tip) => ({
-                  title: t(`tips.${tip.key}.title`),
-                  body: t(`tips.${tip.key}.body`),
-                  Icon: tip.Icon,
-                }))}
-                scopeName={t('scopeName')}
-              />
-            </section>
-
-            <section className="mis-panel mis-observer-panel">
-              <div className="mis-panel-head">
-                <h2 className="mis-panel-title">{t('sections.observer')}</h2>
-                <span className="mis-panel-meta">{t('sections.observerMeta')}</span>
-              </div>
-              <ObserverAssist
-                items={[
-                  {
-                    Icon: Clock,
-                    label: t('observer.dark.label'),
-                    value: dark.duskStart && dark.dawnEnd
-                      ? `${fmtClock(dark.duskStart)}–${fmtClock(dark.dawnEnd)}`
-                      : t('glance.unknown'),
-                    body: t('observer.dark.body'),
-                  },
-                  {
-                    Icon: LcMoon,
-                    label: t('observer.moon.label'),
-                    value: moonGlance
-                      ? t('observer.moon.value', { pct: moonGlance.illum })
-                      : t('glance.unknown'),
-                    body: t('observer.moon.body'),
-                  },
-                  {
-                    Icon: Crosshair,
-                    label: t('observer.target.label'),
-                    value: primeEntry
-                      ? t('observer.target.value', { deg: Math.round(skyPositions[primeEntry.id]?.altitude ?? 0) })
-                      : t('glance.unknown'),
-                    body: t('observer.target.body'),
-                  },
-                  {
-                    Icon: Cloud,
-                    label: t('observer.comfort.label'),
-                    value: cloudCoverPct == null
-                      ? t('glance.unknown')
-                      : t('observer.comfort.value', { pct: cloudCoverPct }),
-                    body: t('observer.comfort.body'),
-                  },
-                  {
-                    Icon: Eye,
-                    label: t('observer.phone.label'),
-                    value: t('observer.phone.value'),
-                    body: t('observer.phone.body'),
-                  },
-                ]}
-              />
-            </section>
-          </main>
-
-          {/* RIGHT RAIL — rare events + quizzes */}
-          <aside className="mis-col mis-col-right">
-            {rareEvents.length > 0 && (
-              <section className="mis-panel">
-                <div className="mis-panel-head">
-                  <h2 className="mis-panel-title">{t('sections.rare', { year: new Date().getFullYear() })}</h2>
-                  <span className="mis-panel-meta">{t('sections.rareMeta', { count: rareEvents.length })}</span>
-                </div>
-                <div className="mis-rare-deck">
-                  {rareEvents.map(ev => (
-                    <RareEventCard
-                      key={`${ev.date}-${ev.name}`}
-                      event={ev}
-                      typeLabel={t(`eventType.${ev.type}`)}
-                      countdown={{
-                        today: t('countdown.today'),
-                        tomorrow: t('countdown.tomorrow'),
-                        past: t('countdown.past'),
-                        inDays: (n) => t('countdown.inDays', { n }),
-                        inMonths: (n) => t('countdown.inMonths', { n }),
-                      }}
-                      onOpen={(rect) => {
-                        setActiveEventAnchor(rect);
-                        setActiveEvent(ev);
-                      }}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <section className="mis-panel">
-              <div className="mis-panel-head">
-                <h2 className="mis-panel-title">{t('sections.quizzes')}</h2>
-                <span className="mis-panel-meta">{t('sections.quizzesMetaShort')}</span>
-              </div>
-              <div className="mis-quiz-list">
-                {QUIZZES.map((quiz) => {
-                  const ui = QUIZ_UI[quiz.id];
-                  if (!ui) return null;
-                  const result = completedQuizIds.get(quiz.id);
-                  const score = result?.score ?? 0;
-                  const total = quiz.questions.length;
-                  const title = quiz.title[locale] ?? quiz.title.en;
-                  const desc = locale === 'ka' ? ui.descKa : ui.descEn;
-                  return (
-                    <QuizRow
-                      key={quiz.id}
-                      Icon={ui.Icon}
-                      gradient={ui.gradient}
-                      title={title}
-                      meta={desc}
-                      reward={ui.reward}
-                      done={score > 0 && score >= total}
-                      onClick={() => setActiveQuiz(quiz)}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-
-            {upcomingEvents.length > 0 && (
-              <section className="mis-panel">
-                <div className="mis-panel-head">
-                  <h2 className="mis-panel-title">{t('sections.upcoming')}</h2>
-                  <span className="mis-panel-meta">{t('sections.eventsCount', { count: upcomingEvents.length })}</span>
-                </div>
-                <div className="mis-events-deck">
-                  {upcomingEvents.map(ev => (
-                    <EventRow
-                      key={`${ev.date}-${ev.name}`}
-                      event={ev}
-                      typeLabel={t(`eventType.${ev.type}`)}
-                      difficultyLabel={t(`eventDiff.${ev.difficulty}`)}
-                      countdown={{ today: t('countdown.today'), tomorrow: t('countdown.tomorrow'), inDays: (n) => t('countdown.inDays', { n }) }}
-                      whyAria={t('whyHard', { name: ev.name })}
-                      onOpen={(rect) => {
-                        setActiveEventAnchor(rect);
-                        setActiveEvent(ev);
-                      }}
-                      onExplain={(rect) => {
-                        setActiveExplainerAnchor(rect);
-                        setActiveExplainer({ kind: 'event', id: ev.name, title: ev.name, eventType: ev.type });
-                      }}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </aside>
-        </div>
-      </div>
+      {/* Quick observe FAB */}
+      <button type="button" className="mis-fab" onClick={() => router.push('/observe')} aria-label={t('quickObserve')}>
+        <Plus size={22} strokeWidth={2.4} />
+        <span className="mis-fab-label">{t('quickObserve')}</span>
+      </button>
 
       <EventInfoSheet
         open={!!activeEvent}
@@ -771,11 +736,214 @@ export default function MissionsPage() {
   );
 }
 
+// ---- Progress card ----
+
+function ProgressCard({
+  pct, earned, total, rating, nextName, nextStars, allDone, onContinue, labels,
+}: {
+  pct: number;
+  earned: number;
+  total: number;
+  rating: number;
+  nextName: string;
+  nextStars: number;
+  allDone: boolean;
+  onContinue: () => void;
+  labels: { title: string; complete: string; starsEarned: string; nextReward: string; continue: string };
+}) {
+  const R = 26;
+  const C = 2 * Math.PI * R;
+  const dash = C * Math.min(1, Math.max(0, pct / 100));
+  return (
+    <section className="mis-progress">
+      <div className="mis-progress-head">
+        <span className="mis-progress-eyebrow"><Sun size={13} strokeWidth={1.9} /> {labels.title}</span>
+      </div>
+      <div className="mis-progress-row">
+        <div className="mis-ring" aria-hidden>
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <circle cx="32" cy="32" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+            <circle
+              cx="32" cy="32" r={R} fill="none" stroke="var(--terracotta)" strokeWidth="5"
+              strokeLinecap="round" strokeDasharray={`${dash} ${C}`} transform="rotate(-90 32 32)"
+            />
+          </svg>
+          <span className="mis-ring-pct">{pct}%</span>
+        </div>
+        <div className="mis-progress-stats">
+          <div className="mis-progress-stat">
+            <span className="mis-progress-num">{earned} <i>/ {total}</i></span>
+            <span className="mis-progress-lbl">{labels.starsEarned}</span>
+            <span className="mis-progress-rating" aria-hidden>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} size={11} strokeWidth={1.8} className={i < rating ? 'is-on' : ''} fill={i < rating ? 'currentColor' : 'none'} />
+              ))}
+            </span>
+          </div>
+          <div className="mis-progress-reward">
+            <Gift size={14} strokeWidth={1.8} />
+            <span>
+              <span className="mis-progress-reward-lbl">{labels.nextReward}</span>
+              <span className="mis-progress-reward-val">{allDone ? '—' : `${nextName} · +${nextStars}`}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <button type="button" className="mis-progress-cta" onClick={onContinue} disabled={allDone}>
+        {labels.continue}
+        {!allDone && <ChevronRight size={15} strokeWidth={2.2} />}
+      </button>
+    </section>
+  );
+}
+
+// ---- Main quest card ----
+
+function MainQuestCard({
+  entry, altitude, window: win, visibilityStars: vis, onObserve, labels,
+}: {
+  entry: LocalizedGridEntry;
+  altitude: number | null;
+  window: { kind: 'window'; text: string } | { kind: 'anytime' } | { kind: 'later'; time: string } | null;
+  visibilityStars: number;
+  onObserve: () => void;
+  labels: {
+    badge: string; bestViewing: string; reward: string; visibility: string;
+    observe: string; anytime: string; later: (time: string) => string;
+  };
+}) {
+  const winText = !win ? '—'
+    : win.kind === 'window' ? win.text
+    : win.kind === 'anytime' ? labels.anytime
+    : labels.later(win.time);
+  return (
+    <section className="mis-quest">
+      <span className="mis-quest-art" aria-hidden>
+        <PlanetViz name={entry.id} size="large" />
+      </span>
+      <div className="mis-quest-body">
+        <span className="mis-quest-badge"><Star size={11} strokeWidth={2} fill="currentColor" /> {labels.badge}</span>
+        <h2 className="mis-quest-name">{entry.name}</h2>
+        <div className="mis-quest-meta">
+          <span className="mis-quest-meta-item">
+            <Clock size={12} strokeWidth={1.8} />
+            <span className="mis-quest-meta-val"><i>{labels.bestViewing}</i><b>{winText}</b></span>
+          </span>
+          <span className="mis-quest-meta-item">
+            <Star size={12} strokeWidth={2} fill="currentColor" className="mis-star-icn" />
+            <span className="mis-quest-meta-val"><i>{labels.reward}</i><b className="mis-quest-reward-b">+{entry.stars}</b></span>
+          </span>
+        </div>
+        <div className="mis-quest-foot">
+          <span className="mis-quest-vis">
+            <i>{labels.visibility}</i>
+            <span className="mis-quest-vis-stars" aria-label={`${vis}/5`}>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} size={12} strokeWidth={1.8} className={i < vis ? 'is-on' : ''} fill={i < vis ? 'currentColor' : 'none'} />
+              ))}
+            </span>
+          </span>
+          <button type="button" className="mis-quest-cta" onClick={onObserve}>
+            {labels.observe}
+            {altitude != null && altitude > 0 && <em>{Math.round(altitude)}°</em>}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Mission list row ----
+
+function MissionRow({
+  entry, above, pct, rise, onStart, labels,
+}: {
+  entry: LocalizedGridEntry;
+  above: boolean;
+  pct: number;
+  rise: Date | null;
+  onStart: () => void;
+  labels: {
+    visibleNow: string;
+    after: (time: string) => string;
+    comingLater: string;
+    observe: string;
+    min: (n: number) => string;
+  };
+}) {
+  const statusText = above ? labels.visibleNow : rise ? labels.after(fmtClock(rise)) : labels.comingLater;
+  return (
+    <div className="mis-row" role="button" tabIndex={0}
+      onClick={() => { if (above) onStart(); }}
+      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && above) { e.preventDefault(); onStart(); } }}
+    >
+      <span className="mis-row-art" aria-hidden><PlanetViz name={entry.id} size="medium" /></span>
+      <div className="mis-row-main">
+        <span className="mis-row-top">
+          <span className="mis-row-name">{entry.name}</span>
+          <span className={`mis-row-diff ${entry.diff}`}>{entry.diffLabel}</span>
+        </span>
+        <span className="mis-row-sub">
+          <span className={`mis-row-status${above ? ' is-up' : ''}`}>{statusText}</span>
+        </span>
+      </div>
+      <div className="mis-row-stats">
+        <span className="mis-row-stat"><Clock size={11} strokeWidth={1.8} />{labels.min(entry.estMin)}</span>
+        <span className="mis-row-stat"><Eye size={11} strokeWidth={1.8} />{above ? `${pct}%` : '—'}</span>
+      </div>
+      <span className="mis-row-stars"><Star size={11} strokeWidth={2} className="mis-star-icn" />+{entry.stars}</span>
+      {above ? (
+        <button type="button" className="mis-row-btn" onClick={(e) => { e.stopPropagation(); onStart(); }}>
+          {labels.observe}
+        </button>
+      ) : (
+        <span className="mis-row-btn is-disabled">{labels.comingLater}</span>
+      )}
+    </div>
+  );
+}
+
+// ---- Weather card ----
+
+function WeatherCard({
+  cloudCoverPct, tempC, labels,
+}: {
+  cloudCoverPct: number | null;
+  tempC: number | null;
+  labels: {
+    title: string; clear: string; partly: string; cloudy: string;
+    cloudCover: string; good: string; poor: string; unknown: string;
+  };
+}) {
+  const cover = cloudCoverPct;
+  const summary = cover == null ? labels.unknown : cover < 20 ? labels.clear : cover < 60 ? labels.partly : labels.cloudy;
+  const good = cover != null && cover < 40;
+  return (
+    <section className="mis-card mis-card--weather">
+      <div className="mis-card-head">
+        <span className="mis-card-eyebrow"><Cloud size={12} strokeWidth={1.9} /> {labels.title}</span>
+      </div>
+      <p className="mis-weather-summary">{summary}</p>
+      <div className="mis-weather-stats">
+        <span className="mis-weather-stat">
+          <b>{tempC == null ? '—' : `${tempC}°C`}</b>
+        </span>
+        <span className="mis-weather-stat">
+          <b>{cover == null ? '—' : `${cover}%`}</b>
+          <i>{labels.cloudCover}</i>
+        </span>
+      </div>
+      {cover != null && (
+        <span className={`mis-weather-verdict${good ? ' is-good' : ''}`}>{good ? labels.good : labels.poor}</span>
+      )}
+    </section>
+  );
+}
+
 // ---- Telescope guide ----
 
 function TelescopeGuide({
-  tips,
-  scopeName,
+  tips, scopeName,
 }: {
   tips: { title: string; body: string; Icon: LucideIcon }[];
   scopeName: string;
@@ -842,10 +1010,7 @@ function ObserverAssist({
 // ---- Rare event card ----
 
 function RareEventCard({
-  event,
-  typeLabel,
-  countdown,
-  onOpen,
+  event, typeLabel, countdown, onOpen,
 }: {
   event: AstroEvent;
   typeLabel: string;
@@ -859,12 +1024,8 @@ function RareEventCard({
   onOpen: (rect: DOMRect) => void;
 }) {
   const days = daysFromToday(event.date);
-  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, {
-    month: 'short', day: 'numeric',
-  });
-  const monthLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, {
-    month: 'short',
-  }).toUpperCase();
+  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const monthLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short' }).toUpperCase();
   const dayNum = new Date(event.date + 'T12:00:00').getDate();
   const future = days >= 0;
   const countdownText = !future
@@ -978,50 +1139,26 @@ function EventRow({ event, typeLabel, difficultyLabel, countdown, whyAria, onOpe
   onExplain?: (rect: DOMRect) => void;
 }) {
   const days = daysFromToday(event.date);
-  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, {
-    month: 'short', day: 'numeric',
-  });
+  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   return (
     <button
       type="button"
       onClick={(e) => onOpen((e.currentTarget as HTMLElement).getBoundingClientRect())}
       className="mis-event-row"
-      style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 14px',
-        background: 'var(--stl-bg-surface)',
-        border: '1px solid var(--stl-border-regular)',
-        borderRadius: 'var(--stl-r-md)',
-        textAlign: 'left',
-        width: '100%',
-        cursor: 'pointer',
-      }}
     >
-      <div style={{ minWidth: 64 }}>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--stl-text-bright)', margin: 0, fontWeight: 600 }}>
-          {dateLabel}
-        </p>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--stl-text-dim)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+      <div className="mis-event-date">
+        <p className="mis-event-date-main">{dateLabel}</p>
+        <p className="mis-event-date-sub">
           {days === 0 ? countdown.today : days === 1 ? countdown.tomorrow : countdown.inDays(days)}
         </p>
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ color: 'var(--stl-text-bright)', fontSize: 14, fontWeight: 500, margin: 0 }}>
-          {event.name}
-        </p>
-        <p style={{ color: 'var(--stl-text-muted)', fontSize: 11, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>
-          {typeLabel} · {event.visibilityRegion}
-        </p>
+      <div className="mis-event-info">
+        <p className="mis-event-name">{event.name}</p>
+        <p className="mis-event-meta">{typeLabel} · {event.visibilityRegion}</p>
       </div>
       <span
+        className="mis-event-diff"
         style={{
-          flexShrink: 0,
-          padding: '4px 8px',
-          borderRadius: 999,
-          fontSize: 10,
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
           color: EVENT_DIFFICULTY_COLOR[event.difficulty],
           border: `1px solid ${EVENT_DIFFICULTY_COLOR[event.difficulty]}55`,
           background: `${EVENT_DIFFICULTY_COLOR[event.difficulty]}1A`,
@@ -1042,7 +1179,6 @@ function EventRow({ event, typeLabel, difficultyLabel, countdown, whyAria, onOpe
             }
           }}
           className="mis-info-dot"
-          style={{ marginLeft: 4 }}
         >
           i
         </span>
@@ -1051,357 +1187,10 @@ function EventRow({ event, typeLabel, difficultyLabel, countdown, whyAria, onOpe
   );
 }
 
-// ---- Tonight's lineup ----
-
-interface LineupItem {
-  key: string;
-  name: string;
-  altitude: number;
-  azimuthDir: string;
-  magnitude: number;
-  routeId: string;
-  stars: number;
-}
-
-function TonightLineup({
-  items,
-  liveStatus,
-  headerTime,
-  dateLabel,
-  cityLabel,
-  onStart,
-  labels,
-}: {
-  items: LineupItem[];
-  liveStatus: 'live' | 'daytime' | 'cloudy';
-  headerTime: string;
-  dateLabel: string;
-  cityLabel: string;
-  onStart: (routeId: string) => void;
-  labels: {
-    daytime: string;
-    cloudy: string;
-    nothingUp: string;
-    aria: string;
-    listAria: string;
-    live: string;
-    alt: string;
-    mag: string;
-  };
-}) {
-  const emptyTitle =
-    liveStatus === 'daytime'
-      ? labels.daytime
-      : liveStatus === 'cloudy'
-        ? labels.cloudy
-        : labels.nothingUp;
-
-  if (items.length === 0) {
-    return (
-      <div
-        className={`mis-status-chip mis-status-chip--${liveStatus}`}
-        role="status"
-        aria-label={labels.aria}
-      >
-        <span className="mis-status-chip-dot" aria-hidden />
-        <span className="mis-status-chip-label">{emptyTitle}</span>
-        <span className="mis-status-chip-sep" aria-hidden>·</span>
-        <span className="mis-status-chip-meta">
-          {headerTime} · {dateLabel} · {cityLabel}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mis-lineup" role="region" aria-label={labels.listAria}>
-      <div className="mis-lineup-head">
-        <div className={`mis-lineup-status mis-lineup-status--${liveStatus}`}>
-          <span className="mis-lineup-dot" aria-hidden />
-          <span>{labels.live} · {headerTime}</span>
-        </div>
-        <div className="mis-lineup-loc">{dateLabel} · {cityLabel}</div>
-      </div>
-
-      <div className="mis-lineup-list">
-        {items.map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            className="mis-lineup-item"
-            onClick={() => onStart(p.routeId)}
-          >
-            <span className="mis-lineup-art">
-              <PlanetViz name={p.key} size="medium" />
-            </span>
-            <span className="mis-lineup-info">
-              <span className="mis-lineup-name">{p.name}</span>
-              <span className="mis-lineup-row">
-                <span className="mis-lineup-stat"><b>{Math.round(p.altitude)}°</b> {labels.alt}</span>
-                <span className="mis-lineup-sep">·</span>
-                <span className="mis-lineup-stat">{p.azimuthDir}</span>
-                <span className="mis-lineup-sep">·</span>
-                <span className="mis-lineup-stat">{labels.mag} <b>{p.magnitude}</b></span>
-              </span>
-            </span>
-            <span className="mis-lineup-stars">+{p.stars}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ---- Prime target card ----
-
-function PrimeCard({
-  entry,
-  altitude,
-  onStart,
-  labels,
-}: {
-  entry: LocalizedGridEntry;
-  altitude: number | null;
-  onStart: () => void;
-  labels: { badge: string; observe: string };
-}) {
-  const altTxt = altitude != null ? ` · ${Math.round(altitude)}°` : '';
-  return (
-    <button type="button" className="mis-prime" onClick={onStart}>
-      <div className="mis-prime-icon">
-        <PlanetViz name={entry.id} size="small" />
-      </div>
-      <div className="mis-prime-body">
-        <span className="mis-prime-badge">{labels.badge}</span>
-        <span className="mis-prime-name">{entry.name}</span>
-        <span className="mis-prime-desc">{entry.desc}{altTxt}</span>
-      </div>
-      <span className="mis-prime-cta" aria-hidden>{labels.observe} +{entry.stars}</span>
-    </button>
-  );
-}
-
-// ---- Mission tile ----
-
-function fmtRiseClock(d: Date | null): string | null {
-  if (!d) return null;
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-}
-
-type ReminderFlash = 'set' | 'removed' | 'blocked' | null;
-
-function MissionTile({
-  entry,
-  above,
-  rise,
-  onStart,
-  labels,
-}: {
-  entry: LocalizedGridEntry;
-  above: boolean;
-  rise: Date | null;
-  onStart: () => void;
-  labels: {
-    rises: string;
-    belowHorizon: string;
-    visibleAfter: string;
-    notTonight: string;
-    remind: string;
-    reminderOn: string;
-    reminderRemove: string;
-    reminderSet: string;
-    reminderBlocked: string;
-  };
-}) {
-  const [showReminder, setShowReminder] = useState(false);
-  const [reminderOn, setReminderOn] = useState(false);
-  const [flash, setFlash] = useState<ReminderFlash>(null);
-  const riseTxt = above ? null : fmtRiseClock(rise);
-  const badgeTxt = above ? null : riseTxt ? `${labels.rises} ${riseTxt}` : labels.belowHorizon;
-
-  useEffect(() => {
-    setReminderOn(readReminders().has(entry.id));
-  }, [entry.id]);
-
-  const handleActivate = () => {
-    if (above) {
-      onStart();
-      return;
-    }
-    setShowReminder((v) => !v);
-    setFlash(null);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleActivate();
-    }
-  };
-
-  const closeAfter = (ms: number) => {
-    window.setTimeout(() => {
-      setShowReminder(false);
-      setFlash(null);
-    }, ms);
-  };
-
-  const onReminderClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    const set = readReminders();
-
-    if (reminderOn) {
-      set.delete(entry.id);
-      writeReminders(set);
-      setReminderOn(false);
-      setFlash('removed');
-      closeAfter(700);
-      return;
-    }
-
-    const perm = await ensureNotifPermission();
-    if (perm === 'denied') {
-      setFlash('blocked');
-      closeAfter(1400);
-      return;
-    }
-
-    set.add(entry.id);
-    writeReminders(set);
-    setReminderOn(true);
-    setFlash('set');
-    closeAfter(900);
-  };
-
-  const reminderText =
-    flash === 'set' ? labels.reminderSet
-    : flash === 'blocked' ? labels.reminderBlocked
-    : flash === 'removed' ? labels.notTonight
-    : reminderOn ? labels.reminderOn
-    : riseTxt ? `${labels.visibleAfter} ${riseTxt}` : labels.notTonight;
-
-  const reminderBtnLabel = reminderOn ? labels.reminderRemove : labels.remind;
-
-  return (
-    <div
-      id={`mis-card-${entry.id}`}
-      className="mis-tile"
-      role="button"
-      tabIndex={0}
-      aria-pressed={!above && showReminder ? true : undefined}
-      onClick={handleActivate}
-      onKeyDown={onKeyDown}
-    >
-      <div className={`mis-tile-sky theme-${entry.id}`}>
-        <span className={`mis-tile-glow theme-${entry.id}`} aria-hidden />
-        <span className="mis-tile-art">
-          <PlanetViz name={entry.id} size="large" />
-        </span>
-        {badgeTxt && (
-          <span className="mis-tile-rise-badge" aria-hidden>
-            {reminderOn && '🔔 '}{badgeTxt}
-          </span>
-        )}
-      </div>
-      <div className="mis-tile-info">
-        <span className="mis-tile-name">{entry.name}</span>
-        <div className="mis-tile-foot">
-          <span className="mis-tile-foot-left">
-            <span className={`mis-diff ${entry.diff}`}>{entry.diffLabel}</span>
-            <span className="mis-tile-equip">
-              <EquipIcon kind={entry.equip} />
-              <span>{entry.equipLabel}</span>
-            </span>
-          </span>
-          <span className="mis-tile-stars">+{entry.stars}</span>
-        </div>
-        {!above && showReminder && (
-          <div
-            className={`mis-tile-reminder${flash ? ` flash-${flash}` : ''}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="mis-tile-reminder-text">{reminderText}</span>
-            <button
-              type="button"
-              className={`mis-tile-reminder-btn${reminderOn ? ' is-on' : ''}`}
-              onClick={onReminderClick}
-              aria-pressed={reminderOn}
-              disabled={flash !== null}
-            >
-              {flash === 'set' ? '✓' : flash === 'blocked' ? '✕' : reminderBtnLabel}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function EquipIcon({ kind }: { kind: string }) {
-  const k = kind.toLowerCase();
-  if (k.includes('telescope')) {
-    return (
-      <svg className="mis-equip-icon" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
-        <path d="M2.5 6.5l8-3.5 1.5 3-8 3.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-        <path d="M5.5 9.2L8 14.5M9 8.6L11.5 14.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-        <circle cx="13.2" cy="2.8" r="1.2" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
-    );
-  }
-  if (k.includes('binocular')) {
-    return (
-      <svg className="mis-equip-icon" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
-        <circle cx="4" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-        <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.2" />
-        <path d="M6.5 10h3M5 7.5l1-3.5h4l1 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  // Naked eye
-  return (
-    <svg className="mis-equip-icon" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8s-2.5 4.5-6.5 4.5S1.5 8 1.5 8z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-// ---- Tonight at a glance (left-rail stat card) ----
-
-function TonightGlance({
-  rows,
-}: {
-  rows: { Icon: LucideIcon; label: string; value: string }[];
-}) {
-  return (
-    <ul className="mis-glance">
-      {rows.map((r) => {
-        const Icon = r.Icon;
-        return (
-          <li key={r.label} className="mis-glance-row">
-            <span className="mis-glance-icon" aria-hidden>
-              <Icon size={13} strokeWidth={1.8} />
-            </span>
-            <span className="mis-glance-label">{r.label}</span>
-            <span className="mis-glance-value">{r.value}</span>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-// ---- Quiz row (right-rail list item) ----
+// ---- Quiz row ----
 
 function QuizRow({
-  Icon,
-  gradient,
-  title,
-  meta,
-  reward,
-  done,
-  onClick,
+  Icon, gradient, title, meta, reward, done, onClick,
 }: {
   Icon: LucideIcon;
   gradient: string;
