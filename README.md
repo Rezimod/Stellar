@@ -27,7 +27,7 @@ That's the loop. Optional layers — sky missions and ASTRA AI — sit on top.
 |---|---|---|
 | **Shows you the sky** | ✓ | ✓ |
 | **Live forecast for your coordinates** | Partial | ✓ |
-| **Photo verification of what you saw** | — | ✓ (Claude Vision + EXIF + oracle hash) |
+| **Photo verification of what you saw** | — | ✓ (Gemini Vision + EXIF + oracle hash) |
 | **On-chain proof of observation** | — | ✓ (compressed NFT) |
 | **Rewards for going outside** | — | Stars (SPL token) |
 | **Connected to a real store** | — | Astroman (Tbilisi) — telescopes, gear |
@@ -41,12 +41,11 @@ Sky atlases show you the sky. Stellar connects what you see to a real economy.
 
 - **7-day sky forecast** — hourly cloud cover, seeing, transparency, dark window, Go/Maybe/Skip per night, location-aware (Open-Meteo + astronomy-engine).
 - **Live planet tracker** — Mercury–Saturn + Moon, rise/transit/set, altitude, naked-eye / binocular / telescope visibility.
-- **AI photo verification** — Claude Sonnet 4.6 vision checks your capture against your GPS, timestamp, EXIF, and the deterministic Sky Oracle hash for your location and time. Cross-wallet hash dedup, reverse-image lookup, and visibility check via `astronomy-engine` round out the pipeline.
+- **AI photo verification** — Google Gemini 2.5 Flash vision checks your capture against your GPS, timestamp, EXIF, and the deterministic Sky Oracle hash for your location and time. Cross-wallet hash dedup, reverse-image lookup, and visibility check via `astronomy-engine` round out the pipeline.
 - **Compressed NFT proofs** — every verified observation sealed on Solana via Metaplex Bubblegum. ~$0.000005 per mint.
 - **Stars SPL token** — real on-chain token (not localStorage points), redeemable at Astroman.
 - **ASTRA AI Companion** — ask "what can I see tonight?" and ASTRA answers with live planet positions, weather, and Bortle context for your coordinates. (OpenAI gpt-4o-mini on web with sky-data tool calls; on-device Llama 3.2 1B in Stellar Field for offline use.)
 - **Sky missions** — guided observations of the Moon, Jupiter, Saturn, Orion, Pleiades, Andromeda, the Crab. Each completion earns Stars + an NFT.
-- **Prediction markets on celestial events** — Anchor program on devnet (`Bcufe9vy6V3Vn4eqBQqdmRKzJgEcHdVxHci6ursiTkvi`) with auto-resolver oracle. Side activity that rewards observers, not the main loop.
 - **Zero-crypto UX** — sign up with email via Privy, embedded Solana wallet, gasless transactions, no seed phrase, no Phantom install.
 
 ---
@@ -62,7 +61,7 @@ Astronomers travel to dark-sky sites — mountains, deserts, rural fields — wh
 
 Verified end-to-end on a Poco X3 NFC (Snapdragon 732G, 6GB RAM, 2026-05-07): APK installs, Llama streams chat tokens, Whisper transcribes, voice-log target auto-extraction works, **and airplane-mode chat still streams** — the prize-eligible artifact.
 
-The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on Claude (fast and broad), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
+The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on cloud models (OpenAI gpt-4o-mini for chat, Gemini 2.5 Flash for vision), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
 
 [Download APK](https://stellarsky.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
 
@@ -95,7 +94,7 @@ Live network map: [stellarsky.vercel.app/network](https://stellarsky.vercel.app/
 | Auth | Privy embedded Solana wallets (email/Google login) |
 | NFTs | Metaplex Bubblegum compressed NFTs |
 | Token | Stars SPL token (0 decimals) |
-| AI (online) | OpenAI gpt-4o-mini for ASTRA chat (sky-data tool calling) · Claude Sonnet 4.6 for vision-based photo verification |
+| AI (online) | OpenAI gpt-4o-mini for ASTRA chat (sky-data tool calling) · Google Gemini 2.5 Flash for vision-based photo verification · Claude Haiku 4.5 for star-name moderation |
 | AI (offline, Field Mode) | Tether QVAC — Llama 3.2 1B + Whisper, on-device via `@qvac/sdk` (Expo / Android) |
 | Sky data | Open-Meteo (weather), astronomy-engine (celestial mechanics), NOAA SWPC (solar), IMO (meteors) |
 | Database | Neon Postgres via Drizzle ORM |

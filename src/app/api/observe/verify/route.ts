@@ -17,7 +17,7 @@ import { getObservationTokenSecret } from '@/lib/observation-token';
 // Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
 export const maxDuration = 60;
 
-interface ClaudeAnalysis {
+interface VisionAnalysis {
   target: ObservationTarget;
   identifiedObject: string;
   isScreenshot: boolean;
@@ -28,7 +28,7 @@ interface ClaudeAnalysis {
   liveCaptureConfirmed?: boolean;
 }
 
-const FALLBACK_ANALYSIS: ClaudeAnalysis = {
+const FALLBACK_ANALYSIS: VisionAnalysis = {
   target: 'unknown',
   identifiedObject: 'Unidentified sky object',
   isScreenshot: true,
@@ -38,16 +38,16 @@ const FALLBACK_ANALYSIS: ClaudeAnalysis = {
   reason: 'Verification service unavailable — observation rejected for safety',
 };
 
-function parseClaudeResponse(text: string): { analysis: ClaudeAnalysis; isFallback: boolean } {
+function parseVisionResponse(text: string): { analysis: VisionAnalysis; isFallback: boolean } {
   // Try direct JSON parse
   try {
-    return { analysis: JSON.parse(text) as ClaudeAnalysis, isFallback: false };
+    return { analysis: JSON.parse(text) as VisionAnalysis, isFallback: false };
   } catch {
     // Try extracting from markdown code fences
     const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (match) {
       try {
-        return { analysis: JSON.parse(match[1]) as ClaudeAnalysis, isFallback: false };
+        return { analysis: JSON.parse(match[1]) as VisionAnalysis, isFallback: false };
       } catch {
         // fall through
       }
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } }
     );
   }
-  // Daily ceiling — bounds Claude Vision spend per user/IP at ~$0.40/day worst case.
+  // Daily ceiling — bounds Gemini Vision spend per user/IP at ~$0.40/day worst case.
   const daily = await checkRateLimit(verifyDailyLimit, rateLimitKey);
   if (!daily.success) {
     return NextResponse.json(
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
   const fileHash = '0x' + createHash('sha256').update(buffer).digest('hex').slice(0, 40);
 
   // ───────────────────────── Pre-check pipeline ─────────────────────────
-  // Run cheap, deterministic checks before the expensive Claude call.
+  // Run cheap, deterministic checks before the expensive Gemini Vision call.
   // Each check that rejects writes a `confidence: 'rejected'` row to
   // observation_log so future attempts at the same hash short-circuit.
   const db = getDb();
@@ -251,7 +251,7 @@ export async function POST(req: NextRequest) {
   }
   // ──────────────────────── End pre-check pipeline ────────────────────────
 
-  // Base64 for Claude
+  // Base64 for Gemini Vision
   const base64 = buffer.toString('base64');
   const rawType = file.type;
   const mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' =
@@ -338,9 +338,9 @@ Return ONLY valid JSON, no markdown, no preamble:
 
   const visionPrompt = (isDoubleCapture ? doubleImagePrompt : singleImagePrompt) + strictnessNote;
 
-  // Vision call — Gemini free tier (gemini-2.0-flash). responseMimeType=json
+  // Vision call — Gemini free tier (gemini-2.5-flash). responseMimeType=json
   // means the model returns raw JSON we can parse directly.
-  let analysis: ClaudeAnalysis;
+  let analysis: VisionAnalysis;
   let verificationFailed = false;
   try {
     const text = await geminiVisionJSON({
@@ -350,7 +350,7 @@ Return ONLY valid JSON, no markdown, no preamble:
       maxOutputTokens: 500,
       signal: AbortSignal.timeout(45000),
     });
-    const parsed = parseClaudeResponse(text);
+    const parsed = parseVisionResponse(text);
     analysis = parsed.analysis;
     verificationFailed = parsed.isFallback;
   } catch (err) {
@@ -363,14 +363,14 @@ Return ONLY valid JSON, no markdown, no preamble:
   // early means clients see a clear `rejectionReason` and we persist a
   // rejection row immediately for hash-dedup of synthetic images.
   if (analysis.isAiGenerated) {
-    await writeRejectionRow('ai_generated', { identifiedObject: analysis.identifiedObject, claudeReason: analysis.reason });
+    await writeRejectionRow('ai_generated', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
       'ai_generated',
       'This looks AI-generated. Stars are only awarded for real photos you took yourself.',
     ));
   }
   if (analysis.isScreenshot) {
-    await writeRejectionRow('screenshot_detected', { identifiedObject: analysis.identifiedObject, claudeReason: analysis.reason });
+    await writeRejectionRow('screenshot_detected', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
       'screenshot_detected',
       'This looks like a screenshot. Stars are only awarded for real photos of the sky.',
