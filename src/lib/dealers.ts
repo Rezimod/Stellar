@@ -39,6 +39,10 @@ export interface Product {
    * marketplace.
    */
   kind?: 'stars-only'
+  /** Hand-picked for the "Featured Deals" rail. Set via FEATURED_IDS. */
+  featured?: boolean
+  /** Hand-picked for the "Recommended for You" rail. Set via RECOMMENDED_IDS. */
+  recommended?: boolean
 }
 
 const DEALERS: Dealer[] = [
@@ -1789,9 +1793,37 @@ const PRODUCTS: Product[] = [
   },
 ]
 
+// Editorially curated rails. Kept as id sets (not per-product literals) so the
+// picks live in one place and read like a storefront merchandising decision.
+// Every dealer/region the storefront serves is represented; regions with no
+// hand-pick (Europe accessories/eyepieces) fall back to a derived list on the
+// page so a rail is never empty.
+const FEATURED_IDS = new Set<string>([
+  // Astroman (Caucasus — default region)
+  'scope-celestron-70az', 'scope-starsense-dx6', 'scope-nexstar-90slt',
+  // Celestron (North America)
+  'cel-nexstar8se', 'cel-starsense-dx130', 'cel-skymaster-15x70',
+  // Levenhuk / Bresser (Europe)
+  'lev-plus130', 'lev-blitz114', 'lev-plus120',
+])
+
+const RECOMMENDED_IDS = new Set<string>([
+  // Astroman
+  'astr-eyepiece-set', 'astr-bino-8x42', 'astr-cosmonaut-moon-lamp',
+  // Celestron
+  'cel-xcel-7mm', 'cel-zoom-eyepiece', 'cel-nature-dx-8x42',
+])
+
 function withMarketplaceStarsPrice(p: Product): Product {
-  if (p.kind === 'stars-only') return p
-  return { ...p, starsPrice: computeMarketplaceStarsPrice(p.price, p.currency) }
+  const featured = FEATURED_IDS.has(p.id) || undefined
+  const recommended = RECOMMENDED_IDS.has(p.id) || undefined
+  if (p.kind === 'stars-only') return { ...p, featured, recommended }
+  return {
+    ...p,
+    starsPrice: computeMarketplaceStarsPrice(p.price, p.currency),
+    featured,
+    recommended,
+  }
 }
 
 // Global fallback: 2 telescopes each from Astroman, Celestron, and Levenhuk

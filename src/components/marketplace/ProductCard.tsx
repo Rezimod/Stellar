@@ -2,7 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { Heart } from 'lucide-react';
 import { priceToSol, priceToUsd, type Product } from '@/lib/dealers';
+
+// Real editorial badges only — 'Best Seller' / 'Popular' come from the dealer
+// catalog. No invented ratings or review counts.
+const BADGE_COLOR: Record<string, string> = {
+  'Best Seller': '#34D399',
+  Popular: '#A78BFA',
+};
 
 const formatPrice = (p: Product): string => {
   const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
@@ -44,6 +52,9 @@ interface Props {
   className?: string;
   /** Current Stars balance — drives the "earn this" progress bar. */
   balance?: number;
+  /** Wishlist: when onToggleFavorite is provided, a heart toggle is shown. */
+  favorite?: boolean;
+  onToggleFavorite?: (id: string) => void;
 }
 
 export default function ProductCard({
@@ -54,6 +65,8 @@ export default function ProductCard({
   featured = false,
   className = '',
   balance = 0,
+  favorite = false,
+  onToggleFavorite,
 }: Props) {
   const checkoutHref = (mode: 'sol' | 'stars') =>
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
@@ -88,6 +101,24 @@ export default function ProductCard({
         e.currentTarget.style.background = idleBg;
       }}
     >
+      {onToggleFavorite && (
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(product.id)}
+          aria-label={favorite ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+          aria-pressed={favorite}
+          className="absolute top-[10px] right-[10px] z-10 inline-flex items-center justify-center w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-colors duration-150"
+          style={{ background: 'rgba(15,18,28,0.7)', border: '1px solid rgba(255,255,255,0.14)' }}
+        >
+          <Heart
+            className="w-[14px] h-[14px]"
+            style={{
+              color: favorite ? 'var(--terracotta)' : 'rgba(255,255,255,0.7)',
+              fill: favorite ? 'var(--terracotta)' : 'transparent',
+            }}
+          />
+        </button>
+      )}
       <a
         href={product.externalUrl}
         target="_blank"
@@ -108,9 +139,21 @@ export default function ProductCard({
               loading="lazy"
             />
           )}
+          {product.badge && (
+            <span
+              className="absolute top-[6px] left-[6px] inline-flex items-center rounded-full px-[8px] py-[3px] text-[9px] font-bold tracking-[0.1em] uppercase leading-none"
+              style={{
+                background: 'rgba(7,11,20,0.82)',
+                color: BADGE_COLOR[product.badge] ?? 'var(--terracotta)',
+                border: `1px solid ${(BADGE_COLOR[product.badge] ?? 'var(--terracotta)')}55`,
+              }}
+            >
+              {product.badge}
+            </span>
+          )}
           {product.starsPrice > 0 && (
             <span
-              className="absolute top-[6px] right-[6px] inline-flex items-center gap-[4px] rounded-full pl-[6px] pr-[8px] py-[3px] backdrop-blur-sm"
+              className="absolute bottom-[6px] left-[6px] inline-flex items-center gap-[4px] rounded-full pl-[6px] pr-[8px] py-[3px] backdrop-blur-sm"
               style={{
                 background: 'rgba(15,18,28,0.82)',
                 border: '1px solid rgba(255,255,255,0.12)',

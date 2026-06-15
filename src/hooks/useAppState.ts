@@ -13,6 +13,7 @@ const defaultState: AppState = {
   completedMissions: [],
   completedQuizzes: [],
   hiddenObservationIds: [],
+  favorites: [],
 };
 
 interface AppStateCtx {
@@ -25,6 +26,7 @@ interface AppStateCtx {
   hideObservation: (id: string) => void;
   unhideObservation: (id: string) => void;
   addQuizResult: (r: QuizResult) => void;
+  toggleFavorite: (id: string) => void;
   pendingCount: number;
   reset: () => void;
 }
@@ -134,6 +136,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const addQuizResult = useCallback((r: QuizResult) => {
     setState(s => ({ ...s, completedQuizzes: [...(s.completedQuizzes ?? []), r] }));
   }, []);
+  const toggleFavorite = useCallback((id: string) => {
+    setState(s => {
+      const favorites = s.favorites ?? [];
+      return {
+        ...s,
+        favorites: favorites.includes(id) ? favorites.filter(x => x !== id) : [...favorites, id],
+      };
+    });
+  }, []);
   const reset = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setState(defaultState);
@@ -155,10 +166,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       hideObservation,
       unhideObservation,
       addQuizResult,
+      toggleFavorite,
       pendingCount,
       reset,
     }),
-    [state, setWallet, setMembership, setTelescope, addMission, removeMission, hideObservation, unhideObservation, addQuizResult, pendingCount, reset],
+    [state, setWallet, setMembership, setTelescope, addMission, removeMission, hideObservation, unhideObservation, addQuizResult, toggleFavorite, pendingCount, reset],
   );
 
   return createElement(Ctx.Provider, { value: ctx }, children);
