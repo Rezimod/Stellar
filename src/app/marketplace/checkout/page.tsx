@@ -217,9 +217,6 @@ function CheckoutContent() {
         track('stars_spent', { source: 'redeem', amount: product.starsPrice, product: product.id }, walletAddress);
       }
 
-      // §4: if the order committed Stars for a discount, burn them BEFORE
-      // showing the SOL pay QR. /api/orders/confirm refuses to mark the
-      // order paid until burn_signature is set on the row.
       if (data.requiresBurn) {
         const wallet = privyWallets[0];
         if (!wallet?.address) {
@@ -231,7 +228,7 @@ function CheckoutContent() {
             privyToken: token,
             wallet: wallet as unknown as Parameters<typeof executeBurn>[0]['wallet'],
             amount: data.burnStars ?? burnStars,
-            kind: 'discount-burn',
+            kind: mode === 'stars' ? 'shop-purchase' : 'discount-burn',
             orderId: data.orderId,
           });
           setBurnSig(result.signature);

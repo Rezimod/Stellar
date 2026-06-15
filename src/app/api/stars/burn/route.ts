@@ -134,12 +134,31 @@ async function validateEligibility(args: {
     const v = validateBurn({ priceGEL: order.amountFiat + order.gelDiscount, stars: amount, balance });
     if (!v.ok) return { ok: false, status: 400, error: v.reason };
   } else {
-    // shop-purchase / redeem-code: just check balance covers it.
     if (amount <= 0 || !Number.isInteger(amount)) {
       return { ok: false, status: 400, error: 'amount must be a positive integer' };
     }
     if (amount > balance) {
       return { ok: false, status: 400, error: `Insufficient Stars (have ${balance}, need ${amount})` };
+    }
+    if (kind === 'shop-purchase') {
+      if (!orderId) return { ok: false, status: 400, error: 'orderId required for shop-purchase' };
+      const db = getDb();
+      if (!db) return { ok: false, status: 503, error: 'Database not configured' };
+      const rows = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+      const order = rows[0];
+      if (!order) return { ok: false, status: 404, error: 'Order not found' };
+      if (order.walletAddress !== walletAddress) {
+        return { ok: false, status: 403, error: 'Order belongs to another wallet' };
+      }
+      if (order.paymentMethod !== 'stars') {
+        return { ok: false, status: 400, error: 'Order is not a Stars purchase' };
+      }
+      if (order.status === 'paid') {
+        return { ok: false, status: 409, error: 'Order is already paid' };
+      }
+      if (order.amountStars !== amount || order.burnStars !== amount) {
+        return { ok: false, status: 400, error: 'Burn amount does not match order' };
+      }
     }
   }
 
@@ -350,11 +369,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // For discount-burn against an order, stamp the order with the burn sig.
-    if (body.kind === 'discount-burn' && body.orderId) {
+    if ((body.kind === 'discount-burn' || body.kind === 'shop-purchase') && body.orderId) {
       try {
         await db.update(orders)
-          .set({ burnSignature: signature })
+          .set({
+            burnSignature: signature,
+            ...(body.kind === 'shop-purchase'
+              ? { status: 'paid', signature, paidAt: new Date() }
+              : {}),
+          })
           .where(eq(orders.id, body.orderId));
       } catch {
         // Ignore — burn is recorded in stars_burns regardless.

@@ -93,13 +93,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  let verifiedTarget: string | null = null
   // Verify token for non-rejected observations (prevents clients from claiming arbitrary confidence)
   if (confidence !== 'rejected') {
     const tokenCheck = verifyObservationToken(body.verificationToken, {
+      target: body.identifiedObject ?? body.target ?? '',
       identifiedObject: body.identifiedObject ?? body.target ?? '',
       confidence,
       capturedAt: body.capturedAt ?? '',
       fileHash: body.fileHash ?? '',
+      lat: typeof body.lat === 'number' ? body.lat : 0,
+      lon: typeof body.lon === 'number' ? body.lon : 0,
       deviceTier: body.deviceTier ?? '',
       deviceMake: body.deviceMake ?? '',
       deviceModel: body.deviceModel ?? '',
@@ -109,10 +113,11 @@ export async function POST(req: NextRequest) {
     if (!tokenCheck.ok) {
       return NextResponse.json({ logged: false, reason: tokenCheck.reason }, { status: tokenCheck.status });
     }
+    verifiedTarget = tokenCheck.payload.target
   }
 
   // Calculate stars server-side from confidence (never trust client-provided stars)
-  const target = body.target ?? '';
+  const target = verifiedTarget ?? body.target ?? '';
   const identifiedForRare = (body.identifiedObject ?? target).toLowerCase();
   const isRare = RARE_OBJECTS.some(r => identifiedForRare.includes(r));
   const reward = STARS_BY_CONFIDENCE[confidence] ?? { base: 0, rare_bonus: 0 };

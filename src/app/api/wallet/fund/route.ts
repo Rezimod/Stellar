@@ -46,9 +46,7 @@ export async function POST(req: NextRequest) {
   if (!isValidPublicKey(address)) {
     return NextResponse.json({ error: 'Invalid address' }, { status: 400 });
   }
-  // Compatibility window: allow unauthenticated calls for now so older clients
-  // still work. Set ALLOW_UNAUTH_WALLET_FUND=false to require auth.
-  const allowUnauthed = process.env.ALLOW_UNAUTH_WALLET_FUND !== 'false';
+  const allowUnauthed = process.env.ALLOW_UNAUTH_WALLET_FUND === 'true';
   if (!privyId && !allowUnauthed) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -81,11 +79,12 @@ export async function POST(req: NextRequest) {
     }
 
     const limiter = getLimiter();
-    if (limiter) {
-      const { success } = await limiter.limit(address);
-      if (!success) {
-        return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
-      }
+    if (!limiter) {
+      return NextResponse.json({ error: 'Rate limit not configured' }, { status: 503 });
+    }
+    const { success } = await limiter.limit(address);
+    if (!success) {
+      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
     const feePayer = Keypair.fromSecretKey(bs58.decode(sk));

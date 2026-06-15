@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash, createHmac } from 'crypto';
+import { createHash } from 'crypto';
 import { verifyRateLimit, verifyDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { geminiVisionJSON, type GeminiImage } from '@/lib/gemini-vision';
 import type { PhotoVerificationResult, ObservationTarget, VerificationConfidence } from '@/lib/types';
@@ -12,7 +12,8 @@ import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
-import { getObservationTokenSecret } from '@/lib/observation-token';
+import { createObservationToken } from '@/lib/observation-token';
+import { verifyPrivy } from '@/lib/api-auth';
 
 // Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
 export const maxDuration = 60;
@@ -60,9 +61,13 @@ export async function POST(req: NextRequest) {
   // Use auth token as rate-limit key when present (prevents IP spoofing)
   const authHeader = req.headers.get('authorization');
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const privyId = bearerToken ? await verifyPrivy(req) : null;
+  if (bearerToken && !privyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
-  const rateLimitKey = bearerToken
-    ? createHash('sha256').update(bearerToken).digest('hex').slice(0, 16)
+  const rateLimitKey = privyId
+    ? createHash('sha256').update(privyId).digest('hex').slice(0, 16)
     : ip;
   const { success, remaining } = await checkRateLimit(verifyRateLimit, rateLimitKey);
   if (!success) {
@@ -463,26 +468,23 @@ Return ONLY valid JSON, no markdown, no preamble:
   // Generate verification token — signs identifiedObject + confidence + new
   // device/EXIF fields so the /api/observe/log route can confirm none of these
   // were tampered with on the way to persistence.
-  const tokenData = [
-    analysis.identifiedObject,
+  const verificationToken = createObservationToken({
+    target: analysis.identifiedObject,
+    identifiedObject: analysis.identifiedObject,
     confidence,
     capturedAt,
     fileHash,
+    lat,
+    lon,
     deviceTier,
-    deviceMake ?? '',
-    deviceModel ?? '',
-    isInternetSourced ? '1' : '0',
-    walletParam,
-  ].join(':');
-  // Dedicated HMAC secret (shared with /api/observe/log + /api/mint validators).
-  // If unset we refuse rather than sign with '' (which would be trivially forgeable).
-  const tokenSecret = getObservationTokenSecret();
-  if (!tokenSecret) {
+    deviceMake: deviceMake ?? '',
+    deviceModel: deviceModel ?? '',
+    isInternetSourced,
+    wallet: walletParam,
+  });
+  if (!verificationToken) {
     return NextResponse.json({ error: 'Server misconfigured: OBSERVATION_TOKEN_SECRET not set' }, { status: 503 });
   }
-  const verificationToken = createHmac('sha256', tokenSecret)
-    .update(tokenData)
-    .digest('hex');
 
   const result: PhotoVerificationResult = {
     accepted: confidence !== 'rejected',

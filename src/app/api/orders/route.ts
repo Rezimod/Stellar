@@ -115,7 +115,8 @@ export async function POST(req: NextRequest) {
   const discountedFiat = pricing.chargedFiat;
   const discountedSol = pricing.chargedSol;
 
-  // STARS PAYMENT: verify on-chain balance against pending+paid stars orders, then mark paid immediately.
+  // STARS PAYMENT: verify balance, create a pending order, and require a signed
+  // burn through /api/stars/burn before fulfillment.
   if (method === 'stars') {
     const required = amountStars as number;
     let onChainBalance = 0;
@@ -145,8 +146,8 @@ export async function POST(req: NextRequest) {
         amountFiat,
         currency,
         paymentReference: referenceStr,
-        status: 'paid',
-        paidAt: new Date(),
+        burnStars: required,
+        status: 'pending',
         shippingName: (s.name as string).trim(),
         shippingPhone: (s.phone as string).trim(),
         shippingAddress: (s.address as string).trim(),
@@ -162,7 +163,9 @@ export async function POST(req: NextRequest) {
       amountStars: required,
       amountFiat,
       currency,
-      status: 'paid',
+      burnStars: required,
+      requiresBurn: true,
+      status: 'pending',
     });
   }
 
@@ -288,4 +291,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ orders: [] });
   }
 }
-

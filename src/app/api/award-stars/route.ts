@@ -15,11 +15,10 @@ import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars
 const DEVNET_URL = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
 
 export async function POST(req: NextRequest) {
-  // Auth: accept either a verified Privy token OR a valid wallet-adapter pubkey.
-  // External-wallet users (Phantom, Solflare, etc.) have no Privy token but the
-  // recipient is still a real on-chain address; abuse is bounded by the per-address
-  // rate limit below.
   const privyId = await verifyPrivy(req);
+  if (!privyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown; idempotencyKey?: unknown };
   try {
@@ -38,14 +37,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid recipientAddress' }, { status: 400 });
   }
 
-  // If a Privy session is present, the recipient must be the wallet linked
-  // to that session. (External-wallet users have no Privy token; the wallet
-  // pubkey is the principal and the per-address rate limit caps abuse.)
-  if (privyId) {
-    const owns = await assertOwnsWallet(privyId, recipientAddress as string);
-    if (!owns) {
-      return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
-    }
+  const owns = await assertOwnsWallet(privyId, recipientAddress as string);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   const { success, remaining } = await checkRateLimit(awardStarsRateLimit, recipientAddress as string);

@@ -6,12 +6,12 @@
 //      a verified Privy session. Use `verifyPrivy(req)` — returns the user's
 //      privyId or null.
 //
-//   2. Mixed routes (mint, award-stars) accept *either* a Privy session OR a
-//      raw wallet pubkey (Phantom/Solflare/Backpack flow). The CLAUDE.md
-//      design notes explicitly preserve this. For these, use `verifyPrivy`
+//   2. Mixed routes (mint) accept *either* a Privy session OR a raw wallet
+//      pubkey (Phantom/Solflare/Backpack flow). For these, use `verifyPrivy`
 //      and treat absence as "external wallet" — but if a Privy token IS
-//      provided, ensure the body's walletAddress matches the session's
-//      recorded wallet via `assertOwnsWallet`.
+//      provided, ensure the body's walletAddress matches the session's recorded
+//      wallet via `assertOwnsWallet`. Reward/token minting routes should require
+//      Privy or a real wallet signature before issuing value.
 //
 // `assertOwnsWallet` looks up `users.walletAddress` for the privyId and
 // rejects when the body wallet doesn't match a non-null linked wallet. If

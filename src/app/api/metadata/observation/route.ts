@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrivyClient } from '@privy-io/server-auth';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
-import { and, eq, gte } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
+import { assertOwnsWallet } from '@/lib/api-auth';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -38,6 +39,10 @@ export async function GET(req: NextRequest) {
   if (!target || !ts || !wallet) {
     return NextResponse.json({ error: 'Missing required params' }, { status: 400 });
   }
+  const owns = await assertOwnsWallet(claims.userId, wallet);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
+  }
 
   // Verify that an observation record exists for this wallet + target within 30 minutes of ts
   const db = getDb();
@@ -59,7 +64,8 @@ export async function GET(req: NextRequest) {
         and(
           eq(observationLog.wallet, wallet),
           eq(observationLog.target, target),
-          gte(observationLog.createdAt, thirtyMinBefore)
+          gte(observationLog.createdAt, thirtyMinBefore),
+          lte(observationLog.createdAt, thirtyMinAfter)
         )
       )
       .limit(1);
@@ -68,9 +74,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Observation not found' }, { status: 403 });
     }
 
-    // Ensure createdAt is within the 30-minute window
     void claims; // userId verified above
-    void thirtyMinAfter;
   }
 
   return NextResponse.json({

@@ -73,14 +73,18 @@ export async function POST(req: NextRequest) {
   // /api/observe/verify. Without it a client could mint a "verified observation"
   // NFT from fabricated data. Demo mints skip the token but are constrained below
   // (Common rarity, ≤50 Stars, Demo attribute).
+  let verifiedTarget: string | null = null;
   if (!isDemoMint) {
     const tokenCheck = verifyObservationToken(
       typeof verificationToken === 'string' ? verificationToken : undefined,
       {
+        target: typeof identifiedObject === 'string' ? identifiedObject : (typeof target === 'string' ? target : ''),
         identifiedObject: typeof identifiedObject === 'string' ? identifiedObject : (typeof target === 'string' ? target : ''),
         confidence: typeof confidence === 'string' ? confidence : '',
         capturedAt: typeof capturedAt === 'string' ? capturedAt : '',
         fileHash: typeof fileHash === 'string' ? fileHash : '',
+        lat,
+        lon,
         deviceTier: typeof deviceTier === 'string' ? deviceTier : '',
         deviceMake: typeof deviceMake === 'string' ? deviceMake : '',
         deviceModel: typeof deviceModel === 'string' ? deviceModel : '',
@@ -96,6 +100,7 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ error: 'Observation not verified' }, { status: 403 });
     }
+    verifiedTarget = tokenCheck.payload.target;
   }
 
   // Upstash rate limit: 2 mints per wallet per hour — skipped for demo missions
@@ -136,6 +141,22 @@ export async function POST(req: NextRequest) {
       if (recent.length > 0) {
         return NextResponse.json({ error: 'Already minted this target recently' }, { status: 429 });
       }
+      if (typeof fileHash === 'string' && fileHash) {
+        const duplicateHashMint = await db
+          .select({ id: observationLog.id })
+          .from(observationLog)
+          .where(
+            and(
+              eq(observationLog.wallet, userAddress),
+              eq(observationLog.fileHash, fileHash),
+              isNotNull(observationLog.mintTx)
+            )
+          )
+          .limit(1);
+        if (duplicateHashMint.length > 0) {
+          return NextResponse.json({ error: 'This verified image was already minted' }, { status: 409 });
+        }
+      }
     } catch (err) {
       console.error('[mint] DB rate-limit check failed:', err);
       return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
@@ -167,8 +188,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', target, isDemoMint ? '(demo)' : '');
-    const { txId } = await mintCompressedNFT({ userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint });
+    const mintTarget = verifiedTarget ?? target;
+    console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', mintTarget, isDemoMint ? '(demo)' : '');
+    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
@@ -177,7 +199,7 @@ export async function POST(req: NextRequest) {
       const exifTakenDate = typeof exifTakenAt === 'string' ? new Date(exifTakenAt) : null;
       db.insert(observationLog).values({
         wallet: userAddress,
-        target,
+        target: mintTarget,
         stars: effectiveStars,
         confidence: 'minted',
         mintTx: txId,

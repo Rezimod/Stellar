@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 declare_id!("t17oa4uuLXhSDZh2WSgYA4vDzUx3iCDDRnJ2iY5AywT");
 
+const MAX_STARS_PER_OBSERVATION: u32 = 500;
+
 /// Stellar Proof-of-Observation registry.
 ///
 /// Records verified astronomical observations as on-chain attestations. Writes
@@ -49,6 +51,10 @@ pub mod stellar_observations {
         require!(!registry.paused, ObsError::RegistryPaused);
         require!(args.confidence <= 3, ObsError::InvalidConfidence);
         require!(args.target_code <= 5, ObsError::InvalidTarget);
+        require!(
+            args.stars_awarded <= MAX_STARS_PER_OBSERVATION,
+            ObsError::StarsAwardTooLarge
+        );
 
         let now = Clock::get()?.unix_timestamp;
 
@@ -281,4 +287,6 @@ pub enum ObsError {
     InvalidTarget,
     #[msg("Observation already revoked")]
     AlreadyRevoked,
+    #[msg("Stars award exceeds the per-observation cap")]
+    StarsAwardTooLarge,
 }

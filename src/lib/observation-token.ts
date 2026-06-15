@@ -6,10 +6,13 @@ import { createHmac } from 'crypto';
 // observation when minting an NFT or logging Stars.
 
 export interface ObservationTokenFields {
+  target: string;
   identifiedObject: string;
   confidence: string;
   capturedAt: string;
   fileHash: string;
+  lat: number;
+  lon: number;
   deviceTier: string;
   deviceMake: string;
   deviceModel: string;
@@ -18,14 +21,82 @@ export interface ObservationTokenFields {
 }
 
 export type ObservationTokenResult =
-  | { ok: true }
+  | { ok: true; payload: ObservationTokenPayload }
   | { ok: false; status: 401 | 503; reason: string };
+
+export interface ObservationTokenPayload extends ObservationTokenFields {
+  exp: number;
+}
 
 // Dedicated HMAC secret. Falls back to ANTHROPIC_API_KEY for compat with tokens
 // issued before the dedicated secret existed; if both are empty we refuse rather
 // than sign/validate with '' (which would be trivially forgeable).
 export function getObservationTokenSecret(): string {
   return process.env.OBSERVATION_TOKEN_SECRET || process.env.ANTHROPIC_API_KEY || '';
+}
+
+function canonicalPayload(fields: ObservationTokenPayload): string {
+  return JSON.stringify({
+    target: fields.target,
+    identifiedObject: fields.identifiedObject,
+    confidence: fields.confidence,
+    capturedAt: fields.capturedAt,
+    fileHash: fields.fileHash,
+    lat: Number(fields.lat.toFixed(6)),
+    lon: Number(fields.lon.toFixed(6)),
+    deviceTier: fields.deviceTier,
+    deviceMake: fields.deviceMake,
+    deviceModel: fields.deviceModel,
+    isInternetSourced: fields.isInternetSourced,
+    wallet: fields.wallet,
+    exp: fields.exp,
+  });
+}
+
+function signPayload(payload: ObservationTokenPayload, secret: string): string {
+  return createHmac('sha256', secret).update(canonicalPayload(payload)).digest('hex');
+}
+
+function encodePayload(payload: ObservationTokenPayload): string {
+  return Buffer.from(canonicalPayload(payload), 'utf8').toString('base64url');
+}
+
+function decodePayload(encoded: string): ObservationTokenPayload | null {
+  try {
+    const parsed = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')) as ObservationTokenPayload;
+    if (
+      typeof parsed.target !== 'string' ||
+      typeof parsed.identifiedObject !== 'string' ||
+      typeof parsed.confidence !== 'string' ||
+      typeof parsed.capturedAt !== 'string' ||
+      typeof parsed.fileHash !== 'string' ||
+      typeof parsed.lat !== 'number' ||
+      typeof parsed.lon !== 'number' ||
+      typeof parsed.deviceTier !== 'string' ||
+      typeof parsed.deviceMake !== 'string' ||
+      typeof parsed.deviceModel !== 'string' ||
+      typeof parsed.isInternetSourced !== 'boolean' ||
+      typeof parsed.wallet !== 'string' ||
+      typeof parsed.exp !== 'number'
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function createObservationToken(fields: ObservationTokenFields): string | null {
+  const secret = getObservationTokenSecret();
+  if (!secret) return null;
+  const payload: ObservationTokenPayload = {
+    ...fields,
+    lat: Number(fields.lat.toFixed(6)),
+    lon: Number(fields.lon.toFixed(6)),
+    exp: Date.now() + 30 * 60_000,
+  };
+  return `${encodePayload(payload)}.${signPayload(payload, secret)}`;
 }
 
 export function verifyObservationToken(
@@ -40,36 +111,43 @@ export function verifyObservationToken(
     return { ok: false, status: 503, reason: 'Server misconfigured' };
   }
 
-  const v2 = [
-    fields.identifiedObject,
-    fields.confidence,
-    fields.capturedAt,
-    fields.fileHash,
-    fields.deviceTier,
-    fields.deviceMake,
-    fields.deviceModel,
-    fields.isInternetSourced ? '1' : '0',
-    fields.wallet,
-  ].join(':');
-  // Legacy tokens omitted wallet binding — disabled by default.
-  // Set ALLOW_LEGACY_OBSERVE_TOKEN=true only for rollback.
-  const legacy = [
-    fields.identifiedObject,
-    fields.confidence,
-    fields.capturedAt,
-    fields.fileHash,
-    fields.deviceTier,
-    fields.deviceMake,
-    fields.deviceModel,
-    fields.isInternetSourced ? '1' : '0',
-  ].join(':');
-
-  const expectedV2 = createHmac('sha256', secret).update(v2).digest('hex');
-  const allowLegacy = process.env.ALLOW_LEGACY_OBSERVE_TOKEN === 'true';
-  const expectedLegacy = createHmac('sha256', secret).update(legacy).digest('hex');
-
-  if (token !== expectedV2 && (!allowLegacy || token !== expectedLegacy)) {
+  const [payloadPart, sig] = token.split('.');
+  if (!payloadPart || !sig) {
     return { ok: false, status: 401, reason: 'Invalid verification token' };
   }
-  return { ok: true };
+  const payload = decodePayload(payloadPart);
+  if (!payload) {
+    return { ok: false, status: 401, reason: 'Invalid verification token' };
+  }
+  if (payload.exp < Date.now()) {
+    return { ok: false, status: 401, reason: 'Verification token expired' };
+  }
+  const expected = signPayload(payload, secret);
+  if (sig !== expected) {
+    return { ok: false, status: 401, reason: 'Invalid verification token' };
+  }
+
+  const expectedFields: ObservationTokenFields = {
+    ...fields,
+    lat: Number(fields.lat.toFixed(6)),
+    lon: Number(fields.lon.toFixed(6)),
+  };
+  const matches =
+    payload.target === expectedFields.target &&
+    payload.identifiedObject === expectedFields.identifiedObject &&
+    payload.confidence === expectedFields.confidence &&
+    payload.capturedAt === expectedFields.capturedAt &&
+    payload.fileHash === expectedFields.fileHash &&
+    payload.lat === expectedFields.lat &&
+    payload.lon === expectedFields.lon &&
+    payload.deviceTier === expectedFields.deviceTier &&
+    payload.deviceMake === expectedFields.deviceMake &&
+    payload.deviceModel === expectedFields.deviceModel &&
+    payload.isInternetSourced === expectedFields.isInternetSourced &&
+    payload.wallet === expectedFields.wallet;
+
+  if (!matches) {
+    return { ok: false, status: 401, reason: 'Invalid verification token' };
+  }
+  return { ok: true, payload };
 }

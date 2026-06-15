@@ -44,6 +44,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ confirmed: true, signature: order.signature, order });
   }
 
+  if (order.paymentMethod === 'stars') {
+    if (!order.burnSignature) {
+      return NextResponse.json({
+        confirmed: false,
+        pending: 'burn',
+        error: 'Awaiting Stars burn confirmation',
+      });
+    }
+    const updated = await db
+      .update(orders)
+      .set({ status: 'paid', signature: order.burnSignature, paidAt: new Date() })
+      .where(eq(orders.id, order.id))
+      .returning();
+    return NextResponse.json({ confirmed: true, signature: order.burnSignature, order: updated[0] ?? order });
+  }
+
   let referenceKey: PublicKey;
   try {
     referenceKey = new PublicKey(order.paymentReference);

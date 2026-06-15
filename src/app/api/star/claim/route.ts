@@ -20,6 +20,33 @@ interface ClaimedStar {
   claimed_name: string;
 }
 
+async function verifyClaimNftOwner(nftAddress: string, walletAddress: string): Promise<boolean> {
+  const endpoint = process.env.HELIUS_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL;
+  const collectionMint = process.env.NEXT_PUBLIC_COLLECTION_MINT_ADDRESS ?? process.env.COLLECTION_MINT_ADDRESS;
+  if (!endpoint || !collectionMint) return false;
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getAsset',
+      params: { id: nftAddress, displayOptions: { showUnverifiedCollections: true } },
+    }),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) return false;
+  const data = await res.json();
+  const asset = data?.result;
+  const owner = asset?.ownership?.owner;
+  const grouping = Array.isArray(asset?.grouping) ? asset.grouping : [];
+  const inCollection = grouping.some((g: { group_key?: string; group_value?: string }) =>
+    g.group_key === 'collection' && g.group_value === collectionMint
+  );
+  return owner === walletAddress && inCollection;
+}
+
 async function moderateName(name: string): Promise<{ approved: boolean; reason?: string }> {
   try {
     const client = new Anthropic();
@@ -94,6 +121,16 @@ export async function POST(req: NextRequest) {
 
   if (typeof nftAddress !== 'string' || !nftAddress) {
     return NextResponse.json({ error: 'nftAddress is required' }, { status: 400 });
+  }
+  try {
+    new PublicKey(nftAddress);
+  } catch {
+    return NextResponse.json({ error: 'Invalid nftAddress' }, { status: 400 });
+  }
+
+  const ownsClaimNft = await verifyClaimNftOwner(nftAddress, walletAddress);
+  if (!ownsClaimNft) {
+    return NextResponse.json({ error: 'Claim NFT not found for this wallet' }, { status: 403 });
   }
 
   const modResult = await moderateName(trimmedName);
