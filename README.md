@@ -6,7 +6,7 @@
 
 Get tonight's sky forecast, photograph what you see, earn rewards you can redeem for real telescopes and gear at [Astroman](https://astroman.ge), Georgia's first astronomy store. Built on Solana. Free to use.
 
-[Live App](https://stellarrclub.vercel.app) · [Stellar Field APK](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Tether Frontier Track Submission](docs/qvac-submission.md) · [Twitter/X](https://x.com/StellarClub26)
+[Live App](https://stellarsky.vercel.app) · [Stellar Field APK](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Tether Frontier Track Submission](docs/qvac-submission.md) · [Twitter/X](https://x.com/StellarClub26)
 
 ---
 
@@ -64,7 +64,7 @@ Verified end-to-end on a Poco X3 NFC (Snapdragon 732G, 6GB RAM, 2026-05-07): APK
 
 The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on Claude (fast and broad), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
 
-[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
+[Download APK](https://stellarsky.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
 
 ---
 
@@ -83,7 +83,7 @@ Every observation contributes a real datapoint — GPS coordinates, timestamp, p
 
 The network grows itself: more observers in more places means denser sky coverage, which makes the data more useful — for ASTRA's recommendations and (eventually) for anyone who needs ground-truth observation data.
 
-Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.app/network).
+Live network map: [stellarsky.vercel.app/network](https://stellarsky.vercel.app/network).
 
 ---
 
@@ -116,8 +116,9 @@ Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.
 Stellar isn't built in a vacuum. It's built on top of [Astroman](https://astroman.ge), Georgia's first astronomy e-commerce store:
 
 - Physical retail in Tbilisi
-- ~$150K of telescope and astronomy inventory
-- 60K+ social followers across Facebook and Instagram
+- 45K+ telescope buyers since 2018
+- 70K+ active social audience
+- Revenue-share with Bresser, Levenhuk, Celestron (20% commission, no inventory held)
 - Direct relationships with Georgian schools, astronomy clubs, observers
 - A founder who answers "is tonight good?" calls every day
 
@@ -128,7 +129,7 @@ Every Astroman customer is a potential Stellar user. Every Stellar observer beco
 ## Running Locally
 
 ```bash
-git clone https://github.com/Morningbriefrezi/Stellar.git
+git clone https://github.com/Rezimod/Stellar.git
 cd Stellar
 npm install
 cp .env.example .env.local  # Fill in your keys
