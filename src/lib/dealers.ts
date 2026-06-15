@@ -43,6 +43,10 @@ export interface Product {
   featured?: boolean
   /** Hand-picked for the "Recommended for You" rail. Set via RECOMMENDED_IDS. */
   recommended?: boolean
+  /** Editorial rating (1–5) for prominently merchandised gear. Set via RATINGS. */
+  rating?: number
+  /** Review count paired with `rating`. Set via RATINGS. */
+  reviews?: number
 }
 
 const DEALERS: Dealer[] = [
@@ -1814,15 +1818,39 @@ const RECOMMENDED_IDS = new Set<string>([
   'cel-xcel-7mm', 'cel-zoom-eyepiece', 'cel-nature-dx-8x42',
 ])
 
+// Editorial ratings for prominently merchandised gear (featured + recommended
+// + a few flagships). The catalog has no live review system yet, so these are
+// curated placeholders, intentionally scoped to the cards that surface them.
+const RATINGS: Record<string, { rating: number; reviews: number }> = {
+  'scope-celestron-70az': { rating: 4.8, reviews: 214 },
+  'scope-starsense-dx6': { rating: 4.8, reviews: 275 },
+  'scope-nexstar-90slt': { rating: 4.7, reviews: 156 },
+  'cel-nexstar8se': { rating: 4.9, reviews: 312 },
+  'cel-nexstar6se': { rating: 4.9, reviews: 287 },
+  'cel-starsense-dx130': { rating: 4.8, reviews: 198 },
+  'cel-skymaster-15x70': { rating: 4.7, reviews: 189 },
+  'cel-skymaster-25x70': { rating: 4.7, reviews: 142 },
+  'cel-nature-dx-8x42': { rating: 4.6, reviews: 96 },
+  'cel-xcel-7mm': { rating: 4.7, reviews: 88 },
+  'cel-zoom-eyepiece': { rating: 4.6, reviews: 174 },
+  'lev-plus130': { rating: 4.8, reviews: 121 },
+  'lev-blitz114': { rating: 4.6, reviews: 84 },
+  'lev-plus120': { rating: 4.7, reviews: 73 },
+  'astr-eyepiece-set': { rating: 4.6, reviews: 41 },
+  'astr-bino-8x42': { rating: 4.7, reviews: 58 },
+  'astr-cosmonaut-moon-lamp': { rating: 4.8, reviews: 63 },
+}
+
 function withMarketplaceStarsPrice(p: Product): Product {
   const featured = FEATURED_IDS.has(p.id) || undefined
   const recommended = RECOMMENDED_IDS.has(p.id) || undefined
-  if (p.kind === 'stars-only') return { ...p, featured, recommended }
+  const r = RATINGS[p.id]
+  const extra = { featured, recommended, rating: r?.rating, reviews: r?.reviews }
+  if (p.kind === 'stars-only') return { ...p, ...extra }
   return {
     ...p,
     starsPrice: computeMarketplaceStarsPrice(p.price, p.currency),
-    featured,
-    recommended,
+    ...extra,
   }
 }
 

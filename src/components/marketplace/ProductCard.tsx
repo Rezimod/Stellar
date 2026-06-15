@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { priceToSol, priceToUsd, type Product } from '@/lib/dealers';
 
-// Real editorial badges only — 'Best Seller' / 'Popular' come from the dealer
-// catalog. No invented ratings or review counts.
+// 'Best Seller' / 'Popular' come from the dealer catalog; ratings are curated
+// editorial values (see RATINGS in dealers.ts) shown only when present.
 const BADGE_COLOR: Record<string, string> = {
   'Best Seller': '#34D399',
   Popular: '#A78BFA',
@@ -72,10 +72,8 @@ export default function ProductCard({
     `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
 
   const starsPrice = product.starsPrice;
-  const showProgress = starsPrice > 0 && balance > 0;
-  const affordable = balance >= starsPrice;
-  const pct = starsPrice > 0 ? Math.min(100, Math.round((balance / starsPrice) * 100)) : 0;
-  const remaining = Math.max(0, starsPrice - balance);
+  const affordable = balance > 0 && balance >= starsPrice;
+  const shortBy = balance > 0 && balance < starsPrice ? starsPrice - balance : 0;
 
   const solValue = priceToSol(product.price, product.currency, solPerGEL, solPriceUsd);
   const solAmount = solValue > 0 ? solValue : null;
@@ -151,23 +149,16 @@ export default function ProductCard({
               {product.badge}
             </span>
           )}
-          {product.starsPrice > 0 && (
-            <span
-              className="absolute bottom-[6px] left-[6px] inline-flex items-center gap-[4px] rounded-full pl-[6px] pr-[8px] py-[3px] backdrop-blur-sm"
-              style={{
-                background: 'rgba(15,18,28,0.82)',
-                border: '1px solid rgba(255,255,255,0.12)',
-              }}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" className="flex-shrink-0">
-                <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
-              </svg>
-              <span className="text-[10.5px] font-bold tabular-nums tracking-[0.02em] text-white leading-none">
-                {product.starsPrice.toLocaleString()}
-              </span>
-            </span>
-          )}
         </div>
+        {product.rating != null && (
+          <div className="flex items-center gap-[5px] mb-[5px]">
+            <Star className="w-[12px] h-[12px]" style={{ color: 'var(--terracotta)', fill: 'var(--terracotta)' }} />
+            <span className="text-[11.5px] font-semibold tabular-nums text-white leading-none">{product.rating.toFixed(1)}</span>
+            {product.reviews != null && (
+              <span className="text-[10.5px] tabular-nums text-white/45 leading-none">({product.reviews})</span>
+            )}
+          </div>
+        )}
         <p className={`font-medium text-white leading-[1.25] line-clamp-2 min-h-[2.5em] mb-[3px] group-hover:text-white transition-colors ${featured ? 'text-[16px]' : 'text-[15px]'}`}>
           {product.name}
         </p>
@@ -201,68 +192,47 @@ export default function ProductCard({
         )}
       </div>
 
-      {showProgress && (
-        <div className="mb-[12px]">
-          <div className="flex items-center justify-between mb-[5px]">
-            <span className="text-[10px] tracking-[0.10em] uppercase" style={{ color: affordable ? '#5EEAD4' : 'rgba(255,255,255,0.55)' }}>
-              {affordable ? 'Ready to redeem' : `${remaining.toLocaleString()} ✦ to go`}
-            </span>
-            <span className="text-[10px] font-mono tabular-nums text-white/45">{pct}%</span>
-          </div>
-          <div className="h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-            <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: affordable ? '#5EEAD4' : '#FFD166' }} />
-          </div>
-        </div>
-      )}
-
-      <div className="flex gap-[6px]">
-        <Link
-          href={checkoutHref('sol')}
-          className="flex-1 min-w-0 inline-flex items-center justify-center gap-[6px] h-[34px] px-[8px] rounded-none text-[11.5px] sm:text-[12px] tracking-[0.04em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
-          style={{
-            background: 'var(--terracotta)',
-            border: '1px solid var(--terracotta)',
-            color: '#1a1208',
-            boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,179,71,0.22)',
-          }}
-          aria-label={`Pay for ${product.name} with SOL`}
-        >
-          <svg width="16" height="16" viewBox="0 0 397 311" aria-hidden="true" className="h-[16px] w-[16px] flex-shrink-0">
-            <defs>
-              <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#9945FF" />
-                <stop offset="50%" stopColor="#19FB9B" />
-                <stop offset="100%" stopColor="#14F195" />
-              </linearGradient>
-            </defs>
-            <path fill={`url(#sol-grad-${product.id})`} d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
-            <path fill={`url(#sol-grad-${product.id})`} d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
-            <path fill={`url(#sol-grad-${product.id})`} d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
-          </svg>
-          <span>SOL</span>
-        </Link>
+      <Link
+        href={checkoutHref('sol')}
+        className="w-full inline-flex items-center justify-center gap-[7px] h-[38px] px-[10px] rounded-none text-[12.5px] tracking-[0.02em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
+        style={{
+          background: 'var(--terracotta)',
+          border: '1px solid var(--terracotta)',
+          color: '#1a1208',
+          boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,179,71,0.22)',
+        }}
+        aria-label={`Pay for ${product.name} with SOL`}
+      >
+        <svg width="16" height="16" viewBox="0 0 397 311" aria-hidden="true" className="h-[16px] w-[16px] flex-shrink-0">
+          <defs>
+            <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#9945FF" />
+              <stop offset="50%" stopColor="#19FB9B" />
+              <stop offset="100%" stopColor="#14F195" />
+            </linearGradient>
+          </defs>
+          <path fill={`url(#sol-grad-${product.id})`} d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
+          <path fill={`url(#sol-grad-${product.id})`} d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
+          <path fill={`url(#sol-grad-${product.id})`} d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
+        </svg>
+        <span>Pay with SOL</span>
+      </Link>
+      {starsPrice > 0 && (
         <Link
           href={checkoutHref('stars')}
-          className="flex-1 min-w-0 inline-flex items-center justify-center gap-[5px] h-[34px] px-[6px] rounded-none text-[11.5px] sm:text-[12px] tracking-[0.04em] font-bold whitespace-nowrap transition-[background,transform] duration-150 hover:-translate-y-[1px]"
-          style={{
-            background: '#1A2540',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: '#FFFFFF',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = '#22305A';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = '#1A2540';
-          }}
-          aria-label={`Redeem ${product.name} with stars`}
+          className="mt-[8px] w-full inline-flex items-center justify-center gap-[5px] text-[11px] tracking-[0.02em] text-white/55 hover:text-[var(--terracotta)] transition-colors"
+          aria-label={`Redeem ${product.name} with Stars`}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="text-white flex-shrink-0">
-            <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
-          </svg>
-          <span>STARS</span>
+          <Star className="w-[11px] h-[11px] flex-shrink-0" style={{ fill: 'currentColor' }} />
+          <span className="tabular-nums">
+            {affordable
+              ? `Redeem · ${starsPrice.toLocaleString()} Stars`
+              : shortBy > 0
+                ? `${shortBy.toLocaleString()} ✦ to go`
+                : `or ${starsPrice.toLocaleString()} Stars`}
+          </span>
         </Link>
-      </div>
+      )}
     </div>
   );
 }

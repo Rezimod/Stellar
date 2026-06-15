@@ -10,11 +10,11 @@ import { useLocation } from '@/lib/location';
 import LocationPicker from '@/components/LocationPicker';
 import PageContainer from '@/components/layout/PageContainer';
 import ProductCard from '@/components/marketplace/ProductCard';
-import MarketplaceBalanceCard from '@/components/marketplace/MarketplaceBalanceCard';
+import MarketplaceHero from '@/components/marketplace/MarketplaceHero';
+import CategoryCircles from '@/components/marketplace/CategoryCircles';
+import EarnStarsCard from '@/components/marketplace/EarnStarsCard';
 import TrustRow from '@/components/marketplace/TrustRow';
 import FeaturedDeals from '@/components/marketplace/FeaturedDeals';
-import ShopByCategory from '@/components/marketplace/ShopByCategory';
-import MarketplaceInfoRow from '@/components/marketplace/MarketplaceInfoRow';
 import RecommendedRow from '@/components/marketplace/RecommendedRow';
 import HelpBanner from '@/components/marketplace/HelpBanner';
 import MarketplaceSectionHeader from '@/components/marketplace/MarketplaceSectionHeader';
@@ -23,14 +23,6 @@ import { getProductsByRegion, getDealersByRegion, GLOBAL_FALLBACK, type Product 
 type Cat = Product['category'];
 type CategoryFilter = 'all' | Cat;
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
-
-const CATEGORIES: { key: CategoryFilter; labelKey: string }[] = [
-  { key: 'all', labelKey: 'all' },
-  { key: 'telescope', labelKey: 'telescopes' },
-  { key: 'eyepiece', labelKey: 'eyepieces' },
-  { key: 'binocular', labelKey: 'binoculars' },
-  { key: 'accessory', labelKey: 'accessories' },
-];
 
 const SKILL_RANK: Record<string, number> = { advanced: 3, intermediate: 2, beginner: 1 };
 
@@ -145,43 +137,29 @@ export default function MarketplacePage() {
   const scrollTo = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
-  const selectCategory = useCallback((cat: Cat) => { setFilter(cat); setDifficulty('all'); scrollTo(catalogRef); }, [scrollTo]);
+  const selectCategory = useCallback((cat: CategoryFilter) => { setFilter(cat); setDifficulty('all'); scrollTo(catalogRef); }, [scrollTo]);
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
       <div className="marketplace-page-bg overflow-hidden">
         <div className="relative z-10 flex flex-col gap-[20px] sm:gap-[24px]">
-          {/* 1. Balance (Stars live in this content card, not the header) */}
-          <MarketplaceBalanceCard balance={balance} signedIn={!!address} solPerGEL={solPerGEL} solPriceUsd={solPriceUsd} />
+          {/* 1. Hero */}
+          <MarketplaceHero
+            onShopTelescopes={() => selectCategory('telescope')}
+            onShopDeals={() => scrollTo(featuredRef)}
+          />
 
-          {/* 2. Category filter pills + region picker (desktop) */}
-          <div className="flex items-center justify-between gap-[10px]">
-            <div className="flex items-center gap-[6px] flex-nowrap overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0 sm:overflow-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              {CATEGORIES.map(c => {
-                const active = filter === c.key;
-                return (
-                  <button
-                    key={c.key}
-                    onClick={() => { setFilter(c.key); setDifficulty('all'); }}
-                    className="flex-shrink-0 h-[30px] px-[12px] text-[11px] tracking-[0.08em] uppercase rounded-none whitespace-nowrap transition-[background,color,border-color] duration-150"
-                    style={active
-                      ? { background: 'var(--terracotta)', color: '#1a1208', border: '1px solid var(--terracotta)', fontWeight: 700, boxShadow: '0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 12px rgba(255,126,54,0.18)' }
-                      : { color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(15,18,28,0.55)', fontWeight: 600, boxShadow: '0 1px 0 rgba(255,255,255,0.04) inset' }}
-                  >
-                    {t(c.labelKey)}
-                  </button>
-                );
-              })}
+          {/* 2. Category circles (primary filter) + region picker (desktop) */}
+          <div className="flex items-start gap-[10px]">
+            <div className="flex-1 min-w-0">
+              <CategoryCircles active={filter} counts={counts} onSelect={cat => { setFilter(cat); setDifficulty('all'); }} />
             </div>
-            <div className="hidden md:flex flex-shrink-0">
+            <div className="hidden md:flex flex-shrink-0 pt-[10px]">
               <LocationPicker compact />
             </div>
           </div>
 
-          {/* 3. Trust signals */}
-          <TrustRow />
-
-          {/* 4. Featured Deals */}
+          {/* 3. Featured Picks */}
           <div ref={featuredRef} className="scroll-mt-[80px]">
             <FeaturedDeals
               products={featured}
@@ -194,6 +172,9 @@ export default function MarketplacePage() {
               onViewAll={() => scrollTo(catalogRef)}
             />
           </div>
+
+          {/* 4. Earn Stars promo */}
+          <EarnStarsCard />
 
           {/* 5. Full catalog grid */}
           <section ref={catalogRef} className="scroll-mt-[80px]">
@@ -220,16 +201,7 @@ export default function MarketplacePage() {
             )}
           </section>
 
-          {/* 6. Shop by category */}
-          <section>
-            <MarketplaceSectionHeader title={t('shopByCategory')} />
-            <ShopByCategory counts={counts} onSelect={selectCategory} />
-          </section>
-
-          {/* 7. Info row */}
-          <MarketplaceInfoRow onCommunityPicks={() => scrollTo(featuredRef)} />
-
-          {/* 8. Recommended */}
+          {/* 6. Recommended */}
           <RecommendedRow
             products={recommended}
             dealerName={getDealerName}
@@ -240,7 +212,10 @@ export default function MarketplacePage() {
             onViewAll={() => scrollTo(catalogRef)}
           />
 
-          {/* 9. Need help choosing? */}
+          {/* 7. Trust signals */}
+          <TrustRow />
+
+          {/* 8. Need help choosing? */}
           <HelpBanner />
 
           {/* Buying guide — preserved goal-based shortcuts into the catalog */}
@@ -279,8 +254,21 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Mobile-only: region picker blended into the nav header (location only; balance now lives in the content card). */}
-      {navSlot && createPortal(<LocationPicker ghost />, navSlot)}
+      {/* Mobile-only: Stars balance + region picker blended into the nav header. */}
+      {navSlot && createPortal(
+        <div className="flex items-center gap-[2px]">
+          <span className="inline-flex items-center h-[22px] gap-[5px] px-[6px] rounded-md uppercase cursor-default">
+            <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" style={{ width: 9, height: 9 }}>
+              <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
+            </svg>
+            <span className="font-semibold tabular-nums tracking-[0.02em] text-[10.5px]" style={{ color: 'var(--terracotta)' }}>
+              {balance.toLocaleString()}
+            </span>
+          </span>
+          <LocationPicker ghost />
+        </div>,
+        navSlot,
+      )}
     </PageContainer>
   );
 }
