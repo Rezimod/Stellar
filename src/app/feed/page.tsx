@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { usePrivy } from '@privy-io/react-auth'
 import {
   Compass, Star, Sparkles, Calendar, Bookmark,
-  Image as ImageIcon, Eye, MapPin, Gem, X,
+  Image as ImageIcon, Eye, MapPin, Gem, X, Moon, Target, BarChart3, Sunset,
 } from 'lucide-react'
 import { useStellarUser } from '@/hooks/useStellarUser'
 import { useDisplayProfile } from '@/hooks/useDisplayProfile'
@@ -23,9 +23,10 @@ import type { FeedPost } from '@/lib/feed/types'
 
 const POST_BODY_MAX = 2000
 
-type FilterKey = 'latest' | 'following' | 'discoveries' | 'tonight'
+type FilterKey = 'latest' | 'following' | 'discoveries' | 'tonight' | 'featured'
+type SidebarFilterKey = Exclude<FilterKey, 'featured'>
 
-const SIDEBAR_FILTERS: Array<{ key: FilterKey; labelKey: FilterKey; Icon: typeof Compass }> = [
+const SIDEBAR_FILTERS: Array<{ key: SidebarFilterKey; labelKey: SidebarFilterKey; Icon: typeof Compass }> = [
   { key: 'latest', labelKey: 'latest', Icon: Compass },
   { key: 'following', labelKey: 'following', Icon: Star },
   { key: 'discoveries', labelKey: 'discoveries', Icon: Sparkles },
@@ -37,6 +38,7 @@ const TAB_FILTERS: Array<{ key: FilterKey; labelKey: FilterKey }> = [
   { key: 'following', labelKey: 'following' },
   { key: 'discoveries', labelKey: 'discoveries' },
   { key: 'tonight', labelKey: 'tonight' },
+  { key: 'featured', labelKey: 'featured' },
 ]
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -88,13 +90,14 @@ export default function FeedPage() {
       following: locale === 'ka' ? 'გამოწერები' : 'Following',
       discoveries: locale === 'ka' ? 'აღმოჩენები' : 'Discoveries',
       tonight: locale === 'ka' ? 'ამაღამ' : 'Tonight',
+      featured: locale === 'ka' ? 'რჩეული' : 'Featured',
     } as Record<FilterKey, string>,
     sidebarFilters: {
       latest: locale === 'ka' ? 'ყველა კოსმოსი' : 'All cosmos',
       following: locale === 'ka' ? 'გამოწერები' : 'Following',
       discoveries: locale === 'ka' ? 'აღმოჩენები' : 'Discoveries',
       tonight: locale === 'ka' ? 'ამაღამ' : 'Tonight',
-    } as Record<FilterKey, string>,
+    } as Record<SidebarFilterKey, string>,
     fileType: locale === 'ka' ? 'მხარდაჭერილია მხოლოდ JPEG, PNG და WebP სურათები.' : 'Only JPEG, PNG, or WebP images are supported.',
     fileSize: locale === 'ka' ? 'სურათი 2MB-ზე ნაკლები უნდა იყოს.' : 'Image must be smaller than 2MB.',
     failedPost: locale === 'ka' ? 'გამოქვეყნება ვერ მოხერხდა' : 'Failed to post',
@@ -109,13 +112,14 @@ export default function FeedPage() {
     linked: locale === 'ka' ? 'მიბმულია' : 'Linked',
     removeObservation: locale === 'ka' ? 'დაკვირვების წაშლა' : 'Remove observation',
     removeLocation: locale === 'ka' ? 'მდებარეობის წაშლა' : 'Remove location',
-    photo: locale === 'ka' ? 'ფოტო' : 'Photo',
+    photo: locale === 'ka' ? 'სურათი' : 'Image',
     observation: locale === 'ka' ? 'დაკვირვება' : 'Observation',
     location: locale === 'ka' ? 'მდებარეობა' : 'Location',
     addPhoto: locale === 'ka' ? 'ფოტოს დამატება' : 'Add photo',
     attachObservation: locale === 'ka' ? 'ბოლო დაკვირვების მიმაგრება' : 'Attach last observation',
     attachLocation: locale === 'ka' ? 'მიმდინარე მდებარეობის მიმაგრება' : 'Attach current location',
-    attachNft: locale === 'ka' ? 'აღმოჩენებიდან NFT-ის მიმაგრება' : 'Attach an NFT from your discoveries',
+    attachNft: locale === 'ka' ? 'აღჭურვილობის დამატება' : 'Add equipment',
+    equipment: locale === 'ka' ? 'აღჭურვილობა' : 'Equipment',
     sending: locale === 'ka' ? 'იგზავნება…' : 'Sending…',
     post: locale === 'ka' ? 'გამოქვეყნება' : 'Post',
     signInToPost: locale === 'ka' ? 'შედი, რათა დაკვირვებები ფიდში გამოაქვეყნო.' : 'Sign in to post your observations to the feed.',
@@ -137,7 +141,7 @@ export default function FeedPage() {
   const fetchPosts = useCallback(async (opts: { append: boolean }) => {
     const sp = new URLSearchParams()
     sp.set('limit', '20')
-    sp.set('filter', filter)
+    sp.set('filter', filter === 'featured' ? 'discoveries' : filter)
     if (address) sp.set('walletAddress', address)
     if (opts.append && nextCursor) sp.set('before', nextCursor)
     const res = await fetch(`/api/feed/posts?${sp}`)
@@ -446,9 +450,9 @@ export default function FeedPage() {
                     disabled={posting}
                     onClick={() => router.push('/nfts')}
                     aria-label={copy.attachNft}
-                    title="NFT"
+                    title={copy.equipment}
                   >
-                    <Gem /> <span className="tool-btn-label">NFT</span>
+                    <Gem /> <span className="tool-btn-label">{copy.equipment}</span>
                   </button>
                 </div>
                 <button type="button" className="post-btn" disabled={!canPost} onClick={submitPost}>
@@ -462,6 +466,41 @@ export default function FeedPage() {
               <button type="button" className="post-btn" onClick={() => setAuthOpen(true)}>{copy.signIn}</button>
             </div>
           )}
+
+          <section className="mobile-feed-intel" aria-label="Tonight feed overview">
+            <div className="tonight-overview-card">
+              <div className="tonight-overview-head">
+                <div>
+                  <p>Tonight Overview</p>
+                  <span>{cityLabel}</span>
+                </div>
+                <button type="button" onClick={() => router.push('/sky')}>View sky now</button>
+              </div>
+              <div className="tonight-overview-grid">
+                <div><Moon size={15} /><span>Moon</span><strong>Waning Gibbous, 92%</strong></div>
+                <div><Target size={15} /><span>Best targets</span><strong>5</strong></div>
+                <div><BarChart3 size={15} /><span>Sky quality</span><strong>8/10</strong></div>
+                <div><Sunset size={15} /><span>Sunset</span><strong>8:17 PM</strong></div>
+              </div>
+            </div>
+
+            <div className="trending-topics-card" aria-label="Trending topics">
+              <div className="mobile-card-title">Trending Topics</div>
+              <div className="trending-topic-row">
+                {[
+                  ['Saturn', '1.2K posts'],
+                  ['Auroras', '870 posts'],
+                  ['M13', '640 posts'],
+                  ['ISS Sighting', '520 posts'],
+                ].map(([topic, count]) => (
+                  <button key={topic} type="button" className="trending-topic" onClick={() => setFilter('latest')}>
+                    <strong>{topic}</strong>
+                    <span>{count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
 
           <div className="feed-filters">
             {TAB_FILTERS.map(t => (

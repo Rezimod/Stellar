@@ -384,6 +384,13 @@
   padding: 4px; border-radius: 6px;
 }
 .post-menu:hover { background: var(--card-bg-hover); color: var(--slate-100); }
+.mobile-only-menu-wrap,
+.action-bookmark,
+.media-object-tag,
+.observation-chip-row,
+.mobile-feed-intel {
+  display: none;
+}
 .post-menu-dropdown {
   position: absolute; top: 32px; right: 0;
   z-index: 10;
@@ -1123,32 +1130,60 @@
    pill composer, divided action bar, long-press reaction picker. */
 @media (max-width: 767px) {
   .feed-page {
-    padding: 8px 0 24px;
+    --mobile-card-bg: #0b162d;
+    --mobile-card-bg-2: #101b35;
+    --mobile-border: rgba(148, 163, 184, 0.14);
+    padding: 10px 0 calc(104px + env(safe-area-inset-bottom));
     max-width: 100%;
+    overflow-x: hidden;
   }
   .feed-grid { gap: 0; }
+  .feed-grid > main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .feed-header {
+    padding: 6px 22px 10px;
+    margin: 0 0 8px;
+    border-bottom: none;
+  }
+  .feed-title {
+    font-size: 26px;
+    line-height: 1.05;
+    margin-bottom: 5px;
+  }
+  .feed-header-meta {
+    font-family: var(--feed-sans);
+    font-size: 13px;
+    letter-spacing: 0;
+    color: rgba(226,232,240,0.68);
+  }
 
   /* Composer — pill input + divided action row */
   .composer {
-    padding: 12px 12px 8px;
-    border-radius: 16px;
-    margin: 0 12px 8px;
-    background: rgba(255,255,255,0.03);
+    padding: 14px;
+    border-radius: 22px;
+    margin: 0 20px 14px;
+    background: linear-gradient(180deg, rgba(16,27,53,0.96), rgba(11,22,45,0.96));
+    border-color: var(--mobile-border);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.18);
   }
   .composer-row {
     gap: 10px;
     align-items: flex-start;
   }
   .composer-avatar {
-    width: 38px; height: 38px; font-size: 16px;
+    width: 42px; height: 42px; font-size: 15px;
   }
   .composer-input {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(148,163,184,0.12);
     border-radius: 18px;
     padding: 11px 14px;
-    font-size: 14.5px;
-    min-height: 42px;
+    font-size: 15px;
+    min-height: 46px;
+    max-height: 118px;
   }
   .composer-input:focus {
     background: rgba(255,255,255,0.06);
@@ -1160,9 +1195,9 @@
 
   /* Action row — icon-only ghost buttons, single hairline above */
   .composer-actions {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--hairline);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(148,163,184,0.1);
     gap: 8px;
     align-items: center;
   }
@@ -1177,29 +1212,30 @@
   .tool-btn {
     flex: 0 0 auto;
     flex-direction: row;
-    gap: 0;
-    padding: 0;
-    width: 36px;
+    gap: 6px;
+    padding: 0 10px;
+    width: auto;
     height: 36px;
     min-height: 36px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
+    border-radius: 999px;
+    border: 1px solid rgba(148,163,184,0.12);
+    background: rgba(255,255,255,0.025);
     color: var(--slate-300);
+    font-size: 11.5px;
   }
-  .tool-btn:hover { background: rgba(255,255,255,0.05); border: none; color: var(--slate-100); }
+  .tool-btn:hover { background: rgba(255,255,255,0.05); border-color: rgba(148,163,184,0.2); color: var(--slate-100); }
   .tool-btn.active {
     background: rgba(255,179,71,0.1);
-    border: none;
+    border-color: rgba(255,179,71,0.24);
     color: var(--brass);
   }
-  .tool-btn-label { display: none; }
-  .tool-btn svg { width: 18px; height: 18px; }
+  .tool-btn-label { display: inline; }
+  .tool-btn svg { width: 15px; height: 15px; }
 
   .post-btn {
-    padding: 0 18px;
-    height: 36px;
-    min-height: 36px;
+    padding: 0 20px;
+    height: 40px;
+    min-height: 40px;
     font-size: 12.5px;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -1209,32 +1245,40 @@
   }
 
   .composer-auth {
-    padding: 12px 14px;
-    border-radius: 14px;
-    margin: 0 12px 8px;
+    padding: 14px;
+    border-radius: 20px;
+    margin: 0 20px 14px;
     flex-wrap: wrap;
     gap: 10px;
+    background: var(--mobile-card-bg);
+    border-color: var(--mobile-border);
   }
 
   /* Filter tabs — segmented control, full width */
   .feed-filters {
-    margin: 0 12px 8px;
-    width: calc(100% - 24px);
+    margin: 0 0 14px;
+    width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
     scrollbar-width: none;
-    padding: 2px;
+    padding: 0 20px 2px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    gap: 8px;
   }
   .feed-filters::-webkit-scrollbar { display: none; }
   .filter-tab {
-    flex: 1;
-    padding: 8px 12px;
-    min-height: 34px;
-    font-size: 12px;
-    font-weight: 500;
+    flex: 0 0 auto;
+    padding: 9px 16px;
+    min-height: 40px;
+    font-size: 13px;
+    font-weight: 600;
     white-space: nowrap;
     flex-shrink: 0;
+    border: 1px solid rgba(148,163,184,0.16);
+    background: rgba(11,22,45,0.62);
   }
   .filter-tab.active {
     background: var(--brass);
@@ -1242,34 +1286,203 @@
     font-weight: 600;
   }
 
+  .mobile-feed-intel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 20px 14px;
+  }
+  .tonight-overview-card,
+  .trending-topics-card {
+    border: 1px solid var(--mobile-border);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(16,27,53,0.95), rgba(11,22,45,0.95));
+    padding: 14px;
+  }
+  .tonight-overview-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .tonight-overview-head p,
+  .mobile-card-title {
+    margin: 0;
+    color: var(--bone);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .tonight-overview-head span {
+    display: block;
+    margin-top: 2px;
+    color: var(--slate-400);
+    font-size: 12px;
+  }
+  .tonight-overview-head button {
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,179,71,0.3);
+    background: rgba(255,179,71,0.12);
+    color: var(--brass);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 12px;
+  }
+  .tonight-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .tonight-overview-grid div {
+    min-width: 0;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(148,163,184,0.1);
+    padding: 10px;
+    display: grid;
+    gap: 4px;
+  }
+  .tonight-overview-grid svg {
+    color: var(--teal);
+  }
+  .tonight-overview-grid span {
+    color: var(--slate-400);
+    font-size: 11px;
+  }
+  .tonight-overview-grid strong {
+    color: var(--slate-100);
+    font-size: 12.5px;
+    line-height: 1.25;
+  }
+  .trending-topic-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-top: 10px;
+    margin: 0 -14px;
+    padding-left: 14px;
+    padding-right: 14px;
+    scrollbar-width: none;
+  }
+  .trending-topic-row::-webkit-scrollbar { display: none; }
+  .trending-topic {
+    flex: 0 0 auto;
+    min-width: 132px;
+    text-align: left;
+    border: 1px solid rgba(94,234,212,0.16);
+    background: rgba(94,234,212,0.06);
+    color: var(--slate-100);
+    border-radius: 16px;
+    padding: 10px 12px;
+    font: inherit;
+  }
+  .trending-topic strong,
+  .trending-topic span {
+    display: block;
+  }
+  .trending-topic strong {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .trending-topic span {
+    color: var(--slate-400);
+    font-size: 11px;
+  }
   /* Posts — fewer borders, bigger image, FB feel */
   .feed-post {
-    padding: 12px 12px 6px;
-    border-radius: 14px;
-    margin: 0 12px 8px;
-    background: rgba(255,255,255,0.035);
-    border: 1px solid var(--hairline);
+    padding: 14px;
+    border-radius: 22px;
+    margin: 0 20px 14px;
+    background: linear-gradient(180deg, rgba(16,27,53,0.96), rgba(11,22,45,0.96));
+    border: 1px solid var(--mobile-border);
   }
   .feed-post:hover { border-color: var(--hairline); }
-  .post-header { margin-bottom: 8px; }
+  .post-header { margin-bottom: 12px; gap: 10px; }
+  .post-author { min-width: 0; }
   .post-text {
-    font-size: 14.5px;
-    line-height: 1.55;
-    margin-bottom: 8px;
+    font-size: 15px;
+    line-height: 1.58;
+    margin-bottom: 12px;
   }
   .post-quote { font-size: 17px; padding: 4px 0 10px; }
   .author-avatar { width: 40px; height: 40px; font-size: 16px; }
   .author-name { font-size: 14px; gap: 6px; font-weight: 600; }
   .author-meta { font-size: 10px; gap: 6px; }
+  .mobile-only-menu-wrap { display: block; }
+  .post-menu {
+    min-width: 36px;
+    min-height: 36px;
+    display: grid;
+    place-items: center;
+  }
+  .post-menu-dropdown button:last-child {
+    color: var(--slate-100);
+  }
 
   /* Image goes edge-to-edge inside the card (FB look), natural aspect ratio,
      capped so the whole post (photo + caption + actions) stays scannable. */
   .post-media {
-    border-radius: 12px;
+    border-radius: 18px;
     margin: 0 0 10px;
+    background: #050914;
+    border-color: rgba(148,163,184,0.12);
+    aspect-ratio: 4 / 3;
   }
   .post-media img {
-    max-height: 62vh;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+  }
+  .media-object-tag {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 20px);
+    border-radius: 999px;
+    border: 1px solid rgba(255,179,71,0.26);
+    background: rgba(5,9,20,0.78);
+    color: var(--brass);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .media-badge {
+    left: auto;
+    right: 10px;
+    top: 10px;
+  }
+  .media-meta {
+    display: none;
+  }
+  .observation-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 0 0 12px;
+  }
+  .observation-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(148,163,184,0.13);
+    color: rgba(226,232,240,0.78);
+    font-size: 11.5px;
+    line-height: 1;
+  }
+  .observation-chip svg {
+    color: var(--teal);
+    flex: 0 0 auto;
   }
 
   /* Reactions summary — left-aligned bubble stack like FB */
@@ -1288,29 +1501,38 @@
 
   /* Action bar — 3 divided buttons, FB-style, wider tap area */
   .actions {
-    gap: 0;
-    padding: 2px 0;
+    gap: 6px;
+    padding: 4px 0 0;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .actions > * {
-    border-right: 1px solid var(--hairline);
+    border-right: none;
   }
   .actions > *:last-child {
     border-right: none;
   }
   .action {
-    padding: 11px 6px;
+    padding: 10px 6px;
     gap: 5px;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 500;
     min-height: 44px;
-    border-radius: 0;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(148,163,184,0.08);
   }
   .action:hover { background: transparent; }
   .action:active { background: rgba(255,255,255,0.04); }
   .action svg { width: 16px; height: 16px; }
   .action.liked { color: var(--brass); font-weight: 600; }
+  .action-bookmark {
+    display: flex;
+  }
+  .action-bookmark span,
+  .action-bookmark .action-count {
+    display: none;
+  }
   .action-count {
     min-width: 18px;
     height: 18px;
@@ -1401,8 +1623,11 @@
 
   /* Skeletons match new card spacing */
   .feed-skeleton {
-    margin: 0 12px 8px;
-    border-radius: 14px;
+    margin: 0 20px 14px;
+    border-radius: 22px;
   }
-  .feed-empty { padding: 40px 20px; }
+  .feed-empty {
+    margin: 0 20px;
+    padding: 40px 20px;
+  }
 }

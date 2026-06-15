@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { MessageCircle, MoreHorizontal, Share2, Telescope, Trash2, Copy, Twitter } from 'lucide-react'
+import { Bookmark, MapPin, MessageCircle, MoreHorizontal, Share2, Telescope, Trash2, Copy, Twitter } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
 import FollowButton from '@/components/feed/FollowButton'
 import { Avatar } from '@/lib/avatars'
@@ -55,6 +55,23 @@ function renderTextWithHashtags(text: string): React.ReactNode[] {
   }
   if (last < text.length) parts.push(<span key={`t${idx++}`}>{text.slice(last)}</span>)
   return parts
+}
+
+function observationChips(post: FeedPost): string[] {
+  const chips: string[] = []
+  const body = post.body ?? ''
+  const equipment = body.match(/(\d+(?:\.\d+)?\s?(?:inch|in|")\s?(?:dob|dobsonian|mak|refractor|newtonian|sct))/i)?.[0]
+  const exposure = body.match(/(\d+(?:\.\d+)?\s?h(?:our)?\s?exposure|\d+\s?min(?:ute)?\s?exposure)/i)?.[0]
+  const eyepieces = Array.from(body.matchAll(/\b\d+(?:\.\d+)?mm\s?eyepiece\b/gi)).map(m => m[0])
+
+  if (equipment) chips.push(equipment.replace(/\bdob\b/i, 'Dobsonian'))
+  if (exposure) chips.push(exposure)
+  chips.push(...eyepieces.slice(0, 2))
+  if (post.observationBortle != null) chips.push(`Bortle ${post.observationBortle}`)
+  if (post.observationLat || post.observationLon) chips.push('Location logged')
+  if (post.observationNftAddress) chips.push('Discovery NFT')
+
+  return Array.from(new Set(chips)).slice(0, 5)
 }
 
 interface Props {
@@ -274,6 +291,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
     ? (post.myReaction as ReactionType)
     : null
   const animationDelay = `${Math.min(index, 5) * 0.05}s`
+  const chips = observationChips(post)
 
   return (
     <article className="feed-post" style={{ animationDelay }}>
@@ -314,30 +332,36 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {!isMine && <FollowButton wallet={post.authorWallet} authPrompt={authPrompt} />}
-          {isMine && (
-            <div ref={menuRef} style={{ position: 'relative' }}>
-              <button type="button" className="post-menu" onClick={() => setShowMenu(s => !s)} aria-label="More">
-                <MoreHorizontal size={18} />
-              </button>
-              {showMenu && (
-                <div className="post-menu-dropdown">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowMenu(false)
-                      setIsEditing(true)
-                      setEditDraft(post.body ?? '')
-                    }}
-                  >
-                    Edit
+          <div ref={menuRef} className={!isMine ? 'mobile-only-menu-wrap' : ''} style={{ position: 'relative' }}>
+            <button type="button" className="post-menu" onClick={() => setShowMenu(s => !s)} aria-label="More">
+              <MoreHorizontal size={18} />
+            </button>
+            {showMenu && (
+              <div className="post-menu-dropdown">
+                {isMine ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMenu(false)
+                        setIsEditing(true)
+                        setEditDraft(post.body ?? '')
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button type="button" onClick={deletePost}>
+                      <Trash2 size={13} /> Delete
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" onClick={() => share('copy_link')}>
+                    <Copy size={13} /> Copy link
                   </button>
-                  <button type="button" onClick={deletePost}>
-                    <Trash2 size={13} /> Delete
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
+            )}
             </div>
-          )}
         </div>
       </div>
 
@@ -400,6 +424,12 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
               NFT · Sealed
             </div>
           )}
+          {post.observationTarget && (
+            <div className="media-object-tag">
+              <Telescope size={12} />
+              {post.observationTarget}
+            </div>
+          )}
           {(post.observationTarget || post.observationLat) && (
             <div className="media-meta">
               {post.observationTarget && <div className="media-target">{post.observationTarget}</div>}
@@ -412,6 +442,17 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             </div>
           )}
         </button>
+      )}
+
+      {chips.length > 0 && (
+        <div className="observation-chip-row" aria-label="Observation metadata">
+          {chips.map((chip, i) => (
+            <span className="observation-chip" key={chip}>
+              {i === chips.length - 1 && chip === 'Location logged' ? <MapPin size={12} /> : <Telescope size={12} />}
+              {chip}
+            </span>
+          ))}
+        </div>
       )}
 
       {post.type === 'achievement' && post.achievementTarget && (
@@ -524,6 +565,9 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             </div>
           )}
         </div>
+        <button type="button" className="action action-bookmark" onClick={() => myWallet ? undefined : authPrompt()} aria-label="Bookmark">
+          <Bookmark size={16} />
+        </button>
       </div>
 
       {(comments.length > 0 || expandedComments) && (
