@@ -4367,94 +4367,8 @@
 .skx .sky-obs__wrap {
   max-width: 1180px;
   gap: 16px;
-  padding-top: 0;
+  padding-top: 16px;
 }
-
-.skx__topbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-inline: -2px;
-  padding: 12px 2px;
-  background: rgba(7, 9, 15, 0.92);
-  backdrop-filter: blur(16px);
-}
-.skx__brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text);
-  text-decoration: none;
-  font-family: var(--sans);
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-.skx__comet {
-  position: relative;
-  width: 28px;
-  height: 18px;
-  flex: 0 0 auto;
-}
-.skx__comet::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 5px;
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: var(--amber);
-  box-shadow: 0 0 16px rgba(245, 166, 35, 0.65);
-}
-.skx__comet::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 8px;
-  width: 22px;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.95));
-  transform: rotate(-18deg);
-  transform-origin: right center;
-}
-.skx__top-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.skx__icon-btn,
-.skx__avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  color: var(--text);
-  text-decoration: none;
-  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
-}
-.skx__icon-btn {
-  border: 1px solid transparent;
-  background: transparent;
-}
-.skx__avatar {
-  border: 1px solid rgba(45, 108, 255, 0.42);
-  background: var(--surface);
-}
-.skx__icon-btn:hover,
-.skx__avatar:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--border-strong);
-}
-.skx__icon-btn:active,
-.skx__avatar:active { transform: scale(0.97); }
 
 /* shared ring used by the "next best time" card */
 .skx__ring { position: relative; width: 52px; height: 52px; flex-shrink: 0; display: inline-flex; }
@@ -4879,8 +4793,6 @@
 }
 .skx__tips-dot.is-active { background: var(--terracotta); transform: scale(1.15); }
 
-.skx__icon-btn:focus-visible,
-.skx__avatar:focus-visible,
 .skx__loc:focus-visible,
 .skx__look-row:focus-visible,
 .skx__viewall:focus-visible,
@@ -4909,10 +4821,6 @@
 /* ── Phones — tighten the summary + duos ── */
 @media (max-width: 560px) {
   .skx .sky-obs__wrap { padding-inline: 14px; }
-  .skx__topbar { margin-inline: -14px; padding-inline: 14px; }
-  .skx__brand { font-size: 21px; }
-  .skx__icon-btn,
-  .skx__avatar { width: 42px; height: 42px; }
   .skx__head { align-items: stretch; flex-direction: column; }
   .skx__loc { width: fit-content; max-width: 100%; }
   .skx__summary {

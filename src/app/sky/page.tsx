@@ -8,7 +8,7 @@ import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset, Search, UserRound } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset } from 'lucide-react';
 import { TelescopeIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
@@ -454,21 +454,6 @@ export default function SkyPage() {
   return (
     <div className="sky-page-v2 sky-v3 sky-obs skx">
       <div className="sky-obs__wrap">
-        <header className="skx__topbar">
-          <Link href="/" className="skx__brand" aria-label="Stellar home">
-            <span className="skx__comet" aria-hidden="true" />
-            <span>STELLAR</span>
-          </Link>
-          <div className="skx__top-actions">
-            <Link href="/hub" className="skx__icon-btn" aria-label="Open hub">
-              <Search size={21} aria-hidden="true" />
-            </Link>
-            <Link href="/profile" className="skx__avatar" aria-label="Open profile">
-              <UserRound size={18} aria-hidden="true" />
-            </Link>
-          </div>
-        </header>
-
         <EventBanner />
 
         {finderError && (
