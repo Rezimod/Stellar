@@ -24,7 +24,7 @@ import { getRareEvents, getUpcomingEvents, type AstroEvent } from '@/lib/astro-e
 import type { QuizDef } from '@/lib/quizzes';
 import {
   Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe,
-  Rocket, Clock, Eye, Cloud, Gift, ChevronRight, Plus, Lightbulb, Satellite, Users,
+  Rocket, Clock, Eye, Cloud, Gift, ChevronRight, Lightbulb, Satellite, Users,
 } from 'lucide-react';
 import { NIGHT_STAR_GOAL, MAIN_QUEST_ID, GLOBAL_MISSION, nextReward } from '@/lib/missions-tonight';
 import type { LucideIcon } from 'lucide-react';
@@ -783,12 +783,6 @@ export default function MissionsPage() {
           />
         </section>
       </div>
-
-      {/* Quick observe FAB */}
-      <button type="button" className="mis-fab" onClick={() => router.push('/observe')} aria-label={t('quickObserve')}>
-        <Plus size={22} strokeWidth={2.4} />
-        <span className="mis-fab-label">{t('quickObserve')}</span>
-      </button>
 
       <EventInfoSheet
         open={!!activeEvent}

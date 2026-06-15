@@ -27,16 +27,16 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
         className="absolute inset-0"
         style={{ background: 'linear-gradient(90deg, rgba(7,11,20,0.94) 0%, rgba(7,11,20,0.80) 45%, rgba(7,11,20,0.35) 100%)' }}
       />
-      <div className="relative z-10 flex items-center justify-between gap-[12px] p-[14px] sm:p-[28px] min-h-[136px] sm:min-h-[220px]">
+      <div className="relative z-10 flex items-center justify-between gap-[12px] px-[14px] py-[12px] sm:px-[28px] sm:py-[18px] min-h-[104px] sm:min-h-[160px]">
         <div className="max-w-[62%] sm:max-w-[58%]">
-          <h1 className="font-display text-[20px] sm:text-[32px] leading-[1.1] text-white" style={{ fontWeight: 600 }}>
+          <h1 className="font-display text-[19px] sm:text-[28px] leading-[1.1] text-white" style={{ fontWeight: 600 }}>
             {t('heroTitleLead')}{' '}
             <span style={{ color: 'var(--terracotta)' }}>{t('heroTitleAccent')}</span>
           </h1>
-          <p className="mt-[6px] sm:mt-[10px] text-[12px] sm:text-[14px] leading-[1.45] text-white/70 max-w-[36ch]">
+          <p className="mt-[5px] sm:mt-[8px] text-[12px] sm:text-[13.5px] leading-[1.4] text-white/70 max-w-[36ch]">
             {t('heroSubtitle')}
           </p>
-          <div className="mt-[10px] sm:mt-[18px] flex flex-wrap items-center gap-[8px]">
+          <div className="mt-[9px] sm:mt-[14px] flex flex-wrap items-center gap-[8px]">
             <button
               onClick={onShopTelescopes}
               className="inline-flex items-center justify-center h-[32px] sm:h-[36px] px-[13px] sm:px-[16px] rounded-none text-[12px] sm:text-[12.5px] font-bold tracking-[0.02em] transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
