@@ -31,7 +31,7 @@ export default function AstraPopup() {
     }
   }, [open, messages.length]);
 
-  // Allow other components (e.g. market detail "Ask ASTRA") to open the popup
+  // Allow other components (e.g. a mission's "Ask ASTRA") to open the popup
   // and optionally seed an initial question. Using a ref so the listener
   // always sees the latest `send` without re-binding.
   const sendRef = useRef<(t?: string) => void>(() => {});

@@ -528,6 +528,8 @@ export default function SkyPage() {
               </div>
             </section>
 
+            {/* ── Dashboard: map + rail + overview/tips (grid on desktop, stack on mobile) ── */}
+            <div className="skx__dash">
             {/* ── Sky map ── */}
             <section className="skx__map">
               <div className="sky-v3__map-stage">
@@ -580,8 +582,7 @@ export default function SkyPage() {
               <AzimuthStrip activeObject={activeObject} />
             </section>
 
-            {/* ── Next best time · what to look for ── */}
-            <div className="skx__duo">
+            {/* ── Next best time ── */}
               <section className="skx__card skx__nbt">
                 <span className="skx__card-label">Next best time</span>
                 <div className="skx__nbt-row">
@@ -621,9 +622,8 @@ export default function SkyPage() {
                   ))}
                 </ul>
               </section>
-            </div>
 
-            {/* ── Visible now rail ── */}
+            {/* ── Visible now ── */}
             <section className="skx__visible" aria-label="Visible now">
               <header className="skx__sec-head">
                 <h2 className="skx__sec-title">Visible now <span className="skx__sec-count">({visibleCount})</span></h2>
@@ -649,8 +649,7 @@ export default function SkyPage() {
               </ol>
             </section>
 
-            {/* ── Tonight overview · tips ── */}
-            <div className="skx__duo">
+            {/* ── Tonight overview ── */}
               <section className="skx__card skx__overview">
                 <span className="skx__card-label">Tonight overview</span>
                 <NightOverview sunsetISO={sunsetISO} sunriseISO={sunriseISO} openISO={windowOpen} closeISO={windowClose} tz={tz} />

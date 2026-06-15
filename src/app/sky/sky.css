@@ -4573,6 +4573,9 @@
 /* ── Two-up card row ── */
 .skx__duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+/* ── Dashboard wrapper — single column on phones, 2-col grid on desktop ── */
+.skx__dash { display: flex; flex-direction: column; gap: 12px; }
+
 /* next best time */
 .skx__nbt-row { display: flex; align-items: center; gap: 12px; margin-top: 11px; }
 .skx__nbt-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -4816,6 +4819,53 @@
   .skx .sky-obs__wrap { max-width: 1180px; }
   .skx__map .sky-map { max-width: min(100%, 720px); }
   .skx__duo { gap: 16px; }
+}
+
+/* ── Desktop dashboard: map (left) + Next-best-time/Visible-now rail (right),
+      then Tonight-overview/Tips. Mockup parity. Phones keep the stacked column. ── */
+@media (min-width: 1024px) {
+  .skx__dash {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    grid-template-areas:
+      "map      nbt"
+      "map      vis"
+      "overview tips";
+    align-items: start;
+    gap: 14px;
+  }
+  .skx__dash > .skx__map      { grid-area: map; align-self: start; }
+  .skx__dash > .skx__nbt      { grid-area: nbt; }
+  .skx__dash > .skx__visible  { grid-area: vis; align-self: stretch; }
+  .skx__dash > .skx__overview { grid-area: overview; }
+  .skx__dash > .skx__tips     { grid-area: tips; }
+  .skx__dash > .skx__look     { display: none; } /* not part of the desktop dashboard */
+
+  .skx__map .sky-map { max-width: min(100%, 660px); }
+
+  /* Visible-now becomes a bordered card with a compact 3-up orb grid */
+  .skx__visible {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    padding: 14px 14px 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    display: flex;
+    flex-direction: column;
+  }
+  .skx__visible .skx__vis-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    overflow: visible;
+    padding: 0;
+    margin-top: 12px;
+    flex: 1;
+    align-content: start;
+  }
+  .skx__visible .skx__vis-rail > li { width: 100%; }
+  .skx__visible .skx__vis-card { width: 100%; min-height: 0; padding: 12px 8px 11px; }
+  .skx__visible .skx__vis-thumb { width: 54px; height: 54px; }
 }
 
 /* ── Phones — tighten the summary + duos ── */

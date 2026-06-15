@@ -25,8 +25,8 @@ const channels = [
   },
   {
     label: 'GitHub',
-    value: 'Morningbriefrezi/Stellar',
-    href: 'https://github.com/Morningbriefrezi/Stellar',
+    value: 'Rezimod/Stellar',
+    href: 'https://github.com/Rezimod/Stellar',
     note: 'Bugs and feature requests welcome.',
     external: true,
   },

@@ -4,8 +4,8 @@
 
 **Hackathon:** Colosseum Frontier 2026 (April 6 – May 11, 2026)
 **Builder:** Rezi (Revaz Modebadze) — founder of Astroman.ge, Georgia's first astronomy e-commerce store
-**Live:** [stellarrclub.vercel.app](https://stellarrclub.vercel.app)
-**GitHub:** [github.com/Morningbriefrezi/Stellar](https://github.com/Morningbriefrezi/Stellar)
+**Live:** [stellarsky.vercel.app](https://stellarsky.vercel.app)
+**GitHub:** [github.com/Rezimod/Stellar](https://github.com/Rezimod/Stellar)
 **X:** [@StellarClub26](https://x.com/StellarClub26)
 **Network:** Solana devnet (hackathon MVP) → mainnet at launch
 

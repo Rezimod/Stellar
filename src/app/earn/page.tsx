@@ -39,7 +39,7 @@ const TIERS = [
     headline: "Pro missions and Astroman redemptions.",
     earn: [
       { what: "Deep-sky and high-resolution captures", reward: "150–500 ✦" },
-      { what: "Stargazer Markets (weekly leaderboards)", reward: "pool prizes" },
+      { what: "Weekly observer leaderboards", reward: "pool prizes" },
       { what: "Redeem Stars for telescopes & gear at Astroman", reward: "real product" },
     ],
     note: "Bortle calibration boosts your score in dark-sky locations.",
@@ -106,7 +106,7 @@ export default async function EarnPage() {
           headline: 'პროფესიონალური მისიები და Astroman-ის რეალური ჯილდოები.',
           earn: [
             { what: 'ღრმა ცის და მაღალი გარჩევადობის კადრები', reward: '150–500 ✦' },
-            { what: 'Stargazer Markets (კვირის ლიდერბორდები)', reward: 'საპრიზო ფონდი' },
+            { what: 'კვირის დამკვირვებელთა ლიდერბორდები', reward: 'საპრიზო ფონდი' },
             { what: 'Stars-ის გადაცვლა ტელესკოპებსა და აქსესუარებზე Astroman-ში', reward: 'რეალური პროდუქტი' },
           ],
           note: 'ბნელი ცის ადგილებში ბორტლის კალიბრაცია შენს ქულას ზრდის.',
@@ -260,7 +260,7 @@ export default async function EarnPage() {
                   <li>+10% Stars ყოველ დადასტურებულ კადრზე</li>
                   <li>ASTRA-სთან ულიმიტო საუბრები</li>
                   <li>14-ღამიანი დაგეგმვა და საკუთარი შეტყობინებები</li>
-                  <li>Pro-ისთვის განკუთვნილი Stargazer Markets</li>
+                  <li>Pro-ისთვის განკუთვნილი ლიდერბორდები</li>
                   <li>გაუქმება ნებისმიერ დროს</li>
                 </>
               ) : (
@@ -268,7 +268,7 @@ export default async function EarnPage() {
                   <li>+10% Stars on every verified capture</li>
                   <li>Unlimited ASTRA conversations</li>
                   <li>14-night sky planning, custom alerts</li>
-                  <li>Pro-only Stargazer Markets</li>
+                  <li>Pro-only observer leaderboards</li>
                   <li>Cancel any time</li>
                 </>
               )}
@@ -291,7 +291,7 @@ export default async function EarnPage() {
             {isKa ? 'ბრენდებისთვის' : 'For brands'}
           </p>
           <h2 className="mt-4 font-display text-3xl leading-tight sm:text-4xl">
-            {isKa ? 'გაუშვი Stargazer Market.' : 'Run a Stargazer Market.'}
+            {isKa ? 'დააფინანსე ცის მისია.' : 'Sponsor a sky mission.'}
             <br />
             {isKa ? 'მიაწვდინე ხმა 70,000+ ასტრონომს.' : 'Reach 70,000+ astronomers.'}
           </h2>

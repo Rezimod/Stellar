@@ -51,8 +51,8 @@ function load(address: string, force = false): Promise<number> {
 
 /**
  * Shared Stars balance for the active wallet. Multiple components mounting
- * at once (markets page + MyActiveBets, etc.) share a single network call
- * via a 5s in-memory cache, and any successful bet/cash-out can refresh
+ * at once (balance header, earn page, etc.) share a single network call
+ * via a 5s in-memory cache, and any successful award can refresh
  * everyone by dispatching `stellar:stars-synced`.
  */
 export function useStarsBalance(address: string | null): number | null {

@@ -3,9 +3,9 @@
 import Link from 'next/link';
 
 const PILLS = [
-  "Should I bet on Lyrids?",
   "What's visible tonight?",
-  "Best market right now?",
+  "Best target for my telescope?",
+  "When does Saturn rise?",
   "Clear sky this week?",
 ];
 
@@ -32,7 +32,7 @@ export default function AstraSection() {
           </h2>
 
           <p className="home-astra-desc">
-            Ask anything about tonight&apos;s sky, market odds, or what to observe. ASTRA pulls live weather, planet positions, and market data to give you an edge.
+            Ask anything about tonight&apos;s sky or what to observe. ASTRA pulls live weather and planet positions to tell you what&apos;s worth pointing a telescope at.
           </p>
 
           <div className="home-astra-pills">
@@ -52,9 +52,9 @@ export default function AstraSection() {
 
         <aside className="home-astra-chat" aria-label="ASTRA preview">
           <div className="home-astra-chat-label">Live conversation</div>
-          <div className="home-astra-chat-user">Is it worth betting on the Lyrids tonight?</div>
+          <div className="home-astra-chat-user">Is it worth setting up the scope for the Lyrids tonight?</div>
           <div className="home-astra-chat-bot">
-            <strong>Yes, conditions favor it.</strong> ZHR 18 expected. Moon is 27% and sets before peak. Cloud cover 15% over Tbilisi. The 55% odds look reasonable — observe tonight for the 1.5x bonus.
+            <strong>Yes, conditions favor it.</strong> ZHR 18 expected. Moon is 27% and sets before peak. Cloud cover 15% over Tbilisi. Head out after midnight for the best rates.
           </div>
           <div className="home-astra-chat-status">ASTRA is ready…</div>
         </aside>

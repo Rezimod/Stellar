@@ -22,7 +22,7 @@ const columns: FooterColumn[] = [
     titleKey: 'colCompany',
     links: [
       { labelKey: 'astroman', label: 'Astroman', href: 'https://astroman.ge', external: true },
-      { labelKey: 'github',   label: 'GitHub',   href: 'https://github.com/Morningbriefrezi/Stellar', external: true },
+      { labelKey: 'github',   label: 'GitHub',   href: 'https://github.com/Rezimod/Stellar', external: true },
       { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true },
     ],
   },
