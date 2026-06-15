@@ -4620,40 +4620,54 @@
   .mis-statusbar-dot--live { animation: none; }
 }
 
-/* === Top grid: progress + main quest === */
-.mis-top-grid {
+/* === Progress summary bar (4 zones) === */
+.mis-summary {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-@media (min-width: 880px) {
-  .mis-top-grid { grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: stretch; }
-}
-
-/* === Progress card === */
-.mis-progress {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  align-items: center;
+  padding: 14px 16px;
   border: 1px solid var(--mis-bd);
   border-radius: var(--radius-xl, 18px);
   background:
-    radial-gradient(140px 90px at 88% 0%, rgba(255,179,71,0.10), transparent 70%),
+    radial-gradient(160px 100px at 92% 0%, rgba(255,179,71,0.08), transparent 70%),
     var(--mis-card);
-  padding: 14px 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
 }
-.mis-progress-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--terracotta);
+.mis-summary-div { display: none; }
+.mis-summary-zone { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mis-summary-zone--ring { flex-direction: row; align-items: center; gap: 12px; grid-column: 1 / -1; }
+.mis-summary-zone--cta { grid-column: 1 / -1; }
+.mis-summary-meta { display: flex; flex-direction: column; gap: 2px; }
+.mis-summary-eyebrow {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--terracotta);
 }
-.mis-progress-row { display: flex; align-items: center; gap: 14px; }
+.mis-summary-sub { font-size: 11px; color: var(--mis-t2); }
+.mis-summary-num {
+  font-family: var(--font-mono); font-size: 19px; font-weight: 700;
+  color: var(--mis-t1); line-height: 1; font-variant-numeric: tabular-nums;
+}
+.mis-summary-num i { font-style: normal; font-size: 12px; color: var(--mis-t3); }
+.mis-summary-stars { display: inline-flex; gap: 1px; color: var(--mis-t3); margin-top: 2px; }
+.mis-summary-stars .is-on { color: var(--terracotta); }
+.mis-summary-reward {
+  font-family: var(--font-mono); font-size: 19px; font-weight: 700;
+  color: var(--terracotta); line-height: 1;
+}
+.mis-summary .mis-progress-cta { width: 100%; }
+@media (min-width: 880px) {
+  .mis-summary {
+    grid-template-columns: auto 1px minmax(0,1fr) 1px minmax(0,1fr) auto;
+    gap: 18px; padding: 16px 20px;
+  }
+  .mis-summary-div { display: block; align-self: stretch; width: 1px; background: var(--mis-bd); }
+  .mis-summary-zone--ring { grid-column: auto; }
+  .mis-summary-zone--cta { grid-column: auto; }
+  .mis-summary .mis-progress-cta { width: auto; padding: 10px 18px; white-space: nowrap; }
+}
+
+/* === Completion ring (used by the summary bar) === */
 .mis-ring { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
 .mis-ring svg { display: block; }
 .mis-ring-pct {
@@ -4667,44 +4681,6 @@
   font-weight: 700;
   color: var(--mis-t1);
   font-variant-numeric: tabular-nums;
-}
-.mis-progress-stats { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
-.mis-progress-stat { display: flex; flex-direction: column; gap: 2px; }
-.mis-progress-num {
-  font-family: var(--font-mono);
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--mis-t1);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.mis-progress-num i { font-style: normal; font-size: 12px; color: var(--mis-t3); }
-.mis-progress-lbl { font-size: 11px; color: var(--mis-t2); }
-.mis-progress-rating { display: inline-flex; gap: 1px; margin-top: 2px; color: var(--mis-t3); }
-.mis-progress-rating .is-on { color: var(--terracotta); }
-.mis-progress-reward {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 9px;
-  border-top: 1px solid var(--mis-bd);
-  color: var(--terracotta);
-}
-.mis-progress-reward > span { display: flex; flex-direction: column; min-width: 0; }
-.mis-progress-reward-lbl {
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mis-t3);
-}
-.mis-progress-reward-val {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--mis-t1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .mis-progress-cta {
   display: inline-flex;
@@ -4942,13 +4918,56 @@
 }
 .mis-star-icn { color: var(--terracotta); }
 
-/* === Side cards grid === */
-.mis-side-grid {
+/* "View all" link in a block header */
+.mis-block-link {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.02em; color: var(--terracotta);
+  background: none; border: 0; padding: 0; cursor: pointer; flex-shrink: 0;
+}
+.mis-block-link:hover { filter: brightness(1.12); }
+
+/* ISS pass card (violet accent) */
+.mis-nearby-badge.is-iss { color: #B49BE8; border-color: rgba(132,101,203,0.4); background: rgba(132,101,203,0.12); }
+.mis-nearby-stars--muted { color: var(--mis-t2); }
+
+/* === Global community mission card === */
+.mis-card--global { position: relative; overflow: hidden; }
+.mis-global-art {
+  position: absolute; right: -10px; bottom: -12px;
+  width: 84px; height: 84px; opacity: 0.18; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.mis-global-heading { font-size: 13.5px; font-weight: 600; color: var(--mis-t1); margin: 0; position: relative; }
+.mis-global-bar {
+  height: 6px; border-radius: 999px;
+  background: rgba(255,255,255,0.07); overflow: hidden; position: relative;
+}
+.mis-global-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--mis-grn); transition: width 0.4s ease; }
+.mis-global-count {
+  display: flex; align-items: center; gap: 5px; position: relative;
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--mis-t2);
+  margin: 0; font-variant-numeric: tabular-nums;
+}
+.mis-global-count b { color: var(--mis-t1); font-weight: 700; }
+.mis-global-reward {
+  display: inline-flex; align-items: center; gap: 4px; position: relative;
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+  color: var(--terracotta); margin: 0;
+}
+
+/* === Two-column layout: main column + right rail === */
+.mis-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 16px;
+  align-items: start;
 }
-@media (min-width: 640px) { .mis-side-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) {
+  .mis-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 18px; }
+}
+.mis-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.mis-rail { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .mis-card {
   display: flex;
   flex-direction: column;

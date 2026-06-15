@@ -83,7 +83,7 @@ export const MISSIONS: Mission[] = [
     target: 'Venus',
     context: 'inner_planet_phase_observation' },
   { id: 'mars', name: 'Mars', emoji: '🔴', difficulty: 'Intermediate',
-    stars: 85, type: 'telescope',
+    stars: 120, type: 'telescope',
     desc: 'Capture the red planet. Look for surface markings or a polar ice cap.',
     hint: "Distinctly orange-red. Doesn't twinkle. Best near opposition.",
     target: 'Mars',
