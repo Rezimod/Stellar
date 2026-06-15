@@ -111,7 +111,7 @@ export default function SkyPage() {
   const tErrors = useTranslations('sky.errors');
   const tDir = useTranslations('sky.directions.compass');
 
-  const { address, authenticated, ready } = useStellarUser({ ignoreDemoBypass: false });
+  const { address, authenticated, ready } = useStellarUser();
   const tAuth = useTranslations('sky.auth');
   const [authOpen, setAuthOpen] = useState(false);
   const { getAccessToken } = usePrivy();

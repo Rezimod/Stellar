@@ -154,7 +154,7 @@ type LocalizedGridEntry = GridEntry & { name: string; desc: string; diffLabel: s
 export default function MissionsPage() {
   const router = useRouter();
   const { state } = useAppState();
-  const { authenticated, address } = useStellarUser({ ignoreDemoBypass: true });
+  const { authenticated, address } = useStellarUser();
   const { getAccessToken } = usePrivy();
   const [authOpen, setAuthOpen] = useState(false);
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
