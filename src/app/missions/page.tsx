@@ -16,7 +16,7 @@ import { getVisiblePlanets, getWindowPlanets } from '@/lib/planets';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 import { getChartDeepSky } from '@/lib/sky-chart';
 import { QUIZZES } from '@/lib/quizzes';
-import { PlanetViz } from '@/components/sky/PlanetViz';
+import { SkyOrb } from '@/components/sky/SkyOrb';
 import QuizActive from '@/components/sky/QuizActive';
 import EventInfoSheet from '@/components/sky/EventInfoSheet';
 import DifficultyExplainer from '@/components/sky/DifficultyExplainer';
@@ -532,7 +532,7 @@ export default function MissionsPage() {
               <div className="mis-nearby-rail">
                 {nearby.map((n) => (
                   <button key={n.key} type="button" className="mis-nearby-card" onClick={() => startMission(n.routeId)}>
-                    <span className="mis-nearby-art"><PlanetViz name={n.key} size="medium" /></span>
+                    <span className="mis-nearby-art"><SkyOrb name={n.key} /></span>
                     <span className="mis-nearby-name">{n.name}</span>
                     <span className={`mis-nearby-badge${n.above ? ' is-now' : ''}`}>
                       {n.above ? t('nearby.now') : n.rise ? t('nearby.after', { time: fmtClock(n.rise) }) : t('quest.anytime')}
@@ -910,7 +910,7 @@ function IssCard({
   const time = iss ? fmtClock(new Date(iss.startsAt)) : null;
   return (
     <button type="button" className="mis-nearby-card mis-nearby-card--iss" onClick={onOpen}>
-      <span className="mis-nearby-art"><IssIcon size={30} /></span>
+      <span className="mis-nearby-art mis-nearby-art--iss"><IssIcon size={42} /></span>
       <span className="mis-nearby-name">{labels.name}</span>
       <span className={`mis-nearby-badge${time ? ' is-iss' : ''}`}>
         {loading ? labels.loading : time ?? labels.none}
@@ -931,7 +931,7 @@ function GlobalMissionCard({
   const pct = data ? Math.min(100, Math.round((data.current / data.goal) * 100)) : 0;
   return (
     <section className="mis-card mis-card--global">
-      <span className="mis-global-art" aria-hidden><PlanetViz name={data?.target ?? 'saturn'} size="medium" /></span>
+      <span className="mis-global-art" aria-hidden><SkyOrb name={data?.target ?? 'saturn'} /></span>
       <div className="mis-card-head">
         <span className="mis-card-eyebrow"><Globe size={12} strokeWidth={1.9} /> {labels.title}</span>
       </div>
@@ -974,7 +974,7 @@ function MainQuestCard({
   return (
     <section className="mis-quest">
       <span className="mis-quest-art" aria-hidden>
-        <PlanetViz name={entry.id} size="large" />
+        <SkyOrb name={entry.id} />
       </span>
       <div className="mis-quest-body">
         <span className="mis-quest-badge"><Star size={11} strokeWidth={2} fill="currentColor" /> {labels.badge}</span>
@@ -1032,7 +1032,7 @@ function MissionRow({
       onClick={() => { if (above) onStart(); }}
       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && above) { e.preventDefault(); onStart(); } }}
     >
-      <span className="mis-row-art" aria-hidden><PlanetViz name={entry.id} size="medium" /></span>
+      <span className="mis-row-art" aria-hidden><SkyOrb name={entry.id} /></span>
       <div className="mis-row-main">
         <span className="mis-row-top">
           <span className="mis-row-name">{entry.name}</span>

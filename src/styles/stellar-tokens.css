@@ -4824,6 +4824,9 @@
   .mis-quest-art { width: 76px; height: 76px; }
   .mis-quest-name { font-size: 21px; }
 }
+@media (min-width: 768px) {
+  .mis-quest-art { width: 110px; height: 110px; }
+}
 
 /* === Block (generic section) === */
 .mis-block { display: flex; flex-direction: column; gap: 11px; }
@@ -4917,6 +4920,12 @@
   font-variant-numeric: tabular-nums;
 }
 .mis-star-icn { color: var(--terracotta); }
+
+/* Real-image celestial orb. Photos are framed on black space, so screen blend
+   drops the background and floats the body onto the dark cards. Fills its parent. */
+.sky-orb { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
+.sky-orb img { width: 100%; height: 100%; mix-blend-mode: screen; }
+.sky-orb--blank { border-radius: 50%; background: radial-gradient(circle at 38% 32%, #3a4a63, #161d2c 70%); }
 
 /* "View all" link in a block header */
 .mis-block-link {
