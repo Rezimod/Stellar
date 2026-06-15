@@ -667,39 +667,38 @@ export default function MissionsPage() {
                 unknown: t('weather.unknown'),
               }}
             />
+
+            {/* Knowledge quizzes — moved into the right rail to fill the empty space */}
+            <section className="mis-card mis-card--quizzes">
+              <div className="mis-card-head">
+                <span className="mis-card-eyebrow"><Star size={12} strokeWidth={1.9} /> {t('sections.quizzes')}</span>
+              </div>
+              <div className="mis-quiz-list">
+                {QUIZZES.map((quiz) => {
+                  const ui = QUIZ_UI[quiz.id];
+                  if (!ui) return null;
+                  const result = completedQuizIds.get(quiz.id);
+                  const score = result?.score ?? 0;
+                  const total = quiz.questions.length;
+                  const title = quiz.title[locale] ?? quiz.title.en;
+                  const desc = locale === 'ka' ? ui.descKa : ui.descEn;
+                  return (
+                    <QuizRow
+                      key={quiz.id}
+                      Icon={ui.Icon}
+                      gradient={ui.gradient}
+                      title={title}
+                      meta={desc}
+                      reward={ui.reward}
+                      done={score > 0 && score >= total}
+                      onClick={() => setActiveQuiz(quiz)}
+                    />
+                  );
+                })}
+              </div>
+            </section>
           </div>
         </div>
-
-        {/* Knowledge quizzes */}
-        <section className="mis-block">
-          <div className="mis-block-head">
-            <h2 className="mis-block-title">{t('sections.quizzes')}</h2>
-            <span className="mis-block-meta">{t('sections.quizzesMetaShort')}</span>
-          </div>
-          <div className="mis-quiz-list">
-            {QUIZZES.map((quiz) => {
-              const ui = QUIZ_UI[quiz.id];
-              if (!ui) return null;
-              const result = completedQuizIds.get(quiz.id);
-              const score = result?.score ?? 0;
-              const total = quiz.questions.length;
-              const title = quiz.title[locale] ?? quiz.title.en;
-              const desc = locale === 'ka' ? ui.descKa : ui.descEn;
-              return (
-                <QuizRow
-                  key={quiz.id}
-                  Icon={ui.Icon}
-                  gradient={ui.gradient}
-                  title={title}
-                  meta={desc}
-                  reward={ui.reward}
-                  done={score > 0 && score >= total}
-                  onClick={() => setActiveQuiz(quiz)}
-                />
-              );
-            })}
-          </div>
-        </section>
 
         {/* Rare events */}
         {rareEvents.length > 0 && (
