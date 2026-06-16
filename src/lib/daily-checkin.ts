@@ -31,6 +31,20 @@ export function saveCheckIn(data: Omit<DailyCheckIn, 'date'>): void {
   localStorage.setItem(CHECKIN_KEY, JSON.stringify(recent))
 }
 
+/** Server-authoritative streak: given check-in dates (YYYY-MM-DD) in any order
+ *  plus today's key, count consecutive days ending today. Pure — safe on the
+ *  server (no localStorage). Today must be present in `dates` to count. */
+export function streakFromDates(dates: string[], todayKey: string): number {
+  const set = new Set(dates)
+  let streak = 0
+  const day = new Date(todayKey + 'T00:00:00Z')
+  while (set.has(day.toISOString().slice(0, 10))) {
+    streak++
+    day.setUTCDate(day.getUTCDate() - 1)
+  }
+  return streak
+}
+
 export function getStreakDays(): number {
   const checkIns = getCheckIns().sort((a, b) => b.date.localeCompare(a.date))
   let streak = 0

@@ -15,6 +15,7 @@ import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
 import { createObservationToken } from '@/lib/observation-token';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
+import { isValidPublicKey } from '@/lib/validate';
 
 // Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
 export const maxDuration = 60;
@@ -104,6 +105,14 @@ export async function POST(req: NextRequest) {
   // requires the signed verificationToken at /api/observe/log.
   const walletParam = ((formData.get('wallet') as string | null) ?? '').slice(0, 64);
   const uploadSourceParam = ((formData.get('uploadSource') as string | null) ?? 'upload').slice(0, 32);
+
+  // Require an authenticated principal before the expensive vision call: a
+  // verified Privy session OR a syntactically valid wallet pubkey. The Stars/
+  // mint path downstream (/api/observe/log) requires a Privy session + wallet
+  // ownership, so a token issued to an unauthenticated wallet can't be cashed in.
+  if (!privyId && !isValidPublicKey(walletParam)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   // Validation
   if (!file) {

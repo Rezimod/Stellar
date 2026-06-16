@@ -99,6 +99,42 @@ export function createObservationToken(fields: ObservationTokenFields): string |
   return `${encodePayload(payload)}.${signPayload(payload, secret)}`;
 }
 
+// Lightweight verification for observation-triggered rewards (cosmic_bonus,
+// weekly_challenge). We only need proof that a genuine, unexpired observation
+// token was issued for THIS wallet — not a re-match of every field. The HMAC
+// signature makes the payload unforgeable, so the decoded confidence/fileHash/
+// target can be trusted as inputs to the server-side reward decision.
+export function verifyObservationTokenForWallet(
+  token: string | undefined | null,
+  wallet: string,
+): ObservationTokenResult {
+  if (!token) {
+    return { ok: false, status: 401, reason: 'Missing verification token' };
+  }
+  const secret = getObservationTokenSecret();
+  if (!secret) {
+    return { ok: false, status: 503, reason: 'Server misconfigured' };
+  }
+  const [payloadPart, sig] = token.split('.');
+  if (!payloadPart || !sig) {
+    return { ok: false, status: 401, reason: 'Invalid verification token' };
+  }
+  const payload = decodePayload(payloadPart);
+  if (!payload) {
+    return { ok: false, status: 401, reason: 'Invalid verification token' };
+  }
+  if (payload.exp < Date.now()) {
+    return { ok: false, status: 401, reason: 'Verification token expired' };
+  }
+  if (signPayload(payload, secret) !== sig) {
+    return { ok: false, status: 401, reason: 'Invalid verification token' };
+  }
+  if (payload.wallet !== wallet) {
+    return { ok: false, status: 401, reason: 'Verification token wallet mismatch' };
+  }
+  return { ok: true, payload };
+}
+
 export function verifyObservationToken(
   token: string | undefined | null,
   fields: ObservationTokenFields,

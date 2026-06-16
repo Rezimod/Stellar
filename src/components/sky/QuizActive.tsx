@@ -48,6 +48,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const [phase, setPhase] = useState<'ready' | 'question' | 'feedback' | 'result'>('ready');
   const [saved, setSaved] = useState(false);
   const [answers, setAnswers] = useState<boolean[]>([]);
+  const [picks, setPicks] = useState<number[]>([]); // chosen option index per question (-1 = timed out)
   const [progress, setProgress] = useState(0); // 0 → 1
   const [missedAnyTimeout, setMissedAnyTimeout] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -119,8 +120,10 @@ export default function QuizActive({ quiz, onClose }: Props) {
   };
 
   // Award stars (only fired from result phase, gated by eligibleForStars).
-  const awardQuizStarsOnChain = async (earnedStars: number) => {
-    if (earnedStars <= 0 || !walletAddress) return;
+  // The server re-scores `picks` against the answer key and is the authority on
+  // the payout — the client no longer sends an amount.
+  const awardQuizStarsOnChain = async (finalPicks: number[]) => {
+    if (!walletAddress) return;
     try {
       const token = await getAccessToken().catch(() => null);
       await fetch('/api/award-stars', {
@@ -131,8 +134,8 @@ export default function QuizActive({ quiz, onClose }: Props) {
         },
         body: JSON.stringify({
           recipientAddress: walletAddress,
-          amount: Math.min(earnedStars, 1000),
           reason: `quiz:${quiz.id}`,
+          answers: finalPicks,
           idempotencyKey: `quiz:${quiz.id}:${walletAddress}:${new Date().toISOString().slice(0, 10)}`,
         }),
       });
@@ -173,6 +176,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
         }
         if (correct) setScore(s => s + 1);
         setAnswers(prev => [...prev, correct]);
+        setPicks(prev => [...prev, picked ?? -1]);
         setPhase('feedback');
         return;
       }
@@ -202,7 +206,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
     if (phase !== 'result' || saved) return;
     addQuizResult({ quizId: quiz.id, score, total, stars, timestamp: new Date().toISOString() });
     setSaved(true);
-    if (eligibleForStars) awardQuizStarsOnChain(stars);
+    if (eligibleForStars) awardQuizStarsOnChain(picks);
   }, [phase, saved, score, total, stars, eligibleForStars, quiz.id, addQuizResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pick = (i: number) => {
@@ -212,6 +216,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
     const correct = i === q.correct;
     if (correct) setScore(s => s + 1);
     setAnswers(prev => [...prev, correct]);
+    setPicks(prev => [...prev, i]);
     setPhase('feedback');
   };
 
@@ -226,6 +231,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
     setSelected(null);
     setScore(0);
     setAnswers([]);
+    setPicks([]);
     setMissedAnyTimeout(false);
     setSaved(false);
     setPhase('ready');

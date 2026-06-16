@@ -13,6 +13,7 @@ import { recordObservationOnChain } from '@/lib/observation-program'
 import { tierForCount, applyReputationMultiplier } from '@/lib/reputation'
 import { ensurePassport } from '@/lib/telescope-passport'
 import { paused } from '@/lib/kill-switch'
+import { networkMisconfig } from '@/lib/network-guard'
 
 // On-chain attestation can add a few seconds of devnet confirmation latency.
 export const maxDuration = 60
@@ -33,7 +34,16 @@ const RARE_OBJECTS = ['saturn', 'jupiter', 'mars', 'venus', 'mercury', 'deep_sky
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
+  const n = networkMisconfig();
+  if (n) return n;
   const privyId = await verifyPrivy(req);
+  // Stars are minted from this route, so require an authenticated session — no
+  // anonymous observation logging. (External-wallet-only observers need a
+  // wallet-signature path, handled separately, rather than a trusted-on-faith
+  // wallet string.)
+  if (!privyId) {
+    return NextResponse.json({ logged: false, reason: 'Authentication required' }, { status: 401 });
+  }
   // Rate-limit by wallet (parsed from body after validation below)
   // Initial coarse limit by IP to prevent unauthenticated spam
   const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
@@ -88,12 +98,10 @@ export async function POST(req: NextRequest) {
     ? (body.confidence as string)
     : 'unknown';
 
-  // If authenticated, enforce the submitted wallet is linked to this session.
-  if (privyId) {
-    const owns = await assertOwnsWallet(privyId, wallet);
-    if (!owns) {
-      return NextResponse.json({ logged: false, reason: 'Wallet does not match session' }, { status: 403 });
-    }
+  // Enforce the submitted wallet is linked to this session.
+  const owns = await assertOwnsWallet(privyId, wallet);
+  if (!owns) {
+    return NextResponse.json({ logged: false, reason: 'Wallet does not match session' }, { status: 403 });
   }
 
   let verifiedTarget: string | null = null
@@ -252,7 +260,7 @@ export async function POST(req: NextRequest) {
     }
 
     const exifTakenDate = typeof body.exifTakenAt === 'string' ? new Date(body.exifTakenAt) : null;
-    await db.insert(observationLog).values({
+    const [inserted] = await db.insert(observationLog).values({
       wallet,
       target,
       stars: starsToAward,
@@ -275,13 +283,27 @@ export async function POST(req: NextRequest) {
       isInternetSourced: body.isInternetSourced === true,
       chainTx: chain?.txId ?? null,
       chainPda: chain?.pda ?? null,
-    })
+    }).returning({ id: observationLog.id })
 
-    // Award tokens on-chain (non-blocking — log still succeeds even if this fails)
+    // Award Stars on-chain. AWAIT the mint (bounded) so the response reflects
+    // reality — never report starsMinted:true while the mint silently failed.
+    // On failure, zero this row's Stars so the daily cap / leaderboard ledger
+    // doesn't count Stars that never minted.
+    let starsMinted = false
     if (wallet && starsToAward > 0) {
-      awardStarsOnChain(wallet, starsToAward, `observation: ${target}`).catch(err =>
-        console.error('[observe/log] Star award failed:', err)
+      const sig = await withTimeout(
+        awardStarsOnChain(wallet, starsToAward, `observation: ${target}`).catch((err) => {
+          console.error('[observe/log] Star award failed:', err)
+          return null
+        }),
+        25_000,
       )
+      starsMinted = !!sig
+      if (!starsMinted && inserted?.id) {
+        try {
+          await db.update(observationLog).set({ stars: 0, starsAwarded: 0 }).where(eq(observationLog.id, inserted.id))
+        } catch { /* best-effort ledger correction */ }
+      }
     }
 
     // Soulbound Telescope Passport: mint/refresh only when this observation
@@ -305,8 +327,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       logged: true,
-      starsAwarded: starsToAward,
-      starsMinted: true,
+      starsAwarded: starsMinted ? starsToAward : 0,
+      starsMinted,
       chainTx: chain?.txId ?? null,
       chainPda: chain?.pda ?? null,
       reputation: {

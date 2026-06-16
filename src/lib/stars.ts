@@ -29,14 +29,17 @@ export function getStarsMintAuthority(): Keypair {
   return Keypair.fromSecretKey(bs58.decode(b58))
 }
 
+// Returns the mint signature on success, or null when the token isn't
+// configured. Throws if the on-chain mint fails — callers can await + catch to
+// learn whether Stars actually landed (no fire-and-forget "success").
 export async function awardStarsOnChain(
   recipientAddress: string,
   amount: number,
   reason: string
-): Promise<void> {
+): Promise<string | null> {
   const mintAddress = process.env.STARS_TOKEN_MINT
   const privateKeyB58 = process.env.FEE_PAYER_PRIVATE_KEY
-  if (!mintAddress || !privateKeyB58) return
+  if (!mintAddress || !privateKeyB58) return null
 
   const feePayerKeypair = Keypair.fromSecretKey(bs58.decode(privateKeyB58))
   const mintAuthority = getStarsMintAuthority()
@@ -57,7 +60,7 @@ export async function awardStarsOnChain(
     undefined,
     STARS_TOKEN_PROGRAM_ID,
   )
-  await mintTo(
+  return await mintTo(
     connection,
     feePayerKeypair,
     mintKey,

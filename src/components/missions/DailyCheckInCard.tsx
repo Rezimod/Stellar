@@ -102,7 +102,8 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
         });
         const data = res.ok ? await res.json().catch(() => null) : null;
         if (res.ok && data && !data.cached) {
-          toast.reward(`${c.earned(amount)} · ${newStreak} ${c.streakMany}`);
+          const awarded = typeof data.awarded === 'number' ? data.awarded : amount;
+          toast.reward(`${c.earned(awarded)} · ${newStreak} ${c.streakMany}`);
           window.dispatchEvent(new Event('stellar:stars-synced'));
         } else {
           toast.success(c.checkedToday);

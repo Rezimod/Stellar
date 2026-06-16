@@ -314,8 +314,8 @@ export default function ObserveVerifyPage() {
         },
         body: JSON.stringify({
           recipientAddress: solanaWallet.address,
-          amount: bonus.amount,
           reason: `cosmic_bonus:${targetName}`,
+          verificationToken: photoVerification?.verificationToken,
           idempotencyKey: `cosmic:${txId}`,
         }),
       }).catch(() => {});
@@ -337,8 +337,8 @@ export default function ObserveVerifyPage() {
           },
           body: JSON.stringify({
             recipientAddress: solanaWallet.address,
-            amount: cb,
             reason: 'weekly_challenge',
+            verificationToken: photoVerification?.verificationToken,
             idempotencyKey: `challenge:${getActiveChallenge().id}:${solanaWallet.address}`,
           }),
         }).catch(() => {});

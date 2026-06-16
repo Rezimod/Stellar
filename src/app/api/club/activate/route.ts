@@ -3,12 +3,15 @@ import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
+import { networkMisconfig } from '@/lib/network-guard';
 
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
+  const n = networkMisconfig();
+  if (n) return n;
   // Club activation writes a memo tx paid for by the server's fee-payer
   // wallet. Without auth, anyone could drain that wallet — require Privy.
   const privyId = await verifyPrivy(req);

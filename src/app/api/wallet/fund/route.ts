@@ -119,8 +119,7 @@ export async function POST(req: NextRequest) {
       explorerUrl: `https://explorer.solana.com/tx/${sig}?cluster=devnet`,
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error('[wallet/fund] failed:', msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error('[wallet/fund] failed:', err);
+    return NextResponse.json({ error: 'Funding failed' }, { status: 500 });
   }
 }

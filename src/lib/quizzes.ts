@@ -20,6 +20,34 @@ export function maxQuizStars(): number {
   return Math.max(...QUIZZES.map((q) => q.questions.length * q.starsPerCorrect));
 }
 
+export interface QuizScore {
+  correct: number;
+  total: number;
+  stars: number;
+  passed: boolean;
+}
+
+// Server-authoritative scoring. The client submits the picked option index per
+// question (-1 for a timed-out no-pick); we score against the answer key here so
+// the Stars payout never depends on a client-reported amount. Mirrors the
+// QuizActive gate: needs >=70% correct AND no timed-out questions.
+export function scoreQuiz(quizId: string, picks: number[]): QuizScore | null {
+  const quiz = QUIZZES.find((q) => q.id === quizId);
+  if (!quiz) return null;
+  const total = quiz.questions.length;
+  if (!Array.isArray(picks) || picks.length !== total) return null;
+  let correct = 0;
+  let anyTimeout = false;
+  for (let i = 0; i < total; i++) {
+    const pick = picks[i];
+    if (typeof pick !== 'number' || pick < 0) { anyTimeout = true; continue; }
+    if (pick === quiz.questions[i].correct) correct++;
+  }
+  const passThreshold = Math.ceil(total * 0.7);
+  const passed = correct >= passThreshold && !anyTimeout;
+  return { correct, total, stars: passed ? correct * quiz.starsPerCorrect : 0, passed };
+}
+
 export const QUIZZES: QuizDef[] = [
   {
     id: 'solar-system',
