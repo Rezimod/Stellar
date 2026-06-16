@@ -28,15 +28,12 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
         style={{ background: 'linear-gradient(90deg, rgba(7,11,20,0.94) 0%, rgba(7,11,20,0.80) 45%, rgba(7,11,20,0.35) 100%)' }}
       />
       <div className="relative z-10 flex items-center justify-between gap-[12px] px-[14px] py-[10px] sm:px-[28px] sm:py-[14px] min-h-[88px] sm:min-h-[124px]">
-        <div className="max-w-[62%] sm:max-w-[58%]">
+        <div className="max-w-[60%] sm:max-w-[56%]">
           <h1 className="font-display text-[19px] sm:text-[28px] leading-[1.1] text-white" style={{ fontWeight: 600 }}>
             {t('heroTitleLead')}{' '}
             <span style={{ color: 'var(--terracotta)' }}>{t('heroTitleAccent')}</span>
           </h1>
-          <p className="mt-[5px] sm:mt-[8px] text-[12px] sm:text-[13.5px] leading-[1.4] text-white/70 max-w-[36ch]">
-            {t('heroSubtitle')}
-          </p>
-          <div className="mt-[9px] sm:mt-[14px] flex flex-wrap items-center gap-[8px]">
+          <div className="mt-[10px] sm:mt-[14px] flex flex-wrap items-center gap-[8px]">
             <button
               onClick={onShopTelescopes}
               className="inline-flex items-center justify-center h-[32px] sm:h-[36px] px-[13px] sm:px-[16px] rounded-none text-[12px] sm:text-[12.5px] font-bold tracking-[0.02em] transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
@@ -57,13 +54,13 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
             </button>
           </div>
         </div>
-        <div className="relative w-[30%] sm:w-[30%] h-[78px] sm:h-[116px] self-end flex-shrink-0">
+        <div className="relative w-[40%] sm:w-[42%] h-[84px] sm:h-[120px] self-center flex-shrink-0">
           <Image
-            src="https://astroman.ge/wp-content/uploads/2024/08/Telescope.jpg"
+            src="/hero/telescope.png"
             alt={t('heroTelescopeAlt')}
             fill
-            sizes="(max-width: 768px) 34vw, 360px"
-            className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
+            sizes="(max-width: 768px) 40vw, 420px"
+            className="object-contain object-right drop-shadow-[0_10px_28px_rgba(0,0,0,0.6)]"
           />
         </div>
       </div>
