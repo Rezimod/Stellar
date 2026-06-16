@@ -1100,28 +1100,28 @@
     },
     "observer": {
       "dark": {
-        "label": "Dark window",
-        "body": "Arrive 15 minutes early so your eyes and optics settle."
+        "label": "Best dark hours",
+        "body": "The sky is darkest now. Arrive 15 min early so your eyes adjust."
       },
       "moon": {
-        "label": "Moon glare",
+        "label": "Moonlight",
         "value": "{pct}% lit",
-        "body": "For faint objects, stand where the Moon is blocked."
+        "body": "A bright Moon hides faint stars. Keep it behind you."
       },
       "target": {
-        "label": "Prime altitude",
+        "label": "How high to look",
         "value": "{deg}° up",
-        "body": "Keep buildings and trees below the target line."
+        "body": "Your target sits this high up. Pick a spot with open sky."
       },
       "comfort": {
-        "label": "Sky cover",
+        "label": "Clouds",
         "value": "{pct}% cloud",
-        "body": "Bring a warm layer and wait for clear gaps."
+        "body": "Clouds block the view — wait for clear gaps. Dress warm."
       },
       "phone": {
-        "label": "Phone mode",
+        "label": "Screen brightness",
         "value": "Dim screen",
-        "body": "Lower brightness before opening the camera."
+        "body": "Turn brightness down to protect your night vision."
       }
     },
     "eventType": {
