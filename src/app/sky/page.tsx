@@ -621,7 +621,10 @@ export default function SkyPage() {
                 <span className="skx__card-label">What to look for</span>
                 <ul className="skx__look-list">
                   {bestTargets.length === 0 && (
-                    <li className="skx__look-empty">Nothing above the horizon right now.</li>
+                    <li className="skx__look-empty">
+                      Nothing up yet{windowOpen ? <> — dark sky opens around <strong>{fmtClock(windowOpen, tz)}</strong></> : ''}.{' '}
+                      <Link href="/missions" style={{ color: 'var(--accent)' }}>Try a quiz</Link> while you wait.
+                    </li>
                   )}
                   {bestTargets.slice(0, 3).map((o) => (
                     <li key={o.id}>
@@ -655,7 +658,10 @@ export default function SkyPage() {
               </header>
               <ol className="skx__vis-rail">
                 {bestTargets.length === 0 && (
-                  <li className="skx__vis-empty">Nothing above the horizon right now.</li>
+                  <li className="skx__vis-empty">
+                    Nothing above the horizon yet{windowOpen ? <> — next dark window ~<strong>{fmtClock(windowOpen, tz)}</strong></> : ''}.{' '}
+                    <Link href="/missions" style={{ color: 'var(--accent)' }}>quiz time</Link> until then.
+                  </li>
                 )}
                 {bestTargets.map((o, i) => (
                   <VisCard

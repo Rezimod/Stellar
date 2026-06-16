@@ -6,7 +6,7 @@ import {
   getOrCreateAssociatedTokenAccount,
   mintTo,
 } from '@solana/spl-token';
-import { STARS_TOKEN_PROGRAM_ID } from '@/lib/stars';
+import { STARS_TOKEN_PROGRAM_ID, getStarsMintAuthority } from '@/lib/stars';
 import bs58 from 'bs58';
 import { isValidPublicKey } from '@/lib/validate';
 import { Ratelimit } from '@upstash/ratelimit';
@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
     const recipient = new PublicKey(address);
     const mint = new PublicKey(mintAddress);
     const feePayer = Keypair.fromSecretKey(bs58.decode(privateKeyB58));
+    const mintAuthority = getStarsMintAuthority();
 
     // Read existing on-chain balance — if it's already ≥ target, this is a no-op
     // and we don't burn any rate-limit budget.
@@ -157,7 +158,7 @@ export async function POST(req: NextRequest) {
       feePayer,
       mint,
       ataInfo.address,
-      feePayer,
+      mintAuthority,
       BigInt(diff),
       [],
       undefined,

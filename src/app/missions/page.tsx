@@ -471,6 +471,11 @@ export default function MissionsPage() {
         <div className="mis-statusbar" role="status">
           <span className={`mis-statusbar-dot mis-statusbar-dot--${liveStatus}`} aria-hidden />
           <span className="mis-statusbar-label">{statusLabel}</span>
+          {liveStatus !== 'live' && dailyQuiz && (
+            <button type="button" className="mis-block-link" onClick={() => setActiveQuiz(dailyQuiz)}>
+              {liveStatus === 'cloudy' ? 'Clouded out — take a quiz' : 'Daylight now — take a quiz'}
+            </button>
+          )}
           <span className="mis-statusbar-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
         </div>
 

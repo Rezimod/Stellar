@@ -4,7 +4,7 @@ export const maxDuration = 60; // Solana devnet token mint can take 15-30s
 import { awardStarsRateLimit, awardStarsDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
-import { STARS_TOKEN_PROGRAM_ID } from '@/lib/stars';
+import { STARS_TOKEN_PROGRAM_ID, getStarsMintAuthority } from '@/lib/stars';
 import bs58 from 'bs58';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
@@ -129,6 +129,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const feePayerKeypair = Keypair.fromSecretKey(bs58.decode(privateKeyB58));
+    const mintAuthority = getStarsMintAuthority();
     const mintPublicKey = new PublicKey(mintAddress);
     const connection = new Connection(DEVNET_URL, 'confirmed');
 
@@ -149,7 +150,7 @@ export async function POST(req: NextRequest) {
       feePayerKeypair,
       mintPublicKey,
       ata.address,
-      feePayerKeypair,
+      mintAuthority,
       BigInt(amount),
       [],
       undefined,

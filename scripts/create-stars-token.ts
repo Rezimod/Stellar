@@ -4,6 +4,7 @@ import bs58 from 'bs58';
 import {
   Keypair,
   Connection,
+  PublicKey,
   SystemProgram,
   Transaction,
   sendAndConfirmTransaction,
@@ -51,10 +52,18 @@ async function main() {
     'confirmed',
   );
 
-  console.log('Creating Stars Token-2022 (NonTransferable) mint on devnet...');
+  console.log('Creating Stars Token-2022 (NonTransferable) mint...');
   // NonTransferable = a closed loyalty economy: points can be minted (earned) and
-  // burned (spent) but never transferred between wallets. 0 decimals; mint
-  // authority is the fee payer (server-side, gasless); no freeze authority.
+  // burned (spent) but never transferred between wallets. 0 decimals; no freeze
+  // authority. Mint authority is STARS_MINT_AUTHORITY when set (a dedicated key,
+  // kept separate from the hot fee payer for mainnet); otherwise the fee payer
+  // (fine for devnet). The server signs mintTo with the matching private key —
+  // see getStarsMintAuthority() in src/lib/stars.ts.
+  const mintAuthority = process.env.STARS_MINT_AUTHORITY
+    ? new PublicKey(process.env.STARS_MINT_AUTHORITY)
+    : feePayerKeypair.publicKey;
+  console.log('Mint authority:', mintAuthority.toBase58(),
+    process.env.STARS_MINT_AUTHORITY ? '(dedicated STARS_MINT_AUTHORITY)' : '(fee payer — devnet default)');
   const mintKeypair = Keypair.generate();
   const extensions = [ExtensionType.NonTransferable];
   const mintLen = getMintLen(extensions);
@@ -73,7 +82,7 @@ async function main() {
     createInitializeMintInstruction(
       mintKeypair.publicKey,
       0,
-      feePayerKeypair.publicKey,
+      mintAuthority,
       null,
       TOKEN_2022_PROGRAM_ID,
     ),

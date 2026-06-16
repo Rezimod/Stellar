@@ -17,6 +17,18 @@ export const MAX_STARS_BY_CONFIDENCE: Record<string, number> = {
 }
 export const DAILY_STARS_CAP = 500
 
+// STARS mint authority. On mainnet this is a dedicated key, kept separate from
+// the hot gas/fee-payer key, so a fee-payer leak cannot mint tokens. On devnet
+// the mint was created with the fee payer as authority, so it falls back to it.
+// The value here MUST match the authority the mint was actually created with.
+export function getStarsMintAuthority(): Keypair {
+  const b58 = process.env.STARS_MINT_AUTHORITY_PRIVATE_KEY || process.env.FEE_PAYER_PRIVATE_KEY
+  if (!b58) {
+    throw new Error('STARS mint authority not configured (set STARS_MINT_AUTHORITY_PRIVATE_KEY or FEE_PAYER_PRIVATE_KEY)')
+  }
+  return Keypair.fromSecretKey(bs58.decode(b58))
+}
+
 export async function awardStarsOnChain(
   recipientAddress: string,
   amount: number,
@@ -27,6 +39,7 @@ export async function awardStarsOnChain(
   if (!mintAddress || !privateKeyB58) return
 
   const feePayerKeypair = Keypair.fromSecretKey(bs58.decode(privateKeyB58))
+  const mintAuthority = getStarsMintAuthority()
   const connection = new Connection(
     process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com',
     'confirmed'
@@ -49,7 +62,7 @@ export async function awardStarsOnChain(
     feePayerKeypair,
     mintKey,
     ata.address,
-    feePayerKeypair,
+    mintAuthority,
     BigInt(amount),
     [],
     undefined,
