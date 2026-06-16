@@ -1238,8 +1238,7 @@ function RareEventCard({
     <button
       type="button"
       onClick={(e) => onOpen((e.currentTarget as HTMLElement).getBoundingClientRect())}
-      className="mis-rare-card"
-      style={{ opacity: future ? 1 : 0.55 }}
+      className={`mis-rare-card mis-rare-card--${event.type}${future ? '' : ' is-past'}`}
     >
       <span className={`mis-rare-art mis-rare-art--${event.type}`} aria-hidden>
         <RareEventArt type={event.type} />
