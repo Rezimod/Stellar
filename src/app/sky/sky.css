@@ -3984,6 +3984,13 @@
 }
 .skyloc__check { margin-left: auto; color: var(--terracotta); flex-shrink: 0; }
 
+/* Starry hero, OR divider, Recent row and privacy line are part of the
+   mobile sheet redesign only — hidden on desktop, shown in the ≤680px block. */
+.skyloc__hero,
+.skyloc__or,
+.skyloc__recent,
+.skyloc__privacy { display: none; }
+
 /* ================================================================
    === SKY OBSERVATORY — reference dashboard (dome · best        ===
    === targets · condition cards). Compact, single-screen.       ===
@@ -4206,94 +4213,187 @@
     padding: 72px 18px 18px;
   }
 
+  .skyloc {
+    align-items: center;
+    padding: 18px;
+  }
+
   .skyloc__panel {
     width: min(360px, 100%);
-    max-height: none;
-    border-radius: 16px;
-    padding: 16px 14px 14px;
+    max-height: min(90vh, 680px);
+    border-radius: 18px;
+    padding: 16px 16px 16px;
+    border-color: rgba(139, 92, 246, 0.32);
+    background: linear-gradient(170deg, rgba(20, 20, 38, 0.99), rgba(11, 13, 24, 0.99));
   }
 
   .skyloc__close {
-    top: 10px;
-    right: 10px;
-    width: 34px;
-    height: 34px;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    z-index: 2;
+    background: rgba(10, 12, 24, 0.55);
+    border-color: rgba(255, 255, 255, 0.18);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  /* Starry hero band with a glowing location pin */
+  .skyloc__hero {
+    display: block;
+    position: relative;
+    height: 118px;
+    margin: -16px -16px 14px;
+    overflow: hidden;
+    background:
+      radial-gradient(130% 95% at 50% 125%, rgba(139, 92, 246, 0.5), transparent 62%),
+      radial-gradient(85% 130% at 50% -10%, rgba(46, 34, 86, 0.9), rgba(12, 14, 26, 0.96)),
+      #0b0e1a;
+  }
+  .skyloc__hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1.4px 1.4px at 20% 38%, rgba(255, 255, 255, 0.75), transparent),
+      radial-gradient(1.2px 1.2px at 68% 26%, rgba(255, 255, 255, 0.6), transparent),
+      radial-gradient(1.6px 1.6px at 84% 58%, rgba(255, 255, 255, 0.55), transparent),
+      radial-gradient(1.1px 1.1px at 38% 64%, rgba(255, 255, 255, 0.5), transparent),
+      radial-gradient(1.3px 1.3px at 12% 70%, rgba(255, 255, 255, 0.45), transparent),
+      radial-gradient(1.2px 1.2px at 56% 80%, rgba(255, 255, 255, 0.4), transparent);
+  }
+  .skyloc__hero-pin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 54px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: #fff;
+    background: linear-gradient(180deg, #a78bfa, #7c3aed);
+    box-shadow:
+      0 0 0 6px rgba(139, 92, 246, 0.18),
+      0 0 0 13px rgba(139, 92, 246, 0.09),
+      0 8px 24px rgba(124, 58, 237, 0.5);
   }
 
   .skyloc__head {
-    margin-bottom: 10px;
-    padding-right: 38px;
+    text-align: center;
+    margin-bottom: 14px;
+    padding-right: 0;
   }
 
-  .skyloc__eyebrow {
-    font-size: 9px;
-    letter-spacing: 0.16em;
-  }
+  .skyloc__eyebrow { display: none; }
 
   .skyloc__title {
-    margin-top: 6px;
-    font-size: 19px;
+    margin-top: 0;
+    font-size: 22px;
   }
 
   .skyloc__sub {
-    display: none;
+    display: block;
+    font-size: 12.5px;
+    line-height: 1.45;
   }
 
+  /* GPS becomes the purple primary CTA */
   .skyloc__gps {
-    min-height: 44px;
-    margin: 10px 0 8px;
-    padding: 9px 12px;
-    border-radius: 11px;
+    min-height: 48px;
+    margin: 4px 0 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+    border: 1px solid rgba(167, 139, 250, 0.6);
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+  }
+  .skyloc__gps:hover:not(:disabled) {
+    background: linear-gradient(180deg, #9670f8, #6d28d9);
+    border-color: rgba(167, 139, 250, 0.85);
+  }
+
+  /* OR divider */
+  .skyloc__or {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(248, 244, 236, 0.4);
+  }
+  .skyloc__or::before,
+  .skyloc__or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .skyloc__search {
-    margin-bottom: 8px;
+    margin-bottom: 14px;
   }
 
   .skyloc__search input {
-    min-height: 42px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
-  .skyloc__select {
-    position: relative;
-    display: grid;
-    gap: 5px;
-    font-family: var(--font-body, system-ui, sans-serif);
-  }
-
-  .skyloc__select-label {
-    margin-left: 4px;
-    font-family: var(--font-mono, monospace);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--terracotta);
-  }
-
-  .skyloc__select select {
-    appearance: none;
-    width: 100%;
     min-height: 46px;
-    padding: 0 42px 0 12px;
+    padding-top: 9px;
+    padding-bottom: 9px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 179, 71, 0.34);
-    background: rgba(255, 179, 71, 0.10);
-    color: #f8f4ec;
-    font: inherit;
-    font-size: 14px;
-    outline: none;
   }
 
-  .skyloc__select svg {
-    position: absolute;
-    right: 13px;
-    bottom: 14px;
-    color: var(--terracotta);
-    pointer-events: none;
+  /* The dropdown is replaced by the Recent row + search on mobile */
+  .skyloc__select { display: none; }
+
+  /* Recent row */
+  .skyloc__recent { display: block; }
+  .skyloc__recent-label {
+    margin: 0 0 7px 2px;
+    font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(248, 244, 236, 0.45);
   }
+  .skyloc__recent-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 50px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8f4ec;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease;
+  }
+  .skyloc__recent-row:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .skyloc__recent-chev { margin-left: auto; color: rgba(248, 244, 236, 0.5); flex-shrink: 0; }
+
+  /* Privacy footer */
+  .skyloc__privacy {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 14px 0 0;
+    font-size: 11px;
+    color: rgba(248, 244, 236, 0.45);
+  }
+  .skyloc__privacy svg { color: rgba(248, 244, 236, 0.4); flex-shrink: 0; }
 
   .skyloc__list:not(.is-searching) {
     display: none;
@@ -4302,6 +4402,7 @@
   .skyloc__list.is-searching {
     max-height: 188px;
     min-height: 0;
+    margin-top: 10px;
   }
 
   .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }

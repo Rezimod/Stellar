@@ -5371,6 +5371,23 @@
 }
 .mis-observer-body { font-size: 11px; color: var(--mis-t2); line-height: 1.4; margin-top: 2px; }
 
+/* Phones — pack the telescope tips + observer checklist onto one screen. */
+@media (max-width: 639px) {
+  .mis-scope { padding: 12px; gap: 10px; }
+  .mis-scope-steps { gap: 7px; }
+  .mis-scope-step-body { line-height: 1.35; }
+
+  .mis-observer-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .mis-observer-item { padding: 9px 10px; gap: 8px; }
+  .mis-observer-icon { width: 26px; height: 26px; }
+  .mis-observer-body {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
 /* === Auth gate === */
 .mis-auth-card {
   border: 1px solid var(--mis-bd);

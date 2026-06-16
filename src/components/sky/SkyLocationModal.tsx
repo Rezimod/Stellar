@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, MapPin, Navigation, Search, Check, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Navigation, Search, Check, Lock, X } from 'lucide-react';
 import { useLocation, type UserLocation } from '@/lib/location';
-import { CITY_PRESETS } from '@/components/LocationPicker';
+import { CITY_PRESETS, type PresetCity } from '@/components/LocationPicker';
 
 interface Props {
   open: boolean;
@@ -84,6 +84,13 @@ export default function SkyLocationModal({ open, onClose }: Props) {
     if (preset) handlePreset(preset);
   };
 
+  // Current spot, shown as the "Recent" row on the mobile sheet.
+  const recent: PresetCity | null =
+    flatCities.find(isActive) ??
+    (location.city
+      ? { ...location, flag: '\u{1F4CD}', nameEn: location.city }
+      : null);
+
   return createPortal(
     <div className="skyloc" role="dialog" aria-modal="true" aria-label="Choose your observing location">
       <div className="skyloc__backdrop" onClick={onClose} />
@@ -92,14 +99,21 @@ export default function SkyLocationModal({ open, onClose }: Props) {
           <X size={16} aria-hidden="true" />
         </button>
 
+        {/* Mobile-only starry hero — glowing location pin */}
+        <div className="skyloc__hero" aria-hidden="true">
+          <span className="skyloc__hero-pin">
+            <MapPin size={22} aria-hidden="true" />
+          </span>
+        </div>
+
         <header className="skyloc__head">
           <span className="skyloc__eyebrow">
             <MapPin size={12} aria-hidden="true" /> Observing from
           </span>
           <h2 className="skyloc__title">Where are you tonight?</h2>
           <p className="skyloc__sub">
-            We use your spot to compute rise/set times, the sky map and the
-            forecast. Pick a city or use your GPS.
+            We use your location to show accurate rise/set times, the sky map,
+            and a personalized forecast.
           </p>
         </header>
 
@@ -107,6 +121,8 @@ export default function SkyLocationModal({ open, onClose }: Props) {
           <Navigation size={14} className={gpsRefreshing ? 'skyloc__spin' : ''} aria-hidden="true" />
           {gpsRefreshing ? 'Detecting your location…' : 'Use my GPS location'}
         </button>
+
+        <div className="skyloc__or" aria-hidden="true"><span>OR</span></div>
 
         <div className="skyloc__search">
           <Search size={14} aria-hidden="true" />
@@ -135,6 +151,21 @@ export default function SkyLocationModal({ open, onClose }: Props) {
             </select>
             <ChevronDown size={16} aria-hidden="true" />
           </label>
+        )}
+
+        {!q && recent && (
+          <div className="skyloc__recent">
+            <p className="skyloc__recent-label">Recent</p>
+            <button
+              type="button"
+              className="skyloc__recent-row"
+              onClick={() => handlePreset(recent)}
+            >
+              <span className="skyloc__flag" aria-hidden="true">{recent.flag}</span>
+              <span className="skyloc__recent-name">{recent.city}, {recent.country}</span>
+              <ChevronRight size={16} aria-hidden="true" className="skyloc__recent-chev" />
+            </button>
+          </div>
         )}
 
         <div className={`skyloc__list${q ? ' is-searching' : ''}`}>
@@ -167,6 +198,10 @@ export default function SkyLocationModal({ open, onClose }: Props) {
             ))
           )}
         </div>
+
+        <p className="skyloc__privacy">
+          <Lock size={12} aria-hidden="true" /> Your location is private and never shared.
+        </p>
       </div>
     </div>,
     document.body,
