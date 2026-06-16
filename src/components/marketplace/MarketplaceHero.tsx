@@ -27,7 +27,7 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
         className="absolute inset-0"
         style={{ background: 'linear-gradient(90deg, rgba(7,11,20,0.94) 0%, rgba(7,11,20,0.80) 45%, rgba(7,11,20,0.35) 100%)' }}
       />
-      <div className="relative z-10 flex items-center justify-between gap-[12px] px-[14px] py-[12px] sm:px-[28px] sm:py-[18px] min-h-[104px] sm:min-h-[160px]">
+      <div className="relative z-10 flex items-center justify-between gap-[12px] px-[14px] py-[10px] sm:px-[28px] sm:py-[14px] min-h-[88px] sm:min-h-[124px]">
         <div className="max-w-[62%] sm:max-w-[58%]">
           <h1 className="font-display text-[19px] sm:text-[28px] leading-[1.1] text-white" style={{ fontWeight: 600 }}>
             {t('heroTitleLead')}{' '}
@@ -57,7 +57,7 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
             </button>
           </div>
         </div>
-        <div className="relative w-[34%] sm:w-[36%] aspect-square self-end flex-shrink-0">
+        <div className="relative w-[30%] sm:w-[30%] h-[78px] sm:h-[116px] self-end flex-shrink-0">
           <Image
             src="https://astroman.ge/wp-content/uploads/2024/08/Telescope.jpg"
             alt={t('heroTelescopeAlt')}
