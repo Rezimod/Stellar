@@ -130,7 +130,11 @@ export default function SkyPage() {
   }, [locationReady]);
   const closeLocModal = useCallback(() => {
     setShowLocModal(false);
-    try { window.sessionStorage.setItem(LOC_PROMPT_KEY, '1'); } catch { /* ignore */ }
+    try {
+      window.sessionStorage.setItem(LOC_PROMPT_KEY, '1');
+      // Location step done — hand off to the tour if it hasn't been seen yet.
+      if (!window.localStorage.getItem(TOUR_KEY)) setShowTour(true);
+    } catch { /* ignore */ }
   }, []);
 
   const handleCalibrate = useCallback(() => {
@@ -145,7 +149,10 @@ export default function SkyPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      if (!window.localStorage.getItem(TOUR_KEY)) setShowTour(true);
+      // Only after the location step is done — otherwise closeLocModal hands off.
+      if (!window.localStorage.getItem(TOUR_KEY) && window.sessionStorage.getItem(LOC_PROMPT_KEY)) {
+        setShowTour(true);
+      }
     } catch { /* private mode */ }
   }, []);
   const dismissTour = useCallback(() => {
@@ -657,6 +664,7 @@ export default function SkyPage() {
                     active={o.id === activeId}
                     top={i === 0}
                     onSelect={handleSelect}
+                    tDir={tDir}
                   />
                 ))}
               </ol>
@@ -733,6 +741,14 @@ function lookPhrase(o: SkyObject, tDir: (k: string) => string): string {
   return `Low in the ${dir}`;
 }
 
+/* ── Plain-language position for the visible-now cards (always directional). ── */
+function wherePlain(o: SkyObject, tDir: (k: string) => string): string {
+  const dir = tDir(o.compassDirection);
+  if (o.altitude >= 50) return `High in the ${dir}`;
+  if (o.altitude >= 20) return `In the ${dir}`;
+  return `Low in the ${dir}`;
+}
+
 /* ── Visible-now badge — best / good / telescope / later. ── */
 function visBadge(o: SkyObject, top: boolean): { label: string; tone: string } {
   if (o.instrument === 'telescope') return { label: 'Telescope', tone: 'scope' };
@@ -789,11 +805,12 @@ function AzimuthStrip({ activeObject }: { activeObject: SkyObject | null }) {
 }
 
 /* ── Visible-now card — photo · name · direction·altitude · badge. ── */
-function VisCard({ obj, active, top, onSelect }: {
+function VisCard({ obj, active, top, onSelect, tDir }: {
   obj: SkyObject;
   active: boolean;
   top: boolean;
   onSelect: (id: ObjectId) => void;
+  tDir: (k: string) => string;
 }) {
   const photo = getTargetPhoto(obj.id);
   const badge = visBadge(obj, top);
@@ -814,7 +831,8 @@ function VisCard({ obj, active, top, onSelect }: {
           )}
         </span>
         <span className="skx__vis-name">{obj.name}</span>
-        <span className="skx__vis-pos">{obj.compassDirection} · {Math.round(obj.altitude)}°</span>
+        <span className="skx__vis-pos">{wherePlain(obj, tDir)}</span>
+        <span className="skx__vis-pos" style={{ opacity: 0.55 }}>{obj.compassDirection} · {Math.round(obj.altitude)}°</span>
         <span className={`skx__vis-badge skx__vis-badge--${badge.tone}`}>{badge.label}</span>
       </button>
     </li>
