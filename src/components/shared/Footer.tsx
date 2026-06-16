@@ -1,37 +1,50 @@
 'use client';
 
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import {
+  ExternalLink, Sparkles, CircleDot, BookOpen, ShoppingBag,
+  User, Github, ShieldCheck, Lock, Mail,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AstroLogo from './AstroLogo';
 
-type FooterLink = { labelKey: string; label?: string; href: string; external?: boolean };
+type IconCmp = React.ComponentType<{ size?: number }>;
+
+function XIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+type FooterLink = { labelKey: string; label?: string; href: string; external?: boolean; Icon: IconCmp };
 type FooterColumn = { titleKey: string; links: FooterLink[] };
 
 const columns: FooterColumn[] = [
   {
     titleKey: 'colProduct',
     links: [
-      { labelKey: 'sky',      href: '/sky' },
-      { labelKey: 'missions', href: '/missions' },
-      { labelKey: 'learning', href: '/learn' },
-      { labelKey: 'shop',     href: '/marketplace' },
+      { labelKey: 'sky',      href: '/sky',         Icon: Sparkles },
+      { labelKey: 'missions', href: '/missions',    Icon: CircleDot },
+      { labelKey: 'learning', href: '/learn',       Icon: BookOpen },
+      { labelKey: 'shop',     href: '/marketplace', Icon: ShoppingBag },
     ],
   },
   {
     titleKey: 'colCompany',
     links: [
-      { labelKey: 'astroman', label: 'Astroman', href: 'https://astroman.ge', external: true },
-      { labelKey: 'github',   label: 'GitHub',   href: 'https://github.com/Rezimod/Stellar', external: true },
-      { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true },
+      { labelKey: 'astroman', label: 'Astroman', href: 'https://astroman.ge', external: true, Icon: User },
+      { labelKey: 'github',   label: 'GitHub',   href: 'https://github.com/Rezimod/Stellar', external: true, Icon: Github },
+      { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true, Icon: XIcon },
     ],
   },
   {
     titleKey: 'colLegal',
     links: [
-      { labelKey: 'terms',   href: '/terms' },
-      { labelKey: 'privacy', href: '/privacy' },
-      { labelKey: 'contact', href: '/contact' },
+      { labelKey: 'terms',   href: '/terms',   Icon: ShieldCheck },
+      { labelKey: 'privacy', href: '/privacy', Icon: Lock },
+      { labelKey: 'contact', href: '/contact', Icon: Mail },
     ],
   },
 ];
@@ -47,6 +60,7 @@ const linkBase: React.CSSProperties = {
 };
 
 function FooterLinkItem({ link, label }: { link: FooterLink; label: string }) {
+  const { Icon } = link;
   return (
     <li>
       <Link
@@ -57,6 +71,7 @@ function FooterLinkItem({ link, label }: { link: FooterLink; label: string }) {
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.95)'; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; }}
       >
+        <span className="stellar-footer-link-ic" aria-hidden="true"><Icon size={15} /></span>
         {label}
         {link.external && <ExternalLink size={11} style={{ opacity: 0.5 }} />}
       </Link>
@@ -121,7 +136,10 @@ export default function Footer() {
             className="stellar-footer-cols"
           >
             {columns.map(col => (
-              <div key={col.titleKey} className="stellar-footer-col">
+              <div
+                key={col.titleKey}
+                className={`stellar-footer-col${col.titleKey === 'colLegal' ? ' stellar-footer-col--legal' : ''}`}
+              >
                 <p
                   className="stellar-footer-col-title"
                   style={{
@@ -177,6 +195,9 @@ export default function Footer() {
       </div>
 
       <style>{`
+        /* Leading link icons are a mobile-only treatment. */
+        .stellar-footer-link-ic { display: none; }
+
         @media (max-width: 640px) {
           .stellar-footer-inner {
             padding-top: 36px !important;
@@ -198,19 +219,45 @@ export default function Footer() {
             margin-right: 0;
           }
           .stellar-footer-cols {
-            grid-template-columns: repeat(2, minmax(0, max-content)) !important;
-            gap: 24px 40px !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 26px 28px !important;
             align-items: start;
             text-align: left;
-            justify-content: start;
           }
           .stellar-footer-col {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            min-width: 0;
+          }
+          /* Legal runs full width on its own row, below Product + Company. */
+          .stellar-footer-col--legal { grid-column: 1 / -1; }
+          /* Gold section headers with a trailing rule line. */
+          .stellar-footer-col-title {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            color: var(--terracotta, #F5A623) !important;
+          }
+          .stellar-footer-col-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.12);
           }
           .stellar-footer-links {
             align-items: flex-start;
+            width: 100%;
+          }
+          .stellar-footer-links li { width: 100%; }
+          .stellar-footer-link-ic {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.42);
+            margin-right: 8px;
+            flex-shrink: 0;
           }
           .stellar-footer-bottom {
             margin-top: 28px !important;
