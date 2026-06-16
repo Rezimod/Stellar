@@ -41,6 +41,7 @@ import { STARS_TOKEN_PROGRAM_ID } from '@/lib/stars';
 import { isValidPublicKey } from '@/lib/validate';
 import { computeMaxBurn, validateBurn } from '@/lib/stars-economy';
 import { assertOwnsWallet } from '@/lib/api-auth';
+import { paused } from '@/lib/kill-switch';
 
 export const maxDuration = 60;
 
@@ -213,6 +214,8 @@ function decodeBurnAmount(ixData: Buffer): bigint | null {
 }
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const privyId = await authenticate(req);
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

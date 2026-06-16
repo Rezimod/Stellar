@@ -10,8 +10,11 @@ import { isValidPublicKey } from '@/lib/validate';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { verifyObservationToken } from '@/lib/observation-token';
 import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
+import { paused } from '@/lib/kill-switch';
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const body = await req.json();
   const {
     userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo,

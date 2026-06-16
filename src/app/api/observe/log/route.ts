@@ -12,6 +12,7 @@ import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth'
 import { recordObservationOnChain } from '@/lib/observation-program'
 import { tierForCount, applyReputationMultiplier } from '@/lib/reputation'
 import { ensurePassport } from '@/lib/telescope-passport'
+import { paused } from '@/lib/kill-switch'
 
 // On-chain attestation can add a few seconds of devnet confirmation latency.
 export const maxDuration = 60
@@ -30,6 +31,8 @@ const STARS_BY_CONFIDENCE: Record<string, { base: number; rare_bonus: number }> 
 const RARE_OBJECTS = ['saturn', 'jupiter', 'mars', 'venus', 'mercury', 'deep_sky']
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const privyId = await verifyPrivy(req);
   // Rate-limit by wallet (parsed from body after validation below)
   // Initial coarse limit by IP to prevent unauthenticated spam

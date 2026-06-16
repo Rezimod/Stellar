@@ -4490,7 +4490,7 @@
 .mis-summary-meta { display: flex; flex-direction: column; gap: 2px; }
 .mis-summary-eyebrow {
   display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
   letter-spacing: 0.13em; text-transform: uppercase; color: var(--terracotta);
 }
 .mis-summary-sub { font-size: 11px; color: var(--mis-t2); }
@@ -4604,7 +4604,7 @@
 .mis-quest-meta-val i {
   font-style: normal;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--mis-t3);
@@ -4636,7 +4636,7 @@
 .mis-quest-vis i {
   font-style: normal;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--mis-t3);
@@ -4844,7 +4844,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -4908,6 +4908,7 @@
 .mis-tip-text { font-size: 11.5px; color: var(--mis-t2); margin: 0; line-height: 1.4; }
 .mis-tip-dots { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 2px; }
 .mis-tip-dot {
+  position: relative;
   flex: 0 0 auto;
   align-self: center;
   width: 7px; height: 7px;
@@ -4919,6 +4920,7 @@
   cursor: pointer;
   transition: background 0.15s ease;
 }
+.mis-tip-dot::before { content: ''; position: absolute; inset: -14px; }
 .mis-tip-dot.is-active { background: var(--terracotta); }
 
 /* === Filter chips === */
@@ -4959,8 +4961,8 @@
 .mis-list { display: flex; flex-direction: column; gap: 8px; }
 .mis-row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto;
-  grid-template-areas: 'art main stats btn';
+  grid-template-columns: 40px minmax(0, 1fr) auto auto auto;
+  grid-template-areas: 'art main stats stars btn';
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
@@ -5015,8 +5017,20 @@
 }
 .mis-row-stat svg { color: var(--mis-t3); }
 .mis-row-stars {
-  grid-area: stats;
-  display: none;
+  grid-area: stars;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--terracotta);
+  font-variant-numeric: tabular-nums;
+}
+/* Narrowest phones: drop the secondary Eye % stat so the Stars chip fits */
+@media (max-width: 479px) {
+  .mis-row-stars { font-size: 11px; }
+  .mis-row-stats .mis-row-stat:nth-child(2) { display: none; }
 }
 .mis-row-btn {
   grid-area: btn;
@@ -5044,24 +5058,10 @@
   cursor: default;
   pointer-events: none;
 }
-/* Stars chip shows on wider rows */
+/* Enlarge the art tile on wider rows */
 @media (min-width: 480px) {
-  .mis-row {
-    grid-template-columns: 44px minmax(0, 1fr) auto auto auto;
-    grid-template-areas: 'art main stats stars btn';
-  }
+  .mis-row { grid-template-columns: 44px minmax(0, 1fr) auto auto auto; }
   .mis-row-art { width: 44px; height: 44px; }
-  .mis-row-stars {
-    grid-area: stars;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--terracotta);
-    font-variant-numeric: tabular-nums;
-  }
 }
 
 .mis-viewall {
@@ -5148,7 +5148,7 @@
 .mis-quiz-row-meta {
   display: block;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--mis-t3);
   line-height: 1.35;
   margin-top: 3px;
@@ -5201,7 +5201,7 @@
 }
 .mis-rare-date-month {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   color: var(--mis-t3);
 }
@@ -5215,7 +5215,7 @@
 .mis-rare-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .mis-rare-tag {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--terracotta);
@@ -5275,6 +5275,7 @@
   letter-spacing: 0.06em;
 }
 .mis-info-dot {
+  position: relative;
   flex-shrink: 0;
   width: 18px; height: 18px;
   border-radius: 50%;
@@ -5288,6 +5289,7 @@
   color: var(--mis-t2);
   cursor: pointer;
 }
+.mis-info-dot::before { content: ''; position: absolute; inset: -14px; }
 .mis-info-dot:hover { color: var(--mis-t1); border-color: var(--mis-t3); }
 
 /* === Telescope guide (reused) === */

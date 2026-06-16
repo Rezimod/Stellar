@@ -4784,6 +4784,7 @@
 }
 .skx__tips-dots { display: flex; gap: 6px; margin-top: 11px; }
 .skx__tips-dot {
+  position: relative;
   appearance: none;
   cursor: pointer;
   width: 7px;
@@ -4794,6 +4795,7 @@
   background: rgba(255, 255, 255, 0.18);
   transition: background 140ms ease, transform 140ms ease;
 }
+.skx__tips-dot::before { content: ''; position: absolute; inset: -14px; }
 .skx__tips-dot.is-active { background: var(--terracotta); transform: scale(1.15); }
 
 .skx__loc:focus-visible,

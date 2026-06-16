@@ -6,6 +6,7 @@ import { PrivyClient } from '@privy-io/server-auth';
 import { eq, and } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { orders } from '@/lib/schema';
+import { paused } from '@/lib/kill-switch';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -13,6 +14,8 @@ const privy = new PrivyClient(
 );
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const authHeader = req.headers.get('authorization');
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token) return NextResponse.json({ confirmed: false, error: 'Unauthorized' }, { status: 401 });

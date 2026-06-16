@@ -12,6 +12,7 @@ import { isValidPublicKey } from '@/lib/validate';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
+import { paused } from '@/lib/kill-switch';
 
 export const maxDuration = 30;
 
@@ -35,6 +36,8 @@ function getLimiter(): Ratelimit | null {
 }
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const privyId = await verifyPrivy(req);
   let body: { address?: unknown };
   try {

@@ -11,10 +11,13 @@ import { observationLog } from '@/lib/schema';
 import { and, eq } from 'drizzle-orm';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars-policy';
+import { paused } from '@/lib/kill-switch';
 
 const DEVNET_URL = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const privyId = await verifyPrivy(req);
   if (!privyId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

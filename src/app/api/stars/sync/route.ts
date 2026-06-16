@@ -15,6 +15,7 @@ import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { and, eq, ne, sum } from 'drizzle-orm';
+import { paused } from '@/lib/kill-switch';
 
 export const maxDuration = 60;
 
@@ -53,6 +54,8 @@ function getLimiter(): Ratelimit | null {
 }
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   // Require an authenticated Privy session. Stars-sync runs from
   // WalletSync.tsx the moment the user has an address, so a token is
   // available — and the route mints SPL tokens, so we can't leave it open.

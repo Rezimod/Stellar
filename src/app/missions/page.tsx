@@ -418,9 +418,18 @@ export default function MissionsPage() {
       ? t('liveStatus.cloudy')
       : t('liveStatus.live');
 
+  // Anonymous-first: views are open; write/earn actions require auth.
+  const requireAuth = useCallback((action: () => void) => {
+    if (!authenticated) {
+      setAuthOpen(true);
+      return;
+    }
+    action();
+  }, [authenticated]);
+
   const startMission = useCallback((routeId: string) => {
-    router.push(`/observe/${routeId}`);
-  }, [router]);
+    requireAuth(() => router.push(`/observe/${routeId}`));
+  }, [requireAuth, router]);
 
   // Best-viewing window for a target: 90-minute span centred on its peak,
   // clamped to tonight's dark window. Falls back to "all night" / rise time.
@@ -438,36 +447,20 @@ export default function MissionsPage() {
     return null;
   }, [skyPositions, dark.duskStart, dark.dawnEnd]);
 
-  // ---- Auth gate ----
-  if (!authenticated) {
-    return (
-      <div className="missions-page">
-        <div className="mis-shell">
-          <div className="mis-statusbar" role="status">
-            <span className={`mis-statusbar-dot mis-statusbar-dot--${liveStatus}`} aria-hidden />
-            <span className="mis-statusbar-label">{statusLabel}</span>
-            <span className="mis-statusbar-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
-          </div>
-          <div className="mis-auth-card">
-            <h2 className="mis-auth-title">{t('auth.title')}</h2>
-            <p className="mis-auth-body">{t('auth.body')}</p>
-            <button type="button" className="mis-auth-btn" onClick={() => setAuthOpen(true)}>
-              {t('auth.signIn')}
-            </button>
-            <p className="mis-auth-sub">{t('auth.sub')}</p>
-          </div>
-        </div>
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      </div>
-    );
-  }
-
   const questLocal = localize(questEntry);
   const questPos = skyPositions[questEntry.id];
   const questWin = viewingWindow(questEntry.id);
   const questStars = visibilityStars(questPos?.altitude ?? -90);
   const visibleMissions = showAllMissions ? filteredGrid : filteredGrid.slice(0, LIST_PREVIEW);
   const tip = TIPS[tipIndex];
+
+  // Daily quiz spotlight — first uncompleted quiz (falls back to the first).
+  const dailyQuiz =
+    QUIZZES.find((q) => {
+      const r = completedQuizIds.get(q.id);
+      return !(r && r.score > 0 && r.score >= q.questions.length);
+    }) ?? QUIZZES[0];
+  const dailyQuizUi = dailyQuiz ? QUIZ_UI[dailyQuiz.id] : null;
 
   return (
     <div className="missions-page">
@@ -520,6 +513,36 @@ export default function MissionsPage() {
                 later: (time: string) => t('quest.comingLater', { time }),
               }}
             />
+
+            {/* Daily quiz spotlight — promotes the rail's quizzes above the fold */}
+            {dailyQuiz && dailyQuizUi && (
+              <section className="mis-block">
+                <div className="mis-block-head">
+                  <h2 className="mis-block-title">{t('sections.quizzes')}</h2>
+                  <span className="mis-block-meta">2 min</span>
+                </div>
+                <div className="mis-card">
+                  <div className="mis-quiz-list">
+                    {(() => {
+                      const result = completedQuizIds.get(dailyQuiz.id);
+                      const score = result?.score ?? 0;
+                      const total = dailyQuiz.questions.length;
+                      return (
+                        <QuizRow
+                          Icon={dailyQuizUi.Icon}
+                          gradient={dailyQuizUi.gradient}
+                          title={dailyQuiz.title[locale] ?? dailyQuiz.title.en}
+                          meta={locale === 'ka' ? dailyQuizUi.descKa : dailyQuizUi.descEn}
+                          reward={dailyQuizUi.reward}
+                          done={score > 0 && score >= total}
+                          onClick={() => setActiveQuiz(dailyQuiz)}
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* Nearby sky events */}
             <section className="mis-block">
@@ -578,14 +601,19 @@ export default function MissionsPage() {
                 {visibleMissions.map((g) => {
                   const pos = skyPositions[g.id];
                   const above = (pos?.altitude ?? -90) > 0;
+                  const lg = localize(g);
                   return (
                     <MissionRow
                       key={g.id}
-                      entry={localize(g)}
+                      entry={lg}
                       above={above}
                       pct={visibilityPct(pos?.altitude ?? -90)}
                       rise={pos?.rise ?? null}
                       onStart={() => startMission(g.routeId)}
+                      onExplain={(rect) => {
+                        setActiveExplainerAnchor(rect);
+                        setActiveExplainer({ kind: 'mission', id: g.id, title: lg.name });
+                      }}
                       labels={{
                         visibleNow: t('list.visibleNow'),
                         after: (time: string) => t('list.after', { time }),
@@ -800,6 +828,8 @@ export default function MissionsPage() {
         title={activeExplainer?.title ?? ''}
         location={{ lat: location.lat, lon: location.lon }}
       />
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }
@@ -1004,13 +1034,14 @@ function MainQuestCard({
 // ---- Mission list row ----
 
 function MissionRow({
-  entry, above, pct, rise, onStart, labels,
+  entry, above, pct, rise, onStart, onExplain, labels,
 }: {
   entry: LocalizedGridEntry;
   above: boolean;
   pct: number;
   rise: Date | null;
   onStart: () => void;
+  onExplain: (rect: DOMRect) => void;
   labels: {
     visibleNow: string;
     after: (time: string) => string;
@@ -1020,10 +1051,15 @@ function MissionRow({
   };
 }) {
   const statusText = above ? labels.visibleNow : rise ? labels.after(fmtClock(rise)) : labels.comingLater;
+  // Visible rows route on tap; not-yet-visible rows aren't routable, so the row
+  // itself isn't a focus stop — only its "Coming later" explainer button is.
   return (
-    <div className="mis-row" role="button" tabIndex={0}
-      onClick={() => { if (above) onStart(); }}
-      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && above) { e.preventDefault(); onStart(); } }}
+    <div
+      className="mis-row"
+      role={above ? 'button' : undefined}
+      tabIndex={above ? 0 : undefined}
+      onClick={above ? () => onStart() : undefined}
+      onKeyDown={above ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onStart(); } } : undefined}
     >
       <span className="mis-row-art" aria-hidden><SkyOrb name={entry.id} /></span>
       <div className="mis-row-main">
@@ -1045,7 +1081,14 @@ function MissionRow({
           {labels.observe}
         </button>
       ) : (
-        <span className="mis-row-btn is-disabled">{labels.comingLater}</span>
+        <button
+          type="button"
+          className="mis-row-btn is-disabled"
+          style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+          onClick={(e) => { e.stopPropagation(); onExplain((e.currentTarget as HTMLElement).getBoundingClientRect()); }}
+        >
+          {labels.comingLater}
+        </button>
       )}
     </div>
   );

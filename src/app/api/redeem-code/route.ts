@@ -21,6 +21,7 @@ import { isValidPublicKey } from '@/lib/validate';
 import { redeemRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { starsToGEL } from '@/lib/stars-economy';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
+import { paused } from '@/lib/kill-switch';
 
 const CODE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -35,6 +36,8 @@ function generateCode(): string {
 }
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   const privyId = await verifyPrivy(req);
   if (!privyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

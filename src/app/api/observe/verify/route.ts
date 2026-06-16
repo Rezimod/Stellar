@@ -14,6 +14,7 @@ import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
 import { createObservationToken } from '@/lib/observation-token';
 import { verifyPrivy } from '@/lib/api-auth';
+import { paused } from '@/lib/kill-switch';
 
 // Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
 export const maxDuration = 60;
@@ -58,6 +59,8 @@ function parseVisionResponse(text: string): { analysis: VisionAnalysis; isFallba
 }
 
 export async function POST(req: NextRequest) {
+  const p = paused();
+  if (p) return p;
   // Use auth token as rate-limit key when present (prevents IP spoofing)
   const authHeader = req.headers.get('authorization');
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
