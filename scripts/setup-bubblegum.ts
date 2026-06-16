@@ -35,7 +35,12 @@ async function main() {
 
   const secretKey = bs58.decode(privateKeyB58);
 
-  const umi = createUmi('https://api.devnet.solana.com')
+  const rpcUrl =
+    process.env.NEXT_PUBLIC_HELIUS_RPC_URL ??
+    process.env.SOLANA_RPC_URL ??
+    'https://api.devnet.solana.com';
+
+  const umi = createUmi(rpcUrl)
     .use(mplBubblegum())
     .use(mplTokenMetadata());
 

@@ -19,7 +19,7 @@ export const MISSIONS: Mission[] = [
     difficulty: 'Beginner',
     stars: 50,
     type: 'naked_eye',
-    desc: 'See the full Stellar flow — simulates an observation and mints a real NFT on devnet.',
+    desc: 'See the full Stellar flow — simulates an observation and mints a real NFT on Solana.',
     hint: 'Uses a pre-generated sky photo. Perfect for demos and presentations.',
     target: 'Jupiter',
     repeatable: true,
@@ -145,5 +145,7 @@ export const AGENT_META = {
   description: 'The global astronomy app — observe anywhere, earn Stars, collect discovery NFTs on Solana. You serve astronomers worldwide, not just in Georgia.',
   capabilities: ['capture', 'verify', 'mint'],
   oracle: 'open-meteo-v1',
-  network: 'solana_devnet',
+  network: (process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet').startsWith('mainnet')
+    ? 'solana_mainnet'
+    : 'solana_devnet',
 };

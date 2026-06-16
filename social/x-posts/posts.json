@@ -28,5 +28,15 @@
     "hashtags": ["#Stellar", "#Astronomy", "#BuildInPublic", "#Solana"],
     "image": "images/midday-draft-2026-06-12.png",
     "background": "backgrounds/test-post-01-bg.png"
+  },
+  {
+    "id": "midday-draft-2026-06-16",
+    "theme": "development",
+    "headline": "Sky missions give telescope owners the next target.",
+    "subhead": "Guided observation prompts turn a blank night into a concrete plan with Stars attached.",
+    "body": "Sky missions turn “what should I observe tonight?” into a guided target list with rewards attached. Built for telescope owners who want a next step, not a menu. stellarr.club/missions #Stellar #Astronomy #BuildInPublic #Solana",
+    "hashtags": ["#Stellar", "#Astronomy", "#BuildInPublic", "#Solana"],
+    "image": "images/midday-draft-2026-06-16.png",
+    "background": "backgrounds/test-post-01-bg.png"
   }
 ]

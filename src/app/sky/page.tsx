@@ -369,6 +369,19 @@ export default function SkyPage() {
   const windowClose = finder?.twilight?.astronomicalDawn ?? finder?.twilight?.nauticalDawn ?? finder?.twilight?.civilDawn ?? null;
   const windowDuration = fmtDuration(windowOpen, windowClose);
 
+  // Fraction of tonight's dark window still ahead of skyTime (drives the "Next best time" ring).
+  const darkRemainingPct = useMemo(() => {
+    if (!windowOpen || !windowClose) return 0;
+    const open = new Date(windowOpen).getTime();
+    const close = new Date(windowClose).getTime();
+    const now = skyTime.getTime();
+    const total = close - open;
+    if (total <= 0) return 0;
+    if (now < open) return 1;
+    if (now > close) return 0;
+    return Math.min(1, Math.max(0, (close - now) / total));
+  }, [windowOpen, windowClose, skyTime]);
+
   // Sun rise/set for the summary strip + night-overview bar.
   const sunObj = finder?.objects.find((o) => o.id === 'sun') ?? null;
   const sunsetISO = sunObj?.setTime ?? finder?.twilight?.civilDusk ?? null;
@@ -586,7 +599,7 @@ export default function SkyPage() {
               <section className="skx__card skx__nbt">
                 <span className="skx__card-label">Next best time</span>
                 <div className="skx__nbt-row">
-                  <RingGauge pct={0.82} color="var(--seafoam, #5EEAD4)">
+                  <RingGauge pct={darkRemainingPct} color="var(--seafoam, #5EEAD4)">
                     <TelescopeIcon size={20} />
                   </RingGauge>
                   <div className="skx__nbt-body">

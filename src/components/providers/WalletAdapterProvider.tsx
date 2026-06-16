@@ -6,7 +6,9 @@ import { WalletAdapterNetwork, type Adapter, type WalletError } from '@solana/wa
 import { clusterApiUrl } from '@solana/web3.js';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-const network = WalletAdapterNetwork.Devnet;
+const network = (process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet').startsWith('mainnet')
+  ? WalletAdapterNetwork.Mainnet
+  : WalletAdapterNetwork.Devnet;
 
 // Phantom/Solflare/Backpack adapter SDKs are ~150KB combined and only matter
 // when the user actually opens the wallet modal. Most users sign in via Privy

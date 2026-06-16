@@ -383,7 +383,7 @@ function ProfilePageContent() {
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
-                {addrShort} · {t('devnet')}
+                {addrShort} · {(process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet').startsWith('mainnet') ? 'Solana mainnet' : t('devnet')}
               </span>
               {address && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
