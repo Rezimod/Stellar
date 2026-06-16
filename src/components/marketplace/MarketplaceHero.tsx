@@ -27,9 +27,9 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
         className="absolute inset-0"
         style={{ background: 'linear-gradient(90deg, rgba(7,11,20,0.94) 0%, rgba(7,11,20,0.80) 45%, rgba(7,11,20,0.35) 100%)' }}
       />
-      <div className="relative z-10 flex items-center justify-between gap-[12px] px-[14px] py-[10px] sm:px-[28px] sm:py-[14px] min-h-[88px] sm:min-h-[124px]">
+      <div className="relative z-10 flex items-center justify-between gap-[12px] px-[14px] py-[14px] sm:px-[32px] sm:py-[22px] min-h-[112px] sm:min-h-[160px]">
         <div className="max-w-[60%] sm:max-w-[56%]">
-          <h1 className="font-display text-[19px] sm:text-[28px] leading-[1.1] text-white" style={{ fontWeight: 600 }}>
+          <h1 className="font-display text-[21px] sm:text-[32px] leading-[1.1] text-white" style={{ fontWeight: 600 }}>
             {t('heroTitleLead')}{' '}
             <span style={{ color: 'var(--terracotta)' }}>{t('heroTitleAccent')}</span>
           </h1>
@@ -54,7 +54,7 @@ export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props
             </button>
           </div>
         </div>
-        <div className="relative w-[40%] sm:w-[42%] h-[84px] sm:h-[120px] self-center flex-shrink-0">
+        <div className="relative w-[42%] sm:w-[44%] h-[112px] sm:h-[164px] self-center flex-shrink-0">
           <Image
             src="/hero/telescope.png"
             alt={t('heroTelescopeAlt')}

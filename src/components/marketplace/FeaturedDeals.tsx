@@ -56,7 +56,7 @@ export default function FeaturedDeals({
         className="flex gap-[14px] sm:gap-[16px] overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {products.map(p => (
-          <div key={p.id} className="snap-start shrink-0 w-[80%] sm:w-[46%] lg:w-[calc(33.333%-11px)]">
+          <div key={p.id} className="snap-start shrink-0 w-[72%] sm:w-[42%] lg:w-[calc(25%-12px)]">
             <ProductCard
               product={p}
               dealerName={dealerName(p.id)}
