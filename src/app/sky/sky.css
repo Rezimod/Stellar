@@ -4873,21 +4873,52 @@
 /* ── Phones — tighten the summary + duos ── */
 @media (max-width: 560px) {
   .skx .sky-obs__wrap { padding-inline: 14px; }
-  .skx__head { align-items: stretch; flex-direction: column; }
-  .skx__loc { width: fit-content; max-width: 100%; }
+
+  /* Title + location pill share one line; subtitle drops below the title. */
+  .skx__head { align-items: center; flex-direction: row; gap: 10px; }
+  .skx__title { font-size: 22px; }
+  .skx__subtitle { font-size: 10px; }
+  .skx__loc {
+    width: fit-content;
+    max-width: 100%;
+    min-height: 36px;
+    padding: 7px 12px;
+    align-self: flex-start;
+    background: color-mix(in oklab, var(--surface) 88%, transparent);
+    border: 1px solid var(--border-strong, var(--border));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+  .skx__loc:hover {
+    background: var(--surface);
+    border-color: var(--border-strong, var(--border));
+  }
+
+  /* Smaller summary cards so the sky map dominates the first screen. */
   .skx__summary {
     grid-template-columns: 1fr 1fr;
     gap: 0;
+    padding: 10px 4px;
+    border-radius: 14px;
   }
-  .skx__sum-cell { padding: 10px 11px; }
+  .skx__sum-cell { padding: 8px 11px; gap: 7px; }
+  .skx__sum-count { font-size: 18px; }
+  .skx__sum-val { font-size: 17px; }
+  .skx__sum-val--time { font-size: 15px; }
+  .skx__sum-moon svg { width: 32px; height: 32px; }
+  .skx__sum-sunic { width: 32px; height: 32px; }
   /* second column of each row gets the divider; rows get a top divider */
   .skx__sum-cell + .skx__sum-cell { border-left: none; }
   .skx__sum-cell:nth-child(2n) { border-left: 1px solid var(--border); }
   .skx__sum-cell:nth-child(n + 3) { border-top: 1px solid var(--border); }
+
+  /* Hand the sky map the room freed above — near full-bleed, square. */
+  .skx__map { padding: 8px; gap: 8px; }
+  .skx__map .sky-v3__map-stage { max-width: none; }
+  .skx__map .sky-map { max-width: none; }
 }
 @media (max-width: 480px) {
   .skx__duo { grid-template-columns: 1fr; }
-  .skx__title { font-size: 24px; }
+  .skx__title { font-size: 20px; }
   .skx__look-row { grid-template-columns: 10px minmax(0, 1fr) 18px; }
   .skx__look-where { display: none; }
 }
