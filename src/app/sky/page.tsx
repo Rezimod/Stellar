@@ -686,7 +686,7 @@ export default function SkyPage() {
 
             {/* ── Multi-day outlook (retained below the new hero) ── */}
             <SevenDayForecast
-              variant="rail"
+              variant="grid"
               days={forecast.days}
               loading={forecast.loading}
               locationLabel={locationLabel}
