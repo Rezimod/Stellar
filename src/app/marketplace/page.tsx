@@ -12,7 +12,6 @@ import PageContainer from '@/components/layout/PageContainer';
 import ProductCard from '@/components/marketplace/ProductCard';
 import MarketplaceHero from '@/components/marketplace/MarketplaceHero';
 import CategoryCircles from '@/components/marketplace/CategoryCircles';
-import TrustRow from '@/components/marketplace/TrustRow';
 import FeaturedDeals from '@/components/marketplace/FeaturedDeals';
 import RecommendedRow from '@/components/marketplace/RecommendedRow';
 import HelpBanner from '@/components/marketplace/HelpBanner';
@@ -207,9 +206,6 @@ export default function MarketplacePage() {
             onToggleFavorite={toggleFavorite}
             onViewAll={() => scrollTo(catalogRef)}
           />
-
-          {/* 7. Trust signals */}
-          <TrustRow />
 
           {/* 8. Need help choosing? */}
           <HelpBanner />
