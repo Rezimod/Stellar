@@ -970,6 +970,8 @@
       "title": "Tonight",
       "complete": "Complete",
       "starsEarned": "Stars earned",
+      "upNow": "Up now",
+      "ofTargets": "of {total} targets",
       "nextReward": "Next reward",
       "coupon": "Astroman coupon",
       "maxReward": "Top tier reached",
@@ -1062,6 +1064,7 @@
     "liveStatus": {
       "daytime": "Daylight — sky too bright",
       "cloudy": "Overcast — nothing observable",
+      "takeQuiz": "Take a quiz",
       "nothingUp": "Nothing above the horizon",
       "aria": "Live sky status",
       "listAria": "Live visible targets",

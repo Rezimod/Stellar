@@ -24,9 +24,9 @@ import { getRareEvents, getUpcomingEvents, type AstroEvent } from '@/lib/astro-e
 import type { QuizDef } from '@/lib/quizzes';
 import {
   Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe,
-  Rocket, Clock, Eye, Cloud, Gift, ChevronRight, Lightbulb, Satellite, Users, Check,
+  Rocket, Clock, Eye, Cloud, ChevronRight, Lightbulb, Satellite, Users, Check,
 } from 'lucide-react';
-import { NIGHT_STAR_GOAL, MAIN_QUEST_ID, GLOBAL_MISSION, nextReward } from '@/lib/missions-tonight';
+import { NIGHT_STAR_GOAL, MAIN_QUEST_ID, GLOBAL_MISSION } from '@/lib/missions-tonight';
 import type { LucideIcon } from 'lucide-react';
 import { Body, Illumination, MoonPhase } from 'astronomy-engine';
 
@@ -193,7 +193,6 @@ export default function MissionsPage() {
   const [iss, setIss] = useState<IssPass | null>(null);
   const [issLoading, setIssLoading] = useState(true);
   const [globalMission, setGlobalMission] = useState<GlobalMissionData | null>(null);
-  const [lifetimeStars, setLifetimeStars] = useState<number | null>(null);
 
   const upcomingEvents = useMemo(() => getUpcomingEvents(new Date(), 30), []);
   const rareEvents = useMemo(() => getRareEvents(new Date(), 5), []);
@@ -298,17 +297,6 @@ export default function MissionsPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Lifetime Stars — drives the coupon "next reward" tier in the summary bar.
-  useEffect(() => {
-    if (!address) return;
-    let cancelled = false;
-    fetch(`/api/stars-balance?address=${address}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (!cancelled && d && typeof d.lifetimeEarned === 'number') setLifetimeStars(d.lifetimeEarned); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [address]);
-
   const skyPositions = useMemo(() => {
     const out: Record<string, SkyPos> = {};
     for (const p of tonightWindowPlanets) {
@@ -350,7 +338,6 @@ export default function MissionsPage() {
   const completedCount = useMemo(() => GRID.filter((g) => completedIds.has(g.id)).length, [completedIds]);
   const completionPct = Math.round((completedCount / GRID.length) * 100);
   const nightRating = earnedStars <= 0 ? 0 : Math.min(5, Math.max(1, Math.round((earnedStars / NIGHT_STAR_GOAL) * 5)));
-  const reward = nextReward(lifetimeStars ?? earnedStars);
 
   // Main quest = best target to do next: an explicit MAIN_QUEST_ID wins; else
   // prefer a visible, incomplete, highest target; fall back to highest-value.
@@ -402,7 +389,6 @@ export default function MissionsPage() {
   }, [skyPositions, t]);
 
   const headerTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  const dateLabel = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
   // Conditions gate — same logic as before, used for the status chip label.
   const CLOUD_OVERCAST_PCT = 70;
@@ -469,14 +455,17 @@ export default function MissionsPage() {
       <div className="mis-shell">
         {/* Status bar */}
         <div className="mis-statusbar" role="status">
-          <span className={`mis-statusbar-dot mis-statusbar-dot--${liveStatus}`} aria-hidden />
-          <span className="mis-statusbar-label">{statusLabel}</span>
+          <span className="mis-statusbar-main">
+            <span className={`mis-statusbar-dot mis-statusbar-dot--${liveStatus}`} aria-hidden />
+            <span className="mis-statusbar-label">{statusLabel}</span>
+          </span>
+          <span className="mis-statusbar-meta">{headerTime} · {cityLabel}</span>
           {liveStatus !== 'live' && dailyQuiz && (
-            <button type="button" className="mis-block-link" onClick={() => setActiveQuiz(dailyQuiz)}>
-              {liveStatus === 'cloudy' ? 'Clouded out — take a quiz' : 'Daylight now — take a quiz'}
+            <button type="button" className="mis-statusbar-chip" onClick={() => setActiveQuiz(dailyQuiz)}>
+              <Lightbulb size={11} strokeWidth={2} />
+              {t('liveStatus.takeQuiz')}
             </button>
           )}
-          <span className="mis-statusbar-meta">{headerTime} · {dateLabel} · {cityLabel}</span>
         </div>
 
         {/* Progress summary bar */}
@@ -485,16 +474,15 @@ export default function MissionsPage() {
           earned={earnedStars}
           nightGoal={NIGHT_STAR_GOAL}
           rating={nightRating}
-          rewardPct={reward?.pct ?? null}
+          visibleCount={visibleCount}
           allDone={completionPct >= 100}
           onContinue={() => startMission(questEntry.routeId)}
           labels={{
             title: t('progress.title'),
             complete: t('progress.complete'),
             starsEarned: t('progress.starsEarned'),
-            nextReward: t('progress.nextReward'),
-            coupon: t('progress.coupon'),
-            maxReward: t('progress.maxReward'),
+            upNow: t('progress.upNow'),
+            ofTargets: t('progress.ofTargets', { total: GRID.length }),
             continue: completionPct >= 100 ? t('progress.allDone') : t('progress.continue'),
           }}
         />
@@ -842,16 +830,16 @@ export default function MissionsPage() {
 // ---- Progress summary bar (4 zones) ----
 
 function SummaryBar({
-  completionPct, earned, nightGoal, rating, rewardPct, allDone, onContinue, labels,
+  completionPct, earned, nightGoal, rating, visibleCount, allDone, onContinue, labels,
 }: {
   completionPct: number;
   earned: number;
   nightGoal: number;
   rating: number;
-  rewardPct: number | null;
+  visibleCount: number;
   allDone: boolean;
   onContinue: () => void;
-  labels: { title: string; complete: string; starsEarned: string; nextReward: string; coupon: string; maxReward: string; continue: string };
+  labels: { title: string; complete: string; starsEarned: string; upNow: string; ofTargets: string; continue: string };
 }) {
   const R = 26;
   const C = 2 * Math.PI * R;
@@ -891,11 +879,11 @@ function SummaryBar({
 
       <span className="mis-summary-div" aria-hidden />
 
-      {/* Zone C — next coupon reward */}
+      {/* Zone C — targets above the horizon tonight */}
       <div className="mis-summary-zone">
-        <span className="mis-summary-eyebrow"><Gift size={12} strokeWidth={1.8} /> {labels.nextReward}</span>
-        <span className="mis-summary-reward">{rewardPct != null ? `${rewardPct}%` : <Star size={16} strokeWidth={2} fill="currentColor" />}</span>
-        <span className="mis-summary-sub">{rewardPct != null ? labels.coupon : labels.maxReward}</span>
+        <span className="mis-summary-eyebrow"><Eye size={12} strokeWidth={1.8} /> {labels.upNow}</span>
+        <span className="mis-summary-reward">{visibleCount}</span>
+        <span className="mis-summary-sub">{labels.ofTargets}</span>
       </div>
 
       <span className="mis-summary-div" aria-hidden />

@@ -4439,16 +4439,22 @@
 @media (min-width: 768px) { .mis-shell { padding: 20px 24px 40px; gap: 18px; } }
 @media (min-width: 1024px) { .mis-shell { padding: 24px 32px 48px; } }
 
-/* === Status bar === */
+/* === Status bar (compact conditions pill) === */
 .mis-statusbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 7px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--mis-bd);
+  border-radius: 13px;
+  background: var(--mis-card);
   font-family: var(--font-mono);
   font-size: 10.5px;
   letter-spacing: 0.03em;
   color: var(--mis-t2);
 }
+.mis-statusbar-main { display: inline-flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto; }
 .mis-statusbar-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
@@ -4458,9 +4464,25 @@
 .mis-statusbar-dot--live { background: var(--mis-grn); box-shadow: 0 0 7px rgba(94,234,212,0.6); animation: mis-pulse 2.2s ease-in-out infinite; }
 .mis-statusbar-dot--daytime { background: var(--terracotta); }
 .mis-statusbar-dot--cloudy { background: var(--mis-t3); }
-.mis-statusbar-label { color: var(--mis-t1); font-weight: 600; }
-.mis-statusbar-meta { color: var(--mis-t3); margin-left: auto; font-variant-numeric: tabular-nums; }
-@media (max-width: 380px) { .mis-statusbar-meta { display: none; } }
+.mis-statusbar-label {
+  color: var(--mis-t1); font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mis-statusbar-meta { color: var(--mis-t3); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.mis-statusbar-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  flex-shrink: 0;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,179,71,0.32);
+  background: rgba(255,179,71,0.12);
+  color: var(--terracotta);
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mis-statusbar-chip:hover { background: rgba(255,179,71,0.2); }
 
 @keyframes mis-pulse {
   0%, 100% { opacity: 1; }
@@ -4515,6 +4537,19 @@
   .mis-summary-zone--ring { grid-column: auto; }
   .mis-summary-zone--cta { grid-column: auto; }
   .mis-summary .mis-progress-cta { width: auto; padding: 10px 18px; white-space: nowrap; }
+}
+
+/* Mobile: compact the Tonight summary card */
+@media (max-width: 879px) {
+  .mis-summary { padding: 12px 14px; gap: 10px 14px; }
+  .mis-summary-zone--ring { gap: 10px; }
+  .mis-summary .mis-ring { width: 50px; height: 50px; }
+  .mis-summary .mis-ring svg { width: 100%; height: 100%; }
+  .mis-summary .mis-ring-pct { font-size: 12px; }
+  .mis-summary-eyebrow { font-size: 10px; letter-spacing: 0.1em; }
+  .mis-summary-sub { font-size: 10.5px; }
+  .mis-summary-num, .mis-summary-reward { font-size: 16px; }
+  .mis-summary .mis-progress-cta { padding: 9px; font-size: 12.5px; }
 }
 
 /* === Completion ring (used by the summary bar) === */
