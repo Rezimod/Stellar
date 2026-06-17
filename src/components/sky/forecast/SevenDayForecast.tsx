@@ -1,9 +1,81 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { CalendarDays, Cloud, CloudMoon, Cloudy, Info, MoonStar } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { ForecastDay } from '@/lib/use-sky-data';
-import { MoonGlyph, NightCloudStrip } from './visuals';
+import { MoonGlyph } from './visuals';
+
+type QualityKey = 'excellent' | 'good' | 'fair' | 'poor';
+
+/**
+ * Per-night sky-quality score, 0–100. Cloud cover dominates (it's what our
+ * forecast actually measures), moonlight trims the top end — a clear but
+ * full-moon night still loses points for washed-out deep-sky targets.
+ */
+function dayScore(day: ForecastDay): number {
+  const clarity = Math.max(0, 100 - Math.max(0, Math.min(100, day.cloudCoverPct)));
+  const moonDark = 1 - Math.max(0, Math.min(1, day.moonIllumination));
+  return Math.max(0, Math.min(100, Math.round(clarity * 0.78 + moonDark * 22)));
+}
+
+/** Score → verdict tier key + ring colour, matching the legend buckets. */
+function scoreTier(score: number): { key: QualityKey; color: string } {
+  if (score >= 80) return { key: 'excellent', color: '#34D399' };
+  if (score >= 60) return { key: 'good', color: '#FBBF24' };
+  if (score >= 40) return { key: 'fair', color: '#FB923C' };
+  return { key: 'poor', color: '#F87171' };
+}
+
+/** Cloud cover → plain-language sky-cover description key. */
+function cloudKey(pct: number): string {
+  if (pct <= 10) return 'clear';
+  if (pct <= 25) return 'few';
+  if (pct <= 50) return 'scattered';
+  if (pct <= 70) return 'broken';
+  if (pct <= 85) return 'mostly';
+  return 'cloudy';
+}
+
+const WX_ICON: Record<string, LucideIcon> = {
+  clear: MoonStar,
+  few: CloudMoon,
+  scattered: Cloud,
+  broken: Cloud,
+  mostly: Cloudy,
+  cloudy: Cloudy,
+};
+
+const LEGEND: Array<{ color: string; range: string; key: QualityKey }> = [
+  { color: '#34D399', range: '80–100', key: 'excellent' },
+  { color: '#FBBF24', range: '60–79', key: 'good' },
+  { color: '#FB923C', range: '40–59', key: 'fair' },
+  { color: '#F87171', range: '0–39', key: 'poor' },
+];
+
+/** Circular 0–100 score ring with the number centred. */
+function ScoreGauge({ score, color }: { score: number; color: string }) {
+  const size = 74;
+  const sw = 5;
+  const r = (size - sw) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(1, score / 100));
+  return (
+    <span className="forecast7__gauge" aria-hidden="true">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={sw} />
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke={color} strokeWidth={sw} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <span className="forecast7__gauge-num" style={{ color }}>{score}</span>
+    </span>
+  );
+}
 
 interface SevenDayForecastProps {
   days: ForecastDay[];
@@ -26,6 +98,7 @@ interface SevenDayForecastProps {
 export function SevenDayForecast({ days, loading = false, locationLabel, variant = 'grid' }: SevenDayForecastProps) {
   const t = useTranslations('sky.forecast7');
   const locale = useLocale();
+  const [howOpen, setHowOpen] = useState(false);
 
   const dayFmt = useMemo(() => {
     try {
@@ -47,7 +120,10 @@ export function SevenDayForecast({ days, loading = false, locationLabel, variant
   return (
     <section className={`forecast7${isRail ? ' forecast7--rail' : ''}`} aria-label={t('label')}>
       <div className="forecast7__head">
-        <span className="forecast7__label">{t('label')}</span>
+        <span className="forecast7__label">
+          {!isRail && <CalendarDays size={13} aria-hidden="true" />}
+          {t('label')}
+        </span>
         {locationLabel && (
           <span className="forecast7__loc">
             {locationLabel}
@@ -70,11 +146,34 @@ export function SevenDayForecast({ days, loading = false, locationLabel, variant
           ))}
         </ol>
       ) : (
-        <div className="forecast7__row">
-          {days.slice(0, 7).map((d, i) => (
-            <DayCard key={d.date} day={d} isToday={i === 0} dayFmt={dayFmt} dateFmt={dateFmt} t={t} />
-          ))}
-        </div>
+        <>
+          <div className="forecast7__row">
+            {days.slice(0, 7).map((d, i) => (
+              <DayCard key={d.date} day={d} isToday={i === 0} dayFmt={dayFmt} dateFmt={dateFmt} t={t} />
+            ))}
+          </div>
+          <div className="forecast7__legend">
+            <span className="forecast7__legend-title">{t('index')}</span>
+            <ul className="forecast7__legend-scale">
+              {LEGEND.map((b) => (
+                <li key={b.range} className="forecast7__legend-item">
+                  <span className="forecast7__legend-dot" style={{ background: b.color }} aria-hidden="true" />
+                  <span>{b.range}</span>
+                  <b>{t(`verdict.${b.key}`)}</b>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="forecast7__legend-how"
+              onClick={() => setHowOpen((v) => !v)}
+              aria-expanded={howOpen}
+            >
+              <Info size={12} aria-hidden="true" /> {t('howItWorks')}
+            </button>
+          </div>
+          {howOpen && <p className="forecast7__legend-note">{t('howNote')}</p>}
+        </>
       )}
     </section>
   );
@@ -199,18 +298,24 @@ function DayCard({
 }) {
   const date = new Date(day.date);
   const cloudPct = Math.max(0, Math.min(100, day.cloudCoverPct));
+  const score = dayScore(day);
+  const tier = scoreTier(score);
+  const ck = cloudKey(cloudPct);
+  const Icon = WX_ICON[ck];
+  const verdict = t(`verdict.${tier.key}`);
+  const clouds = t(`sky.${ck}`);
 
   const labelParts = [
     isToday ? t('today') : dayFmt.format(date),
-    `${t(`badge.${day.badge}`)}`,
-    `${cloudPct}% ${t('clouds')}`,
+    `${verdict} (${score}/100)`,
+    clouds,
   ];
-  if (typeof day.tempLow === 'number') labelParts.push(`${day.tempLow}°`);
-  if (typeof day.windKmh === 'number') labelParts.push(`wind ${day.windKmh}km/h`);
+  if (typeof day.tempHigh === 'number') labelParts.push(`${day.tempHigh}° ${t('hi')}`);
+  if (typeof day.tempLow === 'number') labelParts.push(`${day.tempLow}° ${t('lo')}`);
 
   return (
     <article
-      className={`forecast7__day forecast7__day--${day.badge}${isToday ? ' is-today' : ''}`}
+      className={`forecast7__day forecast7__day--${tier.key}${isToday ? ' is-today' : ''}`}
       aria-label={labelParts.join(' — ')}
     >
       <span className="forecast7__weekday">
@@ -218,24 +323,29 @@ function DayCard({
       </span>
       <span className="forecast7__date">{dateFmt.format(date)}</span>
 
+      <ScoreGauge score={score} color={tier.color} />
+
+      <span className="forecast7__verdict" style={{ color: tier.color }}>{verdict}</span>
+
       <span className="forecast7__moon" aria-hidden="true">
-        <MoonGlyph phase={day.moonPhase} size={22} />
+        <MoonGlyph phase={day.moonPhase} size={26} />
       </span>
 
-      <div className="forecast7__readout">
-        <span className="forecast7__pct">{cloudPct}<em>%</em></span>
-        {typeof day.tempLow === 'number' && (
-          <span className="forecast7__temp-lo">{day.tempLow}°</span>
-        )}
-      </div>
-
-      <div className="forecast7__strip" aria-hidden="true">
-        <NightCloudStrip hours={day.nightHours} height={10} cellGap={1} />
-      </div>
-
-      <span className={`forecast7__badge forecast7__badge--${day.badge}`}>
-        {t(`badge.${day.badge}`)}
+      <span className="forecast7__wx">
+        <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
+        <span>{clouds}</span>
       </span>
+
+      {(typeof day.tempHigh === 'number' || typeof day.tempLow === 'number') && (
+        <span className="forecast7__temps">
+          {typeof day.tempLow === 'number' && (
+            <span className="forecast7__temp"><b>{day.tempLow}°</b><i>{t('lo')}</i></span>
+          )}
+          {typeof day.tempHigh === 'number' && (
+            <span className="forecast7__temp"><b>{day.tempHigh}°</b><i>{t('hi')}</i></span>
+          )}
+        </span>
+      )}
     </article>
   );
 }

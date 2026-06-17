@@ -498,10 +498,29 @@
       }
     },
     "forecast7": {
-      "label": "7-night sky outlook",
+      "label": "7-Day Sky Outlook",
       "today": "Tonight",
       "empty": "Forecast unavailable.",
       "clouds": "clouds",
+      "hi": "high",
+      "lo": "low",
+      "index": "Sky quality index",
+      "howItWorks": "How it works",
+      "howNote": "Each score blends tonight's cloud cover with moonlight — higher means clearer, darker skies for observing.",
+      "verdict": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor"
+      },
+      "sky": {
+        "clear": "Clear",
+        "few": "Few clouds",
+        "scattered": "Scattered clouds",
+        "broken": "Broken clouds",
+        "mostly": "Mostly cloudy",
+        "cloudy": "Cloudy"
+      },
       "badge": {
         "go": "Go",
         "maybe": "Maybe",
