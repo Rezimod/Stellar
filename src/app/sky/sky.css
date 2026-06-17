@@ -5083,6 +5083,24 @@
   outline-offset: 3px;
 }
 
+/* ── Tablet/desktop header: title + date + location on one line, tighter top
+      spacing so the sky map and Visible-now rail reach the first screen. ── */
+@media (min-width: 561px) {
+  .skx .sky-obs__wrap { gap: 12px; padding-top: 14px; }
+  /* Title left; date/time + location grouped on the right (one line). The
+     titles wrapper dissolves so all three become direct flex items. */
+  .skx__head { align-items: center; padding-top: 0; column-gap: 16px; }
+  .skx__head-titles { display: contents; }
+  .skx__title { font-size: clamp(24px, 3vw, 32px); line-height: 1; margin-right: auto; }
+  .skx__subtitle {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .skx__summary { padding: 13px 8px; }
+}
+
 /* ── Wider screens — the same sections, roomier ── */
 @media (min-width: 721px) {
   .skx__vis-card { width: 140px; }
@@ -5090,12 +5108,12 @@
 }
 @media (min-width: 921px) {
   .skx .sky-obs__wrap { max-width: 1100px; }
-  .skx__map .sky-map { max-width: min(100%, 680px); }
-  .skx__summary { padding: 16px 10px; }
+  .skx__map .sky-map { max-width: min(100%, 560px); }
+  .skx__summary { padding: 13px 10px; }
 }
 @media (min-width: 1120px) {
   .skx .sky-obs__wrap { max-width: 1180px; }
-  .skx__map .sky-map { max-width: min(100%, 720px); }
+  .skx__map .sky-map { max-width: min(100%, 600px); }
   .skx__duo { gap: 16px; }
 }
 
@@ -5119,7 +5137,7 @@
   .skx__dash > .skx__tips     { grid-area: tips; }
   .skx__dash > .skx__look     { display: none; } /* not part of the desktop dashboard */
 
-  .skx__map .sky-map { max-width: min(100%, 660px); }
+  .skx__map .sky-map { max-width: min(100%, 580px); }
 
   /* Visible-now becomes a bordered card with a compact 3-up orb grid */
   .skx__visible {
