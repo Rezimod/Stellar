@@ -4883,20 +4883,25 @@
   color: var(--text-muted);
   flex: 1;
 }
-.skx__tips-dots { display: flex; gap: 6px; margin-top: 11px; }
+.skx__tips-dots { display: flex; align-items: center; gap: 7px; margin-top: 11px; }
 .skx__tips-dot {
   position: relative;
   appearance: none;
   cursor: pointer;
+  flex: 0 0 auto;
   width: 7px;
   height: 7px;
+  /* Opt out of the global 44px min touch target so the indicator stays a round
+     dot — the tap area is restored by the enlarged ::before below. */
+  min-height: 0;
+  min-width: 0;
   padding: 0;
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.18);
   transition: background 140ms ease, transform 140ms ease;
 }
-.skx__tips-dot::before { content: ''; position: absolute; inset: -14px; }
+.skx__tips-dot::before { content: ''; position: absolute; inset: -18px; }
 .skx__tips-dot.is-active { background: var(--terracotta); transform: scale(1.15); }
 
 .skx__loc:focus-visible,
