@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Camera, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import { MISSIONS } from '@/lib/constants';
-import { getMissionImage } from '@/lib/mission-icons';
 import { calculateSkyScore, visibilityToMeters } from '@/lib/sky-score';
 import { getTierForStreak } from '@/lib/constellation-streak';
 import { calculateRarity } from '@/lib/nft-rarity';
@@ -23,7 +22,7 @@ import MintAnimation from '@/components/shared/MintAnimation';
 import { useObserveFlow } from '../ObserveFlowContext';
 import PageContainer from '@/components/layout/PageContainer';
 
-type Stage = 'verifying-sky' | 'verifying-photo' | 'mint-ready' | 'minting' | 'gallery-saved' | 'done';
+type Stage = 'verifying-sky' | 'verifying-photo' | 'mint-ready' | 'minting' | 'done';
 
 const isSafePhoto = (url: string) =>
   url.startsWith('data:image/jpeg;base64,') ||
@@ -31,6 +30,23 @@ const isSafePhoto = (url: string) =>
   url.startsWith('data:image/webp;base64,') ||
   url.startsWith('blob:') ||
   url.startsWith('/images/');
+
+function makeEstimatedSky(): SkyVerification {
+  return {
+    verified: true,
+    cloudCover: 20,
+    visibility: 'Good',
+    visibilityMeters: 15000,
+    conditions: 'Sky data temporarily unavailable — using estimated conditions',
+    humidity: 50,
+    temperature: 12,
+    windSpeed: 5,
+    windDirection: 'W',
+    bortleClass: 5,
+    oracleHash: '0x' + Date.now().toString(16).padStart(40, '0'),
+    verifiedAt: new Date().toISOString(),
+  };
+}
 
 export default function ObserveVerifyPage() {
   const router = useRouter();
@@ -49,13 +65,16 @@ export default function ObserveVerifyPage() {
     sky, skyScore, photoVerification, mintError,
     setSky, setSkyScore, setPhotoVerification, setMintTxId, setMintError,
     setMintTier, setMintRarity, setCosmicBonus, setTotalStarsEarned,
-    setChallengeCompleted, setNftImageUrl, setGalleryReason,
+    setChallengeCompleted, setNftImageUrl,
   } = flow;
 
   const [stage, setStage] = useState<Stage>('verifying-sky');
   const [mintDone, setMintDone] = useState(false);
   const [showSlowMint, setShowSlowMint] = useState(false);
   const startedRef = useRef(false);
+
+  // An unverified observation still mints — as a keepsake worth 0 Stars.
+  const isUnverified = !!photoVerification && !photoVerification.accepted;
 
   useEffect(() => {
     if (stage !== 'minting') { setShowSlowMint(false); return; }
@@ -92,20 +111,7 @@ export default function ObserveVerifyPage() {
         if (res.ok) {
           skyData = await res.json();
         } else {
-          skyData = {
-            verified: true,
-            cloudCover: 20,
-            visibility: 'Good',
-            visibilityMeters: 15000,
-            conditions: 'Sky data temporarily unavailable — using estimated conditions',
-            humidity: 50,
-            temperature: 12,
-            windSpeed: 5,
-            windDirection: 'W',
-            bortleClass: 5,
-            oracleHash: '0x' + Date.now().toString(16).padStart(40, '0'),
-            verifiedAt: new Date().toISOString(),
-          };
+          skyData = makeEstimatedSky();
           setMintError('Sky data unavailable — proceeding with estimated conditions.');
         }
 
@@ -144,45 +150,12 @@ export default function ObserveVerifyPage() {
             if (pvRes.ok) {
               const pv: PhotoVerificationResult = await pvRes.json();
               setPhotoVerification(pv);
+              // Never bounce the user back to the camera. A photo that can't be
+              // verified (suspect, wrong object, or a service hiccup) still
+              // proceeds to the mint screen — it just mints as an unverified
+              // keepsake worth 0 Stars, with a clear note explaining why.
               if (!pv.accepted) {
-                if (source === 'upload') {
-                  if (solanaWallet?.address) {
-                    fetch('/api/observe/log', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        ...(verifyToken ? { Authorization: `Bearer ${verifyToken}` } : {}),
-                      },
-                      body: JSON.stringify({
-                        wallet: solanaWallet.address,
-                        target: mission.name,
-                        confidence: 'rejected',
-                        mintTx: null,
-                        lat,
-                        lon,
-                      }),
-                    }).catch(() => {});
-                  }
-                  addMission({
-                    id: mission.id + '_gallery_' + Date.now().toString(36),
-                    name: mission.name,
-                    emoji: mission.emoji,
-                    stars: 0,
-                    txId: 'gallery_' + Date.now().toString(36),
-                    photo: isSafePhoto(photo) ? photo : '',
-                    timestamp: ts,
-                    latitude: lat,
-                    longitude: lon,
-                    sky: skyData,
-                    status: 'gallery',
-                  });
-                  setGalleryReason(pv.reason ?? "Your photo didn't pass AI verification.");
-                  setStage('gallery-saved');
-                  return;
-                }
-                setMintError(pv.reason ?? 'Photo rejected — please retake');
-                router.replace(`/observe/${mission.id}/capture`);
-                return;
+                setMintError(pv.reason || "This photo couldn't be verified, so it earns no Stars — you can still keep it as an unverified NFT.");
               }
             }
           } catch {
@@ -192,8 +165,10 @@ export default function ObserveVerifyPage() {
 
         setStage('mint-ready');
       } catch {
-        setMintError('Sky check offline — please try again in a moment');
-        router.replace(`/observe/${mission.id}/capture`);
+        // Sky oracle offline — don't bounce; proceed with estimated conditions.
+        setSky(makeEstimatedSky());
+        setMintError('Sky check offline — proceeding with estimated conditions.');
+        setStage('mint-ready');
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,11 +192,16 @@ export default function ObserveVerifyPage() {
     const tier = getTierForStreak(streakCount);
     setMintTier(tier);
 
-    const baseStars = sky?.verified ? mission.stars : 0;
-    const effectiveStars = Math.round(baseStars * tier.multiplier);
+    // Unverified keepsake: the photo couldn't be certified, so it mints with
+    // 0 Stars and "Unverified" rarity (server enforces both). No streak/bonus.
+    const isUnverifiedMint = !!photoVerification && !photoVerification.accepted;
+
+    const baseStars = (sky?.verified && !isUnverifiedMint) ? mission.stars : 0;
+    const effectiveStars = isUnverifiedMint ? 0 : Math.round(baseStars * tier.multiplier);
 
     const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);
     setMintRarity(rarityInfo);
+    const mintRarityName = isUnverifiedMint ? 'Unverified' : rarityInfo.rarity;
 
     setMintError('');
 
@@ -246,7 +226,7 @@ export default function ObserveVerifyPage() {
           cloudCover: sky?.cloudCover ?? 0,
           oracleHash: sky?.oracleHash ?? 'sim',
           stars: effectiveStars,
-          rarity: rarityInfo.rarity,
+          rarity: mintRarityName,
           multiplier: tier.multiplier,
           demo: mission.demo === true,
           verificationToken: photoVerification?.verificationToken,
@@ -295,39 +275,19 @@ export default function ObserveVerifyPage() {
     setMintTxId(txId);
 
     const targetName = mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name);
-    const nftUrl = `/api/nft-image?target=${encodeURIComponent(targetName)}&ts=${new Date(timestamp).getTime()}&lat=${coords.lat.toFixed(4)}&lon=${coords.lon.toFixed(4)}&cc=${sky?.cloudCover ?? 0}&stars=${effectiveStars}&rarity=${rarityInfo.rarity}`;
+    const nftUrl = `/api/nft-image?target=${encodeURIComponent(targetName)}&ts=${new Date(timestamp).getTime()}&lat=${coords.lat.toFixed(4)}&lon=${coords.lon.toFixed(4)}&cc=${sky?.cloudCover ?? 0}&stars=${effectiveStars}&rarity=${mintRarityName}`;
     setNftImageUrl(nftUrl);
 
-    const bonus = rollCosmicBonus(rarityInfo.rarity, sky?.oracleHash ?? 'sim', user?.id ?? '', mission.id);
-    setCosmicBonus(bonus);
+    // Bonus Stars, weekly-challenge credit and the streak ledger only apply to
+    // certified observations. An unverified keepsake earns nothing extra.
+    let totalStars = effectiveStars;
+    if (!isUnverifiedMint) {
+      const bonus = rollCosmicBonus(rarityInfo.rarity, sky?.oracleHash ?? 'sim', user?.id ?? '', mission.id);
+      setCosmicBonus(bonus);
 
-    const totalStars = effectiveStars + (bonus.triggered ? bonus.amount : 0);
-    setTotalStarsEarned(totalStars);
+      totalStars = effectiveStars + (bonus.triggered ? bonus.amount : 0);
 
-    if (bonus.triggered && solanaWallet?.address) {
-      const authToken = await getAccessToken().catch(() => null);
-      fetch('/api/award-stars', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-        },
-        body: JSON.stringify({
-          recipientAddress: solanaWallet.address,
-          reason: `cosmic_bonus:${targetName}`,
-          verificationToken: photoVerification?.verificationToken,
-          idempotencyKey: `cosmic:${txId}`,
-        }),
-      }).catch(() => {});
-    }
-
-    if (!mission.demo) consumeStarlight();
-
-    const chResult = recordChallengeProgress(skyScore?.score ?? 0, targetName);
-    if (chResult.justCompleted) {
-      setChallengeCompleted(true);
-      const cb = claimChallengeReward();
-      if (cb > 0 && solanaWallet?.address) {
+      if (bonus.triggered && solanaWallet?.address) {
         const authToken = await getAccessToken().catch(() => null);
         fetch('/api/award-stars', {
           method: 'POST',
@@ -337,13 +297,38 @@ export default function ObserveVerifyPage() {
           },
           body: JSON.stringify({
             recipientAddress: solanaWallet.address,
-            reason: 'weekly_challenge',
+            reason: `cosmic_bonus:${targetName}`,
             verificationToken: photoVerification?.verificationToken,
-            idempotencyKey: `challenge:${getActiveChallenge().id}:${solanaWallet.address}`,
+            idempotencyKey: `cosmic:${txId}`,
           }),
         }).catch(() => {});
       }
+
+      if (!mission.demo) consumeStarlight();
+
+      const chResult = recordChallengeProgress(skyScore?.score ?? 0, targetName);
+      if (chResult.justCompleted) {
+        setChallengeCompleted(true);
+        const cb = claimChallengeReward();
+        if (cb > 0 && solanaWallet?.address) {
+          const authToken = await getAccessToken().catch(() => null);
+          fetch('/api/award-stars', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            },
+            body: JSON.stringify({
+              recipientAddress: solanaWallet.address,
+              reason: 'weekly_challenge',
+              verificationToken: photoVerification?.verificationToken,
+              idempotencyKey: `challenge:${getActiveChallenge().id}:${solanaWallet.address}`,
+            }),
+          }).catch(() => {});
+        }
+      }
     }
+    setTotalStarsEarned(totalStars);
 
     setMintDone(true);
 
@@ -433,58 +418,6 @@ export default function ObserveVerifyPage() {
     );
   }
 
-  if (stage === 'gallery-saved') {
-    return (
-      <PageContainer variant="fullscreen" className="py-3 flex flex-col gap-4">
-        <div className="w-full max-w-md mx-auto flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-            <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
-          </div>
-          <p className="text-text-primary text-sm font-semibold">{mission.name}</p>
-        </div>
-        <div className="flex flex-col items-center gap-3 text-center">
-          {photo && (
-            <div className="w-full rounded-xl overflow-hidden bg-canvas" style={{ maxHeight: '40vh', aspectRatio: '1/1' }}>
-              <img src={photo} alt="Uploaded observation" className="w-full h-full object-cover" style={{ opacity: 0.85 }} />
-            </div>
-          )}
-          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.15)' }}>
-            <Camera size={20} className="text-text-muted" />
-          </div>
-          <div>
-            <h3 className="text-text-primary font-semibold text-base mb-1">Photo Saved</h3>
-            <p className="text-text-muted text-sm leading-snug">
-              {flow.galleryReason || photoVerification?.reason || "Your photo didn't pass AI verification."}
-            </p>
-            <p className="text-text-muted text-xs mt-1.5">No Stars earned · Not minted as NFT</p>
-          </div>
-        </div>
-        <div className="flex gap-3 w-full">
-          <button
-            onClick={() => {
-              setPhotoVerification(null);
-              setMintError('');
-              router.replace(`/observe/${mission.id}/capture`);
-            }}
-            className="flex-1 py-2.5 rounded-xl text-sm"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
-          >
-            Retake
-          </button>
-          <button
-            onClick={() => router.push('/missions')}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--terracotta)' }}
-          >
-            Done
-          </button>
-        </div>
-        </div>
-      </PageContainer>
-    );
-  }
-
   if (stage === 'minting') {
     return <MintAnimation done={mintDone} slowMsg={showSlowMint} />;
   }
@@ -508,14 +441,15 @@ export default function ObserveVerifyPage() {
           <Verification
             photo={photo}
             sky={sky}
-            stars={sky.verified ? mission.stars : 0}
+            stars={(sky.verified && !isUnverified) ? mission.stars : 0}
             timestamp={timestamp}
             latitude={coords.lat}
             longitude={coords.lon}
             onMint={handleMint}
+            mintLabel={isUnverified ? 'Keep as Unverified NFT' : undefined}
             compact={true}
           />
-          {photoVerification && (
+          {photoVerification && !isUnverified && (
             <div className="mt-2 text-center">
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 photoVerification.confidence === 'high' ? 'bg-seafoam text-seafoam' :
@@ -523,6 +457,13 @@ export default function ObserveVerifyPage() {
                 'bg-[var(--surface)] text-text-muted'
               }`}>
                 AI: {photoVerification.identifiedObject} · {photoVerification.confidence} confidence
+              </span>
+            </div>
+          )}
+          {isUnverified && (
+            <div className="mt-2 text-center">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface)] text-text-muted">
+                Not verified · 0 ✦ · mints as a keepsake
               </span>
             </div>
           )}

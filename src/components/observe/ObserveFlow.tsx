@@ -22,15 +22,16 @@ const CONFIDENCE_BADGE: Record<string, { cls: string; label: string }> = {
   high:     { cls: 'bg-seafoam text-seafoam border border-seafoam',  label: '✓ High Confidence' },
   medium:   { cls: 'bg-terracotta text-terracotta border border-terracotta',  label: '● Medium Confidence' },
   low:      { cls: 'bg-[var(--surface)] text-text-muted border border-[var(--border)]',  label: '○ Low Confidence' },
-  rejected: { cls: 'bg-negative text-negative border border-negative',        label: '✗ Rejected' },
+  rejected: { cls: 'bg-negative text-negative border border-negative',        label: '○ Not Verified' },
 };
 
 export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps) {
   const router = useRouter();
   const { getAccessToken } = usePrivy();
-  const [step, setStep] = useState<'capture' | 'uploading' | 'result' | 'minting' | 'done'>('capture');
+  const [step, setStep] = useState<'capture' | 'uploading' | 'result' | 'minting' | 'done' | 'error'>('capture');
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [retryFile, setRetryFile] = useState<File | null>(null);
   const [verification, setVerification] = useState<PhotoVerificationResult | null>(null);
   const [error, setError] = useState('');
   const [mintTxId, setMintTxId] = useState('');
@@ -136,6 +137,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     setError('');
     const file = fileOverride ?? photoFile;
     if (!file) { setError('No photo selected'); setStep('capture'); return; }
+    setRetryFile(file);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('lat', String(observerLocation.lat));
@@ -149,13 +151,21 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
       const timer = setTimeout(() => ctrl.abort(), 60000);
       const res = await fetch('/api/observe/verify', { method: 'POST', body: formData, signal: ctrl.signal });
       clearTimeout(timer);
-      if (!res.ok) { setError('Verification failed — try again'); setStep('capture'); return; }
+      // Don't dump the user back to the camera on a transient failure — keep the
+      // photo and show a retry screen. (Verification itself never fails closed:
+      // a bad/suspect photo comes back as an unverified result, not an error.)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(typeof data?.error === 'string' ? data.error : 'Verification could not complete. Your photo is safe — try again.');
+        setStep('error');
+        return;
+      }
       const result: PhotoVerificationResult = await res.json();
       setVerification(result);
       setStep('result');
     } catch {
-      setError('Verification failed — try again');
-      setStep('capture');
+      setError('Verification timed out. Check your connection — your photo is safe, just try again.');
+      setStep('error');
     }
   };
 
@@ -256,6 +266,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
   const resetToCapture = () => {
     setPhoto(null);
     setPhotoFile(null);
+    setRetryFile(null);
     setVerification(null);
     setError('');
     setMintTxId('');
@@ -298,35 +309,87 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
     );
   }
 
+  // --- error (transient verify failure — photo preserved, offer retry) ---
+  if (step === 'error') {
+    return (
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col items-center justify-center px-6 gap-5">
+        {photo && <img src={photo} alt="" className="rounded-xl max-h-44 object-cover" />}
+        <div className="w-12 h-12 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(255,179,71,0.12)', border: '1px solid rgba(255,179,71,0.3)' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 8v5M12 16.5h.01" stroke="var(--terracotta)" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </div>
+        <p className="text-text-primary text-sm text-center max-w-xs">{error || 'Verification could not complete.'}</p>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button onClick={() => handleVerify(retryFile ?? undefined)}
+            className="w-full py-3 rounded-xl text-black text-sm font-semibold"
+            style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
+            Try Verification Again
+          </button>
+          <button onClick={resetToCapture}
+            className="w-full py-3 rounded-xl text-text-primary text-sm font-semibold"
+            style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>
+            Retake Photo
+          </button>
+          <button onClick={onClose}
+            className="w-full py-3 rounded-xl text-text-muted text-sm"
+            style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)' }}>
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // --- done ---
   if (step === 'done' && verification) {
+    const isKeepsake = !verification.accepted;
     const explorerUrl = mintTxId ? `https://explorer.solana.com/tx/${mintTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}` : null;
-    const shareText = mintTxId
-      ? `Just sealed my observation of ${verification.identifiedObject} on Solana ✦ +${verification.starsEstimate} Stars earned on @stellarrclub\n${explorerUrl}`
-      : `Just observed ${verification.identifiedObject} and earned +${verification.starsEstimate} Stars on @stellarrclub ✦`;
+    const shareText = isKeepsake
+      ? `Captured ${verification.identifiedObject} tonight and kept it as an NFT on @stellarrclub ✦${explorerUrl ? `\n${explorerUrl}` : ''}`
+      : mintTxId
+        ? `Just sealed my observation of ${verification.identifiedObject} on Solana ✦ +${verification.starsEstimate} Stars earned on @stellarrclub\n${explorerUrl}`
+        : `Just observed ${verification.identifiedObject} and earned +${verification.starsEstimate} Stars on @stellarrclub ✦`;
     const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+    const ringColor = isKeepsake ? 'rgba(255,179,71,' : 'rgba(94, 234, 212,';
 
     return (
       <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col items-center justify-center px-6 gap-5 overflow-y-auto py-8">
         <div className="w-20 h-20 rounded-full flex items-center justify-center"
-          style={{ background: 'radial-gradient(circle, rgba(94, 234, 212,0.15), transparent)', border: '2px solid rgba(94, 234, 212,0.3)' }}>
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M8 16l6 6 10-12" stroke="var(--seafoam)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          style={{ background: `radial-gradient(circle, ${ringColor}0.15), transparent)`, border: `2px solid ${ringColor}0.3)` }}>
+          {isKeepsake ? (
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+              <path d="M5 19V5a2 2 0 012-2h10a2 2 0 012 2v14l-7-3.5L5 19z" stroke="var(--terracotta)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M8 16l6 6 10-12" stroke="var(--seafoam)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
         </div>
         <h2 className="text-2xl text-text-primary" style={{ fontFamily: 'Georgia, serif' }}>
-          {mintTxId ? 'Discovery Sealed' : 'Stars Collected'}
+          {isKeepsake ? 'Keepsake Minted' : mintTxId ? 'Discovery Sealed' : 'Stars Collected'}
         </h2>
+        {isKeepsake && (
+          <p className="text-text-muted text-xs text-center max-w-xs -mt-2">
+            This photo couldn&apos;t be certified as taken tonight on this object, so it earned no Stars — but it&apos;s yours, minted on Solana as a personal record.
+          </p>
+        )}
 
         {/* Proof card */}
         <div className="w-full max-w-xs rounded-2xl p-5 flex flex-col gap-3"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] tracking-widest uppercase text-text-muted">Stellar Discovery</span>
+            <span className="text-[10px] tracking-widest uppercase text-text-muted">{isKeepsake ? 'Unverified Keepsake' : 'Stellar Discovery'}</span>
             <span className="text-[10px] text-text-muted">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
           </div>
           <p className="text-text-primary font-semibold">{verification.identifiedObject}</p>
-          <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
+          {isKeepsake ? (
+            <p className="text-sm text-text-muted">Not certified · 0 ✦</p>
+          ) : (
+            <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
+          )}
           {explorerUrl && (
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-[var(--seafoam)] truncate">
@@ -416,7 +479,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
                    'This image could not be verified'}
                 </p>
                 <p className="text-text-muted text-xs mt-1">{verification.reason}</p>
-                <p className="text-text-muted text-xs mt-2">No Stars or NFT awarded.</p>
+                <p className="text-text-muted text-xs mt-2">No Stars — but you can still keep this photo as an unverified NFT.</p>
               </>
             )}
           </div>
@@ -437,9 +500,18 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               </>
             ) : (
               <>
+                {verification.verificationToken && (
+                  <button onClick={handleMintObservation}
+                    className="w-full py-3 rounded-xl text-black text-sm font-semibold"
+                    style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
+                    Keep as Unverified NFT
+                  </button>
+                )}
                 <button onClick={resetToCapture}
-                  className="w-full py-3 rounded-xl text-black text-sm font-semibold"
-                  style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
+                  className={`w-full py-3 rounded-xl text-sm ${verification.verificationToken ? 'text-text-muted' : 'text-black font-semibold'}`}
+                  style={verification.verificationToken
+                    ? { background: 'transparent', border: '1px solid rgba(255,255,255,0.08)' }
+                    : { background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
                   Try Another Photo
                 </button>
                 <button onClick={onClose}

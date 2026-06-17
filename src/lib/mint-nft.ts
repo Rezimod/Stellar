@@ -22,6 +22,7 @@ export interface ObservationMintParams {
   multiplier?: number;
   tier?: 'C' | 'S' | 'U';
   demo?: boolean;
+  verified?: boolean;
 }
 
 export async function mintCompressedNFT(params: ObservationMintParams): Promise<{ txId: string }> {
@@ -56,7 +57,8 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
 
   const recipient = params.userAddress ? toPublicKey(params.userAddress) : keypair.publicKey;
 
-  const name = `Stellar: ${params.target}`;
+  const verified = params.verified !== false;
+  const name = verified ? `Stellar: ${params.target}` : `Stellar Keepsake: ${params.target}`;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
   const shortHash = (params.oracleHash ?? '').slice(0, 10);
   const tierSuffix = params.tier ? `&i=${params.tier}` : '';
@@ -70,7 +72,9 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
     uri = await uploadJsonToIrys({
       name,
       symbol: 'STLR',
-      description: `Verified observation of ${params.target}. Cloud cover ${params.cloudCover}%, oracle hash ${shortHash}. Sealed on Solana.`,
+      description: verified
+        ? `Verified observation of ${params.target}. Cloud cover ${params.cloudCover}%, oracle hash ${shortHash}. Sealed on Solana.`
+        : `Unverified keepsake — a photo captured by the observer but not certified by the Stellar oracle as this object on this night. No Stars awarded. Minted on Solana as a personal record.`,
       image: imageUrl,
       external_url: appUrl,
       attributes: [
@@ -81,6 +85,7 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
         { trait_type: 'Oracle Hash', value: params.oracleHash ?? '' },
         { trait_type: 'Stars Earned', value: params.stars },
         { trait_type: 'Rarity', value: params.rarity ?? 'Common' },
+        { trait_type: 'Verified', value: verified ? 'Yes' : 'No' },
         { trait_type: 'Streak Multiplier', value: params.multiplier ?? 1 },
         ...(params.tier ? [{ trait_type: 'Tier', value: params.tier }] : []),
         ...(params.demo ? [{ trait_type: 'Demo', value: 'true' }] : []),

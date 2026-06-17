@@ -14,9 +14,10 @@ interface VerificationProps {
   longitude: number;
   onMint: () => void;
   compact?: boolean;
+  mintLabel?: string;
 }
 
-export default function Verification({ photo, sky, stars, timestamp, latitude, longitude, onMint, compact = false }: VerificationProps) {
+export default function Verification({ photo, sky, stars, timestamp, latitude, longitude, onMint, compact = false, mintLabel }: VerificationProps) {
   const conditionOk = sky.verified;
 
   const skyScore = calculateSkyScore({
@@ -141,7 +142,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             boxShadow: stars > 0 ? '0 0 24px rgba(255, 179, 71,0.2)' : '0 0 16px rgba(255, 179, 71,0.08)',
           }}
         >
-          {stars > 0 ? `Create NFT  +${stars} Stars` : 'Log Cloudy Observation'}
+          {mintLabel ?? (stars > 0 ? `Create NFT  +${stars} Stars` : 'Log Cloudy Observation')}
         </button>
       </div>
     </div>

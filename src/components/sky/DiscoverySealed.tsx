@@ -14,6 +14,8 @@ interface Props {
   nftNumber: number;
   solanaTxShort: string;
   solanaExplorerUrl: string;
+  unverified?: boolean;
+  unverifiedReason?: string;
   onViewCollection: () => void;
   onShare: () => void;
   onSave: () => void;
@@ -67,6 +69,8 @@ export default function DiscoverySealed({
   nftNumber,
   solanaTxShort,
   solanaExplorerUrl,
+  unverified = false,
+  unverifiedReason,
   onViewCollection,
   onShare,
   onSave,
@@ -126,12 +130,12 @@ export default function DiscoverySealed({
               fontWeight: 500,
             }}
           >
-            DISCOVERY SEALED
+            {unverified ? 'KEEPSAKE MINTED' : 'DISCOVERY SEALED'}
           </span>
           <div className="w-1 h-1 rounded-full" style={{ background: 'var(--stl-gold)' }} />
         </div>
 
-        <SealStamp missionId={mission.id} />
+        <SealStamp missionId={mission.id} unverified={unverified} />
 
         <h1
           style={{
@@ -147,9 +151,26 @@ export default function DiscoverySealed({
         >
           {mission.name}{' '}
           <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(255,255,255,0.55)' }}>
-            sealed
+            {unverified ? 'kept' : 'sealed'}
           </span>
         </h1>
+
+        {unverified && (
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.5)',
+              lineHeight: 1.4,
+              marginTop: 6,
+              maxWidth: 320,
+            }}
+          >
+            {unverifiedReason
+              ? unverifiedReason
+              : "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours, minted on Solana as a personal record."}
+          </p>
+        )}
 
         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap justify-center">
           <span
@@ -462,7 +483,7 @@ const BG_STARS: Array<{ top: string; left: string; size: number; delay: string }
   { top: '82%', left: '18%', size: 1.2, delay: '3s' },
 ];
 
-function SealStamp({ missionId }: { missionId: string }) {
+function SealStamp({ missionId, unverified = false }: { missionId: string; unverified?: boolean }) {
   return (
     <div className="relative flex items-center justify-center" style={{ width: 112, height: 112 }}>
       <div
@@ -513,21 +534,29 @@ function SealStamp({ missionId }: { missionId: string }) {
             width: 22,
             height: 22,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--seafoam), #0E6E56)',
+            background: unverified
+              ? 'linear-gradient(135deg, #8A6A2E, #4A3712)'
+              : 'linear-gradient(135deg, var(--seafoam), #0E6E56)',
             border: '2px solid var(--canvas)',
           }}
         >
-          <svg width="11" height="11" viewBox="0 0 24 24">
-            <polyline
-              className="stl-check-path"
-              points="20 6 9 17 4 12"
-              fill="none"
-              stroke="#fff"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {unverified ? (
+            <svg width="11" height="11" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="7" fill="none" stroke="#fff" strokeWidth="2.5" />
+            </svg>
+          ) : (
+            <svg width="11" height="11" viewBox="0 0 24 24">
+              <polyline
+                className="stl-check-path"
+                points="20 6 9 17 4 12"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </div>
       </div>
     </div>

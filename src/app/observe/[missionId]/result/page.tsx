@@ -30,7 +30,10 @@ export default function ObserveResultPage() {
     sky, skyScore, coords,
     mintTxId, mintTier, cosmicBonus,
     totalStarsEarned, challengeCompleted,
+    photoVerification,
   } = useObserveFlow();
+
+  const isUnverified = !!photoVerification && !photoVerification.accepted;
 
   useEffect(() => {
     if (mission && !mintTxId) {
@@ -119,7 +122,7 @@ export default function ObserveResultPage() {
   }
 
   const isOnChain = !!mintTxId && !mintTxId.startsWith('sim');
-  const starsBase = sky?.verified ? mission.stars : 0;
+  const starsBase = (sky?.verified && !isUnverified) ? mission.stars : 0;
   const displayedTotal = totalStarsEarned || starsBase;
   const starsBonus = Math.max(0, displayedTotal - starsBase);
   const streakMultiplier = mintTier?.multiplier ?? 1;
@@ -258,15 +261,17 @@ export default function ObserveResultPage() {
         nftNumber={nftNumber}
         solanaTxShort={solanaTxShort}
         solanaExplorerUrl={solanaExplorerUrl}
+        unverified={isUnverified}
+        unverifiedReason={photoVerification?.reason}
         onViewCollection={() => router.push('/nfts')}
         onShare={handleShare}
         onSave={handleSave}
         onContinue={() => router.push('/missions')}
-        onPostToFeed={isOnChain ? handlePostToFeed : undefined}
+        onPostToFeed={isOnChain && !isUnverified ? handlePostToFeed : undefined}
       />
 
       {/* Name a star — preserved below the seal */}
-      {!mission.demo && !mintTxId.startsWith('sim') && !starSkipped && (starClaimed || nearestStar) && (
+      {!mission.demo && !isUnverified && !mintTxId.startsWith('sim') && !starSkipped && (starClaimed || nearestStar) && (
         <div
           className="relative z-[1] mx-auto pb-8 px-5"
           style={{ maxWidth: 420 }}

@@ -150,9 +150,25 @@ export async function POST(req: NextRequest) {
 
   // ───────────────────────── Pre-check pipeline ─────────────────────────
   // Run cheap, deterministic checks before the expensive Gemini Vision call.
-  // Each check that rejects writes a `confidence: 'rejected'` row to
+  // Each check that fails writes a `confidence: 'rejected'` row to
   // observation_log so future attempts at the same hash short-circuit.
+  //
+  // Philosophy: a failed check never blocks the user. It downgrades the
+  // observation to UNVERIFIED — 0 Stars, no on-chain attestation — but the
+  // photo can still be minted as a keepsake NFT clearly labelled "not
+  // certified". So every rejection still carries a signed verification token.
   const db = getDb();
+
+  // EXIF + device tier are computed up front so every rejection below carries
+  // consistent device/location metadata and a mint-able token.
+  const exif = await extractExif(buffer);
+  const exifLat = exif?.lat ?? null;
+  const exifLon = exif?.lon ?? null;
+  const exifTakenAt = exif?.takenAt ?? null;
+  const deviceMake = exif?.make ?? null;
+  const deviceModel = exif?.model ?? null;
+  const deviceTier: DeviceTier = classifyDevice(deviceMake, deviceModel);
+  let isInternetSourced = false;
 
   async function writeRejectionRow(reason: string, notes: Record<string, unknown>) {
     if (!db || !walletParam) return;
@@ -173,33 +189,61 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Returns a PhotoVerificationResult-shaped payload for early rejections so
-  // the client UI renders cleanly (no undefined astronomyCheck/imageAnalysis crashes).
-  // Stars are 0 and `accepted: false` — no token issued so /api/observe/log
-  // would refuse anyway.
-  function buildRejection(rejectionReason: string, message: string, extra: Record<string, unknown> = {}): PhotoVerificationResult {
+  // Returns a PhotoVerificationResult-shaped payload for an unverified outcome.
+  // `accepted: false` + `starsEstimate: 0` means no Stars and no on-chain
+  // attestation, but a signed token IS issued so the client can still mint the
+  // photo as a labelled keepsake via /api/mint (which forces 0 Stars and
+  // "Unverified" rarity for a 'rejected' token).
+  function buildRejection(
+    rejectionReason: string,
+    message: string,
+    opts: { identifiedObject?: string; isScreenshot?: boolean; isAiGenerated?: boolean } = {},
+  ): PhotoVerificationResult {
+    const identifiedObject = opts.identifiedObject || 'Unverified observation';
+    const verificationToken = createObservationToken({
+      target: identifiedObject,
+      identifiedObject,
+      confidence: 'rejected',
+      capturedAt,
+      fileHash,
+      lat,
+      lon,
+      deviceTier,
+      deviceMake: deviceMake ?? '',
+      deviceModel: deviceModel ?? '',
+      isInternetSourced,
+      wallet: walletParam,
+    }) ?? undefined;
     return {
       accepted: false,
       confidence: 'rejected',
       rejectionReason,
+      verificationToken,
       target: 'unknown',
-      identifiedObject: 'Unverified',
+      identifiedObject,
       reason: message,
       astronomyCheck: { objectVisible: false },
       imageAnalysis: {
-        isScreenshot: false,
-        isAiGenerated: rejectionReason === 'ai_generated',
+        isScreenshot: !!opts.isScreenshot,
+        isAiGenerated: !!opts.isAiGenerated,
         hasNightSkyCharacteristics: false,
         sharpness: 'low',
       },
       starsEstimate: 0,
       metadata: {
         fileHash,
-        capturedAt: capturedAt || new Date().toISOString(),
+        capturedAt,
         lat,
         lon,
         cloudCover: 0,
-        ...extra,
+        deviceTier,
+        deviceMake,
+        deviceModel,
+        exifLat,
+        exifLon,
+        exifTakenAt: exifTakenAt ? exifTakenAt.toISOString() : null,
+        isInternetSourced,
+        uploadSource: uploadSourceParam,
       },
     };
   }
@@ -212,7 +256,7 @@ export async function POST(req: NextRequest) {
         await writeRejectionRow('duplicate_image', { duplicateOfWallet: dup.wallet.slice(0, 8) + '…' });
         return NextResponse.json(buildRejection(
           'duplicate_image',
-          'This exact image was already submitted by another user. Take your own photo to earn Stars.',
+          'This exact photo was already submitted by another observer, so it earns no Stars. You can still keep it as an unverified NFT.',
         ));
       }
     } catch (err) {
@@ -220,50 +264,38 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 2. EXIF extraction
-  const exif = await extractExif(buffer);
-  const exifLat = exif?.lat ?? null;
-  const exifLon = exif?.lon ?? null;
-  const exifTakenAt = exif?.takenAt ?? null;
-  const deviceMake = exif?.make ?? null;
-  const deviceModel = exif?.model ?? null;
-
-  // 3. EXIF GPS mismatch (> 0.5° ≈ 55km) — only check if EXIF GPS exists
+  // 2. EXIF GPS mismatch (> 0.5° ≈ 55km) — only check if EXIF GPS exists
   if (exifLat !== null && exifLon !== null) {
     if (Math.abs(exifLat - lat) > 0.5 || Math.abs(exifLon - lon) > 0.5) {
       const notes = { exifLat, exifLon, clientLat: lat, clientLon: lon };
       await writeRejectionRow('gps_mismatch', notes);
       return NextResponse.json(buildRejection(
         'gps_mismatch',
-        'Photo location does not match where you say you are. Make sure you took it yourself, on this device.',
+        "The photo's location tag does not match where you say you are, so it can't be certified — no Stars. You can still keep it as an unverified NFT.",
       ));
     }
   }
 
-  // 4. Photo too old (> 24h before submission). Mission-configurable later.
+  // 3. Photo too old (> 24h before submission). Mission-configurable later.
   if (exifTakenAt) {
     const ageMs = Date.now() - exifTakenAt.getTime();
     if (ageMs > 24 * 60 * 60 * 1000) {
       await writeRejectionRow('photo_too_old', { exifTakenAt: exifTakenAt.toISOString(), ageHours: Math.floor(ageMs / 3_600_000) });
       return NextResponse.json(buildRejection(
         'photo_too_old',
-        'Photo was taken more than 24 hours ago. Capture a fresh observation to earn Stars.',
+        'This photo was taken more than 24 hours ago, so it earns no Stars for tonight. You can still keep it as an unverified NFT.',
       ));
     }
   }
 
-  // 5. Device tier
-  const deviceTier: DeviceTier = classifyDevice(deviceMake, deviceModel);
-
-  // 6. Reverse image lookup (optional — gated on GOOGLE_VISION_API_KEY)
+  // 4. Reverse image lookup (optional — gated on GOOGLE_VISION_API_KEY)
   const reverse = await checkReverseImage(buffer);
-  const isInternetSourced = reverse.matchCount > 0;
+  isInternetSourced = reverse.matchCount > 0;
   if (isInternetSourced) {
     await writeRejectionRow('stock_image_detected', { matchCount: reverse.matchCount, sampleUrls: reverse.sampleUrls });
     return NextResponse.json(buildRejection(
       'stock_image_detected',
-      'This image was found on the web — looks like a stock or downloaded photo, not your own observation.',
-      { isInternetSourced: true },
+      'This image was found elsewhere on the web — it looks like a stock or downloaded photo, not your own observation, so it earns no Stars. You can still keep it as an unverified NFT.',
     ));
   }
   // ──────────────────────── End pre-check pipeline ────────────────────────
@@ -372,25 +404,41 @@ Return ONLY valid JSON, no markdown, no preamble:
     verificationFailed = parsed.isFallback;
   } catch (err) {
     console.error('[observe/verify] Gemini vision error:', err);
-    return NextResponse.json({ error: 'Verification service unavailable' }, { status: 500 });
+    // Don't dead-end the user on a service hiccup — return an unverified
+    // outcome they can still mint as a keepsake (0 Stars, not certified).
+    return NextResponse.json(buildRejection(
+      'verification_unavailable',
+      "We couldn't analyze this photo right now, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again in a moment.",
+    ));
   }
 
-  // Hard-reject AI-generated images and screenshots — no Stars, no NFT.
-  // This is also caught by the confidence scoring below, but returning
-  // early means clients see a clear `rejectionReason` and we persist a
-  // rejection row immediately for hash-dedup of synthetic images.
+  // Vision response couldn't be parsed → treat as unverified rather than
+  // mislabelling it (the fallback shape would otherwise read as a screenshot).
+  if (verificationFailed) {
+    return NextResponse.json(buildRejection(
+      'verification_unavailable',
+      "We couldn't read the analysis for this photo, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again.",
+    ));
+  }
+
+  // AI-generated images and screenshots can't earn Stars or an on-chain
+  // attestation, but the user may still keep the photo as an unverified NFT.
+  // Returning early gives clients a clear `rejectionReason` and persists a
+  // rejection row for hash-dedup of synthetic images.
   if (analysis.isAiGenerated) {
     await writeRejectionRow('ai_generated', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
       'ai_generated',
-      'This looks AI-generated. Stars are only awarded for real photos you took yourself.',
+      'This looks AI-generated, so it earns no Stars — Stars are only awarded for real photos you took yourself. You can still keep it as an unverified NFT.',
+      { identifiedObject: analysis.identifiedObject, isAiGenerated: true },
     ));
   }
   if (analysis.isScreenshot) {
     await writeRejectionRow('screenshot_detected', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
       'screenshot_detected',
-      'This looks like a screenshot. Stars are only awarded for real photos of the sky.',
+      'This looks like a screenshot, so it earns no Stars — Stars are only awarded for real photos of the sky. You can still keep it as an unverified NFT.',
+      { identifiedObject: analysis.identifiedObject, isScreenshot: true },
     ));
   }
 
