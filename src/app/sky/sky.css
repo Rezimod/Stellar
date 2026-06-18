@@ -5126,16 +5126,29 @@
 }
 
 /* Wide desktop: summary strip joins the header on the top-right, so the map +
-   Visible-now dashboard both land on the first screen (mockup parity). */
+   Visible-now dashboard both land on the first screen (mockup parity). The whole
+   bar is kept compact so it doesn't dominate the first screen. */
 @media (min-width: 1180px) {
   .skx__topbar {
     display: grid;
-    grid-template-columns: minmax(0, max-content) minmax(440px, 1fr);
+    grid-template-columns: minmax(0, max-content) minmax(420px, 1fr);
     align-items: center;
-    column-gap: 28px;
+    column-gap: 24px;
   }
   .skx__topbar .skx__head { padding-top: 0; }
-  .skx__topbar .skx__summary { padding: 12px 8px; }
+  .skx__topbar .skx__title { font-size: 26px; }
+  .skx__topbar .skx__loc { min-height: 36px; padding: 7px 12px; }
+
+  /* Compact summary strip — smaller padding, icons and numbers. */
+  .skx__topbar .skx__summary { padding: 9px 6px; border-radius: 14px; }
+  .skx__topbar .skx__sum-cell { gap: 8px; padding: 0 11px; }
+  .skx__topbar .skx__sum-count { font-size: 18px; }
+  .skx__topbar .skx__sum-val { font-size: 16px; }
+  .skx__topbar .skx__sum-val--time { font-size: 14px; }
+  .skx__topbar .skx__sum-moon svg { width: 30px; height: 30px; }
+  .skx__topbar .skx__sum-sunic { width: 30px; height: 30px; }
+  .skx__topbar .skx__sum-sunic svg { width: 18px; height: 18px; }
+  .skx__topbar .skx__qring svg { width: 34px; height: 34px; }
 }
 
 /* Extra-wide: a touch more room for the dome. */
