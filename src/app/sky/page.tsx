@@ -605,6 +605,8 @@ export default function SkyPage() {
               <AzimuthStrip activeObject={activeObject} />
             </section>
 
+            {/* ── Right column: next-best-time + visible-now (desktop stack) ── */}
+            <div className="skx__rightcol">
             {/* ── Next best time ── */}
               <section className="skx__card skx__nbt">
                 <span className="skx__card-label">Next best time</span>
@@ -678,6 +680,7 @@ export default function SkyPage() {
                 ))}
               </ol>
             </section>
+            </div>
 
             {/* ── Tonight overview ── */}
               <section className="skx__card skx__overview">

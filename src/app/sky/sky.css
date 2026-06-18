@@ -4853,6 +4853,8 @@
 
 /* ── Dashboard wrapper — single column on phones, 2-col grid on desktop ── */
 .skx__dash { display: flex; flex-direction: column; gap: 12px; }
+/* On phones the right column dissolves so its cards stack inline with the rest. */
+.skx__rightcol { display: contents; }
 
 /* next best time */
 .skx__nbt-row { display: flex; align-items: center; gap: 12px; margin-top: 11px; }
@@ -5139,7 +5141,7 @@
 /* Extra-wide: a touch more room for the dome. */
 @media (min-width: 1440px) {
   .skx .sky-obs__wrap { max-width: 1340px; }
-  .skx__dash > .skx__map .sky-map { max-width: min(100%, 720px); }
+  .skx__dash > .skx__map .sky-map { max-width: min(100%, 700px); }
 }
 
 /* ── Desktop dashboard: map (left) + Next-best-time/Visible-now rail (right),
@@ -5147,24 +5149,36 @@
 @media (min-width: 1024px) {
   .skx__dash {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     grid-template-areas:
-      "map      nbt"
-      "map      vis"
+      "map      right"
       "overview tips";
     align-items: start;
     gap: 14px;
   }
-  .skx__dash > .skx__map      { grid-area: map; align-self: start; }
-  .skx__dash > .skx__nbt      { grid-area: nbt; }
-  .skx__dash > .skx__visible  { grid-area: vis; align-self: stretch; }
+  .skx__dash > .skx__map      { grid-area: map; align-self: stretch; }
+  .skx__dash > .skx__rightcol { grid-area: right; align-self: stretch; }
   .skx__dash > .skx__overview { grid-area: overview; }
   .skx__dash > .skx__tips     { grid-area: tips; }
-  .skx__dash > .skx__look     { display: none; } /* not part of the desktop dashboard */
+  .skx__dash .skx__look       { display: none; } /* not part of the desktop dashboard */
 
-  .skx__map .sky-map { max-width: min(100%, 660px); }
+  /* Right column stacks next-best-time + visible-now, with visible-now growing
+     to fill the column height so it stays flush under the next-best-time card
+     (no dead gap) and matches the map's height. */
+  .skx__rightcol {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+  .skx__rightcol > .skx__nbt     { flex: 0 0 auto; }
+  .skx__rightcol > .skx__visible { flex: 1 1 auto; }
 
-  /* Visible-now becomes a bordered card with a compact 3-up orb grid */
+  /* Map card centres a large dome and fills its column height. */
+  .skx__map { justify-content: center; }
+  .skx__map .sky-map { max-width: min(100%, 620px); }
+
+  /* Visible-now becomes a bordered card with a 3-up orb grid that fills height */
   .skx__visible {
     border: 1px solid var(--border);
     border-radius: 16px;
@@ -5177,16 +5191,22 @@
   .skx__visible .skx__vis-rail {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
     overflow: visible;
     padding: 0;
     margin-top: 12px;
     flex: 1;
-    align-content: start;
+    align-content: center; /* centre the 6 orbs in the column's height */
   }
   .skx__visible .skx__vis-rail > li { width: 100%; }
-  .skx__visible .skx__vis-card { width: 100%; min-height: 0; padding: 12px 8px 11px; }
-  .skx__visible .skx__vis-thumb { width: 54px; height: 54px; }
+  .skx__visible .skx__vis-card {
+    width: 100%;
+    min-height: 156px;
+    padding: 16px 8px;
+    justify-content: center;
+    gap: 8px;
+  }
+  .skx__visible .skx__vis-thumb { width: 56px; height: 56px; }
 }
 
 /* ── Phones — tighten the summary + duos ── */

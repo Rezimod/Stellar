@@ -72,7 +72,7 @@ export function SpaceGallery() {
       <div className="space-gal__grid">
         {images == null
           ? Array.from({ length: 4 }).map((_, i) => <div key={i} className="space-gal__skel" aria-hidden="true" />)
-          : images.map((img) => (
+          : images.slice(0, 8).map((img) => (
               <GalleryCard key={img.id} img={img} onOpen={() => setActive(img)} />
             ))}
       </div>
