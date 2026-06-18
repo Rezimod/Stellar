@@ -491,6 +491,8 @@ export default function SkyPage() {
 
         {finder && !finderError && (
           <>
+            {/* ── Top bar: header (left) + summary strip (right on desktop) ── */}
+            <div className="skx__topbar">
             {/* ── Header ── */}
             <header className="skx__head">
               <div className="skx__head-titles">
@@ -547,6 +549,7 @@ export default function SkyPage() {
                 </span>
               </div>
             </section>
+            </div>
 
             {/* ── Dashboard: map + rail + overview/tips (grid on desktop, stack on mobile) ── */}
             <div className="skx__dash">

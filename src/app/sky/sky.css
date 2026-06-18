@@ -4669,6 +4669,13 @@
 .skx__card-label svg { color: var(--terracotta); }
 
 /* ── Header ── */
+/* Top bar wraps header + summary. Stacks on phones, sits side-by-side on wide
+   desktops (summary moves to the top-right, freeing vertical room for the map). */
+.skx__topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 .skx__head {
   display: flex;
   align-items: flex-start;
@@ -5107,14 +5114,32 @@
   .skx__vis-thumb { width: 64px; height: 64px; }
 }
 @media (min-width: 921px) {
-  .skx .sky-obs__wrap { max-width: 1100px; }
+  .skx .sky-obs__wrap { max-width: 1120px; }
   .skx__map .sky-map { max-width: min(100%, 560px); }
   .skx__summary { padding: 13px 10px; }
 }
 @media (min-width: 1120px) {
-  .skx .sky-obs__wrap { max-width: 1180px; }
-  .skx__map .sky-map { max-width: min(100%, 600px); }
+  .skx .sky-obs__wrap { max-width: 1240px; }
   .skx__duo { gap: 16px; }
+}
+
+/* Wide desktop: summary strip joins the header on the top-right, so the map +
+   Visible-now dashboard both land on the first screen (mockup parity). */
+@media (min-width: 1180px) {
+  .skx__topbar {
+    display: grid;
+    grid-template-columns: minmax(0, max-content) minmax(440px, 1fr);
+    align-items: center;
+    column-gap: 28px;
+  }
+  .skx__topbar .skx__head { padding-top: 0; }
+  .skx__topbar .skx__summary { padding: 12px 8px; }
+}
+
+/* Extra-wide: a touch more room for the dome. */
+@media (min-width: 1440px) {
+  .skx .sky-obs__wrap { max-width: 1340px; }
+  .skx__dash > .skx__map .sky-map { max-width: min(100%, 720px); }
 }
 
 /* ── Desktop dashboard: map (left) + Next-best-time/Visible-now rail (right),
@@ -5137,7 +5162,7 @@
   .skx__dash > .skx__tips     { grid-area: tips; }
   .skx__dash > .skx__look     { display: none; } /* not part of the desktop dashboard */
 
-  .skx__map .sky-map { max-width: min(100%, 580px); }
+  .skx__map .sky-map { max-width: min(100%, 660px); }
 
   /* Visible-now becomes a bordered card with a compact 3-up orb grid */
   .skx__visible {
