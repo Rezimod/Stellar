@@ -1211,3 +1211,281 @@ export function makeEarthOrbitals(earthRadius: number, lite: boolean): EarthOrbi
     },
   };
 }
+
+/* ───────────────────────── planetary moons ───────────────────────── */
+/**
+ * Named moons for the outer/terrestrial giants — Earth keeps its dedicated
+ * Moon in `makeEarthExtras`; this covers everyone else. Each moon orbits in a
+ * per-planet sub-group that the canvas keeps pinned to its planet's position,
+ * so the moons follow the planet around the Sun without inheriting its spin.
+ * Distances/radii are visually compressed (true ratios would put most moons
+ * inside the planet sprite or off-screen) but the relative ordering, colour,
+ * and Triton's retrograde motion are real.
+ */
+interface MoonSpec {
+  planet: SolarBodyId;
+  name: string;
+  radiusMul: number;    // moon radius ÷ planet radius
+  distMul: number;      // orbit radius ÷ planet radius
+  inclination: number;  // rad
+  phase: number;        // rad
+  angularSpeed: number; // rad/sec (negative = retrograde)
+  color: number;
+  roughness: number;
+}
+
+const MOON_SPECS: MoonSpec[] = [
+  // Mars
+  { planet: 'mars', name: 'Phobos', radiusMul: 0.09, distMul: 1.9, inclination: 0.02, phase: 0.0, angularSpeed: 0.55, color: 0x8a7d6e, roughness: 0.95 },
+  { planet: 'mars', name: 'Deimos', radiusMul: 0.06, distMul: 2.7, inclination: 0.03, phase: 1.4, angularSpeed: 0.33, color: 0x9b8d7c, roughness: 0.95 },
+  // Jupiter — Galilean moons
+  { planet: 'jupiter', name: 'Io',       radiusMul: 0.026, distMul: 1.7, inclination: 0.02, phase: 0.3, angularSpeed: 0.42, color: 0xe6d24a, roughness: 0.80 },
+  { planet: 'jupiter', name: 'Europa',   radiusMul: 0.022, distMul: 2.1, inclination: 0.02, phase: 2.0, angularSpeed: 0.33, color: 0xd9cebb, roughness: 0.55 },
+  { planet: 'jupiter', name: 'Ganymede', radiusMul: 0.037, distMul: 2.8, inclination: 0.03, phase: 3.6, angularSpeed: 0.24, color: 0xa69884, roughness: 0.80 },
+  { planet: 'jupiter', name: 'Callisto', radiusMul: 0.034, distMul: 3.7, inclination: 0.04, phase: 5.0, angularSpeed: 0.18, color: 0x726658, roughness: 0.90 },
+  // Saturn — moons orbit clear of the rings (outer ring ≈ 2.35× radius)
+  { planet: 'saturn', name: 'Titan', radiusMul: 0.040, distMul: 3.4, inclination: 0.05, phase: 0.8, angularSpeed: 0.20, color: 0xd1933a, roughness: 0.70 },
+  { planet: 'saturn', name: 'Rhea',  radiusMul: 0.015, distMul: 2.8, inclination: 0.04, phase: 2.6, angularSpeed: 0.27, color: 0xc7c0b2, roughness: 0.85 },
+  // Uranus
+  { planet: 'uranus', name: 'Titania', radiusMul: 0.030, distMul: 2.4, inclination: 0.06, phase: 1.0, angularSpeed: 0.26, color: 0x9fb1b5, roughness: 0.85 },
+  { planet: 'uranus', name: 'Oberon',  radiusMul: 0.028, distMul: 3.1, inclination: 0.06, phase: 3.3, angularSpeed: 0.20, color: 0x8b969a, roughness: 0.85 },
+  // Neptune — Triton orbits retrograde
+  { planet: 'neptune', name: 'Triton', radiusMul: 0.035, distMul: 2.6, inclination: 0.35, phase: 0.5, angularSpeed: -0.28, color: 0xd7c5c0, roughness: 0.70 },
+  // Pluto — Charon is huge relative to its primary
+  { planet: 'pluto', name: 'Charon', radiusMul: 0.50, distMul: 2.9, inclination: 0.20, phase: 1.2, angularSpeed: 0.22, color: 0xb3a698, roughness: 0.90 },
+];
+
+export interface PlanetMoonsHandle {
+  group: THREE.Group;
+  /** Pins each planet's moon sub-group to its planet, then advances orbits. */
+  update: (dtSec: number, planetPos: (id: SolarBodyId) => THREE.Vector3 | null | undefined) => void;
+  dispose: () => void;
+}
+
+export function makePlanetMoons(lite: boolean): PlanetMoonsHandle {
+  const group = new THREE.Group();
+  group.name = 'planetMoons';
+  const segs = lite ? 16 : 24;
+
+  const subgroups = new Map<SolarBodyId, THREE.Group>();
+  const recs: { mesh: THREE.Mesh; spec: MoonSpec; theta: number }[] = [];
+  const geoms: THREE.BufferGeometry[] = [];
+  const mats: THREE.Material[] = [];
+
+  for (const spec of MOON_SPECS) {
+    let sub = subgroups.get(spec.planet);
+    if (!sub) {
+      sub = new THREE.Group();
+      sub.visible = false;
+      subgroups.set(spec.planet, sub);
+      group.add(sub);
+    }
+    const pr = worldRadiusForBody(spec.planet);
+    const geom = new THREE.SphereGeometry(pr * spec.radiusMul, segs, segs);
+    const mat = new THREE.MeshStandardMaterial({
+      color: spec.color,
+      roughness: spec.roughness,
+      metalness: 0.02,
+    });
+    geoms.push(geom);
+    mats.push(mat);
+    const mesh = new THREE.Mesh(geom, mat);
+    sub.add(mesh);
+    recs.push({ mesh, spec, theta: spec.phase });
+  }
+
+  return {
+    group,
+    update(dtSec, planetPos) {
+      subgroups.forEach((sub, id) => {
+        const p = planetPos(id);
+        if (p) {
+          sub.visible = true;
+          sub.position.copy(p);
+        } else {
+          sub.visible = false;
+        }
+      });
+      for (const rec of recs) {
+        rec.theta += rec.spec.angularSpeed * dtSec;
+        const pr = worldRadiusForBody(rec.spec.planet);
+        const r = pr * rec.spec.distMul;
+        const x = Math.cos(rec.theta) * r;
+        const z = Math.sin(rec.theta) * r;
+        const sinI = Math.sin(rec.spec.inclination);
+        const cosI = Math.cos(rec.spec.inclination);
+        // Tilt the in-plane point about the X axis by the orbital inclination.
+        rec.mesh.position.set(x, -z * sinI, z * cosI);
+        rec.mesh.rotation.y = rec.theta; // tidally-locked-ish facing
+      }
+    },
+    dispose() {
+      geoms.forEach((g) => g.dispose());
+      mats.forEach((m) => m.dispose());
+    },
+  };
+}
+
+/* ───────────────────────── comet ───────────────────────── */
+/**
+ * A single bright comet on a steep eccentric orbit through the inner system.
+ * Nucleus + glowing coma + a two-component (blue ion / cream dust) particle
+ * tail. The tail is re-oriented every frame to point directly away from the
+ * Sun and grows + brightens near perihelion — both real comet behaviours.
+ */
+export interface CometHandle {
+  group: THREE.Group;
+  update: (dtSec: number, sunPos: THREE.Vector3) => void;
+  dispose: () => void;
+}
+
+function cometGlowSprite(): THREE.CanvasTexture {
+  const s = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const g = c.getContext('2d')!;
+  const grad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  grad.addColorStop(0, 'rgba(224,242,255,0.95)');
+  grad.addColorStop(0.3, 'rgba(150,200,255,0.45)');
+  grad.addColorStop(1, 'rgba(120,170,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, s, s);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = SRGB;
+  return t;
+}
+
+export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
+  const group = new THREE.Group();
+  group.name = 'comet';
+
+  const a = sceneRadiusFromAu(2.4, mode); // semi-major axis (scene units)
+  const e = 0.74;
+  const inc = 0.5;
+  const node = 0.9;
+  const cosN = Math.cos(node);
+  const sinN = Math.sin(node);
+  const sinI = Math.sin(inc);
+  const cosI = Math.cos(inc);
+  const perihelion = a * (1 - e);
+
+  const orbitPos = (theta: number, out: THREE.Vector3): THREE.Vector3 => {
+    const r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+    const xp = Math.cos(theta) * r;
+    const zp = Math.sin(theta) * r;
+    // Tilt about X by inclination, then rotate about Y by the node longitude.
+    const y = -zp * sinI;
+    const z = zp * cosI;
+    const x2 = xp * cosN - z * sinN;
+    const z2 = xp * sinN + z * cosN;
+    return out.set(x2, y, z2);
+  };
+
+  // Nucleus — small dim icy body.
+  const nucGeo = new THREE.SphereGeometry(Math.max(0.012, a * 0.006), 16, 16);
+  const nucMat = new THREE.MeshStandardMaterial({
+    color: 0x9fb6c8,
+    roughness: 0.85,
+    metalness: 0.05,
+    emissive: 0x223344,
+    emissiveIntensity: 0.4,
+  });
+  const nucleus = new THREE.Mesh(nucGeo, nucMat);
+  group.add(nucleus);
+
+  // Coma — additive sprite centred on the nucleus.
+  const glowTex = cometGlowSprite();
+  const coma = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: glowTex,
+      transparent: true,
+      opacity: 0.8,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    }),
+  );
+  const comaBase = Math.max(0.08, a * 0.05);
+  coma.scale.setScalar(comaBase);
+  group.add(coma);
+
+  // Tail — particles baked along local +X (0..baseLen); the tail group is
+  // rotated each frame so +X faces away from the Sun, and scaled by perihelion
+  // proximity. ~1/3 blue ion specks, the rest cream dust.
+  const N = lite ? 360 : 800;
+  const baseLen = a * 0.55;
+  const coneW = baseLen * 0.07;
+  const tPos = new Float32Array(N * 3);
+  const tCol = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const t = Math.pow(Math.random(), 0.7); // density-biased toward the nucleus
+    tPos[i * 3] = t * baseLen;
+    tPos[i * 3 + 1] = (Math.random() - 0.5) * coneW * (0.2 + t);
+    tPos[i * 3 + 2] = (Math.random() - 0.5) * coneW * (0.2 + t);
+    const fade = (1 - t) * 0.9 + 0.1;
+    if (Math.random() < 0.32) {
+      tCol[i * 3] = 0.50 * fade;
+      tCol[i * 3 + 1] = 0.70 * fade;
+      tCol[i * 3 + 2] = 1.00 * fade;
+    } else {
+      tCol[i * 3] = 0.95 * fade;
+      tCol[i * 3 + 1] = 0.92 * fade;
+      tCol[i * 3 + 2] = 0.72 * fade;
+    }
+  }
+  const tGeo = new THREE.BufferGeometry();
+  tGeo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
+  tGeo.setAttribute('color', new THREE.BufferAttribute(tCol, 3));
+  const tailSprite = diskSprite();
+  const tMat = new THREE.PointsMaterial({
+    map: tailSprite,
+    size: a * 0.02,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.7,
+    depthWrite: false,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+    alphaTest: 0.01,
+  });
+  const tail = new THREE.Points(tGeo, tMat);
+  const tailGroup = new THREE.Group();
+  tailGroup.add(tail);
+  group.add(tailGroup);
+
+  let theta = 0.6;
+  const tmp = new THREE.Vector3();
+  const dir = new THREE.Vector3();
+  const xAxis = new THREE.Vector3(1, 0, 0);
+  const q = new THREE.Quaternion();
+
+  return {
+    group,
+    update(dtSec, sunPos) {
+      theta += dtSec * 0.12;
+      if (theta > Math.PI * 2) theta -= Math.PI * 2;
+      orbitPos(theta, tmp);
+      group.position.copy(tmp);
+
+      const r = Math.max(tmp.distanceTo(sunPos), 1e-4);
+      dir.copy(tmp).sub(sunPos).normalize();
+      q.setFromUnitVectors(xAxis, dir);
+      tailGroup.quaternion.copy(q);
+
+      const lenF = THREE.MathUtils.clamp((perihelion / r) * 1.1, 0.45, 1.8);
+      tailGroup.scale.setScalar(lenF);
+      const bright = THREE.MathUtils.clamp(perihelion / r, 0.2, 1.0);
+      (coma.material as THREE.SpriteMaterial).opacity = 0.35 + bright * 0.55;
+      coma.scale.setScalar(comaBase * (0.7 + bright * 0.7));
+      tMat.opacity = 0.3 + bright * 0.55;
+    },
+    dispose() {
+      nucGeo.dispose();
+      nucMat.dispose();
+      (coma.material as THREE.SpriteMaterial).map?.dispose();
+      (coma.material as THREE.SpriteMaterial).dispose();
+      tGeo.dispose();
+      tailSprite.dispose();
+      tMat.dispose();
+    },
+  };
+}

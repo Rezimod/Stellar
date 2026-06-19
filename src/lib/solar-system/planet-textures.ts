@@ -73,11 +73,19 @@ export function createPlanetMaterial(
       id === 'saturn' ? 0.03 :
       id === 'uranus' || id === 'neptune' ? 0.05 :
       0.02;
-    return new THREE.MeshStandardMaterial({
+    const mat = new THREE.MeshStandardMaterial({
       map: diffuseTexture,
       roughness: rough,
       metalness: metal,
     });
+    // Reuse the diffuse map as a bump map on the dry rocky bodies — under the
+    // sharp low-ambient sun lighting this gives craters and ridges real relief
+    // at the terminator without needing a dedicated height map.
+    if (id === 'mercury' || id === 'mars' || id === 'pluto') {
+      mat.bumpMap = diffuseTexture;
+      mat.bumpScale = id === 'mars' ? 0.016 : 0.01;
+    }
+    return mat;
   }
 
   const base = bodyColor(id);
@@ -241,6 +249,9 @@ export function disposePlanetMaterial(mat: THREE.Material) {
   }
   if (mat.emissiveMap && mat.emissiveMap === mat.map) {
     mat.emissiveMap = null;
+  }
+  if (mat.bumpMap && mat.bumpMap === mat.map) {
+    mat.bumpMap = null;
   }
   mat.map?.dispose();
   mat.emissiveMap?.dispose();

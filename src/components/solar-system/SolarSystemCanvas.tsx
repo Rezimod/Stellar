@@ -26,11 +26,15 @@ import {
   makeMilkyWayBand,
   disposeMilkyWayBand,
   makeSaturnParticleRings,
+  makePlanetMoons,
+  makeComet,
   type BeltHandle,
   type EarthExtrasHandle,
   type EarthOrbitalHandle,
   type SunExtrasHandle,
   type SaturnRingsHandle,
+  type PlanetMoonsHandle,
+  type CometHandle,
 } from '@/lib/solar-system/scene-extras';
 import {
   makeNearbyStars,
@@ -216,6 +220,7 @@ export function SolarSystemCanvas({
 
     const vTarget = new THREE.Vector3();
     const vOffset = new THREE.Vector3();
+    const vZero = new THREE.Vector3();
 
     const updateSystemCamera = () => {
       const st = Math.sin(sysPhi);
@@ -339,6 +344,9 @@ export function SolarSystemCanvas({
     const kuiperBelt: BeltHandle = makeKuiperBelt(scaleRef.current, lite);
     scene.add(kuiperBelt.group);
 
+    const comet: CometHandle = makeComet(scaleRef.current, lite);
+    scene.add(comet.group);
+
     const sunExtras: SunExtrasHandle = makeSunExtras(worldRadiusForBody('sun'));
     scene.add(sunExtras.group);
 
@@ -349,6 +357,9 @@ export function SolarSystemCanvas({
 
     const bodies = new THREE.Group();
     scene.add(bodies);
+
+    const planetMoons: PlanetMoonsHandle = makePlanetMoons(lite);
+    bodies.add(planetMoons.group);
 
     const meshById = new Map<SolarBodyId, THREE.Mesh>();
     const hitById = new Map<SolarBodyId, THREE.Mesh>();
@@ -821,7 +832,13 @@ export function SolarSystemCanvas({
         const saturnMesh = meshById.get('saturn');
         if (saturnMesh) saturnRings.group.position.copy(saturnMesh.position);
       }
-      sunExtras.update(camera.position, sunMesh?.position ?? new THREE.Vector3(), dtSec);
+      sunExtras.update(camera.position, sunMesh?.position ?? vZero, dtSec);
+
+      // Moons + comet are positioned every frame (so they sit on their planets
+      // / orbit even when paused) but only advance when motion is allowed.
+      const motionDt = reduceMotion ? 0 : dtSec;
+      planetMoons.update(motionDt, (id) => meshById.get(id)?.position ?? null);
+      comet.update(motionDt, sunMesh?.position ?? vZero);
 
       // Imperative zoom (e.g. "zoom into Sun" from the galactic tier) —
       // ease sysRadius toward the requested target, then clear the request.
@@ -909,6 +926,10 @@ export function SolarSystemCanvas({
       atmosphereShells.clear();
       asteroidBelt.dispose();
       kuiperBelt.dispose();
+      bodies.remove(planetMoons.group);
+      planetMoons.dispose();
+      scene.remove(comet.group);
+      comet.dispose();
       sunExtras.dispose();
       disposeOrbitRings(orbitRings);
       disposeMilkyWayBand(milkyWay);
