@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { observationLog } from '@/lib/schema'
-import { and, eq, gte, sum, count, inArray } from 'drizzle-orm'
+import { and, eq, gte, count, inArray } from 'drizzle-orm'
 import { PublicKey } from '@solana/web3.js'
-import { awardStarsOnChain, DAILY_STARS_CAP } from '@/lib/stars'
+import { awardStarsOnChain } from '@/lib/stars'
+import { remainingStarsAllowance } from '@/lib/stars-cap'
 import { verifyObservationToken } from '@/lib/observation-token'
 import { verifyRateLimit, checkRateLimit } from '@/lib/rate-limit'
 import { eventsForTarget } from '@/lib/astro-events'
@@ -170,23 +171,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ logged: true, starsAwarded: 0, duplicate: true })
     }
 
-    // Rate limit: check total stars awarded to this wallet today
-    let todayStars = 0
-    if (wallet) {
-      const startOfDay = new Date()
-      startOfDay.setUTCHours(0, 0, 0, 0)
-      const rows = await db
-        .select({ total: sum(observationLog.stars) })
-        .from(observationLog)
-        .where(
-          and(
-            eq(observationLog.wallet, wallet),
-            gte(observationLog.createdAt, startOfDay)
-          )
-        )
-
-      todayStars = Number(rows[0]?.total ?? 0)
-    }
+    // Issuance cap: how many Stars this wallet may still earn now, across BOTH
+    // earning pipelines (observations + award-stars), under the shared daily and
+    // trailing-30-day monthly caps. The monthly cap is what makes gear take
+    // months of sustained use to redeem with Stars alone.
+    const remaining = wallet ? await remainingStarsAllowance(db, wallet) : 0
 
     // Reputation multiplier — based on the observer's standing BEFORE this
     // observation (count of prior accepted observations). The on-chain
@@ -228,9 +217,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const starsToAward = todayStars + reputationStars > DAILY_STARS_CAP
-      ? Math.max(DAILY_STARS_CAP - todayStars, 0)
-      : reputationStars
+    const starsToAward = Math.min(reputationStars, remaining)
 
     // Proof-of-Observation: record the verified attestation on-chain (oracle-
     // signed, gasless). Best-effort with a timeout — an RPC hiccup never blocks

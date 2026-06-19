@@ -11,6 +11,7 @@ import { observationLog } from '@/lib/schema';
 import { and, eq } from 'drizzle-orm';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars-policy';
+import { remainingStarsAllowance } from '@/lib/stars-cap';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
 import { scoreQuiz } from '@/lib/quizzes';
@@ -175,6 +176,19 @@ export async function POST(req: NextRequest) {
   // without minting so the client UI settles cleanly.
   if (amount <= 0) {
     return NextResponse.json({ success: true, txId: null, awarded: 0 });
+  }
+
+  // Unified issuance cap: clamp to what this wallet may still earn under the
+  // shared daily + trailing-30-day monthly caps (same ledger as observations).
+  // This is what enforces the multi-month curve to a Stars-only telescope. A
+  // retry of an already-credited award may see the prior row counted and clamp
+  // to 0 — safe (Stars were already delivered), never over-issues.
+  if (db) {
+    const remaining = await remainingStarsAllowance(db, recipient);
+    amount = Math.min(amount, remaining);
+    if (amount <= 0) {
+      return NextResponse.json({ success: true, txId: null, awarded: 0, capped: true });
+    }
   }
 
   // Resolve config BEFORE claiming an idempotency slot — a 503 here must not

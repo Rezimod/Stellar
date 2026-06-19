@@ -15,7 +15,6 @@ export const MAX_STARS_BY_CONFIDENCE: Record<string, number> = {
   low: 15,
   rejected: 0,
 }
-export const DAILY_STARS_CAP = 500
 
 // STARS mint authority. On mainnet this is a dedicated key, kept separate from
 // the hot gas/fee-payer key, so a fee-payer leak cannot mint tokens. On devnet
