@@ -61,7 +61,11 @@ export default function TelescopeStep() {
                 placeholder="Aperture (e.g. 203mm)"
                 className="bg-[var(--surface)] border border-[rgba(255, 179, 71, 0.12)] rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]" />
               <Button variant="cyan" onClick={handleSave} disabled={!form.model || !form.aperture || saving} className="w-full">
-                {saving ? 'Saving...' : 'Register Telescope 🔭'}
+                {saving ? 'Saving...' : (
+                  <span className="inline-flex items-center justify-center gap-1.5">
+                    <Telescope className="w-4 h-4" /> Register Telescope
+                  </span>
+                )}
               </Button>
               <button
                 onClick={() => router.push('/missions')}

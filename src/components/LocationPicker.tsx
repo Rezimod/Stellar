@@ -114,11 +114,11 @@ export const CITY_PRESETS: { region: Region; label: string; cities: PresetCity[]
   },
 ]
 
-const REGION_TABS: { key: Region; label: string; emoji: string }[] = [
-  { key: 'caucasus',      label: 'Caucasus', emoji: '🛰' },
-  { key: 'north_america', label: 'Americas', emoji: '🌎' },
-  { key: 'europe',        label: 'Europe',   emoji: '🌍' },
-  { key: 'asia',          label: 'Asia',     emoji: '🌏' },
+const REGION_TABS: { key: Region; label: string }[] = [
+  { key: 'caucasus',      label: 'Caucasus' },
+  { key: 'north_america', label: 'Americas' },
+  { key: 'europe',        label: 'Europe' },
+  { key: 'asia',          label: 'Asia' },
 ]
 
 const PANEL_WIDTH = 340
@@ -408,7 +408,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
             display: 'flex', gap: 4, padding: '8px 10px',
             overflowX: 'auto', flexShrink: 0,
           }}>
-            {[{ key: 'all' as const, label: 'All', emoji: '✦' }, ...REGION_TABS].map(tab => {
+            {[{ key: 'all' as const, label: 'All' }, ...REGION_TABS].map(tab => {
               const active = activeTab === tab.key
               return (
                 <button
@@ -425,7 +425,6 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                     transition: 'background 0.15s, border-color 0.15s, color 0.15s',
                   }}
                 >
-                  <span style={{ fontSize: 11 }}>{tab.emoji}</span>
                   {tab.label}
                 </button>
               )

@@ -169,6 +169,10 @@ export async function POST(req: NextRequest) {
   const deviceModel = exif?.model ?? null;
   const deviceTier: DeviceTier = classifyDevice(deviceMake, deviceModel);
   let isInternetSourced = false;
+  // Server-fetched cloud cover, signed into every token below so /api/mint can
+  // enforce the overcast gate without trusting the client. 0 until the
+  // Open-Meteo fetch lands (pre-fetch rejections earn 0 Stars regardless).
+  let cloudCoverForToken = 0;
 
   async function writeRejectionRow(reason: string, notes: Record<string, unknown>) {
     if (!db || !walletParam) return;
@@ -213,6 +217,7 @@ export async function POST(req: NextRequest) {
       deviceModel: deviceModel ?? '',
       isInternetSourced,
       wallet: walletParam,
+      cloudCover: cloudCoverForToken,
     }) ?? undefined;
     return {
       accepted: false,
@@ -458,6 +463,22 @@ Return ONLY valid JSON, no markdown, no preamble:
   let weatherUnavailable = false;
   if (cloudCover === null) {
     weatherUnavailable = true;
+  } else {
+    cloudCoverForToken = cloudCover;
+  }
+
+  // Overcast gate: a sky with >70% cloud cover can't yield a certifiable
+  // observation — reject (0 Stars, no attestation), but the photo can still be
+  // kept as an unverified NFT. The real cloud cover is signed into the token so
+  // /api/mint can independently enforce this and can't be fed a fake clear sky.
+  const CLOUD_COVER_MAX = 70;
+  if (cloudCover !== null && cloudCover > CLOUD_COVER_MAX) {
+    await writeRejectionRow('too_cloudy', { cloudCover });
+    return NextResponse.json(buildRejection(
+      'too_cloudy',
+      `The sky is too cloudy right now (${Math.round(cloudCover)}% cloud cover) to certify an observation, so it earns no Stars. You can still keep it as an unverified NFT, or try again on a clearer night.`,
+      { identifiedObject: analysis.identifiedObject },
+    ));
   }
 
   // Astronomy cross-check
@@ -541,6 +562,7 @@ Return ONLY valid JSON, no markdown, no preamble:
     deviceModel: deviceModel ?? '',
     isInternetSourced,
     wallet: walletParam,
+    cloudCover: cloudCoverForToken,
   });
   if (!verificationToken) {
     return NextResponse.json({ error: 'Server misconfigured: OBSERVATION_TOKEN_SECRET not set' }, { status: 503 });

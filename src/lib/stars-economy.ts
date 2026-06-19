@@ -1,23 +1,32 @@
 // Stars-as-currency rules.
 //
-// 100 Stars = 1 GEL of discount. Discount is capped at 30% of the product
-// price. Stars are always burned in 100-Star increments — the slider on
-// checkout snaps to this, and the server re-validates on order confirmation
-// so a tampered client cannot bypass the cap.
+// A Star is worth the SAME amount of GEL however it is spent — as a marketplace
+// discount, a full "pay in Stars" purchase, or an Astroman till redemption. That
+// single rate is anchored to the catalog reference 288 GEL = 1,350 Stars
+// (≈ 4.69 Stars per GEL ≈ 0.213 GEL per Star), which keeps the "earn a telescope
+// in ~3.6 months at the 4,000/mo cap" curve in stars-cap.ts intact. Discounts are
+// capped at 30% of the product price; Stars burn in fixed increments (the checkout
+// slider snaps to this) and the server re-validates on order confirmation so a
+// tampered client cannot bypass the cap.
 
-export const STARS_PER_GEL = 100;
-export const MAX_BURN_RATIO = 0.30;
-export const BURN_INCREMENT = 100;
-
-// Marketplace “pay in Stars” checkout (separate from §4 burn-for-discount).
-// Calibrated: 288 GEL ≈ 1,350 Stars. USD/EUR list prices → GEL equiv, then same rate.
-export const MARKETPLACE_GEL_PER_USD = 2.7;
-export const MARKETPLACE_USD_PER_EUR = 1.08;
+// Catalog reference point that anchors the single Star↔GEL rate.
 export const MARKETPLACE_REFERENCE_GEL = 288;
 export const MARKETPLACE_REFERENCE_STARS = 1350;
-/** Stars per 1 GEL of catalog list price (1350 / 288 ≈ 4.69). */
-export const MARKETPLACE_STARS_PER_GEL =
-  MARKETPLACE_REFERENCE_STARS / MARKETPLACE_REFERENCE_GEL;
+
+/** The one canonical rate: Stars per 1 GEL (1350 / 288 ≈ 4.69). */
+export const STARS_PER_GEL = MARKETPLACE_REFERENCE_STARS / MARKETPLACE_REFERENCE_GEL;
+/** Alias kept for marketplace call sites — identical to STARS_PER_GEL. */
+export const MARKETPLACE_STARS_PER_GEL = STARS_PER_GEL;
+
+export const MAX_BURN_RATIO = 0.30;
+// Stars per slider step. At ≈0.213 GEL/Star, 25 Stars ≈ 5.3 GEL — fine-grained
+// enough that discounts still work on inexpensive items (a 100-Star step would be
+// ≈21 GEL and zero out discounts below ~71 GEL of list price).
+export const BURN_INCREMENT = 25;
+
+// Marketplace "pay in Stars" currency conversion for non-GEL list prices.
+export const MARKETPLACE_GEL_PER_USD = 2.7;
+export const MARKETPLACE_USD_PER_EUR = 1.08;
 
 export function fiatGelEquivalent(price: number, currency: string): number {
   if (!Number.isFinite(price)) return 0;

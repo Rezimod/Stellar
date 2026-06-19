@@ -106,6 +106,9 @@ export async function POST(req: NextRequest) {
   }
 
   let verifiedTarget: string | null = null
+  // Server-signed cloud cover from the verification token — recorded on-chain
+  // instead of a hardcoded 0 (only the non-rejected, token-bearing path mints).
+  let verifiedCloudCover = 0
   // Verify token for non-rejected observations (prevents clients from claiming arbitrary confidence)
   if (confidence !== 'rejected') {
     const tokenCheck = verifyObservationToken(body.verificationToken, {
@@ -126,6 +129,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ logged: false, reason: tokenCheck.reason }, { status: tokenCheck.status });
     }
     verifiedTarget = tokenCheck.payload.target
+    verifiedCloudCover = tokenCheck.payload.cloudCover
   }
 
   // Calculate stars server-side from confidence (never trust client-provided stars)
@@ -236,7 +240,7 @@ export async function POST(req: NextRequest) {
           lon: typeof body.lon === 'number' ? body.lon : 0,
           observedAtMs: capturedAtForEvents.getTime(),
           oracleHash: body.oracleHash ?? '',
-          cloudCover: 0,
+          cloudCover: verifiedCloudCover,
           stars: starsToAward,
         }).catch((err) => {
           console.error('[observe/log] on-chain record failed:', err);

@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 // HMAC verification token shared by /api/observe/verify (issuer),
 // /api/observe/log and /api/mint (validators). The token signs the
@@ -18,6 +18,9 @@ export interface ObservationTokenFields {
   deviceModel: string;
   isInternetSourced: boolean;
   wallet: string;
+  // Server-fetched cloud cover (0–100) at verify time. Signed here so /api/mint
+  // can trust it (the client can't claim a clear sky) and reject overcast nights.
+  cloudCover: number;
 }
 
 export type ObservationTokenResult =
@@ -49,12 +52,22 @@ function canonicalPayload(fields: ObservationTokenPayload): string {
     deviceModel: fields.deviceModel,
     isInternetSourced: fields.isInternetSourced,
     wallet: fields.wallet,
+    cloudCover: Math.round(fields.cloudCover),
     exp: fields.exp,
   });
 }
 
 function signPayload(payload: ObservationTokenPayload, secret: string): string {
   return createHmac('sha256', secret).update(canonicalPayload(payload)).digest('hex');
+}
+
+// Constant-time signature comparison — avoids leaking byte-match timing that
+// could aid forging a token over many attempts (mirrors agent-token.ts).
+function signaturesEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
 }
 
 function encodePayload(payload: ObservationTokenPayload): string {
@@ -77,6 +90,7 @@ function decodePayload(encoded: string): ObservationTokenPayload | null {
       typeof parsed.deviceModel !== 'string' ||
       typeof parsed.isInternetSourced !== 'boolean' ||
       typeof parsed.wallet !== 'string' ||
+      typeof parsed.cloudCover !== 'number' ||
       typeof parsed.exp !== 'number'
     ) {
       return null;
@@ -126,7 +140,7 @@ export function verifyObservationTokenForWallet(
   if (payload.exp < Date.now()) {
     return { ok: false, status: 401, reason: 'Verification token expired' };
   }
-  if (signPayload(payload, secret) !== sig) {
+  if (!signaturesEqual(signPayload(payload, secret), sig)) {
     return { ok: false, status: 401, reason: 'Invalid verification token' };
   }
   if (payload.wallet !== wallet) {
@@ -135,9 +149,12 @@ export function verifyObservationTokenForWallet(
   return { ok: true, payload };
 }
 
+// `cloudCover` is omitted from the match set: it is server-derived and read
+// from the verified payload, never echoed by the caller. The HMAC signature
+// (which covers cloudCover) already guarantees it wasn't tampered with.
 export function verifyObservationToken(
   token: string | undefined | null,
-  fields: ObservationTokenFields,
+  fields: Omit<ObservationTokenFields, 'cloudCover'>,
 ): ObservationTokenResult {
   if (!token) {
     return { ok: false, status: 401, reason: 'Missing verification token' };
@@ -158,12 +175,11 @@ export function verifyObservationToken(
   if (payload.exp < Date.now()) {
     return { ok: false, status: 401, reason: 'Verification token expired' };
   }
-  const expected = signPayload(payload, secret);
-  if (sig !== expected) {
+  if (!signaturesEqual(signPayload(payload, secret), sig)) {
     return { ok: false, status: 401, reason: 'Invalid verification token' };
   }
 
-  const expectedFields: ObservationTokenFields = {
+  const expectedFields = {
     ...fields,
     lat: Number(fields.lat.toFixed(6)),
     lon: Number(fields.lon.toFixed(6)),

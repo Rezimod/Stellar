@@ -80,6 +80,10 @@ export async function POST(req: NextRequest) {
   // NFT from fabricated data. Demo mints skip the token but are constrained below
   // (Common rarity, ≤50 Stars, Demo attribute).
   let verifiedTarget: string | null = null;
+  // Authoritative cloud cover: the server-signed value from the verification
+  // token for real mints (the client can't fake a clear sky); the validated
+  // client value only for demo mints, which carry no token.
+  let effectiveCloudCover = cloudCover;
   if (!isDemoMint) {
     const tokenCheck = verifyObservationToken(
       typeof verificationToken === 'string' ? verificationToken : undefined,
@@ -107,6 +111,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Observation not verified' }, { status: 403 });
     }
     verifiedTarget = tokenCheck.payload.target;
+    effectiveCloudCover = tokenCheck.payload.cloudCover;
+    // Overcast gate: never certify an observation taken under >70% cloud cover.
+    // /api/observe/verify already rejects these (issuing a 'rejected' token), so
+    // a non-rejected token over the threshold should be impossible — this is the
+    // defense-in-depth backstop, enforced on the signed value, not the client's.
+    if (tokenCheck.payload.confidence !== 'rejected' && effectiveCloudCover > 70) {
+      return NextResponse.json({ error: 'Sky too cloudy to certify this observation' }, { status: 403 });
+    }
   }
 
   // Upstash rate limit: 2 mints per wallet per hour — skipped for demo missions
@@ -194,8 +206,8 @@ export async function POST(req: NextRequest) {
   // the client hash blindly — it ends up in immutable NFT metadata.
   const slot = currentHourSlot();
   const [hashNow, hashPrev] = await Promise.all([
-    computeOracleHash(lat, lon, cloudCover, slot),
-    computeOracleHash(lat, lon, cloudCover, slot - 1),
+    computeOracleHash(lat, lon, effectiveCloudCover, slot),
+    computeOracleHash(lat, lon, effectiveCloudCover, slot - 1),
   ]);
   const clientHash = typeof oracleHash === 'string' ? oracleHash : '';
   const effectiveOracleHash = (clientHash === hashNow || clientHash === hashPrev) ? clientHash : hashNow;
@@ -209,7 +221,7 @@ export async function POST(req: NextRequest) {
   try {
     const mintTarget = verifiedTarget ?? target;
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', mintTarget, isDemoMint ? '(demo)' : '');
-    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified });
+    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover: effectiveCloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency

@@ -21,9 +21,9 @@ export const GLOBAL_MISSION = {
   bonusStars: 30,
 } as const;
 
-// Astroman coupon ladder. Grounded in the real Stars economy used at checkout
-// (~100 Stars ≈ 1% off catalog price — see MissionActive + stars-economy). Each
-// tier is the lifetime Stars needed to unlock that discount coupon.
+// Astroman coupon ladder — a separate, percentage-based reward track (not the
+// per-GEL burn rate in stars-economy). Each tier is the lifetime Stars needed to
+// unlock that discount coupon.
 export const REWARD_LADDER = [
   { stars: 500, pct: 5 },
   { stars: 1000, pct: 10 },

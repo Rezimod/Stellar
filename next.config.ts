@@ -29,12 +29,16 @@ const nextConfig: NextConfig = {
     root: __dirname,
     resolveAlias: {
       '@farcaster/mini-app-solana': { browser: './src/lib/empty-module.ts' },
+      // Optional Privy fiat-onramp peer dep we don't use — silences a build warning.
+      '@stripe/crypto': { browser: './src/lib/empty-module.ts' },
     },
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
       '@farcaster/mini-app-solana': false,
+      // Optional Privy fiat-onramp peer dep we don't use — silences a build warning.
+      '@stripe/crypto': false,
     };
     if (process.env.VERCEL) {
       config.cache = false;

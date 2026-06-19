@@ -27,7 +27,7 @@
   --surface: rgba(255, 255, 255, 0.045);
   --surface-hover: rgba(255, 255, 255, 0.085);
 
-  /* Markets Yes/No — binary outcome indicators, prediction markets only */
+  /* Binary yes/no indicators — positive / negative outcome accents */
   --yes: #34D399;
   --yes-dim: rgba(52, 211, 153, 0.10);
   --yes-border: rgba(52, 211, 153, 0.35);

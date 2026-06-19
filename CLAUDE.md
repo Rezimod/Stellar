@@ -102,7 +102,7 @@ For non-trivial tasks: **planner → executor → reviewer → qa**.
 2. **Gasless transactions.** Server-side fee payer (`FEE_PAYER_PRIVATE_KEY`) covers all tx costs on devnet. Users never need SOL.
 3. **Card-first payments.** Default = credit card via Privy fiat onramp. SOL payment is secondary.
 4. **i18n status: partial.** `next-intl` is wired (`messages/en.json` + `ka.json`). Newer surfaces (`/sky`, `/missions`, parts of `/marketplace`, `/observe`) use `useTranslations`. Older surfaces (home, `/hub`, several landing sections, marketing copy) are still hardcoded English. When adding new strings, prefer translation keys; don't retroactively translate untouched files unless asked.
-5. **Dark cosmic theme.** Deep space background tinted near-black (`oklch(0.15 0.015 260)`), card surfaces ~`#1A1F2E`, accent purple `#8B5CF6`, teal `#14B8A6`, amber `#F59E0B`. Light theme shipped for daytime planning. Full design context in `.impeccable.md`.
+5. **Dark cosmic theme.** Deep space canvas is a dark cosmic blue (`--canvas #0A1735`, light theme `#EDF0F7`). Primary accent is warm terracotta (`--terracotta #FFB347`, aliased to `--accent`); secondary accent is teal/seafoam (`--seafoam #5EEAD4`, aliased to `--accent-teal`). **`src/app/globals.css` is the source of truth for all color tokens — do not hardcode hex.** Light theme shipped for daytime planning. Full design context in `.impeccable.md`.
 6. **Two-runtime AI: same Astra, two homes.** Web Astra runs on cloud (OpenAI for chat, Gemini for vision). Field Astra runs on-device via QVAC (Llama 3.2 1B + Whisper) for offline use at dark-sky sites. Same Privy account, same observation history. See `docs/qvac-integration.md`.
 
 ## App Structure (real)
@@ -261,6 +261,7 @@ GOOGLE_VISION_API_KEY=             # reverse-image / web-detection; also a GEMIN
 
 # Ops / integrations
 CRON_SECRET=                       # Vercel cron auth
+ASTROMAN_TILL_SECRET=              # bearer secret for the Astroman till POS — /api/redeem-code/validate
 REWARD_CODE_MOONLAMP= / REWARD_CODE_10PCT= / REWARD_CODE_20PCT=   # promo codes
 X_API_KEY= / X_API_SECRET= / X_ACCESS_TOKEN= / X_ACCESS_TOKEN_SECRET= / X_AGENT_SECRET=   # X/Twitter agent
 TELEGRAM_BOT_TOKEN= / TELEGRAM_CHAT_ID=
