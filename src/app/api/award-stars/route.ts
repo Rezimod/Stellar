@@ -20,6 +20,7 @@ import { getTierForStreak } from '@/lib/constellation-streak';
 import { verifyObservationTokenForWallet } from '@/lib/observation-token';
 import { rollCosmicBonus } from '@/lib/cosmic-bonus';
 import { getActiveChallenge } from '@/lib/celestial-challenges';
+import { targetAltitude } from '@/lib/sky/target-visibility';
 import type { NftRarity } from '@/lib/nft-rarity';
 
 // Map an observation's verified confidence to a cosmic-bonus rarity tier. The
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown; idempotencyKey?: unknown; answers?: unknown; verificationToken?: unknown };
+  let body: { recipientAddress?: unknown; amount?: unknown; reason?: unknown; idempotencyKey?: unknown; answers?: unknown; verificationToken?: unknown; lat?: unknown; lon?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -116,6 +117,25 @@ export async function POST(req: NextRequest) {
     }
     amount = scored.stars;
   } else if (reasonStr.startsWith('find:')) {
+    // Proof-of-find: re-derive the target's altitude server-side and only award
+    // when it is actually above the horizon at the user's coordinates. Closes the
+    // "POST find:anything for free Stars" hole — the client can no longer claim a
+    // find for an object that isn't up (or a bogus id).
+    const targetId = reasonStr.slice('find:'.length);
+    const lat = typeof body.lat === 'number' ? body.lat : NaN;
+    const lon = typeof body.lon === 'number' ? body.lon : NaN;
+    if (!isFinite(lat) || !isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      return NextResponse.json({ error: 'lat and lon required for find reward' }, { status: 400 });
+    }
+    const altitude = targetAltitude(targetId, lat, lon, new Date());
+    if (altitude === null) {
+      return NextResponse.json({ error: 'unknown find target' }, { status: 400 });
+    }
+    if (altitude <= 0) {
+      // Target isn't above the horizon now — no genuine find, succeed with 0 so
+      // the client UI settles without minting.
+      return NextResponse.json({ success: true, txId: null, awarded: 0, reason: 'not_visible' });
+    }
     amount = 10;
   } else if (reasonStr === 'daily_checkin') {
     const today = new Date().toISOString().split('T')[0];

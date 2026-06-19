@@ -263,6 +263,8 @@ export default function SkyPage() {
   addressRef.current = address;
   const objectsRef = useRef<SkyObject[]>([]);
   objectsRef.current = tableObjects;
+  const locationRef = useRef(location);
+  locationRef.current = location;
 
   const handleLock = useCallback((id: string) => {
     if (awardedRef.current.has(id)) return;
@@ -290,10 +292,13 @@ export default function SkyPage() {
             amount: 10,
             reason: `find:${id}`,
             idempotencyKey: `find:${addr}:${id}:${dateStr}`,
+            // Server re-verifies the target is above the horizon at these coords.
+            lat: locationRef.current.lat,
+            lon: locationRef.current.lon,
           }),
         });
         const data = res.ok ? await res.json().catch(() => null) : null;
-        if (res.ok && data && !data.cached) {
+        if (res.ok && data && data.awarded > 0 && !data.cached) {
           toast.reward(`+10 ✦ Found ${name}`);
           window.dispatchEvent(new Event('stellar:stars-synced'));
         } else {
