@@ -3344,28 +3344,73 @@
   .forecast7__loc {
     white-space: normal;
   }
+  /* Compact: all 7 nights as single-column rows that fit one screen */
   .forecast7__row,
   .forecast7__skeleton {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     overflow: visible;
     padding-bottom: 0;
     scroll-snap-type: none;
   }
-  .forecast7__day,
   .forecast7__skel {
     flex: initial;
-    min-height: 214px;
+    height: 54px;
+    border-radius: 13px;
   }
   .forecast7__day {
-    padding: 14px 8px 12px;
+    flex: initial;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+    padding: 8px 13px;
+    border-radius: 13px;
+    text-align: left;
+  }
+  .forecast7__weekday {
+    min-width: 40px;
+    flex-shrink: 0;
+  }
+  /* Date is redundant with the weekday on the compact row */
+  .forecast7__date {
+    display: none;
+  }
+  .forecast7__gauge {
+    margin: 0;
+    flex-shrink: 0;
   }
   .forecast7__gauge svg {
-    width: 66px;
-    height: 66px;
+    width: 38px;
+    height: 38px;
   }
   .forecast7__gauge-num {
-    font-size: 20px;
+    font-size: 13px;
+  }
+  .forecast7__verdict {
+    flex: 1 1 auto;
+    text-align: left;
+  }
+  .forecast7__moon {
+    flex-shrink: 0;
+  }
+  .forecast7__moon svg {
+    width: 22px;
+    height: 22px;
+  }
+  /* Cloud-cover label drops on the compact row — the gauge carries the verdict */
+  .forecast7__wx {
+    display: none;
+  }
+  .forecast7__temps {
+    width: auto;
+    flex-shrink: 0;
+    gap: 8px;
+    margin: 0;
+    padding-top: 0;
+    border-top: none;
   }
   .forecast7__legend {
     align-items: flex-start;
