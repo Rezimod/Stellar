@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import BackButton from '@/components/shared/BackButton';
 import CameraCapture from '@/components/sky/CameraCapture';
@@ -58,8 +59,8 @@ export default function ObserveCapturePage() {
       <BackButton />
 
       <div className="flex items-center gap-3 px-1">
-        <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
-          <img src={getMissionImage(mission.id)} alt={mission.name} className="w-full h-full object-cover" />
+        <div className="relative w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
+          <Image src={getMissionImage(mission.id)} alt={mission.name} fill sizes="36px" className="object-cover" />
         </div>
         <div className="min-w-0">
           <h1

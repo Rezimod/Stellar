@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { Mission, SkyVerification, MissionState, PhotoVerificationResult } from '@/lib/types';
 import { usePrivy } from '@privy-io/react-auth';
@@ -605,7 +606,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  <img src={getMissionImage(mission.id)} alt="" loading="lazy" decoding="async" className="w-3 h-3 rounded object-cover flex-shrink-0" />
+                  <Image src={getMissionImage(mission.id)} alt="" width={12} height={12} className="w-3 h-3 rounded object-cover flex-shrink-0" />
                   {mission.name}
                 </span>
                 {isOnChain && (
@@ -903,8 +904,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       <div className="fixed inset-0 z-[58] bg-[var(--canvas)] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-              <img src={getMissionImage(mission.id)} alt={mission.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+            <div className="relative w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+              <Image src={getMissionImage(mission.id)} alt={mission.name} fill sizes="32px" className="object-cover" />
             </div>
             <p className="text-text-primary text-sm font-semibold">{mission.name}</p>
           </div>

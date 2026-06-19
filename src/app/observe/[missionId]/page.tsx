@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import BackButton from '@/components/shared/BackButton';
 import Button from '@/components/shared/Button';
@@ -82,10 +83,12 @@ export default function ObserveBriefPage() {
           />
           <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
           <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
-          <img
+          <Image
             src={getMissionImage(mission.id)}
             alt={mission.name}
-            className="relative w-full h-full rounded-full object-cover stl-chart-in"
+            fill
+            sizes="120px"
+            className="rounded-full object-cover stl-chart-in"
             style={{ boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
           />
         </div>
