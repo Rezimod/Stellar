@@ -2,6 +2,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
@@ -27,12 +28,20 @@ import SkyLocationModal from '@/components/sky/SkyLocationModal';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
-import { ARFinder } from '@/components/sky/finder/ARFinder';
 import { SevenDayForecast, FourNightStrip } from '@/components/sky/forecast/SevenDayForecast';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import { SpaceGallery } from '@/components/sky/SpaceGallery';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
 import './sky.css';
+
+// three.js lives only inside ARFinder → ARPlanet3DLayer. Load it lazily so the
+// /sky initial chunk stays light; the AR finder is opened rarely. ARFinder is
+// wrapped (not ARPlanet3DLayer) because next/dynamic does not forward refs and
+// the parent holds an imperative ref to the 3D layer.
+const ARFinder = dynamic(
+  () => import('@/components/sky/finder/ARFinder').then((m) => m.ARFinder),
+  { ssr: false, loading: () => null }
+);
 
 const REFRESH_MS = 60_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
