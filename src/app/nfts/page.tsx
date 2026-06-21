@@ -708,7 +708,7 @@ export default function NftsPage() {
             Your observatory awaits
           </p>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: 0, maxWidth: 320 }}>
-            Complete a sky mission to seal your first discovery on-chain.
+            Complete a sky mission to record your first discovery.
           </p>
           <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none', marginTop: 8 }}>
             Start a mission →

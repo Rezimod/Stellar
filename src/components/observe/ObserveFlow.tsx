@@ -304,7 +304,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
               style={{ animationDelay: `${i * 180}ms` }} />
           ))}
         </div>
-        <p className="text-text-primary text-sm">Sealing your discovery on Solana...</p>
+        <p className="text-text-primary text-sm">Saving your discovery...</p>
       </div>
     );
   }
@@ -490,7 +490,7 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
                 <button onClick={handleMintObservation}
                   className="w-full py-3 rounded-xl text-black text-sm font-semibold"
                   style={{ background: 'linear-gradient(to right, var(--terracotta), #FFB347)' }}>
-                  Create NFT ✦
+                  Save a permanent record ✦
                 </button>
                 <button onClick={handleCollectOnly}
                   className="w-full py-3 rounded-xl text-text-muted text-sm"
