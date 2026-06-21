@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import type { AstronomerProfile } from '@/lib/types'
 import LoadingRing from '@/components/ui/LoadingRing'
 
@@ -11,42 +12,46 @@ interface Props {
 type Step = 1 | 2 | 3 | 'loading'
 
 const EQUIPMENT = [
-  { id: 'naked-eye',       emoji: '👁️',  label: 'Naked Eye',       desc: 'No equipment' },
-  { id: 'binoculars',      emoji: '🔭',  label: 'Binoculars',      desc: '7x50 or similar' },
-  { id: 'small-telescope', emoji: '🌌',  label: 'Small Telescope', desc: 'Under 5" aperture' },
-  { id: 'large-telescope', emoji: '⭐',  label: 'Large Telescope', desc: '5"+ aperture' },
+  { id: 'naked-eye',       emoji: '👁️' },
+  { id: 'binoculars',      emoji: '🔭' },
+  { id: 'small-telescope', emoji: '🌌' },
+  { id: 'large-telescope', emoji: '⭐' },
 ] as const
 
 const ENVIRONMENT = [
-  { id: 'city',   emoji: '🏙️', label: 'City',   desc: 'Bortle 8–9' },
-  { id: 'suburb', emoji: '🏘️', label: 'Suburb', desc: 'Bortle 5–7' },
-  { id: 'rural',  emoji: '🌾', label: 'Rural',  desc: 'Bortle 3–4' },
-  { id: 'remote', emoji: '⛰️', label: 'Remote', desc: 'Bortle 1–2' },
+  { id: 'city',   emoji: '🏙️' },
+  { id: 'suburb', emoji: '🏘️' },
+  { id: 'rural',  emoji: '🌾' },
+  { id: 'remote', emoji: '⛰️' },
 ] as const
 
 const INTERESTS = [
-  { id: 'planets',          emoji: '🪐', label: 'Planets' },
-  { id: 'moon',             emoji: '🌙', label: 'The Moon' },
-  { id: 'deep-sky',         emoji: '🌌', label: 'Deep Sky' },
-  { id: 'astrophotography', emoji: '📷', label: 'Astrophotography' },
-  { id: 'learning',         emoji: '📚', label: 'Learning' },
+  { id: 'planets',          emoji: '🪐' },
+  { id: 'moon',             emoji: '🌙' },
+  { id: 'deep-sky',         emoji: '🌌' },
+  { id: 'astrophotography', emoji: '📷' },
+  { id: 'learning',         emoji: '📚' },
 ] as const
 
 export default function OnboardingQuiz({ onComplete }: Props) {
+  const t = useTranslations('onboarding')
   const [step, setStep] = useState<Step>(1)
   const [equipment, setEquipment] = useState<AstronomerProfile['equipment'] | null>(null)
   const [environment, setEnvironment] = useState<AstronomerProfile['environment'] | null>(null)
   const [interests, setInterests] = useState<AstronomerProfile['interests']>([])
   const [geoLocation, setGeoLocation] = useState<{ lat: number; lon: number } | null>(null)
+  const [locating, setLocating] = useState(false)
 
-  // Request geolocation in background during step 1
-  useEffect(() => {
+  // Explicit, user-triggered location request (with on-screen reason) — no silent prompt.
+  const requestLocation = useCallback(() => {
     if (!navigator.geolocation) return
+    setLocating(true)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setGeoLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+        setLocating(false)
       },
-      () => { /* silently ignore */ },
+      () => { setLocating(false) },
       { timeout: 10000 }
     )
   }, [])
@@ -140,7 +145,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
             className="animate-fade-in"
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}
           >
-            <LoadingRing size={80} message="Building your sky profile..." />
+            <LoadingRing size={80} message={t('building')} />
           </div>
         ) : (
           <div key={step} className="animate-fade-in" style={{ width: '100%' }}>
@@ -154,9 +159,9 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                 margin: 0,
               }}
             >
-              {step === 1 && 'What do you observe with?'}
-              {step === 2 && 'Where do you observe?'}
-              {step === 3 && 'What excites you most?'}
+              {step === 1 && t('step1Title')}
+              {step === 2 && t('step2Title')}
+              {step === 3 && t('step3Title')}
             </h1>
             <p
               style={{
@@ -168,7 +173,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                 marginBottom: 24,
               }}
             >
-              {step === 3 ? 'Pick one or more' : 'Choose one to continue'}
+              {step === 3 ? t('pickMultiple') : t('chooseOne')}
             </p>
 
             {/* Step 1 — Equipment */}
@@ -203,7 +208,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                           marginTop: 8,
                         }}
                       >
-                        {opt.label}
+                        {t(`equipment.${opt.id}.label`)}
                       </div>
                       <div
                         style={{
@@ -212,7 +217,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                           marginTop: 2,
                         }}
                       >
-                        {opt.desc}
+                        {t(`equipment.${opt.id}.desc`)}
                       </div>
                     </button>
                   )
@@ -253,7 +258,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                             marginTop: 8,
                           }}
                         >
-                          {opt.label}
+                          {t(`environment.${opt.id}.label`)}
                         </div>
                         <div
                           style={{
@@ -262,20 +267,49 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                             marginTop: 2,
                           }}
                         >
-                          {opt.desc}
+                          {t(`environment.${opt.id}.desc`)}
                         </div>
                       </button>
                     )
                   })}
                 </div>
-                {geoLocation && (
-                  <div
-                    className="badge-pill badge-success"
-                    style={{ marginTop: 16, display: 'block', textAlign: 'center' }}
-                  >
-                    📍 Location detected
-                  </div>
-                )}
+                {/* Explicit location opt-in with a reason */}
+                <div style={{ marginTop: 16, textAlign: 'center' }}>
+                  {geoLocation ? (
+                    <div className="badge-pill badge-success" style={{ display: 'inline-block' }}>
+                      📍 {t('locationDetected')}
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={requestLocation}
+                        disabled={locating}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '8px 16px',
+                          minHeight: 44,
+                          borderRadius: 9999,
+                          fontSize: 13,
+                          fontFamily: 'var(--font-display)',
+                          fontWeight: 600,
+                          cursor: locating ? 'default' : 'pointer',
+                          border: '1px solid var(--border-strong)',
+                          background: 'transparent',
+                          color: 'var(--text-secondary)',
+                          opacity: locating ? 0.6 : 1,
+                        }}
+                      >
+                        📍 {locating ? t('locating') : t('useLocation')}
+                      </button>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.4 }}>
+                        {t('locationReason')}
+                      </p>
+                    </>
+                  )}
+                </div>
               </>
             )}
 
@@ -313,7 +347,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
                       }}
                     >
                       <span>{opt.emoji}</span>
-                      <span>{opt.label}</span>
+                      <span>{t(`interests.${opt.id}`)}</span>
                     </button>
                   )
                 })}
@@ -332,7 +366,7 @@ export default function OnboardingQuiz({ onComplete }: Props) {
             disabled={!canContinue}
             style={{ width: '100%', borderRadius: 'var(--radius-lg)' }}
           >
-            {step === 3 ? 'Start Exploring →' : 'Continue →'}
+            {step === 3 ? t('startExploring') : t('continue')}
           </button>
         </div>
       )}

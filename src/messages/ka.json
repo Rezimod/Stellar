@@ -833,6 +833,39 @@
     "walletList": "Phantom, Solflare, Backpack, Glow",
     "metamaskNote": "MetaMask მხოლოდ Ethereum-ისთვისაა — Solana-ს ტრანზაქციებს ვერ აწერს ხელს."
   },
+  "onboarding": {
+    "step1Title": "რით აკვირდები?",
+    "step2Title": "საიდან აკვირდები?",
+    "step3Title": "რა გაინტერესებს ყველაზე მეტად?",
+    "chooseOne": "აირჩიე ერთი გასაგრძელებლად",
+    "pickMultiple": "აირჩიე ერთი ან რამდენიმე",
+    "building": "ვქმნით შენი ცის პროფილს…",
+    "continue": "გაგრძელება →",
+    "startExploring": "დაიწყე კვლევა →",
+    "useLocation": "ჩემი მდებარეობის გამოყენება",
+    "locationReason": "რომ გაჩვენოთ, რა ჩანს დღეს ღამით შენი ადგილიდან.",
+    "locating": "ვადგენთ მდებარეობას…",
+    "locationDetected": "მდებარეობა დადგენილია",
+    "equipment": {
+      "naked-eye": { "label": "შეუიარაღებელი თვალით", "desc": "აღჭურვილობის გარეშე" },
+      "binoculars": { "label": "ბინოკლი", "desc": "7×50 ან მსგავსი" },
+      "small-telescope": { "label": "პატარა ტელესკოპი", "desc": "5 დიუმზე ნაკლები" },
+      "large-telescope": { "label": "დიდი ტელესკოპი", "desc": "5 დიუმი ან მეტი" }
+    },
+    "environment": {
+      "city": { "label": "ქალაქი", "desc": "ნათელი ცა" },
+      "suburb": { "label": "გარეუბანი", "desc": "ზოგი ვარსკვლავი" },
+      "rural": { "label": "სოფელი", "desc": "ბნელი ცა" },
+      "remote": { "label": "შორეული ადგილი", "desc": "უმწიკვლო სიბნელე" }
+    },
+    "interests": {
+      "planets": "პლანეტები",
+      "moon": "მთვარე",
+      "deep-sky": "შორეული ცა",
+      "astrophotography": "ასტროფოტოგრაფია",
+      "learning": "სწავლა"
+    }
+  },
   "searchModal": {
     "placeholder": "ძებნა მისიები, ტელესკოპები, პლანეტები...",
     "noResults": "შედეგი ვერ მოიძებნა „{query}“-ისთვის",

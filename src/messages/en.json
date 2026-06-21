@@ -833,6 +833,39 @@
     "walletList": "Phantom, Solflare, Backpack, Glow",
     "metamaskNote": "MetaMask is Ethereum-only and can't sign Solana transactions here."
   },
+  "onboarding": {
+    "step1Title": "What do you observe with?",
+    "step2Title": "Where do you observe from?",
+    "step3Title": "What excites you most?",
+    "chooseOne": "Choose one to continue",
+    "pickMultiple": "Pick one or more",
+    "building": "Building your sky profile…",
+    "continue": "Continue →",
+    "startExploring": "Start exploring →",
+    "useLocation": "Use my location",
+    "locationReason": "So we can show what's visible from where you are tonight.",
+    "locating": "Finding you…",
+    "locationDetected": "Location detected",
+    "equipment": {
+      "naked-eye": { "label": "Naked eye", "desc": "No equipment" },
+      "binoculars": { "label": "Binoculars", "desc": "7×50 or similar" },
+      "small-telescope": { "label": "Small telescope", "desc": "Under 5-inch" },
+      "large-telescope": { "label": "Large telescope", "desc": "5-inch or bigger" }
+    },
+    "environment": {
+      "city": { "label": "City", "desc": "Bright skies" },
+      "suburb": { "label": "Suburb", "desc": "Some stars" },
+      "rural": { "label": "Rural", "desc": "Dark skies" },
+      "remote": { "label": "Remote", "desc": "Pristine dark" }
+    },
+    "interests": {
+      "planets": "Planets",
+      "moon": "The Moon",
+      "deep-sky": "Deep sky",
+      "astrophotography": "Astrophotography",
+      "learning": "Learning"
+    }
+  },
   "searchModal": {
     "placeholder": "Search missions, telescopes, planets...",
     "noResults": "No results for “{query}”",
