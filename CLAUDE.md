@@ -6,7 +6,7 @@ Stellar is the all-in-one astronomy app for telescope owners and space enthusias
 ## Current Posture (post-hackathon)
 The Colosseum Frontier Hackathon (Apr–May 2026) submission is **done**. Stellar also **won 1st place ($5,000 USDT) on the Tether Frontier Hackathon QVAC track** (May 2026) for Stellar Field.
 
-The **Solana Foundation Georgia grant is approved ($5K USDG)**. The active milestone is **Q3 2026: mainnet migration + beta launch to the Astroman customer list.** Devnet remains the working network until that migration. No live deadline pressure — build for durability and the beta cohort, not a demo clock.
+The **Solana Foundation Georgia grant is approved ($5K USDG)**. **The app is now LIVE on Solana mainnet (migrated June 2026)** — RPC, `mainnet-beta` cluster, cNFT tree/collection, Stars token, and gasless fee-payer all run on mainnet. The active milestone is **beta launch to the Astroman customer list.** No live deadline pressure — build for durability and the beta cohort, not a demo clock. (The Proof-of-Observation Anchor program remains devnet-only until separately funded for deploy — see Architecture Decisions.)
 
 ## The Founder
 Rezi (Revaz Modebadze) — founder of Astroman (astroman.ge), Georgia's first astronomy e-commerce store. One physical store in Tbilisi. Solo builder.
@@ -99,7 +99,7 @@ For non-trivial tasks: **planner → executor → reviewer → qa**.
 
 ## Key Architecture Decisions
 1. **Privy-first auth, wallet-adapter as fallback.** Default flow: email signup → embedded Solana wallet auto-created (`embeddedWallets: { createOnLogin: 'users-without-wallets' }`). External-wallet paths remain wired via `WalletAdapterProvider`. New flows should default to Privy.
-2. **Gasless transactions.** Server-side fee payer (`FEE_PAYER_PRIVATE_KEY`) covers all tx costs on devnet. Users never need SOL.
+2. **Gasless transactions.** Server-side fee payer (`FEE_PAYER_PRIVATE_KEY`) covers all tx costs on mainnet. Users never need SOL. Top up the fee-payer wallet as the beta grows (first Stars award per new user costs ~0.002 SOL for the token account).
 3. **Card-first payments.** Default = credit card via Privy fiat onramp. SOL payment is secondary.
 4. **i18n status: partial.** `next-intl` is wired (`messages/en.json` + `ka.json`). Newer surfaces (`/sky`, `/missions`, parts of `/marketplace`, `/observe`) use `useTranslations`. Older surfaces (home, `/hub`, several landing sections, marketing copy) are still hardcoded English. When adding new strings, prefer translation keys; don't retroactively translate untouched files unless asked.
 5. **Dark cosmic theme.** Deep space canvas is a dark cosmic blue (`--canvas #0A1735`, light theme `#EDF0F7`). Primary accent is warm terracotta (`--terracotta #FFB347`, aliased to `--accent`); secondary accent is teal/seafoam (`--seafoam #5EEAD4`, aliased to `--accent-teal`). **`src/app/globals.css` is the source of truth for all color tokens — do not hardcode hex.** Light theme shipped for daytime planning. Full design context in `.impeccable.md`.
@@ -170,7 +170,7 @@ i18n/request.ts            next-intl config
 - **Settings** — notifications section, working light theme
 
 ### Active milestone (Q3 2026)
-- **Mainnet migration** — move off devnet
+- **Mainnet migration** — ✅ done (June 2026); app runs on `mainnet-beta`. Anchor Proof-of-Observation program still pending a separately-funded deploy.
 - **Beta launch to the Astroman customer list** — 45K+ lifetime buyers, 70K+ social audience
 
 ### Backlog
@@ -237,7 +237,7 @@ DATABASE_URL=                      # Neon Postgres (primary, via Drizzle)
 SUPABASE_URL= / SUPABASE_ANON_KEY= / NEXT_PUBLIC_SUPABASE_URL= / NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 # Solana
-SOLANA_RPC_URL=                    # devnet
+SOLANA_RPC_URL=                    # mainnet (Helius)
 FEE_PAYER_PRIVATE_KEY=             # base58, gasless tx payer
 MERKLE_TREE_ADDRESS=               # set by `npm run setup:bubblegum`
 COLLECTION_MINT_ADDRESS=           # set by `npm run setup:bubblegum`
@@ -296,7 +296,7 @@ npm run seed:demo        # seed demo data
 Region detection lives in `src/lib/location.tsx` (caucasus / north_america / global) and `src/lib/dealers.ts` (multi-dealer products). `src/components/LocationPicker.tsx` is the global picker. `src/hooks/useLocation.ts` (lat/lng only) is a separate hook used by sky data; marketplace uses the region-aware context. Don't break either.
 
 ## Live URL
-https://stellarrclub.vercel.app — Vercel auto-deploys from `main`. **Devnet only** until the Q3 2026 mainnet migration.
+https://stellarrclub.vercel.app — Vercel auto-deploys from `main`. **Live on Solana mainnet** (`mainnet-beta`) since June 2026.
 
 ## Design Context
 

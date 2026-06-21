@@ -1,5 +1,12 @@
 # Mainnet Cutover Runbook
 
+> **✅ EXECUTED — June 2026. The app is LIVE on `mainnet-beta`.** What actually shipped (deviations from the plan below, driven by a ~0.2 SOL budget):
+> - **cNFT tree sized down** to depth 13 / buffer 32 / canopy 3 (8,192 capacity, ~0.13 SOL) instead of depth 14 / canopy 10. Spin up a second tree if it fills.
+> - **Anchor Proof-of-Observation program NOT deployed** — deferred (needs ~1.8 SOL). On-chain obs reads/writes no-op cleanly until `OBSERVATION_PROGRAM_ID` is set on mainnet (`src/lib/observation-program.ts`). The same-keypair/same-program-ID note in line 11 below applies whenever that deploy happens.
+> - **Live mainnet addresses:** Stars `CGTweUjzNBRCCqpPXEZTuAvWs2FRUAEe3bnNLaLn3DGW` · Tree `3R9uV6aLb5dkb38Jg4KZjqR4MoCYXtKdeWXRqatf8zWe` · Collection `6Pt5BNk1nzL4rhG2z1SuDCn18vjN1uAvFTU8oK6uhsXm` · Fee-payer `9jAYpQYZiZm4eJcj6q2UppN2Jc6Xr6KCuNafiETYhTDz` · Merchant `AgZdk4K5hwsJneQ2ptZNQkuT8ACkMcuNHFFt4pnzk8xy`
+>
+> The runbook below is retained as the reference procedure (and for the future Anchor-program deploy).
+
 Status after the code pass in this commit: **the app is network-agnostic.** No contract
 address, mint, program ID, or RPC is hardcoded in source — all are env-driven, and every
 explorer link / Privy chain / wallet-adapter network now derives from

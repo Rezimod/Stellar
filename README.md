@@ -103,10 +103,13 @@ Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.
 
 ---
 
-## On-Chain Addresses (Devnet)
+## On-Chain Addresses (Mainnet)
 
-- **Stars Token:** `3cnZEZAu2ENujwNNtA5phyqSi3JvAaHpyzExQiXw1YwW`
-- **Fee Payer:** `BEGJbkPn7eEAKkjLTGh39usDiscM7P2BwQyXNToHdVVg`
+- **Stars Token:** `CGTweUjzNBRCCqpPXEZTuAvWs2FRUAEe3bnNLaLn3DGW`
+- **Merkle Tree:** `3R9uV6aLb5dkb38Jg4KZjqR4MoCYXtKdeWXRqatf8zWe`
+- **Collection:** `6Pt5BNk1nzL4rhG2z1SuDCn18vjN1uAvFTU8oK6uhsXm`
+- **Fee Payer:** `9jAYpQYZiZm4eJcj6q2UppN2Jc6Xr6KCuNafiETYhTDz`
+- **Merchant:** `AgZdk4K5hwsJneQ2ptZNQkuT8ACkMcuNHFFt4pnzk8xy`
 
 ---
 
