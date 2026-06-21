@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useLocation } from '@/lib/location';
 import { Camera, ImagePlus, ArrowLeft, ExternalLink } from 'lucide-react';
+import { starsToGEL, MARKETPLACE_REFERENCE_STARS } from '@/lib/stars-economy';
 import type { PhotoVerificationResult } from '@/lib/types';
 
 interface ObserveFlowProps {
@@ -465,7 +466,11 @@ export default function ObserveFlow({ onClose, walletAddress }: ObserveFlowProps
             {verification.accepted ? (
               <>
                 <p className="text-2xl font-bold" style={{ color: 'var(--stars)' }}>+{verification.starsEstimate} ✦</p>
-                <p className="text-text-muted text-xs mt-1">Stars earned for this observation</p>
+                <p className="text-text-muted text-xs mt-1">
+                  Worth ≈{Math.round(starsToGEL(verification.starsEstimate))} ₾ toward a Bresser 76/300 — your starter telescope
+                  {' · '}
+                  {Math.round((verification.starsEstimate / MARKETPLACE_REFERENCE_STARS) * 100)}% there
+                </p>
               </>
             ) : (
               <>
