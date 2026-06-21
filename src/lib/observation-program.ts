@@ -46,8 +46,14 @@ function programId(): PublicKey {
   return new PublicKey(process.env.OBSERVATION_PROGRAM_ID || (idl as Idl).address!);
 }
 
-/** Oracle key signs + pays for all observation writes. Devnet falls back to the fee payer. */
+/**
+ * Oracle key signs + pays for all observation writes. Devnet falls back to the fee payer.
+ * Returns null unless OBSERVATION_PROGRAM_ID is explicitly set, so on networks where the
+ * Proof-of-Observation program isn't deployed (e.g. mainnet pre-deploy) every on-chain
+ * read/write cleanly no-ops instead of hitting a non-existent program.
+ */
 function oracleKeypair(): Keypair | null {
+  if (!process.env.OBSERVATION_PROGRAM_ID) return null;
   const b58 = process.env.OBSERVATION_ORACLE_PRIVATE_KEY || process.env.FEE_PAYER_PRIVATE_KEY;
   if (!b58) return null;
   return Keypair.fromSecretKey(bs58.decode(b58));

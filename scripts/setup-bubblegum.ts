@@ -52,9 +52,9 @@ async function main() {
   const merkleTree = generateSigner(umi);
   const treeBuilder = await createTree(umi, {
     merkleTree,
-    maxDepth: 14,
-    maxBufferSize: 64,
-    canopyDepth: 10,
+    maxDepth: 13,
+    maxBufferSize: 32,
+    canopyDepth: 3,
   });
   await treeBuilder.sendAndConfirm(umi);
   const treeAddress = merkleTree.publicKey as string;
