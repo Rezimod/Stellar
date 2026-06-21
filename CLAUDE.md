@@ -48,7 +48,7 @@ Rezi (Revaz Modebadze) — founder of Astroman (astroman.ge), Georgia's first as
 ## Repo Layout
 ```
 /                              monorepo-ish root
-├─ src/                        Next.js 15 web app (stellarrclub.vercel.app)
+├─ src/                        Next.js 15 web app (stellarr.club)
 ├─ anchor/                     Stellar Proof-of-Observation Anchor program (in-tree)
 ├─ apps/field/                 Stellar Field — Expo Android companion (Tether QVAC track)
 ├─ stellar-toolkit/            standalone scripts/tests/visual audit utilities
@@ -249,7 +249,7 @@ OBSERVATION_ORACLE_PRIVATE_KEY=    # oracle signer for observation attestations
 NEXT_PUBLIC_MERCHANT_WALLET=
 NEXT_PUBLIC_COLLECTION_MINT_ADDRESS=
 NEXT_PUBLIC_HELIUS_RPC_URL=        # enables DAS API / NFT gallery
-NEXT_PUBLIC_APP_URL=https://stellarrclub.vercel.app
+NEXT_PUBLIC_APP_URL=https://stellarr.club
 NEXT_PUBLIC_FIELD_APK_URL=         # Stellar Field APK direct link
 
 # Rate limit
@@ -296,7 +296,7 @@ npm run seed:demo        # seed demo data
 Region detection lives in `src/lib/location.tsx` (caucasus / north_america / global) and `src/lib/dealers.ts` (multi-dealer products). `src/components/LocationPicker.tsx` is the global picker. `src/hooks/useLocation.ts` (lat/lng only) is a separate hook used by sky data; marketplace uses the region-aware context. Don't break either.
 
 ## Live URL
-https://stellarrclub.vercel.app — Vercel auto-deploys from `main`. **Live on Solana mainnet** (`mainnet-beta`) since June 2026.
+https://stellarr.club — Vercel auto-deploys from `main` (fallback: stellarrclub.vercel.app). **Live on Solana mainnet** (`mainnet-beta`) since June 2026.
 
 ## Design Context
 

@@ -6,7 +6,7 @@
 
 Get tonight's sky forecast, photograph what you see, earn rewards you can redeem for real telescopes and gear at [Astroman](https://astroman.ge), Georgia's first astronomy store. Built on Solana. Free to use.
 
-[Live App](https://stellarrclub.vercel.app) · [Stellar Field APK](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Tether Frontier Track Submission](docs/qvac-submission.md) · [Twitter/X](https://x.com/StellarClub26)
+[Live App](https://stellarr.club) · [Stellar Field APK](https://github.com/Rezimod/Stellar/releases/tag/v0.1.0-field) · [Tether Frontier Track Submission](docs/qvac-submission.md) · [Twitter/X](https://x.com/StellarClub26)
 
 ---
 
@@ -63,7 +63,7 @@ Verified end-to-end on a Poco X3 NFC (Snapdragon 732G, 6GB RAM, 2026-05-07): APK
 
 The split is invisible to the user. Same Astra. Same Privy embedded wallet. Same Supabase observation history. Online she runs on cloud models (OpenAI gpt-4o-mini for chat, Gemini 2.5 Flash for vision), offline on QVAC (free per call, works in airplane mode). The existing web app is untouched — Field Mode is additive.
 
-[Download APK](https://stellarrclub.vercel.app/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
+[Download APK](https://stellarr.club/field) · [Technical writeup](docs/qvac-integration.md) · [Demo script](docs/qvac-demo-script.md) · [Submission body](docs/qvac-submission.md)
 
 ---
 
@@ -82,7 +82,7 @@ Every observation contributes a real datapoint — GPS coordinates, timestamp, p
 
 The network grows itself: more observers in more places means denser sky coverage, which makes the data more useful — for ASTRA's recommendations and (eventually) for anyone who needs ground-truth observation data.
 
-Live network map: [stellarrclub.vercel.app/network](https://stellarrclub.vercel.app/network).
+Live network map: [stellarr.club/network](https://stellarr.club/network).
 
 ---
 
