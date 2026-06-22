@@ -83,14 +83,22 @@ export default function ObserveBriefPage() {
           />
           <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
           <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
-          <Image
-            src={getMissionImage(mission.id)}
-            alt={mission.name}
-            fill
-            sizes="120px"
-            className="rounded-full object-cover stl-chart-in"
-            style={{ boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
-          />
+          {(() => {
+            const img = getMissionImage(mission.id);
+            // Saturn's rings overflow a circle — render the alpha-cut PNG bare so
+            // the whole ringed planet floats inside the glow halo, unclipped.
+            const ringed = img.includes('saturn');
+            return (
+              <Image
+                src={ringed ? img.replace('.jpg', '.png') : img}
+                alt={mission.name}
+                fill
+                sizes="120px"
+                className={`stl-chart-in ${ringed ? 'object-contain' : 'rounded-full object-cover'}`}
+                style={ringed ? undefined : { boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
+              />
+            );
+          })()}
         </div>
 
         <h1

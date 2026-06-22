@@ -1050,14 +1050,19 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               />
               <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
               <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
-              <img
-                src={getMissionImage(mission.id)}
-                alt={mission.name}
-                className="relative w-full h-full rounded-full object-cover stl-chart-in"
-                style={{
-                  boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)',
-                }}
-              />
+              {(() => {
+                const img = getMissionImage(mission.id);
+                // Saturn's rings overflow a circle — render the bare alpha-cut PNG.
+                const ringed = img.includes('saturn');
+                return (
+                  <img
+                    src={ringed ? img.replace('.jpg', '.png') : img}
+                    alt={mission.name}
+                    className={`relative w-full h-full stl-chart-in ${ringed ? 'object-contain' : 'rounded-full object-cover'}`}
+                    style={ringed ? undefined : { boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
+                  />
+                );
+              })()}
             </div>
 
             <h1
