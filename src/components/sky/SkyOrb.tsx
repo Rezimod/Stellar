@@ -1,10 +1,9 @@
 import type { CSSProperties } from 'react';
 
-// Real NASA/observatory photography for each target. All are framed on a black
-// space background, so `mix-blend-mode: screen` (set in CSS) drops the black and
-// floats the body — rings, moons, nebulosity and all — onto the dark cards with
-// no hard edges. The orb fills its parent container, so callers size it by sizing
-// the wrapper (.mis-quest-art, .mis-nearby-art, .mis-row-art, …).
+// Real NASA/observatory photography for each target, framed on black space.
+// Default: cover-cropped inside a circular orb. `raw` mode (see below) uses the
+// alpha-cut PNG instead so the bare body floats frameless. The orb fills its
+// parent, so callers size it via the wrapper (.mis-quest-art, .mis-nearby-art, …).
 const ORB_SRC: Record<string, string> = {
   moon: '/images/planets/moon.jpg',
   mercury: '/images/planets/mercury.jpg',
@@ -21,13 +20,16 @@ const ORB_SRC: Record<string, string> = {
   crab: '/images/dso/m1.jpg',
 };
 
-export function SkyOrb({ name, fit }: { name: string; fit?: 'cover' | 'contain' }) {
+// `raw` swaps to the alpha-cut PNG (black space removed) and drops the circular
+// frame, so the bare planet — Saturn's rings and all — floats on the card.
+export function SkyOrb({ name, fit, raw }: { name: string; fit?: 'cover' | 'contain'; raw?: boolean }) {
   const key = name.toLowerCase();
-  const src = ORB_SRC[key];
-  if (!src) return <span className="sky-orb sky-orb--blank" aria-hidden />;
-  const style: CSSProperties = { objectFit: fit ?? 'cover' };
+  const base = ORB_SRC[key];
+  if (!base) return <span className={`sky-orb sky-orb--blank${raw ? ' sky-orb--raw' : ''}`} aria-hidden />;
+  const src = raw ? base.replace('.jpg', '.png') : base;
+  const style: CSSProperties = { objectFit: fit ?? (raw ? 'contain' : 'cover') };
   return (
-    <span className="sky-orb" aria-hidden>
+    <span className={`sky-orb${raw ? ' sky-orb--raw' : ''}`} aria-hidden>
       <img src={src} alt="" loading="lazy" decoding="async" style={style} />
     </span>
   );

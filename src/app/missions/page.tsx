@@ -548,7 +548,7 @@ export default function MissionsPage() {
               <div className="mis-nearby-rail">
                 {nearby.map((n) => (
                   <button key={n.key} type="button" className="mis-nearby-card" onClick={() => startMission(n.routeId)}>
-                    <span className="mis-nearby-art"><SkyOrb name={n.key} fit="contain" /></span>
+                    <span className="mis-nearby-art"><SkyOrb name={n.key} raw /></span>
                     <span className="mis-nearby-name">{n.name}</span>
                     <span className={`mis-nearby-badge${n.above ? ' is-now' : ''}`}>
                       {n.above ? t('nearby.now') : n.rise ? t('nearby.after', { time: fmtClock(n.rise) }) : t('quest.anytime')}
