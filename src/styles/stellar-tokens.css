@@ -3219,9 +3219,14 @@
 }
 .mis-nearby-card:hover { border-color: var(--mis-bd2); background: var(--mis-card-2); }
 .mis-nearby-art {
-  width: 44px; height: 44px;
+  width: 48px; height: 48px;
   display: flex; align-items: center; justify-content: center;
 }
+/* Raw planet photos — no circular frame. Screen blend drops the black space
+   background so the full body (Saturn's rings included) floats on the card. */
+.mis-nearby-art .sky-orb { border-radius: 0; overflow: visible; }
+.mis-nearby-art .sky-orb img { object-fit: contain; mix-blend-mode: screen; }
+.mis-nearby-art .sky-orb::after { display: none; }
 .mis-nearby-name { font-size: 13px; font-weight: 600; color: var(--mis-t1); }
 .mis-nearby-badge {
   font-family: var(--font-mono);
