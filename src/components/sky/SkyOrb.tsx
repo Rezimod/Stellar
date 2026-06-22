@@ -21,15 +21,11 @@ const ORB_SRC: Record<string, string> = {
   crab: '/images/dso/m1.jpg',
 };
 
-// Saturn (and other wide framings) need the whole frame so the rings survive;
-// round bodies look fuller filling the orb.
-const CONTAIN = new Set(['saturn']);
-
 export function SkyOrb({ name, fit }: { name: string; fit?: 'cover' | 'contain' }) {
   const key = name.toLowerCase();
   const src = ORB_SRC[key];
   if (!src) return <span className="sky-orb sky-orb--blank" aria-hidden />;
-  const style: CSSProperties = { objectFit: fit ?? (CONTAIN.has(key) ? 'contain' : 'cover') };
+  const style: CSSProperties = { objectFit: fit ?? 'cover' };
   return (
     <span className="sky-orb" aria-hidden>
       <img src={src} alt="" loading="lazy" decoding="async" style={style} />

@@ -947,7 +947,6 @@ function GlobalMissionCard({
   const pct = data ? Math.min(100, Math.round((data.current / data.goal) * 100)) : 0;
   return (
     <section className="mis-card mis-card--global">
-      <span className="mis-global-art" aria-hidden><SkyOrb name={data?.target ?? 'saturn'} /></span>
       <div className="mis-card-head">
         <span className="mis-card-eyebrow"><Globe size={12} strokeWidth={1.9} /> {labels.title}</span>
       </div>

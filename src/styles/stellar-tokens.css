@@ -3270,11 +3270,6 @@
 
 /* === Global community mission card === */
 .mis-card--global { position: relative; overflow: hidden; }
-.mis-global-art {
-  position: absolute; right: -10px; bottom: -12px;
-  width: 84px; height: 84px; opacity: 0.18; pointer-events: none;
-  display: flex; align-items: center; justify-content: center;
-}
 .mis-global-heading { font-size: 13.5px; font-weight: 600; color: var(--mis-t1); margin: 0; position: relative; }
 .mis-global-bar {
   height: 6px; border-radius: 999px;
