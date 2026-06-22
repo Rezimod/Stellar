@@ -95,7 +95,7 @@ export default function ObserveBriefPage() {
                 fill
                 sizes="120px"
                 className={`stl-chart-in ${ringed ? 'object-contain' : 'rounded-full object-cover'}`}
-                style={ringed ? undefined : { boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
+                style={ringed ? { transform: 'scale(1.4)' } : { boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
               />
             );
           })()}
