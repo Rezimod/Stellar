@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mintCompressedNFT } from '@/lib/mint-nft';
 
-export const maxDuration = 60; // Solana devnet confirmations can take 15-30s
+export const maxDuration = 60; // Solana confirmations can take 15-30s
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
 import { eq, and, gte, isNotNull } from 'drizzle-orm';
@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
       }).catch(err => console.error('[mint] db.insert failed:', err));
     }
 
-    return NextResponse.json({ txId, explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}` });
+    return NextResponse.json({ txId, explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}` });
   } catch (err) {
     console.error('[mint] Bubblegum mint failed:', err);
     return NextResponse.json({ error: 'NFT minting failed — check server logs', txId: null }, { status: 500 });

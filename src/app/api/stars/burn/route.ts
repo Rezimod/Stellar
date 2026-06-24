@@ -46,7 +46,7 @@ import { networkMisconfig } from '@/lib/network-guard';
 
 export const maxDuration = 60;
 
-const RPC = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
+const RPC = process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,

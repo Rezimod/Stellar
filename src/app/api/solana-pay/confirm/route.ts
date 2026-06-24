@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ confirmed: false, error: 'invalid reference' }, { status: 400 });
   }
 
-  const rpcUrl = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
+  const rpcUrl = process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
   const connection = new Connection(rpcUrl, 'confirmed');
 
   try {

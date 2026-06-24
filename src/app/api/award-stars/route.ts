@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const maxDuration = 60; // Solana devnet token mint can take 15-30s
+export const maxDuration = 60; // Solana token mint can take 15-30s
 import { awardStarsRateLimit, awardStarsDailyLimit, checkRateLimit } from '@/lib/rate-limit';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
@@ -31,7 +31,7 @@ function rarityFromConfidence(confidence: string): NftRarity {
   return 'Common';
 }
 
-const DEVNET_URL = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
+const RPC_URL = process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
 
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -268,7 +268,7 @@ export async function POST(req: NextRequest) {
     const feePayerKeypair = Keypair.fromSecretKey(bs58.decode(privateKeyB58));
     const mintAuthority = getStarsMintAuthority();
     const mintPublicKey = new PublicKey(mintAddress);
-    const connection = new Connection(DEVNET_URL, 'confirmed');
+    const connection = new Connection(RPC_URL, 'confirmed');
 
     const ata = await getOrCreateAssociatedTokenAccount(
       connection,
@@ -308,7 +308,7 @@ export async function POST(req: NextRequest) {
       success: true,
       txId: signature,
       awarded: amount,
-      explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`,
+      explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`,
     });
   } catch (err) {
     console.error('[award-stars]', err);

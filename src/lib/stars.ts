@@ -43,7 +43,7 @@ export async function awardStarsOnChain(
   const feePayerKeypair = Keypair.fromSecretKey(bs58.decode(privateKeyB58))
   const mintAuthority = getStarsMintAuthority()
   const connection = new Connection(
-    process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com',
+    process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com',
     'confirmed'
   )
   const recipientKey = new PublicKey(recipientAddress)

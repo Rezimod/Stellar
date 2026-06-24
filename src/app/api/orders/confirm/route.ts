@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ confirmed: false, error: 'Invalid reference' }, { status: 400 });
   }
 
-  const rpcUrl = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
+  const rpcUrl = process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
   const connection = new Connection(rpcUrl, 'confirmed');
 
   let signature: string;

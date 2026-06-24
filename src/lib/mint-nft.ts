@@ -5,7 +5,7 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import { base58 } from '@metaplex-foundation/umi/serializers';
-import { mintV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
+import { mintToCollectionV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
 import { mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
 import { uploadJsonToIrys } from './irys';
 
@@ -40,11 +40,11 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
     throw new Error('COLLECTION_MINT_ADDRESS not set');
   }
 
-  // Prefer Helius RPC (faster, more reliable) over public devnet
+  // Prefer Helius RPC (faster, more reliable) over the public mainnet endpoint
   const rpcUrl =
     process.env.NEXT_PUBLIC_HELIUS_RPC_URL ??
     process.env.SOLANA_RPC_URL ??
-    'https://api.devnet.solana.com';
+    'https://api.mainnet-beta.solana.com';
 
   const secretKey = bs58.decode(FEE_PAYER_PRIVATE_KEY);
 
@@ -96,15 +96,20 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   }
 
   // 'processed' commitment returns in ~1-2s vs 15-30s for 'confirmed'.
-  // Route has maxDuration=60, so give the mint enough headroom for slow devnet ticks.
+  // Route has maxDuration=60, so give the mint enough headroom for slow ticks.
   const TIMEOUT_MS = 25000;
   const treeKey = toPublicKey(MERKLE_TREE_ADDRESS);
   const collectionKey = toPublicKey(COLLECTION_MINT_ADDRESS);
 
   async function attempt(): Promise<string> {
-    const mintPromise = mintV1(umi, {
+    // mintToCollectionV1 mints AND verifies collection membership in one
+    // instruction. The fee-payer (umi identity) is the collection authority, so
+    // collectionAuthority defaults to it — no extra signer or verifyCollection
+    // call needed. `verified: false` is required here; the program flips it.
+    const mintPromise = mintToCollectionV1(umi, {
       leafOwner: recipient,
       merkleTree: treeKey,
+      collectionMint: collectionKey,
       metadata: {
         name,
         uri,

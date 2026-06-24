@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   try {
     const feePayerKeypair = Keypair.fromSecretKey(bs58.decode(privateKeyB58));
     const connection = new Connection(
-      process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com',
+      process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com',
       'confirmed'
     );
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       txId: signature,
-      explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`,
+      explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
