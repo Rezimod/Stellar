@@ -48,6 +48,22 @@ export async function verifyPrivy(req: NextRequest): Promise<string | null> {
   }
 }
 
+// Every wallet linked to a Privy session — embedded (walletClientType 'privy')
+// AND external (Phantom/Solflare/Backpack). Use this when you need the user's
+// real wallet regardless of how they signed in; the `users` table only mirrors
+// the embedded wallet, so an external-wallet login has no row there.
+export async function getSessionWalletAddresses(privyId: string): Promise<string[]> {
+  try {
+    const user = await getPrivy().getUserById(privyId);
+    const accounts = (user.linkedAccounts ?? []) as Array<{ type: string; address?: string }>;
+    return accounts
+      .filter((a) => a.type === 'wallet' && typeof a.address === 'string' && a.address.length > 0)
+      .map((a) => a.address as string);
+  } catch {
+    return [];
+  }
+}
+
 // Returns true when `walletAddress` matches the wallet linked to this Privy
 // user. On first use, atomically binds the wallet if the row exists but has
 // no address yet — prevents a session from hopping between wallets mid-flow.

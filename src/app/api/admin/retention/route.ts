@@ -14,7 +14,7 @@ import { neon } from '@neondatabase/serverless';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/schema';
-import { verifyPrivy } from '@/lib/api-auth';
+import { verifyPrivy, getSessionWalletAddresses } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 
@@ -39,13 +39,19 @@ export async function GET(req: NextRequest) {
   const db = getDb();
   if (!db) return notFound();
 
+  // Candidate wallets: every wallet on the Privy session (covers external
+  // logins like Phantom, which never get a users-table row) plus the mirrored
+  // embedded wallet. Admit if ANY is allowlisted.
+  const sessionWallets = await getSessionWalletAddresses(privyId);
   const rows = await db
     .select({ walletAddress: users.walletAddress })
     .from(users)
     .where(eq(users.privyId, privyId))
     .limit(1);
-  const wallet = rows[0]?.walletAddress ?? null;
-  if (!wallet || !allow.has(wallet)) return notFound();
+  const candidates = [...sessionWallets, rows[0]?.walletAddress].filter(
+    (w): w is string => typeof w === 'string' && w.length > 0,
+  );
+  if (!candidates.some((w) => allow.has(w))) return notFound();
 
   const source = req.nextUrl.searchParams.get('source') ?? 'astroman';
   const campaign = req.nextUrl.searchParams.get('campaign') ?? 'beta_jul2026';
