@@ -7,6 +7,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import { Volume2, VolumeX } from 'lucide-react';
+import { track } from '@/lib/track';
 import type { QuizDef } from '@/lib/quizzes';
 
 interface Props {
@@ -206,6 +207,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
     if (phase !== 'result' || saved) return;
     addQuizResult({ quizId: quiz.id, score, total, stars, timestamp: new Date().toISOString() });
     setSaved(true);
+    track('quiz_completed', { quiz_id: quiz.id, score }, walletAddress);
     if (eligibleForStars) awardQuizStarsOnChain(picks);
   }, [phase, saved, score, total, stars, eligibleForStars, quiz.id, addQuizResult]); // eslint-disable-line react-hooks/exhaustive-deps
 

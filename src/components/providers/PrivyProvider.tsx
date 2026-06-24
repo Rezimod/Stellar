@@ -46,7 +46,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
-        loginMethods: ['email', 'google', 'sms', 'wallet'],
+        loginMethods: ['email', 'google', 'twitter', 'wallet'],
         appearance: {
           theme: 'dark',
           accentColor: '#FFB347',

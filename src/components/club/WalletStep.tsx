@@ -67,7 +67,7 @@ export default function WalletStep() {
                 <Button variant="brass" onClick={() => setAuthOpen(true)} className="w-full min-h-[44px]">
                   Join Stellar →
                 </Button>
-                <p className="text-text-muted text-xs text-center">Email, Google, SMS, or connect a Solana wallet.</p>
+                <p className="text-text-muted text-xs text-center">Email, Google, X, or connect a Solana wallet.</p>
               </div>
             </div>
           )}

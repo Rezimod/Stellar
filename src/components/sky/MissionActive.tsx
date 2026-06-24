@@ -26,6 +26,7 @@ import { urlToBlob } from '@/lib/data-url';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
 import { useLocation } from '@/lib/location';
+import { track } from '@/lib/track';
 
 const MISSION_STEPS = [
   { label: 'Brief', keys: ['observing'] },
@@ -1115,7 +1116,11 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             {/* CTA */}
             <Button
               variant="brass"
-              onClick={() => { setMintError(''); setStep('camera'); }}
+              onClick={() => {
+                setMintError('');
+                track('observation_started', { target: mission.target || mission.name, mission_id: mission.id }, walletAddress);
+                setStep('camera');
+              }}
               className="relative w-full flex-shrink-0 max-w-sm mt-2"
             >
               Begin Observation →

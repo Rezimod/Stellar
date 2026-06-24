@@ -12,6 +12,7 @@ import { verifyObservationToken } from '@/lib/observation-token';
 import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
+import { trackServer } from '@/lib/track-server';
 
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -245,6 +246,14 @@ export async function POST(req: NextRequest) {
         exifTakenAt: exifTakenDate && !isNaN(exifTakenDate.getTime()) ? exifTakenDate : null,
         isInternetSourced: isInternetSourced === true,
       }).catch(err => console.error('[mint] db.insert failed:', err));
+
+      // Cohort analytics — fires only for real (non-demo) mints, after the NFT
+      // is confirmed on-chain. Server-side so it lands even if the tab closes.
+      trackServer('observation_minted', userAddress, {
+        target: mintTarget,
+        tx_id: txId,
+        cloud_cover: effectiveCloudCover,
+      });
     }
 
     return NextResponse.json({ txId, explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}` });

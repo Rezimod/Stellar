@@ -22,6 +22,7 @@ import { redeemRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { starsToGEL } from '@/lib/stars-economy';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
+import { trackServer } from '@/lib/track-server';
 
 const CODE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -132,6 +133,12 @@ export async function POST(req: NextRequest) {
           expiresAt,
         })
         .returning();
+      // Fresh code minted (not the idempotent cached path above) — a Stars
+      // discount was genuinely redeemed.
+      trackServer('reward_redeemed', walletAddress, {
+        reward_id: inserted[0].code,
+        stars_spent: stars,
+      });
       return NextResponse.json({
         code: inserted[0].code,
         gelValue,

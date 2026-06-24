@@ -301,6 +301,28 @@ export const analyticsEvent = pgTable('analytics_event', {
   index('analytics_event_wallet_idx').on(t.wallet),
 ])
 
+// Acquisition attribution — one write-once row per wallet, set on the first
+// authenticated session. Keyed on `wallet` (the stable identity: Privy embedded
+// wallets persist, external connect yields the same column). UTM + referrer +
+// landing path answer "which campaign brought this user", which is the anchor
+// for cohort retention. First write wins (on conflict do nothing); a returning
+// user's acquisition channel is never overwritten by a later visit.
+export const userCohorts = pgTable('user_cohorts', {
+  wallet: text('wallet').primaryKey(),
+  privyUserId: text('privy_user_id').notNull(),
+  firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).defaultNow().notNull(),
+  utmSource: text('utm_source'),
+  utmMedium: text('utm_medium'),
+  utmCampaign: text('utm_campaign'),
+  utmContent: text('utm_content'),
+  referrer: text('referrer'),
+  landingPath: text('landing_path'),
+  country: text('country'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('user_cohorts_campaign_idx').on(t.utmSource, t.utmCampaign),
+])
+
 // Web Push subscriptions. One row per browser/device endpoint. `lat`/`lon`
 // drive the clear-sky trigger; `lastNotifiedDate` (YYYY-MM-DD) dedupes so a
 // device gets at most one push per day.

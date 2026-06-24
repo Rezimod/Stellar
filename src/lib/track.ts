@@ -4,8 +4,12 @@
  *
  *   track('find_aimed', { target: 'jupiter', heldMs: 1200 }, wallet)
  *
- * The six allowed events are the core loop: open, location_set, find_aimed,
- * stars_earned, stars_spent, mission_complete. See src/app/api/track/route.ts.
+ * The core-loop events are: open, location_set, find_aimed, stars_earned,
+ * stars_spent, mission_complete. The cohort/retention events (session_open,
+ * observation_started, quiz_completed, marketplace_view) are wallet-attributed
+ * behavior tracked for the Astroman beta. See src/app/api/track/route.ts.
+ * Server-only events (signup, observation_minted, reward_redeemed) are written
+ * directly via src/lib/track-server.ts, not through this client helper.
  */
 
 export type TrackEvent =
@@ -14,7 +18,11 @@ export type TrackEvent =
   | 'find_aimed'
   | 'stars_earned'
   | 'stars_spent'
-  | 'mission_complete';
+  | 'mission_complete'
+  | 'session_open'
+  | 'observation_started'
+  | 'quiz_completed'
+  | 'marketplace_view';
 
 const ANON_KEY = 'stellar_anon_id';
 

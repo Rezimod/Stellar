@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft, Sun, Moon,
-  Mail, Phone, Chrome,
+  Mail, Chrome,
   LogOut, Trash2, ChevronRight,
   Orbit, Sparkles, Cloud, Flashlight, Wallet, ShieldCheck,
 } from 'lucide-react';
@@ -19,7 +19,7 @@ import { useAppState } from '@/hooks/useAppState';
 import { Section, Row, Toggle } from '@/components/shared/SettingsList';
 
 export default function SettingsPage() {
-  const { user, linkEmail, linkPhone, unlinkEmail, unlinkPhone } = usePrivy();
+  const { user, linkEmail, unlinkEmail } = usePrivy();
   const { authenticated, address } = useStellarUser();
   const { location } = useLocation();
   const { logout } = useStellarAuth();
@@ -130,7 +130,6 @@ export default function SettingsPage() {
 
   const email = user?.email?.address ??
     (user?.linkedAccounts.find(a => a.type === 'email') as { address?: string } | undefined)?.address;
-  const phone = (user?.linkedAccounts.find(a => a.type === 'phone') as { number?: string } | undefined)?.number;
   const hasGoogle = user?.linkedAccounts.some(a => a.type === 'google_oauth');
   const addrShort = address ? `${address.slice(0, 4)}…${address.slice(-4)}` : null;
 
@@ -185,18 +184,6 @@ export default function SettingsPage() {
           onClick={email ? undefined : () => linkEmail()}
           right={email ? (
             <button onClick={() => unlinkEmail(email)} style={{ color: 'var(--text-muted)', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button>
-          ) : undefined}
-          last={!phone && !hasGoogle}
-        />
-        <Row
-          icon={<Phone size={15} />}
-          iconBg="rgba(94, 234, 212,0.08)"
-          iconColor="var(--success)"
-          label={phone ? phone : 'Add Phone'}
-          sublabel={phone ? 'Linked phone' : 'Add SMS login'}
-          onClick={phone ? undefined : () => linkPhone()}
-          right={phone ? (
-            <button onClick={() => unlinkPhone(phone)} style={{ color: 'var(--text-muted)', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button>
           ) : undefined}
           last={!hasGoogle}
         />

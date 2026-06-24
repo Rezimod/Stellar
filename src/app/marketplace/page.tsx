@@ -17,6 +17,7 @@ import RecommendedRow from '@/components/marketplace/RecommendedRow';
 import HelpBanner from '@/components/marketplace/HelpBanner';
 import MarketplaceSectionHeader from '@/components/marketplace/MarketplaceSectionHeader';
 import { getProductsByRegion, getDealersByRegion, GLOBAL_FALLBACK, type Product } from '@/lib/dealers';
+import { track } from '@/lib/track';
 
 type Cat = Product['category'];
 type CategoryFilter = 'all' | Cat;
@@ -58,6 +59,8 @@ export default function MarketplacePage() {
   const featuredRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setNavSlot(document.getElementById('nav-mobile-center')); }, []);
+  // Funnel: marketplace reached. Once per mount; wallet attached if known.
+  useEffect(() => { track('marketplace_view', {}, address); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetch('/api/price/sol')
       .then(r => r.json())

@@ -47,7 +47,7 @@ export function useProfile() {
     // sign in via Privy — once they do, Phantom is reused as a Privy
     // connector and they get a userId tied to the same address.
     if (!authenticated) {
-      login({ loginMethods: ['wallet', 'email', 'sms', 'google'], walletChainType: 'solana-only' });
+      login({ loginMethods: ['wallet', 'email', 'google', 'twitter'], walletChainType: 'solana-only' });
       return { ok: false, error: 'Sign in to save your profile' };
     }
     setSaving(true);
@@ -55,7 +55,7 @@ export function useProfile() {
     try {
       const token = await getAccessToken();
       if (!token) {
-        login({ loginMethods: ['wallet', 'email', 'sms', 'google'], walletChainType: 'solana-only' });
+        login({ loginMethods: ['wallet', 'email', 'google', 'twitter'], walletChainType: 'solana-only' });
         setError('Session expired — sign in again');
         return { ok: false, error: 'Session expired — sign in again' };
       }

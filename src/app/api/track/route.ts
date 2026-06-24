@@ -5,8 +5,11 @@ import { trackRateLimit, checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
-// The six core-loop events. Anything else is rejected at the boundary so the
-// table stays a clean, queryable funnel.
+// Client-emittable events. Anything else is rejected at the boundary so the
+// table stays a clean, queryable funnel. Server-only events (signup,
+// observation_minted, reward_redeemed) are inserted directly from their route
+// handlers via src/lib/track-server.ts and are intentionally absent here — a
+// client must not be able to forge them.
 const ALLOWED = new Set([
   'open',
   'location_set',
@@ -14,6 +17,10 @@ const ALLOWED = new Set([
   'stars_earned',
   'stars_spent',
   'mission_complete',
+  'session_open',
+  'observation_started',
+  'quiz_completed',
+  'marketplace_view',
 ]);
 
 const PROPS_MAX_BYTES = 4096;

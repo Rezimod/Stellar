@@ -21,7 +21,7 @@ export function useStellarAuth() {
   });
 
   const loginWithEmail = useCallback(() => {
-    login({ loginMethods: ['email', 'sms', 'google'] });
+    login({ loginMethods: ['email', 'google', 'twitter'] });
   }, [login]);
 
   const connectWallet = useCallback(() => {
