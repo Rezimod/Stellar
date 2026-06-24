@@ -5,29 +5,32 @@ import { useStellarUser } from '@/hooks/useStellarUser';
 import { useStellarAuth } from '@/hooks/useStellarAuth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useTranslations } from 'next-intl';
-import { Suspense, useState, useEffect, type CSSProperties } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import {
-  Copy, Check, ExternalLink, Telescope, User, ChevronRight,
-  Bell, Moon, Sun, LogOut, X, Camera, Package, Trash2,
-  ShieldCheck, Gift, Plus,
+  ExternalLink, Telescope, User, ChevronRight, Flag, History, Settings,
+  Bell, Moon, Sun, LogOut, X, Package, Trash2,
+  ShieldCheck, Gift,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAppState } from '@/hooks/useAppState';
-import { getRank } from '@/lib/rewards';
+import { getRank, RANK_THRESHOLDS } from '@/lib/rewards';
 import { PRODUCTS } from '@/lib/products';
 import { computeMarketplaceStarsPrice } from '@/lib/stars-economy';
 import Button from '@/components/shared/Button';
 import PageTransition from '@/components/ui/PageTransition';
 import PageContainer from '@/components/layout/PageContainer';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Avatar } from '@/lib/avatars';
 import { AvatarPicker } from '@/components/profile/AvatarPicker';
 import { UsernameEditor } from '@/components/profile/UsernameEditor';
 import { OnChainRecord } from '@/components/profile/OnChainRecord';
 import { useProfile } from '@/hooks/useProfile';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { Section, Row, Toggle } from '@/components/shared/SettingsList';
+import { profileTokens } from '@/components/profile/profileTheme';
+import { ProfileHero } from '@/components/profile/ProfileHero';
+import { ProfileSidebar, type SidebarItem } from '@/components/profile/ProfileSidebar';
+import { ProgressCard } from '@/components/profile/ProgressCard';
+import { EmptyStateCard } from '@/components/profile/EmptyStateCard';
 
 interface OrderRow {
   id: string;
@@ -155,9 +158,9 @@ function ProfilePageContent() {
           <h1
             style={{
               color: 'var(--text-primary)',
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               fontSize: 18,
-              fontWeight: 500,
+              fontWeight: 600,
               margin: '0 0 8px',
             }}
           >
@@ -230,41 +233,43 @@ function ProfilePageContent() {
       };
     });
 
-  const dividerColor = isLight ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.06)';
-  const hairline = isLight ? 'rgba(15,23,42,0.10)' : 'rgba(255,255,255,0.10)';
+  const tk = profileTokens(isLight);
+  const { hairline, divider: dividerColor } = tk;
   const cardBg = isLight ? '#FFFFFF' : 'var(--surface)';
+  const clusterLabel = cluster.startsWith('mainnet') ? 'Solana mainnet' : t('devnet');
+  const nextRankText = rank.nextRank ? t('nextRank', { rank: rank.nextRank }) : t('maxRank');
+  const missionsText = `${completed.length} ${t('statMissions').toLowerCase()}`;
 
-  const CARD: CSSProperties = {
-    background: cardBg,
-    border: `1px solid ${hairline}`,
-    borderRadius: 20,
-  };
+  // Real rank thresholds become the milestone track — current rank highlighted.
+  const milestones = RANK_THRESHOLDS.map((r, i) => {
+    const next = RANK_THRESHOLDS[i + 1];
+    return {
+      name: r.name,
+      reached: completed.length >= r.min,
+      current: completed.length >= r.min && (!next || completed.length < next.min),
+    };
+  });
 
-  const KICKER: CSSProperties = {
-    fontFamily: 'var(--font-mono)',
-    fontSize: 12,
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.14em',
-    color: 'var(--text-muted)',
-    margin: 0,
-  };
-
-  const iconButton: CSSProperties = {
-    width: 36, height: 36, borderRadius: '50%',
-    background: isLight ? 'rgba(15,23,42,0.05)' : 'rgba(255,255,255,0.06)',
-    border: `1px solid ${hairline}`,
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    cursor: 'pointer', color: 'var(--text-primary)',
-  };
+  const sidebarItems: SidebarItem[] = [
+    { key: 'overview', label: t('overview'), icon: <User size={16} />, active: true },
+    { key: 'missions', label: t('statMissions'), icon: <Flag size={16} />, count: completed.length, href: '/missions' },
+    { key: 'discoveries', label: t('discoveries'), icon: <Telescope size={16} />, count: photoDiscoveries.length, href: '/nfts' },
+    { key: 'gifts', label: t('gifts'), icon: <Gift size={16} />, count: giftsWithinReach, href: '/marketplace' },
+    { key: 'history', label: t('history'), icon: <History size={16} />, href: '/observations' },
+    { key: 'settings', label: t('settingsTitle'), icon: <Settings size={16} />, href: '/settings' },
+  ];
 
   const seeAllLink = (href: string, label: string) => (
     <Link href={href} style={{
-      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent)',
+      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-purple)',
       textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3,
     }}>
       {label} <ChevronRight size={11} />
     </Link>
+  );
+
+  const countTag = (n: number) => (
+    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{n}</span>
   );
 
   return (
@@ -321,457 +326,349 @@ function ProfilePageContent() {
         </div>
       )}
 
-      <PageContainer variant="content" className="py-4 pb-10">
-        <div style={{ maxWidth: 480, margin: '0 auto' }}>
-
-          {/* TOP BAR — avatar + name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 2px 18px' }}>
-            <button
-              onClick={() => setAvatarOpen(true)}
-              aria-label="Change avatar"
-              style={{
-                position: 'relative', width: 48, height: 48, padding: 0, border: 'none',
-                background: 'transparent', cursor: 'pointer', borderRadius: '50%', flexShrink: 0,
-              }}
-            >
-              <Avatar avatarId={profile?.avatar} initial={initial} size={48} />
-              <span
-                aria-hidden
-                style={{
-                  position: 'absolute', right: -3, bottom: -3,
-                  width: 19, height: 19, borderRadius: '50%',
-                  background: 'var(--bg-elevated)',
-                  border: `1px solid ${hairline}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--stars)',
-                }}
-              >
-                <Camera size={10} />
-              </span>
-            </button>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <UsernameEditor
-                value={profile?.username ?? null}
-                fallback={fallbackName}
-                saving={saving}
-                onSave={(next) => update({ username: next })}
-              />
-            </div>
+      <div className="profile-page" style={{ position: 'relative' }}>
+        {/* decorative cosmic glow — scoped to the profile page */}
+        {!isLight && (
+          <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+            <div style={{ position: 'absolute', top: -80, right: '8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.10), transparent 70%)' }} />
+            <div style={{ position: 'absolute', bottom: 40, left: '-6%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%)' }} />
           </div>
+        )}
 
-          {/* BALANCE CARD */}
-          <div style={{ ...CARD, padding: '18px 18px 16px', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <p style={KICKER}>{t('statStars')} · {t('balance')}</p>
-              <Link href="/earn" aria-label={t('earnStars')} style={{ ...iconButton, textDecoration: 'none' }}>
-                <Plus size={16} />
-              </Link>
+        <PageContainer variant="wide" className="py-6 pb-16">
+          <div style={{ position: 'relative', zIndex: 1 }}>
+
+            {/* HERO */}
+            <ProfileHero
+              tokens={tk}
+              avatarId={profile?.avatar}
+              initial={initial}
+              onAvatarClick={() => setAvatarOpen(true)}
+              nameSlot={
+                <UsernameEditor
+                  value={profile?.username ?? null}
+                  fallback={fallbackName}
+                  saving={saving}
+                  onSave={(next) => update({ username: next })}
+                />
+              }
+              displayName={displayName}
+              statusLabel={rank.name}
+              tagline={t('tagline')}
+              addrShort={addrShort}
+              address={address}
+              explorerHref={address ? `https://explorer.solana.com/address/${address}?cluster=${cluster}` : null}
+              clusterLabel={clusterLabel}
+              copied={copied}
+              onCopy={handleCopy}
+              copyLabel={t('copyAddress')}
+              loaded={profileLoaded}
+              balance={balanceDisplay}
+              earned={earnedDisplay}
+              burned={burnedDisplay}
+              statLabels={{ total: t('totalStars'), earned: t('lifetimeEarned'), burned: t('lifetimeBurned') }}
+            />
+
+            {/* DASHBOARD GRID */}
+            <div className="grid gap-4 mt-4 items-start grid-cols-1 md:grid-cols-2 lg:grid-cols-[280px_minmax(0,1.4fr)_minmax(0,1fr)]">
+
+              {/* SIDEBAR */}
+              <div className="md:col-span-2 lg:col-span-1">
+                <ProfileSidebar
+                  tokens={tk}
+                  items={sidebarItems}
+                  status={{
+                    kicker: t('stargazerStatus'),
+                    rankName: rank.name,
+                    nextRankText,
+                    progressPct: rank.progressPct,
+                    missionsText,
+                  }}
+                />
+              </div>
+
+              {/* CENTER COLUMN */}
+              <div className="flex flex-col gap-4">
+                <ProgressCard
+                  tokens={tk}
+                  kicker={t('stargazerProgress')}
+                  countLabel={missionsText}
+                  milestones={milestones}
+                  nextLabel={nextRankText}
+                  hint={rank.nextRank ? t('progressHint', { rank: rank.nextRank }) : t('maxRank')}
+                />
+
+                <EmptyStateCard
+                  tokens={tk}
+                  kicker={t('discoveries')}
+                  headerRight={photoDiscoveries.length > 0 ? seeAllLink('/nfts', t('viewAll')) : countTag(0)}
+                  flushBody={photoDiscoveries.length > 0}
+                  empty={photoDiscoveries.length === 0 ? {
+                    icon: <Telescope size={26} />,
+                    title: t('noDiscoveries'),
+                    subtitle: t('discoveriesHint'),
+                    cta: { label: t('startObserving'), href: '/observe' },
+                  } : undefined}
+                >
+                  {photoDiscoveries.length > 0 ? (
+                    <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', padding: 16 }}>
+                      {photoDiscoveries.map(d => {
+                        const isConfirming = discoveryToDelete === d.id;
+                        return (
+                          <div
+                            key={d.key}
+                            style={{
+                              flexShrink: 0, width: 148,
+                              background: cardBg,
+                              border: `1px solid ${hairline}`,
+                              borderRadius: 14,
+                              overflow: 'hidden', textAlign: 'left',
+                              position: 'relative',
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setSelectedPhoto({ photo: d.photo, name: d.name })}
+                              style={{ display: 'block', width: '100%', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+                            >
+                              <div style={{ position: 'relative', width: '100%', height: 100 }}>
+                                <Image src={d.photo} alt={d.name} fill style={{ objectFit: 'cover' }} unoptimized />
+                              </div>
+                              <div style={{ padding: '10px 11px 11px' }}>
+                                <p style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {d.name}
+                                </p>
+                                <p style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: 12, margin: 0 }}>
+                                  {new Date(d.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}
+                                </p>
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              aria-label={isConfirming ? 'Confirm delete discovery' : 'Delete discovery'}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isConfirming) { removeMission(d.id); setDiscoveryToDelete(null); }
+                                else { setDiscoveryToDelete(d.id); }
+                              }}
+                              onBlur={() => isConfirming && setDiscoveryToDelete(null)}
+                              style={{
+                                position: 'absolute', top: 6, right: 6,
+                                height: 24, minWidth: 24,
+                                padding: isConfirming ? '0 8px' : 0,
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                                borderRadius: 999,
+                                background: isConfirming ? 'var(--error)' : 'var(--bg-elevated)',
+                                border: `1px solid ${isConfirming ? 'var(--error)' : hairline}`,
+                                color: isConfirming ? '#FFFFFF' : 'var(--text-primary)',
+                                cursor: 'pointer',
+                                fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
+                                letterSpacing: '0.08em', textTransform: 'uppercase',
+                              }}
+                            >
+                              <Trash2 size={10} />
+                              {isConfirming && <span>{t('delete')}</span>}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : undefined}
+                </EmptyStateCard>
+              </div>
+
+              {/* RIGHT COLUMN */}
+              <div className="flex flex-col gap-4">
+                {/* GIFTS */}
+                <EmptyStateCard
+                  tokens={tk}
+                  kicker={t('gifts')}
+                  headerRight={<span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>{t('giftsReach', { count: giftsWithinReach })}</span>}
+                  empty={giftsWithinReach === 0 ? {
+                    icon: <Gift size={26} />,
+                    title: t('noGiftsReach'),
+                    subtitle: t('giftsHint'),
+                    cta: { label: t('viewGifts'), href: '/marketplace' },
+                  } : undefined}
+                >
+                  {giftsWithinReach > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {giftPreview.map((g, i) => (
+                          <span key={g.id} style={{ position: 'relative', width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `1px solid ${hairline}`, background: '#FFFFFF', marginLeft: i === 0 ? 0 : -10 }}>
+                            <Image src={g.image} alt="" fill sizes="38px" style={{ objectFit: 'cover' }} unoptimized />
+                          </span>
+                        ))}
+                      </div>
+                      <Link
+                        href="/marketplace"
+                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--accent-purple)', background: isLight ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)' }}
+                      >
+                        {t('viewGifts')}
+                      </Link>
+                    </div>
+                  ) : undefined}
+                </EmptyStateCard>
+
+                {/* PURCHASE HISTORY */}
+                <EmptyStateCard
+                  tokens={tk}
+                  kicker={t('purchaseHistory')}
+                  headerRight={orderHistory.length > 0 ? seeAllLink('/marketplace', t('shop')) : countTag(0)}
+                  flushBody={orderHistory.length > 0}
+                  empty={orderHistory.length === 0 ? {
+                    icon: <Package size={26} />,
+                    title: t('noPurchasesYet'),
+                    subtitle: t('purchasesHint'),
+                    cta: { label: t('goToShop'), href: '/marketplace' },
+                  } : undefined}
+                >
+                  {orderHistory.length > 0 ? (
+                    <div>
+                      {orderHistory.map((o, i) => {
+                        const dateStr = new Date(o.createdAt).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
+                        const isPaid = o.status === 'paid';
+                        const isStars = o.paymentMethod === 'stars';
+                        const fiatLabel = `${o.amountFiat % 1 !== 0 ? o.amountFiat.toFixed(2) : o.amountFiat.toLocaleString()} ${o.currency}`;
+                        const payLabel = isStars
+                          ? `✦ ${(o.amountStars ?? 0).toLocaleString()}`
+                          : `${o.amountSol >= 1 ? o.amountSol.toFixed(3) : o.amountSol.toFixed(4)} SOL`;
+                        return (
+                          <div
+                            key={o.id}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 13,
+                              padding: '12px 22px',
+                              borderBottom: i < orderHistory.length - 1 ? `1px solid ${dividerColor}` : 'none',
+                            }}
+                          >
+                            <div style={{ position: 'relative', width: 36, height: 36, borderRadius: 10, overflow: 'hidden', flexShrink: 0, background: cardBg, border: `1px solid ${hairline}` }}>
+                              {o.productImage ? (
+                                <Image src={o.productImage} alt={o.productName} fill style={{ objectFit: 'contain', padding: 4 }} unoptimized />
+                              ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                  <Package size={14} color="var(--text-muted)" />
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {o.productName}
+                              </p>
+                              <p style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: 11, margin: '2px 0 0' }}>
+                                {dateStr} · {fiatLabel} · {payLabel}
+                              </p>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                              <span style={{ padding: '3px 8px', borderRadius: 999, fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', border: `1px solid ${isPaid ? 'var(--success)' : hairline}`, color: isPaid ? 'var(--success)' : 'var(--stars)' }}>
+                                {isPaid ? t('paid') : t('pending')}
+                              </span>
+                              {o.signature && (
+                                <a href={`https://explorer.solana.com/tx/${o.signature}?cluster=${cluster}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}>
+                                  tx <ExternalLink size={9} />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : undefined}
+                </EmptyStateCard>
+              </div>
             </div>
 
-            {profileLoaded ? (
-              <p style={{
-                fontFamily: 'var(--font-mono)', fontSize: 34, fontWeight: 700,
-                color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums',
-                letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1,
-              }}>
-                <span style={{ color: 'var(--stars)', fontSize: 22, marginRight: 6 }}>✦</span>
-                {balanceDisplay.toLocaleString()}
-              </p>
-            ) : (
-              <Skeleton className="w-32 h-9" style={{ marginBottom: 14 }} />
+            {/* ON-CHAIN RECORD — Proof of Observation registry (renders only when present) */}
+            {address && (
+              <div id="wallet" style={{ scrollMarginTop: 88, marginTop: 16 }}>
+                <OnChainRecord wallet={address} />
+              </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>
-                {addrShort} · {(process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet').startsWith('mainnet') ? 'Solana mainnet' : t('devnet')}
-              </span>
-              {address && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <button onClick={handleCopy} aria-label={t('copyAddress')} style={{ ...iconButton, width: 30, height: 30 }}>
-                    {copied ? <Check size={13} color="var(--success)" /> : <Copy size={13} />}
-                  </button>
-                  <a
-                    href={`https://explorer.solana.com/address/${address}?cluster=${cluster}`}
-                    target="_blank" rel="noopener noreferrer"
-                    aria-label="Solana Explorer"
-                    style={{ ...iconButton, width: 30, height: 30, textDecoration: 'none' }}
-                  >
-                    <ExternalLink size={13} />
-                  </a>
-                </span>
+            {/* SETTINGS + ACCOUNT — functional controls preserved */}
+            <div style={{ maxWidth: 760, marginTop: 16 }}>
+              <Section title={t('settingsTitle')} action={seeAllLink('/settings', t('allSettings'))}>
+                <Row
+                  icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
+                  iconBg="rgba(255, 179, 71,0.08)"
+                  iconColor="var(--terracotta)"
+                  label={theme === 'dark' ? t('darkMode') : t('dayMode')}
+                  sublabel={theme === 'dark' ? t('themeSubDark') : t('themeSubDay')}
+                  right={<Toggle on={theme === 'dark'} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />}
+                />
+                <Row
+                  icon={<Bell size={15} />}
+                  iconBg="rgba(255, 179, 71,0.08)"
+                  iconColor="var(--terracotta)"
+                  label={t('notifications')}
+                  sublabel={t('notificationsSub')}
+                  href="/settings#notifications"
+                />
+                <Row
+                  icon={<span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700 }}>{locale === 'ka' ? 'ქა' : 'EN'}</span>}
+                  iconBg="rgba(94, 234, 212,0.08)"
+                  iconColor="var(--success)"
+                  label={t('language')}
+                  right={
+                    <span style={{ display: 'inline-flex', gap: 4 }}>
+                      {([['en', 'EN'], ['ka', 'ქა']] as const).map(([code, label]) => {
+                        const active = locale === code;
+                        return (
+                          <button
+                            key={code}
+                            onClick={() => switchLocale(code)}
+                            style={{
+                              padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
+                              fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600,
+                              background: active ? 'var(--accent)' : 'transparent',
+                              border: `1px solid ${active ? 'var(--accent)' : hairline}`,
+                              color: active ? '#1A1306' : 'var(--text-secondary)',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </span>
+                  }
+                />
+                <Row
+                  icon={<ShieldCheck size={15} />}
+                  iconBg="rgba(94, 234, 212,0.08)"
+                  iconColor="var(--success)"
+                  label={t('privacy')}
+                  sublabel={t('privacySub')}
+                  href="/settings#privacy"
+                  last
+                />
+              </Section>
+
+              <Section title={t('accountActions')}>
+                <Row
+                  icon={<LogOut size={15} />}
+                  iconBg="rgba(251, 113, 133,0.06)"
+                  iconColor="var(--error)"
+                  label={confirmSignOut ? t('confirmSignOutQ') : t('signOut')}
+                  onClick={() => { if (confirmSignOut) logout(); else setConfirmSignOut(true); }}
+                  danger
+                  last
+                />
+              </Section>
+
+              {confirmSignOut && (
+                <button
+                  onClick={() => setConfirmSignOut(false)}
+                  style={{ display: 'block', margin: '-12px auto 0', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', letterSpacing: '0.05em' }}
+                >
+                  {t('cancel')}
+                </button>
               )}
             </div>
+
           </div>
-
-          {/* EARNED / SPENT TILES */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-            {[
-              { label: t('lifetimeEarned'), value: earnedDisplay },
-              { label: t('lifetimeBurned'), value: burnedDisplay },
-            ].map(s => (
-              <div key={s.label} style={{ ...CARD, padding: '16px 16px 14px' }}>
-                <p style={{ ...KICKER, marginBottom: 10 }}>{s.label}</p>
-                {profileLoaded ? (
-                  <p style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 700,
-                    color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums', margin: 0, lineHeight: 1,
-                  }}>
-                    {s.value.toLocaleString()}
-                  </p>
-                ) : (
-                  <Skeleton className="w-16 h-5" />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* RANK — real progress to the next rank */}
-          <div style={{ ...CARD, padding: '14px 16px', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{
-                fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 500,
-                textTransform: 'uppercase', letterSpacing: '0.1em',
-                color: 'var(--text-primary)',
-              }}>
-                {rank.name}
-              </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-                {completed.length} {t('statMissions').toLowerCase()}
-              </span>
-            </div>
-            <div style={{
-              height: 4, borderRadius: 999, overflow: 'hidden',
-              background: isLight ? 'rgba(15,23,42,0.10)' : 'rgba(0,0,0,0.35)',
-              marginBottom: 7,
-            }}>
-              <div style={{
-                width: `${rank.progressPct}%`, height: '100%',
-                background: 'var(--stars)',
-                transition: 'width 0.4s ease',
-              }} />
-            </div>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-              {rank.nextRank ? t('nextRank', { rank: rank.nextRank }) : t('maxRank')}
-            </p>
-          </div>
-
-          {/* GIFTS — real catalog priced in Stars */}
-          <Link href="/marketplace" style={{ ...CARD, display: 'block', padding: '16px 18px', marginBottom: 12, textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
-              <span style={{ ...iconButton, cursor: 'inherit', color: 'var(--stars)' }} aria-hidden>
-                <Gift size={16} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{
-                  fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 500,
-                  color: 'var(--text-primary)', margin: '0 0 2px',
-                }}>
-                  {t('gifts')}
-                </p>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                  {t('giftsReach', { count: giftsWithinReach })}
-                </p>
-              </div>
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                {giftPreview.map((g, i) => (
-                  <span key={g.id} style={{
-                    position: 'relative', width: 30, height: 30, borderRadius: '50%',
-                    overflow: 'hidden', flexShrink: 0,
-                    border: `1px solid ${hairline}`,
-                    background: '#FFFFFF',
-                    marginLeft: i === 0 ? 0 : -8,
-                  }}>
-                    <Image src={g.image} alt="" fill sizes="30px" style={{ objectFit: 'cover' }} unoptimized />
-                  </span>
-                ))}
-              </span>
-              <ChevronRight size={15} color="var(--text-muted)" />
-            </div>
-          </Link>
-
-          {/* ON-CHAIN RECORD — Proof of Observation registry (renders only when present) */}
-          {address && (
-            <div id="wallet" style={{ scrollMarginTop: 88, marginBottom: 22 }}>
-              <OnChainRecord wallet={address} />
-            </div>
-          )}
-
-          {/* DISCOVERIES */}
-          <Section
-            title={`${t('discoveries')} · ${photoDiscoveries.length}`}
-            action={seeAllLink('/nfts', t('viewAll'))}
-          >
-            {photoDiscoveries.length === 0 ? (
-              <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-                <Telescope size={20} color="var(--text-muted)" style={{ marginBottom: 6 }} />
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-                  {t('noDiscoveries')}
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', padding: 12 }}>
-                {photoDiscoveries.map(d => {
-                  const isConfirming = discoveryToDelete === d.id;
-                  return (
-                    <div
-                      key={d.key}
-                      style={{
-                        flexShrink: 0, width: 148,
-                        background: cardBg,
-                        border: `1px solid ${hairline}`,
-                        borderRadius: 14,
-                        overflow: 'hidden', textAlign: 'left',
-                        position: 'relative',
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPhoto({ photo: d.photo, name: d.name })}
-                        style={{
-                          display: 'block', width: '100%', padding: 0, border: 'none',
-                          background: 'transparent', cursor: 'pointer', textAlign: 'left',
-                        }}
-                      >
-                        <div style={{ position: 'relative', width: '100%', height: 100 }}>
-                          <Image src={d.photo} alt={d.name} fill style={{ objectFit: 'cover' }} unoptimized />
-                        </div>
-                        <div style={{ padding: '10px 11px 11px' }}>
-                          <p style={{
-                            color: 'var(--text-primary)',
-                            fontFamily: 'var(--font-display)',
-                            fontSize: 13, fontWeight: 500, margin: '0 0 3px',
-                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          }}>
-                            {d.name}
-                          </p>
-                          <p style={{
-                            color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)',
-                            fontSize: 12, margin: 0,
-                          }}>
-                            {new Date(d.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}
-                          </p>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        aria-label={isConfirming ? 'Confirm delete discovery' : 'Delete discovery'}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (isConfirming) {
-                            removeMission(d.id);
-                            setDiscoveryToDelete(null);
-                          } else {
-                            setDiscoveryToDelete(d.id);
-                          }
-                        }}
-                        onBlur={() => isConfirming && setDiscoveryToDelete(null)}
-                        style={{
-                          position: 'absolute', top: 6, right: 6,
-                          height: 24, minWidth: 24,
-                          padding: isConfirming ? '0 8px' : 0,
-                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                          borderRadius: 999,
-                          background: isConfirming ? 'var(--error)' : 'var(--bg-elevated)',
-                          border: `1px solid ${isConfirming ? 'var(--error)' : hairline}`,
-                          color: isConfirming ? '#FFFFFF' : 'var(--text-primary)',
-                          cursor: 'pointer',
-                          fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
-                          letterSpacing: '0.08em', textTransform: 'uppercase',
-                        }}
-                      >
-                        <Trash2 size={10} />
-                        {isConfirming && <span>{t('delete')}</span>}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Section>
-
-          {/* PURCHASES */}
-          <Section
-            title={`${t('purchaseHistory')} · ${orderHistory.length}`}
-            action={seeAllLink('/marketplace', t('shop'))}
-          >
-            {orderHistory.length === 0 ? (
-              <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-                <Package size={20} color="var(--text-muted)" style={{ marginBottom: 6 }} />
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-                  {t('noPurchasesYet')}
-                </p>
-              </div>
-            ) : (
-              orderHistory.map((o, i) => {
-                const dateStr = new Date(o.createdAt).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
-                const isPaid = o.status === 'paid';
-                const isStars = o.paymentMethod === 'stars';
-                const fiatLabel = `${o.amountFiat % 1 !== 0 ? o.amountFiat.toFixed(2) : o.amountFiat.toLocaleString()} ${o.currency}`;
-                const payLabel = isStars
-                  ? `✦ ${(o.amountStars ?? 0).toLocaleString()}`
-                  : `${o.amountSol >= 1 ? o.amountSol.toFixed(3) : o.amountSol.toFixed(4)} SOL`;
-                return (
-                  <div
-                    key={o.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 13,
-                      padding: '12px 16px',
-                      borderBottom: i < orderHistory.length - 1 ? `1px solid ${dividerColor}` : 'none',
-                    }}
-                  >
-                    <div style={{
-                      position: 'relative', width: 36, height: 36, borderRadius: 10,
-                      overflow: 'hidden', flexShrink: 0,
-                      background: cardBg,
-                      border: `1px solid ${hairline}`,
-                    }}>
-                      {o.productImage ? (
-                        <Image src={o.productImage} alt={o.productName} fill style={{ objectFit: 'contain', padding: 4 }} unoptimized />
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                          <Package size={14} color="var(--text-muted)" />
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{
-                        color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
-                        fontSize: 14, fontWeight: 500, margin: 0,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
-                        {o.productName}
-                      </p>
-                      <p style={{
-                        color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)',
-                        fontSize: 11, margin: '2px 0 0',
-                      }}>
-                        {dateStr} · {fiatLabel} · {payLabel}
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                      <span
-                        style={{
-                          padding: '3px 8px', borderRadius: 999,
-                          fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
-                          textTransform: 'uppercase', letterSpacing: '0.1em',
-                          border: `1px solid ${isPaid ? 'var(--success)' : hairline}`,
-                          color: isPaid ? 'var(--success)' : 'var(--stars)',
-                        }}
-                      >
-                        {isPaid ? t('paid') : t('pending')}
-                      </span>
-                      {o.signature && (
-                        <a
-                          href={`https://explorer.solana.com/tx/${o.signature}?cluster=${cluster}`}
-                          target="_blank" rel="noopener noreferrer"
-                          style={{
-                            color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)',
-                            fontSize: 11, display: 'inline-flex', alignItems: 'center',
-                            gap: 3, textDecoration: 'none',
-                          }}
-                        >
-                          tx <ExternalLink size={9} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </Section>
-
-          {/* SETTINGS */}
-          <Section title={t('settingsTitle')} action={seeAllLink('/settings', t('allSettings'))}>
-            <Row
-              icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
-              iconBg="rgba(255, 179, 71,0.08)"
-              iconColor="var(--terracotta)"
-              label={theme === 'dark' ? t('darkMode') : t('dayMode')}
-              sublabel={theme === 'dark' ? t('themeSubDark') : t('themeSubDay')}
-              right={<Toggle on={theme === 'dark'} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />}
-            />
-            <Row
-              icon={<Bell size={15} />}
-              iconBg="rgba(255, 179, 71,0.08)"
-              iconColor="var(--terracotta)"
-              label={t('notifications')}
-              sublabel={t('notificationsSub')}
-              href="/settings#notifications"
-            />
-            <Row
-              icon={<span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700 }}>{locale === 'ka' ? 'ქა' : 'EN'}</span>}
-              iconBg="rgba(94, 234, 212,0.08)"
-              iconColor="var(--success)"
-              label={t('language')}
-              right={
-                <span style={{ display: 'inline-flex', gap: 4 }}>
-                  {([['en', 'EN'], ['ka', 'ქა']] as const).map(([code, label]) => {
-                    const active = locale === code;
-                    return (
-                      <button
-                        key={code}
-                        onClick={() => switchLocale(code)}
-                        style={{
-                          padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
-                          fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600,
-                          background: active ? 'var(--accent)' : 'transparent',
-                          border: `1px solid ${active ? 'var(--accent)' : hairline}`,
-                          color: active ? '#1A1306' : 'var(--text-secondary)',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </span>
-              }
-            />
-            <Row
-              icon={<ShieldCheck size={15} />}
-              iconBg="rgba(94, 234, 212,0.08)"
-              iconColor="var(--success)"
-              label={t('privacy')}
-              sublabel={t('privacySub')}
-              href="/settings#privacy"
-              last
-            />
-          </Section>
-
-          {/* SIGN OUT */}
-          <Section title={t('accountActions')}>
-            <Row
-              icon={<LogOut size={15} />}
-              iconBg="rgba(251, 113, 133,0.06)"
-              iconColor="var(--error)"
-              label={confirmSignOut ? t('confirmSignOutQ') : t('signOut')}
-              onClick={() => {
-                if (confirmSignOut) logout();
-                else setConfirmSignOut(true);
-              }}
-              danger
-              last
-            />
-          </Section>
-
-          {confirmSignOut && (
-            <button
-              onClick={() => setConfirmSignOut(false)}
-              style={{
-                display: 'block', margin: '-12px auto 0',
-                fontFamily: 'var(--font-mono)', fontSize: 12,
-                color: 'var(--text-muted)',
-                background: 'none', border: 'none',
-                cursor: 'pointer', padding: '6px 12px',
-                letterSpacing: '0.05em',
-              }}
-            >
-              {t('cancel')}
-            </button>
-          )}
-
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </div>
     </PageTransition>
   );
 }

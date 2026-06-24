@@ -54,7 +54,10 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
           style={{
             color: 'var(--stl-text-bright)',
             margin: 0,
-            fontSize: 22,
+            fontFamily: 'var(--font-body)',
+            fontWeight: 600,
+            fontSize: 24,
+            letterSpacing: '-0.01em',
             lineHeight: 1.15,
           }}
         >

@@ -1263,3 +1263,17 @@ html[data-field="on"]::after {
   background: #ff1a05;
   mix-blend-mode: multiply;
 }
+
+/* ── Profile dashboard (scoped to /profile only) ─────────────────────────── */
+.profile-page .pf-hero-stats { flex: 0 0 auto; }
+
+@media (max-width: 900px) {
+  /* Stats drop below the identity and span full width before mobile. */
+  .profile-page .pf-hero-stats { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .profile-page .pf-hero { padding: 18px !important; }
+  .profile-page .pf-card { padding: 16px !important; }
+  .profile-page .pf-hero-left { gap: 14px !important; }
+}
