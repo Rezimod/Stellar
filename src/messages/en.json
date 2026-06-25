@@ -1332,6 +1332,8 @@
         "cloud": "cloud",
         "tempLabel": "temp",
         "moonLabel": "moon",
+        "visibleNow": "Visible now",
+        "noneUp": "No planets up right now",
         "verdict": { "go": "Go", "maybe": "Maybe", "skip": "Skip" },
         "missionsLabel": "Tonight's mission"
       },

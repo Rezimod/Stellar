@@ -73,10 +73,10 @@ export default function HeroSaturn() {
       <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === Galaxy + constellations on the LEFT (behind the console) === */}
-      <div aria-hidden className="absolute inset-y-0 left-0 w-[60%] md:w-[56%] lg:w-[52%] pointer-events-none">
+      {/* === Galaxy + constellations on the RIGHT (behind the copy) === */}
+      <div aria-hidden className="absolute inset-y-0 right-0 w-[60%] md:w-[56%] lg:w-[52%] pointer-events-none">
         <div
-          className="absolute left-[-6%] top-[40%] -translate-y-1/2 w-[110%] aspect-[400/265]"
+          className="absolute right-[-6%] top-[40%] -translate-y-1/2 w-[110%] aspect-[400/265]"
           style={{
             WebkitMaskImage:
               'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
@@ -204,6 +204,23 @@ function HeroConsole({ paused }: { paused: boolean }) {
   const misIdx = missions.length ? tick % missions.length : 0;
   const mission = missions[misIdx];
 
+  const visiblePlanets = useMemo(() => {
+    const named = (name: string) => {
+      try {
+        const v = tp(name.toLowerCase());
+        return v && !v.startsWith('planets.') ? v : name;
+      } catch {
+        return name;
+      }
+    };
+    return sky.planets
+      .filter((p) => p.visible && p.altitude > 5)
+      .sort((a, b) => b.altitude - a.altitude)
+      .slice(0, 4)
+      .map((p) => ({ name: named(p.name), alt: Math.round(p.altitude) }));
+  }, [sky.planets, tp]);
+  const planetsKey = visiblePlanets.map((p) => p.name).join();
+
   const dayLabel = (i: number): string => {
     if (i === 0) return t('cards.today');
     if (i === 1) return t('cards.tomorrow');
@@ -257,6 +274,40 @@ function HeroConsole({ paused }: { paused: boolean }) {
               </div>
               <Dots count={days.length} active={dayIdx} />
             </div>
+          )}
+        </Link>
+
+        <div className="mx-5 h-px bg-white/[0.07]" />
+
+        {/* Visible-now planets band */}
+        <Link href="/sky" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
+          <div className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+            {t('cards.visibleNow')}
+          </div>
+          {sky.loading ? (
+            <div className="flex gap-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <span key={i} className="h-7 w-20 rounded-full bg-white/[0.05] animate-pulse" />
+              ))}
+            </div>
+          ) : visiblePlanets.length ? (
+            <div key={planetsKey} className="hero-card-swap flex flex-wrap gap-2">
+              {visiblePlanets.map((p) => (
+                <span
+                  key={p.name}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] px-2.5 py-1"
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: p.alt > 35 ? '#4ADE80' : p.alt > 15 ? '#FFB347' : '#94A3B8' }}
+                  />
+                  <span className="text-white/85 text-[12.5px] font-medium leading-none">{p.name}</span>
+                  <span className="font-mono text-[11px] tabular-nums text-white/40 leading-none">{p.alt}°</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="font-mono text-[12px] text-white/35">{t('cards.noneUp')}</span>
           )}
         </Link>
 

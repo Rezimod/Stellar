@@ -727,12 +727,14 @@ code, pre, .mono, [class*="font-mono"] {
    Each time a card cycles to the next night / mission, the new content
    fades + slides in. GPU-only transform + opacity, runs once per swap. */
 .hero-card-swap {
-  animation: heroCardSwap 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: heroCardSwap 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
-.hero-card-swap.d1 { animation-delay: 110ms; animation-fill-mode: both; }
+.hero-card-swap.d1 { animation-delay: 90ms; animation-fill-mode: both; }
 @keyframes heroCardSwap {
-  from { opacity: 0; transform: translateX(18px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+  60%  { opacity: 1; filter: blur(0); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-card-swap { animation: none; }

@@ -1302,6 +1302,8 @@
         "cloud": "ღრუბ.",
         "tempLabel": "ტემპ.",
         "moonLabel": "მთვარე",
+        "visibleNow": "ახლა ხილული",
+        "noneUp": "ამ წუთას პლანეტები არ ჩანს",
         "verdict": { "go": "გადი", "maybe": "შეიძლება", "skip": "გამოტოვე" },
         "missionsLabel": "ამაღამის მისია"
       },
