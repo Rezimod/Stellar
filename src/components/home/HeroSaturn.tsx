@@ -10,12 +10,11 @@ import { MoonGlyph } from '@/components/sky/forecast/visuals';
 const CYCLE_MS = 4500;
 
 const VERDICT_COLOR: Record<'go' | 'maybe' | 'skip', string> = {
-  go: '#5EEAD4',
+  go: '#4ADE80',
   maybe: '#FFB347',
   skip: '#94A3B8',
 };
 
-// Naked-eye / small-scope targets → thumbnail + Stars reward.
 const TARGET_META: Record<string, { img: string; stars: number }> = {
   Moon: { img: '/sky/targets/moon.jpg', stars: 50 },
   Mercury: { img: '/sky/targets/mercury.jpg', stars: 90 },
@@ -32,32 +31,23 @@ export default function HeroSaturn() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [paused, setPaused] = useState(false);
 
-  // Pause the starfield + card cycling when the hero scrolls off-screen
-  // or the tab is backgrounded — keeps idle CPU at zero.
   useEffect(() => {
     const el = sectionRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
-
     let inView = true;
     let docVisible = !document.hidden;
     const sync = () => setPaused(!(inView && docVisible));
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        inView = entries[0]?.isIntersecting ?? true;
-        sync();
-      },
-      { threshold: 0 },
-    );
+    const io = new IntersectionObserver((entries) => {
+      inView = entries[0]?.isIntersecting ?? true;
+      sync();
+    }, { threshold: 0 });
     io.observe(el);
-
     const onVis = () => {
       docVisible = !document.hidden;
       sync();
     };
     document.addEventListener('visibilitychange', onVis);
     sync();
-
     return () => {
       io.disconnect();
       document.removeEventListener('visibilitychange', onVis);
@@ -67,85 +57,127 @@ export default function HeroSaturn() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full overflow-hidden flex items-center"
+      className="relative w-full overflow-hidden"
       style={{
-        // min-height (not fixed height) so the in-flow mobile cards can extend
-        // the hero on short screens without clipping; desktop cards are absolute.
         minHeight: '100dvh',
         background: [
-          'radial-gradient(ellipse 78% 95% at 80% 50%, rgba(255, 168, 85, 0.14) 0%, rgba(255, 122, 58, 0.06) 28%, transparent 58%)',
-          'radial-gradient(ellipse 60% 70% at 16% 32%, rgba(70, 110, 210, 0.08) 0%, transparent 60%)',
-          'linear-gradient(180deg, #04081A 0%, #08122A 48%, #050A1C 100%)',
+          // warm dusk horizon glow rising from the bottom
+          'radial-gradient(ellipse 70% 55% at 50% 104%, rgba(255,150,70,0.26) 0%, rgba(190,90,120,0.12) 32%, transparent 62%)',
+          // cool galactic light on the right
+          'radial-gradient(ellipse 65% 70% at 82% 30%, rgba(120,90,200,0.16) 0%, transparent 58%)',
+          'linear-gradient(180deg, #05071A 0%, #0A0A24 42%, #160F2C 72%, #241634 100%)',
         ].join(', '),
       }}
     >
-      {/* === Static CSS starfield (covers the whole hero) === */}
+      {/* === Starfield (whole sky) === */}
       <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === Right cosmic backdrop: galaxy + constellations === */}
-      <div aria-hidden className="absolute inset-y-0 right-0 w-[68%] md:w-[62%] lg:w-[58%] pointer-events-none">
-        {/* Andromeda — soft, edge-faded so it melts into the canvas */}
+      {/* === Galaxy + constellations on the RIGHT === */}
+      <div aria-hidden className="absolute inset-y-0 right-0 w-[60%] md:w-[56%] lg:w-[52%] pointer-events-none">
         <div
-          className="absolute right-[-4%] top-[44%] -translate-y-1/2 w-[112%] aspect-[400/265]"
+          className="absolute right-[-6%] top-[40%] -translate-y-1/2 w-[110%] aspect-[400/265]"
           style={{
             WebkitMaskImage:
-              'radial-gradient(ellipse 62% 62% at 50% 45%, #000 38%, rgba(0,0,0,0.5) 64%, transparent 84%)',
+              'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
             maskImage:
-              'radial-gradient(ellipse 62% 62% at 50% 45%, #000 38%, rgba(0,0,0,0.5) 64%, transparent 84%)',
-            opacity: 1,
+              'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
           }}
         >
-          <Image
-            src="/hero/andromeda.jpg"
-            alt=""
-            fill
-            sizes="(max-width: 768px) 80vw, 55vw"
-            className="object-cover"
-          />
+          <Image src="/hero/andromeda.jpg" alt="" fill sizes="(max-width: 768px) 70vw, 52vw" className="object-cover" />
         </div>
-
-        {/* Constellation line-art — static, faint, layered over the starfield */}
         <Constellations />
       </div>
 
-      {/* === Left-side vignette keeps the copy readable === */}
+      {/* === Dusk landscape: mountains + city lights === */}
+      <Landscape />
+
+      {/* === Copy-side scrim for legibility === */}
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none z-[1]"
-        style={{
-          background:
-            'linear-gradient(90deg, rgba(4,8,26,0.82) 0%, rgba(5,10,28,0.34) 30%, transparent 50%)',
-        }}
+        className="absolute inset-0 pointer-events-none z-[2]"
+        style={{ background: 'linear-gradient(90deg, rgba(5,7,22,0.6) 0%, rgba(5,7,22,0.18) 34%, transparent 56%)' }}
       />
 
-      {/* === Copy === */}
-      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 pointer-events-none">
-        <div className="max-w-[640px]">
-          <h1
-            className="text-white leading-[1.02] tracking-[-0.01em]"
-            style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(34px, 5.4vw, 68px)', fontWeight: 600 }}
-          >
-            {t('headline1')}
-            <br />
-            {t('headline2')}
-          </h1>
-
-          <p className="mt-6 md:mt-7 text-[15px] md:text-[18px] leading-[1.5]" style={{ color: 'rgba(255, 220, 230, 0.72)', maxWidth: 520 }}>
-            {t('subtitle')}
-          </p>
-
-          <div className="mt-9 md:mt-12 flex flex-col items-start sm:flex-row sm:flex-wrap gap-3 pointer-events-auto">
-            <CTA href="/missions" tone="primary">{t('ctaPrimary')}</CTA>
-            <CTA href="/sky" tone="secondary">{t('ctaSecondary')}</CTA>
-          </div>
-
-          {/* === Live cards — sky conditions + mission, auto-cycling.
-              In-flow under the CTAs on mobile; pinned to the right on desktop. */}
-          <HeroCards paused={paused} />
-        </div>
+      {/* === Content grid: copy (left) · live cards (right) === */}
+      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 min-h-[100dvh]
+        grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-8 py-28 lg:py-0">
+        <Copy t={t} />
+        <HeroCards paused={paused} />
       </div>
     </section>
+  );
+}
+
+/* ─── Copy: headline · buttons · features ────────────────────────── */
+
+function Copy({ t }: { t: (k: string) => string }) {
+  return (
+    <div className="order-1 max-w-[600px] lg:pr-6">
+      <h1
+        className="text-white leading-[1.02] tracking-[-0.015em]"
+        style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(34px, 4.6vw, 60px)', fontWeight: 700 }}
+      >
+        {t('headline1')}
+        <br />
+        <span
+          style={{
+            background: 'linear-gradient(92deg, #FFFFFF 4%, #B06EF0 48%, #5B8CFF 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+          }}
+        >
+          {t('headline2')}
+        </span>
+      </h1>
+
+      <p className="mt-5 md:mt-6 text-[16px] md:text-[19px] font-medium" style={{ color: 'rgba(226,222,240,0.7)' }}>
+        {t('subtitle')}
+      </p>
+
+      <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3.5">
+        <CTA href="/missions" tone="primary" icon={<SparkleIcon />}>{t('ctaPrimary')}</CTA>
+        <CTA href="/sky" tone="secondary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
+      </div>
+
+      <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-4 max-w-[560px]">
+        <Feature href="/sky" tint="#B06EF0" title={t('features.track.title')} desc={t('features.track.desc')} icon={<TrackIcon />} />
+        <Feature href="/sky" tint="#5B8CFF" title={t('features.find.title')} desc={t('features.find.desc')} icon={<FindIcon />} />
+        <Feature href="/missions" tint="#FFB347" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} />
+      </div>
+    </div>
+  );
+}
+
+function Feature({
+  href,
+  tint,
+  title,
+  desc,
+  icon,
+}: {
+  href: string;
+  tint: string;
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link href={href} className="group flex items-start gap-3 no-underline">
+      <span
+        className="mt-0.5 flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-colors"
+        style={{ background: `${tint}1f`, border: `1px solid ${tint}40`, color: tint }}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-white text-[14.5px] font-semibold leading-tight group-hover:text-white">
+          {title}
+        </span>
+        <span className="mt-1 block text-[12.5px] leading-snug text-white/45">{desc}</span>
+      </span>
+    </Link>
   );
 }
 
@@ -164,12 +196,10 @@ function HeroCards({ paused }: { paused: boolean }) {
     return () => window.clearInterval(id);
   }, [paused]);
 
-  // Sky conditions — next 3 nights from the live forecast.
   const days = sky.forecast.slice(0, 3);
   const dayIdx = days.length ? tick % days.length : 0;
   const day = days[dayIdx];
 
-  // Missions — derived from the planets actually up tonight.
   const missions = useMemo(() => buildMissions(sky.planets, tp), [sky.planets, tp]);
   const misIdx = missions.length ? tick % missions.length : 0;
   const mission = missions[misIdx];
@@ -182,77 +212,66 @@ function HeroCards({ paused }: { paused: boolean }) {
     return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'long' }).format(d);
   };
 
+  const cardClass =
+    'group block rounded-[20px] border border-white/[0.12] bg-[#0C0E1F]/68 backdrop-blur-xl no-underline transition-colors hover:border-white/[0.22] hover:bg-[#11142A]/75';
+  const cardShadow: CSSProperties = {
+    boxShadow: '0 30px 70px -28px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)',
+  };
+
   return (
-    <div className="relative z-20 mt-7 flex flex-col gap-2.5 w-full max-w-[330px] pointer-events-auto
-      lg:mt-0 lg:gap-4 lg:absolute lg:right-[3%] xl:right-[6%] lg:top-1/2 lg:-translate-y-1/2 lg:w-[300px] lg:max-w-none">
+    <div className="order-2 w-full max-w-[380px] mx-auto lg:mx-0 lg:justify-self-end flex flex-col gap-4 pointer-events-auto">
       {/* Sky-conditions card */}
-      <Link
-        href="/sky"
-        className="group block rounded-[18px] border border-white/[0.18] bg-[#1B2750]/78 backdrop-blur-lg px-4 py-4 no-underline transition-colors hover:border-white/[0.30] hover:bg-[#243366]/85"
-        style={{ boxShadow: '0 24px 60px -24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.10)' }}
-      >
+      <Link href="/sky" className={`${cardClass} px-5 py-5`} style={cardShadow}>
         {sky.loading || !day ? (
           <CardSkeleton lines={2} />
         ) : (
           <div key={`sky-${dayIdx}`} className="hero-card-swap">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/55">
-                {dayLabel(dayIdx)}
-              </span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">{dayLabel(dayIdx)}</span>
               <VerdictPill badge={day.badge} label={t(`cards.verdict.${day.badge}`)} />
             </div>
-
-            <div className="mt-2.5 flex items-center gap-3">
-              <MoonGlyph phase={day.moonPhase} size={34} />
+            <div className="mt-3.5 flex items-center gap-3.5">
+              <MoonGlyph phase={day.moonPhase} size={40} />
               <div className="min-w-0">
-                <div className="text-white text-[19px] font-semibold leading-tight tracking-[-0.01em] truncate">
+                <div className="text-white text-[22px] font-semibold leading-tight tracking-[-0.01em] truncate">
                   {day.recommendation}
                 </div>
-                <div className="mt-0.5 font-mono text-[11.5px] tabular-nums text-white/50">
+                <div className="mt-1 font-mono text-[12.5px] tabular-nums text-white/55">
                   {day.cloudCoverPct}% {t('cards.cloud')}
                   {day.tempLow != null ? ` · ${day.tempLow}°` : ''}
                   {` · ☾ ${Math.round(day.moonIllumination * 100)}%`}
                 </div>
               </div>
             </div>
-
             <Dots count={days.length} active={dayIdx} />
           </div>
         )}
       </Link>
 
       {/* Mission card */}
-      <Link
-        href="/missions"
-        className="group block rounded-[18px] border border-white/[0.18] bg-[#1B2750]/78 backdrop-blur-lg px-3.5 py-3.5 no-underline transition-colors hover:border-white/[0.30] hover:bg-[#243366]/85"
-        style={{ boxShadow: '0 24px 60px -24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.10)' }}
-      >
-        <div className="px-0.5 pb-2.5 flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#FFB347]">
-            {t('cards.missionsLabel')}
+      <Link href="/missions" className={`${cardClass} px-5 py-4`} style={cardShadow}>
+        <div className="flex items-center justify-between pb-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#FFB347]">{t('cards.missionsLabel')}</span>
+          <span className="text-white/30 group-hover:text-[#FFB347] transition-colors" aria-hidden>
+            <ArrowIcon />
           </span>
-          <span className="text-white/25 group-hover:text-[#FFB347] transition-colors font-mono text-[13px]">↗</span>
         </div>
-
         {sky.loading || !mission ? (
           <CardSkeleton lines={1} thumb />
         ) : (
-          <div key={`mis-${misIdx}`} className="hero-card-swap d1 flex items-center gap-3">
-            <span className="relative w-12 h-12 shrink-0 rounded-[12px] overflow-hidden border border-white/10">
-              <Image src={mission.img} alt="" fill sizes="48px" className="object-cover" />
+          <div key={`mis-${misIdx}`} className="hero-card-swap d1 flex items-center gap-3.5">
+            <span className="relative w-14 h-14 shrink-0 rounded-[14px] overflow-hidden border border-white/10">
+              <Image src={mission.img} alt="" fill sizes="56px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-white text-[14.5px] font-semibold leading-tight truncate">
-                {mission.title}
-              </span>
-              <span className="mt-1 flex items-center gap-2">
-                <span className="font-mono text-[11.5px] tabular-nums text-[#FFB347]">+{mission.stars} ★</span>
-                <span className="font-mono text-[10.5px] tabular-nums text-white/40 truncate">{mission.fact}</span>
+              <span className="block text-white text-[18px] font-semibold leading-tight truncate">{mission.title}</span>
+              <span className="mt-1 flex items-center gap-2.5">
+                <span className="font-mono text-[13px] tabular-nums text-[#FFB347]">+{mission.stars} ★</span>
+                <span className="font-mono text-[12px] tabular-nums text-white/45 truncate">{mission.fact}</span>
               </span>
             </span>
           </div>
         )}
-
         <Dots count={Math.min(missions.length, 5)} active={misIdx % Math.max(1, Math.min(missions.length, 5))} />
       </Link>
     </div>
@@ -276,19 +295,15 @@ function buildMissions(planets: PlanetData[], tp: (k: string) => string): Missio
     .filter((p) => p.visible && p.altitude > 8 && TARGET_META[p.name])
     .sort((a, b) => b.altitude - a.altitude)
     .slice(0, 5)
-    .map((p) => {
-      const meta = TARGET_META[p.name];
-      return {
-        title: planetName(p.name),
-        img: meta.img,
-        stars: meta.stars,
-        fact: `${tp('altitudeLabel')} ${Math.round(p.altitude)}°`,
-      };
-    });
+    .map((p) => ({
+      title: planetName(p.name),
+      img: TARGET_META[p.name].img,
+      stars: TARGET_META[p.name].stars,
+      fact: `${tp('altitudeLabel')} ${Math.round(p.altitude)}°`,
+    }));
 
   if (up.length) return up;
 
-  // Fallback when nothing is up (daytime / no data): evergreen targets.
   return (['Jupiter', 'Saturn', 'Moon'] as const).map((name) => ({
     title: planetName(name),
     img: TARGET_META[name].img,
@@ -300,14 +315,9 @@ function buildMissions(planets: PlanetData[], tp: (k: string) => string): Missio
 function VerdictPill({ badge, label }: { badge: 'go' | 'maybe' | 'skip'; label: string }) {
   const color = VERDICT_COLOR[badge];
   return (
-    <span
-      className="flex items-center gap-1.5 rounded-full px-2 py-0.5"
-      style={{ background: `${color}1f`, border: `1px solid ${color}4d` }}
-    >
+    <span className="flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ background: `${color}1f`, border: `1px solid ${color}55` }}>
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color }}>
-        {label}
-      </span>
+      <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color }}>{label}</span>
     </span>
   );
 }
@@ -315,15 +325,12 @@ function VerdictPill({ badge, label }: { badge: 'go' | 'maybe' | 'skip'; label: 
 function Dots({ count, active }: { count: number; active: number }) {
   if (count <= 1) return null;
   return (
-    <div className="mt-3 flex items-center gap-1.5">
+    <div className="mt-4 flex items-center gap-1.5">
       {Array.from({ length: count }).map((_, i) => (
         <span
           key={i}
           className="h-[3px] rounded-full transition-all duration-300"
-          style={{
-            width: i === active ? 16 : 6,
-            background: i === active ? '#FFB347' : 'rgba(255,255,255,0.22)',
-          }}
+          style={{ width: i === active ? 18 : 7, background: i === active ? '#FFB347' : 'rgba(255,255,255,0.22)' }}
         />
       ))}
     </div>
@@ -332,41 +339,65 @@ function Dots({ count, active }: { count: number; active: number }) {
 
 function CardSkeleton({ lines, thumb }: { lines: number; thumb?: boolean }) {
   return (
-    <div className="animate-pulse flex items-center gap-3">
-      {thumb && <span className="w-12 h-12 rounded-[12px] bg-white/[0.06] shrink-0" />}
-      <div className="flex-1 space-y-2">
-        <div className="h-3.5 w-3/4 rounded bg-white/[0.06]" />
+    <div className="animate-pulse flex items-center gap-3.5">
+      {thumb && <span className="w-14 h-14 rounded-[14px] bg-white/[0.06] shrink-0" />}
+      <div className="flex-1 space-y-2.5">
+        <div className="h-4 w-3/4 rounded bg-white/[0.07]" />
         {lines > 1 && <div className="h-3 w-1/2 rounded bg-white/[0.05]" />}
       </div>
     </div>
   );
 }
 
-/* ─── Constellation line-art (static, decorative) ────────────────── */
+/* ─── Dusk landscape ─────────────────────────────────────────────── */
 
-type Star = [number, number, number?]; // x, y, brighter?
+function Landscape() {
+  // Deterministic city-light cluster in the valley (no Math.random in render).
+  const lights = useMemo(() => {
+    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
+    for (let i = 0; i < 70; i++) {
+      const t = (i * 9301 + 49297) % 233280;
+      const rnd = t / 233280;
+      const t2 = (i * 4021 + 1031) % 100;
+      const x = 250 + (rnd - 0.5) * 760 + Math.sin(i) * 40;
+      const y = 312 + (t2 / 100) * 34;
+      out.push({ x, y, r: i % 6 === 0 ? 1.6 : 1, o: 0.4 + (t2 % 5) * 0.12 });
+    }
+    return out;
+  }, []);
 
-function Constellation({
-  stars,
-  edges,
-  opacity = 1,
-}: {
-  stars: Star[];
-  edges: [number, number][];
-  opacity?: number;
-}) {
+  return (
+    <div aria-hidden className="absolute inset-x-0 bottom-0 h-[44%] pointer-events-none z-[1]">
+      <svg viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice" className="absolute bottom-0 w-full h-full">
+        {/* back ridge */}
+        <path
+          d="M0,206 L150,150 L320,196 L520,120 L720,180 L940,108 L1160,172 L1360,128 L1440,150 L1440,360 L0,360 Z"
+          fill="#1B1330"
+          opacity="0.92"
+        />
+        {/* city lights between ridges */}
+        {lights.map((l, i) => (
+          <circle key={i} cx={l.x} cy={l.y} r={l.r} fill="#FFC76B" opacity={l.o} />
+        ))}
+        {/* front ridge */}
+        <path
+          d="M0,304 L210,232 L430,300 L660,216 L900,288 L1170,224 L1440,278 L1440,360 L0,360 Z"
+          fill="#08060F"
+        />
+      </svg>
+    </div>
+  );
+}
+
+/* ─── Constellation line-art ─────────────────────────────────────── */
+
+type Star = [number, number, number?];
+
+function Constellation({ stars, edges, opacity = 1 }: { stars: Star[]; edges: [number, number][]; opacity?: number }) {
   return (
     <g opacity={opacity}>
       {edges.map(([a, b], i) => (
-        <line
-          key={i}
-          x1={stars[a][0]}
-          y1={stars[a][1]}
-          x2={stars[b][0]}
-          y2={stars[b][1]}
-          stroke="rgba(220,232,255,0.16)"
-          strokeWidth="0.18"
-        />
+        <line key={i} x1={stars[a][0]} y1={stars[a][1]} x2={stars[b][0]} y2={stars[b][1]} stroke="rgba(220,232,255,0.18)" strokeWidth="0.18" />
       ))}
       {stars.map(([x, y, big], i) => (
         <circle key={i} cx={x} cy={y} r={big ? 0.7 : 0.42} fill="#EAF1FF" opacity={big ? 0.95 : 0.6} />
@@ -376,39 +407,17 @@ function Constellation({
 }
 
 function Constellations() {
-  // Orion — belt + shoulders + feet
   const orion: Star[] = [
-    [20, 22, 1], [30, 20, 1], // Betelgeuse, Bellatrix (shoulders)
-    [23, 31], [26, 32], [29, 33], // belt
-    [19, 43, 1], [31, 42], // Rigel, Saiph (feet)
+    [20, 22, 1], [30, 20, 1], [23, 31], [26, 32], [29, 33], [19, 43, 1], [31, 42],
   ];
-  const orionEdges: [number, number][] = [
-    [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1],
-  ];
-
-  // Big Dipper (Ursa Major asterism)
-  const dipper: Star[] = [
-    [60, 24], [66, 21], [72, 20], [78, 23], // handle
-    [78, 30], [71, 31], [69, 25, 1], // bowl
-  ];
-  const dipperEdges: [number, number][] = [
-    [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3],
-  ];
-
-  // Cassiopeia (W)
-  const cas: Star[] = [
-    [50, 70], [56, 63], [62, 69], [68, 62], [74, 68],
-  ];
-  const casEdges: [number, number][] = [
-    [0, 1], [1, 2], [2, 3], [3, 4],
-  ];
+  const orionEdges: [number, number][] = [[0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1]];
+  const dipper: Star[] = [[60, 24], [66, 21], [72, 20], [78, 23], [78, 30], [71, 31], [69, 25, 1]];
+  const dipperEdges: [number, number][] = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]];
+  const cas: Star[] = [[50, 72], [56, 65], [62, 71], [68, 64], [74, 70]];
+  const casEdges: [number, number][] = [[0, 1], [1, 2], [2, 3], [3, 4]];
 
   return (
-    <svg
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMidYMid slice"
-      className="hidden md:block absolute inset-0 w-full h-full"
-    >
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" className="hidden md:block absolute inset-0 w-full h-full">
       <Constellation stars={orion} edges={orionEdges} opacity={0.85} />
       <Constellation stars={dipper} edges={dipperEdges} opacity={0.7} />
       <Constellation stars={cas} edges={casEdges} opacity={0.6} />
@@ -416,32 +425,103 @@ function Constellations() {
   );
 }
 
-function CTA({ href, tone, children }: { href: string; tone: 'primary' | 'secondary'; children: React.ReactNode }) {
+/* ─── Buttons + icons ────────────────────────────────────────────── */
+
+function CTA({
+  href,
+  tone,
+  icon,
+  children,
+}: {
+  href: string;
+  tone: 'primary' | 'secondary';
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   const base: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    gap: 10,
+    borderRadius: 12,
     fontFamily: 'var(--font-body)',
     fontSize: 16,
-    fontWeight: 600,
-    letterSpacing: '0.005em',
+    fontWeight: 700,
     textDecoration: 'none',
-    transition: 'background 140ms ease, filter 140ms ease',
-    cursor: 'pointer',
+    transition: 'background 140ms ease, border-color 140ms ease, filter 140ms ease',
   };
   const skin: CSSProperties =
     tone === 'primary'
-      ? { background: '#FFB347', color: '#0A1735', border: 'none' }
-      : { background: '#1A2540', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.06)' };
-
+      ? { background: '#FFB347', color: '#1A1206', border: 'none' }
+      : { background: 'rgba(14,16,32,0.5)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.16)' };
   return (
     <Link
       href={href}
       style={{ ...base, ...skin }}
-      className={`w-[210px] sm:w-[210px] py-2.5 px-5 sm:py-4 sm:px-7 ${tone === 'primary' ? 'hero-cta-primary' : 'hero-cta-secondary'}`}
+      className={`w-full sm:w-auto px-7 py-3.5 ${tone === 'primary' ? 'hero-cta-primary' : 'hero-cta-secondary'}`}
     >
       {children}
+      {icon}
     </Link>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2l1.6 5.4L19 9l-5.4 1.6L12 16l-1.6-5.4L5 9l5.4-1.6z" />
+      <path d="M18.5 14l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8z" opacity="0.7" />
+    </svg>
+  );
+}
+
+function TelescopeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3 13l11-4 1.5 4L4.5 17z" />
+      <path d="M14 9l3-1 1.5 4-3 1z" />
+      <path d="M11 16v4" />
+      <path d="M9 21h4" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12h14" />
+      <path d="m13 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+function TrackIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="6" cy="7" r="1.8" />
+      <circle cx="18" cy="6" r="1.8" />
+      <circle cx="15" cy="17" r="1.8" />
+      <path d="M7.6 7.8 13.4 16M7.5 8l9-1.4" />
+    </svg>
+  );
+}
+
+function FindIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="6.5" />
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function GiftIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3.5" y="9.5" width="17" height="11" rx="1.5" />
+      <path d="M3.5 13h17M12 9.5v11" />
+      <path d="M12 9.5C10 9.5 7.5 8.5 7.5 6.3 7.5 5 8.4 4 9.6 4c1.8 0 2.4 2.4 2.4 5.5zM12 9.5c2 0 4.5-1 4.5-3.2C16.5 5 15.6 4 14.4 4 12.6 4 12 6.4 12 9.5z" />
+    </svg>
   );
 }

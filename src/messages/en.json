@@ -1331,6 +1331,11 @@
         "cloud": "cloud",
         "verdict": { "go": "Go", "maybe": "Maybe", "skip": "Skip" },
         "missionsLabel": "Tonight's mission"
+      },
+      "features": {
+        "track": { "title": "Track", "desc": "Real-time sky conditions" },
+        "find": { "title": "Find", "desc": "Objects visible tonight" },
+        "earn": { "title": "Earn", "desc": "Complete missions to earn rewards" }
       }
     },
     "partners": "Partner brands",
