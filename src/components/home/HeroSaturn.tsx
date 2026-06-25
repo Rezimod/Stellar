@@ -79,20 +79,21 @@ export default function HeroSaturn() {
         ].join(', '),
       }}
     >
-      {/* === Static CSS starfield === */}
+      {/* === Static CSS starfield (covers the whole hero) === */}
+      <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
       {/* === Right cosmic backdrop: galaxy + constellations === */}
-      <div aria-hidden className="absolute inset-y-0 right-0 w-[62%] md:w-[58%] lg:w-[55%] pointer-events-none">
+      <div aria-hidden className="absolute inset-y-0 right-0 w-[68%] md:w-[62%] lg:w-[58%] pointer-events-none">
         {/* Andromeda — soft, edge-faded so it melts into the canvas */}
         <div
-          className="absolute right-[-12%] top-1/2 -translate-y-1/2 w-[120%] aspect-[400/265]"
+          className="absolute right-[-4%] top-[44%] -translate-y-1/2 w-[112%] aspect-[400/265]"
           style={{
             WebkitMaskImage:
-              'radial-gradient(ellipse 55% 55% at 50% 47%, #000 28%, rgba(0,0,0,0.4) 56%, transparent 76%)',
+              'radial-gradient(ellipse 62% 62% at 50% 45%, #000 38%, rgba(0,0,0,0.5) 64%, transparent 84%)',
             maskImage:
-              'radial-gradient(ellipse 55% 55% at 50% 47%, #000 28%, rgba(0,0,0,0.4) 56%, transparent 76%)',
-            opacity: 0.85,
+              'radial-gradient(ellipse 62% 62% at 50% 45%, #000 38%, rgba(0,0,0,0.5) 64%, transparent 84%)',
+            opacity: 1,
           }}
         >
           <Image
@@ -114,7 +115,7 @@ export default function HeroSaturn() {
         className="absolute inset-0 pointer-events-none z-[1]"
         style={{
           background:
-            'linear-gradient(90deg, rgba(4,8,26,0.94) 0%, rgba(6,12,32,0.55) 28%, transparent 54%)',
+            'linear-gradient(90deg, rgba(4,8,26,0.82) 0%, rgba(5,10,28,0.34) 30%, transparent 50%)',
         }}
       />
 
@@ -187,8 +188,8 @@ function HeroCards({ paused }: { paused: boolean }) {
       {/* Sky-conditions card */}
       <Link
         href="/sky"
-        className="group block rounded-[18px] border border-white/[0.10] bg-[#0A1430]/82 backdrop-blur-md px-4 py-4 no-underline transition-colors hover:border-white/[0.20] hover:bg-[#0C1838]/88"
-        style={{ boxShadow: '0 24px 60px -24px rgba(0,0,0,0.75)' }}
+        className="group block rounded-[18px] border border-white/[0.18] bg-[#1B2750]/78 backdrop-blur-lg px-4 py-4 no-underline transition-colors hover:border-white/[0.30] hover:bg-[#243366]/85"
+        style={{ boxShadow: '0 24px 60px -24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.10)' }}
       >
         {sky.loading || !day ? (
           <CardSkeleton lines={2} />
@@ -223,8 +224,8 @@ function HeroCards({ paused }: { paused: boolean }) {
       {/* Mission card */}
       <Link
         href="/missions"
-        className="group block rounded-[18px] border border-white/[0.10] bg-[#0A1430]/82 backdrop-blur-md px-3.5 py-3.5 no-underline transition-colors hover:border-white/[0.20] hover:bg-[#0C1838]/88"
-        style={{ boxShadow: '0 24px 60px -24px rgba(0,0,0,0.75)' }}
+        className="group block rounded-[18px] border border-white/[0.18] bg-[#1B2750]/78 backdrop-blur-lg px-3.5 py-3.5 no-underline transition-colors hover:border-white/[0.30] hover:bg-[#243366]/85"
+        style={{ boxShadow: '0 24px 60px -24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.10)' }}
       >
         <div className="px-0.5 pb-2.5 flex items-center justify-between">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#FFB347]">

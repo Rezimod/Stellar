@@ -664,22 +664,48 @@ code, pre, .mono, [class*="font-mono"] {
   animation: heroStarsTwinkleC 4.8s ease-in-out infinite;
 }
 @keyframes heroStarsTwinkleA {
-  0%, 100% { opacity: 0.85; }
-  50%      { opacity: 0.55; }
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.72; }
 }
 @keyframes heroStarsTwinkleB {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 0.95; }
+  0%, 100% { opacity: 0.75; }
+  50%      { opacity: 1; }
 }
 @keyframes heroStarsTwinkleC {
-  0%, 100% { opacity: 0.9; }
-  35%      { opacity: 0.45; }
+  0%, 100% { opacity: 1; }
+  35%      { opacity: 0.55; }
   70%      { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-starfield,
   .hero-starfield::before,
   .hero-starfield::after { animation: none; }
+}
+
+/* === Dense fine starfield ===
+   A tiled sprinkle of faint stars so the whole hero — not just around the
+   galaxy — reads as a night sky. Static; single cheap repeating paint. */
+.hero-stars-fine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 24px 38px, rgba(255,255,255,0.75), transparent),
+    radial-gradient(1px 1px at 152px 96px, rgba(220,230,255,0.6), transparent),
+    radial-gradient(1.4px 1.4px at 96px 188px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 244px 54px, rgba(255,245,220,0.55), transparent),
+    radial-gradient(1px 1px at 300px 220px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 60px 300px, rgba(210,225,255,0.5), transparent),
+    radial-gradient(1px 1px at 360px 140px, rgba(255,255,255,0.5), transparent);
+  background-size: 380px 360px;
+  background-repeat: repeat;
+  opacity: 0.85;
+  animation: heroStarsTwinkleB 7.4s ease-in-out infinite;
+}
+.hero-stars-fine[data-paused='true'] { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-stars-fine { animation: none; }
 }
 
 /* === Hero card content swap ===
@@ -690,8 +716,8 @@ code, pre, .mono, [class*="font-mono"] {
 }
 .hero-card-swap.d1 { animation-delay: 110ms; animation-fill-mode: both; }
 @keyframes heroCardSwap {
-  from { opacity: 0; transform: translateY(7px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-card-swap { animation: none; }
