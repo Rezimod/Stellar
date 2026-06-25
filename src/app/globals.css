@@ -681,6 +681,21 @@ code, pre, .mono, [class*="font-mono"] {
   .hero-starfield::before,
   .hero-starfield::after { animation: none; }
 }
+
+/* === Hero card content swap ===
+   Each time a card cycles to the next night / mission, the new content
+   fades + slides in. GPU-only transform + opacity, runs once per swap. */
+.hero-card-swap {
+  animation: heroCardSwap 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hero-card-swap.d1 { animation-delay: 110ms; animation-fill-mode: both; }
+@keyframes heroCardSwap {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-card-swap { animation: none; }
+}
 /* Paused by JS when the hero scrolls off-screen — opacity tweens on full-viewport
    gradient backgrounds force whole-hero recomposites every tick. */
 .hero-starfield[data-paused='true'],

@@ -150,6 +150,24 @@ type RawTimeline = TimelinePayload;
 
 const REFRESH_MS = 5 * 60 * 1000;
 
+// Cross-component fetch cache. The homepage mounts two sky consumers (the hero
+// cards + Tonight-at-a-glance); navigations re-mount the sky page. Caching raw
+// JSON by URL for a short window dedupes those overlapping requests and shares
+// in-flight promises so identical calls never run twice.
+const RAW_TTL = 2 * 60 * 1000;
+const rawCache = new Map<string, { at: number; p: Promise<unknown> }>();
+
+function cachedJson<T>(url: string): Promise<T | null> {
+  const now = Date.now();
+  const hit = rawCache.get(url);
+  if (hit && now - hit.at < RAW_TTL) return hit.p as Promise<T | null>;
+  const p = fetch(url)
+    .then((r) => (r.ok ? (r.json() as Promise<T>) : null))
+    .catch(() => null);
+  rawCache.set(url, { at: now, p });
+  return p;
+}
+
 export function useSkyData() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const { location, locationReady } = useLocation();
@@ -179,21 +197,15 @@ export function useSkyData() {
       const dark = getTonightDarkWindow(coords.lat, coords.lon);
       const planetParam = dark.isCurrentlyDark ? '' : '&tonight=1';
 
-      const [planetsRes, forecastRes, sunMoonRes, verifyRes, timelineRes] = await Promise.all([
-        fetch(`/api/sky/planets?lat=${coords.lat}&lon=${coords.lon}${planetParam}`),
-        fetch(`/api/sky/forecast?lat=${coords.lat}&lon=${coords.lon}`),
-        fetch(`/api/sky/sun-moon?lat=${coords.lat}&lon=${coords.lon}`),
-        fetch(`/api/sky/verify?lat=${coords.lat}&lon=${coords.lon}`),
-        fetch(`/api/sky/timeline?lat=${coords.lat}&lon=${coords.lon}`),
+      const [planetsRaw, forecastRaw, sunMoon, verify, timelineRaw] = await Promise.all([
+        cachedJson<RawPlanet[]>(`/api/sky/planets?lat=${coords.lat}&lon=${coords.lon}${planetParam}`).then((v) => v ?? []),
+        cachedJson<RawSkyDay[]>(`/api/sky/forecast?lat=${coords.lat}&lon=${coords.lon}`).then((v) => v ?? []),
+        cachedJson<RawSunMoon>(`/api/sky/sun-moon?lat=${coords.lat}&lon=${coords.lon}`),
+        cachedJson<RawVerify>(`/api/sky/verify?lat=${coords.lat}&lon=${coords.lon}`),
+        cachedJson<RawTimeline>(`/api/sky/timeline?lat=${coords.lat}&lon=${coords.lon}`).then(
+          (v) => v ?? { darkWindow: null, objects: [], excludedCount: 0 },
+        ),
       ]);
-
-      const planetsRaw: RawPlanet[] = planetsRes.ok ? await planetsRes.json() : [];
-      const forecastRaw: RawSkyDay[] = forecastRes.ok ? await forecastRes.json() : [];
-      const sunMoon: RawSunMoon | null = sunMoonRes.ok ? await sunMoonRes.json() : null;
-      const verify: RawVerify | null = verifyRes.ok ? await verifyRes.json() : null;
-      const timelineRaw: RawTimeline = timelineRes.ok
-        ? await timelineRes.json()
-        : { darkWindow: null, objects: [], excludedCount: 0 };
 
       const planets: PlanetData[] = planetsRaw.map(normalizePlanet);
 
@@ -277,6 +289,71 @@ export function useSkyData() {
   }, [fetchAll, locationReady]);
 
   return { ...data, refresh: fetchAll };
+}
+
+/**
+ * Lightweight sky hook — fetches only the forecast + planets (2 calls instead
+ * of the full 5) for surfaces that just need "what's the next few nights /
+ * what's up right now," like the homepage hero cards. Shares the same cached
+ * fetch layer as useSkyData, so it never double-fetches.
+ */
+export function useSkyForecast() {
+  const locale = useLocale() === 'ka' ? 'ka' : 'en';
+  const { location, locationReady } = useLocation();
+  const [state, setState] = useState<{ loading: boolean; forecast: ForecastDay[]; planets: PlanetData[] }>({
+    loading: true,
+    forecast: [],
+    planets: [],
+  });
+
+  const fetchLite = useCallback(async () => {
+    if (!locationReady) return;
+    const lat = location.lat;
+    const lon = location.lon;
+    const dark = getTonightDarkWindow(lat, lon);
+    const planetParam = dark.isCurrentlyDark ? '' : '&tonight=1';
+
+    const [planetsRaw, forecastRaw] = await Promise.all([
+      cachedJson<RawPlanet[]>(`/api/sky/planets?lat=${lat}&lon=${lon}${planetParam}`).then((v) => v ?? []),
+      cachedJson<RawSkyDay[]>(`/api/sky/forecast?lat=${lat}&lon=${lon}`).then((v) => v ?? []),
+    ]);
+
+    const planets = planetsRaw.map(normalizePlanet);
+    const forecast = forecastRaw.slice(0, 7).map((d, i) => toForecastDay(d, forecastRaw[i + 1], locale));
+    setState({ loading: false, forecast, planets });
+  }, [location.lat, location.lon, locationReady, locale]);
+
+  useEffect(() => {
+    if (!locationReady) return;
+    void fetchLite();
+    let id: number | null = null;
+    const start = () => {
+      if (id === null) id = window.setInterval(() => void fetchLite(), REFRESH_MS);
+    };
+    const stop = () => {
+      if (id !== null) {
+        window.clearInterval(id);
+        id = null;
+      }
+    };
+    if (typeof document === 'undefined' || !document.hidden) start();
+    const onVis = () => (document.hidden ? stop() : start());
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      stop();
+    };
+  }, [fetchLite, locationReady]);
+
+  useEffect(() => {
+    const onLocation = () => {
+      if (locationReady) void fetchLite();
+    };
+    window.addEventListener(LOCATION_UPDATED_EVENT, onLocation);
+    return () => window.removeEventListener(LOCATION_UPDATED_EVENT, onLocation);
+  }, [fetchLite, locationReady]);
+
+  return state;
 }
 
 function normalizePlanet(p: RawPlanet): PlanetData {

@@ -1294,7 +1294,14 @@
       "headline2": "მიიღე ჯილდო.",
       "subtitle": "დაგეგმე, გადაიღე, გადაცვალე.",
       "ctaPrimary": "მიიღე ჯილდო",
-      "ctaSecondary": "დაიწყე დაკვირვება"
+      "ctaSecondary": "დაიწყე დაკვირვება",
+      "cards": {
+        "today": "ამაღამ",
+        "tomorrow": "ხვალ",
+        "cloud": "ღრუბ.",
+        "verdict": { "go": "გადი", "maybe": "შეიძლება", "skip": "გამოტოვე" },
+        "missionsLabel": "ამაღამის მისია"
+      }
     },
     "partners": "პარტნიორი ბრენდები",
     "achievements": {

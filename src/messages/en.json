@@ -1324,7 +1324,14 @@
       "headline2": "Earn rewards.",
       "subtitle": "Plan, photograph, redeem.",
       "ctaPrimary": "Earn Rewards",
-      "ctaSecondary": "Start Observing"
+      "ctaSecondary": "Start Observing",
+      "cards": {
+        "today": "Tonight",
+        "tomorrow": "Tomorrow",
+        "cloud": "cloud",
+        "verdict": { "go": "Go", "maybe": "Maybe", "skip": "Skip" },
+        "missionsLabel": "Tonight's mission"
+      }
     },
     "partners": "Partner brands",
     "achievements": {
