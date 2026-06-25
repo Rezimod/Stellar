@@ -701,7 +701,6 @@ code, pre, .mono, [class*="font-mono"] {
   background-size: 380px 360px;
   background-repeat: repeat;
   opacity: 0.85;
-  animation: heroStarsTwinkleB 7.4s ease-in-out infinite;
 }
 .hero-stars-fine[data-paused='true'] { animation: none; }
 @media (prefers-reduced-motion: reduce) {

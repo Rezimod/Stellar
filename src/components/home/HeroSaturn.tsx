@@ -213,7 +213,7 @@ function HeroCards({ paused }: { paused: boolean }) {
   };
 
   const cardClass =
-    'group block rounded-[20px] border border-white/[0.12] bg-[#0C0E1F]/68 backdrop-blur-xl no-underline transition-colors hover:border-white/[0.22] hover:bg-[#11142A]/75';
+    'group block rounded-[20px] border border-white/[0.12] bg-[#0C0E1F]/92 no-underline transition-colors hover:border-white/[0.22] hover:bg-[#11142A]/95';
   const cardShadow: CSSProperties = {
     boxShadow: '0 30px 70px -28px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)',
   };
