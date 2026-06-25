@@ -1326,9 +1326,12 @@
       "ctaPrimary": "Earn Rewards",
       "ctaSecondary": "Start Observing",
       "cards": {
+        "consoleTitle": "Sky tonight",
         "today": "Tonight",
         "tomorrow": "Tomorrow",
         "cloud": "cloud",
+        "tempLabel": "temp",
+        "moonLabel": "moon",
         "verdict": { "go": "Go", "maybe": "Maybe", "skip": "Skip" },
         "missionsLabel": "Tonight's mission"
       },

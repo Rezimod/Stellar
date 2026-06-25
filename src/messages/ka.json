@@ -1296,9 +1296,12 @@
       "ctaPrimary": "მიიღე ჯილდო",
       "ctaSecondary": "დაიწყე დაკვირვება",
       "cards": {
+        "consoleTitle": "ცა ამაღამ",
         "today": "ამაღამ",
         "tomorrow": "ხვალ",
         "cloud": "ღრუბ.",
+        "tempLabel": "ტემპ.",
+        "moonLabel": "მთვარე",
         "verdict": { "go": "გადი", "maybe": "შეიძლება", "skip": "გამოტოვე" },
         "missionsLabel": "ამაღამის მისია"
       },

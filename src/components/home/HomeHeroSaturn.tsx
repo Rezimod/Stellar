@@ -1,22 +1,9 @@
-'use client';
+import HeroSaturn from './HeroSaturn';
 
-import dynamic from 'next/dynamic';
-
-const HeroSaturn = dynamic(() => import('./HeroSaturn'), {
-  ssr: false,
-  loading: () => (
-    <section
-      className="relative w-full overflow-hidden"
-      style={{
-        minHeight: '100dvh',
-        height: '100dvh',
-        background: 'linear-gradient(180deg, #04081A 0%, #08122A 48%, #050A1C 100%)',
-      }}
-      aria-hidden
-    />
-  ),
-});
-
+// Rendered with SSR so the headline + LCP image ship in the server HTML
+// (the old dynamic(ssr:false) wrapper delayed first paint until the chunk
+// downloaded and hydrated). HeroSaturn is a client component — all browser
+// APIs it uses are inside effects, so it hydrates cleanly.
 export default function HomeHeroSaturn() {
   return <HeroSaturn />;
 }
