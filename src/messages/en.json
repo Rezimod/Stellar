@@ -1334,6 +1334,7 @@
         "moonLabel": "moon",
         "visibleNow": "Visible now",
         "noneUp": "No planets up right now",
+        "skyScore": "Sky score",
         "verdict": { "go": "Go", "maybe": "Maybe", "skip": "Skip" },
         "missionsLabel": "Tonight's mission"
       },

@@ -4,10 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useSkyForecast, type PlanetData } from '@/lib/use-sky-data';
-import { MoonGlyph } from '@/components/sky/forecast/visuals';
+import { useSkyForecast, type PlanetData, type ForecastDay } from '@/lib/use-sky-data';
 
-const CYCLE_MS = 4500;
+const CYCLE_MS = 5200;
+const CYCLE_DAYS = 4;
 
 const VERDICT_COLOR: Record<'go' | 'maybe' | 'skip', string> = {
   go: '#4ADE80',
@@ -73,10 +73,12 @@ export default function HeroSaturn() {
       <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === Galaxy + constellations on the RIGHT (behind the copy) === */}
-      <div aria-hidden className="absolute inset-y-0 right-0 w-[60%] md:w-[56%] lg:w-[52%] pointer-events-none">
+      {/* === Galaxy + constellations ===
+           Mobile: big faint background spanning ~75% of the screen.
+           Desktop: anchored to the right, behind the copy. === */}
+      <div aria-hidden className="absolute inset-y-0 right-0 w-[118%] sm:w-[85%] md:w-[56%] lg:w-[52%] opacity-[0.6] md:opacity-100 pointer-events-none">
         <div
-          className="absolute right-[-6%] top-[40%] -translate-y-1/2 w-[110%] aspect-[400/265]"
+          className="absolute right-[-14%] sm:right-[-6%] top-[46%] md:top-[40%] -translate-y-1/2 w-[118%] sm:w-[110%] aspect-[400/265]"
           style={{
             WebkitMaskImage:
               'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
@@ -99,11 +101,15 @@ export default function HeroSaturn() {
         style={{ background: 'linear-gradient(270deg, rgba(5,7,22,0.62) 0%, rgba(5,7,22,0.2) 34%, transparent 56%)' }}
       />
 
-      {/* === Content grid: live console (left) · copy (right) === */}
+      {/* === Content grid ===
+           Desktop: console (left) · copy (right).
+           Mobile order: copy → console (widget) → three steps on one line. === */}
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 min-h-[100dvh]
-        grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-10 py-28 lg:py-0">
+        grid grid-cols-1 lg:grid-cols-2 items-center gap-8 lg:gap-10 py-24 lg:py-0">
         <HeroConsole paused={paused} />
         <Copy t={t} />
+        {/* Mobile-only: the three steps in one row, under the widget */}
+        <HeroFeatures t={t} compact className="order-3 lg:hidden grid grid-cols-3 gap-3 w-full max-w-[440px] mx-auto" />
       </div>
     </section>
   );
@@ -141,11 +147,18 @@ function Copy({ t }: { t: (k: string) => string }) {
         <CTA href="/sky" tone="secondary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
       </div>
 
-      <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-4 max-w-[560px]">
-        <Feature href="/sky" tint="#B06EF0" title={t('features.track.title')} desc={t('features.track.desc')} icon={<TrackIcon />} />
-        <Feature href="/sky" tint="#5B8CFF" title={t('features.find.title')} desc={t('features.find.desc')} icon={<FindIcon />} />
-        <Feature href="/missions" tint="#FFB347" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} />
-      </div>
+      {/* Desktop: three steps under the copy. Mobile renders them under the widget instead. */}
+      <HeroFeatures t={t} className="hidden lg:grid mt-10 md:mt-12 grid-cols-3 gap-4 max-w-[560px]" />
+    </div>
+  );
+}
+
+function HeroFeatures({ t, className, compact }: { t: (k: string) => string; className: string; compact?: boolean }) {
+  return (
+    <div className={className}>
+      <Feature href="/sky" tint="#B06EF0" title={t('features.track.title')} desc={t('features.track.desc')} icon={<TrackIcon />} compact={compact} />
+      <Feature href="/sky" tint="#5B8CFF" title={t('features.find.title')} desc={t('features.find.desc')} icon={<FindIcon />} compact={compact} />
+      <Feature href="/missions" tint="#FFB347" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} compact={compact} />
     </div>
   );
 }
@@ -156,26 +169,29 @@ function Feature({
   title,
   desc,
   icon,
+  compact,
 }: {
   href: string;
   tint: string;
   title: string;
   desc: string;
   icon: React.ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <Link href={href} className="group flex items-start gap-3 no-underline">
+    <Link
+      href={href}
+      className={`group no-underline ${compact ? 'flex flex-col items-center text-center gap-1.5' : 'flex items-start gap-3'}`}
+    >
       <span
-        className="mt-0.5 flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-colors"
+        className="flex items-center justify-center w-10 h-10 rounded-full shrink-0 transition-colors"
         style={{ background: `${tint}1f`, border: `1px solid ${tint}40`, color: tint }}
       >
         {icon}
       </span>
-      <span className="min-w-0">
-        <span className="block text-white text-[14.5px] font-semibold leading-tight group-hover:text-white">
-          {title}
-        </span>
-        <span className="mt-1 block text-[12.5px] leading-snug text-white/45">{desc}</span>
+      <span className={compact ? 'min-w-0' : 'min-w-0'}>
+        <span className="block text-white text-[14px] sm:text-[14.5px] font-semibold leading-tight">{title}</span>
+        <span className={`mt-1 block leading-snug text-white/45 ${compact ? 'text-[11px]' : 'text-[12.5px]'}`}>{desc}</span>
       </span>
     </Link>
   );
@@ -196,13 +212,13 @@ function HeroConsole({ paused }: { paused: boolean }) {
     return () => window.clearInterval(id);
   }, [paused]);
 
-  const days = sky.forecast.slice(0, 3);
-  const dayIdx = days.length ? tick % days.length : 0;
-  const day = days[dayIdx];
+  const days = sky.forecast.slice(0, CYCLE_DAYS);
+  const daysCount = days.length || 1;
+  const idx = days.length ? tick % days.length : 0;
+  const day = days[idx];
 
   const missions = useMemo(() => buildMissions(sky.planets, tp), [sky.planets, tp]);
-  const misIdx = missions.length ? tick % missions.length : 0;
-  const mission = missions[misIdx];
+  const mission = missions.length ? missions[idx % missions.length] : undefined;
 
   const visiblePlanets = useMemo(() => {
     const named = (name: string) => {
@@ -216,18 +232,22 @@ function HeroConsole({ paused }: { paused: boolean }) {
     return sky.planets
       .filter((p) => p.visible && p.altitude > 5)
       .sort((a, b) => b.altitude - a.altitude)
-      .slice(0, 4)
       .map((p) => ({ name: named(p.name), alt: Math.round(p.altitude) }));
   }, [sky.planets, tp]);
-  const planetsKey = visiblePlanets.map((p) => p.name).join();
+
+  // Rotate the live visible set each cycle so the row changes smoothly.
+  const shownPlanets = rotate(visiblePlanets, idx).slice(0, 4);
 
   const dayLabel = (i: number): string => {
     if (i === 0) return t('cards.today');
     if (i === 1) return t('cards.tomorrow');
     if (!days[i]) return '';
     const d = new Date(`${days[i].date}T00:00:00`);
-    return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'long' }).format(d);
+    return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'short' }).format(d);
   };
+
+  const score = day ? dayScore(day) : 0;
+  const scoreColor = score >= 70 ? '#4ADE80' : score >= 45 ? '#FFB347' : '#94A3B8';
 
   const panelStyle: CSSProperties = {
     background: 'linear-gradient(180deg, rgba(15,17,36,0.94) 0%, rgba(9,10,24,0.96) 100%)',
@@ -239,11 +259,11 @@ function HeroConsole({ paused }: { paused: boolean }) {
   return (
     <div className="order-2 lg:order-1 w-full max-w-[400px] mx-auto lg:mx-0 lg:justify-self-start pointer-events-auto">
       <div className="relative overflow-hidden rounded-[26px] border border-white/[0.12]" style={panelStyle}>
-        {/* Header strip */}
+        {/* Header: cycling night + verdict */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07]">
           <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-white/55">
             <span className="hero-live-dot" />
-            {t('cards.consoleTitle')}
+            {sky.loading || !day ? t('cards.consoleTitle') : dayLabel(idx)}
           </span>
           {sky.loading || !day ? (
             <span className="h-[22px] w-[58px] rounded-full bg-white/[0.06] animate-pulse" />
@@ -252,56 +272,24 @@ function HeroConsole({ paused }: { paused: boolean }) {
           )}
         </div>
 
-        {/* Sky-conditions block */}
-        <Link href="/sky" className="group block px-5 py-5 transition-colors hover:bg-white/[0.03]">
-          {sky.loading || !day ? (
-            <CardSkeleton lines={2} />
-          ) : (
-            <div key={`sky-${dayIdx}`} className="hero-card-swap">
-              <div className="flex items-center gap-3.5">
-                <MoonGlyph phase={day.moonPhase} size={46} />
-                <div className="min-w-0 flex-1">
-                  <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-white/45">{dayLabel(dayIdx)}</span>
-                  <div className="text-white text-[24px] font-semibold leading-tight tracking-[-0.01em] truncate">
-                    {day.recommendation}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <Stat label={t('cards.cloud')} value={`${day.cloudCoverPct}%`} tone={day.cloudCoverPct < 25 ? 'good' : day.cloudCoverPct > 60 ? 'warn' : ''} />
-                {day.tempLow != null && <Stat label={t('cards.tempLabel')} value={`${day.tempLow}°`} />}
-                <Stat label={t('cards.moonLabel')} value={`${Math.round(day.moonIllumination * 100)}%`} />
-              </div>
-              <Dots count={days.length} active={dayIdx} />
-            </div>
-          )}
-        </Link>
-
-        <div className="mx-5 h-px bg-white/[0.07]" />
-
-        {/* Visible-now planets band */}
-        <Link href="/sky" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
-          <div className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
-            {t('cards.visibleNow')}
-          </div>
+        {/* Visible planets — primary */}
+        <Link href="/sky" className="group block px-5 pt-5 pb-4 transition-colors hover:bg-white/[0.03]">
+          <div className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.visibleNow')}</div>
           {sky.loading ? (
             <div className="flex gap-2">
               {Array.from({ length: 3 }).map((_, i) => (
-                <span key={i} className="h-7 w-20 rounded-full bg-white/[0.05] animate-pulse" />
+                <span key={i} className="h-8 w-24 rounded-full bg-white/[0.05] animate-pulse" />
               ))}
             </div>
-          ) : visiblePlanets.length ? (
-            <div key={planetsKey} className="hero-card-swap flex flex-wrap gap-2">
-              {visiblePlanets.map((p) => (
+          ) : shownPlanets.length ? (
+            <div key={`pl-${idx}`} className="hero-card-swap flex flex-wrap gap-2">
+              {shownPlanets.map((p) => (
                 <span
                   key={p.name}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] px-2.5 py-1"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] px-3 py-1.5"
                 >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: p.alt > 35 ? '#4ADE80' : p.alt > 15 ? '#FFB347' : '#94A3B8' }}
-                  />
-                  <span className="text-white/85 text-[12.5px] font-medium leading-none">{p.name}</span>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.alt > 35 ? '#4ADE80' : p.alt > 15 ? '#FFB347' : '#94A3B8' }} />
+                  <span className="text-white/90 text-[13.5px] font-medium leading-none">{p.name}</span>
                   <span className="font-mono text-[11px] tabular-nums text-white/40 leading-none">{p.alt}°</span>
                 </span>
               ))}
@@ -313,10 +301,10 @@ function HeroConsole({ paused }: { paused: boolean }) {
 
         <div className="mx-5 h-px bg-white/[0.07]" />
 
-        {/* Tonight's mission block */}
+        {/* Tonight's mission — primary */}
         <Link href="/missions" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
           <div className="flex items-center justify-between pb-3">
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#FFB347]">{t('cards.missionsLabel')}</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FFB347]">{t('cards.missionsLabel')}</span>
             <span className="text-white/30 transition-colors group-hover:text-[#FFB347]" aria-hidden>
               <ArrowIcon />
             </span>
@@ -324,7 +312,7 @@ function HeroConsole({ paused }: { paused: boolean }) {
           {sky.loading || !mission ? (
             <CardSkeleton lines={1} thumb />
           ) : (
-            <div key={`mis-${misIdx}`} className="hero-card-swap d1 flex items-center gap-3.5">
+            <div key={`mis-${idx}`} className="hero-card-swap d1 flex items-center gap-3.5">
               <span className="relative w-14 h-14 shrink-0 rounded-[14px] overflow-hidden border border-white/10">
                 <Image src={mission.img} alt="" fill sizes="56px" className="object-cover" />
               </span>
@@ -337,21 +325,45 @@ function HeroConsole({ paused }: { paused: boolean }) {
               </span>
             </div>
           )}
-          <Dots count={Math.min(missions.length, 5)} active={misIdx % Math.max(1, Math.min(missions.length, 5))} />
+        </Link>
+
+        <div className="mx-5 h-px bg-white/[0.07]" />
+
+        {/* Sky score — secondary, under the primary content */}
+        <Link href="/sky" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.skyScore')}</span>
+            {sky.loading || !day ? (
+              <span className="h-4 w-12 rounded bg-white/[0.06] animate-pulse" />
+            ) : (
+              <span key={`sc-${idx}`} className="hero-card-swap font-mono text-[15px] font-semibold tabular-nums" style={{ color: scoreColor }}>
+                {score}<span className="text-white/35 text-[12px]">/100</span>
+              </span>
+            )}
+          </div>
+          <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.07] overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{ width: sky.loading || !day ? '0%' : `${score}%`, background: scoreColor }}
+            />
+          </div>
+          <Dots count={daysCount} active={idx} />
         </Link>
       </div>
     </div>
   );
 }
 
-function Stat({ label, value, tone = '' }: { label: string; value: string; tone?: '' | 'good' | 'warn' }) {
-  const color = tone === 'good' ? '#4ADE80' : tone === 'warn' ? '#FFB347' : 'rgba(255,255,255,0.85)';
-  return (
-    <div className="rounded-[12px] border border-white/[0.07] bg-white/[0.03] px-2.5 py-2">
-      <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-white/40 truncate">{label}</div>
-      <div className="mt-0.5 font-mono text-[14px] tabular-nums" style={{ color }}>{value}</div>
-    </div>
-  );
+function dayScore(d: ForecastDay): number {
+  const cloudScore = Math.max(0, 100 - d.cloudCoverPct) * 0.7; // up to 70
+  const moonScore = (1 - d.moonIllumination) * 30; // up to 30
+  return Math.round(cloudScore + moonScore);
+}
+
+function rotate<T>(arr: T[], n: number): T[] {
+  if (arr.length <= 1) return arr;
+  const k = ((n % arr.length) + arr.length) % arr.length;
+  return arr.slice(k).concat(arr.slice(0, k));
 }
 
 type Mission = { title: string; img: string; stars: number; fact: string };
