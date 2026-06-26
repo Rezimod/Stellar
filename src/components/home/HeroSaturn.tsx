@@ -76,14 +76,14 @@ export default function HeroSaturn() {
       {/* === Galaxy + constellations ===
            Mobile: big faint background spanning ~75% of the screen.
            Desktop: anchored to the right, behind the copy. === */}
-      <div aria-hidden className="absolute inset-y-0 right-0 w-[118%] sm:w-[85%] md:w-[66%] lg:w-[62%] opacity-[0.6] md:opacity-100 pointer-events-none">
+      <div aria-hidden className="absolute inset-y-0 right-0 w-[140%] sm:w-[100%] md:w-[80%] lg:w-[76%] opacity-[0.6] md:opacity-100 pointer-events-none">
         <div
-          className="absolute right-[-14%] sm:right-[-6%] top-[46%] md:top-[40%] -translate-y-1/2 w-[128%] sm:w-[122%] aspect-[400/265]"
+          className="absolute right-[-18%] sm:right-[-10%] top-[46%] md:top-[40%] -translate-y-1/2 w-[170%] sm:w-[160%] aspect-[400/265]"
           style={{
             WebkitMaskImage:
-              'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
+              'radial-gradient(ellipse 66% 66% at 52% 44%, #000 42%, rgba(0,0,0,0.5) 66%, transparent 88%)',
             maskImage:
-              'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
+              'radial-gradient(ellipse 66% 66% at 52% 44%, #000 42%, rgba(0,0,0,0.5) 66%, transparent 88%)',
           }}
         >
           <Image src="/hero/andromeda.jpg" alt="" fill priority sizes="(max-width: 768px) 70vw, 52vw" className="object-cover" />
