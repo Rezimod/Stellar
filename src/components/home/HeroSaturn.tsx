@@ -105,7 +105,7 @@ export default function HeroSaturn() {
            Desktop: console (left) · copy (right).
            Mobile order: copy → console (widget) → three steps on one line. === */}
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 min-h-[100dvh]
-        grid grid-cols-1 lg:grid-cols-2 items-center gap-8 lg:gap-10 py-24 lg:py-0">
+        grid grid-cols-1 lg:grid-cols-2 items-start lg:items-center gap-6 lg:gap-10 pt-[60px] pb-28 lg:py-0">
         <HeroConsole paused={paused} />
         <Copy t={t} />
         {/* Mobile-only: the three steps in one row, under the widget */}
@@ -138,11 +138,11 @@ function Copy({ t }: { t: (k: string) => string }) {
         </span>
       </h1>
 
-      <p className="mt-5 md:mt-6 text-[16px] md:text-[19px] font-medium" style={{ color: 'rgba(226,222,240,0.7)' }}>
+      <p className="mt-4 md:mt-6 text-[16px] md:text-[19px] font-medium" style={{ color: 'rgba(226,222,240,0.7)' }}>
         {t('subtitle')}
       </p>
 
-      <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3.5">
+      <div className="mt-6 md:mt-10 flex flex-col sm:flex-row gap-3.5">
         <CTA href="/missions" tone="primary" icon={<SparkleIcon />}>{t('ctaPrimary')}</CTA>
         <CTA href="/sky" tone="secondary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
       </div>
@@ -205,12 +205,22 @@ function HeroConsole({ paused }: { paused: boolean }) {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const sky = useSkyForecast();
   const [tick, setTick] = useState(0);
+  const manualRef = useRef(0);
 
   useEffect(() => {
     if (paused) return;
-    const id = window.setInterval(() => setTick((n) => n + 1), CYCLE_MS);
+    const id = window.setInterval(() => {
+      // Hold on the user's pick for ~2 cycles after they tap the scrubber.
+      if (Date.now() - manualRef.current < CYCLE_MS * 2) return;
+      setTick((n) => n + 1);
+    }, CYCLE_MS);
     return () => window.clearInterval(id);
   }, [paused]);
+
+  const selectNight = (i: number) => {
+    manualRef.current = Date.now();
+    setTick(i);
+  };
 
   const days = sky.forecast.slice(0, CYCLE_DAYS);
   const daysCount = days.length || 1;
@@ -243,7 +253,7 @@ function HeroConsole({ paused }: { paused: boolean }) {
     if (i === 1) return t('cards.tomorrow');
     if (!days[i]) return '';
     const d = new Date(`${days[i].date}T00:00:00`);
-    return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'short' }).format(d);
+    return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'long' }).format(d);
   };
 
   const score = day ? dayScore(day) : 0;
@@ -330,25 +340,27 @@ function HeroConsole({ paused }: { paused: boolean }) {
         <div className="mx-5 h-px bg-white/[0.07]" />
 
         {/* Sky score — secondary, under the primary content */}
-        <Link href="/sky" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.skyScore')}</span>
-            {sky.loading || !day ? (
-              <span className="h-4 w-12 rounded bg-white/[0.06] animate-pulse" />
-            ) : (
-              <span key={`sc-${idx}`} className="hero-card-swap font-mono text-[15px] font-semibold tabular-nums" style={{ color: scoreColor }}>
-                {score}<span className="text-white/35 text-[12px]">/100</span>
-              </span>
-            )}
-          </div>
-          <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.07] overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{ width: sky.loading || !day ? '0%' : `${score}%`, background: scoreColor }}
-            />
-          </div>
-          <Dots count={daysCount} active={idx} />
-        </Link>
+        <div className="px-5 py-4">
+          <Link href="/sky" className="group block transition-opacity hover:opacity-80">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.skyScore')}</span>
+              {sky.loading || !day ? (
+                <span className="h-4 w-12 rounded bg-white/[0.06] animate-pulse" />
+              ) : (
+                <span key={`sc-${idx}`} className="hero-card-swap font-mono text-[15px] font-semibold tabular-nums" style={{ color: scoreColor }}>
+                  {score}<span className="text-white/35 text-[12px]">/100</span>
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.07] overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-700 ease-out"
+                style={{ width: sky.loading || !day ? '0%' : `${score}%`, background: scoreColor }}
+              />
+            </div>
+          </Link>
+          <Scrubber count={daysCount} active={idx} onSelect={selectNight} label={dayLabel} />
+        </div>
       </div>
     </div>
   );
@@ -410,16 +422,38 @@ function VerdictPill({ badge, label }: { badge: 'go' | 'maybe' | 'skip'; label: 
   );
 }
 
-function Dots({ count, active }: { count: number; active: number }) {
+function Scrubber({
+  count,
+  active,
+  onSelect,
+  label,
+}: {
+  count: number;
+  active: number;
+  onSelect: (i: number) => void;
+  label: (i: number) => string;
+}) {
   if (count <= 1) return null;
   return (
-    <div className="mt-4 flex items-center gap-1.5">
+    <div className="mt-4 flex items-center gap-2">
       {Array.from({ length: count }).map((_, i) => (
-        <span
+        <button
           key={i}
-          className="h-[3px] rounded-full transition-all duration-300"
-          style={{ width: i === active ? 18 : 7, background: i === active ? '#FFB347' : 'rgba(255,255,255,0.22)' }}
-        />
+          type="button"
+          aria-label={label(i)}
+          aria-current={i === active || undefined}
+          onClick={() => onSelect(i)}
+          className="group/dot relative -my-2 py-2 min-h-0 outline-none"
+        >
+          <span
+            className="block h-[3px] rounded-full transition-all duration-300 group-active/dot:scale-y-150"
+            style={{
+              width: i === active ? 20 : 8,
+              background: i === active ? '#FFB347' : 'rgba(255,255,255,0.22)',
+              boxShadow: i === active ? '0 0 8px rgba(255,179,71,0.6)' : 'none',
+            }}
+          />
+        </button>
       ))}
     </div>
   );
