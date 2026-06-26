@@ -73,22 +73,41 @@ export default function HeroSaturn() {
       <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === Galaxy + constellations ===
-           Mobile: big faint background spanning ~75% of the screen.
-           Desktop: anchored to the right, behind the copy. === */}
-      <div aria-hidden className="absolute inset-y-0 right-0 w-[140%] sm:w-[100%] md:w-[80%] lg:w-[76%] opacity-[0.32] md:opacity-[0.4] pointer-events-none">
-        <div
-          className="absolute right-[-18%] sm:right-[-10%] top-[46%] md:top-[40%] -translate-y-1/2 w-[170%] sm:w-[160%] aspect-[400/265]"
-          style={{
-            WebkitMaskImage:
-              'radial-gradient(ellipse 66% 66% at 52% 44%, #000 42%, rgba(0,0,0,0.5) 66%, transparent 88%)',
-            maskImage:
-              'radial-gradient(ellipse 66% 66% at 52% 44%, #000 42%, rgba(0,0,0,0.5) 66%, transparent 88%)',
-          }}
-        >
-          <Image src="/hero/hubble-deep-field.jpg" alt="" fill priority sizes="(max-width: 768px) 70vw, 52vw" className="object-cover" style={{ filter: 'brightness(0.82) blur(0.6px)' }} />
-        </div>
-        <Constellations />
+      {/* === Deep-space backdrop: spiral galaxy (left) · nebula (right) · Earth limb (bottom) === */}
+      {/* Spiral galaxy — upper left */}
+      <div
+        aria-hidden
+        className="absolute -top-[10%] -left-[8%] w-[64%] sm:w-[50%] md:w-[42%] lg:w-[36%] aspect-[700/476] pointer-events-none"
+        style={{
+          WebkitMaskImage: 'radial-gradient(ellipse 58% 58% at 46% 46%, #000 28%, rgba(0,0,0,0.4) 60%, transparent 82%)',
+          maskImage: 'radial-gradient(ellipse 58% 58% at 46% 46%, #000 28%, rgba(0,0,0,0.4) 60%, transparent 82%)',
+        }}
+      >
+        <Image src="/hero/galaxy-spiral.jpg" alt="" fill priority sizes="(max-width: 768px) 50vw, 36vw" className="object-cover" />
+      </div>
+
+      {/* Violet nebula — right edge */}
+      <div
+        aria-hidden
+        className="absolute top-0 -right-[12%] w-[60%] sm:w-[46%] md:w-[40%] lg:w-[36%] aspect-square opacity-[0.6] pointer-events-none"
+        style={{
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 62% at 62% 46%, #000 24%, rgba(0,0,0,0.32) 58%, transparent 84%)',
+          maskImage: 'radial-gradient(ellipse 60% 62% at 62% 46%, #000 24%, rgba(0,0,0,0.32) 58%, transparent 84%)',
+        }}
+      >
+        <Image src="/hero/nebula.jpg" alt="" fill sizes="(max-width: 768px) 46vw, 36vw" className="object-cover" style={{ filter: 'hue-rotate(-68deg) saturate(1.35) brightness(0.95)' }} />
+      </div>
+
+      {/* Earth limb — bottom arc */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-[62%] pointer-events-none z-[1]"
+        style={{
+          WebkitMaskImage: 'linear-gradient(180deg, transparent 0%, #000 28%)',
+          maskImage: 'linear-gradient(180deg, transparent 0%, #000 28%)',
+        }}
+      >
+        <Image src="/hero/earth-limb.jpg" alt="" fill sizes="100vw" className="object-cover" style={{ objectPosition: '50% 28%' }} />
       </div>
 
       {/* === Dusk landscape: mountains + city lights === */}
@@ -508,42 +527,6 @@ function Landscape() {
         />
       </svg>
     </div>
-  );
-}
-
-/* ─── Constellation line-art ─────────────────────────────────────── */
-
-type Star = [number, number, number?];
-
-function Constellation({ stars, edges, opacity = 1 }: { stars: Star[]; edges: [number, number][]; opacity?: number }) {
-  return (
-    <g opacity={opacity}>
-      {edges.map(([a, b], i) => (
-        <line key={i} x1={stars[a][0]} y1={stars[a][1]} x2={stars[b][0]} y2={stars[b][1]} stroke="rgba(220,232,255,0.18)" strokeWidth="0.18" />
-      ))}
-      {stars.map(([x, y, big], i) => (
-        <circle key={i} cx={x} cy={y} r={big ? 0.7 : 0.42} fill="#EAF1FF" opacity={big ? 0.95 : 0.6} />
-      ))}
-    </g>
-  );
-}
-
-function Constellations() {
-  const orion: Star[] = [
-    [20, 22, 1], [30, 20, 1], [23, 31], [26, 32], [29, 33], [19, 43, 1], [31, 42],
-  ];
-  const orionEdges: [number, number][] = [[0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1]];
-  const dipper: Star[] = [[60, 24], [66, 21], [72, 20], [78, 23], [78, 30], [71, 31], [69, 25, 1]];
-  const dipperEdges: [number, number][] = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]];
-  const cas: Star[] = [[50, 72], [56, 65], [62, 71], [68, 64], [74, 70]];
-  const casEdges: [number, number][] = [[0, 1], [1, 2], [2, 3], [3, 4]];
-
-  return (
-    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" className="hidden md:block absolute inset-0 w-full h-full">
-      <Constellation stars={orion} edges={orionEdges} opacity={0.85} />
-      <Constellation stars={dipper} edges={dipperEdges} opacity={0.7} />
-      <Constellation stars={cas} edges={casEdges} opacity={0.6} />
-    </svg>
   );
 }
 
