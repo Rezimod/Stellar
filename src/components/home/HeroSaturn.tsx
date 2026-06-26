@@ -86,7 +86,7 @@ export default function HeroSaturn() {
               'radial-gradient(ellipse 66% 66% at 52% 44%, #000 42%, rgba(0,0,0,0.5) 66%, transparent 88%)',
           }}
         >
-          <Image src="/hero/andromeda.jpg" alt="" fill priority sizes="(max-width: 768px) 70vw, 52vw" className="object-cover" />
+          <Image src="/hero/hubble-deep-field.jpg" alt="" fill priority sizes="(max-width: 768px) 70vw, 52vw" className="object-cover" />
         </div>
         <Constellations />
       </div>
