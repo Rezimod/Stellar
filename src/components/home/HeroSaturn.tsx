@@ -76,9 +76,9 @@ export default function HeroSaturn() {
       {/* === Galaxy + constellations ===
            Mobile: big faint background spanning ~75% of the screen.
            Desktop: anchored to the right, behind the copy. === */}
-      <div aria-hidden className="absolute inset-y-0 right-0 w-[118%] sm:w-[85%] md:w-[56%] lg:w-[52%] opacity-[0.6] md:opacity-100 pointer-events-none">
+      <div aria-hidden className="absolute inset-y-0 right-0 w-[118%] sm:w-[85%] md:w-[66%] lg:w-[62%] opacity-[0.6] md:opacity-100 pointer-events-none">
         <div
-          className="absolute right-[-14%] sm:right-[-6%] top-[46%] md:top-[40%] -translate-y-1/2 w-[118%] sm:w-[110%] aspect-[400/265]"
+          className="absolute right-[-14%] sm:right-[-6%] top-[46%] md:top-[40%] -translate-y-1/2 w-[128%] sm:w-[122%] aspect-[400/265]"
           style={{
             WebkitMaskImage:
               'radial-gradient(ellipse 60% 60% at 52% 44%, #000 36%, rgba(0,0,0,0.5) 62%, transparent 84%)',
