@@ -74,16 +74,17 @@ export default function HeroSaturn() {
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
       {/* === Deep-space backdrop: spiral galaxy (left) · nebula (right) · Earth limb (bottom) === */}
-      {/* Spiral galaxy — upper left */}
+      {/* Spiral galaxy — upper left, tilted + softly faded into the dark */}
       <div
         aria-hidden
-        className="absolute -top-[10%] -left-[8%] w-[64%] sm:w-[50%] md:w-[42%] lg:w-[36%] aspect-[700/476] pointer-events-none"
+        className="absolute -top-[4%] -left-[10%] w-[58%] sm:w-[46%] md:w-[40%] lg:w-[33%] aspect-[700/476] pointer-events-none"
         style={{
-          WebkitMaskImage: 'radial-gradient(ellipse 58% 58% at 46% 46%, #000 28%, rgba(0,0,0,0.4) 60%, transparent 82%)',
-          maskImage: 'radial-gradient(ellipse 58% 58% at 46% 46%, #000 28%, rgba(0,0,0,0.4) 60%, transparent 82%)',
+          transform: 'rotate(-12deg)',
+          WebkitMaskImage: 'radial-gradient(ellipse 54% 54% at 48% 47%, #000 22%, rgba(0,0,0,0.35) 56%, transparent 80%)',
+          maskImage: 'radial-gradient(ellipse 54% 54% at 48% 47%, #000 22%, rgba(0,0,0,0.35) 56%, transparent 80%)',
         }}
       >
-        <Image src="/hero/galaxy-spiral.jpg" alt="" fill priority sizes="(max-width: 768px) 50vw, 36vw" className="object-cover" />
+        <Image src="/hero/galaxy-spiral.jpg" alt="" fill priority sizes="(max-width: 768px) 46vw, 33vw" className="object-cover" style={{ filter: 'brightness(0.9) contrast(1.05)' }} />
       </div>
 
       {/* Violet nebula — right edge */}
@@ -107,11 +108,18 @@ export default function HeroSaturn() {
           maskImage: 'linear-gradient(180deg, transparent 0%, #000 28%)',
         }}
       >
-        <Image src="/hero/earth-limb.jpg" alt="" fill sizes="100vw" className="object-cover" style={{ objectPosition: '50% 28%' }} />
+        <Image src="/hero/earth-limb.jpg" alt="" fill sizes="100vw" className="object-cover" style={{ objectPosition: '50% 28%', filter: 'brightness(0.92)' }} />
       </div>
 
-      {/* === Dusk landscape: mountains + city lights === */}
+      {/* === Foreground mountains === */}
       <Landscape />
+
+      {/* === Top fade: hero starts black so it blends into the dark header === */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[26%] pointer-events-none z-[2]"
+        style={{ background: 'linear-gradient(180deg, #03040E 0%, rgba(3,4,14,0.72) 22%, transparent 100%)' }}
+      />
 
       {/* === Copy-side scrim for legibility (copy now on the right) === */}
       <div
@@ -490,40 +498,16 @@ function CardSkeleton({ lines, thumb }: { lines: number; thumb?: boolean }) {
   );
 }
 
-/* ─── Dusk landscape ─────────────────────────────────────────────── */
+/* ─── Foreground mountains ───────────────────────────────────────── */
 
 function Landscape() {
-  // Deterministic city-light cluster in the valley (no Math.random in render).
-  const lights = useMemo(() => {
-    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
-    for (let i = 0; i < 70; i++) {
-      const t = (i * 9301 + 49297) % 233280;
-      const rnd = t / 233280;
-      const t2 = (i * 4021 + 1031) % 100;
-      const x = 250 + (rnd - 0.5) * 760 + Math.sin(i) * 40;
-      const y = 312 + (t2 / 100) * 34;
-      out.push({ x, y, r: i % 6 === 0 ? 1.6 : 1, o: 0.4 + (t2 % 5) * 0.12 });
-    }
-    return out;
-  }, []);
-
   return (
-    <div aria-hidden className="absolute inset-x-0 bottom-0 h-[44%] pointer-events-none z-[1]">
+    <div aria-hidden className="absolute inset-x-0 bottom-0 h-[46%] pointer-events-none z-[1]">
       <svg viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice" className="absolute bottom-0 w-full h-full">
-        {/* back ridge */}
+        {/* single black ridge */}
         <path
-          d="M0,206 L150,150 L320,196 L520,120 L720,180 L940,108 L1160,172 L1360,128 L1440,150 L1440,360 L0,360 Z"
-          fill="#1B1330"
-          opacity="0.92"
-        />
-        {/* city lights between ridges */}
-        {lights.map((l, i) => (
-          <circle key={i} cx={l.x} cy={l.y} r={l.r} fill="#FFC76B" opacity={l.o} />
-        ))}
-        {/* front ridge */}
-        <path
-          d="M0,304 L210,232 L430,300 L660,216 L900,288 L1170,224 L1440,278 L1440,360 L0,360 Z"
-          fill="#08060F"
+          d="M0,250 L190,176 L400,252 L640,166 L900,244 L1180,172 L1440,232 L1440,360 L0,360 Z"
+          fill="#050308"
         />
       </svg>
     </div>
