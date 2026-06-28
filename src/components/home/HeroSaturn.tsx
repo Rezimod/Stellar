@@ -147,42 +147,6 @@ export default function HeroSaturn() {
 function Copy({ t }: { t: (k: string) => string }) {
   return (
     <div className="order-1 lg:order-2 w-full max-w-[600px] mx-auto lg:mx-0 lg:pl-6 lg:justify-self-end text-center lg:text-left">
-      {/* Glowing planet focal — floating object on glass (reference centerpiece) */}
-      <div className="flex justify-center lg:justify-start mb-8 lg:mb-10">
-        <div className="relative" style={{ width: 188, height: 188 }} aria-hidden>
-          {/* soft outer halo */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: '-30px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(59,111,246,0.30) 0%, rgba(46,107,255,0.10) 45%, transparent 70%)',
-            }}
-          />
-          {/* glowing orbital ring */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              borderRadius: '50%',
-              border: '1.5px solid rgba(130,170,255,0.45)',
-              boxShadow: '0 0 24px rgba(59,111,246,0.45), inset 0 0 18px rgba(59,111,246,0.25)',
-            }}
-          />
-          {/* lit planet sphere */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: '34px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle at 34% 28%, #a9c6ff 0%, #3b6ff6 40%, #1b3aa0 66%, #0a1a52 88%)',
-              boxShadow:
-                '0 18px 50px -8px rgba(11,28,84,0.7), inset -12px -14px 38px rgba(2,6,28,0.55), inset 10px 12px 30px rgba(170,200,255,0.28)',
-            }}
-          />
-        </div>
-      </div>
-
       <h1
         className="text-white leading-[1.04] tracking-[-0.015em]"
         style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(38px, 5vw, 60px)', fontWeight: 700 }}
@@ -340,96 +304,81 @@ function HeroConsole({ paused }: { paused: boolean }) {
   };
 
   return (
-    <div className="order-2 lg:order-1 w-full max-w-[400px] mx-auto lg:mx-0 lg:justify-self-start pointer-events-auto">
-      <div className="relative overflow-hidden rounded-[26px] border border-white/[0.12]" style={panelStyle}>
-        {/* Header: cycling night + verdict */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07]">
-          <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-white/55">
-            <span className="hero-live-dot" />
-            {sky.loading || !day ? t('cards.consoleTitle') : dayLabel(idx)}
-          </span>
-          {sky.loading || !day ? (
-            <span className="h-[22px] w-[58px] rounded-full bg-white/[0.06] animate-pulse" />
-          ) : (
-            <VerdictPill badge={day.badge} label={t(`cards.verdict.${day.badge}`)} />
-          )}
+    <div className="order-2 lg:order-1 w-full max-w-[420px] mx-auto lg:mx-0 lg:justify-self-start pointer-events-auto">
+      <div className="relative overflow-hidden rounded-[28px] border border-white/[0.12]" style={panelStyle}>
+
+        {/* ── Hero block: glowing planet object + big sky-score number ── */}
+        <div className="px-6 pt-7 pb-5">
+          <div className="flex items-center gap-5">
+            {/* glowing planet object */}
+            <div className="relative shrink-0" style={{ width: 104, height: 104 }} aria-hidden>
+              <div style={{ position: 'absolute', inset: '-16px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,111,246,0.30) 0%, rgba(46,107,255,0.10) 45%, transparent 70%)' }} />
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1.5px solid rgba(130,170,255,0.45)', boxShadow: '0 0 20px rgba(59,111,246,0.45), inset 0 0 14px rgba(59,111,246,0.25)' }} />
+              <div style={{ position: 'absolute', inset: '18px', borderRadius: '50%', background: 'radial-gradient(circle at 34% 28%, #a9c6ff 0%, #3b6ff6 40%, #1b3aa0 66%, #0a1a52 88%)', boxShadow: 'inset -8px -10px 26px rgba(2,6,28,0.55), inset 7px 9px 22px rgba(170,200,255,0.28)' }} />
+            </div>
+            {/* big real sky-score number */}
+            <div className="min-w-0">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">{t('cards.skyScore')}</div>
+              <div key={`sc-${idx}`} className="hero-card-swap flex items-end gap-1.5 mt-1">
+                <span className="text-[54px] font-bold leading-[0.9] tabular-nums text-white">{sky.loading || !day ? '—' : score}</span>
+                <span className="text-white/35 text-[16px] font-mono mb-1.5">/100</span>
+              </div>
+              <div className="mt-2 inline-flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: scoreColor }} />
+                <span className="text-[13px] font-semibold" style={{ color: sky.loading || !day ? 'rgba(255,255,255,0.6)' : scoreColor }}>
+                  {sky.loading || !day ? t('cards.consoleTitle') : t(`cards.verdict.${day.badge}`)}
+                </span>
+                <span className="font-mono text-[11px] text-white/35">· {dayLabel(idx)}</span>
+              </div>
+            </div>
+          </div>
+          <Scrubber count={daysCount} active={idx} onSelect={selectNight} label={dayLabel} />
         </div>
 
-        {/* Visible planets — primary */}
-        <Link href="/sky" className="group block px-5 pt-5 pb-4 transition-colors hover:bg-white/[0.03]">
-          <div className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.visibleNow')}</div>
+        {/* ── Clean list: tonight's visible planets ── */}
+        <div className="border-t border-white/[0.08]">
+          <div className="px-6 pt-3 pb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.visibleNow')}</div>
           {sky.loading ? (
-            <div className="flex gap-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <span key={i} className="h-8 w-24 rounded-full bg-white/[0.05] animate-pulse" />
+            <div className="px-6 pb-3 space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-10 rounded-xl bg-white/[0.04] animate-pulse" />
               ))}
             </div>
           ) : shownPlanets.length ? (
-            <div key={`pl-${idx}`} className="hero-card-swap flex flex-wrap gap-2">
+            <div key={`pl-${idx}`} className="hero-card-swap px-3 pb-2">
               {shownPlanets.map((p) => (
-                <span
-                  key={p.name}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] px-3 py-1.5"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.alt > 35 ? '#4ADE80' : p.alt > 15 ? '#FFB347' : '#94A3B8' }} />
-                  <span className="text-white/90 text-[13.5px] font-medium leading-none">{p.name}</span>
-                  <span className="font-mono text-[11px] tabular-nums text-white/40 leading-none">{p.alt}°</span>
-                </span>
+                <Link key={p.name} href="/sky" className="flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-white/[0.05] transition-colors no-underline">
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(59,111,246,0.14)', border: '1px solid rgba(59,111,246,0.30)' }}>
+                    <span className="w-2 h-2 rounded-full" style={{ background: p.alt > 35 ? '#4ADE80' : p.alt > 15 ? '#3B6FF6' : '#94A3B8' }} />
+                  </span>
+                  <span className="flex-1 text-white/90 text-[15px] font-medium">{p.name}</span>
+                  <span className="font-mono text-[13px] tabular-nums text-white/45">{p.alt}°</span>
+                </Link>
               ))}
             </div>
           ) : (
-            <span className="font-mono text-[12px] text-white/35">{t('cards.noneUp')}</span>
+            <div className="px-6 pb-4 font-mono text-[12px] text-white/35">{t('cards.noneUp')}</div>
           )}
-        </Link>
+        </div>
 
-        <div className="mx-5 h-px bg-white/[0.07]" />
-
-        {/* Tonight's mission — primary */}
-        <Link href="/missions" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
-          <div className="flex items-center justify-between pb-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#3B6FF6]">{t('cards.missionsLabel')}</span>
-            <span className="text-white/30 transition-colors group-hover:text-[#3B6FF6]" aria-hidden>
-              <ArrowIcon />
-            </span>
-          </div>
+        {/* ── Mission CTA row ── */}
+        <Link href="/missions" className="group flex items-center gap-3.5 border-t border-white/[0.08] px-6 py-4 transition-colors hover:bg-white/[0.04] no-underline">
           {sky.loading || !mission ? (
             <CardSkeleton lines={1} thumb />
           ) : (
-            <div key={`mis-${idx}`} className="hero-card-swap d1 flex items-center gap-3.5">
-              <span className="relative w-14 h-14 shrink-0 rounded-[14px] overflow-hidden border border-white/10">
-                <Image src={mission.img} alt="" fill sizes="56px" className="object-cover" />
+            <>
+              <span className="relative w-12 h-12 shrink-0 rounded-[14px] overflow-hidden border border-white/10">
+                <Image src={mission.img} alt="" fill sizes="48px" className="object-cover" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-white text-[18px] font-semibold leading-tight truncate">{mission.title}</span>
-                <span className="mt-1 flex items-center gap-2.5">
-                  <span className="font-mono text-[13px] tabular-nums text-[#3B6FF6]">+{mission.stars} ★</span>
-                  <span className="font-mono text-[12px] tabular-nums text-white/45 truncate">{mission.fact}</span>
-                </span>
+                <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-[#3B6FF6]">{t('cards.missionsLabel')}</span>
+                <span className="block text-white text-[16px] font-semibold leading-tight truncate mt-0.5">{mission.title}</span>
+                <span className="font-mono text-[12px] tabular-nums text-white/45">+{mission.stars} ★</span>
               </span>
-            </div>
+              <span className="text-white/30 group-hover:text-[#3B6FF6] transition-colors shrink-0" aria-hidden><ArrowIcon /></span>
+            </>
           )}
         </Link>
-
-        <div className="mx-5 h-px bg-white/[0.07]" />
-
-        {/* Sky score — glowing ring (reference signature) */}
-        <div className="px-5 py-4">
-          <Link href="/sky" className="group flex items-center justify-between gap-4 transition-opacity hover:opacity-90">
-            <div className="min-w-0">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.skyScore')}</div>
-              <div
-                key={`sc-${idx}`}
-                className="hero-card-swap mt-1.5 text-[15px] font-semibold leading-tight"
-                style={{ color: sky.loading || !day ? 'rgba(255,255,255,0.5)' : scoreColor }}
-              >
-                {sky.loading || !day ? t('cards.consoleTitle') : t(`cards.verdict.${day.badge}`)}
-              </div>
-              <div className="mt-0.5 font-mono text-[11px] text-white/35">{dayLabel(idx)}</div>
-            </div>
-            <ScoreRing score={score} loading={sky.loading || !day} />
-          </Link>
-          <Scrubber count={daysCount} active={idx} onSelect={selectNight} label={dayLabel} />
-        </div>
       </div>
     </div>
   );
