@@ -170,8 +170,8 @@ function Copy({ t }: { t: (k: string) => string }) {
       </p>
 
       <div className="mt-6 md:mt-10 flex flex-col sm:flex-row gap-3.5">
-        <CTA href="/missions" tone="primary" icon={<SparkleIcon />}>{t('ctaPrimary')}</CTA>
-        <CTA href="/sky" tone="secondary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
+        <CTA href="/sky" tone="primary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
+        <CTA href="/missions" tone="secondary" icon={<SparkleIcon />}>{t('ctaPrimary')}</CTA>
       </div>
 
       {/* Desktop: three steps under the copy. Mobile renders them under the widget instead. */}
@@ -541,7 +541,7 @@ function CTA({
   };
   const skin: CSSProperties =
     tone === 'primary'
-      ? { background: '#FFB347', color: '#1A1206', border: 'none' }
+      ? { background: 'linear-gradient(150deg, #8EF0D8 0%, #5EEAD4 100%)', color: '#06231E', border: 'none' }
       : { background: 'rgba(14,16,32,0.5)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.16)' };
   return (
     <Link

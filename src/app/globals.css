@@ -597,7 +597,7 @@ code, pre, .mono, [class*="font-mono"] {
 .btn-stellar-ghost:active:not(:disabled) { filter: brightness(0.96); }
 
 /* Home hero CTAs */
-.hero-cta-primary:hover   { background: #FFC36B !important; }
+.hero-cta-primary:hover   { filter: brightness(1.06); }
 .hero-cta-secondary:hover { background: #223054 !important; }
 
 /* Live indicator dot in the hero console header */
