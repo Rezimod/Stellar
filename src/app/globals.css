@@ -514,8 +514,8 @@ code, pre, .mono, [class*="font-mono"] {
    rounding. No gradients, no glow. Used by .btn-primary, .btn-ghost,
    .btn-stellar*, and .icon-badge-gradient. */
 :root {
-  --cta-orange:       #FFB347;
-  --cta-orange-hover: #FFC36B;
+  --cta-orange:       #3B6FF6;
+  --cta-orange-hover: #5B8CF8;
   --cta-orange-from:  #FFB347;
   --cta-orange-to:    #FFB347;
   --cta-gradient:        var(--cta-orange);
@@ -525,7 +525,7 @@ code, pre, .mono, [class*="font-mono"] {
   --cta-secondary-bg:     #1A2540;
   --cta-secondary-hover:  #223054;
   --cta-secondary-border: rgba(255,255,255,0.06);
-  --cta-radius: 8px;
+  --cta-radius: 999px;
 }
 
 /* Button styles — solid orange primary, dark navy secondary, rectangular */
@@ -595,6 +595,10 @@ code, pre, .mono, [class*="font-mono"] {
 }
 .btn-stellar-ghost:hover:not(:disabled)  { background: var(--cta-secondary-hover); }
 .btn-stellar-ghost:active:not(:disabled) { filter: brightness(0.96); }
+
+/* Blue glow on the primary pill buttons (reference lit look) — applies app-wide */
+.btn-primary, .btn-stellar { box-shadow: 0 10px 30px -10px rgba(59, 111, 246, 0.55); }
+.btn-primary:hover:not(:disabled), .btn-stellar:hover:not(:disabled) { box-shadow: 0 12px 36px -10px rgba(59, 111, 246, 0.7); }
 
 /* Home hero CTAs */
 .hero-cta-primary:hover   { filter: brightness(1.06); }
