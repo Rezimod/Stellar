@@ -146,10 +146,26 @@ export default function HeroSaturn() {
 
 function Copy({ t }: { t: (k: string) => string }) {
   return (
-    <div className="order-1 lg:order-2 max-w-[600px] lg:pl-6 lg:justify-self-end">
+    <div className="order-1 lg:order-2 w-full max-w-[600px] mx-auto lg:mx-0 lg:pl-6 lg:justify-self-end text-center lg:text-left">
+      {/* Glowing planet focal — the reference's hero sphere (mobile-centered) */}
+      <div className="flex justify-center lg:justify-start mb-7 lg:mb-9">
+        <div
+          aria-hidden
+          style={{
+            width: 132,
+            height: 132,
+            borderRadius: '50%',
+            background:
+              'radial-gradient(circle at 34% 30%, #8fb4ff 0%, #3b6ff6 42%, #1b3aa0 68%, #0b1c54 88%)',
+            boxShadow:
+              '0 0 70px 14px rgba(46,107,255,0.45), 0 0 28px 2px rgba(143,180,255,0.35), inset -10px -12px 34px rgba(2,6,28,0.55), inset 8px 10px 26px rgba(160,195,255,0.22)',
+          }}
+        />
+      </div>
+
       <h1
-        className="text-white leading-[1.02] tracking-[-0.015em]"
-        style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(36px, 4.8vw, 62px)', fontWeight: 700 }}
+        className="text-white leading-[1.04] tracking-[-0.015em]"
+        style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(38px, 5vw, 60px)', fontWeight: 700 }}
       >
         {t('headline1')}
         <br />
@@ -165,13 +181,20 @@ function Copy({ t }: { t: (k: string) => string }) {
         </span>
       </h1>
 
-      <p className="mt-4 md:mt-6 text-[16px] md:text-[19px] font-medium" style={{ color: 'rgba(226,222,240,0.7)' }}>
+      <p className="mt-4 md:mt-5 text-[16px] md:text-[19px] font-medium mx-auto lg:mx-0 max-w-[440px]" style={{ color: 'rgba(226,222,240,0.7)' }}>
         {t('subtitle')}
       </p>
 
-      <div className="mt-6 md:mt-10 flex flex-col sm:flex-row gap-3.5">
+      {/* Single primary pill + a quiet secondary link (reference hierarchy) */}
+      <div className="mt-7 md:mt-9 flex flex-col items-center lg:items-start gap-4">
         <CTA href="/sky" tone="primary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
-        <CTA href="/missions" tone="secondary" icon={<SparkleIcon />}>{t('ctaPrimary')}</CTA>
+        <Link
+          href="/missions"
+          className="inline-flex items-center gap-2 text-[15px] font-semibold text-white/70 hover:text-white transition-colors no-underline"
+        >
+          {t('ctaPrimary')}
+          <span className="text-[#3B6FF6]"><ArrowIcon /></span>
+        </Link>
       </div>
 
       {/* Desktop: three steps under the copy. Mobile renders them under the widget instead. */}
