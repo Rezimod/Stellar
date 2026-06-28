@@ -131,12 +131,11 @@ export default function HeroSaturn() {
       {/* === Content grid ===
            Desktop: console (left) · copy (right).
            Mobile order: copy → console (widget) → three steps on one line. === */}
-      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 min-h-[100dvh]
-        grid grid-cols-1 lg:grid-cols-2 items-start lg:items-center gap-6 lg:gap-10 pt-[60px] pb-28 lg:py-0">
-        <HeroConsole paused={paused} />
+      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-5 md:px-10 lg:px-12 min-h-[100dvh]
+        grid grid-cols-1 lg:grid-cols-2 items-center gap-4 lg:gap-10 pt-[58px] pb-5 lg:py-0">
+        {/* Mobile: compact headline + CTA first, then the card — all in one viewport */}
         <Copy t={t} />
-        {/* Mobile-only: the three steps in one row, under the widget */}
-        <HeroFeatures t={t} compact className="order-3 lg:hidden grid grid-cols-3 gap-3 w-full max-w-[440px] mx-auto" />
+        <HeroConsole paused={paused} />
       </div>
     </section>
   );
@@ -148,8 +147,8 @@ function Copy({ t }: { t: (k: string) => string }) {
   return (
     <div className="order-1 lg:order-2 w-full max-w-[600px] mx-auto lg:mx-0 lg:pl-6 lg:justify-self-end text-center lg:text-left">
       <h1
-        className="text-white leading-[1.04] tracking-[-0.015em]"
-        style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(38px, 5vw, 60px)', fontWeight: 700 }}
+        className="text-white leading-[1.02] tracking-[-0.015em]"
+        style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(30px, 6.5vw, 60px)', fontWeight: 700 }}
       >
         {t('headline1')}
         <br />
@@ -165,12 +164,12 @@ function Copy({ t }: { t: (k: string) => string }) {
         </span>
       </h1>
 
-      <p className="mt-4 md:mt-5 text-[16px] md:text-[19px] font-medium mx-auto lg:mx-0 max-w-[440px]" style={{ color: 'rgba(226,222,240,0.7)' }}>
+      <p className="mt-2.5 md:mt-5 text-[14px] md:text-[19px] font-medium mx-auto lg:mx-0 max-w-[440px]" style={{ color: 'rgba(226,222,240,0.7)' }}>
         {t('subtitle')}
       </p>
 
       {/* Single primary pill + a quiet secondary link (reference hierarchy) */}
-      <div className="mt-7 md:mt-9 flex flex-col items-center lg:items-start gap-4">
+      <div className="mt-4 md:mt-9 flex flex-col items-center lg:items-start gap-3">
         <CTA href="/sky" tone="primary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
         <Link
           href="/missions"
@@ -280,7 +279,8 @@ function HeroConsole({ paused }: { paused: boolean }) {
   }, [sky.planets, tp]);
 
   // Rotate the live visible set each cycle so the row changes smoothly.
-  const shownPlanets = rotate(visiblePlanets, idx).slice(0, 4);
+  // 3 rows keeps the whole hero inside one mobile viewport.
+  const shownPlanets = rotate(visiblePlanets, idx).slice(0, 3);
 
   const dayLabel = (i: number): string => {
     if (i === 0) return t('cards.today');
@@ -308,10 +308,10 @@ function HeroConsole({ paused }: { paused: boolean }) {
       <div className="relative overflow-hidden rounded-[28px] border border-white/[0.12]" style={panelStyle}>
 
         {/* ── Hero block: glowing planet object + big sky-score number ── */}
-        <div className="px-6 pt-7 pb-5">
+        <div className="px-6 pt-5 pb-4">
           <div className="flex items-center gap-5">
             {/* glowing planet object */}
-            <div className="relative shrink-0" style={{ width: 104, height: 104 }} aria-hidden>
+            <div className="relative shrink-0" style={{ width: 92, height: 92 }} aria-hidden>
               <div style={{ position: 'absolute', inset: '-16px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,111,246,0.30) 0%, rgba(46,107,255,0.10) 45%, transparent 70%)' }} />
               <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1.5px solid rgba(130,170,255,0.45)', boxShadow: '0 0 20px rgba(59,111,246,0.45), inset 0 0 14px rgba(59,111,246,0.25)' }} />
               <div style={{ position: 'absolute', inset: '18px', borderRadius: '50%', background: 'radial-gradient(circle at 34% 28%, #a9c6ff 0%, #3b6ff6 40%, #1b3aa0 66%, #0a1a52 88%)', boxShadow: 'inset -8px -10px 26px rgba(2,6,28,0.55), inset 7px 9px 22px rgba(170,200,255,0.28)' }} />
@@ -531,15 +531,18 @@ function CardSkeleton({ lines, thumb }: { lines: number; thumb?: boolean }) {
 /* ─── Foreground mountains ───────────────────────────────────────── */
 
 function Landscape() {
+  // Smooth premium horizon (replaces the jagged mountain ridge): a soft dark
+  // gradient base that grounds the scene + a faint blue atmospheric glow line.
   return (
-    <div aria-hidden className="absolute inset-x-0 bottom-0 h-[46%] pointer-events-none z-[1]">
-      <svg viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice" className="absolute bottom-0 w-full h-full">
-        {/* single black ridge */}
-        <path
-          d="M0,250 L190,176 L400,252 L640,166 L900,244 L1180,172 L1440,232 L1440,360 L0,360 Z"
-          fill="#050308"
-        />
-      </svg>
+    <div aria-hidden className="absolute inset-x-0 bottom-0 h-[42%] pointer-events-none z-[1]">
+      <div
+        className="absolute inset-0"
+        style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(5,8,24,0.5) 42%, #04060f 100%)' }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-[16%] h-[120px]"
+        style={{ background: 'radial-gradient(ellipse 60% 100% at 50% 100%, rgba(59,111,246,0.18) 0%, transparent 70%)' }}
+      />
     </div>
   );
 }
