@@ -8,7 +8,7 @@ import ComparisonTable from '@/components/home/ComparisonTable';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[12px] md:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#FFB347] mb-5">
+    <div className="text-[12px] md:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#A78BFA] mb-5">
       {children}
     </div>
   );
@@ -297,7 +297,7 @@ function PhoneBottomNav({
     >
       {tabs.map((t) => {
         const isActive = t === active;
-        const color = isActive ? '#FFB347' : 'rgba(255,255,255,0.42)';
+        const color = isActive ? '#5EEAD4' : 'rgba(255,255,255,0.42)';
         return (
           <div
             key={t}
@@ -315,7 +315,7 @@ function PhoneBottomNav({
                   width: cfg.dashW,
                   height: cfg.dashH,
                   borderRadius: cfg.dashH,
-                  background: '#FFB347',
+                  background: '#5EEAD4',
                 }}
               />
             )}
@@ -857,7 +857,7 @@ function SignInScreen({ labels }: { labels: { title: string; subtitle: string; e
       <div className="mt-3 rounded-[7px] bg-white/[0.05] border border-white/10 px-2 py-1.5 text-white/35 text-[8px]">
         {labels.email}
       </div>
-      <div className="mt-2 rounded-[7px] bg-[#FFB347] text-[#0A1735] text-[8.5px] font-semibold text-center py-1.5">
+      <div className="mt-2 rounded-[7px] bg-[#5EEAD4] text-[#0A1735] text-[8.5px] font-semibold text-center py-1.5">
         {labels.cta}
       </div>
     </div>
@@ -1041,7 +1041,10 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="home-font bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
+    <div
+      className="home-font text-white -mt-14 overflow-x-hidden"
+      style={{ background: 'radial-gradient(125% 65% at 50% 0%, #2a1f5c 0%, #1a1640 34%, #110e2e 60%, #0b0920 82%)' }}
+    >
 
       {/* ============================================================
           HERO — Saturn parallax, screenshot redesign
