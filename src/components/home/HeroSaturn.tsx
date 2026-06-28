@@ -369,25 +369,21 @@ function HeroConsole({ paused }: { paused: boolean }) {
 
         <div className="mx-5 h-px bg-white/[0.07]" />
 
-        {/* Sky score — secondary, under the primary content */}
+        {/* Sky score — glowing ring (reference signature) */}
         <div className="px-5 py-4">
-          <Link href="/sky" className="group block transition-opacity hover:opacity-80">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.skyScore')}</span>
-              {sky.loading || !day ? (
-                <span className="h-4 w-12 rounded bg-white/[0.06] animate-pulse" />
-              ) : (
-                <span key={`sc-${idx}`} className="hero-card-swap font-mono text-[15px] font-semibold tabular-nums" style={{ color: scoreColor }}>
-                  {score}<span className="text-white/35 text-[12px]">/100</span>
-                </span>
-              )}
-            </div>
-            <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.07] overflow-hidden">
+          <Link href="/sky" className="group flex items-center justify-between gap-4 transition-opacity hover:opacity-90">
+            <div className="min-w-0">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">{t('cards.skyScore')}</div>
               <div
-                className="h-full rounded-full transition-all duration-700 ease-out"
-                style={{ width: sky.loading || !day ? '0%' : `${score}%`, background: scoreColor }}
-              />
+                key={`sc-${idx}`}
+                className="hero-card-swap mt-1.5 text-[15px] font-semibold leading-tight"
+                style={{ color: sky.loading || !day ? 'rgba(255,255,255,0.5)' : scoreColor }}
+              >
+                {sky.loading || !day ? t('cards.consoleTitle') : t(`cards.verdict.${day.badge}`)}
+              </div>
+              <div className="mt-0.5 font-mono text-[11px] text-white/35">{dayLabel(idx)}</div>
             </div>
+            <ScoreRing score={score} loading={sky.loading || !day} />
           </Link>
           <Scrubber count={daysCount} active={idx} onSelect={selectNight} label={dayLabel} />
         </div>
@@ -400,6 +396,45 @@ function dayScore(d: ForecastDay): number {
   const cloudScore = Math.max(0, 100 - d.cloudCoverPct) * 0.7; // up to 70
   const moonScore = (1 - d.moonIllumination) * 30; // up to 30
   return Math.round(cloudScore + moonScore);
+}
+
+// Glowing circular progress ring — the reference's signature stat element
+// (replaces the old flat horizontal bar).
+function ScoreRing({ score, loading }: { score: number; loading: boolean }) {
+  const R = 31;
+  const C = 2 * Math.PI * R;
+  const pct = loading ? 0 : Math.max(0, Math.min(100, score));
+  const offset = C * (1 - pct / 100);
+  return (
+    <div className="relative shrink-0" style={{ width: 76, height: 76 }}>
+      <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden>
+        <defs>
+          <linearGradient id="hero-ring-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#5B8CF8" />
+            <stop offset="100%" stopColor="#2E6BFF" />
+          </linearGradient>
+        </defs>
+        <circle cx="38" cy="38" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+        <circle
+          cx="38"
+          cy="38"
+          r={R}
+          fill="none"
+          stroke="url(#hero-ring-grad)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={C}
+          strokeDashoffset={offset}
+          transform="rotate(-90 38 38)"
+          style={{ filter: 'drop-shadow(0 0 5px rgba(59,111,246,0.65))', transition: 'stroke-dashoffset 800ms ease' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-mono text-[19px] font-bold tabular-nums leading-none text-white">{loading ? '—' : score}</span>
+        <span className="text-[8px] uppercase tracking-[0.12em] text-white/40 mt-1">/100</span>
+      </div>
+    </div>
+  );
 }
 
 function rotate<T>(arr: T[], n: number): T[] {
