@@ -535,7 +535,7 @@ function CTA({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    borderRadius: 12,
+    borderRadius: 999,
     fontFamily: 'var(--font-body)',
     fontSize: 16,
     fontWeight: 700,
@@ -544,8 +544,19 @@ function CTA({
   };
   const skin: CSSProperties =
     tone === 'primary'
-      ? { background: 'linear-gradient(150deg, #8EF0D8 0%, #5EEAD4 100%)', color: '#06231E', border: 'none' }
-      : { background: 'rgba(14,16,32,0.5)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.16)' };
+      ? {
+          background: 'linear-gradient(150deg, #8EF0D8 0%, #5EEAD4 100%)',
+          color: '#06231E',
+          border: 'none',
+          boxShadow: '0 10px 34px -10px rgba(94,234,212,0.55)',
+        }
+      : {
+          background: 'rgba(255,255,255,0.06)',
+          color: '#FFFFFF',
+          border: '1px solid rgba(255,255,255,0.16)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        };
   return (
     <Link
       href={href}
