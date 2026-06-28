@@ -83,7 +83,7 @@ function AchievementBadge({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={linkLabel}
-      className="home-achievement-card group flex flex-col items-center text-center min-w-0 flex-1 max-w-[300px] rounded-[16px] bg-white/[0.03] border border-white/[0.08] px-5 py-5 md:px-7 md:py-6 no-underline transition-colors hover:bg-white/[0.05] hover:[border-color:var(--accent-border)]"
+      className="home-achievement-card group flex flex-col items-center text-center min-w-0 flex-1 max-w-[300px] rounded-[18px] bg-white/[0.05] border border-white/[0.10] backdrop-blur-md px-5 py-5 md:px-7 md:py-6 no-underline transition-colors hover:bg-white/[0.07] hover:[border-color:var(--accent-border)]"
       style={{
         ['--accent-border' as string]: `${color}66`,
       }}
@@ -107,7 +107,7 @@ function AchievementBadge({
         {rank}
       </p>
       <p className="home-achievement-date text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>
-      <span className="home-achievement-arrow mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#FFB347]/80 transition-colors">
+      <span className="home-achievement-arrow mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#5EEAD4]/80 transition-colors">
         ↗
       </span>
     </a>
@@ -118,7 +118,7 @@ function SectionLink({ href, children }: { href: string; children: React.ReactNo
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[11.5px] md:text-[12.5px] hover:gap-3 transition-all no-underline"
+      className="inline-flex items-center gap-2 text-[#5EEAD4] font-mono text-[11.5px] md:text-[12.5px] hover:gap-3 transition-all no-underline"
     >
       {children}
     </Link>
@@ -224,7 +224,7 @@ function PhoneTopBar({ size }: { size: IPhoneSize }) {
             border: '1px solid rgba(255,255,255,0.10)',
           }}
         >
-          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#FFB347">
+          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#5EEAD4">
             <path d="M6 1l1.5 3.5L11 5l-2.5 2L9 10.5 6 8.5 3 10.5l.5-3.5L1 5l3.5-.5z" />
           </svg>
         </span>
@@ -514,13 +514,13 @@ function MissionsScreen({ labels }: { labels: { label: string; title: string; su
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[10px] font-mono uppercase tracking-wider">{labels.label}</span>
-        <span className="text-[#FFB347] text-[9.5px] font-mono tabular-nums">2 / 7</span>
+        <span className="text-[#5EEAD4] text-[9.5px] font-mono tabular-nums">2 / 7</span>
       </div>
       <div className="mt-1 text-white text-[14px] font-bold leading-tight">{labels.title}</div>
       <div className="text-white/50 text-[10px]">{labels.sub}</div>
 
       <div className="mt-2 h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
-        <div className="h-full rounded-full bg-[#FFB347]" style={{ width: '28%' }} />
+        <div className="h-full rounded-full bg-[#5EEAD4]" style={{ width: '28%' }} />
       </div>
 
       <div className="mt-2.5 grid grid-cols-2 gap-1.5">
@@ -543,7 +543,7 @@ function MissionsScreen({ labels }: { labels: { label: string; title: string; su
             </div>
             <div className="px-1.5 py-1 flex items-center justify-between">
               <span className="text-white text-[9.5px] font-medium leading-none">{t.name}</span>
-              <span className="text-[#FFB347] text-[8.5px] font-mono tabular-nums">+{t.stars}</span>
+              <span className="text-[#5EEAD4] text-[8.5px] font-mono tabular-nums">+{t.stars}</span>
             </div>
           </div>
         ))}
@@ -612,7 +612,7 @@ function LearnScreen({
           <div className="text-white/55 text-[8px] font-mono uppercase tracking-wider">{labels.quizLabel}</div>
           <div className="text-white text-[10px] leading-tight">{labels.quizSubject}</div>
         </div>
-        <span className="text-[#FFB347] font-mono text-[9.5px] tabular-nums">+100 ★</span>
+        <span className="text-[#5EEAD4] font-mono text-[9.5px] tabular-nums">+100 ★</span>
       </div>
     </div>
   );
@@ -656,9 +656,9 @@ function SkyMapScreen({ labels }: { labels: { location: string; visible: string;
             <circle key={i} cx={cx} cy={cy} r={r} fill="white" opacity={0.4 + (i % 3) * 0.15} />
           ))}
 
-          <circle cx="38" cy="42" r="3.2" fill="none" stroke="#FFB347" strokeWidth="0.5" opacity="0.6" />
-          <circle cx="38" cy="42" r="1.8" fill="#FFB347" />
-          <text x="38" y="36" fill="#FFB347" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
+          <circle cx="38" cy="42" r="3.2" fill="none" stroke="#5EEAD4" strokeWidth="0.5" opacity="0.6" />
+          <circle cx="38" cy="42" r="1.8" fill="#5EEAD4" />
+          <text x="38" y="36" fill="#5EEAD4" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
 
           <circle cx="65" cy="55" r="1.4" fill="#B07FE8" />
           <text x="65" y="50" fill="#B07FE8" fontSize="2.6" textAnchor="middle" fontFamily="monospace">SAT</text>
@@ -676,7 +676,7 @@ function SkyARScreen({ labels }: { labels: { label: string; jupiterName: string 
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">{labels.label}</span>
-        <span className="text-[#FFB347] text-[8px] font-mono">SE 142°</span>
+        <span className="text-[#5EEAD4] text-[8px] font-mono">SE 142°</span>
       </div>
 
       <div className="mt-2 relative flex-1 rounded-[10px] overflow-hidden bg-gradient-to-b from-[#0a1430] via-[#0f1a40] to-[#1a1030]">
@@ -705,14 +705,14 @@ function SkyARScreen({ labels }: { labels: { label: string; jupiterName: string 
 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            <div className="w-[42px] h-[42px] rounded-full border border-[#FFB347]/70" />
-            <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#FFB347] shadow-[0_0_10px_#FFB347]" />
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFB347]/70" />
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFB347]/70" />
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
-            <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
+            <div className="w-[42px] h-[42px] rounded-full border border-[#5EEAD4]/70" />
+            <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#5EEAD4] shadow-[0_0_10px_#5EEAD4]" />
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#5EEAD4]/70" />
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#5EEAD4]/70" />
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#5EEAD4]/70" />
+            <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#5EEAD4]/70" />
             <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
-              <div className="text-[#FFB347] text-[9px] font-bold leading-none">{labels.jupiterName}</div>
+              <div className="text-[#5EEAD4] text-[9px] font-bold leading-none">{labels.jupiterName}</div>
               <div className="text-white/55 text-[7px] font-mono mt-0.5">alt 38° · mag −2.1</div>
             </div>
           </div>
@@ -846,8 +846,8 @@ function SignInScreen({ labels }: { labels: { title: string; subtitle: string; e
   return (
     <div className="flex flex-col h-full justify-center px-1">
       <div className="text-center">
-        <div className="mx-auto mb-2 w-8 h-8 rounded-full bg-[#FFB347]/15 border border-[#FFB347]/35 flex items-center justify-center">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB347" aria-hidden="true">
+        <div className="mx-auto mb-2 w-8 h-8 rounded-full bg-[#5EEAD4]/15 border border-[#5EEAD4]/35 flex items-center justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#5EEAD4" aria-hidden="true">
             <path d="M12 1l1.5 3.5L17 5l-2.5 2L15 10.5 12 8.5 9 10.5l.5-3.5L7 5l3.5-.5z" />
           </svg>
         </div>
@@ -874,7 +874,7 @@ function EarnStarsScreen({ labels }: { labels: { sealed: string; target: string;
       </div>
       <div className="text-[#5EEAD4] text-[8px] font-mono uppercase tracking-wider">{labels.sealed}</div>
       <div className="text-white text-[13px] font-bold mt-1">{labels.target}</div>
-      <div className="text-[#FFB347] font-mono text-[11px] font-semibold tabular-nums mt-2">{labels.stars}</div>
+      <div className="text-[#5EEAD4] font-mono text-[11px] font-semibold tabular-nums mt-2">{labels.stars}</div>
       <div className="mt-3 w-full rounded-[7px] bg-white/[0.04] border border-white/10 px-2 py-1.5 flex items-center justify-between">
         <span className="text-white/50 text-[7.5px]">Solana</span>
         <span className="text-[#5EEAD4] text-[7px] font-mono">✓ on-chain</span>
@@ -900,7 +900,7 @@ function HowItWorksStep({
     <div className="home-how-step flex flex-col items-center min-w-0 flex-1">
       <div className="home-how-phone-wrap relative flex justify-center w-full h-[228px] sm:h-[268px] md:h-auto overflow-visible">
         <span
-          className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#FFB347] tabular-nums"
+          className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#5EEAD4] tabular-nums"
           style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
         >
           {step}
@@ -1343,7 +1343,7 @@ export default async function HomePage() {
               <Link
                 key={p.id}
                 href={`/marketplace?product=${p.id}`}
-                className="group flex flex-col rounded-[14px] bg-white/[0.025] border border-white/[0.07] p-3 md:p-4 hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline"
+                className="group flex flex-col rounded-[16px] bg-white/[0.05] border border-white/[0.10] backdrop-blur-md p-3 md:p-4 hover:border-white/[0.16] hover:bg-white/[0.07] transition-colors no-underline"
               >
                 <div className="relative w-full aspect-[1.05] rounded-[10px] mb-3 md:mb-4 overflow-hidden bg-[#EFEAE0]">
                   <Image
@@ -1368,7 +1368,7 @@ export default async function HomePage() {
                       ₾
                     </span>
                   </span>
-                  <span className="font-mono text-[#FFB347] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
+                  <span className="font-mono text-[#5EEAD4] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
                     ★ {p.stars}
                   </span>
                 </div>

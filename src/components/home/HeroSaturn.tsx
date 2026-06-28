@@ -61,8 +61,8 @@ export default function HeroSaturn() {
       style={{
         minHeight: '100dvh',
         background: [
-          // warm dusk horizon glow rising from the bottom
-          'radial-gradient(ellipse 70% 55% at 50% 104%, rgba(255,150,70,0.26) 0%, rgba(190,90,120,0.12) 32%, transparent 62%)',
+          // cool blue-hour horizon glow rising from the bottom (violet -> mint)
+          'radial-gradient(ellipse 70% 55% at 50% 104%, rgba(124,92,220,0.30) 0%, rgba(94,234,212,0.10) 34%, transparent 64%)',
           // cool galactic light on the right
           'radial-gradient(ellipse 65% 70% at 82% 30%, rgba(120,90,200,0.16) 0%, transparent 58%)',
           'linear-gradient(180deg, #05071A 0%, #0A0A24 42%, #160F2C 72%, #241634 100%)',
@@ -185,7 +185,7 @@ function HeroFeatures({ t, className, compact }: { t: (k: string) => string; cla
     <div className={className}>
       <Feature href="/sky" tint="#B06EF0" title={t('features.track.title')} desc={t('features.track.desc')} icon={<TrackIcon />} compact={compact} />
       <Feature href="/sky" tint="#5B8CFF" title={t('features.find.title')} desc={t('features.find.desc')} icon={<FindIcon />} compact={compact} />
-      <Feature href="/missions" tint="#FFB347" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} compact={compact} />
+      <Feature href="/missions" tint="#5EEAD4" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} compact={compact} />
     </div>
   );
 }
@@ -344,8 +344,8 @@ function HeroConsole({ paused }: { paused: boolean }) {
         {/* Tonight's mission — primary */}
         <Link href="/missions" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
           <div className="flex items-center justify-between pb-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FFB347]">{t('cards.missionsLabel')}</span>
-            <span className="text-white/30 transition-colors group-hover:text-[#FFB347]" aria-hidden>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5EEAD4]">{t('cards.missionsLabel')}</span>
+            <span className="text-white/30 transition-colors group-hover:text-[#5EEAD4]" aria-hidden>
               <ArrowIcon />
             </span>
           </div>
@@ -359,7 +359,7 @@ function HeroConsole({ paused }: { paused: boolean }) {
               <span className="min-w-0 flex-1">
                 <span className="block text-white text-[18px] font-semibold leading-tight truncate">{mission.title}</span>
                 <span className="mt-1 flex items-center gap-2.5">
-                  <span className="font-mono text-[13px] tabular-nums text-[#FFB347]">+{mission.stars} ★</span>
+                  <span className="font-mono text-[13px] tabular-nums text-[#5EEAD4]">+{mission.stars} ★</span>
                   <span className="font-mono text-[12px] tabular-nums text-white/45 truncate">{mission.fact}</span>
                 </span>
               </span>
@@ -479,7 +479,7 @@ function Scrubber({
             className="block h-[3px] rounded-full transition-all duration-300 group-active/dot:scale-y-150"
             style={{
               width: i === active ? 20 : 8,
-              background: i === active ? '#FFB347' : 'rgba(255,255,255,0.22)',
+              background: i === active ? '#5EEAD4' : 'rgba(255,255,255,0.22)',
               boxShadow: i === active ? '0 0 8px rgba(255,179,71,0.6)' : 'none',
             }}
           />
