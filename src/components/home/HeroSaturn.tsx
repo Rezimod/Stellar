@@ -147,20 +147,40 @@ export default function HeroSaturn() {
 function Copy({ t }: { t: (k: string) => string }) {
   return (
     <div className="order-1 lg:order-2 w-full max-w-[600px] mx-auto lg:mx-0 lg:pl-6 lg:justify-self-end text-center lg:text-left">
-      {/* Glowing planet focal — the reference's hero sphere (mobile-centered) */}
-      <div className="flex justify-center lg:justify-start mb-7 lg:mb-9">
-        <div
-          aria-hidden
-          style={{
-            width: 132,
-            height: 132,
-            borderRadius: '50%',
-            background:
-              'radial-gradient(circle at 34% 30%, #8fb4ff 0%, #3b6ff6 42%, #1b3aa0 68%, #0b1c54 88%)',
-            boxShadow:
-              '0 0 70px 14px rgba(46,107,255,0.45), 0 0 28px 2px rgba(143,180,255,0.35), inset -10px -12px 34px rgba(2,6,28,0.55), inset 8px 10px 26px rgba(160,195,255,0.22)',
-          }}
-        />
+      {/* Glowing planet focal — floating object on glass (reference centerpiece) */}
+      <div className="flex justify-center lg:justify-start mb-8 lg:mb-10">
+        <div className="relative" style={{ width: 188, height: 188 }} aria-hidden>
+          {/* soft outer halo */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: '-30px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(59,111,246,0.30) 0%, rgba(46,107,255,0.10) 45%, transparent 70%)',
+            }}
+          />
+          {/* glowing orbital ring */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: '1.5px solid rgba(130,170,255,0.45)',
+              boxShadow: '0 0 24px rgba(59,111,246,0.45), inset 0 0 18px rgba(59,111,246,0.25)',
+            }}
+          />
+          {/* lit planet sphere */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: '34px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle at 34% 28%, #a9c6ff 0%, #3b6ff6 40%, #1b3aa0 66%, #0a1a52 88%)',
+              boxShadow:
+                '0 18px 50px -8px rgba(11,28,84,0.7), inset -12px -14px 38px rgba(2,6,28,0.55), inset 10px 12px 30px rgba(170,200,255,0.28)',
+            }}
+          />
+        </div>
       </div>
 
       <h1
