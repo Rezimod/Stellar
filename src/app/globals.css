@@ -17,7 +17,7 @@
        Markets Yes/No   → --yes / --no      (binary outcome ONLY, never decorative)
   */
   --canvas: #0A1735;
-  --terracotta: #FFB347;    /* unified to missions-page orange (was #FFD166) */
+  --terracotta: #3B6FF6;    /* unified to missions-page orange (was #FFD166) */
   --orange: #FFB347;        /* alias of terracotta — kept for explicit "orange" semantics */
   --seafoam: #5EEAD4;
   --negative: #FB7185;
@@ -60,9 +60,9 @@
 
   /* PRIMARY ACCENT — terracotta (badges, Stars, gold highlights) */
   --accent: var(--terracotta);
-  --accent-dim: rgba(255, 179, 71, 0.10);
-  --accent-glow: rgba(255, 179, 71, 0.20);
-  --accent-border: rgba(255, 179, 71, 0.25);
+  --accent-dim: rgba(59, 111, 246, 0.12);
+  --accent-glow: rgba(59, 111, 246, 0.28);
+  --accent-border: rgba(59, 111, 246, 0.35);
 
   /* TERTIARY ACCENT — light orange (missions, bets, event highlights) */
   --orange-dim: rgba(255, 179, 71, 0.10);

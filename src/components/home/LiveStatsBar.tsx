@@ -173,7 +173,7 @@ export default function LiveStatsBar() {
            circular mint/violet badges. Borrows the visual language, not the genre. */
         .live-stats-bar {
           width: 100%;
-          background: linear-gradient(135deg, #1a1442 0%, #2a1f5c 50%, #1d1840 100%);
+          background: linear-gradient(135deg, #0e1f4a 0%, #14306b 50%, #0c1838 100%);
           border-top: 1px solid rgba(167, 139, 250, 0.18);
           border-bottom: 1px solid rgba(167, 139, 250, 0.18);
           padding: 14px 16px;
@@ -229,8 +229,8 @@ export default function LiveStatsBar() {
           color: #0b1020;
         }
         .badge-mint {
-          background: linear-gradient(150deg, #8ef0d8 0%, #5eead4 100%);
-          box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+          background: linear-gradient(150deg, #5B8CF8 0%, #3B6FF6 100%);
+          box-shadow: 0 0 0 3px rgba(59, 111, 246, 0.16);
         }
         .badge-violet {
           background: linear-gradient(150deg, #c4b5fd 0%, #a78bfa 100%);
@@ -271,7 +271,7 @@ export default function LiveStatsBar() {
           gap: 6px;
         }
         .live-stats-live-label {
-          color: rgba(94, 234, 212, 0.85);
+          color: rgba(120, 160, 255, 0.9);
           font-size: 11px;
           font-weight: 600;
           letter-spacing: 0.1em;

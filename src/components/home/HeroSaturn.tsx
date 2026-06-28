@@ -62,10 +62,10 @@ export default function HeroSaturn() {
         minHeight: '100dvh',
         background: [
           // cool blue-hour horizon glow rising from the bottom (violet -> mint)
-          'radial-gradient(ellipse 70% 55% at 50% 104%, rgba(124,92,220,0.30) 0%, rgba(94,234,212,0.10) 34%, transparent 64%)',
+          'radial-gradient(ellipse 70% 55% at 50% 104%, rgba(46,107,255,0.34) 0%, rgba(91,140,248,0.12) 34%, transparent 64%)',
           // cool galactic light on the right
-          'radial-gradient(ellipse 65% 70% at 82% 30%, rgba(120,90,200,0.16) 0%, transparent 58%)',
-          'linear-gradient(180deg, #05071A 0%, #0A0A24 42%, #160F2C 72%, #241634 100%)',
+          'radial-gradient(ellipse 65% 70% at 82% 30%, rgba(46,107,255,0.18) 0%, transparent 58%)',
+          'linear-gradient(180deg, #05071A 0%, #0A0A24 42%, #0b1838 72%, #0a1a44 100%)',
         ].join(', '),
       }}
     >
@@ -155,7 +155,7 @@ function Copy({ t }: { t: (k: string) => string }) {
         <br />
         <span
           style={{
-            background: 'linear-gradient(92deg, #FFFFFF 4%, #B06EF0 48%, #5B8CFF 100%)',
+            background: 'linear-gradient(92deg, #FFFFFF 4%, #3B6FF6 48%, #5B8CFF 100%)',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
             color: 'transparent',
@@ -183,9 +183,9 @@ function Copy({ t }: { t: (k: string) => string }) {
 function HeroFeatures({ t, className, compact }: { t: (k: string) => string; className: string; compact?: boolean }) {
   return (
     <div className={className}>
-      <Feature href="/sky" tint="#B06EF0" title={t('features.track.title')} desc={t('features.track.desc')} icon={<TrackIcon />} compact={compact} />
+      <Feature href="/sky" tint="#3B6FF6" title={t('features.track.title')} desc={t('features.track.desc')} icon={<TrackIcon />} compact={compact} />
       <Feature href="/sky" tint="#5B8CFF" title={t('features.find.title')} desc={t('features.find.desc')} icon={<FindIcon />} compact={compact} />
-      <Feature href="/missions" tint="#5EEAD4" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} compact={compact} />
+      <Feature href="/missions" tint="#3B6FF6" title={t('features.earn.title')} desc={t('features.earn.desc')} icon={<GiftIcon />} compact={compact} />
     </div>
   );
 }
@@ -289,9 +289,9 @@ function HeroConsole({ paused }: { paused: boolean }) {
   // Frosted glass (ref 2): translucent violet glass so the indigo page-glow
   // shows through, stronger blur, and a cool mint halo.
   const panelStyle: CSSProperties = {
-    background: 'linear-gradient(180deg, rgba(40,33,86,0.55) 0%, rgba(17,15,42,0.62) 100%)',
+    background: 'linear-gradient(180deg, rgba(16,32,74,0.55) 0%, rgba(10,20,52,0.66) 100%)',
     boxShadow:
-      '0 44px 96px -34px rgba(0,0,0,0.85), 0 0 70px -22px rgba(94,234,212,0.28), inset 0 1px 0 rgba(255,255,255,0.10)',
+      '0 44px 96px -34px rgba(0,0,0,0.85), 0 0 70px -22px rgba(59,111,246,0.32), inset 0 1px 0 rgba(255,255,255,0.10)',
     backdropFilter: 'blur(22px) saturate(125%)',
     WebkitBackdropFilter: 'blur(22px) saturate(125%)',
   };
@@ -344,8 +344,8 @@ function HeroConsole({ paused }: { paused: boolean }) {
         {/* Tonight's mission — primary */}
         <Link href="/missions" className="group block px-5 py-4 transition-colors hover:bg-white/[0.03]">
           <div className="flex items-center justify-between pb-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5EEAD4]">{t('cards.missionsLabel')}</span>
-            <span className="text-white/30 transition-colors group-hover:text-[#5EEAD4]" aria-hidden>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#3B6FF6]">{t('cards.missionsLabel')}</span>
+            <span className="text-white/30 transition-colors group-hover:text-[#3B6FF6]" aria-hidden>
               <ArrowIcon />
             </span>
           </div>
@@ -359,7 +359,7 @@ function HeroConsole({ paused }: { paused: boolean }) {
               <span className="min-w-0 flex-1">
                 <span className="block text-white text-[18px] font-semibold leading-tight truncate">{mission.title}</span>
                 <span className="mt-1 flex items-center gap-2.5">
-                  <span className="font-mono text-[13px] tabular-nums text-[#5EEAD4]">+{mission.stars} ★</span>
+                  <span className="font-mono text-[13px] tabular-nums text-[#3B6FF6]">+{mission.stars} ★</span>
                   <span className="font-mono text-[12px] tabular-nums text-white/45 truncate">{mission.fact}</span>
                 </span>
               </span>
@@ -479,7 +479,7 @@ function Scrubber({
             className="block h-[3px] rounded-full transition-all duration-300 group-active/dot:scale-y-150"
             style={{
               width: i === active ? 20 : 8,
-              background: i === active ? '#5EEAD4' : 'rgba(255,255,255,0.22)',
+              background: i === active ? '#3B6FF6' : 'rgba(255,255,255,0.22)',
               boxShadow: i === active ? '0 0 8px rgba(255,179,71,0.6)' : 'none',
             }}
           />
@@ -545,10 +545,10 @@ function CTA({
   const skin: CSSProperties =
     tone === 'primary'
       ? {
-          background: 'linear-gradient(150deg, #8EF0D8 0%, #5EEAD4 100%)',
+          background: 'linear-gradient(150deg, #5B8CF8 0%, #3B6FF6 100%)',
           color: '#06231E',
           border: 'none',
-          boxShadow: '0 10px 34px -10px rgba(94,234,212,0.55)',
+          boxShadow: '0 10px 34px -10px rgba(59,111,246,0.55)',
         }
       : {
           background: 'rgba(255,255,255,0.06)',
