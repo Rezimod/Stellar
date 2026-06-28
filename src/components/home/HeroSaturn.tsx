@@ -286,11 +286,14 @@ function HeroConsole({ paused }: { paused: boolean }) {
   const score = day ? dayScore(day) : 0;
   const scoreColor = score >= 70 ? '#4ADE80' : score >= 45 ? '#FFB347' : '#94A3B8';
 
+  // Frosted glass (ref 2): translucent violet glass so the indigo page-glow
+  // shows through, stronger blur, and a cool mint halo.
   const panelStyle: CSSProperties = {
-    background: 'linear-gradient(180deg, rgba(15,17,36,0.94) 0%, rgba(9,10,24,0.96) 100%)',
-    boxShadow: '0 44px 96px -34px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    background: 'linear-gradient(180deg, rgba(40,33,86,0.55) 0%, rgba(17,15,42,0.62) 100%)',
+    boxShadow:
+      '0 44px 96px -34px rgba(0,0,0,0.85), 0 0 70px -22px rgba(94,234,212,0.28), inset 0 1px 0 rgba(255,255,255,0.10)',
+    backdropFilter: 'blur(22px) saturate(125%)',
+    WebkitBackdropFilter: 'blur(22px) saturate(125%)',
   };
 
   return (
