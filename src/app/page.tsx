@@ -16,7 +16,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="hidden md:block text-[30px] md:text-[56px] font-extrabold leading-[1.08] tracking-[-0.02em] text-white mb-4 md:mb-6">
+    <h2 className="hidden md:block text-[30px] md:text-[56px] font-medium leading-[1.08] tracking-[-0.02em] text-white mb-4 md:mb-6">
       {children}
     </h2>
   );
