@@ -73,30 +73,30 @@ export default function HeroSaturn() {
       <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === Background: real NASA / Webb "Cosmic Cliffs" (Carina Nebula) ===
-           Blue starry sky fills the top (on-theme + room for content); the
-           nebula cliffs sit at the bottom as a natural cosmic horizon. */}
+      {/* === Background: real NASA/Hubble "Stephan's Quintet" ===
+           Deep-black field of galaxies + golden stars — naturally high contrast
+           for white text and the glass card. */}
       <div aria-hidden className="absolute inset-0 pointer-events-none z-0">
         <Image
-          src="/hero/nasa-carina.jpg"
+          src="/hero/nasa-stephans-quintet.jpg"
           alt=""
           fill
           priority
           sizes="100vw"
           className="object-cover"
-          style={{ objectPosition: '50% 62%' }}
+          style={{ objectPosition: '50% 42%' }}
         />
       </div>
-      {/* Navy tint + darken for text legibility over the photo */}
+      {/* Navy tint for legibility — lighter, since the photo is already dark */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none z-[1]"
-        style={{ background: 'linear-gradient(180deg, rgba(4,6,22,0.58) 0%, rgba(6,10,32,0.30) 36%, rgba(5,8,26,0.62) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(4,6,22,0.42) 0%, rgba(6,10,32,0.18) 38%, rgba(4,7,22,0.55) 100%)' }}
       />
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none z-[1]"
-        style={{ background: 'radial-gradient(ellipse 95% 65% at 50% 30%, rgba(11,26,78,0.28) 0%, transparent 72%)' }}
+        style={{ background: 'radial-gradient(ellipse 95% 65% at 50% 32%, rgba(11,26,78,0.22) 0%, transparent 72%)' }}
       />
 
       {/* === Top fade: hero starts black so it blends into the dark header === */}
