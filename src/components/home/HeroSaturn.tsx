@@ -73,46 +73,31 @@ export default function HeroSaturn() {
       <div aria-hidden className="hero-stars-fine" data-paused={paused || undefined} />
       <div aria-hidden className="hero-starfield" data-paused={paused || undefined} />
 
-      {/* === Deep-space backdrop: spiral galaxy (left) · nebula (right) · Earth limb (bottom) === */}
-      {/* Spiral galaxy — upper left, tilted + softly faded into the dark */}
+      {/* === Background: real NASA / Webb "Cosmic Cliffs" (Carina Nebula) ===
+           Blue starry sky fills the top (on-theme + room for content); the
+           nebula cliffs sit at the bottom as a natural cosmic horizon. */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none z-0">
+        <Image
+          src="/hero/nasa-carina.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          style={{ objectPosition: '50% 62%' }}
+        />
+      </div>
+      {/* Navy tint + darken for text legibility over the photo */}
       <div
         aria-hidden
-        className="absolute -top-[4%] -left-[10%] w-[58%] sm:w-[46%] md:w-[40%] lg:w-[33%] aspect-[700/476] pointer-events-none"
-        style={{
-          transform: 'rotate(-12deg)',
-          WebkitMaskImage: 'radial-gradient(ellipse 54% 54% at 48% 47%, #000 22%, rgba(0,0,0,0.35) 56%, transparent 80%)',
-          maskImage: 'radial-gradient(ellipse 54% 54% at 48% 47%, #000 22%, rgba(0,0,0,0.35) 56%, transparent 80%)',
-        }}
-      >
-        <Image src="/hero/galaxy-spiral.jpg" alt="" fill priority sizes="(max-width: 768px) 46vw, 33vw" className="object-cover" style={{ filter: 'brightness(0.9) contrast(1.05)' }} />
-      </div>
-
-      {/* Violet nebula — right edge */}
+        className="absolute inset-0 pointer-events-none z-[1]"
+        style={{ background: 'linear-gradient(180deg, rgba(4,6,22,0.58) 0%, rgba(6,10,32,0.30) 36%, rgba(5,8,26,0.62) 100%)' }}
+      />
       <div
         aria-hidden
-        className="absolute top-0 -right-[12%] w-[60%] sm:w-[46%] md:w-[40%] lg:w-[36%] aspect-square opacity-[0.6] pointer-events-none"
-        style={{
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 62% at 62% 46%, #000 24%, rgba(0,0,0,0.32) 58%, transparent 84%)',
-          maskImage: 'radial-gradient(ellipse 60% 62% at 62% 46%, #000 24%, rgba(0,0,0,0.32) 58%, transparent 84%)',
-        }}
-      >
-        <Image src="/hero/nebula.jpg" alt="" fill sizes="(max-width: 768px) 46vw, 36vw" className="object-cover" style={{ filter: 'hue-rotate(-68deg) saturate(1.35) brightness(0.95)' }} />
-      </div>
-
-      {/* Earth limb — bottom arc */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 h-[62%] pointer-events-none z-[1]"
-        style={{
-          WebkitMaskImage: 'linear-gradient(180deg, transparent 0%, #000 28%)',
-          maskImage: 'linear-gradient(180deg, transparent 0%, #000 28%)',
-        }}
-      >
-        <Image src="/hero/earth-limb.jpg" alt="" fill sizes="100vw" className="object-cover" style={{ objectPosition: '50% 28%', filter: 'brightness(0.92)' }} />
-      </div>
-
-      {/* === Foreground mountains === */}
-      <Landscape />
+        className="absolute inset-0 pointer-events-none z-[1]"
+        style={{ background: 'radial-gradient(ellipse 95% 65% at 50% 30%, rgba(11,26,78,0.28) 0%, transparent 72%)' }}
+      />
 
       {/* === Top fade: hero starts black so it blends into the dark header === */}
       <div
