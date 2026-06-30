@@ -1367,6 +1367,9 @@
       "step1": "Sign in",
       "step2": "Find a target",
       "step3": "Earn Stars",
+      "step1Desc": "Create a free account in seconds — no wallet, no setup.",
+      "step2Desc": "See what's above you tonight and pick a target to observe.",
+      "step3Desc": "Photograph it, seal it on Solana, and earn Stars for real gear.",
       "cta": "Start observing →",
       "signIn": {
         "title": "Welcome",

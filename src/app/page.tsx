@@ -883,37 +883,75 @@ function EarnStarsScreen({ labels }: { labels: { sealed: string; target: string;
   );
 }
 
-function HowItWorksStep({
-  step,
-  label,
-  activeTab,
-  navLabels,
-  children,
+function HiwUserIcon() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="8" r="3.4" />
+      <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" />
+    </svg>
+  );
+}
+
+function HiwTargetIcon() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="7.5" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+      <path d="M12 1.6v3.2M12 19.2v3.2M1.6 12h3.2M19.2 12h3.2" />
+    </svg>
+  );
+}
+
+function HiwStarIcon() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2.2l2.6 6.1 6.6.6-5 4.3 1.5 6.4L12 16.8 6.3 20.1l1.5-6.4-5-4.3 6.6-.6z" />
+    </svg>
+  );
+}
+
+// Cosmic step card — replaces the small, busy phone mockups with a clear,
+// glowing planet-style orb + a one-line explanation. Simpler to read at a glance.
+function CosmicStep({
+  n,
+  title,
+  desc,
+  tint,
+  icon,
 }: {
-  step: string;
-  label: string;
-  activeTab: AppTab;
-  navLabels: Record<AppTab, string>;
-  children: React.ReactNode;
+  n: string;
+  title: string;
+  desc: string;
+  tint: string;
+  icon: React.ReactNode;
 }) {
   return (
-    <div className="home-how-step flex flex-col items-center min-w-0 flex-1">
-      <div className="home-how-phone-wrap relative flex justify-center w-full h-[228px] sm:h-[268px] md:h-auto overflow-visible">
+    <div className="relative flex flex-col items-center text-center px-2">
+      <div className="relative" style={{ width: 92, height: 92 }}>
         <span
-          className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#FFB347] tabular-nums"
-          style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
+          aria-hidden
+          className="absolute inset-0 rounded-full"
+          style={{ background: `radial-gradient(circle, ${tint}55 0%, transparent 68%)`, filter: 'blur(7px)' }}
+        />
+        <span
+          className="absolute inset-[11px] rounded-full flex items-center justify-center text-white"
+          style={{
+            background: 'radial-gradient(circle at 32% 26%, #8fb0ff 0%, #3B6FF6 44%, #16245e 100%)',
+            boxShadow: 'inset -6px -8px 18px rgba(2,6,28,0.6), inset 5px 7px 15px rgba(170,200,255,0.28), 0 12px 32px -8px rgba(59,111,246,0.6)',
+            border: '1px solid rgba(150,180,255,0.42)',
+          }}
         >
-          {step}
+          {icon}
         </span>
-        <div className="home-how-phone-scale scale-[0.52] sm:scale-[0.68] md:scale-100 origin-top pt-7 md:pt-8">
-          <IPhone size="sm" activeTab={activeTab} navLabels={navLabels}>
-            {children}
-          </IPhone>
-        </div>
+        <span
+          className="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full font-mono text-[12px] font-bold tabular-nums"
+          style={{ color: '#FFB347', background: 'rgba(18,14,7,0.92)', border: '1px solid rgba(255,179,71,0.5)', boxShadow: '0 0 12px rgba(255,179,71,0.32)' }}
+        >
+          {n}
+        </span>
       </div>
-      <p className="home-how-label mt-1 md:mt-3 text-white text-[11.5px] sm:text-[13px] md:text-[15px] font-semibold leading-tight text-center tracking-[-0.01em]">
-        {label}
-      </p>
+      <h3 className="mt-5 text-white text-[17px] md:text-[18.5px] font-semibold tracking-[-0.01em]">{title}</h3>
+      <p className="mt-2 max-w-[230px] text-[13.5px] leading-relaxed text-white/55">{desc}</p>
     </div>
   );
 }
@@ -1114,65 +1152,45 @@ export default async function HomePage() {
       </section>
 
       {/* ============================================================
-          HOW IT WORKS — three phones, one screen
+          HOW IT WORKS — three cosmic steps, one glance
          ============================================================ */}
-      <section className="px-4 md:px-8 py-10 md:py-16">
-        <div className="max-w-[1080px] mx-auto md:min-h-[min(720px,88svh)] flex flex-col justify-center">
-          <div className="text-center mb-5 md:mb-8">
+      <section className="px-4 md:px-8 py-14 md:py-24">
+        <div className="max-w-[1080px] mx-auto flex flex-col">
+          <div className="text-center mb-12 md:mb-16">
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="home-how-steps flex items-start justify-center gap-1 sm:gap-3 md:gap-6 max-w-[960px] mx-auto">
-            <HowItWorksStep
-              step="1"
-              label={t('howItWorks.step1')}
-              activeTab="home"
-              navLabels={navLabels}
-            >
-              <SignInScreen
-                labels={{
-                  title: t('howItWorks.signIn.title'),
-                  subtitle: t('howItWorks.signIn.subtitle'),
-                  email: t('howItWorks.signIn.email'),
-                  cta: t('howItWorks.signIn.cta'),
-                }}
-              />
-            </HowItWorksStep>
-
-            <div className="hidden md:flex items-center self-center pt-16 text-white/20 text-xl font-mono" aria-hidden="true">
-              →
-            </div>
-
-            <HowItWorksStep
-              step="2"
-              label={t('howItWorks.step2')}
-              activeTab="sky"
-              navLabels={navLabels}
-            >
-              <SkyMapScreen labels={skyMapLabels} />
-            </HowItWorksStep>
-
-            <div className="hidden md:flex items-center self-center pt-16 text-white/20 text-xl font-mono" aria-hidden="true">
-              →
-            </div>
-
-            <HowItWorksStep
-              step="3"
-              label={t('howItWorks.step3')}
-              activeTab="missions"
-              navLabels={navLabels}
-            >
-              <EarnStarsScreen
-                labels={{
-                  sealed: t('howItWorks.earn.sealed'),
-                  target: tPlanets('jupiter'),
-                  stars: t('howItWorks.earn.stars'),
-                }}
-              />
-            </HowItWorksStep>
+          <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-12 sm:gap-6 max-w-[840px] mx-auto w-full">
+            {/* faint orbit line linking the three orbs (desktop) */}
+            <div
+              aria-hidden
+              className="hidden sm:block absolute top-[46px] left-[17%] right-[17%] h-px"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(130,160,235,0.35) 18%, rgba(130,160,235,0.35) 82%, transparent)' }}
+            />
+            <CosmicStep
+              n="1"
+              tint="#3B6FF6"
+              title={t('howItWorks.step1')}
+              desc={t('howItWorks.step1Desc')}
+              icon={<HiwUserIcon />}
+            />
+            <CosmicStep
+              n="2"
+              tint="#5B8CFF"
+              title={t('howItWorks.step2')}
+              desc={t('howItWorks.step2Desc')}
+              icon={<HiwTargetIcon />}
+            />
+            <CosmicStep
+              n="3"
+              tint="#B06EF0"
+              title={t('howItWorks.step3')}
+              desc={t('howItWorks.step3Desc')}
+              icon={<HiwStarIcon />}
+            />
           </div>
 
-          <div className="mt-6 md:mt-10 text-center">
+          <div className="mt-14 md:mt-16 text-center">
             <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
           </div>
         </div>
