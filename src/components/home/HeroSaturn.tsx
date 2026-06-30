@@ -26,6 +26,32 @@ const TARGET_META: Record<string, { img: string; stars: number }> = {
   Neptune: { img: '/sky/targets/neptune.jpg', stars: 175 },
 };
 
+// Accurate planet colouring for the "visible now" discs — real-world hues so the
+// widget reads as the actual sky, not generic status dots.
+const PLANET_VISUAL: Record<string, { core: string; edge: string; glow: string; ring?: boolean }> = {
+  Moon:    { core: '#ECEEF4', edge: '#9AA0B5', glow: 'rgba(222,227,242,0.55)' },
+  Mercury: { core: '#CBBBA0', edge: '#6E6253', glow: 'rgba(203,187,160,0.45)' },
+  Venus:   { core: '#F5E7B4', edge: '#C7A557', glow: 'rgba(245,231,180,0.55)' },
+  Mars:    { core: '#E68256', edge: '#9C3A1B', glow: 'rgba(224,110,70,0.55)' },
+  Jupiter: { core: '#E6CEAA', edge: '#AE7A4E', glow: 'rgba(230,206,170,0.5)' },
+  Saturn:  { core: '#ECDBA2', edge: '#B79A55', glow: 'rgba(236,219,162,0.55)', ring: true },
+  Uranus:  { core: '#BEE8E6', edge: '#5FA6B0', glow: 'rgba(190,232,230,0.5)' },
+  Neptune: { core: '#6E97FF', edge: '#1E3FA8', glow: 'rgba(91,140,255,0.6)' },
+};
+
+function PlanetDisc({ name }: { name: string }) {
+  const v = PLANET_VISUAL[name] ?? { core: '#9FB2E0', edge: '#3B5BA8', glow: 'rgba(120,150,230,0.5)' };
+  return (
+    <span className="relative inline-block shrink-0" style={{ width: 14, height: 14 }} aria-hidden>
+      <span style={{ position: 'absolute', inset: -3, borderRadius: '50%', background: `radial-gradient(circle, ${v.glow} 0%, transparent 70%)` }} />
+      {v.ring && (
+        <span style={{ position: 'absolute', left: '50%', top: '50%', width: 21, height: 7, border: '1.5px solid rgba(236,219,162,0.85)', borderRadius: '50%', transform: 'translate(-50%,-50%) rotate(-20deg)', boxShadow: '0 0 4px rgba(236,219,162,0.35)' }} />
+      )}
+      <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: `radial-gradient(circle at 34% 30%, ${v.core} 0%, ${v.edge} 92%)`, boxShadow: 'inset -1.5px -2px 3px rgba(0,0,0,0.45)' }} />
+    </span>
+  );
+}
+
 export default function HeroSaturn() {
   const t = useTranslations('homepage.hero');
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -132,7 +158,7 @@ export default function HeroSaturn() {
            Desktop: console (left) · copy (right).
            Mobile order: copy → console (widget) → three steps on one line. === */}
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 min-h-[100dvh]
-        grid grid-cols-1 lg:grid-cols-2 items-start lg:items-center gap-6 lg:gap-10 pt-[60px] pb-28 lg:py-0">
+        grid grid-cols-1 lg:grid-cols-2 items-start lg:items-center gap-6 lg:gap-10 pt-[92px] pb-28 lg:py-0">
         <HeroConsole paused={paused} />
         <Copy t={t} />
         {/* Mobile-only: the three steps in one row, under the widget */}
@@ -170,7 +196,6 @@ function Copy({ t }: { t: (k: string) => string }) {
       </p>
 
       <div className="mt-6 md:mt-10 flex flex-col sm:flex-row gap-3.5">
-        <CTA href="/missions" tone="primary" icon={<SparkleIcon />}>{t('ctaPrimary')}</CTA>
         <CTA href="/sky" tone="secondary" icon={<TelescopeIcon />}>{t('ctaSecondary')}</CTA>
       </div>
 
@@ -269,7 +294,7 @@ function HeroConsole({ paused }: { paused: boolean }) {
     return sky.planets
       .filter((p) => p.visible && p.altitude > 5)
       .sort((a, b) => b.altitude - a.altitude)
-      .map((p) => ({ name: named(p.name), alt: Math.round(p.altitude) }));
+      .map((p) => ({ id: p.name, name: named(p.name), alt: Math.round(p.altitude) }));
   }, [sky.planets, tp]);
 
   // Rotate the live visible set each cycle so the row changes smoothly.
@@ -322,10 +347,10 @@ function HeroConsole({ paused }: { paused: boolean }) {
             <div key={`pl-${idx}`} className="hero-card-swap flex flex-wrap gap-2">
               {shownPlanets.map((p) => (
                 <span
-                  key={p.name}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.09] bg-white/[0.04] px-3 py-1.5"
+                  key={p.id}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.09] bg-white/[0.04] px-3 py-1.5"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.alt > 35 ? '#4ADE80' : p.alt > 15 ? '#FFB347' : '#94A3B8' }} />
+                  <PlanetDisc name={p.id} />
                   <span className="text-white/90 text-[13.5px] font-medium leading-none">{p.name}</span>
                   <span className="font-mono text-[11px] tabular-nums text-white/40 leading-none">{p.alt}°</span>
                 </span>
@@ -552,15 +577,6 @@ function CTA({
       {children}
       {icon}
     </Link>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2l1.6 5.4L19 9l-5.4 1.6L12 16l-1.6-5.4L5 9l5.4-1.6z" />
-      <path d="M18.5 14l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8z" opacity="0.7" />
-    </svg>
   );
 }
 
