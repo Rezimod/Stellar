@@ -883,75 +883,36 @@ function EarnStarsScreen({ labels }: { labels: { sealed: string; target: string;
   );
 }
 
-function HiwUserIcon() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="12" cy="8" r="3.4" />
-      <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" />
-    </svg>
-  );
-}
-
-function HiwTargetIcon() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="12" cy="12" r="7.5" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-      <path d="M12 1.6v3.2M12 19.2v3.2M1.6 12h3.2M19.2 12h3.2" />
-    </svg>
-  );
-}
-
-function HiwStarIcon() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2.2l2.6 6.1 6.6.6-5 4.3 1.5 6.4L12 16.8 6.3 20.1l1.5-6.4-5-4.3 6.6-.6z" />
-    </svg>
-  );
-}
-
-// Cosmic step card — replaces the small, busy phone mockups with a clear,
-// glowing planet-style orb + a one-line explanation. Simpler to read at a glance.
-function CosmicStep({
+// Compact step slide — a real app screenshot in a phone frame with a numbered
+// badge + short caption. Sits in a horizontal snap carousel so the whole
+// "how it works" fits in one screen on mobile (swipe through the three).
+function PhoneStep({
   n,
   title,
   desc,
-  tint,
-  icon,
+  img,
 }: {
   n: string;
   title: string;
   desc: string;
-  tint: string;
-  icon: React.ReactNode;
+  img: string;
 }) {
   return (
-    <div className="relative flex flex-col items-center text-center px-2">
-      <div className="relative" style={{ width: 92, height: 92 }}>
+    <div className="snap-center shrink-0 flex flex-col items-center">
+      <div
+        className="relative h-[268px] sm:h-[300px] rounded-[24px] overflow-hidden border border-white/[0.12] shrink-0"
+        style={{ aspectRatio: '878 / 1480', boxShadow: '0 30px 60px -28px rgba(0,0,0,0.85), 0 0 44px -16px rgba(59,111,246,0.4)' }}
+      >
+        <Image src={img} alt={title} fill sizes="200px" className="object-cover" />
         <span
-          aria-hidden
-          className="absolute inset-0 rounded-full"
-          style={{ background: `radial-gradient(circle, ${tint}55 0%, transparent 68%)`, filter: 'blur(7px)' }}
-        />
-        <span
-          className="absolute inset-[11px] rounded-full flex items-center justify-center text-white"
-          style={{
-            background: 'radial-gradient(circle at 32% 26%, #8fb0ff 0%, #3B6FF6 44%, #16245e 100%)',
-            boxShadow: 'inset -6px -8px 18px rgba(2,6,28,0.6), inset 5px 7px 15px rgba(170,200,255,0.28), 0 12px 32px -8px rgba(59,111,246,0.6)',
-            border: '1px solid rgba(150,180,255,0.42)',
-          }}
-        >
-          {icon}
-        </span>
-        <span
-          className="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full font-mono text-[12px] font-bold tabular-nums"
-          style={{ color: '#FFB347', background: 'rgba(18,14,7,0.92)', border: '1px solid rgba(255,179,71,0.5)', boxShadow: '0 0 12px rgba(255,179,71,0.32)' }}
+          className="absolute top-2.5 left-2.5 flex items-center justify-center w-6 h-6 rounded-full font-mono text-[11px] font-bold tabular-nums"
+          style={{ color: '#FFB347', background: 'rgba(8,7,4,0.8)', border: '1px solid rgba(255,179,71,0.5)', boxShadow: '0 0 10px rgba(255,179,71,0.3)' }}
         >
           {n}
         </span>
       </div>
-      <h3 className="mt-5 text-white text-[17px] md:text-[18.5px] font-semibold tracking-[-0.01em]">{title}</h3>
-      <p className="mt-2 max-w-[230px] text-[13.5px] leading-relaxed text-white/55">{desc}</p>
+      <h3 className="mt-3.5 text-white text-[15.5px] font-semibold tracking-[-0.01em]">{title}</h3>
+      <p className="mt-1 max-w-[185px] text-center text-[12.5px] leading-snug text-white/50">{desc}</p>
     </div>
   );
 }
@@ -1152,45 +1113,21 @@ export default async function HomePage() {
       </section>
 
       {/* ============================================================
-          HOW IT WORKS — three cosmic steps, one glance
+          HOW IT WORKS — compact carousel of real app screenshots
          ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-24">
+      <section className="md:px-8 py-10 md:py-16">
         <div className="max-w-[1080px] mx-auto flex flex-col">
-          <div className="text-center mb-12 md:mb-16">
+          <div className="text-center mb-7 md:mb-9 px-4">
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-12 sm:gap-6 max-w-[840px] mx-auto w-full">
-            {/* faint orbit line linking the three orbs (desktop) */}
-            <div
-              aria-hidden
-              className="hidden sm:block absolute top-[46px] left-[17%] right-[17%] h-px"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(130,160,235,0.35) 18%, rgba(130,160,235,0.35) 82%, transparent)' }}
-            />
-            <CosmicStep
-              n="1"
-              tint="#3B6FF6"
-              title={t('howItWorks.step1')}
-              desc={t('howItWorks.step1Desc')}
-              icon={<HiwUserIcon />}
-            />
-            <CosmicStep
-              n="2"
-              tint="#5B8CFF"
-              title={t('howItWorks.step2')}
-              desc={t('howItWorks.step2Desc')}
-              icon={<HiwTargetIcon />}
-            />
-            <CosmicStep
-              n="3"
-              tint="#B06EF0"
-              title={t('howItWorks.step3')}
-              desc={t('howItWorks.step3Desc')}
-              icon={<HiwStarIcon />}
-            />
+          <div className="flex gap-5 sm:gap-7 justify-start sm:justify-center overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 sm:px-0 pb-2">
+            <PhoneStep n="1" title={t('howItWorks.step1')} desc={t('howItWorks.step1Desc')} img="/landing/login.png" />
+            <PhoneStep n="2" title={t('howItWorks.step2')} desc={t('howItWorks.step2Desc')} img="/landing/missions.png" />
+            <PhoneStep n="3" title={t('howItWorks.step3')} desc={t('howItWorks.step3Desc')} img="/landing/stars.png" />
           </div>
 
-          <div className="mt-14 md:mt-16 text-center">
+          <div className="mt-7 md:mt-9 text-center px-4">
             <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
           </div>
         </div>
