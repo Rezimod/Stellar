@@ -1,0 +1,91 @@
+/* Moon detail — preview route. On-brand rebuild of the Apple Weather moon screen.
+   Uses Stellar primitives (globals.css) + font vars (layout.tsx). Scoped under .moonpg. */
+
+.moonpg {
+  min-height: 100vh;
+  background:
+    radial-gradient(120% 55% at 50% -5%, #17284f 0%, var(--canvas) 48%, #060e24 100%);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist), system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+.moonpg__col {
+  width: 100%;
+  max-width: 440px;
+  padding: 0 18px 40px;
+}
+
+.moonpg__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 2px 6px;
+}
+.moonpg__ctx {
+  font-family: var(--font-orbitron); font-weight: 500;
+  font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+.moonpg__x {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.07);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-secondary); border: none; cursor: pointer;
+}
+
+.moonpg__hero { display: flex; justify-content: center; margin: 14px 0 6px; }
+.moonpg__hero img {
+  width: 236px; height: 236px; border-radius: 50%; object-fit: cover;
+  filter: drop-shadow(0 14px 46px rgba(0,0,0,.65));
+}
+
+.moonpg__title {
+  font-family: var(--font-orbitron); font-weight: 500;
+  font-size: 27px; letter-spacing: .02em; text-align: center; margin-top: 16px;
+}
+.moonpg__sub { text-align: center; color: var(--color-text-secondary); font-size: 14.5px; margin-top: 6px; }
+
+.moonpg__chipwrap { text-align: center; margin-top: 10px; }
+.moonpg__chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(94,234,212,.10); color: var(--seafoam);
+  font-size: 12px; font-weight: 600; padding: 6px 11px; border-radius: 999px;
+}
+.moonpg__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--seafoam); }
+
+.moonpg__scrub { margin: 24px 2px 4px; }
+.moonpg__ticks {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  height: 34px; padding: 0 2px;
+}
+.moonpg__ticks i { width: 2px; border-radius: 2px; background: rgba(255,255,255,.16); height: 12px; display: block; }
+.moonpg__ticks i.tall { height: 22px; background: rgba(255,255,255,.28); }
+.moonpg__ticks i.now { height: 30px; width: 2.5px; background: var(--terracotta); box-shadow: 0 0 0 3px rgba(255,179,71,.14); }
+.moonpg__marks {
+  display: flex; justify-content: space-between; margin-top: 9px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; color: var(--color-text-muted);
+}
+.moonpg__marks .today { color: var(--terracotta); }
+
+.moonpg__card {
+  margin-top: 22px; background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.08); border-radius: 20px; overflow: hidden;
+}
+.moonpg__row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-bottom: 1px solid rgba(255,255,255,.06); min-height: 44px;
+}
+.moonpg__row:last-child { border-bottom: none; }
+.moonpg__k { font-size: 15.5px; color: var(--color-text-primary); }
+.moonpg__v { font-family: var(--font-mono); font-weight: 500; font-size: 15.5px; color: var(--color-text-primary); }
+.moonpg__v small { color: var(--color-text-secondary); font-size: 12px; font-weight: 400; margin-left: 3px; }
+.moonpg__v.hi { color: var(--terracotta); }
+
+.moonpg__sectitle { font-family: var(--font-orbitron); font-weight: 500; font-size: 19px; margin: 26px 2px 12px; }
+.moonpg__cal {
+  background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px; padding: 16px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  color: var(--color-text-secondary); font-size: 14px;
+}
+.moonpg__mo { font-family: var(--font-orbitron); font-weight: 500; font-size: 15px; color: var(--color-text-primary); letter-spacing: .02em; }
+.moonpg__nav { color: var(--color-text-muted); font-size: 20px; }
