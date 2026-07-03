@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import {
   Body, Illumination, MoonPhase, SearchRiseSet, SearchMoonQuarter,
@@ -54,6 +55,7 @@ function startOfDay(d: Date): Date {
 }
 
 export default function MoonPage() {
+  const router = useRouter();
   const [today] = useState(() => new Date());
   const [offset, setOffset] = useState(0);
   const drag = useRef<{ x: number; base: number } | null>(null);
@@ -111,7 +113,7 @@ export default function MoonPage() {
       <div className="moonpg__col">
         <div className="moonpg__bar">
           <div className="moonpg__ctx">Moon · Sky Tonight</div>
-          <button className="moonpg__x" aria-label="Close"><X size={16} /></button>
+          <button className="moonpg__x" aria-label="Close" onClick={() => router.back()}><X size={16} /></button>
         </div>
 
         <div className="moonpg__hero">

@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -117,6 +118,7 @@ function targetRank(o: SkyObject): number {
 
 export default function SkyPage() {
   const { location, locationReady, requestLocation, gpsState, loading: locationLoading } = useLocation();
+  const router = useRouter();
   const tErrors = useTranslations('sky.errors');
   const tDir = useTranslations('sky.directions.compass');
 
@@ -536,7 +538,15 @@ export default function SkyPage() {
                 <span className="skx__sum-sub">Best targets to see</span>
               </div>
 
-              <div className="skx__sum-cell">
+              <div
+                className="skx__sum-cell"
+                role="button"
+                tabIndex={0}
+                style={{ cursor: 'pointer' }}
+                aria-label={`${moonName}, ${moonIllum}% illuminated — open Moon details`}
+                onClick={() => router.push('/moon')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push('/moon'); } }}
+              >
                 <span className="skx__sum-icon skx__sum-moon"><MoonGlyph phase={moonPhase} size={40} /></span>
                 <span className="skx__sum-body">
                   <span className="skx__sum-head">{moonName}</span>
