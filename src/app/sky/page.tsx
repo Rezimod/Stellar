@@ -542,7 +542,7 @@ export default function SkyPage() {
                 className="skx__sum-cell"
                 role="button"
                 tabIndex={0}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', position: 'relative' }}
                 aria-label={`${moonName}, ${moonIllum}% illuminated — open Moon details`}
                 onClick={() => router.push('/moon')}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push('/moon'); } }}
@@ -551,8 +551,13 @@ export default function SkyPage() {
                 <span className="skx__sum-body">
                   <span className="skx__sum-head">{moonName}</span>
                   <span className="skx__sum-val">{moonIllum}<em>%</em></span>
-                  <span className="skx__sum-sub">Illumination</span>
+                  <span className="skx__sum-sub">Illumination · details</span>
                 </span>
+                <ChevronRight
+                  size={16}
+                  aria-hidden="true"
+                  style={{ position: 'absolute', top: 8, right: 8, color: 'var(--terracotta)', opacity: 0.75 }}
+                />
               </div>
 
               <div className="skx__sum-cell">
