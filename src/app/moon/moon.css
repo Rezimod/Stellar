@@ -53,9 +53,25 @@
 .moonpg__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--seafoam); }
 
 .moonpg__scrub { margin: 24px 2px 4px; }
+.moonpg__steprow { display: flex; align-items: center; gap: 10px; }
+.moonpg__step {
+  flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  color: var(--color-text-secondary); display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.moonpg__step:active { background: rgba(255,255,255,.09); }
 .moonpg__ticks {
+  position: relative; flex: 1 1 auto;
   display: flex; align-items: flex-end; justify-content: space-between;
-  height: 34px; padding: 0 2px;
+  height: 44px; padding: 0 2px;
+  touch-action: none; cursor: grab; user-select: none;
+}
+.moonpg__ticks:active { cursor: grabbing; }
+.moonpg__caret {
+  position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
+  width: 2.5px; height: 34px; border-radius: 2px; background: var(--terracotta);
+  box-shadow: 0 0 0 3px rgba(255,179,71,.14); pointer-events: none;
 }
 .moonpg__ticks i { width: 2px; border-radius: 2px; background: rgba(255,255,255,.16); height: 12px; display: block; }
 .moonpg__ticks i.tall { height: 22px; background: rgba(255,255,255,.28); }
@@ -64,6 +80,7 @@
   display: flex; justify-content: space-between; margin-top: 9px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; color: var(--color-text-muted);
 }
+.moonpg__marks span { cursor: pointer; padding: 2px 4px; }
 .moonpg__marks .today { color: var(--terracotta); }
 
 .moonpg__card {
