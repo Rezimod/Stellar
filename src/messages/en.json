@@ -1364,10 +1364,6 @@
     },
     "howItWorks": {
       "eyebrow": "How it works",
-      "title": "Three steps to your first reward.",
-      "desc1": "Create a free account — your Solana wallet is set up for you automatically.",
-      "desc2": "See what's visible tonight and pick a target from your own sky.",
-      "desc3": "Photograph it, get it verified, and Stars land in your wallet.",
       "step1": "Sign in",
       "step2": "Find a target",
       "step3": "Earn Stars",
@@ -1471,55 +1467,6 @@
       "eyebrow": "Community",
       "title": "Looking up, together.",
       "cta": "Open the feed"
-    },
-    "panels": {
-      "scroll": "Scroll",
-      "location": "Tbilisi, Georgia",
-      "hero": {
-        "eyebrow": "The all-in-one astronomy app",
-        "headline1": "Observe the sky.",
-        "headline2": "Earn rewards.",
-        "sub": "Plan tonight, photograph what you see, redeem Stars for real telescopes and gear.",
-        "cta1": "Earn Rewards",
-        "cta2": "Start Observing",
-        "microcopy": "Free · no wallet needed"
-      },
-      "sky": {
-        "eyebrow": "Sky forecast",
-        "sub": "Cloud cover, moon phase and planet visibility for your exact location.",
-        "cta1": "View forecast",
-        "cta2": "Learn more"
-      },
-      "missions": {
-        "eyebrow": "Observation missions",
-        "sub": "Photograph tonight's targets, verify them on-chain, earn Stars for real gear.",
-        "cta1": "Start a mission",
-        "cta2": "How it works"
-      },
-      "astra": {
-        "eyebrow": "AI companion",
-        "title": "Meet ASTRA.",
-        "sub": "Your AI companion reads the sky and answers in plain language.",
-        "cta1": "Chat now",
-        "cta2": "Learn more"
-      },
-      "marketplace": {
-        "eyebrow": "Marketplace",
-        "sub": "23 real telescopes and accessories from Astroman — pay by card or Stars.",
-        "cta1": "Shop now",
-        "cta2": "View telescopes"
-      },
-      "field": {
-        "eyebrow": "Offline companion",
-        "title": "Stellar Field.",
-        "sub": "An offline companion for dark-sky sites. On-device AI, no signal needed.",
-        "cta1": "Get the app",
-        "cta2": "Learn more"
-      },
-      "community": {
-        "sub": "70,000+ stargazers sharing what they find. Looking up, together.",
-        "cta2": "Join free"
-      }
     }
   }
 }
