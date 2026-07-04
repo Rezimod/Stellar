@@ -204,33 +204,29 @@ function Copy({ t }: { t: (k: string) => string }) {
       <div className="mt-9 flex flex-wrap items-center gap-4">
         <Link
           href="/missions"
-          className="hero-pill-primary inline-flex items-center gap-2.5 rounded-full px-8 py-4 no-underline"
+          className="hero-pill-primary inline-flex items-center justify-center rounded-xl px-8 py-4 font-mono uppercase tracking-[0.14em] no-underline"
           style={{
-            background: 'linear-gradient(180deg,#ffc866,#f59e2e 60%,#e8871c)',
+            background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
             color: '#241503',
-            fontWeight: 700,
-            fontSize: 17,
-            boxShadow: '0 0 0 1px rgba(255,220,160,0.5) inset, 0 12px 40px rgba(245,158,46,0.45)',
+            fontWeight: 600,
+            fontSize: 13.5,
+            boxShadow: 'inset 0 1px 0 rgba(255,235,200,0.7), inset 0 -2px 0 rgba(120,60,0,0.35), 0 8px 26px rgba(245,158,46,0.35)',
           }}
         >
-          <SparkleIcon />
           {t('ctaPrimary')}
         </Link>
         <Link
           href="/sky"
-          className="hero-pill-ghost inline-flex items-center gap-2.5 rounded-full px-7 py-[15px] no-underline"
+          className="hero-pill-ghost inline-flex items-center justify-center rounded-xl px-7 py-4 font-mono uppercase tracking-[0.14em] no-underline"
           style={{
-            border: '1.5px solid rgba(170,190,240,0.4)',
-            color: '#eef2ff',
+            background: 'rgba(12,18,38,0.6)',
+            color: '#ffc877',
             fontWeight: 600,
-            fontSize: 16.5,
-            background: 'rgba(10,15,32,0.45)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            fontSize: 13.5,
+            border: '1px solid rgba(245,168,61,0.35)',
           }}
         >
           {t('ctaSecondary')}
-          <ArrowIcon />
         </Link>
       </div>
     </section>
@@ -437,14 +433,6 @@ function buildMissions(planets: PlanetData[], tp: (k: string) => string): Missio
 }
 
 /* ─── Icons ───────────────────────────────────────────────────────── */
-
-function SparkleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9z" />
-    </svg>
-  );
-}
 
 function ArrowIcon() {
   return (
