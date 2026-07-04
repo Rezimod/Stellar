@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
-import { Orbitron, Geist, JetBrains_Mono, Noto_Sans_Georgian } from 'next/font/google';
+import { Orbitron, Geist, JetBrains_Mono, Noto_Sans_Georgian, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import '../styles/design-tokens.css';
 import '../styles/stellar-tokens.css';
@@ -25,6 +25,13 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   weight: ['400', '700'],
+  display: 'swap',
+});
+// Homepage hero display face — Space Grotesk (hero-only; not a global token).
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-grotesk',
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 const notoGeorgian = Noto_Sans_Georgian({
@@ -101,7 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${notoGeorgian.variable}`}>
+    <html lang={locale} className={`${orbitron.variable} ${geist.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${notoGeorgian.variable}`}>
       <head>
         <link rel="preconnect" href="https://auth.privy.io" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.open-meteo.com" />

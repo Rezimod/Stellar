@@ -719,6 +719,49 @@ code, pre, .mono, [class*="font-mono"] {
   .hero-card-swap { animation: none; }
 }
 
+/* === Hero sky-calendar ticker ===
+   Two identical event rows scroll left as one; when the first row has moved
+   exactly its own width (-50%), the loop restarts seamlessly. */
+.hero-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: hero-ticker 36s linear infinite;
+}
+@keyframes hero-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.hero-ticker-track:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-ticker-track { animation: none; }
+}
+
+/* === Hero horizon glow — soft blue light that breathes above the earth limb === */
+.hero-horizon-glow { animation: hero-horizon-glow 8s ease-in-out infinite; }
+@keyframes hero-horizon-glow {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-horizon-glow { animation: none; }
+}
+
+/* === Hero pill buttons (Space Grotesk hero) === */
+.hero-pill-primary { transition: transform 150ms ease, box-shadow 200ms ease; }
+.hero-pill-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 0 1px rgba(255,230,180,0.7) inset, 0 18px 54px rgba(245,158,46,0.6);
+}
+.hero-pill-ghost { transition: border-color 200ms ease, background 200ms ease, transform 150ms ease; }
+.hero-pill-ghost:hover {
+  border-color: #9ec0ff;
+  background: rgba(30,44,90,0.55);
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-pill-primary:hover, .hero-pill-ghost:hover { transform: none; }
+}
+
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
    on club.astroman.ge. Use .icon-badge-gradient.is-orange for the third
    accent color (sparkle step). */
