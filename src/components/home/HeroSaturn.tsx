@@ -85,7 +85,7 @@ export default function HeroSaturn() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden pt-14"
       style={{
         minHeight: '100dvh',
         fontFamily: 'var(--font-grotesk), system-ui, sans-serif',
