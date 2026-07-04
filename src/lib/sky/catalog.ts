@@ -5,13 +5,19 @@
 // finder API and aren't listed here — but their type/difficulty/instrument
 // metadata IS, in `PLANET_META`, so the UI can treat them uniformly.
 //
-// Coordinates are J2000 RA (hours) / Dec (degrees). Precession and proper
-// motion drift are well below the precision the user can perceive in a
-// phone-finder context, so we ignore them.
+// Coordinates are stored as J2000 RA (hours) / Dec (degrees). They are
+// precessed to equator-of-date at render time (see precessJ2000ToDate) so
+// catalog stars/DSOs line up with the of-date planets/Sun; the ~0.4° J2000
+// drift is perceptible in an AR finder.
 //
 // Naming: every entry has an `id` (lowercase ascii, slash-free, e.g. 'm31',
 // 'sirius'). Display names + recognition copy live in i18n under
 // `sky.catalog.<id>.name` / `.recognize` for EN + KA.
+
+import {
+  AstroTime, Spherical, VectorFromSphere, RotateVector,
+  Rotation_EQJ_EQD, EquatorFromVector,
+} from 'astronomy-engine';
 
 export type CatalogType =
   | 'planet'
@@ -148,6 +154,23 @@ function refractionDeg(altDeg: number): number {
   return r / 60;
 }
 
+/**
+ * Precess J2000 equatorial coords to equator-of-date so catalog stars/DSOs
+ * align with the of-date Sun/planets (astronomy-engine). ~0.4° drift since
+ * 2000 — perceptible in an AR finder. Proper motion is still ignored (µas/yr,
+ * negligible for the naked-eye catalog).
+ */
+export function precessJ2000ToDate(
+  raHours: number,
+  decDeg: number,
+  date: Date,
+): { raHours: number; decDeg: number } {
+  const time = new AstroTime(date);
+  const vec = VectorFromSphere(new Spherical(decDeg, raHours * HOUR_TO_DEG, 1), time);
+  const eq = EquatorFromVector(RotateVector(Rotation_EQJ_EQD(time), vec));
+  return { raHours: eq.ra, decDeg: eq.dec };
+}
+
 export function raDecToAzAlt(
   raHours: number,
   decDeg: number,
@@ -155,10 +178,11 @@ export function raDecToAzAlt(
   lonDeg: number,
   date: Date,
 ): AzAlt {
+  const od = precessJ2000ToDate(raHours, decDeg, date);
   const lst = lstDeg(date, lonDeg);
-  const haDeg = ((lst - raHours * HOUR_TO_DEG) % 360 + 540) % 360 - 180;
+  const haDeg = ((lst - od.raHours * HOUR_TO_DEG) % 360 + 540) % 360 - 180;
   const ha = haDeg * DEG;
-  const dec = decDeg * DEG;
+  const dec = od.decDeg * DEG;
   const lat = latDeg * DEG;
 
   const sinAlt = Math.sin(dec) * Math.sin(lat) + Math.cos(dec) * Math.cos(lat) * Math.cos(ha);
