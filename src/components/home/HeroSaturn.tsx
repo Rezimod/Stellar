@@ -286,12 +286,12 @@ function SkyCard({ paused }: { paused: boolean }) {
       }}
     >
       {/* header */}
-      <div className="mb-5 flex items-center justify-between">
-        <span className="flex items-center gap-2.5 font-mono text-[11px] tracking-[0.26em] text-[#8d99bd]">
-          <span className="hero-live-dot" />
-          {dayName} · {cityLabel}
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <span className="flex min-w-0 items-center gap-2.5 font-mono text-[11px] tracking-[0.26em] text-[#8d99bd]">
+          <span className="hero-live-dot shrink-0" />
+          <span className="truncate">{dayName} · {cityLabel}</span>
         </span>
-        <Link href="/sky" className="font-mono text-[11px] tracking-[0.2em] text-[#9ec0ff] no-underline transition-colors hover:text-white">
+        <Link href="/sky" className="shrink-0 whitespace-nowrap font-mono text-[11px] tracking-[0.2em] text-[#9ec0ff] no-underline transition-colors hover:text-white">
           OPEN SKY →
         </Link>
       </div>
