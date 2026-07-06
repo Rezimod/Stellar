@@ -5,10 +5,12 @@
  * Scrub the date (drag the timeline or use the arrows); the moon drawing and every
  * value recompute from astronomy-engine (real ephemeris) for the selected date.
  * Location fixed to Tbilisi for rise/set; phase/illumination/distance are global.
+ * Bilingual: labels/phase names + date formatting switch on the active locale (en/ka).
  */
 
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import {
   Body, Illumination, MoonPhase, SearchRiseSet, SearchMoonQuarter,
@@ -22,22 +24,42 @@ const KM_MI = 0.621371;
 const PPD = 26; // px per day on the scrubber
 const RANGE = 45; // ± days
 
-const fmtTime = (d: Date | null) =>
-  d ? new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Tbilisi' }).format(d) : '—';
-const fmtDate = (d: Date) =>
-  new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'Asia/Tbilisi' }).format(d);
-const fmtWkd = (d: Date) =>
-  new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Asia/Tbilisi' }).format(d).toUpperCase();
+// [en, ka]
+const STR = {
+  ctx:      ['Moon · Sky Tonight', 'მთვარე · ცა ახლა'],
+  today:    ['Today', 'დღეს'],
+  todayCap: ['TODAY', 'დღეს'],
+  visible:  ['Visible now', 'ახლა ხილულია'],
+  illum:    ['Illumination', 'განათება'],
+  rise:     ['Moonrise', 'ამოსვლა'],
+  set:      ['Moonset', 'ჩასვლა'],
+  nextFull: ['Next Full Moon', 'შემდეგი სავსემთვარეობა'],
+  distance: ['Distance', 'მანძილი'],
+  day:      ['DAY', 'დღე'],
+  days:     ['DAYS', 'დღე'],
+  distUnit: ['MI', 'კმ'],
+} as const;
 
-function phaseName(angle: number): string {
-  if (angle < 11.25 || angle >= 348.75) return 'New Moon';
-  if (angle < 78.75) return 'Waxing Crescent';
-  if (angle < 101.25) return 'First Quarter';
-  if (angle < 168.75) return 'Waxing Gibbous';
-  if (angle < 191.25) return 'Full Moon';
-  if (angle < 258.75) return 'Waning Gibbous';
-  if (angle < 281.25) return 'Last Quarter';
-  return 'Waning Crescent';
+const PHASES: [string, string][] = [
+  ['New Moon', 'ახალმთვარეობა'],          // 0
+  ['Waxing Crescent', 'მზარდი ნამგალა'],  // 1
+  ['First Quarter', 'პირველი მეოთხედი'],   // 2
+  ['Waxing Gibbous', 'მზარდი ამოზნექილი'], // 3
+  ['Full Moon', 'სავსემთვარეობა'],         // 4
+  ['Waning Gibbous', 'კლებადი ამოზნექილი'],// 5
+  ['Last Quarter', 'ბოლო მეოთხედი'],       // 6
+  ['Waning Crescent', 'კლებადი ნამგალა'],  // 7
+];
+
+function phaseIndex(angle: number): number {
+  if (angle < 11.25 || angle >= 348.75) return 0;
+  if (angle < 78.75) return 1;
+  if (angle < 101.25) return 2;
+  if (angle < 168.75) return 3;
+  if (angle < 191.25) return 4;
+  if (angle < 258.75) return 5;
+  if (angle < 281.25) return 6;
+  return 7;
 }
 
 // SVG path of the illuminated region for fraction f (0..1); waxing → lit on the right.
@@ -56,6 +78,17 @@ function startOfDay(d: Date): Date {
 
 export default function MoonPage() {
   const router = useRouter();
+  const lang = useLocale() === 'ka' ? 1 : 0;
+  const tag = lang ? 'ka-GE' : 'en-US';
+  const t = (k: keyof typeof STR) => STR[k][lang];
+
+  const fmtTime = (d: Date | null) =>
+    d ? new Intl.DateTimeFormat(tag, { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Tbilisi' }).format(d) : '—';
+  const fmtDate = (d: Date) =>
+    new Intl.DateTimeFormat(tag, { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'Asia/Tbilisi' }).format(d);
+  const fmtWkd = (d: Date) =>
+    new Intl.DateTimeFormat(tag, { weekday: 'short', timeZone: 'Asia/Tbilisi' }).format(d).toUpperCase();
+
   const [today] = useState(() => new Date());
   const [offset, setOffset] = useState(0);
   const drag = useRef<{ x: number; base: number } | null>(null);
@@ -83,13 +116,14 @@ export default function MoonPage() {
       fullDays = Math.max(0, Math.round((mq.time.date.getTime() - d.getTime()) / 86_400_000));
     } catch {}
     const v = GeoMoon(d);
-    const mi = Math.round(Math.hypot(v.x, v.y, v.z) * AU_KM * KM_MI);
+    const km = Math.round(Math.hypot(v.x, v.y, v.z) * AU_KM);
+    const mi = Math.round(km * KM_MI);
     let up = false;
     try {
       const eq = Equator(Body.Moon, d, TBILISI, true, true);
       up = Horizon(d, TBILISI, eq.ra, eq.dec, 'normal').altitude > 0;
     } catch {}
-    return { angle, illum, waxing, rise, set, fullDays, mi, up };
+    return { angle, illum, waxing, rise, set, fullDays, km, mi, up };
   }, [selected]);
 
   const onDown = useCallback((e: React.PointerEvent) => {
@@ -107,17 +141,19 @@ export default function MoonPage() {
   const R = 118, C = 118;
   const marks = [-3, -2, -1, 0, 1, 2, 3];
   const isToday = offset === 0;
+  const phase = PHASES[phaseIndex(data.angle)][lang];
+  const dist = lang ? data.km : data.mi;
 
   return (
     <div className="moonpg">
       <div className="moonpg__col">
         <div className="moonpg__bar">
-          <div className="moonpg__ctx">Moon · Sky Tonight</div>
+          <div className="moonpg__ctx">{t('ctx')}</div>
           <button className="moonpg__x" aria-label="Close" onClick={() => router.back()}><X size={16} /></button>
         </div>
 
         <div className="moonpg__hero">
-          <svg width="236" height="236" viewBox="0 0 236 236" role="img" aria-label={phaseName(data.angle)}>
+          <svg width="236" height="236" viewBox="0 0 236 236" role="img" aria-label={phase}>
             <defs>
               <clipPath id="moonlit"><path d={litPath(C, C, R, data.illum, data.waxing)} /></clipPath>
               <clipPath id="moondisc"><circle cx={C} cy={C} r={R} /></clipPath>
@@ -130,10 +166,10 @@ export default function MoonPage() {
           </svg>
         </div>
 
-        <h1 className="moonpg__title">{phaseName(data.angle)}</h1>
-        <p className="moonpg__sub">{isToday ? 'Today · ' : ''}{fmtDate(selected)}</p>
+        <h1 className="moonpg__title">{phase}</h1>
+        <p className="moonpg__sub">{isToday ? `${t('today')} · ` : ''}{fmtDate(selected)}</p>
         {isToday && data.up && (
-          <div className="moonpg__chipwrap"><span className="moonpg__chip"><span className="moonpg__dot" />Visible now</span></div>
+          <div className="moonpg__chipwrap"><span className="moonpg__chip"><span className="moonpg__dot" />{t('visible')}</span></div>
         )}
 
         <div className="moonpg__scrub">
@@ -155,7 +191,7 @@ export default function MoonPage() {
               const dd = new Date(selected); dd.setDate(dd.getDate() + m);
               return (
                 <span key={m} className={m === 0 ? 'today' : ''} onClick={() => step(m)}>
-                  {m === 0 && isToday ? 'TODAY' : fmtWkd(dd)}
+                  {m === 0 && isToday ? t('todayCap') : fmtWkd(dd)}
                 </span>
               );
             })}
@@ -163,11 +199,11 @@ export default function MoonPage() {
         </div>
 
         <div className="moonpg__card">
-          <div className="moonpg__row"><span className="moonpg__k">Illumination</span><span className="moonpg__v hi">{Math.round(data.illum * 100)}%</span></div>
-          <div className="moonpg__row"><span className="moonpg__k">Moonrise</span><span className="moonpg__v">{fmtTime(data.rise)}</span></div>
-          <div className="moonpg__row"><span className="moonpg__k">Moonset</span><span className="moonpg__v">{fmtTime(data.set)}</span></div>
-          <div className="moonpg__row"><span className="moonpg__k">Next Full Moon</span><span className="moonpg__v">{data.fullDays}<small>{data.fullDays === 1 ? 'DAY' : 'DAYS'}</small></span></div>
-          <div className="moonpg__row"><span className="moonpg__k">Distance</span><span className="moonpg__v">{data.mi.toLocaleString('en-US')}<small>MI</small></span></div>
+          <div className="moonpg__row"><span className="moonpg__k">{t('illum')}</span><span className="moonpg__v hi">{Math.round(data.illum * 100)}%</span></div>
+          <div className="moonpg__row"><span className="moonpg__k">{t('rise')}</span><span className="moonpg__v">{fmtTime(data.rise)}</span></div>
+          <div className="moonpg__row"><span className="moonpg__k">{t('set')}</span><span className="moonpg__v">{fmtTime(data.set)}</span></div>
+          <div className="moonpg__row"><span className="moonpg__k">{t('nextFull')}</span><span className="moonpg__v">{data.fullDays}<small>{data.fullDays === 1 ? t('day') : t('days')}</small></span></div>
+          <div className="moonpg__row"><span className="moonpg__k">{t('distance')}</span><span className="moonpg__v">{dist.toLocaleString(tag)}<small>{t('distUnit')}</small></span></div>
         </div>
       </div>
     </div>
