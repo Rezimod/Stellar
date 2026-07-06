@@ -2,8 +2,10 @@
 // Used to give the AR overlay something more than empty sky between planets.
 //
 // Coordinates are J2000 RA (hours) / Dec (degrees) and visual magnitude.
-// 0.5°/century precession is ignored — well below the precision the user
-// can perceive in a phone-AR overlay.
+// They are precessed to equator-of-date at render time (see raDecToAzAlt) so
+// bright stars align with the of-date planets/Sun in the AR overlay.
+
+import { precessJ2000ToDate } from './catalog';
 
 export interface Star {
   id: string;
@@ -227,10 +229,11 @@ export function raDecToAzAlt(
   lonDeg: number,
   date: Date,
 ): AzAlt {
+  const od = precessJ2000ToDate(raHours, decDeg, date);
   const lst_deg = lst(date, lonDeg);
-  const ha_deg = ((lst_deg - raHours * HOUR_TO_DEG) % 360 + 540) % 360 - 180;
+  const ha_deg = ((lst_deg - od.raHours * HOUR_TO_DEG) % 360 + 540) % 360 - 180;
   const ha = ha_deg * DEG;
-  const dec = decDeg * DEG;
+  const dec = od.decDeg * DEG;
   const lat = latDeg * DEG;
 
   const sinAlt = Math.sin(dec) * Math.sin(lat) + Math.cos(dec) * Math.cos(lat) * Math.cos(ha);

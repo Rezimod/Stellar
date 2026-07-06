@@ -1,5 +1,6 @@
 import { Body, Equator, Horizon, Illumination, Observer } from 'astronomy-engine';
 import { STARS } from './star-catalog';
+import { precessJ2000ToDate } from './sky/catalog';
 
 /**
  * Canvas convention: a square SVG viewBox "0 0 W H".
@@ -53,7 +54,8 @@ export function getChartStars(
     if (mag > magnitudeCutoff) continue;
 
     try {
-      const horiz = Horizon(date, observer, raHours, decDeg, 'normal');
+      const od = precessJ2000ToDate(raHours, decDeg, date);
+      const horiz = Horizon(date, observer, od.raHours, od.decDeg, 'normal');
       if (horiz.altitude < -25) continue;
       const p = projectAltAz(horiz.altitude, horiz.azimuth, cx, cy, chartRadius);
       out.push({
@@ -157,7 +159,8 @@ export function getChartDeepSky(
   const out: ChartDeepSky[] = [];
   for (const [id, coord] of Object.entries(DEEP_SKY_TARGETS)) {
     try {
-      const horiz = Horizon(date, observer, coord.raHours, coord.decDeg, 'normal');
+      const od = precessJ2000ToDate(coord.raHours, coord.decDeg, date);
+      const horiz = Horizon(date, observer, od.raHours, od.decDeg, 'normal');
       const p = projectAltAz(horiz.altitude, horiz.azimuth, cx, cy, chartRadius, -8);
       out.push({ ...p, id, altitude: horiz.altitude, azimuth: horiz.azimuth, magnitude: DEEP_SKY_MAG[id] });
     } catch { continue; }
