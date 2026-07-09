@@ -251,7 +251,7 @@ export default async function StarProofPage({
         {star.claim_nft && (
           <div style={{ textAlign: 'center', marginTop: 20 }}>
             <a
-              href={`https://explorer.solana.com/address/${star.claim_nft}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`}
+              href={`https://explorer.solana.com/address/${star.claim_nft}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{

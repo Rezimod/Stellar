@@ -21,6 +21,7 @@ const ALLOWED = new Set([
   'observation_started',
   'quiz_completed',
   'marketplace_view',
+  'product_view',
 ]);
 
 const PROPS_MAX_BYTES = 4096;

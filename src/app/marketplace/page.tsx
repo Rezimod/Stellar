@@ -16,14 +16,21 @@ import FeaturedDeals from '@/components/marketplace/FeaturedDeals';
 import RecommendedRow from '@/components/marketplace/RecommendedRow';
 import HelpBanner from '@/components/marketplace/HelpBanner';
 import MarketplaceSectionHeader from '@/components/marketplace/MarketplaceSectionHeader';
+import { SolGradientDef } from '@/components/marketplace/SolMark';
+import { X } from 'lucide-react';
 import { getProductsByRegion, getDealersByRegion, GLOBAL_FALLBACK, type Product } from '@/lib/dealers';
 import { track } from '@/lib/track';
 
 type Cat = Product['category'];
 type CategoryFilter = 'all' | Cat;
 type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
+type SortMode = 'default' | 'priceAsc' | 'priceDesc';
 
 const SKILL_RANK: Record<string, number> = { advanced: 3, intermediate: 2, beginner: 1 };
+const CATS: Cat[] = ['telescope', 'eyepiece', 'binocular', 'accessory'];
+const CAT_KEY: Record<Cat, string> = { telescope: 'telescopes', eyepiece: 'eyepieces', binocular: 'binoculars', accessory: 'accessories' };
+const SKILLS = ['beginner', 'intermediate', 'advanced'] as const;
+const SKILL_KEY: Record<(typeof SKILLS)[number], string> = { beginner: 'skillBeginner', intermediate: 'skillIntermediate', advanced: 'skillAdvanced' };
 
 interface BuyingGuide { id: string; category: CategoryFilter; skill: DifficultyFilter; }
 const BUYING_GUIDES: BuyingGuide[] = [
@@ -36,6 +43,20 @@ const dedupe = (list: Product[]): Product[] => {
   const seen = new Set<string>();
   return list.filter(p => (seen.has(p.id) ? false : (seen.add(p.id), true)));
 };
+
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <button
+      onClick={onClear}
+      aria-label={`Remove filter: ${label}`}
+      className="inline-flex items-center gap-[6px] h-[26px] min-h-0 px-[10px] rounded-full text-[10.5px] tracking-[0.1em] uppercase font-semibold text-[var(--terracotta)] transition-colors hover:text-white"
+      style={{ background: 'rgba(255,179,71,0.10)', border: '1px solid rgba(255,179,71,0.30)' }}
+    >
+      {label}
+      <X className="w-[11px] h-[11px]" />
+    </button>
+  );
+}
 
 export default function MarketplacePage() {
   const t = useTranslations('marketplacePage');
@@ -51,6 +72,7 @@ export default function MarketplacePage() {
 
   const [filter, setFilter] = useState<CategoryFilter>('all');
   const [difficulty, setDifficulty] = useState<DifficultyFilter>('all');
+  const [sort, setSort] = useState<SortMode>('default');
   const [solPerGEL, setSolPerGEL] = useState(0);
   const [solPriceUsd, setSolPriceUsd] = useState(0);
   const [navSlot, setNavSlot] = useState<HTMLElement | null>(null);
@@ -59,8 +81,41 @@ export default function MarketplacePage() {
   const featuredRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setNavSlot(document.getElementById('nav-mobile-center')); }, []);
-  // Funnel: marketplace reached. Once per mount; wallet attached if known.
-  useEffect(() => { track('marketplace_view', {}, address); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Filters live in the URL so refresh / share / back keep the same view.
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const cat = sp.get('cat');
+    const skill = sp.get('skill');
+    const s = sp.get('sort');
+    if (cat && (CATS as string[]).includes(cat)) setFilter(cat as Cat);
+    if (skill && (SKILLS as readonly string[]).includes(skill)) setDifficulty(skill as DifficultyFilter);
+    if (s === 'priceAsc' || s === 'priceDesc') setSort(s);
+  }, []);
+  useEffect(() => {
+    const sp = new URLSearchParams();
+    if (filter !== 'all') sp.set('cat', filter);
+    if (difficulty !== 'all') sp.set('skill', difficulty);
+    if (sort !== 'default') sp.set('sort', sort);
+    const qs = sp.toString();
+    window.history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
+  }, [filter, difficulty, sort]);
+
+  // Funnel: marketplace reached. Fire once, preferring a resolved wallet so
+  // events aren't all anonymous; fall back to anonymous after a short grace.
+  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (trackedRef.current) return;
+    if (address) {
+      trackedRef.current = true;
+      track('marketplace_view', {}, address);
+      return;
+    }
+    const id = setTimeout(() => {
+      if (!trackedRef.current) { trackedRef.current = true; track('marketplace_view', {}, null); }
+    }, 2500);
+    return () => clearTimeout(id);
+  }, [address]);
   useEffect(() => {
     fetch('/api/price/sol')
       .then(r => r.json())
@@ -95,15 +150,19 @@ export default function MarketplacePage() {
     [inCategory, difficulty],
   );
 
+  // Default order is beginner-first, cheapest-first — the beta audience is
+  // first-scope buyers, so entry gear leads and astrophoto rigs come last.
   const orderedVisible = useMemo(() => {
-    if (difficulty !== 'all') return visible;
-    return [...visible].sort((a, b) => {
+    const list = [...visible];
+    if (sort === 'priceAsc') return list.sort((a, b) => a.price - b.price);
+    if (sort === 'priceDesc') return list.sort((a, b) => b.price - a.price);
+    return list.sort((a, b) => {
       const sa = SKILL_RANK[a.skillLevel ?? 'beginner'] ?? 0;
       const sb = SKILL_RANK[b.skillLevel ?? 'beginner'] ?? 0;
-      if (sa !== sb) return sb - sa;
-      return b.price - a.price;
+      if (sa !== sb) return sa - sb;
+      return a.price - b.price;
     });
-  }, [visible, difficulty]);
+  }, [visible, sort]);
 
   // Featured rail: hand-picked flags first, then real badges, then top-tier by
   // skill/price — so the rail is never empty in any region or category.
@@ -136,12 +195,14 @@ export default function MarketplacePage() {
   }, [allProducts]);
 
   const scrollTo = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    ref.current?.scrollIntoView({ behavior, block: 'start' });
   }, []);
   const selectCategory = useCallback((cat: CategoryFilter) => { setFilter(cat); setDifficulty('all'); scrollTo(catalogRef); }, [scrollTo]);
 
   return (
     <PageContainer variant="wide" className="font-mono py-5 animate-page-enter">
+      <SolGradientDef />
       <div className="marketplace-page-bg overflow-hidden">
         <div className="relative z-10 flex flex-col gap-[20px] sm:gap-[24px]">
           {/* 1. Hero */}
@@ -177,6 +238,39 @@ export default function MarketplacePage() {
           {/* 5. Full catalog grid */}
           <section ref={catalogRef} className="scroll-mt-[80px]">
             <MarketplaceSectionHeader title={`${t('allGear')} · ${orderedVisible.length}`} />
+            <div className="flex flex-wrap items-center gap-[8px] mb-[14px]">
+              {filter !== 'all' && (
+                <FilterChip label={t(CAT_KEY[filter])} onClear={() => setFilter('all')} />
+              )}
+              {difficulty !== 'all' && (
+                <FilterChip label={t(SKILL_KEY[difficulty])} onClear={() => setDifficulty('all')} />
+              )}
+              {(filter !== 'all' || difficulty !== 'all') && (
+                <button
+                  onClick={() => { setFilter('all'); setDifficulty('all'); }}
+                  className="text-[10.5px] tracking-[0.12em] uppercase text-white/50 hover:text-[var(--terracotta)] transition-colors"
+                >
+                  {t('clearFilters')}
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-[10px]">
+                {([
+                  ['default', t('sortDefault')],
+                  ['priceAsc', t('sortPriceAsc')],
+                  ['priceDesc', t('sortPriceDesc')],
+                ] as [SortMode, string][]).map(([mode, label]) => (
+                  <button
+                    key={mode}
+                    onClick={() => setSort(mode)}
+                    aria-pressed={sort === mode}
+                    className="text-[10.5px] tracking-[0.12em] uppercase transition-colors"
+                    style={{ color: sort === mode ? 'var(--terracotta)' : 'rgba(255,255,255,0.5)', fontWeight: sort === mode ? 700 : 500 }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {orderedVisible.length > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-[14px] sm:gap-[16px]">
                 {orderedVisible.map(p => (
@@ -193,9 +287,17 @@ export default function MarketplacePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] py-12">
-                {t('noItems')}
-              </p>
+              <div className="text-center py-12">
+                <p className="text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] mb-[12px]">
+                  {t('noItems')}
+                </p>
+                <button
+                  onClick={() => { setFilter('all'); setDifficulty('all'); }}
+                  className="text-[11px] tracking-[0.14em] uppercase font-semibold text-[var(--terracotta)] hover:brightness-110 transition-[filter]"
+                >
+                  {t('resetFilters')}
+                </button>
+              </div>
             )}
           </section>
 
@@ -228,10 +330,7 @@ export default function MarketplacePage() {
                 <button
                   key={g.id}
                   onClick={() => { setFilter(g.category); setDifficulty(g.skill); scrollTo(catalogRef); }}
-                  className="group text-left rounded-none p-[16px] transition-[background,border-color,transform] duration-150 hover:-translate-y-[1px]"
-                  style={{ background: 'rgba(232,230,221,0.035)', border: '1px solid rgba(232,230,221,0.10)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,179,71,0.32)'; e.currentTarget.style.background = 'rgba(232,230,221,0.06)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,230,221,0.10)'; e.currentTarget.style.background = 'rgba(232,230,221,0.035)'; }}
+                  className="mkt-guide group text-left rounded-none p-[16px] hover:-translate-y-[1px]"
                 >
                   <p className="text-[15px] font-semibold text-[#F8F4EC] mb-[6px] leading-[1.25]">
                     {t(`guides.${g.id}.title`)}

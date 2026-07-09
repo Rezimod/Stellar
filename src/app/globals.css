@@ -725,13 +725,21 @@ code, pre, .mono, [class*="font-mono"] {
 .hero-ticker-track {
   display: flex;
   width: max-content;
-  animation: hero-ticker 36s linear infinite;
+  animation: hero-ticker 72s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 @keyframes hero-ticker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
 }
 .hero-ticker-track:hover { animation-play-state: paused; }
+/* Soft fade at both edges so events drift in and out instead of hard-clipping. */
+.hero-ticker-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+}
 @media (prefers-reduced-motion: reduce) {
   .hero-ticker-track { animation: none; }
 }
@@ -1292,6 +1300,32 @@ input, select, textarea { font-size: 16px !important; }
     radial-gradient(ellipse 40% 100% at 80% 0%, rgba(255, 179, 71, 0.04) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* Marketplace cards / buying guides — hover and keyboard focus share one style */
+.mkt-card {
+  background: rgba(232, 230, 221, 0.045);
+  border: 1px solid rgba(232, 230, 221, 0.10);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.2s ease;
+}
+.mkt-card:hover,
+.mkt-card:focus-within {
+  background: rgba(232, 230, 221, 0.075);
+  border-color: rgba(232, 230, 221, 0.22);
+}
+.mkt-guide {
+  background: rgba(232, 230, 221, 0.035);
+  border: 1px solid rgba(232, 230, 221, 0.10);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.mkt-guide:hover,
+.mkt-guide:focus-visible {
+  background: rgba(232, 230, 221, 0.06);
+  border-color: rgba(255, 179, 71, 0.32);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mkt-card, .mkt-guide { transition: none; }
+  .mkt-card:hover, .mkt-guide:hover { transform: none; }
 }
 
 /* Solar system immersive: no rubber-band / pull-to-refresh gesture bleed */

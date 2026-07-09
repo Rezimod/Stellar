@@ -27,7 +27,7 @@ const RPC_WS_URL = toWsUrl(RPC_HTTP_URL);
 
 // Embedded-wallet chain must match the deployed network. Driven by env so the
 // devnet→mainnet cutover is a config flip, not a code change.
-const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
 const IS_MAINNET = CLUSTER.startsWith('mainnet');
 const PRIVY_CHAIN: `solana:${string}` = IS_MAINNET ? 'solana:mainnet' : 'solana:devnet';
 const BLOCK_EXPLORER_URL = IS_MAINNET

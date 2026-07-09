@@ -5,15 +5,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
-import { ExternalLink, ArrowLeft, Check } from 'lucide-react';
+import { ExternalLink, ArrowLeft, Check, Star } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
 import { useWallets as usePrivySolanaWallets } from '@privy-io/react-auth/solana';
 import { AuthModal } from '@/components/auth/AuthModal';
 import PageContainer from '@/components/layout/PageContainer';
+import SolMark, { SolGradientDef } from '@/components/marketplace/SolMark';
 import { getProductById, getDealerById, getProductsByDealer, priceToSol, GLOBAL_FALLBACK } from '@/lib/dealers';
 import type { Product } from '@/lib/dealers';
+import { formatPrice, formatSol } from '@/lib/marketplace-format';
 import {
   STARS_PER_GEL,
   BURN_INCREMENT,
@@ -39,18 +42,11 @@ const EMPTY_SHIPPING: ShippingForm = {
   name: '', phone: '', country: '', city: '', address: '', notes: '',
 };
 
-const formatSol = (sol: number): string => {
-  if (sol >= 10) return sol.toFixed(2);
-  if (sol >= 1)  return sol.toFixed(3);
-  return sol.toFixed(4);
-};
-
-const formatPrice = (p: Product): string => {
-  const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
-  return `${n} ${p.currency}`;
-};
+// Survives the Privy auth redirect so users don't retype the form.
+const SHIPPING_STORAGE_KEY = 'stellar-checkout-shipping';
 
 function CheckoutContent() {
+  const t = useTranslations('checkout');
   const router = useRouter();
   const params = useSearchParams();
   const productId = params.get('id') ?? '';
@@ -83,8 +79,22 @@ function CheckoutContent() {
   }, [product, solPerGEL, solPriceUsd]);
 
   const [authOpen, setAuthOpen] = useState(false);
-  const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
+  const [shipping, setShipping] = useState<ShippingForm>(() => {
+    if (typeof window === 'undefined') return EMPTY_SHIPPING;
+    try {
+      const raw = sessionStorage.getItem(SHIPPING_STORAGE_KEY);
+      return raw ? { ...EMPTY_SHIPPING, ...JSON.parse(raw) as Partial<ShippingForm> } : EMPTY_SHIPPING;
+    } catch {
+      return EMPTY_SHIPPING;
+    }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem(SHIPPING_STORAGE_KEY, JSON.stringify(shipping)); } catch { /* private mode */ }
+  }, [shipping]);
   const [step, setStep] = useState<Step>('form');
+  useEffect(() => {
+    if (step === 'done') { try { sessionStorage.removeItem(SHIPPING_STORAGE_KEY); } catch { /* noop */ } }
+  }, [step]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -96,18 +106,26 @@ function CheckoutContent() {
   // §4: Stars-for-discount. Only available for SOL-paid GEL products.
   const burnEligible = mode === 'sol' && product?.currency === 'GEL';
   const [starsBalance, setStarsBalance] = useState<number>(0);
+  const [balanceLoaded, setBalanceLoaded] = useState(false);
   const [burnStars, setBurnStars] = useState<number>(0);
   const [burning, setBurning] = useState(false);
   const [burnSig, setBurnSig] = useState<string | null>(null);
 
-  // Pull on-chain Stars balance once we know the wallet.
+  // Pull on-chain Stars balance once we know the wallet — needed for the burn
+  // slider (SOL mode) and to gate redemption (Stars mode) before form entry.
+  const needsBalance = burnEligible || mode === 'stars';
   useEffect(() => {
-    if (!walletAddress || !burnEligible) return;
+    if (!walletAddress || !needsBalance) return;
     fetch(`/api/stars-balance?address=${encodeURIComponent(walletAddress)}`)
       .then(r => r.json())
-      .then(d => setStarsBalance(d.balance ?? 0))
-      .catch(() => {});
-  }, [walletAddress, burnEligible]);
+      .then(d => { setStarsBalance(d.balance ?? 0); setBalanceLoaded(true); })
+      .catch(() => setBalanceLoaded(true));
+  }, [walletAddress, needsBalance]);
+
+  // Stars mode: how many Stars the user is missing (0 = can redeem).
+  const starsShort = mode === 'stars' && product && balanceLoaded
+    ? Math.max(0, product.starsPrice - starsBalance)
+    : 0;
 
   const maxBurnable = useMemo(() => {
     if (!product || !burnEligible) return 0;
@@ -135,11 +153,20 @@ function CheckoutContent() {
     !!shipping.country.trim() &&
     !!shipping.city.trim() &&
     !!shipping.address.trim() &&
-    (mode === 'stars' ? !!product && product.starsPrice > 0 : amountSol > 0);
+    (mode === 'stars' ? !!product && product.starsPrice > 0 && starsShort === 0 : amountSol > 0);
 
+  const [pollTimedOut, setPollTimedOut] = useState(false);
   const startPolling = useCallback((id: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
+    setPollTimedOut(false);
+    const startedAt = Date.now();
     pollRef.current = setInterval(async () => {
+      // Stop after 10 minutes; an abandoned QR shouldn't spin forever.
+      if (Date.now() - startedAt > 10 * 60_000) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        setPollTimedOut(true);
+        return;
+      }
       try {
         const token = await getAccessToken().catch(() => null);
         const res = await fetch('/api/orders/confirm', {
@@ -249,11 +276,11 @@ function CheckoutContent() {
         startPolling(data.orderId);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not create order');
+      setError(e instanceof Error ? e.message : t('errGeneric'));
     } finally {
       setSubmitting(false);
     }
-  }, [product, authenticated, walletAddress, canSubmit, discountedSol, burnEligible, burnStars, privyWallets, shipping, getAccessToken, startPolling, mode]);
+  }, [product, authenticated, walletAddress, canSubmit, discountedSol, burnEligible, burnStars, privyWallets, shipping, getAccessToken, startPolling, mode, t]);
 
   useEffect(() => {
     if (pendingPay && authenticated && walletAddress && step === 'form' && !submitting) {
@@ -261,14 +288,14 @@ function CheckoutContent() {
     }
   }, [pendingPay, authenticated, walletAddress, step, submitting, handlePay]);
 
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
 
   if (!productId) {
     return (
       <PageContainer variant="content" className="py-10 text-center">
-        <p className="stl-body text-[#F8F4EC]">No product selected.</p>
+        <p className="stl-body text-[#F8F4EC]">{t('noProduct')}</p>
         <Link href="/marketplace" className="stl-mono-data text-[#F8F4EC]">
-          ← Back to marketplace
+          ← {t('backToMarketplace')}
         </Link>
       </PageContainer>
     );
@@ -277,9 +304,9 @@ function CheckoutContent() {
   if (!product) {
     return (
       <PageContainer variant="content" className="py-10 text-center">
-        <p className="stl-body text-[#F8F4EC]">Product not found.</p>
+        <p className="stl-body text-[#F8F4EC]">{t('productNotFound')}</p>
         <Link href="/marketplace" className="stl-mono-data text-[#F8F4EC]">
-          ← Back to marketplace
+          ← {t('backToMarketplace')}
         </Link>
       </PageContainer>
     );
@@ -295,7 +322,7 @@ function CheckoutContent() {
         }
         .stl-checkout-field:hover { border-color: rgba(255,255,255,0.18); }
         .stl-checkout-field:focus {
-          border-color: rgba(91, 108, 255, 0.55);
+          border-color: rgba(255, 179, 71, 0.55);
           background: #1C2235;
         }
         .stl-checkout-field:-webkit-autofill,
@@ -308,17 +335,18 @@ function CheckoutContent() {
           transition: background-color 9999s ease-out, color 9999s ease-out;
         }
       `}</style>
+      <SolGradientDef />
       <button
         onClick={() => router.back()}
-        aria-label="Back"
+        aria-label={t('back')}
         className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.18em] uppercase text-[#F8F4EC] hover:opacity-75 transition-opacity mb-[20px]"
       >
-        <ArrowLeft size={14} /> Back
+        <ArrowLeft size={14} /> {t('back')}
       </button>
 
       <header className="flex flex-col items-center pb-[18px] mb-[26px] border-b border-[rgba(248,244,236,0.08)] text-center">
         <h1 className="text-[30px] font-semibold tracking-[-0.01em] text-[#F8F4EC] leading-none">
-          Checkout<span className="text-[var(--orange)]">.</span>
+          {t('title')}<span className="text-[var(--orange)]">.</span>
         </h1>
       </header>
 
@@ -328,21 +356,35 @@ function CheckoutContent() {
           {step === 'form' && (
             <>
               <h2 className="text-[13px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
-                Delivery details
+                {t('deliveryDetails')}
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Full name" value={shipping.name} onChange={v => setShipping(s => ({ ...s, name: v }))} required placeholder="Jane Doe" />
-                <Field label="Phone" value={shipping.phone} onChange={v => setShipping(s => ({ ...s, phone: v }))} required type="tel" placeholder="+1 555 123 4567" />
-                <Field label="Country" value={shipping.country} onChange={v => setShipping(s => ({ ...s, country: v }))} required placeholder={dealer?.country ?? 'United States'} />
-                <Field label="City" value={shipping.city} onChange={v => setShipping(s => ({ ...s, city: v }))} required placeholder="New York" />
+                <Field label={t('fieldName')} value={shipping.name} onChange={v => setShipping(s => ({ ...s, name: v }))} required placeholder={t('phName')} />
+                <Field label={t('fieldPhone')} value={shipping.phone} onChange={v => setShipping(s => ({ ...s, phone: v }))} required type="tel" placeholder={t('phPhone')} />
+                <Field label={t('fieldCountry')} value={shipping.country} onChange={v => setShipping(s => ({ ...s, country: v }))} required placeholder={t('phCountry')} />
+                <Field label={t('fieldCity')} value={shipping.city} onChange={v => setShipping(s => ({ ...s, city: v }))} required placeholder={t('phCity')} />
               </div>
-              <Field label="Street address" value={shipping.address} onChange={v => setShipping(s => ({ ...s, address: v }))} required placeholder="123 Galaxy Ave, Apt 4" />
-              <Field label="Delivery notes (optional)" value={shipping.notes} onChange={v => setShipping(s => ({ ...s, notes: v }))} multiline placeholder="Buzz code, doorman, leave at door, etc." />
+              <Field label={t('fieldAddress')} value={shipping.address} onChange={v => setShipping(s => ({ ...s, address: v }))} required placeholder={t('phAddress')} />
+              <Field label={t('fieldNotes')} value={shipping.notes} onChange={v => setShipping(s => ({ ...s, notes: v }))} multiline placeholder={t('phNotes')} />
               {dealer?.shipsTo && dealer.shipsTo.length > 0 && (
                 <p className="text-[10px] tracking-[0.14em] uppercase text-[#F8F4EC]/70">
-                  {dealer.name} ships to: {dealer.shipsTo.slice(0, 8).join(' · ')}{dealer.shipsTo.length > 8 ? ' · …' : ''}
+                  {t('shipsTo', { dealer: dealer.name })} {dealer.shipsTo.slice(0, 8).join(' · ')}{dealer.shipsTo.length > 8 ? ' · …' : ''}
                 </p>
+              )}
+
+              {mode === 'stars' && starsShort > 0 && (
+                <div
+                  className="rounded-md p-4 flex flex-col gap-1"
+                  style={{ background: 'rgba(255,179,71,0.05)', border: '0.5px solid rgba(255,179,71,0.28)' }}
+                >
+                  <p className="text-[12px] text-[#F8F4EC] tabular-nums">
+                    {t('starsShort', { balance: starsBalance.toLocaleString(), short: starsShort.toLocaleString() })}
+                  </p>
+                  <Link href="/earn" className="text-[10.5px] tracking-[0.14em] uppercase font-semibold" style={{ color: 'var(--orange)' }}>
+                    {t('earnMore')} →
+                  </Link>
+                </div>
               )}
 
               {burnEligible && maxBurnable > 0 && (
@@ -364,56 +406,36 @@ function CheckoutContent() {
               <button
                 onClick={handlePay}
                 disabled={!canSubmit || submitting || pendingPay || burning}
-                className="inline-flex items-center justify-center gap-[8px] px-[22px] py-[13px] rounded-[14px] text-[13px] font-semibold tracking-[0.005em] whitespace-nowrap transition-[filter,transform,box-shadow] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:filter-none"
-                style={
-                  mode === 'sol'
-                    ? {
-                        background: 'var(--terracotta)',
-                        border: '1px solid var(--terracotta)',
-                        color: '#1a1208',
-                        boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px rgba(255,179,71,0.28)',
-                      }
-                    : {
-                        background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
-                        border: 'none',
-                        color: '#FFFFFF',
-                        boxShadow: '0 8px 24px rgba(91, 108, 255, 0.28)',
-                      }
-                }
+                className="inline-flex items-center justify-center gap-[8px] px-[22px] py-[13px] rounded-none text-[13px] font-semibold tracking-[0.005em] whitespace-nowrap transition-[filter,transform,box-shadow] duration-150 hover:brightness-[1.08] hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:filter-none"
+                style={{
+                  background: 'var(--terracotta)',
+                  border: '1px solid var(--terracotta)',
+                  color: '#1a1208',
+                  boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px rgba(255,179,71,0.28)',
+                }}
               >
                 {mode === 'sol' ? (
-                  <svg width="16" height="16" viewBox="0 0 397 311" aria-hidden="true">
-                    <defs>
-                      <linearGradient id="sol-pay-grad" x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#9945FF" />
-                        <stop offset="50%" stopColor="#19FB9B" />
-                        <stop offset="100%" stopColor="#14F195" />
-                      </linearGradient>
-                    </defs>
-                    <path fill="url(#sol-pay-grad)" d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
-                    <path fill="url(#sol-pay-grad)" d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
-                    <path fill="url(#sol-pay-grad)" d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
-                  </svg>
+                  <SolMark className="h-[16px] w-[16px]" />
                 ) : (
-                  <span aria-hidden className="text-[14px] leading-none">★</span>
+                  <Star className="w-[14px] h-[14px]" aria-hidden style={{ fill: 'currentColor' }} />
                 )}
                 <span>
                   {burning
-                    ? 'Burning Stars…'
+                    ? t('burningStars')
                     : submitting
-                      ? 'Creating order…'
+                      ? t('creatingOrder')
                       : pendingPay && authenticated && !walletAddress
-                        ? 'Preparing wallet…'
+                        ? t('preparingWallet')
                         : mode === 'stars'
-                          ? `Redeem ${product.starsPrice.toLocaleString()} stars`
+                          ? t('redeemStars', { stars: product.starsPrice.toLocaleString() })
                           : discountedSol > 0
-                            ? `Pay ${formatSol(discountedSol)} SOL`
-                            : 'Pay with SOL'}
+                            ? t('paySolAmount', { sol: formatSol(discountedSol) })
+                            : t('payWithSol')}
                 </span>
               </button>
               {!authenticated && (
                 <p className="text-[11px] text-[#F8F4EC]/80">
-                  You&apos;ll sign in first — payment continues automatically.
+                  {t('signInNote')}
                 </p>
               )}
             </>
@@ -422,13 +444,13 @@ function CheckoutContent() {
           {step === 'paying' && (
             <div className="flex flex-col gap-4 items-center">
               <h2 className="text-[13px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
-                Scan to pay
+                {t('scanToPay')}
               </h2>
               <div className="p-3 rounded-xl bg-white">
                 <QRCodeSVG value={payUrl} size={220} />
               </div>
               <p className="text-[11px] tracking-[0.06em] text-[#F8F4EC] text-center">
-                Open any Solana wallet (Phantom, Solflare, Backpack) and scan this code, or tap below to open your wallet directly.
+                {t('scanHelp')}
               </p>
               <a
                 href={payUrl}
@@ -436,14 +458,28 @@ function CheckoutContent() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]"
               >
-                Open in wallet app <ExternalLink size={11} />
+                {t('openWallet')} <ExternalLink size={11} />
               </a>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="w-3 h-3 rounded-full border-2 border-[var(--orange)] border-t-transparent animate-spin" />
-                <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
-                  Waiting for confirmation…
-                </span>
-              </div>
+              {pollTimedOut ? (
+                <div className="flex flex-col items-center gap-2 mt-2">
+                  <p className="text-[11px] tracking-[0.06em] text-[var(--terracotta)] text-center max-w-sm">
+                    {t('stillWaiting')}
+                  </p>
+                  <button
+                    onClick={() => { if (orderId) startPolling(orderId); }}
+                    className="text-[11px] tracking-[0.16em] uppercase font-semibold text-[#F8F4EC] hover:text-[var(--terracotta)] transition-colors"
+                  >
+                    {t('checkAgain')}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="w-3 h-3 rounded-full border-2 border-[var(--orange)] border-t-transparent animate-spin" />
+                  <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
+                    {t('waiting')}
+                  </span>
+                </div>
+              )}
               <button
                 onClick={() => {
                   if (pollRef.current) clearInterval(pollRef.current);
@@ -453,7 +489,7 @@ function CheckoutContent() {
                 }}
                 className="text-[10px] tracking-[0.16em] uppercase text-[#F8F4EC]/70 hover:text-[#F8F4EC] transition-colors"
               >
-                Cancel and edit details
+                {t('cancelEdit')}
               </button>
             </div>
           )}
@@ -465,12 +501,12 @@ function CheckoutContent() {
                 <Check size={26} color="var(--seafoam)" strokeWidth={2.4} />
               </div>
               <h2 className="text-[18px] font-semibold text-[#F8F4EC]">
-                {mode === 'stars' ? 'Stars redeemed' : 'Payment confirmed'}
+                {mode === 'stars' ? t('doneStars') : t('donePaid')}
               </h2>
               <p className="text-[12px] tracking-[0.06em] text-[#F8F4EC] max-w-sm">
                 {mode === 'stars'
-                  ? `${product.starsPrice.toLocaleString()} stars redeemed. ${dealer?.name ?? 'The dealer'} will reach out by phone to confirm shipping.`
-                  : `Your order is on its way. ${dealer?.name ?? 'The dealer'} will reach out by phone to confirm shipping.`}
+                  ? t('doneStarsBody', { stars: product.starsPrice.toLocaleString(), dealer: dealer?.name ?? t('theDealer') })
+                  : t('donePaidBody', { dealer: dealer?.name ?? t('theDealer') })}
               </p>
               {signature && (
                 <a
@@ -479,17 +515,17 @@ function CheckoutContent() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.14em] uppercase text-[#F8F4EC]"
                 >
-                  View transaction <ExternalLink size={10} />
+                  {t('viewTx')} <ExternalLink size={10} />
                 </a>
               )}
               <div className="flex gap-3 mt-4">
                 <Link href="/profile" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full text-[#F8F4EC]"
                   style={{ background: 'rgba(255,179,71,0.10)', border: '0.5px solid rgba(255,179,71,0.45)' }}>
-                  Order history
+                  {t('orderHistory')}
                 </Link>
                 <Link href="/marketplace" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full text-[#F8F4EC]"
                   style={{ border: '0.5px solid rgba(248,244,236,0.22)' }}>
-                  Keep shopping
+                  {t('keepShopping')}
                 </Link>
               </div>
             </div>
@@ -505,7 +541,7 @@ function CheckoutContent() {
           }}
         >
           <p className="text-[10px] tracking-[0.24em] uppercase font-semibold text-[#F8F4EC] mb-3">
-            Order summary
+            {t('summary')}
           </p>
           <div className="flex gap-3 mb-3">
             <div
@@ -528,14 +564,14 @@ function CheckoutContent() {
             </div>
           </div>
           <div className="flex justify-between items-center pt-3 border-t border-[rgba(248,244,236,0.08)]">
-            <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">Price</span>
+            <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">{t('price')}</span>
             <span className="text-[13px] font-semibold text-[#F8F4EC]">{formatPrice(product)}</span>
           </div>
           {burnEligible && burnStars > 0 && (
             <>
               <div className="flex justify-between items-center mt-2">
                 <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
-                  Stars burned
+                  {t('starsBurned')}
                 </span>
                 <span className="text-[13px] font-semibold text-[var(--orange)]">
                   ✦ {burnStars.toLocaleString()}
@@ -543,7 +579,7 @@ function CheckoutContent() {
               </div>
               <div className="flex justify-between items-center mt-1">
                 <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">
-                  Discount
+                  {t('discount')}
                 </span>
                 <span className="text-[13px] font-semibold text-[var(--orange)]">
                   −{gelDiscount.toFixed(2)} ₾
@@ -553,7 +589,7 @@ function CheckoutContent() {
           )}
           {mode === 'stars' ? (
             <div className="flex justify-between items-center mt-2">
-              <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">Stars</span>
+              <span className="text-[11px] tracking-[0.14em] uppercase text-[#F8F4EC]">{t('stars')}</span>
               <span className="text-[13px] font-semibold text-[#F8F4EC]">
                 ✦ {product.starsPrice.toLocaleString()}
               </span>
@@ -568,7 +604,7 @@ function CheckoutContent() {
           )}
           {orderId && (
             <p className="text-[9px] tracking-[0.16em] uppercase text-[#F8F4EC]/70 mt-3 break-all">
-              Order · {orderId.slice(0, 8)}…
+              {t('order')} · {orderId.slice(0, 8)}…
             </p>
           )}
         </aside>
@@ -595,7 +631,8 @@ interface BurnSliderProps {
 function BurnSlider({
   balance, maxBurn, burnStars, setBurnStars, priceGEL, burning, burnSig,
 }: BurnSliderProps) {
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+  const t = useTranslations('checkout');
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
   const gelOff = burnStars / STARS_PER_GEL;
   const newTotal = Math.max(0, priceGEL - gelOff);
   const sliderMax = maxBurn;
@@ -610,10 +647,10 @@ function BurnSlider({
     >
       <div className="flex items-baseline justify-between">
         <span className="text-[10px] tracking-[0.18em] uppercase text-[var(--orange)] font-medium">
-          Burn Stars · up to {Math.round(MAX_BURN_RATIO * 100)}% off
+          {t('burnTitle', { pct: Math.round(MAX_BURN_RATIO * 100) })}
         </span>
         <span className="text-[10px] tracking-[0.14em] uppercase text-[#F8F4EC] font-mono">
-          Balance ✦ {balance.toLocaleString()}
+          {t('burnBalance')} ✦ {balance.toLocaleString()}
         </span>
       </div>
 
@@ -631,7 +668,7 @@ function BurnSlider({
 
       <div className="flex items-center justify-between text-[12px] font-mono">
         <span className="text-[#F8F4EC]">
-          ✦ {burnStars.toLocaleString()} burning
+          ✦ {burnStars.toLocaleString()} {t('burningLabel')}
         </span>
         <span style={{ color: 'var(--orange)', fontWeight: 600 }}>
           −{gelOff.toFixed(2)} ₾
@@ -639,7 +676,7 @@ function BurnSlider({
       </div>
 
       <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-[rgba(255,179,71,0.18)]">
-        <span className="text-[#F8F4EC]">New total</span>
+        <span className="text-[#F8F4EC]">{t('newTotal')}</span>
         <span className="text-[#F8F4EC]" style={{ fontWeight: 600 }}>
           {newTotal.toFixed(2)} ₾
         </span>
@@ -653,7 +690,7 @@ function BurnSlider({
           className="text-[10px] tracking-[0.14em] uppercase mt-1"
           style={{ color: 'var(--orange)' }}
         >
-          Burn confirmed → view on Solana Explorer
+          {t('burnConfirmed')}
         </a>
       )}
     </div>
@@ -676,7 +713,7 @@ function Field({ label, value, onChange, required, multiline, type, placeholder 
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
     placeholder: placeholder ?? '',
     className:
-      'stl-checkout-field w-full px-[14px] py-[12px] text-[14px] rounded-[14px] outline-none transition-[border-color,background] duration-150 placeholder:text-[rgba(248,244,236,0.4)]',
+      'stl-checkout-field w-full px-[14px] py-[12px] text-[14px] rounded-xl outline-none transition-[border-color,background] duration-150 placeholder:text-[rgba(248,244,236,0.4)]',
   };
   return (
     <label className="flex flex-col gap-[7px]">
@@ -698,6 +735,7 @@ interface SuggestedProps {
 }
 
 function SuggestedTelescopes({ currentId, dealerId }: SuggestedProps) {
+  const t = useTranslations('checkout');
   const items = useMemo(() => {
     const sameDealer = getProductsByDealer(dealerId)
       .filter(p => p.id !== currentId && p.category === 'telescope');
@@ -713,10 +751,10 @@ function SuggestedTelescopes({ currentId, dealerId }: SuggestedProps) {
     <section className="max-w-[920px] mx-auto mt-[44px] pt-[26px] border-t border-[rgba(248,244,236,0.08)]">
       <header className="flex items-baseline justify-between mb-[18px]">
         <h2 className="text-[13px] tracking-[0.18em] uppercase font-semibold text-[#F8F4EC]">
-          Suggested telescopes
+          {t('suggested')}
         </h2>
         <Link href="/marketplace" className="text-[10px] tracking-[0.18em] uppercase text-[#F8F4EC]/80 hover:text-[#F8F4EC] transition-colors">
-          See all →
+          {t('seeAll')} →
         </Link>
       </header>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -729,7 +767,7 @@ function SuggestedTelescopes({ currentId, dealerId }: SuggestedProps) {
 }
 
 function SuggestedCard({ product }: { product: Product }) {
-  const href = `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=sol`;
+  const href = `/marketplace/${encodeURIComponent(product.id)}`;
   return (
     <Link
       href={href}

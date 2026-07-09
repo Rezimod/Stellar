@@ -20,7 +20,7 @@ function clusterOf(rpcUrl: string): 'devnet' | 'testnet' | 'mainnet-beta' | 'unk
 }
 
 export function assertNetworkConfig(): void {
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
   const effectiveRpc = process.env.SOLANA_RPC_URL ?? DEFAULT_RPC;
   const rpcCluster = clusterOf(effectiveRpc);
   // Custom/private RPC without a recognizable cluster host — can't cross-check,

@@ -6,7 +6,7 @@ import { WalletAdapterNetwork, type Adapter, type WalletError } from '@solana/wa
 import { clusterApiUrl } from '@solana/web3.js';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-const network = (process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet').startsWith('mainnet')
+const network = (process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta').startsWith('mainnet')
   ? WalletAdapterNetwork.Mainnet
   : WalletAdapterNetwork.Devnet;
 

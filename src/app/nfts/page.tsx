@@ -67,7 +67,7 @@ function getAttr(attrs: NftAttribute[] | undefined, key: string): string {
 }
 
 function buildExplorerUrl(id: string): string {
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
   // Transaction signatures are 64–88 base58 chars; addresses are 32–44
   const path = id.length > 50 ? 'tx' : 'address';
   return `https://explorer.solana.com/${path}/${id}?cluster=${cluster}`;

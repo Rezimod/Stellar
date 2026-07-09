@@ -163,12 +163,14 @@ function SkyTicker() {
   );
   return (
     <div
-      className="relative z-20 overflow-hidden border-y"
+      className="relative z-20 border-y"
       style={{ borderColor: 'rgba(140,165,235,0.10)', background: 'rgba(6,9,20,0.5)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
     >
-      <div className="hero-ticker-track">
-        {row}
-        {row}
+      <div className="hero-ticker-mask overflow-hidden">
+        <div className="hero-ticker-track">
+          {row}
+          {row}
+        </div>
       </div>
     </div>
   );

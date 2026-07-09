@@ -69,7 +69,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ wallet
     ? user.username
     : shortWallet(wallet);
   const initial = displayName[0]?.toUpperCase() ?? '✦';
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
 
   return (
     <PageTransition>

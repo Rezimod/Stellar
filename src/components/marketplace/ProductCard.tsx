@@ -3,45 +3,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Star } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { priceToSol, priceToUsd, type Product } from '@/lib/dealers';
+import { formatPrice, formatSol, formatUsd } from '@/lib/marketplace-format';
+import SolMark from './SolMark';
 
 // 'Best Seller' / 'Popular' come from the dealer catalog; ratings are curated
 // editorial values (see RATINGS in dealers.ts) shown only when present.
 const BADGE_COLOR: Record<string, string> = {
-  'Best Seller': '#34D399',
-  Popular: '#A78BFA',
+  'Best Seller': 'var(--seafoam)',
+  Popular: 'var(--terracotta)',
 };
-
-const formatPrice = (p: Product): string => {
-  const n = p.price % 1 !== 0 ? p.price.toFixed(2) : p.price.toLocaleString();
-  return `${n} ${p.currency}`;
-};
-
-const formatSol = (sol: number): string => {
-  if (sol >= 10) return sol.toFixed(2);
-  if (sol >= 1)  return sol.toFixed(3);
-  return sol.toFixed(4);
-};
-
-const formatUsd = (usd: number): string =>
-  usd >= 10 ? Math.round(usd).toLocaleString() : usd.toFixed(2);
-
-function SolMark({ id, className = '' }: { id: string; className?: string }) {
-  return (
-    <svg viewBox="0 0 397 311" aria-hidden="true" className={className}>
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#9945FF" />
-          <stop offset="50%" stopColor="#19FB9B" />
-          <stop offset="100%" stopColor="#14F195" />
-        </linearGradient>
-      </defs>
-      <path fill={`url(#${id})`} d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
-      <path fill={`url(#${id})`} d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
-      <path fill={`url(#${id})`} d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
-    </svg>
-  );
-}
 
 interface Props {
   product: Product;
@@ -50,7 +22,7 @@ interface Props {
   solPriceUsd?: number;
   featured?: boolean;
   className?: string;
-  /** Current Stars balance — drives the "earn this" progress bar. */
+  /** Current Stars balance — drives the redeem affordability state. */
   balance?: number;
   /** Wishlist: when onToggleFavorite is provided, a heart toggle is shown. */
   favorite?: boolean;
@@ -68,9 +40,7 @@ export default function ProductCard({
   favorite = false,
   onToggleFavorite,
 }: Props) {
-  const checkoutHref = (mode: 'sol' | 'stars') =>
-    `/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=${mode}`;
-
+  const t = useTranslations('marketplacePage');
   const starsPrice = product.starsPrice;
   const affordable = balance > 0 && balance >= starsPrice;
   const shortBy = balance > 0 && balance < starsPrice ? starsPrice - balance : 0;
@@ -80,32 +50,17 @@ export default function ProductCard({
   // USD equivalent for non-USD-listed gear — many buyers don't know GEL.
   const usdValue = priceToUsd(product.price, product.currency, solPerGEL, solPriceUsd);
   const usdAmount = product.currency !== 'USD' && usdValue > 0 ? usdValue : null;
-  const idleBg = 'rgba(232,230,221,0.045)';
-  const idleBorder = 'rgba(232,230,221,0.10)';
+  const badgeColor = product.badge ? (BADGE_COLOR[product.badge] ?? 'var(--terracotta)') : '';
 
   return (
-    <div
-      className={`group relative flex flex-col rounded-xl p-[14px] transition-all duration-200 hover:-translate-y-[2px] ${className}`}
-      style={{
-        background: idleBg,
-        border: `1px solid ${idleBorder}`,
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = 'rgba(232,230,221,0.22)';
-        e.currentTarget.style.background = 'rgba(232,230,221,0.075)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = idleBorder;
-        e.currentTarget.style.background = idleBg;
-      }}
-    >
+    <div className={`mkt-card group relative flex flex-col rounded-xl p-[14px] hover:-translate-y-[2px] ${className}`}>
       {onToggleFavorite && (
         <button
           type="button"
           onClick={() => onToggleFavorite(product.id)}
           aria-label={favorite ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
           aria-pressed={favorite}
-          className="absolute top-[10px] right-[10px] z-10 inline-flex items-center justify-center w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-colors duration-150"
+          className="absolute top-[10px] right-[10px] z-10 inline-flex items-center justify-center w-[28px] h-[28px] min-h-0 rounded-full backdrop-blur-sm transition-colors duration-150 before:absolute before:-inset-[8px] before:content-['']"
           style={{ background: 'rgba(15,18,28,0.7)', border: '1px solid rgba(255,255,255,0.14)' }}
         >
           <Heart
@@ -117,12 +72,10 @@ export default function ProductCard({
           />
         </button>
       )}
-      <a
-        href={product.externalUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        href={`/marketplace/${encodeURIComponent(product.id)}`}
         className="flex flex-col flex-1 min-h-0"
-        aria-label={`View ${product.name} on dealer site`}
+        aria-label={`View ${product.name}`}
       >
         <div
           className={`relative w-full mb-[14px] overflow-hidden bg-white ${featured ? 'aspect-[1.9]' : 'aspect-[1.25]'}`}
@@ -142,8 +95,8 @@ export default function ProductCard({
               className="absolute top-[6px] left-[6px] inline-flex items-center rounded-full px-[8px] py-[3px] text-[9px] font-bold tracking-[0.1em] uppercase leading-none"
               style={{
                 background: 'rgba(7,11,20,0.82)',
-                color: BADGE_COLOR[product.badge] ?? 'var(--terracotta)',
-                border: `1px solid ${(BADGE_COLOR[product.badge] ?? 'var(--terracotta)')}55`,
+                color: badgeColor,
+                border: `1px solid color-mix(in srgb, ${badgeColor} 35%, transparent)`,
               }}
             >
               {product.badge}
@@ -165,7 +118,7 @@ export default function ProductCard({
         <p className="text-[11px] tracking-[0.16em] uppercase text-white/85 mb-[10px] truncate">
           {dealerName || product.category}
         </p>
-      </a>
+      </Link>
       <div
         className="flex flex-col gap-[4px] pt-[10px] mb-[12px]"
         style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
@@ -184,7 +137,7 @@ export default function ProductCard({
             {solAmount !== null && (
               <span className="inline-flex items-center gap-[3px]">
                 <span className="text-white">{formatSol(solAmount)}</span>
-                <SolMark id={`sol-price-${product.id}`} className="h-[9px] w-[9px] flex-shrink-0" />
+                <SolMark className="h-[9px] w-[9px] flex-shrink-0" />
                 <span>SOL</span>
               </span>
             )}
@@ -193,7 +146,7 @@ export default function ProductCard({
       </div>
 
       <Link
-        href={checkoutHref('sol')}
+        href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=sol`}
         className="w-full inline-flex items-center justify-center gap-[7px] h-[38px] px-[10px] rounded-none text-[12.5px] tracking-[0.02em] font-bold whitespace-nowrap transition-[filter,transform] duration-150 hover:brightness-[1.06] hover:-translate-y-[1px]"
         style={{
           background: 'var(--terracotta)',
@@ -203,35 +156,29 @@ export default function ProductCard({
         }}
         aria-label={`Pay for ${product.name} with SOL`}
       >
-        <svg width="16" height="16" viewBox="0 0 397 311" aria-hidden="true" className="h-[16px] w-[16px] flex-shrink-0">
-          <defs>
-            <linearGradient id={`sol-grad-${product.id}`} x1="0" y1="0" x2="397" y2="311" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#9945FF" />
-              <stop offset="50%" stopColor="#19FB9B" />
-              <stop offset="100%" stopColor="#14F195" />
-            </linearGradient>
-          </defs>
-          <path fill={`url(#sol-grad-${product.id})`} d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
-          <path fill={`url(#sol-grad-${product.id})`} d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
-          <path fill={`url(#sol-grad-${product.id})`} d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
-        </svg>
-        <span>Pay with SOL</span>
+        <SolMark className="h-[16px] w-[16px] flex-shrink-0" />
+        <span>{t('payWithSol')}</span>
       </Link>
       {starsPrice > 0 && (
-        <Link
-          href={checkoutHref('stars')}
-          className="mt-[8px] w-full inline-flex items-center justify-center gap-[5px] text-[11px] tracking-[0.02em] text-white/55 hover:text-[var(--terracotta)] transition-colors"
-          aria-label={`Redeem ${product.name} with Stars`}
-        >
-          <Star className="w-[11px] h-[11px] flex-shrink-0" style={{ fill: 'currentColor' }} />
-          <span className="tabular-nums">
-            {affordable
-              ? `Redeem · ${starsPrice.toLocaleString()} Stars`
-              : shortBy > 0
-                ? `${shortBy.toLocaleString()} ✦ to go`
-                : `or ${starsPrice.toLocaleString()} Stars`}
+        affordable ? (
+          <Link
+            href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
+            className="mt-[8px] w-full inline-flex items-center justify-center gap-[5px] text-[11px] tracking-[0.02em] text-white/55 hover:text-[var(--terracotta)] transition-colors"
+            aria-label={`Redeem ${product.name} with Stars`}
+          >
+            <Star className="w-[11px] h-[11px] flex-shrink-0" style={{ fill: 'currentColor' }} />
+            <span className="tabular-nums">{t('redeemStars', { stars: starsPrice.toLocaleString() })}</span>
+          </Link>
+        ) : (
+          <span className="mt-[8px] w-full inline-flex items-center justify-center gap-[5px] text-[11px] tracking-[0.02em] text-white/40">
+            <Star className="w-[11px] h-[11px] flex-shrink-0" style={{ fill: 'currentColor' }} />
+            <span className="tabular-nums">
+              {shortBy > 0
+                ? t('starsToGo', { stars: shortBy.toLocaleString() })
+                : t('orStars', { stars: starsPrice.toLocaleString() })}
+            </span>
           </span>
-        </Link>
+        )
       )}
     </div>
   );

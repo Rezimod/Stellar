@@ -131,7 +131,7 @@ export default function ObserveResultPage() {
   const nftNumber = isOnChain ? completedCount : 0;
   const solanaTxShort = mintTxId ? `${mintTxId.slice(0, 4)}...${mintTxId.slice(-4)}` : '';
   const solanaExplorerUrl = mintTxId
-    ? `https://explorer.solana.com/tx/${mintTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`
+    ? `https://explorer.solana.com/tx/${mintTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`
     : '#';
 
   const handleShare = async () => {

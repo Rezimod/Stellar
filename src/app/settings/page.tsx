@@ -299,7 +299,7 @@ export default function SettingsPage() {
           iconColor="var(--success)"
           label={addrShort ?? 'No wallet yet'}
           sublabel={address ? 'Embedded Solana wallet · view on Explorer' : 'Sign in to create your wallet'}
-          onClick={address ? () => window.open(`https://explorer.solana.com/address/${address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`, '_blank', 'noopener,noreferrer') : undefined}
+          onClick={address ? () => window.open(`https://explorer.solana.com/address/${address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`, '_blank', 'noopener,noreferrer') : undefined}
           right={address ? <ChevronRight size={15} color="var(--text-muted)" /> : undefined}
           last
         />

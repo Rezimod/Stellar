@@ -41,7 +41,8 @@ export default function FeaturedDeals({
     const el = scrollerRef.current;
     if (!el) return;
     const child = el.children[i] as HTMLElement | undefined;
-    if (child) el.scrollTo({ left: child.offsetLeft, behavior: 'smooth' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (child) el.scrollTo({ left: child.offsetLeft, behavior });
   }, []);
 
   if (products.length === 0) return null;
@@ -76,7 +77,8 @@ export default function FeaturedDeals({
               key={p.id}
               onClick={() => goTo(i)}
               aria-label={`Go to deal ${i + 1}`}
-              className="h-[6px] rounded-full transition-all duration-200"
+              aria-current={i === active}
+              className="relative h-[6px] min-h-0 rounded-full transition-all duration-200 before:absolute before:-inset-x-[6px] before:-inset-y-[14px] before:content-['']"
               style={{
                 width: i === active ? 18 : 6,
                 background: i === active ? 'var(--terracotta)' : 'rgba(255,255,255,0.22)',

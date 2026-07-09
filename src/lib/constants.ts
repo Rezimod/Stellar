@@ -145,7 +145,7 @@ export const AGENT_META = {
   description: 'The global astronomy app — observe anywhere, earn Stars, collect discovery NFTs on Solana. You serve astronomers worldwide, not just in Georgia.',
   capabilities: ['capture', 'verify', 'mint'],
   oracle: 'open-meteo-v1',
-  network: (process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet').startsWith('mainnet')
+  network: (process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta').startsWith('mainnet')
     ? 'solana_mainnet'
     : 'solana_devnet',
 };

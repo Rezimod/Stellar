@@ -184,7 +184,7 @@ function ProfilePageContent() {
     );
   }
 
-  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta';
   const email =
     user?.email?.address ??
     (user?.linkedAccounts.find(a => a.type === 'email') as { address?: string } | undefined)?.address ??

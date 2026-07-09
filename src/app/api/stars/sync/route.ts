@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       newBalance: currentBalance + diff,
       txId: sig,
       explorerUrl: `https://explorer.solana.com/tx/${sig}?cluster=${
-        process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'
+        process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'
       }`,
     });
   } catch (err) {

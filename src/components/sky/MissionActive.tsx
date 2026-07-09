@@ -742,7 +742,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             {/* Explorer link — bottom-left */}
             {isOnChain && (
               <a
-                href={`https://explorer.solana.com/tx/${mintTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`}
+                href={`https://explorer.solana.com/tx/${mintTxId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-3 left-3 flex items-center gap-1 text-[11px]"

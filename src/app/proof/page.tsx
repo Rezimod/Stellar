@@ -10,7 +10,7 @@ import type { CompletedMission } from '@/lib/types';
 
 function openExplorer(mission: CompletedMission) {
   if (mission.method !== 'onchain' || !mission.txId || mission.txId.length < 40) return;
-  window.open(`https://explorer.solana.com/tx/${mission.txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet'}`, '_blank', 'noopener,noreferrer');
+  window.open(`https://explorer.solana.com/tx/${mission.txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`, '_blank', 'noopener,noreferrer');
 }
 
 const isSafePhoto = (url: string) =>
