@@ -60,8 +60,8 @@ export default function ProductCard({
           onClick={() => onToggleFavorite(product.id)}
           aria-label={favorite ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
           aria-pressed={favorite}
-          className="absolute top-[10px] right-[10px] z-10 inline-flex items-center justify-center w-[28px] h-[28px] min-h-0 rounded-full backdrop-blur-sm transition-colors duration-150 before:absolute before:-inset-[8px] before:content-['']"
-          style={{ background: 'rgba(15,18,28,0.7)', border: '1px solid rgba(255,255,255,0.14)' }}
+          className="absolute top-[10px] right-[10px] z-10 inline-flex items-center justify-center w-[28px] h-[28px] rounded-full backdrop-blur-sm transition-colors duration-150 before:absolute before:-inset-[8px] before:content-['']"
+          style={{ minHeight: 0, background: 'rgba(15,18,28,0.7)', border: '1px solid rgba(255,255,255,0.14)' }}
         >
           <Heart
             className="w-[14px] h-[14px]"

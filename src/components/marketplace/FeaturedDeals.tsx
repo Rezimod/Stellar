@@ -78,9 +78,11 @@ export default function FeaturedDeals({
               onClick={() => goTo(i)}
               aria-label={`Go to deal ${i + 1}`}
               aria-current={i === active}
-              className="relative h-[6px] min-h-0 rounded-full transition-all duration-200 before:absolute before:-inset-x-[6px] before:-inset-y-[14px] before:content-['']"
+              className="relative rounded-full transition-all duration-200 before:absolute before:-inset-x-[6px] before:-inset-y-[14px] before:content-['']"
               style={{
                 width: i === active ? 18 : 6,
+                height: 6,
+                minHeight: 0,
                 background: i === active ? 'var(--terracotta)' : 'rgba(255,255,255,0.22)',
               }}
             />

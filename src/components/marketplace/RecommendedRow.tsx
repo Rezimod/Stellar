@@ -65,8 +65,8 @@ export default function RecommendedRow({
                 onClick={() => onToggleFavorite(p.id)}
                 aria-label={fav ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
                 aria-pressed={fav}
-                className="absolute top-[10px] right-[10px] inline-flex items-center justify-center w-[26px] h-[26px] min-h-0 rounded-full before:absolute before:-inset-[9px] before:content-['']"
-                style={{ background: 'rgba(15,18,28,0.6)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="absolute top-[10px] right-[10px] inline-flex items-center justify-center w-[26px] h-[26px] rounded-full before:absolute before:-inset-[9px] before:content-['']"
+                style={{ minHeight: 0, background: 'rgba(15,18,28,0.6)', border: '1px solid rgba(255,255,255,0.12)' }}
               >
                 <Heart
                   className="w-[13px] h-[13px]"
