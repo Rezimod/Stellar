@@ -89,18 +89,18 @@ export async function POST(req: NextRequest) {
   }
   let target = Math.min(expected, MAX_EXPECTED_TOTAL);
 
-  const serverEarned = await getServerEarnedStars(address);
-  if (serverEarned !== null) {
-    if (serverEarned === 0 && target > 500) {
-      return NextResponse.json(
-        { error: 'expectedTotal exceeds earned stars on record' },
-        { status: 400 },
-      );
-    }
-    const maxAllowed = serverEarned + SYNC_DRIFT_BUFFER;
-    if (target > maxAllowed) {
-      target = Math.min(target, maxAllowed);
-    }
+  // Fail closed: if the earned-Stars record is unavailable (DB down), treat it
+  // as 0 rather than skipping the clamp — never mint against an unverifiable total.
+  const serverEarned = (await getServerEarnedStars(address)) ?? 0;
+  if (serverEarned === 0 && target > 500) {
+    return NextResponse.json(
+      { error: 'expectedTotal exceeds earned stars on record' },
+      { status: 400 },
+    );
+  }
+  const maxAllowed = serverEarned + SYNC_DRIFT_BUFFER;
+  if (target > maxAllowed) {
+    target = Math.min(target, maxAllowed);
   }
 
   const mintAddress = process.env.STARS_TOKEN_MINT;

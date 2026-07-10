@@ -27,12 +27,13 @@ export async function GET(req: NextRequest) {
   const db = getDb()
   if (!db) return NextResponse.json({ success: false, error: 'no db' }, { status: 500 })
 
+  // Public endpoint: return only display fields. Do NOT echo privyId/walletAddress
+  // cross-references — that would let anyone map a wallet to its Privy id (or vice
+  // versa) and deanonymize users.
   const [user] = await db
     .select({
-      privyId: users.privyId,
       username: users.username,
       avatar: users.avatar,
-      walletAddress: users.walletAddress,
     })
     .from(users)
     .where(privyId ? eq(users.privyId, privyId) : eq(users.walletAddress, wallet!))

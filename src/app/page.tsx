@@ -1339,7 +1339,7 @@ export default async function HomePage() {
             ].map((p) => (
               <Link
                 key={p.id}
-                href={`/marketplace?product=${p.id}`}
+                href={`/marketplace/${encodeURIComponent(p.id)}`}
                 className="group flex flex-col rounded-[14px] bg-white/[0.025] border border-white/[0.07] p-3 md:p-4 hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline"
               >
                 <div className="relative w-full aspect-[1.05] rounded-[10px] mb-3 md:mb-4 overflow-hidden bg-[#EFEAE0]">

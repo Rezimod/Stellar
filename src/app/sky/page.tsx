@@ -122,8 +122,7 @@ export default function SkyPage() {
   const tErrors = useTranslations('sky.errors');
   const tDir = useTranslations('sky.directions.compass');
 
-  const { address, authenticated, ready } = useStellarUser();
-  const tAuth = useTranslations('sky.auth');
+  const { address } = useStellarUser();
   const [authOpen, setAuthOpen] = useState(false);
   const { getAccessToken } = usePrivy();
   const { field, toggleField } = useTheme();
@@ -284,7 +283,10 @@ export default function SkyPage() {
     const addr = addressRef.current;
     track('find_aimed', { target: id }, addr);
     if (!addr) {
-      toast.reward(`Found ${name}`);
+      // Browsing is free; aiming is the natural moment to invite sign-in so the
+      // find can earn Stars. No wall — the target was still found and shown.
+      toast.reward(`Found ${name} — sign in to earn Stars`);
+      setAuthOpen(true);
       return;
     }
     const dateStr = new Date().toISOString().slice(0, 10);
@@ -465,30 +467,9 @@ export default function SkyPage() {
     return out.length ? out : ['Clear skies make all the difference — find a spot away from direct lights and let your eyes adapt.'];
   }, [bestTargets, moonIllum, moonName, cloudPct, tDir]);
 
-  if (ready && !authenticated) {
-    return (
-      <div className="sky-page-v2 sky-v3 sky-obs">
-        <div className="sky-obs__wrap">
-          <div className="sky-auth-gate">
-            <h1 className="sky-auth-gate__title">{tAuth('title')}</h1>
-            <p className="sky-auth-gate__body">{tAuth('body')}</p>
-            <button
-              type="button"
-              className="sky-auth-gate__btn"
-              onClick={() => setAuthOpen(true)}
-            >
-              {tAuth('signIn')}
-            </button>
-            <p className="sky-auth-gate__sub">{tAuth('sub')}</p>
-          </div>
-        </div>
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      </div>
-    );
-  }
-
   return (
     <div className="sky-page-v2 sky-v3 sky-obs skx">
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       <div className="sky-obs__wrap">
         <EventBanner />
 

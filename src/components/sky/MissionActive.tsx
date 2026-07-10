@@ -331,7 +331,6 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         const data = await res.json();
         if (typeof data.txId === 'string' && data.txId.length > 0) {
           txId = data.txId;
-          console.log('[mint] On-chain success, txId:', data.txId);
         }
       } else {
         const errData = await res.json().catch(() => ({}));

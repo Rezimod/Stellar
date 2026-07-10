@@ -13,17 +13,12 @@
 //      wallet via `assertOwnsWallet`. Reward/token minting routes should require
 //      Privy or a real wallet signature before issuing value.
 //
-// `assertOwnsWallet` looks up `users.walletAddress` for the privyId and
-// rejects when the body wallet doesn't match a non-null linked wallet. If
-// the user row isn't created yet (first call before /api/users/upsert) we
-// allow the wallet through — the upsert call right after login will tie
-// them together.
+// `assertOwnsWallet` verifies the wallet against the Privy session's own
+// linked accounts (the source of truth), not a mirrored DB row. It fails
+// closed: an unknown wallet, or a session Privy can't resolve, is rejected.
 
 import { NextRequest } from 'next/server';
 import { PrivyClient } from '@privy-io/server-auth';
-import { and, eq, isNull } from 'drizzle-orm';
-import { getDb } from './db';
-import { users } from './schema';
 
 let _privy: PrivyClient | null = null;
 function getPrivy(): PrivyClient {
@@ -64,39 +59,16 @@ export async function getSessionWalletAddresses(privyId: string): Promise<string
   }
 }
 
-// Returns true when `walletAddress` matches the wallet linked to this Privy
-// user. On first use, atomically binds the wallet if the row exists but has
-// no address yet — prevents a session from hopping between wallets mid-flow.
-// If the user row hasn't been created yet (upsert still in flight), allow once.
+// Returns true only when `walletAddress` is one of the wallets actually linked
+// to this Privy session (embedded or external). Fails closed: if Privy can't be
+// reached or the wallet isn't linked, returns false. This is the sole
+// authorization primitive protecting value/PII routes, so it must not trust a
+// client-populated DB row — an attacker who never calls /api/users/upsert would
+// otherwise have no row and slip through.
 export async function assertOwnsWallet(
   privyId: string,
   walletAddress: string,
 ): Promise<boolean> {
-  const db = getDb();
-  if (!db) return true; // DB-disabled local dev: skip the check.
-  const rows = await db
-    .select({ walletAddress: users.walletAddress })
-    .from(users)
-    .where(eq(users.privyId, privyId))
-    .limit(1);
-  const linked = rows[0]?.walletAddress ?? null;
-  if (linked) return linked === walletAddress;
-
-  if (rows.length > 0) {
-    const bound = await db
-      .update(users)
-      .set({ walletAddress, updatedAt: new Date() })
-      .where(and(eq(users.privyId, privyId), isNull(users.walletAddress)))
-      .returning({ walletAddress: users.walletAddress });
-    if (bound.length > 0) return true;
-
-    const retry = await db
-      .select({ walletAddress: users.walletAddress })
-      .from(users)
-      .where(eq(users.privyId, privyId))
-      .limit(1);
-    return retry[0]?.walletAddress === walletAddress;
-  }
-
-  return true;
+  const linked = await getSessionWalletAddresses(privyId);
+  return linked.includes(walletAddress);
 }

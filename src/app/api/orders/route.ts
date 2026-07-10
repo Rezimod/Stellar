@@ -232,33 +232,14 @@ export async function POST(req: NextRequest) {
     status: 'pending',
   });
   } catch (err) {
+    // Log the full pg error server-side; return a generic message so we don't
+    // leak schema details (column/constraint names) to the client.
     console.error('[orders/POST]', err);
-    // Drizzle wraps the underlying pg error; its top-level message is the SQL
-    // it tried to run, which is noisy and leaks DB structure to the UI. Walk
-    // the .cause chain to the original Postgres error and surface that.
-    const reason = extractDbErrorReason(err);
-    return NextResponse.json({ error: `Could not place order: ${reason}` }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Could not place order — please retry, or contact support if it keeps happening.' },
+      { status: 500 },
+    );
   }
-}
-
-function extractDbErrorReason(err: unknown): string {
-  let cur: unknown = err;
-  // Walk up to 3 levels of cause; pg errors are usually 1–2 deep.
-  for (let i = 0; i < 3 && cur; i++) {
-    if (cur && typeof cur === 'object') {
-      const e = cur as { message?: string; detail?: string; code?: string; cause?: unknown };
-      // Postgres errors carry a `code` (e.g. '42703' undefined_column,
-      // '23505' unique_violation). When present, prefer their message
-      // over the wrapper's "Failed query: ..." dump.
-      if (e.code && typeof e.message === 'string' && !e.message.startsWith('Failed query')) {
-        return e.detail ? `${e.message} (${e.detail})` : e.message;
-      }
-      if (e.cause) { cur = e.cause; continue; }
-      if (typeof e.message === 'string' && !e.message.startsWith('Failed query')) return e.message;
-    }
-    break;
-  }
-  return 'database error — please retry, or contact support if it keeps happening';
 }
 
 export async function GET(req: NextRequest) {

@@ -31,11 +31,12 @@ export interface ObservationTokenPayload extends ObservationTokenFields {
   exp: number;
 }
 
-// Dedicated HMAC secret. Falls back to ANTHROPIC_API_KEY for compat with tokens
-// issued before the dedicated secret existed; if both are empty we refuse rather
-// than sign/validate with '' (which would be trivially forgeable).
+// Dedicated HMAC secret. Must be set to its own value — no third-party-key
+// fallback, since anyone able to read that shared key could forge verification
+// tokens for any wallet. If empty we refuse to sign/validate (callers 503)
+// rather than use '' (which would be trivially forgeable).
 export function getObservationTokenSecret(): string {
-  return process.env.OBSERVATION_TOKEN_SECRET || process.env.ANTHROPIC_API_KEY || '';
+  return process.env.OBSERVATION_TOKEN_SECRET || '';
 }
 
 function canonicalPayload(fields: ObservationTokenPayload): string {
