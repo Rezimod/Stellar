@@ -18,7 +18,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "setup:stars": "npx tsx scripts/import-star-catalog.ts",
-    "setup:observations": "npx tsx scripts/setup-observation-program.ts"
+    "setup:observations": "npx tsx scripts/setup-observation-program.ts",
+    "report:mints": "node scripts/mint-report.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
