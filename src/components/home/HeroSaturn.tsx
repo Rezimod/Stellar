@@ -18,6 +18,41 @@ const TARGET_META: Record<string, { img: string; stars: number }> = {
   Neptune: { img: '/sky/targets/neptune.jpg', stars: 175 },
 };
 
+// 2026 sky-calendar highlights, in date order. The ticker only shows events
+// that are still upcoming relative to today, so past ones drop off on their own.
+const SKY_EVENTS: { name: string; date: string }[] = [
+  { name: 'QUADRANTIDS', date: '2026-01-04' },
+  { name: 'TOTAL LUNAR ECLIPSE', date: '2026-03-03' },
+  { name: 'LYRIDS', date: '2026-04-22' },
+  { name: 'ETA AQUARIIDS', date: '2026-05-06' },
+  { name: 'SOLAR ECLIPSE', date: '2026-08-12' },
+  { name: 'PERSEIDS', date: '2026-08-12' },
+  { name: 'SATURN OPPOSITION', date: '2026-10-04' },
+  { name: 'ORIONIDS', date: '2026-10-21' },
+  { name: 'LEONIDS', date: '2026-11-17' },
+  { name: 'GEMINIDS', date: '2026-12-13' },
+  { name: 'URSIDS', date: '2026-12-22' },
+];
+
+const TICKER_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+function formatEvent(e: { name: string; date: string }): string {
+  const [, m, d] = e.date.split('-').map(Number);
+  return `${e.name} · ${TICKER_MONTHS[m - 1]} ${d}`;
+}
+
+// Events still to come from `now` (start of day). Falls back to the full list
+// once the year's events are all past, so the ticker never empties.
+function upcomingEvents(now: Date | null): string[] {
+  if (!now) return SKY_EVENTS.map(formatEvent);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const up = SKY_EVENTS.filter((e) => {
+    const [y, m, d] = e.date.split('-').map(Number);
+    return new Date(y, m - 1, d).getTime() >= today;
+  });
+  return (up.length ? up : SKY_EVENTS).map(formatEvent);
+}
+
 type Verdict = 'go' | 'maybe' | 'skip';
 
 const VERDICT_COLOR: Record<Verdict, string> = {
@@ -95,6 +130,9 @@ export default function HeroSaturn() {
         style={{ background: 'radial-gradient(60% 100% at 50% 100%, rgba(110,170,255,0.28), transparent 70%)', filter: 'blur(18px)' }}
       />
 
+      {/* === Sky-calendar ticker === */}
+      <SkyTicker />
+
       {/* === Content: one question, one live answer, one action === */}
       <div className="relative z-10 mx-auto flex w-full max-w-[680px] flex-1 flex-col items-center justify-center px-6 pb-16 pt-10 text-center md:pb-20">
         <h1
@@ -125,7 +163,7 @@ export default function HeroSaturn() {
         </div>
 
         <Link
-          href="/sky"
+          href="/missions"
           className="hero-pill-primary mt-4 inline-flex w-full max-w-[440px] items-center justify-center gap-2.5 rounded-xl px-8 py-4 no-underline"
           style={{
             background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
@@ -142,6 +180,43 @@ export default function HeroSaturn() {
         </Link>
       </div>
     </section>
+  );
+}
+
+/* ─── Sky-calendar ticker ─────────────────────────────────────────── */
+
+function SkyTicker() {
+  // Start from the full list on the server / first paint (deterministic, so
+  // hydration matches), then narrow to upcoming events once mounted.
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
+  const events = useMemo(() => upcomingEvents(now), [now]);
+
+  const row = (
+    <div className="flex items-center gap-11 whitespace-nowrap px-6 py-2.5 font-mono text-[12px] tracking-[0.14em] text-[#9aa6c8]">
+      <span className="text-[#f5a83d]">SKY CALENDAR 2026</span>
+      {events.map((e) => (
+        <span key={e} className="flex items-center gap-11">
+          <span>{e}</span>
+          <span className="text-[#3d476b]" aria-hidden>◦</span>
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <div
+      className="relative z-20 border-y"
+      style={{ borderColor: 'rgba(140,165,235,0.10)', background: 'rgba(6,9,20,0.5)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+    >
+      <div className="hero-ticker-mask overflow-hidden">
+        <div className="hero-ticker-track">
+          {row}
+          {row}
+        </div>
+      </div>
+    </div>
   );
 }
 

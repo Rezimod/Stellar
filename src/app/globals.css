@@ -718,6 +718,31 @@ code, pre, .mono, [class*="font-mono"] {
   .hero-card-swap { animation: none; }
 }
 
+/* === Hero sky-calendar ticker ===
+   Two identical event rows scroll left as one; when the first row has moved
+   exactly its own width (-50%), the loop restarts seamlessly. */
+.hero-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: hero-ticker 72s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+@keyframes hero-ticker {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+.hero-ticker-track:hover { animation-play-state: paused; }
+/* Soft fade at both edges so events drift in and out instead of hard-clipping. */
+.hero-ticker-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-ticker-track { animation: none; }
+}
+
 /* === Hero horizon glow — soft blue light that breathes above the earth limb === */
 .hero-horizon-glow { animation: hero-horizon-glow 8s ease-in-out infinite; }
 @keyframes hero-horizon-glow {
