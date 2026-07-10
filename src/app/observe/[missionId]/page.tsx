@@ -158,7 +158,7 @@ export default function ObserveBriefPage() {
 
         {mission.demo && (
           <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
-            Demo mode — upload any photo; mints a real NFT on Solana
+            Demo mode — upload any photo to try the flow
           </p>
         )}
       </div>

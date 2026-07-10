@@ -155,7 +155,7 @@ export default function ObserveVerifyPage() {
               // proceeds to the mint screen — it just mints as an unverified
               // keepsake worth 0 Stars, with a clear note explaining why.
               if (!pv.accepted) {
-                setMintError(pv.reason || "This photo couldn't be verified, so it earns no Stars — you can still keep it as an unverified NFT.");
+                setMintError(pv.reason || "This photo couldn't be verified, so it earns no Stars — you can still keep it as a personal record.");
               }
             }
           } catch {
@@ -257,7 +257,7 @@ export default function ObserveVerifyPage() {
         if (res.status === 429) {
           setMintError(msg || 'Too many mints right now — try again in a minute.');
         } else {
-          setMintError(msg || 'NFT mint failed — please retry.');
+          setMintError(msg || "Couldn't save your record — please retry.");
         }
       }
     } catch (err) {
@@ -446,7 +446,7 @@ export default function ObserveVerifyPage() {
             latitude={coords.lat}
             longitude={coords.lon}
             onMint={handleMint}
-            mintLabel={isUnverified ? 'Keep as Unverified NFT' : undefined}
+            mintLabel={isUnverified ? 'Keep it anyway' : undefined}
             compact={true}
           />
           {photoVerification && !isUnverified && (
@@ -489,7 +489,7 @@ export default function ObserveVerifyPage() {
     : stage === 'done' ? 'Finishing Up'
     : 'Analyzing Sky';
   const subtitle =
-    stage === 'verifying-photo' ? 'Checking with AI oracle'
+    stage === 'verifying-photo' ? 'Checking your photo'
     : stage === 'done' ? 'Almost there'
     : 'Reading tonight’s conditions';
 
