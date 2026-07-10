@@ -307,7 +307,7 @@ Full design context lives in `.impeccable.md` at the project root. Read that fil
 - **Reference: nasa.gov.** Anti-reference: generic shadcn dashboards.
 - **Theme: dark, but not pure black.** Tinted near-black around `oklch(0.15 0.015 260)` — a night-sky color, not VSCode's. Light theme shipped for daytime planning.
 - **Font stack (global, every page):**
-  - **Hero titles + all headings** (`h1`–`h6`, `.display`): `Orbitron` **Medium (500)** — exact font, no substitutions.
+  - **Headings** (`h1`–`h6`): `Geist` **Medium (500)** — `globals.css` overrides headings to `--font-body`; this is the source of truth. `Orbitron` (`--font-display` / `.font-display`) is reserved for **deliberate display accents** (verdict label, select hero type), not blanket heading styling — do not add `.font-display` to every heading.
   - **Paragraphs + body / UI copy**: `Geist` **Medium (500)** — exact font, no substitutions.
   - **Numbers / data / mono**: `JetBrains Mono`.
   - **Georgian (KA locale)**: `Noto Sans Georgian`.
