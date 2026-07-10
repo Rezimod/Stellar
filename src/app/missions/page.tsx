@@ -32,8 +32,8 @@ import { Body, Illumination, MoonPhase } from 'astronomy-engine';
 
 const HUB_GRADIENTS = {
   amber:   'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
-  violet:  'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
-  fuchsia: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
+  violet:  'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
+  fuchsia: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
   teal:    'linear-gradient(135deg, #5EEAD4 0%, #5EEAD4 100%)',
   rose:    'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)',
 } as const;

@@ -18,10 +18,10 @@ import {
 } from '@/lib/feed/types'
 
 const RANK_GRADIENT: Record<string, string> = {
-  Stargazer: 'linear-gradient(135deg, var(--violet), var(--teal))',
-  Observer: 'linear-gradient(135deg, var(--teal), var(--violet))',
+  Stargazer: 'linear-gradient(135deg, var(--terracotta), var(--seafoam))',
+  Observer: 'linear-gradient(135deg, var(--seafoam), var(--terracotta))',
   Pathfinder: 'linear-gradient(135deg, var(--brass), var(--rose))',
-  Celestial: 'linear-gradient(135deg, var(--brass), var(--teal))',
+  Celestial: 'linear-gradient(135deg, var(--brass), var(--seafoam))',
 }
 
 function relativeTime(iso: string): string {

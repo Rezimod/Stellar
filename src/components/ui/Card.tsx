@@ -53,8 +53,7 @@ const variantStyles: Record<CardVariant, React.CSSProperties> = {
   },
   mission: {
     background: 'var(--bg-card)',
-    border: '1px solid rgba(255,255,255,0.06)',
-    borderLeft: '3px solid var(--color-nebula-teal, var(--terracotta))',
+    border: '1px solid rgba(255, 179, 71, 0.22)',
     borderRadius: 'var(--radius-lg)',
     boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04)',
   },

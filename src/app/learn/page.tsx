@@ -21,8 +21,8 @@ import type { LucideIcon } from 'lucide-react';
 
 const QUIZ_HUB: Record<string, { Icon: LucideIcon; gradient: string }> = {
   'solar-system':      { Icon: Sun,       gradient: 'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)' },
-  'constellations':    { Icon: Star,      gradient: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)' },
-  'telescopes':        { Icon: Telescope, gradient: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)' },
+  'constellations':    { Icon: Star,      gradient: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)' },
+  'telescopes':        { Icon: Telescope, gradient: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)' },
   'universe':          { Icon: Globe,     gradient: 'linear-gradient(135deg, #5EEAD4 0%, #5EEAD4 100%)' },
   'space-exploration': { Icon: Rocket,    gradient: 'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)' },
 };
@@ -570,7 +570,7 @@ function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef)
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: hub?.gradient ?? 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
+                  background: hub?.gradient ?? 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
                   boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
                 }}
               >
@@ -623,7 +623,7 @@ const GLOSSARY_TERMS = [
 const BORTLE_SEGMENTS = [
   { range: '1–2', color: 'var(--success)', label: { en: 'Pristine',  ka: 'პრისტინული'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
   { range: '3–4', color: 'var(--stars)', label: { en: 'Rural',     ka: 'სოფელი'       }, desc: { en: 'Milky Way visible, 100+ stars, good for deep sky',      ka: 'ირმის ნახტომი ჩანს, 100+ ვარსკვლავი, კარგი ღრმა ცისთვის' } },
-  { range: '5–6', color: 'var(--terracotta)', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
+  { range: '5–6', color: '#FFB347', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
   { range: '7–9', color: 'var(--negative)', label: { en: 'City',      ka: 'ქალაქი'       }, desc: { en: 'Moon and brightest planets only',                        ka: 'მხოლოდ მთვარე და ყველაზე კაშკაში პლანეტები' } },
 ];
 
@@ -997,7 +997,7 @@ function AstraPromo({ locale }: { locale: Locale }) {
         <div
           className="w-11 h-11 rounded-full flex items-center justify-center"
           style={{
-            background: 'linear-gradient(135deg, #8B5CF6 0%, #8B5CF6 100%)',
+            background: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
             boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
           }}
         >
@@ -1064,7 +1064,7 @@ const MORE_RESOURCES: {
   },
   {
     Icon: Sparkles,
-    color: '#8B5CF6',
+    color: '#FFB347',
     title: { en: 'James Webb Space Telescope', ka: 'James Webb-ის ტელესკოპი' },
     desc: {
       en: 'The official JWST gallery from STScI. Infrared views of galaxies, nebulae, and exoplanet atmospheres in resolutions Hubble never reached.',

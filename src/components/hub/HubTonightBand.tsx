@@ -113,7 +113,7 @@ function buildMissions(sky: TonightSky | null, c: (typeof COPY)[keyof typeof COP
       sub: `${c.altShort} ${Math.round(p.altitude)}° · ${p.azimuthDir}`,
       href: '/sky',
       icon: i === 0 ? Telescope : Compass,
-      accent: i === 0 ? '#FFB347' : '#8B5CF6',
+      accent: '#FFB347',
     });
   });
 
@@ -146,7 +146,7 @@ function buildMissions(sky: TonightSky | null, c: (typeof COPY)[keyof typeof COP
   // live sky is quiet (e.g. daytime or a moonless, planet-free window).
   const evergreen: Mission[] = [
     { id: 'observe', title: c.logObs, sub: c.logSub, href: '/observe', icon: Telescope, accent: '#34D399' },
-    { id: 'learn', title: c.learnSky, sub: c.learnSub, href: '/learn', icon: Compass, accent: '#8B5CF6' },
+    { id: 'learn', title: c.learnSky, sub: c.learnSub, href: '/learn', icon: Compass, accent: '#FFB347' },
     { id: 'forecast', title: c.weekAhead, sub: c.weekSub, href: '/sky', icon: CalendarDays, accent: '#FB923C' },
   ];
   for (const e of evergreen) {

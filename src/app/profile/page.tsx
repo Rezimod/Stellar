@@ -150,7 +150,7 @@ function ProfilePageContent() {
         >
           <div style={{
             width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #5EEAD4 0%, #3B82F6 100%)',
+            background: 'linear-gradient(135deg, #5EEAD4 0%, var(--seafoam) 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <User size={22} color="#FFFFFF" strokeWidth={2.2} />
@@ -261,7 +261,7 @@ function ProfilePageContent() {
 
   const seeAllLink = (href: string, label: string) => (
     <Link href={href} style={{
-      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-purple)',
+      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--terracotta)',
       textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3,
     }}>
       {label} <ChevronRight size={11} />
@@ -330,7 +330,7 @@ function ProfilePageContent() {
         {/* decorative cosmic glow — scoped to the profile page */}
         {!isLight && (
           <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-            <div style={{ position: 'absolute', top: -80, right: '8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.10), transparent 70%)' }} />
+            <div style={{ position: 'absolute', top: -80, right: '8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 179, 71,0.10), transparent 70%)' }} />
             <div style={{ position: 'absolute', bottom: 40, left: '-6%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%)' }} />
           </div>
         )}
@@ -503,7 +503,7 @@ function ProfilePageContent() {
                       </div>
                       <Link
                         href="/marketplace"
-                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--accent-purple)', background: isLight ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.32)' }}
+                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--terracotta)', background: isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)', border: '1px solid rgba(255, 179, 71,0.32)' }}
                       >
                         {t('viewGifts')}
                       </Link>

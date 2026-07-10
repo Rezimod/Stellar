@@ -971,7 +971,7 @@ export default async function HomePage() {
     },
     {
       key: 'superteam',
-      color: '#A78BFA',
+      color: '#FFB347',
       href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
       logoSrc: '/brand-partners/superteam.webp',
       logoAlt: 'Superteam',
@@ -1437,7 +1437,7 @@ export default async function HomePage() {
                 paddingTop: 18,
                 paddingBottom: 18,
                 fontFamily: 'var(--font-cta, var(--font-body))',
-                background: 'linear-gradient(135deg, #5B6CFF 0%, #8B5CF6 100%)',
+                background: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
                 boxShadow: '0 12px 36px rgba(91, 108, 255, 0.40), inset 0 1px 0 rgba(255,255,255,0.10)',
               }}
             >

@@ -34,9 +34,9 @@ export function EmptyStateCard({ tokens, kicker, headerRight, children, empty, f
     fontWeight: 600,
     cursor: 'pointer',
     textDecoration: 'none',
-    color: 'var(--accent-purple)',
-    background: isLight ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.10)',
-    border: '1px solid rgba(139,92,246,0.32)',
+    color: 'var(--terracotta)',
+    background: isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)',
+    border: '1px solid rgba(255, 179, 71,0.32)',
   } as const;
 
   return (
@@ -69,9 +69,9 @@ export function EmptyStateCard({ tokens, kicker, headerRight, children, empty, f
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 14,
-              color: 'var(--accent-purple)',
+              color: 'var(--terracotta)',
               border: `1px solid ${hairline}`,
-              background: isLight ? 'rgba(139,92,246,0.05)' : 'rgba(139,92,246,0.07)',
+              background: isLight ? 'rgba(255, 179, 71,0.05)' : 'rgba(255, 179, 71,0.07)',
             }}
           >
             {empty.icon}

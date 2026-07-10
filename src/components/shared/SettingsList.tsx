@@ -33,7 +33,7 @@ export function Section({ id, title, action, children }: {
         overflow: 'hidden',
         background: isLight
           ? '#FFFFFF'
-          : 'radial-gradient(ellipse 60% 100% at 0% 0%, rgba(167,139,250,0.06) 0%, transparent 60%), ' +
+          : 'radial-gradient(ellipse 60% 100% at 0% 0%, rgba(255, 179, 71,0.06) 0%, transparent 60%), ' +
             'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
         border: isLight
           ? '1px solid rgba(15,23,42,0.10)'

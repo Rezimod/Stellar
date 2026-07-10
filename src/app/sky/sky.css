@@ -4439,7 +4439,7 @@
     max-height: min(90vh, 680px);
     border-radius: 18px;
     padding: 16px 16px 16px;
-    border-color: rgba(139, 92, 246, 0.32);
+    border-color: rgba(255, 179, 71, 0.32);
     background: linear-gradient(170deg, rgba(20, 20, 38, 0.99), rgba(11, 13, 24, 0.99));
   }
 
@@ -4463,7 +4463,7 @@
     margin: -16px -16px 14px;
     overflow: hidden;
     background:
-      radial-gradient(130% 95% at 50% 125%, rgba(139, 92, 246, 0.5), transparent 62%),
+      radial-gradient(130% 95% at 50% 125%, rgba(255, 179, 71, 0.5), transparent 62%),
       radial-gradient(85% 130% at 50% -10%, rgba(46, 34, 86, 0.9), rgba(12, 14, 26, 0.96)),
       #0b0e1a;
   }
@@ -4491,10 +4491,10 @@
     justify-content: center;
     border-radius: 999px;
     color: #fff;
-    background: linear-gradient(180deg, #a78bfa, #7c3aed);
+    background: linear-gradient(180deg, var(--terracotta), var(--terracotta));
     box-shadow:
-      0 0 0 6px rgba(139, 92, 246, 0.18),
-      0 0 0 13px rgba(139, 92, 246, 0.09),
+      0 0 0 6px rgba(255, 179, 71, 0.18),
+      0 0 0 13px rgba(255, 179, 71, 0.09),
       0 8px 24px rgba(124, 58, 237, 0.5);
   }
 
@@ -4523,15 +4523,15 @@
     margin: 4px 0 14px;
     padding: 12px;
     border-radius: 12px;
-    background: linear-gradient(180deg, #8b5cf6, #7c3aed);
-    border: 1px solid rgba(167, 139, 250, 0.6);
+    background: linear-gradient(180deg, var(--terracotta), var(--terracotta));
+    border: 1px solid rgba(255, 179, 71, 0.6);
     color: #fff;
     font-size: 14px;
     box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
   }
   .skyloc__gps:hover:not(:disabled) {
     background: linear-gradient(180deg, #9670f8, #6d28d9);
-    border-color: rgba(167, 139, 250, 0.85);
+    border-color: rgba(255, 179, 71, 0.85);
   }
 
   /* OR divider */

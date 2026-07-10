@@ -382,8 +382,7 @@ export default function LeaderboardPage() {
                       style={{
                         borderColor: 'rgba(255,255,255,0.05)',
                         background: rowBg,
-                        borderLeft: isCurrentUser ? '3px solid var(--terracotta)' : undefined,
-                        paddingLeft: isCurrentUser ? '13px' : undefined,
+                        boxShadow: isCurrentUser ? 'inset 2px 0 0 var(--terracotta)' : undefined,
                       }}
                     >
                       <span
@@ -440,7 +439,7 @@ export default function LeaderboardPage() {
               style={{
                 background: 'rgba(255, 179, 71,0.05)',
                 border: '1px solid rgba(255, 179, 71,0.15)',
-                borderLeft: '3px solid var(--terracotta)',
+                boxShadow: 'inset 2px 0 0 var(--terracotta)',
               }}
             >
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', fontWeight: 600 }}>

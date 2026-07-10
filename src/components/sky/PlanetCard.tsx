@@ -88,7 +88,7 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
         </div>
         <span
           className="dir-label"
-          style={{ color: !isActive ? 'var(--text-dim)' : planet.altitude > 50 ? 'var(--accent)' : 'var(--teal)' }}
+          style={{ color: !isActive ? 'var(--text-dim)' : planet.altitude > 50 ? 'var(--accent)' : 'var(--seafoam)' }}
         >
           {isActive ? `${cardinal} · ${Math.round(planet.altitude)}°` : 'below'}
         </span>
@@ -128,7 +128,7 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
                 equipment === 'eye'
                   ? 'var(--green)'
                   : equipment === 'binoc'
-                  ? 'var(--teal)'
+                  ? 'var(--seafoam)'
                   : 'var(--accent)',
             }}
           >

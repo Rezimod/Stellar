@@ -41,9 +41,9 @@ export function ProfileSidebar({ tokens, items, status }: Props) {
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          color: item.active ? 'var(--accent-purple)' : 'var(--text-secondary)',
+          color: item.active ? 'var(--terracotta)' : 'var(--text-secondary)',
           background: item.active
-            ? isLight ? 'rgba(139,92,246,0.10)' : 'rgba(139,92,246,0.16)'
+            ? isLight ? 'rgba(255, 179, 71,0.10)' : 'rgba(255, 179, 71,0.16)'
             : 'transparent',
         }}
       >
@@ -86,8 +86,8 @@ export function ProfileSidebar({ tokens, items, status }: Props) {
     borderRadius: 12,
     textDecoration: 'none',
     border: '1px solid transparent',
-    background: active ? (isLight ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.10)') : 'transparent',
-    borderColor: active ? 'rgba(139,92,246,0.28)' : 'transparent',
+    background: active ? (isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)') : 'transparent',
+    borderColor: active ? 'rgba(255, 179, 71,0.28)' : 'transparent',
     cursor: 'pointer',
   } as const);
 
@@ -127,11 +127,11 @@ export function ProfileSidebar({ tokens, items, status }: Props) {
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              background: 'radial-gradient(circle at 40% 35%, rgba(139,92,246,0.3), rgba(59,130,246,0.18) 60%, transparent)',
-              border: '1px solid rgba(139,92,246,0.3)',
+              background: 'radial-gradient(circle at 40% 35%, rgba(255, 179, 71,0.3), rgba(59,130,246,0.18) 60%, transparent)',
+              border: '1px solid rgba(255, 179, 71,0.3)',
             }}
           >
-            <Orbit size={20} color="var(--accent-purple)" />
+            <Orbit size={20} color="var(--terracotta)" />
           </span>
           <div style={{ minWidth: 0 }}>
             <p
@@ -163,7 +163,7 @@ export function ProfileSidebar({ tokens, items, status }: Props) {
             style={{
               width: `${status.progressPct}%`,
               height: '100%',
-              background: 'linear-gradient(90deg, var(--accent-purple), #3B82F6)',
+              background: 'linear-gradient(90deg, var(--terracotta), var(--seafoam))',
               transition: 'width 0.4s ease',
             }}
           />
