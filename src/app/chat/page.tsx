@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ArrowUp, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import PageContainer from '@/components/layout/PageContainer';
+import StarMark from '@/components/ui/StarMark';
 
 interface Msg { role: 'user' | 'assistant'; content: string; }
 
@@ -345,7 +346,7 @@ function ChatPageInner() {
                 border: '1px solid rgba(94, 234, 212, 0.20)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ color: 'var(--color-accent-teal)', fontSize: 10 }}>✦</span>
+                <StarMark size={10} style={{ color: 'var(--color-accent-teal)' }} />
               </div>
               <div
                 className="animate-fade-in"
@@ -378,7 +379,7 @@ function ChatPageInner() {
               border: '1px solid rgba(94, 234, 212, 0.20)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ color: 'var(--color-accent-teal)', fontSize: 10 }}>✦</span>
+              <StarMark size={10} style={{ color: 'var(--color-accent-teal)' }} />
             </div>
             <div style={{
               background: 'var(--color-bg-card)',

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAppState } from '@/hooks/useAppState';
 import { getRank } from '@/lib/rewards';
+import StarMark from '@/components/ui/StarMark';
 
 const TOTAL = 5;
 
@@ -97,7 +98,7 @@ export default function StatsBar() {
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, fontWeight: 600, letterSpacing: '0.02em' }}>
               {totalStars}
             </span>
-            <span style={{ fontSize: 10, fontWeight: 700 }}>✦</span>
+            <StarMark size={10} />
           </span>
         </div>
       </div>

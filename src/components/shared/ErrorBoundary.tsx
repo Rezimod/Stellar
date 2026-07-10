@@ -1,6 +1,7 @@
 'use client';
 
 import { Component, ReactNode } from 'react';
+import StarMark from '@/components/ui/StarMark';
 
 interface Props { children: ReactNode; fallback?: ReactNode }
 interface State { error: Error | null }
@@ -20,7 +21,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center px-4">
           <div className="text-center max-w-md">
-            <p className="text-[var(--terracotta)] text-4xl mb-4">✦</p>
+            <p className="text-[var(--terracotta)] mb-4"><StarMark size={36} /></p>
             <h1 className="text-text-primary text-xl font-bold mb-2" style={{ fontFamily: 'var(--font-display)' }}>
               Something went wrong
             </h1>

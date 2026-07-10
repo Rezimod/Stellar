@@ -14,6 +14,7 @@ import MintAnimation from '@/components/shared/MintAnimation';
 import Button from '@/components/shared/Button';
 import LoadingRing from '@/components/ui/LoadingRing';
 import ScoreRing from '@/components/ui/ScoreRing';
+import StarMark from '@/components/ui/StarMark';
 import { calculateSkyScore, visibilityToMeters, type SkyScoreResult } from '@/lib/sky-score';
 import { ExternalLink, Camera, X } from 'lucide-react';
 import { getMissionImage } from '@/lib/mission-icons';
@@ -602,7 +603,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             </div>
             <div className="text-left">
               <h2 className="text-lg font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
-                Discovery Sealed <span style={{ color: 'var(--accent)' }}>✦</span>
+                Discovery Sealed <StarMark size={14} style={{ color: 'var(--accent)' }} />
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -634,7 +635,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 boxShadow: '0 12px 28px rgba(255, 179, 71,0.35)',
               }}
             >
-              <span style={{ fontSize: 20, filter: 'drop-shadow(0 0 6px white)' }}>✦</span>
+              <StarMark size={20} style={{ filter: 'drop-shadow(0 0 6px white)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">Cosmic Bonus</p>
                 <p className="text-base font-black text-text-primary m-0 leading-tight">+{cosmicBonus.amount} ✦ <span className="text-[10px] font-normal text-text-primary/85 italic">{cosmicBonus.message}</span></p>
@@ -1100,7 +1101,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <div className="relative flex items-center justify-center gap-3 flex-shrink-0">
               <div className="flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
                 <span style={{ color: 'var(--stl-gold)', fontWeight: 600 }}>+{mission.stars}</span>
-                <span style={{ color: 'var(--stl-gold)' }}>✦</span>
+                <StarMark size={14} style={{ color: 'var(--stl-gold)' }} />
               </div>
               <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>

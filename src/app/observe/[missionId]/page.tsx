@@ -10,6 +10,7 @@ import { MISSIONS } from '@/lib/constants';
 import { getMissionImage } from '@/lib/mission-icons';
 import { useObserveFlow } from './ObserveFlowContext';
 import PageContainer from '@/components/layout/PageContainer';
+import StarMark from '@/components/ui/StarMark';
 
 export default function ObserveBriefPage() {
   const router = useRouter();
@@ -135,7 +136,7 @@ export default function ObserveBriefPage() {
         <div className="relative flex items-center justify-center gap-3 flex-shrink-0">
           <div className="flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
             <span style={{ color: 'var(--stl-gold)', fontWeight: 600 }}>+{mission.stars}</span>
-            <span style={{ color: 'var(--stl-gold)' }}>✦</span>
+            <StarMark size={14} style={{ color: 'var(--stl-gold)' }} />
           </div>
           <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>

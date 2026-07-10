@@ -1,6 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import StarMark from '@/components/ui/StarMark';
 import type { ProfileTokens } from './profileTheme';
 
 interface Props {
@@ -43,7 +44,7 @@ export function ProfileStats({ tokens, loaded, balance, earned, burned, labels }
               gap: 10,
             }}
           >
-            <span style={{ color: 'var(--stars)', fontSize: 24 }}>✦</span>
+            <StarMark size={24} style={{ color: 'var(--stars)' }} />
             {balance.toLocaleString()}
           </p>
         ) : (

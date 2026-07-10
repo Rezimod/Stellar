@@ -10,6 +10,7 @@ import BackButton from '@/components/shared/BackButton';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
 import { TELESCOPE_BRANDS } from '@/lib/constants';
+import StarMark from '@/components/ui/StarMark';
 
 const TELESCOPE_TYPES = [
   { value: 'Refractor', label: { en: 'Refractor', ka: 'რეფრაქტორი' } },
@@ -176,7 +177,7 @@ export default function ClubPage() {
               className="mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
               style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
             >
-              <span className="text-[var(--terracotta)] text-xl">✦</span>
+              <StarMark size={20} className="text-[var(--terracotta)]" />
               <div>
                 <p className="text-[var(--terracotta)] font-bold text-sm">+{starsEarned} {t.earned}</p>
                 <p className="text-text-muted text-xs">{t.firstBonus}</p>

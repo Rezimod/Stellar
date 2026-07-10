@@ -10,6 +10,7 @@ import { MISSIONS } from '@/lib/constants';
 import { getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
 import DiscoverySealed from '@/components/sky/DiscoverySealed';
+import StarMark from '@/components/ui/StarMark';
 import { useObserveFlow } from '../ObserveFlowContext';
 import { useAppState } from '@/hooks/useAppState';
 import PageContainer from '@/components/layout/PageContainer';
@@ -217,7 +218,7 @@ export default function ObserveResultPage() {
                 boxShadow: '0 12px 28px rgba(255, 179, 71,0.35)',
               }}
             >
-              <span style={{ fontSize: 20, filter: 'drop-shadow(0 0 6px white)' }}>✦</span>
+              <StarMark size={20} style={{ filter: 'drop-shadow(0 0 6px white)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">Cosmic Bonus</p>
                 <p className="text-sm font-black text-text-primary m-0 leading-tight">+{cosmicBonus.amount} ✦ <span className="text-[10px] font-normal text-text-primary/85 italic">{cosmicBonus.message}</span></p>

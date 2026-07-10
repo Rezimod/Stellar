@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getUpcomingEvents, AstroEvent } from '@/lib/astro-events';
 import EventInfoSheet from './EventInfoSheet';
+import StarMark from '@/components/ui/StarMark';
 
 function daysUntil(dateStr: string): number {
   const now = new Date();
@@ -60,7 +61,7 @@ export default function EventBanner() {
         </span>
 
         <div className="flex items-start gap-3 pr-6">
-          <span className="text-[var(--terracotta)] text-lg mt-0.5">✦</span>
+          <StarMark size={18} className="text-[var(--terracotta)] mt-0.5" />
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-text-primary text-sm font-semibold">{event.name}</span>

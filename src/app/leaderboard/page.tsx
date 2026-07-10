@@ -8,6 +8,7 @@ import BackButton from '@/components/shared/BackButton';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import PageContainer from '@/components/layout/PageContainer';
+import StarMark from '@/components/ui/StarMark';
 
 const RANK_LABELS: Record<string, { label: string; color: string }> = {
   Celestial:  { label: 'Celestial',  color: 'var(--stars)' },
@@ -425,7 +426,7 @@ export default function LeaderboardPage() {
                         className="font-bold flex-shrink-0"
                         style={{ fontSize: 'var(--text-sm)', color: 'var(--stars)' }}
                       >
-                        {entry.stars.toLocaleString()} <span className="font-normal text-[10px]">✦</span>
+                        {entry.stars.toLocaleString()} <StarMark size={11} />
                       </span>
                     </div>
                   );
