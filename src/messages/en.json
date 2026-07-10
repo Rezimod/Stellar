@@ -1391,10 +1391,10 @@
   "homepage": {
     "homeTabLabel": "Home",
     "hero": {
-      "headline1": "Observe the sky.",
-      "headline2": "Earn rewards.",
-      "subtitle": "Plan, photograph, redeem.",
-      "ctaPrimary": "Earn Rewards",
+      "headline1": "Is tonight",
+      "headline2": "a telescope night?",
+      "subtitle": "Live sky conditions for your location — and Stars rewards for what you observe.",
+      "ctaPrimary": "See the 7-day forecast",
       "ctaSecondary": "Start Observing",
       "cards": {
         "consoleTitle": "Sky tonight",
@@ -1403,6 +1403,7 @@
         "cloud": "cloud",
         "tempLabel": "temp",
         "moonLabel": "moon",
+        "planetsUp": "planets up",
         "visibleNow": "Visible now",
         "noneUp": "No planets up right now",
         "skyScore": "Sky score",

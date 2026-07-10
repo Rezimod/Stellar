@@ -76,7 +76,6 @@
   --accent-teal-dim: rgba(94, 234, 212, 0.10);
   --accent-teal-glow: rgba(94, 234, 212, 0.20);
   --accent-emerald: var(--seafoam);
-  --accent-purple: #8B5CF6;
   --accent-amber: var(--orange);
   --accent-red: var(--negative);
 
@@ -719,31 +718,6 @@ code, pre, .mono, [class*="font-mono"] {
   .hero-card-swap { animation: none; }
 }
 
-/* === Hero sky-calendar ticker ===
-   Two identical event rows scroll left as one; when the first row has moved
-   exactly its own width (-50%), the loop restarts seamlessly. */
-.hero-ticker-track {
-  display: flex;
-  width: max-content;
-  animation: hero-ticker 72s linear infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-@keyframes hero-ticker {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-50%, 0, 0); }
-}
-.hero-ticker-track:hover { animation-play-state: paused; }
-/* Soft fade at both edges so events drift in and out instead of hard-clipping. */
-.hero-ticker-mask {
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-ticker-track { animation: none; }
-}
-
 /* === Hero horizon glow — soft blue light that breathes above the earth limb === */
 .hero-horizon-glow { animation: hero-horizon-glow 8s ease-in-out infinite; }
 @keyframes hero-horizon-glow {
@@ -754,20 +728,14 @@ code, pre, .mono, [class*="font-mono"] {
   .hero-horizon-glow { animation: none; }
 }
 
-/* === Hero CTA buttons (amber gradient + amber-ghost) === */
+/* === Hero CTA button (amber gradient) === */
 .hero-pill-primary { transition: transform 150ms ease, box-shadow 200ms ease; }
 .hero-pill-primary:hover {
   transform: translateY(-2px);
   box-shadow: inset 0 1px 0 rgba(255,240,210,0.8), inset 0 -2px 0 rgba(120,60,0,0.35), 0 14px 36px rgba(245,158,46,0.5);
 }
-.hero-pill-ghost { transition: border-color 200ms ease, background 200ms ease, transform 150ms ease; }
-.hero-pill-ghost:hover {
-  transform: translateY(-2px);
-  background: rgba(245,168,61,0.1);
-  border-color: rgba(245,168,61,0.6);
-}
 @media (prefers-reduced-motion: reduce) {
-  .hero-pill-primary:hover, .hero-pill-ghost:hover { transform: none; }
+  .hero-pill-primary:hover { transform: none; }
 }
 
 /* Circular gradient icon badge — mirror of the rocket/cart/sparkle circles
