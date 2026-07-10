@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Eye, Telescope } from 'lucide-react';
 import { useLocation } from '@/lib/location';
 import type { TargetResult } from '@/app/api/sky/targets/route';
 
@@ -56,9 +57,10 @@ export default function BestTargets() {
           const eqBg = target.equipment === 'naked_eye' ? 'rgba(94, 234, 212,0.1)'
             : target.equipment === 'binoculars' ? 'rgba(255, 179, 71,0.1)'
             : 'rgba(255, 179, 71,0.1)';
-          const eqLabel = target.equipment === 'naked_eye' ? '👁 Naked Eye'
-            : target.equipment === 'binoculars' ? '🔭 Binoculars'
-            : '🔭 Telescope';
+          const EqIcon = target.equipment === 'naked_eye' ? Eye : Telescope;
+          const eqText = target.equipment === 'naked_eye' ? 'Naked Eye'
+            : target.equipment === 'binoculars' ? 'Binoculars'
+            : 'Telescope';
 
           return (
             <div
@@ -77,12 +79,13 @@ export default function BestTargets() {
                   <div>
                     <p className="text-text-primary text-sm font-semibold">{target.name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{
+                      <span className="text-[10px] px-1.5 py-0.5 rounded inline-flex items-center gap-1" style={{
                         background: eqBg,
                         border: `1px solid ${eqColor}25`,
                         color: eqColor,
                       }}>
-                        {eqLabel}
+                        <EqIcon size={11} aria-hidden="true" />
+                        {eqText}
                       </span>
                       <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
                         {target.difficulty}
