@@ -15,13 +15,14 @@ interface VisibleNowProps {
   isCurrentlyDark?: boolean;
 }
 
-const PLANET_ICONS: Record<string, { emoji: string; bg: string }> = {
-  Jupiter: { emoji: '🪐', bg: 'rgba(255,179,71,0.12)' },
-  Venus: { emoji: '☀', bg: 'rgba(240,229,192,0.12)' },
-  Mars: { emoji: '●', bg: 'rgba(200,74,46,0.12)' },
-  Saturn: { emoji: '🪐', bg: 'rgba(212,169,84,0.12)' },
-  Mercury: { emoji: '○', bg: 'rgba(168,162,144,0.12)' },
-  Moon: { emoji: '○', bg: 'rgba(255,255,255,0.06)' },
+// Real planet imagery (circular crops) instead of emoji — "photograph where you can".
+const PLANET_ICONS: Record<string, { img: string; bg: string }> = {
+  Jupiter: { img: '/sky/targets/jupiter.jpg', bg: 'rgba(255,179,71,0.12)' },
+  Venus: { img: '/sky/targets/venus.jpg', bg: 'rgba(240,229,192,0.12)' },
+  Mars: { img: '/sky/targets/mars.jpg', bg: 'rgba(200,74,46,0.12)' },
+  Saturn: { img: '/sky/targets/saturn.jpg', bg: 'rgba(212,169,84,0.12)' },
+  Mercury: { img: '/sky/targets/mercury.jpg', bg: 'rgba(168,162,144,0.12)' },
+  Moon: { img: '/sky/targets/moon.jpg', bg: 'rgba(255,255,255,0.06)' },
 };
 
 export function VisibleNow({ planets, featuredTarget, isCurrentlyDark = true }: VisibleNowProps) {
@@ -61,7 +62,7 @@ export function VisibleNow({ planets, featuredTarget, isCurrentlyDark = true }: 
       </div>
       <div className="objects-list">
         {ranked.map((p) => {
-          const icon = PLANET_ICONS[p.name] ?? { emoji: '✦', bg: 'rgba(255,255,255,0.04)' };
+          const icon = PLANET_ICONS[p.name] ?? null;
           const equipment = equipmentForMagnitude(p.magnitude);
           const isFeatured = featuredTarget === p.name;
           const arrow = azimuthToArrow(p.azimuth);
@@ -76,9 +77,12 @@ export function VisibleNow({ planets, featuredTarget, isCurrentlyDark = true }: 
             >
               <div
                 className="object-icon"
-                style={{ background: icon.bg, opacity: p.visible ? 1 : 0.5 }}
+                style={{ background: icon?.bg ?? 'rgba(255,255,255,0.04)', opacity: p.visible ? 1 : 0.5, overflow: 'hidden', padding: 0 }}
               >
-                {icon.emoji}
+                {icon && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={icon.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
               </div>
               <div className="object-info">
                 <div className="name" style={{ color: p.visible ? undefined : 'var(--text-muted)' }}>

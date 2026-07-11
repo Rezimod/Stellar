@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { ShoppingBag, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingBag, Sparkles, ChevronDown, ChevronUp, Sprout, Telescope, Zap, Rocket, type LucideIcon } from 'lucide-react';
 
 type Locale = 'en' | 'ka';
 type Level = 'beginner' | 'intermediate' | 'advanced' | 'pro';
@@ -370,11 +370,11 @@ function TelescopeLadder({ locale }: { locale: Locale }) {
 
 // ─── Level guide ─────────────────────────────────────────────────────────────
 
-const LEVEL_CONFIG: { id: Level; label: { en: string; ka: string }; badge: string; color: string; subtitle: { en: string; ka: string } }[] = [
-  { id: 'beginner',     label: { en: 'Beginner',     ka: 'დამწყები' },     badge: '🌱', color: 'var(--success)',    subtitle: { en: 'First Light',         ka: 'პირველი ხედი' } },
-  { id: 'intermediate', label: { en: 'Intermediate', ka: 'საშუალო' },      badge: '🔭', color: 'var(--stars)',      subtitle: { en: 'Going Deeper',        ka: 'უფრო ღრმად' } },
-  { id: 'advanced',     label: { en: 'Advanced',     ka: 'მოწინავე' },     badge: '⚡', color: 'var(--terracotta)', subtitle: { en: 'Serious Observer',    ka: 'სერიოზული დამკვირვებელი' } },
-  { id: 'pro',          label: { en: 'Pro',          ka: 'პროფესიონალი' }, badge: '🚀', color: 'var(--terracotta)', subtitle: { en: 'Observatory Level',   ka: 'ობსერვატორიის დონე' } },
+const LEVEL_CONFIG: { id: Level; label: { en: string; ka: string }; Icon: LucideIcon; color: string; subtitle: { en: string; ka: string } }[] = [
+  { id: 'beginner',     label: { en: 'Beginner',     ka: 'დამწყები' },     Icon: Sprout,    color: 'var(--success)',    subtitle: { en: 'First Light',         ka: 'პირველი ხედი' } },
+  { id: 'intermediate', label: { en: 'Intermediate', ka: 'საშუალო' },      Icon: Telescope, color: 'var(--stars)',      subtitle: { en: 'Going Deeper',        ka: 'უფრო ღრმად' } },
+  { id: 'advanced',     label: { en: 'Advanced',     ka: 'მოწინავე' },     Icon: Zap,       color: 'var(--terracotta)', subtitle: { en: 'Serious Observer',    ka: 'სერიოზული დამკვირვებელი' } },
+  { id: 'pro',          label: { en: 'Pro',          ka: 'პროფესიონალი' }, Icon: Rocket,    color: 'var(--terracotta)', subtitle: { en: 'Observatory Level',   ka: 'ობსერვატორიის დონე' } },
 ];
 
 const GUIDE_CARDS: GuideCard[] = [
@@ -678,7 +678,7 @@ export default function TelescopesTab() {
               color: 'var(--text-muted)',
             }}
           >
-            <span>{l.badge}</span>
+            <l.Icon size={16} aria-hidden="true" />
             <span>{l.label[locale]}</span>
           </button>
         ))}
@@ -686,7 +686,7 @@ export default function TelescopesTab() {
 
       {/* Level header */}
       <div className="flex items-center gap-2">
-        <span className="text-lg">{activeConfig.badge}</span>
+        <activeConfig.Icon size={18} aria-hidden="true" />
         <div>
           <p className="text-text-primary text-sm font-semibold">{activeConfig.label[locale]}</p>
           <p className="text-[10px] uppercase tracking-widest" style={{ color: activeConfig.color + '99' }}>
