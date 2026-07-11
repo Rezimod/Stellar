@@ -25,6 +25,13 @@ export interface ObservationMintParams {
   verified?: boolean;
 }
 
+function fitBytes(s: string, max: number): string {
+  if (Buffer.byteLength(s, 'utf8') <= max) return s;
+  let out = s;
+  while (Buffer.byteLength(out, 'utf8') > max - 3) out = out.slice(0, -1);
+  return `${out.trimEnd()}…`;
+}
+
 export async function mintCompressedNFT(params: ObservationMintParams): Promise<{ txId: string }> {
   const { FEE_PAYER_PRIVATE_KEY, MERKLE_TREE_ADDRESS, COLLECTION_MINT_ADDRESS } = process.env;
   if (!FEE_PAYER_PRIVATE_KEY) {
@@ -58,7 +65,11 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   const recipient = params.userAddress ? toPublicKey(params.userAddress) : keypair.publicKey;
 
   const verified = params.verified !== false;
-  const name = verified ? `Stellar: ${params.target}` : `Stellar Keepsake: ${params.target}`;
+  // Bubblegum caps the on-chain name at 32 bytes — anything longer fails the
+  // whole mint with error 6012 (MetadataNameTooLong). Truncate on-chain; the
+  // Irys JSON below keeps the full name for display.
+  const fullName = verified ? `Stellar: ${params.target}` : `Stellar Keepsake: ${params.target}`;
+  const name = fitBytes(fullName, 32);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarrclub.vercel.app';
   const shortHash = (params.oracleHash ?? '').slice(0, 10);
   const tierSuffix = params.tier ? `&i=${params.tier}` : '';
@@ -70,7 +81,7 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   let uri = `${appUrl}/m/o?t=${encodeURIComponent(params.target)}&d=${params.timestampMs}&la=${params.lat.toFixed(4)}&lo=${params.lon.toFixed(4)}&cc=${params.cloudCover}&h=${shortHash}&s=${params.stars}&r=${encodeURIComponent(params.rarity ?? 'Common')}&m=${params.multiplier ?? 1}${tierSuffix}`;
   try {
     uri = await uploadJsonToIrys({
-      name,
+      name: fullName,
       symbol: 'STLR',
       description: verified
         ? `Verified observation of ${params.target}. Cloud cover ${params.cloudCover}%, oracle hash ${shortHash}. Sealed on Solana.`
@@ -117,13 +128,19 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
         collection: { key: collectionKey, verified: false },
         creators: [],
       },
-    }).sendAndConfirm(umi, { send: { skipPreflight: true }, confirm: { commitment: 'processed' } });
+    }).sendAndConfirm(umi, { confirm: { commitment: 'processed' } });
 
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error(`Mint timeout after ${TIMEOUT_MS}ms`)), TIMEOUT_MS)
     );
 
-    const { signature } = await Promise.race([mintPromise, timeoutPromise]);
+    // Preflight (simulation) rejects doomed txs before the fee-payer pays, and
+    // a tx that still fails on-chain must throw — otherwise the route records
+    // the failed signature as a successful mint in observation_log.
+    const { signature, result } = await Promise.race([mintPromise, timeoutPromise]);
+    if (result.value.err) {
+      throw new Error(`Mint tx failed on-chain: ${JSON.stringify(result.value.err)}`);
+    }
     return base58.deserialize(signature)[0];
   }
 

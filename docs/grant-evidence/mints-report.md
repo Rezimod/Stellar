@@ -13,7 +13,7 @@ on-chain data — every row is independently verifiable on Solscan.
 | **Total verified-observation cNFT mints** | **0** |
 | Unique owner wallets | 0 |
 | Date range | n/a |
-| Internal test mints (excluded above) | 3 |
+| Internal test mints (excluded above) | 4 |
 
 ## Mints per day
 
