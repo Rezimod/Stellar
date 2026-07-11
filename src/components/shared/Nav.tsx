@@ -104,6 +104,9 @@ export default function Nav() {
     router.push('/');
   };
 
+  // /start is a focused campaign landing — one screen, one action, no chrome.
+  if (pathname === '/start') return null;
+
   return (
     <>
       <style>{`

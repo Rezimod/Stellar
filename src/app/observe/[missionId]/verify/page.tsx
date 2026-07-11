@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { X } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
@@ -53,6 +54,8 @@ export default function ObserveVerifyPage() {
   const params = useParams<{ missionId: string }>();
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
+  // Georgian copy is casual and crypto-free (campaign audience from /start).
+  const ka = useLocale() === 'ka';
 
   const { addMission } = useAppState();
   const { user, getAccessToken } = usePrivy();
@@ -100,7 +103,7 @@ export default function ObserveVerifyPage() {
       const ts = timestamp || new Date().toISOString();
 
       if (!navigator.onLine) {
-        setMintError('No internet connection — try again when back online');
+        setMintError(ka ? 'ინტერნეტი არ არის — სცადე, როცა ისევ ხაზზე იქნები' : 'No internet connection — try again when back online');
         setStage('mint-ready');
         return;
       }
@@ -112,7 +115,7 @@ export default function ObserveVerifyPage() {
           skyData = await res.json();
         } else {
           skyData = makeEstimatedSky();
-          setMintError('Sky data unavailable — proceeding with estimated conditions.');
+          setMintError(ka ? 'ცის მონაცემები ვერ მოვიდა — ვაგრძელებთ სავარაუდო პირობებით.' : 'Sky data unavailable — proceeding with estimated conditions.');
         }
 
         const effectiveSky = mission.demo ? { ...skyData, verified: true } : skyData;
@@ -124,7 +127,9 @@ export default function ObserveVerifyPage() {
           windSpeed: skyData.windSpeed ?? 5,
         }));
         if (!skyData.verified && !mission.demo) {
-          setMintError('Cloudy sky — observation logged with 0 stars. You can still mint.');
+          setMintError(ka
+            ? 'ღრუბლიანი ცაა — დაკვირვება 0 ✦-ით დაფიქსირდება. მაინც შეგიძლია შეინახო.'
+            : 'Cloudy sky — observation logged with 0 stars. You can still mint.');
         }
 
         if (!mission.demo) {
@@ -155,7 +160,11 @@ export default function ObserveVerifyPage() {
               // proceeds to the mint screen — it just mints as an unverified
               // keepsake worth 0 Stars, with a clear note explaining why.
               if (!pv.accepted) {
-                setMintError(pv.reason || "This photo couldn't be verified, so it earns no Stars — you can still keep it as a personal record.");
+                // pv.reason is an English server string — Georgian users get a
+                // single friendly message instead.
+                setMintError(ka
+                  ? 'ფოტო ვერ დადასტურდა, ამიტომ ✦ ამჯერად ვერ დაგროვდება — მაინც შეგიძლია შეინახო სამახსოვროდ.'
+                  : (pv.reason || "This photo couldn't be verified, so it earns no Stars — you can still keep it as a personal record."));
               }
             }
           } catch {
@@ -167,7 +176,7 @@ export default function ObserveVerifyPage() {
       } catch {
         // Sky oracle offline — don't bounce; proceed with estimated conditions.
         setSky(makeEstimatedSky());
-        setMintError('Sky check offline — proceeding with estimated conditions.');
+        setMintError(ka ? 'ცის შემოწმება ვერ მოხერხდა — ვაგრძელებთ სავარაუდო პირობებით.' : 'Sky check offline — proceeding with estimated conditions.');
         setStage('mint-ready');
       }
     })();
@@ -254,15 +263,17 @@ export default function ObserveVerifyPage() {
       } else {
         const errData = await res.json().catch(() => ({}));
         const msg: string = errData?.error ?? '';
+        // Server error strings are English (and crypto-flavored) — Georgian
+        // users get friendly generic copy instead.
         if (res.status === 429) {
-          setMintError(msg || 'Too many mints right now — try again in a minute.');
+          setMintError(ka ? 'ბევრი მოთხოვნაა ერთდროულად — სცადე ერთ წუთში.' : (msg || 'Too many mints right now — try again in a minute.'));
         } else {
-          setMintError(msg || "Couldn't save your record — please retry.");
+          setMintError(ka ? 'ვერ შევინახეთ — სცადე კიდევ ერთხელ.' : (msg || "Couldn't save your record — please retry."));
         }
       }
     } catch (err) {
       console.error('[mint] network/timeout', err);
-      setMintError('Network error — please retry.');
+      setMintError(ka ? 'ქსელი შეფერხდა — სცადე კიდევ ერთხელ.' : 'Network error — please retry.');
     }
 
     if (!txId) {
@@ -393,7 +404,8 @@ export default function ObserveVerifyPage() {
       });
 
       setStage('done');
-      router.push(`/observe/${mission.id}/result`);
+      // Keep the campaign UTM query on the URL through the whole flow.
+      router.push(`/observe/${mission.id}/result${window.location.search}`);
     }, 1200);
   };
 
@@ -405,13 +417,13 @@ export default function ObserveVerifyPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-primary font-semibold text-base mb-2">{ka ? 'მისია ვერ მოიძებნა' : 'Mission not found'}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
-            Back to missions
+            {ka ? 'მისიებზე დაბრუნება' : 'Back to missions'}
           </Link>
         </div>
       </PageContainer>
@@ -446,7 +458,7 @@ export default function ObserveVerifyPage() {
             latitude={coords.lat}
             longitude={coords.lon}
             onMint={handleMint}
-            mintLabel={isUnverified ? 'Keep it anyway' : undefined}
+            mintLabel={isUnverified ? (ka ? 'მაინც შეინახე' : 'Keep it anyway') : undefined}
             compact={true}
           />
           {photoVerification && !isUnverified && (
@@ -456,23 +468,25 @@ export default function ObserveVerifyPage() {
                 photoVerification.confidence === 'medium' ? 'bg-terracotta text-terracotta' :
                 'bg-[var(--surface)] text-text-muted'
               }`}>
-                AI: {photoVerification.identifiedObject} · {photoVerification.confidence} confidence
+                {ka
+                  ? `AI: ${photoVerification.identifiedObject} · სანდოობა: ${photoVerification.confidence === 'high' ? 'მაღალი' : photoVerification.confidence === 'medium' ? 'საშუალო' : 'დაბალი'}`
+                  : `AI: ${photoVerification.identifiedObject} · ${photoVerification.confidence} confidence`}
               </span>
             </div>
           )}
           {isUnverified && (
             <div className="mt-2 text-center">
               <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface)] text-text-muted">
-                Not verified · 0 ✦ · mints as a keepsake
+                {ka ? 'ვერ დადასტურდა · 0 ✦ · შეინახება სამახსოვროდ' : 'Not verified · 0 ✦ · mints as a keepsake'}
               </span>
             </div>
           )}
           {mintError && (
             <div className="mt-2 text-center">
               <p className="text-xs text-terracotta">{mintError}</p>
-              {mintError.includes('cloudy') && (
+              {(mintError.includes('cloudy') || mintError.includes('ღრუბლიანი')) && (
                 <Link href="/sky" className="text-xs text-[var(--terracotta)] underline mt-1 inline-block">
-                  Check sky forecast →
+                  {ka ? 'ნახე ცის პროგნოზი →' : 'Check sky forecast →'}
                 </Link>
               )}
             </div>
@@ -485,13 +499,13 @@ export default function ObserveVerifyPage() {
 
   // verifying-sky | verifying-photo | done (transient before navigation)
   const title =
-    stage === 'verifying-photo' ? 'Verifying Photo'
-    : stage === 'done' ? 'Finishing Up'
-    : 'Analyzing Sky';
+    stage === 'verifying-photo' ? (ka ? 'ფოტოს შემოწმება' : 'Verifying Photo')
+    : stage === 'done' ? (ka ? 'თითქმის მზადაა' : 'Finishing Up')
+    : (ka ? 'ცის ანალიზი' : 'Analyzing Sky');
   const subtitle =
-    stage === 'verifying-photo' ? 'Checking your photo'
-    : stage === 'done' ? 'Almost there'
-    : 'Reading tonight’s conditions';
+    stage === 'verifying-photo' ? (ka ? 'ვამოწმებთ შენს ფოტოს' : 'Checking your photo')
+    : stage === 'done' ? (ka ? 'ერთი წამიც' : 'Almost there')
+    : (ka ? 'ვკითხულობთ ამაღამდელ პირობებს' : 'Reading tonight’s conditions');
 
   return (
     <MintAnimation

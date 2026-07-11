@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import BackButton from '@/components/shared/BackButton';
 import Button from '@/components/shared/Button';
 import { MISSIONS } from '@/lib/constants';
@@ -12,12 +13,23 @@ import { useObserveFlow } from './ObserveFlowContext';
 import PageContainer from '@/components/layout/PageContainer';
 import StarMark from '@/components/ui/StarMark';
 
+// Georgian name/hint for the missions the /start campaign lands on. Other
+// missions keep their English name (proper nouns read fine in Georgian UI).
+const KA_MISSIONS: Record<string, { name: string; hint: string }> = {
+  'free-observation': {
+    name: 'ღამის ცა',
+    hint: 'იპოვე ადგილი კაშკაშა შუქებისგან მოშორებით და დაუმიზნე კამერა ცას — ან ყველაზე კაშკაშა წერტილს, რასაც ხედავ.',
+  },
+};
+
 export default function ObserveBriefPage() {
   const router = useRouter();
   const params = useParams<{ missionId: string }>();
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
   const { reset } = useObserveFlow();
+  const ka = useLocale() === 'ka';
+  const kaOverride = ka ? KA_MISSIONS[missionId] : undefined;
 
   useEffect(() => {
     reset();
@@ -32,14 +44,14 @@ export default function ObserveBriefPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
-          <p className="text-text-muted text-sm mb-4">The mission you're looking for doesn't exist.</p>
+          <p className="text-text-primary font-semibold text-base mb-2">{ka ? 'მისია ვერ მოიძებნა' : 'Mission not found'}</p>
+          <p className="text-text-muted text-sm mb-4">{ka ? 'ასეთი მისია არ არსებობს.' : "The mission you're looking for doesn't exist."}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
-            Back to missions
+            {ka ? 'მისიებზე დაბრუნება' : 'Back to missions'}
           </Link>
         </div>
       </PageContainer>
@@ -67,7 +79,7 @@ export default function ObserveBriefPage() {
         <div className="relative flex items-center justify-center gap-2 flex-shrink-0">
           <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--stl-gold)' }}>
-            Tonight's Target
+            {ka ? 'დღევანდელი სამიზნე' : "Tonight's Target"}
           </span>
           <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
         </div>
@@ -114,7 +126,7 @@ export default function ObserveBriefPage() {
             animationDelay: '120ms',
           }}
         >
-          {mission.name}
+          {kaOverride?.name ?? mission.name}
         </h1>
 
         <p
@@ -130,7 +142,7 @@ export default function ObserveBriefPage() {
             animationDelay: '220ms',
           }}
         >
-          {mission.hint}
+          {kaOverride?.hint ?? mission.hint}
         </p>
 
         <div className="relative flex items-center justify-center gap-3 flex-shrink-0">
@@ -150,15 +162,15 @@ export default function ObserveBriefPage() {
 
         <Button
           variant="brass"
-          onClick={() => router.push(`/observe/${missionId}/capture`)}
+          onClick={() => router.push(`/observe/${missionId}/capture${window.location.search}`)}
           className="relative w-full flex-shrink-0 max-w-sm mt-2"
         >
-          Begin Observation →
+          {ka ? 'დაიწყე დაკვირვება →' : 'Begin Observation →'}
         </Button>
 
         {mission.demo && (
           <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
-            Demo mode — upload any photo to try the flow
+            {ka ? 'სადემონსტრაციო რეჟიმი — ატვირთე ნებისმიერი ფოტო და სცადე' : 'Demo mode — upload any photo to try the flow'}
           </p>
         )}
       </div>

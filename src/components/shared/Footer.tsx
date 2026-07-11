@@ -6,6 +6,7 @@ import {
   User, Github, ShieldCheck, Lock, Mail,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 import AstroLogo from './AstroLogo';
 
 type IconCmp = React.ComponentType<{ size?: number }>;
@@ -81,7 +82,10 @@ function FooterLinkItem({ link, label }: { link: FooterLink; label: string }) {
 
 export default function Footer() {
   const t = useTranslations('footer');
+  const pathname = usePathname();
   const year = new Date().getFullYear();
+
+  if (pathname === '/start') return null;
 
   return (
     <footer

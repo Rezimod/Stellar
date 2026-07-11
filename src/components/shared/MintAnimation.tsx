@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocale } from 'next-intl';
 
 interface MintAnimationProps {
   done?: boolean;
@@ -15,11 +16,18 @@ interface MintAnimationProps {
 export default function MintAnimation({
   done = false,
   slowMsg,
-  title = 'Sealing Observation',
-  subtitle = 'Writing to Solana devnet',
-  doneTitle = 'Sealed on Solana ✦',
-  doneSubtitle = 'Proof recorded on-chain',
+  title,
+  subtitle,
+  doneTitle,
+  doneSubtitle,
 }: MintAnimationProps) {
+  // Georgian defaults are deliberately crypto-free — the /start campaign
+  // audience never sees chain wording.
+  const ka = useLocale() === 'ka';
+  title ??= ka ? 'ვინახავთ შენს დაკვირვებას' : 'Sealing Observation';
+  subtitle ??= ka ? 'ერთი წუთით' : 'Writing to Solana devnet';
+  doneTitle ??= ka ? 'შენახულია ✦' : 'Sealed on Solana ✦';
+  doneSubtitle ??= ka ? 'შენი დაკვირვება დაფიქსირდა' : 'Proof recorded on-chain';
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -153,7 +161,9 @@ export default function MintAnimation({
         )}
         {slowMsg && !done && (
           <p className="text-text-muted text-[11px] mt-3 text-center max-w-[220px] leading-relaxed">
-            Still sealing — Solana devnet can be slow. Don&apos;t close the app.
+            {ka
+              ? 'ცოტა გვიანდება — არ დახურო გვერდი, წამებში მზად იქნება.'
+              : 'Still sealing — this can take a moment. Don’t close the app.'}
           </p>
         )}
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { useCamera } from '@/hooks/useCamera';
 import { RefreshCw, RotateCcw, Camera, Upload, Plus, Minus } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface CameraCaptureProps {
 }
 
 export default function CameraCapture({ missionName, onCapture, onUpload }: CameraCaptureProps) {
+  const ka = useLocale() === 'ka';
   const { videoRef, error, zoom, zoomCap, setZoomLevel, startCamera, flipCamera, stopCamera, capture } = useCamera();
   const [preview, setPreview] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
@@ -29,7 +31,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
     setTimeout(() => setFlash(false), 120);
     const photo = capture(missionName);
     if (photo === null) {
-      setCaptureError('Frame too dark — please point at the sky and try again');
+      setCaptureError(ka ? 'კადრი ძალიან ბნელია — დაუმიზნე ცას და სცადე თავიდან' : 'Frame too dark — please point at the sky and try again');
       return;
     }
     stopCamera();
@@ -107,14 +109,14 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98] flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
-          Submit for Verification →
+          {ka ? 'გაგზავნე შესამოწმებლად →' : 'Submit for Verification →'}
         </button>
         <button
           onClick={handleRetake}
           className="w-full py-2.5 rounded-xl text-sm text-text-muted flex items-center justify-center gap-2 flex-shrink-0"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <RotateCcw size={14} /> Retake
+          <RotateCcw size={14} /> {ka ? 'თავიდან გადაღება' : 'Retake'}
         </button>
       </div>
     );
@@ -127,13 +129,13 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.15)' }}>
           <Camera size={22} className="text-[var(--terracotta)]/60" />
         </div>
-        <p className="text-terracotta text-sm mb-2">Camera access required</p>
-        <p className="text-text-muted text-xs mb-5">Allow camera access in your browser settings, or upload a saved sky photo.</p>
+        <p className="text-terracotta text-sm mb-2">{ka ? 'საჭიროა კამერაზე წვდომა' : 'Camera access required'}</p>
+        <p className="text-text-muted text-xs mb-5">{ka ? 'დაუშვი კამერა ბრაუზერის პარამეტრებში, ან ატვირთე ცის ფოტო გალერეიდან.' : 'Allow camera access in your browser settings, or upload a saved sky photo.'}</p>
         <label
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
-          <Upload size={15} /> Upload from Device
+          <Upload size={15} /> {ka ? 'ატვირთე ფოტო' : 'Upload from Device'}
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
         </label>
       </div>
@@ -275,13 +277,20 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         className="rounded-xl px-3 py-2.5 flex-shrink-0"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
       >
-        <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 font-medium">How to capture</p>
+        <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 font-medium">{ka ? 'როგორ გადავიღო' : 'How to capture'}</p>
         <div className="flex flex-col gap-1.5">
-          {[
-            { n: '1', text: 'Point your telescope at the target object' },
-            { n: '2', text: 'Hold your phone camera to the eyepiece' },
-            { n: '3', text: 'Center the object and press shutter — or tap the upload icon' },
-          ].map(tip => (
+          {(ka
+            ? [
+                { n: '1', text: 'დაუმიზნე ტელესკოპი ან ტელეფონი სამიზნეს' },
+                { n: '2', text: 'ტელესკოპით? მიადე ტელეფონის კამერა ოკულარს' },
+                { n: '3', text: 'მოაქციე ობიექტი ცენტრში და გადაიღე — ან ატვირთე გალერეიდან' },
+              ]
+            : [
+                { n: '1', text: 'Point your telescope at the target object' },
+                { n: '2', text: 'Hold your phone camera to the eyepiece' },
+                { n: '3', text: 'Center the object and press shutter — or tap the upload icon' },
+              ]
+          ).map(tip => (
             <div key={tip.n} className="flex items-start gap-2">
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"

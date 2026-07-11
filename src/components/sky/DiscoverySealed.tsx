@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import type { Mission } from '@/lib/types';
 import { ArrowRight, ExternalLink, Share2, Bookmark, Send } from 'lucide-react';
 import MissionRotateArt from './MissionRotateArt';
@@ -78,7 +79,9 @@ export default function DiscoverySealed({
   onPostToFeed,
 }: Props) {
   const totalStars = starsBase + starsBonus;
-  const tagline = TAGLINES[mission.id] ?? 'Sealed on Solana';
+  // Georgian copy is crypto-free: no Solana/mint/tx wording, no explorer link.
+  const ka = useLocale() === 'ka';
+  const tagline = ka ? 'შენი აღმოჩენა, სამუდამოდ დაცული' : (TAGLINES[mission.id] ?? 'Sealed on Solana');
   const metaLine = META_LINES[mission.id] ?? 'CELESTIAL';
 
   const scoreDash = useMemo(() => {
@@ -130,7 +133,9 @@ export default function DiscoverySealed({
               fontWeight: 500,
             }}
           >
-            {unverified ? 'KEEPSAKE MINTED' : 'DISCOVERY SEALED'}
+            {ka
+              ? (unverified ? 'შენახულია სამახსოვროდ' : 'აღმოჩენა დაფიქსირდა')
+              : (unverified ? 'KEEPSAKE MINTED' : 'DISCOVERY SEALED')}
           </span>
           <div className="w-1 h-1 rounded-full" style={{ background: 'var(--stl-gold)' }} />
         </div>
@@ -151,7 +156,7 @@ export default function DiscoverySealed({
         >
           {mission.name}{' '}
           <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(255,255,255,0.55)' }}>
-            {unverified ? 'kept' : 'sealed'}
+            {ka ? (unverified ? 'შენახულია' : 'დაფიქსირდა') : (unverified ? 'kept' : 'sealed')}
           </span>
         </h1>
 
@@ -166,9 +171,11 @@ export default function DiscoverySealed({
               maxWidth: 320,
             }}
           >
-            {unverifiedReason
-              ? unverifiedReason
-              : "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours, minted on Solana as a personal record."}
+            {ka
+              ? 'ეს ფოტო ვერ დადასტურდა, ამიტომ ✦ ვერ დაგროვდა — მაგრამ შენია და შენს კოლექციაში სამუდამოდ შეინახება.'
+              : (unverifiedReason
+                  ? unverifiedReason
+                  : "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours, minted on Solana as a personal record.")}
           </p>
         )}
 
@@ -277,7 +284,7 @@ export default function DiscoverySealed({
                   marginBottom: 1,
                 }}
               >
-                CERTIFICATE
+                {ka ? 'სერტიფიკატი' : 'CERTIFICATE'}
               </div>
               <div
                 style={{
@@ -288,7 +295,7 @@ export default function DiscoverySealed({
                   lineHeight: 1,
                 }}
               >
-                Stellar Observation{nftNumber > 0 ? ` #${nftNumber}` : ''}
+                {ka ? 'Stellar დაკვირვება' : 'Stellar Observation'}{nftNumber > 0 ? ` #${nftNumber}` : ''}
               </div>
             </div>
 
@@ -340,43 +347,47 @@ export default function DiscoverySealed({
             <MissionRotateArt missionId={mission.id} size={56} />
           </div>
 
-          <div
-            className="flex items-center justify-between mt-1.5 pt-1.5"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-          >
-            <div className="flex items-center gap-1.5">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ background: 'linear-gradient(135deg, #00FFA3, #DC1FFF)' }}
-              />
-              <span
+          {/* Georgian campaign users never see chain wording — the tx row and
+              explorer link are EN-only. */}
+          {!ka && (
+            <div
+              className="flex items-center justify-between mt-1.5 pt-1.5"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+            >
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: 'linear-gradient(135deg, #00FFA3, #DC1FFF)' }}
+                />
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 9.5,
+                    color: 'rgba(255,255,255,0.55)',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {solanaTxShort}
+                </span>
+              </div>
+              <a
+                href={solanaExplorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
                 style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 9.5,
-                  color: 'rgba(255,255,255,0.55)',
-                  letterSpacing: '0.05em',
+                  fontSize: 10.5,
+                  color: 'var(--stl-teal)',
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 500,
+                  textDecoration: 'none',
                 }}
               >
-                {solanaTxShort}
-              </span>
+                View on Solana
+                <ExternalLink size={9} />
+              </a>
             </div>
-            <a
-              href={solanaExplorerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-              style={{
-                fontSize: 10.5,
-                color: 'var(--stl-teal)',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 500,
-                textDecoration: 'none',
-              }}
-            >
-              View on Solana
-              <ExternalLink size={9} />
-            </a>
-          </div>
+          )}
         </div>
 
         <button
@@ -398,24 +409,24 @@ export default function DiscoverySealed({
           onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
         >
-          View in collection
+          {ka ? 'ნახე შენი კოლექცია' : 'View in collection'}
           <ArrowRight size={13} strokeWidth={2.5} />
         </button>
 
         <div className={`grid ${onPostToFeed ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5 w-full mt-1.5`}>
-          <SecondaryButton icon={<Share2 size={11} />} label="Share" onClick={onShare} />
+          <SecondaryButton icon={<Share2 size={11} />} label={ka ? 'გაზიარება' : 'Share'} onClick={onShare} />
           {onPostToFeed && (
             <SecondaryButton
               icon={<Send size={11} />}
-              label="Post"
+              label={ka ? 'პოსტი' : 'Post'}
               onClick={onPostToFeed}
               accent
             />
           )}
-          <SecondaryButton icon={<Bookmark size={11} />} label="Save" onClick={onSave} />
+          <SecondaryButton icon={<Bookmark size={11} />} label={ka ? 'შენახვა' : 'Save'} onClick={onSave} />
           <SecondaryButton
             icon={<ArrowRight size={11} />}
-            label="Next"
+            label={ka ? 'შემდეგი' : 'Next'}
             iconPosition="right"
             onClick={onContinue}
           />

@@ -116,7 +116,7 @@ export default function BottomNav() {
     </nav>
   );
 
-  if (!mounted) return null;
+  if (!mounted || pathname === '/start') return null;
 
   // Keep the tab bar attached to the viewport even when a feature opens its
   // own full-screen scroll container or temporarily scroll-locks the page.

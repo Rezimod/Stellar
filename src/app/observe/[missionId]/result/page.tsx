@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useDisplayProfile } from '@/hooks/useDisplayProfile';
@@ -20,6 +21,8 @@ export default function ObserveResultPage() {
   const params = useParams<{ missionId: string }>();
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
+  // Georgian copy is casual and crypto-free (campaign audience from /start).
+  const ka = useLocale() === 'ka';
 
   const { address: stellarAddress } = useStellarUser();
   const { getAccessToken } = usePrivy();
@@ -54,6 +57,18 @@ export default function ObserveResultPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [posting, setPosting] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [firstMint, setFirstMint] = useState(false);
+
+  // First-ever mint on this device → warm one-time celebration line.
+  useEffect(() => {
+    if (!mintTxId) return;
+    try {
+      if (!localStorage.getItem('stellar_first_mint')) {
+        localStorage.setItem('stellar_first_mint', '1');
+        setFirstMint(true);
+      }
+    } catch {}
+  }, [mintTxId]);
 
   useEffect(() => {
     if (!mission || !mintTxId) return;
@@ -91,12 +106,12 @@ export default function ObserveResultPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setStarError(data.error ?? 'Could not claim star');
+        setStarError(ka ? 'სახელის მინიჭება ვერ მოხერხდა — სცადე სხვა სახელი' : (data.error ?? 'Could not claim star'));
         return;
       }
       setStarClaimed({ chosenName: data.chosenName, proofUrl: data.proofUrl });
     } catch {
-      setStarError('Could not claim star');
+      setStarError(ka ? 'სახელის მინიჭება ვერ მოხერხდა — სცადე თავიდან' : 'Could not claim star');
     } finally {
       setStarClaiming(false);
     }
@@ -109,13 +124,13 @@ export default function ObserveResultPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-primary font-semibold text-base mb-2">{ka ? 'მისია ვერ მოიძებნა' : 'Mission not found'}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
-            Back to missions
+            {ka ? 'მისიებზე დაბრუნება' : 'Back to missions'}
           </Link>
         </div>
       </PageContainer>
@@ -136,12 +151,14 @@ export default function ObserveResultPage() {
     : '#';
 
   const handleShare = async () => {
-    const shareText = `I just observed ${mission.name} on Stellar ✦ Sealed on Solana.`;
+    const shareText = ka
+      ? `ახლახან დავაკვირდი: ${mission.name} — Stellar ✦`
+      : `I just observed ${mission.name} on Stellar ✦ Sealed on Solana.`;
     const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://stellarr.club';
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({
-          title: `I sealed ${mission.name} on Stellar`,
+          title: ka ? `ჩემი აღმოჩენა Stellar-ზე: ${mission.name}` : `I sealed ${mission.name} on Stellar`,
           text: shareText,
           url: shareUrl,
         });
@@ -152,14 +169,14 @@ export default function ObserveResultPage() {
     }
     try {
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      setToast('Copied to clipboard');
+      setToast(ka ? 'დაკოპირდა' : 'Copied to clipboard');
     } catch {
-      setToast('Share unavailable');
+      setToast(ka ? 'გაზიარება ვერ მოხერხდა' : 'Share unavailable');
     }
   };
 
   const handleSave = () => {
-    setToast('Saved to your collection');
+    setToast(ka ? 'შენახულია შენს კოლექციაში' : 'Saved to your collection');
   };
 
   const handlePostToFeed = async () => {
@@ -193,12 +210,12 @@ export default function ObserveResultPage() {
       });
       if (res.ok) {
         setPosted(true);
-        setToast('Posted to your feed');
+        setToast(ka ? 'გამოქვეყნდა შენს ლენტაზე' : 'Posted to your feed');
       } else {
-        setToast('Could not post — try again');
+        setToast(ka ? 'ვერ გამოქვეყნდა — სცადე თავიდან' : 'Could not post — try again');
       }
     } catch {
-      setToast('Could not post — try again');
+      setToast(ka ? 'ვერ გამოქვეყნდა — სცადე თავიდან' : 'Could not post — try again');
     } finally {
       setPosting(false);
     }
@@ -206,6 +223,23 @@ export default function ObserveResultPage() {
 
   return (
     <PageContainer variant="fullscreen" className="relative z-10">
+      {/* First-ever mint — warm one-time congratulation (campaign success state) */}
+      {firstMint && (
+        <div className="relative z-[2] px-4 pt-4 max-w-[420px] mx-auto">
+          <div
+            className="rounded-xl px-4 py-3 text-center animate-cosmic-reveal"
+            style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}
+          >
+            <p className="text-sm font-semibold m-0" style={{ color: 'var(--terracotta)' }}>
+              {ka ? 'გილოცავ! აღმოაჩინე შენი პირველი ვარსკვლავი ✦' : 'Congrats — your first discovery ✦'}
+            </p>
+            <p className="text-[11px] mt-1 m-0" style={{ color: 'var(--text-muted)' }}>
+              {ka ? 'გააზიარე მეგობრებთან, ან დააკვირდი ცას კიდევ ერთხელ.' : 'Share it, or point at the sky again.'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Cosmic bonus + weekly challenge inline banners (above seal) */}
       {(cosmicBonus?.triggered || challengeCompleted) && (
         <div className="relative z-[2] px-4 pt-4 flex flex-col gap-2 max-w-[420px] mx-auto">
@@ -220,7 +254,7 @@ export default function ObserveResultPage() {
             >
               <StarMark size={20} style={{ filter: 'drop-shadow(0 0 6px white)' }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">Cosmic Bonus</p>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">{ka ? 'კოსმოსური ბონუსი' : 'Cosmic Bonus'}</p>
                 <p className="text-sm font-black text-text-primary m-0 leading-tight">+{cosmicBonus.amount} ✦ <span className="text-[10px] font-normal text-text-primary/85 italic">{cosmicBonus.message}</span></p>
               </div>
             </div>
@@ -236,8 +270,8 @@ export default function ObserveResultPage() {
             >
               <span style={{ fontSize: 16 }}>✓</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/90 m-0 uppercase">Weekly Challenge</p>
-                <p className="text-sm font-bold text-text-primary m-0">+{getActiveChallenge().bonusStars} ✦ Claimed</p>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/90 m-0 uppercase">{ka ? 'კვირის გამოწვევა' : 'Weekly Challenge'}</p>
+                <p className="text-sm font-bold text-text-primary m-0">+{getActiveChallenge().bonusStars} ✦ {ka ? 'მიღებულია' : 'Claimed'}</p>
               </div>
             </div>
           )}
@@ -247,7 +281,7 @@ export default function ObserveResultPage() {
               style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255, 179, 71,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
             >
               <MoonPhase phase={mintTier.phase} size={11} />
-              <span>{mintTier.multiplier}× streak multiplier</span>
+              <span>{mintTier.multiplier}× {ka ? 'სერიის ბონუსი' : 'streak multiplier'}</span>
             </div>
           )}
         </div>
@@ -286,19 +320,19 @@ export default function ObserveResultPage() {
                   <div className="flex items-center gap-1.5">
                     <span style={{ fontSize: 14, color: 'var(--stars)', lineHeight: 1 }}>★</span>
                     <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      Name a star
+                      {ka ? 'დაარქვი ვარსკვლავს სახელი' : 'Name a star'}
                     </span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: 'rgba(148,163,184,0.6)' }}>
                     {nearestStar.catalogId}
-                    {nearestStar.constellation ? ` in ${nearestStar.constellation}` : ''} · magnitude {nearestStar.mag.toFixed(1)}
+                    {nearestStar.constellation ? (ka ? ` · ${nearestStar.constellation}` : ` in ${nearestStar.constellation}`) : ''} · {ka ? 'სიკაშკაშე' : 'magnitude'} {nearestStar.mag.toFixed(1)}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(100,116,139,0.7)' }}>
-                    Your name will be inscribed on your NFT.
+                    {ka ? 'შენი არჩეული სახელი შენს აღმოჩენას სამუდამოდ მიეწერება.' : 'Your name will be inscribed on your NFT.'}
                   </p>
                   <input
                     type="text"
-                    placeholder="e.g. Nino's Star, Tbilisi"
+                    placeholder={ka ? 'მაგ.: ნინოს ვარსკვლავი, თბილისი' : "e.g. Nino's Star, Tbilisi"}
                     maxLength={30}
                     value={starName}
                     onChange={e => setStarName(e.target.value)}
@@ -331,7 +365,7 @@ export default function ObserveResultPage() {
                           style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--stars)' }}
                         />
                       )}
-                      Inscribe
+                      {ka ? 'დაარქვი' : 'Inscribe'}
                     </button>
                     <button
                       onClick={() => setStarSkipped(true)}
@@ -342,7 +376,7 @@ export default function ObserveResultPage() {
                         color: 'rgba(148,163,184,0.5)',
                       }}
                     >
-                      Skip
+                      {ka ? 'გამოტოვება' : 'Skip'}
                     </button>
                   </div>
                   {starError && (
@@ -358,14 +392,14 @@ export default function ObserveResultPage() {
                     {starClaimed.chosenName}
                   </span>
                 </div>
-                <p className="text-xs" style={{ color: 'rgba(148,163,184,0.6)' }}>Your star is named.</p>
+                <p className="text-xs" style={{ color: 'rgba(148,163,184,0.6)' }}>{ka ? 'შენს ვარსკვლავს უკვე სახელი აქვს.' : 'Your star is named.'}</p>
                 <a
                   href={starClaimed.proofUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: 'var(--terracotta)', fontSize: 12, textDecoration: 'none' }}
                 >
-                  View proof page →
+                  {ka ? 'ნახე დამადასტურებელი გვერდი →' : 'View proof page →'}
                 </a>
               </div>
             )}
