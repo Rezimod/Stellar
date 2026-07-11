@@ -35,9 +35,12 @@ _none_
 | --- | ---: |
 | Onboarded users (`users`) | 44 |
 | Cohort-tracked wallets (`user_cohorts`) | 5 |
-| Observations with a mint tx (`observation_log`) | 88 |
-| Distinct wallets with a minted observation | 9 |
+| `observation_log` mint rows — devnet pilot (before 2026-06-21) | 59 |
+| `observation_log` mint rows — mainnet era | 4 |
+| `observation_log` rows with an off-chain event tag (not mints) | 25 |
 
-On-chain vs DB: **0** cNFTs on-chain vs **88** mint rows in the app DB — investigate the gap (test mints, retries, or out-of-app mints).
+Mainnet-era DB mint rows verified against chain: **0 landed**, 4 failed on-chain, 0 not found. Failed/not-found rows are recorded as minted in the DB and should be corrected.
+
+On-chain vs DB: **0** live user cNFTs on-chain vs **0** landed mainnet mint rows in the app DB — consistent.
 
 Full row-level data: [mints-report.csv](./mints-report.csv)

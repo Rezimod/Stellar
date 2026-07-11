@@ -136,26 +136,50 @@ const sd = Math.sqrt(counts.reduce((s, n) => s + (n - mean) ** 2, 0) / (counts.l
 const threshold = Math.max(5, Math.ceil(mean + 3 * sd));
 const outliers = [...owners.entries()].filter(([, n]) => n >= threshold).sort((a, b) => b[1] - a[1]);
 
-// 4. Optional app-DB cross-check.
+// 4. Optional app-DB cross-check. observation_log.mint_tx mixes real tx
+// signatures with off-chain event tags (find:/checkin:/cosmic:/challenge:),
+// and signature rows from before the mainnet tree went live (2026-06-21,
+// tx 4ZMWp24yYW98…) are devnet-pilot history — classify before comparing
+// against chain, and verify each mainnet-era signature actually landed.
 let dbSection = '_DB cross-check skipped (no DATABASE_URL)._';
 if (process.env.DATABASE_URL) {
   try {
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(process.env.DATABASE_URL);
+    const SIG = '^[1-9A-HJ-NP-Za-km-z]{80,90}$';
+    const MAINNET_SINCE = '2026-06-21';
     const [{ n: cohortUsers }] = await sql`select count(*)::int as n from user_cohorts`;
     const [{ n: appUsers }] = await sql`select count(*)::int as n from users`;
-    const [{ n: dbMints }] = await sql`select count(*)::int as n from observation_log where mint_tx is not null`;
-    const [{ n: dbMintWallets }] = await sql`select count(distinct wallet)::int as n from observation_log where mint_tx is not null`;
+    const [c] = await sql`select
+      count(*) filter (where mint_tx !~ ${SIG})::int as tags,
+      count(*) filter (where mint_tx ~ ${SIG} and created_at < ${MAINNET_SINCE})::int as devnet,
+      count(*) filter (where mint_tx ~ ${SIG} and created_at >= ${MAINNET_SINCE})::int as mainnet
+      from observation_log where mint_tx is not null`;
+    const attempts = await sql`select mint_tx from observation_log
+      where mint_tx ~ ${SIG} and created_at >= ${MAINNET_SINCE}`;
+    let landed = 0, failedOnChain = 0, notFound = 0;
+    for (const a of attempts) {
+      const tx = await rpc('getTransaction', [a.mint_tx, { maxSupportedTransactionVersion: 0, commitment: 'confirmed' }]).catch(() => null);
+      if (!tx) notFound++;
+      else if (tx.meta?.err) failedOnChain++;
+      else landed++;
+    }
     dbSection = [
       '| App-DB metric | Count |',
       '| --- | ---: |',
       `| Onboarded users (\`users\`) | ${appUsers} |`,
       `| Cohort-tracked wallets (\`user_cohorts\`) | ${cohortUsers} |`,
-      `| Observations with a mint tx (\`observation_log\`) | ${dbMints} |`,
-      `| Distinct wallets with a minted observation | ${dbMintWallets} |`,
+      `| \`observation_log\` mint rows — devnet pilot (before ${MAINNET_SINCE}) | ${c.devnet} |`,
+      `| \`observation_log\` mint rows — mainnet era | ${c.mainnet} |`,
+      `| \`observation_log\` rows with an off-chain event tag (not mints) | ${c.tags} |`,
       '',
-      `On-chain vs DB: **${real.length}** cNFTs on-chain vs **${dbMints}** mint rows in the app DB` +
-        (real.length === dbMints ? ' — consistent.' : ' — investigate the gap (test mints, retries, or out-of-app mints).'),
+      `Mainnet-era DB mint rows verified against chain: **${landed} landed**, ${failedOnChain} failed on-chain, ${notFound} not found.` +
+        (failedOnChain || notFound
+          ? ' Failed/not-found rows are recorded as minted in the DB and should be corrected.'
+          : ''),
+      '',
+      `On-chain vs DB: **${real.length}** live user cNFTs on-chain vs **${landed}** landed mainnet mint rows in the app DB` +
+        (real.length === landed ? ' — consistent.' : ' — investigate the gap (test mints, retries, or out-of-app mints).'),
     ].join('\n');
   } catch (e) {
     dbSection = `_DB cross-check failed: ${e.message}_`;
