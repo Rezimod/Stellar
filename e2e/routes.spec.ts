@@ -29,6 +29,7 @@ const ROUTES = [
   '/observe/demo',
   '/observe/not-a-mission',
   '/marketplace/checkout',
+  '/start',
 ];
 
 for (const route of ROUTES) {
