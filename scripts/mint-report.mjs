@@ -124,7 +124,9 @@ const day = (t) => (t ? iso(t).slice(0, 10) : 'unknown');
 
 // 3. Aggregates.
 const isTest = (r) => /verify test|smoke test/i.test(r.name);
-const real = rows.filter((r) => !isTest(r));
+const isKeepsake = (r) => /^Stellar Keepsake/i.test(r.name);
+const keepsakes = rows.filter((r) => !isTest(r) && isKeepsake(r));
+const real = rows.filter((r) => !isTest(r) && !isKeepsake(r));
 const owners = new Map();
 for (const r of real) owners.set(r.owner, (owners.get(r.owner) ?? 0) + 1);
 const perDay = new Map();
@@ -178,8 +180,8 @@ if (process.env.DATABASE_URL) {
           ? ' Failed/not-found rows are recorded as minted in the DB and should be corrected.'
           : ''),
       '',
-      `On-chain vs DB: **${real.length}** live user cNFTs on-chain vs **${landed}** landed mainnet mint rows in the app DB` +
-        (real.length === landed ? ' — consistent.' : ' — investigate the gap (test mints, retries, or out-of-app mints).'),
+      `On-chain vs DB: **${real.length + keepsakes.length}** live user cNFTs on-chain (verified + keepsakes) vs **${landed}** landed mainnet mint rows in the app DB` +
+        (real.length + keepsakes.length === landed ? ' — consistent.' : ' — investigate the gap (test mints, retries, or out-of-app mints).'),
     ].join('\n');
   } catch (e) {
     dbSection = `_DB cross-check failed: ${e.message}_`;
@@ -189,11 +191,11 @@ if (process.env.DATABASE_URL) {
 // 5. Outputs.
 const solscanAsset = (id) => `https://solscan.io/token/${id}`;
 const csv = [
-  'asset_id,owner,mint_timestamp_utc,mint_tx,solscan_asset,solscan_tx,name,is_test',
+  'asset_id,owner,mint_timestamp_utc,mint_tx,solscan_asset,solscan_tx,name,is_test,is_keepsake',
   ...rows.map((r) =>
     [r.id, r.owner, iso(r.blockTime), r.signature, solscanAsset(r.id),
      r.signature ? `https://solscan.io/tx/${r.signature}` : '',
-     `"${r.name.replaceAll('"', '""')}"`, isTest(r)].join(',')),
+     `"${r.name.replaceAll('"', '""')}"`, isTest(r), isKeepsake(r)].join(',')),
 ].join('\n');
 fs.writeFileSync(path.join(OUT_DIR, 'mints-report.csv'), csv + '\n');
 
@@ -214,7 +216,8 @@ on-chain data — every row is independently verifiable on Solscan.
 | **Total verified-observation cNFT mints** | **${real.length}** |
 | Unique owner wallets | ${owners.size} |
 | Date range | ${dated.length ? `${day(dated[0].blockTime)} → ${day(dated[dated.length - 1].blockTime)}` : 'n/a'} |
-| Internal test mints (excluded above) | ${rows.length - real.length} |
+| Unverified keepsake mints (excluded above) | ${keepsakes.length} |
+| Internal test mints (excluded above) | ${rows.length - real.length - keepsakes.length} |
 
 ## Mints per day
 
@@ -242,5 +245,5 @@ Full row-level data: [mints-report.csv](./mints-report.csv)
 fs.writeFileSync(path.join(OUT_DIR, 'mints-report.md'), md);
 
 console.log(`\nHEADLINE: ${real.length} verified-observation cNFT mints on mainnet`);
-console.log(`  unique owners: ${owners.size}, test mints excluded: ${rows.length - real.length}`);
+console.log(`  unique owners: ${owners.size}, keepsakes excluded: ${keepsakes.length}, test mints excluded: ${rows.length - real.length - keepsakes.length}`);
 console.log(`  wrote docs/grant-evidence/mints-report.csv + mints-report.md`);
