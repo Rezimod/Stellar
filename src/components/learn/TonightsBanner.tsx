@@ -84,7 +84,7 @@ export default function TonightsBanner({ locale }: Props) {
         <Moon size={20} aria-hidden="true" style={{ color: 'var(--terracotta)' }} />
         <p className="text-text-muted text-xs leading-snug flex-1">
           {locale === 'ka'
-            ? '맑은 ცა? შეამოწმე ღამის ამინდი →'
+            ? 'მოწმენდილი ცა? შეამოწმე ღამის ამინდი →'
             : "Clear skies? Check the sky forecast for tonight's targets →"}
         </p>
       </Link>
