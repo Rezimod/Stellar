@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type CSSProperties } from 'react';
-import { ExternalLink, ShieldCheck } from 'lucide-react';
+import { ExternalLink, ShieldCheck, Satellite } from 'lucide-react';
 
 interface OnChainObservation {
   pda: string;
@@ -245,7 +245,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
               textDecoration: 'none',
             }}
           >
-            <span aria-hidden style={{ fontSize: 18 }}>🛰</span>
+            <Satellite size={18} aria-hidden="true" style={{ color: 'var(--text-secondary)' }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <p
                 style={{

@@ -5,6 +5,7 @@ import { useLocation } from '@/lib/location';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import type { SkyDay, SkyHour } from '@/lib/sky-data';
 import type { PlanetInfo } from '@/lib/planets';
+import { Cloud, Droplet, Wind, Moon, MapPin, type LucideIcon } from 'lucide-react';
 
 // ── Data helpers ────────────────────────────────────────────────────────────
 
@@ -127,7 +128,7 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
   );
 }
 
-function StatCard({ label, value, sub, warn, icon }: { label: string; value: string; sub?: string; warn?: boolean; icon: string }) {
+function StatCard({ label, value, sub, warn, icon: Icon }: { label: string; value: string; sub?: string; warn?: boolean; icon: LucideIcon }) {
   return (
     <div style={{
       padding: '14px 14px 12px',
@@ -137,7 +138,7 @@ function StatCard({ label, value, sub, warn, icon }: { label: string; value: str
       display: 'flex', flexDirection: 'column', gap: 4,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{icon}</span>
+        <Icon size={13} style={{ color: 'rgba(255,255,255,0.3)' }} aria-hidden="true" />
         <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
       </div>
       <span style={{
@@ -217,10 +218,10 @@ export default function HomeSkyPreview() {
   const dayLabel = selectedDay === 0 ? 'Tonight' : selectedDay === 1 ? 'Tomorrow' : formatDay(forecast[selectedDay]?.date ?? '', selectedDay);
 
   const stats = [
-    { label: 'Cloud', icon: '☁', value: avgCloud !== null ? `${avgCloud}%` : '—', sub: avgCloud !== null ? (avgCloud < 30 ? 'Clear' : avgCloud < 60 ? 'Partly' : 'Overcast') : undefined, warn: (avgCloud ?? 0) > 60 },
-    { label: 'Humidity', icon: '💧', value: avgHumidity !== null ? `${avgHumidity}%` : '—', sub: (avgHumidity ?? 0) > 85 ? 'Dew risk' : undefined, warn: (avgHumidity ?? 0) > 85 },
-    { label: 'Wind', icon: '💨', value: avgWind !== null ? `${avgWind}km/h` : '—', sub: (avgWind ?? 0) > 25 ? 'Turbulent' : undefined, warn: (avgWind ?? 0) > 25 },
-    { label: 'Moon', icon: '☽', value: `${moonPct}%`, sub: moonPhaseName(moonIllum), warn: moonWarn },
+    { label: 'Cloud', icon: Cloud, value: avgCloud !== null ? `${avgCloud}%` : '—', sub: avgCloud !== null ? (avgCloud < 30 ? 'Clear' : avgCloud < 60 ? 'Partly' : 'Overcast') : undefined, warn: (avgCloud ?? 0) > 60 },
+    { label: 'Humidity', icon: Droplet, value: avgHumidity !== null ? `${avgHumidity}%` : '—', sub: (avgHumidity ?? 0) > 85 ? 'Dew risk' : undefined, warn: (avgHumidity ?? 0) > 85 },
+    { label: 'Wind', icon: Wind, value: avgWind !== null ? `${avgWind}km/h` : '—', sub: (avgWind ?? 0) > 25 ? 'Turbulent' : undefined, warn: (avgWind ?? 0) > 25 },
+    { label: 'Moon', icon: Moon, value: `${moonPct}%`, sub: moonPhaseName(moonIllum), warn: moonWarn },
   ];
 
   const scoreColor = !skyScore ? 'var(--text-muted)' : skyScore.score >= 70 ? 'var(--success)' : skyScore.score >= 50 ? 'var(--terracotta)' : 'var(--text-muted)';
@@ -311,7 +312,7 @@ export default function HomeSkyPreview() {
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 500 }}>{dayLabel}</span>
             </div>
             <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span>📍</span>{locationLabel}
+              <MapPin size={10} aria-hidden="true" />{locationLabel}
             </span>
           </div>
 

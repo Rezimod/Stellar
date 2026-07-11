@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PLANETS } from '@/lib/learn-data';
 import { MISSIONS } from '@/lib/constants';
+import { Moon } from 'lucide-react';
 
 interface PlanetInfo {
   key: string;
@@ -80,7 +81,7 @@ export default function TonightsBanner({ locale }: Props) {
           border: '1px solid rgba(255, 179, 71,0.1)',
         }}
       >
-        <span className="text-xl">🌙</span>
+        <Moon size={20} aria-hidden="true" style={{ color: 'var(--terracotta)' }} />
         <p className="text-text-muted text-xs leading-snug flex-1">
           {locale === 'ka'
             ? '맑은 ცა? შეამოწმე ღამის ამინდი →'

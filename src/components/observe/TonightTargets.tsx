@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import type { DailyTarget } from '@/lib/daily-targets'
 import { getTonightTargets } from '@/lib/daily-targets'
+import { Flame } from 'lucide-react'
 
 interface TonightTargetsProps {
   onStartObserve: () => void
@@ -62,7 +63,7 @@ export default function TonightTargets({ onStartObserve, walletAddress }: Tonigh
         <p className="text-text-primary font-semibold" style={{ fontFamily: 'Georgia, serif' }}>Tonight's Targets</p>
         {streak && streak.streak > 0 && (
           <>
-            <span className="text-terracotta text-xs ml-1">🔥 {streak.streak} day streak</span>
+            <span className="text-terracotta text-xs ml-1 inline-flex items-center gap-1"><Flame size={12} aria-hidden="true" /> {streak.streak} day streak</span>
             {streak.bonusStars > 0 && (
               <span className="text-[var(--terracotta)] text-xs">+{streak.bonusStars} ✦ bonus</span>
             )}

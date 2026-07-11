@@ -1,5 +1,7 @@
 'use client';
 
+import { Flame, Snowflake } from 'lucide-react';
+
 interface StreakBadgeProps {
   days: number;
   frozen?: boolean;
@@ -22,8 +24,8 @@ export default function StreakBadge({ days, frozen = false, className = '' }: St
         border: hasStreak ? '1px solid var(--stars-border)' : '1px solid var(--border-subtle)',
       }}
     >
-      {frozen && <span style={{ fontSize: 14 }}>❄️</span>}
-      {!frozen && hasStreak && <span style={{ fontSize: 14 }}>🔥</span>}
+      {frozen && <Snowflake size={14} style={{ color: 'var(--accent-teal)' }} aria-hidden="true" />}
+      {!frozen && hasStreak && <Flame size={14} style={{ color: 'var(--terracotta)' }} aria-hidden="true" />}
       {hasStreak && (
         <span
           style={{
