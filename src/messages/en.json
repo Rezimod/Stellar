@@ -637,6 +637,10 @@
     "signInPrompt": "Sign in to chat with ASTRA",
     "welcome": "Hello! I'm ASTRA, your personal astronomer. Ask me anything about tonight's sky, your telescope, or astronomy in general.",
     "placeholder": "Ask about tonight's sky…",
+    "addQuestionPlaceholder": "What do you see in the sky?",
+    "uploadImage": "Upload a sky photo",
+    "selectImage": "Select image",
+    "clearImage": "Clear image",
     "send": "Send",
     "thinking": "ASTRA is thinking…",
     "clearChat": "Clear conversation",
@@ -658,7 +662,9 @@
       "page_1": "What's visible tonight? 🌙",
       "page_2": "Best telescope for beginners? 🔭",
       "page_3": "Explain the Bortle scale",
-      "page_4": "Why is the sky dark at night?"
+      "page_4": "Why is the sky dark at night?",
+      "image_1": "Upload a sky photo ✦",
+      "image_2": "What am I looking at? ✦"
     },
     "fieldBanner": {
       "label": "Going off-grid?",

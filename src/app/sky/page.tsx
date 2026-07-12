@@ -10,7 +10,7 @@ import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { toast } from '@/components/ui/Toast';
 import { track } from '@/lib/track';
-import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset } from 'lucide-react';
+import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset, Camera } from 'lucide-react';
 import { TelescopeIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslations } from 'next-intl';
@@ -589,6 +589,15 @@ export default function SkyPage() {
                   } : null}
                 />
                 <div className="sky-v3__map-tools">
+                  <Link
+                    href="/chat"
+                    className="sky-v3__solar-launch"
+                    aria-label="Ask the Sky — AI companion"
+                    title="Ask the Sky — AI companion"
+                  >
+                    <Camera size={14} aria-hidden="true" />
+                    <span className="sky-v3__solar-launch-label">Ask Sky</span>
+                  </Link>
                   <Link
                     href="/solar-system"
                     className="sky-v3__solar-launch"

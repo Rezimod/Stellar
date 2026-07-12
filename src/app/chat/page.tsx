@@ -6,12 +6,12 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowUp, WifiOff } from 'lucide-react';
+import { ArrowUp, WifiOff, Image as ImageIcon, Loader } from 'lucide-react';
 import Link from 'next/link';
 import PageContainer from '@/components/layout/PageContainer';
 import StarMark from '@/components/ui/StarMark';
 
-interface Msg { role: 'user' | 'assistant'; content: string; }
+interface Msg { role: 'user' | 'assistant'; content: string; image?: string; }
 
 export default function ChatPage() {
   return (
@@ -39,8 +39,11 @@ function ChatPageInner() {
   const [loading, setLoading] = useState(false);
   const [streamingMsgIdx, setStreamingMsgIdx] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const lastSentRef = useRef('');
 
   useEffect(() => {
@@ -58,32 +61,75 @@ function ChatPageInner() {
     el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   };
 
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2.5 * 1024 * 1024) {
+      setError(locale === 'ka' ? 'სურათი ძალიან დიდია (მაქსიმუმ 2.5 MB)' : 'Image too large (max 2.5 MB)');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setImagePreview(dataUrl);
+      setSelectedImage(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  }, [locale]);
+
+  const clearImage = useCallback(() => {
+    setImagePreview(null);
+    setSelectedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
   const send = useCallback(async (text?: string) => {
     const msg = (text ?? input).trim();
-    if (!msg || loading) return;
+    if (!msg && !selectedImage) return;
+    if (loading) return;
+
     lastSentRef.current = msg;
     setInput('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
     setError('');
-    const next: Msg[] = [...messages, { role: 'user', content: msg }];
+
+    const userMsg: Msg = { role: 'user', content: msg };
+    if (selectedImage) userMsg.image = selectedImage;
+
+    const next: Msg[] = [...messages, userMsg];
     setMessages(next);
     setLoading(true);
     setStreamingMsgIdx(next.length);
+    clearImage();
+
     const abortController = new AbortController();
     const streamTimeout = setTimeout(() => abortController.abort(), 5 * 60 * 1000);
     try {
       const accessToken = await getAccessToken();
       if (!accessToken) { login(); return; }
-      const res = await fetch('/api/chat', {
+
+      // Use ask-sky endpoint if image is present, otherwise use regular chat
+      const endpoint = selectedImage ? '/api/chat/ask-sky' : '/api/chat';
+      const body: Record<string, unknown> = {
+        locale,
+      };
+
+      if (selectedImage) {
+        body.image = selectedImage;
+        body.question = msg;
+      } else {
+        body.message = msg;
+        body.history = next.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
-        body: JSON.stringify({
-          message: msg,
-          history: next.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
-          locale,
-        }),
+        body: JSON.stringify(body),
         signal: abortController.signal,
       });
       if (!res.ok) {
@@ -316,23 +362,45 @@ function ChatPageInner() {
           const isStreamingThis = streamingMsgIdx === i && m.role === 'assistant';
           if (m.role === 'user') {
             return (
-              <div key={i} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 <div
                   className="animate-slide-up"
                   style={{
                     maxWidth: '78%',
-                    background: 'rgba(94, 234, 212, 0.10)',
-                    border: '1px solid rgba(94, 234, 212, 0.20)',
-                    borderRadius: '16px 16px 4px 16px',
-                    padding: '10px 16px',
-                    fontSize: 14,
-                    fontFamily: 'var(--font-body)',
-                    color: 'var(--text-primary)',
-                    lineHeight: 1.5,
-                    whiteSpace: 'pre-wrap',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
                   }}
                 >
-                  {m.content}
+                  {m.image && (
+                    <img
+                      src={m.image}
+                      alt="User image"
+                      style={{
+                        maxWidth: '100%',
+                        borderRadius: '12px',
+                        maxHeight: 240,
+                        objectFit: 'cover',
+                      }}
+                    />
+                  )}
+                  {m.content && (
+                    <div
+                      style={{
+                        background: 'rgba(94, 234, 212, 0.10)',
+                        border: '1px solid rgba(94, 234, 212, 0.20)',
+                        borderRadius: '16px 16px 4px 16px',
+                        padding: '10px 16px',
+                        fontSize: 14,
+                        fontFamily: 'var(--font-body)',
+                        color: 'var(--text-primary)',
+                        lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
+                      {m.content}
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -433,7 +501,87 @@ function ChatPageInner() {
         paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
         borderTop: '1px solid var(--border-subtle)',
       }}>
+        {imagePreview && (
+          <div style={{
+            position: 'relative',
+            marginBottom: 12,
+            borderRadius: 12,
+            overflow: 'hidden',
+            maxWidth: 160,
+          }}>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{
+                width: '100%',
+                height: 120,
+                objectFit: 'cover',
+                borderRadius: 12,
+              }}
+            />
+            <button
+              onClick={clearImage}
+              style={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                width: 24,
+                height: 24,
+                borderRadius: '50%',
+                background: 'rgba(0,0,0,0.6)',
+                border: 'none',
+                color: 'white',
+                fontSize: 16,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              aria-label={t('clearImage')}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, maxWidth: 672, margin: '0 auto' }}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            disabled={!authenticated || loading}
+            style={{ display: 'none' }}
+            aria-label={t('selectImage')}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!authenticated || loading}
+            aria-label={t('uploadImage')}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: !authenticated || loading ? 'not-allowed' : 'pointer',
+              opacity: !authenticated || loading ? 0.45 : 1,
+              transition: 'background 0.2s, opacity 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (!(!authenticated || loading)) {
+                e.currentTarget.style.background = 'var(--color-bg-card-strong)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--color-bg-card)';
+            }}
+          >
+            <ImageIcon size={18} color="var(--text-muted)" />
+          </button>
           <textarea
             ref={textareaRef}
             value={input}
@@ -444,8 +592,8 @@ function ChatPageInner() {
                 send();
               }
             }}
-            placeholder={t('placeholder')}
-            aria-label={t('placeholder')}
+            placeholder={selectedImage ? t('addQuestionPlaceholder') : t('placeholder')}
+            aria-label={selectedImage ? t('addQuestionPlaceholder') : t('placeholder')}
             disabled={!authenticated}
             rows={1}
             style={{
@@ -475,20 +623,29 @@ function ChatPageInner() {
           />
           <button
             onClick={() => send()}
-            disabled={!input.trim() || loading || !authenticated}
+            disabled={(!input.trim() && !selectedImage) || loading || !authenticated}
             aria-label={t('send')}
             style={{
-              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-              background: input.trim() && !loading && authenticated ? 'var(--gradient-primary)' : 'var(--color-bg-card)',
-              border: input.trim() && !loading && authenticated ? 'none' : '1px solid var(--color-border-subtle)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: input.trim() && !loading && authenticated ? 'pointer' : 'not-allowed',
-              opacity: !input.trim() || loading || !authenticated ? 0.45 : 1,
-              boxShadow: input.trim() && !loading && authenticated ? 'var(--shadow-glow-teal)' : 'none',
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: (input.trim() || selectedImage) && !loading && authenticated ? 'var(--gradient-primary)' : 'var(--color-bg-card)',
+              border: (input.trim() || selectedImage) && !loading && authenticated ? 'none' : '1px solid var(--color-border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: (input.trim() || selectedImage) && !loading && authenticated ? 'pointer' : 'not-allowed',
+              opacity: (!input.trim() && !selectedImage) || loading || !authenticated ? 0.45 : 1,
+              boxShadow: (input.trim() || selectedImage) && !loading && authenticated ? 'var(--shadow-glow-teal)' : 'none',
               transition: 'background 0.2s, opacity 0.2s, transform 0.2s, box-shadow 0.2s',
             }}
           >
-            <ArrowUp size={18} color={input.trim() && !loading && authenticated ? 'var(--canvas)' : 'var(--text-muted)'} />
+            {loading ? (
+              <Loader size={18} color="var(--text-muted)" className="animate-spin" />
+            ) : (
+              <ArrowUp size={18} color={(input.trim() || selectedImage) && !loading && authenticated ? 'var(--canvas)' : 'var(--text-muted)'} />
+            )}
           </button>
         </div>
       </div>
