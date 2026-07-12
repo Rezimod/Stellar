@@ -36,7 +36,7 @@ Keep it warm, encouraging, and personal. This is for their keepsake, not a fortu
 export async function generateNatalReading(chart: NatalChart, name: string): Promise<string> {
   try {
     const response = await getAnthropic().messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 800,
       messages: [
         {
@@ -77,7 +77,7 @@ Write a brief, encouraging daily horoscope for ${name} for ${dateStr}. Keep it t
 Be warm and poetic, not formulaic. No fortune-telling or scary predictions. Respond in plain text.`;
 
     const response = await getAnthropic().messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
       messages: [
         {
