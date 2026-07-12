@@ -341,3 +341,39 @@ export const pushSubscription = pgTable('push_subscription', {
 }, (t) => [
   index('push_sub_wallet_idx').on(t.wallet),
 ])
+
+// Astrology: natal charts saved by users
+export const natalCharts = pgTable('natal_charts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  wallet: text('wallet').notNull(),
+  name: text('name').notNull(),
+  birthDate: timestamp('birth_date', { withTimezone: true }).notNull(),
+  birthTime: text('birth_time').notNull(), // HH:MM format
+  lat: doublePrecision('lat').notNull(),
+  lon: doublePrecision('lon').notNull(),
+  locationName: text('location_name').notNull(),
+  sunSign: text('sun_sign').notNull(),
+  moonSign: text('moon_sign').notNull(),
+  risingSign: text('rising_sign').notNull(),
+  planetSigns: jsonb('planet_signs').notNull(), // JSON object of planet -> sign
+  natalReading: text('natal_reading'),
+  starMapImageUrl: text('star_map_image_url'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('natal_charts_wallet_idx').on(t.wallet),
+])
+
+// Daily horoscopes cached per chart per day
+export const dailyHoroscopes = pgTable('daily_horoscopes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  chartId: uuid('chart_id').notNull(),
+  wallet: text('wallet').notNull(),
+  date: date('date').notNull(), // YYYY-MM-DD format
+  horoscope: text('horoscope').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('daily_horoscopes_chart_date_unique').on(t.chartId, t.date),
+  index('daily_horoscopes_wallet_idx').on(t.wallet),
+  index('daily_horoscopes_date_idx').on(t.date),
+])

@@ -16,7 +16,8 @@
     "profile": "Profile",
     "sky": "Sky",
     "feed": "Feed",
-    "chat": "AI Chat",
+    "chat": "Ask the Sky",
+    "astrology": "Birth Chart",
     "learn": "Learning",
     "marketplace": "Shop",
     "observe": "Observe",
@@ -671,6 +672,28 @@
       "body": "Get Astra Field Mode — runs on the phone, no signal needed.",
       "cta": "Get Field Mode"
     }
+  },
+  "astrology": {
+    "title": "Your Birth Chart",
+    "subtitle": "Discover the stars at your birth — a personalized keepsake and daily guide.",
+    "distinction": "Astronomy measures the stars. Astrology interprets them.",
+    "birthInfo": "Birth Information",
+    "name": "Your name",
+    "namePlaceholder": "Enter your name",
+    "birthDate": "Date of birth",
+    "birthTime": "Time of birth (if known)",
+    "location": "Birth location",
+    "locationPlaceholder": "City or place of birth",
+    "useMyLocation": "Use my current location",
+    "locationError": "Could not access your location",
+    "missingFields": "Please fill in all required fields",
+    "createChart": "Create My Chart",
+    "generating": "Calculating your natal chart and generating your reading...",
+    "chartCreationError": "Failed to create your chart. Please try again.",
+    "chartReady": "Your natal chart is ready",
+    "viewStarMap": "View Star Map",
+    "createAnother": "Create Another",
+    "getStarted": "Get Started"
   },
   "field": {
     "back": "Back to Astra",
