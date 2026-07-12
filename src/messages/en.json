@@ -18,6 +18,7 @@
     "feed": "Feed",
     "chat": "Ask the Sky",
     "astrology": "Birth Chart",
+    "gear": "Gear",
     "learn": "Learning",
     "marketplace": "Shop",
     "observe": "Observe",
@@ -672,6 +673,47 @@
       "body": "Get Astra Field Mode — runs on the phone, no signal needed.",
       "cta": "Get Field Mode"
     }
+  },
+  "gear": {
+    "title": "Gear Recommender",
+    "subtitle": "Tell us what you want to observe, and we'll recommend the perfect equipment from our catalog.",
+    "howItWorks": "Answer a few quick questions about your experience, budget, and observing goals. We'll use AI to recommend gear that's perfect for you.",
+    "getStarted": "Get Started",
+    "next": "Next",
+    "back": "Back",
+    "experience": "What's your experience level?",
+    "experienceLevel": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "budget": "What's your budget?",
+    "budgetAbout": "Budget:",
+    "interests": "What do you want to observe?",
+    "selectAtLeast": "Select at least one",
+    "interest": {
+      "moon": "The Moon",
+      "planets": "Planets",
+      "deep-sky": "Deep-sky objects",
+      "star-clusters": "Star clusters",
+      "galaxies": "Galaxies",
+      "urban": "Urban observing"
+    },
+    "portability": "How portable does it need to be?",
+    "portability": {
+      "stationary": "Stationary",
+      "portable": "Portable",
+      "ultra-portable": "Ultra-portable"
+    },
+    "seeRecommendations": "See Recommendations",
+    "finding": "Finding the perfect gear for you...",
+    "forYou": "Recommendations for you",
+    "basedOn": "Based on your preferences and budget",
+    "viewProduct": "View in Store",
+    "noRecommendations": "No recommendations available. Please try again.",
+    "tryAgain": "Try Again",
+    "selectAll": "Please select all fields before continuing",
+    "error": "Failed to get recommendations"
   },
   "astrology": {
     "title": "Your Birth Chart",
