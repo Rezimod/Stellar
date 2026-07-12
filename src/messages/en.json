@@ -765,7 +765,7 @@
     "statStars": "Stars",
     "lifetimeEarned": "Earned",
     "lifetimeBurned": "Burned",
-    "devnet": "Solana devnet",
+    "devnet": "Solana",
     "goToMissions": "Go to Missions",
     "signInSubtitle": "Your cosmic identity awaits",
     "viewAll": "View all",
@@ -807,8 +807,8 @@
     "continueEmail": "Continue with Email",
     "continueEmailDesc": "We create a Solana wallet for you automatically. No app needed.",
     "emailPlaceholder": "your@email.com",
-    "activatingWallet": "Activating wallet on Solana devnet…",
-    "walletActivated": "Wallet activated — 1 devnet SOL funded",
+    "activatingWallet": "Setting up your wallet…",
+    "walletActivated": "Wallet ready",
     "viewOnExplorer": "View on Solana Explorer ↗"
   },
   "missions": {
