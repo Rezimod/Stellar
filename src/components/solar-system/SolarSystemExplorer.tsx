@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Gauge,
   Orbit,
   Pause,
   Play,
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { SolarSystemCanvas, type CosmicView } from '@/components/solar-system/SolarSystemCanvas';
+import { PlanetDetailPanel } from '@/components/solar-system/PlanetDetailPanel';
 import {
   MEAN_RADIUS_KM,
   type ScaleMode,
@@ -257,32 +257,12 @@ export default function SolarSystemExplorer() {
       </div>
 
       {selectedId && (
-        <aside className="solar-system__sheet" aria-label={t('detail.title')}>
-          <div className="solar-system__sheet-head">
-            <h2 className="solar-system__sheet-title">
-              <Gauge size={14} aria-hidden />
-              {bodyCopy[selectedId].name}
-            </h2>
-            <button
-              type="button"
-              className="solar-system__sheet-x"
-              onClick={closeDetail}
-              aria-label={t('detail.closeSheet')}
-            >
-              <X size={20} strokeWidth={2} aria-hidden />
-            </button>
-          </div>
-          <p className="solar-system__sheet-blurb">{bodyCopy[selectedId].blurb}</p>
-          <dl className="solar-system__dl solar-system__dl--sheet">
-            <div>
-              <dt>{t('detail.meanRadius')}</dt>
-              <dd>{radiusLabel(selectedId)}</dd>
-            </div>
-          </dl>
-          <Link href="/sky" className="solar-system__sheet-link">
-            {t('backSky')}
-          </Link>
-        </aside>
+        <PlanetDetailPanel
+          bodyId={selectedId}
+          bodyName={bodyCopy[selectedId].name}
+          bodyBlurb={bodyCopy[selectedId].blurb}
+          onClose={closeDetail}
+        />
       )}
     </div>
   );
