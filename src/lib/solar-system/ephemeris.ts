@@ -38,9 +38,57 @@ export const MEAN_RADIUS_KM: Record<SolarBodyId, number> = {
   pluto: 1_188,
 };
 
-function helioEqjToThree(vec: Vector): THREE.Vector3 {
+/** J2000 equatorial vector → Three.js ecliptic frame (Y up, ecliptic ≈ XZ). */
+export function helioEqjToThree(vec: Vector): THREE.Vector3 {
   const e = RotateVector(ROT_EQJ_ECL, vec);
   return new THREE.Vector3(e.x, e.z, -e.y);
+}
+
+/** Sidereal orbital periods (days) — used to sample true orbit paths and to
+ *  drive epoch-accurate small-body motion. */
+export const ORBIT_PERIOD_DAYS: Record<Exclude<SolarBodyId, 'sun'>, number> = {
+  mercury: 87.969,
+  venus: 224.701,
+  earth: 365.256,
+  mars: 686.980,
+  jupiter: 4332.589,
+  saturn: 10_759.22,
+  uranus: 30_685.4,
+  neptune: 60_189,
+  pluto: 90_560,
+};
+
+const ORBIT_BODY: Record<Exclude<SolarBodyId, 'sun'>, Body> = {
+  mercury: Body.Mercury,
+  venus: Body.Venus,
+  earth: Body.Earth,
+  mars: Body.Mars,
+  jupiter: Body.Jupiter,
+  saturn: Body.Saturn,
+  uranus: Body.Uranus,
+  neptune: Body.Neptune,
+  pluto: Body.Pluto,
+};
+
+/**
+ * True orbit path for a body: heliocentric positions sampled over one full
+ * sidereal period, so eccentricity and inclination (Mercury's ellipse,
+ * Pluto's 17° tilt crossing Neptune) render exactly as they are in space.
+ */
+export function sampleOrbitPath(
+  id: Exclude<SolarBodyId, 'sun'>,
+  mode: ScaleMode,
+  segments = 192,
+): THREE.Vector3[] {
+  const body = ORBIT_BODY[id];
+  const periodMs = ORBIT_PERIOD_DAYS[id] * 86_400_000;
+  const t0 = Date.now();
+  const pts: THREE.Vector3[] = [];
+  for (let i = 0; i < segments; i++) {
+    const date = new Date(t0 + (i / segments) * periodMs);
+    pts.push(helioScenePosition(HelioVector(body, date), mode));
+  }
+  return pts;
 }
 
 /**

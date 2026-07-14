@@ -1,45 +1,49 @@
 import * as THREE from 'three';
-import { sceneRadiusFromAu, worldRadiusForBody, type ScaleMode, type SolarBodyId } from '@/lib/solar-system/ephemeris';
+import { GeoMoon } from 'astronomy-engine';
+import {
+  helioEqjToThree,
+  sampleOrbitPath,
+  sceneRadiusFromAu,
+  worldRadiusForBody,
+  type ScaleMode,
+  type SolarBodyId,
+} from '@/lib/solar-system/ephemeris';
 
 const SRGB = THREE.SRGBColorSpace;
-
-/* Mean orbital semi-major axes (AU) — used for orbit rings + belt placement. */
-export const MEAN_ORBIT_AU: Record<Exclude<SolarBodyId, 'sun'>, number> = {
-  mercury: 0.387,
-  venus: 0.723,
-  earth: 1.0,
-  mars: 1.524,
-  jupiter: 5.203,
-  saturn: 9.539,
-  uranus: 19.18,
-  neptune: 30.06,
-  pluto: 39.48,
-};
+const MS_DAY = 86_400_000;
+/** Mean motion (rad/ms) for a circular heliocentric orbit at `au` — Kepler's third law. */
+function meanMotionRadPerMs(au: number): number {
+  return (Math.PI * 2) / (Math.pow(au, 1.5) * 365.256 * MS_DAY);
+}
 
 /* ───────────────────────── orbit rings ───────────────────────── */
 
+/**
+ * True orbit paths — each line is the body's real heliocentric trajectory
+ * sampled over one sidereal period, so Mercury's eccentric ellipse and
+ * Pluto's inclined Neptune-crossing orbit render exactly as in space
+ * (instead of the flat concentric circles a toy orrery would draw).
+ */
 export function makeOrbitRings(mode: ScaleMode, includePluto: boolean): THREE.Group {
   const group = new THREE.Group();
   group.name = 'orbitRings';
-  const segments = 256;
 
-  const ids: (keyof typeof MEAN_ORBIT_AU)[] = [
+  const ids: Exclude<SolarBodyId, 'sun'>[] = [
     'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
   ];
   if (includePluto) ids.push('pluto');
 
   for (const id of ids) {
-    const r = sceneRadiusFromAu(MEAN_ORBIT_AU[id], mode);
-    const pos = new Float32Array(segments * 3);
-    for (let i = 0; i < segments; i++) {
-      const t = (i / segments) * Math.PI * 2;
-      pos[i * 3] = Math.cos(t) * r;
-      pos[i * 3 + 1] = 0;
-      pos[i * 3 + 2] = Math.sin(t) * r;
+    const pts = sampleOrbitPath(id, mode);
+    const pos = new Float32Array(pts.length * 3);
+    for (let i = 0; i < pts.length; i++) {
+      pos[i * 3] = pts[i].x;
+      pos[i * 3 + 1] = pts[i].y;
+      pos[i * 3 + 2] = pts[i].z;
     }
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const opacity = id === 'pluto' ? 0.08 : 0.13;
+    const opacity = id === 'pluto' ? 0.1 : 0.13;
     const mat = new THREE.LineBasicMaterial({
       color: 0x6b86c8,
       transparent: true,
@@ -66,7 +70,8 @@ export function disposeOrbitRings(group: THREE.Group) {
 
 export interface BeltHandle {
   group: THREE.Group;
-  update: (dtSec: number) => void;
+  /** Repositions every particle for the simulation epoch — Keplerian rates. */
+  update: (epochMs: number) => void;
   dispose: () => void;
 }
 
@@ -88,8 +93,10 @@ function diskSprite(): THREE.CanvasTexture {
 
 export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   const count = lite ? 1200 : 2800;
-  const inner = sceneRadiusFromAu(2.15, mode);
-  const outer = sceneRadiusFromAu(3.3, mode);
+  const innerAu = 2.15;
+  const outerAu = 3.3;
+  const inner = sceneRadiusFromAu(innerAu, mode);
+  const outer = sceneRadiusFromAu(outerAu, mode);
   const thickness = (outer - inner) * 0.06;
 
   const positions = new Float32Array(count * 3);
@@ -98,11 +105,13 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   const angles = new Float32Array(count);
   const radii = new Float32Array(count);
   const heights = new Float32Array(count);
-  const driftRates = new Float32Array(count);
+  const driftRates = new Float64Array(count);
 
   for (let i = 0; i < count; i++) {
     const a = Math.random() * Math.PI * 2;
-    const r = inner + Math.pow(Math.random(), 0.62) * (outer - inner);
+    const tAu = Math.pow(Math.random(), 0.62);
+    const au = innerAu + tAu * (outerAu - innerAu);
+    const r = sceneRadiusFromAu(au, mode);
     const y = (Math.random() - 0.5) * thickness;
     angles[i] = a;
     radii[i] = r;
@@ -115,8 +124,9 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
     colors[i * 3 + 1] = 0.72 * shade;
     colors[i * 3 + 2] = 0.55 * shade;
     sizes[i] = 0.018 + Math.random() * 0.032;
-    // Kepler-ish: angular rate ∝ r^-1.5; normalised so inner edge ~ 0.045 rad/s
-    driftRates[i] = 0.045 * Math.pow(inner / r, 1.5);
+    // True Keplerian mean motion for the particle's heliocentric distance —
+    // an inner-belt asteroid takes ~3.2 years per lap, exactly as in space.
+    driftRates[i] = meanMotionRadPerMs(au);
   }
 
   const geo = new THREE.BufferGeometry();
@@ -147,11 +157,10 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
 
   return {
     group,
-    update(dtSec: number) {
+    update(epochMs: number) {
       const arr = posAttr.array as Float32Array;
       for (let i = 0; i < count; i++) {
-        angles[i] += driftRates[i] * dtSec;
-        const a = angles[i];
+        const a = angles[i] + driftRates[i] * epochMs;
         const r = radii[i];
         arr[i * 3] = Math.cos(a) * r;
         arr[i * 3 + 1] = heights[i];
@@ -171,8 +180,10 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
 
 export function makeKuiperBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   const count = lite ? 600 : 1400;
-  const inner = sceneRadiusFromAu(30, mode);
-  const outer = sceneRadiusFromAu(50, mode);
+  const innerAu = 30;
+  const outerAu = 50;
+  const inner = sceneRadiusFromAu(innerAu, mode);
+  const outer = sceneRadiusFromAu(outerAu, mode);
   const thickness = (outer - inner) * 0.18;
 
   const positions = new Float32Array(count * 3);
@@ -180,11 +191,12 @@ export function makeKuiperBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   const angles = new Float32Array(count);
   const radii = new Float32Array(count);
   const heights = new Float32Array(count);
-  const driftRates = new Float32Array(count);
+  const driftRates = new Float64Array(count);
 
   for (let i = 0; i < count; i++) {
     const a = Math.random() * Math.PI * 2;
-    const r = inner + Math.random() * (outer - inner);
+    const au = innerAu + Math.random() * (outerAu - innerAu);
+    const r = sceneRadiusFromAu(au, mode);
     const y = (Math.random() - 0.5) * thickness;
     angles[i] = a;
     radii[i] = r;
@@ -196,7 +208,7 @@ export function makeKuiperBelt(mode: ScaleMode, lite: boolean): BeltHandle {
     colors[i * 3] = 0.6 * shade;
     colors[i * 3 + 1] = 0.66 * shade;
     colors[i * 3 + 2] = 0.85 * shade;
-    driftRates[i] = 0.006 * Math.pow(inner / r, 1.5);
+    driftRates[i] = meanMotionRadPerMs(au);
   }
 
   const geo = new THREE.BufferGeometry();
@@ -226,11 +238,10 @@ export function makeKuiperBelt(mode: ScaleMode, lite: boolean): BeltHandle {
 
   return {
     group,
-    update(dtSec: number) {
+    update(epochMs: number) {
       const arr = posAttr.array as Float32Array;
       for (let i = 0; i < count; i++) {
-        angles[i] += driftRates[i] * dtSec;
-        const a = angles[i];
+        const a = angles[i] + driftRates[i] * epochMs;
         const r = radii[i];
         arr[i * 3] = Math.cos(a) * r;
         arr[i * 3 + 1] = heights[i];
@@ -418,10 +429,7 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
   moonMesh.position.set(moonDist, 0, 0);
   moonGroup.add(moonMesh);
 
-  const MS_PER_LUNAR_ORBIT = 27.3 * 86400 * 1000;
-  const MS_PER_LUNAR_SPIN = MS_PER_LUNAR_ORBIT; // tidally locked
-  // Slight inclination 5.14° — set once on the orbiting group.
-  moonGroup.rotation.z = 0.0898;
+  const moonDir = new THREE.Vector3();
 
   return {
     cloudMesh,
@@ -432,10 +440,13 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
       // Cloud is a child of spinning Earth; set local rotation to a small drift
       // so world-space cloud motion = earth spin + slight delta (visual drift).
       cloudMesh.rotation.y = (epochMs / (86400 * 1000)) * Math.PI * 2 * 0.04;
-      // Lunar orbit phase (moonGroup attached to scene, not Earth).
-      moonGroup.rotation.y = (epochMs / MS_PER_LUNAR_ORBIT) * Math.PI * 2;
-      // Moon spin (tidally locked) — same period as orbit.
-      moonMesh.rotation.y = (epochMs / MS_PER_LUNAR_SPIN) * Math.PI * 2;
+      // Real geocentric Moon direction from the lunar ephemeris — phase,
+      // 5.1° inclination, and node regression all come along for free.
+      // Only the distance is compressed for visibility.
+      moonDir.copy(helioEqjToThree(GeoMoon(new Date(epochMs)))).normalize();
+      moonMesh.position.copy(moonDir).multiplyScalar(moonDist);
+      // Tidally locked — keep the same hemisphere pointed at Earth.
+      moonMesh.rotation.y = Math.atan2(-moonDir.z, -moonDir.x);
     },
     dispose() {
       cloudGeom.dispose();
@@ -590,14 +601,16 @@ export function disposeMilkyWayBand(pts: THREE.Points) {
  */
 export interface SaturnRingsHandle {
   group: THREE.Group;
-  update: (dtSec: number) => void;
+  /** `simSec` — simulation seconds (epoch-relative), so ring motion tracks sim speed. */
+  update: (simSec: number) => void;
   dispose: () => void;
 }
 
 export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): SaturnRingsHandle {
   const RING_COUNT = lite ? 3500 : 11000;
-  const innerR = saturnRadius * 1.235;
-  const outerR = saturnRadius * 2.352;
+  // Real ring extents: C ring inner edge 1.24 R♄ → A ring outer edge 2.27 R♄.
+  const innerR = saturnRadius * 1.239;
+  const outerR = saturnRadius * 2.270;
 
   const yJitter = new Float32Array(RING_COUNT);
   const colors = new Float32Array(RING_COUNT * 3);
@@ -617,10 +630,11 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
   while (filled < RING_COUNT) {
     const t = Math.pow(Math.random(), 0.85);
     const r = innerR + t * (outerR - innerR);
-    const cassini = Math.abs(r - (innerR + (outerR - innerR) * 0.62));
-    if (cassini < (outerR - innerR) * 0.03 && Math.random() < 0.85) continue;
-    const encke = Math.abs(r - (innerR + (outerR - innerR) * 0.88));
-    if (encke < (outerR - innerR) * 0.01 && Math.random() < 0.9) continue;
+    // Cassini division: 1.95–1.99 R♄. Encke gap: 2.214 R♄, 325 km wide.
+    const cassini = Math.abs(r - saturnRadius * 1.97);
+    if (cassini < saturnRadius * 0.04 && Math.random() < 0.88) continue;
+    const encke = Math.abs(r - saturnRadius * 2.214);
+    if (encke < saturnRadius * 0.006 && Math.random() < 0.92) continue;
     radii[filled] = r;
     baseAngles[filled] = Math.random() * Math.PI * 2;
     yJitter[filled] = (Math.random() - 0.5) * saturnRadius * 0.012;
@@ -643,6 +657,12 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
   geo.setAttribute('aRadius', new THREE.BufferAttribute(radii, 1));
   geo.setAttribute('aBaseAngle', new THREE.BufferAttribute(baseAngles, 1));
 
+  // Real ring dynamics: a particle at x Saturn radii orbits with period
+  // T = 2π·√(x³·R³/GM) ≈ 4.2 h at the ring's inner edge. uOmegaScale folds the
+  // scene-unit conversion in so the shader only needs pow(aRadius, -1.5).
+  const RING_PERIOD_AT_1R_SEC = 15_096;
+  const omegaScale = ((Math.PI * 2) / RING_PERIOD_AT_1R_SEC) * Math.pow(saturnRadius, 1.5);
+
   const mat = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
@@ -651,7 +671,7 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
     uniforms: {
       uPixelRatio: { value: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1 },
       uTime: { value: 0 },
-      uSpeed: { value: 0.18 },
+      uOmegaScale: { value: omegaScale },
     },
     vertexShader: /* glsl */ `
       attribute float size;
@@ -660,10 +680,10 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
       varying vec3 vColor;
       uniform float uPixelRatio;
       uniform float uTime;
-      uniform float uSpeed;
+      uniform float uOmegaScale;
       void main() {
         vColor = color;
-        float a = aBaseAngle + (uSpeed / sqrt(aRadius)) * uTime;
+        float a = aBaseAngle + uOmegaScale * pow(aRadius, -1.5) * uTime;
         vec3 pos = vec3(cos(a) * aRadius, position.y, sin(a) * aRadius);
         vec4 mv = modelViewMatrix * vec4(pos, 1.0);
         gl_PointSize = max(1.0, size * uPixelRatio * (260.0 / max(0.0001, -mv.z)));
@@ -688,19 +708,45 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
   group.name = 'saturnParticleRingsGroup';
   group.add(points);
 
-  let time = 0;
-
   return {
     group,
-    update(dtSec: number) {
-      time += dtSec;
-      mat.uniforms.uTime.value = time;
+    update(simSec: number) {
+      mat.uniforms.uTime.value = simSec;
     },
     dispose() {
       geo.dispose();
       mat.dispose();
     },
   };
+}
+
+/* ───────────────────────── uranus rings ───────────────────────── */
+/**
+ * Uranus's narrow, dark ring system — a faint inner band plus the dominant
+ * ε ring at its real 2.0 R♅ radius. Added as children of the planet mesh so
+ * they pick up the real 82° tilt (rings nearly face-on to the orbit plane).
+ */
+export function makeUranusRings(planetRadius: number): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'uranusRings';
+  const defs = [
+    { inner: 1.64, outer: 1.95, color: 0x8fa3ad, opacity: 0.06 },
+    { inner: 1.99, outer: 2.04, color: 0xaebfc9, opacity: 0.24 },
+  ];
+  for (const d of defs) {
+    const geom = new THREE.RingGeometry(planetRadius * d.inner, planetRadius * d.outer, 96);
+    const mat = new THREE.MeshBasicMaterial({
+      color: d.color,
+      transparent: true,
+      opacity: d.opacity,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.rotation.x = Math.PI / 2;
+    group.add(mesh);
+  }
+  return group;
 }
 
 /* ───────────────────────── earth satellites + debris ───────────────────────── */
@@ -1229,36 +1275,38 @@ interface MoonSpec {
   distMul: number;      // orbit radius ÷ planet radius
   inclination: number;  // rad
   phase: number;        // rad
-  angularSpeed: number; // rad/sec (negative = retrograde)
+  /** True sidereal orbital period in days (negative = retrograde). */
+  periodDays: number;
   color: number;
   roughness: number;
 }
 
 const MOON_SPECS: MoonSpec[] = [
-  // Mars
-  { planet: 'mars', name: 'Phobos', radiusMul: 0.09, distMul: 1.9, inclination: 0.02, phase: 0.0, angularSpeed: 0.55, color: 0x8a7d6e, roughness: 0.95 },
-  { planet: 'mars', name: 'Deimos', radiusMul: 0.06, distMul: 2.7, inclination: 0.03, phase: 1.4, angularSpeed: 0.33, color: 0x9b8d7c, roughness: 0.95 },
-  // Jupiter — Galilean moons
-  { planet: 'jupiter', name: 'Io',       radiusMul: 0.026, distMul: 1.7, inclination: 0.02, phase: 0.3, angularSpeed: 0.42, color: 0xe6d24a, roughness: 0.80 },
-  { planet: 'jupiter', name: 'Europa',   radiusMul: 0.022, distMul: 2.1, inclination: 0.02, phase: 2.0, angularSpeed: 0.33, color: 0xd9cebb, roughness: 0.55 },
-  { planet: 'jupiter', name: 'Ganymede', radiusMul: 0.037, distMul: 2.8, inclination: 0.03, phase: 3.6, angularSpeed: 0.24, color: 0xa69884, roughness: 0.80 },
-  { planet: 'jupiter', name: 'Callisto', radiusMul: 0.034, distMul: 3.7, inclination: 0.04, phase: 5.0, angularSpeed: 0.18, color: 0x726658, roughness: 0.90 },
-  // Saturn — moons orbit clear of the rings (outer ring ≈ 2.35× radius)
-  { planet: 'saturn', name: 'Titan', radiusMul: 0.040, distMul: 3.4, inclination: 0.05, phase: 0.8, angularSpeed: 0.20, color: 0xd1933a, roughness: 0.70 },
-  { planet: 'saturn', name: 'Rhea',  radiusMul: 0.015, distMul: 2.8, inclination: 0.04, phase: 2.6, angularSpeed: 0.27, color: 0xc7c0b2, roughness: 0.85 },
+  // Mars — Phobos laps Mars 3×/day, faster than Mars rotates.
+  { planet: 'mars', name: 'Phobos', radiusMul: 0.09, distMul: 1.9, inclination: 0.02, phase: 0.0, periodDays: 0.3189, color: 0x8a7d6e, roughness: 0.95 },
+  { planet: 'mars', name: 'Deimos', radiusMul: 0.06, distMul: 2.7, inclination: 0.03, phase: 1.4, periodDays: 1.2624, color: 0x9b8d7c, roughness: 0.95 },
+  // Jupiter — Galilean moons in their real 1:2:4 Laplace resonance.
+  { planet: 'jupiter', name: 'Io',       radiusMul: 0.026, distMul: 1.7, inclination: 0.02, phase: 0.3, periodDays: 1.7691, color: 0xe6d24a, roughness: 0.80 },
+  { planet: 'jupiter', name: 'Europa',   radiusMul: 0.022, distMul: 2.1, inclination: 0.02, phase: 2.0, periodDays: 3.5512, color: 0xd9cebb, roughness: 0.55 },
+  { planet: 'jupiter', name: 'Ganymede', radiusMul: 0.037, distMul: 2.8, inclination: 0.03, phase: 3.6, periodDays: 7.1546, color: 0xa69884, roughness: 0.80 },
+  { planet: 'jupiter', name: 'Callisto', radiusMul: 0.034, distMul: 3.7, inclination: 0.04, phase: 5.0, periodDays: 16.689, color: 0x726658, roughness: 0.90 },
+  // Saturn — moons orbit clear of the rings (outer ring ≈ 2.27× radius)
+  { planet: 'saturn', name: 'Titan', radiusMul: 0.040, distMul: 3.4, inclination: 0.05, phase: 0.8, periodDays: 15.945, color: 0xd1933a, roughness: 0.70 },
+  { planet: 'saturn', name: 'Rhea',  radiusMul: 0.015, distMul: 2.8, inclination: 0.04, phase: 2.6, periodDays: 4.5182, color: 0xc7c0b2, roughness: 0.85 },
   // Uranus
-  { planet: 'uranus', name: 'Titania', radiusMul: 0.030, distMul: 2.4, inclination: 0.06, phase: 1.0, angularSpeed: 0.26, color: 0x9fb1b5, roughness: 0.85 },
-  { planet: 'uranus', name: 'Oberon',  radiusMul: 0.028, distMul: 3.1, inclination: 0.06, phase: 3.3, angularSpeed: 0.20, color: 0x8b969a, roughness: 0.85 },
+  { planet: 'uranus', name: 'Titania', radiusMul: 0.030, distMul: 2.4, inclination: 0.06, phase: 1.0, periodDays: 8.7062, color: 0x9fb1b5, roughness: 0.85 },
+  { planet: 'uranus', name: 'Oberon',  radiusMul: 0.028, distMul: 3.1, inclination: 0.06, phase: 3.3, periodDays: 13.463, color: 0x8b969a, roughness: 0.85 },
   // Neptune — Triton orbits retrograde
-  { planet: 'neptune', name: 'Triton', radiusMul: 0.035, distMul: 2.6, inclination: 0.35, phase: 0.5, angularSpeed: -0.28, color: 0xd7c5c0, roughness: 0.70 },
+  { planet: 'neptune', name: 'Triton', radiusMul: 0.035, distMul: 2.6, inclination: 0.35, phase: 0.5, periodDays: -5.877, color: 0xd7c5c0, roughness: 0.70 },
   // Pluto — Charon is huge relative to its primary
-  { planet: 'pluto', name: 'Charon', radiusMul: 0.50, distMul: 2.9, inclination: 0.20, phase: 1.2, angularSpeed: 0.22, color: 0xb3a698, roughness: 0.90 },
+  { planet: 'pluto', name: 'Charon', radiusMul: 0.50, distMul: 2.9, inclination: 0.20, phase: 1.2, periodDays: 6.3873, color: 0xb3a698, roughness: 0.90 },
 ];
 
 export interface PlanetMoonsHandle {
   group: THREE.Group;
-  /** Pins each planet's moon sub-group to its planet, then advances orbits. */
-  update: (dtSec: number, planetPos: (id: SolarBodyId) => THREE.Vector3 | null | undefined) => void;
+  /** Pins each planet's moon sub-group to its planet, then places every moon
+   *  at its epoch-accurate orbital phase (real sidereal periods). */
+  update: (epochMs: number, planetPos: (id: SolarBodyId) => THREE.Vector3 | null | undefined) => void;
   dispose: () => void;
 }
 
@@ -1268,7 +1316,7 @@ export function makePlanetMoons(lite: boolean): PlanetMoonsHandle {
   const segs = lite ? 16 : 24;
 
   const subgroups = new Map<SolarBodyId, THREE.Group>();
-  const recs: { mesh: THREE.Mesh; spec: MoonSpec; theta: number }[] = [];
+  const recs: { mesh: THREE.Mesh; spec: MoonSpec }[] = [];
   const geoms: THREE.BufferGeometry[] = [];
   const mats: THREE.Material[] = [];
 
@@ -1291,12 +1339,12 @@ export function makePlanetMoons(lite: boolean): PlanetMoonsHandle {
     mats.push(mat);
     const mesh = new THREE.Mesh(geom, mat);
     sub.add(mesh);
-    recs.push({ mesh, spec, theta: spec.phase });
+    recs.push({ mesh, spec });
   }
 
   return {
     group,
-    update(dtSec, planetPos) {
+    update(epochMs, planetPos) {
       subgroups.forEach((sub, id) => {
         const p = planetPos(id);
         if (p) {
@@ -1307,16 +1355,16 @@ export function makePlanetMoons(lite: boolean): PlanetMoonsHandle {
         }
       });
       for (const rec of recs) {
-        rec.theta += rec.spec.angularSpeed * dtSec;
+        const theta = rec.spec.phase + (epochMs / (Math.abs(rec.spec.periodDays) * MS_DAY)) * Math.PI * 2 * Math.sign(rec.spec.periodDays);
         const pr = worldRadiusForBody(rec.spec.planet);
         const r = pr * rec.spec.distMul;
-        const x = Math.cos(rec.theta) * r;
-        const z = Math.sin(rec.theta) * r;
+        const x = Math.cos(theta) * r;
+        const z = Math.sin(theta) * r;
         const sinI = Math.sin(rec.spec.inclination);
         const cosI = Math.cos(rec.spec.inclination);
         // Tilt the in-plane point about the X axis by the orbital inclination.
         rec.mesh.position.set(x, -z * sinI, z * cosI);
-        rec.mesh.rotation.y = rec.theta; // tidally-locked-ish facing
+        rec.mesh.rotation.y = -theta; // tidally locked — same face toward the planet
       }
     },
     dispose() {
@@ -1335,7 +1383,7 @@ export function makePlanetMoons(lite: boolean): PlanetMoonsHandle {
  */
 export interface CometHandle {
   group: THREE.Group;
-  update: (dtSec: number, sunPos: THREE.Vector3) => void;
+  update: (epochMs: number, sunPos: THREE.Vector3) => void;
   dispose: () => void;
 }
 
@@ -1359,7 +1407,8 @@ export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
   const group = new THREE.Group();
   group.name = 'comet';
 
-  const a = sceneRadiusFromAu(2.4, mode); // semi-major axis (scene units)
+  // Keplerian elements (AU) — a bright short-period comet on a steep orbit.
+  const aAu = 2.4;
   const e = 0.74;
   const inc = 0.5;
   const node = 0.9;
@@ -1367,18 +1416,34 @@ export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
   const sinN = Math.sin(node);
   const sinI = Math.sin(inc);
   const cosI = Math.cos(inc);
-  const perihelion = a * (1 - e);
+  const periodMs = Math.pow(aAu, 1.5) * 365.256 * MS_DAY; // Kepler's third law
+  const perihelionAu = aAu * (1 - e);
+  const a = sceneRadiusFromAu(aAu, mode); // for sizing the tail/coma only
 
-  const orbitPos = (theta: number, out: THREE.Vector3): THREE.Vector3 => {
-    const r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+  /** True anomaly at `epochMs` — mean anomaly → Newton-solved eccentric anomaly. */
+  const trueAnomalyAt = (epochMs: number): number => {
+    const M = ((epochMs % periodMs) / periodMs) * Math.PI * 2;
+    let E = M;
+    for (let i = 0; i < 6; i++) {
+      E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    }
+    return 2 * Math.atan2(
+      Math.sqrt(1 + e) * Math.sin(E / 2),
+      Math.sqrt(1 - e) * Math.cos(E / 2),
+    );
+  };
+
+  /** Scene position for true anomaly `theta`; also reports the AU distance. */
+  const orbitPos = (theta: number, out: THREE.Vector3): { rAu: number } => {
+    const rAu = (aAu * (1 - e * e)) / (1 + e * Math.cos(theta));
+    const r = sceneRadiusFromAu(rAu, mode);
     const xp = Math.cos(theta) * r;
     const zp = Math.sin(theta) * r;
     // Tilt about X by inclination, then rotate about Y by the node longitude.
     const y = -zp * sinI;
     const z = zp * cosI;
-    const x2 = xp * cosN - z * sinN;
-    const z2 = xp * sinN + z * cosN;
-    return out.set(x2, y, z2);
+    out.set(xp * cosN - z * sinN, y, xp * sinN + z * cosN);
+    return { rAu };
   };
 
   // Nucleus — small dim icy body.
@@ -1452,7 +1517,6 @@ export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
   tailGroup.add(tail);
   group.add(tailGroup);
 
-  let theta = 0.6;
   const tmp = new THREE.Vector3();
   const dir = new THREE.Vector3();
   const xAxis = new THREE.Vector3(1, 0, 0);
@@ -1460,20 +1524,20 @@ export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
 
   return {
     group,
-    update(dtSec, sunPos) {
-      theta += dtSec * 0.12;
-      if (theta > Math.PI * 2) theta -= Math.PI * 2;
-      orbitPos(theta, tmp);
+    update(epochMs, sunPos) {
+      const theta = trueAnomalyAt(epochMs);
+      const { rAu } = orbitPos(theta, tmp);
       group.position.copy(tmp);
 
-      const r = Math.max(tmp.distanceTo(sunPos), 1e-4);
+      // Tail always points anti-sunward; length + brightness scale with the
+      // real heliocentric distance (strongest at perihelion).
       dir.copy(tmp).sub(sunPos).normalize();
       q.setFromUnitVectors(xAxis, dir);
       tailGroup.quaternion.copy(q);
 
-      const lenF = THREE.MathUtils.clamp((perihelion / r) * 1.1, 0.45, 1.8);
+      const lenF = THREE.MathUtils.clamp((perihelionAu / rAu) * 1.1, 0.45, 1.8);
       tailGroup.scale.setScalar(lenF);
-      const bright = THREE.MathUtils.clamp(perihelion / r, 0.2, 1.0);
+      const bright = THREE.MathUtils.clamp(perihelionAu / rAu, 0.2, 1.0);
       (coma.material as THREE.SpriteMaterial).opacity = 0.35 + bright * 0.55;
       coma.scale.setScalar(comaBase * (0.7 + bright * 0.7));
       tMat.opacity = 0.3 + bright * 0.55;

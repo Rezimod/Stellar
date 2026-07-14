@@ -9,7 +9,7 @@ import {
   type ScaleMode,
   type SolarBodyId,
 } from '@/lib/solar-system/ephemeris';
-import { siderealSpinY } from '@/lib/solar-system/planet-spin';
+import { AXIAL_TILT_DEG, siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
@@ -26,6 +26,7 @@ import {
   makeMilkyWayBand,
   disposeMilkyWayBand,
   makeSaturnParticleRings,
+  makeUranusRings,
   makePlanetMoons,
   makeComet,
   type BeltHandle,
@@ -40,6 +41,7 @@ import {
   makeNearbyStars,
   makeMilkyWayDisk,
   makeOtherGalaxies,
+  makeCosmicWeb,
   tierBlendFromRadius,
 } from '@/lib/solar-system/galactic-scene';
 
@@ -52,6 +54,8 @@ export interface CosmicView {
   galactic: number;
   /** 0..1 — other-galaxy backdrop presence. */
   universe: number;
+  /** 0..1 — cosmic web / large-scale-structure presence. */
+  web: number;
   /** Sun projected to screen-space CSS pixels (null = off-screen / behind camera). */
   sunScreen: { x: number; y: number; depth: number } | null;
   /** Milky Way label projected to screen (null when galactic tier hidden). */
@@ -201,13 +205,13 @@ export function SolarSystemCanvas({
     renderer.domElement.style.touchAction = 'none';
 
     const scene = new THREE.Scene();
-    // Far plane is large enough to keep distant galaxies in view at the
-    // intergalactic tier (~10k units out).
+    // Far plane reaches past the cosmic-web tier (~26k units out) so the
+    // large-scale structure stays in view at maximum zoom-out.
     const camera = new THREE.PerspectiveCamera(
       42,
       mount.clientWidth / mount.clientHeight,
       0.02,
-      24000,
+      64000,
     );
 
     let sysTheta = 0.72;
@@ -327,13 +331,17 @@ export function SolarSystemCanvas({
     nearbyStars.setFade(0);
     scene.add(nearbyStars.group);
 
-    const galaxyDisk = makeMilkyWayDisk();
+    const galaxyDisk = makeMilkyWayDisk(lite);
     galaxyDisk.setFade(0);
     scene.add(galaxyDisk.group);
 
     const otherGalaxies = makeOtherGalaxies();
     otherGalaxies.setFade(0);
     scene.add(otherGalaxies.group);
+
+    const cosmicWeb = makeCosmicWeb(lite);
+    cosmicWeb.setFade(0);
+    scene.add(cosmicWeb.group);
 
     const orbitRings = makeOrbitRings(scaleRef.current, plutoRef.current);
     scene.add(orbitRings);
@@ -419,9 +427,22 @@ export function SolarSystemCanvas({
         id === 'saturn' ? (lite ? 80 : 128) :
         lite ? 64 : 96;
       const geom = new THREE.SphereGeometry(r, segs, segs);
+      // Real polar flattening — Jupiter and Saturn are visibly oblate.
+      const oblate =
+        id === 'jupiter' ? 0.935 :
+        id === 'saturn' ? 0.902 :
+        id === 'uranus' ? 0.977 :
+        id === 'neptune' ? 0.983 :
+        1;
+      if (oblate !== 1) geom.scale(1, oblate, 1);
       const mat = createPlanetMaterial(id, lite, textureById.get(id) ?? null);
       const mesh = new THREE.Mesh(geom, mat);
       mesh.userData.bodyId = id;
+      // Real axial tilt. Euler order ZYX applies the tilt (Z) on top of the
+      // per-frame spin (Y), so each body rotates around its own tilted pole —
+      // Uranus rolls on its side, Earth leans its true 23.4°.
+      mesh.rotation.order = 'ZYX';
+      mesh.rotation.z = THREE.MathUtils.degToRad(AXIAL_TILT_DEG[id]);
       return mesh;
     };
 
@@ -548,12 +569,17 @@ export function SolarSystemCanvas({
 
           if (s.id === 'saturn' && !saturnRings) {
             const sr = worldRadiusForBody('saturn');
-            const tilt = THREE.MathUtils.degToRad(26.7);
-            mesh.rotation.z = tilt;
             saturnRings = makeSaturnParticleRings(sr, lite);
-            saturnRings.group.rotation.z = tilt;
-            // Rings sit at scene level so they don't inherit Saturn's spin.
+            // Rings share the planet's real tilt but sit at scene level so
+            // they don't inherit Saturn's spin (particles orbit on their own).
+            saturnRings.group.rotation.z = THREE.MathUtils.degToRad(AXIAL_TILT_DEG.saturn);
             bodies.add(saturnRings.group);
+          }
+
+          if (s.id === 'uranus') {
+            // Child of the planet mesh — inherits the 82° tilt; the ring is
+            // rotationally symmetric around the spin axis so spin is invisible.
+            mesh.add(makeUranusRings(worldRadiusForBody('uranus')));
           }
         }
         mesh.position.copy(s.position);
@@ -667,9 +693,9 @@ export function SolarSystemCanvas({
       } else {
         sysRadius *= f;
         // Extended clamp — the upper bound passes through the stellar
-        // neighbourhood, the Milky Way disk, and out into the
-        // intergalactic backdrop.
-        sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, 11000);
+        // neighbourhood, the Milky Way disk, the Local Group, and out to
+        // the cosmic-web tier.
+        sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, 34000);
       }
     };
 
@@ -703,7 +729,7 @@ export function SolarSystemCanvas({
         if (lastPinchDist > 4 && d > 4) {
           const factor = d / lastPinchDist;
           if (focusRef.current) orbDist = THREE.MathUtils.clamp(orbDist / factor, 0.04, 420);
-          else sysRadius = THREE.MathUtils.clamp(sysRadius / factor, 5.2, 11000);
+          else sysRadius = THREE.MathUtils.clamp(sysRadius / factor, 5.2, 34000);
         }
         lastPinchDist = d;
         pinchActive = true;
@@ -764,6 +790,9 @@ export function SolarSystemCanvas({
     let raf = 0;
     let lastFrame = performance.now();
     let docVisible = !document.hidden;
+    // Epoch anchor for shader time uniforms — keeps the float32 value the GPU
+    // sees small enough to stay precise across the ±2 year scrub range.
+    const baseEpochMs = epochRef.current;
 
     const stopLoop = () => {
       if (raf) {
@@ -795,11 +824,11 @@ export function SolarSystemCanvas({
       lastFrame = now;
 
       syncMeshes();
-      if (!reduceMotion) {
-        meshById.forEach((mesh, id) => {
-          mesh.rotation.y = siderealSpinY(id, epochRef.current);
-        });
-      }
+      // Spin phase is a pure function of the simulation epoch — bodies hold
+      // still while time is paused and track playback/scrubbing exactly.
+      meshById.forEach((mesh, id) => {
+        mesh.rotation.y = siderealSpinY(id, epochRef.current);
+      });
 
       const sunMesh = meshById.get('sun');
       if (sunMesh) sunLight.position.copy(sunMesh.position);
@@ -813,14 +842,18 @@ export function SolarSystemCanvas({
         updateSystemCamera();
       }
       if (!reduceMotion) {
+        // Ambient background drift + decorative satellites stay real-time.
         stars.rotation.y += 0.000055;
         milkyWay.rotation.y += 0.000022;
-        asteroidBelt.update(dtSec);
-        kuiperBelt.update(dtSec);
-        earthExtras?.update(epochRef.current);
         earthOrbitals?.update(dtSec);
-        saturnRings?.update(dtSec);
       }
+      // Epoch-accurate motion — belts, clouds, the real Moon, and Saturn's
+      // ring particles all track simulation time (Kepler rates), so they
+      // respond to play/scrub/speed exactly like the planets do.
+      asteroidBelt.update(epochRef.current);
+      kuiperBelt.update(epochRef.current);
+      earthExtras?.update(epochRef.current);
+      saturnRings?.update((epochRef.current - baseEpochMs) / 1000);
       if (earthExtras) {
         const earthMesh = meshById.get('earth');
         if (earthMesh) {
@@ -834,11 +867,9 @@ export function SolarSystemCanvas({
       }
       sunExtras.update(camera.position, sunMesh?.position ?? vZero, dtSec);
 
-      // Moons + comet are positioned every frame (so they sit on their planets
-      // / orbit even when paused) but only advance when motion is allowed.
-      const motionDt = reduceMotion ? 0 : dtSec;
-      planetMoons.update(motionDt, (id) => meshById.get(id)?.position ?? null);
-      comet.update(motionDt, sunMesh?.position ?? vZero);
+      // Moons + comet at their epoch-accurate orbital phases (real periods).
+      planetMoons.update(epochRef.current, (id) => meshById.get(id)?.position ?? null);
+      comet.update(epochRef.current, sunMesh?.position ?? vZero);
 
       // Imperative zoom (e.g. "zoom into Sun" from the galactic tier) —
       // ease sysRadius toward the requested target, then clear the request.
@@ -860,6 +891,7 @@ export function SolarSystemCanvas({
       nearbyStars.setFade(currentTier.stellar);
       galaxyDisk.setFade(currentTier.galactic);
       otherGalaxies.setFade(currentTier.universe);
+      cosmicWeb.setFade(currentTier.web);
       // The dense particle Milky Way ribbon at the solar tier overlaps
       // visually with the new disk — fade it out once the disk takes over.
       const milkyMat = milkyWay.material as THREE.PointsMaterial;
@@ -936,9 +968,11 @@ export function SolarSystemCanvas({
       scene.remove(nearbyStars.group);
       scene.remove(galaxyDisk.group);
       scene.remove(otherGalaxies.group);
+      scene.remove(cosmicWeb.group);
       nearbyStars.dispose();
       galaxyDisk.dispose();
       otherGalaxies.dispose();
+      cosmicWeb.dispose();
 
       meshById.forEach((mesh) => disposeMeshTree(mesh));
       meshById.clear();

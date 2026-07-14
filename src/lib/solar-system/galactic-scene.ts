@@ -207,7 +207,7 @@ export interface MilkyWayHandle {
   dispose: () => void;
 }
 
-export function makeMilkyWayDisk(): MilkyWayHandle {
+export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
   const group = new THREE.Group();
   group.name = 'galactic.milkyWay';
 
@@ -239,6 +239,94 @@ export function makeMilkyWayDisk(): MilkyWayHandle {
   // The disk lives at -sunOffsetLocal so the Sun (origin) sits on a spiral arm.
   disk.position.copy(sunOffsetLocal.clone().negate());
   group.add(disk);
+
+  // Volumetric stellar disk — tens of thousands of point-stars distributed
+  // like a real barred spiral: exponential radial falloff, log-spiral arm
+  // density waves, a central bar, and a thin-disk vertical profile that
+  // flares outward. Young blue stars + pink HII regions hug the arm ridges;
+  // older yellow stars fill the inter-arm disk. This gives the galaxy true
+  // 3D depth the flat texture alone can't provide.
+  const starN = lite ? 9000 : 24000;
+  const vPos = new Float32Array(starN * 3);
+  const vCol = new Float32Array(starN * 3);
+  const Rd = diskRadius * 0.28;          // radial scale length
+  // 22° pitch keeps the arms to ~1.2 windings across the disk — grand-design
+  // spirals read like this; tighter pitches degenerate into concentric rings.
+  const pitch = Math.tan(THREE.MathUtils.degToRad(22));
+  const ARMS = 4;
+  const thin = diskRadius * 0.012;       // vertical scale height
+  const cx = -sunOffsetLocal.x;
+  const cz = -sunOffsetLocal.z;
+  for (let i = 0; i < starN; i++) {
+    // Exponential disk sampling: r = -Rd·ln(u1·u2) approximates a gamma(2)
+    // profile that peaks off-centre like a real surface-density law.
+    const r = Math.min(-Rd * Math.log(Math.random() * Math.random() + 1e-6) * 0.5, diskRadius * 0.98);
+    let theta = Math.random() * Math.PI * 2;
+    const rNorm = r / diskRadius;
+    const isBar = r < diskRadius * 0.16;
+    // Two dominant arms + two weaker ones; ~60% of disk stars gather on a
+    // ridge, the rest stay smooth inter-arm background.
+    let onArm = false;
+    if (!isBar && Math.random() < 0.6) {
+      onArm = true;
+      const armPhase = Math.log(Math.max(r, 1) / (diskRadius * 0.05)) / pitch;
+      const arm = Math.random() < 0.7
+        ? Math.floor(Math.random() * 2) * 2       // major arms 0/2
+        : Math.floor(Math.random() * 2) * 2 + 1;  // minor arms 1/3
+      const ridge = armPhase + (arm * Math.PI * 2) / ARMS;
+      // Arm width grows with radius so the outer arms dissolve naturally.
+      const sigma = 0.12 + 0.5 * rNorm;
+      const scatter = (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
+      theta = ridge + scatter;
+      onArm = Math.abs(scatter) < sigma * 0.6;
+    }
+    let x = Math.cos(theta) * r;
+    let z = Math.sin(theta) * r;
+    if (isBar) {
+      // Central bar — elongate along X, squash along Z.
+      x *= 1.55;
+      z *= 0.5;
+    }
+    // Thin disk with outer flare; the bulge/bar region is thicker.
+    const h = thin * (1 + rNorm * 2.2) + (isBar ? diskRadius * 0.02 * (1 - rNorm * 4) : 0);
+    const y = (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 0.7 * h;
+    vPos[i * 3] = cx + x;
+    vPos[i * 3 + 1] = y;
+    vPos[i * 3 + 2] = cz + z;
+
+    // Colour by population: warm bulge/bar, blue arm ridges, pink HII sparks.
+    let cr: number, cg: number, cb: number;
+    let lum = 0.35 + Math.random() * 0.65;
+    if (isBar || rNorm < 0.18) {
+      cr = 1.0; cg = 0.82; cb = 0.58;                       // old population I/II — warm
+    } else if (onArm && Math.random() < 0.035) {
+      cr = 1.0; cg = 0.55; cb = 0.66;                       // HII star-forming region
+      lum *= 0.75;                                          // glow, don't bead
+    } else if (onArm) {
+      cr = 0.72; cg = 0.82; cb = 1.0;                       // young OB associations — blue
+    } else {
+      cr = 1.0; cg = 0.92; cb = 0.74;                       // inter-arm disk — yellowish
+    }
+    vCol[i * 3] = cr * lum;
+    vCol[i * 3 + 1] = cg * lum;
+    vCol[i * 3 + 2] = cb * lum;
+  }
+  const volGeom = new THREE.BufferGeometry();
+  volGeom.setAttribute('position', new THREE.BufferAttribute(vPos, 3));
+  volGeom.setAttribute('color', new THREE.BufferAttribute(vCol, 3));
+  const volMat = new THREE.PointsMaterial({
+    map: softStarSprite(),
+    size: lite ? 26 : 20,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+    alphaTest: 0.02,
+  });
+  const volume = new THREE.Points(volGeom, volMat);
+  group.add(volume);
 
   // Backside dust lane — slightly larger, darker disk pasted behind so the
   // central bulge isn't completely transparent against far galaxies.
@@ -297,7 +385,10 @@ export function makeMilkyWayDisk(): MilkyWayHandle {
 
   const setFade = (fade: number) => {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
-    diskMat.opacity = f;
+    // Texture disk provides the smooth glow underneath; the particle volume
+    // carries most of the brightness so the galaxy reads as true 3D.
+    diskMat.opacity = f * 0.62;
+    volMat.opacity = f * 0.92;
     dustMat.opacity = f * 0.85;
     haloMat.opacity = f * 0.55;
     group.visible = f > 0.005;
@@ -313,6 +404,9 @@ export function makeMilkyWayDisk(): MilkyWayHandle {
       diskGeom.dispose();
       diskTex.dispose();
       diskMat.dispose();
+      volGeom.dispose();
+      (volMat.map as THREE.Texture | null)?.dispose();
+      volMat.dispose();
       dustGeom.dispose();
       dustMat.dispose();
       haloGeom.dispose();
@@ -349,9 +443,10 @@ function spiralGalaxyCanvasTexture(): THREE.CanvasTexture {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, SIZE, SIZE);
 
-  // Spiral arms — log spirals + jitter
+  // Spiral arms — log spirals + jitter (winding count matches the particle
+  // volume above so the texture glow and the 3D stars trace the same arms)
   const arms = 4;
-  const turns = 1.35;
+  const turns = 1.1;
   const particles = 28000;
   for (let i = 0; i < particles; i++) {
     const armIdx = Math.floor(Math.random() * arms);
@@ -564,6 +659,181 @@ function galaxySpriteTexture(
   return tex;
 }
 
+/* ───────────────────────── cosmic web ───────────────────────── */
+
+export interface CosmicWebHandle {
+  group: THREE.Group;
+  setFade: (fade: number) => void;
+  dispose: () => void;
+}
+
+/**
+ * Large-scale structure of the universe, the way simulations like Illustris
+ * and Uchuu show it: galaxy clusters as bright knots, filaments of galaxies
+ * strung between neighbouring knots, and near-empty voids in between. Built
+ * from three point clouds (filaments / cluster cores / sparse field) so the
+ * whole tier costs three draw calls.
+ */
+export function makeCosmicWeb(lite: boolean): CosmicWebHandle {
+  const group = new THREE.Group();
+  group.name = 'galactic.cosmicWeb';
+
+  const NODE_N = lite ? 42 : 64;
+  const R_MIN = 9000;
+  const R_MAX = 26000;
+  const nodes: THREE.Vector3[] = [];
+  for (let i = 0; i < NODE_N; i++) {
+    const u = Math.random();
+    const v = Math.random();
+    const t = 2 * Math.PI * u;
+    const p = Math.acos(2 * v - 1);
+    const r = R_MIN + Math.pow(Math.random(), 0.7) * (R_MAX - R_MIN);
+    nodes.push(new THREE.Vector3(
+      r * Math.sin(p) * Math.cos(t),
+      r * Math.sin(p) * Math.sin(t),
+      r * Math.cos(p),
+    ));
+  }
+
+  // Filaments — each node links to its 2–3 nearest neighbours (deduped), and
+  // galaxies are scattered along a gently bowed curve between the pair with
+  // gaussian spread, exactly how the web looks in N-body survey maps.
+  const links: [number, number][] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < NODE_N; i++) {
+    const dists = nodes
+      .map((n, j) => ({ j, d: i === j ? Infinity : nodes[i].distanceToSquared(n) }))
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 2 + (i % 2));
+    for (const { j } of dists) {
+      const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        links.push(i < j ? [i, j] : [j, i]);
+      }
+    }
+  }
+
+  const filN = lite ? 7000 : 18000;
+  const filPos = new Float32Array(filN * 3);
+  const filCol = new Float32Array(filN * 3);
+  const mid = new THREE.Vector3();
+  const bow = new THREE.Vector3();
+  const pA = new THREE.Vector3();
+  const pB = new THREE.Vector3();
+  const pt = new THREE.Vector3();
+  const bows = links.map(([ia, ib]) => {
+    // Fixed random bow per filament, perpendicular-ish to the link.
+    mid.copy(nodes[ia]).add(nodes[ib]).multiplyScalar(0.5);
+    const len = nodes[ia].distanceTo(nodes[ib]);
+    return new THREE.Vector3(
+      (Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5),
+    ).normalize().multiplyScalar(len * (0.08 + Math.random() * 0.14)).add(mid);
+  });
+  for (let i = 0; i < filN; i++) {
+    const li = i % links.length;
+    const [ia, ib] = links[li];
+    pA.copy(nodes[ia]);
+    pB.copy(nodes[ib]);
+    bow.copy(bows[li]);
+    // Quadratic bezier sample, biased toward the ends (denser near clusters).
+    let s = Math.random();
+    s = s < 0.5 ? Math.pow(s * 2, 1.4) / 2 : 1 - Math.pow((1 - s) * 2, 1.4) / 2;
+    const inv = 1 - s;
+    pt.set(0, 0, 0)
+      .addScaledVector(pA, inv * inv)
+      .addScaledVector(bow, 2 * inv * s)
+      .addScaledVector(pB, s * s);
+    const len = pA.distanceTo(pB);
+    const spread = len * 0.035;
+    filPos[i * 3] = pt.x + (Math.random() + Math.random() - 1) * spread;
+    filPos[i * 3 + 1] = pt.y + (Math.random() + Math.random() - 1) * spread;
+    filPos[i * 3 + 2] = pt.z + (Math.random() + Math.random() - 1) * spread;
+    const lum = 0.25 + Math.random() * 0.5;
+    filCol[i * 3] = 0.62 * lum;
+    filCol[i * 3 + 1] = 0.66 * lum;
+    filCol[i * 3 + 2] = 0.95 * lum;
+  }
+
+  // Cluster cores — dense warm knots at the nodes (galaxies crowd there).
+  const coreN = lite ? 2600 : 6400;
+  const corePos = new Float32Array(coreN * 3);
+  const coreCol = new Float32Array(coreN * 3);
+  for (let i = 0; i < coreN; i++) {
+    const n = nodes[i % NODE_N];
+    const sigma = 380 + (i % 7) * 60;
+    corePos[i * 3] = n.x + (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
+    corePos[i * 3 + 1] = n.y + (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
+    corePos[i * 3 + 2] = n.z + (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
+    const lum = 0.4 + Math.random() * 0.6;
+    coreCol[i * 3] = 1.0 * lum;
+    coreCol[i * 3 + 1] = 0.9 * lum;
+    coreCol[i * 3 + 2] = 0.76 * lum;
+  }
+
+  // Sparse field galaxies drifting in the voids.
+  const fieldN = lite ? 900 : 2200;
+  const fieldPos = new Float32Array(fieldN * 3);
+  const fieldCol = new Float32Array(fieldN * 3);
+  for (let i = 0; i < fieldN; i++) {
+    const u = Math.random();
+    const v = Math.random();
+    const t = 2 * Math.PI * u;
+    const p = Math.acos(2 * v - 1);
+    const r = R_MIN * 0.8 + Math.random() * (R_MAX - R_MIN * 0.8);
+    fieldPos[i * 3] = r * Math.sin(p) * Math.cos(t);
+    fieldPos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
+    fieldPos[i * 3 + 2] = r * Math.cos(p);
+    const lum = 0.2 + Math.random() * 0.4;
+    fieldCol[i * 3] = 0.85 * lum;
+    fieldCol[i * 3 + 1] = 0.85 * lum;
+    fieldCol[i * 3 + 2] = 0.95 * lum;
+  }
+
+  const sprite = softStarSprite();
+  const layers: { pts: THREE.Points; mat: THREE.PointsMaterial; peak: number }[] = [];
+  const addLayer = (pos: Float32Array, col: Float32Array, size: number, peak: number) => {
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geom.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const mat = new THREE.PointsMaterial({
+      map: sprite,
+      size,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending,
+      alphaTest: 0.02,
+    });
+    const pts = new THREE.Points(geom, mat);
+    group.add(pts);
+    layers.push({ pts, mat, peak });
+  };
+  addLayer(filPos, filCol, 130, 0.6);
+  addLayer(corePos, coreCol, 210, 0.85);
+  addLayer(fieldPos, fieldCol, 160, 0.35);
+
+  const setFade = (fade: number) => {
+    const f = THREE.MathUtils.clamp(fade, 0, 1);
+    for (const l of layers) l.mat.opacity = f * l.peak;
+    group.visible = f > 0.005;
+  };
+
+  return {
+    group,
+    setFade,
+    dispose: () => {
+      for (const l of layers) {
+        l.pts.geometry.dispose();
+        l.mat.dispose();
+      }
+      sprite.dispose();
+    },
+  };
+}
+
 /* ───────────────────────── tier helper ───────────────────────── */
 
 /**
@@ -579,6 +849,8 @@ export interface TierBlend {
   stellar: number;
   galactic: number;
   universe: number;
+  /** Cosmic web / large-scale structure — the outermost tier. */
+  web: number;
 }
 
 export function tierBlendFromRadius(radius: number): TierBlend {
@@ -587,14 +859,16 @@ export function tierBlendFromRadius(radius: number): TierBlend {
   //   60-150 : solar fades a bit, stars fade in
   //   150-1400 : stellar tier
   //   1400-4500 : galactic tier
-  //   4500+ : intergalactic tier (galaxies pop in)
+  //   4500-9000 : intergalactic tier (Local Group galaxies pop in)
+  //   9000+ : cosmic web — clusters + filaments of the large-scale structure
   const stellar = smoothstep(60, 220, radius);
   const galactic = smoothstep(1400, 3200, radius);
   const universe = smoothstep(4400, 6800, radius);
+  const web = smoothstep(9000, 15000, radius);
   // The solar tier doesn't fully disappear — at huge distances the sun
   // simply becomes a tiny dot via perspective, no need to hide the meshes.
   const solar = 1.0;
-  return { solar, stellar, galactic, universe };
+  return { solar, stellar, galactic, universe, web };
 }
 
 function smoothstep(edge0: number, edge1: number, x: number): number {

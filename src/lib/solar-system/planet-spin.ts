@@ -17,7 +17,26 @@ const SIDEREAL_ROTATION_MS: Record<SolarBodyId, number> = {
   saturn: 10.656 * MS_HOUR,
   uranus: -17.24 * MS_HOUR,
   neptune: 16.11 * MS_HOUR,
-  pluto: MS_DAY * 6.3872304,
+  pluto: -MS_DAY * 6.3872304,
+};
+
+/**
+ * Axial tilt (obliquity to orbit, degrees), folded into [0, 90] — bodies whose
+ * IAU obliquity exceeds 90° (Venus 177.4°, Uranus 97.8°, Pluto 122.5°) carry
+ * the flip as a negative rotation period above instead, so tilt + spin sign
+ * together reproduce the true pole orientation and spin direction.
+ */
+export const AXIAL_TILT_DEG: Record<SolarBodyId, number> = {
+  sun: 7.25,
+  mercury: 0.03,
+  venus: 2.64,
+  earth: 23.44,
+  mars: 25.19,
+  jupiter: 3.13,
+  saturn: 26.73,
+  uranus: 82.23,
+  neptune: 28.32,
+  pluto: 57.47,
 };
 
 /** Phase in radians for Y-axis rotation at `epochMs`. */

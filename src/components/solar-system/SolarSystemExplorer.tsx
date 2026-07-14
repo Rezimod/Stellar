@@ -39,11 +39,11 @@ export default function SolarSystemExplorer() {
   const [includePluto, setIncludePluto] = useState(true);
   const [selectedId, setSelectedId] = useState<SolarBodyId | null>(null);
   const [focusId, setFocusId] = useState<SolarBodyId | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [speedIdx, setSpeedIdx] = useState(2);
+  const [playing, setPlaying] = useState(true);
+  const [speedIdx, setSpeedIdx] = useState(1);
   const [viewOpen, setViewOpen] = useState(false);
   const [cosmic, setCosmic] = useState<CosmicView>({
-    solar: 1, stellar: 0, galactic: 0, universe: 0,
+    solar: 1, stellar: 0, galactic: 0, universe: 0, web: 0,
     sunScreen: null, milkyWayScreen: null,
   });
   const [zoomTo, setZoomTo] = useState<number | null>(null);
