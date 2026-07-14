@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import AstroLogo from './AstroLogo';
 import SearchModal from './SearchModal';
+import LanguageToggle from './LanguageToggle';
 
 const NAV_ITEMS = [
   { href: '/sky',         key: 'sky',         icon: CloudSun },
@@ -177,7 +178,7 @@ export default function Nav() {
               })}
             </div>
 
-            {/* RIGHT cluster: search → hub → avatar/sign-in */}
+            {/* RIGHT cluster: search → language → hub → avatar/sign-in */}
             <div className="ml-auto flex items-center gap-2 flex-shrink-0 z-10">
               <button
                 onClick={() => setSearchOpen(true)}
@@ -187,6 +188,8 @@ export default function Nav() {
               >
                 <Search size={17} strokeWidth={1.9} />
               </button>
+
+              <LanguageToggle />
 
               <Link
                 href="/hub"
