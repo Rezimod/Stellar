@@ -13,7 +13,7 @@ import { track } from '@/lib/track';
 import { Compass, Crosshair, Telescope, Hand, Box, Lightbulb, MapPin, ChevronRight, Eye, Sparkles, Sunrise, Sunset } from 'lucide-react';
 import { TelescopeIcon } from '@/components/sky/CosmicIcons';
 import { useTheme } from '@/components/providers/ThemeProvider';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { LOCATIONS } from '@/lib/darksky-locations';
@@ -48,11 +48,11 @@ const REFRESH_MS = 60_000;
 const TOUR_KEY = 'stellar.sky.tour.v1';
 const LOC_PROMPT_KEY = 'stellar.sky.locprompt.v1';
 
-function fmtClock(iso: string | null, tz?: string): string | null {
+function fmtClock(iso: string | null, dateLocale: string, tz?: string): string | null {
   if (!iso) return null;
   try {
     const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
+    return d.toLocaleTimeString(dateLocale, { hour: 'numeric', minute: '2-digit', timeZone: tz });
   } catch {
     return null;
   }
@@ -121,6 +121,8 @@ export default function SkyPage() {
   const router = useRouter();
   const tErrors = useTranslations('sky.errors');
   const tDir = useTranslations('sky.directions.compass');
+  const tUi = useTranslations('skyUi');
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
 
   const { address } = useStellarUser();
   const [authOpen, setAuthOpen] = useState(false);
@@ -385,9 +387,9 @@ export default function SkyPage() {
 
   // Header date + time, in the observing location's zone.
   const dateLabel = skyTime
-    .toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz })
+    .toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz })
     .toUpperCase();
-  const timeLabel = skyTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZone: tz });
+  const timeLabel = skyTime.toLocaleTimeString(dateLocale, { hour: 'numeric', minute: '2-digit', timeZone: tz });
 
   // Observing window from twilight (astronomical dark → dawn).
   const windowOpen = finder?.twilight?.astronomicalDusk ?? finder?.twilight?.nauticalDusk ?? finder?.twilight?.civilDusk ?? null;
@@ -493,14 +495,14 @@ export default function SkyPage() {
             {/* ── Header ── */}
             <header className="skx__head">
               <div className="skx__head-titles">
-                <h1 className="skx__title">Sky Tonight</h1>
+                <h1 className="skx__title">{tUi('skyTonight')}</h1>
                 <p className="skx__subtitle">{dateLabel} · {timeLabel}</p>
               </div>
               <button
                 type="button"
                 className="skx__loc"
                 onClick={() => setShowLocModal(true)}
-                aria-label="Change observing location"
+                aria-label={tUi('changeLocation')}
               >
                 <MapPin size={14} aria-hidden="true" />
                 <span className="skx__loc-city">{locationLabel}</span>
@@ -509,14 +511,14 @@ export default function SkyPage() {
             </header>
 
             {/* ── Summary strip — visible · moon · sky quality · sun ── */}
-            <section className="skx__summary" aria-label="Tonight at a glance">
+            <section className="skx__summary" aria-label={tUi('tonightAtGlance')}>
               <div className="skx__sum-cell skx__sum-cell--lead">
                 <span className="skx__sum-lead-top">
                   <span className="skx__sum-count">{visibleCount}</span>
                   <Eye size={15} aria-hidden="true" />
-                  <span className="skx__sum-head">Visible now</span>
+                  <span className="skx__sum-head">{tUi('visibleNow')}</span>
                 </span>
-                <span className="skx__sum-sub">Best targets to see</span>
+                <span className="skx__sum-sub">{tUi('bestTargetsToSee')}</span>
               </div>
 
               <div
@@ -532,7 +534,7 @@ export default function SkyPage() {
                 <span className="skx__sum-body">
                   <span className="skx__sum-head">{moonName}</span>
                   <span className="skx__sum-val">{moonIllum}<em>%</em></span>
-                  <span className="skx__sum-sub">Illumination · details</span>
+                  <span className="skx__sum-sub">{tUi('illuminationDetails')}</span>
                 </span>
                 <ChevronRight
                   size={16}
@@ -544,7 +546,7 @@ export default function SkyPage() {
               <div className="skx__sum-cell">
                 <QualityRing score={skyScore} />
                 <span className="skx__sum-body">
-                  <span className="skx__sum-head">Sky quality</span>
+                  <span className="skx__sum-head">{tUi('skyQuality')}</span>
                   <span className="skx__sum-val">{skyScore}<em>/10</em></span>
                   <span className="skx__sum-sub" data-tone={skyScore >= 7 ? 'good' : skyScore >= 5 ? 'mid' : 'bad'}>{skyWord}</span>
                 </span>
@@ -553,9 +555,9 @@ export default function SkyPage() {
               <div className="skx__sum-cell">
                 <span className="skx__sum-icon skx__sum-sunic"><Sunset size={22} aria-hidden="true" /></span>
                 <span className="skx__sum-body">
-                  <span className="skx__sum-head">Sunset</span>
-                  <span className="skx__sum-val skx__sum-val--time">{fmtClock(sunsetISO, tz) ?? '—'}</span>
-                  <span className="skx__sum-sub">Sunrise {fmtClock(sunriseISO, tz) ?? '—'}</span>
+                  <span className="skx__sum-head">{tUi('sunset')}</span>
+                  <span className="skx__sum-val skx__sum-val--time">{fmtClock(sunsetISO, dateLocale, tz) ?? '—'}</span>
+                  <span className="skx__sum-sub">{tUi('sunrise')} {fmtClock(sunriseISO, dateLocale, tz) ?? '—'}</span>
                 </span>
               </div>
             </section>
@@ -592,23 +594,23 @@ export default function SkyPage() {
                   <Link
                     href="/solar-system"
                     className="sky-v3__solar-launch"
-                    aria-label="3D solar system"
-                    title="3D solar system"
+                    aria-label={tUi('solarSystem3d')}
+                    title={tUi('solarSystem3d')}
                   >
                     <Box size={14} aria-hidden="true" />
-                    <span className="sky-v3__solar-launch-label">3D View</span>
+                    <span className="sky-v3__solar-launch-label">{tUi('view3d')}</span>
                   </Link>
                   <button
                     type="button"
                     className="sky-v3__ar-launch"
                     onClick={toggleField}
-                    aria-label="Night mode — red light"
+                    aria-label={tUi('nightModeRedLight')}
                     aria-pressed={field}
-                    title="Night mode — red light"
+                    title={tUi('nightModeRedLight')}
                     style={field ? { color: '#FF3B30', borderColor: 'rgba(255,59,48,0.45)' } : undefined}
                   >
                     <Lightbulb size={14} aria-hidden="true" />
-                    <span className="sky-v3__ar-launch-label">Night</span>
+                    <span className="sky-v3__ar-launch-label">{tUi('night')}</span>
                   </button>
                 </div>
               </div>
@@ -619,26 +621,26 @@ export default function SkyPage() {
             <div className="skx__rightcol">
             {/* ── Next best time ── */}
               <section className="skx__card skx__nbt">
-                <span className="skx__card-label">Next best time</span>
+                <span className="skx__card-label">{tUi('nextBestTime')}</span>
                 <div className="skx__nbt-row">
                   <RingGauge pct={darkRemainingPct} color="var(--seafoam, #5EEAD4)">
                     <TelescopeIcon size={20} />
                   </RingGauge>
                   <div className="skx__nbt-body">
-                    <strong className="skx__nbt-window">{fmtClock(windowOpen, tz) ?? '—'} – {fmtClock(windowClose, tz) ?? '—'}</strong>
-                    <span className="skx__nbt-dur">{windowDuration ?? 'Dark window'} window</span>
+                    <strong className="skx__nbt-window">{fmtClock(windowOpen, dateLocale, tz) ?? '—'} – {fmtClock(windowClose, dateLocale, tz) ?? '—'}</strong>
+                    <span className="skx__nbt-dur">{windowDuration ?? tUi('darkWindow')} {tUi('windowWord')}</span>
                     <span className="skx__nbt-note"><Sparkles size={13} aria-hidden="true" /> {darkNote}</span>
                   </div>
                 </div>
               </section>
 
               <section className="skx__card skx__look">
-                <span className="skx__card-label">What to look for</span>
+                <span className="skx__card-label">{tUi('whatToLookFor')}</span>
                 <ul className="skx__look-list">
                   {bestTargets.length === 0 && (
                     <li className="skx__look-empty">
-                      Nothing up yet{windowOpen ? <> — dark sky opens around <strong>{fmtClock(windowOpen, tz)}</strong></> : ''}.{' '}
-                      <Link href="/missions" style={{ color: 'var(--accent)' }}>Try a quiz</Link> while you wait.
+                      {tUi('nothingUpYet')}{windowOpen ? <> — {tUi('darkSkyOpensAround')} <strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.{' '}
+                      <Link href="/missions" style={{ color: 'var(--accent)' }}>{tUi('tryAQuiz')}</Link> {tUi('whileYouWait')}
                     </li>
                   )}
                   {bestTargets.slice(0, 3).map((o) => (
@@ -662,20 +664,20 @@ export default function SkyPage() {
               </section>
 
             {/* ── Visible now ── */}
-            <section className="skx__visible" aria-label="Visible now">
+            <section className="skx__visible" aria-label={tUi('visibleNow')}>
               <header className="skx__sec-head">
-                <h2 className="skx__sec-title">Visible now <span className="skx__sec-count">({visibleCount})</span></h2>
+                <h2 className="skx__sec-title">{tUi('visibleNow')} <span className="skx__sec-count">({visibleCount})</span></h2>
                 {compass.status !== 'unavailable' && (
                   <button type="button" className="skx__viewall" onClick={handleArOpen}>
-                    View all <ChevronRight size={14} aria-hidden="true" />
+                    {tUi('viewAll')} <ChevronRight size={14} aria-hidden="true" />
                   </button>
                 )}
               </header>
               <ol className="skx__vis-rail">
                 {bestTargets.length === 0 && (
                   <li className="skx__vis-empty">
-                    Nothing above the horizon yet{windowOpen ? <> — next dark window ~<strong>{fmtClock(windowOpen, tz)}</strong></> : ''}.{' '}
-                    <Link href="/missions" style={{ color: 'var(--accent)' }}>quiz time</Link> until then.
+                    {tUi('nothingAboveHorizon')}{windowOpen ? <> — {tUi('nextDarkWindow')}<strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.{' '}
+                    <Link href="/missions" style={{ color: 'var(--accent)' }}>{tUi('quizTime')}</Link> {tUi('untilThen')}
                   </li>
                 )}
                 {bestTargets.map((o, i) => (
@@ -694,8 +696,8 @@ export default function SkyPage() {
 
             {/* ── Tonight overview ── */}
               <section className="skx__card skx__overview">
-                <span className="skx__card-label">Tonight overview</span>
-                <NightOverview sunsetISO={sunsetISO} sunriseISO={sunriseISO} openISO={windowOpen} closeISO={windowClose} tz={tz} />
+                <span className="skx__card-label">{tUi('tonightOverview')}</span>
+                <NightOverview sunsetISO={sunsetISO} sunriseISO={sunriseISO} openISO={windowOpen} closeISO={windowClose} tz={tz} dateLocale={dateLocale} />
               </section>
               <TipsCard tips={tips} />
             </div>
@@ -883,13 +885,15 @@ function RingGauge({ pct, color, children }: { pct: number; color: string; child
 }
 
 /* ── Night overview bar — sunset → sunrise with the dark window highlighted. ── */
-function NightOverview({ sunsetISO, sunriseISO, openISO, closeISO, tz }: {
+function NightOverview({ sunsetISO, sunriseISO, openISO, closeISO, tz, dateLocale }: {
   sunsetISO: string | null;
   sunriseISO: string | null;
   openISO: string | null;
   closeISO: string | null;
   tz?: string;
+  dateLocale: string;
 }) {
+  const tUi = useTranslations('skyUi');
   const sunset = sunsetISO ? new Date(sunsetISO).getTime() : null;
   let sunrise = sunriseISO ? new Date(sunriseISO).getTime() : null;
   if (sunset != null && sunrise != null && sunrise <= sunset) sunrise += 24 * 3600 * 1000;
@@ -908,23 +912,23 @@ function NightOverview({ sunsetISO, sunriseISO, openISO, closeISO, tz }: {
       <div className="skx__ov-track" aria-hidden="true">
         {hasWindow && (
           <span className="skx__ov-window" style={{ left: `${a * 100}%`, width: `${(b - a) * 100}%` }}>
-            <span className="skx__ov-window-label">Best window</span>
+            <span className="skx__ov-window-label">{tUi('bestWindow')}</span>
           </span>
         )}
       </div>
       <div className="skx__ov-ends">
         <span className="skx__ov-end">
           <Sunset size={14} aria-hidden="true" />
-          <span className="skx__ov-end-time">{fmtClock(sunsetISO, tz) ?? '—'}</span>
-          <span className="skx__ov-end-label">Sunset</span>
+          <span className="skx__ov-end-time">{fmtClock(sunsetISO, dateLocale, tz) ?? '—'}</span>
+          <span className="skx__ov-end-label">{tUi('sunset')}</span>
         </span>
         {hasWindow && (
-          <span className="skx__ov-mid">{fmtClock(openISO, tz)} – {fmtClock(closeISO, tz)}</span>
+          <span className="skx__ov-mid">{fmtClock(openISO, dateLocale, tz)} – {fmtClock(closeISO, dateLocale, tz)}</span>
         )}
         <span className="skx__ov-end skx__ov-end--right">
           <Sunrise size={14} aria-hidden="true" />
-          <span className="skx__ov-end-time">{fmtClock(sunriseISO, tz) ?? '—'}</span>
-          <span className="skx__ov-end-label">Sunrise</span>
+          <span className="skx__ov-end-time">{fmtClock(sunriseISO, dateLocale, tz) ?? '—'}</span>
+          <span className="skx__ov-end-label">{tUi('sunrise')}</span>
         </span>
       </div>
     </div>
@@ -933,6 +937,7 @@ function NightOverview({ sunsetISO, sunriseISO, openISO, closeISO, tz }: {
 
 /* ── Tips card — rotates through contextual advice for tonight. ── */
 function TipsCard({ tips }: { tips: string[] }) {
+  const tUi = useTranslations('skyUi');
   const [i, setI] = useState(0);
   useEffect(() => { setI(0); }, [tips]);
   useEffect(() => {
@@ -943,7 +948,7 @@ function TipsCard({ tips }: { tips: string[] }) {
   const current = tips[Math.min(i, tips.length - 1)] ?? '';
   return (
     <section className="skx__card skx__tips">
-      <span className="skx__card-label"><Lightbulb size={13} aria-hidden="true" /> Tips for tonight</span>
+      <span className="skx__card-label"><Lightbulb size={13} aria-hidden="true" /> {tUi('tipsForTonight')}</span>
       <p className="skx__tips-text">{current}</p>
       {tips.length > 1 && (
         <div className="skx__tips-dots">
@@ -953,7 +958,7 @@ function TipsCard({ tips }: { tips: string[] }) {
               type="button"
               className={`skx__tips-dot${n === i ? ' is-active' : ''}`}
               onClick={() => setI(n)}
-              aria-label={`Tip ${n + 1}`}
+              aria-label={tUi('tipN', { n: n + 1 })}
             />
           ))}
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { Camera, Copy, Check, ExternalLink } from 'lucide-react';
 import { Avatar } from '@/lib/avatars';
 import { ProfileStats } from './ProfileStats';
@@ -35,6 +36,7 @@ export function ProfileHero({
   addrShort, address, explorerHref, clusterLabel, copied, onCopy, copyLabel,
   loaded, balance, earned, burned, statLabels,
 }: Props) {
+  const t = useTranslations('profileUi');
   const { card, hairline, iconButton, isLight } = tokens;
 
   return (
@@ -73,7 +75,7 @@ export function ProfileHero({
         {/* AVATAR */}
         <button
           onClick={onAvatarClick}
-          aria-label="Change avatar"
+          aria-label={t('avatar.change')}
           style={{
             position: 'relative',
             width: 96,
@@ -183,7 +185,7 @@ export function ProfileHero({
                   href={explorerHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Solana Explorer"
+                  aria-label={t('hero.explorer')}
                   style={{ ...iconButton, width: 30, height: 30, textDecoration: 'none' }}
                 >
                   <ExternalLink size={13} />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type CSSProperties } from 'react';
+import { useTranslations } from 'next-intl';
 import { ExternalLink, ShieldCheck, Satellite } from 'lucide-react';
 
 interface OnChainObservation {
@@ -37,9 +38,6 @@ interface OnChainData {
   cluster: string;
 }
 
-const TARGET_LABEL = ['Moon', 'Planet', 'Stars', 'Constellation', 'Deep sky', 'Unknown'];
-const CONFIDENCE_LABEL = ['Rejected', 'Low', 'Medium', 'High'];
-
 const CARD_STYLE: CSSProperties = {
   background:
     'radial-gradient(ellipse 70% 100% at 0% 0%, rgba(94,234,212,0.06) 0%, transparent 60%), ' +
@@ -72,6 +70,21 @@ function shortPda(pda: string): string {
 }
 
 export function OnChainRecord({ wallet }: { wallet: string }) {
+  const t = useTranslations('profileUi');
+  const TARGET_LABEL = [
+    t('target.moon'),
+    t('target.planet'),
+    t('target.stars'),
+    t('target.constellation'),
+    t('target.deepSky'),
+    t('target.unknown'),
+  ];
+  const CONFIDENCE_LABEL = [
+    t('quality.rejected'),
+    t('quality.low'),
+    t('quality.medium'),
+    t('quality.high'),
+  ];
   const [data, setData] = useState<OnChainData | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -107,7 +120,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
     <section>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px', marginBottom: 8 }}>
         <ShieldCheck size={12} color="var(--stl-green)" />
-        <span style={KICKER_STYLE}>On-chain record · Proof of Observation</span>
+        <span style={KICKER_STYLE}>{t('onchain.title')}</span>
       </div>
 
       <div style={CARD_STYLE}>
@@ -122,7 +135,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
           }}
         >
           {status === 'loading' || !data?.profile ? (
-            <span style={MONO_DIM}>Reading registry…</span>
+            <span style={MONO_DIM}>{t('onchain.reading')}</span>
           ) : (
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -138,7 +151,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                 >
                   {data.profile.totalObservations}
                 </span>
-                <span style={KICKER_STYLE}>verified on Solana</span>
+                <span style={KICKER_STYLE}>{t('onchain.verifiedOnSolana')}</span>
               </div>
               <a
                 href={explorer(data.profilePda)}
@@ -158,7 +171,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                   textDecoration: 'none',
                 }}
               >
-                Observer account <ExternalLink size={10} />
+                {t('onchain.observerAccount')} <ExternalLink size={10} />
               </a>
             </>
           )}
@@ -199,7 +212,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                     border: '1px solid rgba(255,179,71,0.25)',
                   }}
                 >
-                  ✦ ×{data.reputation.multiplier} Stars
+                  ✦ ×{data.reputation.multiplier} {t('onchain.starsMultiplier')}
                 </span>
               )}
             </div>
@@ -223,7 +236,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                   />
                 </div>
                 <span style={MONO_DIM}>
-                  {data.reputation.toNext} more to {data.reputation.nextTier}
+                  {t('onchain.progressToNext', { count: data.reputation.toNext, tier: data.reputation.nextTier })}
                 </span>
               </>
             )}
@@ -256,10 +269,10 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                   margin: 0,
                 }}
               >
-                Telescope Passport
+                {t('onchain.telescopePassport')}
               </p>
               <p style={{ ...MONO_DIM, margin: '2px 0 0' }}>
-                {data.passport.tier ?? '—'} · soulbound · {shortPda(data.passport.mint)}
+                {data.passport.tier ?? '—'} · {t('onchain.soulbound')} · {shortPda(data.passport.mint)}
               </p>
             </div>
             <ExternalLink size={11} color="var(--stl-text-dim)" />
@@ -298,11 +311,11 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                         textDecoration: o.revoked ? 'line-through' : 'none',
                       }}
                     >
-                      {TARGET_LABEL[o.targetCode] ?? 'Unknown'}
+                      {TARGET_LABEL[o.targetCode] ?? t('target.unknown')}
                     </p>
                     <p style={{ ...MONO_DIM, margin: '2px 0 0' }}>
                       {CONFIDENCE_LABEL[o.confidence] ?? '—'} · {shortPda(o.pda)}
-                      {o.revoked ? ' · revoked' : ''}
+                      {o.revoked ? ` · ${t('onchain.revoked')}` : ''}
                     </p>
                   </div>
                   <span

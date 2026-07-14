@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import './SkyEvents2026.css';
 
@@ -39,6 +39,7 @@ const EVENTS: SkyEvent[] = [
 
 export function SkyEvents2026() {
   const t = useTranslations('sky.events');
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
   const [openId, setOpenId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -95,7 +96,7 @@ export function SkyEvents2026() {
                 <EventArt kind={ev.kind} />
               </div>
               <div className="ev__caption">
-                <span className="ev__date">{formatDateRange(ev.date, ev.endDate)}</span>
+                <span className="ev__date">{formatDateRange(ev.date, ev.endDate, dateLocale)}</span>
                 <span className="ev__name">{t(`names.${ev.id}`)}</span>
               </div>
             </button>
@@ -126,7 +127,7 @@ export function SkyEvents2026() {
             <div className="ev-modal__art">
               <EventArt kind={opened.kind} large />
             </div>
-            <p className="ev-modal__eyebrow">{formatDateRange(opened.date, opened.endDate)}</p>
+            <p className="ev-modal__eyebrow">{formatDateRange(opened.date, opened.endDate, dateLocale)}</p>
             <h3 id={`ev-sheet-title-${opened.id}`} className="ev-modal__title">
               {t(`names.${opened.id}`)}
             </h3>
@@ -154,16 +155,16 @@ export function SkyEvents2026() {
   );
 }
 
-function formatDateRange(start: string, end?: string): string {
+function formatDateRange(start: string, end: string | undefined, dateLocale: string): string {
   const s = new Date(start);
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  if (!end) return s.toLocaleDateString('en-US', opts);
+  if (!end) return s.toLocaleDateString(dateLocale, opts);
   const e = new Date(end);
   const sameMonth = s.getMonth() === e.getMonth();
   if (sameMonth) {
-    return `${s.toLocaleDateString('en-US', opts)}–${e.getDate()}`;
+    return `${s.toLocaleDateString(dateLocale, opts)}–${e.getDate()}`;
   }
-  return `${s.toLocaleDateString('en-US', opts)} – ${e.toLocaleDateString('en-US', opts)}`;
+  return `${s.toLocaleDateString(dateLocale, opts)} – ${e.toLocaleDateString(dateLocale, opts)}`;
 }
 
 interface EventArtProps {

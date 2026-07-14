@@ -80,8 +80,8 @@ function moonPhaseKey(phase: number): string {
   return 'thinWaning';
 }
 
-function fmtClock(d: Date): string {
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+function fmtClock(d: Date, dateLocale: string): string {
+  return d.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function clampDate(d: Date, min: Date, max: Date): Date {
@@ -162,6 +162,7 @@ export default function MissionsPage() {
   const { getAccessToken } = usePrivy();
   const [authOpen, setAuthOpen] = useState(false);
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
+  const dateLocale = locale === 'ka' ? 'ka-GE' : 'en-US';
   const { location, ensureLocation } = useLocation();
   const t = useTranslations('missionsPage');
   const tSky = useTranslations('sky');
@@ -388,7 +389,7 @@ export default function MissionsPage() {
     return items;
   }, [skyPositions, t]);
 
-  const headerTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const headerTime = now.toLocaleTimeString(dateLocale, { hour: 'numeric', minute: '2-digit' });
 
   // Conditions gate — same logic as before, used for the status chip label.
   const CLOUD_OVERCAST_PCT = 70;
@@ -426,12 +427,12 @@ export default function MissionsPage() {
     if (dark.duskStart && dark.dawnEnd && pos.transit) {
       const start = clampDate(new Date(pos.transit.getTime() - 45 * 60_000), dark.duskStart, dark.dawnEnd);
       const end = clampDate(new Date(pos.transit.getTime() + 45 * 60_000), dark.duskStart, dark.dawnEnd);
-      if (end.getTime() > start.getTime()) return { kind: 'window', text: `${fmtClock(start)}–${fmtClock(end)}` };
+      if (end.getTime() > start.getTime()) return { kind: 'window', text: `${fmtClock(start, dateLocale)}–${fmtClock(end, dateLocale)}` };
     }
     if (above) return { kind: 'anytime' };
-    if (pos.rise) return { kind: 'later', time: fmtClock(pos.rise) };
+    if (pos.rise) return { kind: 'later', time: fmtClock(pos.rise, dateLocale) };
     return null;
-  }, [skyPositions, dark.duskStart, dark.dawnEnd]);
+  }, [skyPositions, dark.duskStart, dark.dawnEnd, dateLocale]);
 
   const questLocal = localize(questEntry);
   const questPos = skyPositions[questEntry.id];
@@ -551,7 +552,7 @@ export default function MissionsPage() {
                     <span className="mis-nearby-art"><SkyOrb name={n.key} raw /></span>
                     <span className="mis-nearby-name">{n.name}</span>
                     <span className={`mis-nearby-badge${n.above ? ' is-now' : ''}`}>
-                      {n.above ? t('nearby.now') : n.rise ? t('nearby.after', { time: fmtClock(n.rise) }) : t('quest.anytime')}
+                      {n.above ? t('nearby.now') : n.rise ? t('nearby.after', { time: fmtClock(n.rise, dateLocale) }) : t('quest.anytime')}
                     </span>
                     <span className="mis-nearby-stars"><Star size={11} strokeWidth={2} className="mis-star-icn" />+{n.stars}</span>
                   </button>
@@ -559,6 +560,7 @@ export default function MissionsPage() {
                 <IssCard
                   iss={iss}
                   loading={issLoading}
+                  dateLocale={dateLocale}
                   onOpen={() => router.push('/sky')}
                   labels={{
                     name: t('iss.name'),
@@ -602,6 +604,7 @@ export default function MissionsPage() {
                       above={above}
                       pct={visibilityPct(pos?.altitude ?? -90)}
                       rise={pos?.rise ?? null}
+                      dateLocale={dateLocale}
                       onStart={() => startMission(g.routeId)}
                       onExplain={(rect) => {
                         setActiveExplainerAnchor(rect);
@@ -733,6 +736,7 @@ export default function MissionsPage() {
                 <RareEventCard
                   key={`${ev.date}-${ev.name}`}
                   event={ev}
+                  dateLocale={dateLocale}
                   typeLabel={t(`eventType.${ev.type}`)}
                   countdown={{
                     today: t('countdown.today'),
@@ -760,6 +764,7 @@ export default function MissionsPage() {
                 <EventRow
                   key={`${ev.date}-${ev.name}`}
                   event={ev}
+                  dateLocale={dateLocale}
                   typeLabel={t(`eventType.${ev.type}`)}
                   difficultyLabel={t(`eventDiff.${ev.difficulty}`)}
                   countdown={{ today: t('countdown.today'), tomorrow: t('countdown.tomorrow'), inDays: (n) => t('countdown.inDays', { n }) }}
@@ -795,7 +800,7 @@ export default function MissionsPage() {
           </div>
           <ObserverAssist
             items={[
-              { Icon: Clock, label: t('observer.dark.label'), value: dark.duskStart && dark.dawnEnd ? `${fmtClock(dark.duskStart)}–${fmtClock(dark.dawnEnd)}` : t('glance.unknown'), body: t('observer.dark.body') },
+              { Icon: Clock, label: t('observer.dark.label'), value: dark.duskStart && dark.dawnEnd ? `${fmtClock(dark.duskStart, dateLocale)}–${fmtClock(dark.dawnEnd, dateLocale)}` : t('glance.unknown'), body: t('observer.dark.body') },
               { Icon: LcMoon, label: t('observer.moon.label'), value: moonGlance ? t('observer.moon.value', { pct: moonGlance.illum }) : t('glance.unknown'), body: t('observer.moon.body') },
               { Icon: Crosshair, label: t('observer.target.label'), value: questPos ? t('observer.target.value', { deg: Math.round(questPos.altitude) }) : t('glance.unknown'), body: t('observer.target.body') },
               { Icon: Cloud, label: t('observer.comfort.label'), value: cloudCoverPct == null ? t('glance.unknown') : t('observer.comfort.value', { pct: cloudCoverPct }), body: t('observer.comfort.body') },
@@ -916,14 +921,15 @@ function IssIcon({ size = 30 }: { size?: number }) {
 }
 
 function IssCard({
-  iss, loading, onOpen, labels,
+  iss, loading, dateLocale, onOpen, labels,
 }: {
   iss: IssPass | null;
   loading: boolean;
+  dateLocale: string;
   onOpen: () => void;
   labels: { name: string; loading: string; none: string; peak: (deg: number) => string };
 }) {
-  const time = iss ? fmtClock(new Date(iss.startsAt)) : null;
+  const time = iss ? fmtClock(new Date(iss.startsAt), dateLocale) : null;
   return (
     <button type="button" className="mis-nearby-card mis-nearby-card--iss" onClick={onOpen}>
       <span className="mis-nearby-art mis-nearby-art--iss"><IssIcon size={42} /></span>
@@ -1026,12 +1032,13 @@ function MainQuestCard({
 // ---- Mission list row ----
 
 function MissionRow({
-  entry, above, pct, rise, onStart, onExplain, labels,
+  entry, above, pct, rise, dateLocale, onStart, onExplain, labels,
 }: {
   entry: LocalizedGridEntry;
   above: boolean;
   pct: number;
   rise: Date | null;
+  dateLocale: string;
   onStart: () => void;
   onExplain: (rect: DOMRect) => void;
   labels: {
@@ -1042,7 +1049,7 @@ function MissionRow({
     min: (n: number) => string;
   };
 }) {
-  const statusText = above ? labels.visibleNow : rise ? labels.after(fmtClock(rise)) : labels.comingLater;
+  const statusText = above ? labels.visibleNow : rise ? labels.after(fmtClock(rise, dateLocale)) : labels.comingLater;
   // Visible rows route on tap; not-yet-visible rows aren't routable, so the row
   // itself isn't a focus stop — only its "Coming later" explainer button is.
   return (
@@ -1193,9 +1200,10 @@ function ObserverAssist({
 // ---- Rare event card ----
 
 function RareEventCard({
-  event, typeLabel, countdown, onOpen,
+  event, dateLocale, typeLabel, countdown, onOpen,
 }: {
   event: AstroEvent;
+  dateLocale: string;
   typeLabel: string;
   countdown: {
     today: string;
@@ -1207,8 +1215,8 @@ function RareEventCard({
   onOpen: (rect: DOMRect) => void;
 }) {
   const days = daysFromToday(event.date);
-  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  const monthLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short' }).toUpperCase();
+  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
+  const monthLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(dateLocale, { month: 'short' }).toUpperCase();
   const dayNum = new Date(event.date + 'T12:00:00').getDate();
   const future = days >= 0;
   const countdownText = !future
@@ -1311,8 +1319,9 @@ function daysFromToday(dateStr: string): number {
   return Math.round((event.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function EventRow({ event, typeLabel, difficultyLabel, countdown, whyAria, onOpen, onExplain }: {
+function EventRow({ event, dateLocale, typeLabel, difficultyLabel, countdown, whyAria, onOpen, onExplain }: {
   event: AstroEvent;
+  dateLocale: string;
   typeLabel: string;
   difficultyLabel: string;
   countdown: { today: string; tomorrow: string; inDays: (n: number) => string };
@@ -1321,7 +1330,7 @@ function EventRow({ event, typeLabel, difficultyLabel, countdown, whyAria, onOpe
   onExplain?: (rect: DOMRect) => void;
 }) {
   const days = daysFromToday(event.date);
-  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
   return (
     <button
       type="button"

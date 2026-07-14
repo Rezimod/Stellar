@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -99,10 +100,11 @@ function localToNftAsset(m: CompletedMission): NftAsset {
 }
 
 function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { nft: NftAsset; onClose: () => void; onRetryMint?: () => void; retrying?: boolean; onRemove: () => void }) {
+  const t = useTranslations('nftsPage');
   const [confirmRemove, setConfirmRemove] = useState(false);
   const attrs = nft.content?.metadata?.attributes;
-  const name = nft.content?.metadata?.name ?? 'Stellar Observation';
-  const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || 'Unknown';
+  const name = nft.content?.metadata?.name ?? t('observationFallback');
+  const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || t('unknown');
   const date = getAttr(attrs, 'Date');
   const cloudCover = getAttr(attrs, 'Cloud Cover');
   const starCount = getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars');
@@ -116,8 +118,8 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
 
   const appUrl = 'https://stellarr.club';
   const fullImageUrl = `${appUrl}${nftImageUrl}`;
-  const twitterText = encodeURIComponent(`I observed ${target} and sealed it on Solana with @StellarClub26 ✦ #Astronomy #Solana`);
-  const farcasterText = encodeURIComponent(`Observed ${target} and sealed it on Solana with @StellarClub26 ✦`);
+  const twitterText = encodeURIComponent(t('detail.shareTweet', { target }));
+  const farcasterText = encodeURIComponent(t('detail.shareFarcaster', { target }));
 
   const isDemoNft = target.toLowerCase().includes('demo') || (getAttr(attrs, 'Mission-ID') || '').startsWith('quick-') || (getAttr(attrs, 'Mission-ID') || '') === 'demo';
 
@@ -154,7 +156,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
           </p>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('detail.close')}
             className="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors flex-shrink-0 ml-2"
             style={{ background: 'rgba(255,255,255,0.05)', minWidth: 36, minHeight: 36 }}
           >
@@ -181,7 +183,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
           >
             <img
               src={nft.photo}
-              alt="Your observation"
+              alt={t('detail.photoAlt')}
               style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', display: 'block', objectFit: 'contain' }}
             />
           </div>
@@ -204,16 +206,16 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
         {/* Attributes grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {[
-            { label: 'Target', value: target },
-            { label: 'Date', value: date || 'Unknown' },
+            { label: t('detail.fields.target'), value: target },
+            { label: t('detail.fields.date'), value: date || t('unknown') },
             {
-              label: 'Cloud Cover',
+              label: t('detail.fields.cloudCover'),
               value: isDemoNft ? '—' : cloudCover || '—',
               color: isDemoNft ? 'rgba(255,255,255,0.6)' : ccNum < 30 ? 'var(--success)' : ccNum < 60 ? 'var(--warning)' : 'var(--error)',
             },
-            { label: 'Stars Earned', value: starCount ? `✦ ${starCount}` : '—', color: 'var(--stars)' },
-            { label: 'Location', value: loc },
-            { label: 'Oracle Hash', value: oracleHash ? `${oracleHash.slice(0, 8)}…` : '—', mono: true },
+            { label: t('detail.fields.starsEarned'), value: starCount ? `✦ ${starCount}` : '—', color: 'var(--stars)' },
+            { label: t('detail.fields.location'), value: loc },
+            { label: t('detail.fields.oracleHash'), value: oracleHash ? `${oracleHash.slice(0, 8)}…` : '—', mono: true },
           ].map(attr => (
             <div key={attr.label} className="card-base p-3">
               <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0, fontFamily: 'var(--font-body)' }}>
@@ -240,14 +242,14 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
             className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm text-text-primary"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 0', minHeight: 44 }}
           >
-            𝕏 Share
+            𝕏 {t('detail.share')}
           </button>
           <button
             onClick={() => window.open(`https://warpcast.com/~/compose?text=${farcasterText}&embeds[]=${encodeURIComponent(appUrl)}`, '_blank')}
             className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm"
             style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.3)', color: 'var(--terracotta)', padding: '12px 0', minHeight: 44 }}
           >
-            ⬡ Farcaster
+            ⬡ {t('detail.farcaster')}
           </button>
         </div>
 
@@ -267,7 +269,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
               transition: 'background 0.15s',
             }}
           >
-            {retrying ? 'Syncing to Solana…' : 'Seal on Solana →'}
+            {retrying ? t('detail.syncing') : t('detail.seal')}
           </button>
         ) : isSimulated ? (
           <div
@@ -280,7 +282,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
               minHeight: 44,
             }}
           >
-            Demo · local proof only
+            {t('detail.demoLocal')}
           </div>
         ) : (
           <a
@@ -297,7 +299,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
               minHeight: 44,
             }}
           >
-            <ExternalLink size={14} /> View on Solana Explorer
+            <ExternalLink size={14} /> {t('detail.viewExplorer')}
           </a>
         )}
 
@@ -316,12 +318,12 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
                 cursor: 'pointer',
               }}
             >
-              <Trash2 size={13} /> Remove from gallery
+              <Trash2 size={13} /> {t('detail.removeFromGallery')}
             </button>
           ) : (
             <div className="flex flex-col gap-2">
               <p style={{ color: 'var(--text-secondary)', fontSize: 11, textAlign: 'center', margin: 0 }}>
-                {isSimulated ? 'Permanently delete this local observation?' : 'Hide from your gallery? The on-chain NFT is not burned.'}
+                {isSimulated ? t('detail.confirmDeleteLocal') : t('detail.confirmHide')}
               </p>
               <div className="flex gap-2">
                 <button
@@ -335,7 +337,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
                     minHeight: 40,
                   }}
                 >
-                  Cancel
+                  {t('detail.cancel')}
                 </button>
                 <button
                   onClick={onRemove}
@@ -348,7 +350,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
                     minHeight: 40,
                   }}
                 >
-                  {isSimulated ? 'Delete' : 'Hide'}
+                  {isSimulated ? t('detail.delete') : t('detail.hide')}
                 </button>
               </div>
             </div>
@@ -361,6 +363,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
 }
 
 export default function NftsPage() {
+  const t = useTranslations('nftsPage');
   const { getAccessToken } = usePrivy();
   const { authenticated, ready, address: stellarAddress } = useStellarUser();
   const { state, hideObservation } = useAppState();
@@ -472,9 +475,9 @@ export default function NftsPage() {
 
   if (!ready || !authenticated) {
     const demoNfts = [
-      { name: 'Stellar Observation #001', target: 'Moon', date: 'Apr 9, 2026', cloudCover: '12', stars: '50' },
-      { name: 'Stellar Observation #002', target: 'Jupiter', date: 'Apr 8, 2026', cloudCover: '24', stars: '75' },
-      { name: 'Stellar Observation #003', target: 'Orion Nebula', date: 'Apr 7, 2026', cloudCover: '41', stars: '100' },
+      { name: t('demo.o1.name'), target: t('demo.o1.target'), date: 'Apr 9, 2026', cloudCover: '12', stars: '50' },
+      { name: t('demo.o2.name'), target: t('demo.o2.target'), date: 'Apr 8, 2026', cloudCover: '24', stars: '75' },
+      { name: t('demo.o3.name'), target: t('demo.o3.target'), date: 'Apr 7, 2026', cloudCover: '41', stars: '100' },
     ];
 
     return (
@@ -485,24 +488,24 @@ export default function NftsPage() {
               <Satellite size={22} color="var(--accent)" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, margin: 0 }}>My Observations</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: '2px 0 0' }}>Sign in to view your observation NFTs.</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, margin: 0 }}>{t('title')}</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: '2px 0 0' }}>{t('signInDesc')}</p>
             </div>
             <button onClick={() => setAuthOpen(true)} className="btn-primary" style={{ padding: '8px 16px', fontSize: 12, minHeight: 36 }}>
-              Sign In →
+              {t('signIn')}
             </button>
             <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
           </div>
         </div>
 
         <div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, fontFamily: 'var(--font-display)' }}>Example Observations</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, fontFamily: 'var(--font-display)' }}>{t('exampleObservations')}</p>
           <div className="grid grid-cols-2 gap-3">
             {demoNfts.map(nft => (
               <div key={nft.name} className="card-base overflow-hidden p-0 relative">
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1" style={{ backdropFilter: 'blur(3px)', background: 'rgba(7,11,20,0.55)' }}>
                   <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>Sign in to view</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>{t('signInToView')}</span>
                 </div>
                 <div style={{ height: 120, background: 'linear-gradient(135deg, rgba(255, 179, 71,0.06), rgba(122,95,255,0.08))' }} />
                 <div className="p-3 select-none" aria-hidden="true">
@@ -558,7 +561,7 @@ export default function NftsPage() {
       <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
           <div className="text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#FFB347] mb-2">
-            Your collection
+            {t('collection')}
           </div>
           <h1
             className="text-white font-extrabold leading-[1.05] tracking-[-0.02em]"
@@ -568,17 +571,17 @@ export default function NftsPage() {
               margin: 0,
             }}
           >
-            My Observations
+            {t('title')}
           </h1>
         </div>
 
         {!loading && allNfts.length > 0 && (
           <div className="flex items-center gap-4 sm:gap-5">
-            <InlineStat value={String(allNfts.length)} label="NFTs" />
-            <InlineStat value={`✦ ${totalStarsEarned}`} label="Stars" gold />
+            <InlineStat value={String(allNfts.length)} label={t('stats.nfts')} />
+            <InlineStat value={`✦ ${totalStarsEarned}`} label={t('stats.stars')} gold />
             <InlineStat
-              value={bestCloud < 30 ? 'Clear' : `${Math.round(bestCloud)}%`}
-              label="Best night"
+              value={bestCloud < 30 ? t('stats.clear') : `${Math.round(bestCloud)}%`}
+              label={t('stats.bestNight')}
               clear={bestCloud < 30}
             />
             {allNfts.length > 1 && (
@@ -590,7 +593,7 @@ export default function NftsPage() {
                     className={sort === s ? 'badge-pill badge-accent' : 'badge-pill badge-muted'}
                     style={{ fontSize: 11, cursor: 'pointer', border: 'none', fontFamily: 'var(--font-display)' }}
                   >
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                    {t(`sort.${s}`)}
                   </button>
                 ))}
               </div>
@@ -624,7 +627,7 @@ export default function NftsPage() {
             <div className="card-base" style={{ padding: '8px 12px' }}>
               <div className="flex items-center gap-3">
                 <p style={{ color: 'var(--text-muted)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                  Celestial
+                  {t('progress.celestial')}
                 </p>
                 <p style={{ color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, margin: 0, flexShrink: 0 }}>
                   {celestialCompleted}/{celestialTotal}
@@ -693,9 +696,9 @@ export default function NftsPage() {
       {/* Error */}
       {error && !loading && (
         <div className="text-center py-12">
-          <p className="text-text-muted mb-3">Could not load — try again</p>
+          <p className="text-text-muted mb-3">{t('error')}</p>
           <button onClick={fetchNfts} className="text-seafoam hover:underline">
-            Retry
+            {t('retry')}
           </button>
         </div>
       )}
@@ -705,13 +708,13 @@ export default function NftsPage() {
         <div style={{ padding: '64px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}>
           <Telescope size={44} color="rgba(255,255,255,0.45)" strokeWidth={1.4} />
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 20, color: 'var(--text-primary)', margin: 0 }}>
-            Your observatory awaits
+            {t('empty.title')}
           </p>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: 0, maxWidth: 320 }}>
-            Complete a sky mission to record your first discovery.
+            {t('empty.desc')}
           </p>
           <Link href="/missions" className="btn-primary" style={{ textDecoration: 'none', marginTop: 8 }}>
-            Start a mission →
+            {t('empty.cta')}
           </Link>
         </div>
       )}
@@ -720,9 +723,9 @@ export default function NftsPage() {
       {!loading && !error && allNfts.length > 0 && (
         <StaggerChildren stagger={50} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {sortedNfts.map(item => {
-            const name = item.content?.metadata?.name ?? 'Stellar Observation';
+            const name = item.content?.metadata?.name ?? t('observationFallback');
             const attrs = item.content?.metadata?.attributes;
-            const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || 'Unknown';
+            const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || t('unknown');
             const date = getAttr(attrs, 'Date');
             const cloudCover = getAttr(attrs, 'Cloud Cover');
             const stars = getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars');
@@ -797,10 +800,10 @@ export default function NftsPage() {
                   )}
                   <button
                     type="button"
-                    aria-label="Remove from gallery"
+                    aria-label={t('detail.removeFromGallery')}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('Remove this observation from your gallery?')) {
+                      if (window.confirm(t('removeConfirm'))) {
                         handleRemove(item.id);
                       }
                     }}
@@ -872,7 +875,7 @@ export default function NftsPage() {
                         className={`badge-pill ${ccNum < 20 ? 'badge-success' : ccNum < 50 ? 'badge-warning' : 'badge-error'}`}
                         style={{ fontSize: 9, padding: '1px 6px' }}
                       >
-                        {ccNum < 20 ? 'Clear' : ccNum < 50 ? 'Partial' : 'Cloudy'}
+                        {ccNum < 20 ? t('cloud.clear') : ccNum < 50 ? t('cloud.partial') : t('cloud.cloudy')}
                       </span>
                     )}
                     {stars && <span className="badge-pill badge-stars" style={{ fontSize: 9, padding: '1px 6px' }}>✦ {stars}</span>}
@@ -886,7 +889,7 @@ export default function NftsPage() {
 
       {starsBalance > 0 && (
         <p style={{ textAlign: 'center', color: 'var(--stars)', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 14 }}>
-          Total balance: ✦ {starsBalance} Stars
+          {t('totalBalance', { balance: starsBalance })}
         </p>
       )}
     </PageContainer>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Pencil, Check, X, Loader2 } from 'lucide-react';
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{2,24}$/;
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
+  const t = useTranslations('profileUi');
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? '');
   const [error, setError] = useState<string | null>(null);
@@ -33,17 +35,17 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
     if (trimmed.length === 0) {
       const r = await onSave(null);
       if (r.ok) setEditing(false);
-      else setError(r.error ?? 'Save failed');
+      else setError(r.error ?? t('username.saveFailed'));
       return;
     }
     if (!USERNAME_RE.test(trimmed)) {
-      setError('2–24 chars · letters, numbers, _ . -');
+      setError(t('username.validation'));
       return;
     }
     if (trimmed === value) { setEditing(false); return; }
     const r = await onSave(trimmed);
     if (r.ok) setEditing(false);
-    else setError(r.error ?? 'Save failed');
+    else setError(r.error ?? t('username.saveFailed'));
   };
 
   if (!editing) {
@@ -65,7 +67,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
         </h2>
         <button
           onClick={() => setEditing(true)}
-          aria-label="Edit username"
+          aria-label={t('username.edit')}
           style={{
             width: 18, height: 18, borderRadius: 4,
             background: 'transparent', border: 'none',
@@ -93,7 +95,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
           }}
           placeholder={fallback}
           maxLength={24}
-          aria-label="Username"
+          aria-label={t('username.field')}
           style={{
             background: 'var(--stl-bg-surface)',
             border: '1px solid var(--stl-border-strong)',
@@ -110,7 +112,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
         <button
           onClick={commit}
           disabled={saving}
-          aria-label="Save username"
+          aria-label={t('username.save')}
           style={{
             width: 30, height: 30, borderRadius: 6,
             background: 'rgba(94, 234, 212,0.10)',
@@ -125,7 +127,7 @@ export function UsernameEditor({ value, fallback, saving, onSave }: Props) {
         <button
           onClick={() => { setEditing(false); setError(null); }}
           disabled={saving}
-          aria-label="Cancel"
+          aria-label={t('username.cancel')}
           style={{
             width: 30, height: 30, borderRadius: 6,
             background: 'transparent',

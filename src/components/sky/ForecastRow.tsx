@@ -1,6 +1,7 @@
 // src/components/sky/ForecastRow.tsx
 'use client';
 
+import { useLocale } from 'next-intl';
 import type { ForecastDay } from '@/lib/use-sky-data';
 
 interface ForecastRowProps {
@@ -8,6 +9,8 @@ interface ForecastRowProps {
 }
 
 export function ForecastRow({ forecast }: ForecastRowProps) {
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
+
   if (forecast.length === 0) {
     return (
       <div className="forecast-row">
@@ -28,7 +31,7 @@ export function ForecastRow({ forecast }: ForecastRowProps) {
         const isToday = i === 0;
         const dayLabel = isToday
           ? 'Tonight'
-          : date.toLocaleDateString([], { weekday: 'short' });
+          : date.toLocaleDateString(dateLocale, { weekday: 'short' });
 
         return (
           <div key={day.date} className={`forecast-day ${isToday ? 'tonight' : ''}`}>

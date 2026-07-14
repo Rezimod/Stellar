@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
@@ -53,6 +54,7 @@ export default function ObserveVerifyPage() {
   const params = useParams<{ missionId: string }>();
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
+  const t = useTranslations('observeFlow');
 
   const { addMission } = useAppState();
   const { user, getAccessToken } = usePrivy();
@@ -100,7 +102,7 @@ export default function ObserveVerifyPage() {
       const ts = timestamp || new Date().toISOString();
 
       if (!navigator.onLine) {
-        setMintError('No internet connection — try again when back online');
+        setMintError(t('verify.error.offline'));
         setStage('mint-ready');
         return;
       }
@@ -112,7 +114,7 @@ export default function ObserveVerifyPage() {
           skyData = await res.json();
         } else {
           skyData = makeEstimatedSky();
-          setMintError('Sky data unavailable — proceeding with estimated conditions.');
+          setMintError(t('verify.error.skyUnavailable'));
         }
 
         const effectiveSky = mission.demo ? { ...skyData, verified: true } : skyData;
@@ -124,7 +126,7 @@ export default function ObserveVerifyPage() {
           windSpeed: skyData.windSpeed ?? 5,
         }));
         if (!skyData.verified && !mission.demo) {
-          setMintError('Cloudy sky — observation logged with 0 stars. You can still mint.');
+          setMintError(t('verify.error.cloudy'));
         }
 
         if (!mission.demo) {
@@ -155,7 +157,7 @@ export default function ObserveVerifyPage() {
               // proceeds to the mint screen — it just mints as an unverified
               // keepsake worth 0 Stars, with a clear note explaining why.
               if (!pv.accepted) {
-                setMintError(pv.reason || "This photo couldn't be verified, so it earns no Stars — you can still keep it as a personal record.");
+                setMintError(pv.reason || t('verify.error.photoUnverified'));
               }
             }
           } catch {
@@ -167,7 +169,7 @@ export default function ObserveVerifyPage() {
       } catch {
         // Sky oracle offline — don't bounce; proceed with estimated conditions.
         setSky(makeEstimatedSky());
-        setMintError('Sky check offline — proceeding with estimated conditions.');
+        setMintError(t('verify.error.skyOffline'));
         setStage('mint-ready');
       }
     })();
@@ -255,14 +257,14 @@ export default function ObserveVerifyPage() {
         const errData = await res.json().catch(() => ({}));
         const msg: string = errData?.error ?? '';
         if (res.status === 429) {
-          setMintError(msg || 'Too many mints right now — try again in a minute.');
+          setMintError(msg || t('verify.error.tooMany'));
         } else {
-          setMintError(msg || "Couldn't save your record — please retry.");
+          setMintError(msg || t('verify.error.saveFailed'));
         }
       }
     } catch (err) {
       console.error('[mint] network/timeout', err);
-      setMintError('Network error — please retry.');
+      setMintError(t('verify.error.network'));
     }
 
     if (!txId) {
@@ -405,13 +407,13 @@ export default function ObserveVerifyPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
-            Back to missions
+            {t('notFound.back')}
           </Link>
         </div>
       </PageContainer>
@@ -430,7 +432,7 @@ export default function ObserveVerifyPage() {
           <BackButton />
           <button
             onClick={() => router.push('/missions')}
-            aria-label="Close"
+            aria-label={t('verify.close')}
             className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
@@ -446,7 +448,7 @@ export default function ObserveVerifyPage() {
             latitude={coords.lat}
             longitude={coords.lon}
             onMint={handleMint}
-            mintLabel={isUnverified ? 'Keep it anyway' : undefined}
+            mintLabel={isUnverified ? t('verify.keepAnyway') : undefined}
             compact={true}
           />
           {photoVerification && !isUnverified && (
@@ -456,14 +458,14 @@ export default function ObserveVerifyPage() {
                 photoVerification.confidence === 'medium' ? 'bg-terracotta text-terracotta' :
                 'bg-[var(--surface)] text-text-muted'
               }`}>
-                AI: {photoVerification.identifiedObject} · {photoVerification.confidence} confidence
+                {t('verify.aiConfidence', { object: photoVerification.identifiedObject, confidence: photoVerification.confidence })}
               </span>
             </div>
           )}
           {isUnverified && (
             <div className="mt-2 text-center">
               <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface)] text-text-muted">
-                Not verified · 0 ✦ · mints as a keepsake
+                {t('verify.notVerifiedLabel')} · 0 ✦ · {t('verify.keepsakeNote')}
               </span>
             </div>
           )}
@@ -472,7 +474,7 @@ export default function ObserveVerifyPage() {
               <p className="text-xs text-terracotta">{mintError}</p>
               {mintError.includes('cloudy') && (
                 <Link href="/sky" className="text-xs text-[var(--terracotta)] underline mt-1 inline-block">
-                  Check sky forecast →
+                  {t('verify.checkForecast')} →
                 </Link>
               )}
             </div>
@@ -485,13 +487,13 @@ export default function ObserveVerifyPage() {
 
   // verifying-sky | verifying-photo | done (transient before navigation)
   const title =
-    stage === 'verifying-photo' ? 'Verifying Photo'
-    : stage === 'done' ? 'Finishing Up'
-    : 'Analyzing Sky';
+    stage === 'verifying-photo' ? t('verify.stage.photoTitle')
+    : stage === 'done' ? t('verify.stage.doneTitle')
+    : t('verify.stage.skyTitle');
   const subtitle =
-    stage === 'verifying-photo' ? 'Checking your photo'
-    : stage === 'done' ? 'Almost there'
-    : 'Reading tonight’s conditions';
+    stage === 'verifying-photo' ? t('verify.stage.photoSub')
+    : stage === 'done' ? t('verify.stage.doneSub')
+    : t('verify.stage.skySub');
 
   return (
     <MintAnimation

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import type { DailyTarget } from '@/lib/daily-targets'
 import { getTonightTargets } from '@/lib/daily-targets'
 import { Flame } from 'lucide-react'
@@ -24,6 +25,7 @@ const DIFFICULTY_COLOR = {
 }
 
 export default function TonightTargets({ onStartObserve, walletAddress }: TonightTargetsProps) {
+  const t = useTranslations('observeFlow')
   const [targets, setTargets] = useState<DailyTarget[]>([])
   const [streak, setStreak] = useState<StreakData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -60,37 +62,37 @@ export default function TonightTargets({ onStartObserve, walletAddress }: Tonigh
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <p className="text-text-primary font-semibold" style={{ fontFamily: 'Georgia, serif' }}>Tonight's Targets</p>
+        <p className="text-text-primary font-semibold" style={{ fontFamily: 'Georgia, serif' }}>{t('tonight.title')}</p>
         {streak && streak.streak > 0 && (
           <>
-            <span className="text-terracotta text-xs ml-1 inline-flex items-center gap-1"><Flame size={12} aria-hidden="true" /> {streak.streak} day streak</span>
+            <span className="text-terracotta text-xs ml-1 inline-flex items-center gap-1"><Flame size={12} aria-hidden="true" /> {t('tonight.dayStreak', { count: streak.streak })}</span>
             {streak.bonusStars > 0 && (
-              <span className="text-[var(--terracotta)] text-xs">+{streak.bonusStars} ✦ bonus</span>
+              <span className="text-[var(--terracotta)] text-xs">+{streak.bonusStars} ✦ {t('tonight.bonus')}</span>
             )}
           </>
         )}
       </div>
 
       <div className="flex flex-col gap-2.5">
-        {targets.map(t => (
+        {targets.map(tgt => (
           <button
-            key={t.id}
+            key={tgt.id}
             onClick={onStartObserve}
             className="flex items-center gap-3 rounded-xl p-4 text-left w-full transition-colors hover:bg-[var(--surface)]]"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
           >
-            <span className="text-2xl flex-shrink-0">{t.emoji}</span>
+            <span className="text-2xl flex-shrink-0">{tgt.emoji}</span>
             <div className="flex-1 min-w-0">
-              <p className="text-text-primary font-semibold text-sm">{t.name}</p>
-              <p className="text-text-muted text-xs mt-0.5 line-clamp-1">{t.description}</p>
-              <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${DIFFICULTY_COLOR[t.difficulty]}`}>
-                {t.difficulty}
+              <p className="text-text-primary font-semibold text-sm">{tgt.name}</p>
+              <p className="text-text-muted text-xs mt-0.5 line-clamp-1">{tgt.description}</p>
+              <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium ${DIFFICULTY_COLOR[tgt.difficulty]}`}>
+                {t(`tonight.difficulty.${tgt.difficulty}`)}
               </span>
             </div>
             <div className="flex flex-col items-end flex-shrink-0">
-              <span className="text-sm font-bold" style={{ color: 'var(--stars)' }}>+{t.bonusStars} ✦</span>
-              {!t.available && (
-                <span className="text-negative text-[10px] mt-0.5">Below horizon</span>
+              <span className="text-sm font-bold" style={{ color: 'var(--stars)' }}>+{tgt.bonusStars} ✦</span>
+              {!tgt.available && (
+                <span className="text-negative text-[10px] mt-0.5">{t('tonight.belowHorizon')}</span>
               )}
             </div>
           </button>
@@ -102,7 +104,7 @@ export default function TonightTargets({ onStartObserve, walletAddress }: Tonigh
         className="w-full py-3.5 rounded-xl text-black font-bold text-sm transition-all active:scale-[0.98] hover:opacity-90"
         style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))' }}
       >
-        Observe Now
+        {t('tonight.observeNow')}
       </button>
     </div>
   )

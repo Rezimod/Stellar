@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocale } from 'next-intl';
 import { X } from 'lucide-react';
 import type { AstroEvent } from '@/lib/astro-events';
 
@@ -33,6 +34,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
   // Render the modal via a portal to document.body so any parent transform /
   // filter / overflow on the sky page can't clip or shift the dialog. This
   // matches the pattern used by the learn-page Planet modal.
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -65,7 +67,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
 
   if (!open || !event || !mounted) return null;
 
-  const eventDate = new Date(event.date + 'T12:00:00').toLocaleDateString(undefined, {
+  const eventDate = new Date(event.date + 'T12:00:00').toLocaleDateString(dateLocale, {
     weekday: 'long', month: 'long', day: 'numeric',
   });
 

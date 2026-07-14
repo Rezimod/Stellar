@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { AVATARS, Avatar, type AvatarId } from '@/lib/avatars';
 
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function AvatarPicker({ open, current, initial, saving, onClose, onSelect }: Props) {
+  const t = useTranslations('profileUi');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
@@ -59,7 +61,7 @@ export function AvatarPicker({ open, current, initial, saving, onClose, onSelect
       >
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('avatar.close')}
           style={{
             position: 'absolute', top: 14, right: 14,
             width: 28, height: 28, borderRadius: '50%',
@@ -81,7 +83,7 @@ export function AvatarPicker({ open, current, initial, saving, onClose, onSelect
               color: 'var(--stl-text-muted)', marginBottom: 6,
             }}
           >
-            SELECT AVATAR
+            {t('avatar.pick')}
           </div>
           <p
             style={{
@@ -91,7 +93,7 @@ export function AvatarPicker({ open, current, initial, saving, onClose, onSelect
               margin: 0, lineHeight: 1.15,
             }}
           >
-            Choose your way
+            {t('avatar.heading')}
           </p>
         </div>
 

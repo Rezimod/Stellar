@@ -15,6 +15,7 @@
     "myDiscoveries": "My discoveries",
     "profile": "Profile",
     "sky": "Sky",
+    "home": "Home",
     "feed": "Feed",
     "chat": "AI Chat",
     "learn": "Learning",
@@ -677,7 +678,7 @@
     "online": {
       "label": "Online · this app",
       "title": "Cloud Astra",
-      "body": "Claude API, fast, broad. Best for planning a session at home or in the car."
+      "body": "Cloud AI, fast and broad. Best for planning a session at home or in the car."
     },
     "offline": {
       "label": "Offline · Field Mode",
@@ -1556,5 +1557,350 @@
       "title": "Looking up, together.",
       "cta": "Open the feed"
     }
+  },
+  "observeFlow":   {
+    "target": {
+      "eyebrow": "Tonight's Target",
+      "beginner": "Beginner",
+      "begin": "Begin Observation",
+      "demo": "Demo mode — upload any photo to try the flow"
+    },
+    "notFound": {
+      "title": "Mission not found",
+      "desc": "The mission you're looking for doesn't exist.",
+      "back": "Back to missions"
+    },
+    "tonight": {
+      "title": "Tonight's Targets",
+      "dayStreak": "{count} day streak",
+      "bonus": "bonus",
+      "belowHorizon": "Below horizon",
+      "observeNow": "Observe Now"
+    },
+    "capture": {
+      "title": "Capture your observation",
+      "tooDark": "Frame too dark — please point at the sky and try again",
+      "previewAlt": "Observation preview",
+      "uploaded": "UPLOADED",
+      "captured": "CAPTURED",
+      "submit": "Submit for Verification",
+      "retake": "Retake",
+      "cameraRequired": "Camera access required",
+      "cameraHelp": "Allow camera access in your browser settings, or upload a saved sky photo.",
+      "uploadDevice": "Upload from Device",
+      "uploadTitle": "Upload from device",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "howTo": "How to capture",
+      "tip1": "Point your telescope at the target object",
+      "tip2": "Hold your phone camera to the eyepiece",
+      "tip3": "Center the object and press shutter — or tap the upload icon"
+    },
+    "verify": {
+      "close": "Close",
+      "keepAnyway": "Keep it anyway",
+      "aiConfidence": "AI: {object} · {confidence} confidence",
+      "notVerifiedLabel": "Not verified",
+      "keepsakeNote": "mints as a keepsake",
+      "checkForecast": "Check sky forecast",
+      "stage": {
+        "photoTitle": "Verifying Photo",
+        "doneTitle": "Finishing Up",
+        "skyTitle": "Analyzing Sky",
+        "photoSub": "Checking your photo",
+        "doneSub": "Almost there",
+        "skySub": "Reading tonight's conditions"
+      },
+      "error": {
+        "offline": "No internet connection — try again when back online",
+        "skyUnavailable": "Sky data unavailable — proceeding with estimated conditions.",
+        "cloudy": "Cloudy sky — observation logged with 0 stars. You can still mint.",
+        "photoUnverified": "This photo couldn't be verified, so it earns no Stars — you can still keep it as a personal record.",
+        "skyOffline": "Sky check offline — proceeding with estimated conditions.",
+        "tooMany": "Too many mints right now — try again in a minute.",
+        "saveFailed": "Couldn't save your record — please retry.",
+        "network": "Network error — please retry."
+      }
+    },
+    "result": {
+      "starClaimError": "Could not claim star",
+      "shareObserved": "I just observed {name} on Stellar",
+      "shareSealed": "Sealed on Solana.",
+      "shareTitle": "I sealed {name} on Stellar",
+      "feedBody": "Sealed {name} on Stellar",
+      "cosmicBonus": "Cosmic Bonus",
+      "weeklyChallenge": "Weekly Challenge",
+      "claimed": "Claimed",
+      "streakMultiplier": "{multiplier}× streak multiplier",
+      "nameStar": "Name a star",
+      "starIn": "in {constellation}",
+      "starMagnitude": "magnitude {mag}",
+      "inscribeNote": "Your name will be inscribed on your NFT.",
+      "starPlaceholder": "e.g. Nino's Star, Tbilisi",
+      "inscribe": "Inscribe",
+      "skip": "Skip",
+      "starNamed": "Your star is named.",
+      "viewProof": "View proof page"
+    },
+    "toast": {
+      "copied": "Copied to clipboard",
+      "shareUnavailable": "Share unavailable",
+      "saved": "Saved to your collection",
+      "posted": "Posted to your feed",
+      "postFailed": "Could not post — try again"
+    }
+  },
+  "profileUi":   {
+    "avatar": {
+      "close": "Close",
+      "pick": "Select avatar",
+      "heading": "Choose your way",
+      "change": "Change avatar"
+    },
+    "hero": {
+      "explorer": "Solana Explorer"
+    },
+    "target": {
+      "moon": "Moon",
+      "planet": "Planet",
+      "stars": "Stars",
+      "constellation": "Constellation",
+      "deepSky": "Deep sky",
+      "unknown": "Unknown"
+    },
+    "quality": {
+      "rejected": "Rejected",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "onchain": {
+      "title": "On-chain record · Proof of Observation",
+      "reading": "Reading registry…",
+      "verifiedOnSolana": "verified on Solana",
+      "observerAccount": "Observer account",
+      "starsMultiplier": "Stars",
+      "progressToNext": "{count} more to {tier}",
+      "telescopePassport": "Telescope Passport",
+      "soulbound": "soulbound",
+      "revoked": "revoked"
+    },
+    "username": {
+      "saveFailed": "Save failed",
+      "validation": "2–24 chars · letters, numbers, _ . -",
+      "edit": "Edit username",
+      "field": "Username",
+      "save": "Save username",
+      "cancel": "Cancel"
+    }
+  },
+  "nftsPage":   {
+    "title": "My Observations",
+    "collection": "Your collection",
+    "signInDesc": "Sign in to view your observation NFTs.",
+    "signIn": "Sign In →",
+    "exampleObservations": "Example Observations",
+    "signInToView": "Sign in to view",
+    "observationFallback": "Stellar Observation",
+    "unknown": "Unknown",
+    "error": "Could not load — try again",
+    "retry": "Retry",
+    "removeConfirm": "Remove this observation from your gallery?",
+    "totalBalance": "Total balance: ✦ {balance} Stars",
+    "progress": {
+      "celestial": "Celestial"
+    },
+    "stats": {
+      "nfts": "NFTs",
+      "stars": "Stars",
+      "clear": "Clear",
+      "bestNight": "Best night"
+    },
+    "sort": {
+      "recent": "Recent",
+      "stars": "Stars"
+    },
+    "cloud": {
+      "clear": "Clear",
+      "partial": "Partial",
+      "cloudy": "Cloudy"
+    },
+    "empty": {
+      "title": "Your observatory awaits",
+      "desc": "Complete a sky mission to record your first discovery.",
+      "cta": "Start a mission →"
+    },
+    "demo": {
+      "o1": {
+        "name": "Stellar Observation #001",
+        "target": "Moon"
+      },
+      "o2": {
+        "name": "Stellar Observation #002",
+        "target": "Jupiter"
+      },
+      "o3": {
+        "name": "Stellar Observation #003",
+        "target": "Orion Nebula"
+      }
+    },
+    "detail": {
+      "close": "Close",
+      "photoAlt": "Your observation",
+      "share": "Share",
+      "farcaster": "Farcaster",
+      "syncing": "Syncing to Solana…",
+      "seal": "Seal on Solana →",
+      "demoLocal": "Demo · local proof only",
+      "viewExplorer": "View on Solana Explorer",
+      "removeFromGallery": "Remove from gallery",
+      "confirmDeleteLocal": "Permanently delete this local observation?",
+      "confirmHide": "Hide from your gallery? The on-chain NFT is not burned.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "hide": "Hide",
+      "shareTweet": "I observed {target} and sealed it on Solana with @StellarClub26 ✦ #Astronomy #Solana",
+      "shareFarcaster": "Observed {target} and sealed it on Solana with @StellarClub26 ✦",
+      "fields": {
+        "target": "Target",
+        "date": "Date",
+        "cloudCover": "Cloud Cover",
+        "starsEarned": "Stars Earned",
+        "location": "Location",
+        "oracleHash": "Oracle Hash"
+      }
+    }
+  },
+  "leaderboardPage":   {
+    "title": "Leaderboard",
+    "liveNotice": "Leaderboard updates with real observer data as missions are completed on-chain",
+    "error": "Couldn't load the leaderboard.",
+    "tryAgain": "Try again",
+    "obs": "{count} obs",
+    "rankings": "Rankings",
+    "you": "You",
+    "yourRank": "Your Rank: #{rank}",
+    "footer": "Updated every 5 minutes · Observations sealed as NFTs on Solana",
+    "tabs": {
+      "week": "This Week",
+      "month": "This Month",
+      "all": "All Time"
+    },
+    "empty": {
+      "title": "Be the first on the board",
+      "desc": "Complete a mission to appear here.",
+      "cta": "Go to Missions →"
+    },
+    "rank": {
+      "Celestial": "Celestial",
+      "Pathfinder": "Pathfinder",
+      "Observer": "Observer",
+      "Stargazer": "Stargazer"
+    },
+    "cta": {
+      "title": "Complete missions to climb the leaderboard",
+      "desc": "Each verified observation earns Stars and moves you up the ranks",
+      "button": "Start Observing →"
+    }
+  },
+  "settingsUi":   {
+    "title": "Settings",
+    "back": "Back",
+    "signInPrompt": "Sign in to access settings.",
+    "backToProfile": "← Back to Profile",
+    "accountTitle": "Account",
+    "addEmail": "Add Email",
+    "primaryEmail": "Primary email",
+    "linkEmail": "Link an email address",
+    "remove": "Remove",
+    "googleAccount": "Google Account",
+    "connected": "Connected",
+    "notificationsTitle": "Notifications",
+    "notifBlocked": "Notifications are blocked. Enable them for this site in your browser settings to receive alerts.",
+    "notifUnsupported": "Push notifications aren't supported on this device.",
+    "iosNeedsInstall": "On iPhone, add Stellar to your Home Screen first (Share → Add to Home Screen) to receive alerts.",
+    "visiblePlanets": "Visible Planets",
+    "visiblePlanetsSub": "Alert when Mars, Jupiter or Saturn rises tonight",
+    "skyEvents": "Sky Events",
+    "skyEventsSub": "Eclipses, meteor showers, ISS passes",
+    "weatherAlerts": "Weather Alerts",
+    "weatherAlertsSub": "When tonight clears for observing",
+    "appearanceTitle": "Appearance",
+    "darkMode": "Dark Mode",
+    "dayMode": "Day Mode",
+    "darkModeSub": "Deep space theme",
+    "dayModeSub": "Bright daytime theme",
+    "fieldMode": "Field Mode",
+    "fieldModeSub": "Red-on-black to protect your night vision at the eyepiece",
+    "walletTitle": "Wallet",
+    "noWallet": "No wallet yet",
+    "walletSub": "Embedded Solana wallet · view on Explorer",
+    "walletSignInSub": "Sign in to create your wallet",
+    "privacyTitle": "Privacy & Data",
+    "privacyPolicy": "Privacy Policy",
+    "privacyPolicySub": "How we handle your data",
+    "terms": "Terms of Service",
+    "termsSub": "Usage rules and disclaimers",
+    "languageTitle": "Language",
+    "accountActionsTitle": "Account Actions",
+    "resetObservations": "Reset Observations",
+    "confirmReset": "Confirm reset?",
+    "resetSub": "Clears local mission data",
+    "signOut": "Sign Out",
+    "confirmSignOut": "Confirm sign out?",
+    "cancel": "Cancel"
+  },
+  "skyUi":   {
+    "skyTonight": "Sky Tonight",
+    "changeLocation": "Change observing location",
+    "tonightAtGlance": "Tonight at a glance",
+    "visibleNow": "Visible now",
+    "bestTargetsToSee": "Best targets to see",
+    "illuminationDetails": "Illumination · details",
+    "skyQuality": "Sky quality",
+    "sunset": "Sunset",
+    "sunrise": "Sunrise",
+    "solarSystem3d": "3D solar system",
+    "view3d": "3D View",
+    "nightModeRedLight": "Night mode — red light",
+    "night": "Night",
+    "nextBestTime": "Next best time",
+    "darkWindow": "Dark window",
+    "windowWord": "window",
+    "whatToLookFor": "What to look for",
+    "nothingUpYet": "Nothing up yet",
+    "darkSkyOpensAround": "dark sky opens around",
+    "tryAQuiz": "Try a quiz",
+    "whileYouWait": "while you wait.",
+    "viewAll": "View all",
+    "nothingAboveHorizon": "Nothing above the horizon yet",
+    "nextDarkWindow": "next dark window ~",
+    "quizTime": "quiz time",
+    "untilThen": "until then.",
+    "tonightOverview": "Tonight overview",
+    "bestWindow": "Best window",
+    "tipsForTonight": "Tips for tonight",
+    "tipN": "Tip {n}"
+  },
+  "feedUi":   {
+    "overview": {
+      "ariaLabel": "Tonight feed overview",
+      "title": "Tonight Overview",
+      "viewSky": "View sky now",
+      "moon": "Moon",
+      "moonValue": "Waning Gibbous, 92%",
+      "bestTargets": "Best targets",
+      "skyQuality": "Sky quality",
+      "sunset": "Sunset"
+    },
+    "trending": {
+      "ariaLabel": "Trending topics",
+      "title": "Trending Topics",
+      "posts": "posts"
+    }
+  },
+  "offlineBanner":   {
+    "offline": "Offline — observations will queue and sync when you reconnect",
+    "backOnline": "Back online — syncing queued observations…"
   }
 }

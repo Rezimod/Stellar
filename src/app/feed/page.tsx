@@ -3,7 +3,7 @@
 import './feed.css'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { usePrivy } from '@privy-io/react-auth'
 import {
@@ -52,6 +52,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function FeedPage() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en'
+  const t = useTranslations('feedUi')
   const router = useRouter()
   const searchParams = useSearchParams()
   const filter = (searchParams?.get('filter') as FilterKey) ?? 'latest'
@@ -467,35 +468,35 @@ export default function FeedPage() {
             </div>
           )}
 
-          <section className="mobile-feed-intel" aria-label="Tonight feed overview">
+          <section className="mobile-feed-intel" aria-label={t('overview.ariaLabel')}>
             <div className="tonight-overview-card">
               <div className="tonight-overview-head">
                 <div>
-                  <p>Tonight Overview</p>
+                  <p>{t('overview.title')}</p>
                   <span>{cityLabel}</span>
                 </div>
-                <button type="button" onClick={() => router.push('/sky')}>View sky now</button>
+                <button type="button" onClick={() => router.push('/sky')}>{t('overview.viewSky')}</button>
               </div>
               <div className="tonight-overview-grid">
-                <div><Moon size={15} /><span>Moon</span><strong>Waning Gibbous, 92%</strong></div>
-                <div><Target size={15} /><span>Best targets</span><strong>5</strong></div>
-                <div><BarChart3 size={15} /><span>Sky quality</span><strong>8/10</strong></div>
-                <div><Sunset size={15} /><span>Sunset</span><strong>8:17 PM</strong></div>
+                <div><Moon size={15} /><span>{t('overview.moon')}</span><strong>{t('overview.moonValue')}</strong></div>
+                <div><Target size={15} /><span>{t('overview.bestTargets')}</span><strong>5</strong></div>
+                <div><BarChart3 size={15} /><span>{t('overview.skyQuality')}</span><strong>8/10</strong></div>
+                <div><Sunset size={15} /><span>{t('overview.sunset')}</span><strong>8:17 PM</strong></div>
               </div>
             </div>
 
-            <div className="trending-topics-card" aria-label="Trending topics">
-              <div className="mobile-card-title">Trending Topics</div>
+            <div className="trending-topics-card" aria-label={t('trending.ariaLabel')}>
+              <div className="mobile-card-title">{t('trending.title')}</div>
               <div className="trending-topic-row">
                 {[
-                  ['Saturn', '1.2K posts'],
-                  ['Auroras', '870 posts'],
-                  ['M13', '640 posts'],
-                  ['ISS Sighting', '520 posts'],
+                  ['Saturn', '1.2K'],
+                  ['Auroras', '870'],
+                  ['M13', '640'],
+                  ['ISS Sighting', '520'],
                 ].map(([topic, count]) => (
                   <button key={topic} type="button" className="trending-topic" onClick={() => setFilter('latest')}>
                     <strong>{topic}</strong>
-                    <span>{count}</span>
+                    <span>{count} {t('trending.posts')}</span>
                   </button>
                 ))}
               </div>

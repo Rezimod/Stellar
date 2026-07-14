@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useLocale } from 'next-intl';
 import type { Mission } from '@/lib/types';
 import {
   getChartStars,
@@ -100,8 +101,9 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
       }>;
   }, [missions, plottedPlanets, plottedDeepSky]);
 
-  const liveTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const liveDate = date.toLocaleDateString([], { month: 'short', day: 'numeric' }).toUpperCase();
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
+  const liveTime = date.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' });
+  const liveDate = date.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' }).toUpperCase();
   const cityTag = (city ?? '').toUpperCase();
 
   return (

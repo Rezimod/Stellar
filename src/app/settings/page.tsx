@@ -17,8 +17,10 @@ import {
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useAppState } from '@/hooks/useAppState';
 import { Section, Row, Toggle } from '@/components/shared/SettingsList';
+import { useTranslations } from 'next-intl';
 
 export default function SettingsPage() {
+  const t = useTranslations('settingsUi');
   const { user, linkEmail, unlinkEmail } = usePrivy();
   const { authenticated, address } = useStellarUser();
   const { location } = useLocation();
@@ -136,8 +138,8 @@ export default function SettingsPage() {
   if (!authenticated) {
     return (
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '32px 16px', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 15 }}>Sign in to access settings.</p>
-        <Link href="/profile" style={{ color: 'var(--accent)', fontSize: 14, marginTop: 12, display: 'inline-block' }}>← Back to Profile</Link>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 15 }}>{t('signInPrompt')}</p>
+        <Link href="/profile" style={{ color: 'var(--accent)', fontSize: 14, marginTop: 12, display: 'inline-block' }}>{t('backToProfile')}</Link>
       </div>
     );
   }
@@ -149,7 +151,7 @@ export default function SettingsPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 0 22px' }}>
         <button
           onClick={() => router.back()}
-          aria-label="Back"
+          aria-label={t('back')}
           style={{
             width: 36, height: 36, borderRadius: 10,
             background: 'rgba(255,255,255,0.04)',
@@ -169,21 +171,21 @@ export default function SettingsPage() {
           margin: 0,
           letterSpacing: '-0.01em',
         }}>
-          Settings
+          {t('title')}
         </h1>
       </div>
 
       {/* ── ACCOUNT ── */}
-      <Section title="Account">
+      <Section title={t('accountTitle')}>
         <Row
           icon={<Mail size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--terracotta)"
-          label={email ? email : 'Add Email'}
-          sublabel={email ? 'Primary email' : 'Link an email address'}
+          label={email ? email : t('addEmail')}
+          sublabel={email ? t('primaryEmail') : t('linkEmail')}
           onClick={email ? undefined : () => linkEmail()}
           right={email ? (
-            <button onClick={() => unlinkEmail(email)} style={{ color: 'var(--text-muted)', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button>
+            <button onClick={() => unlinkEmail(email)} style={{ color: 'var(--text-muted)', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>{t('remove')}</button>
           ) : undefined}
           last={!hasGoogle}
         />
@@ -192,15 +194,15 @@ export default function SettingsPage() {
             icon={<Chrome size={15} />}
             iconBg="rgba(255, 179, 71,0.08)"
             iconColor="var(--stars)"
-            label="Google Account"
-            sublabel="Connected"
+            label={t('googleAccount')}
+            sublabel={t('connected')}
             last
           />
         )}
       </Section>
 
       {/* ── NOTIFICATIONS ── */}
-      <Section id="notifications" title="Notifications">
+      <Section id="notifications" title={t('notificationsTitle')}>
         {notifBlocked && (
           <div style={{
             padding: '12px 16px',
@@ -211,7 +213,7 @@ export default function SettingsPage() {
               margin: 0, color: 'var(--error)',
               fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
             }}>
-              Notifications are blocked. Enable them for this site in your browser settings to receive alerts.
+              {t('notifBlocked')}
             </p>
           </div>
         )}
@@ -225,7 +227,7 @@ export default function SettingsPage() {
               margin: 0, color: 'var(--text-secondary)',
               fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
             }}>
-              Push notifications aren&apos;t supported on this device.
+              {t('notifUnsupported')}
             </p>
           </div>
         )}
@@ -239,7 +241,7 @@ export default function SettingsPage() {
               margin: 0, color: 'var(--text-secondary)',
               fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5,
             }}>
-              On iPhone, add Stellar to your Home Screen first (Share → Add to Home Screen) to receive alerts.
+              {t('iosNeedsInstall')}
             </p>
           </div>
         )}
@@ -247,58 +249,58 @@ export default function SettingsPage() {
           icon={<Orbit size={15} />}
           iconBg="rgba(94, 234, 212,0.08)"
           iconColor="var(--success)"
-          label="Visible Planets"
-          sublabel="Alert when Mars, Jupiter or Saturn rises tonight"
+          label={t('visiblePlanets')}
+          sublabel={t('visiblePlanetsSub')}
           right={<Toggle on={notif.visiblePlanets} onToggle={() => toggleNotif('visiblePlanets')} disabled={notifBlocked || notifUnsupported} />}
         />
         <Row
           icon={<Sparkles size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--terracotta)"
-          label="Sky Events"
-          sublabel="Eclipses, meteor showers, ISS passes"
+          label={t('skyEvents')}
+          sublabel={t('skyEventsSub')}
           right={<Toggle on={notif.skyEvents} onToggle={() => toggleNotif('skyEvents')} disabled={notifBlocked || notifUnsupported} />}
         />
         <Row
           icon={<Cloud size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--terracotta)"
-          label="Weather Alerts"
-          sublabel="When tonight clears for observing"
+          label={t('weatherAlerts')}
+          sublabel={t('weatherAlertsSub')}
           right={<Toggle on={notif.weatherAlerts} onToggle={() => toggleNotif('weatherAlerts')} disabled={notifBlocked || notifUnsupported} />}
           last
         />
       </Section>
 
       {/* ── APPEARANCE ── */}
-      <Section id="appearance" title="Appearance">
+      <Section id="appearance" title={t('appearanceTitle')}>
         <Row
           icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--terracotta)"
-          label={theme === 'dark' ? 'Dark Mode' : 'Day Mode'}
-          sublabel={theme === 'dark' ? 'Deep space theme' : 'Bright daytime theme'}
+          label={theme === 'dark' ? t('darkMode') : t('dayMode')}
+          sublabel={theme === 'dark' ? t('darkModeSub') : t('dayModeSub')}
           right={<Toggle on={theme === 'dark'} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />}
         />
         <Row
           icon={<Flashlight size={15} />}
           iconBg="rgba(255, 59, 48,0.10)"
           iconColor="#FF3B30"
-          label="Field Mode"
-          sublabel="Red-on-black to protect your night vision at the eyepiece"
+          label={t('fieldMode')}
+          sublabel={t('fieldModeSub')}
           right={<Toggle on={field} onToggle={toggleField} />}
           last
         />
       </Section>
 
       {/* ── WALLET ── */}
-      <Section id="wallet" title="Wallet">
+      <Section id="wallet" title={t('walletTitle')}>
         <Row
           icon={<Wallet size={15} />}
           iconBg="rgba(94, 234, 212,0.08)"
           iconColor="var(--success)"
-          label={addrShort ?? 'No wallet yet'}
-          sublabel={address ? 'Embedded Solana wallet · view on Explorer' : 'Sign in to create your wallet'}
+          label={addrShort ?? t('noWallet')}
+          sublabel={address ? t('walletSub') : t('walletSignInSub')}
           onClick={address ? () => window.open(`https://explorer.solana.com/address/${address}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`, '_blank', 'noopener,noreferrer') : undefined}
           right={address ? <ChevronRight size={15} color="var(--text-muted)" /> : undefined}
           last
@@ -306,13 +308,13 @@ export default function SettingsPage() {
       </Section>
 
       {/* ── PRIVACY ── */}
-      <Section id="privacy" title="Privacy & Data">
+      <Section id="privacy" title={t('privacyTitle')}>
         <Row
           icon={<ShieldCheck size={15} />}
           iconBg="rgba(94, 234, 212,0.08)"
           iconColor="var(--success)"
-          label="Privacy Policy"
-          sublabel="How we handle your data"
+          label={t('privacyPolicy')}
+          sublabel={t('privacyPolicySub')}
           href="/privacy"
           right={<ChevronRight size={15} color="var(--text-muted)" />}
         />
@@ -320,8 +322,8 @@ export default function SettingsPage() {
           icon={<ShieldCheck size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
           iconColor="var(--terracotta)"
-          label="Terms of Service"
-          sublabel="Usage rules and disclaimers"
+          label={t('terms')}
+          sublabel={t('termsSub')}
           href="/terms"
           right={<ChevronRight size={15} color="var(--text-muted)" />}
           last
@@ -329,7 +331,7 @@ export default function SettingsPage() {
       </Section>
 
       {/* ── LANGUAGE ── */}
-      <Section title="Language">
+      <Section title={t('languageTitle')}>
         <div style={{ padding: 12, display: 'flex', gap: 10 }}>
           {[
             { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -370,13 +372,13 @@ export default function SettingsPage() {
       </Section>
 
       {/* ── ACCOUNT ACTIONS ── */}
-      <Section title="Account Actions">
+      <Section title={t('accountActionsTitle')}>
         <Row
           icon={<Trash2 size={15} />}
           iconBg="rgba(251, 113, 133,0.06)"
           iconColor="var(--error)"
-          label={confirmReset ? 'Confirm reset?' : 'Reset Observations'}
-          sublabel="Clears local mission data"
+          label={confirmReset ? t('confirmReset') : t('resetObservations')}
+          sublabel={t('resetSub')}
           onClick={() => {
             if (confirmReset) { reset(); setConfirmReset(false); }
             else setConfirmReset(true);
@@ -387,7 +389,7 @@ export default function SettingsPage() {
           icon={<LogOut size={15} />}
           iconBg="rgba(251, 113, 133,0.06)"
           iconColor="var(--error)"
-          label={confirmSignOut ? 'Confirm sign out?' : 'Sign Out'}
+          label={confirmSignOut ? t('confirmSignOut') : t('signOut')}
           onClick={() => {
             if (confirmSignOut) logout();
             else setConfirmSignOut(true);
@@ -399,7 +401,7 @@ export default function SettingsPage() {
 
       {confirmSignOut && (
         <button onClick={() => setConfirmSignOut(false)} style={{ display: 'block', margin: '-20px auto 0', color: 'var(--text-muted)', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer' }}>
-          Cancel
+          {t('cancel')}
         </button>
       )}
 

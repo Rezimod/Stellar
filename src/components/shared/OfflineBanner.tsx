@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { WifiOff, Wifi } from 'lucide-react';
 
 export default function OfflineBanner() {
+  const t = useTranslations('offlineBanner');
   const [offline, setOffline] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -41,9 +43,7 @@ export default function OfflineBanner() {
       }`}
     >
       {offline ? <WifiOff size={13} /> : <Wifi size={13} />}
-      {offline
-        ? 'Offline — observations will queue and sync when you reconnect'
-        : '✓ Back online — syncing queued observations…'}
+      {offline ? t('offline') : `✓ ${t('backOnline')}`}
     </div>
   );
 }

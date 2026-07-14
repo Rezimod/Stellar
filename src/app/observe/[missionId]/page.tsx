@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -18,6 +19,7 @@ export default function ObserveBriefPage() {
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
   const { reset } = useObserveFlow();
+  const t = useTranslations('observeFlow');
 
   useEffect(() => {
     reset();
@@ -32,14 +34,14 @@ export default function ObserveBriefPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
-          <p className="text-text-muted text-sm mb-4">The mission you're looking for doesn't exist.</p>
+          <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
+          <p className="text-text-muted text-sm mb-4">{t('notFound.desc')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
-            Back to missions
+            {t('notFound.back')}
           </Link>
         </div>
       </PageContainer>
@@ -67,7 +69,7 @@ export default function ObserveBriefPage() {
         <div className="relative flex items-center justify-center gap-2 flex-shrink-0">
           <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--stl-gold)' }}>
-            Tonight's Target
+            {t('target.eyebrow')}
           </span>
           <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
         </div>
@@ -140,7 +142,7 @@ export default function ObserveBriefPage() {
           </div>
           <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
-            {mission.difficulty || 'Beginner'}
+            {mission.difficulty || t('target.beginner')}
           </span>
           <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
@@ -153,12 +155,12 @@ export default function ObserveBriefPage() {
           onClick={() => router.push(`/observe/${missionId}/capture`)}
           className="relative w-full flex-shrink-0 max-w-sm mt-2"
         >
-          Begin Observation →
+          {t('target.begin')} →
         </Button>
 
         {mission.demo && (
           <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
-            Demo mode — upload any photo to try the flow
+            {t('target.demo')}
           </p>
         )}
       </div>

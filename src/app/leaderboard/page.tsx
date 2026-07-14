@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { Telescope, Trophy } from 'lucide-react';
@@ -126,6 +127,9 @@ const PODIUM_CONFIG = [
 ];
 
 export default function LeaderboardPage() {
+  const t = useTranslations('leaderboardPage');
+  const tabLabel = (tab: typeof TIME_TABS[number]) =>
+    tab === 'This Week' ? t('tabs.week') : tab === 'All Time' ? t('tabs.all') : t('tabs.month');
   const [activeTab, setActiveTab] = useState<typeof TIME_TABS[number]>('This Month');
   const [entries, setEntries] = useState<DisplayEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -198,7 +202,7 @@ export default function LeaderboardPage() {
           className="text-2xl text-text-primary/90"
           style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
         >
-          Leaderboard
+          {t('title')}
         </h1>
       </div>
 
@@ -212,7 +216,7 @@ export default function LeaderboardPage() {
         }}
       >
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--terracotta)', flexShrink: 0, opacity: 0.7, display: 'inline-block' }} />
-        Leaderboard updates with real observer data as missions are completed on-chain
+        {t('liveNotice')}
       </div>
 
       {/* Time filter tabs */}
@@ -231,7 +235,7 @@ export default function LeaderboardPage() {
                 : { color: 'var(--color-text-secondary)' }
             }
           >
-            {tab}
+            {tabLabel(tab)}
           </button>
         ))}
       </div>
@@ -240,13 +244,13 @@ export default function LeaderboardPage() {
       {leaderError && !loading && (
         <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="text-text-primary/60 text-sm">Couldn&apos;t load the leaderboard.</p>
+          <p className="text-text-primary/60 text-sm">{t('error')}</p>
           <button
-            onClick={() => { setLeaderError(false); setActiveTab(t => t); }}
+            onClick={() => { setLeaderError(false); setActiveTab(prev => prev); }}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-opacity hover:opacity-80"
             style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--terracotta)', border: '1px solid rgba(255, 179, 71,0.2)' }}
           >
-            Try again
+            {t('tryAgain')}
           </button>
         </div>
       )}
@@ -267,15 +271,15 @@ export default function LeaderboardPage() {
             <Trophy size={26} strokeWidth={2.2} color="#FFFFFF" />
           </div>
           <div>
-            <p className="text-text-primary/80 font-semibold text-sm">Be the first on the board</p>
-            <p className="text-text-primary/40 text-xs mt-1">Complete a mission to appear here.</p>
+            <p className="text-text-primary/80 font-semibold text-sm">{t('empty.title')}</p>
+            <p className="text-text-primary/40 text-xs mt-1">{t('empty.desc')}</p>
           </div>
           <Link
             href="/missions"
             className="mt-1 px-5 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
             style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--terracotta)', border: '1px solid rgba(255, 179, 71,0.2)' }}
           >
-            Go to Missions →
+            {t('empty.cta')}
           </Link>
         </div>
       )}
@@ -347,7 +351,7 @@ export default function LeaderboardPage() {
                         {entry.stars.toLocaleString()} ✦
                       </span>
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                        {entry.observations} obs
+                        {t('obs', { count: entry.observations })}
                       </span>
                     </div>
                   </div>
@@ -363,7 +367,7 @@ export default function LeaderboardPage() {
               style={{ borderColor: 'rgba(255,255,255,0.06)' }}
             >
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                Rankings
+                {t('rankings')}
               </span>
             </div>
 
@@ -404,14 +408,14 @@ export default function LeaderboardPage() {
                             {entry.handle}
                           </p>
                           {isCurrentUser && (
-                            <Badge variant="teal" size="sm">You</Badge>
+                            <Badge variant="teal" size="sm">{t('you')}</Badge>
                           )}
                         </div>
                         <div
                           className="mt-0.5 inline-block px-1.5 py-px rounded text-[10px] font-medium"
                           style={{ background: `${rankLabel.color}15`, color: rankLabel.color }}
                         >
-                          {rankLabel.label}
+                          {t(`rank.${entry.rank}`)}
                         </div>
                       </div>
 
@@ -444,7 +448,7 @@ export default function LeaderboardPage() {
               }}
             >
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                Your Rank: #{currentUserIndex + 1}
+                {t('yourRank', { rank: currentUserIndex + 1 })}
               </span>
               <div className="flex-1" />
               <span style={{ fontSize: 'var(--text-xs)', color: 'var(--terracotta)' }}>
@@ -457,7 +461,7 @@ export default function LeaderboardPage() {
 
       {/* Footer note */}
       <p className="text-center text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-        Updated every 5 minutes · Observations sealed as NFTs on Solana
+        {t('footer')}
       </p>
 
       {/* CTA */}
@@ -466,17 +470,17 @@ export default function LeaderboardPage() {
         style={{ background: 'rgba(94, 234, 212,0.05)', border: '1px solid rgba(94, 234, 212,0.14)' }}
       >
         <p className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>
-          Complete missions to climb the leaderboard
+          {t('cta.title')}
         </p>
         <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-          Each verified observation earns Stars and moves you up the ranks
+          {t('cta.desc')}
         </p>
         <Link
           href="/missions"
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, var(--seafoam), var(--seafoam))', color: 'var(--canvas)' }}
         >
-          Start Observing →
+          {t('cta.button')}
         </Link>
       </div>
     </PageContainer>

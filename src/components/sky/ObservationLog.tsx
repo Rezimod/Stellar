@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { useAppState } from '@/hooks/useAppState';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { Clock, Trash2 } from 'lucide-react';
@@ -8,6 +9,7 @@ import { Clock, Trash2 } from 'lucide-react';
 export default function ObservationLog() {
   const { state, removeMission } = useAppState();
   const { authenticated } = useStellarUser();
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
   const all = [...state.completedMissions].reverse();
   const missions = all.slice(0, 3);
 
@@ -59,7 +61,7 @@ export default function ObservationLog() {
             <div className="flex-1 min-w-0">
               <p className="text-text-primary text-sm font-medium leading-tight">{m.emoji} {m.name}</p>
               <p className="text-text-muted text-[11px] mt-0.5">
-                {new Date(m.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {new Date(m.timestamp).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

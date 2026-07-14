@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
@@ -20,6 +21,7 @@ export default function ObserveResultPage() {
   const params = useParams<{ missionId: string }>();
   const missionId = params?.missionId ?? '';
   const mission = MISSIONS.find(m => m.id === missionId);
+  const t = useTranslations('observeFlow');
 
   const { address: stellarAddress } = useStellarUser();
   const { getAccessToken } = usePrivy();
@@ -91,12 +93,12 @@ export default function ObserveResultPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setStarError(data.error ?? 'Could not claim star');
+        setStarError(data.error ?? t('result.starClaimError'));
         return;
       }
       setStarClaimed({ chosenName: data.chosenName, proofUrl: data.proofUrl });
     } catch {
-      setStarError('Could not claim star');
+      setStarError(t('result.starClaimError'));
     } finally {
       setStarClaiming(false);
     }
@@ -109,13 +111,13 @@ export default function ObserveResultPage() {
           className="rounded-2xl p-6 text-center"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <p className="text-text-primary font-semibold text-base mb-2">Mission not found</p>
+          <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
             style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
           >
-            Back to missions
+            {t('notFound.back')}
           </Link>
         </div>
       </PageContainer>
@@ -136,12 +138,12 @@ export default function ObserveResultPage() {
     : '#';
 
   const handleShare = async () => {
-    const shareText = `I just observed ${mission.name} on Stellar ✦ Sealed on Solana.`;
+    const shareText = `${t('result.shareObserved', { name: mission.name })} ✦ ${t('result.shareSealed')}`;
     const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://stellarr.club';
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({
-          title: `I sealed ${mission.name} on Stellar`,
+          title: t('result.shareTitle', { name: mission.name }),
           text: shareText,
           url: shareUrl,
         });
@@ -152,21 +154,21 @@ export default function ObserveResultPage() {
     }
     try {
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      setToast('Copied to clipboard');
+      setToast(t('toast.copied'));
     } catch {
-      setToast('Share unavailable');
+      setToast(t('toast.shareUnavailable'));
     }
   };
 
   const handleSave = () => {
-    setToast('Saved to your collection');
+    setToast(t('toast.saved'));
   };
 
   const handlePostToFeed = async () => {
     if (!stellarAddress || !mission || posting || posted) return;
     setPosting(true);
     try {
-      const body = `Sealed ${mission.name} on Stellar ✦`;
+      const body = `${t('result.feedBody', { name: mission.name })} ✦`;
       const payload: Record<string, unknown> = {
         authorWallet: stellarAddress,
         authorName: displayName,
@@ -193,12 +195,12 @@ export default function ObserveResultPage() {
       });
       if (res.ok) {
         setPosted(true);
-        setToast('Posted to your feed');
+        setToast(t('toast.posted'));
       } else {
-        setToast('Could not post — try again');
+        setToast(t('toast.postFailed'));
       }
     } catch {
-      setToast('Could not post — try again');
+      setToast(t('toast.postFailed'));
     } finally {
       setPosting(false);
     }
@@ -220,7 +222,7 @@ export default function ObserveResultPage() {
             >
               <StarMark size={20} style={{ filter: 'drop-shadow(0 0 6px white)' }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">Cosmic Bonus</p>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/80 m-0 uppercase">{t('result.cosmicBonus')}</p>
                 <p className="text-sm font-black text-text-primary m-0 leading-tight">+{cosmicBonus.amount} ✦ <span className="text-[10px] font-normal text-text-primary/85 italic">{cosmicBonus.message}</span></p>
               </div>
             </div>
@@ -236,8 +238,8 @@ export default function ObserveResultPage() {
             >
               <span style={{ fontSize: 16 }}>✓</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/90 m-0 uppercase">Weekly Challenge</p>
-                <p className="text-sm font-bold text-text-primary m-0">+{getActiveChallenge().bonusStars} ✦ Claimed</p>
+                <p className="text-[9px] font-bold tracking-[0.2em] text-text-primary/90 m-0 uppercase">{t('result.weeklyChallenge')}</p>
+                <p className="text-sm font-bold text-text-primary m-0">+{getActiveChallenge().bonusStars} ✦ {t('result.claimed')}</p>
               </div>
             </div>
           )}
@@ -247,7 +249,7 @@ export default function ObserveResultPage() {
               style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255, 179, 71,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
             >
               <MoonPhase phase={mintTier.phase} size={11} />
-              <span>{mintTier.multiplier}× streak multiplier</span>
+              <span>{t('result.streakMultiplier', { multiplier: mintTier.multiplier })}</span>
             </div>
           )}
         </div>
@@ -286,19 +288,19 @@ export default function ObserveResultPage() {
                   <div className="flex items-center gap-1.5">
                     <span style={{ fontSize: 14, color: 'var(--stars)', lineHeight: 1 }}>★</span>
                     <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      Name a star
+                      {t('result.nameStar')}
                     </span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: 'rgba(148,163,184,0.6)' }}>
                     {nearestStar.catalogId}
-                    {nearestStar.constellation ? ` in ${nearestStar.constellation}` : ''} · magnitude {nearestStar.mag.toFixed(1)}
+                    {nearestStar.constellation ? ` ${t('result.starIn', { constellation: nearestStar.constellation })}` : ''} · {t('result.starMagnitude', { mag: nearestStar.mag.toFixed(1) })}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(100,116,139,0.7)' }}>
-                    Your name will be inscribed on your NFT.
+                    {t('result.inscribeNote')}
                   </p>
                   <input
                     type="text"
-                    placeholder="e.g. Nino's Star, Tbilisi"
+                    placeholder={t('result.starPlaceholder')}
                     maxLength={30}
                     value={starName}
                     onChange={e => setStarName(e.target.value)}
@@ -331,7 +333,7 @@ export default function ObserveResultPage() {
                           style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--stars)' }}
                         />
                       )}
-                      Inscribe
+                      {t('result.inscribe')}
                     </button>
                     <button
                       onClick={() => setStarSkipped(true)}
@@ -342,7 +344,7 @@ export default function ObserveResultPage() {
                         color: 'rgba(148,163,184,0.5)',
                       }}
                     >
-                      Skip
+                      {t('result.skip')}
                     </button>
                   </div>
                   {starError && (
@@ -358,14 +360,14 @@ export default function ObserveResultPage() {
                     {starClaimed.chosenName}
                   </span>
                 </div>
-                <p className="text-xs" style={{ color: 'rgba(148,163,184,0.6)' }}>Your star is named.</p>
+                <p className="text-xs" style={{ color: 'rgba(148,163,184,0.6)' }}>{t('result.starNamed')}</p>
                 <a
                   href={starClaimed.proofUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: 'var(--terracotta)', fontSize: 12, textDecoration: 'none' }}
                 >
-                  View proof page →
+                  {t('result.viewProof')} →
                 </a>
               </div>
             )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useCamera } from '@/hooks/useCamera';
 import { RefreshCw, RotateCcw, Camera, Upload, Plus, Minus } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface CameraCaptureProps {
 }
 
 export default function CameraCapture({ missionName, onCapture, onUpload }: CameraCaptureProps) {
+  const t = useTranslations('observeFlow');
   const { videoRef, error, zoom, zoomCap, setZoomLevel, startCamera, flipCamera, stopCamera, capture } = useCamera();
   const [preview, setPreview] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
@@ -29,7 +31,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
     setTimeout(() => setFlash(false), 120);
     const photo = capture(missionName);
     if (photo === null) {
-      setCaptureError('Frame too dark — please point at the sky and try again');
+      setCaptureError(t('capture.tooDark'));
       return;
     }
     stopCamera();
@@ -95,10 +97,10 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
     return (
       <div className="flex flex-col gap-2.5 w-full">
         <div className="relative rounded-2xl overflow-hidden bg-canvas w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
-          <img src={preview} alt="Observation preview" className="w-full h-full object-cover" />
+          <img src={preview} alt={t('capture.previewAlt')} className="w-full h-full object-cover" />
           <div className="absolute bottom-0 left-0 right-0 px-3 py-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
             <p className="text-[var(--terracotta)] text-[10px] font-mono tracking-widest">
-              STELLAR · {missionName.toUpperCase()} · {isUploadPreview ? 'UPLOADED' : 'CAPTURED'}
+              STELLAR · {missionName.toUpperCase()} · {isUploadPreview ? t('capture.uploaded') : t('capture.captured')}
             </p>
           </div>
         </div>
@@ -107,14 +109,14 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           className="w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98] flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
-          Submit for Verification →
+          {t('capture.submit')} →
         </button>
         <button
           onClick={handleRetake}
           className="w-full py-2.5 rounded-xl text-sm text-text-muted flex items-center justify-center gap-2 flex-shrink-0"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <RotateCcw size={14} /> Retake
+          <RotateCcw size={14} /> {t('capture.retake')}
         </button>
       </div>
     );
@@ -127,13 +129,13 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.15)' }}>
           <Camera size={22} className="text-[var(--terracotta)]/60" />
         </div>
-        <p className="text-terracotta text-sm mb-2">Camera access required</p>
-        <p className="text-text-muted text-xs mb-5">Allow camera access in your browser settings, or upload a saved sky photo.</p>
+        <p className="text-terracotta text-sm mb-2">{t('capture.cameraRequired')}</p>
+        <p className="text-text-muted text-xs mb-5">{t('capture.cameraHelp')}</p>
         <label
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
-          <Upload size={15} /> Upload from Device
+          <Upload size={15} /> {t('capture.uploadDevice')}
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
         </label>
       </div>
@@ -204,7 +206,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           <button
             onClick={() => stepZoom(-1)}
             disabled={zoom <= zoomCap.min + 0.001}
-            aria-label="Zoom out"
+            aria-label={t('capture.zoomOut')}
             className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 disabled:opacity-40"
             style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)' }}
           >
@@ -220,7 +222,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           <button
             onClick={() => stepZoom(1)}
             disabled={zoom >= zoomCap.max - 0.001}
-            aria-label="Zoom in"
+            aria-label={t('capture.zoomIn')}
             className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 disabled:opacity-40"
             style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.15)' }}
           >
@@ -263,7 +265,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <label
           className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
-          title="Upload from device"
+          title={t('capture.uploadTitle')}
         >
           <Upload size={15} className="text-text-muted" />
           <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
@@ -275,12 +277,12 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         className="rounded-xl px-3 py-2.5 flex-shrink-0"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
       >
-        <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 font-medium">How to capture</p>
+        <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 font-medium">{t('capture.howTo')}</p>
         <div className="flex flex-col gap-1.5">
           {[
-            { n: '1', text: 'Point your telescope at the target object' },
-            { n: '2', text: 'Hold your phone camera to the eyepiece' },
-            { n: '3', text: 'Center the object and press shutter — or tap the upload icon' },
+            { n: '1', text: t('capture.tip1') },
+            { n: '2', text: t('capture.tip2') },
+            { n: '3', text: t('capture.tip3') },
           ].map(tip => (
             <div key={tip.n} className="flex items-start gap-2">
               <span

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, type ComponentType } from 'react';
+import { useLocale } from 'next-intl';
 import { Body, Observer, SearchRiseSet } from 'astronomy-engine';
 import type { Mission } from '@/lib/types';
 import type { QuizDef } from '@/lib/quizzes';
@@ -76,9 +77,9 @@ interface Props {
   completedQuizIds: Set<string>;
 }
 
-function fmtHM(d: Date | null): string | null {
+function fmtHM(d: Date | null, dateLocale: string): string | null {
   if (!d) return null;
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  return d.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function useSunTimes(lat: number, lon: number, date: Date) {
@@ -105,17 +106,18 @@ export default function MissionsWebDesktop({
   chartableMissions, primeMission, statusById, completedIds,
   onStart, skyConditions, streak, quizzes, onStartQuiz, completedQuizIds,
 }: Props) {
+  const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
   const { sunset, sunrise } = useSunTimes(lat, lon, now);
-  const sunsetStr = fmtHM(sunset) ?? '19:42';
-  const sunriseStr = fmtHM(sunrise) ?? '04:18';
+  const sunsetStr = fmtHM(sunset, dateLocale) ?? '19:42';
+  const sunriseStr = fmtHM(sunrise, dateLocale) ?? '04:18';
   const windowHours = sunset && sunrise
     ? Math.max(0, (sunrise.getTime() - sunset.getTime()) / 3_600_000)
     : 0;
   const winH = Math.floor(windowHours);
   const winM = Math.round((windowHours - winH) * 60);
 
-  const liveTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-  const liveDateStr = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
+  const liveTimeStr = now.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit', hour12: false });
+  const liveDateStr = now.toLocaleDateString(dateLocale, { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
 
   const primeStatus = primeMission ? statusById[primeMission.id] : null;
   const PrimeArt = primeMission ? NODE[primeMission.id] ?? JupiterNode : null;
