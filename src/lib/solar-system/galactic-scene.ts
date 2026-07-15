@@ -661,6 +661,155 @@ function galaxySpriteTexture(
 
 /* ───────────────────────── cosmic web ───────────────────────── */
 
+/**
+ * 2×2 galaxy sprite atlas: spiral face-on / elliptical / edge-on disk /
+ * irregular. Each galaxy is drawn inside the central ~72% of its tile so the
+ * per-point rotation in the shader never clips a corner. This is what turns
+ * the far tier into a Hubble-deep-field of shaped galaxies instead of dots.
+ */
+function galaxyAtlasTexture(): THREE.CanvasTexture {
+  const TILE = 256;
+  const c = document.createElement('canvas');
+  c.width = c.height = TILE * 2;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, TILE * 2, TILE * 2);
+
+  const withTile = (tx: number, ty: number, draw: (cx: number, cy: number) => void) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(tx * TILE, ty * TILE, TILE, TILE);
+    ctx.clip();
+    draw(tx * TILE + TILE / 2, ty * TILE + TILE / 2);
+    ctx.restore();
+  };
+
+  // Tile (0,0) — face-on spiral.
+  withTile(0, 0, (cx, cy) => {
+    const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, TILE * 0.34);
+    bg.addColorStop(0, 'rgba(255,244,222,0.95)');
+    bg.addColorStop(0.18, 'rgba(255,232,190,0.5)');
+    bg.addColorStop(0.55, 'rgba(190,200,235,0.16)');
+    bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(cx - TILE / 2, cy - TILE / 2, TILE, TILE);
+    for (let i = 0; i < 2600; i++) {
+      const arm = Math.floor(Math.random() * 2);
+      const t = Math.pow(Math.random(), 0.6);
+      const theta = arm * Math.PI + t * Math.PI * 1.7;
+      const rr = t * TILE * 0.34;
+      const jit = (1 - t * 0.5) * 7;
+      const x = cx + Math.cos(theta) * rr + (Math.random() - 0.5) * jit;
+      const y = cy + Math.sin(theta) * rr * 0.92 + (Math.random() - 0.5) * jit;
+      const a = (1 - t) * 0.5 + 0.08;
+      ctx.fillStyle = `rgba(214,226,255,${a})`;
+      ctx.fillRect(x, y, 1.4, 1.4);
+    }
+  });
+
+  // Tile (1,0) — elliptical.
+  withTile(1, 0, (cx, cy) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(1, 0.72);
+    const bg = ctx.createRadialGradient(0, 0, 0, 0, 0, TILE * 0.32);
+    bg.addColorStop(0, 'rgba(255,240,214,0.95)');
+    bg.addColorStop(0.35, 'rgba(244,222,186,0.42)');
+    bg.addColorStop(0.75, 'rgba(220,198,168,0.12)');
+    bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(-TILE / 2, -TILE / 2, TILE, TILE);
+    ctx.restore();
+  });
+
+  // Tile (0,1) — edge-on disk: thin streak + central bulge + dust hint.
+  withTile(0, 1, (cx, cy) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    const streak = ctx.createLinearGradient(-TILE * 0.34, 0, TILE * 0.34, 0);
+    streak.addColorStop(0, 'rgba(0,0,0,0)');
+    streak.addColorStop(0.2, 'rgba(235,225,205,0.55)');
+    streak.addColorStop(0.5, 'rgba(255,244,222,0.9)');
+    streak.addColorStop(0.8, 'rgba(235,225,205,0.55)');
+    streak.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = streak;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, TILE * 0.34, TILE * 0.045, 0, 0, Math.PI * 2);
+    ctx.fill();
+    const bulge = ctx.createRadialGradient(0, 0, 0, 0, 0, TILE * 0.1);
+    bulge.addColorStop(0, 'rgba(255,240,210,0.95)');
+    bulge.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bulge;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, TILE * 0.1, TILE * 0.075, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Dust lane
+    ctx.fillStyle = 'rgba(20,12,8,0.5)';
+    ctx.fillRect(-TILE * 0.3, -1.5, TILE * 0.6, 3);
+    ctx.restore();
+  });
+
+  // Tile (1,1) — irregular: offset clumps.
+  withTile(1, 1, (cx, cy) => {
+    for (let b = 0; b < 5; b++) {
+      const bx = cx + (Math.random() - 0.5) * TILE * 0.3;
+      const by = cy + (Math.random() - 0.5) * TILE * 0.3;
+      const br = TILE * (0.07 + Math.random() * 0.12);
+      const bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+      bg.addColorStop(0, 'rgba(226,232,255,0.6)');
+      bg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = bg;
+      ctx.fillRect(cx - TILE / 2, cy - TILE / 2, TILE, TILE);
+    }
+  });
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+const GALAXY_POINTS_VERT = /* glsl */ `
+  attribute float aSize;
+  attribute float aAngle;
+  attribute vec2 aTile;
+  attribute float aAlpha;
+  varying vec3 vColor;
+  varying float vAngle;
+  varying vec2 vTile;
+  varying float vAlpha;
+  uniform float uPixelRatio;
+  void main() {
+    vColor = color;
+    vAngle = aAngle;
+    vTile = aTile;
+    vAlpha = aAlpha;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = clamp(aSize * uPixelRatio * (900.0 / max(1.0, -mv.z)), 1.5, 220.0);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const GALAXY_POINTS_FRAG = /* glsl */ `
+  uniform sampler2D uAtlas;
+  uniform float uOpacity;
+  varying vec3 vColor;
+  varying float vAngle;
+  varying vec2 vTile;
+  varying float vAlpha;
+  void main() {
+    vec2 p = gl_PointCoord - 0.5;
+    float s = sin(vAngle);
+    float co = cos(vAngle);
+    vec2 rp = vec2(p.x * co - p.y * s, p.x * s + p.y * co);
+    if (abs(rp.x) > 0.5 || abs(rp.y) > 0.5) discard;
+    vec2 uv = (rp + 0.5) * 0.5 + vTile;
+    vec4 t = texture2D(uAtlas, uv);
+    float a = t.a * uOpacity * vAlpha;
+    if (a < 0.012) discard;
+    gl_FragColor = vec4(vColor * t.rgb, a);
+  }
+`;
+
 export interface CosmicWebHandle {
   group: THREE.Group;
   setFade: (fade: number) => void;
@@ -714,9 +863,70 @@ export function makeCosmicWeb(lite: boolean): CosmicWebHandle {
     }
   }
 
-  const filN = lite ? 7000 : 18000;
-  const filPos = new Float32Array(filN * 3);
-  const filCol = new Float32Array(filN * 3);
+  // ── One merged deep field: every entry is a shaped galaxy sprite with its
+  // own rotation, atlas tile, tint, and brightness — filament members,
+  // cluster members, and lonely void galaxies all in a single draw call. ──
+  const filN = lite ? 5200 : 13000;
+  const coreN = lite ? 2600 : 6400;
+  const fieldN = lite ? 1400 : 3600;
+  const total = filN + coreN + fieldN;
+
+  const gPos = new Float32Array(total * 3);
+  const gCol = new Float32Array(total * 3);
+  const gSize = new Float32Array(total);
+  const gAngle = new Float32Array(total);
+  const gTile = new Float32Array(total * 2);
+  const gAlpha = new Float32Array(total);
+
+  // Atlas tile UV offsets (flipY canvas → top row is v=0.5).
+  const TILE_SPIRAL: [number, number] = [0, 0.5];
+  const TILE_ELLIPTICAL: [number, number] = [0.5, 0.5];
+  const TILE_EDGE: [number, number] = [0, 0];
+  const TILE_IRREGULAR: [number, number] = [0.5, 0];
+
+  let w = 0;
+  const put = (
+    x: number, y: number, z: number,
+    kind: 'cluster' | 'filament' | 'field',
+  ) => {
+    const i = w++;
+    gPos[i * 3] = x;
+    gPos[i * 3 + 1] = y;
+    gPos[i * 3 + 2] = z;
+    // Morphology mix: clusters are elliptical-rich (real morphology–density
+    // relation); filaments and the field are spiral-rich.
+    const roll = Math.random();
+    let tile: [number, number];
+    if (kind === 'cluster') {
+      tile = roll < 0.55 ? TILE_ELLIPTICAL : roll < 0.8 ? TILE_SPIRAL : roll < 0.93 ? TILE_EDGE : TILE_IRREGULAR;
+    } else {
+      tile = roll < 0.45 ? TILE_SPIRAL : roll < 0.68 ? TILE_EDGE : roll < 0.86 ? TILE_ELLIPTICAL : TILE_IRREGULAR;
+    }
+    gTile[i * 2] = tile[0];
+    gTile[i * 2 + 1] = tile[1];
+    gAngle[i] = Math.random() * Math.PI * 2;
+    // Tint: ellipticals warm gold, spirals blue-white, plus a redshifted tail.
+    const isEll = tile === TILE_ELLIPTICAL;
+    const redshifted = Math.random() < 0.16;
+    if (redshifted) {
+      gCol[i * 3] = 0.95; gCol[i * 3 + 1] = 0.62; gCol[i * 3 + 2] = 0.5;
+    } else if (isEll) {
+      gCol[i * 3] = 1.0; gCol[i * 3 + 1] = 0.88; gCol[i * 3 + 2] = 0.7;
+    } else {
+      gCol[i * 3] = 0.82; gCol[i * 3 + 1] = 0.88; gCol[i * 3 + 2] = 1.0;
+    }
+    if (kind === 'cluster') {
+      gSize[i] = 90 + Math.random() * Math.random() * 220;
+      gAlpha[i] = 0.55 + Math.random() * 0.45;
+    } else if (kind === 'filament') {
+      gSize[i] = 60 + Math.random() * 110;
+      gAlpha[i] = 0.4 + Math.random() * 0.4;
+    } else {
+      gSize[i] = 50 + Math.random() * 110;
+      gAlpha[i] = 0.2 + Math.random() * 0.3;
+    }
+  };
+
   const mid = new THREE.Vector3();
   const bow = new THREE.Vector3();
   const pA = new THREE.Vector3();
@@ -746,78 +956,69 @@ export function makeCosmicWeb(lite: boolean): CosmicWebHandle {
       .addScaledVector(pB, s * s);
     const len = pA.distanceTo(pB);
     const spread = len * 0.035;
-    filPos[i * 3] = pt.x + (Math.random() + Math.random() - 1) * spread;
-    filPos[i * 3 + 1] = pt.y + (Math.random() + Math.random() - 1) * spread;
-    filPos[i * 3 + 2] = pt.z + (Math.random() + Math.random() - 1) * spread;
-    const lum = 0.25 + Math.random() * 0.5;
-    filCol[i * 3] = 0.62 * lum;
-    filCol[i * 3 + 1] = 0.66 * lum;
-    filCol[i * 3 + 2] = 0.95 * lum;
+    put(
+      pt.x + (Math.random() + Math.random() - 1) * spread,
+      pt.y + (Math.random() + Math.random() - 1) * spread,
+      pt.z + (Math.random() + Math.random() - 1) * spread,
+      'filament',
+    );
   }
 
-  // Cluster cores — dense warm knots at the nodes (galaxies crowd there).
-  const coreN = lite ? 2600 : 6400;
-  const corePos = new Float32Array(coreN * 3);
-  const coreCol = new Float32Array(coreN * 3);
+  // Cluster cores — dense knots at the nodes (galaxies crowd there).
   for (let i = 0; i < coreN; i++) {
     const n = nodes[i % NODE_N];
     const sigma = 380 + (i % 7) * 60;
-    corePos[i * 3] = n.x + (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
-    corePos[i * 3 + 1] = n.y + (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
-    corePos[i * 3 + 2] = n.z + (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
-    const lum = 0.4 + Math.random() * 0.6;
-    coreCol[i * 3] = 1.0 * lum;
-    coreCol[i * 3 + 1] = 0.9 * lum;
-    coreCol[i * 3 + 2] = 0.76 * lum;
+    put(
+      n.x + (Math.random() + Math.random() + Math.random() - 1.5) * sigma,
+      n.y + (Math.random() + Math.random() + Math.random() - 1.5) * sigma,
+      n.z + (Math.random() + Math.random() + Math.random() - 1.5) * sigma,
+      'cluster',
+    );
   }
 
-  // Sparse field galaxies drifting in the voids.
-  const fieldN = lite ? 900 : 2200;
-  const fieldPos = new Float32Array(fieldN * 3);
-  const fieldCol = new Float32Array(fieldN * 3);
+  // Sparse lonely galaxies drifting in the voids.
   for (let i = 0; i < fieldN; i++) {
     const u = Math.random();
     const v = Math.random();
     const t = 2 * Math.PI * u;
     const p = Math.acos(2 * v - 1);
     const r = R_MIN * 0.8 + Math.random() * (R_MAX - R_MIN * 0.8);
-    fieldPos[i * 3] = r * Math.sin(p) * Math.cos(t);
-    fieldPos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
-    fieldPos[i * 3 + 2] = r * Math.cos(p);
-    const lum = 0.2 + Math.random() * 0.4;
-    fieldCol[i * 3] = 0.85 * lum;
-    fieldCol[i * 3 + 1] = 0.85 * lum;
-    fieldCol[i * 3 + 2] = 0.95 * lum;
+    put(
+      r * Math.sin(p) * Math.cos(t),
+      r * Math.sin(p) * Math.sin(t),
+      r * Math.cos(p),
+      'field',
+    );
   }
 
-  const sprite = softStarSprite();
-  const layers: { pts: THREE.Points; mat: THREE.PointsMaterial; peak: number }[] = [];
-  const addLayer = (pos: Float32Array, col: Float32Array, size: number, peak: number) => {
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geom.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    const mat = new THREE.PointsMaterial({
-      map: sprite,
-      size,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      sizeAttenuation: true,
-      blending: THREE.AdditiveBlending,
-      alphaTest: 0.02,
-    });
-    const pts = new THREE.Points(geom, mat);
-    group.add(pts);
-    layers.push({ pts, mat, peak });
-  };
-  addLayer(filPos, filCol, 130, 0.6);
-  addLayer(corePos, coreCol, 210, 0.85);
-  addLayer(fieldPos, fieldCol, 160, 0.35);
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(gPos, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(gCol, 3));
+  geom.setAttribute('aSize', new THREE.BufferAttribute(gSize, 1));
+  geom.setAttribute('aAngle', new THREE.BufferAttribute(gAngle, 1));
+  geom.setAttribute('aTile', new THREE.BufferAttribute(gTile, 2));
+  geom.setAttribute('aAlpha', new THREE.BufferAttribute(gAlpha, 1));
+
+  const atlas = galaxyAtlasTexture();
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      uAtlas: { value: atlas },
+      uOpacity: { value: 0 },
+      uPixelRatio: { value: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1 },
+    },
+    vertexShader: GALAXY_POINTS_VERT,
+    fragmentShader: GALAXY_POINTS_FRAG,
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const pts = new THREE.Points(geom, mat);
+  group.add(pts);
 
   const setFade = (fade: number) => {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
-    for (const l of layers) l.mat.opacity = f * l.peak;
+    mat.uniforms.uOpacity.value = f;
     group.visible = f > 0.005;
   };
 
@@ -825,11 +1026,9 @@ export function makeCosmicWeb(lite: boolean): CosmicWebHandle {
     group,
     setFade,
     dispose: () => {
-      for (const l of layers) {
-        l.pts.geometry.dispose();
-        l.mat.dispose();
-      }
-      sprite.dispose();
+      geom.dispose();
+      mat.dispose();
+      atlas.dispose();
     },
   };
 }
@@ -858,13 +1057,13 @@ export function tierBlendFromRadius(radius: number): TierBlend {
   //   <  60 : pure solar
   //   60-150 : solar fades a bit, stars fade in
   //   150-1400 : stellar tier
-  //   1400-4500 : galactic tier
-  //   4500-9000 : intergalactic tier (Local Group galaxies pop in)
-  //   9000+ : cosmic web — clusters + filaments of the large-scale structure
+  //   1400-3800 : galactic tier
+  //   3800-6500 : intergalactic tier (Local Group galaxies pop in)
+  //   6500+ : cosmic web — clusters + filaments of the large-scale structure
   const stellar = smoothstep(60, 220, radius);
   const galactic = smoothstep(1400, 3200, radius);
-  const universe = smoothstep(4400, 6800, radius);
-  const web = smoothstep(9000, 15000, radius);
+  const universe = smoothstep(3800, 5800, radius);
+  const web = smoothstep(6500, 10500, radius);
   // The solar tier doesn't fully disappear — at huge distances the sun
   // simply becomes a tiny dot via perspective, no need to hide the meshes.
   const solar = 1.0;

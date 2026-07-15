@@ -685,16 +685,19 @@ export function SolarSystemCanvas({
       drag = false;
     };
 
+    // Zoom accelerates once the camera leaves the solar tier — without this,
+    // the ~1300× radius span from planets to the cosmic web takes dozens of
+    // wheel flicks and the galaxies feel unreachable.
+    const zoomAccel = () => 1 + Math.min(2.4, Math.max(0, Math.log10(sysRadius / 40)));
+
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const f = Math.exp(e.deltaY * 0.0011);
       if (focusRef.current) {
-        orbDist *= f;
+        orbDist *= Math.exp(e.deltaY * 0.0011);
       } else {
-        sysRadius *= f;
-        // Extended clamp — the upper bound passes through the stellar
-        // neighbourhood, the Milky Way disk, the Local Group, and out to
-        // the cosmic-web tier.
+        sysRadius *= Math.exp(e.deltaY * 0.0011 * zoomAccel());
+        // Clamp spans the stellar neighbourhood, the Milky Way disk, the
+        // Local Group, and the cosmic-web tier.
         sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, 34000);
       }
     };
@@ -728,8 +731,16 @@ export function SolarSystemCanvas({
         const d = touchDist(e.touches);
         if (lastPinchDist > 4 && d > 4) {
           const factor = d / lastPinchDist;
-          if (focusRef.current) orbDist = THREE.MathUtils.clamp(orbDist / factor, 0.04, 420);
-          else sysRadius = THREE.MathUtils.clamp(sysRadius / factor, 5.2, 34000);
+          if (focusRef.current) {
+            orbDist = THREE.MathUtils.clamp(orbDist / factor, 0.04, 420);
+          } else {
+            // Same acceleration as the wheel so a few pinches reach the web.
+            sysRadius = THREE.MathUtils.clamp(
+              sysRadius / Math.pow(factor, zoomAccel()),
+              5.2,
+              34000,
+            );
+          }
         }
         lastPinchDist = d;
         pinchActive = true;

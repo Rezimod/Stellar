@@ -485,6 +485,59 @@ function lensFlareSprite(): THREE.CanvasTexture {
   return t;
 }
 
+/** Glowing prominence loop — a fiery arc that stands on the solar limb. */
+function prominenceTexture(): THREE.CanvasTexture {
+  const w = 256;
+  const h = 128;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, w, h);
+  // Arch: half-ellipse from (0.2w, h) to (0.8w, h) peaking near y = 0.18h.
+  const draw = (lw: number, alpha: number, color: string) => {
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.ellipse(w / 2, h, w * 0.3, h * 0.82, 0, Math.PI, Math.PI * 2);
+    ctx.stroke();
+  };
+  draw(18, 0.25, '#ff5a20');
+  draw(10, 0.5, '#ff8a30');
+  draw(5, 0.85, '#ffc060');
+  draw(2, 1.0, '#fff0c0');
+  ctx.globalAlpha = 1;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  return tex;
+}
+
+/** Elongated jet for eruptive flares. */
+function flareJetTexture(): THREE.CanvasTexture {
+  const w = 128;
+  const h = 256;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createLinearGradient(0, h, 0, 0);
+  g.addColorStop(0, 'rgba(255,220,150,0.95)');
+  g.addColorStop(0.35, 'rgba(255,150,60,0.55)');
+  g.addColorStop(1, 'rgba(255,90,30,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.5, h);
+  ctx.quadraticCurveTo(w * 0.18, h * 0.45, w * 0.42, 0);
+  ctx.lineTo(w * 0.58, 0);
+  ctx.quadraticCurveTo(w * 0.82, h * 0.45, w * 0.5, h);
+  ctx.fill();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  return tex;
+}
+
 export function makeSunExtras(sunRadius: number): SunExtrasHandle {
   const group = new THREE.Group();
   group.name = 'sunExtras';
@@ -502,6 +555,56 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
   );
   corona.name = 'sunCorona';
 
+  // ── Prominence loops — fiery arcs anchored on the limb, carried around
+  // by the Sun's slow rotation, each breathing on its own rhythm. ──
+  const promTex = prominenceTexture();
+  const promGroup = new THREE.Group();
+  promGroup.name = 'sunProminences';
+  const proms: { pivot: THREE.Group; plane: THREE.Mesh; mat: THREE.MeshBasicMaterial; phase: number; speed: number }[] = [];
+  const promGeom = new THREE.PlaneGeometry(sunRadius * 1.35, sunRadius * 0.72);
+  for (let i = 0; i < 4; i++) {
+    const mat = new THREE.MeshBasicMaterial({
+      map: promTex,
+      transparent: true,
+      opacity: 0.9,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    });
+    const plane = new THREE.Mesh(promGeom, mat);
+    // Stand the arc on the limb: texture "up" points radially outward.
+    plane.rotation.z = -Math.PI / 2;
+    plane.position.x = sunRadius * 1.08;
+    const pivot = new THREE.Group();
+    pivot.rotation.y = (i / 4) * Math.PI * 2 + Math.random() * 0.8;
+    pivot.rotation.z = (Math.random() - 0.5) * 1.1;
+    pivot.add(plane);
+    promGroup.add(pivot);
+    proms.push({ pivot, plane, mat, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.5 });
+  }
+
+  // ── Eruptive flare — a jet that bursts from a random limb point every
+  // several seconds, grows, and fades. ──
+  const jetTex = flareJetTexture();
+  const jetMat = new THREE.MeshBasicMaterial({
+    map: jetTex,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+  });
+  const jetGeom = new THREE.PlaneGeometry(sunRadius * 0.5, sunRadius * 1.3);
+  const jet = new THREE.Mesh(jetGeom, jetMat);
+  jet.rotation.z = -Math.PI / 2;
+  jet.position.x = sunRadius * 1.05;
+  const jetPivot = new THREE.Group();
+  jetPivot.add(jet);
+  promGroup.add(jetPivot);
+  let flareClock = 3; // first eruption a few seconds in
+  let flareT = -1;    // <0 = idle, otherwise seconds since eruption began
+  const FLARE_DUR = 3.2;
+
   // Lens flare sprite (always faces camera, scales w/ distance)
   const flareTex = lensFlareSprite();
   const flare = new THREE.Sprite(
@@ -518,6 +621,7 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
 
   group.add(corona);
   group.add(flare);
+  group.add(promGroup);
 
   let pulse = 0;
 
@@ -533,12 +637,52 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
       flare.scale.set(flareScale, flareScale, 1);
       flare.position.copy(sunPos);
       corona.position.copy(sunPos);
+      promGroup.position.copy(sunPos);
+
+      // Prominences ride the Sun's slow rotation and breathe individually.
+      promGroup.rotation.y += dtSec * 0.02;
+      for (const p of proms) {
+        p.phase += dtSec * p.speed;
+        const s = 1 + Math.sin(p.phase) * 0.18;
+        p.plane.scale.set(1, s, 1);
+        p.mat.opacity = 0.65 + 0.3 * Math.sin(p.phase * 0.7 + 1.3);
+      }
+
+      // Eruptive flare cycle: idle → burst (grow fast, fade out) → idle.
+      if (flareT < 0) {
+        flareClock -= dtSec;
+        if (flareClock <= 0) {
+          flareT = 0;
+          jetPivot.rotation.y = Math.random() * Math.PI * 2;
+          jetPivot.rotation.z = (Math.random() - 0.5) * 1.6;
+        }
+      } else {
+        flareT += dtSec;
+        const t = flareT / FLARE_DUR;
+        if (t >= 1) {
+          flareT = -1;
+          flareClock = 6 + Math.random() * 9;
+          jetMat.opacity = 0;
+        } else {
+          // Fast rise, slow decay.
+          const env = t < 0.25 ? t / 0.25 : 1 - (t - 0.25) / 0.75;
+          jetMat.opacity = env * 0.85;
+          const grow = 0.5 + Math.min(1, t * 2.2) * 0.9;
+          jet.scale.set(1, grow, 1);
+        }
+      }
     },
     dispose() {
       corona.geometry.dispose();
       (corona.material as THREE.Material).dispose();
       (flare.material as THREE.SpriteMaterial).dispose();
       flareTex.dispose();
+      promGeom.dispose();
+      for (const p of proms) p.mat.dispose();
+      promTex.dispose();
+      jetGeom.dispose();
+      jetMat.dispose();
+      jetTex.dispose();
     },
   };
 }
@@ -606,8 +750,93 @@ export interface SaturnRingsHandle {
   dispose: () => void;
 }
 
+/**
+ * Radial color+alpha strip encoding Saturn's real ring structure, sampled by
+ * radius across the ring mesh: D (faint) → C (translucent) → B (bright,
+ * opaque) → Cassini Division → A with the Encke and Keeler gaps → F (thin
+ * bright thread). Fine-grained noise adds the ringlet banding Cassini saw.
+ */
+function saturnRingStripTexture(): THREE.CanvasTexture {
+  const W = 1024;
+  const H = 16;
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, W, H);
+  const R0 = 1.11;
+  const R1 = 2.33;
+  const img = ctx.createImageData(W, H);
+  // Band lookup: [rIn, rOut, r, g, b, alpha]
+  const bands: [number, number, number, number, number, number][] = [
+    [1.110, 1.236, 150, 135, 120, 0.05],  // D ring
+    [1.239, 1.526, 168, 146, 122, 0.30],  // C ring
+    [1.526, 1.951, 232, 214, 184, 0.94],  // B ring — brightest
+    [1.951, 2.027, 130, 118, 100, 0.10],  // Cassini Division
+    [2.027, 2.211, 214, 196, 164, 0.78],  // A ring (inner)
+    [2.217, 2.261, 208, 190, 158, 0.72],  // A ring (mid) — Encke gap before
+    [2.265, 2.269, 200, 184, 152, 0.66],  // A ring (outer edge) — Keeler gap before
+    [2.320, 2.328, 240, 228, 205, 0.42],  // F ring — thin bright thread
+  ];
+  for (let x = 0; x < W; x++) {
+    const R = R0 + (x / W) * (R1 - R0);
+    let cr = 0, cg = 0, cb = 0, ca = 0;
+    for (const [ri, ro, r, g, b, a] of bands) {
+      if (R >= ri && R <= ro) {
+        const t = (R - ri) / (ro - ri);
+        // Slight inner-to-outer shading within each band.
+        const shade = 0.92 + 0.08 * Math.sin(t * Math.PI);
+        cr = r * shade; cg = g * shade; cb = b * shade; ca = a;
+        break;
+      }
+    }
+    // Ringlet noise — fine radial brightness striations.
+    if (ca > 0.02) {
+      const n = 0.86 + 0.14 * Math.sin(x * 0.9) * Math.sin(x * 0.23 + 1.7) + (Math.random() - 0.5) * 0.1;
+      cr *= n; cg *= n; cb *= n;
+      ca *= 0.9 + (Math.random() - 0.5) * 0.16;
+    }
+    for (let y = 0; y < H; y++) {
+      const i = (y * W + x) * 4;
+      img.data[i] = Math.min(255, cr);
+      img.data[i + 1] = Math.min(255, cg);
+      img.data[i + 2] = Math.min(255, cb);
+      img.data[i + 3] = Math.min(255, Math.round(ca * 255));
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  tex.anisotropy = 8;
+  return tex;
+}
+
 export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): SaturnRingsHandle {
-  const RING_COUNT = lite ? 3500 : 11000;
+  // ── Banded ring plane — carries the photoreal look ──────────────
+  const meshInner = saturnRadius * 1.11;
+  const meshOuter = saturnRadius * 2.33;
+  const ringGeom = new THREE.RingGeometry(meshInner, meshOuter, 256, 1);
+  // RingGeometry UVs are planar; remap radially so the strip texture reads
+  // as concentric bands.
+  const posAttr2 = ringGeom.getAttribute('position') as THREE.BufferAttribute;
+  const uvAttr = ringGeom.getAttribute('uv') as THREE.BufferAttribute;
+  for (let i = 0; i < posAttr2.count; i++) {
+    const len = Math.hypot(posAttr2.getX(i), posAttr2.getY(i));
+    uvAttr.setXY(i, (len - meshInner) / (meshOuter - meshInner), 0.5);
+  }
+  const ringTex = saturnRingStripTexture();
+  const ringMat = new THREE.MeshBasicMaterial({
+    map: ringTex,
+    transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const ringMesh = new THREE.Mesh(ringGeom, ringMat);
+  ringMesh.rotation.x = -Math.PI / 2; // lie in the equatorial plane
+  ringMesh.renderOrder = 1;
+
+  // ── Sparse ice-particle sparkle on top (close-range depth cue) ──
+  const RING_COUNT = lite ? 1500 : 4500;
   // Real ring extents: C ring inner edge 1.24 R♄ → A ring outer edge 2.27 R♄.
   const innerR = saturnRadius * 1.239;
   const outerR = saturnRadius * 2.270;
@@ -696,16 +925,18 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
         vec2 uv = gl_PointCoord - 0.5;
         float d = length(uv);
         float alpha = smoothstep(0.5, 0.0, d);
-        gl_FragColor = vec4(vColor, alpha * 0.92);
+        gl_FragColor = vec4(vColor, alpha * 0.4);
       }
     `,
   });
 
   const points = new THREE.Points(geo, mat);
   points.name = 'saturnParticleRings';
+  points.renderOrder = 2;
 
   const group = new THREE.Group();
   group.name = 'saturnParticleRingsGroup';
+  group.add(ringMesh);
   group.add(points);
 
   return {
@@ -714,6 +945,9 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
       mat.uniforms.uTime.value = simSec;
     },
     dispose() {
+      ringGeom.dispose();
+      ringTex.dispose();
+      ringMat.dispose();
       geo.dispose();
       mat.dispose();
     },
