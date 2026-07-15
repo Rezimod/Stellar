@@ -229,8 +229,16 @@ function TonightCard() {
   const sky = useSkyForecast();
 
   const day = sky.forecast[0];
-  const score = day ? dayScore(day) : 0;
-  const verdict: Verdict = score >= 70 ? 'go' : score >= 40 ? 'maybe' : 'skip';
+  // Verdict comes from tonight's forecast badge — the same source every other
+  // surface uses — and the score is clamped into that band so the hero can
+  // never contradict the 7-night outlook.
+  let score = day ? dayScore(day) : 0;
+  const verdict: Verdict = day ? day.badge : score >= 70 ? 'go' : score >= 40 ? 'maybe' : 'skip';
+  if (day) {
+    if (verdict === 'go') score = Math.max(70, score);
+    else if (verdict === 'maybe') score = Math.min(69, Math.max(40, score));
+    else score = Math.min(39, score);
+  }
   const color = VERDICT_COLOR[verdict];
   const planetsUp = sky.planets.filter((p) => p.visible && p.altitude > 10).length;
   const mission = useMemo(() => buildMissions(sky.planets, tp)[0], [sky.planets, tp]);

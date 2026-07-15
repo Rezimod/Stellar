@@ -3,9 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { useMemo } from 'react';
-import { useSkyData, type PlanetData, type ForecastDay } from '@/lib/use-sky-data';
-import { MoonGlyph } from '@/components/sky/forecast/visuals';
+import {
+  useSkyData,
+  type PlanetData,
+  type ForecastDay,
+  type ObservableObject,
+} from '@/lib/use-sky-data';
+import { MoonGlyph, NightCloudStrip } from '@/components/sky/forecast/visuals';
 
 const PLANET_IMG: Record<string, string> = {
   Mercury: '/images/planets/mercury.jpg',
@@ -29,457 +33,431 @@ const PLANET_DOT: Record<string, string> = {
   Moon:    '#E2D5B0',
 };
 
-type Verdict = 'GO' | 'MAYBE' | 'SKIP';
+type Verdict = 'go' | 'maybe' | 'skip';
 
-function verdictFromScore(score: number): { v: Verdict; color: string } {
-  if (score >= 70) return { v: 'GO',    color: '#5EEAD4' };
-  if (score >= 40) return { v: 'MAYBE', color: '#FFB347' };
-  return { v: 'SKIP', color: '#94A3B8' };
-}
-
-function fmtTime(iso: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function pickTop3(planets: PlanetData[]): PlanetData[] {
-  const visible = planets.filter((p) => p.altitude > 10).slice();
-  visible.sort((a, b) => b.altitude - a.altitude);
-  return visible.slice(0, 3);
-}
-
-function badgeColor(b: 'go' | 'maybe' | 'skip'): string {
-  if (b === 'go') return '#5EEAD4';
-  if (b === 'maybe') return '#FFB347';
-  return '#94A3B8';
-}
+const VERDICT_COLOR: Record<Verdict, string> = {
+  go: '#5EEAD4',
+  maybe: '#FFB347',
+  skip: '#94A3B8',
+};
 
 const COPY = {
   en: {
-    stats: {
-      cloud: 'Cloud',
-      bortle: 'Bortle',
-      planetsUp: 'Planets up',
-    },
+    scoreLabel: 'Sky score',
+    tonight: 'Tonight',
+    cloudRow: 'Cloud',
+    visibleTonight: 'Visible tonight',
+    nothingUp: 'Nothing is above the horizon right now.',
     outlook: '7-night outlook',
-    cloudCol: 'cloud',
-    tempCol: 'low',
+    colCloud: 'Cloud',
+    colLow: 'Low',
     openForecast: 'Open the 7-day forecast →',
-    verdict: {
-      GO: 'GO',
-      MAYBE: 'MAYBE',
-      SKIP: 'SKIP',
-    },
-    compass: { N: 'N', E: 'E', S: 'S', W: 'W' },
+    alt: 'alt',
+    mag: 'mag',
+    peakLabel: 'Peaks',
+    verdict: { go: 'GO', maybe: 'MAYBE', skip: 'SKIP' } as Record<Verdict, string>,
+    dirs: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+    unavailable: 'Sky data is unavailable right now.',
+    moon: 'Moon',
+    lit: 'lit',
+    cloudNote: 'cloud over the night window',
+    bortle: 'Bortle',
+    best: 'Best',
     planetNames: {
-      Mercury: 'Mercury',
-      Venus: 'Venus',
-      Mars: 'Mars',
-      Jupiter: 'Jupiter',
-      Saturn: 'Saturn',
-      Uranus: 'Uranus',
-      Neptune: 'Neptune',
-      Moon: 'Moon',
-    } as Record<string, string>,
-    planetShort: {
-      Mercury: 'MER',
-      Venus: 'VEN',
-      Mars: 'MAR',
-      Jupiter: 'JUP',
-      Saturn: 'SAT',
-      Uranus: 'URA',
-      Neptune: 'NEP',
-      Moon: 'MON',
+      Mercury: 'Mercury', Venus: 'Venus', Mars: 'Mars', Jupiter: 'Jupiter',
+      Saturn: 'Saturn', Uranus: 'Uranus', Neptune: 'Neptune', Moon: 'Moon',
     } as Record<string, string>,
   },
   ka: {
-    stats: {
-      cloud: 'ღრუბლები',
-      bortle: 'ბორტლი',
-      planetsUp: 'ხილული პლანეტები',
-    },
+    scoreLabel: 'ცის ქულა',
+    tonight: 'ამაღამ',
+    cloudRow: 'ღრუბ.',
+    visibleTonight: 'ხილული ამაღამ',
+    nothingUp: 'ჰორიზონტზე ამჟამად არაფერი ჩანს.',
     outlook: '7-ღამიანი პროგნოზი',
-    cloudCol: 'ღრუბ.',
-    tempCol: 'მინ.',
+    colCloud: 'ღრუბ.',
+    colLow: 'მინ.',
     openForecast: 'გახსენი 7-ღამიანი პროგნოზი →',
-    verdict: {
-      GO: 'გადი',
-      MAYBE: 'შეიძლება',
-      SKIP: 'გამოტოვე',
-    },
-    compass: { N: 'ჩ', E: 'ა', S: 'ს', W: 'დ' },
+    alt: 'სიმ.',
+    mag: 'ვარსკ.',
+    peakLabel: 'პიკი',
+    verdict: { go: 'გადი', maybe: 'შეიძლება', skip: 'გამოტოვე' } as Record<Verdict, string>,
+    dirs: ['ჩ', 'ჩა', 'ა', 'სა', 'ს', 'სდ', 'დ', 'ჩდ'],
+    unavailable: 'ცის მონაცემები ამჟამად მიუწვდომელია.',
+    moon: 'მთვარე',
+    lit: 'განათებული',
+    cloudNote: 'ღრუბლიანობა ღამის ფანჯარაში',
+    bortle: 'ბორტლი',
+    best: 'საუკეთესო',
     planetNames: {
-      Mercury: 'მერკური',
-      Venus: 'ვენერა',
-      Mars: 'მარსი',
-      Jupiter: 'იუპიტერი',
-      Saturn: 'სატურნი',
-      Uranus: 'ურანი',
-      Neptune: 'ნეპტუნი',
-      Moon: 'მთვარე',
-    } as Record<string, string>,
-    planetShort: {
-      Mercury: 'მერ',
-      Venus: 'ვენ',
-      Mars: 'მარ',
-      Jupiter: 'იუპ',
-      Saturn: 'სატ',
-      Uranus: 'ურა',
-      Neptune: 'ნეპ',
-      Moon: 'მთვ',
+      Mercury: 'მერკური', Venus: 'ვენერა', Mars: 'მარსი', Jupiter: 'იუპიტერი',
+      Saturn: 'სატურნი', Uranus: 'ურანი', Neptune: 'ნეპტუნი', Moon: 'მთვარე',
     } as Record<string, string>,
   },
 } as const;
+
+type Copy = (typeof COPY)['en' | 'ka'];
+
+function fmtHHmm(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/* Map a clock time onto the 20:00 → 05:00 night axis as a 0..1 fraction.
+   Hours past midnight fold onto 24..29 so the axis is monotonic. */
+function nightFrac(iso: string): number {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 0;
+  let h = d.getHours() + d.getMinutes() / 60;
+  if (h < 12) h += 24;
+  return Math.max(0, Math.min(1, (h - 20) / 9));
+}
+
+function compassDir(azimuth: number, dirs: readonly string[]): string {
+  return dirs[Math.round(((azimuth % 360) + 360) % 360 / 45) % 8];
+}
+
+/* In tonight mode the planets API reports each body at its best moment of the
+   night window: `transitTime` is the peak time and altitude/azimuth are taken
+   at that peak. Label the column accordingly. */
+function peakTime(p: PlanetData): string {
+  const iso = p.transitTime;
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '—' : fmtHHmm(d);
+}
 
 export default function TonightAtAGlance() {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const copy = COPY[locale];
   const sky = useSkyData();
 
-  if (sky.loading) {
+  if (sky.loading) return <Skeleton />;
+
+  if (sky.error && sky.forecast.length === 0 && sky.planets.length === 0) {
     return (
-      <div className="animate-pulse max-w-[1000px] mx-auto">
-        <div className="grid items-center gap-7 md:gap-14 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
-          <div className="flex flex-col items-center">
-            <div className="aspect-square w-full max-w-[230px] md:max-w-[360px] mx-auto rounded-full bg-white/[0.04]" />
-            <div className="mt-5 h-3 w-60 max-w-full bg-white/[0.05] rounded" />
-            <div className="mt-5 grid grid-cols-3 gap-2 w-full max-w-[340px]">
-              <div className="h-14 bg-white/[0.04] rounded" />
-              <div className="h-14 bg-white/[0.04] rounded" />
-              <div className="h-14 bg-white/[0.04] rounded" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="h-7 bg-white/[0.03] rounded" />
-            ))}
-          </div>
-        </div>
+      <div className="max-w-[1000px] mx-auto rounded-xl border border-white/[0.08] p-6 text-center">
+        <p className="text-[13px] text-white/60">{copy.unavailable}</p>
+        <Link
+          href="/sky"
+          className="inline-block mt-3 font-mono text-[12px] text-[#FFB347] no-underline"
+        >
+          {copy.openForecast}
+        </Link>
       </div>
     );
   }
 
-  const score = sky.score?.score ?? 0;
-  const { v, color } = verdictFromScore(score);
-  const headline = sky.score?.headline ?? '';
-  const cloud = sky.conditions?.cloudCoverPct;
+  const tonight: ForecastDay | undefined = sky.forecast[0];
+  const planetsUp = sky.planets
+    .filter((p) => p.visible && p.altitude > 5)
+    .sort((a, b) => b.altitude - a.altitude)
+    .slice(0, 6);
+
+  // Verdict and score both derive from tonight's *evening* window (the same
+  // numbers the outlook rows use), so the banner can never say GO while the
+  // first forecast row says SKIP. Instantaneous conditions only fill the gap
+  // when the forecast is missing.
+  let score = sky.score?.score ?? 0;
+  let verdict: Verdict = score >= 70 ? 'go' : score >= 40 ? 'maybe' : 'skip';
+  if (tonight) {
+    verdict = tonight.badge;
+    const brightCount = sky.planets.filter(
+      (p) => p.visible && p.altitude > 15 && p.magnitude < 2,
+    ).length;
+    score = Math.round(
+      (100 - tonight.cloudCoverPct) * 0.6 +
+        (1 - tonight.moonIllumination) * 20 +
+        Math.min(20, brightCount * 7),
+    );
+    if (verdict === 'go') score = Math.max(70, score);
+    else if (verdict === 'maybe') score = Math.min(69, Math.max(40, score));
+    else score = Math.min(39, score);
+  }
+  const color = VERDICT_COLOR[verdict];
+
+  const cloud = tonight?.cloudCoverPct ?? sky.conditions?.cloudCoverPct;
+  const moonPct = tonight ? Math.round(tonight.moonIllumination * 100) : null;
   const bortle = sky.location?.bortle;
-  const visiblePlanets = sky.planets.filter((p) => p.visible && p.altitude > 10);
-  const visibleCount = visiblePlanets.length;
-  const top = pickTop3(sky.planets);
+  const bestNames = (sky.score?.bestTargets ?? [])
+    .slice(0, 2)
+    .map((n) => copy.planetNames[n] ?? n);
+
+  const summaryParts: string[] = [];
+  if (cloud != null) summaryParts.push(`${cloud}% ${copy.cloudNote}`);
+  if (moonPct != null) summaryParts.push(`${copy.moon} ${moonPct}% ${copy.lit}`);
+  if (bortle != null) summaryParts.push(`${copy.bortle} ${bortle}`);
+  if (verdict !== 'skip' && bestNames.length > 0)
+    summaryParts.push(`${copy.best}: ${bestNames.join(', ')}`);
+
+  // Label the banner with the night being judged (forecast[0]'s date), so it
+  // always matches the first outlook row even across midnight.
+  const bannerDate = tonight ? new Date(`${tonight.date}T12:00:00`) : sky.evalTime ?? new Date();
+  const dateLabel = new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+    .format(bannerDate)
+    .toUpperCase();
 
   return (
-    <div className="max-w-[1000px] mx-auto">
-      {/* Two columns on desktop so the whole section fits one screen with no
-          scroll; a tight single column on mobile. Left = sky dome + verdict +
-          stats. Right = top planets + 7-night forecast + CTA. */}
-      <div className="grid items-center gap-7 md:gap-14 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="max-w-[1000px] mx-auto flex flex-col gap-4">
 
-        {/* ── Left: dome + headline + 3 stats ───────────────────────── */}
-        <div className="flex flex-col items-center">
-          <SkyDome
-            planets={sky.planets}
-            verdict={v}
-            verdictColor={color}
-            score={score}
-            locale={locale}
-          />
-
-          {headline && (
-            <p className="mt-4 md:mt-5 text-center text-[12.5px] md:text-[14px] text-white/65 leading-snug max-w-[340px]">
-              {headline}
-            </p>
-          )}
-
-          <div className="mt-5 md:mt-6 grid grid-cols-3 gap-2 md:gap-5 w-full max-w-[340px]">
-            <Stat
-              label={copy.stats.cloud}
-              value={cloud != null ? `${cloud}%` : '—'}
-              visual={<CloudVisual pct={cloud} />}
-            />
-            <Stat
-              label={copy.stats.bortle}
-              value={bortle != null ? String(bortle) : '—'}
-              visual={<BortleVisual value={bortle} />}
-            />
-            <Stat
-              label={copy.stats.planetsUp}
-              value={String(visibleCount)}
-              visual={<PlanetsVisual planets={visiblePlanets.slice(0, 5)} />}
-            />
-          </div>
-        </div>
-
-        {/* ── Right: top planets + 7-night forecast + CTA ───────────── */}
-        <div className="flex flex-col">
-
-          {/* Top 3 planets — realistic thumbnails */}
-          {top.length > 0 && (
-            <ul className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
-              {top.map((p) => {
-                const time = fmtTime(p.transitTime ?? p.riseTime);
-                const img = PLANET_IMG[p.name];
-                const dot = PLANET_DOT[p.name] ?? 'rgba(255,255,255,0.35)';
-                return (
-                  <li
-                    key={p.name}
-                    className="py-2 md:py-2.5 grid grid-cols-[28px_minmax(0,1fr)_auto_auto] items-center gap-x-3 md:gap-x-5"
-                  >
-                    <div
-                      className="relative w-7 h-7 rounded-full overflow-hidden"
-                      style={{
-                        background: dot,
-                        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-                      }}
-                    >
-                      {img && (
-                        <Image
-                          src={img}
-                          alt=""
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                        />
-                      )}
-                    </div>
-                    <span className="text-left text-[13.5px] md:text-[15px] text-white/85">
-                      {copy.planetNames[p.name] ?? p.name}
-                    </span>
-                    <span className="font-mono tabular-nums text-[12px] md:text-[12.5px] text-white/45">
-                      {time}
-                    </span>
-                    <span className="font-mono tabular-nums text-[12.5px] md:text-[13px] text-white/75 w-[40px] md:w-[48px] text-right">
-                      {Math.round(p.altitude)}°
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          {/* 7-night forecast — live weather, one row per night */}
-          {sky.forecast.length > 0 && (
-            <div className="mt-5 md:mt-7">
-              <div className="flex items-baseline justify-between mb-1.5 md:mb-2">
-                <span className="font-mono text-[10px] md:text-[10.5px] uppercase tracking-[0.22em] text-white/40">
-                  {copy.outlook}
-                </span>
-                {sky.location?.city && (
-                  <span className="font-mono text-[10px] md:text-[10.5px] tracking-[0.12em] text-white/30 truncate max-w-[180px]">
-                    {sky.location.city}
-                  </span>
-                )}
+      {/* ── Verdict banner + tonight timeline ─────────────────────── */}
+      <div className="rounded-xl border border-white/[0.08] bg-white/[0.015] overflow-hidden">
+        <div className="p-4 md:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/40 truncate">
+                {dateLabel}
+                {sky.location?.city ? ` · ${sky.location.city}` : ''}
               </div>
-
-              <div className="flex flex-col divide-y divide-white/[0.05]">
-                {sky.forecast.slice(0, 7).map((d, i) => (
-                  <ForecastRow key={d.date} day={d} highlight={i === 0} locale={locale} />
-                ))}
+              <div
+                className="font-display mt-1.5 text-[30px] md:text-[40px] leading-none tracking-[0.04em]"
+                style={{ color }}
+              >
+                {copy.verdict[verdict]}
               </div>
             </div>
-          )}
-
-          <div className="mt-5 md:mt-6 text-center md:text-left">
-            <Link
-              href="/sky"
-              className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
-            >
-              {copy.openForecast}
-            </Link>
+            <div className="text-right shrink-0">
+              <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/40">
+                {copy.scoreLabel}
+              </div>
+              <div className="font-mono tabular-nums mt-1 text-[24px] md:text-[28px] leading-none text-white/90">
+                {score}
+                <span className="text-[13px] text-white/35">/100</span>
+              </div>
+              <div className="mt-2 ml-auto w-[84px] h-[3px] rounded-full bg-white/[0.08] overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${score}%`, background: color }}
+                />
+              </div>
+            </div>
           </div>
+
+          {summaryParts.length > 0 && (
+            <p className="mt-3 text-[13px] md:text-[14px] leading-relaxed text-white/60">
+              {summaryParts.join(' · ')}
+            </p>
+          )}
         </div>
+
+        <TonightTimeline
+          tonight={tonight}
+          objects={sky.timeline.objects}
+          isCurrentlyDark={sky.isCurrentlyDark}
+          copy={copy}
+        />
+      </div>
+
+      {/* ── Planets + 7-night outlook ──────────────────────────────── */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <PlanetPanel planets={planetsUp} copy={copy} />
+        <OutlookPanel forecast={sky.forecast} city={sky.location?.city} copy={copy} locale={locale} />
+      </div>
+
+      <div className="text-center">
+        <Link
+          href="/sky"
+          className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
+        >
+          {copy.openForecast}
+        </Link>
       </div>
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Sky Dome — circular visual centerpiece, mirrors the Sky page's
-   SkyMapScreen language: dark cosmic gradient, compass anchors,
-   altitude rings, stars + real planet positions tonight.
-
-   Replaces the previous 96px "SKIP/GO" text block. The verdict
-   becomes a small chip; the score sits inside the dome.
+   Tonight timeline — a 20:00 → 05:00 axis. Top row is the hourly
+   cloud forecast for the night window; below it, one bar per object
+   showing when it is actually observable (above the horizon during
+   astronomical darkness), with a tick at its peak altitude.
    ───────────────────────────────────────────────────────────────── */
-function SkyDome({
-  planets,
-  verdict,
-  verdictColor,
-  score,
-  locale,
+const AXIS_TICKS = [
+  { frac: 0, label: '20' },
+  { frac: 2 / 9, label: '22' },
+  { frac: 4 / 9, label: '00' },
+  { frac: 6 / 9, label: '02' },
+  { frac: 8 / 9, label: '04' },
+];
+
+function TonightTimeline({
+  tonight,
+  objects,
+  isCurrentlyDark,
+  copy,
 }: {
-  planets: PlanetData[];
-  verdict: Verdict;
-  verdictColor: string;
-  score: number;
-  locale: 'en' | 'ka';
+  tonight: ForecastDay | undefined;
+  objects: ObservableObject[];
+  isCurrentlyDark: boolean;
+  copy: Copy;
 }) {
-  const copy = COPY[locale];
-  // Stable star field — deterministic so SSR/CSR match. Anchored points
-  // give the dome texture without competing with planets.
-  const stars = useMemo(() => {
-    const seed = 17;
-    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
-    for (let i = 0; i < 36; i++) {
-      const a = (i * seed * 13) % 360;
-      const rad = ((i * 7 + 11) % 100) / 100;
-      const x = 50 + Math.cos((a * Math.PI) / 180) * (rad * 44);
-      const y = 50 + Math.sin((a * Math.PI) / 180) * (rad * 44);
-      const r = i % 5 === 0 ? 0.55 : 0.32;
-      const o = 0.32 + ((i * 3) % 5) * 0.1;
-      out.push({ x, y, r, o });
-    }
-    return out;
-  }, []);
+  const bars = objects
+    .filter((o) => o.peakAlt >= 5)
+    .sort((a, b) => b.peakAlt - a.peakAlt)
+    .slice(0, 4)
+    .map((o) => {
+      const start = nightFrac(o.visibleStart);
+      const end = nightFrac(o.visibleEnd);
+      const peak = nightFrac(o.peakAt);
+      const peakDate = new Date(o.peakAt);
+      return {
+        ...o,
+        start,
+        end: Math.max(end, start + 0.02),
+        peak,
+        peakLabel: Number.isNaN(peakDate.getTime()) ? '—' : fmtHHmm(peakDate),
+      };
+    })
+    .filter((b) => b.end > b.start);
 
-  // Project (azimuth, altitude) onto the 100x100 dome.
-  // Center = zenith (alt=90). Edge = horizon (alt=0).
-  // Azimuth: 0=N (up), 90=E (right), 180=S (down), 270=W (left).
-  function project(az: number, alt: number) {
-    const a = Math.max(0, Math.min(90, alt));
-    const dist = ((90 - a) / 90) * 44;
-    const rad = (az * Math.PI) / 180;
-    return {
-      x: 50 + Math.sin(rad) * dist,
-      y: 50 - Math.cos(rad) * dist,
-    };
-  }
+  if (!tonight && bars.length === 0) return null;
 
-  const visible = planets.filter((p) => p.visible && p.altitude > 0);
+  const nowFrac = isCurrentlyDark ? nightFrac(new Date().toISOString()) : null;
+  const rowGrid =
+    'grid grid-cols-[68px_minmax(0,1fr)_84px] md:grid-cols-[92px_minmax(0,1fr)_104px] items-center gap-x-2 md:gap-x-3';
 
   return (
-    <div className="relative w-full max-w-[230px] md:max-w-[360px] mx-auto aspect-square">
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <defs>
-          <radialGradient id="tonightDomeBg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#0a1430" />
-            <stop offset="60%" stopColor="#070D22" />
-            <stop offset="100%" stopColor="#04060F" />
-          </radialGradient>
-          <radialGradient id="tonightDomeGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={verdictColor} stopOpacity="0.10" />
-            <stop offset="55%" stopColor={verdictColor} stopOpacity="0.02" />
-            <stop offset="100%" stopColor={verdictColor} stopOpacity="0" />
-          </radialGradient>
-        </defs>
+    <div className="border-t border-white/[0.08] px-4 md:px-6 py-4 md:py-5">
+      <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/40 mb-3">
+        {copy.tonight} · 20:00 → 05:00
+      </div>
 
-        {/* Dome */}
-        <circle cx="50" cy="50" r="46" fill="url(#tonightDomeBg)" stroke="rgba(255,255,255,0.10)" strokeWidth="0.4" />
-        <circle cx="50" cy="50" r="46" fill="url(#tonightDomeGlow)" />
+      {tonight && (
+        <div className={`${rowGrid} h-7`}>
+          <span className="font-mono text-[12px] text-white/45 truncate">{copy.cloudRow}</span>
+          <NightCloudStrip hours={tonight.nightHours} height={14} cellGap={2} />
+          <span className="font-mono tabular-nums text-[12px] text-white/45 text-right">
+            {tonight.cloudCoverPct}%
+          </span>
+        </div>
+      )}
 
-        {/* Altitude rings */}
-        <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.3" />
-        <circle cx="50" cy="50" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.3" />
-
-        {/* Cardinal cross */}
-        <line x1="50" y1="6" x2="50" y2="94" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
-        <line x1="6" y1="50" x2="94" y2="50" stroke="rgba(255,255,255,0.04)" strokeWidth="0.3" />
-
-        {/* Compass labels */}
-        <text x="50" y="3.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.N}</text>
-        <text x="96.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.E}</text>
-        <text x="50" y="98.5" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.S}</text>
-        <text x="3.6" y="51.6" fill="rgba(255,255,255,0.5)" fontSize="3.2" textAnchor="middle" fontFamily="monospace" letterSpacing="0.1em">{copy.compass.W}</text>
-
-        {/* Background stars */}
-        {stars.map((s, i) => (
-          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="white" opacity={s.o} />
-        ))}
-
-        {/* Real planets */}
-        {visible.map((p) => {
-          const pos = project(p.azimuth, p.altitude);
-          const dot = PLANET_DOT[p.name] ?? '#FFFFFF';
-          const isBig = p.altitude > 30;
-          return (
-            <g key={p.name}>
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={isBig ? 2.2 : 1.6}
-                fill={dot}
-                opacity={0.95}
+      {bars.map((b) => (
+        <div key={b.name} className={`${rowGrid} h-7`}>
+          <span className="font-mono text-[12px] text-white/70 truncate" title={b.name}>
+            {copy.planetNames[b.name] ?? b.name}
+          </span>
+          <div className="relative h-[14px]">
+            <div
+              className="absolute inset-y-[2px] rounded-[3px]"
+              style={{
+                left: `${b.start * 100}%`,
+                width: `${(b.end - b.start) * 100}%`,
+                background: `${b.color}26`,
+                boxShadow: `inset 0 0 0 1px ${b.color}59`,
+              }}
+            />
+            <div
+              className="absolute inset-y-0 w-[2px] rounded-full"
+              style={{ left: `calc(${b.peak * 100}% - 1px)`, background: b.color }}
+            />
+            {nowFrac != null && (
+              <div
+                className="absolute inset-y-[-2px] w-px bg-white/40 motion-safe:animate-pulse"
+                style={{ left: `${nowFrac * 100}%` }}
               />
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={isBig ? 4.4 : 3.2}
-                fill="none"
-                stroke={dot}
-                strokeOpacity="0.18"
-                strokeWidth="0.4"
-              />
-              <text
-                x={pos.x}
-                y={pos.y - 4.6}
-                fill={dot}
-                opacity="0.85"
-                fontSize="2.6"
-                textAnchor="middle"
-                fontFamily="monospace"
-                fontWeight="bold"
-                letterSpacing="0.06em"
-              >
-                {(copy.planetShort[p.name] ?? p.name.slice(0, 3)).toUpperCase()}
-              </text>
-            </g>
-          );
-        })}
+            )}
+          </div>
+          <span className="font-mono tabular-nums text-[12px] text-white/45 text-right">
+            {b.peakLabel} · {Math.round(b.peakAlt)}°
+          </span>
+        </div>
+      ))}
 
-        {/* Center score puck */}
-        <g>
-          <circle cx="50" cy="50" r="9.5" fill="rgba(4,6,15,0.85)" stroke={verdictColor} strokeOpacity="0.55" strokeWidth="0.5" />
-          <text
-            x="50"
-            y="50.2"
-            fill={verdictColor}
-            fontSize="6"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontFamily="monospace"
-            fontWeight="700"
-            letterSpacing="0.04em"
-          >
-            {score}
-          </text>
-          <text
-            x="50"
-            y="56.6"
-            fill="rgba(255,255,255,0.35)"
-            fontSize="2"
-            textAnchor="middle"
-            fontFamily="monospace"
-            letterSpacing="0.18em"
-          >
-            /100
-          </text>
-        </g>
-      </svg>
-
-      {/* Verdict chip — positioned above the dome */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2 -top-1 md:-top-2 px-3.5 py-1.5 rounded-full font-mono text-[11px] md:text-[12px] font-bold tracking-[0.22em]"
-        style={{
-          color: verdictColor,
-          background: 'rgba(7, 12, 28, 0.92)',
-          border: `1px solid ${verdictColor}40`,
-          boxShadow: `0 0 24px ${verdictColor}1a`,
-        }}
-      >
-        {copy.verdict[verdict]}
+      <div className={rowGrid}>
+        <span />
+        <div className="relative h-4">
+          {AXIS_TICKS.map((t) => (
+            <span
+              key={t.label}
+              className="absolute top-0.5 -translate-x-1/2 font-mono tabular-nums text-[12px] text-white/30"
+              style={{ left: `${t.frac * 100}%` }}
+            >
+              {t.label}
+            </span>
+          ))}
+        </div>
+        <span />
       </div>
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Forecast row — day initial + colored bar + badge dot.
-   Mirrors the SkyForecastScreen pattern in the homepage iPhone.
+   Visible tonight — every listed planet is counted in the header,
+   with direction, magnitude, altitude, and a labeled next event.
+   ───────────────────────────────────────────────────────────────── */
+function PlanetPanel({ planets, copy }: { planets: PlanetData[]; copy: Copy }) {
+  return (
+    <div className="rounded-xl border border-white/[0.08] bg-white/[0.015] p-4 md:p-5">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/40">
+          {copy.visibleTonight}
+        </span>
+        <span className="font-mono tabular-nums text-[12px] text-white/45">{planets.length}</span>
+      </div>
+
+      {planets.length === 0 ? (
+        <p className="py-4 text-[13px] text-white/50">{copy.nothingUp}</p>
+      ) : (
+        <ul className="divide-y divide-white/[0.06]">
+          {planets.map((p) => {
+            return (
+              <li
+                key={p.name}
+                className="py-2.5 grid grid-cols-[32px_minmax(0,1fr)_auto_auto] items-center gap-x-3"
+              >
+                <div
+                  className="relative w-8 h-8 rounded-full overflow-hidden"
+                  style={{
+                    background: PLANET_DOT[p.name] ?? 'rgba(255,255,255,0.2)',
+                    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
+                  }}
+                >
+                  {PLANET_IMG[p.name] && (
+                    <Image src={PLANET_IMG[p.name]} alt="" fill sizes="32px" className="object-cover" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[14px] text-white/90 truncate">
+                    {copy.planetNames[p.name] ?? p.name}
+                  </div>
+                  <div className="font-mono text-[12px] text-white/40 truncate">
+                    {compassDir(p.azimuth, copy.dirs)} · {copy.mag} {p.magnitude.toFixed(1)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono text-[12px] text-white/35 leading-tight">
+                    {copy.peakLabel}
+                  </div>
+                  <div className="font-mono tabular-nums text-[13px] text-white/70 leading-tight">
+                    {peakTime(p)}
+                  </div>
+                </div>
+                <div className="text-right w-[44px]">
+                  <div className="font-mono text-[12px] text-white/35 leading-tight">{copy.alt}</div>
+                  <div className="font-mono tabular-nums text-[13px] text-white/85 leading-tight">
+                    {Math.round(p.altitude)}°
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   7-night outlook — hourly cloud cells per night (real Open-Meteo
+   data), moon phase, labeled columns, verdict word per night.
    ───────────────────────────────────────────────────────────────── */
 function dayShort(iso: string, locale: 'en' | 'ka'): string {
-  const d = new Date(iso);
+  const d = new Date(iso + 'T12:00:00');
   if (Number.isNaN(d.getTime())) return '';
   return new Intl.DateTimeFormat(locale === 'ka' ? 'ka-GE' : 'en-US', { weekday: 'short' })
     .format(d)
@@ -488,213 +466,103 @@ function dayShort(iso: string, locale: 'en' | 'ka'): string {
     .toUpperCase();
 }
 
-function ForecastRow({
-  day,
-  highlight,
+function OutlookPanel({
+  forecast,
+  city,
+  copy,
   locale,
 }: {
-  day: ForecastDay;
-  highlight: boolean;
+  forecast: ForecastDay[];
+  city: string | undefined;
+  copy: Copy;
   locale: 'en' | 'ka';
 }) {
-  const color = badgeColor(day.badge);
-  const short = dayShort(day.date, locale);
-  const copy = COPY[locale];
+  if (forecast.length === 0) return null;
+
+  const rowGrid = 'grid items-center gap-x-2 md:gap-x-2.5';
+  const rowCols = {
+    gridTemplateColumns: `36px 18px minmax(0,1fr) 40px 36px ${locale === 'ka' ? '76px' : '52px'}`,
+  };
+
   return (
-    <div className="grid grid-cols-[34px_16px_minmax(0,1fr)_42px_38px_52px] items-center gap-x-2.5 md:gap-x-3 py-[7px] md:py-2">
-      <span
-        className={`font-mono text-[11px] tracking-[0.08em] ${
-          highlight ? 'text-white/90' : 'text-white/45'
-        }`}
-      >
-        {short}
-      </span>
-      <span className="flex items-center justify-center" aria-hidden>
-        <MoonGlyph phase={day.moonPhase} size={14} />
-      </span>
-      <NightSkyBand cloudCover={day.cloudCoverPct ?? 0} seed={day.date} />
-      <span className="font-mono text-[11px] tabular-nums text-right text-white/55">
-        {day.cloudCoverPct != null ? `${day.cloudCoverPct}%` : '—'}
-      </span>
-      <span className="font-mono text-[11px] tabular-nums text-right text-white/55">
-        {day.tempLow != null ? `${day.tempLow}°` : '—'}
-      </span>
-      <span
-        className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-right tabular-nums"
-        style={{ color }}
-      >
-        {copy.verdict[day.badge.toUpperCase() as Verdict]}
-      </span>
+    <div className="rounded-xl border border-white/[0.08] bg-white/[0.015] p-4 md:p-5">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/40">
+          {copy.outlook}
+        </span>
+        {city && (
+          <span className="font-mono text-[12px] text-white/30 truncate max-w-[140px]">{city}</span>
+        )}
+      </div>
+
+      <div className={`${rowGrid} pb-1.5 border-b border-white/[0.06]`} style={rowCols}>
+        <span />
+        <span />
+        <span className="font-mono text-[12px] text-white/30">20h → 05h</span>
+        <span className="font-mono text-[12px] text-white/30 text-right">{copy.colCloud}</span>
+        <span className="font-mono text-[12px] text-white/30 text-right">{copy.colLow}</span>
+        <span />
+      </div>
+
+      <div className="divide-y divide-white/[0.05]">
+        {forecast.slice(0, 7).map((d, i) => (
+          <div key={d.date} className={`${rowGrid} py-[7px]`} style={rowCols}>
+            <span
+              className={`font-mono text-[12px] tracking-[0.06em] ${
+                i === 0 ? 'text-white/90' : 'text-white/45'
+              }`}
+            >
+              {dayShort(d.date, locale)}
+            </span>
+            <span className="flex items-center" aria-hidden>
+              <MoonGlyph phase={d.moonPhase} size={13} />
+            </span>
+            <NightCloudStrip hours={d.nightHours} height={12} cellGap={2} />
+            <span className="font-mono tabular-nums text-[12px] text-white/55 text-right">
+              {d.cloudCoverPct}%
+            </span>
+            <span className="font-mono tabular-nums text-[12px] text-white/55 text-right">
+              {d.tempLow != null ? `${d.tempLow}°` : '—'}
+            </span>
+            <span
+              className="font-mono text-[12px] uppercase tracking-[0.1em] text-right"
+              style={{ color: VERDICT_COLOR[d.badge] }}
+            >
+              {copy.verdict[d.badge]}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   NightSkyBand — a literal window into the night sky for one night.
-   A cloud bank rolls in from the left covering a fraction of the band
-   equal to the cloud %, dimming the stars it passes over. Clear sky
-   on the right keeps its stars bright. Cosmic + cloud, read at a glance.
-   ───────────────────────────────────────────────────────────────── */
-function NightSkyBand({ cloudCover, seed }: { cloudCover: number; seed: string }) {
-  const W = 120;
-  const H = 24;
-  const cover = Math.max(0, Math.min(100, cloudCover)) / 100;
-  const coverX = cover * W;
-
-  const seedNum = useMemo(() => {
-    let s = 0;
-    for (let i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) % 9973;
-    return s;
-  }, [seed]);
-
-  const stars = useMemo(() => {
-    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
-    for (let i = 0; i < 11; i++) {
-      const x = 5 + ((i * 53 + seedNum * 7) % (W - 10));
-      const y = 4 + ((i * 29 + seedNum * 3) % (H - 8));
-      const r = i % 4 === 0 ? 0.95 : 0.6;
-      const o = 0.4 + ((i * 17) % 5) * 0.12;
-      out.push({ x, y, r, o });
-    }
-    return out;
-  }, [seedNum]);
-
-  // Cloud bank — overlapping soft puffs from the left edge to coverX,
-  // tapering on the right so the bank dissolves into clear sky.
-  const puffs = useMemo(() => {
-    if (coverX < 4) return [];
-    const out: Array<{ x: number; y: number; r: number; o: number }> = [];
-    for (let x = -4; x <= coverX; x += 9) {
-      const taper = Math.max(0, Math.min(1, (coverX - x) / 14));
-      out.push({
-        x,
-        y: 12 + (((x + seedNum) * 5) % 7) - 3,
-        r: 7 + (((x + seedNum) * 3) % 4),
-        o: 0.22 + cover * 0.4 * taper,
-      });
-    }
-    return out;
-  }, [coverX, cover, seedNum]);
-
-  const fid = `nightband-${seedNum}`;
-
+function Skeleton() {
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" aria-hidden>
-      <defs>
-        <radialGradient id={`${fid}-bg`} cx="50%" cy="120%" r="120%">
-          <stop offset="0%" stopColor="#101a36" />
-          <stop offset="100%" stopColor="#070c1d" />
-        </radialGradient>
-      </defs>
-
-      <rect x="0" y="0" width={W} height={H} rx="4" fill={`url(#${fid}-bg)`} />
-
-      {/* Stars — dimmed where the cloud bank covers them */}
-      {stars.map((s, i) => {
-        const covered = s.x < coverX;
-        const opacity = covered ? s.o * 0.12 : s.o;
-        return <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#dbe7ff" opacity={opacity} />;
-      })}
-
-      {/* Cloud bank — soft overlapping circles (no SVG blur filter) */}
-      {puffs.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={p.r * 1.15} fill="#c4d2ee" opacity={p.o * 0.55} />
-      ))}
-    </svg>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  visual,
-}: {
-  label: string;
-  value: string;
-  visual: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col items-center gap-1.5">
-      <span className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.16em] md:tracking-[0.2em] text-white/40 text-center leading-tight">
-        {label}
-      </span>
-      <span className="font-mono tabular-nums text-[22px] md:text-[28px] text-white/92 leading-none">
-        {value}
-      </span>
-      <div className="mt-1 h-3 flex items-center justify-center">{visual}</div>
-    </div>
-  );
-}
-
-/* Cloud — a minimal horizontal fill (the % already gives the data,
-   the visual gives instant "how covered is the sky" without numbers) */
-function CloudVisual({ pct }: { pct: number | undefined }) {
-  if (pct == null) return null;
-  const clamped = Math.max(0, Math.min(100, pct));
-  return (
-    <div className="w-[56px] h-[5px] rounded-full bg-white/[0.08] overflow-hidden">
-      <div
-        className="h-full rounded-full"
-        style={{ width: `${clamped}%`, background: 'rgba(255,255,255,0.55)' }}
-      />
-    </div>
-  );
-}
-
-/* Bortle — a 9-step scale, current step highlighted in amber.
-   1 = darkest sky (good), 9 = inner-city (bad). */
-function BortleVisual({ value }: { value: number | undefined }) {
-  if (value == null) return null;
-  const v = Math.max(1, Math.min(9, value));
-  return (
-    <div className="flex items-center gap-[3px]">
-      {Array.from({ length: 9 }).map((_, i) => {
-        const num = i + 1;
-        const active = num === v;
-        const filled = num <= v;
-        return (
-          <span
-            key={i}
-            aria-hidden
-            className={`block rounded-full ${active ? 'w-[7px] h-[7px]' : 'w-[5px] h-[5px]'}`}
-            style={{
-              background: active
-                ? '#FFB347'
-                : filled
-                ? 'rgba(255,255,255,0.42)'
-                : 'rgba(255,255,255,0.12)',
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-/* Planets up — small, colored dots per planet (uses the same dot
-   palette as the row list so it reads as a preview). */
-function PlanetsVisual({ planets }: { planets: PlanetData[] }) {
-  if (planets.length === 0) {
-    return (
-      <span
-        className="block w-[6px] h-[6px] rounded-full"
-        style={{ background: 'rgba(255,255,255,0.18)' }}
-      />
-    );
-  }
-  return (
-    <div className="flex items-center gap-[5px]">
-      {planets.map((p) => (
-        <span
-          key={p.name}
-          aria-hidden
-          className="block w-[7px] h-[7px] rounded-full"
-          style={{
-            background: PLANET_DOT[p.name] ?? 'rgba(255,255,255,0.55)',
-            boxShadow: 'inset 0 0 0 0.5px rgba(0,0,0,0.25)',
-          }}
-        />
-      ))}
+    <div className="max-w-[1000px] mx-auto flex flex-col gap-4 animate-pulse">
+      <div className="rounded-xl border border-white/[0.06] p-4 md:p-6">
+        <div className="flex justify-between">
+          <div>
+            <div className="h-3 w-32 bg-white/[0.05] rounded" />
+            <div className="mt-3 h-9 w-28 bg-white/[0.06] rounded" />
+          </div>
+          <div className="h-9 w-20 bg-white/[0.05] rounded" />
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-4 bg-white/[0.03] rounded" />
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-white/[0.06] p-4 md:p-5">
+            {Array.from({ length: 6 }).map((_, j) => (
+              <div key={j} className="h-7 my-2 bg-white/[0.03] rounded" />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

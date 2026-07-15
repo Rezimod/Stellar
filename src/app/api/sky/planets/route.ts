@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       const dark = getTonightDarkWindow(lat, lng);
       const start = dark.duskStart ?? dark.evalTime;
       const end = dark.dawnEnd ?? new Date(start.getTime() + 6 * 3600 * 1000);
-      const planets = getWindowPlanets(lat, lng, start, end);
+      const planets = getWindowPlanets(lat, lng, start, end, 25);
       return NextResponse.json(planets, {
         headers: { 'Cache-Control': 'public, max-age=300, s-maxage=1800, stale-while-revalidate=3600' },
       });
