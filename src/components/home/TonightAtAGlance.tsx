@@ -55,6 +55,9 @@ const COPY = {
     alt: 'alt',
     mag: 'mag',
     peakLabel: 'Peaks',
+    legendClear: 'Clear',
+    legendPartly: 'Partly',
+    legendCloudy: 'Cloudy',
     verdict: { go: 'GO', maybe: 'MAYBE', skip: 'SKIP' } as Record<Verdict, string>,
     dirs: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
     unavailable: 'Sky data is unavailable right now.',
@@ -81,6 +84,9 @@ const COPY = {
     alt: 'სიმ.',
     mag: 'ვარსკ.',
     peakLabel: 'პიკი',
+    legendClear: 'მოწმენდილი',
+    legendPartly: 'ნაწილობრივ',
+    legendCloudy: 'მოღრუბლული',
     verdict: { go: 'გადი', maybe: 'შეიძლება', skip: 'გამოტოვე' } as Record<Verdict, string>,
     dirs: ['ჩ', 'ჩა', 'ა', 'სა', 'ს', 'სდ', 'დ', 'ჩდ'],
     unavailable: 'ცის მონაცემები ამჟამად მიუწვდომელია.',
@@ -114,6 +120,29 @@ function nightFrac(iso: string): number {
 
 function compassDir(azimuth: number, dirs: readonly string[]): string {
   return dirs[Math.round(((azimuth % 360) + 360) % 360 / 45) % 8];
+}
+
+/* Color key for the hourly cloud strips — same tiers as go/maybe/skip. */
+function StripLegend({ copy }: { copy: Copy }) {
+  const items = [
+    { color: 'rgba(94, 234, 212, 0.75)', label: copy.legendClear },
+    { color: 'rgba(255, 179, 71, 0.6)', label: copy.legendPartly },
+    { color: 'rgba(148, 163, 184, 0.3)', label: copy.legendCloudy },
+  ];
+  return (
+    <div className="flex items-center gap-3.5">
+      {items.map((it) => (
+        <span key={it.label} className="flex items-center gap-1.5">
+          <span
+            className="block w-[12px] h-[6px] rounded-[2px]"
+            style={{ background: it.color }}
+            aria-hidden
+          />
+          <span className="font-mono text-[12px] text-white/40">{it.label}</span>
+        </span>
+      ))}
+    </div>
+  );
 }
 
 /* In tonight mode the planets API reports each body at its best moment of the
@@ -382,6 +411,10 @@ function TonightTimeline({
         </div>
         <span />
       </div>
+
+      <div className="mt-2">
+        <StripLegend copy={copy} />
+      </div>
     </div>
   );
 }
@@ -532,6 +565,10 @@ function OutlookPanel({
             </span>
           </div>
         ))}
+      </div>
+
+      <div className="mt-3">
+        <StripLegend copy={copy} />
       </div>
     </div>
   );

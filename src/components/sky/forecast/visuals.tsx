@@ -45,7 +45,7 @@ export function MoonGlyph({
 
 /**
  * 9-cell heat strip showing cloud cover from sunset (~20:00) through
- * sunrise (~04:00). Brighter cell = clearer sky.
+ * sunrise (~04:00). Teal = clear, amber = partly cloudy, dim = overcast.
  */
 export function NightCloudStrip({
   hours,
@@ -82,16 +82,19 @@ export function NightCloudStrip({
       }}
     >
       {hours.map((h, i) => {
-        const clarity = Math.max(0, Math.min(100, 100 - h.cloudCover)) / 100;
-        // Tinted near-black at fully cloudy → near-white at clear.
-        // Mix two colors so the strip reads as "stars peeking through" rather
-        // than a generic data bar.
-        const opacity = 0.12 + clarity * 0.78;
+        // Same thresholds as the go/maybe/skip badge (30/70), so an hour's
+        // color always agrees with the night's verdict word.
+        const background =
+          h.cloudCover < 30
+            ? 'rgba(94, 234, 212, 0.75)'
+            : h.cloudCover < 70
+            ? 'rgba(255, 179, 71, 0.6)'
+            : 'rgba(148, 163, 184, 0.16)';
         return (
           <span
             key={`${h.hour}-${i}`}
             style={{
-              background: `rgba(214, 232, 255, ${opacity})`,
+              background,
               borderRadius: 2,
               display: 'block',
             }}

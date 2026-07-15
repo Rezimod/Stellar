@@ -445,8 +445,13 @@ function toForecastDay(
   next: RawSkyDay | undefined,
   locale: 'en' | 'ka' = 'en',
 ): ForecastDay {
-  const cloudCoverPct = averageEveningCloud(d.hours);
   const nightHours = buildNightHours(d, next);
+  // Average the same 20:00→04:00 cells the UI strips render, so the number,
+  // the badge, and the hourly visual always describe the same night. The
+  // same-day fallback only fires when the night window has no data at all.
+  const cloudCoverPct = nightHours.length
+    ? Math.round(nightHours.reduce((s, h) => s + h.cloudCover, 0) / nightHours.length)
+    : averageEveningCloud(d.hours);
   const { phase, illumination } = moonPhaseFor(d.date);
   const { tempLow, windKmh, humidityPct } = eveningWeather(d, next);
   return {
