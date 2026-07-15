@@ -19,7 +19,7 @@ import {
   makeAsteroidBelt,
   makeKuiperBelt,
   makeEarthExtras,
-  makeEarthOrbitals,
+  makeEarthRocket,
   makeAtmosphereShell,
   disposeAtmosphereShell,
   makeSunExtras,
@@ -31,7 +31,7 @@ import {
   makeComet,
   type BeltHandle,
   type EarthExtrasHandle,
-  type EarthOrbitalHandle,
+  type EarthRocketHandle,
   type SunExtrasHandle,
   type SaturnRingsHandle,
   type PlanetMoonsHandle,
@@ -40,6 +40,7 @@ import {
 import {
   makeNearbyStars,
   makeMilkyWayDisk,
+  makeAndromedaGalaxy,
   makeOtherGalaxies,
   makeCosmicWeb,
   tierBlendFromRadius,
@@ -60,6 +61,9 @@ export interface CosmicView {
   sunScreen: { x: number; y: number; depth: number } | null;
   /** Milky Way label projected to screen (null when galactic tier hidden). */
   milkyWayScreen: { x: number; y: number; depth: number } | null;
+  /** Selected body projected to screen + its apparent radius in CSS pixels —
+   *  anchors the planet info popup beside the body. */
+  selectedScreen: { x: number; y: number; rPx: number } | null;
 }
 
 export interface SolarSystemCanvasProps {
@@ -335,6 +339,10 @@ export function SolarSystemCanvas({
     galaxyDisk.setFade(0);
     scene.add(galaxyDisk.group);
 
+    const andromeda = makeAndromedaGalaxy(lite);
+    andromeda.setFade(0);
+    scene.add(andromeda.group);
+
     const otherGalaxies = makeOtherGalaxies();
     otherGalaxies.setFade(0);
     scene.add(otherGalaxies.group);
@@ -359,7 +367,7 @@ export function SolarSystemCanvas({
     scene.add(sunExtras.group);
 
     let earthExtras: EarthExtrasHandle | null = null;
-    let earthOrbitals: EarthOrbitalHandle | null = null;
+    let earthRocket: EarthRocketHandle | null = null;
     let saturnRings: SaturnRingsHandle | null = null;
     const atmosphereShells = new Map<SolarBodyId, THREE.Mesh>();
 
@@ -474,10 +482,10 @@ export function SolarSystemCanvas({
             bodies.remove(earthExtras.moonGroup);
             earthExtras.dispose();
             earthExtras = null;
-            if (earthOrbitals) {
-              bodies.remove(earthOrbitals.group);
-              earthOrbitals.dispose();
-              earthOrbitals = null;
+            if (earthRocket) {
+              bodies.remove(earthRocket.group);
+              earthRocket.dispose();
+              earthRocket = null;
             }
           }
           if (id === 'saturn' && saturnRings) {
@@ -538,9 +546,9 @@ export function SolarSystemCanvas({
             mesh.add(earthExtras.atmosphereMesh);
             // Moon group attached at scene level so it doesn't inherit Earth's spin.
             bodies.add(earthExtras.moonGroup);
-            // Satellites + debris orbiting Earth in an inertial frame.
-            earthOrbitals = makeEarthOrbitals(er, lite);
-            bodies.add(earthOrbitals.group);
+            // Occasional rocket launch — attached in an inertial frame too.
+            earthRocket = makeEarthRocket(er);
+            bodies.add(earthRocket.group);
           }
 
           if ((s.id === 'venus' || s.id === 'mars') && !atmosphereShells.has(s.id)) {
@@ -853,10 +861,10 @@ export function SolarSystemCanvas({
         updateSystemCamera();
       }
       if (!reduceMotion) {
-        // Ambient background drift + decorative satellites stay real-time.
+        // Ambient background drift + the decorative rocket stay real-time.
         stars.rotation.y += 0.000055;
         milkyWay.rotation.y += 0.000022;
-        earthOrbitals?.update(dtSec);
+        earthRocket?.update(dtSec);
       }
       // Epoch-accurate motion — belts, clouds, the real Moon, and Saturn's
       // ring particles all track simulation time (Kepler rates), so they
@@ -869,7 +877,7 @@ export function SolarSystemCanvas({
         const earthMesh = meshById.get('earth');
         if (earthMesh) {
           earthExtras.moonGroup.position.copy(earthMesh.position);
-          if (earthOrbitals) earthOrbitals.group.position.copy(earthMesh.position);
+          if (earthRocket) earthRocket.group.position.copy(earthMesh.position);
         }
       }
       if (saturnRings) {
@@ -901,6 +909,7 @@ export function SolarSystemCanvas({
       currentTier = tierBlendFromRadius(sysRadius);
       nearbyStars.setFade(currentTier.stellar);
       galaxyDisk.setFade(currentTier.galactic);
+      andromeda.setFade(currentTier.universe);
       otherGalaxies.setFade(currentTier.universe);
       cosmicWeb.setFade(currentTier.web);
       // The dense particle Milky Way ribbon at the solar tier overlaps
@@ -921,10 +930,27 @@ export function SolarSystemCanvas({
         const mwAnchor = galaxyDisk.group.visible
           ? localToScreen(new THREE.Vector3(0, 0, 0), galaxyDisk.group, camera, width, height)
           : null;
+        // Selected body anchor + apparent radius — the planet popup docks
+        // beside the body instead of covering the map.
+        let selectedScreen: { x: number; y: number; rPx: number } | null = null;
+        const sel = selectedRef.current;
+        const selMesh = sel ? meshById.get(sel) : undefined;
+        if (sel && selMesh) {
+          const p = projectToScreen(selMesh.position, camera, width, height);
+          if (p) {
+            const dist = camera.position.distanceTo(selMesh.position);
+            const rPx =
+              (worldRadiusForBody(sel) / Math.max(dist, 1e-6)) *
+              (height / 2) /
+              Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+            selectedScreen = { x: p.x, y: p.y, rPx };
+          }
+        }
         onView({
           ...currentTier,
           sunScreen,
           milkyWayScreen: mwAnchor,
+          selectedScreen,
         });
       }
 
@@ -955,10 +981,10 @@ export function SolarSystemCanvas({
         earthExtras.dispose();
         earthExtras = null;
       }
-      if (earthOrbitals) {
-        bodies.remove(earthOrbitals.group);
-        earthOrbitals.dispose();
-        earthOrbitals = null;
+      if (earthRocket) {
+        bodies.remove(earthRocket.group);
+        earthRocket.dispose();
+        earthRocket = null;
       }
       if (saturnRings) {
         bodies.remove(saturnRings.group);
@@ -978,10 +1004,12 @@ export function SolarSystemCanvas({
       disposeMilkyWayBand(milkyWay);
       scene.remove(nearbyStars.group);
       scene.remove(galaxyDisk.group);
+      scene.remove(andromeda.group);
       scene.remove(otherGalaxies.group);
       scene.remove(cosmicWeb.group);
       nearbyStars.dispose();
       galaxyDisk.dispose();
+      andromeda.dispose();
       otherGalaxies.dispose();
       cosmicWeb.dispose();
 

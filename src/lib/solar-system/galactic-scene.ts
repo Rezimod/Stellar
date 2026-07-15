@@ -207,6 +207,74 @@ export interface MilkyWayHandle {
   dispose: () => void;
 }
 
+/**
+ * Star sampler for a barred spiral galaxy, centred at the origin in the XZ
+ * plane: exponential radial falloff, log-spiral arm density waves, a central
+ * bar, a thin vertical profile that flares outward, and population colouring
+ * (warm bulge/bar, blue arm ridges, sparse pink HII, yellow inter-arm).
+ * Shared by the Milky Way and Andromeda so both read as the same species.
+ */
+function sampleSpiralStars(
+  starN: number,
+  R: number,
+  opts: { arms?: number; pitchDeg?: number; barFraction?: number; hiiChance?: number } = {},
+): { pos: Float32Array; col: Float32Array } {
+  const ARMS = opts.arms ?? 4;
+  const pitch = Math.tan(THREE.MathUtils.degToRad(opts.pitchDeg ?? 22));
+  const barFrac = opts.barFraction ?? 0.16;
+  const hiiChance = opts.hiiChance ?? 0.045;
+  const Rd = R * 0.28;
+  const thin = R * 0.012;
+  const pos = new Float32Array(starN * 3);
+  const col = new Float32Array(starN * 3);
+  for (let i = 0; i < starN; i++) {
+    const r = Math.min(-Rd * Math.log(Math.random() * Math.random() + 1e-6) * 0.5, R * 0.98);
+    let theta = Math.random() * Math.PI * 2;
+    const rNorm = r / R;
+    const isBar = r < R * barFrac;
+    let onArm = false;
+    if (!isBar && Math.random() < 0.6) {
+      const armPhase = Math.log(Math.max(r, 1) / (R * 0.05)) / pitch;
+      const arm = Math.random() < 0.7
+        ? Math.floor(Math.random() * 2) * 2       // major arms 0/2
+        : Math.floor(Math.random() * 2) * 2 + 1;  // minor arms 1/3
+      const ridge = armPhase + (arm * Math.PI * 2) / ARMS;
+      // Arm width grows with radius so the outer arms dissolve naturally.
+      const sigma = 0.12 + 0.5 * rNorm;
+      const scatter = (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
+      theta = ridge + scatter;
+      onArm = Math.abs(scatter) < sigma * 0.6;
+    }
+    let x = Math.cos(theta) * r;
+    let z = Math.sin(theta) * r;
+    if (isBar) {
+      x *= 1.55;
+      z *= 0.5;
+    }
+    const h = thin * (1 + rNorm * 2.2) + (isBar ? R * 0.02 * (1 - rNorm * 4) : 0);
+    const y = (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 0.7 * h;
+    pos[i * 3] = x;
+    pos[i * 3 + 1] = y;
+    pos[i * 3 + 2] = z;
+
+    let cr: number, cg: number, cb: number;
+    if (isBar || rNorm < 0.18) {
+      cr = 1.0; cg = 0.82; cb = 0.58;                       // old population — warm
+    } else if (onArm && Math.random() < hiiChance) {
+      cr = 1.0; cg = 0.58; cb = 0.68;                       // HII star-forming region
+    } else if (onArm) {
+      cr = 0.72; cg = 0.82; cb = 1.0;                       // young OB associations — blue
+    } else {
+      cr = 1.0; cg = 0.92; cb = 0.74;                       // inter-arm disk — yellowish
+    }
+    const lum = 0.35 + Math.random() * 0.65;
+    col[i * 3] = cr * lum;
+    col[i * 3 + 1] = cg * lum;
+    col[i * 3 + 2] = cb * lum;
+  }
+  return { pos, col };
+}
+
 export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
   const group = new THREE.Group();
   group.name = 'galactic.milkyWay';
@@ -247,70 +315,7 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
   // older yellow stars fill the inter-arm disk. This gives the galaxy true
   // 3D depth the flat texture alone can't provide.
   const starN = lite ? 9000 : 24000;
-  const vPos = new Float32Array(starN * 3);
-  const vCol = new Float32Array(starN * 3);
-  const Rd = diskRadius * 0.28;          // radial scale length
-  // 22° pitch keeps the arms to ~1.2 windings across the disk — grand-design
-  // spirals read like this; tighter pitches degenerate into concentric rings.
-  const pitch = Math.tan(THREE.MathUtils.degToRad(22));
-  const ARMS = 4;
-  const thin = diskRadius * 0.012;       // vertical scale height
-  const cx = -sunOffsetLocal.x;
-  const cz = -sunOffsetLocal.z;
-  for (let i = 0; i < starN; i++) {
-    // Exponential disk sampling: r = -Rd·ln(u1·u2) approximates a gamma(2)
-    // profile that peaks off-centre like a real surface-density law.
-    const r = Math.min(-Rd * Math.log(Math.random() * Math.random() + 1e-6) * 0.5, diskRadius * 0.98);
-    let theta = Math.random() * Math.PI * 2;
-    const rNorm = r / diskRadius;
-    const isBar = r < diskRadius * 0.16;
-    // Two dominant arms + two weaker ones; ~60% of disk stars gather on a
-    // ridge, the rest stay smooth inter-arm background.
-    let onArm = false;
-    if (!isBar && Math.random() < 0.6) {
-      onArm = true;
-      const armPhase = Math.log(Math.max(r, 1) / (diskRadius * 0.05)) / pitch;
-      const arm = Math.random() < 0.7
-        ? Math.floor(Math.random() * 2) * 2       // major arms 0/2
-        : Math.floor(Math.random() * 2) * 2 + 1;  // minor arms 1/3
-      const ridge = armPhase + (arm * Math.PI * 2) / ARMS;
-      // Arm width grows with radius so the outer arms dissolve naturally.
-      const sigma = 0.12 + 0.5 * rNorm;
-      const scatter = (Math.random() + Math.random() + Math.random() - 1.5) * sigma;
-      theta = ridge + scatter;
-      onArm = Math.abs(scatter) < sigma * 0.6;
-    }
-    let x = Math.cos(theta) * r;
-    let z = Math.sin(theta) * r;
-    if (isBar) {
-      // Central bar — elongate along X, squash along Z.
-      x *= 1.55;
-      z *= 0.5;
-    }
-    // Thin disk with outer flare; the bulge/bar region is thicker.
-    const h = thin * (1 + rNorm * 2.2) + (isBar ? diskRadius * 0.02 * (1 - rNorm * 4) : 0);
-    const y = (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 0.7 * h;
-    vPos[i * 3] = cx + x;
-    vPos[i * 3 + 1] = y;
-    vPos[i * 3 + 2] = cz + z;
-
-    // Colour by population: warm bulge/bar, blue arm ridges, pink HII sparks.
-    let cr: number, cg: number, cb: number;
-    let lum = 0.35 + Math.random() * 0.65;
-    if (isBar || rNorm < 0.18) {
-      cr = 1.0; cg = 0.82; cb = 0.58;                       // old population I/II — warm
-    } else if (onArm && Math.random() < 0.035) {
-      cr = 1.0; cg = 0.55; cb = 0.66;                       // HII star-forming region
-      lum *= 0.75;                                          // glow, don't bead
-    } else if (onArm) {
-      cr = 0.72; cg = 0.82; cb = 1.0;                       // young OB associations — blue
-    } else {
-      cr = 1.0; cg = 0.92; cb = 0.74;                       // inter-arm disk — yellowish
-    }
-    vCol[i * 3] = cr * lum;
-    vCol[i * 3 + 1] = cg * lum;
-    vCol[i * 3 + 2] = cb * lum;
-  }
+  const { pos: vPos, col: vCol } = sampleSpiralStars(starN, diskRadius, { hiiChance: 0.03 });
   const volGeom = new THREE.BufferGeometry();
   volGeom.setAttribute('position', new THREE.BufferAttribute(vPos, 3));
   volGeom.setAttribute('color', new THREE.BufferAttribute(vCol, 3));
@@ -326,21 +331,9 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
     alphaTest: 0.02,
   });
   const volume = new THREE.Points(volGeom, volMat);
+  // Centre the sampled disk on the galactic centre (Sun stays at origin).
+  volume.position.set(-sunOffsetLocal.x, 0, -sunOffsetLocal.z);
   group.add(volume);
-
-  // Backside dust lane — slightly larger, darker disk pasted behind so the
-  // central bulge isn't completely transparent against far galaxies.
-  const dustGeom = new THREE.CircleGeometry(diskRadius * 1.04, 96);
-  const dustMat = new THREE.MeshBasicMaterial({
-    color: 0x06070d,
-    transparent: true,
-    opacity: 0,
-    side: THREE.DoubleSide,
-  });
-  const dust = new THREE.Mesh(dustGeom, dustMat);
-  dust.position.copy(sunOffsetLocal.clone().negate());
-  dust.position.y -= 4;
-  group.add(dust);
 
   // Faint halo of population-II stars around the bulge — adds depth above
   // and below the disk plane. Modest count, additive blend.
@@ -387,9 +380,8 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
     // Texture disk provides the smooth glow underneath; the particle volume
     // carries most of the brightness so the galaxy reads as true 3D.
-    diskMat.opacity = f * 0.62;
+    diskMat.opacity = f * 0.55;
     volMat.opacity = f * 0.92;
-    dustMat.opacity = f * 0.85;
     haloMat.opacity = f * 0.55;
     group.visible = f > 0.005;
   };
@@ -407,8 +399,6 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
       volGeom.dispose();
       (volMat.map as THREE.Texture | null)?.dispose();
       volMat.dispose();
-      dustGeom.dispose();
-      dustMat.dispose();
       haloGeom.dispose();
       (haloMat.map as THREE.Texture | null)?.dispose();
       haloMat.dispose();
@@ -468,20 +458,22 @@ function spiralGalaxyCanvasTexture(): THREE.CanvasTexture {
     ctx.fillRect(cx, cy, 1.6, 1.6);
   }
 
-  // HII regions — small pink/red sparks along the arms.
-  for (let i = 0; i < 220; i++) {
+  // HII regions — soft pink glows scattered loosely around the arms. Kept
+  // few, dim, and well-jittered so they read as nebulae, not a dashed ring.
+  for (let i = 0; i < 70; i++) {
     const armIdx = Math.floor(Math.random() * arms);
-    const t = 0.35 + Math.random() * 0.45;
+    const t = 0.3 + Math.random() * 0.55;
     const theta = armIdx * (Math.PI * 2 / arms) + t * Math.PI * 2 * turns;
     const r = t * SIZE * 0.44;
-    const cx = SIZE / 2 + Math.cos(theta) * r + (Math.random() - 0.5) * 8;
-    const cy = SIZE / 2 + Math.sin(theta) * r + (Math.random() - 0.5) * 8;
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 5);
-    grad.addColorStop(0,   'rgba(255, 160, 180, 0.95)');
-    grad.addColorStop(0.6, 'rgba(255, 120, 150, 0.35)');
+    const cx = SIZE / 2 + Math.cos(theta) * r + (Math.random() - 0.5) * 26;
+    const cy = SIZE / 2 + Math.sin(theta) * r + (Math.random() - 0.5) * 26;
+    const rad = 3 + Math.random() * 4;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    grad.addColorStop(0,   'rgba(255, 150, 170, 0.4)');
+    grad.addColorStop(0.6, 'rgba(255, 110, 140, 0.16)');
     grad.addColorStop(1.0, 'rgba(255, 80, 110, 0)');
     ctx.fillStyle = grad;
-    ctx.fillRect(cx - 5, cy - 5, 10, 10);
+    ctx.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
   }
 
   // Dust lanes
@@ -504,6 +496,85 @@ function spiralGalaxyCanvasTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+/* ───────────────────────── andromeda (M31) ───────────────────────── */
+
+export interface AndromedaHandle {
+  group: THREE.Group;
+  setFade: (fade: number) => void;
+  dispose: () => void;
+}
+
+/**
+ * Andromeda as a true volumetric particle galaxy — same generator as the
+ * Milky Way (it's the same species of barred spiral) at its real ~77°
+ * inclination, half again larger than the Milky Way, with a warm core glow.
+ * Replaces the old flat M31 sprite.
+ */
+export function makeAndromedaGalaxy(lite: boolean): AndromedaHandle {
+  const group = new THREE.Group();
+  group.name = 'galactic.andromeda';
+
+  const R = 1500;
+  const { pos, col } = sampleSpiralStars(lite ? 4500 : 11000, R, {
+    pitchDeg: 20,
+    barFraction: 0.13,
+    hiiChance: 0.025,
+  });
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const sprite = softStarSprite();
+  const mat = new THREE.PointsMaterial({
+    map: sprite,
+    size: lite ? 22 : 17,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    sizeAttenuation: true,
+    blending: THREE.AdditiveBlending,
+    alphaTest: 0.02,
+  });
+  const points = new THREE.Points(geom, mat);
+  group.add(points);
+
+  // Warm core glow so the bulge reads bright from every angle.
+  const glowMat = new THREE.SpriteMaterial({
+    map: sprite,
+    color: new THREE.Color(1.0, 0.88, 0.68),
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const glow = new THREE.Sprite(glowMat);
+  glow.scale.setScalar(R * 0.9);
+  group.add(glow);
+
+  // M31's real position sense: high above the Milky Way plane in our frame,
+  // disk inclined ~77° so it shows the classic near-edge-on ellipse.
+  group.position.set(6200, 2800, -4800);
+  group.rotation.set(THREE.MathUtils.degToRad(77), 0.6, 0.25);
+
+  const setFade = (fade: number) => {
+    const f = THREE.MathUtils.clamp(fade, 0, 1);
+    mat.opacity = f * 0.9;
+    glowMat.opacity = f * 0.5;
+    group.visible = f > 0.005;
+  };
+
+  return {
+    group,
+    setFade,
+    dispose: () => {
+      geom.dispose();
+      mat.dispose();
+      glowMat.dispose();
+      sprite.dispose();
+    },
+  };
+}
+
 /* ───────────────────────── other galaxies ───────────────────────── */
 
 interface GalaxyDef {
@@ -517,7 +588,7 @@ interface GalaxyDef {
 }
 
 const OTHER_GALAXIES: GalaxyDef[] = [
-  { id: 'm31',  name: 'Andromeda',   pos: [ 6200, 2800, -4800], size: 1700, shape: 'spiral',     tilt: -0.7, color: [1.0, 0.92, 0.78] },
+  // M31 lives in makeAndromedaGalaxy as a full particle galaxy.
   { id: 'm33',  name: 'Triangulum',  pos: [ 5400, 1900, -5600], size: 900,  shape: 'spiral',     tilt: 0.4,  color: [0.96, 0.94, 1.0] },
   { id: 'lmc',  name: 'LMC',         pos: [-1800, -3200,  2400], size: 700,  shape: 'irregular',  tilt: 0.2,  color: [1.0, 0.88, 0.74] },
   { id: 'smc',  name: 'SMC',         pos: [-2200, -2800,  1600], size: 480,  shape: 'irregular',  tilt: 0.6,  color: [1.0, 0.86, 0.82] },

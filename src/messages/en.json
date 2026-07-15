@@ -936,6 +936,7 @@
       "now": "Now",
       "speed": {
         "realtime": "Live",
+        "10m": "+10 m/s",
         "1h": "+1 h/s",
         "6h": "+6 h/s",
         "1d": "+1 d/s",

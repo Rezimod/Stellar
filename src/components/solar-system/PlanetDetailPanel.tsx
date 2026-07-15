@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { X, Sparkles, MessageSquare, Telescope } from 'lucide-react';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
@@ -24,7 +23,6 @@ export function PlanetDetailPanel({
   onClose,
 }: PlanetDetailPanelProps) {
   const t = useTranslations('solarSystem.detail');
-  const tPlanet = useTranslations('solarSystem.bodies');
   const format = useFormatter();
   const router = useRouter();
   const { lat, lng } = useObserverLocation();
@@ -81,23 +79,23 @@ export function PlanetDetailPanel({
   }, [bodyId, router]);
 
   return (
-    <aside className="solar-system__sheet" aria-label={t('title')}>
-      <div className="solar-system__sheet-head">
-        <h2 className="solar-system__sheet-title">
-          <Sparkles size={16} aria-hidden className="text-accent" />
+    <aside className="solar-system__popcard" aria-label={t('title')}>
+      <div className="solar-system__popcard-head">
+        <h2 className="solar-system__popcard-title">
+          <Sparkles size={14} aria-hidden className="text-accent" />
           {bodyName}
         </h2>
         <button
           type="button"
-          className="solar-system__sheet-x"
+          className="solar-system__popcard-x"
           onClick={onClose}
           aria-label={t('closeSheet')}
         >
-          <X size={20} strokeWidth={2} aria-hidden />
+          <X size={16} strokeWidth={2.2} aria-hidden />
         </button>
       </div>
 
-      <p className="solar-system__sheet-blurb">{bodyBlurb}</p>
+      <p className="solar-system__popcard-blurb">{bodyBlurb}</p>
 
       {/* Core physical data */}
       <div className="solar-system__data-section">
@@ -198,10 +196,6 @@ export function PlanetDetailPanel({
           <span>{t('gearRecommender')}</span>
         </button>
       </div>
-
-      <Link href="/sky" className="solar-system__sheet-link">
-        {tPlanet('back' as any)}
-      </Link>
     </aside>
   );
 }

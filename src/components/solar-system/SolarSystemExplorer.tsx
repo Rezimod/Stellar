@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  CalendarClock,
   Orbit,
   Pause,
   Play,
@@ -15,19 +15,41 @@ import {
 import { useFormatter, useTranslations } from 'next-intl';
 import { SolarSystemCanvas, type CosmicView } from '@/components/solar-system/SolarSystemCanvas';
 import { PlanetDetailPanel } from '@/components/solar-system/PlanetDetailPanel';
-import {
-  MEAN_RADIUS_KM,
-  type ScaleMode,
-  type SolarBodyId,
-} from '@/lib/solar-system/ephemeris';
+import type { ScaleMode, SolarBodyId } from '@/lib/solar-system/ephemeris';
 
 const SPEED_STEPS = [
   { id: 'realtime', simSecPerRealSec: 1 },
+  // Slow timelapse — Earth completes a rotation in ~2.4 real minutes, so
+  // planet spin is actually watchable at close zoom.
+  { id: '10m', simSecPerRealSec: 600 },
   { id: '1h', simSecPerRealSec: 3600 },
   { id: '6h', simSecPerRealSec: 3600 * 6 },
   { id: '1d', simSecPerRealSec: 86400 },
   { id: '7d', simSecPerRealSec: 86400 * 7 },
 ] as const;
+
+/** Anchored-popup placement: dock beside the selected body, clamped to the
+ *  viewport; on narrow screens fall back to a bottom card above the dock. */
+function popoverStyle(
+  anchor: { x: number; y: number; rPx: number } | null,
+  vw: number,
+  vh: number,
+): React.CSSProperties {
+  if (vw < 560) {
+    return { left: 12, right: 12, bottom: 76 };
+  }
+  const W = 320;
+  const H = 400; // upper bound used only for clamping
+  const margin = 12;
+  if (!anchor) return { right: margin, top: 72 };
+  const gap = Math.min(Math.max(anchor.rPx, 24) + 24, vw * 0.3);
+  let left = anchor.x + gap;
+  if (left + W + margin > vw) left = anchor.x - gap - W;
+  left = Math.min(Math.max(left, margin), vw - W - margin);
+  let top = anchor.y - 120;
+  top = Math.min(Math.max(top, 64), Math.max(64, vh - H - margin));
+  return { left, top, width: W };
+}
 
 export default function SolarSystemExplorer() {
   const t = useTranslations('solarSystem');
@@ -40,11 +62,12 @@ export default function SolarSystemExplorer() {
   const [selectedId, setSelectedId] = useState<SolarBodyId | null>(null);
   const [focusId, setFocusId] = useState<SolarBodyId | null>(null);
   const [playing, setPlaying] = useState(true);
-  const [speedIdx, setSpeedIdx] = useState(1);
+  const [speedIdx, setSpeedIdx] = useState(2);
   const [viewOpen, setViewOpen] = useState(false);
+  const [scrubOpen, setScrubOpen] = useState(false);
   const [cosmic, setCosmic] = useState<CosmicView>({
     solar: 1, stellar: 0, galactic: 0, universe: 0, web: 0,
-    sunScreen: null, milkyWayScreen: null,
+    sunScreen: null, milkyWayScreen: null, selectedScreen: null,
   });
   const [zoomTo, setZoomTo] = useState<number | null>(null);
   const handleZoomToSun = useCallback(() => {
@@ -122,13 +145,6 @@ export default function SolarSystemExplorer() {
     return o;
   }, [t]);
 
-  const radiusLabel = (id: SolarBodyId) => {
-    const km = MEAN_RADIUS_KM[id];
-    if (km >= 1_000_000) return `${(km / 1_000_000).toFixed(2)}×10⁶ km`;
-    if (km >= 1000) return `${(km / 1000).toFixed(1)}×10³ km`;
-    return `${km} km`;
-  };
-
   return (
     <div className="solar-system solar-system--immersive">
       <div className="solar-system__chrome-float">
@@ -163,106 +179,131 @@ export default function SolarSystemExplorer() {
         </div>
       </div>
 
-      <div className="solar-system__dock">
-        <div className="solar-system__dock-row solar-system__dock-row--controls">
-          <button
-            type="button"
-            className="solar-system__btn solar-system__btn--primary solar-system__btn--grow"
-            onClick={() => setPlaying((p) => !p)}
-            aria-pressed={playing}
-          >
-            {playing ? <Pause size={18} aria-hidden /> : <Play size={18} aria-hidden />}
-            {playing ? t('time.pause') : t('time.play')}
-          </button>
-          <button type="button" className="solar-system__btn" onClick={resetNow}>
-            <RotateCcw size={18} aria-hidden />
-            {t('time.now')}
-          </button>
-          <button
-            type="button"
-            className={`solar-system__iconbtn${viewOpen ? ' is-active' : ''}`}
-            onClick={() => setViewOpen((o) => !o)}
-            aria-expanded={viewOpen}
-            aria-label={t('view.title')}
-          >
-            <Settings2 size={20} aria-hidden />
-          </button>
+      {/* Floating timelapse pill — sits over the map instead of docking a
+          full-height control panel under it. */}
+      <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
+        <button
+          type="button"
+          className="solar-system__dockbtn solar-system__dockbtn--primary"
+          onClick={() => setPlaying((p) => !p)}
+          aria-pressed={playing}
+          aria-label={playing ? t('time.pause') : t('time.play')}
+        >
+          {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
+        </button>
+        <div className="solar-system__dockbar-chips" role="tablist" aria-label={t('time.speedAria')}>
+          {SPEED_STEPS.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              className={`solar-system__chip${i === speedIdx ? ' is-active' : ''}`}
+              onClick={() => setSpeedIdx(i)}
+            >
+              {t(`time.speed.${s.id}`)}
+            </button>
+          ))}
         </div>
-
-        <label className="solar-system__dock-label" htmlFor="solar-epoch-range">
-          {t('time.scrub')}
-        </label>
-        <input
-          id="solar-epoch-range"
-          className="solar-system__range"
-          type="range"
-          min={Date.now() - 1000 * 86400 * 365 * 2}
-          max={Date.now() + 1000 * 86400 * 365 * 2}
-          step={3600000}
-          value={epochMs}
-          onChange={(e) => {
-            setEpochMs(Number(e.target.value));
-            setPlaying(false);
-          }}
-        />
-
-        <div className="solar-system__speeds-wrap">
-          <div className="solar-system__speeds" role="tablist" aria-label={t('time.speedAria')}>
-            {SPEED_STEPS.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                role="tab"
-                className={`solar-system__chip${i === speedIdx ? ' is-active' : ''}`}
-                onClick={() => setSpeedIdx(i)}
-              >
-                {t(`time.speed.${s.id}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {viewOpen && (
-          <div className="solar-system__view-pop">
-            <div className="solar-system__view-pop-head">
-              <Sparkles size={14} aria-hidden />
-              <span>{t('view.title')}</span>
-            </div>
-            <div className="solar-system__seg solar-system__seg--full">
-              <button
-                type="button"
-                className={scaleMode === 'orrery' ? 'is-active' : ''}
-                onClick={() => setScaleMode('orrery')}
-              >
-                {t('view.orrery')}
-              </button>
-              <button
-                type="button"
-                className={scaleMode === 'linear' ? 'is-active' : ''}
-                onClick={() => setScaleMode('linear')}
-              >
-                {t('view.linear')}
-              </button>
-            </div>
-            <label className="solar-system__check">
-              <input
-                type="checkbox"
-                checked={includePluto}
-                onChange={(e) => setIncludePluto(e.target.checked)}
-              />
-              {t('view.pluto')}
-            </label>
-          </div>
-        )}
+        <button
+          type="button"
+          className="solar-system__dockbtn"
+          onClick={resetNow}
+          aria-label={t('time.now')}
+          title={t('time.now')}
+        >
+          <RotateCcw size={16} aria-hidden />
+        </button>
+        <button
+          type="button"
+          className={`solar-system__dockbtn${scrubOpen ? ' is-active' : ''}`}
+          onClick={() => setScrubOpen((o) => !o)}
+          aria-expanded={scrubOpen}
+          aria-label={t('time.scrub')}
+          title={t('time.scrub')}
+        >
+          <CalendarClock size={16} aria-hidden />
+        </button>
+        <button
+          type="button"
+          className={`solar-system__dockbtn${viewOpen ? ' is-active' : ''}`}
+          onClick={() => setViewOpen((o) => !o)}
+          aria-expanded={viewOpen}
+          aria-label={t('view.title')}
+        >
+          <Settings2 size={16} aria-hidden />
+        </button>
       </div>
 
+      {scrubOpen && (
+        <div className="solar-system__scrub-pop">
+          <label className="solar-system__dock-label" htmlFor="solar-epoch-range">
+            {t('time.scrub')}
+          </label>
+          <input
+            id="solar-epoch-range"
+            className="solar-system__range"
+            type="range"
+            min={Date.now() - 1000 * 86400 * 365 * 2}
+            max={Date.now() + 1000 * 86400 * 365 * 2}
+            step={3600000}
+            value={epochMs}
+            onChange={(e) => {
+              setEpochMs(Number(e.target.value));
+              setPlaying(false);
+            }}
+          />
+        </div>
+      )}
+
+      {viewOpen && (
+        <div className="solar-system__view-pop solar-system__view-pop--float">
+          <div className="solar-system__view-pop-head">
+            <Sparkles size={14} aria-hidden />
+            <span>{t('view.title')}</span>
+          </div>
+          <div className="solar-system__seg solar-system__seg--full">
+            <button
+              type="button"
+              className={scaleMode === 'orrery' ? 'is-active' : ''}
+              onClick={() => setScaleMode('orrery')}
+            >
+              {t('view.orrery')}
+            </button>
+            <button
+              type="button"
+              className={scaleMode === 'linear' ? 'is-active' : ''}
+              onClick={() => setScaleMode('linear')}
+            >
+              {t('view.linear')}
+            </button>
+          </div>
+          <label className="solar-system__check">
+            <input
+              type="checkbox"
+              checked={includePluto}
+              onChange={(e) => setIncludePluto(e.target.checked)}
+            />
+            {t('view.pluto')}
+          </label>
+        </div>
+      )}
+
       {selectedId && (
-        <PlanetDetailPanel
-          bodyId={selectedId}
-          bodyName={bodyCopy[selectedId].name}
-          bodyBlurb={bodyCopy[selectedId].blurb}
-          onClose={closeDetail}
-        />
+        <div
+          className="solar-system__popover"
+          style={popoverStyle(
+            cosmic.selectedScreen,
+            typeof window === 'undefined' ? 1280 : window.innerWidth,
+            typeof window === 'undefined' ? 800 : window.innerHeight,
+          )}
+        >
+          <PlanetDetailPanel
+            bodyId={selectedId}
+            bodyName={bodyCopy[selectedId].name}
+            bodyBlurb={bodyCopy[selectedId].blurb}
+            onClose={closeDetail}
+          />
+        </div>
       )}
     </div>
   );

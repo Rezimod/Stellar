@@ -410,47 +410,100 @@
 }
 
 .solar-system__viewport-hint--compact {
-  bottom: calc(168px + env(safe-area-inset-bottom));
+  bottom: calc(64px + env(safe-area-inset-bottom));
   font-size: 9px;
   letter-spacing: 0.06em;
   opacity: 0.85;
 }
 
-.solar-system__dock {
-  flex-shrink: 0;
+/* Floating timelapse pill — hovers over the map, bottom centre. */
+.solar-system__dockbar {
+  position: absolute;
   z-index: 15;
-  padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
-  background: linear-gradient(0deg, rgba(4, 8, 18, 0.97) 0%, rgba(4, 8, 18, 0.88) 100%);
-  border-top: 0.5px solid rgba(248, 244, 236, 0.08);
-}
-
-.solar-system__dock-row--controls {
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.solar-system__btn--grow {
-  flex: 1;
-}
-
-.solar-system__iconbtn {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 999px;
+  background: rgba(5, 9, 18, 0.82);
   border: 0.5px solid rgba(248, 244, 236, 0.12);
-  background: rgba(6, 9, 14, 0.65);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  max-width: calc(100vw - 16px);
+}
+
+.solar-system__dockbar-chips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.solar-system__dockbar-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.solar-system__dockbar .solar-system__chip {
+  min-height: 30px;
+  padding: 0 9px;
+  flex-shrink: 0;
+}
+
+.solar-system__dockbtn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  min-height: 0;
+  border-radius: 50%;
+  border: 0.5px solid rgba(248, 244, 236, 0.12);
+  background: rgba(255, 255, 255, 0.03);
   color: rgba(232, 236, 244, 0.9);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
-.solar-system__iconbtn.is-active {
+.solar-system__dockbtn::before {
+  content: none;
+}
+.solar-system__dockbtn.is-active {
   border-color: rgba(255, 179, 71, 0.45);
-  background: rgba(255, 179, 71, 0.1);
+  background: rgba(255, 179, 71, 0.12);
   color: #ffd79a;
+}
+.solar-system__dockbtn--primary {
+  border-color: rgba(255, 179, 71, 0.42);
+  background: rgba(255, 179, 71, 0.12);
+  color: #ffd79a;
+}
+
+/* Scrub slider pop — floats above the pill when toggled. */
+.solar-system__scrub-pop {
+  position: absolute;
+  z-index: 15;
+  left: 50%;
+  bottom: calc(58px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 24px));
+  padding: 10px 14px 12px;
+  border-radius: 14px;
+  background: rgba(5, 9, 18, 0.88);
+  border: 0.5px solid rgba(248, 244, 236, 0.12);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.solar-system__view-pop--float {
+  position: absolute;
+  z-index: 15;
+  right: 12px;
+  bottom: calc(58px + env(safe-area-inset-bottom));
+  width: min(280px, calc(100vw - 24px));
+  margin-top: 0;
 }
 
 .solar-system__dock-label {
@@ -461,30 +514,6 @@
   color: rgba(168, 180, 200, 0.75);
   margin-bottom: 4px;
   font-family: var(--font-mono, 'JetBrains Mono'), monospace;
-}
-
-.solar-system__speeds-wrap {
-  margin-top: 10px;
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-  padding: 6px 0 10px;
-  margin-bottom: -4px;
-  scrollbar-width: thin;
-  touch-action: pan-x;
-}
-
-.solar-system__speeds {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  width: max-content;
-  min-width: 100%;
-  padding-right: 8px;
-}
-
-.solar-system__chip {
-  flex-shrink: 0;
 }
 
 .solar-system__view-pop {
@@ -511,47 +540,61 @@
   margin-bottom: 8px;
 }
 
-.solar-system__sheet {
+/* ──────────────────── planet info popover (anchored beside the body) ──────────────────── */
+
+.solar-system__popover {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
   z-index: 18;
-  max-height: min(52vh, 420px);
+  pointer-events: none;
+}
+
+.solar-system__popcard {
+  pointer-events: auto;
+  max-height: min(58vh, 420px);
   overflow-y: auto;
-  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
-  background: rgba(6, 10, 18, 0.94);
-  border-top: 0.5px solid rgba(248, 244, 236, 0.12);
+  padding: 12px 14px 14px;
+  border-radius: 14px;
+  background: rgba(6, 10, 18, 0.9);
+  border: 0.5px solid rgba(248, 244, 236, 0.14);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
+  scrollbar-width: thin;
 }
 
-.solar-system__sheet-head {
+@media (max-width: 559px) {
+  .solar-system__popcard {
+    max-height: 38vh;
+  }
+}
+
+.solar-system__popcard-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
-.solar-system__sheet-title {
+.solar-system__popcard-title {
   margin: 0;
   font-family: var(--font-display, 'Orbitron'), system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
-.solar-system__sheet-x {
+.solar-system__popcard-x {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  border-radius: 9px;
   border: 0.5px solid rgba(248, 244, 236, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: #fff;
@@ -560,23 +603,23 @@
   align-items: center;
   justify-content: center;
 }
+.solar-system__popcard-x::before {
+  content: none;
+}
 
-.solar-system__sheet-blurb {
-  margin: 0 0 12px;
-  font-size: 13px;
-  line-height: 1.55;
+.solar-system__popcard-blurb {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
   color: rgba(168, 180, 200, 0.95);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .solar-system__dl--sheet {
-  margin: 0 0 14px;
-}
-
-.solar-system__sheet-link {
-  font-size: 12px;
-  color: rgba(94, 234, 212, 0.95);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  margin: 0 0 6px;
 }
 
 /* ──────────────────── cosmic overlay (sun pin + milky way label) ──────────────────── */
