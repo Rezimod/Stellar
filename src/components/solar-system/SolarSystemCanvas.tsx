@@ -29,6 +29,9 @@ import {
   makeUranusRings,
   makePlanetMoons,
   makeComet,
+  makeAurora,
+  makeLightPulse,
+  type AuroraHandle,
   type BeltHandle,
   type EarthExtrasHandle,
   type EarthRocketHandle,
@@ -37,6 +40,7 @@ import {
   type PlanetMoonsHandle,
   type CometHandle,
 } from '@/lib/solar-system/scene-extras';
+import { makeAlienEncounters } from '@/lib/solar-system/aliens';
 import {
   makeNearbyStars,
   makeMilkyWayDisk,
@@ -354,6 +358,16 @@ export function SolarSystemCanvas({
     const orbitRings = makeOrbitRings(scaleRef.current, plutoRef.current);
     scene.add(orbitRings);
 
+    // Photon wavefront expanding from the Sun at the true speed of light.
+    const lightPulse = makeLightPulse(scaleRef.current);
+    scene.add(lightPulse.group);
+
+    // Rare alien sightings — decorative, real-time.
+    const aliens = makeAlienEncounters();
+    scene.add(aliens.group);
+
+    const auroraHandles: AuroraHandle[] = [];
+
     const asteroidBelt: BeltHandle = makeAsteroidBelt(scaleRef.current, lite);
     scene.add(asteroidBelt.group);
 
@@ -386,6 +400,27 @@ export function SolarSystemCanvas({
     loader.setCrossOrigin('anonymous');
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
+    // NASA Black Marble-derived night lights — the dark side of Earth glows
+    // with real city grids via the material's emissive map.
+    let earthNightTex: THREE.Texture | null = null;
+    const applyEarthNight = () => {
+      const mesh = meshById.get('earth');
+      if (!mesh || !earthNightTex) return;
+      const m = mesh.material as THREE.MeshStandardMaterial;
+      m.emissiveMap = earthNightTex;
+      m.needsUpdate = true;
+    };
+    loader.load('/solar-system/planets/earth-night.jpg', (tex) => {
+      if (textureLoadsCancelled) {
+        tex.dispose();
+        return;
+      }
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      earthNightTex = tex;
+      applyEarthNight();
+    });
+
     const applyLoadedTexture = (id: SolarBodyId, tex: THREE.Texture) => {
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.anisotropy = Math.min(16, maxAniso);
@@ -399,6 +434,7 @@ export function SolarSystemCanvas({
       if (mesh) {
         disposeMat(mesh.material as THREE.Material);
         mesh.material = createPlanetMaterial(id, lite, tex);
+        if (id === 'earth') applyEarthNight();
       }
     };
 
@@ -428,6 +464,24 @@ export function SolarSystemCanvas({
     const hitPickRadiusMul = 4.2;
 
     let lastFocus: SolarBodyId | null = null;
+
+    // Speed-of-light pulse bookkeeping: when the wavefront crosses a body's
+    // heliocentric distance, that body pings (bright flare decaying ~1 s).
+    const lastAuById = new Map<SolarBodyId, number>();
+    const pingById = new Map<SolarBodyId, number>();
+    let prevFrontAu = 0;
+
+    // Auroral ovals for every body that really has them. Earth's magnetic
+    // pole sits ~11° off the spin axis; the ice giants' fields are wildly
+    // tilted (Uranus ~59°, Neptune ~47°) — rendered slightly tamed so the
+    // ovals stay readable.
+    const AURORA_BY_ID: Partial<Record<SolarBodyId, Parameters<typeof makeAurora>[1]>> = {
+      earth: { color: 0x3dff8a, topColor: 0xff5a6a, latitudeDeg: 68, magneticTiltDeg: 11, intensity: 0.5 },
+      jupiter: { color: 0x6a8cff, topColor: 0xb08cff, latitudeDeg: 76, magneticTiltDeg: 10, intensity: 0.5 },
+      saturn: { color: 0x7aa0ff, topColor: 0x9fc0ff, latitudeDeg: 78, magneticTiltDeg: 0, intensity: 0.4 },
+      uranus: { color: 0x9fd8e8, topColor: 0xc0ecf4, latitudeDeg: 62, magneticTiltDeg: 45, intensity: 0.26 },
+      neptune: { color: 0x8fb4ff, topColor: 0xb4ccff, latitudeDeg: 65, magneticTiltDeg: 40, intensity: 0.2 },
+    };
 
     const makeBodyMesh = (id: SolarBodyId): THREE.Mesh => {
       const r = worldRadiusForBody(id);
@@ -461,6 +515,7 @@ export function SolarSystemCanvas({
         plutoRef.current,
       );
       const ids = new Set(samples.map((s) => s.id));
+      for (const s of samples) lastAuById.set(s.id, s.helioDistanceAu);
 
       for (const id of Array.from(meshById.keys())) {
         if (!ids.has(id)) {
@@ -589,6 +644,15 @@ export function SolarSystemCanvas({
             // rotationally symmetric around the spin axis so spin is invisible.
             mesh.add(makeUranusRings(worldRadiusForBody('uranus')));
           }
+
+          if (s.id === 'earth') applyEarthNight();
+
+          const auroraSpec = AURORA_BY_ID[s.id];
+          if (auroraSpec) {
+            const aurora = makeAurora(worldRadiusForBody(s.id), auroraSpec);
+            mesh.add(aurora.group);
+            auroraHandles.push(aurora);
+          }
         }
         mesh.position.copy(s.position);
         hit!.position.copy(s.position);
@@ -599,12 +663,24 @@ export function SolarSystemCanvas({
         const mat = mesh.material as THREE.MeshStandardMaterial;
         const base = bodyColor(id);
         const isSel = sel === id;
+        const ping = pingById.get(id) ?? 0;
         if (id === 'sun') {
           mat.emissive.setHex(base);
           mat.emissiveIntensity = isSel ? 1.55 : 1.25;
+        } else if (id === 'earth' && mat.emissiveMap) {
+          // Night-side city lights ride the emissive map; the light-pulse
+          // ping and selection just boost the same channel.
+          mat.emissive.setHex(0xffd9a0);
+          mat.emissiveIntensity = 0.85 + (isSel ? 0.3 : 0) + ping * 1.2;
+        } else if (isSel) {
+          mat.emissive.setHex(base);
+          mat.emissiveIntensity = 0.2;
+        } else if (ping > 0.02) {
+          mat.emissive.setHex(0x9fe8dc);
+          mat.emissiveIntensity = ping * 1.1;
         } else {
-          mat.emissive.setHex(isSel ? base : 0x000000);
-          mat.emissiveIntensity = isSel ? 0.2 : 0;
+          mat.emissive.setHex(0x000000);
+          mat.emissiveIntensity = 0;
         }
         mesh.scale.setScalar(isSel ? 1.08 : 1);
       });
@@ -842,6 +918,18 @@ export function SolarSystemCanvas({
       const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
       lastFrame = now;
 
+      // Advance the light pulse first so syncMeshes sees fresh ping values.
+      lightPulse.update(epochRef.current);
+      const frontAu = lightPulse.frontAu;
+      if (frontAu < prevFrontAu) prevFrontAu = 0; // pulse restarted at the Sun
+      lastAuById.forEach((au, id) => {
+        if (prevFrontAu <= au && frontAu > au) pingById.set(id, 1);
+      });
+      prevFrontAu = frontAu;
+      pingById.forEach((v, id) => {
+        if (v > 0) pingById.set(id, Math.max(0, v - dtSec * 1.2));
+      });
+
       syncMeshes();
       // Spin phase is a pure function of the simulation epoch — bodies hold
       // still while time is paused and track playback/scrubbing exactly.
@@ -861,17 +949,20 @@ export function SolarSystemCanvas({
         updateSystemCamera();
       }
       if (!reduceMotion) {
-        // Ambient background drift + the decorative rocket stay real-time.
+        // Ambient background drift + decorative real-time layers: rocket
+        // launches, aurora shimmer, alien sightings.
         stars.rotation.y += 0.000055;
         milkyWay.rotation.y += 0.000022;
         earthRocket?.update(dtSec);
+        aliens.update(dtSec);
+        for (const a of auroraHandles) a.update(dtSec);
       }
       // Epoch-accurate motion — belts, clouds, the real Moon, and Saturn's
       // ring particles all track simulation time (Kepler rates), so they
       // respond to play/scrub/speed exactly like the planets do.
       asteroidBelt.update(epochRef.current);
       kuiperBelt.update(epochRef.current);
-      earthExtras?.update(epochRef.current);
+      earthExtras?.update(epochRef.current, reduceMotion ? 0 : dtSec);
       saturnRings?.update((epochRef.current - baseEpochMs) / 1000);
       if (earthExtras) {
         const earthMesh = meshById.get('earth');
@@ -993,6 +1084,13 @@ export function SolarSystemCanvas({
       }
       atmosphereShells.forEach((shell) => disposeAtmosphereShell(shell));
       atmosphereShells.clear();
+      for (const a of auroraHandles) a.dispose();
+      auroraHandles.length = 0;
+      scene.remove(lightPulse.group);
+      lightPulse.dispose();
+      scene.remove(aliens.group);
+      aliens.dispose();
+      earthNightTex?.dispose();
       asteroidBelt.dispose();
       kuiperBelt.dispose();
       bodies.remove(planetMoons.group);

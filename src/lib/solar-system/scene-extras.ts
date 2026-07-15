@@ -153,6 +153,45 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   group.name = 'asteroidBeltGroup';
   group.add(points);
 
+  // A few resolvable boulders among the dust — lumpy displaced icosahedra
+  // (Ceres/Vesta-class stand-ins) on their own Keplerian orbits, tumbling
+  // slowly. Everything else in the belt stays a point sprite.
+  const boulders: {
+    mesh: THREE.Mesh;
+    r: number;
+    y: number;
+    angle0: number;
+    rate: number;
+    spinRate: number;
+  }[] = [];
+  const boulderMat = new THREE.MeshStandardMaterial({
+    color: 0x8d8073,
+    roughness: 0.95,
+    metalness: 0.02,
+  });
+  const BOULDER_N = lite ? 3 : 6;
+  for (let i = 0; i < BOULDER_N; i++) {
+    const bGeom = new THREE.IcosahedronGeometry(0.008 + Math.random() * 0.008, 1);
+    // Gently lumpy silhouette — potato, not shrapnel.
+    const bp = bGeom.getAttribute('position') as THREE.BufferAttribute;
+    for (let v = 0; v < bp.count; v++) {
+      const k = 0.88 + Math.random() * 0.24;
+      bp.setXYZ(v, bp.getX(v) * k, bp.getY(v) * (0.85 + Math.random() * 0.25), bp.getZ(v) * k);
+    }
+    bGeom.computeVertexNormals();
+    const bMesh = new THREE.Mesh(bGeom, boulderMat);
+    const au = innerAu + Math.random() * (outerAu - innerAu);
+    boulders.push({
+      mesh: bMesh,
+      r: sceneRadiusFromAu(au, mode),
+      y: (Math.random() - 0.5) * thickness,
+      angle0: Math.random() * Math.PI * 2,
+      rate: meanMotionRadPerMs(au),
+      spinRate: (0.5 + Math.random()) * 2e-5, // rad/ms of sim time
+    });
+    group.add(bMesh);
+  }
+
   const posAttr = geo.getAttribute('position') as THREE.BufferAttribute;
 
   return {
@@ -167,11 +206,19 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
         arr[i * 3 + 2] = Math.sin(a) * r;
       }
       posAttr.needsUpdate = true;
+      for (const b of boulders) {
+        const a = b.angle0 + b.rate * epochMs;
+        b.mesh.position.set(Math.cos(a) * b.r, b.y, Math.sin(a) * b.r);
+        b.mesh.rotation.y = b.spinRate * epochMs;
+        b.mesh.rotation.x = b.spinRate * 0.6 * epochMs;
+      }
     },
     dispose() {
       geo.dispose();
       mat.dispose();
       sprite.dispose();
+      for (const b of boulders) b.mesh.geometry.dispose();
+      boulderMat.dispose();
     },
   };
 }
@@ -294,7 +341,8 @@ export interface EarthExtrasHandle {
   atmosphereMesh: THREE.Mesh;
   moonGroup: THREE.Group;
   moonMesh: THREE.Mesh;
-  update: (epochMs: number) => void;
+  /** `dtSec` drives the real-time weather (lightning); epoch drives orbits. */
+  update: (epochMs: number, dtSec: number) => void;
   dispose: () => void;
 }
 
@@ -394,7 +442,8 @@ export function disposeAtmosphereShell(mesh: THREE.Mesh) {
 }
 
 export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtrasHandle {
-  // Cloud layer
+  // Cloud layer — procedural fallback swaps to the real NASA-derived
+  // satellite cloud composite once it loads.
   const cloudsTex = cloudsTexture();
   const cloudGeom = new THREE.SphereGeometry(earthRadius * 1.013, lite ? 48 : 72, lite ? 48 : 72);
   const cloudMat = new THREE.MeshStandardMaterial({
@@ -408,6 +457,54 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
   });
   const cloudMesh = new THREE.Mesh(cloudGeom, cloudMat);
   cloudMesh.userData.isClouds = true;
+
+  let realCloudsTex: THREE.Texture | null = null;
+  new THREE.TextureLoader().load('/solar-system/planets/earth-clouds.jpg', (tex) => {
+    tex.colorSpace = SRGB;
+    tex.wrapS = THREE.RepeatWrapping;
+    realCloudsTex = tex;
+    cloudMat.map = tex;
+    cloudMat.alphaMap = tex; // clouds-on-black composite doubles as alpha
+    cloudMat.needsUpdate = true;
+  });
+
+  // Thunderstorms — small flash sprites parked inside the cloud layer.
+  // Each storm cell flickers 2–3 times, goes dark, then re-arms elsewhere
+  // on its own schedule, the way lightning looks from orbit.
+  const STORM_N = lite ? 3 : 6;
+  const stormTex = cometGlowSprite(); // cool white-blue glow — reads as lightning
+  const storms: {
+    sprite: THREE.Sprite;
+    mat: THREE.SpriteMaterial;
+    wait: number;
+    burst: number; // >0 while flickering
+  }[] = [];
+  const placeStorm = (spr: THREE.Sprite) => {
+    // Bias toward the tropics where thunderstorms actually cluster.
+    const lat = (Math.random() + Math.random() - 1) * 0.62; // ±~35°
+    const lon = Math.random() * Math.PI * 2;
+    const r = earthRadius * 1.015;
+    spr.position.set(
+      r * Math.cos(lat) * Math.cos(lon),
+      r * Math.sin(lat),
+      r * Math.cos(lat) * Math.sin(lon),
+    );
+  };
+  for (let i = 0; i < STORM_N; i++) {
+    const mat = new THREE.SpriteMaterial({
+      map: stormTex,
+      color: new THREE.Color(0.85, 0.9, 1.0),
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.setScalar(earthRadius * 0.14);
+    placeStorm(sprite);
+    cloudMesh.add(sprite); // rides the cloud layer's rotation
+    storms.push({ sprite, mat, wait: 1 + Math.random() * 5, burst: 0 });
+  }
 
   // Atmosphere fresnel shell
   const atmosphereMesh = makeAtmosphereShell(earthRadius, 0x6ab7ff, 1.06, 1.3, 2.4);
@@ -436,7 +533,7 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
     atmosphereMesh,
     moonGroup,
     moonMesh,
-    update(epochMs: number) {
+    update(epochMs: number, dtSec: number) {
       // Cloud is a child of spinning Earth; set local rotation to a small drift
       // so world-space cloud motion = earth spin + slight delta (visual drift).
       cloudMesh.rotation.y = (epochMs / (86400 * 1000)) * Math.PI * 2 * 0.04;
@@ -447,11 +544,32 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
       moonMesh.position.copy(moonDir).multiplyScalar(moonDist);
       // Tidally locked — keep the same hemisphere pointed at Earth.
       moonMesh.rotation.y = Math.atan2(-moonDir.z, -moonDir.x);
+
+      // Lightning — quick double/triple flickers, then a long dark rearm.
+      for (const s of storms) {
+        if (s.burst > 0) {
+          s.burst -= dtSec;
+          // Flicker envelope: a few sharp pulses across ~0.5 s.
+          const p = Math.max(0, s.burst) * 14;
+          s.mat.opacity = Math.max(0, Math.sin(p) * Math.sin(p * 2.7)) * 0.9;
+          if (s.burst <= 0) {
+            s.mat.opacity = 0;
+            s.wait = 2 + Math.random() * 7;
+            placeStorm(s.sprite);
+          }
+        } else {
+          s.wait -= dtSec;
+          if (s.wait <= 0) s.burst = 0.5;
+        }
+      }
     },
     dispose() {
       cloudGeom.dispose();
       cloudMat.dispose();
       cloudsTex.dispose();
+      realCloudsTex?.dispose();
+      for (const s of storms) s.mat.dispose();
+      stormTex.dispose();
       disposeAtmosphereShell(atmosphereMesh);
       moonGeom.dispose();
       moonMat.dispose();
@@ -989,6 +1107,200 @@ export function makeUranusRings(planetRadius: number): THREE.Group {
   return group;
 }
 
+/* ───────────────────────── auroras ───────────────────────── */
+/**
+ * Auroral ovals — glowing curtain cones ringing each magnetic pole, added as
+ * children of the planet mesh so they inherit the real axial tilt and spin.
+ * Earth's oval is offset ~11° from the spin axis (magnetic pole ≠ geographic
+ * pole); the gas giants' ovals hug the poles tighter. Curtain rays drift
+ * slowly and the whole oval breathes, like time-lapse footage from orbit.
+ */
+export interface AuroraHandle {
+  group: THREE.Group;
+  update: (dtSec: number) => void;
+  dispose: () => void;
+}
+
+function auroraCurtainTexture(base: THREE.Color, top: THREE.Color): THREE.CanvasTexture {
+  const w = 256;
+  const h = 128;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d')!;
+  const img = ctx.createImageData(w, h);
+  for (let x = 0; x < w; x++) {
+    // Smooth pseudo-random ray brightness along the oval.
+    const ray =
+      0.45 +
+      0.3 * Math.sin(x * 0.23) * Math.sin(x * 0.071 + 2.1) +
+      0.25 * Math.sin(x * 0.53 + 0.7);
+    for (let y = 0; y < h; y++) {
+      const v = y / h; // 0 = top of curtain, 1 = base
+      const heightFade = Math.pow(v, 1.6);           // bright at the base
+      const r = base.r * v + top.r * (1 - v);
+      const g = base.g * v + top.g * (1 - v);
+      const b = base.b * v + top.b * (1 - v);
+      const a = Math.max(0, ray) * heightFade;
+      const i = (y * w + x) * 4;
+      img.data[i] = r * 255;
+      img.data[i + 1] = g * 255;
+      img.data[i + 2] = b * 255;
+      img.data[i + 3] = a * 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  tex.wrapS = THREE.RepeatWrapping;
+  return tex;
+}
+
+export function makeAurora(
+  planetRadius: number,
+  opts: {
+    color: number;
+    topColor?: number;
+    latitudeDeg?: number;
+    magneticTiltDeg?: number;
+    intensity?: number;
+  },
+): AuroraHandle {
+  const group = new THREE.Group();
+  group.name = 'aurora';
+  const lat = THREE.MathUtils.degToRad(opts.latitudeDeg ?? 70);
+  const intensity = opts.intensity ?? 0.55;
+  const tex = auroraCurtainTexture(
+    new THREE.Color(opts.color),
+    new THREE.Color(opts.topColor ?? opts.color),
+  );
+
+  const ringR = planetRadius * Math.cos(lat);
+  const baseY = planetRadius * Math.sin(lat);
+  const height = planetRadius * 0.16;
+  const mats: THREE.MeshBasicMaterial[] = [];
+  for (const side of [1, -1]) {
+    const geom = new THREE.CylinderGeometry(ringR * 0.88, ringR, height, 48, 1, true);
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: intensity,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    mats.push(mat);
+    const curtain = new THREE.Mesh(geom, mat);
+    curtain.position.y = side * (baseY + height * 0.4);
+    if (side < 0) curtain.rotation.x = Math.PI;
+    group.add(curtain);
+  }
+
+  // Magnetic axis offset from the spin axis.
+  group.rotation.z = THREE.MathUtils.degToRad(opts.magneticTiltDeg ?? 0);
+
+  let t = Math.random() * 10;
+  return {
+    group,
+    update(dtSec: number) {
+      t += dtSec;
+      tex.offset.x = t * 0.012; // rays drift along the oval
+      const breathe = 0.75 + 0.25 * Math.sin(t * 0.9) * Math.sin(t * 0.37 + 1.2);
+      for (const m of mats) m.opacity = intensity * breathe;
+    },
+    dispose() {
+      for (const m of mats) m.dispose();
+      group.children.forEach((ch) => {
+        if (ch instanceof THREE.Mesh) ch.geometry.dispose();
+      });
+      tex.dispose();
+    },
+  };
+}
+
+/* ───────────────────────── speed-of-light pulse ───────────────────────── */
+/**
+ * A photon wavefront that leaves the Sun and expands at the true speed of
+ * light — 8 min 20 s to Earth, over 4 hours to Neptune. Each planet flares
+ * softly as the front sweeps past it. Epoch-driven, so at Live speed you
+ * feel how slow light really is, and at +1 h/s the pulse sweeps the whole
+ * system in seconds. Nothing else in a consumer sky app shows this.
+ */
+export interface LightPulseHandle {
+  group: THREE.Group;
+  /** Heliocentric distance of the wavefront (AU) at the last update. */
+  frontAu: number;
+  update: (epochMs: number) => void;
+  dispose: () => void;
+}
+
+const LIGHT_SEC_PER_AU = 499.005;
+/** Pulse repeats every 5 sim-hours — light reaches Neptune in ~4.2 h. */
+const PULSE_PERIOD_MS = 5 * 3600 * 1000;
+
+export function makeLightPulse(mode: ScaleMode): LightPulseHandle {
+  const group = new THREE.Group();
+  group.name = 'lightPulse';
+
+  // Ecliptic-plane ring marks the wavefront where the orbits live…
+  const SEG = 160;
+  const ringPos = new Float32Array(SEG * 3);
+  for (let i = 0; i < SEG; i++) {
+    const a = (i / SEG) * Math.PI * 2;
+    ringPos[i * 3] = Math.cos(a);
+    ringPos[i * 3 + 1] = 0;
+    ringPos[i * 3 + 2] = Math.sin(a);
+  }
+  const ringGeo = new THREE.BufferGeometry();
+  ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPos, 3));
+  const ringMat = new THREE.LineBasicMaterial({
+    color: 0x9fe8dc,
+    transparent: true,
+    opacity: 0.4,
+    depthWrite: false,
+  });
+  const ring = new THREE.LineLoop(ringGeo, ringMat);
+  group.add(ring);
+
+  // …and a whisper-faint shell gives it presence off the plane.
+  const shellGeo = new THREE.SphereGeometry(1, 48, 32);
+  const shellMat = new THREE.MeshBasicMaterial({
+    color: 0x86d8cc,
+    transparent: true,
+    opacity: 0.03,
+    side: THREE.BackSide,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const shell = new THREE.Mesh(shellGeo, shellMat);
+  group.add(shell);
+
+  const handle: LightPulseHandle = {
+    group,
+    frontAu: 0,
+    update(epochMs: number) {
+      const tSec = (((epochMs % PULSE_PERIOD_MS) + PULSE_PERIOD_MS) % PULSE_PERIOD_MS) / 1000;
+      const au = tSec / LIGHT_SEC_PER_AU;
+      handle.frontAu = au;
+      const r = sceneRadiusFromAu(Math.max(au, 0.001), mode);
+      ring.scale.setScalar(r);
+      shell.scale.setScalar(r);
+      // Fade as the front thins out toward the Kuiper belt.
+      const fade = THREE.MathUtils.clamp(1 - au / 34, 0.12, 1);
+      ringMat.opacity = 0.42 * fade;
+      shellMat.opacity = 0.032 * fade;
+      group.visible = au > 0.002;
+    },
+    dispose() {
+      ringGeo.dispose();
+      ringMat.dispose();
+      shellGeo.dispose();
+      shellMat.dispose();
+    },
+  };
+  return handle;
+}
+
 /* ───────────────────────── earth rocket launch ───────────────────────── */
 /**
  * A small rocket that lifts off from Earth every so often: vertical ascent,
@@ -1007,39 +1319,77 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
   group.name = 'earthRocket';
 
   // Oversized relative to true scale (a real rocket would be sub-pixel) but
-  // slim, so it reads as a rocket rather than another moon.
-  const L = earthRadius * 0.3; // rocket length
+  // slim, so it reads as a launch vehicle rather than another moon.
+  const L = earthRadius * 0.3;
 
-  // Rocket built along +Z so lookAt() points it along its velocity.
+  // ── Two-stage vehicle, built along +Z so lookAt() points it downrange ──
   const rocket = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({
+  const whiteMat = new THREE.MeshStandardMaterial({
     color: 0xf2eee4, roughness: 0.5, metalness: 0.35, transparent: true,
   });
-  const noseMat = new THREE.MeshStandardMaterial({
-    color: 0x2a2e38, roughness: 0.6, metalness: 0.3, transparent: true,
+  const darkMat = new THREE.MeshStandardMaterial({
+    color: 0x23262e, roughness: 0.65, metalness: 0.3, transparent: true,
   });
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(L * 0.05, L * 0.06, L * 0.72, 12), bodyMat);
-  body.rotation.x = Math.PI / 2;
-  rocket.add(body);
-  const nose = new THREE.Mesh(new THREE.ConeGeometry(L * 0.05, L * 0.28, 12), noseMat);
+
+  // First stage (booster) — its own group so it can separate mid-flight.
+  const stage1 = new THREE.Group();
+  const s1Body = new THREE.Mesh(new THREE.CylinderGeometry(L * 0.052, L * 0.056, L * 0.46, 12), whiteMat);
+  s1Body.rotation.x = Math.PI / 2;
+  stage1.add(s1Body);
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(L * 0.052, L * 0.036, L * 0.05, 10), darkMat);
+  nozzle.rotation.x = Math.PI / 2;
+  nozzle.position.z = -L * 0.25;
+  stage1.add(nozzle);
+  // Four grid-fin stubs near the interstage.
+  for (let i = 0; i < 4; i++) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(L * 0.012, L * 0.05, L * 0.04), darkMat);
+    const a = (i / 4) * Math.PI * 2;
+    fin.position.set(Math.cos(a) * L * 0.06, Math.sin(a) * L * 0.06, L * 0.18);
+    fin.rotation.z = a;
+    stage1.add(fin);
+  }
+  stage1.position.z = -L * 0.14;
+  rocket.add(stage1);
+
+  // Interstage band + second stage + fairing.
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(L * 0.052, L * 0.052, L * 0.035, 12), darkMat);
+  band.rotation.x = Math.PI / 2;
+  band.position.z = L * 0.1;
+  rocket.add(band);
+  const s2Body = new THREE.Mesh(new THREE.CylinderGeometry(L * 0.048, L * 0.052, L * 0.2, 12), whiteMat);
+  s2Body.rotation.x = Math.PI / 2;
+  s2Body.position.z = L * 0.22;
+  rocket.add(s2Body);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(L * 0.048, L * 0.14, 12), whiteMat);
   nose.rotation.x = Math.PI / 2;
-  nose.position.z = L * 0.5;
+  nose.position.z = L * 0.39;
   rocket.add(nose);
   group.add(rocket);
 
-  // Engine plume — additive sprite at the tail.
+  // Engine plume — bright core + wide orange glow at the active engine.
   const plumeTex = cometGlowSprite();
-  const plumeMat = new THREE.SpriteMaterial({
-    map: plumeTex,
-    color: new THREE.Color(1.0, 0.72, 0.4),
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
+  const plumeCoreMat = new THREE.SpriteMaterial({
+    map: plumeTex, color: new THREE.Color(1.0, 0.95, 0.8),
+    transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending,
   });
-  const plume = new THREE.Sprite(plumeMat);
-  plume.position.z = -L * 0.55;
-  rocket.add(plume);
+  const plumeGlowMat = new THREE.SpriteMaterial({
+    map: plumeTex, color: new THREE.Color(1.0, 0.6, 0.28),
+    transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const plumeCore = new THREE.Sprite(plumeCoreMat);
+  const plumeGlow = new THREE.Sprite(plumeGlowMat);
+  plumeCore.position.z = -L * 0.42;
+  plumeGlow.position.z = -L * 0.48;
+  rocket.add(plumeCore);
+  rocket.add(plumeGlow);
+
+  // Liftoff flash at the pad.
+  const padFlashMat = new THREE.SpriteMaterial({
+    map: plumeTex, color: new THREE.Color(1.0, 0.85, 0.6),
+    transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const padFlash = new THREE.Sprite(padFlashMat);
+  group.add(padFlash);
 
   // Smoke/exhaust trail — ring buffer of fading points.
   const TRAIL_N = 56;
@@ -1063,17 +1413,21 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
   const trail = new THREE.Points(trailGeo, trailMat);
   group.add(trail);
 
-  // Flight profile.
+  // Flight profile — a launch leaves Earth roughly every 15 seconds.
   const FLIGHT_DUR = 10;
-  const BURN_FRAC = 0.6;
-  let idleClock = 5;      // first launch a few seconds after load
-  let flightT = -1;       // <0 idle, else seconds since liftoff
+  const BURN_FRAC = 0.62;
+  const SEP_T = 0.45;      // booster separation (fraction of flight)
+  let idleClock = 4;       // first launch shortly after load
+  let flightT = -1;        // <0 idle, else seconds since liftoff
+  let separated = false;
   const launchDir = new THREE.Vector3(0, 1, 0);
   const downrange = new THREE.Vector3(1, 0, 0);
   const dir = new THREE.Vector3();
   const posNow = new THREE.Vector3();
   const posNext = new THREE.Vector3();
   const lookTarget = new THREE.Vector3();
+  const sepPos = new THREE.Vector3();
+  const sepVel = new THREE.Vector3();
   let emitAcc = 0;
 
   const flightPos = (t: number, out: THREE.Vector3) => {
@@ -1086,11 +1440,22 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
 
   const beginFlight = () => {
     flightT = 0;
+    separated = false;
     // Random launch site; downrange direction is any perpendicular ("east").
     launchDir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
     downrange.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
       .cross(launchDir).normalize();
     trailAge.fill(Infinity);
+    // Re-attach the booster for the next flight.
+    stage1.visible = true;
+    if (stage1.parent !== rocket) rocket.add(stage1);
+    stage1.position.set(0, 0, -L * 0.14);
+    stage1.rotation.set(0, 0, 0);
+    whiteMat.opacity = 1;
+    darkMat.opacity = 1;
+    flightPos(0, posNow);
+    padFlash.position.copy(posNow);
+    padFlash.scale.setScalar(L * 0.9);
     rocket.visible = true;
   };
 
@@ -1120,9 +1485,13 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
       const t = flightT / FLIGHT_DUR;
       if (t >= 1) {
         flightT = -1;
-        idleClock = 9 + Math.random() * 10;
+        // ~15 s cadence: 10 s flight + ~5 s turnaround.
+        idleClock = 4.5 + Math.random();
         rocket.visible = false;
-        plumeMat.opacity = 0;
+        stage1.visible = false;
+        plumeCoreMat.opacity = 0;
+        plumeGlowMat.opacity = 0;
+        padFlashMat.opacity = 0;
         return;
       }
 
@@ -1134,12 +1503,37 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
       lookTarget.add(posNext);
       rocket.lookAt(lookTarget);
 
+      // Booster separation: detach, tumble, decelerate, fade.
+      if (!separated && t >= SEP_T) {
+        separated = true;
+        stage1.getWorldPosition(sepPos);
+        group.worldToLocal(sepPos);
+        sepVel.copy(posNext).sub(posNow).normalize().multiplyScalar(earthRadius * 0.55);
+        group.add(stage1);
+        stage1.position.copy(sepPos);
+      }
+      if (separated && stage1.visible) {
+        const tau = flightT - SEP_T * FLIGHT_DUR;
+        // Coast forward while gravity bends it back toward Earth.
+        stage1.position.copy(sepPos)
+          .addScaledVector(sepVel, tau * Math.max(0.15, 1 - tau * 0.22))
+          .addScaledVector(posNow.clone().normalize(), -earthRadius * 0.05 * tau * tau);
+        stage1.rotation.x += dtSec * 1.6;
+        stage1.rotation.y += dtSec * 0.9;
+        if (tau > 3.4) stage1.visible = false;
+      }
+
       const burning = t < BURN_FRAC;
       const fade = t > 0.85 ? 1 - (t - 0.85) / 0.15 : 1;
-      bodyMat.opacity = fade;
-      noseMat.opacity = fade;
-      plumeMat.opacity = burning ? 0.75 + Math.random() * 0.25 : 0;
-      plume.scale.setScalar(L * (burning ? 0.7 + Math.random() * 0.25 : 0.001));
+      whiteMat.opacity = fade;
+      darkMat.opacity = fade;
+      plumeCoreMat.opacity = burning ? 0.85 + Math.random() * 0.15 : 0;
+      plumeGlowMat.opacity = burning ? 0.5 + Math.random() * 0.2 : 0;
+      const flick = burning ? 0.85 + Math.random() * 0.3 : 0.001;
+      plumeCore.scale.setScalar(L * 0.32 * flick);
+      plumeGlow.scale.setScalar(L * 0.75 * flick);
+      // Pad flash decays over the first second of flight.
+      padFlashMat.opacity = Math.max(0, 0.9 - flightT * 1.1);
 
       if (burning) {
         emitAcc += dtSec;
@@ -1156,11 +1550,17 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
       }
     },
     dispose() {
-      body.geometry.dispose();
-      bodyMat.dispose();
-      nose.geometry.dispose();
-      noseMat.dispose();
-      plumeMat.dispose();
+      rocket.traverse((o) => {
+        if (o instanceof THREE.Mesh) o.geometry.dispose();
+      });
+      stage1.traverse((o) => {
+        if (o instanceof THREE.Mesh) o.geometry.dispose();
+      });
+      whiteMat.dispose();
+      darkMat.dispose();
+      plumeCoreMat.dispose();
+      plumeGlowMat.dispose();
+      padFlashMat.dispose();
       plumeTex.dispose();
       trailGeo.dispose();
       trailMat.dispose();
@@ -1383,54 +1783,59 @@ export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
   coma.scale.setScalar(comaBase);
   group.add(coma);
 
-  // Tail — particles baked along local +X (0..baseLen); the tail group is
-  // rotated each frame so +X faces away from the Sun, and scaled by perihelion
-  // proximity. ~1/3 blue ion specks, the rest cream dust.
-  const N = lite ? 360 : 800;
+  // Two distinct tails, the way real comets carry them: a straight narrow
+  // blue ion tail blown directly anti-sunward by the solar wind, and a
+  // wider cream dust tail that lags behind along the orbit. Particles are
+  // baked along local +X; each group is oriented every frame.
   const baseLen = a * 0.55;
-  const coneW = baseLen * 0.07;
-  const tPos = new Float32Array(N * 3);
-  const tCol = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    const t = Math.pow(Math.random(), 0.7); // density-biased toward the nucleus
-    tPos[i * 3] = t * baseLen;
-    tPos[i * 3 + 1] = (Math.random() - 0.5) * coneW * (0.2 + t);
-    tPos[i * 3 + 2] = (Math.random() - 0.5) * coneW * (0.2 + t);
-    const fade = (1 - t) * 0.9 + 0.1;
-    if (Math.random() < 0.32) {
-      tCol[i * 3] = 0.50 * fade;
-      tCol[i * 3 + 1] = 0.70 * fade;
-      tCol[i * 3 + 2] = 1.00 * fade;
-    } else {
-      tCol[i * 3] = 0.95 * fade;
-      tCol[i * 3 + 1] = 0.92 * fade;
-      tCol[i * 3 + 2] = 0.72 * fade;
-    }
-  }
-  const tGeo = new THREE.BufferGeometry();
-  tGeo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
-  tGeo.setAttribute('color', new THREE.BufferAttribute(tCol, 3));
   const tailSprite = diskSprite();
-  const tMat = new THREE.PointsMaterial({
-    map: tailSprite,
-    size: a * 0.02,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.7,
-    depthWrite: false,
-    sizeAttenuation: true,
-    blending: THREE.AdditiveBlending,
-    alphaTest: 0.01,
-  });
-  const tail = new THREE.Points(tGeo, tMat);
-  const tailGroup = new THREE.Group();
-  tailGroup.add(tail);
-  group.add(tailGroup);
+  const makeTail = (
+    n: number,
+    len: number,
+    width: number,
+    rgb: [number, number, number],
+  ) => {
+    const p = new Float32Array(n * 3);
+    const col = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const t = Math.pow(Math.random(), 0.7); // denser toward the nucleus
+      p[i * 3] = t * len;
+      p[i * 3 + 1] = (Math.random() - 0.5) * width * (0.2 + t);
+      p[i * 3 + 2] = (Math.random() - 0.5) * width * (0.2 + t);
+      const fade = (1 - t) * 0.9 + 0.1;
+      col[i * 3] = rgb[0] * fade;
+      col[i * 3 + 1] = rgb[1] * fade;
+      col[i * 3 + 2] = rgb[2] * fade;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const mat = new THREE.PointsMaterial({
+      map: tailSprite,
+      size: a * 0.02,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.7,
+      depthWrite: false,
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending,
+      alphaTest: 0.01,
+    });
+    const grp = new THREE.Group();
+    grp.add(new THREE.Points(geo, mat));
+    group.add(grp);
+    return { grp, geo, mat };
+  };
+  const ionTail = makeTail(lite ? 160 : 340, baseLen * 1.15, baseLen * 0.035, [0.5, 0.7, 1.0]);
+  const dustTail = makeTail(lite ? 220 : 480, baseLen * 0.85, baseLen * 0.09, [0.95, 0.9, 0.7]);
 
   const tmp = new THREE.Vector3();
   const dir = new THREE.Vector3();
   const xAxis = new THREE.Vector3(1, 0, 0);
+  const yAxis = new THREE.Vector3(0, 1, 0);
   const q = new THREE.Quaternion();
+  const qDust = new THREE.Quaternion();
+  const qLag = new THREE.Quaternion();
 
   return {
     group,
@@ -1439,27 +1844,35 @@ export function makeComet(mode: ScaleMode, lite: boolean): CometHandle {
       const { rAu } = orbitPos(theta, tmp);
       group.position.copy(tmp);
 
-      // Tail always points anti-sunward; length + brightness scale with the
-      // real heliocentric distance (strongest at perihelion).
+      // Ion tail points dead anti-sunward; the dust tail lags ~14° behind
+      // it toward the orbit just travelled. Length + brightness scale with
+      // the real heliocentric distance (strongest at perihelion).
       dir.copy(tmp).sub(sunPos).normalize();
       q.setFromUnitVectors(xAxis, dir);
-      tailGroup.quaternion.copy(q);
+      ionTail.grp.quaternion.copy(q);
+      qLag.setFromAxisAngle(yAxis, 0.24);
+      qDust.copy(q).multiply(qLag);
+      dustTail.grp.quaternion.copy(qDust);
 
       const lenF = THREE.MathUtils.clamp((perihelionAu / rAu) * 1.1, 0.45, 1.8);
-      tailGroup.scale.setScalar(lenF);
+      ionTail.grp.scale.setScalar(lenF);
+      dustTail.grp.scale.setScalar(lenF * 0.9);
       const bright = THREE.MathUtils.clamp(perihelionAu / rAu, 0.2, 1.0);
       (coma.material as THREE.SpriteMaterial).opacity = 0.35 + bright * 0.55;
       coma.scale.setScalar(comaBase * (0.7 + bright * 0.7));
-      tMat.opacity = 0.3 + bright * 0.55;
+      ionTail.mat.opacity = 0.3 + bright * 0.55;
+      dustTail.mat.opacity = 0.25 + bright * 0.5;
     },
     dispose() {
       nucGeo.dispose();
       nucMat.dispose();
       (coma.material as THREE.SpriteMaterial).map?.dispose();
       (coma.material as THREE.SpriteMaterial).dispose();
-      tGeo.dispose();
+      ionTail.geo.dispose();
+      ionTail.mat.dispose();
+      dustTail.geo.dispose();
+      dustTail.mat.dispose();
       tailSprite.dispose();
-      tMat.dispose();
     },
   };
 }
