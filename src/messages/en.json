@@ -1880,7 +1880,56 @@
     "tonightOverview": "Tonight overview",
     "bestWindow": "Best window",
     "tipsForTonight": "Tips for tonight",
-    "tipN": "Tip {n}"
+    "tipN": "Tip {n}",
+    "threeSteps": "3 STEPS",
+    "moonAria": "{name}, {pct}% illuminated — open Moon details",
+    "moon": {
+      "new": "New Moon",
+      "thinCrescent": "Waxing Crescent",
+      "firstQuarter": "First Quarter",
+      "waxingGibbous": "Waxing Gibbous",
+      "full": "Full Moon",
+      "waningGibbous": "Waning Gibbous",
+      "lastQuarter": "Last Quarter",
+      "thinWaning": "Waning Crescent"
+    },
+    "quality": {
+      "excellent": "Excellent",
+      "veryGood": "Very good",
+      "fair": "Fair",
+      "poor": "Poor"
+    },
+    "darkNote": {
+      "milkyWay": "Milky Way visible",
+      "someMoon": "Some moonlight",
+      "brightMoon": "Bright moon tonight"
+    },
+    "tip": {
+      "planet": "Look {dir} after dark for bright {name}, about {deg}° up.",
+      "newMoon": "Near-new Moon — faint nebulae and the Milky Way are at their best. Let your eyes adapt for 20 minutes.",
+      "brightMoon": "A {moon} lights the sky — favour the Moon, planets, and bright double stars tonight.",
+      "scope": "Aim a telescope {dir}, about {deg}° up, to catch {name}.",
+      "cloud": "{pct}% cloud cover tonight — watch for clear gaps and keep your gear covered.",
+      "fallback": "Clear skies make all the difference — find a spot away from direct lights and let your eyes adapt."
+    },
+    "toast": {
+      "found": "Found {name}",
+      "foundSignIn": "Found {name} — sign in to earn Stars"
+    },
+    "instrument": {
+      "telescope": "Telescope",
+      "binoculars": "Binoculars"
+    },
+    "pos": {
+      "high": "High in the {dir}",
+      "mid": "In the {dir}",
+      "low": "Low in the {dir}"
+    },
+    "badge": {
+      "later": "Later",
+      "bestNow": "Best now",
+      "good": "Good"
+    }
   },
   "feedUi":   {
     "overview": {

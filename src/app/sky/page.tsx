@@ -93,17 +93,6 @@ function estimateBortle(lat: number, lon: number): number {
   return minDist <= 60 ? nearest : 5;
 }
 
-const MOON_NAMES: Record<string, string> = {
-  new: 'New Moon',
-  thinCrescent: 'Waxing Crescent',
-  firstQuarter: 'First Quarter',
-  waxingGibbous: 'Waxing Gibbous',
-  full: 'Full Moon',
-  waningGibbous: 'Waning Gibbous',
-  lastQuarter: 'Last Quarter',
-  thinWaning: 'Waning Crescent',
-};
-
 /** Priority for the "best targets" rail: Sun (daytime) → Moon → bright planets → DSO/stars. */
 function targetRank(o: SkyObject): number {
   if (o.id === 'sun') return -1;
@@ -287,7 +276,7 @@ export default function SkyPage() {
     if (!addr) {
       // Browsing is free; aiming is the natural moment to invite sign-in so the
       // find can earn Stars. No wall — the target was still found and shown.
-      toast.reward(`Found ${name} — sign in to earn Stars`);
+      toast.reward(tUi('toast.foundSignIn', { name }));
       setAuthOpen(true);
       return;
     }
@@ -314,16 +303,16 @@ export default function SkyPage() {
         });
         const data = res.ok ? await res.json().catch(() => null) : null;
         if (res.ok && data && data.awarded > 0 && !data.cached) {
-          toast.reward(`+10 ✦ Found ${name}`);
+          toast.reward(`+10 ✦ ${tUi('toast.found', { name })}`);
           window.dispatchEvent(new Event('stellar:stars-synced'));
         } else {
-          toast.success(`Found ${name}`);
+          toast.success(tUi('toast.found', { name }));
         }
       } catch {
-        toast.success(`Found ${name}`);
+        toast.success(tUi('toast.found', { name }));
       }
     })();
-  }, [getAccessToken]);
+  }, [getAccessToken, tUi]);
 
   const constellationStars = useMemo<ConstellationStar[]>(() => {
     if (!finder) return [];
@@ -437,7 +426,7 @@ export default function SkyPage() {
   const moonObj = finder?.objects.find((o) => o.id === 'moon') ?? null;
   const moonPhase = moonObj?.phase ?? forecast.days[0]?.moonPhase ?? 0.5;
   const moonIllum = Math.round(((1 - Math.cos(moonPhase * 2 * Math.PI)) / 2) * 100);
-  const moonName = MOON_NAMES[moonPhaseKey(moonPhase)] ?? 'Moon';
+  const moonName = tUi(`moon.${moonPhaseKey(moonPhase)}`);
 
   const cloudPct = finder?.conditions?.cloudCoverPct ?? null;
 
@@ -451,23 +440,23 @@ export default function SkyPage() {
     s -= Math.max(0, bortle - 4) * 0.35;
     return Math.max(1, Math.min(10, Math.round(s)));
   }, [finder?.conditions?.quality, cloudPct, moonIllum, bortle]);
-  const skyWord = skyScore >= 9 ? 'Excellent' : skyScore >= 7 ? 'Very good' : skyScore >= 5 ? 'Fair' : 'Poor';
+  const skyWord = skyScore >= 9 ? tUi('quality.excellent') : skyScore >= 7 ? tUi('quality.veryGood') : skyScore >= 5 ? tUi('quality.fair') : tUi('quality.poor');
 
   // Dark-window quality note for the "next best time" card.
-  const darkNote = moonIllum < 35 ? 'Milky Way visible' : moonIllum < 70 ? 'Some moonlight' : 'Bright moon tonight';
+  const darkNote = moonIllum < 35 ? tUi('darkNote.milkyWay') : moonIllum < 70 ? tUi('darkNote.someMoon') : tUi('darkNote.brightMoon');
 
   // Contextual tips, derived from the night's conditions and targets.
   const tips = useMemo<string[]>(() => {
     const out: string[] = [];
     const planet = bestTargets.find((o) => o.type === 'planet' && o.nakedEye && o.altitude > 5);
-    if (planet) out.push(`Look ${tDir(planet.compassDirection)} after dark for bright ${planet.name}, about ${Math.round(planet.altitude)}° up.`);
-    if (moonIllum < 30) out.push('Near-new Moon — faint nebulae and the Milky Way are at their best. Let your eyes adapt for 20 minutes.');
-    else if (moonIllum > 70) out.push(`A ${moonName.toLowerCase()} lights the sky — favour the Moon, planets, and bright double stars tonight.`);
+    if (planet) out.push(tUi('tip.planet', { dir: tDir(planet.compassDirection), name: planet.name, deg: Math.round(planet.altitude) }));
+    if (moonIllum < 30) out.push(tUi('tip.newMoon'));
+    else if (moonIllum > 70) out.push(tUi('tip.brightMoon', { moon: moonName.toLowerCase() }));
     const scope = bestTargets.find((o) => o.instrument === 'telescope' && o.altitude > 5);
-    if (scope) out.push(`Aim a telescope ${tDir(scope.compassDirection)}, about ${Math.round(scope.altitude)}° up, to catch ${scope.name}.`);
-    if (cloudPct != null && cloudPct > 60) out.push(`${cloudPct}% cloud cover tonight — watch for clear gaps and keep your gear covered.`);
-    return out.length ? out : ['Clear skies make all the difference — find a spot away from direct lights and let your eyes adapt.'];
-  }, [bestTargets, moonIllum, moonName, cloudPct, tDir]);
+    if (scope) out.push(tUi('tip.scope', { dir: tDir(scope.compassDirection), name: scope.name, deg: Math.round(scope.altitude) }));
+    if (cloudPct != null && cloudPct > 60) out.push(tUi('tip.cloud', { pct: cloudPct }));
+    return out.length ? out : [tUi('tip.fallback')];
+  }, [bestTargets, moonIllum, moonName, cloudPct, tDir, tUi]);
 
   return (
     <div className="sky-page-v2 sky-v3 sky-obs skx">
@@ -526,7 +515,7 @@ export default function SkyPage() {
                 role="button"
                 tabIndex={0}
                 style={{ cursor: 'pointer', position: 'relative' }}
-                aria-label={`${moonName}, ${moonIllum}% illuminated — open Moon details`}
+                aria-label={tUi('moonAria', { name: moonName, pct: moonIllum })}
                 onClick={() => router.push('/moon')}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push('/moon'); } }}
               >
@@ -653,7 +642,7 @@ export default function SkyPage() {
                       >
                         <span className="skx__look-dot" style={{ background: objectAccent(o) }} aria-hidden="true" />
                         <span className="skx__look-name">{o.name}</span>
-                        <span className="skx__look-where">{lookPhrase(o, tDir)}</span>
+                        <span className="skx__look-where">{lookPhrase(o, tDir, tUi)}</span>
                         <span className="skx__look-ic" aria-hidden="true">
                           {o.instrument === 'naked' ? <Eye size={14} /> : <Telescope size={14} />}
                         </span>
@@ -755,31 +744,33 @@ function objectAccent(o: SkyObject): string {
   return '#FF9B54'; // stars / doubles
 }
 
+type TFn = (k: string, values?: Record<string, string | number>) => string;
+
 /* ── Plain-language "where to look" for the what-to-look-for list. ── */
-function lookPhrase(o: SkyObject, tDir: (k: string) => string): string {
-  if (o.instrument === 'telescope') return 'Telescope';
-  if (o.instrument === 'binoculars') return 'Binoculars';
+function lookPhrase(o: SkyObject, tDir: (k: string) => string, tUi: TFn): string {
+  if (o.instrument === 'telescope') return tUi('instrument.telescope');
+  if (o.instrument === 'binoculars') return tUi('instrument.binoculars');
   const dir = tDir(o.compassDirection);
-  if (o.altitude >= 50) return `High in the ${dir}`;
-  if (o.altitude >= 20) return `In the ${dir}`;
-  return `Low in the ${dir}`;
+  if (o.altitude >= 50) return tUi('pos.high', { dir });
+  if (o.altitude >= 20) return tUi('pos.mid', { dir });
+  return tUi('pos.low', { dir });
 }
 
 /* ── Plain-language position for the visible-now cards (always directional). ── */
-function wherePlain(o: SkyObject, tDir: (k: string) => string): string {
+function wherePlain(o: SkyObject, tDir: (k: string) => string, tUi: TFn): string {
   const dir = tDir(o.compassDirection);
-  if (o.altitude >= 50) return `High in the ${dir}`;
-  if (o.altitude >= 20) return `In the ${dir}`;
-  return `Low in the ${dir}`;
+  if (o.altitude >= 50) return tUi('pos.high', { dir });
+  if (o.altitude >= 20) return tUi('pos.mid', { dir });
+  return tUi('pos.low', { dir });
 }
 
 /* ── Visible-now badge — best / good / telescope / later. ── */
-function visBadge(o: SkyObject, top: boolean): { label: string; tone: string } {
-  if (o.instrument === 'telescope') return { label: 'Telescope', tone: 'scope' };
-  if (o.instrument === 'binoculars') return { label: 'Binoculars', tone: 'scope' };
-  if (o.altitude < 18) return { label: 'Later', tone: 'later' };
-  if (top) return { label: 'Best now', tone: 'best' };
-  return { label: 'Good', tone: 'good' };
+function visBadge(o: SkyObject, top: boolean, tUi: TFn): { label: string; tone: string } {
+  if (o.instrument === 'telescope') return { label: tUi('instrument.telescope'), tone: 'scope' };
+  if (o.instrument === 'binoculars') return { label: tUi('instrument.binoculars'), tone: 'scope' };
+  if (o.altitude < 18) return { label: tUi('badge.later'), tone: 'later' };
+  if (top) return { label: tUi('badge.bestNow'), tone: 'best' };
+  return { label: tUi('badge.good'), tone: 'good' };
 }
 
 /* ── Sky-quality ring — arc fills to score/10. ── */
@@ -836,8 +827,9 @@ function VisCard({ obj, active, top, onSelect, tDir }: {
   onSelect: (id: ObjectId) => void;
   tDir: (k: string) => string;
 }) {
+  const tUi = useTranslations('skyUi');
   const photo = getTargetPhoto(obj.id);
-  const badge = visBadge(obj, top);
+  const badge = visBadge(obj, top, tUi);
   return (
     <li>
       <button
@@ -855,7 +847,7 @@ function VisCard({ obj, active, top, onSelect, tDir }: {
           )}
         </span>
         <span className="skx__vis-name">{obj.name}</span>
-        <span className="skx__vis-pos">{wherePlain(obj, tDir)}</span>
+        <span className="skx__vis-pos">{wherePlain(obj, tDir, tUi)}</span>
         <span className="skx__vis-pos" style={{ opacity: 0.55 }}>{obj.compassDirection} · {Math.round(obj.altitude)}°</span>
         <span className={`skx__vis-badge skx__vis-badge--${badge.tone}`}>{badge.label}</span>
       </button>
@@ -978,10 +970,11 @@ function SkyLoadingSkeleton() {
 
 function FinderTour({ onDismiss }: { onDismiss: () => void }) {
   const t = useTranslations('sky.tour');
+  const tUi = useTranslations('skyUi');
   return (
     <aside className="sky-v3__tour" role="note" aria-label={t('aria')}>
       <header className="sky-v3__tour-head">
-        <span className="sky-v3__tour-eyebrow">3 STEPS</span>
+        <span className="sky-v3__tour-eyebrow">{tUi('threeSteps')}</span>
         <h3 className="sky-v3__tour-title">{t('aria')}</h3>
       </header>
       <ol className="sky-v3__tour-steps">
