@@ -11,7 +11,7 @@ import { QUIZZES, type QuizDef } from '@/lib/quizzes';
 import QuizActive from '@/components/sky/QuizActive';
 import TelescopesTab from '@/components/sky/TelescopesTab';
 import TonightsBanner from '@/components/learn/TonightsBanner';
-import { PLANETS, DSO, CONSTELLATIONS, ALL_EVENTS, daysFromNow, type Locale } from '@/lib/learn-data';
+import { PLANETS, DSO, CONSTELLATIONS, ALL_EVENTS, daysFromNow, type Locale, type EventKind } from '@/lib/learn-data';
 import {
   Globe, Sparkles, Brain, Camera, BookOpen, Telescope, Map, Search,
   X, Star, Moon, Eye, ChevronDown, ChevronUp, Binoculars, Sun, Rocket,
@@ -200,8 +200,8 @@ function ConstellationModal({ constellation, locale, onClose }: {
           overflow: 'hidden',
         }}
       >
-        {/* Hero image */}
-        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '16 / 9' }}>
+        {/* Hero image — 3:2 matches the generated star charts exactly (no crop) */}
+        <div className="relative w-full flex-shrink-0" style={{ aspectRatio: '3 / 2' }}>
           <Image
             src={c.img}
             alt={c.name[locale]}
@@ -485,7 +485,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
               {isExp ? <ChevronUp size={14} className="text-text-muted flex-shrink-0" /> : <ChevronDown size={14} className="text-text-muted flex-shrink-0" />}
             </div>
             {isExp && (
-              <div className="mt-4 flex flex-col gap-2" style={{ paddingLeft: '52px' }}>
+              <div className="mt-4 flex flex-col gap-2 sm:pl-[52px]">
                 <div className="relative w-full rounded-xl overflow-hidden mb-2" style={{ height: '160px' }}>
                   <Image src={obj.img} alt={obj.name[locale]} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,11,20,0.8) 0%, transparent 60%)' }} />
@@ -612,13 +612,23 @@ const GLOSSARY_TERMS = [
   { term: 'Bortle scale', termKa: 'ბორტლის სკალა', def: 'A 1–9 rating of sky darkness. 1 = pristine dark sky (Milky Way casts shadows). 5 = suburban. 9 = city center (only Moon and planets visible). Check the Dark Sky Map to find your local Bortle rating.', defKa: 'ცის სიბნელის 1–9 შეფასება. 1 = ხელუხლებელი ბნელი ცა (ირმის ნახტომი ჩრდილს აგდებს). 5 = გარეუბანი. 9 = ქალაქის ცენტრი (ჩანს მხოლოდ მთვარე და პლანეტები). შენი ბორტლის შესაფასებლად იხილე ბნელი ცის რუკა.' },
   { term: 'Light-year', termKa: 'სინათლის წელი', def: 'Distance light travels in one year: 9.46 trillion km. Used for interstellar distances. When you see the Andromeda Galaxy (2.5M light-years away), you\'re seeing light that left 2.5 million years ago.', defKa: 'მანძილი, რასაც სინათლე ერთ წელიწადში გადის: 9.46 ტრილიონი კმ.' },
   { term: 'Collimation', termKa: 'კოლიმაცია', def: 'Aligning a reflector telescope\'s mirrors so they focus light correctly. Needs checking every session for Newtonians. Uses a collimation cap or laser collimator.', defKa: 'რეფლექტორის სარკეების გასწორება. ნიუტონისთვის ყოველ სესიაზე საჭიროა.' },
-  { term: 'Opposition', termKa: 'ოპოზიცია', def: 'When a planet is directly opposite the Sun from Earth — closest and brightest. Best time to observe outer planets. Jupiter opposition Oct 2026, Saturn Sep 2026.', defKa: 'როცა პლანეტა მზის საპირისპიროდაა — ყველაზე ახლო და კაშკაში.' },
+  { term: 'Opposition', termKa: 'ოპოზიცია', def: 'When a planet is directly opposite the Sun from Earth — closest and brightest. Best time to observe outer planets. Saturn opposition Oct 2026, Jupiter and Mars Feb 2027.', defKa: 'როცა პლანეტა მზის საპირისპიროდაა — ყველაზე ახლო და კაშკაშა. სატურნის ოპოზიცია 2026 ოქტომბერში, იუპიტერის და მარსის — 2027 თებერვალში.' },
+  { term: 'Magnitude', termKa: 'ვარსკვლავიერი სიდიდე', def: 'The brightness scale for sky objects — lower numbers mean brighter. Vega is 0, the faintest naked-eye stars are ~6, binoculars reach ~9. Counterintuitive but you get used to it fast.', defKa: 'ობიექტების სიკაშკაშის სკალა — რაც ნაკლებია რიცხვი, მით კაშკაშაა. ვეგა = 0, თვალით ხილული ყველაზე მკრთალი ვარსკვლავები ~6.' },
+  { term: 'Averted vision', termKa: 'გვერდითი მზერა', def: 'Look slightly to the side of a faint object instead of straight at it — the edge of your eye is more light-sensitive. A must-know trick for nebulas and galaxies.', defKa: 'მკრთალ ობიექტს ოდნავ გვერდიდან შეხედე — თვალის კიდე სინათლის მიმართ უფრო მგრძნობიარეა. აუცილებელი ხრიკი ნისლეულებისთვის.' },
+  { term: 'Eyepiece', termKa: 'ოკულარი', def: 'The small lens you look through. Swapping eyepieces changes magnification: a 25mm gives a wide, bright view for finding objects; a 10mm zooms in for planets and the Moon.', defKa: 'პატარა ლინზა, რომელშიც იყურები. 25მმ — ფართო ხედი ობიექტების საპოვნელად; 10მმ — გადიდება პლანეტებისთვის.' },
+  { term: 'Star hopping', termKa: 'ვარსკვლავებით ნავიგაცია', def: 'Finding faint objects by "hopping" from one bright star to the next, like following landmarks. Example: hop from Vega to find the Ring Nebula. How observers found things for centuries before GoTo mounts.', defKa: 'მკრთალი ობიექტების პოვნა კაშკაშა ვარსკვლავიდან ვარსკვლავზე "გადახტომით", ორიენტირებივით. მაგ: ვეგადან რგოლის ნისლეულამდე.' },
   { term: 'Seeing', termKa: 'ხილვადობა', def: 'How steady the atmosphere is — affects sharpness at high magnification. Good seeing = steady stars. Bad seeing = twinkling, blurry planets. Check the Sky page for tonight\'s conditions.', defKa: 'ატმოსფეროს სტაბილურობა — გავლენას ახდენს სიმკვეთრეზე.' },
   { term: 'Terminator', termKa: 'ტერმინატორი', def: 'The shadow line on the Moon between the lit and dark sides. This is where craters look most dramatic — sunlight hits at an angle creating long shadows. Best area to observe on any night.', defKa: 'მთვარეზე ჩრდილის ხაზი განათებულ და ბნელ მხარეს შორის.' },
   { term: 'Meridian', termKa: 'მერიდიანი', def: 'An imaginary line from north to south passing directly overhead. Objects are highest (best viewing) when they cross the meridian — called "transit".', defKa: 'წარმოსახვითი ხაზი ჩრდილოეთიდან სამხრეთამდე თავის ზემოთ.' },
   { term: 'Alt-Az mount', termKa: 'ალტ-აზ მონტირება', def: 'A mount that moves up-down (altitude) and left-right (azimuth). Simple to use. Most beginner telescopes use this type. Doesn\'t track the sky automatically.', defKa: 'ზემოთ-ქვემოთ და მარცხნივ-მარჯვნივ მოძრავი მონტირება. მარტივია.' },
   { term: 'Equatorial mount', termKa: 'ეკვატორული მონტირება', def: 'A mount aligned with Earth\'s rotation axis. One motor can track objects across the sky. Required for long-exposure astrophotography. More complex to set up than Alt-Az.', defKa: 'დედამიწის ბრუნვის ღერძზე გათანაბრებული. ერთი ძრავით ადევნებს ობიექტებს.' },
 ];
+
+const EVENT_ICON: Record<EventKind, LucideIcon> = {
+  meteor: Sparkles,
+  planet: Orbit,
+  eclipse: Moon,
+};
 
 const BORTLE_SEGMENTS = [
   { range: '1–2', color: 'var(--success)', label: { en: 'Pristine',  ka: 'ხელუხლებელი'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
@@ -657,7 +667,7 @@ function GuideTab({ locale }: { locale: Locale }) {
       part === 'Sky page' ? (
         <Link key={i} href="/sky" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
       ) : part === 'Dark Sky Map' ? (
-        <Link key={i} href="/network" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
+        <Link key={i} href="/darksky" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
       ) : part
     );
   };
@@ -741,7 +751,7 @@ function GuideTab({ locale }: { locale: Locale }) {
               ))}
             </div>
             <Link
-              href="/network"
+              href="/darksky"
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-medium transition-all hover:opacity-80"
               style={{ background: 'rgba(94, 234, 212,0.06)', border: '1px solid rgba(94, 234, 212,0.2)', color: 'var(--seafoam)' }}
             >
@@ -774,7 +784,10 @@ function GuideTab({ locale }: { locale: Locale }) {
                 </p>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">{nextEvent.emoji}</span>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--stars)' }}>
+                      {(() => { const Icon = EVENT_ICON[nextEvent.kind]; return <Icon size={17} />; })()}
+                    </div>
                     <div>
                       <p className="text-text-primary font-semibold text-sm">{nextEvent.name[locale]}</p>
                       <p className="text-text-muted text-xs mt-0.5 leading-relaxed">{nextEvent.desc[locale]}</p>
@@ -790,11 +803,13 @@ function GuideTab({ locale }: { locale: Locale }) {
             {upcoming.length > 1 && (
               <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div className="px-4">
-                  {upcoming.slice(1).map(ev => (
+                  {upcoming.slice(1).map(ev => {
+                    const Icon = EVENT_ICON[ev.kind];
+                    return (
                     <div key={ev.date} className="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-                        style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.1)' }}>
-                        {ev.emoji}
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'rgba(255, 179, 71,0.75)' }}>
+                        <Icon size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-text-primary text-sm font-medium">{ev.name[locale]}</p>
@@ -804,7 +819,8 @@ function GuideTab({ locale }: { locale: Locale }) {
                         {dayLabel(daysFromNow(ev.date))}
                       </span>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -819,18 +835,21 @@ function GuideTab({ locale }: { locale: Locale }) {
             )}
             {showPast && (
               <div className="flex flex-col gap-2">
-                {past.map(ev => (
+                {past.map(ev => {
+                  const Icon = EVENT_ICON[ev.kind];
+                  return (
                   <div key={ev.date} className="flex items-center gap-3 opacity-40">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 grayscale"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      {ev.emoji}
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'var(--text-muted)' }}>
+                      <Icon size={14} />
                     </div>
                     <div>
                       <p className="text-text-muted text-sm font-medium">{ev.name[locale]}</p>
                       <p className="text-text-muted text-[10px] font-mono">{ev.date}</p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -956,7 +975,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
               {isExp ? <ChevronUp size={14} className="text-text-muted flex-shrink-0" /> : <ChevronDown size={14} className="text-text-muted flex-shrink-0" />}
             </div>
             {isExp && (
-              <div className="mt-3 flex flex-col gap-2" style={{ paddingLeft: '44px' }}>
+              <div className="mt-3 flex flex-col gap-2 sm:pl-[44px]">
                 <p className="text-text-muted text-xs leading-relaxed">{card.body[locale]}</p>
                 <div
                   className="rounded-lg p-3 text-xs flex items-start gap-2"
@@ -1084,6 +1103,30 @@ const MORE_RESOURCES: {
     },
     meta: { en: 'SpaceX · Live', ka: 'SpaceX · პირდაპირ' },
     href: 'https://www.spacex.com/launches/',
+    external: true,
+  },
+  {
+    Icon: Star,
+    color: '#5EEAD4',
+    title: { en: 'Stellarium Web', ka: 'Stellarium Web' },
+    desc: {
+      en: 'A free planetarium in your browser. Set your location and see exactly what the sky looks like right now — or any date in history.',
+      ka: 'უფასო პლანეტარიუმი ბრაუზერში. მიუთითე ადგილმდებარეობა და ნახე, როგორ გამოიყურება ცა ახლა — ან ისტორიის ნებისმიერ თარიღზე.',
+    },
+    meta: { en: 'Stellarium · Interactive', ka: 'Stellarium · ინტერაქტიული' },
+    href: 'https://stellarium-web.org/',
+    external: true,
+  },
+  {
+    Icon: Eye,
+    color: '#FB7185',
+    title: { en: 'Heavens-Above', ka: 'Heavens-Above' },
+    desc: {
+      en: 'Precise pass predictions for the ISS and bright satellites over your location. Know exactly when to look up and where.',
+      ka: 'ISS-ისა და კაშკაშა თანამგზავრების გადაფრენის ზუსტი პროგნოზი შენი ადგილმდებარეობისთვის. იცოდე, როდის და საით ახედო.',
+    },
+    meta: { en: 'Satellites · Free', ka: 'თანამგზავრები · უფასო' },
+    href: 'https://www.heavens-above.com/',
     external: true,
   },
   {

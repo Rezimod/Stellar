@@ -29,7 +29,7 @@ export const PLANETS = [
       en: ['Closest planet to the Sun', 'No atmosphere — extreme temperature swings', 'A year is just 88 Earth days'],
       ka: ['ყველაზე ახლო პლანეტა მზისთვის', 'ატმოსფეროს გარეშე — ექსტრემალური ტემპერატურა', 'წელი = 88 დედამიწის დღე'],
     },
-    tip: { en: 'Visible low on the horizon just after sunset or before sunrise. Never easy — catch it during greatest elongation.', ka: 'ჩანს ჰორიზონტთან მაღლა მზის ჩასვლის შემდეგ ან ამოსვლამდე.' },
+    tip: { en: 'Visible low on the horizon just after sunset or before sunrise. Never easy — catch it during greatest elongation.', ka: 'ჩანს დაბლა, ჰორიზონტთან, მზის ჩასვლისთანავე ან ამოსვლამდე. საუკეთესო დროა უდიდესი ელონგაცია.' },
     kidsLine: { en: 'Tiny and fast — a year here is only 88 days!', ka: 'პატარა და სწრაფი — წელი აქ მხოლოდ 88 დღეა!' },
     kidsFact: { en: 'Without an atmosphere, temperatures swing from 430°C during the day to -180°C at night!', ka: 'ატმოსფეროს გარეშე ტემპერატურა დღით 430°C-ს აღწევს, ღამით კი -180°C-მდე ეცემა!' },
     color: '#b0b0b0',
@@ -62,8 +62,8 @@ export const PLANETS = [
     emoji: '♂', key: 'mars', img: '/images/planets/mars.jpg',
     name: { en: 'Mars', ka: 'მარსი' },
     facts: {
-      en: ['Red color from iron oxide (rust) in soil', 'Two tiny moons: Phobos and Deimos', 'Next opposition: May 2026 — best viewing in years'],
-      ka: ['წითელი ფერი რკინის ოქსიდისგან ნიადაგში', 'ორი პატარა მთვარე: ფობოსი და დეიმოსი', 'შემდეგი ოპოზიცია: 2026 მაისი'],
+      en: ['Red color from iron oxide (rust) in soil', 'Two tiny moons: Phobos and Deimos', 'Next opposition: February 2027 — closest and brightest'],
+      ka: ['წითელი ფერი რკინის ოქსიდისგან ნიადაგში', 'ორი პატარა მთვარე: ფობოსი და დეიმოსი', 'შემდეგი ოპოზიცია: 2027 თებერვალი'],
     },
     tip: { en: 'At opposition you can see the polar ice caps and surface markings with 100mm+ aperture.', ka: 'ოპოზიციისას 100 მმ+ ობიექტივით ჩანს პოლარული ქუდები.' },
     kidsLine: { en: 'Scientists have sent 50 robots to explore this red world!', ka: 'მეცნიერებმა 50 რობოტი გაუშვეს ამ წითელი სამყაროს შესასწავლად!' },
@@ -77,7 +77,7 @@ export const PLANETS = [
       en: ['Largest planet — 1,300 Earths fit inside', 'Great Red Spot: a storm older than 400 years', '4 Galilean moons visible in binoculars'],
       ka: ['ყველაზე დიდი — 1,300 დედამიწა ეტევა', 'დიდი წითელი ლაქა: 400+ წლის ქარიშხალი', '4 გალილეური მთვარე ბინოკლით ჩანს'],
     },
-    tip: { en: 'Any telescope shows cloud bands and the four Galilean moons. Opposition: Oct 2026.', ka: 'ნებისმიერ ტელესკოპში ღრუბლის ზოლები და 4 მთვარე ჩანს. ოპოზიცია: 2026 ოქტომბერი.' },
+    tip: { en: 'Any telescope shows cloud bands and the four Galilean moons. Next opposition: Feb 2027.', ka: 'ნებისმიერ ტელესკოპში ღრუბლის ზოლები და 4 მთვარე ჩანს. შემდეგი ოპოზიცია: 2027 თებერვალი.' },
     kidsLine: { en: 'One storm here (the Great Red Spot) is bigger than Earth!', ka: 'ერთი ქარიშხალი (დიდი წითელი ლაქა) დედამიწაზე დიდია!' },
     kidsFact: { en: 'Jupiter is so big that all the other planets could fit inside it with room to spare!', ka: 'იუპიტერი იმდენად დიდია, რომ ყველა სხვა პლანეტა მასში ჩაეტევა!' },
     color: '#c88b3a',
@@ -87,12 +87,12 @@ export const PLANETS = [
     emoji: '♄', key: 'saturn', img: '/images/planets/saturn.jpg',
     name: { en: 'Saturn', ka: 'სატურნი' },
     facts: {
-      en: ['Iconic ring system made of ice and rock', 'Least dense planet — would float on water', '83 known moons including giant Titan'],
-      ka: ['ყინულისა და ქვის რგოლების სისტემა', 'ყველაზე ნაკლები სიმკვრივე — წყალზე ამომივა', '83 ცნობილი მთვარე, მათ შორის გიგანტური ტიტანი'],
+      en: ['Iconic ring system made of ice and rock', 'Least dense planet — it would float on water', 'Most moons of any planet — 274 known, including giant Titan'],
+      ka: ['ყინულისა და ქვის რგოლების სისტემა', 'ყველაზე ნაკლები სიმკვრივე — წყალზე ამოტივტივდებოდა', 'ყველაზე მეტი მთვარე — 274 ცნობილი, მათ შორის გიგანტური ტიტანი'],
     },
-    tip: { en: 'The rings are visible in even a 60mm telescope — one of the most breathtaking sights in astronomy. Opposition: Sep 2026.', ka: '60 მმ ტელესკოპშიც კი ჩანს რგოლები. ოპოზიცია: 2026 სექტემბერი.' },
+    tip: { en: 'The rings are visible in even a 60mm telescope — one of the most breathtaking sights in astronomy. Opposition: Oct 4, 2026.', ka: '60 მმ ტელესკოპშიც კი ჩანს რგოლები. ოპოზიცია: 2026 წლის 4 ოქტომბერი.' },
     kidsLine: { en: 'Its rings are made of billions of ice and rock pieces!', ka: 'მისი რგოლები მილიარდობით ყინულის და ქვის ნაჭრებისგან შედგება!' },
-    kidsFact: { en: 'Saturn is so light it could float on water — if you had a big enough ocean!', ka: 'სატურნი იმდენად მსუბუქია, რომ წყალზე ამოვა — საკმარისი ოკეანე რომ გვქონდეს!' },
+    kidsFact: { en: 'Saturn is so light it could float on water — if you had a big enough ocean!', ka: 'სატურნი იმდენად მსუბუქია, რომ წყალზე ამოტივტივდებოდა — საკმარისი ოკეანე რომ გვქონდეს!' },
     color: '#e8d5a3',
     missionId: 'saturn',
   },
@@ -103,9 +103,9 @@ export const PLANETS = [
       en: ['Rotates on its side (98° axial tilt)', 'Blue-green color from methane in atmosphere', 'Faint rings discovered in 1977'],
       ka: ['ბრუნავს გვერდით (98° ღერძული დახრა)', 'ლურჯ-მწვანე ფერი მეთანიდან ატმოსფეროში', 'სუსტი რგოლები აღმოაჩინეს 1977 წელს'],
     },
-    tip: { en: 'Visible to the naked eye in dark skies. A telescope shows its blue-green disc but little detail.', ka: 'შავ ცაზე შეიძლება შიშველი თვალით ჩანს. ტელესკოპი აჩვენებს ლურჯ-მწვანე დისკს.' },
+    tip: { en: 'Visible to the naked eye in dark skies. A telescope shows its blue-green disc but little detail.', ka: 'ბნელ ცაზე შიშველი თვალითაც ჩანს. ტელესკოპი აჩვენებს ლურჯ-მწვანე დისკს.' },
     kidsLine: { en: "It rolls around the Sun on its side — like a bowling ball!", ka: 'მზის გარშემო გვერდულად ბრუნავს — სათამაშო ბურთივით!' },
-    kidsFact: { en: 'Uranus has 27 moons, many named after characters from Shakespeare plays!', ka: 'ურანს 27 მთვარე აქვს, ბევრი შექსპირის პიესების პერსონაჟების სახელს ატარებს!' },
+    kidsFact: { en: 'Uranus has 28 moons, many named after characters from Shakespeare plays!', ka: 'ურანს 28 მთვარე აქვს, ბევრი შექსპირის პიესების პერსონაჟების სახელს ატარებს!' },
     color: '#7de8e8',
   },
   {
@@ -144,7 +144,7 @@ export const DSO = [
     type: { en: 'Spiral Galaxy', ka: 'სპირალური გალაქტიკა' },
     distance: { en: '2.5 million light-years', ka: '2.5 მილიონი სინათლის წელი' },
     desc: { en: 'The nearest major galaxy and the farthest object visible to the naked eye. It contains over 1 trillion stars and is on a collision course with the Milky Way in 4.5 billion years.', ka: 'ყველაზე ახლო მთავარი გალაქტიკა. შეიცავს 1 ტრილიონზე მეტ ვარსკვლავს და ირმის ნახტომს 4.5 მილიარდ წელიწადში შეეჯახება.' },
-    scope: { en: 'Visible naked eye in dark skies. Binoculars show its elliptical glow. Wide-field telescope shows dust lanes.', ka: 'შავ ცაზე შიშველი თვალით ჩანს. ბინოკლი კარგად აჩვენებს.' },
+    scope: { en: 'Visible naked eye in dark skies. Binoculars show its elliptical glow. Wide-field telescope shows dust lanes.', ka: 'ბნელ ცაზე შიშველი თვალით ჩანს. ბინოკლი კარგად აჩვენებს.' },
     kidsLine: { en: "The farthest thing you can see with your own eyes — 2.5 million light-years away!", ka: 'ყველაზე შორი რამ, რაც შიშველი თვალით ჩანს — 2.5 მილიონი სინათლის წელი!' },
     color: '#14b8a6',
     missionId: 'andromeda',
@@ -166,7 +166,7 @@ export const DSO = [
     equipment: 'large_scope' as const,
     name: { en: 'Crab Nebula (M1)', ka: 'კიბოს ნისლეული (M1)' },
     type: { en: 'Supernova Remnant', ka: 'სუპერნოვის ნარჩენი' },
-    distance: { en: '6,523 light-years', ka: '6,523 სინათლის წელი' },
+    distance: { en: '~6,500 light-years', ka: '~6,500 სინათლის წელი' },
     desc: { en: 'The expanding debris cloud from a supernova explosion observed by Chinese astronomers in 1054 AD. A pulsar at its center spins 30 times per second.', ka: 'სუპერნოვის აფეთქებიდან გაფართოებული ნარჩენი — ჩინელმა ასტრონომებმა 1054 წელს დააფიქსირეს. ცენტრში პულსარი 30-ჯერ/წმ ბრუნავს.' },
     scope: { en: 'Requires 150mm+ aperture. Appears as a faint oval smudge. One of the most historically significant objects.', ka: '150 მმ+ ობიექტივი სჭირდება. სუსტი ოვალური ლაქა ჩანს.' },
     kidsLine: { en: 'This star exploded 1,000 years ago — Chinese astronomers watched it happen!', ka: 'ეს ვარსკვლავი 1,000 წლის წინ აფეთქდა — ჩინელი ასტრონომები უყურებდნენ!' },
@@ -174,7 +174,7 @@ export const DSO = [
     missionId: 'crab',
   },
   {
-    id: 'm13', emoji: '⭐', img: '/images/dso/m13.jpg',
+    id: 'm13', emoji: '⭐', img: '/images/dso/m13-cluster.jpg',
     equipment: 'binoculars' as const,
     name: { en: 'Hercules Cluster (M13)', ka: 'ჰერკულესის გროვა (M13)' },
     type: { en: 'Globular Cluster', ka: 'გლობულარული გროვა' },
@@ -185,7 +185,7 @@ export const DSO = [
     color: '#FFB347',
   },
   {
-    id: 'm57', emoji: '💍', img: '/images/dso/m57.jpg',
+    id: 'm57', emoji: '💍', img: '/images/dso/m57-ring.jpg',
     equipment: 'small_scope' as const,
     name: { en: 'Ring Nebula (M57)', ka: 'რგოლის ნისლეული (M57)' },
     type: { en: 'Planetary Nebula', ka: 'პლანეტური ნისლეული' },
@@ -196,7 +196,7 @@ export const DSO = [
     color: '#34d399',
   },
   {
-    id: 'm17', emoji: '🌊', img: '/images/dso/m17.jpg',
+    id: 'm17', emoji: '🌊', img: '/images/dso/m17-omega.jpg',
     equipment: 'binoculars' as const,
     name: { en: 'Omega Nebula (M17)', ka: 'ომეგა ნისლეული (M17)' },
     type: { en: 'Emission Nebula', ka: 'ემისიური ნისლეული' },
@@ -247,7 +247,7 @@ export const CONSTELLATIONS = [
   {
     id: 'orion',
     name: { en: 'Orion', ka: 'ორიონი' },
-    img: '/images/constellations/orion.jpg',
+    img: '/images/constellations/orion-chart.jpg',
     season: { en: 'Winter', ka: 'ზამთარი' },
     stars: 7,
     desc: { en: 'The Hunter — easiest constellation to find. Three bright stars form the famous belt.', ka: 'მონადირე — ყველაზე ადვილად მოსაძებნი. სამი კაშკაში ვარსკვლავი ქმნის სარტყელს.' },
@@ -270,7 +270,7 @@ export const CONSTELLATIONS = [
   {
     id: 'ursa-major',
     name: { en: 'Ursa Major', ka: 'დიდი დათვი' },
-    img: '/images/constellations/ursa-major.jpg',
+    img: '/images/constellations/ursa-major-chart.jpg',
     season: { en: 'Year-round (north)', ka: 'მთელი წელი (ჩრდილოეთი)' },
     stars: 7,
     desc: { en: 'The Great Bear — contains the Big Dipper, which points to the North Star.', ka: 'დიდი დათვი — შეიცავს "დიდ ჩარხს", რომელიც ჩრდილოეთის ვარსკვლავისკენ მიუთითებს.' },
@@ -293,7 +293,7 @@ export const CONSTELLATIONS = [
   {
     id: 'cassiopeia',
     name: { en: 'Cassiopeia', ka: 'კასიოპეა' },
-    img: '/images/constellations/cassiopeia.jpg',
+    img: '/images/constellations/cassiopeia-chart.jpg',
     season: { en: 'Autumn/Winter', ka: 'შემოდგომა/ზამთარი' },
     stars: 5,
     desc: { en: 'The Queen — W or M shape in the north sky. Never sets from Georgia.', ka: 'დედოფალი — W ან M ფორმა ჩრდილოეთ ცაზე. საქართველოდან არასოდეს ჩადის.' },
@@ -316,7 +316,7 @@ export const CONSTELLATIONS = [
   {
     id: 'scorpius',
     name: { en: 'Scorpius', ka: 'მორიელი' },
-    img: '/images/constellations/scorpius.jpg',
+    img: '/images/constellations/scorpius-chart.jpg',
     season: { en: 'Summer', ka: 'ზაფხული' },
     stars: 18,
     desc: { en: 'The Scorpion — one of the most dramatic constellations with a curved tail dipping into the Milky Way.', ka: 'მორიელი — ერთ-ერთი ყველაზე დრამატული. მოხრილი კუდი ირმის ნახტომში ეშვება.' },
@@ -339,7 +339,7 @@ export const CONSTELLATIONS = [
   {
     id: 'cygnus',
     name: { en: 'Cygnus', ka: 'გედი' },
-    img: '/images/constellations/cygnus.jpg',
+    img: '/images/constellations/cygnus-chart.jpg',
     season: { en: 'Summer/Autumn', ka: 'ზაფხული/შემოდგომა' },
     stars: 9,
     desc: { en: 'The Swan — forms a clear cross (Northern Cross) flying along the Milky Way.', ka: 'გედი — ნათელ ჯვარს ქმნის (ჩრდილოეთის ჯვარი) ირმის ნახტომში.' },
@@ -362,10 +362,10 @@ export const CONSTELLATIONS = [
   {
     id: 'leo',
     name: { en: 'Leo', ka: 'ლომი' },
-    img: '/images/constellations/leo.jpg',
+    img: '/images/constellations/leo-chart.jpg',
     season: { en: 'Spring', ka: 'გაზაფხული' },
     stars: 9,
-    desc: { en: 'The Lion — a prominent spring constellation with a backwards question-mark shape called the Sickle.', ka: 'ლომი — გაზაფხულის თვალსაჩინო თანავარსკვლავედი. კითხვის ნიშნის ფორმა "მამელს" ქმნის.' },
+    desc: { en: 'The Lion — a prominent spring constellation with a backwards question-mark shape called the Sickle.', ka: 'ლომი — გაზაფხულის თვალსაჩინო თანავარსკვლავედი. შებრუნებული კითხვის ნიშნის ფორმას "ნამგალს" უწოდებენ.' },
     highlight: { en: 'Regulus, its brightest star, sits almost exactly on the ecliptic', ka: 'რეგულუსი, ყველაზე კაშკაში ვარსკვლავი, ეკლიპტიკაზე ზის' },
     color: '#34d399',
     brightestStar: {
@@ -375,24 +375,102 @@ export const CONSTELLATIONS = [
     },
     mythology: {
       en: 'The Nemean Lion — an invulnerable beast killed by Hercules as the first of his Twelve Labors. He wore its golden hide as armor for the rest of his life.',
-      ka: 'ნემეას ლომი — უხილავი ცხოველი, რომელიც ჰერკულესმა მოკლა თავისი 12 ბრძანების პირველად. მისი ოქროს ტყავი ცხოვრების ბოლომდე ეცვა.',
+      ka: 'ნემეას ლომი — დაუძლეველი მხეცი, რომელიც ჰერკულესმა თავისი 12 გმირობიდან პირველში მოკლა. მისი ოქროს ტყავი ჯავშნად ეცვა ცხოვრების ბოლომდე.',
     },
     bestTime: {
       en: 'Mar–May · high in the southern sky',
       ka: 'მარტ–მაი · მაღლა სამხრეთ ცაზე',
     },
   },
+  {
+    id: 'taurus',
+    name: { en: 'Taurus', ka: 'კურო' },
+    img: '/images/constellations/taurus-chart.jpg',
+    season: { en: 'Winter', ka: 'ზამთარი' },
+    stars: 9,
+    desc: { en: 'The Bull — a V-shaped face of stars (the Hyades cluster) with long horns. Home to both the Pleiades and the Crab Nebula.', ka: 'კურო — ვარსკვლავების V-ფორმის სახე (ჰიადების გროვა) გრძელი რქებით. აქვეა პლეიადები და კიბოს ნისლეული.' },
+    highlight: { en: 'Two naked-eye star clusters in one constellation: the Hyades and the Pleiades', ka: 'ორი შიშველი თვალით ხილული გროვა ერთ თანავარსკვლავედში: ჰიადები და პლეიადები' },
+    color: '#FFB347',
+    brightestStar: {
+      name: { en: 'Aldebaran (α Tauri)', ka: 'ალდებარანი (α Tauri)' },
+      magnitude: 0.85,
+      note: { en: 'Orange giant — the "eye" of the Bull, 65 ly away', ka: 'ნარინჯისფერი გიგანტი — კუროს "თვალი", 65 სინათლის წელი' },
+    },
+    mythology: {
+      en: 'Zeus took the form of a magnificent white bull to carry off the princess Europa across the sea to Crete. Only the front half of the bull is drawn in the sky — the rest is underwater.',
+      ka: 'ზევსმა ბრწყინვალე თეთრი ხარის სახე მიიღო, რომ პრინცესა ევროპა ზღვის გაღმა კრეტაზე გადაეყვანა. ცაზე ხარის მხოლოდ წინა ნახევარია გამოსახული — დანარჩენი წყალქვეშაა.',
+    },
+    bestTime: {
+      en: 'Nov–Feb · high in the south, right of Orion',
+      ka: 'ნოე–თებ · მაღლა სამხრეთით, ორიონის მარჯვნივ',
+    },
+  },
+  {
+    id: 'gemini',
+    name: { en: 'Gemini', ka: 'ტყუპები' },
+    img: '/images/constellations/gemini-chart.jpg',
+    season: { en: 'Winter', ka: 'ზამთარი' },
+    stars: 16,
+    desc: { en: 'The Twins — two bright stars, Castor and Pollux, mark two stick-figure brothers standing side by side.', ka: 'ტყუპები — ორი კაშკაშა ვარსკვლავი, კასტორი და პოლუქსი, გვერდიგვერდ მდგომ ორ ძმას აღნიშნავს.' },
+    highlight: { en: 'Castor is actually six stars orbiting each other — a telescope splits it in two', ka: 'კასტორი სინამდვილეში ექვსი ვარსკვლავია — ტელესკოპი ორად ყოფს' },
+    color: '#5EEAD4',
+    brightestStar: {
+      name: { en: 'Pollux (β Geminorum)', ka: 'პოლუქსი (β Geminorum)' },
+      magnitude: 1.14,
+      note: { en: 'Orange giant with a confirmed exoplanet, 34 ly away', ka: 'ნარინჯისფერი გიგანტი დადასტურებული ეგზოპლანეტით, 34 სინათლის წელი' },
+    },
+    mythology: {
+      en: 'Castor and Pollux were twin brothers — one mortal, one immortal. When Castor died, Pollux begged Zeus to share his immortality, so Zeus placed them together in the sky forever.',
+      ka: 'კასტორი და პოლუქსი ტყუპი ძმები იყვნენ — ერთი მოკვდავი, მეორე უკვდავი. კასტორის სიკვდილის შემდეგ პოლუქსმა ზევსს უკვდავების გაყოფა სთხოვა და ზევსმა ისინი სამუდამოდ ერთად მოათავსა ცაზე.',
+    },
+    bestTime: {
+      en: 'Dec–Apr · high overhead, left of Orion',
+      ka: 'დეკ–აპრ · მაღლა თავზე, ორიონის მარცხნივ',
+    },
+  },
+  {
+    id: 'lyra',
+    name: { en: 'Lyra', ka: 'ლირა' },
+    img: '/images/constellations/lyra-chart.jpg',
+    season: { en: 'Summer', ka: 'ზაფხული' },
+    stars: 6,
+    desc: { en: 'The Lyre — small but easy to find: brilliant Vega plus a neat parallelogram of four fainter stars.', ka: 'ლირა — პატარა, მაგრამ ადვილად მოსაძებნი: კაშკაშა ვეგა და ოთხი მკრთალი ვარსკვლავის პარალელოგრამი.' },
+    highlight: { en: 'Contains the Ring Nebula (M57) and the famous Double-Double star ε Lyrae', ka: 'შეიცავს რგოლის ნისლეულს (M57) და ცნობილ ორმაგ-ორმაგ ვარსკვლავს ε Lyrae' },
+    color: '#8B5CF6',
+    brightestStar: {
+      name: { en: 'Vega (α Lyrae)', ka: 'ვეგა (α Lyrae)' },
+      magnitude: 0.03,
+      note: { en: '5th brightest star in the sky, only 25 ly away', ka: 'ცის მე-5 ყველაზე კაშკაშა ვარსკვლავი, მხოლოდ 25 სინათლის წელი' },
+    },
+    mythology: {
+      en: 'The lyre of Orpheus, whose music could charm stones and rivers. After his death, Zeus placed the instrument among the stars. Vega anchors the Summer Triangle with Deneb and Altair.',
+      ka: 'ორფეოსის ლირა, რომლის მუსიკაც ქვებსა და მდინარეებს ხიბლავდა. მისი სიკვდილის შემდეგ ზევსმა საკრავი ვარსკვლავებში მოათავსა. ვეგა დენებთან და ალტაირთან ერთად ზაფხულის სამკუთხედს ქმნის.',
+    },
+    bestTime: {
+      en: 'Jun–Oct · nearly overhead on summer nights',
+      ka: 'ივნ–ოქტ · თითქმის თავზე ზაფხულის ღამეებში',
+    },
+  },
 ];
 
 // ─── Events data ──────────────────────────────────────────────────────────────
 
-export const ALL_EVENTS = [
-  { date: '2026-04-22', emoji: '☄️', name: { en: 'Lyrids Meteor Shower', ka: 'ლირიდების მეტეორული ნაკადი' }, desc: { en: 'Up to 20 meteors/hour. Look NE after midnight.', ka: 'საათში 20 მეტეორამდე. შეხედე ჩრდ.-აღმ.-ით შუაღამის შემდეგ.' } },
-  { date: '2026-05-06', emoji: '☄️', name: { en: 'Eta Aquariids Shower', ka: 'ეტა-აქვარიიდების ნაკადი' }, desc: { en: 'Debris from Halley\'s Comet — up to 50/hour. Best before dawn.', ka: 'ჰალეის კომეტის ნარჩენები — 50+/სთ. საუკეთესოა გამთენიისას.' } },
-  { date: '2026-05-17', emoji: '♂', name: { en: 'Mars at Opposition', ka: 'მარსის ოპოზიცია' }, desc: { en: 'Mars at its closest and brightest. Surface detail visible in telescopes.', ka: 'მარსი ყველაზე ახლოს და კაშკაში. ტელესკოპში ზედაპირი ჩანს.' } },
-  { date: '2026-08-12', emoji: '☄️', name: { en: 'Perseid Meteor Shower', ka: 'პერსეიდების მეტეორული ნაკადი' }, desc: { en: 'Up to 100 meteors/hour — best summer shower. No equipment needed.', ka: 'საათში 100 მეტეორამდე — ყველაზე კარგი ზაფხულის ნაკადი.' } },
-  { date: '2026-09-15', emoji: '♄', name: { en: 'Saturn at Opposition', ka: 'სატურნის ოპოზიცია' }, desc: { en: 'Saturn at its biggest and brightest. Rings tilted 22° toward Earth.', ka: 'სატურნი ყველაზე დიდი და კაშკაში. რგოლები 22°-ით გადახრილია.' } },
-  { date: '2026-10-19', emoji: '♃', name: { en: 'Jupiter at Opposition', ka: 'იუპიტერის ოპოზიცია' }, desc: { en: 'Jupiter\'s cloud bands and moons are at their finest. Best night of the year for Jupiter.', ka: 'იუპიტერის ღრუბლის ზოლები და მთვარეები ყველაზე კარგია.' } },
-  { date: '2026-11-17', emoji: '☄️', name: { en: 'Leonids Meteor Shower', ka: 'ლეონიდების მეტეორული ნაკადი' }, desc: { en: 'Fast, bright meteors from Comet Tempel-Tuttle. Up to 15/hour.', ka: 'სწრაფი, კაშკაში მეტეორები კომეტ ტემპელ-ტუტლედან. 15+/სთ.' } },
-  { date: '2026-12-13', emoji: '☄️', name: { en: 'Geminids Meteor Shower', ka: 'გემინიდების მეტეორული ნაკადი' }, desc: { en: 'The most reliable shower of the year — up to 120/hour. Starts at 9 PM.', ka: 'წლის ყველაზე სანდო ნაკადი — 120+/სთ. იწყება 21:00-ზე.' } },
+export type EventKind = 'meteor' | 'planet' | 'eclipse';
+
+export const ALL_EVENTS: {
+  date: string;
+  kind: EventKind;
+  name: { en: string; ka: string };
+  desc: { en: string; ka: string };
+}[] = [
+  { date: '2026-01-10', kind: 'planet', name: { en: 'Jupiter at Opposition', ka: 'იუპიტერის ოპოზიცია' }, desc: { en: 'Jupiter at its closest and brightest — cloud bands and moons at their finest.', ka: 'იუპიტერი ყველაზე ახლოს და კაშკაშა — ღრუბლის ზოლები და მთვარეები საუკეთესოდ ჩანს.' } },
+  { date: '2026-04-22', kind: 'meteor', name: { en: 'Lyrids Meteor Shower', ka: 'ლირიდების მეტეორული ნაკადი' }, desc: { en: 'Up to 20 meteors/hour. Look NE after midnight.', ka: 'საათში 20 მეტეორამდე. შეხედე ჩრდ.-აღმ.-ით შუაღამის შემდეგ.' } },
+  { date: '2026-05-06', kind: 'meteor', name: { en: 'Eta Aquariids Shower', ka: 'ეტა-აქვარიიდების ნაკადი' }, desc: { en: 'Debris from Halley\'s Comet — up to 50/hour. Best before dawn.', ka: 'ჰალეის კომეტის ნარჩენები — 50+/სთ. საუკეთესოა გამთენიისას.' } },
+  { date: '2026-08-12', kind: 'eclipse', name: { en: 'Total Solar Eclipse', ka: 'მზის სრული დაბნელება' }, desc: { en: 'Totality crosses Iceland and Spain. Not visible from Georgia — a trip-worthy event.', ka: 'სრული ფაზა ისლანდიასა და ესპანეთში. საქართველოდან არ ჩანს — მოგზაურობის ღირსი მოვლენა.' } },
+  { date: '2026-08-13', kind: 'meteor', name: { en: 'Perseid Meteor Shower', ka: 'პერსეიდების მეტეორული ნაკადი' }, desc: { en: 'Up to 100 meteors/hour, and 2026 is moonless — the best Perseids in years. No equipment needed.', ka: 'საათში 100 მეტეორამდე, 2026-ში უმთვარო ცაა — საუკეთესო პერსეიდები. აღჭურვილობა არ გჭირდება.' } },
+  { date: '2026-08-28', kind: 'eclipse', name: { en: 'Partial Lunar Eclipse', ka: 'მთვარის ნაწილობრივი დაბნელება' }, desc: { en: 'Earth\'s shadow takes a bite out of the Moon — visible from Georgia in the evening.', ka: 'დედამიწის ჩრდილი მთვარეს "მოკბეჩს" — საქართველოდან საღამოს ჩანს.' } },
+  { date: '2026-10-04', kind: 'planet', name: { en: 'Saturn at Opposition', ka: 'სატურნის ოპოზიცია' }, desc: { en: 'Saturn at its biggest and brightest of the year — prime time for the rings.', ka: 'სატურნი წლის ყველაზე დიდი და კაშკაშა — საუკეთესო დრო რგოლებისთვის.' } },
+  { date: '2026-10-21', kind: 'meteor', name: { en: 'Orionids Meteor Shower', ka: 'ორიონიდების მეტეორული ნაკადი' }, desc: { en: 'More debris from Halley\'s Comet — up to 20/hour. Best after midnight.', ka: 'ჰალეის კომეტის ნარჩენები — 20/სთ-მდე. საუკეთესოა შუაღამის შემდეგ.' } },
+  { date: '2026-11-17', kind: 'meteor', name: { en: 'Leonids Meteor Shower', ka: 'ლეონიდების მეტეორული ნაკადი' }, desc: { en: 'Fast, bright meteors from Comet Tempel-Tuttle. Up to 15/hour.', ka: 'სწრაფი, კაშკაშა მეტეორები კომეტა ტემპელ-ტუტლიდან. 15/სთ-მდე.' } },
+  { date: '2026-12-13', kind: 'meteor', name: { en: 'Geminids Meteor Shower', ka: 'გემინიდების მეტეორული ნაკადი' }, desc: { en: 'The most reliable shower of the year — up to 120/hour. Starts as early as 9 PM.', ka: 'წლის ყველაზე სანდო ნაკადი — 120/სთ-მდე. იწყება უკვე 21:00-ზე.' } },
 ];
