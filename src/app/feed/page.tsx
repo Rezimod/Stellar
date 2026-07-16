@@ -83,8 +83,6 @@ export default function FeedPage() {
 
   const copy = {
     sidebarTitle: locale === 'ka' ? 'ფიდი' : 'Feed',
-    headerTitle: locale === 'ka' ? 'ფიდი' : 'Feed',
-    headerSubtitle: locale === 'ka' ? 'ცოცხალი დაკვირვებები მთელი მსოფლიოდან' : 'Real observations from astronomers worldwide',
     saved: locale === 'ka' ? 'შენახული' : 'Saved',
     filters: {
       latest: locale === 'ka' ? 'ყველა' : 'Latest',
@@ -298,13 +296,6 @@ export default function FeedPage() {
         </aside>
 
         <main>
-          <header className="feed-header">
-            <h1 className="feed-title">{copy.headerTitle}</h1>
-            <div className="feed-header-meta">
-              <span>{copy.headerSubtitle}</span>
-            </div>
-          </header>
-
           {authenticated ? (
             <div className="composer">
               <div className="composer-row">
