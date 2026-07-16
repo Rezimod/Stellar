@@ -314,14 +314,14 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
   // flares outward. Young blue stars + pink HII regions hug the arm ridges;
   // older yellow stars fill the inter-arm disk. This gives the galaxy true
   // 3D depth the flat texture alone can't provide.
-  const starN = lite ? 9000 : 24000;
+  const starN = lite ? 12000 : 34000;
   const { pos: vPos, col: vCol } = sampleSpiralStars(starN, diskRadius, { hiiChance: 0.03 });
   const volGeom = new THREE.BufferGeometry();
   volGeom.setAttribute('position', new THREE.BufferAttribute(vPos, 3));
   volGeom.setAttribute('color', new THREE.BufferAttribute(vCol, 3));
   const volMat = new THREE.PointsMaterial({
     map: softStarSprite(),
-    size: lite ? 26 : 20,
+    size: lite ? 14 : 11,
     vertexColors: true,
     transparent: true,
     opacity: 0,
@@ -337,20 +337,22 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
 
   // Faint halo of population-II stars around the bulge — adds depth above
   // and below the disk plane. Modest count, additive blend.
-  const haloN = 1800;
+  const haloN = 1200;
   const haloPos = new Float32Array(haloN * 3);
   const haloCol = new Float32Array(haloN * 3);
   for (let i = 0; i < haloN; i++) {
     // Sample inside a flattened ellipsoid centred on the galactic centre.
+    // Kept compact and dim — an oversized halo reads as a stray plume of
+    // dots crossing the disk when the galaxy is viewed edge-on.
     const u = Math.random();
     const v = Math.random();
     const w = Math.random();
     const t = 2 * Math.PI * u;
     const p = Math.acos(2 * v - 1);
-    const r = Math.pow(w, 0.35) * 1800 + 90;
+    const r = Math.pow(w, 0.35) * 1100 + 90;
     const x = -sunOffsetLocal.x + r * Math.sin(p) * Math.cos(t);
     const z = -sunOffsetLocal.z + r * Math.sin(p) * Math.sin(t) * 0.4; // flatten in disk plane
-    const y = r * Math.cos(p) * 0.42;
+    const y = r * Math.cos(p) * 0.28;
     haloPos[i * 3] = x;
     haloPos[i * 3 + 1] = y;
     haloPos[i * 3 + 2] = z;
@@ -364,7 +366,7 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
   haloGeom.setAttribute('color', new THREE.BufferAttribute(haloCol, 3));
   const haloMat = new THREE.PointsMaterial({
     map: softStarSprite(),
-    size: 18,
+    size: 13,
     vertexColors: true,
     transparent: true,
     opacity: 0,
@@ -376,13 +378,30 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
   const halo = new THREE.Points(haloGeom, haloMat);
   group.add(halo);
 
+  // Warm core glow (like Andromeda's) so the bulge stays a bright luminous
+  // nucleus from every viewing angle — the flat texture disk vanishes when
+  // seen edge-on, and without this the centre looked like loose grit.
+  const coreGlowMat = new THREE.SpriteMaterial({
+    map: softStarSprite(),
+    color: new THREE.Color(1.0, 0.88, 0.66),
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const coreGlow = new THREE.Sprite(coreGlowMat);
+  coreGlow.scale.setScalar(diskRadius * 0.3);
+  coreGlow.position.copy(disk.position);
+  group.add(coreGlow);
+
   const setFade = (fade: number) => {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
     // Texture disk provides the smooth glow underneath; the particle volume
     // carries most of the brightness so the galaxy reads as true 3D.
     diskMat.opacity = f * 0.55;
     volMat.opacity = f * 0.92;
-    haloMat.opacity = f * 0.55;
+    haloMat.opacity = f * 0.28;
+    coreGlowMat.opacity = f * 0.5;
     group.visible = f > 0.005;
   };
 
@@ -402,6 +421,7 @@ export function makeMilkyWayDisk(lite = false): MilkyWayHandle {
       haloGeom.dispose();
       (haloMat.map as THREE.Texture | null)?.dispose();
       haloMat.dispose();
+      coreGlowMat.dispose();
     },
   };
 }

@@ -230,10 +230,10 @@ export function makeAsteroidBelt(mode: ScaleMode, lite: boolean): BeltHandle {
   const BOULDER_N = lite ? 5 : 10;
   for (let i = 0; i < BOULDER_N; i++) {
     const big = i < 2; // a couple of Ceres/Vesta-class bodies
-    // Small enough that a boulder drifting past the Earth-focused camera
-    // reads as a passing rock, not a looming monolith.
+    // True rock scale — far smaller than any planet (Earth renders at 0.028
+    // scene units). Earlier sizes made boulders read as extra planets.
     const bGeom = new THREE.IcosahedronGeometry(
-      big ? 0.011 + Math.random() * 0.004 : 0.005 + Math.random() * 0.005,
+      big ? 0.0035 + Math.random() * 0.0015 : 0.0015 + Math.random() * 0.0015,
       big ? 2 : 1,
     );
     // Gently lumpy silhouette — potato, not shrapnel. The big ones stay
@@ -1619,20 +1619,24 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
 
 /* ───────────────────────── earth satellites ───────────────────────── */
 /**
- * A small constellation of artificial satellites around Earth — a station,
- * a space telescope, smallsats, a navigation bird in MEO, and one
- * geostationary relay. Deliberately tiny (a station spans ~1/6 of the Moon's
- * diameter here) and hugging the planet on faint orbit rings, so they read
- * as spacecraft, never as extra moons. Epoch-driven like everything else.
+ * The real hardware around Earth — the ISS, Hubble, smallsats, a navigation
+ * bird in MEO, a geostationary relay, and JWST holding station at the
+ * Sun–Earth L2 point on the planet's shadow side. Deliberately tiny (the
+ * station spans ~1/6 of the Moon's diameter here) and hugging the planet on
+ * faint orbit rings, so they read as spacecraft, never as extra moons. The
+ * named ones carry small mono labels. Epoch-driven like everything else.
  */
 export interface EarthSatellitesHandle {
   group: THREE.Group;
-  update: (epochMs: number) => void;
+  /** `earthPos` — Earth's heliocentric scene position (fixes JWST on the
+   *  anti-sunward Sun–Earth line; the Sun sits at the scene origin). */
+  update: (epochMs: number, earthPos: THREE.Vector3) => void;
   dispose: () => void;
 }
 
 interface SatSpec {
-  kind: 'station' | 'telescope' | 'smallsat' | 'nav' | 'geo';
+  kind: 'station' | 'telescope' | 'smallsat' | 'nav' | 'geo' | 'jwst';
+  label?: string;
   distMul: number;   // orbit radius ÷ Earth radius (compressed like the Moon)
   periodMin: number; // real orbital period in minutes
   incl: number;      // rad — 51.6° for the station, polar for one smallsat
@@ -1641,14 +1645,42 @@ interface SatSpec {
 }
 
 const SAT_SPECS: SatSpec[] = [
-  { kind: 'station',   distMul: 1.14, periodMin: 92,   incl: 0.90, node: 0.3, phase: 0.0 },
-  { kind: 'telescope', distMul: 1.2,  periodMin: 95,   incl: 0.50, node: 2.1, phase: 2.2 },
+  { kind: 'station',   label: 'ISS',    distMul: 1.14, periodMin: 92,   incl: 0.90, node: 0.3, phase: 0.0 },
+  { kind: 'telescope', label: 'HUBBLE', distMul: 1.2,  periodMin: 95,   incl: 0.50, node: 2.1, phase: 2.2 },
   { kind: 'smallsat',  distMul: 1.26, periodMin: 100,  incl: 1.70, node: 0.9, phase: 4.1 },
   { kind: 'nav',       distMul: 2.05, periodMin: 718,  incl: 0.96, node: 1.5, phase: 1.0 },
   { kind: 'smallsat',  distMul: 1.17, periodMin: 96,   incl: 0.60, node: 4.2, phase: 5.3 },
   { kind: 'smallsat',  distMul: 1.32, periodMin: 104,  incl: 0.20, node: 5.1, phase: 0.7 },
   { kind: 'geo',       distMul: 3.1,  periodMin: 1436, incl: 0.02, node: 0.0, phase: 3.0 },
+  // JWST — no geocentric orbit; it rides the Sun–Earth line at L2, tracing
+  // a slow halo loop around the point. periodMin here is the halo period.
+  { kind: 'jwst', label: 'JWST', distMul: 5.8, periodMin: 6 * 30 * 24 * 60, incl: 0, node: 0, phase: 0 },
 ];
+
+function satLabelSprite(text: string, earthRadius: number): {
+  sprite: THREE.Sprite;
+  mat: THREE.SpriteMaterial;
+  tex: THREE.CanvasTexture;
+} {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = '500 30px "JetBrains Mono", "SF Mono", Menlo, monospace';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(196,210,236,0.9)';
+  ctx.fillText(text, 128, 34);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = SRGB;
+  const mat = new THREE.SpriteMaterial({
+    map: tex, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false,
+  });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(earthRadius * 1.1, earthRadius * 0.275, 1);
+  sprite.center.set(0.5, -0.6); // float just above the spacecraft
+  return { sprite, mat, tex };
+}
 
 export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSatellitesHandle {
   const group = new THREE.Group();
@@ -1685,15 +1717,34 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
         }
       }
     } else if (kind === 'telescope') {
-      // Foil-wrapped tube with two panels — a space telescope.
-      const tube = new THREE.Mesh(new THREE.CylinderGeometry(b * 0.3, b * 0.3, b * 1.15, 10), foilMat);
+      // Hubble: silver tube, foil aft shroud, two flat panels.
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(b * 0.28, b * 0.28, b * 1.15, 10), bodyMat);
       tube.rotation.z = 0.5;
       g.add(tube);
+      const aft = new THREE.Mesh(new THREE.CylinderGeometry(b * 0.3, b * 0.3, b * 0.35, 10), foilMat);
+      aft.rotation.z = 0.5;
+      aft.position.set(Math.sin(0.5) * b * 0.42, -Math.cos(0.5) * b * 0.42, 0);
+      g.add(aft);
       for (const s of [-1, 1]) {
         const wing = new THREE.Mesh(new THREE.BoxGeometry(b * 0.05, b * 0.5, b * 0.8), panelMat);
         wing.position.set(s * b * 0.42, 0, 0);
         g.add(wing);
       }
+    } else if (kind === 'jwst') {
+      // JWST: gold hex mirror stack on a silver kite sunshield.
+      const goldMat = new THREE.MeshStandardMaterial({
+        color: 0xd9b24a, roughness: 0.25, metalness: 1.0,
+        emissive: 0x6a541e, emissiveIntensity: 0.35,
+      });
+      const mirror = new THREE.Mesh(new THREE.CylinderGeometry(b * 0.34, b * 0.34, b * 0.05, 6), goldMat);
+      mirror.position.y = b * 0.16;
+      g.add(mirror);
+      const shieldMat = new THREE.MeshStandardMaterial({
+        color: 0xd8dcec, roughness: 0.35, metalness: 0.75, side: THREE.DoubleSide,
+      });
+      const shield = new THREE.Mesh(new THREE.PlaneGeometry(b * 1.1, b * 0.65), shieldMat);
+      shield.rotation.x = -Math.PI / 2;
+      g.add(shield);
     } else if (kind === 'nav' || kind === 'geo') {
       // Boxy bus with a long twin-panel span.
       const bus = new THREE.Mesh(new THREE.BoxGeometry(b * 0.5, b * 0.5, b * 0.5), kind === 'geo' ? foilMat : bodyMat);
@@ -1714,9 +1765,13 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
     return g;
   };
 
-  const specs = lite ? SAT_SPECS.slice(0, 4) : SAT_SPECS;
+  const specs = lite
+    ? SAT_SPECS.filter((s) => s.label || s.kind === 'geo')
+    : SAT_SPECS;
   const recs: { node: THREE.Group; spec: SatSpec }[] = [];
   const ringGeos: THREE.BufferGeometry[] = [];
+  const labelTextures: THREE.CanvasTexture[] = [];
+  const labelMats: THREE.SpriteMaterial[] = [];
   const ringMat = new THREE.LineBasicMaterial({
     color: 0x8fa8d8, transparent: true, opacity: 0.07, depthWrite: false,
   });
@@ -1725,6 +1780,16 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
     const node = buildSat(spec.kind);
     group.add(node);
     recs.push({ node, spec });
+
+    if (spec.label) {
+      const { sprite, mat, tex } = satLabelSprite(spec.label, earthRadius);
+      labelTextures.push(tex);
+      labelMats.push(mat);
+      node.add(sprite);
+    }
+
+    // JWST holds the L2 point — no geocentric orbit ring to draw.
+    if (spec.kind === 'jwst') continue;
 
     // Faint orbit ring — instantly says "spacecraft", not "moon".
     const SEG = 72;
@@ -1750,10 +1815,29 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
     group.add(new THREE.LineLoop(rg, ringMat));
   }
 
+  const antiSun = new THREE.Vector3();
+  const haloA = new THREE.Vector3();
+  const haloB = new THREE.Vector3();
+
   return {
     group,
-    update(epochMs: number) {
+    update(epochMs: number, earthPos: THREE.Vector3) {
       for (const { node, spec } of recs) {
+        if (spec.kind === 'jwst') {
+          // L2 sits on the Sun–Earth line beyond Earth (Sun at the origin),
+          // and the observatory traces a slow halo loop around the point.
+          antiSun.copy(earthPos).normalize();
+          const haloAng = (epochMs / (spec.periodMin * 60_000)) * Math.PI * 2;
+          // Perpendicular frame for the halo circle.
+          haloA.set(-antiSun.z, 0, antiSun.x).normalize();
+          haloB.crossVectors(antiSun, haloA);
+          node.position.copy(antiSun).multiplyScalar(earthRadius * spec.distMul)
+            .addScaledVector(haloA, Math.cos(haloAng) * earthRadius * 0.5)
+            .addScaledVector(haloB, Math.sin(haloAng) * earthRadius * 0.5);
+          // Sunshield squarely between the mirror and the Sun.
+          node.lookAt(node.position.x + antiSun.x, node.position.y + antiSun.y, node.position.z + antiSun.z);
+          continue;
+        }
         const a = spec.phase + (epochMs / (spec.periodMin * 60_000)) * Math.PI * 2;
         const r = earthRadius * spec.distMul;
         const x = Math.cos(a) * r;
@@ -1771,13 +1855,20 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
     },
     dispose() {
       group.traverse((o) => {
-        if (o instanceof THREE.Mesh) o.geometry.dispose();
+        if (o instanceof THREE.Mesh) {
+          o.geometry.dispose();
+          const m = o.material;
+          if (Array.isArray(m)) m.forEach((x) => x.dispose());
+          else (m as THREE.Material).dispose();
+        }
       });
       ringGeos.forEach((g) => g.dispose());
       ringMat.dispose();
       bodyMat.dispose();
       foilMat.dispose();
       panelMat.dispose();
+      labelMats.forEach((m) => m.dispose());
+      labelTextures.forEach((t) => t.dispose());
     },
   };
 }

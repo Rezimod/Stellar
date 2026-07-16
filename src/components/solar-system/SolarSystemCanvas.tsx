@@ -952,7 +952,6 @@ export function SolarSystemCanvas({
       asteroidBelt.update(epochRef.current);
       kuiperBelt.update(epochRef.current);
       earthExtras?.update(epochRef.current, reduceMotion ? 0 : dtSec);
-      earthSats?.update(epochRef.current);
       probes.update(epochRef.current, focusRef.current ? 0 : sysRadius);
       saturnRings?.update((epochRef.current - baseEpochMs) / 1000);
       if (earthExtras) {
@@ -960,7 +959,10 @@ export function SolarSystemCanvas({
         if (earthMesh) {
           earthExtras.moonGroup.position.copy(earthMesh.position);
           if (earthRocket) earthRocket.group.position.copy(earthMesh.position);
-          if (earthSats) earthSats.group.position.copy(earthMesh.position);
+          if (earthSats) {
+            earthSats.group.position.copy(earthMesh.position);
+            earthSats.update(epochRef.current, earthMesh.position);
+          }
         }
       }
       if (saturnRings) {
