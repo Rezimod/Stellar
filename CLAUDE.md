@@ -33,7 +33,7 @@ Rezi (Revaz Modebadze) — founder of Astroman (astroman.ge), Georgia's first as
 - **Styling:** Tailwind CSS 4
 - **Auth + Wallets:** Privy SDK (`@privy-io/react-auth` + `@privy-io/server-auth`) — email/Google/SMS, embedded Solana wallets. Privy App ID: `cmnnk6n2c002d0cl47skaaz0d`. Solana wallet-adapter (Phantom/Backpack/Solflare) is also wired; `/api/mint` and `/api/award-stars` accept either Privy token or wallet pubkey.
 - **AI (by route — verified against code):**
-  - **ASTRA chat (`/api/chat`)** — **OpenAI `gpt-4o-mini`** with tool calls into sky forecast + planet positions (`get_planet_positions`, `get_sky_forecast`). Streaming, Privy-gated, Upstash rate-limited.
+  - **ASTRA chat (`/api/chat`)** — **Claude `claude-haiku-4-5-20251001`** (`@anthropic-ai/sdk`) with tool calls into sky forecast + planet positions (`get_planet_positions`, `get_sky_forecast`). Streaming, Privy-gated, Upstash rate-limited. (Switched from OpenAI gpt-4o-mini July 2026 — OpenAI account ran out of quota; key remains for the X/Twitter agent only.)
   - **Photo verification (`/api/observe/verify`)** — **Google Gemini `gemini-2.5-flash`**, free tier, called over REST via `src/lib/gemini-vision.ts` (no npm dep). Reads `GEMINI_API_KEY` (falls back to `GOOGLE_VISION_API_KEY`). This replaced the earlier paid Claude Sonnet vision call. The full pipeline also runs EXIF GPS/time checks, cross-wallet hash dedup, reverse-image lookup, `astronomy-engine` visibility cross-check, optional double-capture liveness, and an HMAC verification token.
   - **Star naming moderation (`/api/star/claim`)** — **Claude `claude-haiku-4-5-20251001`** (`@anthropic-ai/sdk`) for name moderation only.
 - **Sky Data:** Open-Meteo (7-day weather) + `astronomy-engine` (planet positions, rise/transit/set, lunar phase).
@@ -103,7 +103,7 @@ For non-trivial tasks: **planner → executor → reviewer → qa**.
 3. **Card-first payments.** Default = credit card via Privy fiat onramp. SOL payment is secondary.
 4. **i18n status: partial.** `next-intl` is wired (`messages/en.json` + `ka.json`). Newer surfaces (`/sky`, `/missions`, parts of `/marketplace`, `/observe`) use `useTranslations`. Older surfaces (home, `/hub`, several landing sections, marketing copy) are still hardcoded English. When adding new strings, prefer translation keys; don't retroactively translate untouched files unless asked.
 5. **Dark cosmic theme.** Deep space canvas is a dark cosmic blue (`--canvas #0A1735`, light theme `#EDF0F7`). Primary accent is warm terracotta (`--terracotta #FFB347`, aliased to `--accent`); secondary accent is teal/seafoam (`--seafoam #5EEAD4`, aliased to `--accent-teal`). **`src/app/globals.css` is the source of truth for all color tokens — do not hardcode hex.** Light theme shipped for daytime planning. Full design context in `.impeccable.md`.
-6. **Two-runtime AI: same Astra, two homes.** Web Astra runs on cloud (OpenAI for chat, Gemini for vision). Field Astra runs on-device via QVAC (Llama 3.2 1B + Whisper) for offline use at dark-sky sites. Same Privy account, same observation history. See `docs/qvac-integration.md`.
+6. **Two-runtime AI: same Astra, two homes.** Web Astra runs on cloud (Claude Haiku for chat, Gemini for vision). Field Astra runs on-device via QVAC (Llama 3.2 1B + Whisper) for offline use at dark-sky sites. Same Privy account, same observation history. See `docs/qvac-integration.md`.
 
 ## App Structure (real)
 ```
@@ -158,7 +158,7 @@ i18n/request.ts            next-intl config
 - **Privy auth + embedded wallets** — email/Google signup, wallet auto-create, profile shows account
 - **7-day sky forecast** + Go/Maybe/Skip badges per night
 - **Planet tracker** — Mercury–Saturn + Moon, rise/transit/set, altitude
-- **ASTRA chat** (`/api/chat`) — OpenAI gpt-4o-mini with sky/planet tool calls
+- **ASTRA chat** (`/api/chat`) — Claude Haiku 4.5 with sky/planet tool calls
 - **Marketplace** — Astroman catalog (23 products), card payment via Privy, dual GEL+SOL pricing
 - **Discovery Attestations** — Bubblegum cNFT mint on verified observations
 - **Observation verification** — Gemini vision + EXIF + hash dedup + reverse-image + visibility check + rate limit + HMAC verification token
@@ -183,7 +183,7 @@ i18n/request.ts            next-intl config
 ```
 /api/agent                agent endpoints
 /api/award-stars          award Stars on event (Privy or wallet)
-/api/chat                 OpenAI gpt-4o-mini chat with tool calls
+/api/chat                 Claude Haiku 4.5 chat with tool calls
 /api/club                 club membership flows
 /api/cron                 scheduled jobs (Vercel cron)
 /api/darksky              light-pollution data
@@ -227,9 +227,9 @@ NEXT_PUBLIC_PRIVY_APP_ID=          # cmnnk6n2c002d0cl47skaaz0d
 PRIVY_APP_SECRET=                  # server-only, never NEXT_PUBLIC_
 
 # AI
-OPENAI_API_KEY=                    # gpt-4o-mini for ASTRA chat
+OPENAI_API_KEY=                    # X/Twitter agent only (tweet-agent, tweet-image); chat moved to Anthropic
 GEMINI_API_KEY=                    # gemini-2.5-flash for photo verification (free tier)
-ANTHROPIC_API_KEY=                 # Claude Haiku 4.5 for star-name moderation
+ANTHROPIC_API_KEY=                 # Claude Haiku 4.5 for ASTRA chat + star-name moderation
 OBSERVATION_TOKEN_SECRET=          # HMAC secret for verify→log→mint token (falls back to ANTHROPIC_API_KEY)
 
 # Database
