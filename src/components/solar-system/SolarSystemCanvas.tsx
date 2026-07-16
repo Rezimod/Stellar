@@ -18,9 +18,11 @@ import {
   disposeOrbitRings,
   makeAsteroidBelt,
   makeKuiperBelt,
+  clampedPointsMaterial,
   makeEarthExtras,
   makeEarthRocket,
   makeEarthSatellites,
+  makeMeteors,
   makeAtmosphereShell,
   disposeAtmosphereShell,
   makeSunExtras,
@@ -36,6 +38,7 @@ import {
   type EarthExtrasHandle,
   type EarthRocketHandle,
   type EarthSatellitesHandle,
+  type MeteorsHandle,
   type SunExtrasHandle,
   type SaturnRingsHandle,
   type PlanetMoonsHandle,
@@ -279,9 +282,10 @@ export function SolarSystemCanvas({
 
     const starSprite = softSpriteTexture();
 
-    const STAR_N = lite ? 1200 : 4800;
+    const STAR_N = lite ? 2600 : 9000;
     const starPos = new Float32Array(STAR_N * 3);
     const starCol = new Float32Array(STAR_N * 3);
+    const starSize = new Float32Array(STAR_N);
     // Spectral classes — rough population mix: most stars are cool M/K (red/orange),
     // fewer are hot O/B (blue). Gives the sky a real, varied tint.
     const SPECTRAL = [
@@ -300,36 +304,52 @@ export function SolarSystemCanvas({
       }
       return SPECTRAL[SPECTRAL.length - 1];
     };
+    // Real sky statistics: brightness follows a steep power law (a handful of
+    // bright stars over thousands of faint ones), and ~40% of stars crowd
+    // toward the Milky Way band's plane the way the real sky thickens there.
+    const BAND_INCL = 0.42; // matches makeMilkyWayBand
     for (let i = 0; i < STAR_N; i++) {
-      const u = Math.random();
-      const v = Math.random();
-      const t = 2 * Math.PI * u;
-      const p = Math.acos(2 * v - 1);
+      const t = 2 * Math.PI * Math.random();
+      let p: number;
+      if (Math.random() < 0.4) {
+        // Galactic-plane population — latitude pinched toward the band.
+        const lat = (Math.random() + Math.random() - 1) * 0.45;
+        p = Math.PI / 2 - lat;
+      } else {
+        p = Math.acos(2 * Math.random() - 1);
+      }
       const r = 120 + Math.random() * 180;
-      starPos[i * 3] = r * Math.sin(p) * Math.cos(t);
-      starPos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
-      starPos[i * 3 + 2] = r * Math.cos(p);
+      const x = r * Math.sin(p) * Math.cos(t);
+      const zBand = r * Math.sin(p) * Math.sin(t);
+      const yBand = r * Math.cos(p);
+      // Rotate the band population into the Milky Way band's inclination.
+      starPos[i * 3] = x;
+      starPos[i * 3 + 1] = yBand * Math.cos(BAND_INCL) - zBand * Math.sin(BAND_INCL);
+      starPos[i * 3 + 2] = yBand * Math.sin(BAND_INCL) + zBand * Math.cos(BAND_INCL);
       const sp = pickSpectral();
-      const c = 0.45 + Math.random() * 0.55;
+      const c = 0.4 + Math.random() * 0.6;
       starCol[i * 3] = sp.r * c;
       starCol[i * 3 + 1] = sp.g * c;
       starCol[i * 3 + 2] = sp.b * c;
+      // Power-law magnitudes — mostly pinpricks, the occasional bright star.
+      starSize[i] = 0.35 + Math.pow(Math.random(), 3.2) * 2.3;
     }
     const starGeo = new THREE.BufferGeometry();
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+    starGeo.setAttribute('aSize', new THREE.BufferAttribute(starSize, 1));
     const stars = new THREE.Points(
       starGeo,
-      new THREE.PointsMaterial({
+      clampedPointsMaterial({
         map: starSprite,
-        size: lite ? 0.14 : 0.11,
+        size: lite ? 0.15 : 0.12,
         vertexColors: true,
         transparent: true,
-        opacity: 0.88,
+        opacity: 0.9,
         depthWrite: false,
         sizeAttenuation: true,
         alphaTest: 0.02,
-      }),
+      }, 2.6, true),
     );
     scene.add(stars);
 
@@ -386,6 +406,7 @@ export function SolarSystemCanvas({
     let earthExtras: EarthExtrasHandle | null = null;
     let earthRocket: EarthRocketHandle | null = null;
     let earthSats: EarthSatellitesHandle | null = null;
+    let earthMeteors: MeteorsHandle | null = null;
     let saturnRings: SaturnRingsHandle | null = null;
     const atmosphereShells = new Map<SolarBodyId, THREE.Mesh>();
 
@@ -544,6 +565,11 @@ export function SolarSystemCanvas({
               earthSats.dispose();
               earthSats = null;
             }
+            if (earthMeteors) {
+              bodies.remove(earthMeteors.group);
+              earthMeteors.dispose();
+              earthMeteors = null;
+            }
           }
           if (id === 'saturn' && saturnRings) {
             bodies.remove(saturnRings.group);
@@ -574,16 +600,17 @@ export function SolarSystemCanvas({
           bodies.add(hit);
 
           if (s.id === 'sun') {
+            // Soft billboard glow — smooth radial falloff. The old nested
+            // translucent spheres drew hard-edged brown rings around the Sun.
             const sunR = worldRadiusForBody('sun');
             const glowLayers = [
-              { scale: 1.22, opacity: 0.18, color: 0xffb347 },
-              { scale: 1.5, opacity: 0.08, color: 0xffa040 },
-              { scale: 2.1, opacity: 0.03, color: 0xff8030 },
+              { scale: 3.0, opacity: 0.5, color: 0xffd9a0 },
+              { scale: 5.6, opacity: 0.22, color: 0xffa050 },
             ];
             for (const layer of glowLayers) {
-              const shell = new THREE.Mesh(
-                new THREE.SphereGeometry(sunR * layer.scale, 32, 32),
-                new THREE.MeshBasicMaterial({
+              const glow = new THREE.Sprite(
+                new THREE.SpriteMaterial({
+                  map: softSpriteTexture(),
                   color: layer.color,
                   transparent: true,
                   opacity: layer.opacity,
@@ -591,8 +618,9 @@ export function SolarSystemCanvas({
                   blending: THREE.AdditiveBlending,
                 }),
               );
-              shell.name = 'sunGlow';
-              mesh.add(shell);
+              glow.name = 'sunGlow';
+              glow.scale.setScalar(sunR * layer.scale);
+              mesh.add(glow);
             }
           }
 
@@ -609,6 +637,9 @@ export function SolarSystemCanvas({
             // Satellite constellation on faint orbit rings.
             earthSats = makeEarthSatellites(er, lite);
             bodies.add(earthSats.group);
+            // Sporadic meteors burning up in the high atmosphere.
+            earthMeteors = makeMeteors(er);
+            bodies.add(earthMeteors.group);
           }
 
           if ((s.id === 'venus' || s.id === 'mars') && !atmosphereShells.has(s.id)) {
@@ -943,6 +974,7 @@ export function SolarSystemCanvas({
         stars.rotation.y += 0.000055;
         milkyWay.rotation.y += 0.000022;
         earthRocket?.update(dtSec);
+        earthMeteors?.update(dtSec);
         aliens.update(dtSec, meshById.get('earth')?.position ?? null);
         for (const a of auroraHandles) a.update(dtSec);
       }
@@ -959,6 +991,7 @@ export function SolarSystemCanvas({
         if (earthMesh) {
           earthExtras.moonGroup.position.copy(earthMesh.position);
           if (earthRocket) earthRocket.group.position.copy(earthMesh.position);
+          if (earthMeteors) earthMeteors.group.position.copy(earthMesh.position);
           if (earthSats) {
             earthSats.group.position.copy(earthMesh.position);
             earthSats.update(epochRef.current, earthMesh.position);
@@ -992,7 +1025,9 @@ export function SolarSystemCanvas({
 
       // Cosmic tier blend + galactic-layer fades.
       currentTier = tierBlendFromRadius(sysRadius);
-      nearbyStars.setFade(currentTier.stellar);
+      // Star-system labels belong to the stellar tier only — over the whole
+      // galaxy thirty floating names would just be noise.
+      nearbyStars.setFade(currentTier.stellar, currentTier.stellar * (1 - currentTier.galactic));
       galaxyDisk.setFade(currentTier.galactic);
       andromeda.setFade(currentTier.universe);
       otherGalaxies.setFade(currentTier.universe);
@@ -1075,6 +1110,11 @@ export function SolarSystemCanvas({
         bodies.remove(earthSats.group);
         earthSats.dispose();
         earthSats = null;
+      }
+      if (earthMeteors) {
+        bodies.remove(earthMeteors.group);
+        earthMeteors.dispose();
+        earthMeteors = null;
       }
       if (saturnRings) {
         bodies.remove(saturnRings.group);

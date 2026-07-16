@@ -97,7 +97,7 @@ function diskSprite(): THREE.CanvasTexture {
  * per-particle by an `aSize` attribute. Fixes the "giant bokeh blob" artifact
  * when the orbit camera passes through a particle field.
  */
-function clampedPointsMaterial(
+export function clampedPointsMaterial(
   params: THREE.PointsMaterialParameters,
   maxPx: number,
   perParticleSize: boolean,
@@ -1673,8 +1673,10 @@ function satLabelSprite(text: string, earthRadius: number): {
   ctx.fillText(text, 128, 34);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = SRGB;
+  // depthTest stays ON so a label ducks behind Earth with its satellite
+  // instead of floating over the planet's disk.
   const mat = new THREE.SpriteMaterial({
-    map: tex, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false,
+    map: tex, transparent: true, opacity: 0.9, depthWrite: false,
   });
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(earthRadius * 1.1, earthRadius * 0.275, 1);
@@ -1869,6 +1871,151 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
       panelMat.dispose();
       labelMats.forEach((m) => m.dispose());
       labelTextures.forEach((t) => t.dispose());
+    },
+  };
+}
+
+/* ───────────────────────── meteors over earth ───────────────────────── */
+/**
+ * Sporadic meteors burning up in Earth's upper atmosphere — the view a crew
+ * on orbit actually gets: a white-hot head streaking along a great circle
+ * just above the limb, leaving a short incandescent train that cools from
+ * white through orange, then a final flare as the rock ablates away.
+ * Real-time and decorative, like the rocket and the lightning.
+ */
+export interface MeteorsHandle {
+  group: THREE.Group;
+  update: (dtSec: number) => void;
+  dispose: () => void;
+}
+
+export function makeMeteors(earthRadius: number): MeteorsHandle {
+  const group = new THREE.Group();
+  group.name = 'earthMeteors';
+
+  const R = earthRadius * 1.05; // burn-up altitude, just above the clouds
+  const tex = cometGlowSprite();
+
+  interface Meteor {
+    head: THREE.Sprite;
+    headMat: THREE.SpriteMaterial;
+    trail: THREE.Points;
+    trailGeo: THREE.BufferGeometry;
+    trailMat: THREE.PointsMaterial;
+    trailAges: Float32Array;
+    trailHead: number;
+    n: THREE.Vector3;      // entry point normal
+    tdir: THREE.Vector3;   // flight direction (tangent)
+    age: number;           // <0 = idle
+    dur: number;
+    wait: number;
+    emitAcc: number;
+  }
+
+  const TRAIL_N = 10;
+  const meteors: Meteor[] = [];
+  for (let i = 0; i < 2; i++) {
+    const headMat = new THREE.SpriteMaterial({
+      map: tex, color: new THREE.Color(1.0, 0.98, 0.92),
+      transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending,
+    });
+    const head = new THREE.Sprite(headMat);
+    head.scale.setScalar(earthRadius * 0.05);
+    group.add(head);
+
+    const trailGeo = new THREE.BufferGeometry();
+    trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL_N * 3), 3));
+    trailGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(TRAIL_N * 3), 3));
+    const trailMat = new THREE.PointsMaterial({
+      map: tex, size: earthRadius * 0.04, vertexColors: true, transparent: true,
+      opacity: 0.9, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending,
+    });
+    const trail = new THREE.Points(trailGeo, trailMat);
+    group.add(trail);
+
+    meteors.push({
+      head, headMat, trail, trailGeo, trailMat,
+      trailAges: new Float32Array(TRAIL_N).fill(Infinity),
+      trailHead: 0,
+      n: new THREE.Vector3(),
+      tdir: new THREE.Vector3(),
+      age: -1,
+      dur: 0.8,
+      wait: 2 + i * 5 + Math.random() * 4,
+      emitAcc: 0,
+    });
+  }
+
+  const pos = new THREE.Vector3();
+  const tmp = new THREE.Vector3();
+
+  const headPos = (m: Meteor, out: THREE.Vector3) => {
+    // Great-circle streak: ~0.9 rad of arc across the visible limb.
+    const a = (m.age / m.dur) * 0.9;
+    return out.copy(m.n).multiplyScalar(Math.cos(a)).addScaledVector(m.tdir, Math.sin(a)).multiplyScalar(R);
+  };
+
+  return {
+    group,
+    update(dtSec: number) {
+      for (const m of meteors) {
+        // Trail cools white → orange → gone in ~0.45 s.
+        const tp = m.trailGeo.getAttribute('position') as THREE.BufferAttribute;
+        const tc = m.trailGeo.getAttribute('color') as THREE.BufferAttribute;
+        for (let i = 0; i < TRAIL_N; i++) {
+          m.trailAges[i] += dtSec;
+          const fade = Math.max(0, 1 - m.trailAges[i] / 0.45);
+          const cool = Math.min(1, m.trailAges[i] * 4);
+          tc.setXYZ(i, fade, fade * (0.95 - cool * 0.4), fade * (0.85 - cool * 0.6));
+        }
+        tc.needsUpdate = true;
+
+        if (m.age < 0) {
+          m.wait -= dtSec;
+          if (m.wait <= 0) {
+            m.age = 0;
+            m.dur = 0.6 + Math.random() * 0.5;
+            m.n.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+            tmp.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+            m.tdir.crossVectors(m.n, tmp).normalize();
+            m.trailAges.fill(Infinity);
+          }
+          continue;
+        }
+
+        m.age += dtSec;
+        if (m.age >= m.dur) {
+          m.age = -1;
+          m.wait = 3 + Math.random() * 6;
+          m.headMat.opacity = 0;
+          continue;
+        }
+
+        headPos(m, pos);
+        m.head.position.copy(pos);
+        const k = m.age / m.dur;
+        // Ramp in fast, flare briefly at the end as the meteoroid breaks up.
+        const flare = k > 0.82 ? 1.6 - (k - 0.82) * 4 : 1;
+        m.headMat.opacity = Math.min(1, k * 8) * (1 - k) * 1.4 * flare;
+        m.head.scale.setScalar(earthRadius * (0.04 + 0.03 * flare));
+
+        m.emitAcc += dtSec;
+        while (m.emitAcc > 0.03) {
+          m.emitAcc -= 0.03;
+          tp.setXYZ(m.trailHead, pos.x, pos.y, pos.z);
+          m.trailAges[m.trailHead] = 0;
+          m.trailHead = (m.trailHead + 1) % TRAIL_N;
+        }
+        tp.needsUpdate = true;
+      }
+    },
+    dispose() {
+      for (const m of meteors) {
+        m.headMat.dispose();
+        m.trailGeo.dispose();
+        m.trailMat.dispose();
+      }
+      tex.dispose();
     },
   };
 }

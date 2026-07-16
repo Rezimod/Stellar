@@ -448,8 +448,7 @@ export function makeAlienEncounters(): AlienHandle {
           if (tr.ship === saucer) {
             saucer.rotation.y += dtSec * 2.0; // saucers stay level and spin
           } else {
-            tmp.copy(posNext).sub(pos).add(pos);
-            tr.ship.lookAt(tmp);
+            tr.ship.lookAt(tmp.copy(posNext));
           }
         }
 
@@ -482,8 +481,7 @@ export function makeAlienEncounters(): AlienHandle {
           lead.rotation.y += dtSec * 2.0;
         } else {
           // Probe and mothership hold their noses on the velocity vector.
-          tmp.copy(posNext).sub(pos).add(lead.position);
-          lead.lookAt(tmp);
+          lead.lookAt(tmp.copy(posNext));
         }
 
         if (mode === 'dogfight') {

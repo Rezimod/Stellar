@@ -20,13 +20,19 @@ export interface NearbyStarRow {
   pc: number;        // parsecs (Hipparcos/Gaia)
   mag: number;       // apparent V magnitude
   spectral: 'O'|'B'|'A'|'F'|'G'|'K'|'M';
+  /** Confirmed exoplanets in the system (omitted = none known). */
+  planets?: number;
 }
 
-/** A tight bright-star roster — every entry has a Hipparcos-grade distance. */
+/**
+ * Bright-star roster + the real nearest star systems and famous planet
+ * hosts — every entry has a Hipparcos/Gaia-grade distance, and planet
+ * counts stick to confirmed detections.
+ */
 export const NEARBY_STARS: NearbyStarRow[] = [
   { id: 'sirius',     name: 'Sirius',         ra: 6.752,  dec: -16.716, pc: 2.64,  mag: -1.46, spectral: 'A' },
   { id: 'canopus',    name: 'Canopus',        ra: 6.399,  dec: -52.696, pc: 95,    mag: -0.74, spectral: 'F' },
-  { id: 'rigil',      name: 'Alpha Centauri', ra: 14.660, dec: -60.834, pc: 1.34,  mag: -0.27, spectral: 'G' },
+  { id: 'rigil',      name: 'Alpha Centauri', ra: 14.660, dec: -60.834, pc: 1.34,  mag: -0.27, spectral: 'G', planets: 3 },
   { id: 'arcturus',   name: 'Arcturus',       ra: 14.261, dec:  19.182, pc: 11.26, mag: -0.05, spectral: 'K' },
   { id: 'vega',       name: 'Vega',           ra: 18.616, dec:  38.784, pc: 7.68,  mag:  0.03, spectral: 'A' },
   { id: 'capella',    name: 'Capella',        ra: 5.278,  dec:  45.998, pc: 13.13, mag:  0.08, spectral: 'G' },
@@ -39,12 +45,25 @@ export const NEARBY_STARS: NearbyStarRow[] = [
   { id: 'aldebaran',  name: 'Aldebaran',      ra: 4.598,  dec:  16.509, pc: 20.43, mag:  0.85, spectral: 'K' },
   { id: 'antares',    name: 'Antares',        ra: 16.490, dec: -26.432, pc: 169,   mag:  0.96, spectral: 'M' },
   { id: 'spica',      name: 'Spica',          ra: 13.420, dec: -11.161, pc: 78,    mag:  0.98, spectral: 'B' },
-  { id: 'pollux',     name: 'Pollux',         ra: 7.755,  dec:  28.026, pc: 10.34, mag:  1.14, spectral: 'K' },
+  { id: 'pollux',     name: 'Pollux',         ra: 7.755,  dec:  28.026, pc: 10.34, mag:  1.14, spectral: 'K', planets: 1 },
   { id: 'fomalhaut',  name: 'Fomalhaut',      ra: 22.961, dec: -29.622, pc: 7.7,   mag:  1.16, spectral: 'A' },
   { id: 'deneb',      name: 'Deneb',          ra: 20.690, dec:  45.280, pc: 802,   mag:  1.25, spectral: 'A' },
   { id: 'regulus',    name: 'Regulus',        ra: 10.139, dec:  11.967, pc: 24.31, mag:  1.40, spectral: 'B' },
   { id: 'castor',     name: 'Castor',         ra: 7.577,  dec:  31.888, pc: 15.6,  mag:  1.58, spectral: 'A' },
   { id: 'polaris',    name: 'Polaris',        ra: 2.530,  dec:  89.260, pc: 132,   mag:  1.97, spectral: 'F' },
+  // The true nearest systems — dim red dwarfs the bright-star list skips.
+  { id: 'barnard',    name: "Barnard's Star", ra: 17.963, dec:   4.693, pc: 1.83,  mag:  9.51, spectral: 'M', planets: 4 },
+  { id: 'wolf359',    name: 'Wolf 359',       ra: 10.941, dec:   7.014, pc: 2.41,  mag: 13.54, spectral: 'M' },
+  { id: 'lalande',    name: 'Lalande 21185',  ra: 11.055, dec:  35.970, pc: 2.55,  mag:  7.52, spectral: 'M', planets: 2 },
+  { id: 'epseri',     name: 'Epsilon Eridani', ra: 3.549, dec:  -9.458, pc: 3.22,  mag:  3.73, spectral: 'K', planets: 1 },
+  { id: 'tauceti',    name: 'Tau Ceti',       ra: 1.734,  dec: -15.937, pc: 3.65,  mag:  3.50, spectral: 'G', planets: 4 },
+  { id: 'epsindi',    name: 'Epsilon Indi',   ra: 22.055, dec: -56.786, pc: 3.64,  mag:  4.69, spectral: 'K', planets: 1 },
+  { id: 'cyg61',      name: '61 Cygni',       ra: 21.115, dec:  38.749, pc: 3.50,  mag:  5.21, spectral: 'K' },
+  // Famous planetary systems a bit farther out.
+  { id: 'gliese581',  name: 'Gliese 581',     ra: 15.323, dec:  -7.722, pc: 6.30,  mag: 10.57, spectral: 'M', planets: 3 },
+  { id: 'trappist1',  name: 'TRAPPIST-1',     ra: 23.108, dec:  -5.041, pc: 12.47, mag: 18.80, spectral: 'M', planets: 7 },
+  { id: 'peg51',      name: '51 Pegasi',      ra: 22.958, dec:  20.769, pc: 15.47, mag:  5.49, spectral: 'G', planets: 1 },
+  { id: 'kepler90',   name: 'Kepler-90',      ra: 18.963, dec:  49.306, pc: 855,   mag: 14.0,  spectral: 'G', planets: 8 },
 ];
 
 const SPECTRAL_RGB: Record<NearbyStarRow['spectral'], [number, number, number]> = {
@@ -72,7 +91,9 @@ function raDecPcToVec(ra: number, dec: number, pc: number): THREE.Vector3 {
 export interface NearbyStarsHandle {
   group: THREE.Group;
   positions: Map<string, THREE.Vector3>;
-  setFade: (fade: number) => void;
+  /** `labelFade` defaults to `fade`; pass a lower value to hide the catalog
+   *  labels while keeping the stars (e.g. once the galactic tier takes over). */
+  setFade: (fade: number, labelFade?: number) => void;
   dispose: () => void;
 }
 
@@ -82,16 +103,21 @@ export function makeNearbyStars(lite: boolean): NearbyStarsHandle {
 
   const sprite = softStarSprite();
 
-  // Named bright stars — each its own sprite so they pop and can carry the
-  // catalog name in the future.
+  // Named stars — each its own sprite, carrying a catalog label with the
+  // real distance and, where the system has them, its confirmed planet
+  // count. Zooming out of the solar system introduces the actual stellar
+  // neighbourhood: Barnard's four worlds, TRAPPIST-1's seven, and so on.
   const positions = new Map<string, THREE.Vector3>();
+  const coreSprite = starCoreSprite();
   const namedMats: THREE.SpriteMaterial[] = [];
+  const labelMats: THREE.SpriteMaterial[] = [];
+  const labelTextures: THREE.CanvasTexture[] = [];
   for (const star of NEARBY_STARS) {
     const pos = raDecPcToVec(star.ra, star.dec, star.pc);
     positions.set(star.id, pos.clone());
     const [r, g, b] = SPECTRAL_RGB[star.spectral];
     const mat = new THREE.SpriteMaterial({
-      map: sprite,
+      map: coreSprite,
       color: new THREE.Color(r, g, b),
       transparent: true,
       opacity: 0,
@@ -100,11 +126,41 @@ export function makeNearbyStars(lite: boolean): NearbyStarsHandle {
     });
     const spr = new THREE.Sprite(mat);
     spr.position.copy(pos);
-    // Apparent brightness — brighter (lower mag) gets a larger sprite.
+    // Apparent brightness — brighter (lower mag) gets a larger sprite. Kept
+    // small: a star is a point with a halo, not a fog ball.
     const apparent = THREE.MathUtils.clamp(1.8 - star.mag * 0.6, 0.4, 3.0);
-    spr.scale.setScalar(34 + apparent * 12);
+    spr.scale.setScalar(12 + apparent * 5);
     group.add(spr);
     namedMats.push(mat);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 170;
+    const ctx = canvas.getContext('2d')!;
+    ctx.textBaseline = 'middle';
+    ctx.font = '500 44px "JetBrains Mono", "SF Mono", Menlo, monospace';
+    ctx.fillStyle = 'rgba(212,224,244,0.92)';
+    ctx.fillText(star.name.toUpperCase(), 10, 52);
+    const ly = star.pc * 3.2616;
+    const info = ly >= 100 ? `${Math.round(ly)} LY` : `${ly.toFixed(1)} LY`;
+    ctx.font = '500 32px "JetBrains Mono", "SF Mono", Menlo, monospace';
+    ctx.fillStyle = 'rgba(142,162,198,0.85)';
+    const planetTag = star.planets === 1 ? '1 PLANET' : `${star.planets} PLANETS`;
+    ctx.fillText(star.planets ? `${info} · ${planetTag}` : info, 10, 118);
+    const labelTex = new THREE.CanvasTexture(canvas);
+    labelTex.colorSpace = THREE.SRGBColorSpace;
+    const labelMat = new THREE.SpriteMaterial({
+      map: labelTex, transparent: true, opacity: 0, depthWrite: false,
+    });
+    const label = new THREE.Sprite(labelMat);
+    // Scale with distance so labels stay a readable size across the layer.
+    const s = 6 + pos.length() * 0.042;
+    label.scale.set(s * 3, s, 1);
+    label.center.set(-0.1, 0.5); // sits just right of the star's glow
+    label.position.copy(pos);
+    group.add(label);
+    labelMats.push(labelMat);
+    labelTextures.push(labelTex);
   }
 
   // Background field stars filling the rest of the celestial sphere — they
@@ -146,9 +202,11 @@ export function makeNearbyStars(lite: boolean): NearbyStarsHandle {
   const field = new THREE.Points(fieldGeo, fieldMat);
   group.add(field);
 
-  const setFade = (fade: number) => {
+  const setFade = (fade: number, labelFade?: number) => {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
+    const lf = THREE.MathUtils.clamp(labelFade ?? fade, 0, 1);
     for (const m of namedMats) m.opacity = f;
+    for (const m of labelMats) m.opacity = lf * 0.85;
     fieldMat.opacity = f * 0.72;
     group.visible = f > 0.005;
   };
@@ -159,6 +217,9 @@ export function makeNearbyStars(lite: boolean): NearbyStarsHandle {
     setFade,
     dispose: () => {
       for (const m of namedMats) m.dispose();
+      for (const m of labelMats) m.dispose();
+      for (const t of labelTextures) t.dispose();
+      coreSprite.dispose();
       sprite.dispose();
       fieldGeo.dispose();
       fieldMat.dispose();
@@ -174,6 +235,26 @@ function pickFieldSpectral(): [number, number, number] {
   if (r < 0.50) return [1.00, 0.96, 0.84];   // G
   if (r < 0.75) return [1.00, 0.86, 0.66];   // K
   return [1.00, 0.70, 0.52];                 // M
+}
+
+/** Tight stellar profile — hot pinpoint core, small halo. The broad soft
+ *  sprite reads as fog when a star is viewed from the stellar tier. */
+function starCoreSprite(): THREE.CanvasTexture {
+  const size = 64;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.07, 'rgba(255,255,255,0.95)');
+  g.addColorStop(0.16, 'rgba(255,255,255,0.4)');
+  g.addColorStop(0.34, 'rgba(255,255,255,0.08)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
 }
 
 function softStarSprite(): THREE.CanvasTexture {
