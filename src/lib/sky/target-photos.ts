@@ -29,7 +29,7 @@ export const TARGET_PHOTOS: Record<string, TargetPhoto> = {
   },
   venus: {
     src: '/sky/targets/venus.jpg',
-    alt: 'Venus globe in real colour',
+    alt: 'Venus cloud tops',
     credit: 'NASA / Mariner 10',
   },
   mars: {

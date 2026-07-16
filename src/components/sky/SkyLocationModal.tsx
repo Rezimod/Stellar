@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronRight, MapPin, Navigation, Search, Check, Lock, X } from 'lucide-react';
 import { useLocation, type UserLocation } from '@/lib/location';
 import { CITY_PRESETS, type PresetCity } from '@/components/LocationPicker';
@@ -17,6 +18,7 @@ interface Props {
  * user, once, where they're observing from — GPS or a preset city.
  */
 export default function SkyLocationModal({ open, onClose }: Props) {
+  const t = useTranslations('skyUi.locModal');
   const { location, setLocation, requestLocation, loading: gpsRefreshing } = useLocation();
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -84,18 +86,19 @@ export default function SkyLocationModal({ open, onClose }: Props) {
     if (preset) handlePreset(preset);
   };
 
-  // Current spot, shown as the "Recent" row on the mobile sheet.
+  // Current spot, shown as the "Recent" row on the mobile sheet. An empty
+  // flag renders as a MapPin icon (no emoji in UI).
   const recent: PresetCity | null =
     flatCities.find(isActive) ??
     (location.city
-      ? { ...location, flag: '\u{1F4CD}', nameEn: location.city }
+      ? { ...location, flag: '', nameEn: location.city }
       : null);
 
   return createPortal(
-    <div className="skyloc" role="dialog" aria-modal="true" aria-label="Choose your observing location">
+    <div className="skyloc" role="dialog" aria-modal="true" aria-label={t('aria')}>
       <div className="skyloc__backdrop" onClick={onClose} />
       <div className="skyloc__panel" role="document">
-        <button type="button" className="skyloc__close" onClick={onClose} aria-label="Close">
+        <button type="button" className="skyloc__close" onClick={onClose} aria-label={t('close')}>
           <X size={16} aria-hidden="true" />
         </button>
 
@@ -108,28 +111,25 @@ export default function SkyLocationModal({ open, onClose }: Props) {
 
         <header className="skyloc__head">
           <span className="skyloc__eyebrow">
-            <MapPin size={12} aria-hidden="true" /> Observing from
+            <MapPin size={12} aria-hidden="true" /> {t('observingFrom')}
           </span>
-          <h2 className="skyloc__title">Where are you tonight?</h2>
-          <p className="skyloc__sub">
-            We use your location to show accurate rise/set times, the sky map,
-            and a personalized forecast.
-          </p>
+          <h2 className="skyloc__title">{t('title')}</h2>
+          <p className="skyloc__sub">{t('sub')}</p>
         </header>
 
         <button type="button" className="skyloc__gps" onClick={handleGPS} disabled={gpsRefreshing}>
           <Navigation size={14} className={gpsRefreshing ? 'skyloc__spin' : ''} aria-hidden="true" />
-          {gpsRefreshing ? 'Detecting your location…' : 'Use my GPS location'}
+          {gpsRefreshing ? t('gpsDetecting') : t('gpsUse')}
         </button>
 
-        <div className="skyloc__or" aria-hidden="true"><span>OR</span></div>
+        <div className="skyloc__or" aria-hidden="true"><span>{t('or')}</span></div>
 
         <div className="skyloc__search">
           <Search size={14} aria-hidden="true" />
           <input
             ref={searchRef}
             type="text"
-            placeholder="Search if your city is not shown…"
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -137,7 +137,7 @@ export default function SkyLocationModal({ open, onClose }: Props) {
 
         {!q && (
           <label className="skyloc__select">
-            <span className="skyloc__select-label">City</span>
+            <span className="skyloc__select-label">{t('cityLabel')}</span>
             <select value={selectedValue} onChange={(e) => handleSelect(e.target.value)}>
               {CITY_PRESETS.map((g) => (
                 <optgroup key={g.label} label={g.label}>
@@ -155,13 +155,15 @@ export default function SkyLocationModal({ open, onClose }: Props) {
 
         {!q && recent && (
           <div className="skyloc__recent">
-            <p className="skyloc__recent-label">Recent</p>
+            <p className="skyloc__recent-label">{t('recent')}</p>
             <button
               type="button"
               className="skyloc__recent-row"
               onClick={() => handlePreset(recent)}
             >
-              <span className="skyloc__flag" aria-hidden="true">{recent.flag}</span>
+              <span className="skyloc__flag" aria-hidden="true">
+                {recent.flag || <MapPin size={14} aria-hidden="true" />}
+              </span>
               <span className="skyloc__recent-name">{recent.city}, {recent.country}</span>
               <ChevronRight size={16} aria-hidden="true" className="skyloc__recent-chev" />
             </button>
@@ -170,7 +172,7 @@ export default function SkyLocationModal({ open, onClose }: Props) {
 
         <div className={`skyloc__list${q ? ' is-searching' : ''}`}>
           {groups.length === 0 ? (
-            <p className="skyloc__empty">No cities found</p>
+            <p className="skyloc__empty">{t('empty')}</p>
           ) : (
             groups.map((g) => (
               <div key={g.label} className="skyloc__group">
@@ -200,7 +202,7 @@ export default function SkyLocationModal({ open, onClose }: Props) {
         </div>
 
         <p className="skyloc__privacy">
-          <Lock size={12} aria-hidden="true" /> Your location is private and never shared.
+          <Lock size={12} aria-hidden="true" /> {t('privacy')}
         </p>
       </div>
     </div>,

@@ -94,9 +94,19 @@ function computeTwilight(observer: Observer, now: Date): TwilightTimes {
       return null;
     }
   };
-  const civilDusk = lookFor(-1, -6, now);
-  const nauticalDusk = lookFor(-1, -12, now);
-  const astronomicalDusk = lookFor(-1, -18, now);
+  // If the sun is already below a dusk threshold (page opened mid-night),
+  // a forward descending search would return tomorrow evening's dusk. Search
+  // from 24h back instead so the window describes the night in progress.
+  let sunAltNow = 90;
+  try {
+    const eq = Equator(Body.Sun, now, observer, true, true);
+    sunAltNow = Horizon(now, observer, eq.ra, eq.dec, 'normal').altitude;
+  } catch { /* keep 90 — plain forward search */ }
+  const dusk = (alt: number): Date | null =>
+    lookFor(-1, alt, sunAltNow > alt ? now : new Date(now.getTime() - 24 * 3600 * 1000));
+  const civilDusk = dusk(-6);
+  const nauticalDusk = dusk(-12);
+  const astronomicalDusk = dusk(-18);
   const astronomicalDawn = astronomicalDusk ? lookFor(+1, -18, astronomicalDusk) : null;
   const nauticalDawn = astronomicalDawn ? lookFor(+1, -12, astronomicalDawn) : null;
   const civilDawn = nauticalDawn ? lookFor(+1, -6, nauticalDawn) : null;

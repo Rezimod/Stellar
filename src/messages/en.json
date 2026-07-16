@@ -339,15 +339,15 @@
         "lyrids": {
           "body": "A steady spring shower with a Zenithal Hourly Rate near 18, and occasional outbursts that triple it. Streaks are bright, fast, and often leave persistent trains.",
           "peak": "02:00–04:00 local time, April 23",
-          "moon": "Waning crescent — sets early, sky stays dark",
+          "moon": "Waxing crescent — sets mid-evening, dark for the post-midnight peak",
           "gear": "Naked eye; reclining chair beats craning your neck",
           "tip": "Look up once the radiant in Lyra is high (after midnight). Let your eyes adapt for 20 minutes — no phone screens, no flashlights."
         },
         "mars_saturn_conj": {
-          "body": "Mars and Saturn pass within 0.4° — close enough to share a single low-power eyepiece field. Mars glows steady red; Saturn shows pale gold with rings barely tilted.",
-          "peak": "Pre-dawn May 12, ~04:30 local, ~15° above the eastern horizon",
-          "moon": "Waning crescent — minor light pollution only",
-          "gear": "10×50 binoculars frame both; any small scope splits Saturn's rings",
+          "body": "Mars and Saturn pass about 1.3° apart — close enough to share one binocular field. Mars glows steady red; Saturn shows pale gold with rings barely tilted. Both sit very low in bright dawn twilight, so this one rewards effort.",
+          "peak": "Pre-dawn April 20, in the last hour before sunrise, very low in the east",
+          "moon": "Waxing crescent — sets in the evening, no interference at dawn",
+          "gear": "10×50 binoculars frame both; a small scope shows Saturn's rings",
           "tip": "Be set up an hour before sunrise. Mars is the redder, steady dot; Saturn the steadier gold. Both ride low — an unobstructed eastern horizon makes or breaks the view."
         },
         "perseids": {
@@ -359,7 +359,7 @@
         },
         "solar_eclipse_aug12": {
           "body": "The path of totality crosses Greenland, Iceland, and northern Spain — about 2 minutes 18 seconds of full darkness. Across the rest of Europe and North Africa it's a deep partial.",
-          "peak": "Greatest eclipse 17:47 UTC — early evening across Europe",
+          "peak": "Greatest eclipse 17:46 UTC — early evening across Europe",
           "moon": "New Moon — the occulting body",
           "gear": "ISO-12312-2 solar filters or eclipse glasses, always",
           "tip": "Never look directly without certified protection. If you lack filters, build a pinhole projector — a single hole in card stock projects a crescent Sun onto any flat surface."
@@ -367,16 +367,16 @@
         "saturn_opp": {
           "body": "Saturn rises as the Sun sets and shines all night, at its brightest (mag +0.4) and biggest of the year. Rings are tilted about 9° — reopening from the 2025 edge-on event.",
           "peak": "Rises at sunset; transits highest around local midnight",
-          "moon": "Near new on Oct 4 — pristine dark sky",
+          "moon": "Last quarter — rises near midnight; early-evening hours stay dark",
           "gear": "Telescope at 80×+ to split the rings; even a 60mm achromat shows them clearly",
           "tip": "Wait until Saturn climbs above 30° altitude — atmospheric turbulence smears the view at low angles. Use medium magnification first; push higher only when the seeing is steady."
         },
         "geminids": {
           "body": "The most reliable shower of the year — slow, colour-tinted meteors at a Zenithal Hourly Rate near 120. Often produces bright multicoloured fireballs.",
           "peak": "02:00 local time, December 14, with the radiant nearly overhead",
-          "moon": "First quarter — sets by midnight, leaving prime hours dark",
+          "moon": "Waxing crescent (~25%) — sets by mid-evening, leaving prime hours dark",
           "gear": "Naked eye; serious thermal layers (this is winter)",
-          "tip": "Wait for moonset around midnight, then face anywhere — the radiant in Gemini is overhead, so meteors fall in every direction."
+          "tip": "Once the crescent Moon sets in mid-evening, face anywhere — the radiant in Gemini climbs overhead, so meteors fall in every direction."
         }
       }
     },
@@ -567,6 +567,8 @@
       "below": "below"
     },
     "skymap": {
+      "mapAria": "Sky map showing visible bodies",
+      "belowHorizon": "BELOW HORIZON",
       "calibrate": "Calibrate compass",
       "facing": "Facing",
       "compassDenied": "Compass denied",
@@ -1999,6 +2001,43 @@
     "cancel": "Cancel"
   },
   "skyUi": {
+    "eventBanner": {
+      "openDetails": "{name} — open details",
+      "dismiss": "Dismiss",
+      "today": "Tonight",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {days} days",
+      "tip": "Tip: {tip}",
+      "difficulty": {
+        "naked-eye": "naked eye",
+        "binoculars": "binoculars",
+        "telescope": "telescope",
+        "expert": "expert"
+      }
+    },
+    "locModal": {
+      "aria": "Choose your observing location",
+      "close": "Close",
+      "observingFrom": "Observing from",
+      "title": "Where are you tonight?",
+      "sub": "We use your location to show accurate rise/set times, the sky map, and a personalized forecast.",
+      "gpsDetecting": "Detecting your location…",
+      "gpsUse": "Use my GPS location",
+      "or": "OR",
+      "searchPlaceholder": "Search if your city is not shown…",
+      "cityLabel": "City",
+      "recent": "Recent",
+      "empty": "No cities found",
+      "privacy": "Your location is private and never shared."
+    },
+    "gallery": {
+      "aria": "Daily telescope images",
+      "eyebrow": "Captured by real telescopes",
+      "title": "Today in deep space",
+      "sub": "NASA · ESA · Webb · updated daily",
+      "close": "Close",
+      "viewOn": "View on {source}"
+    },
     "skyTonight": "Sky Tonight",
     "changeLocation": "Change observing location",
     "tonightAtGlance": "Tonight at a glance",

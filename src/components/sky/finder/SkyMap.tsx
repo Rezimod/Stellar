@@ -277,7 +277,12 @@ export function SkyMap({
   }, [proximity, onProximityChange]);
 
   const lockRadius = active ? lockRadiusDeg(active.obj) : 8;
-  const insideLockCone = proximity != null && proximity <= lockRadius;
+  // A compass that *reports* worse accuracy than the lock cone can put the
+  // reticle on a target the phone isn't near — don't let the hold confirm
+  // (and award Stars) off a known-bad heading. Unknown accuracy (Android
+  // never reports it) still locks; the server re-checks visibility.
+  const knownBadAccuracy = accuracy != null && accuracy > POOR_ACCURACY_DEG;
+  const insideLockCone = proximity != null && proximity <= lockRadius && !knownBadAccuracy;
 
   // Hold-to-lock state machine. The user has to keep the aim inside the
   // lock cone for HOLD_TO_LOCK_MS before the lock confirms — this rejects
@@ -469,7 +474,7 @@ export function SkyMap({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className={`sky-map__svg${isLive ? ' is-live' : ''}`}
         role="img"
-        aria-label="Sky map showing visible bodies"
+        aria-label={t('mapAria')}
       >
         <defs>
           <radialGradient id="skymap-bg" cx="50%" cy="50%" r="65%">
@@ -1061,6 +1066,7 @@ function UserAimReticle({
   locked: boolean;
   scanning: boolean;
 }) {
+  const t = useTranslations('sky.skymap');
   if (below) {
     return (
       <g pointerEvents="none" opacity={0.55}>
@@ -1073,7 +1079,7 @@ function UserAimReticle({
           fontFamily="var(--mono)"
           letterSpacing="0.16em"
         >
-          ↓ BELOW HORIZON
+          ↓ {t('belowHorizon')}
         </text>
       </g>
     );

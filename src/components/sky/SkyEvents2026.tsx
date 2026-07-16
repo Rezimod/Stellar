@@ -30,7 +30,7 @@ interface SkyEvent {
 const EVENTS: SkyEvent[] = [
   { id: 'lunar_eclipse_mar3',  kind: 'lunarEclipse',  date: '2026-03-03' },
   { id: 'lyrids',              kind: 'meteorShower',  date: '2026-04-22', endDate: '2026-04-23' },
-  { id: 'mars_saturn_conj',    kind: 'conjunction',   date: '2026-05-12' },
+  { id: 'mars_saturn_conj',    kind: 'conjunction',   date: '2026-04-20' },
   { id: 'perseids',            kind: 'meteorShower',  date: '2026-08-12', endDate: '2026-08-13' },
   { id: 'solar_eclipse_aug12', kind: 'solarEclipse',  date: '2026-08-12' },
   { id: 'saturn_opp',          kind: 'opposition',    date: '2026-10-04' },

@@ -260,7 +260,12 @@ function eventToPointingWithDeclination(
   const result = eventToPointing(e);
   if (!result) return null;
   const ev = e as unknown as { webkitCompassHeading?: number };
-  const hasWebkitCompass = typeof ev.webkitCompassHeading === 'number' && !Number.isNaN(ev.webkitCompassHeading);
+  // Same validity test as eventToPointing — iOS reports -1 when uncalibrated,
+  // and that raw-alpha fallback path still needs the declination correction.
+  const hasWebkitCompass =
+    typeof ev.webkitCompassHeading === 'number' &&
+    !Number.isNaN(ev.webkitCompassHeading) &&
+    ev.webkitCompassHeading >= 0;
   if (hasWebkitCompass) return result;
   if (result.heading == null) return result;
   return {
@@ -355,6 +360,13 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
     }
   }, [lat, lon]);
 
+  // Read declination through a ref so the attached listener always applies the
+  // current location's value — `attach` runs once per request(), and a GPS fix
+  // arriving later would otherwise leave the old declination baked into the
+  // live handler's closure.
+  const declinationRef = useRef(0);
+  declinationRef.current = declinationDeg;
+
   const smoothedHeadingRef = useRef<number | null>(null);
   const smoothedAltRef = useRef<number | null>(null);
   const smoothedRollRef = useRef<number | null>(null);
@@ -395,7 +407,7 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
     detach();
 
     const handle = (e: DeviceOrientationEvent) => {
-      const next = eventToPointingWithDeclination(e, declinationDeg);
+      const next = eventToPointingWithDeclination(e, declinationRef.current);
       if (!next) return;
       setLive(true);
 
@@ -461,7 +473,7 @@ export function useDeviceHeading(lat?: number | null, lon?: number | null): UseD
         setStatus('unavailable');
       }
     }, FIRST_EVENT_TIMEOUT_MS);
-  }, [declinationDeg, detach]);
+  }, [detach]);
 
   const request = useCallback(async () => {
     if (typeof window === 'undefined') return;

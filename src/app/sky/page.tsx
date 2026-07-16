@@ -171,6 +171,9 @@ export default function SkyPage() {
   const handleArOpen = useCallback(() => {
     if (compass.heading == null) void compass.request();
     setArActiveId(null);
+    // Release the dome's proximity damping — AR tracks its own target and
+    // shouldn't inherit smoothing tuned to whatever the dome had selected.
+    compass.setProximityDeg(null);
     setArOpen(true);
   }, [compass]);
 
@@ -178,6 +181,15 @@ export default function SkyPage() {
     setArOpen(false);
     setArActiveId(null);
   }, []);
+
+  // SkyMap stays mounted under the AR overlay; ignore its proximity feed
+  // while AR is open so the dome's unrelated selection can't over-damp the
+  // heading smoother AR is reading.
+  const arOpenRef = useRef(false);
+  arOpenRef.current = arOpen;
+  const handleDomeProximity = useCallback((deg: number | null) => {
+    if (!arOpenRef.current) compass.setProximityDeg(deg);
+  }, [compass]);
 
   const [skyTime, setSkyTime] = useState(() => new Date());
 
@@ -187,7 +199,15 @@ export default function SkyPage() {
 
   useEffect(() => {
     if (!locationReady) return;
-    if (compass.status === 'idle') void compass.request();
+    if (compass.status !== 'idle') return;
+    // iOS requires a user gesture for DeviceOrientationEvent.requestPermission;
+    // auto-requesting from an effect would reject and show the compass as
+    // denied before the user touched anything. Calibrate / AR taps request it.
+    const ctor = typeof DeviceOrientationEvent !== 'undefined'
+      ? (DeviceOrientationEvent as { requestPermission?: unknown })
+      : null;
+    if (ctor && typeof ctor.requestPermission === 'function') return;
+    void compass.request();
   }, [locationReady, compass]);
 
   const fetchFinder = useCallback(async () => {
@@ -268,8 +288,12 @@ export default function SkyPage() {
   locationRef.current = location;
 
   const handleLock = useCallback((id: string) => {
-    if (awardedRef.current.has(id)) return;
-    awardedRef.current.add(id);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    // Keyed by day to mirror the server idempotency key — a tab left open past
+    // midnight (or reused the next evening) can earn the same target again.
+    const awardKey = `${id}:${dateStr}`;
+    if (awardedRef.current.has(awardKey)) return;
+    awardedRef.current.add(awardKey);
     const name = objectsRef.current.find((o) => o.id === id)?.name ?? id;
     const addr = addressRef.current;
     track('find_aimed', { target: id }, addr);
@@ -280,7 +304,6 @@ export default function SkyPage() {
       setAuthOpen(true);
       return;
     }
-    const dateStr = new Date().toISOString().slice(0, 10);
     void (async () => {
       let authToken: string | null = null;
       try { authToken = await getAccessToken(); } catch { /* external wallet */ }
@@ -568,7 +591,7 @@ export default function SkyPage() {
                   onCalibrate={handleCalibrate}
                   calibrationOffset={compass.offset}
                   onNudge={compass.nudge}
-                  onProximityChange={compass.setProximityDeg}
+                  onProximityChange={handleDomeProximity}
                   onLock={handleLock}
                   constellationStars={constellationStars}
                   constellationLines={CONSTELLATION_LINES}

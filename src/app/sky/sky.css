@@ -4495,7 +4495,7 @@
     box-shadow:
       0 0 0 6px rgba(255, 179, 71, 0.18),
       0 0 0 13px rgba(255, 179, 71, 0.09),
-      0 8px 24px rgba(124, 58, 237, 0.5);
+      0 8px 24px rgba(255, 179, 71, 0.35);
   }
 
   .skyloc__head {
@@ -4517,20 +4517,20 @@
     line-height: 1.45;
   }
 
-  /* GPS becomes the purple primary CTA */
+  /* GPS is the terracotta primary CTA */
   .skyloc__gps {
     min-height: 48px;
     margin: 4px 0 14px;
     padding: 12px;
     border-radius: 12px;
-    background: linear-gradient(180deg, var(--terracotta), var(--terracotta));
+    background: var(--terracotta);
     border: 1px solid rgba(255, 179, 71, 0.6);
-    color: #fff;
+    color: #1c1207;
     font-size: 14px;
-    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+    box-shadow: 0 6px 18px rgba(255, 179, 71, 0.3);
   }
   .skyloc__gps:hover:not(:disabled) {
-    background: linear-gradient(180deg, #9670f8, #6d28d9);
+    background: #ffc063;
     border-color: rgba(255, 179, 71, 0.85);
   }
 

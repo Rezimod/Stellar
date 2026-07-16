@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { ExternalLink, X } from 'lucide-react';
 import './SpaceGallery.css';
 
@@ -28,11 +29,14 @@ function fmtDate(iso: string): string {
 }
 
 export function SpaceGallery() {
+  const t = useTranslations('skyUi.gallery');
   const [images, setImages] = useState<SpaceImage[] | null>(null);
   const [error, setError] = useState(false);
   const [active, setActive] = useState<SpaceImage | null>(null);
+  const [modalImgBroken, setModalImgBroken] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  useEffect(() => setModalImgBroken(false), [active]);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,13 +64,13 @@ export function SpaceGallery() {
   if (error) return null;
 
   return (
-    <section className="space-gal" aria-label="Daily telescope images">
+    <section className="space-gal" aria-label={t('aria')}>
       <header className="space-gal__head">
         <div>
-          <p className="space-gal__eyebrow">Captured by real telescopes</p>
-          <h2 className="space-gal__title">Today in deep space</h2>
+          <p className="space-gal__eyebrow">{t('eyebrow')}</p>
+          <h2 className="space-gal__title">{t('title')}</h2>
         </div>
-        <span className="space-gal__sub">NASA · ESA · Webb · updated daily</span>
+        <span className="space-gal__sub">{t('sub')}</span>
       </header>
 
       <div className="space-gal__grid">
@@ -80,12 +84,16 @@ export function SpaceGallery() {
       {mounted && active && createPortal(
         <div className="space-gal__overlay" role="dialog" aria-modal="true" aria-label={active.title} onClick={close}>
           <div className="space-gal__modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="space-gal__close" onClick={close} aria-label="Close">
+            <button type="button" className="space-gal__close" onClick={close} aria-label={t('close')}>
               <X size={18} aria-hidden="true" />
             </button>
             <div className="space-gal__modal-img">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={active.imageUrl} alt={active.title} loading="lazy" decoding="async" />
+              {modalImgBroken ? (
+                <span className="space-gal__thumb-fallback" aria-hidden="true" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={active.imageUrl} alt={active.title} loading="lazy" decoding="async" onError={() => setModalImgBroken(true)} />
+              )}
             </div>
             <div className="space-gal__modal-body">
               <span className={`space-gal__badge space-gal__badge--${active.source.toLowerCase()}`}>{active.source}</span>
@@ -98,7 +106,7 @@ export function SpaceGallery() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                View on {active.source} <ExternalLink size={14} aria-hidden="true" />
+                {t('viewOn', { source: active.source })} <ExternalLink size={14} aria-hidden="true" />
               </a>
             </div>
           </div>

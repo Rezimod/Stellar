@@ -388,6 +388,7 @@ export function ARFinder({
   const headingActiveRef = useRef(headingActive); headingActiveRef.current = headingActive;
   const headingStatusRef = useRef(headingStatus); headingStatusRef.current = headingStatus;
   const confirmedLockRef = useRef(confirmedLock); confirmedLockRef.current = confirmedLock;
+  const accuracyRef = useRef(accuracy); accuracyRef.current = accuracy;
   const tRef = useRef(t); tRef.current = t;
   const objectsRef = useRef(objects); objectsRef.current = objects;
   const sceneStarsRef = useRef(sceneStars); sceneStarsRef.current = sceneStars;
@@ -655,9 +656,14 @@ export function ARFinder({
     }
 
     // Lock cone — flip the discrete React state only on a boundary crossing.
+    // A compass reporting worse accuracy than the cone radius can't attest an
+    // aim, so the hold (and its Stars award) never confirms off a known-bad
+    // heading. Unknown accuracy (Android never reports it) still locks.
     const ab = activeBodyRef.current;
     const lockRadius = ab ? lockRadiusDeg(ab) : 8;
-    const cone = headingActiveRef.current && activeRow != null && activeRow.sep <= lockRadius;
+    const acc = accuracyRef.current;
+    const knownBadAccuracy = acc != null && acc > POOR_ACCURACY_DEG;
+    const cone = headingActiveRef.current && !knownBadAccuracy && activeRow != null && activeRow.sep <= lockRadius;
     if (cone !== insideConeRef.current) {
       insideConeRef.current = cone;
       setInsideLockCone(cone);
