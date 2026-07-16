@@ -36,6 +36,14 @@ export interface AstroEvent {
    * the Stars award.
    */
   boostTargets: string[];
+  /** Georgian display strings — applied over the English ones by localizeEvent. */
+  ka?: Pick<AstroEvent, 'name' | 'description' | 'viewingTip' | 'visibilityRegion' | 'infoBar'>;
+}
+
+/** Returns the event with display strings swapped to the given locale. */
+export function localizeEvent(e: AstroEvent, locale: string): AstroEvent {
+  if (locale !== 'ka' || !e.ka) return e;
+  return { ...e, ...e.ka };
 }
 
 const EVENTS_2026: AstroEvent[] = [
@@ -49,6 +57,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'expert',
     visibilityRegion: 'Antarctica · partial: southern hemisphere',
     infoBar: 'A solar eclipse happens when the Moon passes between the Sun and Earth. In an annular eclipse the Moon is too far from Earth to cover the whole Sun, so a bright ring stays visible — never look without a certified solar filter.',
+    ka: {
+      name: 'მზის რგოლისებრი დაბნელება',
+      description: 'რგოლისებრი დაბნელება — მთვარე მზის ~96%-ს ფარავს და თხელი „ცეცხლის რგოლი“ რჩება, რომელიც მხოლოდ ანტარქტიდიდან ჩანს.',
+      viewingTip: 'რგოლისებრი ფაზის ზოლი ანტარქტიდაზე გადის. ნაწილობრივი ფაზები ჩანს სამხრეთ ამერიკის სამხრეთიდან, სამხრეთ აფრიკიდან და ინდოეთის ოკეანის სამხრეთიდან.',
+      visibilityRegion: 'ანტარქტიდა · ნაწილობრივი: სამხრეთ ნახევარსფერო',
+      infoBar: 'მზის დაბნელება ხდება, როცა მთვარე მზესა და დედამიწას შორის გაივლის. რგოლისებრი დაბნელებისას მთვარე დედამიწისგან ზედმეტად შორსაა, რომ მზე მთლიანად დაფაროს, ამიტომ კაშკაშა რგოლი რჩება — არასოდეს უყურო სერტიფიცირებული მზის ფილტრის გარეშე.',
+    },
     boostTargets: ['sun', 'eclipse'],
   },
   {
@@ -60,6 +75,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Asia / Pacific / Australia / W. Americas',
     infoBar: 'A lunar eclipse happens when Earth passes between the Sun and the Moon. The Moon turns red because the only sunlight reaching it has been filtered through Earth\'s atmosphere — the same physics as a sunset.',
+    ka: {
+      name: 'მთვარის სრული დაბნელება',
+      description: 'დედამიწის ჩრდილი მთვარეს მთლიანად ფარავს — მთვარე ~58 წუთით მუქ წითლად („სისხლიანი მთვარე“) იქცევა.',
+      viewingTip: 'საუკეთესოდ ჩანს აღმოსავლეთ აზიიდან, ავსტრალიიდან, წყნარი ოკეანიდან და ჩრდილოეთ ამერიკის დასავლეთიდან. აღჭურვილობა არ გჭირდება.',
+      visibilityRegion: 'აზია / წყნარი ოკეანე / ავსტრალია / დას. ამერიკები',
+      infoBar: 'მთვარის დაბნელება ხდება, როცა დედამიწა მზესა და მთვარეს შორის დგება. მთვარე წითლდება, რადგან მასზე მხოლოდ დედამიწის ატმოსფეროში გაფილტრული სინათლე აღწევს — იგივე ფიზიკა, რაც მზის ჩასვლისას.',
+    },
     boostTargets: ['moon', 'eclipse'],
   },
   {
@@ -71,6 +93,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Iceland / N. Spain (totality) · partial across Europe inc. Georgia',
     infoBar: 'During a total solar eclipse the Moon completely blocks the Sun, revealing the corona — the Sun\'s outer atmosphere. The corona is only visible during totality; outside that narrow path you only see a partial eclipse and must keep filters on the entire time.',
+    ka: {
+      name: 'მზის სრული დაბნელება',
+      description: 'სრული ფაზის ზოლი გადის ისლანდიაზე, გრენლანდიის ნაწილსა და ჩრდილოეთ ესპანეთზე. ნაწილობრივი ფაზები ევროპის უმეტეს ნაწილში — საქართველოშიც, ~50% დაფარვით.',
+      viewingTip: 'სრული ფაზის ზოლში: ~2 წუთი სიბნელე. მის გარეთ (მაგ. საქართველოში): ღრმა ნაწილობრივი დაბნელება — გამოიყენე სერტიფიცირებული დაბნელების სათვალე ან პინჰოლ-პროექტორი.',
+      visibilityRegion: 'ისლანდია / ჩრდ. ესპანეთი (სრული) · ნაწილობრივი ევროპაში, მათ შორის საქართველოში',
+      infoBar: 'მზის სრული დაბნელებისას მთვარე მზეს მთლიანად ფარავს და ჩანს გვირგვინი — მზის გარე ატმოსფერო. გვირგვინი მხოლოდ სრული ფაზისას ჩანს; ამ ვიწრო ზოლის გარეთ მხოლოდ ნაწილობრივი დაბნელებაა და ფილტრი მთელი დროის განმავლობაში გჭირდება.',
+    },
     boostTargets: ['sun', 'eclipse'],
   },
   {
@@ -82,6 +111,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Americas / Europe / Africa / W. Asia',
     infoBar: 'A partial lunar eclipse happens when only part of the Moon enters Earth\'s dark inner shadow (the umbra). The shadowed portion looks bitten out of the Moon — easy to spot at a glance.',
+    ka: {
+      name: 'მთვარის ნაწილობრივი დაბნელება',
+      description: 'დედამიწის ჩრდილი მაქსიმუმში მთვარის ~93%-ს ფარავს, პატარა კაშკაშა ნამგალი რჩება. სრული ფაზა ამჯერად არ იქნება.',
+      viewingTip: 'ჩანს ამერიკებიდან, ევროპიდან, აფრიკიდან და დასავლეთ აზიიდან. აღჭურვილობა არ გჭირდება.',
+      visibilityRegion: 'ამერიკები / ევროპა / აფრიკა / დას. აზია',
+      infoBar: 'მთვარის ნაწილობრივი დაბნელება ხდება, როცა მთვარის მხოლოდ ნაწილი შედის დედამიწის მუქ შიდა ჩრდილში (უმბრაში). დაჩრდილული ნაწილი მთვარეს „მოკბეჩილს“ აჩენს — ერთი შეხედვითაც ადვილი შესამჩნევია.',
+    },
     boostTargets: ['moon', 'eclipse'],
   },
 
@@ -96,45 +132,53 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Worldwide (evening sky)',
     infoBar: 'A planetary conjunction is when two planets appear close together in our sky from Earth\'s point of view. They\'re still hundreds of millions of kilometres apart in space — the alignment is just our line of sight.',
+    ka: {
+      name: 'ვენერასა და სატურნის დაახლოება',
+      description: 'ვენერა და სატურნი ~3°-ით არიან დაშორებულნი — ორივე ჩანს დასავლეთის საღამოს ცაზე მზის ჩასვლისთანავე.',
+      viewingTip: 'შეხედე დაბლა დასავლეთით მზის ჩასვლიდან 30–45 წუთში. ვენერა კაშკაშაა; სატურნი ოქროსფერი და ბევრად მკრთალი.',
+      visibilityRegion: 'მთელ მსოფლიოში (საღამოს ცა)',
+      infoBar: 'პლანეტების კონიუნქცია ნიშნავს, რომ ორი პლანეტა ჩვენი ცის ხედიდან ერთმანეთთან ახლოს ჩანს. სინამდვილეში ისინი კოსმოსში ასობით მილიონი კილომეტრით არიან დაშორებულნი — უბრალოდ ერთ ხაზზე აღმოჩნდნენ.',
+    },
     boostTargets: ['venus', 'saturn'],
   },
 
   // ─── OPPOSITIONS ─────────────────────────────────────────────────────────
-  // Existing (kept from earlier file). Mars opposition note: the next true
-  // Mars opposition is Feb 2027; the May 17 entry is a planetary highlight
-  // window rather than a strict opposition. Kept per spec.
-  {
-    name: 'Mars at Opposition',
-    date: '2026-05-17',
-    description: 'Mars is closest to Earth and fully illuminated — brightest of the year.',
-    viewingTip: 'Visible all night. Even small telescopes show surface detail.',
-    type: 'opposition',
-    difficulty: 'binoculars',
-    visibilityRegion: 'Worldwide',
-    infoBar: 'Opposition is when Earth sits between a planet and the Sun, putting the planet at its closest, brightest, and visible all night. It happens roughly every two years for Mars and every year for the outer planets.',
-    boostTargets: ['mars'],
-  },
-  {
-    name: 'Saturn at Opposition',
-    date: '2026-09-15',
-    description: 'Saturn at its biggest and brightest. Rings tilted ~22° toward Earth.',
-    viewingTip: 'Any telescope shows the rings. Look south after sunset.',
-    type: 'opposition',
-    difficulty: 'telescope',
-    visibilityRegion: 'Worldwide',
-    infoBar: 'Saturn at opposition rises at sunset and sets at sunrise — the whole night is observing time. The ring tilt changes year to year; in 2026 they\'re still well-presented before they go edge-on around 2025–2026.',
-    boostTargets: ['saturn'],
-  },
+  // Note: no Mars opposition in 2026 — the next one is Feb 19, 2027.
   {
     name: 'Jupiter at Opposition',
-    date: '2026-10-19',
+    date: '2026-01-10',
     description: 'Jupiter at its closest — largest and brightest in the sky.',
     viewingTip: 'Binoculars show the four Galilean moons. Telescopes reveal cloud bands.',
     type: 'opposition',
     difficulty: 'binoculars',
     visibilityRegion: 'Worldwide',
     infoBar: 'Jupiter at opposition is unmistakable — outshining everything else in the night sky except the Moon and Venus. With any binoculars steadied on a fence or tripod you can resolve the four Galilean moons.',
+    ka: {
+      name: 'იუპიტერის ოპოზიცია',
+      description: 'იუპიტერი ყველაზე ახლოსაა — ცაზე ყველაზე დიდი და კაშკაშა.',
+      viewingTip: 'ბინოკლში ოთხი გალილეური მთვარე ჩანს. ტელესკოპი ღრუბლის ზოლებს აჩვენებს.',
+      visibilityRegion: 'მთელ მსოფლიოში',
+      infoBar: 'იუპიტერი ოპოზიციისას შეუმჩნეველი ვერ დარჩება — ღამის ცაზე მასზე კაშკაშა მხოლოდ მთვარე და ვენერაა. ღობეზე ან შტატივზე დაყრდნობილი ბინოკლითაც კი გაარჩევ ოთხ გალილეურ მთვარეს.',
+    },
     boostTargets: ['jupiter'],
+  },
+  {
+    name: 'Saturn at Opposition',
+    date: '2026-10-04',
+    description: 'Saturn at its biggest and brightest of the year. The rings are nearly edge-on in 2026 — a rare thin-ring view.',
+    viewingTip: 'Any telescope shows the rings. Look south after sunset.',
+    type: 'opposition',
+    difficulty: 'telescope',
+    visibilityRegion: 'Worldwide',
+    infoBar: 'Saturn at opposition rises at sunset and sets at sunrise — the whole night is observing time. The ring tilt changes year to year; around 2025–2026 the rings are close to edge-on, so they appear as a thin bright line.',
+    ka: {
+      name: 'სატურნის ოპოზიცია',
+      description: 'სატურნი წლის ყველაზე დიდი და კაშკაშა. 2026-ში რგოლები თითქმის გვერდიდან ჩანს — იშვიათი „თხელი რგოლის“ ხედი.',
+      viewingTip: 'ნებისმიერი ტელესკოპი აჩვენებს რგოლებს. შეხედე სამხრეთით მზის ჩასვლის შემდეგ.',
+      visibilityRegion: 'მთელ მსოფლიოში',
+      infoBar: 'სატურნი ოპოზიციისას მზის ჩასვლისას ამოდის და ამოსვლისას ჩადის — მთელი ღამე დაკვირვების დროა. რგოლების დახრა წლიდან წლამდე იცვლება; 2025–2026 წლებში ისინი თითქმის გვერდიდან ჩანს და თხელ კაშკაშა ხაზს ჰგავს.',
+    },
+    boostTargets: ['saturn'],
   },
 
   // ─── METEOR SHOWERS ──────────────────────────────────────────────────────
@@ -147,6 +191,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Northern hemisphere best',
     infoBar: 'A meteor shower happens when Earth passes through a trail of dust left by a comet. The grains burn up in the upper atmosphere — no telescope helps; the wider your view, the better.',
+    ka: {
+      name: 'ლირიდების მეტეორული ნაკადი',
+      description: 'ყოველწლიური მეტეორული ნაკადი — პიკზე საათში 20 მეტეორამდე.',
+      viewingTip: 'შეხედე ჩრდილო-აღმოსავლეთით შუაღამის შემდეგ. საუკეთესოა ქალაქის შუქებისგან მოშორებით.',
+      visibilityRegion: 'საუკეთესო ჩრდილოეთ ნახევარსფეროში',
+      infoBar: 'მეტეორული ნაკადი ხდება, როცა დედამიწა კომეტის დატოვებულ მტვრის კვალს კვეთს. მარცვლები ატმოსფეროს ზედა ფენებში იწვის — ტელესკოპი არ გჭირდება; რაც უფრო ფართოა ხედი, მით უკეთესი.',
+    },
     boostTargets: ['meteor', 'lyrid'],
   },
   {
@@ -158,6 +209,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Tropics / southern hemisphere best',
     infoBar: 'The Eta Aquariids come from dust shed by Comet 1P/Halley on its 76-year orbit. The radiant is low for northern observers, so rates are best from the tropics and southern hemisphere.',
+    ka: {
+      name: 'ეტა-აქვარიიდების მეტეორული ნაკადი',
+      description: 'ჰალეის კომეტის ნამსხვრევები — პიკზე საათში 50 მეტეორამდე.',
+      viewingTip: 'საუკეთესოა გამთენიისას. შეხედე აღმოსავლეთით, მერწყულის მიმართულებით.',
+      visibilityRegion: 'საუკეთესო ტროპიკებსა და სამხრეთ ნახევარსფეროში',
+      infoBar: 'ეტა-აქვარიიდები 1P/ჰალეის კომეტის მტვრიდან მოდის, რომელიც მზეს 76 წელიწადში ერთხელ უვლის. რადიანტი ჩრდილოეთიდან დაბალია, ამიტომ ყველაზე მეტი მეტეორი ტროპიკებიდან და სამხრეთიდან ჩანს.',
+    },
     boostTargets: ['meteor', 'aquariid', 'halley'],
   },
   {
@@ -169,6 +227,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Northern hemisphere',
     infoBar: 'The Perseids are debris from Comet Swift-Tuttle. Peak runs the night of Aug 12–13; you don\'t need to face Perseus directly — meteors streak across the whole sky.',
+    ka: {
+      name: 'პერსეიდების მეტეორული ნაკადი',
+      description: 'წლის ერთ-ერთი საუკეთესო ნაკადი — საათში 100 მეტეორამდე. წელს 12 აგვისტოს მზის სრულ დაბნელებას ემთხვევა.',
+      viewingTip: 'შეხედე ჩრდილო-აღმოსავლეთით 22:00-ის შემდეგ. აღჭურვილობა არ გჭირდება.',
+      visibilityRegion: 'ჩრდილოეთ ნახევარსფერო',
+      infoBar: 'პერსეიდები კომეტა სვიფტ-ტატლის ნამსხვრევებია. პიკი 12–13 აგვისტოს ღამეს მოდის; პერსევსისკენ ყურება არ არის აუცილებელი — მეტეორები მთელ ცაზე ისრიალებენ.',
+    },
     boostTargets: ['meteor', 'perseid'],
   },
   {
@@ -180,6 +245,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Worldwide',
     infoBar: 'The Leonids are known for occasional meteor storms when Earth crosses fresh debris streams — most years are quiet, but the Leonids are why "meteor storm" is a word.',
+    ka: {
+      name: 'ლეონიდების მეტეორული ნაკადი',
+      description: 'სწრაფი მეტეორები კომეტა ტემპელ-ტატლიდან — საათში 15-მდე.',
+      viewingTip: 'საუკეთესოა შუაღამის შემდეგ, ლომის მიმართულებით აღმოსავლეთით.',
+      visibilityRegion: 'მთელ მსოფლიოში',
+      infoBar: 'ლეონიდები ცნობილია იშვიათი მეტეორული ქარიშხლებით, როცა დედამიწა ახალ ნამსხვრევების ნაკადს კვეთს — წლების უმეტესობა მშვიდია, მაგრამ სწორედ ლეონიდების გამო არსებობს ტერმინი „მეტეორული ქარიშხალი“.',
+    },
     boostTargets: ['meteor', 'leonid'],
   },
   {
@@ -191,6 +263,13 @@ const EVENTS_2026: AstroEvent[] = [
     difficulty: 'naked-eye',
     visibilityRegion: 'Worldwide',
     infoBar: 'The Geminids are unusual — their parent body is an asteroid (3200 Phaethon), not a comet. The shower is active well before midnight, making it the most family-friendly of the year.',
+    ka: {
+      name: 'გემინიდების მეტეორული ნაკადი',
+      description: 'წლის ყველაზე სანდო ნაკადი — საათში 120 მეტეორამდე.',
+      viewingTip: 'დაიწყე ყურება 21:00-ზე. რადიანტი ტყუპების თანავარსკვლავედში, კასტორთან ახლოსაა.',
+      visibilityRegion: 'მთელ მსოფლიოში',
+      infoBar: 'გემინიდები უჩვეულოა — მათი წყარო ასტეროიდია (3200 ფაეთონი) და არა კომეტა. ნაკადი შუაღამემდეც აქტიურია, ამიტომ წლის ყველაზე ოჯახური ნაკადია.',
+    },
     boostTargets: ['meteor', 'geminid'],
   },
 

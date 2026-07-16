@@ -41,9 +41,18 @@ const COPY = {
   },
 } as const;
 
+const TIER_NAME_KA: Record<string, string> = {
+  'New Star': 'ახალი ვარსკვლავი',
+  'Crescent': 'ნამგალა მთვარე',
+  'Half Moon': 'ნახევარმთვარე',
+  'Gibbous': 'ამოზნექილი მთვარე',
+  'Full Moon': 'სავსე მთვარე',
+};
+
 export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyCheckInCardProps) {
   const locale = useLocale() === 'ka' ? 'ka' : 'en';
   const c = COPY[locale];
+  const tierName = (name: string) => (locale === 'ka' ? TIER_NAME_KA[name] ?? name : name);
   const [checked, setChecked] = useState(false);
   const [streak, setStreak] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -138,12 +147,12 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
           {c.eyebrow}
         </span>
         <p className="text-white text-[13.5px] font-medium leading-tight mt-0.5">
-          {tier.name}
+          {tierName(tier.name)}
           {tier.multiplier > 1 && <span className="text-[#FFB347] ml-1.5 font-mono text-[12px]">×{tier.multiplier}</span>}
         </p>
         {tier.nextName && (
           <p className="text-white/40 text-[10.5px] leading-tight mt-0.5 truncate">
-            {c.nextTier(tier.nextName, tier.nightsToNext)}
+            {c.nextTier(tierName(tier.nextName), tier.nightsToNext)}
           </p>
         )}
       </div>

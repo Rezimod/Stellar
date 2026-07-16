@@ -20,6 +20,7 @@ export default function ObserveCapturePage() {
   const mission = MISSIONS.find(m => m.id === missionId);
   const { setPhoto, setSource, setTimestamp, setCoords, setMintError } = useObserveFlow();
   const t = useTranslations('observeFlow');
+  const tm = useTranslations('missions');
 
   if (!mission) {
     return (
@@ -72,7 +73,7 @@ export default function ObserveCapturePage() {
             {t('capture.title')}
           </h1>
           <p className="text-xs mt-0.5" style={{ color: 'var(--stl-text-muted)' }}>
-            {mission.name}
+            {tm.has(`briefs.${mission.id}.name`) ? tm(`briefs.${mission.id}.name`) : mission.name}
           </p>
         </div>
       </div>

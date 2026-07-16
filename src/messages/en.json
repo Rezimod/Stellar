@@ -821,7 +821,71 @@
     "goodConditions": "Good for observing tonight",
     "cloudyTonight": "Cloudy tonight",
     "knowledgeQuizzes": "Knowledge Quizzes",
-    "approximateLocation": "Using approximate location — tap to set yours"
+    "approximateLocation": "Using approximate location — tap to set yours",
+    "briefs": {
+      "demo": {
+        "name": "Demo Observation",
+        "hint": "Uses a pre-generated sky photo. Perfect for demos and presentations."
+      },
+      "quick-jupiter": {
+        "name": "Jupiter",
+        "hint": "Upload a photo of Jupiter or the night sky. Sky conditions are ignored — your NFT mints regardless."
+      },
+      "quick-saturn": {
+        "name": "Saturn",
+        "hint": "Upload a photo of Saturn or the night sky. Sky conditions are ignored — your NFT mints regardless."
+      },
+      "free-observation": {
+        "name": "Tonight's Sky",
+        "hint": "Find a spot away from bright lights. Point your camera straight up or at the brightest thing you see."
+      },
+      "moon": {
+        "name": "The Moon",
+        "hint": "Best viewed during first/last quarter for crater shadow detail."
+      },
+      "mercury": {
+        "name": "Mercury",
+        "hint": "Always near the Sun — look just after sunset or before sunrise, low to the horizon."
+      },
+      "venus": {
+        "name": "Venus",
+        "hint": "Brighter than any star and doesn't twinkle. West after sunset, or east before dawn."
+      },
+      "mars": {
+        "name": "Mars",
+        "hint": "Distinctly orange-red. Doesn't twinkle. Best near opposition."
+      },
+      "jupiter": {
+        "name": "Jupiter",
+        "hint": "Look for the bright 'star' that doesn't twinkle."
+      },
+      "orion": {
+        "name": "Orion Nebula",
+        "hint": "Below the three belt stars — middle 'star' of the sword."
+      },
+      "saturn": {
+        "name": "Saturn",
+        "hint": "Even a small telescope shows rings. Yellowish 'star'."
+      },
+      "pleiades": {
+        "name": "Pleiades (M45)",
+        "hint": "Fuzzy patch to naked eye. Binoculars show dozens of stars."
+      },
+      "andromeda": {
+        "name": "Andromeda Galaxy",
+        "hint": "Find the Great Square of Pegasus, then hop two stars north-east. Dark skies required."
+      },
+      "crab": {
+        "name": "Crab Nebula",
+        "hint": "Requires at least 8\" aperture and dark skies. Located 1° NW of ζ Tauri."
+      }
+    },
+    "difficultyLabels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "hard": "Hard",
+      "expert": "Expert"
+    }
   },
   "dashboard": {
     "greeting": {
@@ -863,16 +927,40 @@
     "locating": "Finding you…",
     "locationDetected": "Location detected",
     "equipment": {
-      "naked-eye": { "label": "Naked eye", "desc": "No equipment" },
-      "binoculars": { "label": "Binoculars", "desc": "7×50 or similar" },
-      "small-telescope": { "label": "Small telescope", "desc": "Under 5-inch" },
-      "large-telescope": { "label": "Large telescope", "desc": "5-inch or bigger" }
+      "naked-eye": {
+        "label": "Naked eye",
+        "desc": "No equipment"
+      },
+      "binoculars": {
+        "label": "Binoculars",
+        "desc": "7×50 or similar"
+      },
+      "small-telescope": {
+        "label": "Small telescope",
+        "desc": "Under 5-inch"
+      },
+      "large-telescope": {
+        "label": "Large telescope",
+        "desc": "5-inch or bigger"
+      }
     },
     "environment": {
-      "city": { "label": "City", "desc": "Bright skies" },
-      "suburb": { "label": "Suburb", "desc": "Some stars" },
-      "rural": { "label": "Rural", "desc": "Dark skies" },
-      "remote": { "label": "Remote", "desc": "Pristine dark" }
+      "city": {
+        "label": "City",
+        "desc": "Bright skies"
+      },
+      "suburb": {
+        "label": "Suburb",
+        "desc": "Some stars"
+      },
+      "rural": {
+        "label": "Rural",
+        "desc": "Dark skies"
+      },
+      "remote": {
+        "label": "Remote",
+        "desc": "Pristine dark"
+      }
     },
     "interests": {
       "planets": "Planets",
@@ -1169,22 +1257,64 @@
       "binoculars": "Binoculars"
     },
     "grid": {
-      "moon":      { "name": "The Moon",          "desc": "Craters, seas, and the terminator line" },
-      "mercury":   { "name": "Mercury",           "desc": "Swiftest planet — catch it low at twilight" },
-      "jupiter":   { "name": "Jupiter",           "desc": "Spot the four Galilean moons" },
-      "pleiades":  { "name": "Pleiades (M45)",    "desc": "Seven sisters — naked eye showpiece" },
-      "venus":     { "name": "Venus",             "desc": "Brightest planet — the evening star" },
-      "saturn":    { "name": "Saturn",            "desc": "The rings are unmistakable" },
-      "mars":      { "name": "Mars",              "desc": "Look for the polar ice cap" },
-      "orion":     { "name": "Orion Nebula (M42)", "desc": "A stellar nursery — glows in any scope" },
-      "andromeda": { "name": "Andromeda (M31)",   "desc": "2.5 million light-years — nearest spiral" },
-      "crab":      { "name": "Crab Nebula (M1)",  "desc": "Supernova remnant from 1054 AD" }
+      "moon": {
+        "name": "The Moon",
+        "desc": "Craters, seas, and the terminator line"
+      },
+      "mercury": {
+        "name": "Mercury",
+        "desc": "Swiftest planet — catch it low at twilight"
+      },
+      "jupiter": {
+        "name": "Jupiter",
+        "desc": "Spot the four Galilean moons"
+      },
+      "pleiades": {
+        "name": "Pleiades (M45)",
+        "desc": "Seven sisters — naked eye showpiece"
+      },
+      "venus": {
+        "name": "Venus",
+        "desc": "Brightest planet — the evening star"
+      },
+      "saturn": {
+        "name": "Saturn",
+        "desc": "The rings are unmistakable"
+      },
+      "mars": {
+        "name": "Mars",
+        "desc": "Look for the polar ice cap"
+      },
+      "orion": {
+        "name": "Orion Nebula (M42)",
+        "desc": "A stellar nursery — glows in any scope"
+      },
+      "andromeda": {
+        "name": "Andromeda (M31)",
+        "desc": "2.5 million light-years — nearest spiral"
+      },
+      "crab": {
+        "name": "Crab Nebula (M1)",
+        "desc": "Supernova remnant from 1054 AD"
+      }
     },
     "tips": {
-      "cool":  { "title": "Let it cool",          "body": "Set it outside 30 min before viewing." },
-      "zoom":  { "title": "Start zoomed out",     "body": "Use the lowest power eyepiece first." },
-      "align": { "title": "Align finder by day",  "body": "Aim at a distant tree or sign." },
-      "eyes":  { "title": "Let your eyes adjust", "body": "20 min in the dark. No phone screens." }
+      "cool": {
+        "title": "Let it cool",
+        "body": "Set it outside 30 min before viewing."
+      },
+      "zoom": {
+        "title": "Start zoomed out",
+        "body": "Use the lowest power eyepiece first."
+      },
+      "align": {
+        "title": "Align finder by day",
+        "body": "Aim at a distant tree or sign."
+      },
+      "eyes": {
+        "title": "Let your eyes adjust",
+        "body": "20 min in the dark. No phone screens."
+      }
     },
     "observer": {
       "dark": {
@@ -1215,23 +1345,27 @@
     "eventType": {
       "eclipse-lunar": "Lunar eclipse",
       "eclipse-solar": "Solar eclipse",
-      "conjunction":   "Conjunction",
-      "comet":         "Comet",
-      "opposition":    "Opposition",
+      "conjunction": "Conjunction",
+      "comet": "Comet",
+      "opposition": "Opposition",
       "meteor-shower": "Meteor shower"
     },
     "eventDiff": {
-      "naked-eye":  "Naked eye",
+      "naked-eye": "Naked eye",
       "binoculars": "Binoculars",
-      "telescope":  "Telescope",
-      "expert":     "Expert"
+      "telescope": "Telescope",
+      "expert": "Expert"
     },
     "countdown": {
-      "today":    "today",
+      "today": "today",
       "tomorrow": "tomorrow",
-      "past":     "past",
-      "inDays":   "in {n}d",
+      "past": "past",
+      "inDays": "in {n}d",
       "inMonths": "in {n}mo"
+    },
+    "eventSheet": {
+      "where": "Where to see it",
+      "tip": "Tip"
     }
   },
   "checkout": {
@@ -1425,13 +1559,26 @@
         "visibleNow": "Visible now",
         "noneUp": "No planets up right now",
         "skyScore": "Sky score",
-        "verdict": { "go": "Go", "maybe": "Maybe", "skip": "Skip" },
+        "verdict": {
+          "go": "Go",
+          "maybe": "Maybe",
+          "skip": "Skip"
+        },
         "missionsLabel": "Tonight's mission"
       },
       "features": {
-        "track": { "title": "Track", "desc": "Real-time sky conditions" },
-        "find": { "title": "Find", "desc": "Objects visible tonight" },
-        "earn": { "title": "Earn", "desc": "Complete missions to earn rewards" }
+        "track": {
+          "title": "Track",
+          "desc": "Real-time sky conditions"
+        },
+        "find": {
+          "title": "Find",
+          "desc": "Objects visible tonight"
+        },
+        "earn": {
+          "title": "Earn",
+          "desc": "Complete missions to earn rewards"
+        }
       }
     },
     "partners": "Partner brands",
@@ -1559,7 +1706,7 @@
       "cta": "Open the feed"
     }
   },
-  "observeFlow":   {
+  "observeFlow": {
     "target": {
       "eyebrow": "Tonight's Target",
       "beginner": "Beginner",
@@ -1651,7 +1798,7 @@
       "postFailed": "Could not post — try again"
     }
   },
-  "profileUi":   {
+  "profileUi": {
     "avatar": {
       "close": "Close",
       "pick": "Select avatar",
@@ -1695,7 +1842,7 @@
       "cancel": "Cancel"
     }
   },
-  "nftsPage":   {
+  "nftsPage": {
     "title": "My Observations",
     "collection": "Your collection",
     "signInDesc": "Sign in to view your observation NFTs.",
@@ -1772,7 +1919,7 @@
       }
     }
   },
-  "leaderboardPage":   {
+  "leaderboardPage": {
     "title": "Leaderboard",
     "liveNotice": "Leaderboard updates with real observer data as missions are completed on-chain",
     "error": "Couldn't load the leaderboard.",
@@ -1804,7 +1951,7 @@
       "button": "Start Observing →"
     }
   },
-  "settingsUi":   {
+  "settingsUi": {
     "title": "Settings",
     "back": "Back",
     "signInPrompt": "Sign in to access settings.",
@@ -1851,7 +1998,7 @@
     "confirmSignOut": "Confirm sign out?",
     "cancel": "Cancel"
   },
-  "skyUi":   {
+  "skyUi": {
     "skyTonight": "Sky Tonight",
     "changeLocation": "Change observing location",
     "tonightAtGlance": "Tonight at a glance",
@@ -1932,7 +2079,7 @@
       "good": "Good"
     }
   },
-  "feedUi":   {
+  "feedUi": {
     "overview": {
       "ariaLabel": "Tonight feed overview",
       "title": "Tonight Overview",
@@ -1949,7 +2096,7 @@
       "posts": "posts"
     }
   },
-  "offlineBanner":   {
+  "offlineBanner": {
     "offline": "Offline — observations will queue and sync when you reconnect",
     "backOnline": "Back online — syncing queued observations…"
   }

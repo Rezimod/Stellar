@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import type { AstroEvent } from '@/lib/astro-events';
 
@@ -14,27 +14,12 @@ interface Props {
   anchorRect?: DOMRect | null;
 }
 
-const DIFFICULTY_LABEL: Record<AstroEvent['difficulty'], string> = {
-  'naked-eye': 'Naked eye',
-  'binoculars': 'Binoculars',
-  'telescope': 'Telescope',
-  'expert': 'Expert',
-};
-
-const TYPE_LABEL: Record<AstroEvent['type'], string> = {
-  'eclipse-lunar': 'Lunar eclipse',
-  'eclipse-solar': 'Solar eclipse',
-  'conjunction': 'Conjunction',
-  'comet': 'Comet',
-  'opposition': 'Opposition',
-  'meteor-shower': 'Meteor shower',
-};
-
 export default function EventInfoSheet({ open, event, onClose }: Props) {
   // Render the modal via a portal to document.body so any parent transform /
   // filter / overflow on the sky page can't clip or shift the dialog. This
   // matches the pattern used by the learn-page Planet modal.
   const dateLocale = useLocale() === 'ka' ? 'ka-GE' : 'en-US';
+  const t = useTranslations('missionsPage');
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -115,7 +100,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
         <div className="flex flex-col gap-3 p-5 overflow-y-auto">
           <div>
             <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)] font-mono">
-              {TYPE_LABEL[event.type]} · {DIFFICULTY_LABEL[event.difficulty]}
+              {t(`eventType.${event.type}`)} · {t(`eventDiff.${event.difficulty}`)}
             </p>
             <h2 className="text-text-primary text-lg font-semibold mt-1" style={{ fontFamily: 'var(--font-display)' }}>
               {event.name}
@@ -128,8 +113,8 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
           </p>
 
           <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
-            <Row label="Where to see it" value={event.visibilityRegion} />
-            <Row label="Tip" value={event.viewingTip} />
+            <Row label={t('eventSheet.where')} value={event.visibilityRegion} />
+            <Row label={t('eventSheet.tip')} value={event.viewingTip} />
           </div>
         </div>
       </div>

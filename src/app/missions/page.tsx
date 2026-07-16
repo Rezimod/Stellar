@@ -20,7 +20,7 @@ import { SkyOrb } from '@/components/sky/SkyOrb';
 import QuizActive from '@/components/sky/QuizActive';
 import EventInfoSheet from '@/components/sky/EventInfoSheet';
 import DifficultyExplainer from '@/components/sky/DifficultyExplainer';
-import { getRareEvents, getUpcomingEvents, type AstroEvent } from '@/lib/astro-events';
+import { getRareEvents, getUpcomingEvents, localizeEvent, type AstroEvent } from '@/lib/astro-events';
 import type { QuizDef } from '@/lib/quizzes';
 import {
   Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe,
@@ -61,7 +61,7 @@ const GRID: GridEntry[] = [
   { id: 'pleiades',  stars: 60,  diff: 'easy',   equip: 'naked',      routeId: 'pleiades',  estMin: 6  },
   { id: 'venus',     stars: 40,  diff: 'easy',   equip: 'naked',      routeId: 'venus',     estMin: 5  },
   { id: 'saturn',    stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'saturn',    estMin: 10 },
-  { id: 'mars',      stars: 85,  diff: 'med',    equip: 'telescope',  routeId: 'mars',      estMin: 12 },
+  { id: 'mars',      stars: 120, diff: 'med',    equip: 'telescope',  routeId: 'mars',      estMin: 12 },
   { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion',     estMin: 10 },
   { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda', estMin: 12 },
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab',      estMin: 15 },
@@ -117,7 +117,7 @@ const LINEUP_ROUTE_BY_KEY: Record<string, { routeId: string; stars: number }> = 
   moon:    { routeId: 'moon',    stars: 50 },
   jupiter: { routeId: 'jupiter', stars: 75 },
   saturn:  { routeId: 'saturn',  stars: 100 },
-  mars:    { routeId: 'mars',    stars: 85 },
+  mars:    { routeId: 'mars',    stars: 120 },
   venus:   { routeId: 'venus',   stars: 40 },
   mercury: { routeId: 'mercury', stars: 60 },
 };
@@ -195,8 +195,8 @@ export default function MissionsPage() {
   const [issLoading, setIssLoading] = useState(true);
   const [globalMission, setGlobalMission] = useState<GlobalMissionData | null>(null);
 
-  const upcomingEvents = useMemo(() => getUpcomingEvents(new Date(), 30), []);
-  const rareEvents = useMemo(() => getRareEvents(new Date(), 5), []);
+  const upcomingEvents = useMemo(() => getUpcomingEvents(new Date(), 30).map((e) => localizeEvent(e, locale)), [locale]);
+  const rareEvents = useMemo(() => getRareEvents(new Date(), 5).map((e) => localizeEvent(e, locale)), [locale]);
 
   useVisibleInterval(() => setNow(new Date()), 60_000);
 
@@ -644,7 +644,10 @@ export default function MissionsPage() {
               data={globalMission}
               labels={{
                 title: t('global.title'),
-                heading: (target: string) => t('global.heading', { target }),
+                heading: (target: string) => {
+                  const key = target.toLowerCase();
+                  return t('global.heading', { target: t.has(`grid.${key}.name`) ? t(`grid.${key}.name`) : target });
+                },
                 observers: t('global.observers'),
                 reward: (n: number) => t('global.reward', { n }),
                 loading: t('global.loading'),

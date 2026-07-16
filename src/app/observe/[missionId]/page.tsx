@@ -20,6 +20,7 @@ export default function ObserveBriefPage() {
   const mission = MISSIONS.find(m => m.id === missionId);
   const { reset } = useObserveFlow();
   const t = useTranslations('observeFlow');
+  const tm = useTranslations('missions');
 
   useEffect(() => {
     reset();
@@ -47,6 +48,11 @@ export default function ObserveBriefPage() {
       </PageContainer>
     );
   }
+
+  const missionName = tm.has(`briefs.${mission.id}.name`) ? tm(`briefs.${mission.id}.name`) : mission.name;
+  const missionHint = tm.has(`briefs.${mission.id}.hint`) ? tm(`briefs.${mission.id}.hint`) : mission.hint;
+  const diffKey = mission.difficulty?.toLowerCase();
+  const diffLabel = diffKey && tm.has(`difficultyLabels.${diffKey}`) ? tm(`difficultyLabels.${diffKey}`) : mission.difficulty;
 
   return (
     <PageContainer variant="fullscreen" className="py-3 flex flex-col gap-4 items-stretch">
@@ -94,7 +100,7 @@ export default function ObserveBriefPage() {
             return (
               <Image
                 src={ringed ? img.replace('.jpg', '.png') : img}
-                alt={mission.name}
+                alt={missionName}
                 fill
                 sizes="120px"
                 className={`stl-chart-in ${ringed ? 'object-contain' : 'rounded-full object-cover'}`}
@@ -116,7 +122,7 @@ export default function ObserveBriefPage() {
             animationDelay: '120ms',
           }}
         >
-          {mission.name}
+          {missionName}
         </h1>
 
         <p
@@ -132,7 +138,7 @@ export default function ObserveBriefPage() {
             animationDelay: '220ms',
           }}
         >
-          {mission.hint}
+          {missionHint}
         </p>
 
         <div className="relative flex items-center justify-center gap-3 flex-shrink-0">
@@ -142,12 +148,16 @@ export default function ObserveBriefPage() {
           </div>
           <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
-            {mission.difficulty || t('target.beginner')}
+            {diffLabel || t('target.beginner')}
           </span>
-          <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
-            {mission.target || mission.name}
-          </span>
+          {mission.target && mission.target !== mission.name && (
+            <>
+              <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
+                {mission.target}
+              </span>
+            </>
+          )}
         </div>
 
         <Button
