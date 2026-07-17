@@ -26,6 +26,8 @@ const COPY = {
     checkInCta: 'Check in',
     checkedToday: 'Checked in today',
     comeBack: 'Come back tomorrow to keep the streak',
+    signInFirst: 'Sign in to check in and earn Stars',
+    failed: 'Check-in failed — please try again',
     nextTier: (name: string, n: number) => `${n} more night${n === 1 ? '' : 's'} → ${name}`,
     earned: (n: number) => `+${n} ✦`,
   },
@@ -36,6 +38,8 @@ const COPY = {
     checkInCta: 'ჩექ-ინი',
     checkedToday: 'დღეს უკვე შესრულდა',
     comeBack: 'დაბრუნდი ხვალ, რომ სერია გააგრძელო',
+    signInFirst: 'შედი ანგარიშზე, რომ ჩექ-ინი გააკეთო და ვარსკვლავები დააგროვო',
+    failed: 'ჩექ-ინი ვერ შესრულდა — სცადე თავიდან',
     nextTier: (name: string, n: number) => `კიდევ ${n} ღამე → ${name}`,
     earned: (n: number) => `+${n} ✦`,
   },
@@ -67,9 +71,15 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
 
   async function checkIn() {
     if (busy || checked) return;
+    // Never burn the day while signed out — a check-in only counts once the
+    // server has actually credited it.
+    if (!address) {
+      toast.info(c.signInFirst);
+      return;
+    }
     setBusy(true);
 
-    // Record the check-in alongside tonight's sky score (cheap, best-effort).
+    // Tonight's sky score is recorded alongside the check-in (cheap, best-effort).
     let skyScore: number | undefined;
     let skyGrade: string | undefined;
     try {
@@ -80,46 +90,51 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
         skyGrade = d.grade;
       }
     } catch {
-      /* offline — check in anyway */
+      /* score is optional */
     }
-    saveCheckIn({ skyScore, skyGrade, lat, lon });
 
-    const newStreak = getStreakDays();
-    const amount = Math.round(BASE_REWARD * getTierForStreak(newStreak).multiplier);
-    setStreak(newStreak);
-    setChecked(true);
+    const amount = Math.round(BASE_REWARD * getTierForStreak(streak + 1).multiplier);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    try {
+      let token: string | null = null;
+      try { token = await getAccessToken(); } catch { /* external wallet */ }
+      const res = await fetch('/api/award-stars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          recipientAddress: address,
+          amount,
+          reason: 'daily_checkin',
+          idempotencyKey: `checkin:${address}:${dateStr}`,
+        }),
+      });
+      const data = res.ok ? await res.json().catch(() => null) : null;
+      if (!res.ok || !data) {
+        // Failed award = no check-in. Leave the button active so a retry can
+        // still earn today's Stars, and say so instead of a silent success.
+        toast.error(c.failed);
+        setBusy(false);
+        return;
+      }
 
-    track('stars_earned', { source: 'checkin', amount, streak: newStreak }, address);
+      // Server accepted (fresh award, already-awarded, or capped) — the day counts.
+      saveCheckIn({ skyScore, skyGrade, lat, lon });
+      const newStreak = getStreakDays();
+      setStreak(newStreak);
+      setChecked(true);
+      track('stars_earned', { source: 'checkin', amount, streak: newStreak }, address);
 
-    if (address) {
-      const dateStr = new Date().toISOString().slice(0, 10);
-      try {
-        let token: string | null = null;
-        try { token = await getAccessToken(); } catch { /* external wallet */ }
-        const res = await fetch('/api/award-stars', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            recipientAddress: address,
-            amount,
-            reason: 'daily_checkin',
-            idempotencyKey: `checkin:${address}:${dateStr}`,
-          }),
-        });
-        const data = res.ok ? await res.json().catch(() => null) : null;
-        if (res.ok && data && !data.cached) {
-          const awarded = typeof data.awarded === 'number' ? data.awarded : amount;
-          toast.reward(`${c.earned(awarded)} · ${newStreak} ${c.streakMany}`);
-          window.dispatchEvent(new Event('stellar:stars-synced'));
-        } else {
-          toast.success(c.checkedToday);
-        }
-      } catch {
+      if (!data.cached && typeof data.awarded === 'number' && data.awarded > 0) {
+        toast.reward(`${c.earned(data.awarded)} · ${newStreak} ${c.streakMany}`);
+        window.dispatchEvent(new Event('stellar:stars-synced'));
+      } else {
         toast.success(c.checkedToday);
       }
+    } catch {
+      toast.error(c.failed);
     }
     setBusy(false);
   }

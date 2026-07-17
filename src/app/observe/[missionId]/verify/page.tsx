@@ -208,6 +208,10 @@ export default function ObserveVerifyPage() {
     setMintError('');
 
     let txId: string | null = null;
+    // Keepsake mints (unverified photos) pay a small flat reward, at most twice
+    // a day — the server decides. Past the budget it answers galleryOnly.
+    let keepsakeAwarded = 0;
+    let galleryOnly = false;
     try {
       const authToken = await getAccessToken().catch(() => null);
       const ctrl = new AbortController();
@@ -253,6 +257,10 @@ export default function ObserveVerifyPage() {
         if (typeof data.txId === 'string' && data.txId.length > 0) {
           txId = data.txId;
         }
+        galleryOnly = data.galleryOnly === true;
+        if (typeof data.starsAwarded === 'number') {
+          keepsakeAwarded = data.starsAwarded;
+        }
       } else {
         const errData = await res.json().catch(() => ({}));
         const msg: string = errData?.error ?? '';
@@ -265,6 +273,28 @@ export default function ObserveVerifyPage() {
     } catch (err) {
       console.error('[mint] network/timeout', err);
       setMintError(t('verify.error.network'));
+    }
+
+    if (!txId && galleryOnly) {
+      // Daily keepsake budget reached — no mint, no Stars. The photo still goes
+      // to the user's gallery so nothing they captured is lost.
+      addMission({
+        id: mission.id + '_gallery_' + Date.now().toString(36),
+        name: mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name),
+        emoji: mission.emoji,
+        stars: 0,
+        txId: 'gallery_' + Date.now().toString(36),
+        photo: isSafePhoto(photo) ? photo : '',
+        timestamp,
+        latitude: coords.lat,
+        longitude: coords.lon,
+        sky: sky!,
+        status: 'gallery',
+      });
+      setMintError(t('verify.keepsakeLimit'));
+      setStage('mint-ready');
+      setMintDone(false);
+      return;
     }
 
     if (!txId) {
@@ -281,8 +311,9 @@ export default function ObserveVerifyPage() {
     setNftImageUrl(nftUrl);
 
     // Bonus Stars, weekly-challenge credit and the streak ledger only apply to
-    // certified observations. An unverified keepsake earns nothing extra.
-    let totalStars = effectiveStars;
+    // certified observations. An unverified keepsake earns the flat fun reward
+    // the server just granted (0 when clamped by the issuance caps).
+    let totalStars = isUnverifiedMint ? keepsakeAwarded : effectiveStars;
     if (!isUnverifiedMint) {
       const bonus = rollCosmicBonus(rarityInfo.rarity, sky?.oracleHash ?? 'sim', user?.id ?? '', mission.id);
       setCosmicBonus(bonus);
@@ -331,6 +362,9 @@ export default function ObserveVerifyPage() {
       }
     }
     setTotalStarsEarned(totalStars);
+    if (isUnverifiedMint && keepsakeAwarded > 0) {
+      window.dispatchEvent(new Event('stellar:stars-synced'));
+    }
 
     setMintDone(true);
 
@@ -465,7 +499,7 @@ export default function ObserveVerifyPage() {
           {isUnverified && (
             <div className="mt-2 text-center">
               <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface)] text-text-muted">
-                {t('verify.notVerifiedLabel')} · 0 ✦ · {t('verify.keepsakeNote')}
+                {t('verify.notVerifiedLabel')} · {t('verify.keepsakeNote')}
               </span>
             </div>
           )}

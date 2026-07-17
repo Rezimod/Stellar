@@ -6,9 +6,9 @@ import { useLocale } from 'next-intl';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
-import { Volume2, VolumeX } from 'lucide-react';
+import { CalendarClock, Volume2, VolumeX } from 'lucide-react';
 import { track } from '@/lib/track';
-import type { QuizDef } from '@/lib/quizzes';
+import { MAX_QUIZ_REWARDS_PER_WEEK, type QuizDef } from '@/lib/quizzes';
 
 interface Props {
   quiz: QuizDef;
@@ -17,6 +17,22 @@ interface Props {
 
 const READY_BEAT_MS = 1000;
 const MUTE_KEY = 'stellar_quiz_mute';
+
+// Play ledger: one entry per quiz open, pruned to the trailing week. Mirrors
+// the server rules (once per quiz per day, MAX_QUIZ_REWARDS_PER_WEEK per week)
+// so users see the gate up front instead of a silent 0-Star award.
+const PLAYS_KEY = 'stellar-quiz-plays';
+interface QuizPlay { id: string; date: string }
+
+function loadRecentPlays(): QuizPlay[] {
+  try {
+    const all = JSON.parse(localStorage.getItem(PLAYS_KEY) ?? '[]') as QuizPlay[];
+    const weekAgo = Date.now() - 7 * 86_400_000;
+    return all.filter((p) => new Date(`${p.date}T00:00:00`).getTime() >= weekAgo);
+  } catch {
+    return [];
+  }
+}
 
 // Per-question countdown — first half of the quiz gets 10s, later questions 5s.
 function questionSeconds(index: number, total: number): number {
@@ -54,6 +70,19 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const [missedAnyTimeout, setMissedAnyTimeout] = useState(false);
   const [muted, setMuted] = useState(true);
   const [reduced, setReduced] = useState(false);
+  // Computed synchronously on first render so the question state machine never
+  // starts (and no play is recorded) when the quiz is gated.
+  const [gate] = useState<'daily' | 'weekly' | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const today = new Date().toISOString().slice(0, 10);
+    const plays = loadRecentPlays();
+    if (plays.some((p) => p.id === quiz.id && p.date === today)) return 'daily';
+    if (plays.length >= MAX_QUIZ_REWARDS_PER_WEEK) return 'weekly';
+    return null;
+  });
+  const [awardedServer, setAwardedServer] = useState<number | null>(null);
+  const [awardNote, setAwardNote] = useState<string | null>(null);
+  const awardAttemptedRef = useRef(false);
 
   const startRef = useRef<number>(0);
   const rafRef = useRef<number | null>(null);
@@ -75,6 +104,11 @@ export default function QuizActive({ quiz, onClose }: Props) {
     setReduced(prefersReducedMotion());
     if (typeof window !== 'undefined') {
       setMuted(localStorage.getItem(MUTE_KEY) !== '0');
+      // Opening past the gate records a play (counts toward the weekly budget).
+      if (!gate) {
+        const today = new Date().toISOString().slice(0, 10);
+        localStorage.setItem(PLAYS_KEY, JSON.stringify([...loadRecentPlays(), { id: quiz.id, date: today }]));
+      }
     }
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -124,10 +158,20 @@ export default function QuizActive({ quiz, onClose }: Props) {
   // The server re-scores `picks` against the answer key and is the authority on
   // the payout — the client no longer sends an amount.
   const awardQuizStarsOnChain = async (finalPicks: number[]) => {
-    if (!walletAddress) return;
+    if (awardAttemptedRef.current) return;
+    awardAttemptedRef.current = true;
+    if (!walletAddress) {
+      // No wallet in session — be honest that nothing was credited.
+      setAwardedServer(0);
+      setAwardNote(locale === 'ka' ? 'შედი ანგარიშზე, რომ ქვიზებით ვარსკვლავები დააგროვო' : 'Sign in to earn Stars from quizzes');
+      return;
+    }
+    const failMsg = locale === 'ka'
+      ? 'ვარსკვლავების დარიცხვა ვერ მოხერხდა — სცადე მოგვიანებით'
+      : 'Stars award failed — try again later';
     try {
       const token = await getAccessToken().catch(() => null);
-      await fetch('/api/award-stars', {
+      const res = await fetch('/api/award-stars', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,14 +184,31 @@ export default function QuizActive({ quiz, onClose }: Props) {
           idempotencyKey: `quiz:${quiz.id}:${walletAddress}:${new Date().toISOString().slice(0, 10)}`,
         }),
       });
+      const data = res.ok ? await res.json().catch(() => null) : null;
+      if (!data) {
+        setAwardNote(failMsg);
+        return;
+      }
+      if (data.cached) {
+        setAwardedServer(0);
+        setAwardNote(locale === 'ka' ? 'ამ ქვიზისთვის დღეს უკვე დაგერიცხა' : 'Already awarded for this quiz today');
+      } else if (data.capped === 'weekly_quiz_limit') {
+        setAwardedServer(0);
+        setAwardNote(locale === 'ka'
+          ? `კვირაში მაქსიმუმ ${MAX_QUIZ_REWARDS_PER_WEEK} ქვიზი ჯილდოვდება — ამჯერად ვარსკვლავები არ დაერიცხება`
+          : `Weekly limit of ${MAX_QUIZ_REWARDS_PER_WEEK} rewarded quizzes reached — no Stars this time`);
+      } else if (typeof data.awarded === 'number') {
+        setAwardedServer(data.awarded);
+        window.dispatchEvent(new Event('stellar:stars-synced'));
+      }
     } catch {
-      // Non-blocking
+      setAwardNote(failMsg);
     }
   };
 
   // 1s "ready" beat at the start of each question, then start the rAF loop.
   useEffect(() => {
-    if (phase !== 'ready') return;
+    if (phase !== 'ready' || gate) return;
     const t = setTimeout(() => {
       startRef.current = performance.now();
       beepedAtRef.current = new Set();
@@ -227,18 +288,6 @@ export default function QuizActive({ quiz, onClose }: Props) {
     onClose();
   };
 
-  const restart = () => {
-    cancelRaf();
-    setIdx(0);
-    setSelected(null);
-    setScore(0);
-    setAnswers([]);
-    setPicks([]);
-    setMissedAnyTimeout(false);
-    setSaved(false);
-    setPhase('ready');
-  };
-
   const toggleMute = () => {
     setMuted(prev => {
       const next = !prev;
@@ -254,6 +303,41 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const ringStrokeColor = ringColor(secondsLeft);
 
   if (!mounted) return null;
+
+  if (gate) {
+    const gateTitle = gate === 'daily'
+      ? (locale === 'ka' ? 'დღეს უკვე ითამაშე' : 'Already played today')
+      : (locale === 'ka' ? 'კვირის ლიმიტი ამოიწურა' : 'Weekly limit reached');
+    const gateMsg = gate === 'daily'
+      ? (locale === 'ka' ? 'თითო ქვიზი დღეში ერთხელ იხსნება. დაბრუნდი ხვალ.' : 'Each quiz opens once per day. Come back tomorrow.')
+      : (locale === 'ka'
+          ? `კვირაში მაქსიმუმ ${MAX_QUIZ_REWARDS_PER_WEEK} ქვიზის თამაშია შესაძლებელი. დაბრუნდი მოგვიანებით.`
+          : `You can play up to ${MAX_QUIZ_REWARDS_PER_WEEK} quizzes per week. Come back later.`);
+    return createPortal(
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center flex flex-col items-center gap-4">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+          >
+            <CalendarClock size={24} className="text-[var(--terracotta)]" strokeWidth={1.8} />
+          </div>
+          <div>
+            <p className="text-text-primary text-lg font-semibold mb-1">{gateTitle}</p>
+            <p className="text-text-muted text-sm">{gateMsg}</p>
+          </div>
+          <button
+            onClick={handleClose}
+            className="w-full py-3 rounded-xl text-sm font-bold transition-all"
+            style={{ background: 'var(--terracotta)', color: 'var(--canvas)' }}
+          >
+            {locale === 'ka' ? 'გასაგებია' : 'Got it'}
+          </button>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col overflow-hidden">
@@ -308,7 +392,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
             </div>
             <div>
               <p className="text-4xl font-bold text-text-primary mb-1">{score}<span className="text-text-muted text-2xl">/{total}</span></p>
-              <p className="text-[var(--terracotta)] font-bold text-lg">+{stars} ✦</p>
+              <p className="text-[var(--terracotta)] font-bold text-lg">+{awardedServer ?? stars} ✦</p>
               <p className="text-text-muted text-sm mt-2">
                 {eligibleForStars
                   ? (score >= 8 ? 'Outstanding!' : 'Well done!')
@@ -316,6 +400,9 @@ export default function QuizActive({ quiz, onClose }: Props) {
                     ? 'No Stars — at least one question ran out without a pick.'
                     : 'No Stars — you need 70% to earn.'}
               </p>
+              {awardNote && (
+                <p className="text-[var(--terracotta)] text-xs mt-1">{awardNote}</p>
+              )}
             </div>
             <div className="w-full">
               <div className="flex flex-wrap gap-1.5 justify-center">
@@ -337,21 +424,17 @@ export default function QuizActive({ quiz, onClose }: Props) {
                 {answers.filter(Boolean).length} correct · {answers.filter(b => !b).length} wrong
               </p>
             </div>
-            <div className="flex gap-3 w-full">
-              <button
-                onClick={restart}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold text-text-primary transition-all"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-              >
-                Play Again
-              </button>
+            <div className="w-full">
               <button
                 onClick={handleClose}
-                className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
+                className="w-full py-3 rounded-xl text-sm font-bold transition-all"
                 style={{ background: 'var(--terracotta)', color: 'var(--canvas)' }}
               >
                 Done
               </button>
+              <p className="text-text-muted text-[10px] text-center mt-2">
+                {locale === 'ka' ? 'ეს ქვიზი ხვალ ისევ გაიხსნება' : 'This quiz opens again tomorrow'}
+              </p>
             </div>
           </div>
         ) : (

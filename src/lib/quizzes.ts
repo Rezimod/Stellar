@@ -5,11 +5,21 @@ export interface QuizQuestion {
   explanation: { en: string; ka: string };
 }
 
+export type QuizDifficulty = 'easy' | 'medium' | 'hard';
+
+// Reward scales with difficulty — harder quizzes pay more per correct answer.
+export const STARS_PER_CORRECT_BY_DIFFICULTY: Record<QuizDifficulty, number> = {
+  easy: 5,
+  medium: 7,
+  hard: 10,
+};
+
 export interface QuizDef {
   id: string;
   emoji: string;
   title: { en: string; ka: string };
   description: { en: string; ka: string };
+  difficulty: QuizDifficulty;
   starsPerCorrect: number;
   questions: QuizQuestion[];
 }
@@ -19,6 +29,15 @@ export interface QuizDef {
 export function maxQuizStars(): number {
   return Math.max(...QUIZZES.map((q) => q.questions.length * q.starsPerCorrect));
 }
+
+/** Full payout for one quiz (all questions correct) — the number shown on quiz cards. */
+export function quizReward(quiz: QuizDef): number {
+  return quiz.questions.length * quiz.starsPerCorrect;
+}
+
+/** A wallet can earn Stars from at most this many quizzes in any trailing 7-day
+ *  window — enforced server-side in /api/award-stars and mirrored in the UI. */
+export const MAX_QUIZ_REWARDS_PER_WEEK = 6;
 
 export interface QuizScore {
   correct: number;
@@ -54,7 +73,8 @@ export const QUIZZES: QuizDef[] = [
     emoji: '☀️',
     title: { en: 'Solar System', ka: 'მზის სისტემა' },
     description: { en: 'Test your knowledge of planets, moons, and our cosmic neighborhood.', ka: 'შეამოწმე ცოდნა პლანეტების, მთვარეების და ჩვენი კოსმოსური სამეზობლოს შესახებ.' },
-    starsPerCorrect: 10,
+    difficulty: 'easy',
+    starsPerCorrect: STARS_PER_CORRECT_BY_DIFFICULTY.easy,
     questions: [
       {
         q: { en: 'How many planets are in our solar system?', ka: 'რამდენი პლანეტაა ჩვენს მზის სისტემაში?' },
@@ -173,7 +193,8 @@ export const QUIZZES: QuizDef[] = [
     emoji: '✦',
     title: { en: 'Stars & Constellations', ka: 'ვარსკვლავები და თანავარსკვლავედები' },
     description: { en: 'How well do you know the night sky, its patterns, and famous stars?', ka: 'რამდენად კარგად იცნობ ღამის ცას, მის ნახატებს და ცნობილ ვარსკვლავებს?' },
-    starsPerCorrect: 10,
+    difficulty: 'medium',
+    starsPerCorrect: STARS_PER_CORRECT_BY_DIFFICULTY.medium,
     questions: [
       {
         q: { en: 'How many official constellations are recognized by the IAU?', ka: 'რამდენი ოფიციალური თანავარსკვლავედია IAU-ს მიერ აღიარებული?' },
@@ -292,7 +313,8 @@ export const QUIZZES: QuizDef[] = [
     emoji: '🔭',
     title: { en: 'Telescopes & Optics', ka: 'ტელესკოპები და ოპტიკა' },
     description: { en: 'Essential knowledge for telescope owners and serious observers.', ka: 'აუცილებელი ცოდნა ტელესკოპის მფლობელებისა და სერიოზული დამკვირვებლებისთვის.' },
-    starsPerCorrect: 10,
+    difficulty: 'medium',
+    starsPerCorrect: STARS_PER_CORRECT_BY_DIFFICULTY.medium,
     questions: [
       {
         q: { en: 'What does "aperture" mean for a telescope?', ka: 'რას ნიშნავს "ობიექტივი" ტელესკოპისთვის?' },
@@ -411,7 +433,8 @@ export const QUIZZES: QuizDef[] = [
     emoji: '🌌',
     title: { en: 'Universe & Cosmology', ka: 'სამყარო და კოსმოლოგია' },
     description: { en: 'The Big Bang, black holes, dark matter — how big is everything?', ka: 'დიდი აფეთქება, შავი ხვრელები, ბნელი მატერია.' },
-    starsPerCorrect: 10,
+    difficulty: 'hard',
+    starsPerCorrect: STARS_PER_CORRECT_BY_DIFFICULTY.hard,
     questions: [
       {
         q: { en: 'How old is the universe?', ka: 'რამდენი წლისაა სამყარო?' },
@@ -530,7 +553,8 @@ export const QUIZZES: QuizDef[] = [
     emoji: '🚀',
     title: { en: 'Space Exploration', ka: 'კოსმოსის კვლევა' },
     description: { en: 'Rockets, astronauts, missions — the history of humanity in space.', ka: 'რაკეტები, ასტრონავტები, მისიები.' },
-    starsPerCorrect: 10,
+    difficulty: 'hard',
+    starsPerCorrect: STARS_PER_CORRECT_BY_DIFFICULTY.hard,
     questions: [
       {
         q: { en: 'Who was the first human to travel to space?', ka: 'ვინ იყო პირველი ადამიანი კოსმოსში?' },

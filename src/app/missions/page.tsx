@@ -15,7 +15,7 @@ import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { getVisiblePlanets, getWindowPlanets } from '@/lib/planets';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 import { getChartDeepSky } from '@/lib/sky-chart';
-import { QUIZZES } from '@/lib/quizzes';
+import { QUIZZES, quizReward } from '@/lib/quizzes';
 import { SkyOrb } from '@/components/sky/SkyOrb';
 import QuizActive from '@/components/sky/QuizActive';
 import EventInfoSheet from '@/components/sky/EventInfoSheet';
@@ -135,17 +135,16 @@ interface QuizUi {
   key: 'solar-system' | 'constellations' | 'telescopes' | 'universe' | 'space-exploration';
   Icon: LucideIcon;
   gradient: string;
-  reward: number;
   descEn: string;
   descKa: string;
 }
 
 const QUIZ_UI: Record<string, QuizUi> = {
-  'solar-system':      { key: 'solar-system',      Icon: Sun,         gradient: HUB_GRADIENTS.amber,   reward: 100, descEn: '10 questions · planets, moons, orbits',      descKa: '10 კითხვა · პლანეტები, მთვარეები, ორბიტები' },
-  'constellations':    { key: 'constellations',    Icon: Star,        gradient: HUB_GRADIENTS.fuchsia, reward: 100, descEn: '10 questions · stars, myths, sky patterns',    descKa: '10 კითხვა · ვარსკვლავები, მითები, ცის ფიგურები' },
-  'telescopes':        { key: 'telescopes',        Icon: LcTelescope, gradient: HUB_GRADIENTS.violet,  reward: 100, descEn: '10 questions · optics, mounts, magnification', descKa: '10 კითხვა · ოპტიკა, სადგარები, გადიდება' },
-  'universe':          { key: 'universe',          Icon: Globe,       gradient: HUB_GRADIENTS.teal,    reward: 100, descEn: '10 questions · galaxies, cosmology, time',     descKa: '10 კითხვა · გალაქტიკები, კოსმოლოგია, დრო' },
-  'space-exploration': { key: 'space-exploration', Icon: Rocket,      gradient: HUB_GRADIENTS.rose,    reward: 100, descEn: '10 questions · missions, probes, astronauts',  descKa: '10 კითხვა · მისიები, ზონდები, ასტრონავტები' },
+  'solar-system':      { key: 'solar-system',      Icon: Sun,         gradient: HUB_GRADIENTS.amber, descEn: '10 questions · planets, moons, orbits',      descKa: '10 კითხვა · პლანეტები, მთვარეები, ორბიტები' },
+  'constellations':    { key: 'constellations',    Icon: Star,        gradient: HUB_GRADIENTS.fuchsia, descEn: '10 questions · stars, myths, sky patterns',    descKa: '10 კითხვა · ვარსკვლავები, მითები, ცის ფიგურები' },
+  'telescopes':        { key: 'telescopes',        Icon: LcTelescope, gradient: HUB_GRADIENTS.violet, descEn: '10 questions · optics, mounts, magnification', descKa: '10 კითხვა · ოპტიკა, სადგარები, გადიდება' },
+  'universe':          { key: 'universe',          Icon: Globe,       gradient: HUB_GRADIENTS.teal, descEn: '10 questions · galaxies, cosmology, time',     descKa: '10 კითხვა · გალაქტიკები, კოსმოლოგია, დრო' },
+  'space-exploration': { key: 'space-exploration', Icon: Rocket,      gradient: HUB_GRADIENTS.rose, descEn: '10 questions · missions, probes, astronauts',  descKa: '10 კითხვა · მისიები, ზონდები, ასტრონავტები' },
 };
 
 interface SkyPos { altitude: number; azimuth: number; rise: Date | null; transit: Date | null; }
@@ -527,7 +526,7 @@ export default function MissionsPage() {
                           gradient={dailyQuizUi.gradient}
                           title={dailyQuiz.title[locale] ?? dailyQuiz.title.en}
                           meta={locale === 'ka' ? dailyQuizUi.descKa : dailyQuizUi.descEn}
-                          reward={dailyQuizUi.reward}
+                          reward={quizReward(dailyQuiz)}
                           done={score > 0 && score >= total}
                           onClick={() => setActiveQuiz(dailyQuiz)}
                         />
@@ -716,7 +715,7 @@ export default function MissionsPage() {
                       gradient={ui.gradient}
                       title={title}
                       meta={desc}
-                      reward={ui.reward}
+                      reward={quizReward(quiz)}
                       done={score > 0 && score >= total}
                       onClick={() => setActiveQuiz(quiz)}
                     />

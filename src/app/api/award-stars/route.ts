@@ -8,13 +8,13 @@ import { STARS_TOKEN_PROGRAM_ID, getStarsMintAuthority } from '@/lib/stars';
 import bs58 from 'bs58';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, like, count } from 'drizzle-orm';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars-policy';
 import { remainingStarsAllowance } from '@/lib/stars-cap';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
-import { scoreQuiz } from '@/lib/quizzes';
+import { scoreQuiz, MAX_QUIZ_REWARDS_PER_WEEK } from '@/lib/quizzes';
 import { streakFromDates, DAILY_CHECKIN_BASE_REWARD } from '@/lib/daily-checkin';
 import { getTierForStreak } from '@/lib/constellation-streak';
 import { verifyObservationTokenForWallet } from '@/lib/observation-token';
@@ -198,6 +198,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, txId: null, awarded: 0 });
   }
 
+  // Weekly quiz budget: Stars from at most MAX_QUIZ_REWARDS_PER_WEEK quiz
+  // completions per wallet in any trailing 7-day window. The per-quiz-per-day
+  // limit is already enforced by the (wallet, target, observed_date) unique
+  // index on the claim insert below.
+  if (reasonStr.startsWith('quiz:') && db) {
+    const weekAgo = new Date(Date.now() - 7 * 86_400_000);
+    const rows = await db
+      .select({ c: count() })
+      .from(observationLog)
+      .where(and(
+        eq(observationLog.wallet, recipient),
+        like(observationLog.target, 'quiz:%'),
+        gte(observationLog.createdAt, weekAgo),
+      ));
+    if (Number(rows[0]?.c ?? 0) >= MAX_QUIZ_REWARDS_PER_WEEK) {
+      return NextResponse.json({ success: true, txId: null, awarded: 0, capped: 'weekly_quiz_limit' });
+    }
+  }
+
   // Unified issuance cap: clamp to what this wallet may still earn under the
   // shared daily + trailing-30-day monthly caps (same ledger as observations).
   // This is what enforces the multi-month curve to a Stars-only telescope. A
@@ -229,11 +248,18 @@ export async function POST(req: NextRequest) {
   // it is released (in the catch below) so a genuine retry can re-mint — a
   // failed mint never leaves a silent "already awarded" with no Stars.
   const todayStr = new Date().toISOString().split('T')[0];
+  // Activity rewards use a server-derived slot key — a crafted client key can't
+  // dodge the once-per-day dedup. Other reasons keep the client's key (it is
+  // scoped by tx/challenge ids the server can't derive here).
+  const idemKey =
+    reasonStr.startsWith('quiz:') ? `${reasonStr}:${recipient}:${todayStr}`
+    : reasonStr === 'daily_checkin' ? `checkin:${recipient}:${todayStr}`
+    : idempotencyKey;
   let claimed = false;
   if (db) {
     const claim = () => db.insert(observationLog).values({
       wallet: recipient, target: reasonStr, stars: amount,
-      confidence: 'pending', mintTx: idempotencyKey, observedDate: todayStr,
+      confidence: 'pending', mintTx: idemKey, observedDate: todayStr,
     });
     try {
       await claim();
@@ -249,7 +275,7 @@ export async function POST(req: NextRequest) {
         const existing = await db
           .select({ id: observationLog.id, confidence: observationLog.confidence, createdAt: observationLog.createdAt })
           .from(observationLog)
-          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idempotencyKey)))
+          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)))
           .limit(1);
         const row = existing[0];
         const stale = !!row && row.confidence === 'pending' && !!row.createdAt && row.createdAt.getTime() < Date.now() - 120_000;
@@ -300,7 +326,7 @@ export async function POST(req: NextRequest) {
       try {
         await db.update(observationLog)
           .set({ confidence: 'minted' })
-          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idempotencyKey)));
+          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)));
       } catch { /* non-fatal — the row already serves idempotency */ }
     }
 
@@ -316,7 +342,7 @@ export async function POST(req: NextRequest) {
     if (db && claimed) {
       try {
         await db.delete(observationLog)
-          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idempotencyKey)));
+          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)));
       } catch { /* best-effort slot release */ }
     }
     return NextResponse.json({ error: 'Failed to award Stars' }, { status: 500 });

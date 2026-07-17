@@ -4,7 +4,9 @@ import { mintCompressedNFT } from '@/lib/mint-nft';
 export const maxDuration = 60; // Solana confirmations can take 15-30s
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
-import { eq, and, gte, isNotNull } from 'drizzle-orm';
+import { eq, and, gte, isNotNull, count } from 'drizzle-orm';
+import { awardStarsOnChain } from '@/lib/stars';
+import { remainingStarsAllowance } from '@/lib/stars-cap';
 import { mintRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { isValidPublicKey } from '@/lib/validate';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
@@ -134,9 +136,14 @@ export async function POST(req: NextRequest) {
   }
 
   // Unverified keepsake: a 'rejected'-confidence token mints the photo the user
-  // took, but it is never certified — 0 Stars and "Unverified" rarity. The token
-  // still proves the image facts came from /api/observe/verify (not fabricated).
+  // took, but it is never certified — "Unverified" rarity, 0 certified Stars in
+  // the NFT metadata. The token still proves the image facts came from
+  // /api/observe/verify (not fabricated). Each keepsake mint pays a small flat
+  // fun reward, at most UNVERIFIED_MINTS_PER_DAY times per wallet per day;
+  // past that the photo can only be saved to the gallery (no mint, no Stars).
   const isUnverified = !isDemoMint && confidence === 'rejected';
+  const UNVERIFIED_MINTS_PER_DAY = 2;
+  const UNVERIFIED_KEEPSAKE_STARS = 10;
 
   // Validate rarity. Demo mints are always Common with Stars capped at 50.
   const VALID_RARITIES = ['Common', 'Stellar', 'Astral', 'Celestial'] as const;
@@ -155,6 +162,22 @@ export async function POST(req: NextRequest) {
       // keepsakes share a generic target, so this would wrongly block distinct
       // photos — the per-image fileHash dedup below still prevents re-minting
       // the same picture.
+      if (isUnverified) {
+        // Daily keepsake budget: past the cap the client saves the photo to the
+        // gallery instead — a 200 with galleryOnly so the flow settles cleanly.
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todays = await db
+          .select({ c: count() })
+          .from(observationLog)
+          .where(and(
+            eq(observationLog.wallet, userAddress),
+            eq(observationLog.confidence, 'unverified'),
+            eq(observationLog.observedDate, todayStr),
+          ));
+        if (Number(todays[0]?.c ?? 0) >= UNVERIFIED_MINTS_PER_DAY) {
+          return NextResponse.json({ txId: null, galleryOnly: true, starsAwarded: 0 });
+        }
+      }
       if (!isUnverified) {
         const oneHourAgo = new Date(Date.now() - 3600_000);
         const recent = await db
@@ -225,6 +248,24 @@ export async function POST(req: NextRequest) {
     const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover: effectiveCloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
+    // Keepsake fun reward: a flat +10 for an unverified mint, clamped by the
+    // shared daily/monthly issuance caps. The 2/day keepsake budget above bounds
+    // how often this can pay out. Verified mints keep their existing pipeline
+    // (Stars minted via /api/award-stars and /api/observe/log).
+    let keepsakeStars = 0;
+    if (isUnverified && db && userAddress) {
+      try {
+        const allow = await remainingStarsAllowance(db, userAddress);
+        const grant = Math.min(UNVERIFIED_KEEPSAKE_STARS, allow);
+        if (grant > 0) {
+          const sig = await awardStarsOnChain(userAddress, grant, `unverified keepsake: ${mintTarget}`);
+          if (sig) keepsakeStars = grant;
+        }
+      } catch (err) {
+        console.error('[mint] keepsake Stars award failed:', err);
+      }
+    }
+
     // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
     // Skip DB log for demo mints to avoid polluting production records
     if (db && userAddress && !isDemoMint) {
@@ -232,7 +273,7 @@ export async function POST(req: NextRequest) {
       db.insert(observationLog).values({
         wallet: userAddress,
         target: mintTarget,
-        stars: effectiveStars,
+        stars: isUnverified ? keepsakeStars : effectiveStars,
         confidence: isUnverified ? 'unverified' : 'minted',
         mintTx: txId,
         observedDate: new Date().toISOString().split('T')[0],
@@ -256,7 +297,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ txId, explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}` });
+    return NextResponse.json({
+      txId,
+      ...(isUnverified ? { starsAwarded: keepsakeStars } : {}),
+      explorerUrl: `https://explorer.solana.com/tx/${txId}?cluster=${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}`,
+    });
   } catch (err) {
     console.error('[mint] Bubblegum mint failed:', err);
     return NextResponse.json({ error: 'NFT minting failed — check server logs', txId: null }, { status: 500 });
