@@ -1579,3 +1579,43 @@
     padding: 40px 20px;
   }
 }
+
+/* === Light / Day theme ==============================================
+   Re-point the scoped feed palette at the day tokens. --ink stays dark
+   (it is dark text on gold buttons in both themes). */
+[data-theme="light"] .feed-page {
+  --bone: #0F172A;
+  --slate-100: rgba(15, 23, 42, 0.94);
+  --slate-300: rgba(15, 23, 42, 0.62);
+  --slate-400: rgba(15, 23, 42, 0.45);
+  --slate-500: rgba(15, 23, 42, 0.30);
+  --slate-600: rgba(15, 23, 42, 0.14);
+  --hairline: rgba(15, 23, 42, 0.10);
+  --card-bg: #FFFFFF;
+  --card-bg-hover: #F4F7FF;
+}
+[data-theme="light"] .composer,
+[data-theme="light"] .composer-auth {
+  background: #FFFFFF;
+}
+@media (max-width: 767px) {
+  [data-theme="light"] .feed-page {
+    --mobile-card-bg: #FFFFFF;
+    --mobile-card-bg-2: #F4F7FF;
+    --mobile-border: rgba(15, 23, 42, 0.10);
+  }
+  [data-theme="light"] .feed-page .composer,
+  [data-theme="light"] .feed-page .composer-auth,
+  [data-theme="light"] .feed-page .tonight-overview-card,
+  [data-theme="light"] .feed-page .trending-topics-card {
+    background: #FFFFFF;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  }
+  [data-theme="light"] .feed-page .tonight-overview-grid div {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.08);
+  }
+  [data-theme="light"] .feed-page .feed-post {
+    background: #FFFFFF;
+  }
+}

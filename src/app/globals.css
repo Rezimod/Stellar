@@ -44,6 +44,7 @@
   --bg-card: var(--surface);
   --bg-card-hover: var(--surface-hover);
   --bg-elevated: var(--surface-hover);
+  --bg-panel: #0D1321; /* solid elevated panel (modals, dropdowns) */
 
   /* Borders */
   --border-glass: var(--border);
@@ -164,6 +165,7 @@
   --bg-card: #FFFFFF;
   --bg-card-hover: #F4F7FF;
   --bg-elevated: #F0F4FF;
+  --bg-panel: #FFFFFF;
 
   --border-glass: rgba(15, 23, 42, 0.10);
   --border-glow: rgba(15, 23, 42, 0.14);
@@ -247,11 +249,19 @@
   --glass-bg: rgba(255, 255, 255, 0.85);
 }
 
-/* Stars / cosmic backdrop are dark-mode-only — hide in light mode */
-[data-theme="light"] .star { display: none; }
-[data-theme="light"] .hero-starfield,
-[data-theme="light"] .hero-starfield::before,
-[data-theme="light"] .hero-starfield::after { display: none; }
+/* Stars / cosmic backdrop are dark-mode-only — hide in light mode,
+   except inside .stay-dark scopes (night-scene heroes keep their sky). */
+[data-theme="light"] .star:not(.stay-dark, .stay-dark *) { display: none; }
+[data-theme="light"] .hero-starfield:not(.stay-dark *),
+[data-theme="light"] .hero-starfield:not(.stay-dark *)::before,
+[data-theme="light"] .hero-starfield:not(.stay-dark *)::after { display: none; }
+
+/* Partner / achievement logos are inverted-to-white for the dark canvas;
+   flatten them to dark silhouettes on the light canvas. */
+[data-theme="light"] .partner-logo,
+[data-theme="light"] .home-achievement-image {
+  filter: brightness(0) opacity(0.72) !important;
+}
 
 /* Selection color flips to terracotta-on-dark-text */
 [data-theme="light"] ::selection {
@@ -281,6 +291,70 @@
   background: rgba(15, 23, 42, 0.05);
   border-color: rgba(255, 179, 71, 0.30);
 }
+
+/* ── Light-mode remap of dark-only Tailwind utilities ──
+   Many surfaces hardcode white-on-dark utility classes (text-white/55,
+   bg-white/[0.04], border-white/10, text-[#F8F4EC], bg-[#0A1735], ...).
+   Rather than forking every component, remap the finite set of variants in
+   use onto the theme tokens. These rules are unlayered, so they win over
+   Tailwind's @layer utilities in light mode only. Anything inside a
+   `.stay-dark` scope (device mockups, night-sky art, photo scrims) keeps
+   its dark-mode colors in both themes. */
+[data-theme="light"] :is(.text-white, .text-white\/95, .text-white\/90,
+  .text-white\/85, .text-white\/80, .text-\[\#F8F4EC\],
+  .hover\:text-white:hover, .hover\:text-\[\#F8F4EC\]:hover):not(.stay-dark, .stay-dark *),
+[data-theme="light"] .group:hover :is(.group-hover\:text-white, .group-hover\:text-white\/90):not(.stay-dark, .stay-dark *) {
+  color: var(--text-primary);
+}
+[data-theme="light"] :is(.text-white\/70, .text-white\/60, .text-white\/55,
+  .text-white\/50, .text-\[\#F8F4EC\]\/80, .text-\[\#F8F4EC\]\/70):not(.stay-dark, .stay-dark *),
+[data-theme="light"] .group:hover .group-hover\:text-white\/50:not(.stay-dark, .stay-dark *) {
+  color: var(--text-secondary);
+}
+[data-theme="light"] :is(.text-white\/45, .text-white\/40, .text-white\/35,
+  .text-white\/30):not(.stay-dark, .stay-dark *) {
+  color: var(--text-dim);
+}
+[data-theme="light"] :is(.text-white\/25, .text-white\/20):not(.stay-dark, .stay-dark *) {
+  color: var(--text-faint);
+}
+[data-theme="light"] :is(.bg-white\/\[0\.012\], .bg-white\/\[0\.015\],
+  .bg-white\/\[0\.02\], .bg-white\/\[0\.025\], .bg-white\/\[0\.03\],
+  .bg-white\/\[0\.035\], .bg-white\/\[0\.04\], .bg-white\/\[0\.05\],
+  .bg-white\/\[0\.06\], .bg-white\/\[0\.08\], .bg-white\/10):not(.stay-dark, .stay-dark *) {
+  background-color: var(--surface);
+}
+[data-theme="light"] :is(.bg-white\/\[0\.1\], .hover\:bg-white\/\[0\.04\]:hover,
+  .hover\:bg-white\/\[0\.05\]:hover, .hover\:bg-white\/\[0\.06\]:hover,
+  .hover\:bg-white\/\[0\.1\]:hover):not(.stay-dark, .stay-dark *) {
+  background-color: var(--surface-hover);
+}
+[data-theme="light"] :is(.border-white\/\[0\.04\], .border-white\/\[0\.05\],
+  .border-white\/\[0\.06\], .border-white\/\[0\.07\], .border-white\/\[0\.08\],
+  .border-white\/\[0\.10\], .border-white\/10, .border-white\/\[0\.16\],
+  .border-white\/20, .hover\:border-white\/\[0\.16\]:hover):not(.stay-dark, .stay-dark *) {
+  border-color: var(--border);
+}
+[data-theme="light"] :is(.border-white\/55, .border-white\/60,
+  .hover\:border-white\/60:hover):not(.stay-dark, .stay-dark *) {
+  border-color: rgba(15, 23, 42, 0.40);
+}
+[data-theme="light"] :is(.divide-white\/10, .divide-white\/\[0\.05\],
+  .divide-white\/\[0\.06\]):not(.stay-dark, .stay-dark *) > * {
+  border-color: var(--border);
+}
+[data-theme="light"] :is(.ring-white\/60, .focus-visible\:ring-white\/60:focus-visible):not(.stay-dark, .stay-dark *) {
+  --tw-ring-color: rgba(15, 23, 42, 0.40);
+}
+/* Solid dark card/page backgrounds */
+[data-theme="light"] .bg-\[\#0A1735\]:not(.stay-dark, .stay-dark *) { background-color: var(--canvas); }
+[data-theme="light"] :is(.bg-\[\#0F1422\], .bg-\[\#071126\]):not(.stay-dark, .stay-dark *) { background-color: var(--bg-card); }
+/* Dark hero gradients → light equivalents */
+[data-theme="light"] .from-\[\#0A1735\]:not(.stay-dark, .stay-dark *) { --tw-gradient-from: #EDF0F7; }
+[data-theme="light"] .to-\[\#0F1424\]:not(.stay-dark, .stay-dark *) { --tw-gradient-to: #E2E8F5; }
+[data-theme="light"] .from-\[\#0a1430\]:not(.stay-dark, .stay-dark *) { --tw-gradient-from: #EDF0F7; }
+[data-theme="light"] .via-\[\#0f1a40\]:not(.stay-dark, .stay-dark *) { --tw-gradient-via: #E7ECF7; }
+[data-theme="light"] .to-\[\#1a1030\]:not(.stay-dark, .stay-dark *) { --tw-gradient-to: #E2E8F5; }
 
 @theme inline {
   --color-background: var(--canvas);

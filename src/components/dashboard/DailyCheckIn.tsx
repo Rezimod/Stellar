@@ -168,8 +168,8 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
           gap: 12,
           padding: '8px 10px',
           borderRadius: 12,
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'var(--surface)',
+          border: '1px solid var(--border-subtle)',
         }}
       >
         {/* Label */}

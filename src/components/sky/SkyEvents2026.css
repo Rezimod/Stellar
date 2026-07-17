@@ -279,3 +279,39 @@
   line-height: 1.5;
   color: rgba(255,237,200,0.92);
 }
+
+/* === Light / Day theme ============================================ */
+/* Night-sky art panels (.ev__art, .ev-modal__art) stay dark by design;
+   the surrounding card chrome and text flip to the light tokens. */
+[data-theme="light"] .ev {
+  background: var(--surface);
+  border-color: var(--border-subtle);
+}
+[data-theme="light"] .ev__eyebrow { color: var(--text-secondary); }
+[data-theme="light"] .ev__sub { color: var(--text-secondary); }
+[data-theme="light"] .ev__card {
+  background: #FFFFFF;
+  border-color: var(--border);
+}
+[data-theme="light"] .ev__card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+}
+[data-theme="light"] .ev__caption {
+  border-top-color: var(--border-subtle);
+  background: transparent;
+}
+[data-theme="light"] .ev-modal__sheet {
+  background: #FFFFFF;
+  border-color: var(--border);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+}
+[data-theme="light"] .ev-modal__close {
+  background: var(--surface);
+  border-color: var(--border);
+}
+[data-theme="light"] .ev-modal__close:hover { background: var(--surface-hover); }
+[data-theme="light"] .ev-modal__body { color: var(--text-secondary); }
+[data-theme="light"] .ev-modal__key { color: var(--text-muted); }
+[data-theme="light"] .ev-modal__meta li { border-top-color: var(--border-subtle); }
+[data-theme="light"] .ev-modal__tip { color: #7A4A00; }

@@ -52,7 +52,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
       {/* Full-screen backdrop — z-[60] to sit above BottomNav (z-50) and Nav (z-40) */}
       <div
         className="fixed inset-0 z-[60]"
-        style={{ background: 'rgba(3,6,14,0.88)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+        style={{ background: 'rgba(3,6,14,0.6)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
         onClick={onClose}
       />
 
@@ -64,13 +64,13 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
           maxWidth: '440px',
           transform: 'translate(-50%, -50%)',
           background: 'var(--canvas)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.9)',
+          border: '1px solid var(--border)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
           overflow: 'hidden',
         }}
       >
         {/* Header: image + name side by side */}
-        <div className="flex items-stretch" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-stretch" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           {/* Planet image — fixed square */}
           <div className="relative flex-shrink-0" style={{ width: 110, height: 110 }}>
             <Image
@@ -107,10 +107,10 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
           <button
             onClick={onClose}
             className="self-start mt-3 mr-3 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             aria-label="Close"
           >
-            <X size={13} color="rgba(255,255,255,0.7)" />
+            <X size={13} color="var(--text-secondary)" />
           </button>
         </div>
 
@@ -183,7 +183,7 @@ function ConstellationModal({ constellation, locale, onClose }: {
     <>
       <div
         className="fixed inset-0 z-[60]"
-        style={{ background: 'rgba(3,6,14,0.88)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+        style={{ background: 'rgba(3,6,14,0.6)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
         onClick={onClose}
       />
 
@@ -195,8 +195,8 @@ function ConstellationModal({ constellation, locale, onClose }: {
           maxHeight: 'calc(100vh - 48px)',
           transform: 'translate(-50%, -50%)',
           background: 'var(--canvas)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.9)',
+          border: '1px solid var(--border)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
           overflow: 'hidden',
         }}
       >
@@ -215,10 +215,10 @@ function ConstellationModal({ constellation, locale, onClose }: {
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(7,11,20,0.7)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+            style={{ background: 'var(--surface-hover)', border: '1px solid var(--border-strong)', backdropFilter: 'blur(8px)' }}
             aria-label="Close"
           >
-            <X size={14} color="rgba(255,255,255,0.85)" />
+            <X size={14} color="var(--text-primary)" />
           </button>
 
           <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2">
@@ -239,7 +239,7 @@ function ConstellationModal({ constellation, locale, onClose }: {
           <p className="text-text-primary text-[13px] leading-relaxed">{c.desc[locale]}</p>
 
           {/* Brightest star */}
-          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
             <div className="flex items-center gap-1.5 mb-1">
               <Star size={10} color={c.color} />
               <span className="text-[10px] uppercase tracking-widest text-text-muted">
@@ -256,7 +256,7 @@ function ConstellationModal({ constellation, locale, onClose }: {
           </div>
 
           {/* Where to look */}
-          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
             <div className="flex items-center gap-1.5 mb-1">
               <Eye size={10} color={c.color} />
               <span className="text-[10px] uppercase tracking-widest text-text-muted">
@@ -267,7 +267,7 @@ function ConstellationModal({ constellation, locale, onClose }: {
           </div>
 
           {/* Mythology */}
-          <div className="rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
             <div className="flex items-center gap-1.5 mb-1">
               <BookOpen size={10} color={c.color} />
               <span className="text-[10px] uppercase tracking-widest text-text-muted">
@@ -353,7 +353,7 @@ function PlanetsTab({ locale, kidsMode, onSelect, onSelectConstellation }: {
               key={c.id}
               onClick={() => onSelectConstellation(c)}
               className="group text-left rounded-xl overflow-hidden relative transition-transform duration-200 hover:-translate-y-0.5"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
             >
               <div className="relative w-full" style={{ aspectRatio: '4 / 3' }}>
                 <Image

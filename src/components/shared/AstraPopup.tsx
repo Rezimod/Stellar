@@ -178,10 +178,10 @@ export default function AstraPopup() {
             right: 20,
             width: 'min(360px, calc(100vw - 32px))',
             height: 'min(520px, calc(100dvh - 140px))',
-            background: '#06091B',
+            background: 'var(--bg-panel)',
             border: '1px solid rgba(255, 179, 71,0.3)',
             borderRadius: 20,
-            boxShadow: '0 16px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03)',
+            boxShadow: '0 16px 64px rgba(0,0,0,0.45)',
             animation: 'astraSlide 0.2s ease forwards',
           }}
         >
@@ -192,9 +192,9 @@ export default function AstraPopup() {
             </div>
             <div className="flex-1 min-w-0">
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--terracotta)', letterSpacing: '0.05em' }}>ASTRA</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>AI Astronomer</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>AI Astronomer</div>
             </div>
-            <button onClick={() => setOpen(false)} className="w-7 h-7 flex items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+            <button onClick={() => setOpen(false)} className="w-7 h-7 flex items-center justify-center rounded-full" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
               <X size={13} />
             </button>
           </div>
@@ -206,8 +206,8 @@ export default function AstraPopup() {
                 <div style={{
                   maxWidth: '85%', fontSize: 13, lineHeight: 1.5, padding: '8px 12px', borderRadius: 14,
                   ...(m.role === 'user'
-                    ? { background: 'rgba(255, 179, 71,0.25)', border: '1px solid rgba(255, 179, 71,0.35)', color: '#e9d5ff', borderBottomRightRadius: 4 }
-                    : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.88)', borderBottomLeftRadius: 4 }),
+                    ? { background: 'rgba(255, 179, 71,0.25)', border: '1px solid rgba(255, 179, 71,0.35)', color: 'var(--text-primary)', borderBottomRightRadius: 4 }
+                    : { background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderBottomLeftRadius: 4 }),
                 }}>
                   {m.content}
                 </div>
@@ -215,7 +215,7 @@ export default function AstraPopup() {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, borderBottomLeftRadius: 4, padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, borderBottomLeftRadius: 4, padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
                   {[0,1,2].map(i => (
                     <div key={i} className="astra-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--terracotta)' }} />
                   ))}
@@ -236,9 +236,9 @@ export default function AstraPopup() {
                 placeholder="Ask about the night sky..."
                 rows={1}
                 style={{
-                  flex: 1, resize: 'none', background: 'rgba(255,255,255,0.05)',
+                  flex: 1, resize: 'none', background: 'var(--surface)',
                   border: '1px solid rgba(255, 179, 71,0.25)', borderRadius: 12,
-                  color: 'rgba(255,255,255,0.9)', fontSize: 13, padding: '8px 12px',
+                  color: 'var(--text-primary)', fontSize: 13, padding: '8px 12px',
                   outline: 'none', maxHeight: 100, lineHeight: 1.5,
                   scrollbarWidth: 'none',
                 }}
@@ -253,10 +253,10 @@ export default function AstraPopup() {
                 disabled={!input.trim() || loading}
                 style={{
                   width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                  background: input.trim() && !loading ? 'linear-gradient(135deg, var(--terracotta), #5EEAD4)' : 'rgba(255,255,255,0.06)',
+                  background: input.trim() && !loading ? 'linear-gradient(135deg, var(--terracotta), #5EEAD4)' : 'var(--surface)',
                   border: 'none', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: input.trim() && !loading ? '#fff' : 'rgba(255,255,255,0.25)',
+                  color: input.trim() && !loading ? '#fff' : 'var(--text-faint)',
                   transition: 'all 0.18s ease',
                   boxShadow: input.trim() && !loading ? '0 0 16px rgba(255, 179, 71,0.4)' : undefined,
                 }}

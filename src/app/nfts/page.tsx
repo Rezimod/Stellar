@@ -140,8 +140,8 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
         onClick={e => e.stopPropagation()}
         className="relative rounded-2xl overflow-hidden flex flex-col w-full max-w-lg my-8"
         style={{
-          background: '#0A1735',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--bg-panel)',
+          border: '1px solid var(--border)',
           boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
           animation: 'slideUp 220ms ease-out',
         }}
@@ -149,7 +149,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
         {/* Top bar */}
         <div
           className="flex items-center justify-between px-4 py-3 flex-shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ borderBottom: '1px solid var(--border-subtle)' }}
         >
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--text-primary)', fontSize: 14, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {name}
@@ -158,7 +158,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
             onClick={onClose}
             aria-label={t('detail.close')}
             className="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors flex-shrink-0 ml-2"
-            style={{ background: 'rgba(255,255,255,0.05)', minWidth: 36, minHeight: 36 }}
+            style={{ background: 'var(--surface)', minWidth: 36, minHeight: 36 }}
           >
             ✕
           </button>
@@ -172,7 +172,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
           <div
             className="rounded-2xl overflow-hidden"
             style={{
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid var(--border)',
               background: 'var(--canvas)',
               width: '100%',
               aspectRatio: '4 / 3',
@@ -211,7 +211,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
             {
               label: t('detail.fields.cloudCover'),
               value: isDemoNft ? '—' : cloudCover || '—',
-              color: isDemoNft ? 'rgba(255,255,255,0.6)' : ccNum < 30 ? 'var(--success)' : ccNum < 60 ? 'var(--warning)' : 'var(--error)',
+              color: isDemoNft ? 'var(--text-secondary)' : ccNum < 30 ? 'var(--success)' : ccNum < 60 ? 'var(--warning)' : 'var(--error)',
             },
             { label: t('detail.fields.starsEarned'), value: starCount ? `✦ ${starCount}` : '—', color: 'var(--stars)' },
             { label: t('detail.fields.location'), value: loc },
@@ -240,7 +240,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
           <button
             onClick={() => window.open(`https://twitter.com/intent/tweet?text=${twitterText}&url=${encodeURIComponent(fullImageUrl)}`, '_blank')}
             className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm text-text-primary"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 0', minHeight: 44 }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '12px 0', minHeight: 44 }}
           >
             𝕏 {t('detail.share')}
           </button>
@@ -304,14 +304,14 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
         )}
 
         {/* Remove from gallery — soft hide. On-chain mint is not burned. */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 4 }}>
+        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 12, marginTop: 4 }}>
           {!confirmRemove ? (
             <button
               onClick={() => setConfirmRemove(true)}
               className="flex items-center justify-center gap-2 rounded-xl text-xs w-full"
               style={{
                 background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid var(--border)',
                 color: 'var(--text-muted)',
                 padding: '10px 0',
                 minHeight: 40,
@@ -331,7 +331,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
                   className="flex-1 rounded-xl text-xs"
                   style={{
                     background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: '1px solid var(--border)',
                     color: 'var(--text-muted)',
                     padding: '10px 0',
                     minHeight: 40,
@@ -666,8 +666,8 @@ export default function NftsPage() {
                             fontSize: 10,
                             padding: '1px 6px',
                             borderRadius: 20,
-                            background: owned ? 'rgba(94, 234, 212,0.12)' : 'rgba(255,255,255,0.04)',
-                            border: `1px solid ${owned ? 'rgba(94, 234, 212,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                            background: owned ? 'rgba(94, 234, 212,0.12)' : 'var(--surface)',
+                            border: `1px solid ${owned ? 'rgba(94, 234, 212,0.25)' : 'var(--border-subtle)'}`,
                             color: owned ? 'var(--success)' : 'var(--text-muted)',
                           }}
                         >
@@ -706,7 +706,7 @@ export default function NftsPage() {
       {/* Empty state */}
       {!loading && !error && allNfts.length === 0 && (
         <div style={{ padding: '64px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}>
-          <Telescope size={44} color="rgba(255,255,255,0.45)" strokeWidth={1.4} />
+          <Telescope size={44} color="var(--text-muted)" strokeWidth={1.4} />
           <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 20, color: 'var(--text-primary)', margin: 0 }}>
             {t('empty.title')}
           </p>
@@ -745,10 +745,10 @@ export default function NftsPage() {
                 style={{
                   transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s',
                   cursor: 'pointer',
-                  background: 'rgba(255,255,255,0.025)',
+                  background: 'var(--surface)',
                   borderRadius: 14,
                   border: rarity.rarity === 'Common'
-                    ? '1px solid rgba(255,255,255,0.07)'
+                    ? '1px solid var(--border-subtle)'
                     : `1px solid ${rarity.color}40`,
                   boxShadow: rarity.rarity === 'Celestial' ? `0 0 24px ${rarity.color}20` : undefined,
                 }}
@@ -758,16 +758,16 @@ export default function NftsPage() {
                 tabIndex={0}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
+                  (e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)';
                   if (rarity.rarity === 'Common') {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.16)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
                   }
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLElement).style.transform = '';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.025)';
+                  (e.currentTarget as HTMLElement).style.background = 'var(--surface)';
                   if (rarity.rarity === 'Common') {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)';
                   }
                 }}
               >
@@ -819,7 +819,7 @@ export default function NftsPage() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       background: 'rgba(7,11,20,0.7)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      border: '1px solid var(--border)',
                       color: 'rgba(248,113,113,0.85)',
                       cursor: 'pointer',
                       opacity: 0,

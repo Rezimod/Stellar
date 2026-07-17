@@ -30,13 +30,15 @@ export default function BottomNav() {
   const nav = (
     <nav
       data-stellar-chrome="bottom"
-      className="sm:hidden fixed bottom-0 left-0 right-0 z-50"
+      className="stellar-bottomnav sm:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: '#050812',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
         paddingBottom: 'max(env(safe-area-inset-bottom), 10px)',
       }}
     >
+      <style>{`
+        .stellar-bottomnav { background: #050812; border-top: 1px solid rgba(255,255,255,0.06); }
+        [data-theme="light"] .stellar-bottomnav { background: rgba(237,240,247,0.97); border-top: 1px solid rgba(15,23,42,0.08); }
+      `}</style>
       <div
         style={{
           display: 'flex',
@@ -78,7 +80,7 @@ export default function BottomNav() {
                 <Icon
                   size={22}
                   strokeWidth={isActive ? 2.2 : 1.7}
-                  color={isActive ? 'var(--stl-gold)' : '#ffffff'}
+                  color={isActive ? 'var(--stl-gold)' : 'var(--text-primary)'}
                 />
               </div>
 
@@ -87,7 +89,7 @@ export default function BottomNav() {
                   fontFamily: 'var(--font-display)',
                   fontSize: 10.5,
                   fontWeight: isActive ? 600 : 400,
-                  color: isActive ? 'var(--stl-text-bright)' : '#ffffff',
+                  color: isActive ? 'var(--stl-text-bright)' : 'var(--text-primary)',
                   letterSpacing: '0.01em',
                   lineHeight: 1,
                   transition: 'color 0.2s ease',

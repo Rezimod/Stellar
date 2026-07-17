@@ -50,7 +50,7 @@
   border-radius: 8px;
   transition: background 120ms ease;
 }
-.tl__row--body:hover { background: rgba(255, 255, 255, 0.035); }
+.tl__row--body:hover { background: var(--surface-hover); }
 
 .tl__label {
   font-family: var(--mono);
@@ -83,10 +83,10 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-image: linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 25% 100%;
 }
-.tl__row--body .tl__track { background: rgba(255, 255, 255, 0.04); }
+.tl__row--body .tl__track { background: var(--surface); }
 
 /* Axis ticks */
 .tl__axis { height: 14px; }

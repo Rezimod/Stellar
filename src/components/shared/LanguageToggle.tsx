@@ -31,7 +31,7 @@ export default function LanguageToggle() {
         width: 32,
         height: 32,
         borderRadius: 8,
-        color: 'rgba(255,255,255,0.85)',
+        color: 'var(--text-secondary)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

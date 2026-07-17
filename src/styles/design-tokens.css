@@ -96,9 +96,10 @@
   --color-night-text:        rgba(255, 100, 80, 0.85);
 }
 
-/* Ensure app dark theme is never overridden by system light mode */
+/* Ensure app dark theme is never overridden by system light mode.
+   Scoped so the explicit in-app day theme ([data-theme="light"]) still wins. */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-space-black:  var(--canvas);
     --color-panel-dark:   var(--canvas);
     --color-card-surface: rgba(255, 255, 255, 0.02);

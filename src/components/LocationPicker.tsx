@@ -226,7 +226,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         }
         `}
         .loc-pill:hover {
-          background: ${ghost ? 'rgba(255,255,255,0.06)' : 'rgba(15, 18, 28, 0.75)'};
+          background: ${ghost ? 'var(--surface)' : 'var(--bg-panel)'};
           border-color: ${ghost ? 'transparent' : 'rgba(255, 179, 71, 0.55)'};
         }
         .loc-city-btn {
@@ -242,7 +242,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           text-align: left;
           transition: background 0.12s, border-color 0.12s;
         }
-        .loc-city-btn:hover { background: rgba(255,255,255,0.05); }
+        .loc-city-btn:hover { background: var(--surface-hover); }
         .loc-city-btn.active {
           background: rgba(255, 179, 71, 0.14);
           border-color: rgba(255, 179, 71, 0.32);
@@ -271,10 +271,10 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         .loc-search-input {
           width: 100%;
           padding: 8px 12px 8px 32px;
-          background: rgba(255,255,255,0.05);
+          background: var(--surface);
           border: 1px solid rgba(232,230,221,0.14);
           border-radius: 10px;
-          color: #F8F4EC;
+          color: var(--text-primary);
           font-size: 13px;
           box-sizing: border-box;
           outline: none;
@@ -282,7 +282,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         }
         .loc-search-input:focus {
           border-color: rgba(255, 179, 71, 0.55);
-          background: rgba(255,255,255,0.07);
+          background: var(--surface-hover);
         }
         .loc-search-input::placeholder { color: rgba(232,230,221,0.45); }
         .loc-city-list::-webkit-scrollbar { width: 4px; }
@@ -308,13 +308,13 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           cursor: 'pointer',
           transition: 'background 0.15s',
         } : undefined}
-        onMouseEnter={ghost ? (e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' } : undefined}
+        onMouseEnter={ghost ? (e) => { e.currentTarget.style.background = 'var(--surface-hover)' } : undefined}
         onMouseLeave={ghost ? (e) => { e.currentTarget.style.background = 'transparent' } : undefined}
       >
         <MapPin
           size={ghost ? 10 : compact ? 11 : 13}
           color={ghost
-            ? (location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255,255,255,0.55)')
+            ? (location.source === 'gps' ? 'var(--terracotta)' : 'var(--text-secondary)')
             : (location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)')}
           className="loc-pill-mappin"
           style={{ flexShrink: 0 }}
@@ -323,7 +323,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           className="loc-pill-label"
           style={{
             fontSize: ghost ? 10.5 : compact ? 10.5 : 12,
-            color: ghost ? 'rgba(255,255,255,0.78)' : 'rgba(255,255,255,0.92)',
+            color: ghost ? 'var(--text-secondary)' : 'var(--text-primary)',
             fontWeight: 500,
             letterSpacing: '0.01em',
           }}
@@ -332,7 +332,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         </span>
         <ChevronDown
           size={ghost ? 9 : compact ? 9 : 11}
-          color={ghost ? 'rgba(255,255,255,0.45)' : 'rgba(255, 179, 71,0.7)'}
+          color={ghost ? 'var(--text-muted)' : 'rgba(255, 179, 71,0.7)'}
           className="loc-pill-chevron"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
         />
@@ -359,7 +359,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         >
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0,
+            padding: '10px 12px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <MapPin size={13} color="var(--terracotta)" style={{ flexShrink: 0 }} />
@@ -371,7 +371,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                   Current
                 </p>
                 <p style={{
-                  color: '#F8F4EC', fontSize: 13, fontWeight: 600, margin: 0,
+                  color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, margin: 0,
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
                   {label}
@@ -461,7 +461,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                         >
                           <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{p.flag}</span>
                           <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                            <span style={{ color: active ? 'var(--terracotta)' : '#F8F4EC', fontSize: 13, fontWeight: 500 }}>
+                            <span style={{ color: active ? 'var(--terracotta)' : 'var(--text-primary)', fontSize: 13, fontWeight: 500 }}>
                               {p.city}
                             </span>
                             <span style={{
@@ -482,7 +482,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
             <div style={{ height: 6 }} />
           </div>
 
-          <div style={{ padding: '8px 10px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+          <div style={{ padding: '8px 10px 10px', borderTop: '1px solid var(--border-subtle)', flexShrink: 0 }}>
             <button className="loc-gps-btn" onClick={handleGPS} disabled={gpsRefreshing}>
               <Navigation size={13} className={gpsRefreshing ? 'loc-spinning' : ''} />
               {gpsRefreshing ? 'Detecting…' : 'Use my GPS location'}

@@ -141,8 +141,8 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
         style={{
           width: '100%',
           maxWidth: 512,
-          background: '#0D1321',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--bg-panel)',
+          border: '1px solid var(--border)',
           borderRadius: '1rem',
           padding: '1rem',
         }}
@@ -150,7 +150,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
       >
         {/* Input row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Search size={16} color="rgba(255,255,255,0.3)" style={{ flexShrink: 0 }} />
+          <Search size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
           <input
             ref={inputRef}
             value={query}
@@ -163,7 +163,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
               background: 'transparent',
               border: 'none',
               outline: 'none',
-              color: 'white',
+              color: 'var(--text-primary)',
               fontSize: '0.875rem',
               padding: '8px 12px',
             }}
@@ -172,7 +172,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
             <span style={{
               fontSize: '0.625rem',
               color: 'var(--text-muted)',
-              border: '1px solid #334155',
+              border: '1px solid var(--border-strong)',
               borderRadius: 4,
               padding: '1px 4px',
               flexShrink: 0,
@@ -192,12 +192,12 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   key={q.href}
                   onClick={() => navigate(q.href)}
                   style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
                     borderRadius: '9999px',
                     padding: '8px 16px',
                     fontSize: '0.75rem',
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     cursor: 'pointer',
                   }}
                 >
@@ -233,14 +233,14 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                       cursor: 'pointer',
                       textAlign: 'left',
                     }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)')}
                     onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
                   >
                     <div style={{
                       width: 32,
                       height: 32,
                       borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.06)',
+                      background: 'var(--surface)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -250,7 +250,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                       {item.icon}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: 'white', fontSize: '0.875rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</p>
+                      <p style={{ color: 'var(--text-primary)', fontSize: '0.875rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</p>
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.sub}</p>
                     </div>
                     <ArrowUpRight size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />

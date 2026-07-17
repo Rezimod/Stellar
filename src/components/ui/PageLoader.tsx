@@ -38,7 +38,7 @@ export default function PageLoader() {
             width: s.size,
             height: s.size,
             borderRadius: '50%',
-            background: 'white',
+            background: 'var(--text-muted)',
             left: s.x,
             top: s.y,
             opacity: s.opacity,

@@ -79,7 +79,7 @@ export default function TonightTargets({ onStartObserve, walletAddress }: Tonigh
             key={tgt.id}
             onClick={onStartObserve}
             className="flex items-center gap-3 rounded-xl p-4 text-left w-full transition-colors hover:bg-[var(--surface)]]"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
           >
             <span className="text-2xl flex-shrink-0">{tgt.emoji}</span>
             <div className="flex-1 min-w-0">

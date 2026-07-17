@@ -51,7 +51,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           onClick={onClose}
           aria-label={t('close')}
           className="absolute top-4 right-4"
-          style={{ color: 'rgba(232,230,221,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}
+          style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           <X size={18} />
         </button>
@@ -60,7 +60,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           style={{
             fontFamily: 'var(--font-display), serif',
             fontSize: 22,
-            color: '#F8F4EC',
+            color: 'var(--text-primary)',
             margin: '0 0 4px',
             fontWeight: 500,
             letterSpacing: '-0.01em',
@@ -99,7 +99,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 20px' }}>
-          <div style={{ flex: 1, height: 1, background: 'rgba(232,230,221,0.08)' }} />
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           <span
             style={{
               fontSize: 10,
@@ -110,7 +110,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           >
             {t('or')}
           </span>
-          <div style={{ flex: 1, height: 1, background: 'rgba(232,230,221,0.08)' }} />
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
         <button
@@ -122,7 +122,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           style={{
             width: '100%',
             background: 'transparent',
-            color: '#F8F4EC',
+            color: 'var(--text-primary)',
             fontSize: 13,
             fontWeight: 500,
             padding: '12px 16px',

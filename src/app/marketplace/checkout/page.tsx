@@ -316,23 +316,32 @@ function CheckoutContent() {
     <PageContainer variant="wide" className="font-mono py-5">
       <style jsx global>{`
         .stl-checkout-field {
-          color: #F8F4EC;
+          color: var(--text-primary);
           background: #161A28;
-          border: 1px solid rgba(255,255,255,0.10);
+          border: 1px solid var(--border);
         }
-        .stl-checkout-field:hover { border-color: rgba(255,255,255,0.18); }
+        [data-theme="light"] .stl-checkout-field { background: #FFFFFF; }
+        .stl-checkout-field:hover { border-color: var(--border-strong); }
         .stl-checkout-field:focus {
           border-color: rgba(255, 179, 71, 0.55);
           background: #1C2235;
         }
+        [data-theme="light"] .stl-checkout-field:focus { background: #F4F7FF; }
         .stl-checkout-field:-webkit-autofill,
         .stl-checkout-field:-webkit-autofill:hover,
         .stl-checkout-field:-webkit-autofill:focus,
         .stl-checkout-field:-webkit-autofill:active {
           -webkit-box-shadow: 0 0 0 1000px #161A28 inset !important;
           -webkit-text-fill-color: #F8F4EC !important;
-          caret-color: #F8F4EC;
+          caret-color: var(--text-primary);
           transition: background-color 9999s ease-out, color 9999s ease-out;
+        }
+        [data-theme="light"] .stl-checkout-field:-webkit-autofill,
+        [data-theme="light"] .stl-checkout-field:-webkit-autofill:hover,
+        [data-theme="light"] .stl-checkout-field:-webkit-autofill:focus,
+        [data-theme="light"] .stl-checkout-field:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+          -webkit-text-fill-color: #0F172A !important;
         }
       `}</style>
       <SolGradientDef />

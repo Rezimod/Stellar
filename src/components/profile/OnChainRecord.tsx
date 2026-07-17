@@ -41,10 +41,10 @@ interface OnChainData {
 const CARD_STYLE: CSSProperties = {
   background:
     'radial-gradient(ellipse 70% 100% at 0% 0%, rgba(94,234,212,0.06) 0%, transparent 60%), ' +
-    'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%)',
-  border: '1px solid rgba(255,255,255,0.10)',
+    'linear-gradient(180deg, var(--surface) 0%, transparent 100%)',
+  border: '1px solid var(--border)',
   borderRadius: 16,
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 28px -18px rgba(0,0,0,0.55)',
+  boxShadow: '0 10px 28px -18px rgba(0,0,0,0.35)',
   backdropFilter: 'blur(8px)',
   WebkitBackdropFilter: 'blur(8px)',
   overflow: 'hidden',
@@ -131,7 +131,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '14px 16px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid var(--border-subtle)',
           }}
         >
           {status === 'loading' || !data?.profile ? (
@@ -182,7 +182,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
           <div
             style={{
               padding: '12px 16px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               flexDirection: 'column',
               gap: 8,
@@ -254,7 +254,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
               alignItems: 'center',
               gap: 12,
               padding: '12px 16px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--border-subtle)',
               textDecoration: 'none',
             }}
           >
@@ -296,7 +296,7 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                     alignItems: 'center',
                     gap: 12,
                     padding: '11px 16px',
-                    borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                    borderBottom: i < arr.length - 1 ? '1px solid var(--border-subtle)' : 'none',
                     textDecoration: 'none',
                   }}
                 >

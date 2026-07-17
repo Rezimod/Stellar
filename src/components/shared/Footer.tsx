@@ -50,7 +50,7 @@ const columns: FooterColumn[] = [
 ];
 
 const linkBase: React.CSSProperties = {
-  color: 'rgba(255,255,255,0.55)',
+  color: 'var(--text-secondary)',
   fontSize: 13,
   textDecoration: 'none',
   display: 'inline-flex',
@@ -68,8 +68,8 @@ function FooterLinkItem({ link, label }: { link: FooterLink; label: string }) {
         target={link.external ? '_blank' : undefined}
         rel={link.external ? 'noopener noreferrer' : undefined}
         style={linkBase}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.95)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
       >
         <span className="stellar-footer-link-ic" aria-hidden="true"><Icon size={15} /></span>
         {label}
@@ -86,11 +86,7 @@ export default function Footer() {
   return (
     <footer
       data-stellar-chrome="footer"
-      className="relative z-10 mt-auto"
-      style={{
-        background: 'rgba(10,22,40,0.92)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-      }}
+      className="stellar-footer relative z-10 mt-auto"
     >
       <div
         className="stellar-footer-inner max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
@@ -115,7 +111,7 @@ export default function Footer() {
               className="stellar-footer-tagline"
               style={{
                 marginTop: 14,
-                color: 'rgba(255,255,255,0.5)',
+                color: 'var(--text-secondary)',
                 fontSize: 13,
                 lineHeight: 1.55,
                 maxWidth: 280,
@@ -147,7 +143,7 @@ export default function Footer() {
                     fontWeight: 700,
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
-                    color: 'rgba(255,255,255,0.4)',
+                    color: 'var(--text-muted)',
                     marginBottom: 14,
                     fontFamily: 'var(--font-display)',
                   }}
@@ -177,7 +173,7 @@ export default function Footer() {
           style={{
             marginTop: 40,
             paddingTop: 20,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -185,16 +181,19 @@ export default function Footer() {
             flexWrap: 'wrap',
           }}
         >
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
             {t('rights', { year })}
           </span>
-          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
             {t('builtIn')}
           </span>
         </div>
       </div>
 
       <style>{`
+        .stellar-footer { background: rgba(10,22,40,0.92); border-top: 1px solid rgba(255,255,255,0.06); }
+        [data-theme="light"] .stellar-footer { background: #E7EBF4; border-top: 1px solid rgba(15,23,42,0.08); }
+
         /* Leading link icons are a mobile-only treatment. */
         .stellar-footer-link-ic { display: none; }
 
@@ -244,7 +243,7 @@ export default function Footer() {
             content: '';
             flex: 1;
             height: 1px;
-            background: rgba(255, 255, 255, 0.12);
+            background: var(--border);
           }
           .stellar-footer-links {
             align-items: flex-start;
@@ -255,7 +254,7 @@ export default function Footer() {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.42);
+            color: var(--text-muted);
             margin-right: 8px;
             flex-shrink: 0;
           }

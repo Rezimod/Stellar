@@ -51,7 +51,7 @@ export function AvatarPicker({ open, current, initial, saving, onClose, onSelect
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 480,
-          background: 'var(--stl-bg-surface)',
+          background: 'var(--bg-panel)',
           border: '1px solid var(--stl-border-regular)',
           borderRadius: 'var(--stl-r-lg)',
           padding: '22px 22px 24px',

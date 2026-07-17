@@ -110,29 +110,29 @@ export default function Nav() {
       <style>{`
         @keyframes dropIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
         .nav-icon-btn { transition: color 0.15s ease, background 0.15s ease; background: transparent; border: none; cursor: pointer; }
-        .nav-icon-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.95); }
+        .nav-icon-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
         .nav-tab { position: relative; transition: all 0.18s ease; border-radius: 9999px; }
-        .nav-tab:hover:not(.nav-tab-active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9) !important; }
+        .nav-tab:hover:not(.nav-tab-active) { background: var(--surface-hover); color: var(--text-primary) !important; }
         .signin-btn { transition: all 0.18s ease; }
-        .signin-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25); color: white; }
-        .hub-btn { width: 32px; height: 32px; display: none; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: rgba(255,255,255,0.7); transition: all 0.15s ease; text-decoration: none; }
+        .signin-btn:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text-primary); }
+        .hub-btn { width: 32px; height: 32px; display: none; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: var(--text-secondary); transition: all 0.15s ease; text-decoration: none; }
         @media (min-width: 768px) { .hub-btn { display: flex; } }
-        .hub-btn:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.95); }
+        .hub-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text-primary); }
         .hub-btn[data-active="true"] { background: rgba(255,179,71,0.10); border-color: rgba(255,179,71,0.25); color: #FFB347; }
         .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.18s ease, filter 0.18s ease; }
         .avatar-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
         .avatar-btn[data-active="true"] { box-shadow: 0 0 0 1.5px rgba(255,179,71,0.55), 0 4px 12px -4px rgba(255,179,71,0.30) !important; }
         .dd-link { transition: background 0.15s ease; text-decoration: none; }
-        .dd-link:hover { background: rgba(255,255,255,0.04); }
+        .dd-link:hover { background: var(--surface); }
+        .stellar-topnav { background: #050812; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        [data-theme="light"] .stellar-topnav { background: rgba(237,240,247,0.97); border-bottom: 1px solid rgba(15,23,42,0.08); }
+        .dd-menu { background: #0d1424; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 16px 40px rgba(0,0,0,0.5); }
+        [data-theme="light"] .dd-menu { background: #FFFFFF; border-color: rgba(15,23,42,0.10); box-shadow: 0 16px 40px rgba(15,23,42,0.18); }
       `}</style>
 
       <nav
         data-stellar-chrome="top"
-        className="fixed top-0 left-0 right-0 z-50"
-        style={{
-          background: '#050812',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}
+        className="stellar-topnav fixed top-0 left-0 right-0 z-50"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-14 relative flex items-center">
@@ -167,7 +167,7 @@ export default function Nav() {
                       color: '#0A1735',
                       textDecoration: 'none',
                     } : {
-                      color: '#FFFFFF',
+                      color: 'var(--text-primary)',
                       border: '1px solid transparent',
                       textDecoration: 'none',
                     }}
@@ -183,7 +183,7 @@ export default function Nav() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="nav-icon-btn"
-                style={{ width: 32, height: 32, borderRadius: 8, color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 32, height: 32, borderRadius: 8, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 aria-label={t('search')}
               >
                 <Search size={17} strokeWidth={1.9} />
@@ -210,8 +210,8 @@ export default function Nav() {
                     padding: '6px 12px',
                     borderRadius: 9999,
                     background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    color: 'rgba(255,255,255,0.85)',
+                    border: '1px solid var(--border-strong)',
+                    color: 'var(--text-primary)',
                     cursor: 'pointer',
                     fontWeight: 600,
                     letterSpacing: '0.02em',
@@ -240,23 +240,20 @@ export default function Nav() {
                     <div
                       id="avatar-menu"
                       role="menu"
-                      className="absolute z-[60]"
+                      className="dd-menu absolute z-[60]"
                       style={{
                         top: 'calc(100% + 8px)',
                         right: 0,
                         width: 240,
                         animation: 'dropIn 0.15s cubic-bezier(0.22,1,0.36,1)',
-                        background: '#0d1424',
-                        border: '1px solid rgba(255,255,255,0.08)',
                         borderRadius: 10,
                         padding: 8,
-                        boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
                       }}
                     >
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 12px',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        borderBottom: '1px solid var(--border-subtle)',
                         marginBottom: 4,
                       }}>
                         <div style={{
@@ -269,7 +266,7 @@ export default function Nav() {
                         </div>
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div style={{
-                            color: 'white', fontSize: 13, fontWeight: 500,
+                            color: 'var(--text-primary)', fontSize: 13, fontWeight: 500,
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             fontFamily: 'var(--font-display)',
                           }}>
@@ -277,7 +274,7 @@ export default function Nav() {
                           </div>
                           {email && (
                             <div style={{
-                              color: 'rgba(255,255,255,0.4)', fontSize: 11,
+                              color: 'var(--text-muted)', fontSize: 11,
                               fontFamily: 'var(--font-mono)',
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             }}>
@@ -299,7 +296,7 @@ export default function Nav() {
                             style={{
                               gap: 10,
                               padding: '8px 12px',
-                              color: 'rgba(255,255,255,0.85)',
+                              color: 'var(--text-primary)',
                               fontSize: 13,
                               borderRadius: 6,
                               fontFamily: 'var(--font-display)',
@@ -311,7 +308,7 @@ export default function Nav() {
                         );
                       })}
 
-                      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+                      <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 0' }} />
 
                       <button
                         type="button"
@@ -321,7 +318,7 @@ export default function Nav() {
                         style={{
                           gap: 10,
                           padding: '8px 12px',
-                          color: 'rgba(255,140,140,0.85)',
+                          color: 'var(--error)',
                           fontSize: 13,
                           borderRadius: 6,
                           background: 'transparent',

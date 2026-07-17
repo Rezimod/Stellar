@@ -29,7 +29,7 @@ export function PageHeader({ label, title, subtitle, action }: PageHeaderProps) 
               fontWeight: 500,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              color: 'var(--accent-teal, rgba(255,255,255,0.5))',
+              color: 'var(--accent-teal)',
               marginBottom: 8,
             }}
           >
@@ -43,7 +43,7 @@ export function PageHeader({ label, title, subtitle, action }: PageHeaderProps) 
             fontWeight: 700,
             letterSpacing: '-0.025em',
             lineHeight: 1.18,
-            color: 'white',
+            color: 'var(--text-primary)',
             margin: 0,
             maxWidth: 520,
           }}
@@ -56,7 +56,7 @@ export function PageHeader({ label, title, subtitle, action }: PageHeaderProps) 
               fontFamily: 'var(--font-body)',
               fontSize: 14,
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.55)',
+              color: 'var(--text-secondary)',
               lineHeight: 1.55,
               maxWidth: 420,
               margin: '8px 0 0',

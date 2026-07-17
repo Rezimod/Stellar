@@ -89,7 +89,7 @@ export default function ScoreRing({
           cy={cy}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="var(--border-subtle)"
           strokeWidth={strokeWidth}
         />
         {/* Foreground arc */}

@@ -46,7 +46,7 @@ function PartnerLogo({
         unoptimized={isSvg}
         loading="lazy"
         sizes="(max-width: 768px) 50vw, 240px"
-        className="h-7 md:h-9 w-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+        className="partner-logo h-7 md:h-9 w-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300"
         style={filter ? { filter, height: 'auto', maxHeight: '36px' } : { height: 'auto', maxHeight: '36px' }}
       />
     </div>
@@ -388,7 +388,7 @@ function IPhone({
         };
 
   return (
-    <div className={`relative mx-auto ${cfg.width}`}>
+    <div className={`stay-dark relative mx-auto ${cfg.width}`}>
       {/* Outer titanium edge */}
       <div
         className="relative w-full"

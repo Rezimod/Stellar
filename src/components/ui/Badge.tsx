@@ -16,9 +16,9 @@ interface BadgeProps {
 
 const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
   default: {
-    background: 'rgba(255,255,255,0.06)',
-    color: 'rgba(255,255,255,0.55)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'var(--surface)',
+    color: 'var(--text-secondary)',
+    border: '1px solid var(--border)',
   },
   teal: {
     background: 'rgba(255, 179, 71,0.1)',
@@ -53,7 +53,7 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
 };
 
 const dotColors: Record<BadgeVariant, string> = {
-  default: 'rgba(255,255,255,0.4)',
+  default: 'var(--text-muted)',
   teal:    'var(--terracotta)',
   gold:    'var(--stars)',
   green:   'var(--success)',

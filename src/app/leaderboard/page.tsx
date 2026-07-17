@@ -59,14 +59,14 @@ function AvatarCircle({ name, size = 40, color }: { name: string; size?: number;
         width: size,
         height: size,
         borderRadius: '50%',
-        background: color ? `${color}18` : 'rgba(255,255,255,0.06)',
-        border: `1px solid ${color ? `${color}35` : 'rgba(255,255,255,0.1)'}`,
+        background: color ? `${color}18` : 'var(--surface)',
+        border: `1px solid ${color ? `${color}35` : 'var(--border)'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: size * 0.4,
         fontWeight: 700,
-        color: color ?? 'rgba(255,255,255,0.7)',
+        color: color ?? 'var(--text-secondary)',
         flexShrink: 0,
       }}
     >
@@ -222,7 +222,7 @@ export default function LeaderboardPage() {
       {/* Time filter tabs */}
       <div
         className="flex rounded-xl p-1 gap-1"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
       >
         {TIME_TABS.map(tab => (
           <button
@@ -243,7 +243,7 @@ export default function LeaderboardPage() {
       {/* Error state */}
       {leaderError && !loading && (
         <div className="rounded-2xl p-8 text-center flex flex-col items-center gap-3"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
           <p className="text-text-primary/60 text-sm">{t('error')}</p>
           <button
             onClick={() => { setLeaderError(false); setActiveTab(prev => prev); }}
@@ -259,7 +259,7 @@ export default function LeaderboardPage() {
       {isEmpty && (
         <div
           className="rounded-2xl p-10 text-center flex flex-col items-center gap-4"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
         >
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -293,7 +293,7 @@ export default function LeaderboardPage() {
                 <div
                   key={i}
                   className="flex-1 rounded-2xl animate-pulse"
-                  style={{ height: s.h, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
+                  style={{ height: s.h, background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
                 />
               ))}
             </div>
@@ -338,7 +338,7 @@ export default function LeaderboardPage() {
 
                     <p
                       className="font-mono leading-tight w-full truncate"
-                      style={{ fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.7)' }}
+                      style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}
                     >
                       {entry.handle}
                     </p>
@@ -364,7 +364,7 @@ export default function LeaderboardPage() {
           <Card variant="default" padding="none" hover={false}>
             <div
               className="px-4 py-3 border-b flex items-center gap-2"
-              style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+              style={{ borderColor: 'var(--border-subtle)' }}
             >
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
                 {t('rankings')}
@@ -378,14 +378,14 @@ export default function LeaderboardPage() {
                   const isCurrentUser = currentWallet && entry.wallet.toLowerCase() === currentWallet.toLowerCase();
                   const rankNumColor = i === 0 ? 'var(--stars)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--color-text-muted)';
                   const avatarColor = i < 3 ? rankNumColor : walletColor(entry.wallet);
-                  const rowBg = i % 2 === 1 ? 'rgba(255,255,255,0.015)' : 'transparent';
+                  const rowBg = i % 2 === 1 ? 'var(--surface)' : 'transparent';
 
                   return (
                     <div
                       key={`${entry.handle}-${i}`}
                       className="flex items-center gap-3 px-4 py-3 border-b last:border-0 transition-colors"
                       style={{
-                        borderColor: 'rgba(255,255,255,0.05)',
+                        borderColor: 'var(--border-subtle)',
                         background: rowBg,
                         boxShadow: isCurrentUser ? 'inset 2px 0 0 var(--terracotta)' : undefined,
                       }}

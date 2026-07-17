@@ -28,7 +28,7 @@ export default function AstroLogo({
   variant = 'white',
   showWordmark = true,
 }: AstroLogoProps) {
-  const color = variant === 'black' ? '#0A0E1A' : '#F4EDE0';
+  const color = variant === 'black' ? '#0A0E1A' : 'var(--text-primary)';
 
   if (showWordmark) {
     return (

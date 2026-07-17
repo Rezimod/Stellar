@@ -78,7 +78,7 @@ export default function ForecastStrip({ days, onDayClick, className = '' }: Fore
             onMouseEnter={(e) => {
               if (!day.isToday) {
                 (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-strong)';
-                (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.04)';
+                (e.currentTarget as HTMLDivElement).style.background = 'var(--surface-hover)';
               }
             }}
             onMouseLeave={(e) => {

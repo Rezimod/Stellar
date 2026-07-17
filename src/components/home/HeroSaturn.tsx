@@ -92,7 +92,7 @@ export default function HeroSaturn() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex w-full flex-col overflow-hidden pt-14"
+      className="stay-dark relative flex w-full flex-col overflow-hidden pt-14"
       style={{
         minHeight: '100svh',
         background: [

@@ -5319,3 +5319,25 @@
   .skx__look-row { grid-template-columns: 10px minmax(0, 1fr) 18px; }
   .skx__look-where { display: none; }
 }
+
+/* === Light / Day theme ==============================================
+   The page defines a scoped dark palette above; re-point the scoped
+   tokens at the day values so every rule reading them flips. Chips and
+   HUD overlays that sit ON the night-sky chart keep their dark rgba
+   backgrounds — the chart is dark in both themes. */
+[data-theme="light"] .sky-page-v2 {
+  --bg: #EDF0F7;
+  --bg-2: #E2E8F5;
+  --surface: #FFFFFF;
+  --surface-2: #F4F7FF;
+  --border: rgba(15, 23, 42, 0.10);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --text: #0F172A;
+  --text-muted: #475569;
+  --text-dim: #64748B;
+  background: var(--bg);
+}
+[data-theme="light"] .sky-page-v2 .object-row:hover { background: rgba(15, 23, 42, 0.04); }
+[data-theme="light"] .sky-page-v2 .object-icon { background: rgba(15, 23, 42, 0.05); }
+[data-theme="light"] .sky-page-v2 .dir-badge.below { background: rgba(15, 23, 42, 0.05); }
+[data-theme="light"] .sky-page-v2 .equipment-tag { background: rgba(15, 23, 42, 0.05); }

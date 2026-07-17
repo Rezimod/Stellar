@@ -186,7 +186,7 @@ export default function ClubPage() {
           ) : telescope?.starsAwarded ? (
             <div
               className="mb-4 rounded-2xl px-4 py-3"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
             >
               <p className="text-text-muted text-xs">{t.bonusDone}</p>
             </div>
@@ -251,7 +251,7 @@ export default function ClubPage() {
               value={form.brand}
               onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
               className="rounded-xl px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:border-[var(--terracotta)]"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             >
               {TELESCOPE_BRANDS.map(b => <option key={b}>{b}</option>)}
             </select>
@@ -264,7 +264,7 @@ export default function ClubPage() {
               onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
               placeholder={t.modelPlaceholder}
               className="rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             />
           </div>
 
@@ -275,7 +275,7 @@ export default function ClubPage() {
               onChange={e => setForm(f => ({ ...f, aperture: e.target.value }))}
               placeholder={t.aperturePlaceholder}
               className="rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder-slate-600 focus:outline-none focus:border-[var(--terracotta)]"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             />
           </div>
 
@@ -285,7 +285,7 @@ export default function ClubPage() {
               value={form.type}
               onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
               className="rounded-xl px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:border-[var(--terracotta)]"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             >
               {TELESCOPE_TYPES.map(option => (
                 <option key={option.value} value={option.value}>
