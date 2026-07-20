@@ -1519,6 +1519,52 @@
   text-transform: uppercase;
 }
 
+/* Star alignment — mirrors the nudge pad on the opposite corner. Solving
+   north off a real body is the accurate path, so it reads as the primary
+   control and the ±1° pad stays a secondary trim. */
+.sky-map__align {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: calc(100% - 120px);
+  z-index: 2;
+}
+.sky-map__align-btn {
+  appearance: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(7, 11, 20, 0.62);
+  border: 1px solid rgba(255, 179, 71, 0.42);
+  color: #FFDC8C;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.sky-map__align-btn:hover {
+  background: rgba(255, 179, 71, 0.12);
+}
+.sky-map__align-btn.is-aligned {
+  border-color: rgba(94, 234, 212, 0.42);
+  color: #5EEAD4;
+}
+.sky-map__align-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+  font-feature-settings: 'tnum' 1;
+  padding-left: 12px;
+}
+
 /* === SkyHeaderStrip — slim mono row sitting just above the dome.
    Replaces dead negative space between page header and the sky chart. */
 .sky-strip-mini {

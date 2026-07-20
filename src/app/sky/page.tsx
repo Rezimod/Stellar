@@ -191,6 +191,15 @@ export default function SkyPage() {
     if (!arOpenRef.current) compass.setProximityDeg(deg);
   }, [compass]);
 
+  // Solve the compass north offset from the body the user is aiming at.
+  // Reads the live object list rather than closing over a snapshot so the
+  // azimuth used is the one currently drawn on the dome.
+  const alignToActive = useCallback(() => {
+    const target = finder?.objects.find((o) => o.id === activeId);
+    if (!target || !target.visible) return;
+    compass.alignToAzimuth(target.azimuth);
+  }, [finder, activeId, compass]);
+
   const [skyTime, setSkyTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -591,6 +600,10 @@ export default function SkyPage() {
                   onCalibrate={handleCalibrate}
                   calibrationOffset={compass.offset}
                   onNudge={compass.nudge}
+                  sensorLive={compass.live}
+                  northReady={compass.northReady}
+                  northSource={compass.northSource}
+                  onAlign={alignToActive}
                   onProximityChange={handleDomeProximity}
                   onLock={handleLock}
                   constellationStars={constellationStars}

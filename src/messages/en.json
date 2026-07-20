@@ -590,7 +590,8 @@
       "calMeta": "expects {deg}° · alt {alt}°",
       "calLocked": "Compass aligned to {name} ({deg}°)",
       "calPick": "Calibrate using:",
-      "visible": "{count} visible"
+      "visible": "{count} visible",
+      "northPending": "Hold the phone level to find north"
     },
     "tour": {
       "aria": "How to find a target",

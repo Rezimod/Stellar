@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { angularSeparation, type HeadingStatus } from '@/lib/sky/use-device-heading';
+import { angularSeparation, type HeadingStatus, type NorthSource } from '@/lib/sky/use-device-heading';
 import { azimuthToCardinal } from '@/lib/sky/ar';
 import { CONSTELLATION_NAMES, STAR_TINT } from '@/lib/sky/palette';
 import type { ObjectId, SkyObject } from './types';
@@ -73,6 +73,12 @@ interface SkyMapProps {
   onSelect: (id: ObjectId) => void;
   /** Optional live device compass heading. When provided, the dome rotates so the user's facing direction is at top. */
   heading?: number | null;
+  /**
+   * The orientation sensor is streaming, whether or not north is anchored yet.
+   * Distinct from `heading != null`: the star-alignment control has to render
+   * precisely when north is *un*anchored, since it is the way out of that state.
+   */
+  sensorLive?: boolean;
   /** Optional live device altitude (where the back of the phone points), −90..+90. */
   userAltitude?: number | null;
   /** Permission/availability state for the heading source. */
@@ -91,6 +97,20 @@ interface SkyMapProps {
   calibrationOffset?: number;
   /** Apply ±degrees to the calibration offset. Optional — only renders the +/− pad when provided. */
   onNudge?: (delta: number) => void;
+  /**
+   * False until the heading is anchored to true north. The dome renders a
+   * relative bearing until then, so it prompts the user to hold the phone
+   * level rather than silently pointing them at empty sky.
+   */
+  northReady?: boolean;
+  /** How north was established — a star alignment is worth showing off. */
+  northSource?: NorthSource;
+  /**
+   * Solve north from the active target the user is physically aiming at.
+   * Beats the magnetometer, which runs ±10–20° beside a telescope's steel
+   * tube. Optional — only renders the align control when provided.
+   */
+  onAlign?: () => void;
   /**
    * Reports the angular distance between the user's current aim and the
    * active target whenever it changes. Used by the heading hook to dampen
@@ -181,6 +201,7 @@ export function SkyMap({
   activeId,
   onSelect,
   heading = null,
+  sensorLive = false,
   userAltitude = null,
   headingStatus = 'idle',
   accuracy = null,
@@ -190,6 +211,9 @@ export function SkyMap({
   hopAnchor = null,
   calibrationOffset = 0,
   onNudge,
+  northReady = true,
+  northSource = 'none',
+  onAlign,
   onProximityChange,
   onLock,
 }: SkyMapProps) {
@@ -466,7 +490,10 @@ export function SkyMap({
   // Compass accuracy is poor when iOS reports >15° or omits the field while
   // the user is live. Surfaces a calibration banner so the user knows why
   // targets might be off without blaming the math.
-  const poorAccuracy = isLive && (accuracy == null || accuracy > POOR_ACCURACY_DEG);
+  // Only flag accuracy we actually know to be bad. Treating a missing value
+  // as poor pinned this banner open permanently on Android, which never
+  // reports webkitCompassAccuracy at all.
+  const poorAccuracy = isLive && accuracy != null && accuracy > POOR_ACCURACY_DEG;
 
   return (
     <div className="sky-map">
@@ -807,10 +834,43 @@ export function SkyMap({
         )}
       </div>
 
-      {poorAccuracy && (
+      {/* North isn't anchored yet. The compass axis is only well defined
+          while the phone is near level, so ask for that pose rather than
+          showing a bearing we know is arbitrary. */}
+      {sensorLive && !northReady && (
+        <div className="sky-map__accuracy" role="status">
+          <span className="sky-map__accuracy-icon" aria-hidden="true">⌖</span>
+          <span>{t('northPending')}</span>
+        </div>
+      )}
+
+      {northReady && poorAccuracy && northSource !== 'star' && (
         <div className="sky-map__accuracy" role="status">
           <span className="sky-map__accuracy-icon" aria-hidden="true">∞</span>
           <span>{t('poorAccuracy')}</span>
+        </div>
+      )}
+
+      {/* Star alignment — solve north from a body the user is actually
+          aimed at. More accurate than any magnetometer reading, and the
+          only thing that survives standing next to a steel telescope. */}
+      {sensorLive && onAlign && active && (
+        <div className="sky-map__align">
+          <button
+            type="button"
+            className={`sky-map__align-btn${northSource === 'star' ? ' is-aligned' : ''}`}
+            onClick={onAlign}
+          >
+            {northSource === 'star'
+              ? t('calRecal', { name: active.obj.name })
+              : t('calReady', { name: active.obj.name })}
+          </button>
+          <span className="sky-map__align-meta">
+            {t('calMeta', {
+              deg: Math.round(active.obj.azimuth),
+              alt: Math.round(active.obj.altitude),
+            })}
+          </span>
         </div>
       )}
 
