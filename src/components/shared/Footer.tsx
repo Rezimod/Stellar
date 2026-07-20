@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import {
   ExternalLink, Sparkles, CircleDot, BookOpen, ShoppingBag,
-  User, Github, ShieldCheck, Lock, Mail,
+  User, ShieldCheck, Lock, Mail,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AstroLogo from './AstroLogo';
@@ -35,7 +35,6 @@ const columns: FooterColumn[] = [
     titleKey: 'colCompany',
     links: [
       { labelKey: 'astroman', label: 'Astroman', href: 'https://astroman.ge', external: true, Icon: User },
-      { labelKey: 'github',   label: 'GitHub',   href: 'https://github.com/Rezimod/Stellar', external: true, Icon: Github },
       { labelKey: 'twitter',  label: 'X',        href: 'https://x.com/StellarClub26', external: true, Icon: XIcon },
     ],
   },
