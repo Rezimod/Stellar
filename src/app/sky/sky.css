@@ -2798,7 +2798,6 @@
   .sky-v3 .sky-v3__container > .sky-v3__skeleton { order: 6; }
   .sky-v3 .sky-v3__container > .sky-v3__active { order: 7; }
   .sky-v3 .sky-v3__container > .target-below { order: 8; }
-  .sky-v3 .sky-v3__container > .forecast7 { order: 9; }
   .sky-v3 .sky-v3__container > .sky-v3__horizon { order: 10; }
   .sky-v3 .sky-v3__container > .sky-v3__extended { order: 11; }
 
@@ -3072,400 +3071,6 @@
 .sky-v3__dome-only .sky-map {
   max-width: 460px;
   width: 100%;
-}
-
-/* ================================================================
-   === 7-day sky forecast — primary outlook section             ===
-   ================================================================ */
-
-.forecast7 {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border: 1px solid rgba(var(--ink), 0.08);
-  border-radius: 22px;
-  background:
-    radial-gradient(90% 70% at 50% 0%, rgba(255, 179, 71, 0.08), transparent 58%),
-    radial-gradient(80% 90% at 100% 10%, rgba(56, 240, 255, 0.05), transparent 62%),
-    linear-gradient(180deg, rgba(18, 26, 48, 0.72), rgba(7, 10, 24, 0.72));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 24px 70px rgba(0, 0, 0, 0.26);
-  overflow: hidden;
-}
-.forecast7__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-}
-.forecast7__label {
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--serif, Georgia, serif);
-  font-size: clamp(20px, 2vw, 27px);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: 0;
-  color: var(--text, rgba(255, 255, 255, 0.9));
-}
-.forecast7__label svg { color: var(--terracotta, #FFB347); flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.32)); }
-.forecast7__loc {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.10em;
-  color: rgba(var(--ink), 0.55);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.forecast7__row {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-}
-.forecast7__skeleton {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-}
-.forecast7__skel {
-  height: 224px;
-  border-radius: 18px;
-  background: linear-gradient(90deg, rgba(var(--ink),0.03), rgba(var(--ink),0.06), rgba(var(--ink),0.03));
-  background-size: 200% 100%;
-  animation: skyShimmer 1.6s linear infinite;
-}
-.forecast7__empty {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: rgba(var(--ink), 0.45);
-  padding: 14px;
-  border: 1px dashed rgba(var(--ink), 0.10);
-  border-radius: 12px;
-  text-align: center;
-}
-
-.forecast7__day {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 9px;
-  min-height: 224px;
-  padding: 16px 10px 14px;
-  border: 1px solid rgba(var(--ink), 0.08);
-  border-radius: 18px;
-  text-align: center;
-  background:
-    radial-gradient(90% 70% at 50% 0%, rgba(255, 255, 255, 0.055), transparent 64%),
-    linear-gradient(180deg, rgba(20, 29, 53, 0.8), rgba(10, 14, 31, 0.84));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
-  overflow: hidden;
-  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
-}
-.forecast7__day::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(72% 42% at 50% 0%, color-mix(in srgb, var(--score-color, #ffffff) 18%, transparent), transparent 72%);
-  opacity: 0.8;
-  pointer-events: none;
-}
-.forecast7__day > * {
-  position: relative;
-  z-index: 1;
-}
-.forecast7__day:hover {
-  border-color: rgba(var(--ink), 0.16);
-  transform: translateY(-1px);
-}
-.forecast7__day.is-today {
-  border-color: rgba(255, 179, 71, 0.64);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 179, 71, 0.14),
-    0 0 34px rgba(255, 179, 71, 0.18);
-}
-.forecast7__day--excellent { --score-color: #34D399; }
-.forecast7__day--good { --score-color: #FBBF24; }
-.forecast7__day--fair { --score-color: #FB923C; }
-.forecast7__day--poor { --score-color: #F87171; }
-
-.forecast7__weekday {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text);
-  font-weight: 600;
-  white-space: nowrap;
-}
-.forecast7__day.is-today .forecast7__weekday { color: var(--terracotta); }
-.forecast7__date {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-dim, rgba(255, 255, 255, 0.42));
-  font-feature-settings: 'tnum' 1;
-  white-space: nowrap;
-}
-
-/* Circular 0–100 score ring */
-.forecast7__gauge {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 5px 0 0;
-  border-radius: 999px;
-  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--score-color, #ffffff) 24%, transparent));
-}
-.forecast7__gauge-num {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-feature-settings: 'tnum' 1;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.forecast7__verdict {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.forecast7__moon {
-  display: inline-flex;
-  filter: drop-shadow(0 0 7px rgba(244, 217, 160, 0.28));
-}
-.forecast7__wx {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  margin-top: auto;
-  color: var(--text-muted, rgba(255, 255, 255, 0.62));
-  font-size: 10.5px;
-  line-height: 1.25;
-  min-height: 32px;
-}
-
-.forecast7__temps {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 9px;
-  margin-top: 0;
-  padding-top: 9px;
-  width: 100%;
-  border-top: 1px solid var(--border);
-}
-.forecast7__temp {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 3px;
-  font-family: var(--font-mono);
-  font-feature-settings: 'tnum' 1;
-}
-.forecast7__temp b { font-size: 12px; font-weight: 700; color: var(--text); }
-.forecast7__temp i {
-  font-style: normal;
-  font-size: 8px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-dim, rgba(255, 255, 255, 0.4));
-}
-
-/* Sky-quality index legend */
-.forecast7__legend {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  padding-top: 2px;
-  margin-top: 0;
-  border-top: 1px solid var(--border);
-}
-.forecast7__legend-title {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-muted, rgba(255, 255, 255, 0.55));
-}
-.forecast7__legend-scale {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-}
-.forecast7__legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-feature-settings: 'tnum' 1;
-  font-size: 10px;
-  color: var(--text-dim, rgba(255, 255, 255, 0.5));
-}
-.forecast7__legend-item b {
-  font-weight: 600;
-  color: rgba(var(--ink), 0.7);
-}
-.forecast7__legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-.forecast7__legend-how {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 34px;
-  background: rgba(255, 179, 71, 0.08);
-  border: 1px solid rgba(255, 179, 71, 0.18);
-  border-radius: 999px;
-  cursor: pointer;
-  padding: 0 12px;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted, rgba(255, 255, 255, 0.55));
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-.forecast7__legend-how:hover { color: var(--text); border-color: rgba(255, 179, 71, 0.34); background: rgba(255, 179, 71, 0.12); }
-.forecast7__legend-how svg { color: var(--terracotta, #FFB347); }
-.forecast7__legend-note {
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.5;
-  color: var(--text-muted, rgba(255, 255, 255, 0.6));
-}
-
-@media (max-width: 1020px) {
-  .forecast7 {
-    padding: 16px;
-  }
-  .forecast7__row,
-  .forecast7__skeleton {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scroll-snap-type: x proximity;
-  }
-  .forecast7__day,
-  .forecast7__skel {
-    flex: 0 0 154px;
-    scroll-snap-align: start;
-  }
-}
-@media (max-width: 560px) {
-  .forecast7 {
-    padding: 15px;
-    border-radius: 20px;
-  }
-  .forecast7__head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-  .forecast7__loc {
-    white-space: normal;
-  }
-  /* Compact: all 7 nights as single-column rows that fit one screen */
-  .forecast7__row,
-  .forecast7__skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    overflow: visible;
-    padding-bottom: 0;
-    scroll-snap-type: none;
-  }
-  .forecast7__skel {
-    flex: initial;
-    height: 54px;
-    border-radius: 13px;
-  }
-  .forecast7__day {
-    flex: initial;
-    min-height: 0;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 11px;
-    padding: 8px 13px;
-    border-radius: 13px;
-    text-align: left;
-  }
-  .forecast7__weekday {
-    min-width: 40px;
-    flex-shrink: 0;
-  }
-  /* Date is redundant with the weekday on the compact row */
-  .forecast7__date {
-    display: none;
-  }
-  .forecast7__gauge {
-    margin: 0;
-    flex-shrink: 0;
-  }
-  .forecast7__gauge svg {
-    width: 38px;
-    height: 38px;
-  }
-  .forecast7__gauge-num {
-    font-size: 13px;
-  }
-  .forecast7__verdict {
-    flex: 1 1 auto;
-    text-align: left;
-  }
-  .forecast7__moon {
-    flex-shrink: 0;
-  }
-  .forecast7__moon svg {
-    width: 22px;
-    height: 22px;
-  }
-  /* Cloud-cover label drops on the compact row — the gauge carries the verdict */
-  .forecast7__wx {
-    display: none;
-  }
-  .forecast7__temps {
-    width: auto;
-    flex-shrink: 0;
-    gap: 8px;
-    margin: 0;
-    padding-top: 0;
-    border-top: none;
-  }
-  .forecast7__legend {
-    align-items: flex-start;
-  }
-  .forecast7__legend-how {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 /* ================================================================
@@ -3767,7 +3372,6 @@
   .sky-v3 .sky-v3__container > .point-id { order: 7; }
   .sky-v3 .sky-v3__container > .tl { order: 8; }
   .sky-v3 .sky-v3__container > .ev { order: 9; }
-  .sky-v3 .sky-v3__container > .forecast7 { order: 10; }
 
   /* Drop the "Local Time" pill on mobile and let Clouds stretch the
      full width of the second strip row so we don't leave a gap. */
@@ -4268,207 +3872,6 @@
   gap: 16px;
 }
 
-
-/* === 7-night outlook — compact vertical list variant for the rail === */
-.forecast7--rail {
-  margin-top: 0;
-  gap: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 16px 16px 8px;
-  min-height: 0;
-}
-.forecast7--rail .forecast7__head {
-  border-top: none;
-  padding: 0 0 12px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-.forecast7--rail .forecast7__loc { text-transform: uppercase; letter-spacing: 0.14em; }
-.forecast7__rail-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;
-}
-.forecast7__rrow {
-  display: grid;
-  grid-template-columns: 64px 24px minmax(0, 1fr) 38px 28px;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 4px;
-  border-bottom: 1px solid rgba(var(--ink), 0.05);
-}
-.forecast7__rrow:last-child { border-bottom: none; }
-.forecast7__rwhen { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.forecast7__rday {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text);
-  white-space: nowrap;
-}
-.forecast7__rrow.is-today .forecast7__rday { color: var(--terracotta); }
-.forecast7__rdate {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.04em;
-  color: var(--text-dim);
-  font-feature-settings: 'tnum' 1;
-  white-space: nowrap;
-}
-.forecast7__rmoon { display: inline-flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 4px rgba(244, 217, 160, 0.22)); }
-.forecast7__rbar {
-  position: relative;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(var(--ink), 0.08);
-  overflow: hidden;
-}
-.forecast7__rbar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
-.forecast7__rrow--go    .forecast7__rbar-fill { background: #8fe3c0; }
-.forecast7__rrow--maybe .forecast7__rbar-fill { background: var(--terracotta, #FFB347); }
-.forecast7__rrow--skip  .forecast7__rbar-fill { background: #e9a7a7; }
-.forecast7__rpct {
-  font-family: var(--mono);
-  font-feature-settings: 'tnum' 1;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: right;
-  color: var(--text);
-}
-.forecast7__rpct em { font-style: normal; font-size: 9px; font-weight: 600; opacity: 0.55; }
-.forecast7__rrow--go    .forecast7__rpct { color: #8fe3c0; }
-.forecast7__rrow--maybe .forecast7__rpct { color: #ffce80; }
-.forecast7__rrow--skip  .forecast7__rpct { color: #e9a7a7; }
-.forecast7__rtemp {
-  font-family: var(--mono);
-  font-feature-settings: 'tnum' 1;
-  font-size: 11px;
-  text-align: right;
-  color: var(--text-dim);
-}
-.forecast7__rskel {
-  height: 38px;
-  border-radius: 10px;
-  margin-bottom: 4px;
-  background: linear-gradient(90deg, rgba(var(--ink),0.03), rgba(var(--ink),0.06), rgba(var(--ink),0.03));
-  background-size: 200% 100%;
-  animation: skyShimmer 1.6s linear infinite;
-}
-
-/* === 4-night strip — compact mobile-only outlook ===
-   Hidden by default; the ≤680 block flips it on and hides the 7-night rail.
-   A row of four cells, each just weekday over cloud % (two lines) with a
-   small moon glyph and a verdict-tinted bar. */
-.fcstrip {
-  display: none;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 13px 14px 12px;
-}
-.fcstrip__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 10px;
-  margin-bottom: 11px;
-  border-bottom: 1px solid var(--border);
-}
-.fcstrip__label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.fcstrip__loc {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.fcstrip__row {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-.fcstrip__cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 4px 9px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(var(--ink), 0.025);
-}
-.fcstrip__cell.is-today {
-  border-color: rgba(255, 179, 71, 0.4);
-  background: rgba(255, 179, 71, 0.07);
-}
-.fcstrip__day {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text);
-  white-space: nowrap;
-}
-.fcstrip__cell.is-today .fcstrip__day { color: var(--terracotta); }
-.fcstrip__moon {
-  display: inline-flex;
-  filter: drop-shadow(0 0 4px rgba(244, 217, 160, 0.22));
-}
-.fcstrip__pct {
-  font-family: var(--mono);
-  font-feature-settings: 'tnum' 1;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--text);
-}
-.fcstrip__pct em { font-style: normal; font-size: 9px; font-weight: 600; opacity: 0.55; margin-left: 1px; }
-.fcstrip__cell--go .fcstrip__pct { color: #8fe3c0; }
-.fcstrip__cell--maybe .fcstrip__pct { color: #ffce80; }
-.fcstrip__cell--skip .fcstrip__pct { color: #e9a7a7; }
-.fcstrip__bar {
-  position: relative;
-  width: 100%;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(var(--ink), 0.08);
-  overflow: hidden;
-}
-.fcstrip__bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
-.fcstrip__cell--go .fcstrip__bar-fill { background: #8fe3c0; }
-.fcstrip__cell--maybe .fcstrip__bar-fill { background: var(--terracotta, #FFB347); }
-.fcstrip__cell--skip .fcstrip__bar-fill { background: #e9a7a7; }
-.fcstrip__skel {
-  height: 80px;
-  border-radius: 14px;
-  background: linear-gradient(90deg, rgba(var(--ink),0.03), rgba(var(--ink),0.06), rgba(var(--ink),0.03));
-  background-size: 200% 100%;
-  animation: skyShimmer 1.6s linear infinite;
-}
-.fcstrip__empty { font-family: var(--mono); font-size: 12px; color: var(--text-dim); padding: 16px 4px; }
-
 @media (max-width: 680px) {
   .skyloc {
     align-items: flex-start;
@@ -4668,9 +4071,6 @@
   }
 
   .sky-obs .sky-obs__wrap { padding: 14px 14px 56px; gap: 12px; }
-
-  .sky-page-v2 .forecast7--rail { display: none; }
-  .sky-page-v2 .fcstrip { display: none; }
 }
 
 /* ── Sign-in gate — Sky requires authentication ── */
@@ -5412,41 +4812,11 @@
 [data-theme="light"] .skx__vis-badge--good { color: #15803D; }
 [data-theme="light"] .skx__vis-badge--scope { color: #1D4ED8; }
 [data-theme="light"] .skx__vis-badge--later { color: #7C3AED; }
-[data-theme="light"] .forecast7__rrow--go .forecast7__rpct,
-[data-theme="light"] .fcstrip__cell--go .fcstrip__pct { color: #15803D; }
-[data-theme="light"] .forecast7__rrow--maybe .forecast7__rpct,
-[data-theme="light"] .fcstrip__cell--maybe .fcstrip__pct { color: #B45309; }
-[data-theme="light"] .forecast7__rrow--skip .forecast7__rpct,
-[data-theme="light"] .fcstrip__cell--skip .fcstrip__pct { color: #DC2626; }
 
 /* Buttons whose amber background resolves to deep amber (#B45309) in day —
    their near-black night text would vanish, so they go white. */
 [data-theme="light"] .sky-v3__tour-cta,
 [data-theme="light"] .sky-auth-gate__btn { color: #FFFFFF; }
-
-/* 7-night forecast — the panel and day cards are painted with dark
-   gradients at night; day gets light equivalents of the same shapes. */
-[data-theme="light"] .forecast7 {
-  background:
-    radial-gradient(90% 70% at 50% 0%, rgba(255, 179, 71, 0.10), transparent 58%),
-    radial-gradient(80% 90% at 100% 10%, rgba(8, 145, 178, 0.06), transparent 62%),
-    linear-gradient(180deg, #FFFFFF, #F4F7FF);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 24px 70px rgba(15, 23, 42, 0.08);
-}
-[data-theme="light"] .forecast7__day {
-  background:
-    radial-gradient(90% 70% at 50% 0%, rgba(15, 23, 42, 0.03), transparent 64%),
-    linear-gradient(180deg, #FFFFFF, #F4F7FF);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-[data-theme="light"] .forecast7__day--excellent { --score-color: #059669; }
-[data-theme="light"] .forecast7__day--good      { --score-color: #B45309; }
-[data-theme="light"] .forecast7__day--fair      { --score-color: #C2410C; }
-[data-theme="light"] .forecast7__day--poor      { --score-color: #DC2626; }
-/* Gauge number + verdict get their color inline from the component (night
-   palette); on the light day card, override with the day score color. */
-[data-theme="light"] .forecast7__gauge-num,
-[data-theme="light"] .forecast7__verdict { color: var(--score-color) !important; }
 
 /* Compass posture hint — dark glass card becomes a light card in day. */
 [data-theme="light"] .sky-posture { background: rgba(15, 23, 42, 0.04); }
@@ -5469,3 +4839,208 @@
 [data-theme="light"] .sky-strip-mini { color: #9AA4B6; }
 [data-theme="light"] .sky-strip-mini__cell--time { color: #F8F4EC; }
 [data-theme="light"] .sky-strip-mini__cell--active { color: #F5A623; }
+
+/* ══════════════════════════════════════════════════════════════
+   7-night outlook — comparison bars.
+
+   Replaces a grid of seven ring-gauge cards. The question is "which
+   night do I take the scope out?", which is a comparison, so all seven
+   nights share one baseline and the winner is stated in words above
+   the chart. Score is carried by the number and the bar height, never
+   by colour alone.
+   ══════════════════════════════════════════════════════════════ */
+.fcw {
+  --fcw-track: 62px;
+  /* Moon lit-limb fill. The glyph's default cream is invisible on the light
+     panel, so it flips with the theme rather than being baked in. */
+  --fcw-moon-lit: rgba(244, 217, 160, 0.85);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px 12px;
+}
+
+.fcw__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fcw__label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fcw__loc {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The verdict. Answers the page's question before the chart is read. */
+.fcw__best {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.fcw__best b {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--accent-text);
+}
+
+.fcw__chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* No gap: each track carries the baseline rule, so zero gap joins them
+     into one continuous line under the bars. Columns are separated by the
+     bar's own max-width instead. */
+  gap: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fcw__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* Full column width so the bottom rule meets its neighbours — that shared
+   baseline is what makes the bar heights readable as a comparison. The top
+   margin is the gutter the score label rides in when a bar hits 100. */
+.fcw__track {
+  position: relative;
+  width: 100%;
+  height: var(--fcw-track);
+  margin-top: 17px;
+  border-bottom: 1px solid var(--border);
+}
+.fcw__bar {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 30px;
+  height: var(--h);
+  border-radius: 3px 3px 0 0;
+  background: var(--fcw-color);
+  opacity: 0.55;
+}
+.fcw__col.is-best .fcw__bar { opacity: 1; }
+
+/* Sits on top of its own bar rather than on a fixed row, so the number and
+   the height it describes never separate. */
+.fcw__score {
+  position: absolute;
+  bottom: var(--h);
+  left: 0;
+  right: 0;
+  margin-bottom: 4px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.fcw__col.is-best .fcw__score {
+  color: var(--accent-text);
+}
+
+.fcw__col--go    { --fcw-color: var(--yes); }
+.fcw__col--maybe { --fcw-color: var(--warning); }
+.fcw__col--skip  { --fcw-color: var(--no); }
+
+.fcw__day {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.fcw__col.is-best .fcw__day { color: var(--text); }
+
+.fcw__moon { display: flex; opacity: 0.8; padding-bottom: 2px; }
+.fcw__col.is-best .fcw__moon { opacity: 1; }
+
+.fcw__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.fcw__how {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  min-height: 0; /* globals.css stretches bare buttons into 44px pills */
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  transition: color 120ms ease;
+}
+.fcw__how:hover { color: var(--text-muted); }
+.fcw__note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.fcw__empty {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.fcw__skel {
+  height: calc(var(--fcw-track) + 57px);
+  border-radius: 8px 8px 0 0;
+  background: var(--surface-hover);
+  animation: fcw-pulse 1.6s ease-in-out infinite;
+}
+@keyframes fcw-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.8; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fcw__skel { animation: none; }
+}
+
+@media (max-width: 560px) {
+  .fcw {
+    --fcw-track: 50px;
+    padding: 12px 12px 10px;
+  }
+  .fcw__chart { gap: 2px; }
+  .fcw__score { font-size: 12px; }
+  .fcw__day { font-size: 12px; letter-spacing: 0.02em; }
+  .fcw__loc { display: none; }
+}
+
+[data-theme="light"] .fcw { --fcw-moon-lit: #C08A2E; }

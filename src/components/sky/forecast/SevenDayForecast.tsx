@@ -2,12 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { CalendarDays, Cloud, CloudMoon, Cloudy, Info, MoonStar } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Info } from 'lucide-react';
 import type { ForecastDay } from '@/lib/use-sky-data';
 import { MoonGlyph } from './visuals';
 
-type QualityKey = 'excellent' | 'good' | 'fair' | 'poor';
+type Verdict = 'go' | 'maybe' | 'skip';
 
 /**
  * Per-night sky-quality score, 0–100. Cloud cover dominates (it's what our
@@ -20,12 +19,15 @@ function dayScore(day: ForecastDay): number {
   return Math.max(0, Math.min(100, Math.round(clarity * 0.78 + moonDark * 22)));
 }
 
-/** Score → verdict tier key + ring colour, matching the legend buckets. */
-function scoreTier(score: number): { key: QualityKey; color: string } {
-  if (score >= 80) return { key: 'excellent', color: '#34D399' };
-  if (score >= 60) return { key: 'good', color: '#FBBF24' };
-  if (score >= 40) return { key: 'fair', color: '#FB923C' };
-  return { key: 'poor', color: '#F87171' };
+/**
+ * Verdict tier from the score rather than from `day.badge`. The badge is
+ * cloud-only while the score also weighs moonlight, so reading colour from
+ * one and bar height from the other would let a tall bar render red.
+ */
+function verdictOf(score: number): Verdict {
+  if (score >= 65) return 'go';
+  if (score >= 40) return 'maybe';
+  return 'skip';
 }
 
 /** Cloud cover → plain-language sky-cover description key. */
@@ -38,64 +40,23 @@ function cloudKey(pct: number): string {
   return 'cloudy';
 }
 
-const WX_ICON: Record<string, LucideIcon> = {
-  clear: MoonStar,
-  few: CloudMoon,
-  scattered: Cloud,
-  broken: Cloud,
-  mostly: Cloudy,
-  cloudy: Cloudy,
-};
-
-const LEGEND: Array<{ color: string; range: string; key: QualityKey }> = [
-  { color: '#34D399', range: '80–100', key: 'excellent' },
-  { color: '#FBBF24', range: '60–79', key: 'good' },
-  { color: '#FB923C', range: '40–59', key: 'fair' },
-  { color: '#F87171', range: '0–39', key: 'poor' },
-];
-
-/** Circular 0–100 score ring with the number centred. */
-function ScoreGauge({ score, color }: { score: number; color: string }) {
-  const size = 74;
-  const sw = 5;
-  const r = (size - sw) / 2;
-  const c = 2 * Math.PI * r;
-  const pct = Math.max(0, Math.min(1, score / 100));
-  return (
-    <span className="forecast7__gauge" aria-hidden="true">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(var(--ink),0.10)" strokeWidth={sw} />
-        <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke={color} strokeWidth={sw} strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </svg>
-      <span className="forecast7__gauge-num" style={{ color }}>{score}</span>
-    </span>
-  );
-}
-
 interface SevenDayForecastProps {
   days: ForecastDay[];
   loading?: boolean;
   /** Optional location label to anchor the section header. */
   locationLabel?: string;
-  /** `grid` = full-width 7-column section. `rail` = compact vertical list for the sidebar. */
-  variant?: 'grid' | 'rail';
 }
 
 /**
  * 7-night observation outlook.
  *
- * Each day rolls up its hourly cloud cover into a single Go / Maybe / Skip
- * verdict, plus the evening-window temperature, wind, and humidity an
- * observer cares about under the eyepiece. The lead icon is picked from
- * cloud cover (not weather code) — that's the variable our forecast
- * actually pivots on.
+ * The question this answers is "which night this week do I take the scope
+ * out?", which is a comparison — so every night sits on one shared baseline
+ * and the winner is called out in words above the chart. The previous version
+ * gave each night its own ring gauge in its own card, which made seven
+ * identical objects and left the comparison entirely to the reader.
  */
-export function SevenDayForecast({ days, loading = false, locationLabel, variant = 'grid' }: SevenDayForecastProps) {
+export function SevenDayForecast({ days, loading = false, locationLabel }: SevenDayForecastProps) {
   const t = useTranslations('sky.forecast7');
   const locale = useLocale();
   const [howOpen, setHowOpen] = useState(false);
@@ -107,245 +68,115 @@ export function SevenDayForecast({ days, loading = false, locationLabel, variant
       return new Intl.DateTimeFormat('en', { weekday: 'short' });
     }
   }, [locale]);
-  const dateFmt = useMemo(() => {
+  const longDayFmt = useMemo(() => {
     try {
-      return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+      return new Intl.DateTimeFormat(locale, { weekday: 'long' });
     } catch {
-      return new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' });
+      return new Intl.DateTimeFormat('en', { weekday: 'long' });
     }
   }, [locale]);
 
-  const isRail = variant === 'rail';
+  const week = useMemo(
+    () =>
+      days.slice(0, 7).map((day, i) => ({
+        day,
+        isToday: i === 0,
+        score: dayScore(day),
+        verdict: verdictOf(dayScore(day)),
+      })),
+    [days],
+  );
+
+  // The verdict line. Ties resolve to the earliest night — a good sky sooner
+  // is worth more than the same sky later in the week.
+  const best = useMemo(() => {
+    if (!week.length) return null;
+    return week.reduce((a, b) => (b.score > a.score ? b : a));
+  }, [week]);
 
   return (
-    <section className={`forecast7${isRail ? ' forecast7--rail' : ''}`} aria-label={t('label')}>
-      <div className="forecast7__head">
-        <span className="forecast7__label">
-          {!isRail && <CalendarDays size={13} aria-hidden="true" />}
-          {t('label')}
-        </span>
-        {locationLabel && (
-          <span className="forecast7__loc">
-            {locationLabel}
-            {isRail && <> · {t('clouds')}</>}
-          </span>
-        )}
+    <section className="fcw" aria-label={t('label')}>
+      <div className="fcw__head">
+        <h2 className="fcw__label">{t('label')}</h2>
+        {locationLabel && <span className="fcw__loc">{locationLabel}</span>}
       </div>
-      {loading && days.length === 0 ? (
-        <div className={isRail ? 'forecast7__rail-list' : 'forecast7__skeleton'} aria-hidden="true">
+
+      {loading && week.length === 0 ? (
+        <div className="fcw__chart" aria-hidden="true">
           {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className={isRail ? 'forecast7__rskel' : 'forecast7__skel'} />
+            <span key={i} className="fcw__skel" />
           ))}
         </div>
-      ) : days.length === 0 ? (
-        <div className="forecast7__empty">{t('empty')}</div>
-      ) : isRail ? (
-        <ol className="forecast7__rail-list">
-          {days.slice(0, 7).map((d, i) => (
-            <OutlookRow key={d.date} day={d} isToday={i === 0} dayFmt={dayFmt} dateFmt={dateFmt} t={t} />
-          ))}
-        </ol>
+      ) : week.length === 0 ? (
+        <p className="fcw__empty">{t('empty')}</p>
       ) : (
         <>
-          <div className="forecast7__row">
-            {days.slice(0, 7).map((d, i) => (
-              <DayCard key={d.date} day={d} isToday={i === 0} dayFmt={dayFmt} dateFmt={dateFmt} t={t} />
-            ))}
-          </div>
-          <div className="forecast7__legend">
-            <span className="forecast7__legend-title">{t('index')}</span>
-            <ul className="forecast7__legend-scale">
-              {LEGEND.map((b) => (
-                <li key={b.range} className="forecast7__legend-item">
-                  <span className="forecast7__legend-dot" style={{ background: b.color }} aria-hidden="true" />
-                  <span>{b.range}</span>
-                  <b>{t(`verdict.${b.key}`)}</b>
+          {best && (
+            <p className="fcw__best">
+              {t.rich('bestLine', {
+                day: best.isToday ? t('today') : longDayFmt.format(new Date(best.day.date)),
+                score: best.score,
+                sky: t(`sky.${cloudKey(best.day.cloudCoverPct)}`).toLowerCase(),
+                b: (chunks) => <b>{chunks}</b>,
+              })}
+            </p>
+          )}
+
+          <ol className="fcw__chart">
+            {week.map(({ day, isToday, score, verdict }) => {
+              const date = new Date(day.date);
+              // Short form in the column: "Tonight" overflows a 7-column grid
+              // on a phone, and shrinking it further would breach the 12px
+              // microcopy floor. The full word still carries the aria label
+              // and the verdict sentence above.
+              const label = isToday ? t('todayShort') : dayFmt.format(date);
+              const isBest = day.date === best?.day.date;
+              return (
+                <li
+                  key={day.date}
+                  className={`fcw__col fcw__col--${verdict}${isBest ? ' is-best' : ''}`}
+                  // Drives both the bar height and the label that rides on
+                  // top of it, so the number can never drift off its bar.
+                  // Floored so a 0-score night still reads as a night.
+                  style={{ '--h': `${Math.max(4, score)}%` } as React.CSSProperties}
+                  aria-label={[
+                    isToday ? t('today') : longDayFmt.format(date),
+                    `${score}/100`,
+                    t(`badge.${verdict}`),
+                    t(`sky.${cloudKey(day.cloudCoverPct)}`),
+                    typeof day.tempLow === 'number' ? `${day.tempLow}° ${t('lo')}` : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' — ')}
+                >
+                  {/* Bars share one baseline, so height is the comparison. */}
+                  <span className="fcw__track">
+                    <span className="fcw__bar" aria-hidden="true" />
+                    <span className="fcw__score" aria-hidden="true">{score}</span>
+                  </span>
+                  <span className="fcw__day">{label}</span>
+                  <span className="fcw__moon" aria-hidden="true">
+                    <MoonGlyph phase={day.moonPhase} size={14} litColor="var(--fcw-moon-lit)" />
+                  </span>
                 </li>
-              ))}
-            </ul>
+              );
+            })}
+          </ol>
+
+          <div className="fcw__foot">
             <button
               type="button"
-              className="forecast7__legend-how"
+              className="fcw__how"
               onClick={() => setHowOpen((v) => !v)}
               aria-expanded={howOpen}
             >
-              <Info size={12} aria-hidden="true" /> {t('howItWorks')}
+              <Info size={12} aria-hidden="true" />
+              {t('howItWorks')}
             </button>
+            {howOpen && <p className="fcw__note">{t('howNote')}</p>}
           </div>
-          {howOpen && <p className="forecast7__legend-note">{t('howNote')}</p>}
         </>
       )}
     </section>
-  );
-}
-
-/** Compact one-line outlook row for the sidebar rail — when · moon · cloud bar · %. */
-function OutlookRow({
-  day,
-  isToday,
-  dayFmt,
-  dateFmt,
-  t,
-}: {
-  day: ForecastDay;
-  isToday: boolean;
-  dayFmt: Intl.DateTimeFormat;
-  dateFmt: Intl.DateTimeFormat;
-  t: ReturnType<typeof useTranslations>;
-}) {
-  const date = new Date(day.date);
-  const cloudPct = Math.max(0, Math.min(100, day.cloudCoverPct));
-
-  return (
-    <li
-      className={`forecast7__rrow forecast7__rrow--${day.badge}${isToday ? ' is-today' : ''}`}
-      aria-label={`${isToday ? t('today') : dayFmt.format(date)} — ${t(`badge.${day.badge}`)} — ${cloudPct}% ${t('clouds')}`}
-    >
-      <span className="forecast7__rwhen">
-        <span className="forecast7__rday">{isToday ? t('today') : dayFmt.format(date)}</span>
-        <span className="forecast7__rdate">{dateFmt.format(date)}</span>
-      </span>
-      <span className="forecast7__rmoon" aria-hidden="true">
-        <MoonGlyph phase={day.moonPhase} size={20} />
-      </span>
-      <span className="forecast7__rbar" aria-hidden="true">
-        <span className="forecast7__rbar-fill" style={{ width: `${cloudPct}%` }} />
-      </span>
-      <span className="forecast7__rpct">{cloudPct}<em>%</em></span>
-      {typeof day.tempLow === 'number' && (
-        <span className="forecast7__rtemp">{day.tempLow}°</span>
-      )}
-    </li>
-  );
-}
-
-/**
- * Compact 4-night outlook strip — mobile only.
- *
- * A horizontal row of four day cells, each just two text lines (weekday over
- * cloud %) with a small moon glyph and a verdict-tinted bar. Far slimmer than
- * the 7-row rail; the rail still carries the full week on desktop.
- */
-export function FourNightStrip({ days, loading = false, locationLabel }: Omit<SevenDayForecastProps, 'variant'>) {
-  const t = useTranslations('sky.forecast7');
-  const t4 = useTranslations('sky.forecast4');
-  const locale = useLocale();
-
-  const dayFmt = useMemo(() => {
-    try {
-      return new Intl.DateTimeFormat(locale, { weekday: 'short' });
-    } catch {
-      return new Intl.DateTimeFormat('en', { weekday: 'short' });
-    }
-  }, [locale]);
-
-  const four = days.slice(0, 4);
-
-  return (
-    <section className="fcstrip" aria-label={t4('label')}>
-      <div className="fcstrip__head">
-        <span className="fcstrip__label">{t4('label')}</span>
-        {locationLabel && <span className="fcstrip__loc">{locationLabel}</span>}
-      </div>
-      {loading && days.length === 0 ? (
-        <div className="fcstrip__row" aria-hidden="true">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <span key={i} className="fcstrip__skel" />
-          ))}
-        </div>
-      ) : four.length === 0 ? (
-        <div className="fcstrip__empty">{t('empty')}</div>
-      ) : (
-        <ol className="fcstrip__row">
-          {four.map((d, i) => {
-            const date = new Date(d.date);
-            const cloudPct = Math.max(0, Math.min(100, d.cloudCoverPct));
-            return (
-              <li
-                key={d.date}
-                className={`fcstrip__cell fcstrip__cell--${d.badge}${i === 0 ? ' is-today' : ''}`}
-                aria-label={`${i === 0 ? t('today') : dayFmt.format(date)} — ${t(`badge.${d.badge}`)} — ${cloudPct}% ${t('clouds')}`}
-              >
-                <span className="fcstrip__day">{i === 0 ? t('today') : dayFmt.format(date)}</span>
-                <span className="fcstrip__moon" aria-hidden="true">
-                  <MoonGlyph phase={d.moonPhase} size={18} />
-                </span>
-                <span className="fcstrip__pct">{cloudPct}<em>%</em></span>
-                <span className="fcstrip__bar" aria-hidden="true">
-                  <span className="fcstrip__bar-fill" style={{ width: `${cloudPct}%` }} />
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-    </section>
-  );
-}
-
-function DayCard({
-  day,
-  isToday,
-  dayFmt,
-  dateFmt,
-  t,
-}: {
-  day: ForecastDay;
-  isToday: boolean;
-  dayFmt: Intl.DateTimeFormat;
-  dateFmt: Intl.DateTimeFormat;
-  t: ReturnType<typeof useTranslations>;
-}) {
-  const date = new Date(day.date);
-  const cloudPct = Math.max(0, Math.min(100, day.cloudCoverPct));
-  const score = dayScore(day);
-  const tier = scoreTier(score);
-  const ck = cloudKey(cloudPct);
-  const Icon = WX_ICON[ck];
-  const verdict = t(`verdict.${tier.key}`);
-  const clouds = t(`sky.${ck}`);
-
-  const labelParts = [
-    isToday ? t('today') : dayFmt.format(date),
-    `${verdict} (${score}/100)`,
-    clouds,
-  ];
-  if (typeof day.tempHigh === 'number') labelParts.push(`${day.tempHigh}° ${t('hi')}`);
-  if (typeof day.tempLow === 'number') labelParts.push(`${day.tempLow}° ${t('lo')}`);
-
-  return (
-    <article
-      className={`forecast7__day forecast7__day--${tier.key}${isToday ? ' is-today' : ''}`}
-      aria-label={labelParts.join(' — ')}
-    >
-      <span className="forecast7__weekday">
-        {isToday ? t('today') : dayFmt.format(date)}
-      </span>
-      <span className="forecast7__date">{dateFmt.format(date)}</span>
-
-      <ScoreGauge score={score} color={tier.color} />
-
-      <span className="forecast7__verdict" style={{ color: tier.color }}>{verdict}</span>
-
-      <span className="forecast7__moon" aria-hidden="true">
-        <MoonGlyph phase={day.moonPhase} size={26} />
-      </span>
-
-      <span className="forecast7__wx">
-        <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
-        <span>{clouds}</span>
-      </span>
-
-      {(typeof day.tempHigh === 'number' || typeof day.tempLow === 'number') && (
-        <span className="forecast7__temps">
-          {typeof day.tempLow === 'number' && (
-            <span className="forecast7__temp"><b>{day.tempLow}°</b><i>{t('lo')}</i></span>
-          )}
-          {typeof day.tempHigh === 'number' && (
-            <span className="forecast7__temp"><b>{day.tempHigh}°</b><i>{t('hi')}</i></span>
-          )}
-        </span>
-      )}
-    </article>
   );
 }

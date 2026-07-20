@@ -505,15 +505,8 @@
       "clouds": "clouds",
       "hi": "high",
       "lo": "low",
-      "index": "Sky quality index",
       "howItWorks": "How it works",
       "howNote": "Each score blends tonight's cloud cover with moonlight — higher means clearer, darker skies for observing.",
-      "verdict": {
-        "excellent": "Excellent",
-        "good": "Good",
-        "fair": "Fair",
-        "poor": "Poor"
-      },
       "sky": {
         "clear": "Clear",
         "few": "Few clouds",
@@ -526,10 +519,9 @@
         "go": "Go",
         "maybe": "Maybe",
         "skip": "Skip"
-      }
-    },
-    "forecast4": {
-      "label": "4-night outlook"
+      },
+      "bestLine": "Best — {day} · <b>{score}/100</b> · {sky}",
+      "todayShort": "Now"
     },
     "strip": {
       "a11y": "Live sky state",

@@ -29,7 +29,7 @@ import SkyLocationModal from '@/components/sky/SkyLocationModal';
 import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
-import { SevenDayForecast, FourNightStrip } from '@/components/sky/forecast/SevenDayForecast';
+import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import { SpaceGallery } from '@/components/sky/SpaceGallery';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
@@ -729,12 +729,6 @@ export default function SkyPage() {
 
             {/* ── Multi-day outlook (retained below the new hero) ── */}
             <SevenDayForecast
-              variant="grid"
-              days={forecast.days}
-              loading={forecast.loading}
-              locationLabel={locationLabel}
-            />
-            <FourNightStrip
               days={forecast.days}
               loading={forecast.loading}
               locationLabel={locationLabel}
