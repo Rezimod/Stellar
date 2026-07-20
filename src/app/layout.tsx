@@ -132,6 +132,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="bg-canvas text-text-primary min-h-dvh w-full font-body flex flex-col"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <a href="#stellar-main" className="skip-link">Skip to main content</a>
         <ErrorBoundary>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <ThemeProvider>

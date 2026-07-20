@@ -30,6 +30,7 @@ export default function BottomNav() {
   const nav = (
     <nav
       data-stellar-chrome="bottom"
+      aria-label="Main navigation"
       className="stellar-bottomnav sm:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
         paddingBottom: 'max(env(safe-area-inset-bottom), 10px)',
@@ -54,6 +55,8 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
+              aria-label={t(tab.labelKey)}
+              aria-current={isActive ? 'page' : undefined}
               style={{
                 flex: 1,
                 display: 'flex',

@@ -1501,3 +1501,44 @@ html[data-field="on"]::after {
   .profile-page .pf-card { padding: 16px !important; }
   .profile-page .pf-hero-left { gap: 14px !important; }
 }
+
+/* ── a11y: skip-to-content link ─────────────────────────────────────────────
+   Visually hidden until keyboard-focused, then it slides into view. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  transform: translateY(-130%);
+  padding: 10px 18px;
+  background: #6ea8ff;
+  color: #050812;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 0 0 10px 0;
+  transition: transform 140ms ease-out;
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── a11y: visible keyboard focus for every interactive element ─────────────
+   Only shows on keyboard nav (:focus-visible), never on mouse click. */
+:focus-visible {
+  outline: 2px solid #6ea8ff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── a11y: global reduced-motion catch-all ─────────────────────────────────
+   Components already honour this individually; this guarantees the rest. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
