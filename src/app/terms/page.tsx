@@ -3,8 +3,10 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
-  title: 'Terms — Stellar',
-  description: 'Terms of use for Stellar.',
+  title: 'Terms of Service — Stellar Astronomy App',
+  description:
+    'The terms of service governing your use of Stellar — the gamified astronomy app by Astroman. Read the rules for accounts, rewards and Web3 features.',
+  alternates: { canonical: '/terms' },
 };
 
 export default async function TermsPage() {

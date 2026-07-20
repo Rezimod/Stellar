@@ -59,6 +59,7 @@ import BottomNav from '@/components/shared/BottomNav';
 import DeferredGlobals from '@/components/shared/DeferredGlobals';
 import PageTransition from '@/components/layout/PageTransition';
 import { Toaster } from '@/components/ui/Toast';
+import JsonLd from '@/components/shared/JsonLd';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -67,10 +68,19 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Stellar — Astronomy, on chain',
+  title: {
+    default: 'Stellar — Observe the Night Sky, Earn Rewards, Collect Discovery NFTs',
+    template: '%s',
+  },
   description:
     'The companion app for telescope, smartphone, and camera owners. Photograph the sky, earn Stars, redeem for real telescopes at Astroman.',
   metadataBase: new URL('https://stellarr.club'),
+  alternates: { canonical: '/' },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -118,6 +128,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Prevent theme flash — read localStorage before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('stellar_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})()` }} />
+        <JsonLd />
       </head>
       <body className="bg-canvas text-text-primary min-h-dvh w-full font-body flex flex-col"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
