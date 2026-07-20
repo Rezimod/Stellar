@@ -41,9 +41,13 @@ const columns: FooterColumn[] = [
   {
     titleKey: 'colLegal',
     links: [
-      { labelKey: 'terms',   href: '/terms',   Icon: ShieldCheck },
-      { labelKey: 'privacy', href: '/privacy', Icon: Lock },
-      { labelKey: 'contact', href: '/contact', Icon: Mail },
+      { labelKey: 'faq',           label: 'FAQ',           href: '/faq',           Icon: BookOpen },
+      { labelKey: 'terms',         href: '/terms',         Icon: ShieldCheck },
+      { labelKey: 'privacy',       href: '/privacy',       Icon: Lock },
+      { labelKey: 'cookies',       label: 'Cookie Policy', href: '/cookie-policy', Icon: ShieldCheck },
+      { labelKey: 'accessibility', label: 'Accessibility', href: '/accessibility', Icon: ShieldCheck },
+      { labelKey: 'returns',       label: 'Returns',       href: '/returns',       Icon: ShoppingBag },
+      { labelKey: 'contact',       href: '/contact',       Icon: Mail },
     ],
   },
 ];
