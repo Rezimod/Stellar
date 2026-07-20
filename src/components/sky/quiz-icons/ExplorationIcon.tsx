@@ -22,10 +22,10 @@ export default function ExplorationIcon({ size = 56 }: { size?: number }) {
         <path d="M 3 6 L 7 12 L 3 10 Z" fill="#C8763A" />
         <line x1="-3" y1="-4" x2="3" y2="-4" stroke="#FF6428" strokeWidth="1.5" opacity="0.8" />
       </g>
-      <circle cx="46" cy="12" r="1.2" fill="#fff" />
-      <circle cx="12" cy="46" r="0.8" fill="#fff" opacity="0.7" />
-      <circle cx="48" cy="46" r="0.6" fill="#fff" opacity="0.6" />
-      <circle cx="8" cy="8" r="0.5" fill="#fff" opacity="0.5" />
+      <circle cx="46" cy="12" r="1.2" style={{ fill: 'rgba(var(--ink), 0.95)' }} />
+      <circle cx="12" cy="46" r="0.8" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.7" />
+      <circle cx="48" cy="46" r="0.6" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.6" />
+      <circle cx="8" cy="8" r="0.5" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.5" />
     </svg>
   );
 }

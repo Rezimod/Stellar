@@ -25,9 +25,9 @@ export default function TelescopeIcon({ size = 56 }: { size?: number }) {
         <line x1="28" y1="30" x2="36" y2="46" />
         <line x1="28" y1="30" x2="28" y2="46" />
       </g>
-      <circle cx="48" cy="12" r="1.5" fill="#fff" />
-      <circle cx="48" cy="12" r="3" fill="#fff" opacity="0.3" />
-      <g stroke="#fff" strokeWidth="0.3" opacity="0.5">
+      <circle cx="48" cy="12" r="1.5" style={{ fill: 'rgba(var(--ink), 0.95)' }} />
+      <circle cx="48" cy="12" r="3" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.3" />
+      <g style={{ stroke: 'rgba(var(--ink), 0.9)' }} strokeWidth="0.3" opacity="0.5">
         <line x1="48" y1="8" x2="48" y2="16" />
         <line x1="44" y1="12" x2="52" y2="12" />
       </g>

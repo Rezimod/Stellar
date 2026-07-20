@@ -322,7 +322,8 @@ export default function SkyChart({ lat, lon, date, missions, primeId, city, onSe
                     backdropFilter: 'blur(6px)',
                   }}
                 >
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'var(--text)', fontWeight: 600, lineHeight: 1 }}>
+                  {/* Tooltip bg is hardcoded dark — keep light text in both themes */}
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: '#F8F4EC', fontWeight: 600, lineHeight: 1 }}>
                     {mission.name}
                   </div>
                   {magnitude < 50 && (

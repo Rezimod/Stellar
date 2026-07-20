@@ -41,7 +41,7 @@ export function ProfileSidebar({ tokens, items, status }: Props) {
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          color: item.active ? 'var(--terracotta)' : 'var(--text-secondary)',
+          color: item.active ? 'var(--accent-text)' : 'var(--text-secondary)',
           background: item.active
             ? isLight ? 'rgba(255, 179, 71,0.10)' : 'rgba(255, 179, 71,0.16)'
             : 'transparent',
@@ -131,7 +131,7 @@ export function ProfileSidebar({ tokens, items, status }: Props) {
               border: '1px solid rgba(255, 179, 71,0.3)',
             }}
           >
-            <Orbit size={20} color="var(--terracotta)" />
+            <Orbit size={20} color="var(--accent-text)" />
           </span>
           <div style={{ minWidth: 0 }}>
             <p

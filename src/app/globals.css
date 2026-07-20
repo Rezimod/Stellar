@@ -27,6 +27,16 @@
   --surface: rgba(255, 255, 255, 0.045);
   --surface-hover: rgba(255, 255, 255, 0.085);
 
+  /* Ink triplet — rgba(var(--ink), X) keeps the exact night-mode opacity ramp
+     and flips white → slate ink in day mode. Use in inline styles instead of
+     rgba(255,255,255,X). */
+  --ink: 255, 255, 255;
+  --ink-warm: 232, 230, 221; /* E8E6DD family used on landing surfaces */
+  /* Accent-as-TEXT — brand accents are too light to read on the day canvas.
+     Backgrounds/glows keep --terracotta / --seafoam; text uses these. */
+  --accent-text: var(--terracotta);
+  --teal-text: var(--seafoam);
+
   /* Binary yes/no indicators — positive / negative outcome accents */
   --yes: #34D399;
   --yes-dim: rgba(52, 211, 153, 0.10);
@@ -156,6 +166,13 @@
   --surface-hover: rgba(15, 23, 42, 0.07);
   --border: rgba(15, 23, 42, 0.10);
   --negative: #DC2626;
+
+  --ink: 15, 23, 42;
+  --ink-warm: 15, 23, 42;
+  --accent-text: #B45309;
+  --teal-text: #0F766E;
+  --success: #059669;
+  --warning: #B45309;
 
   --bg-void: #EDF0F7;
   --bg-cosmos: #E2E8F5;
@@ -355,6 +372,37 @@
 [data-theme="light"] .from-\[\#0a1430\]:not(.stay-dark, .stay-dark *) { --tw-gradient-from: #EDF0F7; }
 [data-theme="light"] .via-\[\#0f1a40\]:not(.stay-dark, .stay-dark *) { --tw-gradient-via: #E7ECF7; }
 [data-theme="light"] .to-\[\#1a1030\]:not(.stay-dark, .stay-dark *) { --tw-gradient-to: #E2E8F5; }
+/* Near-white arbitrary hex text → primary ink */
+[data-theme="light"] :is(.text-\[\#f6f8ff\], .text-\[\#f4f7ff\],
+  .text-\[\#e7ecfb\]):not(.stay-dark, .stay-dark *) {
+  color: var(--text-primary);
+}
+/* Muted blue-gray hex text (readable at night, weak on day canvas) → secondary */
+[data-theme="light"] :is(.text-\[\#A8B4C8\], .text-\[\#9aa6c8\], .text-\[\#9BA3B4\],
+  .text-\[\#8d99bd\], .text-\[\#7f8cad\]):not(.stay-dark, .stay-dark *) {
+  color: var(--text-secondary);
+}
+/* Amber accent text is ~1.9:1 on the day canvas — darken to readable amber */
+[data-theme="light"] :is(.text-terracotta, .text-accent, .text-amber-300,
+  .text-\[\#FFB347\], .text-\[\#FFB347\]\/80, .text-\[\#ffc877\],
+  .text-\[\#f5a83d\], .text-\[\#FFD166\]):not(.stay-dark, .stay-dark *),
+[data-theme="light"] .group:hover .group-hover\:text-\[\#FFB347\]\/80:not(.stay-dark, .stay-dark *) {
+  color: var(--accent-text);
+}
+/* Seafoam text is ~1.4:1 on the day canvas — darken to deep teal */
+[data-theme="light"] :is(.text-seafoam, .text-\[\#5EEAD4\]):not(.stay-dark, .stay-dark *) {
+  color: var(--teal-text);
+}
+[data-theme="light"] .border-\[\#5EEAD4\]\/40:not(.stay-dark, .stay-dark *) {
+  border-color: rgba(13, 148, 136, 0.45);
+}
+/* stay-dark scopes keep the night palette for inline-styled colors too */
+[data-theme="light"] .stay-dark {
+  --ink: 255, 255, 255;
+  --ink-warm: 232, 230, 221;
+  --accent-text: var(--terracotta);
+  --teal-text: var(--seafoam);
+}
 
 @theme inline {
   --color-background: var(--canvas);

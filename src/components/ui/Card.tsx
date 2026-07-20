@@ -27,21 +27,21 @@ const variantStyles: Record<CardVariant, React.CSSProperties> = {
     background: 'var(--bg-card)',
     border: '1px solid var(--border-subtle)',
     borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04)',
+    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(var(--ink), 0.04)',
   },
   glass: {
     background: 'var(--glass-bg, rgba(15,29,50,0.65))',
     backdropFilter: 'blur(var(--glass-blur, 16px))',
     WebkitBackdropFilter: 'blur(var(--glass-blur, 16px))',
-    border: '1px solid var(--glass-border, rgba(255,255,255,0.06))',
+    border: '1px solid var(--glass-border, rgba(var(--ink), 0.06))',
     borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04)',
+    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(var(--ink), 0.04)',
   },
   interactive: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border-subtle)',
     borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04)',
+    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(var(--ink), 0.04)',
     cursor: 'pointer',
     transition: 'transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out, background 200ms ease-out',
   },
@@ -49,13 +49,13 @@ const variantStyles: Record<CardVariant, React.CSSProperties> = {
     background: 'var(--bg-card)',
     border: '1px solid rgba(255, 179, 71,0.2)',
     borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-glow-gold, 0 0 20px rgba(255, 179, 71,0.15)), inset 0 1px 0 rgba(255,255,255,0.04)',
+    boxShadow: 'var(--shadow-glow-gold, 0 0 20px rgba(255, 179, 71,0.15)), inset 0 1px 0 rgba(var(--ink), 0.04)',
   },
   mission: {
     background: 'var(--bg-card)',
     border: '1px solid rgba(255, 179, 71, 0.22)',
     borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04)',
+    boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(var(--ink), 0.04)',
   },
 };
 
@@ -97,7 +97,7 @@ export function Card({
       ? (e) => {
           const el = e.currentTarget as HTMLElement;
           el.style.transform = 'scale(1.02)';
-          el.style.boxShadow = 'var(--shadow-card-hover), inset 0 1px 0 rgba(255,255,255,0.04)';
+          el.style.boxShadow = 'var(--shadow-card-hover), inset 0 1px 0 rgba(var(--ink), 0.04)';
           el.style.borderColor = 'rgba(255, 179, 71,0.1)';
           el.style.background = 'var(--bg-card-hover)';
         }

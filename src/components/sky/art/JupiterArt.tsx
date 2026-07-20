@@ -22,10 +22,11 @@ export default function JupiterArt({ className }: { className?: string }) {
       <ellipse cx="200" cy="215" rx="97" ry="10" fill="url(#jup-band)" opacity="0.5" />
       <ellipse cx="200" cy="235" rx="92" ry="7" fill="url(#jup-band)" opacity="0.6" />
       <ellipse cx="170" cy="215" rx="14" ry="6" fill="#8B3A1E" opacity="0.85" />
-      <circle cx="88" cy="200" r="2.5" fill="#fff" opacity="0.9" />
-      <circle cx="320" cy="200" r="3" fill="#fff" opacity="0.9" />
-      <circle cx="200" cy="50" r="2" fill="#fff" opacity="0.7" />
-      <circle cx="370" cy="200" r="2.5" fill="#fff" opacity="0.85" />
+      {/* Moons/stars sit on the page surface — ink so they read in day mode */}
+      <circle cx="88" cy="200" r="2.5" style={{ fill: 'rgb(var(--ink))' }} opacity="0.9" />
+      <circle cx="320" cy="200" r="3" style={{ fill: 'rgb(var(--ink))' }} opacity="0.9" />
+      <circle cx="200" cy="50" r="2" style={{ fill: 'rgb(var(--ink))' }} opacity="0.7" />
+      <circle cx="370" cy="200" r="2.5" style={{ fill: 'rgb(var(--ink))' }} opacity="0.85" />
     </svg>
   );
 }

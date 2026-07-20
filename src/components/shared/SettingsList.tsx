@@ -89,7 +89,7 @@ export function Row({
         background: iconBg,
         border: `1px solid ${iconColor}33`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: 'inset 0 1px 0 rgba(var(--ink), 0.05)',
       }}>
         <span style={{ color: iconColor }}>{icon}</span>
       </div>

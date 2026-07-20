@@ -16,12 +16,12 @@ export default function CosmologyIcon({ size = 56 }: { size?: number }) {
         <ellipse cx="0" cy="0" rx="10" ry="3" fill="#FFE1A8" opacity="0.6" />
         <ellipse cx="0" cy="0" rx="26" ry="1.2" fill="#0a0012" opacity="0.6" />
       </g>
-      <circle cx="8" cy="12" r="0.6" fill="#fff" opacity="0.7" />
-      <circle cx="48" cy="14" r="0.5" fill="#fff" opacity="0.6" />
-      <circle cx="10" cy="46" r="0.5" fill="#fff" opacity="0.6" />
-      <circle cx="46" cy="44" r="0.7" fill="#fff" opacity="0.8" />
-      <circle cx="4" cy="28" r="0.4" fill="#5EEAD4" opacity="0.5" />
-      <circle cx="52" cy="30" r="0.4" fill="#5EEAD4" opacity="0.5" />
+      <circle cx="8" cy="12" r="0.6" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.7" />
+      <circle cx="48" cy="14" r="0.5" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.6" />
+      <circle cx="10" cy="46" r="0.5" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.6" />
+      <circle cx="46" cy="44" r="0.7" style={{ fill: 'rgba(var(--ink), 0.95)' }} opacity="0.8" />
+      <circle cx="4" cy="28" r="0.4" style={{ fill: 'var(--teal-text, #5EEAD4)' }} opacity="0.5" />
+      <circle cx="52" cy="30" r="0.4" style={{ fill: 'var(--teal-text, #5EEAD4)' }} opacity="0.5" />
     </svg>
   );
 }

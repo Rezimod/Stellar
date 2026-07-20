@@ -81,7 +81,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
         {/* Metric grid — 3 cols, max 2 rows */}
         <div
           className="rounded-xl p-2"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
+          style={{ background: 'rgba(var(--ink),0.04)', border: '1px solid rgba(var(--ink),0.08)', backdropFilter: 'blur(12px)' }}
         >
           <div className="flex items-center gap-1.5 mb-1.5">
             <div className="w-1 h-1 rounded-full bg-[var(--terracotta)]/60" />
@@ -90,14 +90,14 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
           <div className="grid grid-cols-3 gap-1">
             {metrics.map((m) => (
               <div key={m.label} className="rounded-lg px-2 py-1.5 flex flex-col gap-0.5"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="flex items-center gap-1" style={{ color: m.good ? 'rgba(255,255,255,0.3)' : 'rgba(255, 179, 71,0.5)' }}>
+                style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
+                <div className="flex items-center gap-1" style={{ color: m.good ? 'rgba(var(--ink),0.3)' : 'rgba(255, 179, 71,0.5)' }}>
                   {m.icon}
                   <span className="text-[9px] text-text-muted truncate">{m.label}</span>
                 </div>
                 <p className="text-text-primary text-[11px] font-semibold">{m.value}</p>
                 {m.bar !== null && (
-                  <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(var(--ink),0.06)' }}>
                     <div className="h-full rounded-full" style={{
                       width: `${Math.min(m.bar as number, 100)}%`,
                       background: m.good ? 'rgba(94, 234, 212,0.6)' : 'rgba(255, 179, 71,0.6)',
@@ -108,7 +108,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             ))}
             {/* Signature cell */}
             <div className="rounded-lg px-2 py-1.5 flex flex-col gap-0.5"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
               <div className="flex items-center gap-1" style={{ color: 'rgba(255, 179, 71,0.55)' }}>
                 <ShieldCheck size={12} />
                 <span className="text-[9px] text-text-muted truncate">Signature</span>
@@ -123,7 +123,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
         {/* Oracle badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>
+          <span style={{ fontSize: 9, color: 'rgba(var(--ink),0.25)' }}>
             Sky Oracle · Open-Meteo · {new Date(sky.verifiedAt).toLocaleTimeString()}
           </span>
         </div>

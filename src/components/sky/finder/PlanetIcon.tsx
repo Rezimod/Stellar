@@ -312,7 +312,13 @@ function CatalogGlyph({
     const m = Math.max(-2, Math.min(4, magnitude));
     const core = size * (0.13 - ((m + 2) / 6) * 0.05); // ~size * 0.13 → 0.08
     const halo = size * 0.42;
-    const tint = m <= -1 ? '#5EEAD4' : m <= 0 ? '#F8F4EC' : m <= 1 ? '#FFB347' : '#e8d8b6';
+    // Theme-aware tints: identical at night (ink = white), readable on the
+    // light chip in day mode (ink = near-black, darkened teal/amber).
+    const tint =
+      m <= -1 ? 'var(--teal-text, #5EEAD4)'
+      : m <= 0 ? 'rgba(var(--ink), 0.95)'
+      : m <= 1 ? 'var(--accent-text, #FFB347)'
+      : 'rgba(var(--ink), 0.75)';
     const haloShadow = glow
       ? `0 0 ${size * 0.18}px rgba(255,250,235,0.45), 0 0 ${size * 0.34}px rgba(180,205,255,0.18)`
       : 'none';
@@ -358,7 +364,7 @@ function CatalogGlyph({
               marginTop: -core * 0.275 - core * 0.85,
               marginLeft: core * 0.55,
               borderRadius: '50%',
-              background: '#5EEAD4',
+              background: 'var(--teal-text, #5EEAD4)',
               opacity: 0.85,
             }}
           />
@@ -387,7 +393,7 @@ function CatalogGlyph({
           <ellipse cx={50} cy={50} rx={46} ry={16} fill={`url(#${armsId})`} />
           <ellipse cx={50} cy={50} rx={28} ry={9} fill={`url(#${armsId})`} opacity={0.8} />
           <circle cx={50} cy={50} r={12} fill={`url(#${coreId})`} />
-          <circle cx={50} cy={50} r={3.5} fill="#fdf8ff" />
+          <circle cx={50} cy={50} r={3.5} style={{ fill: 'rgba(var(--ink), 0.92)' }} />
         </g>
       </svg>
     );
@@ -437,7 +443,7 @@ function CatalogGlyph({
           [45,48,1.2],[55,38,1.2],[50,68,1.6],[42,65,1.2],[58,65,1.2],[48,42,1.0],
           [62,50,1.0],[38,48,1.0],[55,72,1.0],[44,72,0.9],
         ].map(([cx, cy, r], i) => (
-          <circle key={i} cx={cx} cy={cy} r={r} fill="#fff7d8" />
+          <circle key={i} cx={cx} cy={cy} r={r} style={{ fill: 'rgba(var(--ink), 0.92)' }} />
         ))}
       </svg>
     );

@@ -104,7 +104,7 @@ export function ProfileHero({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--stars)',
+              color: 'var(--accent-text)',
             }}
           >
             <Camera size={13} />
@@ -141,7 +141,7 @@ export function ProfileHero({
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                color: 'var(--terracotta)',
+                color: 'var(--accent-text)',
                 background: isLight ? 'rgba(255, 179, 71,0.08)' : 'rgba(255, 179, 71,0.12)',
                 border: '1px solid rgba(255, 179, 71,0.3)',
                 whiteSpace: 'nowrap',

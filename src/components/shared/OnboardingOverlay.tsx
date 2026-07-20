@@ -55,7 +55,7 @@ export default function OnboardingOverlay() {
         style={{
           fontSize: 12,
           letterSpacing: '0.3em',
-          color: 'var(--success)',
+          color: '#5EEAD4',
           fontFamily: 'var(--font-mono, monospace)',
           textTransform: 'uppercase',
         }}

@@ -15,15 +15,15 @@ const NetworkMap = dynamic(() => import('@/components/network/NetworkMap'), {
       className="animate-pulse"
       style={{
         height: 420,
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(var(--ink), 0.04)',
+        border: '1px solid rgba(var(--ink), 0.06)',
         borderRadius: 12,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+      <span style={{ color: 'rgba(var(--ink), 0.35)', fontSize: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
         Initializing map…
       </span>
     </div>
@@ -40,8 +40,8 @@ type Stats = {
 
 const NODE_COLOR: Record<NodeType, string> = {
   passive: 'var(--text-muted)',
-  observer: 'var(--stl-teal)',
-  advanced: 'var(--stl-gold)',
+  observer: 'var(--teal-text)',
+  advanced: 'var(--accent-text)',
 };
 
 function timeAgo(iso: string): string {
@@ -135,7 +135,7 @@ export default function NetworkPage() {
               }}
               aria-hidden
             />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--stl-green)', fontWeight: 600 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.18em', color: 'var(--teal-text)', fontWeight: 600 }}>
               LIVE
             </span>
           </div>
@@ -309,7 +309,7 @@ export default function NetworkPage() {
                     </li>
                   ))}
                 </ul>
-                <p className="stl-mono-data" style={{ color: 'var(--stl-gold)', marginTop: 4 }}>
+                <p className="stl-mono-data" style={{ color: 'var(--accent-text)', marginTop: 4 }}>
                   {card.reward} per contribution
                 </p>
               </div>
@@ -332,7 +332,7 @@ export default function NetworkPage() {
                 { step: '05', title: 'Earn', body: 'Stars rewards flow back to the observer who contributed.' },
               ].map(row => (
                 <li key={row.step} style={{ display: 'grid', gridTemplateColumns: '44px 1fr', gap: 14, alignItems: 'baseline' }}>
-                  <span className="stl-mono-kicker" style={{ color: 'var(--stl-gold)' }}>{row.step}</span>
+                  <span className="stl-mono-kicker" style={{ color: 'var(--accent-text)' }}>{row.step}</span>
                   <div>
                     <p className="stl-label" style={{ color: 'var(--stl-text-bright)', margin: 0 }}>{row.title}</p>
                     <p className="stl-body-sm" style={{ color: 'var(--stl-text-muted)', margin: '2px 0 0' }}>{row.body}</p>
@@ -352,7 +352,7 @@ export default function NetworkPage() {
               padding: '12px 22px',
               borderRadius: 'var(--stl-r-md)',
               background: 'var(--stl-gold)',
-              color: 'var(--canvas)',
+              color: '#0A1735',
               textDecoration: 'none',
               fontWeight: 600,
             }}

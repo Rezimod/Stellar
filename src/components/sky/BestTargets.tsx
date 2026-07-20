@@ -28,7 +28,7 @@ export default function BestTargets() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
+          <div key={i} className="h-28 rounded-xl animate-pulse" style={{ background: 'rgba(var(--ink), 0.05)' }} />
         ))}
       </div>
     );
@@ -45,15 +45,14 @@ export default function BestTargets() {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[13px] -mt-2 mb-1 max-w-[60ch]" style={{ color: 'oklch(0.94 0.015 80 / 0.55)' }}>
+      <p className="text-[13px] -mt-2 mb-1 max-w-[60ch]" style={{ color: 'rgba(var(--ink), 0.55)' }}>
         {isDefault ? 'Showing Tbilisi — change location above' : 'Based on your location and current sky conditions'}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {targets.map(target => {
           const eqColor = target.equipment === 'naked_eye' ? 'var(--success)'
-            : target.equipment === 'binoculars' ? 'var(--stars)'
-            : 'var(--terracotta)';
+            : 'var(--accent-text)';
           const eqBg = target.equipment === 'naked_eye' ? 'rgba(94, 234, 212,0.1)'
             : target.equipment === 'binoculars' ? 'rgba(255, 179, 71,0.1)'
             : 'rgba(255, 179, 71,0.1)';
@@ -69,7 +68,7 @@ export default function BestTargets() {
               style={{
                 borderLeft: target.visible
                   ? '2px solid rgba(94, 234, 212,0.4)'
-                  : '2px solid rgba(255,255,255,0.06)',
+                  : '2px solid rgba(var(--ink), 0.06)',
                 opacity: target.visible ? 1 : 0.5,
               }}
             >
@@ -93,7 +92,7 @@ export default function BestTargets() {
                     </div>
                   </div>
                 </div>
-                <span className="text-sm font-bold flex-shrink-0" style={{ color: 'var(--stars)' }}>
+                <span className="text-sm font-bold flex-shrink-0" style={{ color: 'var(--accent-text)' }}>
                   +{target.stars} ✦
                 </span>
               </div>
@@ -103,7 +102,7 @@ export default function BestTargets() {
               </p>
 
               {target.visible && (
-                <Link href="/missions" className="text-xs font-medium" style={{ color: 'var(--stars)' }}>
+                <Link href="/missions" className="text-xs font-medium" style={{ color: 'var(--accent-text)' }}>
                   Start mission →
                 </Link>
               )}

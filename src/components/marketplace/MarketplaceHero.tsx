@@ -14,7 +14,7 @@ interface Props {
 export default function MarketplaceHero({ onShopTelescopes, onShopDeals }: Props) {
   const t = useTranslations('marketplacePage');
   return (
-    <div className="relative overflow-hidden rounded-2xl" style={{ border: '1px solid rgba(232,230,221,0.10)' }}>
+    <div className="stay-dark relative overflow-hidden rounded-2xl" style={{ border: '1px solid rgba(232,230,221,0.10)' }}>
       <Image
         src="/hero/andromeda.jpg"
         alt=""

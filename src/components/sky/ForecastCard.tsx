@@ -43,20 +43,20 @@ const kindConfig: Record<SkyKind, {
     barColor: 'var(--success)',
   },
   maybe: {
-    badge:   { bg: 'rgba(255, 179, 71,0.12)', border: 'rgba(255, 179, 71,0.3)', color: 'var(--terracotta)', label: 'MAYBE' },
+    badge:   { bg: 'rgba(255, 179, 71,0.12)', border: 'rgba(255, 179, 71,0.3)', color: 'var(--accent-text)', label: 'MAYBE' },
     border:  'rgba(255, 179, 71,0.15)',
     barColor: 'var(--terracotta)',
   },
   skip:  {
     badge:   { bg: 'rgba(251, 113, 133,0.1)', border: 'rgba(251, 113, 133,0.2)', color: 'var(--negative)', label: 'SKIP' },
-    border:  'rgba(255,255,255,0.06)',
+    border:  'rgba(var(--ink), 0.06)',
     barColor: 'var(--negative)',
   },
 };
 
 function SkyIcon({ kind, size = 20 }: { kind: SkyKind; size?: number }) {
   if (kind === 'go') return <Stars size={size} color="var(--success)" strokeWidth={1.5} />;
-  if (kind === 'maybe') return <CloudMoon size={size} color="var(--terracotta)" strokeWidth={1.5} />;
+  if (kind === 'maybe') return <CloudMoon size={size} color="var(--accent-text)" strokeWidth={1.5} />;
   return <Cloud size={size} color="var(--text-muted)" strokeWidth={1.5} />;
 }
 
@@ -103,7 +103,7 @@ export default function ForecastCard({ day, isToday }: Props) {
         {/* Header row */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'var(--color-nebula-teal)' }}>
+            <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'var(--accent-text)' }}>
               {t('today')}
             </p>
             <p className="text-text-primary text-base font-semibold">{formatDate(day.date, locale)}</p>
@@ -141,7 +141,7 @@ export default function ForecastCard({ day, isToday }: Props) {
 
         {/* Cloud cover bar */}
         <div className="mb-3">
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(var(--ink), 0.06)' }}>
             <div
               className="h-full rounded-full transition-all"
               style={{
@@ -154,9 +154,9 @@ export default function ForecastCard({ day, isToday }: Props) {
 
         {/* Best window */}
         {window && (
-          <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-            <Clock size={11} color="var(--color-nebula-teal)" strokeWidth={2} />
-            <span className="text-[11px] uppercase tracking-widest font-medium" style={{ color: 'var(--color-nebula-teal)' }}>
+          <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: 'rgba(var(--ink), 0.04)' }}>
+            <Clock size={11} color="var(--accent-text)" strokeWidth={2} />
+            <span className="text-[11px] uppercase tracking-widest font-medium" style={{ color: 'var(--accent-text)' }}>
               {t('bestHours')}
             </span>
             <span className="text-xs font-mono text-text-primary ml-1">{window}</span>
@@ -174,7 +174,7 @@ export default function ForecastCard({ day, isToday }: Props) {
         </button>
 
         {expanded && (
-          <div className="mt-3 pt-3 flex flex-col gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <div className="mt-3 pt-3 flex flex-col gap-2" style={{ borderTop: '1px solid rgba(var(--ink), 0.04)' }}>
             <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
               Evening · hour by hour
             </p>
@@ -196,15 +196,16 @@ export default function ForecastCard({ day, isToday }: Props) {
                   const hr = h.time.slice(11, 16);
                   const cc = h.cloudCover;
                   const barColor = cc < 30 ? 'var(--success)' : cc < 60 ? 'var(--terracotta)' : 'var(--negative)';
+                  const pctColor = cc < 30 ? 'var(--success)' : cc < 60 ? 'var(--accent-text)' : 'var(--negative)';
                   return (
                     <div key={h.time} className="flex items-center gap-3">
                       <span className="text-xs font-mono w-10 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }}>
                         {hr}
                       </span>
-                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(var(--ink), 0.04)' }}>
                         <div className="h-full rounded-full" style={{ width: `${cc}%`, background: barColor, opacity: 0.7 }} />
                       </div>
-                      <span className="text-[10px] w-8 text-right font-mono" style={{ color: barColor }}>
+                      <span className="text-[10px] w-8 text-right font-mono" style={{ color: pctColor }}>
                         {cc}%
                       </span>
                       <span className="text-[10px] w-12 text-right" style={{ color: 'var(--color-text-muted)' }}>
@@ -251,7 +252,7 @@ export default function ForecastCard({ day, isToday }: Props) {
       <StatRow icon={<Eye size={11} strokeWidth={1.5} />} value={`${visKm} km`} />
 
       {/* Cloud cover bar */}
-      <div className="h-1 rounded-full overflow-hidden mt-auto" style={{ background: 'rgba(255,255,255,0.06)' }}>
+      <div className="h-1 rounded-full overflow-hidden mt-auto" style={{ background: 'rgba(var(--ink), 0.06)' }}>
         <div
           className="h-full rounded-full"
           style={{
@@ -263,7 +264,7 @@ export default function ForecastCard({ day, isToday }: Props) {
       </div>
 
       {window && (
-        <p className="text-[10px] font-mono" style={{ color: 'var(--color-nebula-teal)', opacity: 0.8 }}>{window}</p>
+        <p className="text-[10px] font-mono" style={{ color: 'var(--accent-text)', opacity: 0.8 }}>{window}</p>
       )}
     </div>
   );

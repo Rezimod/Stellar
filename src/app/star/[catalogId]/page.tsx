@@ -130,10 +130,10 @@ export default async function StarProofPage({
           padding: '24px',
         }}
       >
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 16 }}>
+        <p style={{ color: 'rgba(var(--ink), 0.4)', fontSize: 14, marginBottom: 16 }}>
           Star not found or not yet named.
         </p>
-        <Link href="/" style={{ color: 'var(--terracotta)', fontSize: 13, textDecoration: 'none' }}>
+        <Link href="/" style={{ color: 'var(--accent-text)', fontSize: 13, textDecoration: 'none' }}>
           ← Back to Stellar
         </Link>
       </div>
@@ -148,7 +148,7 @@ export default async function StarProofPage({
     <div
       style={{
         minHeight: '100vh',
-        color: '#fff',
+        color: 'var(--text-primary)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
@@ -157,7 +157,7 @@ export default async function StarProofPage({
         <Link
           href="/"
           style={{
-            color: 'rgba(255,255,255,0.35)',
+            color: 'rgba(var(--ink), 0.35)',
             fontSize: 13,
             textDecoration: 'none',
             display: 'inline-flex',
@@ -170,13 +170,13 @@ export default async function StarProofPage({
 
         {/* Hero */}
         <div style={{ textAlign: 'center', marginTop: 56 }}>
-          <div style={{ fontSize: 52, lineHeight: 1, color: 'var(--stars)', marginBottom: 20 }}>★</div>
+          <div style={{ fontSize: 52, lineHeight: 1, color: 'var(--accent-text)', marginBottom: 20 }}>★</div>
           <h1
             style={{
               fontFamily: 'Georgia, "Times New Roman", serif',
               fontSize: 'clamp(24px, 6vw, 32px)',
               fontWeight: 700,
-              color: '#fff',
+              color: 'var(--text-primary)',
               margin: '0 0 10px',
               lineHeight: 1.2,
             }}
@@ -205,8 +205,8 @@ export default async function StarProofPage({
         <div
           style={{
             marginTop: 32,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(var(--ink), 0.04)',
+            border: '1px solid rgba(var(--ink), 0.08)',
             borderRadius: 16,
             overflow: 'hidden',
           }}
@@ -225,7 +225,7 @@ export default async function StarProofPage({
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '13px 18px',
-                borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                borderBottom: i < arr.length - 1 ? '1px solid rgba(var(--ink), 0.05)' : 'none',
                 gap: 12,
               }}
             >
@@ -235,7 +235,7 @@ export default async function StarProofPage({
               <span
                 style={{
                   fontSize: 13,
-                  color: 'rgba(255,255,255,0.85)',
+                  color: 'rgba(var(--ink), 0.85)',
                   textAlign: 'right',
                   fontFamily: label === 'Coordinates' || label === 'Named by' ? 'monospace' : 'inherit',
                   wordBreak: 'break-all',
@@ -255,7 +255,7 @@ export default async function StarProofPage({
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                color: 'var(--terracotta)',
+                color: 'var(--accent-text)',
                 fontSize: 12,
                 textDecoration: 'none',
                 display: 'inline-flex',
@@ -276,8 +276,8 @@ export default async function StarProofPage({
             rel="noopener noreferrer"
             style={{
               fontSize: 12,
-              color: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'rgba(var(--ink), 0.7)',
+              border: '1px solid rgba(var(--ink), 0.12)',
               borderRadius: 8,
               padding: '7px 14px',
               textDecoration: 'none',
@@ -294,7 +294,7 @@ export default async function StarProofPage({
             rel="noopener noreferrer"
             style={{
               fontSize: 12,
-              color: 'var(--terracotta)',
+              color: 'var(--accent-text)',
               border: '1px solid rgba(255, 179, 71,0.25)',
               borderRadius: 8,
               padding: '7px 14px',
@@ -312,7 +312,7 @@ export default async function StarProofPage({
         <p
           style={{
             fontSize: 11,
-            color: 'rgba(255,255,255,0.2)',
+            color: 'rgba(var(--ink), 0.2)',
             maxWidth: 320,
             margin: '28px auto 0',
             lineHeight: 1.6,

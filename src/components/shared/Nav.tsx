@@ -118,7 +118,7 @@ export default function Nav() {
         .hub-btn { width: 32px; height: 32px; display: none; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; padding: 0; color: var(--text-secondary); transition: all 0.15s ease; text-decoration: none; }
         @media (min-width: 768px) { .hub-btn { display: flex; } }
         .hub-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text-primary); }
-        .hub-btn[data-active="true"] { background: rgba(255,179,71,0.10); border-color: rgba(255,179,71,0.25); color: #FFB347; }
+        .hub-btn[data-active="true"] { background: rgba(255,179,71,0.10); border-color: rgba(255,179,71,0.25); color: var(--accent-text); }
         .avatar-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; aspect-ratio: 1 / 1; flex-shrink: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.18s ease, filter 0.18s ease; }
         .avatar-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
         .avatar-btn[data-active="true"] { box-shadow: 0 0 0 1.5px rgba(255,179,71,0.55), 0 4px 12px -4px rgba(255,179,71,0.30) !important; }

@@ -50,18 +50,18 @@ export default function TonightsBanner({ locale }: Props) {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.05)',
+          background: 'rgba(var(--ink), 0.02)',
+          border: '1px solid rgba(var(--ink), 0.05)',
           height: '70px',
         }}
       >
         <div style={{
           height: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '0 16px',
         }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', flexShrink: 0 }} />
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(var(--ink), 0.04)', flexShrink: 0 }} />
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ height: 9, width: '55%', borderRadius: 4, background: 'rgba(255,255,255,0.04)' }} />
-            <div style={{ height: 7, width: '38%', borderRadius: 4, background: 'rgba(255,255,255,0.03)' }} />
+            <div style={{ height: 9, width: '55%', borderRadius: 4, background: 'rgba(var(--ink), 0.04)' }} />
+            <div style={{ height: 7, width: '38%', borderRadius: 4, background: 'rgba(var(--ink), 0.03)' }} />
           </div>
         </div>
       </div>
@@ -81,7 +81,7 @@ export default function TonightsBanner({ locale }: Props) {
           border: '1px solid rgba(255, 179, 71,0.1)',
         }}
       >
-        <Moon size={20} aria-hidden="true" style={{ color: 'var(--terracotta)' }} />
+        <Moon size={20} aria-hidden="true" style={{ color: 'var(--accent-text)' }} />
         <p className="text-text-muted text-xs leading-snug flex-1">
           {locale === 'ka'
             ? 'მოწმენდილი ცა? შეამოწმე ღამის ამინდი →'
@@ -93,7 +93,7 @@ export default function TonightsBanner({ locale }: Props) {
 
   // Live planet banner
   const img = (planetEntry as { img?: string }).img;
-  const color = (planetEntry as { color?: string }).color ?? 'var(--terracotta)';
+  const color = (planetEntry as { color?: string }).color ?? 'var(--accent-text)';
 
   return (
     <>
@@ -115,7 +115,7 @@ export default function TonightsBanner({ locale }: Props) {
       <div
         className="relative overflow-hidden rounded-2xl"
         style={{
-          background: `linear-gradient(135deg, rgba(${hexToRgb(color)},0.07) 0%, rgba(8,11,26,0.95) 60%)`,
+          background: `linear-gradient(135deg, rgba(${hexToRgb(color)},0.07) 0%, color-mix(in srgb, var(--bg-panel) 95%, transparent) 60%)`,
           border: `1px solid rgba(${hexToRgb(color)},0.2)`,
           boxShadow: `0 0 0 1px rgba(${hexToRgb(color)},0.06), 0 8px 32px rgba(0,0,0,0.5)`,
           animation: 'bannerIn 0.5s cubic-bezier(0.16,1,0.3,1) both',

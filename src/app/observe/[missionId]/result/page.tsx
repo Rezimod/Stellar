@@ -109,13 +109,13 @@ export default function ObserveResultPage() {
       <PageContainer variant="content" className="py-6 flex flex-col gap-4">
         <div
           className="rounded-2xl p-6 text-center"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid rgba(var(--ink), 0.08)' }}
         >
           <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--accent-text)' }}
           >
             {t('notFound.back')}
           </Link>
@@ -280,13 +280,13 @@ export default function ObserveResultPage() {
           style={{ maxWidth: 420 }}
         >
           <div
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 18 }}
+            style={{ borderTop: '1px solid rgba(var(--ink), 0.06)', paddingTop: 18 }}
           >
             {!starClaimed ? (
               nearestStar && (
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span style={{ fontSize: 14, color: 'var(--stars)', lineHeight: 1 }}>★</span>
+                    <span style={{ fontSize: 14, color: 'var(--accent-text)', lineHeight: 1 }}>★</span>
                     <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {t('result.nameStar')}
                     </span>
@@ -307,8 +307,8 @@ export default function ObserveResultPage() {
                     onKeyDown={e => { if (e.key === 'Enter') handleStarClaim(); }}
                     className="mt-3 w-full rounded-xl px-3 py-2.5 text-sm outline-none"
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'rgba(var(--ink), 0.05)',
+                      border: '1px solid rgba(var(--ink), 0.1)',
                       color: 'var(--text-primary)',
                     }}
                   />
@@ -322,7 +322,7 @@ export default function ObserveResultPage() {
                           ? 'rgba(255, 179, 71,0.15)'
                           : 'rgba(255, 179, 71,0.2)',
                         border: '1px solid rgba(255, 179, 71,0.35)',
-                        color: 'var(--stars)',
+                        color: 'var(--accent-text)',
                         opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                         cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
                       }}
@@ -330,7 +330,7 @@ export default function ObserveResultPage() {
                       {starClaiming && (
                         <div
                           className="w-3 h-3 rounded-full border-2 animate-spin"
-                          style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--stars)' }}
+                          style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--accent-text)' }}
                         />
                       )}
                       {t('result.inscribe')}
@@ -340,7 +340,7 @@ export default function ObserveResultPage() {
                       className="px-4 py-2 rounded-xl text-xs"
                       style={{
                         background: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(var(--ink), 0.08)',
                         color: 'rgba(148,163,184,0.5)',
                       }}
                     >
@@ -348,15 +348,15 @@ export default function ObserveResultPage() {
                     </button>
                   </div>
                   {starError && (
-                    <p className="text-xs mt-2" style={{ color: 'var(--terracotta)' }}>{starError}</p>
+                    <p className="text-xs mt-2" style={{ color: 'var(--accent-text)' }}>{starError}</p>
                   )}
                 </div>
               )
             ) : (
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-1.5">
-                  <span style={{ fontSize: 14, color: 'var(--stars)' }}>★</span>
-                  <span className="text-base font-semibold" style={{ color: 'var(--stars)' }}>
+                  <span style={{ fontSize: 14, color: 'var(--accent-text)' }}>★</span>
+                  <span className="text-base font-semibold" style={{ color: 'var(--accent-text)' }}>
                     {starClaimed.chosenName}
                   </span>
                 </div>
@@ -365,7 +365,7 @@ export default function ObserveResultPage() {
                   href={starClaimed.proofUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: 'var(--terracotta)', fontSize: 12, textDecoration: 'none' }}
+                  style={{ color: 'var(--accent-text)', fontSize: 12, textDecoration: 'none' }}
                 >
                   {t('result.viewProof')} →
                 </a>
@@ -382,7 +382,7 @@ export default function ObserveResultPage() {
           style={{
             background: 'rgba(7,11,20,0.92)',
             border: '1px solid rgba(255,255,255,0.12)',
-            color: 'var(--text)',
+            color: '#F8F4EC',
             fontFamily: 'var(--font-display)',
             backdropFilter: 'blur(10px)',
           }}

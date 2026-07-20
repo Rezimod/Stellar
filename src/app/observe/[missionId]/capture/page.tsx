@@ -28,13 +28,13 @@ export default function ObserveCapturePage() {
         <BackButton />
         <div
           className="rounded-2xl p-6 text-center"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid rgba(var(--ink), 0.08)' }}
         >
           <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--accent-text)' }}
           >
             {t('notFound.back')}
           </Link>

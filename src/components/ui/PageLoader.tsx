@@ -115,12 +115,12 @@ export default function PageLoader() {
                 180deg,
                 transparent             0px,
                 transparent            10px,
-                rgba(255,255,255,0.04)  10px,
-                rgba(255,255,255,0.04)  11px,
+                rgba(var(--ink), 0.04)  10px,
+                rgba(var(--ink), 0.04)  11px,
                 transparent            11px,
                 transparent            18px,
-                rgba(255,255,255,0.025) 18px,
-                rgba(255,255,255,0.025) 19px
+                rgba(var(--ink), 0.025) 18px,
+                rgba(var(--ink), 0.025) 19px
               )`,
             }}
           />
@@ -184,7 +184,7 @@ export default function PageLoader() {
       <span
         style={{
           fontSize: 11,
-          color: 'rgba(255, 179, 71,0.8)',
+          color: 'color-mix(in srgb, var(--accent-text) 80%, transparent)',
           letterSpacing: '0.2em',
           fontFamily: 'var(--font-display, sans-serif)',
           textTransform: 'uppercase',

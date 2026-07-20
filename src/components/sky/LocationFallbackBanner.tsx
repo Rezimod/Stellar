@@ -31,13 +31,13 @@ export function LocationFallbackBanner() {
         border: '1px solid rgba(245, 158, 11, 0.28)',
         borderRadius: 12,
         fontSize: 13,
-        color: 'rgba(255,255,255,0.92)',
+        color: 'rgba(var(--ink), 0.92)',
       }}
     >
-      <MapPin size={16} color="rgb(245, 158, 11)" style={{ flexShrink: 0 }} />
+      <MapPin size={16} color="var(--accent-text)" style={{ flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0, lineHeight: 1.45 }}>
         <strong style={{ fontWeight: 600 }}>{reason}.</strong>{' '}
-        <span style={{ color: 'rgba(255,255,255,0.7)' }}>
+        <span style={{ color: 'rgba(var(--ink), 0.7)' }}>
           Showing default data for {location.city}. Pick your city for accurate sky conditions.
         </span>
       </div>
@@ -50,7 +50,7 @@ export function LocationFallbackBanner() {
           border: 'none',
           padding: 4,
           cursor: 'pointer',
-          color: 'rgba(255,255,255,0.5)',
+          color: 'rgba(var(--ink), 0.5)',
           flexShrink: 0,
           display: 'flex',
         }}

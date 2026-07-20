@@ -44,7 +44,7 @@ export function ProfileStats({ tokens, loaded, balance, earned, burned, labels }
               gap: 10,
             }}
           >
-            <StarMark size={24} style={{ color: 'var(--stars)' }} />
+            <StarMark size={24} style={{ color: 'var(--accent-text)' }} />
             {balance.toLocaleString()}
           </p>
         ) : (

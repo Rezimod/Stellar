@@ -109,7 +109,7 @@ export default function SunMoonBar() {
 
   if (!data) {
     return (
-      <div className="glass-card p-4 animate-pulse h-16" style={{ border: '1px solid rgba(255,255,255,0.06)' }} />
+      <div className="glass-card p-4 animate-pulse h-16" style={{ border: '1px solid rgba(var(--ink),0.06)' }} />
     );
   }
 
@@ -151,9 +151,9 @@ export default function SunMoonBar() {
   ];
 
   return (
-    <div className="glass-card px-4 py-3" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className="glass-card px-4 py-3" style={{ border: '1px solid rgba(var(--ink),0.06)' }}>
       {/* Bar */}
-      <div className="relative h-5 rounded-lg overflow-visible mb-1" style={{ background: gradient, border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="relative h-5 rounded-lg overflow-visible mb-1" style={{ background: gradient, border: '1px solid rgba(var(--ink),0.06)' }}>
         {/* Sunrise marker */}
         {risePercent !== null && (
           <div

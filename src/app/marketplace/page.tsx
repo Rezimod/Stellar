@@ -49,7 +49,7 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
     <button
       onClick={onClear}
       aria-label={`Remove filter: ${label}`}
-      className="inline-flex items-center gap-[6px] h-[26px] px-[10px] rounded-full text-[10.5px] tracking-[0.1em] uppercase font-semibold text-[var(--terracotta)] transition-colors hover:text-white"
+      className="inline-flex items-center gap-[6px] h-[26px] px-[10px] rounded-full text-[10.5px] tracking-[0.1em] uppercase font-semibold text-[var(--accent-text)] transition-colors hover:text-white"
       style={{ minHeight: 0, background: 'rgba(255,179,71,0.10)', border: '1px solid rgba(255,179,71,0.30)' }}
     >
       {label}
@@ -248,7 +248,7 @@ export default function MarketplacePage() {
               {(filter !== 'all' || difficulty !== 'all') && (
                 <button
                   onClick={() => { setFilter('all'); setDifficulty('all'); }}
-                  className="text-[10.5px] tracking-[0.12em] uppercase text-white/50 hover:text-[var(--terracotta)] transition-colors"
+                  className="text-[10.5px] tracking-[0.12em] uppercase text-white/50 hover:text-[var(--accent-text)] transition-colors"
                 >
                   {t('clearFilters')}
                 </button>
@@ -264,7 +264,7 @@ export default function MarketplacePage() {
                     onClick={() => setSort(mode)}
                     aria-pressed={sort === mode}
                     className="text-[10.5px] tracking-[0.12em] uppercase transition-colors"
-                    style={{ color: sort === mode ? 'var(--terracotta)' : 'rgba(255,255,255,0.5)', fontWeight: sort === mode ? 700 : 500 }}
+                    style={{ color: sort === mode ? 'var(--accent-text)' : 'rgba(var(--ink), 0.5)', fontWeight: sort === mode ? 700 : 500 }}
                   >
                     {label}
                   </button>
@@ -288,12 +288,12 @@ export default function MarketplacePage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-[13px] tracking-[0.14em] uppercase text-[rgba(232,230,221,0.7)] mb-[12px]">
+                <p className="text-[13px] tracking-[0.14em] uppercase text-[rgba(var(--ink-warm),0.7)] mb-[12px]">
                   {t('noItems')}
                 </p>
                 <button
                   onClick={() => { setFilter('all'); setDifficulty('all'); }}
-                  className="text-[11px] tracking-[0.14em] uppercase font-semibold text-[var(--terracotta)] hover:brightness-110 transition-[filter]"
+                  className="text-[11px] tracking-[0.14em] uppercase font-semibold text-[var(--accent-text)] hover:brightness-110 transition-[filter]"
                 >
                   {t('resetFilters')}
                 </button>
@@ -321,7 +321,7 @@ export default function MarketplacePage() {
               <h2 className="font-display text-[18px] sm:text-[20px] tracking-[-0.005em] text-[#F8F4EC]" style={{ fontWeight: 600 }}>
                 {t('guideTitle')}
               </h2>
-              <p className="hidden sm:block text-[10.5px] tracking-[0.18em] uppercase text-[rgba(232,230,221,0.5)]">
+              <p className="hidden sm:block text-[10.5px] tracking-[0.18em] uppercase text-[rgba(var(--ink-warm),0.5)]">
                 {t('guideSubtitle')}
               </p>
             </div>
@@ -335,10 +335,10 @@ export default function MarketplacePage() {
                   <p className="text-[15px] font-semibold text-[#F8F4EC] mb-[6px] leading-[1.25]">
                     {t(`guides.${g.id}.title`)}
                   </p>
-                  <p className="text-[12.5px] leading-[1.5] text-[rgba(232,230,221,0.7)]">
+                  <p className="text-[12.5px] leading-[1.5] text-[rgba(var(--ink-warm),0.7)]">
                     {t(`guides.${g.id}.copy`)}
                   </p>
-                  <p className="mt-[12px] text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[rgba(232,230,221,0.55)] group-hover:text-[var(--terracotta)] transition-colors">
+                  <p className="mt-[12px] text-[10.5px] tracking-[0.18em] uppercase font-semibold text-[rgba(var(--ink-warm),0.55)] group-hover:text-[var(--accent-text)] transition-colors">
                     {t('browsePicks')}
                   </p>
                 </button>
@@ -352,10 +352,10 @@ export default function MarketplacePage() {
       {navSlot && createPortal(
         <div className="flex items-center gap-[2px]">
           <span className="inline-flex items-center h-[22px] gap-[5px] px-[6px] rounded-md uppercase cursor-default">
-            <svg viewBox="0 0 24 24" fill="var(--terracotta)" aria-hidden="true" style={{ width: 9, height: 9 }}>
+            <svg viewBox="0 0 24 24" fill="var(--accent-text)" aria-hidden="true" style={{ width: 9, height: 9 }}>
               <path d="M12 2l2.95 6.97 7.55.6-5.74 4.96 1.79 7.39L12 17.77 5.45 21.92l1.79-7.39L1.5 9.57l7.55-.6L12 2z" />
             </svg>
-            <span className="font-semibold tabular-nums tracking-[0.02em] text-[10.5px]" style={{ color: 'var(--terracotta)' }}>
+            <span className="font-semibold tabular-nums tracking-[0.02em] text-[10.5px]" style={{ color: 'var(--accent-text)' }}>
               {balance.toLocaleString()}
             </span>
           </span>

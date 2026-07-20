@@ -90,7 +90,7 @@ export default function TonightTargets({ onStartObserve, walletAddress }: Tonigh
               </span>
             </div>
             <div className="flex flex-col items-end flex-shrink-0">
-              <span className="text-sm font-bold" style={{ color: 'var(--stars)' }}>+{tgt.bonusStars} ✦</span>
+              <span className="text-sm font-bold" style={{ color: 'var(--accent-text)' }}>+{tgt.bonusStars} ✦</span>
               {!tgt.available && (
                 <span className="text-negative text-[10px] mt-0.5">{t('tonight.belowHorizon')}</span>
               )}

@@ -857,7 +857,7 @@ function SummaryBar({
       <div className="mis-summary-zone mis-summary-zone--ring">
         <div className="mis-ring" aria-hidden>
           <svg viewBox="0 0 64 64" width="64" height="64">
-            <circle cx="32" cy="32" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+            <circle cx="32" cy="32" r={R} fill="none" style={{ stroke: 'rgba(var(--ink), 0.08)' }} strokeWidth="5" />
             <circle
               cx="32" cy="32" r={R} fill="none" stroke="var(--terracotta)" strokeWidth="5"
               strokeLinecap="round" strokeDasharray={`${dash} ${C}`} transform="rotate(-90 32 32)"
@@ -1307,9 +1307,9 @@ function RareEventArt({ type }: { type: AstroEvent['type'] }) {
 // ---- Upcoming event row ----
 
 const EVENT_DIFFICULTY_COLOR: Record<AstroEvent['difficulty'], string> = {
-  'naked-eye': 'var(--seafoam)',
-  'binoculars': 'var(--terracotta)',
-  'telescope': 'var(--terracotta)',
+  'naked-eye': 'var(--teal-text)',
+  'binoculars': 'var(--accent-text)',
+  'telescope': 'var(--accent-text)',
   'expert': 'var(--negative)',
 };
 

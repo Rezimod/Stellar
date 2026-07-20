@@ -144,13 +144,13 @@ export function OrionNebulaIcon({ size = 48, className, animate }: CelestialIcon
         <circle cx="30" cy="27" r="12" fill={`url(#op${id})`}/>
         <circle cx="16" cy="28" r="11" fill={`url(#ob${id})`}/>
       </g>
-      {/* Stars */}
-      <circle cx="24" cy="20" r="1.2" fill="white" opacity="0.9"/>
-      <circle cx="28" cy="25" r="0.9" fill="white" opacity="0.85"/>
-      <circle cx="20" cy="27" r="0.8" fill="white" opacity="0.8"/>
-      <circle cx="27" cy="31" r="0.7" fill="white" opacity="0.7"/>
-      <circle cx="21" cy="16" r="0.6" fill="white" opacity="0.75"/>
-      <circle cx="32" cy="21" r="0.6" fill="white" opacity="0.65"/>
+      {/* Stars — ink so they read on the light canvas in day mode */}
+      <circle cx="24" cy="20" r="1.2" style={{ fill: 'rgb(var(--ink))' }} opacity="0.9"/>
+      <circle cx="28" cy="25" r="0.9" style={{ fill: 'rgb(var(--ink))' }} opacity="0.85"/>
+      <circle cx="20" cy="27" r="0.8" style={{ fill: 'rgb(var(--ink))' }} opacity="0.8"/>
+      <circle cx="27" cy="31" r="0.7" style={{ fill: 'rgb(var(--ink))' }} opacity="0.7"/>
+      <circle cx="21" cy="16" r="0.6" style={{ fill: 'rgb(var(--ink))' }} opacity="0.75"/>
+      <circle cx="32" cy="21" r="0.6" style={{ fill: 'rgb(var(--ink))' }} opacity="0.65"/>
     </svg>
   );
 }
@@ -177,17 +177,17 @@ export function PleiadesIcon({ size = 48, className, animate }: CelestialIconPro
         `}</style>
       )}
       <circle cx="24" cy="22" r="18" fill="rgba(147,197,253,0.04)"/>
-      <line x1="24" y1="13" x2="32" y2="18" stroke="rgba(147,197,253,0.12)" strokeWidth="0.5"/>
-      <line x1="32" y1="18" x2="28" y2="27" stroke="rgba(147,197,253,0.10)" strokeWidth="0.5"/>
-      <line x1="24" y1="13" x2="17" y2="20" stroke="rgba(147,197,253,0.10)" strokeWidth="0.5"/>
-      <line x1="17" y1="20" x2="21" y2="31" stroke="rgba(147,197,253,0.08)" strokeWidth="0.5"/>
+      <line x1="24" y1="13" x2="32" y2="18" style={{ stroke: 'rgba(var(--ink), 0.16)' }} strokeWidth="0.5"/>
+      <line x1="32" y1="18" x2="28" y2="27" style={{ stroke: 'rgba(var(--ink), 0.14)' }} strokeWidth="0.5"/>
+      <line x1="24" y1="13" x2="17" y2="20" style={{ stroke: 'rgba(var(--ink), 0.14)' }} strokeWidth="0.5"/>
+      <line x1="17" y1="20" x2="21" y2="31" style={{ stroke: 'rgba(var(--ink), 0.12)' }} strokeWidth="0.5"/>
       {stars.map(({ cx, cy, r }, i) => {
         const si = r * 0.36;
         return (
           <path key={i}
             className={animate ? `ps${id}${i}` : ''}
             d={`M${cx},${cy - r} L${cx + si},${cy - si} L${cx + r},${cy} L${cx + si},${cy + si} L${cx},${cy + r} L${cx - si},${cy + si} L${cx - r},${cy} L${cx - si},${cy - si}Z`}
-            fill="#E8E8FF"/>
+            style={{ fill: 'rgba(var(--ink), 0.95)' }}/>
         );
       })}
     </svg>
@@ -379,12 +379,12 @@ export function TelescopeIcon({ size = 48, className, animate }: CelestialIconPr
         </filter>
       </defs>
 
-      {/* ── Tripod ── */}
-      <line x1="22" y1="35" x2="14" y2="46" stroke="rgba(147,197,253,0.35)" strokeWidth="1.3" strokeLinecap="round"/>
-      <line x1="22" y1="35" x2="30" y2="46" stroke="rgba(147,197,253,0.35)" strokeWidth="1.3" strokeLinecap="round"/>
-      <line x1="22" y1="35" x2="22" y2="46" stroke="rgba(147,197,253,0.25)" strokeWidth="1"   strokeLinecap="round"/>
+      {/* ── Tripod — ink so it reads on the light canvas in day mode ── */}
+      <line x1="22" y1="35" x2="14" y2="46" style={{ stroke: 'rgba(var(--ink), 0.4)' }} strokeWidth="1.3" strokeLinecap="round"/>
+      <line x1="22" y1="35" x2="30" y2="46" style={{ stroke: 'rgba(var(--ink), 0.4)' }} strokeWidth="1.3" strokeLinecap="round"/>
+      <line x1="22" y1="35" x2="22" y2="46" style={{ stroke: 'rgba(var(--ink), 0.3)' }} strokeWidth="1"   strokeLinecap="round"/>
       {/* Crossbar */}
-      <line x1="17" y1="41" x2="27" y2="41" stroke="rgba(147,197,253,0.2)" strokeWidth="0.8" strokeLinecap="round"/>
+      <line x1="17" y1="41" x2="27" y2="41" style={{ stroke: 'rgba(var(--ink), 0.22)' }} strokeWidth="0.8" strokeLinecap="round"/>
 
       {/* ── Mount head ── */}
       <circle cx="22" cy="35" r="2.2" fill={`url(#tb${id})`} stroke={`url(#tg${id})`} strokeWidth="1.2"/>

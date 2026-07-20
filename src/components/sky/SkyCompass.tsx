@@ -54,10 +54,12 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
       <div className="compass-wrap">
         <svg className="compass-svg" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg">
           <defs>
+            {/* Opaque night dome — the white stars/labels inside need this dark
+                sky in both themes (the panel behind flips light in day mode). */}
             <radialGradient id="skyGrad" cx="50%" cy="100%" r="100%">
-              <stop offset="0%" stopColor="#0B1830" stopOpacity="0.9" />
-              <stop offset="60%" stopColor="#070B14" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#070B14" stopOpacity="0" />
+              <stop offset="0%" stopColor="#0B1830" />
+              <stop offset="60%" stopColor="#0A101E" />
+              <stop offset="100%" stopColor="#070B14" />
             </radialGradient>
             <filter id="planetGlow">
               <feGaussianBlur stdDeviation="3" />
@@ -246,15 +248,15 @@ export function SkyCompass({ planets, deepSky = [], featuredTarget, refreshedAt 
 
       <div className="compass-legend">
         <div className="legend-item">
-          <span className="legend-dot" style={{ background: '#FFB347' }} />
+          <span className="legend-dot" style={{ background: '#FFB347', boxShadow: 'inset 0 0 0 1px rgba(var(--ink), 0.25)' }} />
           Featured target
         </div>
         <div className="legend-item">
-          <span className="legend-dot" style={{ background: '#F0E5C0' }} />
+          <span className="legend-dot" style={{ background: '#F0E5C0', boxShadow: 'inset 0 0 0 1px rgba(var(--ink), 0.25)' }} />
           Planets
         </div>
         <div className="legend-item">
-          <span className="legend-dot" style={{ background: '#5EEAD4' }} />
+          <span className="legend-dot" style={{ background: '#5EEAD4', boxShadow: 'inset 0 0 0 1px rgba(var(--ink), 0.25)' }} />
           Deep sky
         </div>
         <div className="legend-item" style={{ marginLeft: 'auto', color: 'var(--text-dim)' }}>

@@ -73,7 +73,7 @@
   --shadow-card-hover:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255, 179, 71,0.12);
   --shadow-glow-teal: 0 0 20px rgba(255, 179, 71,0.20), 0 0 60px rgba(255, 179, 71,0.06);
   --shadow-glow-gold: 0 0 20px rgba(255, 179, 71,0.15), 0 0 60px rgba(255, 179, 71,0.05);
-  --shadow-inner:     inset 0 1px 0 rgba(255,255,255,0.04);
+  --shadow-inner:     inset 0 1px 0 rgba(var(--ink), 0.04);
 
   /* Transitions */
   --transition-fast:   120ms ease-out;
@@ -94,6 +94,24 @@
   --color-night-accent:      #CC2200;
   --color-night-accent-glow: rgba(204, 34, 0, 0.15);
   --color-night-text:        rgba(255, 100, 80, 0.85);
+}
+
+/* Day / light mode flip for the --color-* scale.
+   This block MUST live here: design-tokens.css is imported after globals.css,
+   so its :root definitions above win the cascade tie against globals'
+   [data-theme="light"] override. Without this, --color-text-primary etc. stay
+   white in day mode and vanish on the light canvas. Values mirror globals.css. */
+[data-theme="light"] {
+  --color-space-black:  #EDF0F7;
+  --color-panel-dark:   #FFFFFF;
+  --color-card-surface: rgba(15, 23, 42, 0.03);
+  --color-card-hover:   rgba(15, 23, 42, 0.06);
+  --color-surface-mid:  rgba(15, 23, 42, 0.06);
+  --color-text-primary:   rgba(15, 23, 42, 0.92);
+  --color-text-secondary: rgba(15, 23, 42, 0.65);
+  --color-text-muted:     rgba(15, 23, 42, 0.45);
+  --color-text-disabled:  rgba(15, 23, 42, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.85);
 }
 
 /* Ensure app dark theme is never overridden by system light mode.

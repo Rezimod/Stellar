@@ -29,7 +29,7 @@ export function PageHeader({ label, title, subtitle, action }: PageHeaderProps) 
               fontWeight: 500,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              color: 'var(--accent-teal)',
+              color: 'var(--teal-text)',
               marginBottom: 8,
             }}
           >

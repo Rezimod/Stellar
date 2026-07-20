@@ -69,7 +69,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
         className="relative w-full max-w-sm rounded-2xl flex flex-col overflow-hidden"
         style={{
           background: 'var(--canvas)',
-          border: '1px solid rgba(255,255,255,0.10)',
+          border: '1px solid rgba(var(--ink), 0.10)',
           boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
           maxHeight: 'calc(100dvh - 2rem)',
         }}
@@ -79,7 +79,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
           onClick={onClose}
           aria-label="Close"
           className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-          style={{ background: 'rgba(11,14,23,0.7)', border: '1px solid rgba(255,255,255,0.10)' }}
+          style={{ background: 'var(--bg-panel)', border: '1px solid rgba(var(--ink), 0.10)' }}
         >
           <X size={14} />
         </button>
@@ -88,7 +88,7 @@ export default function EventInfoSheet({ open, event, onClose }: Props) {
           className="w-full flex items-center justify-center"
           style={{
             height: 132,
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))',
+            background: 'linear-gradient(180deg, rgba(var(--ink), 0.04), rgba(var(--ink), 0.01))',
             borderBottom: '1px solid var(--border)',
           }}
         >

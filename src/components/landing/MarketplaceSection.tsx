@@ -11,7 +11,7 @@ export default function MarketplaceSection() {
           <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#F8F4EC]">
             Stars buy real telescopes.
           </h2>
-          <p className="mt-3 text-[13px] md:text-[14px] leading-[1.65] text-[rgba(232,230,221,0.6)] max-w-[440px]">
+          <p className="mt-3 text-[13px] md:text-[14px] leading-[1.65] text-[rgba(var(--ink-warm),0.6)] max-w-[440px]">
             Earn Stars in-app, redeem them at Astroman — Georgia&apos;s first
             astronomy store. Bresser, Levenhuk, Celestron, all in one place.
           </p>
@@ -23,7 +23,7 @@ export default function MarketplaceSection() {
           </Link>
         </div>
 
-        <div className="md:order-1 rounded-[14px] border-[0.5px] border-[rgba(232,230,221,0.08)] bg-[rgba(232,230,221,0.025)] p-[18px] md:p-[22px]">
+        <div className="md:order-1 rounded-[14px] border-[0.5px] border-[rgba(var(--ink-warm),0.08)] bg-[rgba(var(--ink-warm),0.025)] p-[18px] md:p-[22px]">
           <div className="flex gap-3">
             <ProductCard
               tone="gold"
@@ -44,15 +44,15 @@ export default function MarketplaceSection() {
               <div className="font-display text-[12px] md:text-[13px] text-[#F8F4EC] truncate">
                 Celestron AstroMaster 70
               </div>
-              <div className="mt-0.5 text-[10px] text-[rgba(232,230,221,0.5)]">
+              <div className="mt-0.5 text-[10px] text-[rgba(var(--ink-warm),0.5)]">
                 Refractor · 70mm aperture
               </div>
             </div>
             <div className="shrink-0 text-[11px] text-[var(--terracotta)] font-mono">680 GEL</div>
           </div>
 
-          <div className="mt-4 pt-3.5 flex justify-between items-center text-[11px] border-t-[0.5px] border-[rgba(232,230,221,0.08)]">
-            <span className="text-[rgba(232,230,221,0.55)]">Your balance</span>
+          <div className="mt-4 pt-3.5 flex justify-between items-center text-[11px] border-t-[0.5px] border-[rgba(var(--ink-warm),0.08)]">
+            <span className="text-[rgba(var(--ink-warm),0.55)]">Your balance</span>
             <span className="text-[var(--terracotta)] font-mono">485 ✦  →  10% off</span>
           </div>
         </div>
@@ -93,7 +93,7 @@ function ProductCard({
       <div className="mt-3 font-display text-[12px] md:text-[13px] text-[#F8F4EC] truncate">
         {title}
       </div>
-      <div className="mt-0.5 text-[10px] text-[rgba(232,230,221,0.5)]">{subtitle}</div>
+      <div className="mt-0.5 text-[10px] text-[rgba(var(--ink-warm),0.5)]">{subtitle}</div>
       <div className="mt-2 text-[11px] font-medium text-[var(--terracotta)] font-mono">{price}</div>
     </div>
   );

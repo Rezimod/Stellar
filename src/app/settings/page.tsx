@@ -139,7 +139,7 @@ export default function SettingsPage() {
     return (
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '32px 16px', textAlign: 'center' }}>
         <p style={{ color: 'var(--text-secondary)', fontSize: 15 }}>{t('signInPrompt')}</p>
-        <Link href="/profile" style={{ color: 'var(--accent)', fontSize: 14, marginTop: 12, display: 'inline-block' }}>{t('backToProfile')}</Link>
+        <Link href="/profile" style={{ color: 'var(--accent-text)', fontSize: 14, marginTop: 12, display: 'inline-block' }}>{t('backToProfile')}</Link>
       </div>
     );
   }
@@ -154,11 +154,11 @@ export default function SettingsPage() {
           aria-label={t('back')}
           style={{
             width: 36, height: 36, borderRadius: 10,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.10)',
+            background: 'rgba(var(--ink), 0.04)',
+            border: '1px solid rgba(var(--ink), 0.10)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+            boxShadow: 'inset 0 1px 0 rgba(var(--ink), 0.05)',
           }}
         >
           <ChevronLeft size={17} color="var(--text-secondary)" />
@@ -180,7 +180,7 @@ export default function SettingsPage() {
         <Row
           icon={<Mail size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
-          iconColor="var(--terracotta)"
+          iconColor="var(--accent-text)"
           label={email ? email : t('addEmail')}
           sublabel={email ? t('primaryEmail') : t('linkEmail')}
           onClick={email ? undefined : () => linkEmail()}
@@ -193,7 +193,7 @@ export default function SettingsPage() {
           <Row
             icon={<Chrome size={15} />}
             iconBg="rgba(255, 179, 71,0.08)"
-            iconColor="var(--stars)"
+            iconColor="var(--accent-text)"
             label={t('googleAccount')}
             sublabel={t('connected')}
             last
@@ -256,7 +256,7 @@ export default function SettingsPage() {
         <Row
           icon={<Sparkles size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
-          iconColor="var(--terracotta)"
+          iconColor="var(--accent-text)"
           label={t('skyEvents')}
           sublabel={t('skyEventsSub')}
           right={<Toggle on={notif.skyEvents} onToggle={() => toggleNotif('skyEvents')} disabled={notifBlocked || notifUnsupported} />}
@@ -264,7 +264,7 @@ export default function SettingsPage() {
         <Row
           icon={<Cloud size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
-          iconColor="var(--terracotta)"
+          iconColor="var(--accent-text)"
           label={t('weatherAlerts')}
           sublabel={t('weatherAlertsSub')}
           right={<Toggle on={notif.weatherAlerts} onToggle={() => toggleNotif('weatherAlerts')} disabled={notifBlocked || notifUnsupported} />}
@@ -277,7 +277,7 @@ export default function SettingsPage() {
         <Row
           icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
-          iconColor="var(--terracotta)"
+          iconColor="var(--accent-text)"
           label={theme === 'dark' ? t('darkMode') : t('dayMode')}
           sublabel={theme === 'dark' ? t('darkModeSub') : t('dayModeSub')}
           right={<Toggle on={theme === 'dark'} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />}
@@ -321,7 +321,7 @@ export default function SettingsPage() {
         <Row
           icon={<ShieldCheck size={15} />}
           iconBg="rgba(255, 179, 71,0.08)"
-          iconColor="var(--terracotta)"
+          iconColor="var(--accent-text)"
           label={t('terms')}
           sublabel={t('termsSub')}
           href="/terms"
@@ -348,18 +348,18 @@ export default function SettingsPage() {
                   cursor: 'pointer',
                   background: active
                     ? 'linear-gradient(180deg, rgba(255,179,71,0.16) 0%, rgba(255,179,71,0.04) 100%)'
-                    : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? 'rgba(255,179,71,0.45)' : 'rgba(255,255,255,0.08)'}`,
+                    : 'rgba(var(--ink), 0.04)',
+                  border: `1px solid ${active ? 'rgba(255,179,71,0.45)' : 'rgba(var(--ink), 0.08)'}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                   transition: 'all 0.2s',
                   boxShadow: active
-                    ? 'inset 0 1px 0 rgba(255,255,255,0.10), 0 8px 24px -14px rgba(255,179,71,0.45)'
-                    : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                    ? 'inset 0 1px 0 rgba(var(--ink), 0.10), 0 8px 24px -14px rgba(255,179,71,0.45)'
+                    : 'inset 0 1px 0 rgba(var(--ink), 0.05)',
                 }}
               >
                 <span style={{ fontSize: 22 }}>{l.flag}</span>
                 <span style={{
-                  color: active ? 'var(--terracotta)' : 'var(--text-secondary)',
+                  color: active ? 'var(--accent-text)' : 'var(--text-secondary)',
                   fontFamily: 'var(--font-display)',
                   fontSize: 13,
                   fontWeight: 500,

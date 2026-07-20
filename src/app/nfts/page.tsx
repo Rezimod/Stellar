@@ -213,7 +213,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
               value: isDemoNft ? '—' : cloudCover || '—',
               color: isDemoNft ? 'var(--text-secondary)' : ccNum < 30 ? 'var(--success)' : ccNum < 60 ? 'var(--warning)' : 'var(--error)',
             },
-            { label: t('detail.fields.starsEarned'), value: starCount ? `✦ ${starCount}` : '—', color: 'var(--stars)' },
+            { label: t('detail.fields.starsEarned'), value: starCount ? `✦ ${starCount}` : '—', color: 'var(--accent-text)' },
             { label: t('detail.fields.location'), value: loc },
             { label: t('detail.fields.oracleHash'), value: oracleHash ? `${oracleHash.slice(0, 8)}…` : '—', mono: true },
           ].map(attr => (
@@ -247,7 +247,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
           <button
             onClick={() => window.open(`https://warpcast.com/~/compose?text=${farcasterText}&embeds[]=${encodeURIComponent(appUrl)}`, '_blank')}
             className="flex-1 flex items-center justify-center gap-2 rounded-xl text-sm"
-            style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.3)', color: 'var(--terracotta)', padding: '12px 0', minHeight: 44 }}
+            style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.3)', color: 'var(--accent-text)', padding: '12px 0', minHeight: 44 }}
           >
             ⬡ {t('detail.farcaster')}
           </button>
@@ -293,7 +293,7 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
             style={{
               background: 'rgba(255, 179, 71,0.06)',
               border: '1px solid rgba(255, 179, 71,0.15)',
-              color: 'var(--terracotta)',
+              color: 'var(--accent-text)',
               textDecoration: 'none',
               padding: '12px 0',
               minHeight: 44,
@@ -888,7 +888,7 @@ export default function NftsPage() {
       )}
 
       {starsBalance > 0 && (
-        <p style={{ textAlign: 'center', color: 'var(--stars)', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 14 }}>
+        <p style={{ textAlign: 'center', color: 'var(--accent-text)', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 14 }}>
           {t('totalBalance', { balance: starsBalance })}
         </p>
       )}

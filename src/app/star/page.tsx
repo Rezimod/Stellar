@@ -46,12 +46,12 @@ export default async function StarIndexPage() {
   const recent = await getRecentNamedStars();
 
   return (
-    <div style={{ color: '#fff' }}>
+    <div style={{ color: 'var(--text-primary)' }}>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 64px' }}>
         <Link
           href="/"
           style={{
-            color: 'rgba(255,255,255,0.35)',
+            color: 'rgba(var(--ink), 0.35)',
             fontSize: 13,
             textDecoration: 'none',
             display: 'inline-flex',
@@ -63,7 +63,7 @@ export default async function StarIndexPage() {
         </Link>
 
         <div style={{ textAlign: 'center', marginTop: 48, marginBottom: 40 }}>
-          <div style={{ fontSize: 56, lineHeight: 1, color: 'var(--stars)', marginBottom: 20 }}>★</div>
+          <div style={{ fontSize: 56, lineHeight: 1, color: 'var(--accent-text)', marginBottom: 20 }}>★</div>
           <h1
             className="font-display"
             style={{
@@ -93,7 +93,7 @@ export default async function StarIndexPage() {
               href="/sky"
               style={{
                 background: 'var(--terracotta)',
-                color: '#fff',
+                color: 'var(--text-primary)',
                 padding: '11px 20px',
                 borderRadius: 10,
                 fontSize: 14,
@@ -106,14 +106,14 @@ export default async function StarIndexPage() {
             <Link
               href="/missions"
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                color: 'rgba(255,255,255,0.9)',
+                background: 'rgba(var(--ink), 0.06)',
+                color: 'rgba(var(--ink), 0.9)',
                 padding: '11px 20px',
                 borderRadius: 10,
                 fontSize: 14,
                 fontWeight: 600,
                 textDecoration: 'none',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1px solid rgba(var(--ink), 0.1)',
               }}
             >
               Browse missions
@@ -150,11 +150,11 @@ export default async function StarIndexPage() {
                   style={{
                     display: 'block',
                     padding: '14px 16px',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(var(--ink), 0.04)',
+                    border: '1px solid rgba(var(--ink), 0.08)',
                     borderRadius: 12,
                     textDecoration: 'none',
-                    color: '#fff',
+                    color: 'var(--text-primary)',
                     transition: 'background 200ms, border-color 200ms',
                   }}
                 >

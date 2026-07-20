@@ -586,7 +586,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             onClick={onClose}
             aria-label="Close"
             className="absolute top-2 right-4 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors z-20"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: 'rgba(var(--ink), 0.05)', border: '1px solid rgba(var(--ink), 0.08)' }}
           >
             <X size={14} />
           </button>
@@ -682,15 +682,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
             <p
               className="relative font-black leading-none"
-              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--stars)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255, 179, 71,0.8), 0 0 48px rgba(255, 179, 71,0.4)', letterSpacing: '-0.02em' }}
+              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--accent-text)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255, 179, 71,0.8), 0 0 48px rgba(255, 179, 71,0.4)', letterSpacing: '-0.02em' }}
             >
               +{starsEarned}
             </p>
-            <p className="relative text-[10px] font-bold tracking-[0.25em] mt-0.5" style={{ color: 'rgba(255, 179, 71,0.55)' }}>
+            <p className="relative text-[10px] font-bold tracking-[0.25em] mt-0.5" style={{ color: 'var(--accent-text)', opacity: 0.55 }}>
               STARS EARNED
             </p>
             {starsEarned >= 100 && (
-              <p className="relative text-[9px] mt-1" style={{ color: 'rgba(255, 179, 71,0.4)' }}>
+              <p className="relative text-[9px] mt-1" style={{ color: 'var(--accent-text)', opacity: 0.4 }}>
                 ≈ {Math.floor(starsEarned / 100)}% off at astroman.ge
               </p>
             )}
@@ -762,7 +762,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <button
               onClick={() => window.open(buildTwitterShareUrl({ target: mission.name, score: skyScore?.score ?? 0, grade: skyScore?.grade ?? 'Good', stars: starsEarned, appUrl, ogImageUrl }), '_blank')}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-xs text-text-primary"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              style={{ background: 'rgba(var(--ink), 0.05)', border: '1px solid rgba(var(--ink), 0.08)' }}
             >
               <span style={{ fontSize: 13 }}>𝕏</span> Share
             </button>
@@ -790,7 +790,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           {!mission.demo && !mintTxId.startsWith('sim') && !starSkipped && (
             <div
               className="flex-shrink-0 pt-5"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 4 }}
+              style={{ borderTop: '1px solid rgba(var(--ink), 0.06)', marginTop: 4 }}
             >
               {!starClaimed ? (
                 nearestStar === null ? (
@@ -806,7 +806,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 ) : (
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span style={{ fontSize: 14, color: 'var(--stars)', lineHeight: 1 }}>★</span>
+                      <span style={{ fontSize: 14, color: 'var(--accent-text)', lineHeight: 1 }}>★</span>
                       <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                         Name a star
                       </span>
@@ -827,8 +827,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                       onKeyDown={e => { if (e.key === 'Enter') handleStarClaim(); }}
                       className="mt-3 w-full rounded-xl px-3 py-2.5 text-sm outline-none"
                       style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(var(--ink), 0.05)',
+                        border: '1px solid rgba(var(--ink), 0.1)',
                         color: 'var(--text-primary)',
                       }}
                     />
@@ -842,7 +842,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                             ? 'rgba(255, 179, 71,0.15)'
                             : 'rgba(255, 179, 71,0.2)',
                           border: '1px solid rgba(255, 179, 71,0.35)',
-                          color: 'var(--stars)',
+                          color: 'var(--accent-text)',
                           opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                           cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
                         }}
@@ -850,7 +850,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         {starClaiming && (
                           <div
                             className="w-3 h-3 rounded-full border-2 animate-spin"
-                            style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--stars)' }}
+                            style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--accent-text)' }}
                           />
                         )}
                         Inscribe
@@ -860,7 +860,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         className="px-4 py-2 rounded-xl text-xs"
                         style={{
                           background: 'transparent',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(var(--ink), 0.08)',
                           color: 'rgba(148,163,184,0.5)',
                         }}
                       >
@@ -868,15 +868,15 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                       </button>
                     </div>
                     {starError && (
-                      <p className="text-xs mt-2" style={{ color: 'var(--terracotta)' }}>{starError}</p>
+                      <p className="text-xs mt-2" style={{ color: 'var(--accent-text)' }}>{starError}</p>
                     )}
                   </div>
                 )
               ) : (
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-1.5">
-                    <span style={{ fontSize: 14, color: 'var(--stars)' }}>★</span>
-                    <span className="text-base font-semibold" style={{ color: 'var(--stars)' }}>
+                    <span style={{ fontSize: 14, color: 'var(--accent-text)' }}>★</span>
+                    <span className="text-base font-semibold" style={{ color: 'var(--accent-text)' }}>
                       {starClaimed.chosenName}
                     </span>
                   </div>
@@ -885,7 +885,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                     href={starClaimed.proofUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: 'var(--terracotta)', fontSize: 12, textDecoration: 'none' }}
+                    style={{ color: 'var(--accent-text)', fontSize: 12, textDecoration: 'none' }}
                   >
                     View proof page →
                   </a>
@@ -903,14 +903,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
   if (step === 'gallery-saved') {
     return (
       <div className="fixed inset-0 z-[58] bg-[var(--canvas)] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(var(--ink), 0.05)' }}>
           <div className="flex items-center gap-2">
             <div className="relative w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
               <Image src={getMissionImage(mission.id)} alt={mission.name} fill sizes="32px" className="object-cover" />
             </div>
             <p className="text-text-primary text-sm font-semibold">{mission.name}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" style={{ background: 'rgba(var(--ink), 0.05)' }}>
             <X size={14} />
           </button>
         </div>
@@ -936,14 +936,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <button
               onClick={() => { setStep('camera'); setPhotoVerification(null); }}
               className="flex-1 py-2.5 rounded-xl text-sm"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
+              style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.08)', color: 'rgba(var(--ink), 0.6)' }}
             >
               Try Again
             </button>
             <button
               onClick={onClose}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--terracotta)' }}
+              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--accent-text)' }}
             >
               Done
             </button>
@@ -961,7 +961,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     <div
       ref={containerRef}
       className="relative w-full max-w-2xl h-full bg-[var(--canvas)] overflow-hidden flex flex-col"
-      style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+      style={{ borderLeft: '1px solid rgba(var(--ink), 0.05)', borderRight: '1px solid rgba(var(--ink), 0.05)' }}
     >
 
       {/* Step progress indicator */}
@@ -1006,7 +1006,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         onClick={onClose}
         aria-label="Close"
         className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
+        style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.08)', backdropFilter: 'blur(8px)' }}
       >
         <X size={14} />
       </button>
@@ -1032,7 +1032,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             {/* Kicker strip */}
             <div className="relative flex items-center justify-center gap-2 flex-shrink-0">
               <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--stl-gold)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent-text)' }}>
                 Tonight's Target
               </span>
               <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
@@ -1049,8 +1049,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                   transform: 'scale(1.55)',
                 }}
               />
-              <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
-              <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
+              <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(var(--ink), 0.04)', transform: 'scale(1.18)' }} />
+              <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(var(--ink), 0.06)', transform: 'scale(1.08)' }} />
               {(() => {
                 const img = getMissionImage(mission.id);
                 // Saturn's rings overflow a circle — render the bare alpha-cut PNG.
@@ -1100,14 +1100,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             {/* Stats strip — inline, minimal */}
             <div className="relative flex items-center justify-center gap-3 flex-shrink-0">
               <div className="flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
-                <span style={{ color: 'var(--stl-gold)', fontWeight: 600 }}>+{mission.stars}</span>
-                <StarMark size={14} style={{ color: 'var(--stl-gold)' }} />
+                <span style={{ color: 'var(--accent-text)', fontWeight: 600 }}>+{mission.stars}</span>
+                <StarMark size={14} style={{ color: 'var(--accent-text)' }} />
               </div>
-              <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
+              <span style={{ color: 'rgba(var(--ink), 0.18)', fontSize: 10 }}>·</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
                 {mission.difficulty || 'Beginner'}
               </span>
-              <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
+              <span style={{ color: 'rgba(var(--ink), 0.18)', fontSize: 10 }}>·</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
                 {mission.target || mission.name}
               </span>
@@ -1127,7 +1127,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             </Button>
 
             {mission.demo && (
-              <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
+              <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--accent-text)' }}>
                 Demo mode — upload any photo; mints a real NFT on Solana
               </p>
             )}
@@ -1148,7 +1148,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="flex flex-col flex-1 min-h-0 items-center justify-center gap-4">
             <div
               className="flex flex-col items-center gap-4 p-8 rounded-2xl"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
+              style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.08)', backdropFilter: 'blur(12px)' }}
             >
               <LoadingRing size={64} message="Analyzing sky + photo..." facts={[]} />
               <p className="text-[11px] font-body" style={{ color: 'var(--text-muted)' }}>This may take a moment</p>

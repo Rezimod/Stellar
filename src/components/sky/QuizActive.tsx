@@ -45,7 +45,7 @@ function questionSeconds(index: number, total: number): number {
 function ringColor(secondsLeft: number): string {
   if (secondsLeft <= 3) return 'var(--negative)';
   if (secondsLeft <= 7) return 'var(--warning)';
-  return 'var(--seafoam)';
+  return 'var(--teal-text)';
 }
 
 function prefersReducedMotion(): boolean {
@@ -342,7 +342,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   return createPortal(
     <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col overflow-hidden">
       {/* Top progress bar (questions completed) */}
-      <div className="flex h-0.5 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.04)' }}>
+      <div className="flex h-0.5 flex-shrink-0" style={{ background: 'rgba(var(--ink), 0.04)' }}>
         <div
           className="h-full transition-all duration-500"
           style={{
@@ -366,14 +366,14 @@ export default function QuizActive({ quiz, onClose }: Props) {
             onClick={toggleMute}
             aria-label={muted ? 'Unmute timer ticks' : 'Mute timer ticks'}
             className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-            style={{ background: 'rgba(255,255,255,0.05)' }}
+            style={{ background: 'rgba(var(--ink), 0.05)' }}
           >
             {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </button>
           <button
             onClick={handleClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-            style={{ background: 'rgba(255,255,255,0.05)' }}
+            style={{ background: 'rgba(var(--ink), 0.05)' }}
           >
             ✕
           </button>
@@ -442,7 +442,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
             {/* Question card with timer */}
             <div
               className="relative rounded-2xl p-5 mb-6 flex-shrink-0"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid rgba(var(--ink), 0.07)' }}
             >
               {/* Timer badge — top-right */}
               <div className="absolute top-3 right-3">
@@ -462,26 +462,25 @@ export default function QuizActive({ quiz, onClose }: Props) {
                     <circle
                       cx="16" cy="16" r="14"
                       fill="none"
-                      stroke="rgba(255,255,255,0.08)"
+                      style={{ stroke: 'rgba(var(--ink), 0.08)' }}
                       strokeWidth="2"
                     />
                     <circle
                       cx="16" cy="16" r="14"
                       fill="none"
-                      stroke={ringStrokeColor}
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeDasharray={2 * Math.PI * 14}
                       strokeDashoffset={2 * Math.PI * 14 * (phase === 'ready' ? 0 : progress)}
                       transform="rotate(-90 16 16)"
-                      style={{ transition: 'stroke 200ms linear' }}
+                      style={{ stroke: ringStrokeColor, transition: 'stroke 200ms linear' }}
                     />
                     <text
                       x="16" y="20"
                       textAnchor="middle"
                       fontSize="10"
                       fontFamily="var(--font-mono)"
-                      fill={ringStrokeColor}
+                      style={{ fill: ringStrokeColor }}
                     >
                       {phase === 'ready' ? currentSeconds : secondsLeft}
                     </text>
@@ -497,8 +496,8 @@ export default function QuizActive({ quiz, onClose }: Props) {
               {q.options.map((opt, i) => {
 
                 let style: React.CSSProperties = {
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(var(--ink), 0.03)',
+                  border: '1px solid rgba(var(--ink), 0.08)',
                 };
                 if (phase === 'feedback') {
                   if (i === q.correct) {
@@ -521,7 +520,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                       style={{
                         background: phase === 'feedback' && i === q.correct
                           ? 'rgba(94, 234, 212,0.3)'
-                          : 'rgba(255,255,255,0.06)',
+                          : 'rgba(var(--ink), 0.06)',
                         color: phase === 'feedback' && i === q.correct ? 'var(--success)'
                           : phase === 'feedback' && i === selected ? 'var(--negative)'
                           : 'var(--text-muted)',

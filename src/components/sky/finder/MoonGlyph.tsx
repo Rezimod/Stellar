@@ -22,9 +22,9 @@ export function MoonGlyph({ phase, size = 24 }: MoonGlyphProps) {
 
   let body: React.ReactElement;
   if (p < 0.03 || p > 0.97) {
-    body = <circle cx={r} cy={r} r={r} fill="rgba(255,255,255,0.10)" />;
+    body = <circle cx={r} cy={r} r={r} style={{ fill: 'rgba(var(--ink), 0.10)' }} />;
   } else if (p > 0.47 && p < 0.53) {
-    body = <circle cx={r} cy={r} r={r} fill="var(--terracotta, #FFB347)" />;
+    body = <circle cx={r} cy={r} r={r} style={{ fill: 'var(--accent-text, #FFB347)' }} />;
   } else {
     const waxing = p < 0.5;
     // 0 at new/full edge, 1 fully illuminated/dark
@@ -32,12 +32,12 @@ export function MoonGlyph({ phase, size = 24 }: MoonGlyphProps) {
     const offset = k * size;
     body = (
       <g clipPath={`url(#${clipId})`}>
-        <circle cx={r} cy={r} r={r} fill="var(--terracotta, #FFB347)" />
+        <circle cx={r} cy={r} r={r} style={{ fill: 'var(--accent-text, #FFB347)' }} />
         <circle
           cx={waxing ? r - offset : r + offset}
           cy={r}
           r={r}
-          fill="rgba(255,255,255,0.10)"
+          style={{ fill: 'rgba(var(--ink), 0.10)' }}
         />
       </g>
     );
@@ -51,14 +51,14 @@ export function MoonGlyph({ phase, size = 24 }: MoonGlyphProps) {
         </clipPath>
       </defs>
       {/* Faint outer rim so the glyph reads even at full moon on dark bg */}
-      <circle cx={r} cy={r} r={r} fill="rgba(255,255,255,0.04)" />
+      <circle cx={r} cy={r} r={r} style={{ fill: 'rgba(var(--ink), 0.04)' }} />
       {body}
       <circle
         cx={r}
         cy={r}
         r={r - 0.5}
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        style={{ stroke: 'rgba(var(--ink), 0.08)' }}
         strokeWidth={0.75}
       />
     </svg>

@@ -24,15 +24,15 @@ export default function StreakBadge({ days, frozen = false, className = '' }: St
         border: hasStreak ? '1px solid var(--stars-border)' : '1px solid var(--border-subtle)',
       }}
     >
-      {frozen && <Snowflake size={14} style={{ color: 'var(--accent-teal)' }} aria-hidden="true" />}
-      {!frozen && hasStreak && <Flame size={14} style={{ color: 'var(--terracotta)' }} aria-hidden="true" />}
+      {frozen && <Snowflake size={14} style={{ color: 'var(--teal-text)' }} aria-hidden="true" />}
+      {!frozen && hasStreak && <Flame size={14} style={{ color: 'var(--accent-text)' }} aria-hidden="true" />}
       {hasStreak && (
         <span
           style={{
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
             fontSize: 14,
-            color: 'var(--stars)',
+            color: 'var(--accent-text)',
           }}
         >
           {days}

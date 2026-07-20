@@ -125,7 +125,7 @@ export default function DiscoverySealed({
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 8.5,
-              color: 'var(--stl-gold)',
+              color: 'var(--accent-text)',
               letterSpacing: '0.28em',
               fontWeight: 500,
             }}
@@ -150,7 +150,7 @@ export default function DiscoverySealed({
           }}
         >
           {mission.name}{' '}
-          <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(255,255,255,0.55)' }}>
+          <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(var(--ink), 0.55)' }}>
             {unverified ? 'kept' : 'sealed'}
           </span>
         </h1>
@@ -160,7 +160,7 @@ export default function DiscoverySealed({
             style={{
               fontFamily: 'var(--font-body)',
               fontSize: 11,
-              color: 'rgba(255,255,255,0.5)',
+              color: 'rgba(var(--ink), 0.5)',
               lineHeight: 1.4,
               marginTop: 6,
               maxWidth: 320,
@@ -177,18 +177,18 @@ export default function DiscoverySealed({
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 9,
-              color: 'rgba(255,255,255,0.42)',
+              color: 'rgba(var(--ink), 0.42)',
               letterSpacing: '0.14em',
             }}
           >
             {metaLine}
           </span>
-          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9 }}>·</span>
+          <span style={{ color: 'rgba(var(--ink), 0.2)', fontSize: 9 }}>·</span>
           <span
             style={{
               fontFamily: 'var(--font-display)',
               fontSize: 11,
-              color: 'rgba(255,255,255,0.65)',
+              color: 'rgba(var(--ink), 0.65)',
               fontStyle: 'italic',
               fontWeight: 400,
             }}
@@ -228,7 +228,8 @@ export default function DiscoverySealed({
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 8.5,
-                color: 'rgba(255, 179, 71,0.65)',
+                color: 'var(--accent-text)',
+                opacity: 0.65,
                 letterSpacing: '0.2em',
                 fontWeight: 500,
               }}
@@ -242,7 +243,7 @@ export default function DiscoverySealed({
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: 26,
-                color: 'var(--stl-gold)',
+                color: 'var(--accent-text)',
                 fontWeight: 600,
                 lineHeight: 1,
                 letterSpacing: '-0.02em',
@@ -251,7 +252,7 @@ export default function DiscoverySealed({
               +{totalStars}
             </span>
             <svg width="16" height="16" viewBox="0 0 24 24">
-              <path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z" fill="var(--stl-gold)" />
+              <path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z" style={{ fill: 'var(--accent-text)' }} />
             </svg>
           </div>
         </div>
@@ -262,8 +263,8 @@ export default function DiscoverySealed({
             marginTop: 8,
             padding: 9,
             borderRadius: 12,
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(var(--ink), 0.02)',
+            border: '1px solid rgba(var(--ink), 0.08)',
           }}
         >
           <div className="flex items-center justify-between mb-1.5">
@@ -272,7 +273,7 @@ export default function DiscoverySealed({
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 8.5,
-                  color: 'rgba(255,255,255,0.38)',
+                  color: 'rgba(var(--ink), 0.38)',
                   letterSpacing: '0.18em',
                   marginBottom: 1,
                 }}
@@ -294,27 +295,27 @@ export default function DiscoverySealed({
 
             <div className="relative" style={{ width: 36, height: 36 }}>
               <svg width="36" height="36" viewBox="0 0 50 50" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+                <circle cx="25" cy="25" r="20" fill="none" style={{ stroke: 'rgba(var(--ink), 0.08)' }} strokeWidth="3" />
                 <circle
                   cx="25"
                   cy="25"
                   r="20"
                   fill="none"
-                  stroke={skyScore >= 70 ? 'var(--stl-gold)' : skyScore >= 50 ? 'var(--stl-teal)' : 'var(--negative)'}
+                  style={{ stroke: skyScore >= 70 ? 'var(--accent-text)' : skyScore >= 50 ? 'var(--teal-text)' : 'var(--negative)' }}
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeDasharray={scoreDash}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#fff', fontWeight: 700, lineHeight: 1 }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1 }}>
                   {skyScore}
                 </span>
                 <span
                   style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 5.5,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'rgba(var(--ink), 0.5)',
                     letterSpacing: '0.1em',
                     marginTop: 1,
                   }}
@@ -334,7 +335,7 @@ export default function DiscoverySealed({
                 'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.16) 0%, rgba(255, 179, 71,0.06) 35%, transparent 60%)',
                 'linear-gradient(135deg, #080414 0%, #02050E 100%)',
               ].join(', '),
-              border: '1px solid rgba(255,255,255,0.05)',
+              border: '1px solid rgba(var(--ink), 0.05)',
             }}
           >
             <MissionRotateArt missionId={mission.id} size={56} />
@@ -342,7 +343,7 @@ export default function DiscoverySealed({
 
           <div
             className="flex items-center justify-between mt-1.5 pt-1.5"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+            style={{ borderTop: '1px solid rgba(var(--ink), 0.05)' }}
           >
             <div className="flex items-center gap-1.5">
               <div
@@ -353,7 +354,7 @@ export default function DiscoverySealed({
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 9.5,
-                  color: 'rgba(255,255,255,0.55)',
+                  color: 'rgba(var(--ink), 0.55)',
                   letterSpacing: '0.05em',
                 }}
               >
@@ -367,7 +368,7 @@ export default function DiscoverySealed({
               className="flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{
                 fontSize: 10.5,
-                color: 'var(--stl-teal)',
+                color: 'var(--teal-text)',
                 fontFamily: 'var(--font-display)',
                 fontWeight: 500,
                 textDecoration: 'none',
@@ -438,11 +439,11 @@ function SecondaryButton({
   iconPosition?: 'left' | 'right';
   accent?: boolean;
 }) {
-  const baseBg = accent ? 'rgba(94, 234, 212,0.08)' : 'rgba(255,255,255,0.04)';
-  const hoverBg = accent ? 'rgba(94, 234, 212,0.14)' : 'rgba(255,255,255,0.07)';
-  const borderColor = accent ? 'rgba(94, 234, 212,0.28)' : 'rgba(255,255,255,0.1)';
-  const hoverBorder = accent ? 'rgba(94, 234, 212,0.42)' : 'rgba(255,255,255,0.18)';
-  const color = accent ? '#7DEAD8' : 'rgba(255,255,255,0.8)';
+  const baseBg = accent ? 'rgba(94, 234, 212,0.08)' : 'rgba(var(--ink), 0.04)';
+  const hoverBg = accent ? 'rgba(94, 234, 212,0.14)' : 'rgba(var(--ink), 0.07)';
+  const borderColor = accent ? 'rgba(94, 234, 212,0.28)' : 'rgba(var(--ink), 0.1)';
+  const hoverBorder = accent ? 'rgba(94, 234, 212,0.42)' : 'rgba(var(--ink), 0.18)';
+  const color = accent ? 'var(--teal-text)' : 'rgba(var(--ink), 0.8)';
 
   return (
     <button

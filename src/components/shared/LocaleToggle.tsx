@@ -48,7 +48,7 @@ export default function LocaleToggle() {
             className="relative z-10 flex h-full flex-1 items-center justify-center rounded-full px-1 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050812] disabled:cursor-default"
             style={{
               alignItems: 'center',
-              color: active ? '#FFF4DA' : 'rgba(255,255,255,0.56)',
+              color: active ? 'var(--text-primary)' : 'rgba(var(--ink), 0.56)',
               display: 'flex',
             }}
           >

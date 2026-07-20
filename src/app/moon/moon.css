@@ -3,8 +3,13 @@
 
 .moonpg {
   min-height: 100vh;
+  /* Night scene in BOTH themes — canvas pinned to the dark literal, and the
+     design-token text scale re-pinned so the day-mode flip never applies here. */
+  --color-text-primary:   rgba(255, 255, 255, 0.92);
+  --color-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-text-muted:     rgba(255, 255, 255, 0.25);
   background:
-    radial-gradient(120% 55% at 50% -5%, #17284f 0%, var(--canvas) 48%, #060e24 100%);
+    radial-gradient(120% 55% at 50% -5%, #17284f 0%, #0A1735 48%, #060e24 100%);
   color: var(--color-text-primary);
   font-family: var(--font-geist), system-ui, sans-serif;
   display: flex;

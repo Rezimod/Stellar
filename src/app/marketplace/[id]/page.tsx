@@ -41,7 +41,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     return (
       <PageContainer variant="content" className="font-mono py-10 text-center">
         <p className="text-[#F8F4EC] mb-3">{t('detailNotFound')}</p>
-        <Link href="/marketplace" className="text-[11px] tracking-[0.18em] uppercase text-[#F8F4EC]/80 hover:text-[var(--terracotta)] transition-colors">
+        <Link href="/marketplace" className="text-[11px] tracking-[0.18em] uppercase text-[#F8F4EC]/80 hover:text-[var(--accent-text)] transition-colors">
           ← {t('detailBack')}
         </Link>
       </PageContainer>
@@ -85,13 +85,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           <div className="flex flex-wrap items-center gap-[8px] mb-[10px]">
             {product.badge && (
               <span className="inline-flex items-center rounded-full px-[8px] py-[3px] text-[9px] font-bold tracking-[0.1em] uppercase leading-none"
-                style={{ background: 'rgba(255,179,71,0.10)', color: 'var(--terracotta)', border: '1px solid rgba(255,179,71,0.30)' }}>
+                style={{ background: 'rgba(255,179,71,0.10)', color: 'var(--accent-text)', border: '1px solid rgba(255,179,71,0.30)' }}>
                 {product.badge}
               </span>
             )}
             {skillKey && (
               <span className="inline-flex items-center rounded-full px-[8px] py-[3px] text-[9px] font-semibold tracking-[0.1em] uppercase leading-none text-white/70"
-                style={{ background: 'rgba(232,230,221,0.06)', border: '1px solid rgba(232,230,221,0.14)' }}>
+                style={{ background: 'rgba(var(--ink-warm), 0.06)', border: '1px solid rgba(var(--ink-warm), 0.14)' }}>
                 {t(skillKey)}
               </span>
             )}
@@ -104,13 +104,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           </p>
           {product.rating != null && (
             <div className="flex items-center gap-[5px] mt-[10px]">
-              <Star className="w-[13px] h-[13px]" style={{ color: 'var(--terracotta)', fill: 'var(--terracotta)' }} />
+              <Star className="w-[13px] h-[13px]" style={{ color: 'var(--accent-text)', fill: 'var(--accent-text)' }} />
               <span className="text-[12.5px] font-semibold tabular-nums text-white leading-none">{product.rating.toFixed(1)}</span>
               {product.reviews != null && <span className="text-[11px] tabular-nums text-white/45 leading-none">({product.reviews})</span>}
             </div>
           )}
 
-          <div className="mt-[16px] pt-[14px]" style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+          <div className="mt-[16px] pt-[14px]" style={{ borderTop: '1px solid rgba(var(--ink), 0.12)' }}>
             <p className="text-[24px] font-semibold text-white leading-none">{formatPrice(product)}</p>
             {(usd > 0 || sol > 0) && (
               <p className="flex items-center gap-[6px] text-[11px] tracking-[0.10em] uppercase text-white/70 mt-[6px] leading-none">
@@ -127,7 +127,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             )}
           </div>
 
-          <p className="text-[13.5px] leading-[1.6] text-[rgba(232,230,221,0.78)] mt-[14px]">{product.description}</p>
+          <p className="text-[13.5px] leading-[1.6] text-[rgba(var(--ink-warm),0.78)] mt-[14px]">{product.description}</p>
 
           <div className="flex flex-col gap-[8px] mt-[20px]">
             <Link
@@ -146,7 +146,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             {product.starsPrice > 0 && affordable && (
               <Link
                 href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
-                className="w-full inline-flex items-center justify-center gap-[6px] h-[40px] rounded-none text-[12px] font-semibold text-[var(--terracotta)] transition-colors hover:text-white"
+                className="w-full inline-flex items-center justify-center gap-[6px] h-[40px] rounded-none text-[12px] font-semibold text-[var(--accent-text)] transition-colors hover:text-white"
                 style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
               >
                 <Star className="w-[12px] h-[12px]" style={{ fill: 'currentColor' }} />
@@ -165,7 +165,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 href={product.externalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-[6px] text-[11px] tracking-[0.12em] uppercase text-white/55 hover:text-[var(--terracotta)] transition-colors mt-[4px]"
+                className="inline-flex items-center justify-center gap-[6px] text-[11px] tracking-[0.12em] uppercase text-white/55 hover:text-[var(--accent-text)] transition-colors mt-[4px]"
               >
                 {t('viewOnDealer', { dealer: dealer?.name ?? 'dealer' })} <ExternalLink size={11} />
               </a>
@@ -181,7 +181,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-[24px]">
             {specs.map(([k, v]) => (
-              <div key={k} className="flex justify-between gap-[12px] py-[8px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div key={k} className="flex justify-between gap-[12px] py-[8px]" style={{ borderBottom: '1px solid rgba(var(--ink), 0.08)' }}>
                 <dt className="text-[11px] tracking-[0.12em] uppercase text-white/50">{k}</dt>
                 <dd className="text-[12.5px] text-white text-right tabular-nums">{v}</dd>
               </div>

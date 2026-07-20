@@ -6,13 +6,13 @@
   /* ── Canonical surface tokens (post-V2) ──
      Single source of truth for cards, borders, accents. Other token names
      in globals.css remain for backward compat; new code uses these. */
-  --color-bg-card:         rgba(255,255,255,0.025);
-  --color-bg-card-hover:   rgba(255,255,255,0.045);
-  --color-bg-card-strong:  rgba(255,255,255,0.06);
+  --color-bg-card:         rgba(var(--ink),0.025);
+  --color-bg-card-hover:   rgba(var(--ink),0.045);
+  --color-bg-card-strong:  rgba(var(--ink),0.06);
 
-  --color-border-subtle:   rgba(255,255,255,0.06);
-  --color-border-medium:   rgba(255,255,255,0.12);
-  --color-border-strong:   rgba(255,255,255,0.20);
+  --color-border-subtle:   rgba(var(--ink),0.06);
+  --color-border-medium:   rgba(var(--ink),0.12);
+  --color-border-strong:   rgba(var(--ink),0.20);
 
   --color-accent-teal:     var(--seafoam);
   --color-accent-cyan:     var(--seafoam);
@@ -21,7 +21,7 @@
 
   --color-success:         var(--seafoam);
   --color-error:           var(--negative);
-  --color-text-faint:      rgba(255,255,255,0.35);
+  --color-text-faint:      rgba(var(--ink),0.35);
 
   --shadow-glow-teal:      0 0 24px rgba(94, 234, 212, 0.25), 0 0 48px rgba(94, 234, 212, 0.06);
   --shadow-glow-gold-soft: 0 0 24px rgba(255, 179, 71, 0.20);
@@ -37,7 +37,7 @@
   --stl-bg-chart:     var(--canvas);
 
   /* Borders */
-  --stl-border-soft:    rgba(255,255,255,0.06);
+  --stl-border-soft:    rgba(var(--ink),0.06);
   --stl-border-regular: var(--border);
   --stl-border-strong:  var(--border);
   --stl-border-gold:    rgba(255, 179, 71, 0.22);
@@ -49,7 +49,7 @@
   --stl-text-primary:   var(--text);
   --stl-text-muted:     var(--text-muted);
   --stl-text-dim:       var(--text-muted);
-  --stl-text-whisper:   rgba(255,255,255,0.18);
+  --stl-text-whisper:   rgba(var(--ink),0.18);
 
   /* Accents */
   --stl-gold:     var(--terracotta);
@@ -325,7 +325,7 @@
 .stl-sheen { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
 .stl-sheen::after {
   content: ''; position: absolute; top: 0; bottom: 0; width: 40%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--ink),0.06), transparent);
   animation: stl-shimmer 6s ease-in-out infinite;
 }
 
@@ -354,7 +354,7 @@
   align-items: baseline;
   gap: 10px;
   padding: 14px 4px 6px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(var(--ink),0.04);
   margin-top: 2px;
   margin-bottom: 4px;
 }
@@ -365,12 +365,12 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
+  color: rgba(var(--ink),0.35);
 }
 .stl-cat-count {
   font-family: var(--font-mono);
   font-size: 9px;
-  color: rgba(255,255,255,0.15);
+  color: rgba(var(--ink),0.15);
   letter-spacing: 0.05em;
 }
 
@@ -437,7 +437,7 @@
 .stl-prob-bar {
   width: 56px;
   height: 4px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(var(--ink),0.05);
   border-radius: 2px;
   overflow: hidden;
   flex-shrink: 0;
@@ -447,8 +447,8 @@
   border-radius: 2px;
   transition: width 0.3s ease;
 }
-.stl-odds-hi   { color: var(--stl-green); }
-.stl-odds-mid  { color: var(--stl-gold); }
+.stl-odds-hi   { color: var(--teal-text); }
+.stl-odds-mid  { color: var(--accent-text); }
 .stl-odds-lo   { color: var(--negative); }
 .stl-fill-hi   { background: var(--stl-green); }
 .stl-fill-mid  { background: var(--stl-gold); }
@@ -463,7 +463,7 @@
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--stl-gold);
+  color: var(--accent-text);
   background: rgba(255, 179, 71,0.10);
   border: 1px solid var(--stl-border-gold);
   padding: 2px 5px;
@@ -490,7 +490,7 @@
   line-height: 1;
 }
 .stl-resolved-yes {
-  color: var(--stl-green);
+  color: var(--teal-text);
   background: rgba(94, 234, 212,0.10);
   border: 1px solid rgba(94, 234, 212,0.25);
 }
@@ -616,13 +616,13 @@
   text-overflow: ellipsis;
 }
 .stl-row-adv {
-  color: var(--stl-gold);
+  color: var(--accent-text);
   font-weight: 500;
   letter-spacing: 0.08em;
   flex-shrink: 0;
 }
-.stl-row-obs-time.urgent { color: var(--terracotta); font-weight: 500; }
-.stl-row-obs-time.distant { color: rgba(255,255,255,0.15); }
+.stl-row-obs-time.urgent { color: var(--accent-text); font-weight: 500; }
+.stl-row-obs-time.distant { color: rgba(var(--ink),0.15); }
 
 @media (max-width: 640px) {
   .stl-row-obs-meta { font-size: 8px; gap: 6px; }
@@ -642,8 +642,8 @@
   gap: 10px;
   padding: 12px 14px;
   border-radius: var(--stl-r-md);
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(var(--ink),0.025);
+  border: 1px solid rgba(var(--ink),0.07);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
   color: inherit;
@@ -651,8 +651,8 @@
 }
 .stl-bet-row:hover,
 .stl-bet-row:focus-visible {
-  background: rgba(255,255,255,0.045);
-  border-color: rgba(255,255,255,0.14);
+  background: rgba(var(--ink),0.045);
+  border-color: rgba(var(--ink),0.14);
   outline: none;
 }
 .stl-bet-head {
@@ -682,13 +682,13 @@
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.55);
+  color: rgba(var(--ink),0.55);
   text-transform: lowercase;
   flex-shrink: 0;
 }
-.stl-bet-countdown.urgent { color: var(--terracotta); }
-.stl-bet-countdown.hot    { color: var(--seafoam); }
-.stl-bet-countdown.locked { color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.14em; font-size: 9px; }
+.stl-bet-countdown.urgent { color: var(--accent-text); }
+.stl-bet-countdown.hot    { color: var(--teal-text); }
+.stl-bet-countdown.locked { color: rgba(var(--ink),0.45); text-transform: uppercase; letter-spacing: 0.14em; font-size: 9px; }
 
 .stl-bet-sides {
   display: grid;
@@ -702,7 +702,7 @@
   padding: 9px 11px;
   border-radius: 8px;
   border: 1px solid transparent;
-  background: rgba(255,255,255,0.03);
+  background: rgba(var(--ink),0.03);
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 .stl-bet-yes {
@@ -729,7 +729,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.stl-bet-yes .stl-bet-side-label { color: var(--seafoam); }
+.stl-bet-yes .stl-bet-side-label { color: var(--teal-text); }
 .stl-bet-no  .stl-bet-side-label { color: var(--no); }
 
 .stl-bet-side-pct {
@@ -744,7 +744,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.6);
+  color: rgba(var(--ink),0.6);
   font-variant-numeric: tabular-nums;
 }
 .stl-bet-yes .stl-bet-side-mult { color: rgba(94, 234, 212,0.85); }
@@ -758,7 +758,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.55);
+  color: rgba(var(--ink),0.55);
 }
 .stl-bet-oracle {
   color: rgba(94, 234, 212,0.8);
@@ -770,14 +770,14 @@
   letter-spacing: 0.06em;
 }
 .stl-bet-adv {
-  color: var(--stl-gold);
+  color: var(--accent-text);
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.08em;
 }
 .stl-bet-vol {
   margin-left: auto;
-  color: rgba(255,255,255,0.55);
+  color: rgba(var(--ink),0.55);
   font-variant-numeric: tabular-nums;
 }
 
@@ -793,7 +793,7 @@
 .stl-resolved-section {
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(var(--ink),0.08);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -816,7 +816,7 @@
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
+  color: rgba(var(--ink),0.5);
 }
 .stl-resolved-list {
   display: flex;
@@ -830,15 +830,15 @@
   gap: 10px;
   padding: 9px 12px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.015);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(var(--ink),0.015);
+  border: 1px solid rgba(var(--ink),0.05);
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 .stl-resolved-row:hover,
 .stl-resolved-row:focus-visible {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.12);
+  background: rgba(var(--ink),0.04);
+  border-color: rgba(var(--ink),0.12);
   outline: none;
 }
 .stl-resolved-emoji {
@@ -851,7 +851,7 @@
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 400;
-  color: rgba(242,240,234,0.85);
+  color: rgba(var(--ink),0.85);
   letter-spacing: -0.003em;
   white-space: nowrap;
   overflow: hidden;
@@ -862,7 +862,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.5);
+  color: rgba(var(--ink),0.5);
   font-variant-numeric: tabular-nums;
   min-width: 44px;
   text-align: right;
@@ -871,6 +871,12 @@
   .stl-resolved-row { grid-template-columns: 18px 1fr auto auto; gap: 8px; padding: 8px 10px; }
   .stl-resolved-row .stl-resolved-title { font-size: 12.5px; }
 }
+
+/* Day mode: alpha seafoam/rose text can't flip via --ink; swap to the text-safe accents */
+[data-theme="light"] .stl-oracle-src,
+[data-theme="light"] .stl-bet-oracle,
+[data-theme="light"] .stl-bet-yes .stl-bet-side-mult { color: var(--teal-text); }
+[data-theme="light"] .stl-bet-no .stl-bet-side-mult { color: var(--no); }
 
 /* === HOMEPAGE === */
 .home-page {
@@ -2838,12 +2844,12 @@
   --mis-t1: #EDEDEF;
   --mis-t2: #8E919A;
   --mis-t3: #7A7E8A;
-  --mis-bd: rgba(255, 255, 255, 0.07);
-  --mis-bd2: rgba(255, 255, 255, 0.13);
+  --mis-bd: rgba(var(--ink), 0.07);
+  --mis-bd2: rgba(var(--ink), 0.13);
   --mis-grn: var(--seafoam);
   --mis-amb: var(--terracotta);
-  --mis-card: rgba(255, 255, 255, 0.022);
-  --mis-card-2: rgba(255, 255, 255, 0.04);
+  --mis-card: rgba(var(--ink), 0.022);
+  --mis-card-2: rgba(var(--ink), 0.04);
 
   position: relative;
   background: var(--canvas);
@@ -2866,6 +2872,15 @@
     radial-gradient(1px 1px at 86% 10%, rgba(255,255,255,0.18), transparent),
     radial-gradient(1px 1px at 24% 30%, rgba(255,255,255,0.12), transparent);
 }
+
+/* Day mode: flip the page-local text tokens; hide the starfield wash */
+[data-theme="light"] .missions-page {
+  --mis-t1: var(--text-primary);
+  --mis-t2: var(--text-secondary);
+  --mis-t3: var(--text-dim);
+  --mis-grn: var(--teal-text);
+}
+[data-theme="light"] .missions-page::before { display: none; }
 
 .mis-shell {
   position: relative;
@@ -2917,7 +2932,7 @@
   border-radius: 999px;
   border: 1px solid rgba(255,179,71,0.32);
   background: rgba(255,179,71,0.12);
-  color: var(--terracotta);
+  color: var(--accent-text);
   font-family: var(--font-mono);
   font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
   cursor: pointer;
@@ -2954,7 +2969,7 @@
 .mis-summary-eyebrow {
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-  letter-spacing: 0.13em; text-transform: uppercase; color: var(--terracotta);
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent-text);
 }
 .mis-summary-sub { font-size: 11px; color: var(--mis-t2); }
 .mis-summary-num {
@@ -2963,10 +2978,10 @@
 }
 .mis-summary-num i { font-style: normal; font-size: 12px; color: var(--mis-t3); }
 .mis-summary-stars { display: inline-flex; gap: 1px; color: var(--mis-t3); margin-top: 2px; }
-.mis-summary-stars .is-on { color: var(--terracotta); }
+.mis-summary-stars .is-on { color: var(--accent-text); }
 .mis-summary-reward {
   font-family: var(--font-mono); font-size: 19px; font-weight: 700;
-  color: var(--terracotta); line-height: 1;
+  color: var(--accent-text); line-height: 1;
 }
 .mis-summary .mis-progress-cta { width: 100%; }
 @media (min-width: 880px) {
@@ -3018,7 +3033,7 @@
   border: 0;
   border-radius: 12px;
   background: var(--terracotta);
-  color: var(--canvas);
+  color: #0A1735;
   font-family: var(--font-cta, var(--font-body));
   font-size: 13px;
   font-weight: 700;
@@ -3058,7 +3073,7 @@
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--terracotta);
+  color: var(--accent-text);
 }
 .mis-quest-name {
   font-family: var(--font-display), var(--font-body);
@@ -3097,7 +3112,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--terracotta) !important;
+  color: var(--accent-text) !important;
   font-weight: 700;
 }
 .mis-quest-foot {
@@ -3128,7 +3143,7 @@
   border: 0;
   border-radius: 999px;
   background: var(--terracotta);
-  color: var(--canvas);
+  color: #0A1735;
   font-family: var(--font-cta, var(--font-body));
   font-size: 13px;
   font-weight: 700;
@@ -3242,10 +3257,10 @@
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--terracotta);
+  color: var(--accent-text);
   font-variant-numeric: tabular-nums;
 }
-.mis-star-icn { color: var(--terracotta); }
+.mis-star-icn { color: var(--accent-text); }
 
 /* Real-image celestial orb. Photos are framed on black space, so screen blend
    drops the background and floats the body onto the dark cards. Fills its parent. */
@@ -3262,7 +3277,7 @@
 .mis-block-link {
   display: inline-flex; align-items: center; gap: 2px;
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
-  letter-spacing: 0.02em; color: var(--terracotta);
+  letter-spacing: 0.02em; color: var(--accent-text);
   background: none; border: 0; padding: 0; cursor: pointer; flex-shrink: 0;
 }
 .mis-block-link:hover { filter: brightness(1.12); }
@@ -3276,7 +3291,7 @@
 .mis-global-heading { font-size: 13.5px; font-weight: 600; color: var(--mis-t1); margin: 0; position: relative; }
 .mis-global-bar {
   height: 6px; border-radius: 999px;
-  background: rgba(255,255,255,0.07); overflow: hidden; position: relative;
+  background: rgba(var(--ink),0.07); overflow: hidden; position: relative;
 }
 .mis-global-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--mis-grn); transition: width 0.4s ease; }
 .mis-global-count {
@@ -3288,7 +3303,7 @@
 .mis-global-reward {
   display: inline-flex; align-items: center; gap: 4px; position: relative;
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
-  color: var(--terracotta); margin: 0;
+  color: var(--accent-text); margin: 0;
 }
 
 /* === Two-column layout: main column + right rail === */
@@ -3376,7 +3391,7 @@
   border-radius: 9px;
   background: var(--mis-card-2);
   display: flex; align-items: center; justify-content: center;
-  color: var(--terracotta);
+  color: var(--accent-text);
 }
 .mis-tip-title { font-size: 12.5px; font-weight: 600; color: var(--mis-t1); margin: 0 0 2px; }
 .mis-tip-text { font-size: 11.5px; color: var(--mis-t2); margin: 0; line-height: 1.4; }
@@ -3426,7 +3441,7 @@
 .mis-chip:hover { color: var(--mis-t1); border-color: var(--mis-t3); }
 .mis-chip.is-active {
   background: var(--terracotta);
-  color: var(--canvas);
+  color: #0A1735;
   border-color: var(--terracotta);
   font-weight: 600;
 }
@@ -3472,9 +3487,9 @@
   padding: 1px 6px;
   border-radius: 5px;
 }
-.mis-row-diff.easy { color: var(--seafoam); background: rgba(94,234,212,0.12); }
-.mis-row-diff.med { color: var(--terracotta); background: rgba(255,179,71,0.12); }
-.mis-row-diff.hard { color: var(--terracotta); background: rgba(255,179,71,0.16); }
+.mis-row-diff.easy { color: var(--teal-text); background: rgba(94,234,212,0.12); }
+.mis-row-diff.med { color: var(--accent-text); background: rgba(255,179,71,0.12); }
+.mis-row-diff.hard { color: var(--accent-text); background: rgba(255,179,71,0.16); }
 .mis-row-diff.expert { color: var(--negative, #FB7185); background: rgba(251,113,133,0.14); }
 .mis-row-sub { display: flex; }
 .mis-row-status { font-family: var(--font-mono); font-size: 10.5px; color: var(--mis-t3); }
@@ -3498,7 +3513,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
-  color: var(--terracotta);
+  color: var(--accent-text);
   font-variant-numeric: tabular-nums;
 }
 /* Narrowest phones: drop the secondary Eye % stat so the Stars chip fits */
@@ -3571,7 +3586,7 @@
   border: 0;
   border-radius: 999px;
   background: var(--terracotta);
-  color: var(--canvas);
+  color: #0A1735;
   font-family: var(--font-cta, var(--font-body));
   font-size: 12px;
   font-weight: 700;
@@ -3631,7 +3646,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--terracotta);
+  color: var(--accent-text);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -3649,12 +3664,12 @@
   align-items: center;
   gap: 11px;
   padding: 11px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--ink), 0.1);
   border-radius: 13px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.058), rgba(255, 255, 255, 0.012));
+    linear-gradient(180deg, rgba(var(--ink), 0.058), rgba(var(--ink), 0.012));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 1px 0 rgba(var(--ink), 0.09),
     0 1px 2px rgba(0, 0, 0, 0.28);
   cursor: pointer;
   text-align: left;
@@ -3662,9 +3677,9 @@
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .mis-rare-card:hover {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(var(--ink), 0.18);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.02));
+    linear-gradient(180deg, rgba(var(--ink), 0.085), rgba(var(--ink), 0.02));
 }
 .mis-rare-card.is-past { opacity: 0.78; }
 .mis-rare-art {
@@ -3694,7 +3709,7 @@
   font-family: var(--font-mono);
   font-size: 16px;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--text-primary);
   line-height: 1;
 }
 .mis-rare-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -3704,22 +3719,32 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--terracotta);
+  color: var(--accent-text);
 }
 .mis-rare-card--eclipse-solar .mis-rare-tag { color: #F4A93C; }
 .mis-rare-card--eclipse-lunar .mis-rare-tag { color: #F07A6E; }
-.mis-rare-card--comet .mis-rare-tag { color: #5EEAD4; }
+.mis-rare-card--comet .mis-rare-tag { color: var(--teal-text); }
 .mis-rare-card--meteor-shower .mis-rare-tag { color: #6FB7FF; }
 .mis-rare-card--conjunction .mis-rare-tag { color: #A78BFA; }
 .mis-rare-name {
   font-size: 13px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .mis-rare-meta { font-family: var(--font-mono); font-size: 10px; color: #9CA0AC; }
+
+/* Day mode: hex grays and pale accent tags that can't flip via tokens */
+[data-theme="light"] .mis-rare-date-month { color: var(--text-secondary); }
+[data-theme="light"] .mis-rare-meta { color: var(--text-dim); }
+[data-theme="light"] .mis-rare-card--eclipse-solar .mis-rare-tag { color: #B45309; }
+[data-theme="light"] .mis-rare-card--eclipse-lunar .mis-rare-tag { color: #C2410C; }
+[data-theme="light"] .mis-rare-card--meteor-shower .mis-rare-tag { color: #2563EB; }
+[data-theme="light"] .mis-rare-card--conjunction .mis-rare-tag { color: #7C3AED; }
+[data-theme="light"] .mis-nearby-badge.is-iss { color: #7C3AED; }
+[data-theme="light"] .mis-viewall { color: #4F46E5; }
 
 /* Phones — two compact, premium tiles per row. */
 @media (max-width: 639px) {
@@ -3843,7 +3868,7 @@
   border-radius: 7px;
   background: var(--mis-card-2);
   display: flex; align-items: center; justify-content: center;
-  color: var(--terracotta);
+  color: var(--accent-text);
 }
 .mis-scope-step-text { display: flex; flex-direction: column; gap: 1px; }
 .mis-scope-step-title { font-size: 12.5px; font-weight: 600; color: var(--mis-t1); }
@@ -3861,12 +3886,12 @@
   gap: 10px;
   align-items: flex-start;
   padding: 12px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--ink), 0.1);
   border-radius: 13px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.058), rgba(255, 255, 255, 0.012));
+    linear-gradient(180deg, rgba(var(--ink), 0.058), rgba(var(--ink), 0.012));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 1px 0 rgba(var(--ink), 0.09),
     0 1px 2px rgba(0, 0, 0, 0.28);
 }
 .mis-observer-icon {
@@ -3874,9 +3899,9 @@
   width: 30px; height: 30px;
   border-radius: 9px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    linear-gradient(180deg, rgba(var(--ink), 0.12), rgba(var(--ink), 0.03));
+  border: 1px solid rgba(var(--ink), 0.08);
+  box-shadow: inset 0 1px 0 rgba(var(--ink), 0.14);
   display: flex; align-items: center; justify-content: center;
   color: #E4E6EC;
 }
@@ -3891,10 +3916,15 @@
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 .mis-observer-body { font-size: 11px; color: #9CA0AC; line-height: 1.4; margin-top: 2px; }
+
+/* Day mode: hex grays on the observer checklist */
+[data-theme="light"] .mis-observer-icon { color: var(--text-primary); }
+[data-theme="light"] .mis-observer-label { color: var(--text-secondary); }
+[data-theme="light"] .mis-observer-body { color: var(--text-dim); }
 
 /* Phones — pack the telescope tips + observer checklist onto one screen. */
 @media (max-width: 639px) {
@@ -3939,7 +3969,7 @@
   border: 0;
   border-radius: 12px;
   background: var(--terracotta);
-  color: var(--canvas);
+  color: #0A1735;
   font-family: var(--font-cta, var(--font-body));
   font-size: 14px;
   font-weight: 700;

@@ -80,7 +80,7 @@ export default function BottomNav() {
                 <Icon
                   size={22}
                   strokeWidth={isActive ? 2.2 : 1.7}
-                  color={isActive ? 'var(--stl-gold)' : 'var(--text-primary)'}
+                  color={isActive ? 'var(--accent-text)' : 'var(--text-primary)'}
                 />
               </div>
 

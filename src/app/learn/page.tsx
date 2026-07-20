@@ -90,7 +90,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
             {('missionId' in planet && (planet.key === 'moon' || planet.key === 'jupiter')) && (
               <span
                 className="inline-flex items-center gap-1 mb-1.5 px-1.5 py-0.5 rounded self-start text-[8px] uppercase tracking-widest font-bold"
-                style={{ background: 'rgba(255, 179, 71,0.15)', border: '1px solid rgba(255, 179, 71,0.3)', color: 'var(--stars)' }}
+                style={{ background: 'rgba(255, 179, 71,0.15)', border: '1px solid rgba(255, 179, 71,0.3)', color: 'var(--accent-text)' }}
               >
                 <Star size={7} /> {locale === 'ka' ? 'საუკეთესო' : 'Best target'}
               </span>
@@ -130,7 +130,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
 
         {/* Tip */}
         <div className="mx-4 mb-3 rounded-xl px-3 py-2 flex items-start gap-2 text-xs"
-          style={{ background: 'rgba(255, 179, 71,0.05)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'rgba(255, 179, 71,0.75)' }}>
+          style={{ background: 'rgba(255, 179, 71,0.05)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'color-mix(in srgb, var(--accent-text) 75%, transparent)' }}>
           <Telescope size={11} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>{planet.tip[locale].split('.')[0]}.</span>
         </div>
@@ -146,7 +146,7 @@ function PlanetModal({ planet, locale, kidsMode, onClose }: {
           {'missionId' in planet && planet.missionId && (
             <Link href="/missions" onClick={onClose}
               className="inline-flex items-center gap-1 text-xs font-medium hover:opacity-80"
-              style={{ color: 'var(--stars)' }}>
+              style={{ color: 'var(--accent-text)' }}>
               <Sparkles size={11} />
               {locale === 'ka' ? 'მისია →' : 'Mission →'}
             </Link>
@@ -392,9 +392,9 @@ function PlanetsTab({ locale, kidsMode, onSelect, onSelectConstellation }: {
 
 const EQ_BADGES: Record<string, { label: { en: string; ka: string }; Icon: React.FC<{ size?: number; color?: string }>; color: string }> = {
   naked_eye:   { label: { en: 'Naked Eye',    ka: 'შიშველი თვალი' }, Icon: Eye,        color: 'var(--success)' },
-  binoculars:  { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       Icon: Binoculars, color: 'var(--stars)' },
-  small_scope: { label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   Icon: Telescope,  color: 'var(--terracotta)' },
-  large_scope: { label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   Icon: Telescope,  color: 'var(--terracotta)' },
+  binoculars:  { label: { en: 'Binoculars',   ka: 'ბინოკლი' },       Icon: Binoculars, color: 'var(--accent-text)' },
+  small_scope: { label: { en: '100mm+ Scope', ka: '100მმ+ ტელ.' },   Icon: Telescope,  color: 'var(--accent-text)' },
+  large_scope: { label: { en: '150mm+ Scope', ka: '150მმ+ ტელ.' },   Icon: Telescope,  color: 'var(--accent-text)' },
 };
 
 const DSO_SEASONS: Record<string, { en: string; ka: string }> = {
@@ -443,10 +443,10 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
               style={active ? {
                 background: 'rgba(255, 179, 71,0.12)',
                 border: '1px solid rgba(255, 179, 71,0.3)',
-                color: 'var(--stars)',
+                color: 'var(--accent-text)',
               } : {
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(var(--ink), 0.04)',
+                border: '1px solid rgba(var(--ink), 0.08)',
                 color: 'var(--text-muted)',
               }}
             >
@@ -494,10 +494,10 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                 {kidsMode ? (
                   <>
                     <p className="text-text-primary text-xs leading-relaxed flex items-start gap-1.5">
-                      <Star size={11} style={{ color: 'var(--stars)', flexShrink: 0, marginTop: 1 }} />
+                      <Star size={11} style={{ color: 'var(--accent-text)', flexShrink: 0, marginTop: 1 }} />
                       {obj.kidsLine[locale]}
                     </p>
-                    <div className="rounded-lg p-3 text-xs text-[var(--terracotta)]/80 flex items-start gap-2"
+                    <div className="rounded-lg p-3 text-xs text-[var(--accent-text)]/80 flex items-start gap-2"
                       style={{ background: 'rgba(255, 179, 71,0.05)', border: '1px solid rgba(255, 179, 71,0.1)' }}>
                       <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
                       {locale === 'ka' ? 'საჭირო ინსტრუმენტი: ' : 'Scope needed: '}{obj.scope[locale].split('.')[0]}.
@@ -517,7 +517,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                         </span>
                       )}
                     </div>
-                    <div className="rounded-lg p-3 text-xs text-[var(--terracotta)]/80 flex items-start gap-2"
+                    <div className="rounded-lg p-3 text-xs text-[var(--accent-text)]/80 flex items-start gap-2"
                       style={{ background: 'rgba(255, 179, 71,0.05)', border: '1px solid rgba(255, 179, 71,0.1)' }}>
                       <Telescope size={12} style={{ flexShrink: 0, marginTop: 1 }} />
                       {obj.scope[locale]}
@@ -529,7 +529,7 @@ function DeepSkyTab({ locale, kidsMode }: { locale: Locale; kidsMode: boolean })
                     href="/missions"
                     onClick={e => e.stopPropagation()}
                     className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80 mt-1"
-                    style={{ color: 'var(--stars)' }}
+                    style={{ color: 'var(--accent-text)' }}
                   >
                     <Sparkles size={12} />
                     {locale === 'ka' ? `${obj.name[locale]} მისიის დაწყება →` : `Start ${obj.name[locale]} Mission →`}
@@ -583,14 +583,14 @@ function QuizzesTab({ locale, onStart }: { locale: Locale; onStart: (q: QuizDef)
             </div>
             <div className="flex items-center gap-3">
               {best !== null && (
-                <span className="text-[var(--terracotta)] text-xs font-medium">
+                <span className="text-[var(--accent-text)] text-xs font-medium">
                   {locale === 'ka' ? 'საუკეთესო' : 'Best'}: {best}/{quiz.questions.length} · +{bestStars} ✦
                 </span>
               )}
               <button
                 onClick={() => onStart(quiz)}
                 className="ml-auto px-4 py-2 rounded-xl text-xs font-bold transition-all"
-                style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
+                style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: '#0A1735' }}
               >
                 {best !== null ? (locale === 'ka' ? 'კვლავ თამაში' : 'Play Again') : (locale === 'ka' ? 'დაწყება →' : 'Start →')}
               </button>
@@ -631,10 +631,10 @@ const EVENT_ICON: Record<EventKind, LucideIcon> = {
 };
 
 const BORTLE_SEGMENTS = [
-  { range: '1–2', color: 'var(--success)', label: { en: 'Pristine',  ka: 'ხელუხლებელი'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
-  { range: '3–4', color: 'var(--stars)', label: { en: 'Rural',     ka: 'სოფელი'       }, desc: { en: 'Milky Way visible, 100+ stars, good for deep sky',      ka: 'ირმის ნახტომი ჩანს, 100+ ვარსკვლავი, კარგი ღრმა ცისთვის' } },
-  { range: '5–6', color: '#FFB347', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
-  { range: '7–9', color: 'var(--negative)', label: { en: 'City',      ka: 'ქალაქი'       }, desc: { en: 'Moon and brightest planets only',                        ka: 'მხოლოდ მთვარე და ყველაზე კაშკაში პლანეტები' } },
+  { range: '1–2', color: 'var(--success)', text: 'var(--success)', label: { en: 'Pristine',  ka: 'ხელუხლებელი'  }, desc: { en: 'Milky Way structure, zodiacal light, thousands of stars', ka: 'ირმის ნახტომი, ზოდიაქური სინათლე, ათასობით ვარსკვლავი' } },
+  { range: '3–4', color: 'var(--stars)', text: 'var(--accent-text)', label: { en: 'Rural',     ka: 'სოფელი'       }, desc: { en: 'Milky Way visible, 100+ stars, good for deep sky',      ka: 'ირმის ნახტომი ჩანს, 100+ ვარსკვლავი, კარგი ღრმა ცისთვის' } },
+  { range: '5–6', color: '#FFB347', text: 'var(--accent-text)', label: { en: 'Suburban',  ka: 'გარეუბანი'    }, desc: { en: 'Milky Way faint, planets and bright clusters',           ka: 'ირმის ნახტომი სუსტია, პლანეტები და კაშკაში გროვები' } },
+  { range: '7–9', color: 'var(--negative)', text: 'var(--negative)', label: { en: 'City',      ka: 'ქალაქი'       }, desc: { en: 'Moon and brightest planets only',                        ka: 'მხოლოდ მთვარე და ყველაზე კაშკაში პლანეტები' } },
 ];
 
 function GuideTab({ locale }: { locale: Locale }) {
@@ -665,9 +665,9 @@ function GuideTab({ locale }: { locale: Locale }) {
     const parts = def.split(/(Sky page|Dark Sky Map)/g);
     return parts.map((part, i) =>
       part === 'Sky page' ? (
-        <Link key={i} href="/sky" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
+        <Link key={i} href="/sky" onClick={e => e.stopPropagation()} className="text-[var(--teal-text)] hover:opacity-80">{part}</Link>
       ) : part === 'Dark Sky Map' ? (
-        <Link key={i} href="/darksky" onClick={e => e.stopPropagation()} className="text-[var(--seafoam)] hover:opacity-80">{part}</Link>
+        <Link key={i} href="/darksky" onClick={e => e.stopPropagation()} className="text-[var(--teal-text)] hover:opacity-80">{part}</Link>
       ) : part
     );
   };
@@ -697,7 +697,7 @@ function GuideTab({ locale }: { locale: Locale }) {
                 onChange={e => setSearch(e.target.value)}
                 placeholder={locale === 'ka' ? 'ტერმინის ძიება...' : 'Search terms...'}
                 className="w-full pl-8 pr-3 py-2 rounded-lg text-xs text-text-primary placeholder-slate-600 outline-none"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.08)' }}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -740,7 +740,7 @@ function GuideTab({ locale }: { locale: Locale }) {
               {BORTLE_SEGMENTS.map(seg => (
                 <div key={seg.range} className="flex gap-3 items-start">
                   <div className="flex-shrink-0 mt-0.5 w-14 h-5 rounded flex items-center justify-center text-[10px] font-bold"
-                    style={{ background: `${seg.color}20`, color: seg.color, border: `1px solid ${seg.color}30` }}>
+                    style={{ background: `${seg.color}20`, color: seg.text, border: `1px solid ${seg.color}30` }}>
                     {seg.range}
                   </div>
                   <div>
@@ -753,7 +753,7 @@ function GuideTab({ locale }: { locale: Locale }) {
             <Link
               href="/darksky"
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-medium transition-all hover:opacity-80"
-              style={{ background: 'rgba(94, 234, 212,0.06)', border: '1px solid rgba(94, 234, 212,0.2)', color: 'var(--seafoam)' }}
+              style={{ background: 'rgba(94, 234, 212,0.06)', border: '1px solid rgba(94, 234, 212,0.2)', color: 'var(--teal-text)' }}
             >
               <Map size={13} />
               {locale === 'ka' ? 'იპოვე ბნელი ცა შენ მახლობლად →' : 'Find dark skies near you →'}
@@ -779,13 +779,13 @@ function GuideTab({ locale }: { locale: Locale }) {
           <div className="px-4 pb-4 flex flex-col gap-3">
             {nextEvent && (
               <div className="rounded-xl p-4" style={{ boxShadow: '0 0 20px rgba(255, 179, 71,0.04)', border: '1px solid rgba(255, 179, 71,0.2)', background: 'rgba(255, 179, 71,0.03)' }}>
-                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255, 179, 71,0.6)' }}>
+                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'color-mix(in srgb, var(--accent-text) 60%, transparent)' }}>
                   {locale === 'ka' ? 'მომდევნო მოვლენა' : 'Next Up'}
                 </p>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--stars)' }}>
+                      style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--accent-text)' }}>
                       {(() => { const Icon = EVENT_ICON[nextEvent.kind]; return <Icon size={17} />; })()}
                     </div>
                     <div>
@@ -794,28 +794,28 @@ function GuideTab({ locale }: { locale: Locale }) {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-[var(--terracotta)] text-2xl font-bold leading-none">{daysFromNow(nextEvent.date)}</p>
+                    <p className="text-[var(--accent-text)] text-2xl font-bold leading-none">{daysFromNow(nextEvent.date)}</p>
                     <p className="text-text-muted text-[10px] mt-0.5">{locale === 'ka' ? 'დღეში' : 'days'}</p>
                   </div>
                 </div>
               </div>
             )}
             {upcoming.length > 1 && (
-              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(var(--ink), 0.06)' }}>
                 <div className="px-4">
                   {upcoming.slice(1).map(ev => {
                     const Icon = EVENT_ICON[ev.kind];
                     return (
                     <div key={ev.date} className="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'rgba(255, 179, 71,0.75)' }}>
+                        style={{ background: 'rgba(255, 179, 71,0.06)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'color-mix(in srgb, var(--accent-text) 75%, transparent)' }}>
                         <Icon size={14} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-text-primary text-sm font-medium">{ev.name[locale]}</p>
                         <p className="text-text-muted text-xs truncate">{ev.date} · {ev.desc[locale].split('.')[0]}.</p>
                       </div>
-                      <span className="text-[var(--terracotta)] text-xs font-mono flex-shrink-0">
+                      <span className="text-[var(--accent-text)] text-xs font-mono flex-shrink-0">
                         {dayLabel(daysFromNow(ev.date))}
                       </span>
                     </div>
@@ -840,7 +840,7 @@ function GuideTab({ locale }: { locale: Locale }) {
                   return (
                   <div key={ev.date} className="flex items-center gap-3 opacity-40">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'var(--text-muted)' }}>
+                      style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.07)', color: 'var(--text-muted)' }}>
                       <Icon size={14} />
                     </div>
                     <div>
@@ -965,7 +965,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
             <div className="flex items-center gap-3">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--stars)' }}
+                style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--accent-text)' }}
               >
                 {card.step}
               </div>
@@ -979,7 +979,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
                 <p className="text-text-muted text-xs leading-relaxed">{card.body[locale]}</p>
                 <div
                   className="rounded-lg p-3 text-xs flex items-start gap-2"
-                  style={{ background: 'rgba(255, 179, 71,0.04)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'rgba(255, 179, 71,0.8)' }}
+                  style={{ background: 'rgba(255, 179, 71,0.04)', border: '1px solid rgba(255, 179, 71,0.1)', color: 'color-mix(in srgb, var(--accent-text) 80%, transparent)' }}
                 >
                   <Camera size={12} style={{ flexShrink: 0, marginTop: 1 }} />
                   {card.tip[locale]}
@@ -989,7 +989,7 @@ function AstroPhotoTab({ locale }: { locale: Locale }) {
                     href={card.link.href}
                     onClick={e => e.stopPropagation()}
                     className="inline-flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-80"
-                    style={{ color: 'var(--stars)' }}
+                    style={{ color: 'var(--accent-text)' }}
                   >
                     {card.link[locale]}
                   </Link>
@@ -1264,7 +1264,7 @@ export default function LearnPage() {
               <div className="flex flex-col">
                 <span
                   className="font-bold tabular-nums leading-none"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(20px, 3vw, 28px)', color: '#FFB347' }}
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(20px, 3vw, 28px)', color: 'var(--accent-text)' }}
                 >
                   ✦ {completedQuizzes.reduce((s, r) => s + r.stars, 0)}
                 </span>
@@ -1290,10 +1290,10 @@ export default function LearnPage() {
                 style={active ? {
                   background: 'rgba(255, 179, 71,0.12)',
                   border: '1px solid rgba(255, 179, 71,0.3)',
-                  color: 'var(--stars)',
+                  color: 'var(--accent-text)',
                 } : {
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(var(--ink), 0.04)',
+                  border: '1px solid rgba(var(--ink), 0.08)',
                   color: 'var(--text-muted)',
                 }}
               >

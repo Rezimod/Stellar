@@ -43,7 +43,7 @@ export default function HeroSection() {
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center stagger-in">
         <div className="flex flex-col items-center text-center w-full" style={{ maxWidth: 640 }}>
-        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(var(--ink-warm),0.4)]">
           BUILT ON SOLANA · COLOSSEUM FRONTIER
         </span>
 
@@ -52,7 +52,7 @@ export default function HeroSection() {
           <span className="block italic text-[var(--terracotta)]">on chain.</span>
         </h1>
 
-        <p className="mt-6 max-w-[440px] px-2 text-[15px] md:text-[16px] leading-[1.65] text-[rgba(232,230,221,0.65)]">
+        <p className="mt-6 max-w-[440px] px-2 text-[15px] md:text-[16px] leading-[1.65] text-[rgba(var(--ink-warm),0.65)]">
           Stellar brings astrolovers on chain. Observe the night sky, earn rewards,
           and seal your discoveries on Solana.
         </p>
@@ -88,7 +88,7 @@ export default function HeroSection() {
         </div>
 
         {greeting && (
-          <p className="mt-5 text-[11px] text-[rgba(232,230,221,0.4)] font-mono tracking-[0.16em] uppercase">
+          <p className="mt-5 text-[11px] text-[rgba(var(--ink-warm),0.4)] font-mono tracking-[0.16em] uppercase">
             Signed in as {greeting}
           </p>
         )}

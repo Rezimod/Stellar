@@ -19,7 +19,7 @@ export default function MissionListRow({ mission, Art, metaLine, badge, isPrime,
       onClick={() => !disabled && onClick()}
       disabled={disabled}
       className="relative w-full flex items-center gap-3 px-3 py-3.5 text-left transition-colors hover:bg-[var(--surface)]] disabled:opacity-55 disabled:cursor-default"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      style={{ borderBottom: '1px solid rgba(var(--ink), 0.05)' }}
     >
       {isPrime && (
         <span
@@ -37,7 +37,7 @@ export default function MissionListRow({ mission, Art, metaLine, badge, isPrime,
           className="absolute inset-0 rounded-full"
           style={{
             background: disabled
-              ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 62%)'
+              ? 'radial-gradient(circle at 50% 50%, rgba(var(--ink), 0.04) 0%, transparent 62%)'
               : 'radial-gradient(circle at 50% 50%, rgba(255, 179, 71,0.09) 0%, transparent 62%)',
             filter: 'blur(2px)',
           }}
@@ -80,7 +80,7 @@ export default function MissionListRow({ mission, Art, metaLine, badge, isPrime,
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 10,
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(var(--ink), 0.45)',
             letterSpacing: '0.05em',
           }}
         >
@@ -93,13 +93,13 @@ export default function MissionListRow({ mission, Art, metaLine, badge, isPrime,
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 14,
-            color: 'var(--stl-gold)',
+            color: 'var(--accent-text)',
             fontWeight: 700,
           }}
         >
           +{mission.stars} ✦
         </span>
-        <ChevronRight size={11} color="rgba(255,255,255,0.35)" />
+        <ChevronRight size={11} style={{ color: 'rgba(var(--ink), 0.35)' }} />
       </div>
     </button>
   );

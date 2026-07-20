@@ -72,6 +72,15 @@ type Mission = {
   accent: string;
 };
 
+/* Icon strokes read as text — flip them to the day-readable accent tokens
+   while the `${accent}1A` chip backgrounds keep the raw hex. */
+const ACCENT_ICON: Record<string, string> = {
+  '#5EEAD4': 'var(--teal-text)',
+  '#FFB347': 'var(--accent-text)',
+  '#34D399': 'var(--yes)',
+  '#A8B4C8': 'var(--text-muted)',
+};
+
 function fmtHm(iso: string | null): string {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -271,7 +280,7 @@ export function HubTonightBand() {
                         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
                         style={{ background: `${m.accent}1A`, border: `1px solid ${m.accent}33` }}
                       >
-                        <Icon size={14} strokeWidth={2} color={m.accent} />
+                        <Icon size={14} strokeWidth={2} color={ACCENT_ICON[m.accent] ?? m.accent} />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[13px] font-medium leading-tight text-white/90">{m.title}</span>

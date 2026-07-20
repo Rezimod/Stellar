@@ -83,7 +83,7 @@ export default function FeaturedDeals({
                 width: i === active ? 18 : 6,
                 height: 6,
                 minHeight: 0,
-                background: i === active ? 'var(--terracotta)' : 'rgba(255,255,255,0.22)',
+                background: i === active ? 'var(--terracotta)' : 'rgba(var(--ink), 0.22)',
               }}
             />
           ))}

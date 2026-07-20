@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
   background: oklch(0.14 0.018 260);
+  /* The 3D scene (and all chrome floating over it) is dark in BOTH themes.
+     Pin --text to its night value so day mode never flips it dark. */
+  --text: #F8F4EC;
   color: var(--text, #e8ecf4);
 }
 

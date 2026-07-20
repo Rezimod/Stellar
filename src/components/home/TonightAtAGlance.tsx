@@ -36,8 +36,8 @@ const PLANET_DOT: Record<string, string> = {
 type Verdict = 'go' | 'maybe' | 'skip';
 
 const VERDICT_COLOR: Record<Verdict, string> = {
-  go: '#5EEAD4',
-  maybe: '#FFB347',
+  go: 'var(--teal-text)',
+  maybe: 'var(--accent-text)',
   skip: '#94A3B8',
 };
 
@@ -385,7 +385,7 @@ function TonightTimeline({
             />
             {nowFrac != null && (
               <div
-                className="absolute inset-y-[-2px] w-px bg-white/40 motion-safe:animate-pulse"
+                className="absolute inset-y-[-2px] w-px bg-[rgba(var(--ink),0.4)] motion-safe:animate-pulse"
                 style={{ left: `${nowFrac * 100}%` }}
               />
             )}

@@ -208,20 +208,20 @@
 /* --- Stellar brand overrides --- */
 .wallet-adapter-modal-wrapper {
   background-color: #050811 !important;
-  border: 1px solid rgba(232, 230, 221, 0.08) !important;
+  border: 1px solid rgba(var(--ink-warm), 0.08) !important;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6) !important;
 }
 
 .wallet-adapter-modal-title {
   font-family: var(--font-display), serif !important;
-  color: #E8E6DD !important;
+  color: rgba(var(--ink-warm), 1) !important;
   font-weight: 500 !important;
   letter-spacing: -0.01em !important;
 }
 
 .wallet-adapter-modal-list .wallet-adapter-button {
-  background-color: rgba(232, 230, 221, 0.04) !important;
-  color: #E8E6DD !important;
+  background-color: rgba(var(--ink-warm), 0.04) !important;
+  color: rgba(var(--ink-warm), 1) !important;
   border-radius: 10px !important;
   font-weight: 500 !important;
 }
@@ -231,10 +231,31 @@
 }
 
 .wallet-adapter-modal-button-close {
-  background-color: rgba(232, 230, 221, 0.06) !important;
+  background-color: rgba(var(--ink-warm), 0.06) !important;
 }
 .wallet-adapter-modal-button-close:hover {
-  background-color: rgba(232, 230, 221, 0.1) !important;
+  background-color: rgba(var(--ink-warm), 0.1) !important;
 }
 
-.wallet-adapter-modal-list-more { color: rgba(232, 230, 221, 0.6) !important; }
+.wallet-adapter-modal-list-more { color: rgba(var(--ink-warm), 0.6) !important; }
+
+/* --- Day theme — solid dark surfaces and white fills that the ink-warm
+   conversion above can't flip. Night mode is untouched. --- */
+[data-theme="light"] .wallet-adapter-modal-wrapper {
+  background-color: var(--bg-panel) !important;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18) !important;
+}
+[data-theme="light"] .wallet-adapter-dropdown-list {
+  background: var(--bg-panel);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+[data-theme="light"] .wallet-adapter-dropdown-list-item { color: var(--text-primary); }
+[data-theme="light"] .wallet-adapter-dropdown-list-item:not([disabled]):hover {
+  background-color: var(--surface-hover);
+}
+[data-theme="light"] .wallet-adapter-modal-list-more svg { fill: var(--text-primary); }
+[data-theme="light"] .wallet-adapter-modal-button-close:hover svg { fill: var(--text-primary); }
+[data-theme="light"] .wallet-adapter-button:not([disabled]):focus-visible,
+[data-theme="light"] .wallet-adapter-modal-button-close:focus-visible {
+  outline-color: var(--text-primary);
+}

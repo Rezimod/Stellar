@@ -122,7 +122,7 @@ export default function MintAnimation({
         <div style={{ position: 'relative', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {done ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="var(--success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+              stroke="#5EEAD4" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
               style={{ filter: 'drop-shadow(0 0 10px rgba(94, 234, 212,0.9))' }}>
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -137,10 +137,10 @@ export default function MintAnimation({
 
       {/* Text */}
       <div className="flex flex-col items-center gap-2">
-        <p className="text-text-primary font-semibold text-lg tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>
+        <p className="font-semibold text-lg tracking-wide" style={{ fontFamily: 'Georgia, serif', color: '#F8F4EC' }}>
           {done ? doneTitle : title}
         </p>
-        <p className="text-text-muted text-[11px] tracking-widest uppercase">
+        <p className="text-[11px] tracking-widest uppercase" style={{ color: '#A8B4C8' }}>
           {done ? doneSubtitle : subtitle}
         </p>
         {!done && (
@@ -152,7 +152,7 @@ export default function MintAnimation({
           </div>
         )}
         {slowMsg && !done && (
-          <p className="text-text-muted text-[11px] mt-3 text-center max-w-[220px] leading-relaxed">
+          <p className="text-[11px] mt-3 text-center max-w-[220px] leading-relaxed" style={{ color: '#A8B4C8' }}>
             Still sealing — Solana devnet can be slow. Don&apos;t close the app.
           </p>
         )}

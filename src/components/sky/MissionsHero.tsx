@@ -90,7 +90,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
     <div
       className="relative grid grid-cols-1 md:grid-cols-[1.15fr_1fr] rounded-[20px] overflow-hidden mb-4"
       style={{
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid rgba(var(--ink), 0.08)',
         background: 'linear-gradient(135deg, rgba(255, 179, 71,0.08), rgba(94, 234, 212,0.04) 60%, transparent)',
       }}
     >
@@ -105,7 +105,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
             style={{
               fontFamily: 'var(--font-mono)',
               letterSpacing: '0.2em',
-              color: 'var(--stars)',
+              color: 'var(--accent-text)',
               border: '1px solid rgba(255, 179, 71,0.35)',
             }}
           >
@@ -114,7 +114,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
           {times && (
             <span
               className="text-[10px]"
-              style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.5)' }}
+              style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.14em', color: 'rgba(var(--ink), 0.5)' }}
             >
               RISES {times.rise} · PEAKS {times.transit}
             </span>
@@ -124,7 +124,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
         <div className="relative z-[2] mt-auto">
           <div
             className="text-[10px] mb-1.5"
-            style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.4)' }}
+            style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.18em', color: 'rgba(var(--ink), 0.4)' }}
           >
             {copy.kicker}
           </div>
@@ -136,7 +136,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
           </h2>
           <p
             className="mt-2.5 max-w-[340px]"
-            style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 15, color: 'rgba(242,240,234,0.65)', fontWeight: 300, lineHeight: 1.4 }}
+            style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 15, color: 'rgba(var(--ink), 0.65)', fontWeight: 300, lineHeight: 1.4 }}
           >
             {copy.tagline}
           </p>
@@ -145,41 +145,41 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
 
       <div
         className="px-6 py-7 sm:px-8 sm:py-8 flex flex-col justify-between"
-        style={{ borderLeft: '1px solid rgba(255,255,255,0.06)', background: 'rgba(6,9,18,0.4)' }}
+        style={{ borderLeft: '1px solid rgba(var(--ink), 0.06)', background: 'var(--bg-panel)' }}
       >
         <div>
           <div
             className="text-[10px] mb-3.5"
-            style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.4)' }}
+            style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.18em', color: 'rgba(var(--ink), 0.4)' }}
           >
             MISSION PARAMETERS
           </div>
 
           <div
             className="flex flex-col gap-3 py-3.5"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ borderTop: '1px solid rgba(var(--ink), 0.06)', borderBottom: '1px solid rgba(var(--ink), 0.06)' }}
           >
             <ParamRow label="EQUIPMENT" value={copy.equipment} />
             {times && <ParamRow label="ALTITUDE" value={`${times.altitude}°`} mono />}
             <ParamRow label="DIFFICULTY" custom={
               <div className="flex gap-[3px]">
                 {[0,1,2,3].map(i => (
-                  <div key={i} className="w-4 h-[3px] rounded-[1px]" style={{ background: i < diffDots ? 'var(--stars)' : 'rgba(255,255,255,0.12)' }} />
+                  <div key={i} className="w-4 h-[3px] rounded-[1px]" style={{ background: i < diffDots ? 'var(--stars)' : 'rgba(var(--ink), 0.12)' }} />
                 ))}
               </div>
             } />
-            <ParamRow label="NFT RARITY" value="STELLAR · ASTRAL" mono color="var(--stl-teal)" />
+            <ParamRow label="NFT RARITY" value="STELLAR · ASTRAL" mono color="var(--teal-text)" />
           </div>
 
           <div className="flex items-baseline gap-3 mt-4">
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 44, color: 'var(--stars)', fontWeight: 400, lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 44, color: 'var(--accent-text)', fontWeight: 400, lineHeight: 1 }}>
               +{heroMission.stars}
             </span>
             <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255, 179, 71,0.7)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', color: 'var(--accent-text)', opacity: 0.7 }}>
                 STARS EARNED
               </div>
-              <div className="mt-0.5" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.35)' }}>
+              <div className="mt-0.5" style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(var(--ink), 0.35)' }}>
                 +COSMIC BONUS ×1.0
               </div>
             </div>
@@ -214,11 +214,11 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
 function ParamRow({ label, value, custom, mono, color }: { label: string; value?: string; custom?: React.ReactNode; mono?: boolean; color?: string }) {
   return (
     <div className="flex justify-between items-center">
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', color: 'rgba(var(--ink), 0.4)' }}>
         {label}
       </span>
       {custom ?? (
-        <span style={{ fontFamily: mono ? 'var(--font-mono)' : undefined, fontSize: mono ? 11 : 13, letterSpacing: mono ? '0.1em' : undefined, color: color ?? '#E8ECF4' }}>
+        <span style={{ fontFamily: mono ? 'var(--font-mono)' : undefined, fontSize: mono ? 11 : 13, letterSpacing: mono ? '0.1em' : undefined, color: color ?? 'var(--text-primary)' }}>
           {value}
         </span>
       )}

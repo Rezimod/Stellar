@@ -103,7 +103,7 @@ function AchievementBadge({
       <p className="home-achievement-label text-white text-[14px] md:text-[15px] font-semibold tracking-[-0.01em] leading-tight">
         {label}
       </p>
-      <p className="home-achievement-rank text-[12px] md:text-[13px] font-semibold mt-1" style={{ color }}>
+      <p className="home-achievement-rank text-[12px] md:text-[13px] font-semibold mt-1" style={{ color: color === '#FFB347' ? 'var(--accent-text)' : color }}>
         {rank}
       </p>
       <p className="home-achievement-date text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>

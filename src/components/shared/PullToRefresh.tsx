@@ -118,7 +118,7 @@ export default function PullToRefresh() {
             cy={RING / 2}
             r={R}
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke="rgba(var(--ink), 0.08)"
             strokeWidth={STROKE}
           />
           <circle
@@ -126,7 +126,7 @@ export default function PullToRefresh() {
             cy={RING / 2}
             r={R}
             fill="none"
-            stroke="#FFB347"
+            stroke="var(--accent-text)"
             strokeWidth={STROKE}
             strokeLinecap="round"
             strokeDasharray={C}
@@ -138,7 +138,7 @@ export default function PullToRefresh() {
         {progress >= 0.9 && (
           <span
             style={{
-              color: '#FFB347',
+              color: 'var(--accent-text)',
               fontSize: 9.5,
               fontWeight: 600,
               fontFamily: 'var(--font-mono, ui-monospace, monospace)',

@@ -25,7 +25,7 @@ export default function MissionsSection() {
           <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#F8F4EC]">
             Seven missions await.
           </h2>
-          <p className="mt-3 text-[13px] md:text-[14px] leading-[1.65] text-[rgba(232,230,221,0.6)] max-w-[440px]">
+          <p className="mt-3 text-[13px] md:text-[14px] leading-[1.65] text-[rgba(var(--ink-warm),0.6)] max-w-[440px]">
             From the Moon to the Crab Nebula. Each verified observation earns Stars
             and mints a compressed NFT to your wallet.
           </p>
@@ -37,19 +37,19 @@ export default function MissionsSection() {
           </Link>
         </div>
 
-        <div className="rounded-[14px] border-[0.5px] border-[rgba(232,230,221,0.08)] bg-[rgba(232,230,221,0.025)] p-[14px] md:p-[18px]">
+        <div className="rounded-[14px] border-[0.5px] border-[rgba(var(--ink-warm),0.08)] bg-[rgba(var(--ink-warm),0.025)] p-[14px] md:p-[18px]">
           {ROWS.map((row, i) => (
             <div
               key={row.name}
               className={`flex items-baseline justify-between py-3 ${
-                i < ROWS.length - 1 ? 'border-b-[0.5px] border-[rgba(232,230,221,0.06)]' : ''
+                i < ROWS.length - 1 ? 'border-b-[0.5px] border-[rgba(var(--ink-warm),0.06)]' : ''
               }`}
             >
               <div className="min-w-0">
                 <div className="font-display text-[13px] md:text-[14px] text-[#F8F4EC]">
                   {row.name}
                 </div>
-                <div className="mt-0.5 text-[10px] text-[rgba(232,230,221,0.45)]">
+                <div className="mt-0.5 text-[10px] text-[rgba(var(--ink-warm),0.45)]">
                   {row.detail}
                 </div>
               </div>

@@ -45,7 +45,7 @@ export default function FieldPage() {
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 10,
-              color: 'var(--accent)',
+              color: 'var(--accent-text)',
               textTransform: 'uppercase',
               letterSpacing: '0.14em',
               margin: '0 0 6px',
@@ -75,7 +75,7 @@ export default function FieldPage() {
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 11,
-              color: 'var(--accent)',
+              color: 'var(--accent-text)',
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
               margin: '0 0 12px',
@@ -136,7 +136,7 @@ export default function FieldPage() {
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: 10,
-                  color: 'var(--accent)',
+                  color: 'var(--accent-text)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   margin: '0 0 8px',
@@ -261,7 +261,7 @@ function Capability({ icon, title, body }: { icon: React.ReactNode; title: strin
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--accent)',
+          color: 'var(--accent-text)',
           flexShrink: 0,
         }}
       >

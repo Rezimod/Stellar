@@ -434,7 +434,7 @@ export default function HeroSkyPanel() {
             {/* outer halo */}
             <circle cx="0" cy="0" r="3.2" fill="url(#comet-head)" />
             {/* hot core */}
-            <circle cx="0" cy="0" r="1.1" fill="#FFFFFF" />
+            <circle cx="0" cy="0" r="1.1" fill="rgba(var(--ink),0.9)" />
           </g>
         </g>
 

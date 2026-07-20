@@ -177,9 +177,9 @@ export default function ClubPage() {
               className="mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
               style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
             >
-              <StarMark size={20} className="text-[var(--terracotta)]" />
+              <StarMark size={20} className="text-[var(--accent-text)]" />
               <div>
-                <p className="text-[var(--terracotta)] font-bold text-sm">+{starsEarned} {t.earned}</p>
+                <p className="text-[var(--accent-text)] font-bold text-sm">+{starsEarned} {t.earned}</p>
                 <p className="text-text-muted text-xs">{t.firstBonus}</p>
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function ClubPage() {
                 <p className="text-text-muted text-sm">{telescope?.aperture} · {telescope?.type ?? t.telescopeFallback}</p>
               </div>
               <div className="ml-auto w-7 h-7 rounded-full bg-[var(--terracotta)]/10 border border-[var(--terracotta)]/30 flex items-center justify-center flex-shrink-0">
-                <Check size={14} className="text-[var(--terracotta)]" />
+                <Check size={14} className="text-[var(--accent-text)]" />
               </div>
             </div>
             <p className="text-text-muted text-xs mb-4">{t.registeredBody}</p>

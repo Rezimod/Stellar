@@ -73,14 +73,14 @@ export default function AdminRetentionPage() {
       {/* 1. Headline */}
       <section
         className="rounded-2xl px-6 py-8 text-center"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-default)' }}
+        style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid var(--border-default)' }}
       >
         <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-muted mb-3">
           Week-4 retention
         </p>
         <p
           className="leading-none"
-          style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 'clamp(48px, 14vw, 88px)', color: 'var(--accent)' }}
+          style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 'clamp(48px, 14vw, 88px)', color: 'var(--accent-text)' }}
         >
           {pct == null ? '—' : `${pct}%`}
         </p>
@@ -142,7 +142,7 @@ function FunnelCell({ label, value, pct }: { label: string; value: number; pct: 
   return (
     <div
       className="rounded-xl px-3 py-4 text-center"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-default)' }}
+      style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid var(--border-default)' }}
     >
       <p className="font-mono text-2xl text-text-primary leading-none">{value}</p>
       <p className="text-[10px] uppercase tracking-wider text-text-muted mt-2">{label}</p>

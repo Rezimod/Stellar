@@ -42,7 +42,7 @@ export default function StatsBar() {
       className="animate-page-enter"
       style={{
         borderRadius: 10,
-        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.04) 0%, rgba(15,20,40,0.55) 60%, transparent 100%)',
+        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.04) 0%, var(--surface) 60%, transparent 100%)',
         border: '1px solid rgba(255, 179, 71,0.14)',
         padding: '10px 12px',
         marginBottom: 14,
@@ -55,7 +55,7 @@ export default function StatsBar() {
               fontFamily: 'var(--font-display)',
               fontSize: 10,
               letterSpacing: '0.18em',
-              color: 'rgba(255,255,255,0.45)',
+              color: 'rgba(var(--ink), 0.45)',
               textTransform: 'uppercase',
             }}
           >
@@ -66,7 +66,7 @@ export default function StatsBar() {
               fontFamily: 'var(--font-display)',
               fontSize: 13,
               fontWeight: 600,
-              color: allDone ? 'var(--success)' : 'var(--stars)',
+              color: allDone ? 'var(--success)' : 'var(--accent-text)',
               letterSpacing: '-0.005em',
             }}
           >
@@ -85,14 +85,14 @@ export default function StatsBar() {
             }}
           >
             {count}/{TOTAL}
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', marginLeft: 4, letterSpacing: '0.12em', textTransform: 'uppercase', fontStyle: 'italic' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(var(--ink), 0.4)', marginLeft: 4, letterSpacing: '0.12em', textTransform: 'uppercase', fontStyle: 'italic' }}>
               obs
             </span>
           </span>
           <span
             className="flex items-baseline gap-1"
             style={{
-              color: 'var(--stl-gold)',
+              color: 'var(--accent-text)',
             }}
           >
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, fontWeight: 600, letterSpacing: '0.02em' }}>
@@ -105,7 +105,7 @@ export default function StatsBar() {
 
       <div
         className="mt-2 h-[2px] rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.06)' }}
+        style={{ background: 'rgba(var(--ink), 0.06)' }}
       >
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"

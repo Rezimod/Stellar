@@ -439,13 +439,13 @@ export default function ObserveVerifyPage() {
         <BackButton />
         <div
           className="rounded-2xl p-6 text-center"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid rgba(var(--ink), 0.08)' }}
         >
           <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--accent-text)' }}
           >
             {t('notFound.back')}
           </Link>
@@ -468,7 +468,7 @@ export default function ObserveVerifyPage() {
             onClick={() => router.push('/missions')}
             aria-label={t('verify.close')}
             className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: 'rgba(var(--ink), 0.05)', border: '1px solid rgba(var(--ink), 0.08)' }}
           >
             <X size={14} />
           </button>
@@ -507,7 +507,7 @@ export default function ObserveVerifyPage() {
             <div className="mt-2 text-center">
               <p className="text-xs text-terracotta">{mintError}</p>
               {mintError.includes('cloudy') && (
-                <Link href="/sky" className="text-xs text-[var(--terracotta)] underline mt-1 inline-block">
+                <Link href="/sky" className="text-xs text-[var(--accent-text)] underline mt-1 inline-block">
                   {t('verify.checkForecast')} →
                 </Link>
               )}

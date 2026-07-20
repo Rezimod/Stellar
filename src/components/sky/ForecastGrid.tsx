@@ -60,7 +60,7 @@ export default function ForecastGrid() {
         <button
           onClick={() => load(lat, lng)}
           className="px-4 py-2 rounded-lg text-sm transition-colors"
-          style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
+          style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--accent-text)' }}
         >
           {t('retry')}
         </button>

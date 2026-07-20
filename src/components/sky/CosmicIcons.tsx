@@ -23,7 +23,7 @@ export function TelescopeIcon({ size = 22, className }: IconProps) {
         <path d="M8.2 18.9h5" opacity="0.55" />
       </g>
       {/* target star */}
-      <path d="M19.4 3.2l.62 1.76 1.76.62-1.76.62-.62 1.76-.62-1.76-1.76-.62 1.76-.62z" fill="#fff" opacity="0.92" />
+      <path d="M19.4 3.2l.62 1.76 1.76.62-1.76.62-.62 1.76-.62-1.76-1.76-.62 1.76-.62z" style={{ fill: 'rgba(var(--ink), 0.92)' }} />
     </svg>
   );
 }

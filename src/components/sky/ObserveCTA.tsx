@@ -48,8 +48,8 @@ export default function ObserveCTA() {
 
   return (
     <div className="rounded-2xl p-4 text-center" style={{
-      background: 'rgba(255,255,255,0.02)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(var(--ink), 0.02)',
+      border: '1px solid rgba(var(--ink), 0.06)',
     }}>
       <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>
         Sky conditions are limited tonight
@@ -57,7 +57,7 @@ export default function ObserveCTA() {
       <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
         You can still observe the Moon and bright planets
       </p>
-      <Link href="/missions" className="text-xs font-medium hover:underline" style={{ color: 'var(--terracotta)' }}>
+      <Link href="/missions" className="text-xs font-medium hover:underline" style={{ color: 'var(--accent-text)' }}>
         Browse missions →
       </Link>
     </div>

@@ -261,7 +261,7 @@ function ProfilePageContent() {
 
   const seeAllLink = (href: string, label: string) => (
     <Link href={href} style={{
-      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--terracotta)',
+      fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-text)',
       textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3,
     }}>
       {label} <ChevronRight size={11} />
@@ -503,7 +503,7 @@ function ProfilePageContent() {
                       </div>
                       <Link
                         href="/marketplace"
-                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--terracotta)', background: isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)', border: '1px solid rgba(255, 179, 71,0.32)' }}
+                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--accent-text)', background: isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)', border: '1px solid rgba(255, 179, 71,0.32)' }}
                       >
                         {t('viewGifts')}
                       </Link>
@@ -561,7 +561,7 @@ function ProfilePageContent() {
                               </p>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                              <span style={{ padding: '3px 8px', borderRadius: 999, fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', border: `1px solid ${isPaid ? 'var(--success)' : hairline}`, color: isPaid ? 'var(--success)' : 'var(--stars)' }}>
+                              <span style={{ padding: '3px 8px', borderRadius: 999, fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', border: `1px solid ${isPaid ? 'var(--success)' : hairline}`, color: isPaid ? 'var(--success)' : 'var(--accent-text)' }}>
                                 {isPaid ? t('paid') : t('pending')}
                               </span>
                               {o.signature && (
@@ -592,7 +592,7 @@ function ProfilePageContent() {
                 <Row
                   icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
                   iconBg="rgba(255, 179, 71,0.08)"
-                  iconColor="var(--terracotta)"
+                  iconColor="var(--accent-text)"
                   label={theme === 'dark' ? t('darkMode') : t('dayMode')}
                   sublabel={theme === 'dark' ? t('themeSubDark') : t('themeSubDay')}
                   right={<Toggle on={theme === 'dark'} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />}
@@ -600,7 +600,7 @@ function ProfilePageContent() {
                 <Row
                   icon={<Bell size={15} />}
                   iconBg="rgba(255, 179, 71,0.08)"
-                  iconColor="var(--terracotta)"
+                  iconColor="var(--accent-text)"
                   label={t('notifications')}
                   sublabel={t('notificationsSub')}
                   href="/settings#notifications"

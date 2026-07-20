@@ -80,12 +80,12 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
   function segColor(cover: number): string {
     if (cover < 30) return 'rgba(94, 234, 212,0.65)';
     if (cover < 60) return 'rgba(255, 179, 71,0.5)';
-    return 'rgba(255,255,255,0.07)';
+    return 'rgba(var(--ink), 0.07)';
   }
 
   return (
     <div>
-      <span style={{ display: 'block', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
+      <span style={{ display: 'block', color: 'rgba(var(--ink), 0.3)', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
         Night window  8pm – 4am
       </span>
       {/* Segmented heatmap strip */}
@@ -107,20 +107,20 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
       </div>
       {/* Time anchors */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-        <span style={{ color: 'rgba(255,255,255,0.22)', fontSize: 9 }}>8pm</span>
-        <span style={{ color: 'rgba(255,255,255,0.22)', fontSize: 9 }}>12am</span>
-        <span style={{ color: 'rgba(255,255,255,0.22)', fontSize: 9 }}>4am</span>
+        <span style={{ color: 'rgba(var(--ink), 0.22)', fontSize: 9 }}>8pm</span>
+        <span style={{ color: 'rgba(var(--ink), 0.22)', fontSize: 9 }}>12am</span>
+        <span style={{ color: 'rgba(var(--ink), 0.22)', fontSize: 9 }}>4am</span>
       </div>
       {/* Legend */}
       <div style={{ display: 'flex', gap: 10, marginTop: 7 }}>
         {[
           { color: 'rgba(94, 234, 212,0.65)', label: 'Clear' },
           { color: 'rgba(255, 179, 71,0.5)', label: 'Partly cloudy' },
-          { color: 'rgba(255,255,255,0.15)', label: 'Overcast' },
+          { color: 'rgba(var(--ink), 0.15)', label: 'Overcast' },
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <div style={{ width: 10, height: 6, borderRadius: 2, background: item.color }} />
-            <span style={{ color: 'rgba(255,255,255,0.22)', fontSize: 9 }}>{item.label}</span>
+            <span style={{ color: 'rgba(var(--ink), 0.22)', fontSize: 9 }}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -133,19 +133,19 @@ function StatCard({ label, value, sub, warn, icon: Icon }: { label: string; valu
     <div style={{
       padding: '14px 14px 12px',
       borderRadius: 12,
-      background: 'rgba(255,255,255,0.02)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(var(--ink), 0.02)',
+      border: '1px solid rgba(var(--ink), 0.06)',
       display: 'flex', flexDirection: 'column', gap: 4,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <Icon size={13} style={{ color: 'rgba(255,255,255,0.3)' }} aria-hidden="true" />
-        <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
+        <Icon size={13} style={{ color: 'rgba(var(--ink), 0.3)' }} aria-hidden="true" />
+        <span style={{ color: 'rgba(var(--ink), 0.35)', fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
       </div>
       <span style={{
-        color: warn ? 'rgba(251, 113, 133,0.8)' : 'rgba(255,255,255,0.92)',
+        color: warn ? 'color-mix(in srgb, var(--negative) 80%, transparent)' : 'rgba(var(--ink), 0.92)',
         fontSize: 26, fontWeight: 600, fontFamily: 'monospace', lineHeight: 1,
       }}>{value}</span>
-      {sub && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>{sub}</span>}
+      {sub && <span style={{ color: 'rgba(var(--ink), 0.3)', fontSize: 11 }}>{sub}</span>}
     </div>
   );
 }
@@ -189,7 +189,7 @@ export default function HomeSkyPreview() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {[160, 120, 52].map((h, i) => (
-          <div key={i} style={{ height: h, borderRadius: 18, background: 'rgba(255,255,255,0.025)', animation: 'pulse 2s ease-in-out infinite' }} />
+          <div key={i} style={{ height: h, borderRadius: 18, background: 'rgba(var(--ink), 0.025)', animation: 'pulse 2s ease-in-out infinite' }} />
         ))}
       </div>
     );
@@ -211,8 +211,8 @@ export default function HomeSkyPreview() {
 
   const SC = {
     Go:    { color: 'var(--success)', border: 'rgba(94, 234, 212,0.22)',   bg: 'rgba(94, 234, 212,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(94, 234, 212,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(255, 179, 71,0.06) 0%, transparent 55%)' },
-    Maybe: { color: 'var(--stars)', border: 'rgba(255, 179, 71,0.2)',   bg: 'rgba(255, 179, 71,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255, 179, 71,0.10) 0%, transparent 55%)' },
-    Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(255,255,255,0.07)', bg: 'transparent', nebula: 'none' },
+    Maybe: { color: 'var(--accent-text)', border: 'rgba(255, 179, 71,0.2)',   bg: 'rgba(255, 179, 71,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255, 179, 71,0.10) 0%, transparent 55%)' },
+    Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(var(--ink), 0.07)', bg: 'transparent', nebula: 'none' },
   }[status];
 
   const dayLabel = selectedDay === 0 ? 'Tonight' : selectedDay === 1 ? 'Tomorrow' : formatDay(forecast[selectedDay]?.date ?? '', selectedDay);
@@ -224,7 +224,7 @@ export default function HomeSkyPreview() {
     { label: 'Moon', icon: Moon, value: `${moonPct}%`, sub: moonPhaseName(moonIllum), warn: moonWarn },
   ];
 
-  const scoreColor = !skyScore ? 'var(--text-muted)' : skyScore.score >= 70 ? 'var(--success)' : skyScore.score >= 50 ? 'var(--terracotta)' : 'var(--text-muted)';
+  const scoreColor = !skyScore ? 'var(--text-muted)' : skyScore.score >= 70 ? 'var(--success)' : skyScore.score >= 50 ? 'var(--accent-text)' : 'var(--text-muted)';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -238,14 +238,14 @@ export default function HomeSkyPreview() {
       {skyScore && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px',
-          borderRadius: 14, background: 'rgba(12,18,33,0.5)',
+          borderRadius: 14, background: 'color-mix(in srgb, var(--bg-panel) 50%, transparent)',
           border: `1px solid ${scoreColor}22`,
           animation: 'scoreIn 0.5s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           {/* Circular score */}
           <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
             <svg width="64" height="64" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+              <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(var(--ink), 0.06)" strokeWidth="5" />
               <circle cx="32" cy="32" r="26" fill="none" stroke={scoreColor} strokeWidth="5"
                 strokeDasharray={`${2 * Math.PI * 26}`}
                 strokeDashoffset={`${2 * Math.PI * 26 * (1 - skyScore.score / 100)}`}
@@ -265,7 +265,7 @@ export default function HomeSkyPreview() {
             <div style={{ color: scoreColor, fontWeight: 600, fontSize: 14 }}>
               {skyScore.emoji} {skyScore.grade} Sky Tonight
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 }}>
+            <div style={{ color: 'rgba(var(--ink), 0.35)', fontSize: 11, marginTop: 2 }}>
               Sky Score {skyScore.score}/100
             </div>
           </div>
@@ -278,8 +278,8 @@ export default function HomeSkyPreview() {
             }}
             style={{
               padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap', flexShrink: 0,
+              background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.08)',
+              color: 'rgba(var(--ink), 0.5)', whiteSpace: 'nowrap', flexShrink: 0,
             }}
           >
             Share ↗
@@ -291,7 +291,7 @@ export default function HomeSkyPreview() {
       <div style={{
         position: 'relative', overflow: 'hidden',
         borderRadius: 16,
-        background: 'rgba(12, 18, 33, 0.6)',
+        background: 'color-mix(in srgb, var(--bg-panel) 60%, transparent)',
         border: `1px solid ${SC.border}`,
         padding: '16px 16px 14px',
         animation: 'skyEnter 0.45s cubic-bezier(0.22,1,0.36,1) both',
@@ -309,9 +309,9 @@ export default function HomeSkyPreview() {
                 background: SC.bg, border: `1px solid ${SC.border}`,
                 color: SC.color,
               }}>{status.toUpperCase()}</span>
-              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 500 }}>{dayLabel}</span>
+              <span style={{ color: 'rgba(var(--ink), 0.4)', fontSize: 12, fontWeight: 500 }}>{dayLabel}</span>
             </div>
-            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ color: 'rgba(var(--ink), 0.18)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
               <MapPin size={10} aria-hidden="true" />{locationLabel}
             </span>
           </div>
@@ -329,7 +329,7 @@ export default function HomeSkyPreview() {
             <div style={{
               marginTop: 10, padding: '8px 12px', borderRadius: 10,
               background: 'rgba(255, 179, 71,0.05)', border: '1px solid rgba(255, 179, 71,0.15)',
-              color: 'rgba(255, 179, 71,0.65)', fontSize: 11, lineHeight: 1.4,
+              color: 'color-mix(in srgb, var(--accent-text) 65%, transparent)', fontSize: 11, lineHeight: 1.4,
             }}>
               ☽ Full moon ({moonPct}%) — faint deep-sky targets will be washed out
             </div>
@@ -341,62 +341,62 @@ export default function HomeSkyPreview() {
       {(visiblePlanets.length > 0 || moon || planetsLoading) && (
         <div style={{
           borderRadius: 16,
-          background: 'rgba(12, 18, 33, 0.5)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'color-mix(in srgb, var(--bg-panel) 50%, transparent)',
+          border: '1px solid rgba(var(--ink), 0.06)',
           overflow: 'hidden',
           animation: 'skyEnter 0.45s cubic-bezier(0.22,1,0.36,1) 0.1s both',
         }}>
           <div style={{
             padding: '11px 14px 9px',
-            borderBottom: '1px solid rgba(255,255,255,0.04)',
+            borderBottom: '1px solid rgba(var(--ink), 0.04)',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Planets tonight</span>
-            <span style={{ color: 'rgba(255,255,255,0.14)', fontSize: 9, fontWeight: 600, letterSpacing: '0.06em' }}>Alt · Rise · Set · Dir</span>
+            <span style={{ color: 'rgba(var(--ink), 0.3)', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Planets tonight</span>
+            <span style={{ color: 'rgba(var(--ink), 0.14)', fontSize: 9, fontWeight: 600, letterSpacing: '0.06em' }}>Alt · Rise · Set · Dir</span>
           </div>
 
           {planetsLoading ? (
             <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {[0, 1, 2].map(i => <div key={i} style={{ height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.02)', animation: 'pulse 2s ease-in-out infinite' }} />)}
+              {[0, 1, 2].map(i => <div key={i} style={{ height: 36, borderRadius: 8, background: 'rgba(var(--ink), 0.02)', animation: 'pulse 2s ease-in-out infinite' }} />)}
             </div>
           ) : (
             <div style={{ padding: '4px 0' }}>
               {[moon, ...visiblePlanets].filter(Boolean).map((p, rowIdx) => {
                 if (!p) return null;
                 const quality = p.altitude > 30 ? 'good' : p.altitude > 10 ? 'ok' : 'low';
-                const pColor = PLANET_COLOR[p.key] ?? 'rgba(255,255,255,0.4)';
-                const altColor = quality === 'good' ? 'var(--success)' : quality === 'ok' ? 'var(--stars)' : 'rgba(148,163,184,0.35)';
+                const pColor = PLANET_COLOR[p.key] ?? 'rgba(var(--ink), 0.4)';
+                const altColor = quality === 'good' ? 'var(--success)' : quality === 'ok' ? 'var(--accent-text)' : 'rgba(148,163,184,0.35)';
                 const totalRows = [moon, ...visiblePlanets].filter(Boolean).length;
                 return (
                   <div key={p.key} style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '9px 14px',
                     opacity: quality === 'low' ? 0.35 : 1,
-                    borderBottom: rowIdx < totalRows - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
+                    borderBottom: rowIdx < totalRows - 1 ? '1px solid rgba(var(--ink), 0.03)' : 'none',
                     transition: 'background 0.2s',
                     animation: `planetSlideIn 0.4s ease forwards`,
                     animationDelay: `${rowIdx * 0.08}s`,
                     animationFillMode: 'both',
                   }}
-                  onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.02)'; }}
+                  onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(var(--ink), 0.02)'; }}
                   onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                   >
                     {/* Planet symbol */}
                     <div style={{
                       width: 32, height: 32, flexShrink: 0, borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                      background: 'rgba(var(--ink), 0.03)', border: '1px solid rgba(var(--ink), 0.06)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 14, color: pColor,
                     }}>
                       {PLANET_SYMBOL[p.key] ?? '✦'}
                     </div>
                     {/* Name */}
-                    <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500, minWidth: 52 }}>
+                    <span style={{ color: 'rgba(var(--ink), 0.75)', fontSize: 13, fontWeight: 500, minWidth: 52 }}>
                       {p.key.charAt(0).toUpperCase() + p.key.slice(1)}
                     </span>
                     {/* Altitude bar */}
                     {quality !== 'low' ? (
-                      <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 2 }}>
+                      <div style={{ flex: 1, height: 3, background: 'rgba(var(--ink), 0.04)', borderRadius: 2 }}>
                         <div style={{
                           height: '100%',
                           width: `${Math.max(2, Math.min(100, (p.altitude / 90) * 100))}%`,
@@ -414,11 +414,11 @@ export default function HomeSkyPreview() {
                     </span>
                     {/* Rise/Set */}
                     <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
-                      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9.5, fontFamily: 'monospace' }}>↑{fmtTime(p.rise)}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.14)', fontSize: 9.5, fontFamily: 'monospace' }}>↓{fmtTime(p.set)}</span>
+                      <span style={{ color: 'rgba(var(--ink), 0.2)', fontSize: 9.5, fontFamily: 'monospace' }}>↑{fmtTime(p.rise)}</span>
+                      <span style={{ color: 'rgba(var(--ink), 0.14)', fontSize: 9.5, fontFamily: 'monospace' }}>↓{fmtTime(p.set)}</span>
                     </div>
                     {/* Direction */}
-                    <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: 700, minWidth: 18, textAlign: 'right' }}>{p.azimuthDir}</span>
+                    <span style={{ color: 'rgba(var(--ink), 0.15)', fontSize: 9, fontWeight: 700, minWidth: 18, textAlign: 'right' }}>{p.azimuthDir}</span>
                   </div>
                 );
               })}
@@ -440,23 +440,23 @@ export default function HomeSkyPreview() {
             const { avgCloud: dc } = getNightStats(day);
             const sel2 = i === selectedDay;
             const bs = badge === 'Go'    ? { color: 'var(--success)',               border: 'rgba(94, 234, 212,0.3)',   bg: 'rgba(94, 234, 212,0.07)' }
-                      : badge === 'Maybe' ? { color: 'var(--stars)',               border: 'rgba(255, 179, 71,0.25)', bg: 'rgba(255, 179, 71,0.06)' }
-                      :                     { color: 'rgba(148,163,184,0.45)', border: 'rgba(255,255,255,0.07)', bg: 'rgba(255,255,255,0.02)' };
+                      : badge === 'Maybe' ? { color: 'var(--accent-text)',               border: 'rgba(255, 179, 71,0.25)', bg: 'rgba(255, 179, 71,0.06)' }
+                      :                     { color: 'rgba(148,163,184,0.45)', border: 'rgba(var(--ink), 0.07)', bg: 'rgba(var(--ink), 0.02)' };
             return (
               <button key={day.date} onClick={() => selectDay(i, day.date)} style={{
                 flex: '0 0 auto', minWidth: 54, cursor: 'pointer',
-                background: sel2 ? bs.bg : 'rgba(255,255,255,0.015)',
-                border: `1px solid ${sel2 ? bs.border : 'rgba(255,255,255,0.05)'}`,
+                background: sel2 ? bs.bg : 'rgba(var(--ink), 0.015)',
+                border: `1px solid ${sel2 ? bs.border : 'rgba(var(--ink), 0.05)'}`,
                 borderRadius: 12, padding: '9px 5px 8px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
                 outline: 'none', transition: 'all 0.22s ease',
                 boxShadow: sel2 ? `0 0 12px ${bs.color}22` : 'none',
               }}>
-                <span style={{ color: sel2 ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.28)', fontSize: 9.5, fontWeight: 600 }}>
+                <span style={{ color: sel2 ? 'rgba(var(--ink), 0.75)' : 'rgba(var(--ink), 0.28)', fontSize: 9.5, fontWeight: 600 }}>
                   {formatDay(day.date, i)}
                 </span>
                 {dc !== null && (
-                  <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.06)' }}>
+                  <div style={{ width: '70%', height: 2, borderRadius: 1, background: 'rgba(var(--ink), 0.06)' }}>
                     <div style={{ height: '100%', width: `${Math.round(100 - dc)}%`, borderRadius: 1, background: bs.color, transition: 'width 0.6s ease' }} />
                   </div>
                 )}

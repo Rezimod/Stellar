@@ -380,7 +380,7 @@ export default function Dashboard() {
                 minHeight: 48,
                 background: 'var(--accent-dim)',
                 border: '1px solid var(--accent-border)',
-                color: 'var(--accent)',
+                color: 'var(--accent-text)',
               }}
             >
               ✦ Ask ASTRA

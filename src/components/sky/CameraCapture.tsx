@@ -114,7 +114,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <button
           onClick={handleRetake}
           className="w-full py-2.5 rounded-xl text-sm text-text-muted flex items-center justify-center gap-2 flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.07)' }}
         >
           <RotateCcw size={14} /> {t('capture.retake')}
         </button>
@@ -255,16 +255,16 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           onClick={handleCapture}
           className="w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-transform"
           style={{
-            background: 'rgba(255,255,255,0.08)',
-            border: '2px solid rgba(255,255,255,0.3)',
-            boxShadow: '0 0 0 5px rgba(255,255,255,0.04)',
+            background: 'rgba(var(--ink), 0.08)',
+            border: '2px solid rgba(var(--ink), 0.3)',
+            boxShadow: '0 0 0 5px rgba(var(--ink), 0.04)',
           }}
         >
-          <div className="w-10 h-10 rounded-full" style={{ background: '#fff' }} />
+          <div className="w-10 h-10 rounded-full" style={{ background: 'var(--text-primary)' }} />
         </button>
         <label
           className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)' }}
+          style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.12)' }}
           title={t('capture.uploadTitle')}
         >
           <Upload size={15} className="text-text-muted" />
@@ -275,7 +275,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
       {/* Capture guide */}
       <div
         className="rounded-xl px-3 py-2.5 flex-shrink-0"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
+        style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.08)', backdropFilter: 'blur(12px)' }}
       >
         <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 font-medium">{t('capture.howTo')}</p>
         <div className="flex flex-col gap-1.5">
@@ -287,7 +287,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
             <div key={tip.n} className="flex items-start gap-2">
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-px"
-                style={{ background: 'rgba(255, 179, 71,0.1)', color: 'var(--stars)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+                style={{ background: 'rgba(255, 179, 71,0.1)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.2)' }}
               >
                 {tip.n}
               </span>

@@ -23,13 +23,13 @@ export default function HowItWorksSection() {
     <section className="py-16 md:py-24 bg-[radial-gradient(ellipse_at_50%_50%,rgba(255, 179, 71,0.05)_0%,transparent_70%)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <header className="mx-auto max-w-[640px] text-center mb-10 md:mb-16">
-        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(232,230,221,0.4)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgba(var(--ink-warm),0.4)]">
           02 · MECHANISM
         </span>
         <h2 className="mt-3 font-display font-medium tracking-[-0.02em] text-[24px] md:text-[32px] text-[#F8F4EC]">
           Three orbits, one discovery.
         </h2>
-        <p className="mt-3 text-[13px] md:text-[14px] text-[rgba(232,230,221,0.55)]">
+        <p className="mt-3 text-[13px] md:text-[14px] text-[rgba(var(--ink-warm),0.55)]">
           From the sky to the chain in three motions.
         </p>
       </header>
@@ -48,9 +48,9 @@ export default function HowItWorksSection() {
             Collect an NFT and Stars rewards.
           </desc>
 
-          <ellipse cx="340" cy="230" rx="100" ry="100" fill="none" stroke="rgba(232,230,221,0.08)" strokeWidth="0.5" strokeDasharray="2 4" />
-          <ellipse cx="340" cy="230" rx="160" ry="160" fill="none" stroke="rgba(232,230,221,0.06)" strokeWidth="0.5" strokeDasharray="2 4" />
-          <ellipse cx="340" cy="230" rx="220" ry="220" fill="none" stroke="rgba(232,230,221,0.04)" strokeWidth="0.5" strokeDasharray="2 4" />
+          <ellipse cx="340" cy="230" rx="100" ry="100" fill="none" stroke="rgba(var(--ink-warm),0.08)" strokeWidth="0.5" strokeDasharray="2 4" />
+          <ellipse cx="340" cy="230" rx="160" ry="160" fill="none" stroke="rgba(var(--ink-warm),0.06)" strokeWidth="0.5" strokeDasharray="2 4" />
+          <ellipse cx="340" cy="230" rx="220" ry="220" fill="none" stroke="rgba(var(--ink-warm),0.04)" strokeWidth="0.5" strokeDasharray="2 4" />
 
           {DECOR_STARS.map((s, i) => (
             <circle
@@ -58,7 +58,7 @@ export default function HowItWorksSection() {
               cx={s.cx}
               cy={s.cy}
               r={s.r}
-              fill={s.gold ? 'var(--terracotta)' : '#F8F4EC'}
+              fill={s.gold ? 'var(--terracotta)' : 'rgba(var(--ink),1)'}
               opacity={s.opacity}
             />
           ))}
@@ -72,7 +72,7 @@ export default function HowItWorksSection() {
             textAnchor="middle"
             fontSize="9"
             letterSpacing="0.2em"
-            fill="rgba(232,230,221,0.5)"
+            fill="rgba(var(--ink-warm),0.5)"
             fontFamily="var(--font-mono)"
           >
             YOU
@@ -85,10 +85,10 @@ export default function HowItWorksSection() {
             <circle cx="335" cy="126" r="1.2" fill="rgba(94, 234, 212,0.6)" />
             <circle cx="344" cy="132" r="1"   fill="rgba(94, 234, 212,0.45)" />
             <circle cx="338" cy="135" r="0.9" fill="rgba(94, 234, 212,0.4)" />
-            <text x="340" y="92" textAnchor="middle" fontSize="9" letterSpacing="0.2em" fill="var(--seafoam)" fontFamily="var(--font-mono)">
+            <text x="340" y="92" textAnchor="middle" fontSize="9" letterSpacing="0.2em" fill="var(--teal-text)" fontFamily="var(--font-mono)">
               i · OBSERVE
             </text>
-            <text x="340" y="170" textAnchor="middle" fontSize="14" fill="#F8F4EC" fontFamily="var(--font-display)">
+            <text x="340" y="170" textAnchor="middle" fontSize="14" fill="var(--text-primary)" fontFamily="var(--font-display)">
               Tonight&apos;s sky
             </text>
           </g>
@@ -104,10 +104,10 @@ export default function HowItWorksSection() {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <text x="540" y="222" textAnchor="start" fontSize="9" letterSpacing="0.2em" fill="var(--terracotta)" fontFamily="var(--font-mono)">
+            <text x="540" y="222" textAnchor="start" fontSize="9" letterSpacing="0.2em" fill="var(--accent-text)" fontFamily="var(--font-mono)">
               ii · VERIFY
             </text>
-            <text x="540" y="240" textAnchor="start" fontSize="14" fill="#F8F4EC" fontFamily="var(--font-display)">
+            <text x="540" y="240" textAnchor="start" fontSize="14" fill="var(--text-primary)" fontFamily="var(--font-display)">
               Photo + oracle
             </text>
           </g>
@@ -122,10 +122,10 @@ export default function HowItWorksSection() {
               strokeWidth="1.2"
             />
             <circle cx="180" cy="231" r="2" fill="var(--terracotta)" />
-            <text x="140" y="222" textAnchor="end" fontSize="9" letterSpacing="0.2em" fill="var(--terracotta)" fontFamily="var(--font-mono)">
+            <text x="140" y="222" textAnchor="end" fontSize="9" letterSpacing="0.2em" fill="var(--accent-text)" fontFamily="var(--font-mono)">
               iii · COLLECT
             </text>
-            <text x="140" y="240" textAnchor="end" fontSize="14" fill="#F8F4EC" fontFamily="var(--font-display)">
+            <text x="140" y="240" textAnchor="end" fontSize="14" fill="var(--text-primary)" fontFamily="var(--font-display)">
               NFT + Stars
             </text>
           </g>
@@ -135,7 +135,7 @@ export default function HowItWorksSection() {
             y="430"
             textAnchor="middle"
             fontSize="11"
-            fill="rgba(232,230,221,0.45)"
+            fill="rgba(var(--ink-warm),0.45)"
             fontFamily="var(--font-display)"
           >
             Each completed orbit mints one verified discovery, gasless.

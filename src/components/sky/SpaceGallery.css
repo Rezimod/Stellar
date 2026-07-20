@@ -36,7 +36,7 @@
 .space-gal__skel {
   aspect-ratio: 4 / 3;
   border-radius: 16px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  background: linear-gradient(90deg, rgba(var(--ink),0.03), rgba(var(--ink),0.06), rgba(var(--ink),0.03));
   background-size: 200% 100%;
   animation: skyShimmer 1.6s linear infinite;
 }

@@ -33,14 +33,14 @@ export default function ObserveBriefPage() {
         <BackButton />
         <div
           className="rounded-2xl p-6 text-center"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: 'rgba(var(--ink), 0.03)', border: '1px solid rgba(var(--ink), 0.08)' }}
         >
           <p className="text-text-primary font-semibold text-base mb-2">{t('notFound.title')}</p>
           <p className="text-text-muted text-sm mb-4">{t('notFound.desc')}</p>
           <Link
             href="/missions"
             className="inline-block px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--terracotta)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', border: '1px solid rgba(255, 179, 71,0.25)', color: 'var(--accent-text)' }}
           >
             {t('notFound.back')}
           </Link>
@@ -74,7 +74,7 @@ export default function ObserveBriefPage() {
 
         <div className="relative flex items-center justify-center gap-2 flex-shrink-0">
           <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--stl-gold)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent-text)' }}>
             {t('target.eyebrow')}
           </span>
           <span className="w-1 h-1 rounded-full stl-tw" style={{ background: 'var(--stl-gold)' }} />
@@ -90,8 +90,8 @@ export default function ObserveBriefPage() {
               transform: 'scale(1.55)',
             }}
           />
-          <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.04)', transform: 'scale(1.18)' }} />
-          <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.06)', transform: 'scale(1.08)' }} />
+          <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(var(--ink), 0.04)', transform: 'scale(1.18)' }} />
+          <div aria-hidden className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(var(--ink), 0.06)', transform: 'scale(1.08)' }} />
           {(() => {
             const img = getMissionImage(mission.id);
             // Saturn's rings overflow a circle — render the alpha-cut PNG bare so
@@ -143,8 +143,8 @@ export default function ObserveBriefPage() {
 
         <div className="relative flex items-center justify-center gap-3 flex-shrink-0">
           <div className="flex items-center gap-1" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.04em' }}>
-            <span style={{ color: 'var(--stl-gold)', fontWeight: 600 }}>+{mission.stars}</span>
-            <StarMark size={14} style={{ color: 'var(--stl-gold)' }} />
+            <span style={{ color: 'var(--accent-text)', fontWeight: 600 }}>+{mission.stars}</span>
+            <StarMark size={14} style={{ color: 'var(--accent-text)' }} />
           </div>
           <span style={{ color: 'var(--stl-text-whisper)', fontSize: 10 }}>·</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--stl-text-muted)' }}>
@@ -169,7 +169,7 @@ export default function ObserveBriefPage() {
         </Button>
 
         {mission.demo && (
-          <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--terracotta)' }}>
+          <p className="relative text-[11px] mt-2 opacity-70 text-center flex-shrink-0" style={{ color: 'var(--accent-text)' }}>
             {t('target.demo')}
           </p>
         )}

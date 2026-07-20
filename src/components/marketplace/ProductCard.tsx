@@ -105,7 +105,7 @@ export default function ProductCard({
         </div>
         {product.rating != null && (
           <div className="flex items-center gap-[5px] mb-[5px]">
-            <Star className="w-[12px] h-[12px]" style={{ color: 'var(--terracotta)', fill: 'var(--terracotta)' }} />
+            <Star className="w-[12px] h-[12px]" style={{ color: 'var(--accent-text)', fill: 'var(--accent-text)' }} />
             <span className="text-[11.5px] font-semibold tabular-nums text-white leading-none">{product.rating.toFixed(1)}</span>
             {product.reviews != null && (
               <span className="text-[10.5px] tabular-nums text-white/45 leading-none">({product.reviews})</span>
@@ -121,7 +121,7 @@ export default function ProductCard({
       </Link>
       <div
         className="flex flex-col gap-[4px] pt-[10px] mb-[12px]"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
+        style={{ borderTop: '1px solid rgba(var(--ink), 0.12)' }}
       >
         <span className="text-[16px] sm:text-[18px] font-semibold text-white leading-none whitespace-nowrap">
           {formatPrice(product)}
@@ -163,7 +163,7 @@ export default function ProductCard({
         affordable ? (
           <Link
             href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
-            className="mt-[8px] w-full inline-flex items-center justify-center gap-[5px] text-[11px] tracking-[0.02em] text-white/55 hover:text-[var(--terracotta)] transition-colors"
+            className="mt-[8px] w-full inline-flex items-center justify-center gap-[5px] text-[11px] tracking-[0.02em] text-white/55 hover:text-[var(--accent-text)] transition-colors"
             aria-label={`Redeem ${product.name} with Stars`}
           >
             <Star className="w-[11px] h-[11px] flex-shrink-0" style={{ fill: 'currentColor' }} />

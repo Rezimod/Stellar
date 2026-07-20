@@ -11,8 +11,8 @@ export function MoonGlyph({
   phase,
   size = 14,
   litColor = 'rgba(244, 217, 160, 0.85)',
-  shadowColor = 'rgba(255, 255, 255, 0.06)',
-  rim = 'rgba(255, 255, 255, 0.22)',
+  shadowColor = 'rgba(var(--ink), 0.06)',
+  rim = 'rgba(var(--ink), 0.22)',
 }: {
   phase: number;
   size?: number;
@@ -63,7 +63,7 @@ export function NightCloudStrip({
         style={{
           height,
           width: '100%',
-          background: 'rgba(255,255,255,0.05)',
+          background: 'rgba(var(--ink),0.05)',
           borderRadius: 3,
         }}
       />

@@ -22,7 +22,7 @@ const PLANET_ICONS: Record<string, { img: string; bg: string }> = {
   Mars: { img: '/sky/targets/mars.jpg', bg: 'rgba(200,74,46,0.12)' },
   Saturn: { img: '/sky/targets/saturn.jpg', bg: 'rgba(212,169,84,0.12)' },
   Mercury: { img: '/sky/targets/mercury.jpg', bg: 'rgba(168,162,144,0.12)' },
-  Moon: { img: '/sky/targets/moon.jpg', bg: 'rgba(255,255,255,0.06)' },
+  Moon: { img: '/sky/targets/moon.jpg', bg: 'rgba(var(--ink),0.06)' },
 };
 
 export function VisibleNow({ planets, featuredTarget, isCurrentlyDark = true }: VisibleNowProps) {
@@ -77,7 +77,7 @@ export function VisibleNow({ planets, featuredTarget, isCurrentlyDark = true }: 
             >
               <div
                 className="object-icon"
-                style={{ background: icon?.bg ?? 'rgba(255,255,255,0.04)', opacity: p.visible ? 1 : 0.5, overflow: 'hidden', padding: 0 }}
+                style={{ background: icon?.bg ?? 'rgba(var(--ink),0.04)', opacity: p.visible ? 1 : 0.5, overflow: 'hidden', padding: 0 }}
               >
                 {icon && (
                   // eslint-disable-next-line @next/next/no-img-element

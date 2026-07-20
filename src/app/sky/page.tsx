@@ -551,7 +551,7 @@ export default function SkyPage() {
                 <ChevronRight
                   size={16}
                   aria-hidden="true"
-                  style={{ position: 'absolute', top: 8, right: 8, color: 'var(--terracotta)', opacity: 0.75 }}
+                  style={{ position: 'absolute', top: 8, right: 8, color: 'var(--accent-text)', opacity: 0.75 }}
                 />
               </div>
 
@@ -635,7 +635,7 @@ export default function SkyPage() {
               <section className="skx__card skx__nbt">
                 <span className="skx__card-label">{tUi('nextBestTime')}</span>
                 <div className="skx__nbt-row">
-                  <RingGauge pct={darkRemainingPct} color="var(--seafoam, #5EEAD4)">
+                  <RingGauge pct={darkRemainingPct} color="var(--teal-text, #5EEAD4)">
                     <TelescopeIcon size={20} />
                   </RingGauge>
                   <div className="skx__nbt-body">
@@ -652,7 +652,7 @@ export default function SkyPage() {
                   {bestTargets.length === 0 && (
                     <li className="skx__look-empty">
                       {tUi('nothingUpYet')}{windowOpen ? <> — {tUi('darkSkyOpensAround')} <strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.{' '}
-                      <Link href="/missions" style={{ color: 'var(--accent)' }}>{tUi('tryAQuiz')}</Link> {tUi('whileYouWait')}
+                      <Link href="/missions" style={{ color: 'var(--accent-text)' }}>{tUi('tryAQuiz')}</Link> {tUi('whileYouWait')}
                     </li>
                   )}
                   {bestTargets.slice(0, 3).map((o) => (
@@ -689,7 +689,7 @@ export default function SkyPage() {
                 {bestTargets.length === 0 && (
                   <li className="skx__vis-empty">
                     {tUi('nothingAboveHorizon')}{windowOpen ? <> — {tUi('nextDarkWindow')}<strong>{fmtClock(windowOpen, dateLocale, tz)}</strong></> : ''}.{' '}
-                    <Link href="/missions" style={{ color: 'var(--accent)' }}>{tUi('quizTime')}</Link> {tUi('untilThen')}
+                    <Link href="/missions" style={{ color: 'var(--accent-text)' }}>{tUi('quizTime')}</Link> {tUi('untilThen')}
                   </li>
                 )}
                 {bestTargets.map((o, i) => (
@@ -801,11 +801,11 @@ function QualityRing({ score }: { score: number }) {
   const r = 18;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(1, score / 10));
-  const color = score >= 7 ? 'var(--seafoam, #5EEAD4)' : score >= 5 ? 'var(--terracotta, #FFB347)' : '#FF8A6A';
+  const color = score >= 7 ? 'var(--teal-text, #5EEAD4)' : score >= 5 ? 'var(--accent-text, #FFB347)' : '#FF8A6A';
   return (
     <span className="skx__qring" aria-hidden="true">
       <svg width={44} height={44} viewBox="0 0 44 44">
-        <circle cx={22} cy={22} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={3.5} />
+        <circle cx={22} cy={22} r={r} fill="none" stroke="rgba(var(--ink), 0.10)" strokeWidth={3.5} />
         <circle
           cx={22} cy={22} r={r} fill="none"
           stroke={color} strokeWidth={3.5} strokeLinecap="round"
@@ -886,7 +886,7 @@ function RingGauge({ pct, color, children }: { pct: number; color: string; child
   return (
     <span className="skx__ring">
       <svg width={52} height={52} viewBox="0 0 52 52" aria-hidden="true">
-        <circle cx={26} cy={26} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={3.5} />
+        <circle cx={26} cy={26} r={r} fill="none" stroke="rgba(var(--ink), 0.10)" strokeWidth={3.5} />
         <circle
           cx={26} cy={26} r={r} fill="none"
           stroke={color} strokeWidth={3.5} strokeLinecap="round"

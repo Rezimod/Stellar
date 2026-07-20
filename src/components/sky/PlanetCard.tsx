@@ -15,7 +15,7 @@ interface PlanetCardProps {
 }
 
 const ARROW_COLORS = {
-  active: { teal: '#5EEAD4', peak: '#FFB347' },
+  active: { teal: 'var(--teal-text)', peak: 'var(--accent-text)' },
   inactive: '#5A6275',
 };
 
@@ -50,7 +50,7 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
       <div className="mini-compass-wrap">
         <div className="mini-compass">
           <svg className="mini-compass-svg" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+            <circle cx="24" cy="24" r="21" fill="none" style={{ stroke: 'rgba(var(--ink), 0.08)' }} strokeWidth="1" />
             <text x="24" y="9" fill="#5A6275" fontFamily="JetBrains Mono" fontSize="6" textAnchor="middle">
               N
             </text>
@@ -65,7 +65,7 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
             </text>
 
             {/* Center dot */}
-            <circle cx="24" cy="24" r="2" fill={arrowColor} />
+            <circle cx="24" cy="24" r="2" style={{ fill: arrowColor }} />
 
             {/* Direction arrow — rotated by azimuth around the center.
                 In SVG, 0° rotation points up (north), positive rotation is clockwise. */}
@@ -78,17 +78,17 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
                 y1="24"
                 x2="24"
                 y2="9"
-                stroke={arrowColor}
+                style={{ stroke: arrowColor }}
                 strokeWidth="1.8"
                 strokeLinecap="round"
               />
-              <polygon points="24,7 21.5,11 26.5,11" fill={arrowColor} />
+              <polygon points="24,7 21.5,11 26.5,11" style={{ fill: arrowColor }} />
             </g>
           </svg>
         </div>
         <span
           className="dir-label"
-          style={{ color: !isActive ? 'var(--text-dim)' : planet.altitude > 50 ? 'var(--accent)' : 'var(--seafoam)' }}
+          style={{ color: !isActive ? 'var(--text-dim)' : planet.altitude > 50 ? 'var(--accent-text)' : 'var(--teal-text)' }}
         >
           {isActive ? `${cardinal} · ${Math.round(planet.altitude)}°` : 'below'}
         </span>
@@ -128,8 +128,8 @@ export function PlanetCard({ planet, orbStyle }: PlanetCardProps) {
                 equipment === 'eye'
                   ? 'var(--green)'
                   : equipment === 'binoc'
-                  ? 'var(--seafoam)'
-                  : 'var(--accent)',
+                  ? 'var(--teal-text)'
+                  : 'var(--accent-text)',
             }}
           >
             {equipmentLabel(equipment)}

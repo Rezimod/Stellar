@@ -64,7 +64,7 @@ function ScoreGauge({ score, color }: { score: number; color: string }) {
   return (
     <span className="forecast7__gauge" aria-hidden="true">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={sw} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(var(--ink),0.10)" strokeWidth={sw} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke={color} strokeWidth={sw} strokeLinecap="round"

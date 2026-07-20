@@ -18,7 +18,7 @@ export default function SkyAstraCta() {
     >
       <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
         style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)' }}>
-        <StarMark size={16} style={{ color: 'var(--terracotta)' }} />
+        <StarMark size={16} style={{ color: 'var(--accent-text)' }} />
       </div>
       <div>
         <p className="text-text-primary text-sm font-semibold">Not sure what to observe?</p>

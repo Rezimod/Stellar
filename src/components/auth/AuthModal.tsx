@@ -42,7 +42,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         className="relative w-full max-w-[400px] mx-4 rounded-2xl p-6"
         style={{
           background: 'var(--canvas)',
-          border: '1px solid rgba(232,230,221,0.08)',
+          border: '1px solid rgba(var(--ink-warm),0.08)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -68,7 +68,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         >
           {t('welcome')}
         </h2>
-        <p style={{ fontSize: 13, color: 'rgba(232,230,221,0.6)', margin: '0 0 24px', lineHeight: 1.4 }}>
+        <p style={{ fontSize: 13, color: 'rgba(var(--ink-warm),0.6)', margin: '0 0 24px', lineHeight: 1.4 }}>
           {t('subtitle')}
         </p>
 
@@ -94,7 +94,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           {t('continueEmail')}
         </button>
 
-        <p style={{ fontSize: 11, color: 'rgba(232,230,221,0.4)', textAlign: 'center', margin: '0 0 20px' }}>
+        <p style={{ fontSize: 11, color: 'rgba(var(--ink-warm),0.4)', textAlign: 'center', margin: '0 0 20px' }}>
           {t('emailHelp')}
         </p>
 
@@ -103,7 +103,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           <span
             style={{
               fontSize: 10,
-              color: 'rgba(232,230,221,0.4)',
+              color: 'rgba(var(--ink-warm),0.4)',
               textTransform: 'uppercase',
               letterSpacing: '0.2em',
             }}
@@ -127,17 +127,17 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             fontWeight: 500,
             padding: '12px 16px',
             borderRadius: 10,
-            border: '1px solid rgba(232,230,221,0.2)',
+            border: '1px solid rgba(var(--ink-warm),0.2)',
             cursor: 'pointer',
           }}
         >
           {t('connectWallet')}
         </button>
 
-        <p style={{ fontSize: 11, color: 'rgba(232,230,221,0.4)', textAlign: 'center', margin: '8px 0 0' }}>
+        <p style={{ fontSize: 11, color: 'rgba(var(--ink-warm),0.4)', textAlign: 'center', margin: '8px 0 0' }}>
           {t('walletList')}
         </p>
-        <p style={{ fontSize: 10, color: 'rgba(232,230,221,0.3)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.45 }}>
+        <p style={{ fontSize: 10, color: 'rgba(var(--ink-warm),0.3)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.45 }}>
           {t('metamaskNote')}
         </p>
       </div>

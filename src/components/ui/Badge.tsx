@@ -22,12 +22,12 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
   },
   teal: {
     background: 'rgba(255, 179, 71,0.1)',
-    color: 'var(--terracotta)',
+    color: 'var(--accent-text)',
     border: '1px solid rgba(255, 179, 71,0.2)',
   },
   gold: {
     background: 'rgba(255, 179, 71,0.1)',
-    color: 'var(--stars)',
+    color: 'var(--accent-text)',
     border: '1px solid rgba(255, 179, 71,0.2)',
   },
   green: {
@@ -37,7 +37,7 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
   },
   amber: {
     background: 'rgba(255, 179, 71,0.1)',
-    color: 'var(--terracotta)',
+    color: 'var(--accent-text)',
     border: '1px solid rgba(255, 179, 71,0.2)',
   },
   red: {
@@ -47,7 +47,7 @@ const variantStyles: Record<BadgeVariant, React.CSSProperties> = {
   },
   oracle: {
     background: 'rgba(255, 179, 71,0.1)',
-    color: 'var(--terracotta)',
+    color: 'var(--accent-text)',
     border: '1px solid rgba(255, 179, 71,0.2)',
   },
 };

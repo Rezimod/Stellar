@@ -13,14 +13,14 @@ export default function HelpBanner() {
   return (
     <div
       className="rounded-xl p-[16px] sm:p-[20px] flex flex-col sm:flex-row sm:items-center gap-[14px] sm:justify-between"
-      style={{ background: 'rgba(232,230,221,0.045)', border: '1px solid rgba(232,230,221,0.10)' }}
+      style={{ background: 'rgba(var(--ink-warm), 0.045)', border: '1px solid rgba(var(--ink-warm), 0.10)' }}
     >
       <div className="flex items-center gap-[14px]">
         <span
           className="inline-flex items-center justify-center w-[40px] h-[40px] rounded-full flex-shrink-0"
           style={{ background: 'rgba(255,179,71,0.10)', border: '1px solid rgba(255,179,71,0.30)' }}
         >
-          <Sparkles className="w-[18px] h-[18px]" style={{ color: 'var(--terracotta)' }} />
+          <Sparkles className="w-[18px] h-[18px]" style={{ color: 'var(--accent-text)' }} />
         </span>
         <div>
           <p className="font-display text-[16px] sm:text-[17px] text-white leading-tight" style={{ fontWeight: 600 }}>

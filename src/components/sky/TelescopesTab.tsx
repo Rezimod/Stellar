@@ -218,7 +218,7 @@ function TelescopeLadder({ locale }: { locale: Locale }) {
         <Link
           href="/marketplace"
           className="text-[11px] font-medium inline-flex items-center gap-1 hover:opacity-80 flex-shrink-0"
-          style={{ color: 'var(--stars)' }}
+          style={{ color: 'var(--accent-text)' }}
         >
           <ShoppingBag size={11} />
           {locale === 'ka' ? 'მაღაზია' : 'Shop'}
@@ -236,8 +236,8 @@ function TelescopeLadder({ locale }: { locale: Locale }) {
               key={s.id}
               className="rounded-xl overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: `1px solid ${isOpen ? `${s.badgeColor}40` : 'rgba(255,255,255,0.08)'}`,
+                background: 'rgba(var(--ink),0.03)',
+                border: `1px solid ${isOpen ? `${s.badgeColor}40` : 'rgba(var(--ink),0.08)'}`,
                 transition: 'border-color 200ms ease',
               }}
             >
@@ -301,25 +301,25 @@ function TelescopeLadder({ locale }: { locale: Locale }) {
               {isOpen && (
                 <div className="px-3 pb-3 pt-0 flex flex-col gap-2.5 border-t border-white/[0.05]">
                   <div className="grid grid-cols-2 gap-2 mt-2.5">
-                    <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="rounded-lg p-2" style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
                       <p className="text-[9px] uppercase tracking-widest text-text-muted">
                         {locale === 'ka' ? 'ტიპი' : 'Type'}
                       </p>
                       <p className="text-text-primary text-[11px] mt-0.5">{s.type[locale]}</p>
                     </div>
-                    <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="rounded-lg p-2" style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
                       <p className="text-[9px] uppercase tracking-widest text-text-muted">
                         {locale === 'ka' ? 'სამაგრი' : 'Mount'}
                       </p>
                       <p className="text-text-primary text-[11px] mt-0.5">{s.mount[locale]}</p>
                     </div>
-                    <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="rounded-lg p-2" style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
                       <p className="text-[9px] uppercase tracking-widest text-text-muted">
                         {locale === 'ka' ? 'ფოკუსი' : 'Focal length'}
                       </p>
                       <p className="text-text-primary text-[11px] mt-0.5 font-mono">{s.focalLength}mm</p>
                     </div>
-                    <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="rounded-lg p-2" style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
                       <p className="text-[9px] uppercase tracking-widest text-text-muted">
                         {locale === 'ka' ? 'მაქს. გადიდება' : 'Max useful'}
                       </p>
@@ -357,7 +357,7 @@ function TelescopeLadder({ locale }: { locale: Locale }) {
         className="rounded-xl p-3 flex items-start gap-2 mt-1"
         style={{ background: 'rgba(255, 179, 71,0.04)', border: '1px solid rgba(255, 179, 71,0.12)' }}
       >
-        <Sparkles size={12} style={{ color: 'var(--stars)', flexShrink: 0, marginTop: 2 }} />
+        <Sparkles size={12} style={{ color: 'var(--accent-text)', flexShrink: 0, marginTop: 2 }} />
         <p className="text-text-muted text-[11px] leading-relaxed">
           {locale === 'ka'
             ? 'წესი: მაქსიმალური სასარგებლო გადიდება ≈ 2 × ობიექტივი მმ-ში. 70მმ ტელესკოპი 140×-ზე ჩერდება — კოლოფზე დაწერილი 525× მარკეტინგია.'
@@ -641,6 +641,9 @@ export default function TelescopesTab() {
   const [level, setLevel] = useState<Level>('beginner');
 
   const activeConfig = LEVEL_CONFIG.find(l => l.id === level)!;
+  // Tier color doubles as a bright pill background; as text on the day canvas
+  // the amber tiers are unreadable, so guide copy uses the day-safe variants.
+  const guideText = activeConfig.id === 'beginner' ? 'var(--success)' : 'var(--accent-text)';
   const cards = GUIDE_CARDS.filter(c => c.level === level);
 
   return (
@@ -670,11 +673,11 @@ export default function TelescopesTab() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium flex-shrink-0 transition-all duration-200"
             style={level === l.id ? {
               background: l.color,
-              color: 'var(--canvas)',
+              color: '#0A1735',
               border: 'none',
             } : {
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(var(--ink),0.04)',
+              border: '1px solid rgba(var(--ink),0.08)',
               color: 'var(--text-muted)',
             }}
           >
@@ -704,7 +707,7 @@ export default function TelescopesTab() {
                 className="text-[11px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
                 style={{
                   background: `${activeConfig.color}20`,
-                  color: activeConfig.color,
+                  color: guideText,
                   border: `1px solid ${activeConfig.color}40`,
                 }}
               >
@@ -719,7 +722,7 @@ export default function TelescopesTab() {
                 style={{
                   background: `${activeConfig.color}08`,
                   border: `1px solid ${activeConfig.color}20`,
-                  color: activeConfig.color,
+                  color: guideText,
                 }}
               >
                 💡 {card.tip[locale]}
@@ -729,7 +732,7 @@ export default function TelescopesTab() {
               <Link
                 href="/marketplace"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold transition-opacity hover:opacity-80"
-                style={{ color: 'var(--stars)' }}
+                style={{ color: 'var(--accent-text)' }}
               >
                 {locale === 'ka' ? 'ნახე ტელესკოპები Astroman-ში →' : 'Browse telescopes at Astroman →'}
               </Link>

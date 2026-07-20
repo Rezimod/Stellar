@@ -64,10 +64,10 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
 
         let chipText = 'VISIBLE';
         let chipColor = 'rgba(134,239,172,0.8)';
-        if (locked) { chipText = 'NO STARLIGHT'; chipColor = 'rgba(255, 179, 71,0.7)'; }
-        else if (done) { chipText = 'SEALED'; chipColor = 'rgba(94, 234, 212,0.9)'; }
-        else if (mission.difficulty === 'Expert') { chipText = 'CIRCUMPOLAR · 24H'; chipColor = 'rgba(255,255,255,0.4)'; }
-        else if (mission.difficulty === 'Hard') { chipText = 'RISES LATE'; chipColor = 'rgba(255,255,255,0.4)'; }
+        if (locked) { chipText = 'NO STARLIGHT'; chipColor = 'var(--accent-text)'; }
+        else if (done) { chipText = 'SEALED'; chipColor = 'var(--teal-text)'; }
+        else if (mission.difficulty === 'Expert') { chipText = 'CIRCUMPOLAR · 24H'; chipColor = 'rgba(var(--ink), 0.4)'; }
+        else if (mission.difficulty === 'Hard') { chipText = 'RISES LATE'; chipColor = 'rgba(var(--ink), 0.4)'; }
 
         return (
           <button
@@ -76,14 +76,14 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
             disabled={disabled}
             className="relative p-5 rounded-[14px] text-left overflow-hidden transition-transform active:scale-[0.98] hover:-translate-y-0.5"
             style={{
-              background: done ? 'rgba(94, 234, 212,0.04)' : 'rgba(255,255,255,0.02)',
-              border: done ? '1px solid rgba(94, 234, 212,0.2)' : '1px solid rgba(255,255,255,0.08)',
+              background: done ? 'rgba(94, 234, 212,0.04)' : 'rgba(var(--ink), 0.02)',
+              border: done ? '1px solid rgba(94, 234, 212,0.2)' : '1px solid rgba(var(--ink), 0.08)',
               opacity: locked ? 0.6 : 1,
               cursor: disabled ? 'default' : 'pointer',
               minHeight: 180,
             }}
-            onMouseEnter={e => { if (!disabled && !done) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'; }}
-            onMouseLeave={e => { if (!done) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+            onMouseEnter={e => { if (!disabled && !done) e.currentTarget.style.borderColor = 'rgba(var(--ink), 0.14)'; }}
+            onMouseLeave={e => { if (!done) e.currentTarget.style.borderColor = 'rgba(var(--ink), 0.08)'; }}
           >
             <div className="absolute -right-8 -top-6 pointer-events-none" style={{ opacity: done ? 0.5 : 0.85 }}>
               <Art className="w-[140px] h-[140px]" />
@@ -106,16 +106,16 @@ export default function SecondaryMissionsRail({ heroId, onStart }: Props) {
             </h4>
             <div
               className="mt-0.5"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.35)' }}
+              style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(var(--ink), 0.35)' }}
             >
               {mission.difficulty.toUpperCase()}{mission.demo ? ' · DEMO' : ''}
             </div>
 
             <div
               className="flex items-center justify-between mt-3.5 pt-3"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ borderTop: '1px solid rgba(var(--ink), 0.06)' }}
             >
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--stars)' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--accent-text)' }}>
                 +{mission.stars}
               </span>
               {!disabled && (

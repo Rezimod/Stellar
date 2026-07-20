@@ -12,9 +12,9 @@ import PageContainer from '@/components/layout/PageContainer';
 import StarMark from '@/components/ui/StarMark';
 
 const RANK_LABELS: Record<string, { label: string; color: string }> = {
-  Celestial:  { label: 'Celestial',  color: 'var(--stars)' },
-  Pathfinder: { label: 'Pathfinder', color: 'var(--terracotta)' },
-  Observer:   { label: 'Observer',   color: 'var(--terracotta)' },
+  Celestial:  { label: 'Celestial',  color: 'var(--accent-text)' },
+  Pathfinder: { label: 'Pathfinder', color: 'var(--accent-text)' },
+  Observer:   { label: 'Observer',   color: 'var(--accent-text)' },
   Stargazer:  { label: 'Stargazer',  color: 'var(--text-muted)' },
 };
 
@@ -103,7 +103,7 @@ const PODIUM_CONFIG = [
   },
   {
     rankNum: 1,
-    rankColor: 'var(--stars)',
+    rankColor: 'var(--accent-text)',
     border: 'rgba(255, 179, 71,0.4)',
     bg: 'rgba(255, 179, 71,0.07)',
     padTop: 0,
@@ -212,7 +212,7 @@ export default function LeaderboardPage() {
         style={{
           background: 'rgba(255, 179, 71,0.05)',
           border: '1px solid rgba(255, 179, 71,0.12)',
-          color: 'rgba(255, 179, 71,0.7)',
+          color: 'color-mix(in srgb, var(--accent-text) 70%, transparent)',
         }}
       >
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--terracotta)', flexShrink: 0, opacity: 0.7, display: 'inline-block' }} />
@@ -231,7 +231,7 @@ export default function LeaderboardPage() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
             style={
               activeTab === tab
-                ? { background: 'rgba(255, 179, 71,0.12)', color: 'var(--stars)', border: '1px solid rgba(255, 179, 71,0.22)' }
+                ? { background: 'rgba(255, 179, 71,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.22)' }
                 : { color: 'var(--color-text-secondary)' }
             }
           >
@@ -248,7 +248,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => { setLeaderError(false); setActiveTab(prev => prev); }}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--terracotta)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.2)' }}
           >
             {t('tryAgain')}
           </button>
@@ -277,7 +277,7 @@ export default function LeaderboardPage() {
           <Link
             href="/missions"
             className="mt-1 px-5 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--terracotta)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+            style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.2)' }}
           >
             {t('empty.cta')}
           </Link>
@@ -346,7 +346,7 @@ export default function LeaderboardPage() {
                     <div className="flex flex-col items-center gap-1">
                       <span
                         className="font-bold"
-                        style={{ fontSize: isFirst ? '0.9rem' : '0.8rem', color: 'var(--stars)' }}
+                        style={{ fontSize: isFirst ? '0.9rem' : '0.8rem', color: 'var(--accent-text)' }}
                       >
                         {entry.stars.toLocaleString()} ✦
                       </span>
@@ -376,7 +376,7 @@ export default function LeaderboardPage() {
               : entries.map((entry, i) => {
                   const rankLabel = RANK_LABELS[entry.rank] ?? RANK_LABELS['Stargazer'];
                   const isCurrentUser = currentWallet && entry.wallet.toLowerCase() === currentWallet.toLowerCase();
-                  const rankNumColor = i === 0 ? 'var(--stars)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--color-text-muted)';
+                  const rankNumColor = i === 0 ? 'var(--accent-text)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--color-text-muted)';
                   const avatarColor = i < 3 ? rankNumColor : walletColor(entry.wallet);
                   const rowBg = i % 2 === 1 ? 'var(--surface)' : 'transparent';
 
@@ -428,7 +428,7 @@ export default function LeaderboardPage() {
 
                       <span
                         className="font-bold flex-shrink-0"
-                        style={{ fontSize: 'var(--text-sm)', color: 'var(--stars)' }}
+                        style={{ fontSize: 'var(--text-sm)', color: 'var(--accent-text)' }}
                       >
                         {entry.stars.toLocaleString()} <StarMark size={11} />
                       </span>
@@ -451,7 +451,7 @@ export default function LeaderboardPage() {
                 {t('yourRank', { rank: currentUserIndex + 1 })}
               </span>
               <div className="flex-1" />
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--terracotta)' }}>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-text)' }}>
                 {entries[currentUserIndex]?.stars.toLocaleString()} ✦
               </span>
             </div>
@@ -478,7 +478,7 @@ export default function LeaderboardPage() {
         <Link
           href="/missions"
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, var(--seafoam), var(--seafoam))', color: 'var(--canvas)' }}
+          style={{ background: 'linear-gradient(135deg, var(--seafoam), var(--seafoam))', color: '#0A1735' }}
         >
           {t('cta.button')}
         </Link>

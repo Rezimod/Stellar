@@ -119,7 +119,7 @@ export default function DailyCheckIn({ lat, lon, onCheckIn }: DailyCheckInProps)
                 return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <MoonPhase phase={tier.phase} size={12} glow />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--stars)', fontFamily: 'var(--font-display)' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-text)', fontFamily: 'var(--font-display)' }}>
                       {tier.streak > 0 ? `${tier.name} · ${tier.multiplier}×` : `${streak} day streak`}
                     </span>
                   </div>

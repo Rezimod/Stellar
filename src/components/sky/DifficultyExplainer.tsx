@@ -225,7 +225,7 @@ export default function DifficultyExplainer({
           onClick={onClose}
           aria-label="Close"
           className="w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
+          style={{ background: 'rgba(var(--ink), 0.05)' }}
         >
           <X size={13} />
         </button>
@@ -293,13 +293,13 @@ export default function DifficultyExplainer({
         className="w-full max-w-md rounded-2xl p-5 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
         style={{
           background: 'var(--canvas)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid rgba(var(--ink), 0.08)',
           transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,
           transition: dragStartY.current === null ? 'transform 200ms ease' : undefined,
         }}
       >
         {/* Drag handle (mobile) */}
-        <div className="sm:hidden mx-auto mb-1 w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.18)' }} />
+        <div className="sm:hidden mx-auto mb-1 w-10 h-1 rounded-full" style={{ background: 'rgba(var(--ink), 0.18)' }} />
         {body}
       </div>
     </div>

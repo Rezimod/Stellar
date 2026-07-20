@@ -103,7 +103,7 @@ export default function AnchoredPanel({
   if (!open) return null;
 
   const panelBg = 'var(--canvas, #0E1320)';
-  const panelBorder = '1px solid rgba(255,255,255,0.08)';
+  const panelBorder = '1px solid rgba(var(--ink), 0.08)';
 
   // Mobile: bottom sheet docked at bottom of viewport. Always visible near
   // the user's thumb, regardless of scroll position or where the trigger
@@ -144,7 +144,7 @@ export default function AnchoredPanel({
               width: 38,
               height: 4,
               borderRadius: 999,
-              background: 'rgba(255,255,255,0.18)',
+              background: 'rgba(var(--ink), 0.18)',
               margin: '0 auto 10px',
             }}
           />

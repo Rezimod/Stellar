@@ -84,7 +84,7 @@ export default function LiveStatsBar() {
           flex-shrink: 0;
         }
         .live-stats-label {
-          color: rgba(255,255,255,0.4);
+          color: rgba(var(--ink), 0.4);
           font-size: 12px;
           line-height: 1.3;
         }
@@ -94,7 +94,7 @@ export default function LiveStatsBar() {
           gap: 6px;
         }
         .live-stats-live-label {
-          color: rgba(94, 234, 212,0.7);
+          color: color-mix(in srgb, var(--teal-text) 70%, transparent);
           font-size: 11px;
           font-weight: 600;
           letter-spacing: 0.1em;

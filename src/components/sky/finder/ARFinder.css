@@ -5,6 +5,10 @@
   inset: 0;
   z-index: 1000;
   background: #000;
+  /* The finder is a camera scene — dark in BOTH themes. Pin the text tokens
+     to their night values so day mode never paints dark text over the video. */
+  --text: #F8F4EC;
+  --text-muted: #A8B4C8;
   color: var(--text);
   font-family: var(--font-body, 'Geist'), system-ui, sans-serif;
   overscroll-behavior: contain;

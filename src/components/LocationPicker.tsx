@@ -272,7 +272,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           width: 100%;
           padding: 8px 12px 8px 32px;
           background: var(--surface);
-          border: 1px solid rgba(232,230,221,0.14);
+          border: 1px solid rgba(var(--ink-warm),0.14);
           border-radius: 10px;
           color: var(--text-primary);
           font-size: 13px;
@@ -284,7 +284,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           border-color: rgba(255, 179, 71, 0.55);
           background: var(--surface-hover);
         }
-        .loc-search-input::placeholder { color: rgba(232,230,221,0.45); }
+        .loc-search-input::placeholder { color: rgba(var(--ink-warm),0.45); }
         .loc-city-list::-webkit-scrollbar { width: 4px; }
         .loc-city-list::-webkit-scrollbar-track { background: transparent; }
         .loc-city-list::-webkit-scrollbar-thumb { background: rgba(255, 179, 71,0.30); border-radius: 2px; }
@@ -365,7 +365,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
               <MapPin size={13} color="var(--terracotta)" style={{ flexShrink: 0 }} />
               <div style={{ minWidth: 0 }}>
                 <p style={{
-                  color: 'rgba(232,230,221,0.55)', fontSize: 9, fontWeight: 700,
+                  color: 'rgba(var(--ink-warm),0.55)', fontSize: 9, fontWeight: 700,
                   letterSpacing: '0.16em', textTransform: 'uppercase', margin: 0,
                 }}>
                   Current
@@ -392,7 +392,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
 
           <div style={{ padding: '10px 10px 4px', flexShrink: 0 }}>
             <div style={{ position: 'relative' }}>
-              <Search size={13} color="rgba(232,230,221,0.55)" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              <Search size={13} color="rgba(var(--ink-warm),0.55)" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
               <input
                 ref={searchRef}
                 className="loc-search-input"
@@ -419,8 +419,8 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                     padding: '5px 10px', borderRadius: 999,
                     fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
                     background: active ? 'rgba(255, 179, 71,0.14)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(255, 179, 71,0.45)' : 'rgba(232,230,221,0.12)'}`,
-                    color: active ? 'var(--terracotta)' : 'rgba(232,230,221,0.7)',
+                    border: `1px solid ${active ? 'rgba(255, 179, 71,0.45)' : 'rgba(var(--ink-warm),0.12)'}`,
+                    color: active ? 'var(--terracotta)' : 'rgba(var(--ink-warm),0.7)',
                     cursor: 'pointer', whiteSpace: 'nowrap',
                     transition: 'background 0.15s, border-color 0.15s, color 0.15s',
                   }}
@@ -433,7 +433,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
 
           <div className="loc-city-list" style={{ maxHeight: 300, overflowY: 'auto', padding: '0 10px', minHeight: 120 }}>
             {totalShown === 0 ? (
-              <p style={{ color: 'rgba(232,230,221,0.5)', fontSize: 12, textAlign: 'center', padding: '24px 0', margin: 0 }}>
+              <p style={{ color: 'rgba(var(--ink-warm),0.5)', fontSize: 12, textAlign: 'center', padding: '24px 0', margin: 0 }}>
                 No cities found
               </p>
             ) : (
@@ -446,7 +446,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   }}>
                     <span>{group.label}</span>
-                    <span style={{ color: 'rgba(232,230,221,0.45)', fontWeight: 500 }}>
+                    <span style={{ color: 'rgba(var(--ink-warm),0.45)', fontWeight: 500 }}>
                       {group.cities.length}
                     </span>
                   </p>
@@ -465,7 +465,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                               {p.city}
                             </span>
                             <span style={{
-                              color: 'rgba(232,230,221,0.55)', fontSize: 10, fontWeight: 600,
+                              color: 'rgba(var(--ink-warm),0.55)', fontSize: 10, fontWeight: 600,
                               letterSpacing: '0.08em', textTransform: 'uppercase',
                             }}>
                               {p.country}

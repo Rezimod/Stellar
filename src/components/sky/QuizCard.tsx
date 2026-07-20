@@ -15,18 +15,18 @@ const THEMES: Record<QuizTheme, {
 }> = {
   solar: {
     background:
-      'radial-gradient(circle at 85% 30%, rgba(255,180,80,0.18) 0%, transparent 55%), radial-gradient(circle at 20% 80%, rgba(255,100,40,0.1) 0%, transparent 50%), linear-gradient(145deg, #1a0e07 0%, #0a0a14 100%)',
+      'radial-gradient(circle at 85% 30%, rgba(255,180,80,0.18) 0%, transparent 55%), radial-gradient(circle at 20% 80%, rgba(255,100,40,0.1) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(255,180,80,0.18)',
-    accent: '#FFB347',
+    accent: 'var(--accent-text)',
     buttonBg: 'rgba(255,180,80,0.1)',
     buttonBorder: 'rgba(255,180,80,0.3)',
-    buttonFill: '#FFB347',
+    buttonFill: 'var(--accent-text)',
   },
   stars: {
     background:
-      'radial-gradient(circle at 80% 20%, rgba(184,212,255,0.14) 0%, transparent 50%), radial-gradient(circle at 15% 70%, rgba(132,155,220,0.08) 0%, transparent 50%), linear-gradient(145deg, #0d1428 0%, var(--canvas) 100%)',
+      'radial-gradient(circle at 80% 20%, rgba(184,212,255,0.14) 0%, transparent 50%), radial-gradient(circle at 15% 70%, rgba(132,155,220,0.08) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(184,212,255,0.12)',
-    accent: '#5EEAD4',
+    accent: 'var(--teal-text)',
     buttonBg: 'rgba(184,212,255,0.1)',
     buttonBorder: 'rgba(184,212,255,0.25)',
     buttonFill: 'rgba(184,212,255,0.9)',
@@ -35,23 +35,23 @@ const THEMES: Record<QuizTheme, {
     background:
       'radial-gradient(circle at 80% 30%, rgba(94, 234, 212,0.12) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(100,180,220,0.06) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(94, 234, 212,0.15)',
-    accent: 'var(--stl-teal)',
+    accent: 'var(--teal-text)',
     buttonBg: 'rgba(94, 234, 212,0.1)',
     buttonBorder: 'rgba(94, 234, 212,0.3)',
-    buttonFill: 'var(--stl-teal)',
+    buttonFill: 'var(--teal-text)',
   },
   cosmos: {
     background:
       'radial-gradient(circle at 85% 25%, rgba(167,139,232,0.18) 0%, transparent 55%), radial-gradient(circle at 15% 85%, rgba(255,143,184,0.1) 0%, transparent 55%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(167,139,232,0.18)',
-    accent: 'var(--terracotta)',
+    accent: 'var(--accent-text)',
     buttonBg: 'rgba(167,139,232,0.1)',
     buttonBorder: 'rgba(167,139,232,0.3)',
     buttonFill: 'rgba(167,139,232,0.95)',
   },
   exploration: {
     background:
-      'radial-gradient(circle at 80% 20%, rgba(255,143,184,0.14) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,180,80,0.08) 0%, transparent 50%), linear-gradient(145deg, #1a0916 0%, var(--canvas) 100%)',
+      'radial-gradient(circle at 80% 20%, rgba(255,143,184,0.14) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,180,80,0.08) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(255,143,184,0.14)',
     accent: 'var(--negative)',
     buttonBg: 'rgba(255,143,184,0.08)',
@@ -122,9 +122,9 @@ export default function QuizCard({
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: 8,
-                color: b.variant === 'new' ? 'var(--stl-teal)'
+                color: b.variant === 'new' ? 'var(--teal-text)'
                      : b.variant === 'done' ? '#86efac'
-                     : 'var(--terracotta)',
+                     : 'var(--accent-text)',
                 background: b.variant === 'new' ? 'rgba(94, 234, 212,0.14)'
                           : b.variant === 'done' ? 'rgba(94, 234, 212,0.12)'
                           : 'rgba(167,139,232,0.12)',
@@ -142,7 +142,7 @@ export default function QuizCard({
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 10.5,
-            color: 'rgba(255,255,255,0.48)',
+            color: 'rgba(var(--ink), 0.48)',
             lineHeight: 1.35,
             marginTop: 1,
           }}
@@ -157,7 +157,7 @@ export default function QuizCard({
                 flex: 1,
                 maxWidth: 120,
                 height: 3,
-                background: 'rgba(255,255,255,0.08)',
+                background: 'rgba(var(--ink), 0.08)',
                 borderRadius: 2,
                 overflow: 'hidden',
               }}
@@ -171,25 +171,25 @@ export default function QuizCard({
                 }}
               />
             </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: `${t.accent}b0`, letterSpacing: '0.05em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: t.accent, opacity: 0.69, letterSpacing: '0.05em' }}>
               {progressQ}/{totalQuestions} · CONTINUE
             </span>
           </div>
         ) : isCompleted ? (
           <div className="flex items-center gap-2.5 mt-2">
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(var(--ink), 0.4)', letterSpacing: '0.05em' }}>
               {totalQuestions} Q · BEST {Math.round((bestPct! / 100) * totalQuestions)}/{totalQuestions}
             </span>
-            <span style={{ fontSize: 10, color: 'var(--stars)', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, color: 'var(--accent-text)', fontWeight: 600 }}>
               +{starsEarned ?? 0} earned
             </span>
           </div>
         ) : (
           <div className="flex items-center gap-2.5 mt-2">
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 9.5, color: 'rgba(var(--ink), 0.4)', letterSpacing: '0.05em' }}>
               {totalQuestions} QUESTIONS
             </span>
-            <span style={{ fontSize: 10, color: 'var(--stars)', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, color: 'var(--accent-text)', fontWeight: 600 }}>
               +{reward} ✦
             </span>
           </div>
@@ -201,14 +201,14 @@ export default function QuizCard({
         style={{
           width: 28,
           height: 28,
-          background: isCompleted ? 'rgba(255,255,255,0.04)' : t.buttonBg,
-          border: `1px solid ${isCompleted ? 'rgba(255,255,255,0.1)' : t.buttonBorder}`,
+          background: isCompleted ? 'rgba(var(--ink), 0.04)' : t.buttonBg,
+          border: `1px solid ${isCompleted ? 'rgba(var(--ink), 0.1)' : t.buttonBorder}`,
           borderRadius: 9,
         }}
       >
         {isCompleted
-          ? <RotateCw size={11} color="rgba(255,255,255,0.6)" />
-          : <Play size={11} fill={t.buttonFill} color={t.buttonFill} />}
+          ? <RotateCw size={11} style={{ color: 'rgba(var(--ink), 0.6)' }} />
+          : <Play size={11} style={{ fill: t.buttonFill, color: t.buttonFill }} />}
       </div>
     </button>
   );

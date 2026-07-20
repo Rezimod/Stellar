@@ -191,7 +191,7 @@ export default function AstraPopup() {
               <Sparkles size={15} color="#fff" />
             </div>
             <div className="flex-1 min-w-0">
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--terracotta)', letterSpacing: '0.05em' }}>ASTRA</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-text)', letterSpacing: '0.05em' }}>ASTRA</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>AI Astronomer</div>
             </div>
             <button onClick={() => setOpen(false)} className="w-7 h-7 flex items-center justify-center rounded-full" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
@@ -286,7 +286,7 @@ export default function AstraPopup() {
           }}
           aria-label="Close ASTRA"
         >
-          <X size={18} color="rgba(255, 179, 71,0.75)" />
+          <X size={18} color="color-mix(in srgb, var(--accent-text) 75%, transparent)" />
         </button>
       ) : (
         <div

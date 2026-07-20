@@ -22,7 +22,7 @@ export default function ObservationLog() {
           <span className="text-[10px] text-text-muted uppercase tracking-widest font-medium whitespace-nowrap">Recent Observations</span>
           <div className="ornament-line flex-1" />
         </div>
-        <div className="rounded-xl px-4 py-5 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-xl px-4 py-5 text-center" style={{ background: 'rgba(var(--ink), 0.02)', border: '1px solid rgba(var(--ink), 0.06)' }}>
           <p className="text-text-muted text-sm">Your completed observations will appear here.</p>
           <p className="text-text-muted text-xs mt-1">
             <Link href="/missions" className="text-[var(--terracotta)] hover:underline">Complete your first mission →</Link>
@@ -47,8 +47,8 @@ export default function ObservationLog() {
             key={m.txId}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group"
             style={{
-              background: 'rgba(15,31,61,0.35)',
-              border: '1px solid rgba(255,255,255,0.04)',
+              background: 'var(--surface)',
+              border: '1px solid rgba(var(--ink), 0.04)',
               animationDelay: `${i * 60}ms`,
             }}
           >
@@ -56,7 +56,7 @@ export default function ObservationLog() {
               src={m.photo}
               alt={m.name}
               className="w-12 h-9 object-cover rounded-lg flex-shrink-0"
-              style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ border: '1px solid rgba(var(--ink), 0.06)' }}
             />
             <div className="flex-1 min-w-0">
               <p className="text-text-primary text-sm font-medium leading-tight">{m.emoji} {m.name}</p>
