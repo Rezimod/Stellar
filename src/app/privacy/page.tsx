@@ -3,8 +3,10 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
-  title: 'Privacy — Stellar',
-  description: 'How Stellar handles your data.',
+  title: 'Privacy Policy — Stellar Astronomy App',
+  description:
+    'How Stellar collects, uses and protects your data — including location, observations and Web3 wallet information. Your privacy, explained plainly.',
+  alternates: { canonical: '/privacy' },
 };
 
 export default async function PrivacyPage() {

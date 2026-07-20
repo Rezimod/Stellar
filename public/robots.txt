@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Keep private/app-internal routes out of the index
+Disallow: /settings
+Disallow: /profile
+Disallow: /observe
+Disallow: /proof
+
+Sitemap: https://stellarr.club/sitemap.xml

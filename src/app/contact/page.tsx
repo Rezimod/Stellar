@@ -3,8 +3,10 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
-  title: 'Contact — Stellar',
-  description: 'Get in touch with the Stellar team.',
+  title: 'Contact — Stellar Astronomy Team',
+  description:
+    'Get in touch with the Stellar astronomy team — questions, partnerships, press or support. Reach us by email or through our community channels.',
+  alternates: { canonical: '/contact' },
 };
 
 const channels = [
