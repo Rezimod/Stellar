@@ -1,0 +1,5 @@
+Contact: mailto:security@astroman.ge
+Expires: 2027-07-20T00:00:00.000Z
+Preferred-Languages: en, ka
+Canonical: https://stellarr.club/.well-known/security.txt
+Policy: https://stellarr.club/security-policy

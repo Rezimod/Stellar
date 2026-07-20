@@ -20,9 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/solar-system', changeFrequency: 'monthly', priority: 0.6 },
     { path: '/darksky', changeFrequency: 'weekly', priority: 0.6 },
     { path: '/leaderboard', changeFrequency: 'daily', priority: 0.5 },
+    { path: '/faq', changeFrequency: 'monthly', priority: 0.6 },
     { path: '/contact', changeFrequency: 'monthly', priority: 0.4 },
     { path: '/terms', changeFrequency: 'monthly', priority: 0.3 },
     { path: '/privacy', changeFrequency: 'monthly', priority: 0.3 },
+    { path: '/cookie-policy', changeFrequency: 'monthly', priority: 0.3 },
+    { path: '/accessibility', changeFrequency: 'monthly', priority: 0.3 },
+    { path: '/returns', changeFrequency: 'monthly', priority: 0.3 },
   ];
 
   return routes.map((r) => ({
