@@ -14,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function LearnLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <h1 className="sr-only">Learn Astronomy — Interactive Guides, Quizzes &amp; Field Guide</h1>
+      {children}
+    </>
+  );
 }

@@ -14,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function SkyLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <h1 className="sr-only">Sky Calendar 2026 — Meteor Showers, Eclipses &amp; Celestial Events</h1>
+      {children}
+    </>
+  );
 }

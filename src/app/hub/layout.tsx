@@ -14,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function HubLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <h1 className="sr-only">Your Stellar Astronomy Dashboard — Stats &amp; Rewards</h1>
+      {children}
+    </>
+  );
 }

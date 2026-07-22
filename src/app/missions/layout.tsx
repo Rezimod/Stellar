@@ -14,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function MissionsLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <h1 className="sr-only">Tonight&apos;s Sky Missions — Photograph Planets, Earn Stars</h1>
+      {children}
+    </>
+  );
 }

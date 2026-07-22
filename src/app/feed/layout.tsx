@@ -14,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <h1 className="sr-only">Community Feed — Astronomical Observations &amp; Discoveries</h1>
+      {children}
+    </>
+  );
 }
