@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
   serverExternalPackages: ['three', 'astronomy-engine'],
+  // OG image reads its background + fonts from disk at request time.
+  outputFileTracingIncludes: {
+    '/opengraph-image': ['./src/app/_og/**'],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
