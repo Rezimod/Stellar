@@ -1246,62 +1246,56 @@ export default function LearnPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-page-enter flex flex-col gap-5">
         <BackButton />
 
-        {completedQuizzes.length > 0 && (
-          <header className="flex justify-end">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex flex-col">
-                <span
-                  className="text-white font-bold tabular-nums leading-none"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(20px, 3vw, 28px)' }}
+        <TonightsBanner locale={locale} />
+
+        {/* Tab bar + quiz stats */}
+        <div className="flex items-center gap-3">
+          <div className="scroll-x scrollbar-hide flex gap-1.5 pb-1 flex-1 min-w-0">
+            {TAB_CONFIG.map(t => {
+              const active = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200 min-h-[36px]"
+                  style={active ? {
+                    background: 'rgba(255, 179, 71,0.12)',
+                    border: '1px solid rgba(255, 179, 71,0.3)',
+                    color: 'var(--accent-text)',
+                  } : {
+                    background: 'rgba(var(--ink), 0.04)',
+                    border: '1px solid rgba(var(--ink), 0.08)',
+                    color: 'var(--text-muted)',
+                  }}
                 >
+                  <t.Icon size={13} />
+                  <span>{t[locale]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {completedQuizzes.length > 0 && (
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="hidden sm:flex items-baseline gap-1.5">
+                <span className="text-text-primary text-sm font-bold tabular-nums" style={{ fontFamily: 'var(--font-mono)' }}>
                   {completedQuizzes.length}
                 </span>
-                <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/40 font-mono">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-text-muted font-mono">
                   {locale === 'ka' ? 'ქვიზი' : 'Quizzes'}
                 </span>
               </div>
-              <div className="w-px h-9 bg-white/10" />
-              <div className="flex flex-col">
-                <span
-                  className="font-bold tabular-nums leading-none"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(20px, 3vw, 28px)', color: 'var(--accent-text)' }}
-                >
+              <div className="hidden sm:block w-px h-4" style={{ background: 'var(--border)' }} />
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm font-bold tabular-nums" style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-text)' }}>
                   ✦ {completedQuizzes.reduce((s, r) => s + r.stars, 0)}
                 </span>
-                <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/40 font-mono">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-text-muted font-mono">
                   {locale === 'ka' ? 'ვარსკვლავი' : 'Earned'}
                 </span>
               </div>
             </div>
-          </header>
-        )}
-
-        <TonightsBanner locale={locale} />
-
-        {/* Tab bar */}
-        <div className="scroll-x scrollbar-hide flex gap-1.5 pb-1">
-          {TAB_CONFIG.map(t => {
-            const active = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium flex-shrink-0 transition-all duration-200 min-h-[36px]"
-                style={active ? {
-                  background: 'rgba(255, 179, 71,0.12)',
-                  border: '1px solid rgba(255, 179, 71,0.3)',
-                  color: 'var(--accent-text)',
-                } : {
-                  background: 'rgba(var(--ink), 0.04)',
-                  border: '1px solid rgba(var(--ink), 0.08)',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                <t.Icon size={13} />
-                <span>{t[locale]}</span>
-              </button>
-            );
-          })}
+          )}
         </div>
 
         {/* Content */}
