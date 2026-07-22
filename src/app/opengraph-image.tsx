@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Stellar — Astronomy, on chain';
+export const alt = 'Stellar — Your default astronomy app';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -83,15 +83,16 @@ export default async function Image() {
           <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
             <div
               style={{
-                fontSize: 78,
+                fontSize: 74,
                 fontWeight: 600,
                 letterSpacing: -2.5,
-                lineHeight: 1.02,
+                lineHeight: 1.06,
                 color: '#FFFFFF',
                 textShadow: '0 2px 28px rgba(6,12,28,0.85)',
+                maxWidth: 560,
               }}
             >
-              Astronomy, on chain
+              Your default astronomy app
             </div>
             <div
               style={{
