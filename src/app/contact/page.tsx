@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 const channels = [
   {
     label: 'Email',
-    value: 'hello@astroman.ge',
-    href: 'mailto:hello@astroman.ge',
+    value: 'info@astroman.ge',
+    href: 'mailto:info@astroman.ge',
     note: 'General questions, partnerships, press.',
     icon: Mail,
     external: false,
@@ -45,8 +45,8 @@ export default async function ContactPage() {
   const locale = await getLocale();
   const isKa = locale === 'ka';
   const intro = isKa
-    ? 'Stellar-ს თბილისიდან Rezi და პატარა გუნდი აშენებენ. ჩვენთან დასაკავშირებლად ყველაზე სწრაფი გზა ელფოსტაა. ყველაფერს ვკითხულობთ, თუნდაც პასუხს ერთი-ორი დღე დასჭირდეს.'
-    : 'Stellar is built by Rezi and a small team in Tbilisi. The fastest way to reach us is email. We read everything, even if a reply takes a day or two.';
+    ? 'Stellar-ს თბილისში ქმნის Rezi — Astroman-ის დამფუძნებელი. ჩვენთან დასაკავშირებლად ყველაზე სწრაფი გზა ელფოსტაა. ყველაფერს ვკითხულობთ, თუნდაც პასუხს ერთი-ორი დღე დასჭირდეს.'
+    : 'Stellar is built in Tbilisi by Rezi, the founder of Astroman. The fastest way to reach us is email. We read everything, even if a reply takes a day or two.';
   const eyebrow = isKa ? 'მოგვწერე' : 'Talk to us';
   const title = isKa ? 'კონტაქტი' : 'Contact';
   const localizedChannels = channels.map((channel) => ({
@@ -73,7 +73,7 @@ export default async function ContactPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
       <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">{eyebrow}</p>
       <h1 className="font-display text-3xl sm:text-4xl mb-3">{title}</h1>
-      <p className="text-white/70 text-[15px] leading-relaxed mb-10 max-w-prose">
+      <p className="text-text-primary/70 text-[15px] leading-relaxed mb-10 max-w-prose">
         {intro}
       </p>
 
@@ -89,7 +89,7 @@ export default async function ContactPage() {
                 className="group flex items-start gap-4 rounded-xl px-4 py-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] transition-colors"
               >
                 {Icon && (
-                  <span className="mt-0.5 text-white/60 group-hover:text-white/90 transition-colors">
+                  <span className="mt-0.5 text-text-primary/60 group-hover:text-text-primary transition-colors">
                     <Icon size={18} strokeWidth={1.6} />
                   </span>
                 )}
@@ -102,10 +102,10 @@ export default async function ContactPage() {
                       <ExternalLink size={11} className="text-text-muted opacity-60" />
                     )}
                   </span>
-                  <span className="block font-display text-lg text-white mt-0.5 break-all">
+                  <span className="block font-display text-lg text-text-primary mt-0.5 break-all">
                     {c.value}
                   </span>
-                  <span className="block text-sm text-white/55 mt-1">{c.note}</span>
+                  <span className="block text-sm text-text-primary/55 mt-1">{c.note}</span>
                 </span>
               </a>
             </li>

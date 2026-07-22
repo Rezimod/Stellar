@@ -301,7 +301,7 @@ export default async function EarnPage() {
               : 'Telescope brands, camera makers, and astrotourism partners run sponsored missions with branded prizes and verified capture data. Astroman is our flagship customer.'}
           </p>
           <Link
-            href="mailto:hello@stellarrclub.com"
+            href="mailto:info@astroman.ge"
             className="mt-8 inline-block rounded-md border border-white/20 px-5 py-3 text-sm hover:border-white/60"
           >
             {isKa ? 'მოგვწერე →' : 'Talk to us →'}

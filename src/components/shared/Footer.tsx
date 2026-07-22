@@ -41,12 +41,12 @@ const columns: FooterColumn[] = [
   {
     titleKey: 'colLegal',
     links: [
-      { labelKey: 'faq',           label: 'FAQ',           href: '/faq',           Icon: BookOpen },
+      { labelKey: 'faq',           href: '/faq',           Icon: BookOpen },
       { labelKey: 'terms',         href: '/terms',         Icon: ShieldCheck },
       { labelKey: 'privacy',       href: '/privacy',       Icon: Lock },
-      { labelKey: 'cookies',       label: 'Cookie Policy', href: '/cookie-policy', Icon: ShieldCheck },
-      { labelKey: 'accessibility', label: 'Accessibility', href: '/accessibility', Icon: ShieldCheck },
-      { labelKey: 'returns',       label: 'Returns',       href: '/returns',       Icon: ShoppingBag },
+      { labelKey: 'cookies',       href: '/cookie-policy', Icon: ShieldCheck },
+      { labelKey: 'accessibility', href: '/accessibility', Icon: ShieldCheck },
+      { labelKey: 'returns',       href: '/returns',       Icon: ShoppingBag },
       { labelKey: 'contact',       href: '/contact',       Icon: Mail },
     ],
   },
@@ -118,7 +118,7 @@ export default function Footer() {
                 fontSize: 13,
                 lineHeight: 1.55,
                 maxWidth: 280,
-                fontFamily: 'var(--font-display)',
+                fontFamily: 'var(--font-body)',
               }}
             >
               {t('tagline')}
@@ -148,7 +148,7 @@ export default function Footer() {
                     textTransform: 'uppercase',
                     color: 'var(--text-muted)',
                     marginBottom: 14,
-                    fontFamily: 'var(--font-display)',
+                    fontFamily: 'var(--font-body)',
                   }}
                 >
                   {t(col.titleKey)}{/* */}

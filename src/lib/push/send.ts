@@ -6,7 +6,7 @@ function ensureConfigured(): boolean {
   if (configured !== null) return configured;
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
-  const subject = process.env.VAPID_SUBJECT || 'mailto:hello@stellarrclub.vercel.app';
+  const subject = process.env.VAPID_SUBJECT || 'mailto:info@astroman.ge';
   if (!pub || !priv) {
     configured = false;
     return false;

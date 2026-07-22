@@ -17,17 +17,17 @@ export default async function TermsPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-text-primary">
       <p className="text-xs uppercase tracking-[0.2em] text-text-muted mb-3">{isKa ? 'იურიდიული' : 'Legal'}</p>
       <h1 className="font-display text-3xl sm:text-4xl mb-2">{isKa ? 'გამოყენების პირობები' : 'Terms'}</h1>
-      <p className="text-text-muted text-sm mb-10">{isKa ? 'ბოლოს განახლდა: 30 აპრილი, 2026' : 'Last updated April 30, 2026'}</p>
+      <p className="text-text-muted text-sm mb-10">{isKa ? 'ბოლოს განახლდა: 22 ივლისი, 2026' : 'Last updated July 22, 2026'}</p>
 
-      <div className="flex flex-col gap-6 text-[15px] leading-relaxed text-white/80">
+      <div className="flex flex-col gap-6 text-[15px] leading-relaxed text-text-primary/80">
         <p>
           {isKa
             ? 'Stellar-ს Astroman-ის გუნდი გთავაზობს არსებული სახით. აპის გამოყენებით ეთანხმები ქვემოთ ჩამოთვლილ პირობებს. შეგნებულად მოკლედ წერია.'
-            : 'Stellar is provided as-is by the Astroman team. By using the app you agree to the points below. They&rsquo;re short on purpose.'}
+            : 'Stellar is provided as-is by the Astroman team. By using the app you agree to the points below. They’re short on purpose.'}
         </p>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-white">{isKa ? 'რა არის Stellar' : 'What Stellar is'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'რა არის Stellar' : 'What Stellar is'}</h2>
           <p>
             {isKa
               ? 'ღამის ცის დაგეგმვისა და დაკვირვების თანამგზავრია ყველასთვის, ვისაც ცისკენ გახედვა უყვარს — სმარტფონის მომხმარებლისთვის, მოყვარული დამკვირვებლისთვის და ტელესკოპის მფლობელისთვისაც. ჩვენ ვაძლევთ ცის პროგნოზს, ვადევნებთ თვალს პლანეტებს, ვქმნით compressed NFT-ებს დადასტურებული დაკვირვებებისთვის და გაძლევთ შესაძლებლობას ჯილდოები რეალურ ტელესკოპებსა და ოპტიკაზე გადაცვალოთ Astroman-სა და პარტნიორ მაღაზიებში.'
@@ -36,16 +36,16 @@ export default async function TermsPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-white">{isKa ? 'შენი ანგარიში' : 'Your account'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'შენი ანგარიში' : 'Your account'}</h2>
           <p>
             {isKa
               ? 'ანგარიშზე შედიხარ ელფოსტით ან სოციალური ავტორიზაციით Privy-ს მეშვეობით. ჩვენ ავტომატურად ვქმნით Solana-ს საფულეს და ბეტა პერიოდში ვფარავთ ქსელის საკომისიოებს. არ გააზიარო ანგარიში და 13 წლამდე ასაკში ნუ გამოიყენებ Stellar-ს მშობლის ან მეურვის თანხმობის გარეშე.'
-              : 'You sign in with email or a social account through Privy. We auto-create a Solana wallet for you and cover network fees while the app is in beta. Don&rsquo;t share your account, and don&rsquo;t use Stellar if you&rsquo;re under 13 without a parent or guardian.'}
+              : 'You sign in with email or a social account through Privy. We auto-create a Solana wallet for you and cover network fees while the app is in beta. Don’t share your account, and don’t use Stellar if you’re under 13 without a parent or guardian.'}
           </p>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-white">{isKa ? 'ონჩეინ აქტივები' : 'On-chain assets'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'ონჩეინ აქტივები' : 'On-chain assets'}</h2>
           <p>
             {isKa
               ? 'Stellar-ში შექმნილი NFT-ები შენივე დაკვირვების ჩანაწერებია. მათ არ აქვთ გარანტირებული ფინანსური ღირებულება და ჩვენ არ ვიძლევით მეორად ბაზარზე ლიკვიდობის დაპირებას. Stars ქულები აპის შიდა ჯილდოა და ბეტა პერიოდში შეიძლება გადაითვალოს, განულდეს ან საერთოდ შეწყდეს.'
@@ -54,16 +54,18 @@ export default async function TermsPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-white">{isKa ? 'მაღაზიის შეკვეთები' : 'Marketplace orders'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'მაღაზიის შეკვეთები' : 'Marketplace orders'}</h2>
           <p>
             {isKa
-              ? 'ფიზიკურ პროდუქტებს ასრულებს მითითებული დილერი (Astroman, High Point Scientific და სხვები). მოქმედებს თავად დილერის გარანტიის, დაბრუნებისა და მიწოდების პოლიტიკა. Stellar არის ვიტრინა და არა ჩანაწერით ოფიციალური გამყიდველი.'
-              : 'Physical product orders are fulfilled by the listed dealer (Astroman, High Point Scientific, etc.). The dealer&rsquo;s own warranty, return, and shipping policy applies. Stellar is the storefront, not the seller of record.'}
+              ? 'ფიზიკურ პროდუქტებს ასრულებს მითითებული დილერი (Astroman, Celestron, Levenhuk, Bresser). მოქმედებს თავად დილერის გარანტიის, დაბრუნებისა და მიწოდების პოლიტიკა. Stellar არის ვიტრინა და არა ჩანაწერით ოფიციალური გამყიდველი. დეტალები იხილე '
+              : 'Physical product orders are fulfilled by the listed dealer (Astroman, Celestron, Levenhuk, Bresser). The dealer’s own warranty, return, and shipping policy applies. Stellar is the storefront, not the seller of record — see our '}
+            <Link href="/returns" className="underline underline-offset-4">{isKa ? 'დაბრუნების გვერდზე' : 'Returns'}</Link>
+            {isKa ? '.' : ' page for detail.'}
           </p>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-white">{isKa ? 'მისაღები გამოყენება' : 'Acceptable use'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'მისაღები გამოყენება' : 'Acceptable use'}</h2>
           <ul className="list-disc pl-5 flex flex-col gap-1.5">
             {isKa ? (
               <>
@@ -83,11 +85,11 @@ export default async function TermsPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-white">{isKa ? 'ცვლილებები' : 'Changes'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'ცვლილებები' : 'Changes'}</h2>
           <p>
             {isKa
               ? 'ამ პირობებს პროდუქტთან ერთად განვაახლებთ. მნიშვნელოვანი ცვლილებები აპში გამოცხადდება. ცვლილების შემდეგ გამოყენების გაგრძელება ნიშნავს, რომ მას ეთანხმები.'
-              : 'We&rsquo;ll update these terms as the product evolves. Material changes will be announced in-app. Continued use after a change means you accept it.'}
+              : 'We’ll update these terms as the product evolves. Material changes will be announced in-app. Continued use after a change means you accept it.'}
           </p>
         </section>
 

@@ -1529,8 +1529,12 @@
     "missions": "Missions",
     "learning": "Learning",
     "shop": "Shop",
+    "faq": "FAQ",
     "terms": "Terms",
     "privacy": "Privacy",
+    "cookies": "Cookie policy",
+    "accessibility": "Accessibility",
+    "returns": "Returns",
     "contact": "Contact",
     "rights": "© {year} Stellar. All rights reserved.",
     "builtIn": "Built in Tbilisi"
