@@ -39,10 +39,12 @@ export const clubActivateRateLimit = { limit: (id: string) => makeLimit('3600 s'
 // issuance per user even if the per-minute / per-hour limits are saturated.
 // These are the numbers we cite in the pitch math:
 //   chat:    50 msg/day/user → ~$0.08/user/day worst-case OpenAI bill
-//   verify:  20 attempts/day → ~$0.40/user/day worst-case Claude bill
+//   verify:  25 attempts/day → free-tier Gemini (gemini-2.5-flash); every
+//            attempt still mints as a keepsake, so this also bounds the daily
+//            keepsake mints per user (mirrors UNVERIFIED_MINTS_PER_DAY)
 //   award:   30 grants/day  → bounds Stars issuance through this route
 export const chatDailyLimit   = { limit: (id: string) => makeLimit('86400 s', 50, 'rl:chat:d').limit(id) };
-export const verifyDailyLimit = { limit: (id: string) => makeLimit('86400 s', 20, 'rl:verify:d').limit(id) };
+export const verifyDailyLimit = { limit: (id: string) => makeLimit('86400 s', 25, 'rl:verify:d').limit(id) };
 export const awardStarsDailyLimit = { limit: (id: string) => makeLimit('86400 s', 30, 'rl:award:d').limit(id) };
 
 export async function checkRateLimit(

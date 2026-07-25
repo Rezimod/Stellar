@@ -18,6 +18,10 @@ export interface ObservationTokenFields {
   deviceModel: string;
   isInternetSourced: boolean;
   wallet: string;
+  // How the photo entered the flow: 'camera' (live in-app capture) or 'upload'
+  // (picked from the device gallery). Signed so the label can't be flipped
+  // between verify → log/mint — uploads earn half the Stars of a live capture.
+  uploadSource: string;
   // Server-fetched cloud cover (0–100) at verify time. Signed here so /api/mint
   // can trust it (the client can't claim a clear sky) and reject overcast nights.
   cloudCover: number;
@@ -53,6 +57,7 @@ function canonicalPayload(fields: ObservationTokenPayload): string {
     deviceModel: fields.deviceModel,
     isInternetSourced: fields.isInternetSourced,
     wallet: fields.wallet,
+    uploadSource: fields.uploadSource,
     cloudCover: Math.round(fields.cloudCover),
     exp: fields.exp,
   });
@@ -91,6 +96,7 @@ function decodePayload(encoded: string): ObservationTokenPayload | null {
       typeof parsed.deviceModel !== 'string' ||
       typeof parsed.isInternetSourced !== 'boolean' ||
       typeof parsed.wallet !== 'string' ||
+      typeof parsed.uploadSource !== 'string' ||
       typeof parsed.cloudCover !== 'number' ||
       typeof parsed.exp !== 'number'
     ) {
@@ -197,7 +203,8 @@ export function verifyObservationToken(
     payload.deviceMake === expectedFields.deviceMake &&
     payload.deviceModel === expectedFields.deviceModel &&
     payload.isInternetSourced === expectedFields.isInternetSourced &&
-    payload.wallet === expectedFields.wallet;
+    payload.wallet === expectedFields.wallet &&
+    payload.uploadSource === expectedFields.uploadSource;
 
   if (!matches) {
     return { ok: false, status: 401, reason: 'Invalid verification token' };

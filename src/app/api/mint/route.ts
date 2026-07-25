@@ -87,6 +87,9 @@ export async function POST(req: NextRequest) {
   // token (never the client body) — these drive certified rarity + Stars below.
   let signedConfidence = '';
   let signedIdentified = '';
+  // Signed capture source: 'upload' halves the NFT's certified Stars vs a live
+  // 'camera' capture (kept in step with /api/observe/log's on-chain award).
+  let signedUploadSource = '';
   // Authoritative cloud cover: the server-signed value from the verification
   // token for real mints (the client can't fake a clear sky); the validated
   // client value only for demo mints, which carry no token.
@@ -107,6 +110,7 @@ export async function POST(req: NextRequest) {
         deviceModel: typeof deviceModel === 'string' ? deviceModel : '',
         isInternetSourced: isInternetSourced === true,
         wallet: typeof userAddress === 'string' ? userAddress : '',
+        uploadSource: typeof uploadSource === 'string' ? uploadSource : '',
       },
     );
     if (!tokenCheck.ok) {
@@ -120,6 +124,7 @@ export async function POST(req: NextRequest) {
     verifiedTarget = tokenCheck.payload.target;
     signedConfidence = tokenCheck.payload.confidence;
     signedIdentified = tokenCheck.payload.identifiedObject;
+    signedUploadSource = tokenCheck.payload.uploadSource;
     effectiveCloudCover = tokenCheck.payload.cloudCover;
     // Overcast gate: never certify an observation taken under >70% cloud cover.
     // /api/observe/verify already rejects these (issuing a 'rejected' token), so
@@ -148,7 +153,7 @@ export async function POST(req: NextRequest) {
   // fun reward, at most UNVERIFIED_MINTS_PER_DAY times per wallet per day;
   // past that the photo can only be saved to the gallery (no mint, no Stars).
   const isUnverified = !isDemoMint && confidence === 'rejected';
-  const UNVERIFIED_MINTS_PER_DAY = 2;
+  const UNVERIFIED_MINTS_PER_DAY = 25;
   const UNVERIFIED_KEEPSAKE_STARS = 10;
 
   // Certified rarity and Stars are derived SERVER-SIDE from the token's signed
@@ -164,7 +169,9 @@ export async function POST(req: NextRequest) {
   const rareForNft = ['saturn', 'jupiter', 'mars', 'venus', 'mercury', 'deep_sky']
     .some(r => signedIdentified.toLowerCase().includes(r));
   const certReward = CERTIFIED_STARS[signedConfidence] ?? { base: 0, rare_bonus: 0 };
-  const certifiedStars = certReward.base + (rareForNft ? certReward.rare_bonus : 0);
+  // Gallery uploads earn half — mirrors the on-chain award in /api/observe/log.
+  const sourceMultiplier = signedUploadSource === 'upload' ? 0.5 : 1;
+  const certifiedStars = Math.round((certReward.base + (rareForNft ? certReward.rare_bonus : 0)) * sourceMultiplier);
   const rarityVal = isDemoMint
     ? 'Common'
     : isUnverified

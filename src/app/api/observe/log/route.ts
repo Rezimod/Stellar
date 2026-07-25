@@ -109,6 +109,10 @@ export async function POST(req: NextRequest) {
   // Server-signed cloud cover from the verification token — recorded on-chain
   // instead of a hardcoded 0 (only the non-rejected, token-bearing path mints).
   let verifiedCloudCover = 0
+  // Server-signed capture source: 'camera' (full Stars) or 'upload' (half). Read
+  // from the token, never the raw body, so the label can't be flipped for a
+  // full-Stars payout on a gallery upload.
+  let signedUploadSource = ''
   // Verify token for non-rejected observations (prevents clients from claiming arbitrary confidence)
   if (confidence !== 'rejected') {
     const tokenCheck = verifyObservationToken(body.verificationToken, {
@@ -124,12 +128,14 @@ export async function POST(req: NextRequest) {
       deviceModel: body.deviceModel ?? '',
       isInternetSourced: body.isInternetSourced === true,
       wallet,
+      uploadSource: body.uploadSource ?? '',
     });
     if (!tokenCheck.ok) {
       return NextResponse.json({ logged: false, reason: tokenCheck.reason }, { status: tokenCheck.status });
     }
     verifiedTarget = tokenCheck.payload.target
     verifiedCloudCover = tokenCheck.payload.cloudCover
+    signedUploadSource = tokenCheck.payload.uploadSource
   }
 
   // Calculate stars server-side from confidence (never trust client-provided stars)
@@ -137,7 +143,9 @@ export async function POST(req: NextRequest) {
   const identifiedForRare = (body.identifiedObject ?? target).toLowerCase();
   const isRare = RARE_OBJECTS.some(r => identifiedForRare.includes(r));
   const reward = STARS_BY_CONFIDENCE[confidence] ?? { base: 0, rare_bonus: 0 };
-  const baseStars = reward.base + (isRare ? reward.rare_bonus : 0);
+  // Gallery uploads (signed 'upload') earn half a live capture's Stars.
+  const sourceMultiplier = signedUploadSource === 'upload' ? 0.5 : 1;
+  const baseStars = Math.round((reward.base + (isRare ? reward.rare_bonus : 0)) * sourceMultiplier);
 
   // Event-window 2x bonus: when the observation timestamp is within ±24h of
   // an AstroEvent matching this target, double the Stars award.

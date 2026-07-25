@@ -217,6 +217,7 @@ export async function POST(req: NextRequest) {
       deviceModel: deviceModel ?? '',
       isInternetSourced,
       wallet: walletParam,
+      uploadSource: uploadSourceParam,
       cloudCover: cloudCoverForToken,
     }) ?? undefined;
     return {
@@ -534,7 +535,14 @@ Return ONLY valid JSON, no markdown, no preamble:
     rareObjects.some(r => analysis.identifiedObject.toLowerCase().includes(r)) ||
     analysis.target === 'deep_sky';
   const reward = REWARD_TABLE[confidence];
-  const baseStarsAwarded = reward.base + (isRare ? reward.rare_bonus : 0);
+  // Gallery uploads earn half the Stars of a live in-app capture — same
+  // authenticity checks (not on the internet, real night-sky photo), but a
+  // capture taken inside the app is worth more. Applied to the base here and
+  // authoritatively in /api/observe/log; the 'camera' vs 'upload' label is
+  // signed into the verification token so it can't be flipped afterwards.
+  const isUpload = uploadSourceParam === 'upload';
+  const sourceMultiplier = isUpload ? 0.5 : 1;
+  const baseStarsAwarded = Math.round((reward.base + (isRare ? reward.rare_bonus : 0)) * sourceMultiplier);
 
   // Mirror the 2x event-window bonus from /api/observe/log so the UI estimate
   // matches what the mint will actually award.
@@ -562,6 +570,7 @@ Return ONLY valid JSON, no markdown, no preamble:
     deviceModel: deviceModel ?? '',
     isInternetSourced,
     wallet: walletParam,
+    uploadSource: uploadSourceParam,
     cloudCover: cloudCoverForToken,
   });
   if (!verificationToken) {

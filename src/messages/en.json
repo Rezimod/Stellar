@@ -1748,7 +1748,8 @@
       "keepAnyway": "Keep it anyway",
       "aiConfidence": "AI: {object} · {confidence} confidence",
       "notVerifiedLabel": "Not verified",
-      "keepsakeNote": "mints as a keepsake · +10 ✦ (max 2 a day)",
+      "keepsakeNote": "mints as a keepsake · +10 ✦ (max 25 a day)",
+      "uploadHalfNote": "Uploaded photo · earns half the Stars of an in-app capture",
       "keepsakeLimit": "Daily keepsake limit reached — photo saved to your gallery, no Stars this time.",
       "checkForecast": "Check sky forecast",
       "stage": {

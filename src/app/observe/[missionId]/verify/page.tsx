@@ -199,7 +199,10 @@ export default function ObserveVerifyPage() {
     const isUnverifiedMint = !!photoVerification && !photoVerification.accepted;
 
     const baseStars = (sky?.verified && !isUnverifiedMint) ? mission.stars : 0;
-    const effectiveStars = isUnverifiedMint ? 0 : Math.round(baseStars * tier.multiplier);
+    // Gallery uploads earn half a live capture's Stars (server enforces this in
+    // /api/observe/log + /api/mint; this keeps the displayed total honest).
+    const sourceMultiplier = source === 'upload' ? 0.5 : 1;
+    const effectiveStars = isUnverifiedMint ? 0 : Math.round(baseStars * tier.multiplier * sourceMultiplier);
 
     const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);
     setMintRarity(rarityInfo);
@@ -477,7 +480,7 @@ export default function ObserveVerifyPage() {
           <Verification
             photo={photo}
             sky={sky}
-            stars={(sky.verified && !isUnverified) ? mission.stars : 0}
+            stars={(sky.verified && !isUnverified) ? Math.round(mission.stars * (source === 'upload' ? 0.5 : 1)) : 0}
             timestamp={timestamp}
             latitude={coords.lat}
             longitude={coords.lon}
@@ -500,6 +503,13 @@ export default function ObserveVerifyPage() {
             <div className="mt-2 text-center">
               <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface)] text-text-muted">
                 {t('verify.notVerifiedLabel')} · {t('verify.keepsakeNote')}
+              </span>
+            </div>
+          )}
+          {source === 'upload' && !isUnverified && (
+            <div className="mt-2 text-center">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface)] text-text-muted">
+                {t('verify.uploadHalfNote')}
               </span>
             </div>
           )}
