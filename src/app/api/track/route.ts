@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { analyticsEvent } from '@/lib/schema';
 import { trackRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { isValidPublicKey } from '@/lib/validate';
 
 export const runtime = 'nodejs';
 
@@ -61,7 +62,10 @@ export async function POST(req: NextRequest) {
   try {
     await db.insert(analyticsEvent).values({
       event,
-      wallet: typeof body.wallet === 'string' ? body.wallet : null,
+      // This endpoint is intentionally unauthenticated (pre-auth analytics via
+      // sendBeacon, which can't carry a token). Only accept a syntactically
+      // valid pubkey so the funnel can't be polluted with arbitrary junk.
+      wallet: typeof body.wallet === 'string' && isValidPublicKey(body.wallet) ? body.wallet : null,
       anonId: typeof body.anonId === 'string' ? body.anonId.slice(0, 64) : null,
       path: typeof body.path === 'string' ? body.path.slice(0, 256) : null,
       props: props as Record<string, unknown> | null,

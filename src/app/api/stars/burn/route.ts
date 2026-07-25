@@ -351,7 +351,18 @@ export async function POST(req: NextRequest) {
   let signature: string;
   try {
     signature = await connection.sendRawTransaction(signedTx.serialize());
-    await connection.confirmTransaction(signature, 'confirmed');
+    const conf = await connection.confirmTransaction(signature, 'confirmed');
+    // confirmTransaction RESOLVES for a tx that landed but executed with an
+    // error (it only rejects on timeout / expired blockhash). A failed Burn ix
+    // — e.g. insufficient funds from a concurrent burn racing the same balance —
+    // must NOT be recorded as a successful burn, or the caller would issue a
+    // redeem code / mark an order paid for Stars that were never destroyed.
+    if (conf.value?.err) {
+      return NextResponse.json(
+        { error: 'Burn transaction failed on-chain', detail: JSON.stringify(conf.value.err) },
+        { status: 500 },
+      );
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: `Burn submission failed: ${msg}` }, { status: 500 });

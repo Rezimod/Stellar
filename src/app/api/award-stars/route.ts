@@ -106,6 +106,11 @@ export async function POST(req: NextRequest) {
   // registration still pass the client amount through the policy cap; those are
   // locked down server-side in Stage 2.
   let amount: number;
+  // The signed observation's fileHash, captured when a cosmic_bonus /
+  // weekly_challenge token is verified below. Used to derive a server-side
+  // idempotency key so ONE observation pays each bonus at most once — a valid
+  // token can't be replayed with fresh client idempotency keys to farm Stars.
+  let observationFileHash = '';
   if (reasonStr.startsWith('quiz:')) {
     const picks = Array.isArray(body.answers) ? (body.answers as unknown[]) : null;
     if (!picks) {
@@ -163,6 +168,7 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ error: 'Observation proof required' }, { status: 403 });
     }
+    observationFileHash = tok.payload.fileHash;
     if (reasonStr.startsWith('cosmic_bonus:')) {
       // Deterministic server roll seeded by the signed observation (fileHash) +
       // wallet + day + target — same observation always yields the same result,
@@ -254,6 +260,10 @@ export async function POST(req: NextRequest) {
   const idemKey =
     reasonStr.startsWith('quiz:') ? `${reasonStr}:${recipient}:${todayStr}`
     : reasonStr === 'daily_checkin' ? `checkin:${recipient}:${todayStr}`
+    : (reasonStr.startsWith('cosmic_bonus:') || reasonStr === 'weekly_challenge')
+      // Bind the slot to the signed observation (fileHash) + reason + wallet, so
+      // replaying the same 30-min token with new client keys can't re-claim.
+      ? `${reasonStr}:${observationFileHash}:${recipient}`
     : idempotencyKey;
   let claimed = false;
   if (db) {

@@ -43,8 +43,11 @@ export async function GET() {
         observations.push({
           id: `obs-${r.id}`,
           target: r.identifiedObject ?? r.target,
-          lat: r.lat,
-          lon: r.lon,
+          // Coarsen to ~1km (2 decimals) for this public, unauthenticated feed:
+          // exact coordinates keyed to a wallet would expose an observer's home
+          // location. Precision is fine for a network/light-pollution map.
+          lat: r.lat === null ? null : Math.round(r.lat * 100) / 100,
+          lon: r.lon === null ? null : Math.round(r.lon * 100) / 100,
           timestamp: (r.createdAt ?? new Date()).toString(),
           nodeType: classifyObservation({
             mintTx: r.mintTx,

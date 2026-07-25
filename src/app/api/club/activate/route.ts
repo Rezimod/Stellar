@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
+import { checkRateLimit, clubActivateRateLimit } from '@/lib/rate-limit';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
 
@@ -35,6 +36,13 @@ export async function POST(req: NextRequest) {
   const owns = await assertOwnsWallet(privyId, userKey.toString());
   if (!owns) {
     return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
+  }
+
+  // Each activation sends a fee-payer-funded memo tx; cap per wallet so a single
+  // authenticated user can't loop it to drain the hot wallet's SOL float.
+  const { success } = await checkRateLimit(clubActivateRateLimit, userKey.toString());
+  if (!success) {
+    return NextResponse.json({ error: 'Too many activation attempts. Please wait.' }, { status: 429 });
   }
 
   const privateKeyB58 = process.env.FEE_PAYER_PRIVATE_KEY;

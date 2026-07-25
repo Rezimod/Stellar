@@ -15,6 +15,7 @@ import { sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { users } from '@/lib/schema'
 import { isValidEmail, isValidPublicKey, sanitizeString } from '@/lib/validate'
+import { assertOwnsWallet } from '@/lib/api-auth'
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -70,7 +71,13 @@ export async function POST(req: NextRequest) {
       if (!isValidPublicKey(trimmed)) {
         return NextResponse.json({ success: false, error: 'Invalid wallet address' }, { status: 400 })
       }
-      cleanWallet = trimmed
+      // Only persist a wallet this session actually controls (checked against
+      // Privy's linked accounts). Prevents poisoning `users.walletAddress` with
+      // someone else's key. Not owned → don't error, just skip storing it; the
+      // COALESCE below keeps any previously-verified wallet, and a later sync
+      // (once the embedded wallet has surfaced in Privy) records it.
+      const owns = await assertOwnsWallet(verifiedPrivyId, trimmed)
+      cleanWallet = owns ? trimmed : null
     }
 
     const db = getDb()

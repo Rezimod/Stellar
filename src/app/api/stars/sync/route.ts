@@ -13,7 +13,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { getDb } from '@/lib/db';
-import { observationLog } from '@/lib/schema';
+import { observationLog, starsBurns } from '@/lib/schema';
 import { and, eq, ne, sum } from 'drizzle-orm';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
@@ -25,8 +25,6 @@ export const maxDuration = 60;
 // mint the gap between (current SPL balance) and (expectedTotal). Hard cap
 // prevents the client from claiming an absurd amount.
 const MAX_EXPECTED_TOTAL = 5000;
-// Small buffer for in-flight awards between observe/log and stars/sync.
-const SYNC_DRIFT_BUFFER = 50;
 
 async function getServerEarnedStars(wallet: string): Promise<number | null> {
   const db = getDb();
@@ -35,6 +33,19 @@ async function getServerEarnedStars(wallet: string): Promise<number | null> {
     .select({ total: sum(observationLog.stars) })
     .from(observationLog)
     .where(and(eq(observationLog.wallet, wallet), ne(observationLog.confidence, 'rejected')));
+  return Number(rows[0]?.total ?? 0);
+}
+
+// Total Stars this wallet has already burned (redeem codes, marketplace
+// discounts, shop purchases). Subtracted from lifetime-earned to get the
+// spendable balance sync is allowed to re-mint.
+async function getBurnedStars(wallet: string): Promise<number> {
+  const db = getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select({ total: sum(starsBurns.amount) })
+    .from(starsBurns)
+    .where(eq(starsBurns.walletAddress, wallet));
   return Number(rows[0]?.total ?? 0);
 }
 // We allow one full sync per wallet per hour. Multiple bets/visits in quick
@@ -89,18 +100,17 @@ export async function POST(req: NextRequest) {
   }
   let target = Math.min(expected, MAX_EXPECTED_TOTAL);
 
-  // Fail closed: if the earned-Stars record is unavailable (DB down), treat it
-  // as 0 rather than skipping the clamp — never mint against an unverifiable total.
+  // Spendable = lifetime earned MINUS everything already burned (redeem codes,
+  // marketplace discounts, shop purchases). Re-minting must never exceed this:
+  // otherwise a user could burn Stars for real GEL value, call sync to re-mint
+  // the balance back to lifetime-earned, and burn again — an unbounded value
+  // loop. Fail closed: if the earned record is unavailable (DB down),
+  // getServerEarnedStars returns null → treat earned as 0, so target clamps to 0.
   const serverEarned = (await getServerEarnedStars(address)) ?? 0;
-  if (serverEarned === 0 && target > 500) {
-    return NextResponse.json(
-      { error: 'expectedTotal exceeds earned stars on record' },
-      { status: 400 },
-    );
-  }
-  const maxAllowed = serverEarned + SYNC_DRIFT_BUFFER;
-  if (target > maxAllowed) {
-    target = Math.min(target, maxAllowed);
+  const burned = await getBurnedStars(address);
+  const spendable = Math.max(0, serverEarned - burned);
+  if (target > spendable) {
+    target = spendable;
   }
 
   const mintAddress = process.env.STARS_TOKEN_MINT;

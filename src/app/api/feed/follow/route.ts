@@ -9,6 +9,7 @@ import { and, eq, sql } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { feedFollows, users } from '@/lib/schema'
 import { isValidPublicKey } from '@/lib/validate'
+import { getSessionWalletAddresses } from '@/lib/api-auth'
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
@@ -25,14 +26,24 @@ async function authedWallet(req: NextRequest): Promise<string | null> {
   } catch {
     return null
   }
+  // Identity MUST come from Privy's linked accounts (authoritative), never from
+  // the client-populated `users.walletAddress` row alone — a user can set that
+  // row to any wallet via /api/users/upsert and would otherwise be able to
+  // follow/unfollow AS another wallet, or delete a victim's follow edges. Prefer
+  // the DB-mirrored wallet when it is genuinely linked to this session; else use
+  // the session's first linked wallet.
+  const linked = await getSessionWalletAddresses(privyId)
+  if (linked.length === 0) return null
   const db = getDb()
-  if (!db) return null
-  const [row] = await db
-    .select({ walletAddress: users.walletAddress })
-    .from(users)
-    .where(eq(users.privyId, privyId))
-    .limit(1)
-  return row?.walletAddress ?? null
+  if (db) {
+    const [row] = await db
+      .select({ walletAddress: users.walletAddress })
+      .from(users)
+      .where(eq(users.privyId, privyId))
+      .limit(1)
+    if (row?.walletAddress && linked.includes(row.walletAddress)) return row.walletAddress
+  }
+  return linked[0]
 }
 
 export async function GET(req: NextRequest) {

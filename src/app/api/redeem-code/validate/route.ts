@@ -9,6 +9,7 @@
 // (lazily, on read, when expiresAt < now).
 
 import { NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { redeemCodes } from '@/lib/schema';
@@ -21,7 +22,9 @@ export async function POST(req: NextRequest) {
 
   const authHeader = req.headers.get('authorization');
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!token || token !== expected) {
+  const tokenBuf = Buffer.from(token ?? '');
+  const expectedBuf = Buffer.from(expected);
+  if (!token || tokenBuf.length !== expectedBuf.length || !timingSafeEqual(tokenBuf, expectedBuf)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 

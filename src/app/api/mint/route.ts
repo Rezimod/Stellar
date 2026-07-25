@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   if (n) return n;
   const body = await req.json();
   const {
-    userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, rarity, demo,
+    userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, demo,
     fileHash, deviceTier, deviceMake, deviceModel, exifLat, exifLon, exifTakenAt,
     isInternetSourced, uploadSource,
     verificationToken, identifiedObject, confidence, capturedAt,
@@ -83,6 +83,10 @@ export async function POST(req: NextRequest) {
   // NFT from fabricated data. Demo mints skip the token but are constrained below
   // (Common rarity, ≤50 Stars, Demo attribute).
   let verifiedTarget: string | null = null;
+  // The observation's confidence + identified object, taken from the SIGNED
+  // token (never the client body) — these drive certified rarity + Stars below.
+  let signedConfidence = '';
+  let signedIdentified = '';
   // Authoritative cloud cover: the server-signed value from the verification
   // token for real mints (the client can't fake a clear sky); the validated
   // client value only for demo mints, which carry no token.
@@ -114,6 +118,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Observation not verified' }, { status: 403 });
     }
     verifiedTarget = tokenCheck.payload.target;
+    signedConfidence = tokenCheck.payload.confidence;
+    signedIdentified = tokenCheck.payload.identifiedObject;
     effectiveCloudCover = tokenCheck.payload.cloudCover;
     // Overcast gate: never certify an observation taken under >70% cloud cover.
     // /api/observe/verify already rejects these (issuing a 'rejected' token), so
@@ -145,14 +151,34 @@ export async function POST(req: NextRequest) {
   const UNVERIFIED_MINTS_PER_DAY = 2;
   const UNVERIFIED_KEEPSAKE_STARS = 10;
 
-  // Validate rarity. Demo mints are always Common with Stars capped at 50.
-  const VALID_RARITIES = ['Common', 'Stellar', 'Astral', 'Celestial'] as const;
+  // Certified rarity and Stars are derived SERVER-SIDE from the token's signed
+  // confidence — never from the client. A low-confidence observation cannot be
+  // minted as a top-tier "Celestial" NFT, and the displayed Stars can't be
+  // inflated. (Client `stars` is only honored for demo mints, which carry no
+  // token and are hard-capped at 50; client `rarity` is ignored entirely.)
+  const CERTIFIED_STARS: Record<string, { base: number; rare_bonus: number }> = {
+    high:   { base: 50, rare_bonus: 30 },
+    medium: { base: 25, rare_bonus: 15 },
+    low:    { base: 10, rare_bonus: 5 },
+  };
+  const rareForNft = ['saturn', 'jupiter', 'mars', 'venus', 'mercury', 'deep_sky']
+    .some(r => signedIdentified.toLowerCase().includes(r));
+  const certReward = CERTIFIED_STARS[signedConfidence] ?? { base: 0, rare_bonus: 0 };
+  const certifiedStars = certReward.base + (rareForNft ? certReward.rare_bonus : 0);
   const rarityVal = isDemoMint
     ? 'Common'
     : isUnverified
       ? 'Unverified'
-      : (VALID_RARITIES.includes(rarity as typeof VALID_RARITIES[number]) ? (rarity as string) : 'Common');
-  const effectiveStars = isDemoMint ? Math.min(stars, 50) : isUnverified ? 0 : stars;
+      : signedConfidence === 'high'
+        ? 'Astral'
+        : signedConfidence === 'medium'
+          ? 'Stellar'
+          : 'Common';
+  // Stars written into the NFT metadata. The ledger row (below) records 0 for
+  // certified mints: real on-chain Stars are minted only by /api/observe/log
+  // and /api/award-stars, so counting the mint row too would double-issue AND
+  // let a client inflate its earned/leaderboard total via a crafted `stars`.
+  const nftStars = isDemoMint ? Math.min(stars, 50) : isUnverified ? 0 : certifiedStars;
 
   // DB rate limit: one NFT per wallet+target per hour — skipped for demo missions
   const db = getDb();
@@ -245,7 +271,7 @@ export async function POST(req: NextRequest) {
   try {
     const mintTarget = verifiedTarget ?? target;
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', mintTarget, isDemoMint ? '(demo)' : '');
-    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover: effectiveCloudCover, oracleHash: effectiveOracleHash, stars: effectiveStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified });
+    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover: effectiveCloudCover, oracleHash: effectiveOracleHash, stars: nftStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Keepsake fun reward: a flat +10 for an unverified mint, clamped by the
@@ -273,7 +299,10 @@ export async function POST(req: NextRequest) {
       db.insert(observationLog).values({
         wallet: userAddress,
         target: mintTarget,
-        stars: isUnverified ? keepsakeStars : effectiveStars,
+        // Certified mints record 0 here — the observation's real Stars are
+        // minted (and ledgered) by /api/observe/log + /api/award-stars. Only the
+        // keepsake path actually mints Stars at /api/mint, so it records them.
+        stars: isUnverified ? keepsakeStars : 0,
         confidence: isUnverified ? 'unverified' : 'minted',
         mintTx: txId,
         observedDate: new Date().toISOString().split('T')[0],
