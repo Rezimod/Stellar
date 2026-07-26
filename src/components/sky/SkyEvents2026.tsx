@@ -25,17 +25,27 @@ interface SkyEvent {
   kind: EventKind;
   date: string;
   endDate?: string;
+  /**
+   * False for events that never clear the Tbilisi horizon (the app's home
+   * base). The Mar 3 total lunar eclipse falls over Asia/Pacific/the Americas;
+   * the Aug 12 total solar eclipse is below the horizon here (Sun set ~1.5 h
+   * before greatest eclipse). We still list them as major 2026 events but flag
+   * that they can't be seen from Georgia so the card isn't a false promise.
+   */
+  visibleFromGeorgia?: boolean;
 }
 
-const EVENTS: SkyEvent[] = [
-  { id: 'lunar_eclipse_mar3',  kind: 'lunarEclipse',  date: '2026-03-03' },
-  { id: 'lyrids',              kind: 'meteorShower',  date: '2026-04-22', endDate: '2026-04-23' },
+// Chronological — the rail reads as a timeline, so it must render in date
+// order regardless of how the source array is arranged.
+const EVENTS: SkyEvent[] = ([
+  { id: 'lunar_eclipse_mar3',  kind: 'lunarEclipse',  date: '2026-03-03', visibleFromGeorgia: false },
   { id: 'mars_saturn_conj',    kind: 'conjunction',   date: '2026-04-20' },
+  { id: 'lyrids',              kind: 'meteorShower',  date: '2026-04-22', endDate: '2026-04-23' },
   { id: 'perseids',            kind: 'meteorShower',  date: '2026-08-12', endDate: '2026-08-13' },
-  { id: 'solar_eclipse_aug12', kind: 'solarEclipse',  date: '2026-08-12' },
+  { id: 'solar_eclipse_aug12', kind: 'solarEclipse',  date: '2026-08-12', visibleFromGeorgia: false },
   { id: 'saturn_opp',          kind: 'opposition',    date: '2026-10-04' },
   { id: 'geminids',            kind: 'meteorShower',  date: '2026-12-13', endDate: '2026-12-14' },
-];
+] as SkyEvent[]).sort((a, b) => a.date.localeCompare(b.date));
 
 export function SkyEvents2026() {
   const t = useTranslations('sky.events');
@@ -98,6 +108,9 @@ export function SkyEvents2026() {
               <div className="ev__caption">
                 <span className="ev__date">{formatDateRange(ev.date, ev.endDate, dateLocale)}</span>
                 <span className="ev__name">{t(`names.${ev.id}`)}</span>
+                {ev.visibleFromGeorgia === false && (
+                  <span className="ev__novis">{t('notVisibleGeorgia')}</span>
+                )}
               </div>
             </button>
           </li>
@@ -131,6 +144,9 @@ export function SkyEvents2026() {
             <h3 id={`ev-sheet-title-${opened.id}`} className="ev-modal__title">
               {t(`names.${opened.id}`)}
             </h3>
+            {opened.visibleFromGeorgia === false && (
+              <p className="ev-modal__novis">{t('notVisibleGeorgiaLong')}</p>
+            )}
             <p className="ev-modal__body">{t(`details.${opened.id}.body`)}</p>
             <ul className="ev-modal__meta">
               <li>

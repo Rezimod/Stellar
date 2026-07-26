@@ -16,7 +16,9 @@ export const metadata: Metadata = {
 export default function SkyLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <h1 className="sr-only">Sky Calendar 2026 — Meteor Showers, Eclipses &amp; Celestial Events</h1>
+      {/* Screen-reader/SEO context line. Kept as a <p>, not a second <h1> —
+          the page's visible "Sky tonight" heading is the page's sole h1. */}
+      <p className="sr-only">Sky Calendar 2026 — meteor showers, eclipses and celestial events, plus a live tonight&apos;s-sky planet finder.</p>
       {children}
     </>
   );

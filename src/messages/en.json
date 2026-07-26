@@ -319,6 +319,8 @@
       "peak": "Peak",
       "moon": "Moon",
       "gear": "Gear",
+      "notVisibleGeorgia": "Not visible from Georgia",
+      "notVisibleGeorgiaLong": "This one isn't visible from Georgia — it plays out below our horizon. Listed as a major 2026 event for travelers and remote viewers.",
       "names": {
         "lunar_eclipse_mar3": "Total Lunar Eclipse",
         "lyrids": "Lyrid Meteor Shower",
@@ -365,7 +367,7 @@
           "tip": "Never look directly without certified protection. If you lack filters, build a pinhole projector — a single hole in card stock projects a crescent Sun onto any flat surface."
         },
         "saturn_opp": {
-          "body": "Saturn rises as the Sun sets and shines all night, at its brightest (mag +0.4) and biggest of the year. Rings are tilted about 9° — reopening from the 2025 edge-on event.",
+          "body": "Saturn rises as the Sun sets and shines all night, at its brightest (mag +0.4) and biggest of the year. Rings are tilted a few degrees — slowly reopening after the 2025 edge-on event.",
           "peak": "Rises at sunset; transits highest around local midnight",
           "moon": "Last quarter — rises near midnight; early-evening hours stay dark",
           "gear": "Telescope at 80×+ to split the rings; even a 60mm achromat shows them clearly",

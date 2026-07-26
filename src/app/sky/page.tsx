@@ -860,6 +860,7 @@ function VisCard({ obj, active, top, onSelect, tDir }: {
   const tUi = useTranslations('skyUi');
   const photo = getTargetPhoto(obj.id);
   const badge = visBadge(obj, top, tUi);
+  const [imgBroken, setImgBroken] = useState(false);
   return (
     <li>
       <button
@@ -869,9 +870,9 @@ function VisCard({ obj, active, top, onSelect, tDir }: {
         aria-pressed={active}
       >
         <span className="skx__vis-thumb">
-          {photo ? (
+          {photo && !imgBroken ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+            <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" onError={() => setImgBroken(true)} />
           ) : (
             <PlanetIcon id={obj.id} type={obj.type} magnitude={obj.magnitude} phase={obj.phase} size={48} glow={false} />
           )}

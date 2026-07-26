@@ -6,7 +6,10 @@ import { useLocale } from 'next-intl';
 import { usePrivy } from '@privy-io/react-auth';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { useAppState } from '@/hooks/useAppState';
-import { CalendarClock, Volume2, VolumeX } from 'lucide-react';
+import {
+  CalendarClock, Volume2, VolumeX, X, Sun, Star, Telescope, Globe, Rocket,
+  Trophy, Clock3, TriangleAlert, type LucideIcon,
+} from 'lucide-react';
 import { track } from '@/lib/track';
 import { MAX_QUIZ_REWARDS_PER_WEEK, type QuizDef } from '@/lib/quizzes';
 
@@ -14,6 +17,16 @@ interface Props {
   quiz: QuizDef;
   onClose: () => void;
 }
+
+// SVG icon per quiz — replaces the emoji field (no emoji in UI). Mirrors the
+// QUIZ_UI map on the missions page so the header icon matches the launch row.
+const QUIZ_ICON: Record<string, LucideIcon> = {
+  'solar-system': Sun,
+  'constellations': Star,
+  'telescopes': Telescope,
+  'universe': Globe,
+  'space-exploration': Rocket,
+};
 
 const READY_BEAT_MS = 1000;
 const MUTE_KEY = 'stellar_quiz_mute';
@@ -62,7 +75,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
-  const [phase, setPhase] = useState<'ready' | 'question' | 'feedback' | 'result'>('ready');
+  const [phase, setPhase] = useState<'intro' | 'ready' | 'question' | 'feedback' | 'result'>('intro');
   const [saved, setSaved] = useState(false);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [picks, setPicks] = useState<number[]>([]); // chosen option index per question (-1 = timed out)
@@ -104,11 +117,6 @@ export default function QuizActive({ quiz, onClose }: Props) {
     setReduced(prefersReducedMotion());
     if (typeof window !== 'undefined') {
       setMuted(localStorage.getItem(MUTE_KEY) !== '0');
-      // Opening past the gate records a play (counts toward the weekly budget).
-      if (!gate) {
-        const today = new Date().toISOString().slice(0, 10);
-        localStorage.setItem(PLAYS_KEY, JSON.stringify([...loadRecentPlays(), { id: quiz.id, date: today }]));
-      }
     }
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -283,6 +291,17 @@ export default function QuizActive({ quiz, onClose }: Props) {
     setPhase('feedback');
   };
 
+  // Start the quiz for real. Recording the play here (not on mount) means
+  // opening a quiz to read its rules no longer burns the daily/weekly slot —
+  // only committing to play does.
+  const beginQuiz = () => {
+    if (typeof window !== 'undefined') {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(PLAYS_KEY, JSON.stringify([...loadRecentPlays(), { id: quiz.id, date: today }]));
+    }
+    setPhase('ready');
+  };
+
   const handleClose = () => {
     cancelRaf();
     onClose();
@@ -339,6 +358,89 @@ export default function QuizActive({ quiz, onClose }: Props) {
     );
   }
 
+  // Pre-play brief. Opening a quiz lands here first — no timer runs and no play
+  // is recorded until the user taps Start, so the rules (reward, pass mark,
+  // timeout penalty, once-per-day) are all disclosed before anything commits.
+  if (phase === 'intro') {
+    const IntroIcon = QUIZ_ICON[quiz.id] ?? Star;
+    const maxReward = total * quiz.starsPerCorrect;
+    const rules = [
+      {
+        Icon: Star,
+        text: locale === 'ka'
+          ? `უპასუხე სწორად ${passThreshold}+ კითხვას (70%) და დააგროვე ${maxReward}-მდე ვარსკვლავი`
+          : `Answer ${passThreshold}+ of ${total} right (70%) to earn up to ${maxReward} Stars`,
+      },
+      {
+        Icon: Clock3,
+        text: locale === 'ka'
+          ? 'ბოლო კითხვები დროზეა — თითოზე 5 წამი'
+          : 'Later questions are timed — 5 seconds each',
+      },
+      {
+        Icon: TriangleAlert,
+        text: locale === 'ka'
+          ? 'თუ დრო ამოგეწურა პასუხის გარეშე, ამ ქვიზში ვარსკვლავებს ვერ მიიღებ'
+          : 'Let a timer run out without answering and the whole quiz earns no Stars',
+      },
+      {
+        Icon: CalendarClock,
+        text: locale === 'ka'
+          ? 'თითო ქვიზი დღეში ერთხელ იხსნება'
+          : 'Each quiz can be played once per day',
+      },
+    ];
+    return createPortal(
+      <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-end px-4 py-3 flex-shrink-0">
+          <button
+            onClick={handleClose}
+            aria-label={locale === 'ka' ? 'დახურვა' : 'Close'}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
+            style={{ background: 'rgba(var(--ink), 0.05)' }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-6 pb-8 text-center">
+          <div className="max-w-sm w-full flex flex-col items-center gap-6">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+            >
+              <IntroIcon size={26} strokeWidth={1.8} className="text-[var(--terracotta)]" />
+            </div>
+            <div>
+              <h2 className="text-text-primary text-xl font-semibold mb-1">{quiz.title[locale]}</h2>
+              <p className="text-text-muted text-sm">{quiz.description[locale]}</p>
+            </div>
+            <ul className="w-full flex flex-col gap-3 text-left">
+              {rules.map(({ Icon, text }, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span
+                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: 'rgba(var(--ink), 0.05)' }}
+                  >
+                    <Icon size={14} strokeWidth={1.9} className="text-text-muted" />
+                  </span>
+                  <span className="text-text-primary text-sm leading-relaxed">{text}</span>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={beginQuiz}
+              className="w-full py-3.5 rounded-xl text-sm font-bold transition-all"
+              style={{ background: 'var(--terracotta)', color: 'var(--canvas)' }}
+            >
+              {locale === 'ka' ? 'დაწყება' : 'Start quiz'}
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    );
+  }
+
   return createPortal(
     <div className="fixed inset-0 z-[60] bg-[var(--canvas)] flex flex-col overflow-hidden">
       {/* Top progress bar (questions completed) */}
@@ -355,7 +457,11 @@ export default function QuizActive({ quiz, onClose }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 border-b border-[var(--border)]">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{quiz.emoji}</span>
+          {(() => { const HIcon = QUIZ_ICON[quiz.id] ?? Star; return (
+            <span className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(var(--ink), 0.06)' }}>
+              <HIcon size={14} strokeWidth={2} className="text-[var(--terracotta)]" />
+            </span>
+          ); })()}
           <p className="text-text-primary text-sm font-semibold">{quiz.title[locale]}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -372,10 +478,11 @@ export default function QuizActive({ quiz, onClose }: Props) {
           </button>
           <button
             onClick={handleClose}
+            aria-label={locale === 'ka' ? 'დახურვა' : 'Close quiz'}
             className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
             style={{ background: 'rgba(var(--ink), 0.05)' }}
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
       </div>
@@ -386,13 +493,17 @@ export default function QuizActive({ quiz, onClose }: Props) {
 
         {phase === 'result' ? (
           <div className="flex flex-col items-center justify-center min-h-full gap-6 text-center py-4">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+            <div className="w-20 h-20 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}>
-              {score >= 8 ? '🏆' : score >= 5 ? '⭐' : '🔭'}
+              {score >= 8
+                ? <Trophy size={34} strokeWidth={1.6} className="text-[var(--terracotta)]" />
+                : score >= 5
+                  ? <Star size={34} strokeWidth={1.6} className="text-[var(--terracotta)]" />
+                  : <Telescope size={34} strokeWidth={1.6} className="text-[var(--terracotta)]" />}
             </div>
             <div>
               <p className="text-4xl font-bold text-text-primary mb-1">{score}<span className="text-text-muted text-2xl">/{total}</span></p>
-              <p className="text-[var(--terracotta)] font-bold text-lg">+{awardedServer ?? stars} ✦</p>
+              <p className="text-[var(--terracotta)] font-bold text-lg inline-flex items-center gap-1.5">+{awardedServer ?? stars}<Star size={15} strokeWidth={2} fill="currentColor" /></p>
               <p className="text-text-muted text-sm mt-2">
                 {eligibleForStars
                   ? (score >= 8 ? 'Outstanding!' : 'Well done!')
@@ -420,7 +531,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
                   </div>
                 ))}
               </div>
-              <p className="text-text-muted text-[10px] text-center mt-2">
+              <p className="text-text-muted text-xs text-center mt-2">
                 {answers.filter(Boolean).length} correct · {answers.filter(b => !b).length} wrong
               </p>
             </div>
@@ -432,7 +543,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
               >
                 Done
               </button>
-              <p className="text-text-muted text-[10px] text-center mt-2">
+              <p className="text-text-muted text-xs text-center mt-2">
                 {locale === 'ka' ? 'ეს ქვიზი ხვალ ისევ გაიხსნება' : 'This quiz opens again tomorrow'}
               </p>
             </div>

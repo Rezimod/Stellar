@@ -30,11 +30,14 @@ import { NIGHT_STAR_GOAL, MAIN_QUEST_ID, GLOBAL_MISSION } from '@/lib/missions-t
 import type { LucideIcon } from 'lucide-react';
 import { Body, Illumination, MoonPhase } from 'astronomy-engine';
 
+// Icon tiles differentiate by SHAPE (Sun/Star/Telescope/Globe/Rocket); the
+// two-accent brand (terracotta + seafoam) intentionally repeats across them.
+// Rose is the single warm-contrast exception for space-exploration.
 const HUB_GRADIENTS = {
-  amber:   'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
+  amber:   'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
   violet:  'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
   fuchsia: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
-  teal:    'linear-gradient(135deg, #5EEAD4 0%, #5EEAD4 100%)',
+  teal:    'linear-gradient(135deg, var(--seafoam) 0%, var(--seafoam) 100%)',
   rose:    'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)',
 } as const;
 
@@ -527,7 +530,7 @@ export default function MissionsPage() {
                           title={dailyQuiz.title[locale] ?? dailyQuiz.title.en}
                           meta={locale === 'ka' ? dailyQuizUi.descKa : dailyQuizUi.descEn}
                           reward={quizReward(dailyQuiz)}
-                          done={score > 0 && score >= total}
+                          done={score >= Math.ceil(total * 0.7)}
                           onClick={() => setActiveQuiz(dailyQuiz)}
                         />
                       );
@@ -1353,8 +1356,8 @@ function EventRow({ event, dateLocale, typeLabel, difficultyLabel, countdown, wh
         className="mis-event-diff"
         style={{
           color: EVENT_DIFFICULTY_COLOR[event.difficulty],
-          border: `1px solid ${EVENT_DIFFICULTY_COLOR[event.difficulty]}55`,
-          background: `${EVENT_DIFFICULTY_COLOR[event.difficulty]}1A`,
+          border: `1px solid color-mix(in srgb, ${EVENT_DIFFICULTY_COLOR[event.difficulty]} 33%, transparent)`,
+          background: `color-mix(in srgb, ${EVENT_DIFFICULTY_COLOR[event.difficulty]} 10%, transparent)`,
         }}
       >
         {difficultyLabel}

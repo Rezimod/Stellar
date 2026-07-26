@@ -136,6 +136,28 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.ev__novis {
+  align-self: flex-start;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--warning, #E5B769);
+  background: color-mix(in srgb, var(--warning, #E5B769) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning, #E5B769) 30%, transparent);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.ev-modal__novis {
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--warning, #E5B769);
+  background: color-mix(in srgb, var(--warning, #E5B769) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning, #E5B769) 26%, transparent);
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin: 4px 0 2px;
+}
 
 /* === Web layout ================================================== */
 @media (min-width: 760px) {

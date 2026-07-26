@@ -16,7 +16,6 @@ export const STARS_PER_CORRECT_BY_DIFFICULTY: Record<QuizDifficulty, number> = {
 
 export interface QuizDef {
   id: string;
-  emoji: string;
   title: { en: string; ka: string };
   description: { en: string; ka: string };
   difficulty: QuizDifficulty;
@@ -70,7 +69,6 @@ export function scoreQuiz(quizId: string, picks: number[]): QuizScore | null {
 export const QUIZZES: QuizDef[] = [
   {
     id: 'solar-system',
-    emoji: '☀️',
     title: { en: 'Solar System', ka: 'მზის სისტემა' },
     description: { en: 'Test your knowledge of planets, moons, and our cosmic neighborhood.', ka: 'შეამოწმე ცოდნა პლანეტების, მთვარეების და ჩვენი კოსმოსური სამეზობლოს შესახებ.' },
     difficulty: 'easy',
@@ -190,7 +188,6 @@ export const QUIZZES: QuizDef[] = [
   },
   {
     id: 'constellations',
-    emoji: '✦',
     title: { en: 'Stars & Constellations', ka: 'ვარსკვლავები და თანავარსკვლავედები' },
     description: { en: 'How well do you know the night sky, its patterns, and famous stars?', ka: 'რამდენად კარგად იცნობ ღამის ცას, მის ნახატებს და ცნობილ ვარსკვლავებს?' },
     difficulty: 'medium',
@@ -310,7 +307,6 @@ export const QUIZZES: QuizDef[] = [
   },
   {
     id: 'telescopes',
-    emoji: '🔭',
     title: { en: 'Telescopes & Optics', ka: 'ტელესკოპები და ოპტიკა' },
     description: { en: 'Essential knowledge for telescope owners and serious observers.', ka: 'აუცილებელი ცოდნა ტელესკოპის მფლობელებისა და სერიოზული დამკვირვებლებისთვის.' },
     difficulty: 'medium',
@@ -430,7 +426,6 @@ export const QUIZZES: QuizDef[] = [
   },
   {
     id: 'universe',
-    emoji: '🌌',
     title: { en: 'Universe & Cosmology', ka: 'სამყარო და კოსმოლოგია' },
     description: { en: 'The Big Bang, black holes, dark matter — how big is everything?', ka: 'დიდი აფეთქება, შავი ხვრელები, ბნელი მატერია.' },
     difficulty: 'hard',
@@ -550,7 +545,6 @@ export const QUIZZES: QuizDef[] = [
   },
   {
     id: 'space-exploration',
-    emoji: '🚀',
     title: { en: 'Space Exploration', ka: 'კოსმოსის კვლევა' },
     description: { en: 'Rockets, astronauts, missions — the history of humanity in space.', ka: 'რაკეტები, ასტრონავტები, მისიები.' },
     difficulty: 'hard',
@@ -568,7 +562,7 @@ export const QUIZZES: QuizDef[] = [
         explanation: { en: 'Yuri Gagarin became the first human in space on April 12, 1961, aboard Vostok 1. His flight lasted 108 minutes and completed one orbit of Earth.', ka: 'იური გაგარინი 1961 წლის 12 აპრილს გახდა პირველი ადამიანი კოსმოსში — ვოსტოკ 1-ით. ფრენა 108 წუთი გაგრძელდა.' },
       },
       {
-        q: { en: 'Which mission first landed humans on the Moon?', ka: 'რომელმა მისიამ პირველად დაასხა ადამიანები მთვარეზე?' },
+        q: { en: 'Which mission first landed humans on the Moon?', ka: 'რომელმა მისიამ პირველად დაუშვა ადამიანები მთვარეზე?' },
         options: [
           { en: 'Apollo 10', ka: 'აპოლო 10' },
           { en: 'Apollo 11', ka: 'აპოლო 11' },
