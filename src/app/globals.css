@@ -1542,3 +1542,133 @@ html[data-field="on"]::after {
     scroll-behavior: auto !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   HOMEPAGE — cosmic backdrop + scroll-reveal choreography
+   Premium, restrained, brand-safe. Motion is opt-in and reduced-motion aware.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root { --reveal-ease: cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ── Continuous cosmos: a fixed nebula + drifting starfield that sits behind
+   every section below the hero, so scrolling feels like moving through space.
+   Home is always dark, so this is intentionally dark-only. ─────────────── */
+.home-cosmos {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(78% 58% at 80% 6%, rgba(104, 68, 166, 0.16), transparent 60%),
+    radial-gradient(66% 52% at 10% 24%, rgba(38, 84, 168, 0.15), transparent 62%),
+    radial-gradient(58% 46% at 88% 62%, rgba(70, 120, 200, 0.10), transparent 60%),
+    radial-gradient(96% 70% at 50% 112%, rgba(255, 150, 74, 0.07), transparent 58%),
+    #0A1735;
+}
+.home-cosmos::before,
+.home-cosmos::after {
+  content: '';
+  position: absolute;
+  inset: -20% 0;
+  background-repeat: repeat;
+  will-change: transform;
+}
+/* Far, faint star layer */
+.home-cosmos::before {
+  background-image:
+    radial-gradient(1px 1px at 24px 42px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 128px 96px, rgba(210, 224, 255, 0.40), transparent),
+    radial-gradient(1px 1px at 196px 28px, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 76px 168px, rgba(200, 216, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 232px 132px, rgba(255, 255, 255, 0.30), transparent);
+  background-size: 260px 220px;
+  opacity: 0.5;
+  animation: cosmosDriftFar 140s linear infinite;
+}
+/* Near, slightly brighter layer for parallax depth */
+.home-cosmos::after {
+  background-image:
+    radial-gradient(1.4px 1.4px at 60px 60px, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1.4px 1.4px at 300px 200px, rgba(255, 236, 200, 0.55), transparent),
+    radial-gradient(1.6px 1.6px at 180px 300px, rgba(214, 228, 255, 0.60), transparent),
+    radial-gradient(1.2px 1.2px at 360px 90px, rgba(255, 255, 255, 0.50), transparent);
+  background-size: 420px 360px;
+  opacity: 0.45;
+  animation: cosmosDriftNear 90s linear infinite;
+}
+@keyframes cosmosDriftFar {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, -220px, 0); }
+}
+@keyframes cosmosDriftNear {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, -360px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-cosmos::before,
+  .home-cosmos::after { animation: none; }
+}
+
+/* ── Scroll reveal: elements enter with a soft rise. Base state is hidden;
+   ScrollReveals.tsx flips [data-reveal-in] on when the node scrolls in. ── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.85s var(--reveal-ease),
+    transform 0.85s var(--reveal-ease);
+  will-change: opacity, transform;
+}
+[data-reveal][data-reveal-in] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered variant — children cascade once the container enters view. */
+[data-reveal-stagger] > * {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.72s var(--reveal-ease),
+    transform 0.72s var(--reveal-ease);
+  will-change: opacity, transform;
+}
+[data-reveal-stagger][data-reveal-in] > * {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal-stagger][data-reveal-in] > *:nth-child(1) { transition-delay: 0.04s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(2) { transition-delay: 0.10s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(3) { transition-delay: 0.16s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(4) { transition-delay: 0.22s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(5) { transition-delay: 0.28s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(6) { transition-delay: 0.34s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(7) { transition-delay: 0.40s; }
+[data-reveal-stagger][data-reveal-in] > *:nth-child(8) { transition-delay: 0.46s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal-stagger] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Image polish: gentle zoom on marketplace product shots, float on the
+   phone mockups. Presents the existing imagery richer without new assets. ── */
+.home-shot {
+  transition: transform 0.6s var(--reveal-ease);
+}
+.group:hover .home-shot { transform: scale(1.045); }
+
+.home-float {
+  transition: transform 0.5s var(--reveal-ease), filter 0.5s var(--reveal-ease);
+}
+.home-float:hover { transform: translateY(-6px); }
+@media (prefers-reduced-motion: reduce) {
+  .home-shot,
+  .home-float { transition: none; }
+  .home-float:hover { transform: none; }
+  .group:hover .home-shot { transform: none; }
+}

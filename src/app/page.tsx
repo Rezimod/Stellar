@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import HomeHeroSaturn from '@/components/home/HomeHeroSaturn';
-import TonightAtAGlance from '@/components/home/TonightAtAGlanceLazy';
 import ComparisonTable from '@/components/home/ComparisonTable';
+import ScrollReveals from '@/components/home/ScrollReveals';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -1041,7 +1041,18 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="home-font bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
+    <div className="home-font relative bg-[#0A1735] text-white -mt-14 overflow-x-hidden">
+
+      {/* Continuous cosmos behind every section below the hero */}
+      <div className="home-cosmos" aria-hidden />
+      <noscript>
+        <style>{`[data-reveal],[data-reveal-stagger]>*{opacity:1!important;transform:none!important;}`}</style>
+      </noscript>
+
+      {/* Scroll-reveal observer (renders nothing) */}
+      <ScrollReveals />
+
+      <div className="relative z-[1]">
 
       {/* ============================================================
           HERO — Saturn parallax, screenshot redesign
@@ -1049,11 +1060,11 @@ export default async function HomePage() {
       <HomeHeroSaturn />
 
       <section className="relative px-4 md:px-8 pt-14 md:pt-20 pb-2">
-        <div className="relative max-w-[960px] mx-auto">
+        <div className="relative max-w-[960px] mx-auto" data-reveal>
           <div className="text-center mb-5 md:mb-7 text-[10.5px] md:text-[11px] font-mono uppercase tracking-[0.22em] text-[#6B7385]">
             {t('partners')}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-y-2 md:gap-y-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-y-2 md:gap-y-0" data-reveal-stagger>
             <PartnerLogo
               src="/brand-partners/astroman.png"
               alt="Astroman"
@@ -1089,11 +1100,11 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="max-w-[720px] mx-auto">
-          <div className="text-center mb-8 md:mb-10">
+          <div className="text-center mb-8 md:mb-10" data-reveal>
             <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="home-achievements-grid grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+          <div className="home-achievements-grid grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5" data-reveal-stagger>
             {achievements.map((a) => (
               <AchievementBadge
                 key={a.key}
@@ -1118,11 +1129,11 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-10 md:py-16">
         <div className="max-w-[1080px] mx-auto md:min-h-[min(720px,88svh)] flex flex-col justify-center">
-          <div className="text-center mb-5 md:mb-8">
+          <div className="text-center mb-5 md:mb-8" data-reveal>
             <Eyebrow>{t('howItWorks.eyebrow')}</Eyebrow>
           </div>
 
-          <div className="home-how-steps flex items-start justify-center gap-1 sm:gap-3 md:gap-6 max-w-[960px] mx-auto">
+          <div className="home-how-steps flex items-start justify-center gap-1 sm:gap-3 md:gap-6 max-w-[960px] mx-auto" data-reveal-stagger>
             <HowItWorksStep
               step="1"
               label={t('howItWorks.step1')}
@@ -1172,7 +1183,7 @@ export default async function HomePage() {
             </HowItWorksStep>
           </div>
 
-          <div className="mt-6 md:mt-10 text-center">
+          <div className="mt-6 md:mt-10 text-center" data-reveal>
             <SectionLink href="/missions">{t('howItWorks.cta')}</SectionLink>
           </div>
         </div>
@@ -1183,16 +1194,18 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="relative px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-16">
+          <div className="text-center mb-12 md:mb-16" data-reveal>
             <Eyebrow>{t('missions.eyebrow')}</Eyebrow>
             <SectionTitle>{t('missions.title')}</SectionTitle>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto" data-reveal-stagger>
             <div className="order-1 mx-auto">
-              <IPhone size="md" activeTab="missions" navLabels={navLabels}>
-                <MissionsScreen labels={missionsLabels} />
-              </IPhone>
+              <div className="home-float">
+                <IPhone size="md" activeTab="missions" navLabels={navLabels}>
+                  <MissionsScreen labels={missionsLabels} />
+                </IPhone>
+              </div>
             </div>
             <div className="order-2">
               {/* Mobile: phone + horizontal step grid (matches HOW IT WORKS) */}
@@ -1226,12 +1239,12 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-16">
+          <div className="text-center mb-12 md:mb-16" data-reveal>
             <Eyebrow>{t('learn.eyebrow')}</Eyebrow>
             <SectionTitle>{t('learn.title')}</SectionTitle>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto" data-reveal-stagger>
             <div className="order-2 md:order-1 text-center md:text-left">
               {/* Mobile: phone + horizontal step grid (matches HOW IT WORKS) */}
               <div className="grid grid-cols-3 gap-x-3 w-full max-w-[420px] mx-auto md:hidden">
@@ -1256,9 +1269,11 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="order-1 md:order-2 mx-auto">
-              <IPhone size="md" activeTab="hub" navLabels={navLabels}>
-                <LearnScreen labels={learnLabels} planetNames={planetNames} />
-              </IPhone>
+              <div className="home-float">
+                <IPhone size="md" activeTab="hub" navLabels={navLabels}>
+                  <LearnScreen labels={learnLabels} planetNames={planetNames} />
+                </IPhone>
+              </div>
             </div>
           </div>
         </div>
@@ -1269,12 +1284,12 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-20">
+          <div className="text-center mb-12 md:mb-20" data-reveal>
             <Eyebrow>{t('skyPage.eyebrow')}</Eyebrow>
             <SectionTitle>{t('skyPage.title')}</SectionTitle>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 md:gap-y-14 max-w-[920px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 md:gap-y-14 max-w-[920px] mx-auto" data-reveal-stagger>
             <SkyFeatureSlot title={t('skyPage.livePlanetMap')}>
               <IPhone size="sm" activeTab="sky" navLabels={navLabels}><SkyMapScreen labels={skyMapLabels} /></IPhone>
             </SkyFeatureSlot>
@@ -1286,7 +1301,7 @@ export default async function HomePage() {
             </SkyFeatureSlot>
           </div>
 
-          <div className="mt-10 md:mt-16 text-center">
+          <div className="mt-10 md:mt-16 text-center" data-reveal>
             <SectionLink href="/sky">{t('skyPage.cta')}</SectionLink>
           </div>
         </div>
@@ -1297,12 +1312,12 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10 md:mb-14">
+          <div className="text-center mb-10 md:mb-14" data-reveal>
             <Eyebrow>{t('marketplace.eyebrow')}</Eyebrow>
             <SectionTitle>{t('marketplace.title')}</SectionTitle>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4" data-reveal-stagger>
             {[
               {
                 id: 'scope-bresser-76-300',
@@ -1340,16 +1355,17 @@ export default async function HomePage() {
               <Link
                 key={p.id}
                 href={`/marketplace/${encodeURIComponent(p.id)}`}
-                className="group flex flex-col rounded-[14px] bg-white/[0.025] border border-white/[0.07] p-3 md:p-4 hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline"
+                className="group flex flex-col rounded-[14px] bg-white/[0.025] border border-white/[0.07] p-2.5 md:p-3 hover:border-white/[0.16] hover:bg-white/[0.04] transition-colors no-underline"
               >
-                <div className="relative w-full aspect-[1.05] rounded-[10px] mb-3 md:mb-4 overflow-hidden bg-[#EFEAE0]">
+                <div className="relative w-full aspect-[1.25] rounded-[10px] mb-2.5 md:mb-3 overflow-hidden bg-[#EFEAE0]">
                   <Image
                     src={p.image}
                     alt={p.name}
                     fill
-                    sizes="(max-width: 768px) 50vw, 280px"
-                    style={{ objectFit: 'contain', padding: '14px' }}
+                    sizes="(max-width: 768px) 50vw, 240px"
+                    style={{ objectFit: 'contain', padding: '10px' }}
                     loading="lazy"
+                    className="home-shot"
                   />
                 </div>
                 <div className="text-white text-[13.5px] md:text-[15px] font-semibold leading-[1.3] line-clamp-2">
@@ -1358,7 +1374,7 @@ export default async function HomePage() {
                 <div className="text-[#6B7385] text-[12px] md:text-[12.5px] mt-1 leading-[1.4] line-clamp-1">
                   {p.spec}
                 </div>
-                <div className="flex items-baseline justify-between mt-3 md:mt-4 pt-3 border-t border-white/[0.06]">
+                <div className="flex items-baseline justify-between mt-2.5 md:mt-3 pt-2.5 border-t border-white/[0.06]">
                   <span className="font-mono text-white tabular-nums text-[15px] md:text-[17px] font-bold">
                     {p.price}
                     <span className="text-[#9BA3B4] font-mono text-[12px] md:text-[13px] ml-0.5">
@@ -1373,23 +1389,9 @@ export default async function HomePage() {
             ))}
           </div>
 
-          <div className="mt-10 md:mt-12 text-center">
+          <div className="mt-10 md:mt-12 text-center" data-reveal>
             <SectionLink href="/marketplace">{t('marketplace.cta')}</SectionLink>
           </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          TONIGHT AT A GLANCE
-         ============================================================ */}
-      <section className="px-4 md:px-8 py-12 md:py-20">
-        <div className="max-w-[1040px] mx-auto">
-          <div className="text-center mb-7 md:mb-10">
-            <Eyebrow>{t('tonightAtAGlance.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('tonightAtAGlance.title')}</SectionTitle>
-          </div>
-
-          <TonightAtAGlance />
         </div>
       </section>
 
@@ -1398,7 +1400,7 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-16 md:py-[120px]">
         <div className="max-w-[880px] mx-auto">
-          <div className="text-center mb-10 md:mb-14">
+          <div className="text-center mb-10 md:mb-14" data-reveal>
             <Eyebrow>{t('comparison.eyebrow')}</Eyebrow>
             <SectionTitle>
               {t('comparison.title1')}
@@ -1407,6 +1409,7 @@ export default async function HomePage() {
             </SectionTitle>
           </div>
 
+          <div data-reveal>
           <ComparisonTable
             features={{
               skyMap: t('comparison.features.skyMap'),
@@ -1419,6 +1422,7 @@ export default async function HomePage() {
             stellarLabel={t('comparison.stellar')}
             footnote={t('comparison.footnote')}
           />
+          </div>
         </div>
       </section>
 
@@ -1426,23 +1430,25 @@ export default async function HomePage() {
           COMMUNITY
          ============================================================ */}
       <section className="px-6 md:px-8 py-14 md:py-[120px] text-center">
-        <div className="max-w-[1200px] mx-auto">
+        <div className="max-w-[1200px] mx-auto" data-reveal>
           <Eyebrow>{t('community.eyebrow')}</Eyebrow>
           <SectionTitle>{t('community.title')}</SectionTitle>
           <div className="mt-8 md:mt-12">
             <Link
               href="/feed"
-              className="inline-flex items-center gap-2.5 px-9 text-white font-semibold text-[17px] rounded-[14px] transition-all hover:brightness-[1.08] active:translate-y-[0.5px] no-underline"
+              className="hero-pill-primary group inline-flex items-center gap-3 px-10 font-semibold text-[17px] rounded-[16px] transition-all hover:brightness-[1.05] active:translate-y-[0.5px] no-underline"
               style={{
                 paddingTop: 18,
                 paddingBottom: 18,
                 fontFamily: 'var(--font-cta, var(--font-body))',
-                background: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
-                boxShadow: '0 12px 36px rgba(91, 108, 255, 0.40), inset 0 1px 0 rgba(255,255,255,0.10)',
+                color: '#241503',
+                background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
+                boxShadow:
+                  'inset 0 1px 0 rgba(255,235,200,0.7), inset 0 -2px 0 rgba(120,60,0,0.35), 0 10px 34px rgba(245,158,46,0.38)',
               }}
             >
               {t('community.cta')}
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5">
                 <path d="M5 12h14" />
                 <path d="m13 5 7 7-7 7" />
               </svg>
@@ -1451,6 +1457,7 @@ export default async function HomePage() {
         </div>
       </section>
 
+      </div>
     </div>
   );
 }

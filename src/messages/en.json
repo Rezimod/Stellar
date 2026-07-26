@@ -1622,7 +1622,7 @@
       "title": "Complete missions. Earn rewards.",
       "step1": "Pick a target",
       "step2": "Photograph it",
-      "step3": "Stars in your wallet",
+      "step3": "Save forever.",
       "cta": "See all missions →",
       "screenLabel": "Missions",
       "screenTitle": "Seven targets.",
@@ -1676,10 +1676,6 @@
       "eyebrow": "Marketplace",
       "title": "The shop is in the app.",
       "cta": "Open the marketplace →"
-    },
-    "tonightAtAGlance": {
-      "eyebrow": "Live from your sky",
-      "title": "Tonight, at a glance."
     },
     "vision": {
       "eyebrow": "Vision",
