@@ -516,7 +516,7 @@ export default function SkyPage() {
             {/* ── Header ── */}
             <header className="skx__head">
               <div className="skx__head-titles">
-                <h1 className="skx__title">{tUi('skyTonight')}</h1>
+                <h2 className="skx__title">{tUi('skyTonight')}</h2>
                 <p className="skx__subtitle">{dateLabel} · {timeLabel}</p>
               </div>
               <button

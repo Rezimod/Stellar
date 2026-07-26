@@ -18,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/marketplace', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/moon', changeFrequency: 'daily', priority: 0.6 },
     { path: '/solar-system', changeFrequency: 'monthly', priority: 0.6 },
-    { path: '/darksky', changeFrequency: 'weekly', priority: 0.6 },
+    { path: '/network', changeFrequency: 'weekly', priority: 0.6 },
     { path: '/leaderboard', changeFrequency: 'daily', priority: 0.5 },
     { path: '/faq', changeFrequency: 'monthly', priority: 0.6 },
     { path: '/contact', changeFrequency: 'monthly', priority: 0.4 },

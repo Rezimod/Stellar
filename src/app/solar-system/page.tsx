@@ -2,5 +2,10 @@ import SolarSystemPageClient from '@/components/solar-system/SolarSystemPageClie
 import './solar-system.css';
 
 export default function SolarSystemPage() {
-  return <SolarSystemPageClient />;
+  return (
+    <>
+      <h1 className="sr-only">Solar System Guide — Explore the Planets, Moons and Sun</h1>
+      <SolarSystemPageClient />
+    </>
+  );
 }

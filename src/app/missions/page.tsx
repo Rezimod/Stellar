@@ -972,7 +972,12 @@ function GlobalMissionCard({
           <p className="mis-global-reward"><Star size={11} strokeWidth={2} className="mis-star-icn" /> {labels.reward(data.bonusStars)}</p>
         </>
       ) : (
-        <p className="mis-global-heading">{labels.loading}</p>
+        <div role="status" aria-live="polite">
+          <span className="sr-only">{labels.loading}</span>
+          <div className="skeleton" style={{ height: 20, width: '68%', marginBottom: 10 }} aria-hidden />
+          <div className="skeleton" style={{ height: 8, width: '100%', marginBottom: 10 }} aria-hidden />
+          <div className="skeleton" style={{ height: 13, width: '44%' }} aria-hidden />
+        </div>
       )}
     </section>
   );

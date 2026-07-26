@@ -16,9 +16,10 @@ export const metadata: Metadata = {
 export default function SkyLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Screen-reader/SEO context line. Kept as a <p>, not a second <h1> —
-          the page's visible "Sky tonight" heading is the page's sole h1. */}
-      <p className="sr-only">Sky Calendar 2026 — meteor showers, eclipses and celestial events, plus a live tonight&apos;s-sky planet finder.</p>
+      {/* The visible "Sky tonight" heading only renders once client-side finder
+          data resolves, so the page shipped no <h1> in its initial HTML. This
+          one always renders; the visible heading is an <h2> beneath it. */}
+      <h1 className="sr-only">Sky Calendar 2026 — meteor showers, eclipses and celestial events, plus a live tonight&apos;s-sky planet finder.</h1>
       {children}
     </>
   );
