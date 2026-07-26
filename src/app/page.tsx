@@ -14,14 +14,6 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="hidden md:block text-[30px] md:text-[56px] font-extrabold leading-[1.08] tracking-[-0.02em] text-white mb-4 md:mb-6">
-      {children}
-    </h2>
-  );
-}
-
 function PartnerLogo({
   src,
   alt,
@@ -1100,10 +1092,6 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 pt-14 md:pt-20 pb-2">
         <div className="max-w-[720px] mx-auto">
-          <div className="text-center mb-8 md:mb-10" data-reveal>
-            <Eyebrow>{t('achievements.eyebrow')}</Eyebrow>
-          </div>
-
           <div className="home-achievements-grid grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5" data-reveal-stagger>
             {achievements.map((a) => (
               <AchievementBadge
@@ -1194,11 +1182,6 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="relative px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-16" data-reveal>
-            <Eyebrow>{t('missions.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('missions.title')}</SectionTitle>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto" data-reveal-stagger>
             <div className="order-1 mx-auto">
               <div className="home-float">
@@ -1239,11 +1222,6 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-16" data-reveal>
-            <Eyebrow>{t('learn.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('learn.title')}</SectionTitle>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 md:gap-16 items-center max-w-[1000px] mx-auto" data-reveal-stagger>
             <div className="order-2 md:order-1 text-center md:text-left">
               {/* Mobile: phone + horizontal step grid (matches HOW IT WORKS) */}
@@ -1284,11 +1262,6 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-12 md:mb-20" data-reveal>
-            <Eyebrow>{t('skyPage.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('skyPage.title')}</SectionTitle>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-8 md:gap-y-14 max-w-[920px] mx-auto" data-reveal-stagger>
             <SkyFeatureSlot title={t('skyPage.livePlanetMap')}>
               <IPhone size="sm" activeTab="sky" navLabels={navLabels}><SkyMapScreen labels={skyMapLabels} /></IPhone>
@@ -1312,11 +1285,6 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-14 md:py-[120px]">
         <div className="max-w-[1200px] mx-auto">
-          <div className="text-center mb-10 md:mb-14" data-reveal>
-            <Eyebrow>{t('marketplace.eyebrow')}</Eyebrow>
-            <SectionTitle>{t('marketplace.title')}</SectionTitle>
-          </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4" data-reveal-stagger>
             {[
               {
@@ -1400,15 +1368,6 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-4 md:px-8 py-16 md:py-[120px]">
         <div className="max-w-[880px] mx-auto">
-          <div className="text-center mb-10 md:mb-14" data-reveal>
-            <Eyebrow>{t('comparison.eyebrow')}</Eyebrow>
-            <SectionTitle>
-              {t('comparison.title1')}
-              <br />
-              {t('comparison.title2')}
-            </SectionTitle>
-          </div>
-
           <div data-reveal>
           <ComparisonTable
             features={{
@@ -1431,9 +1390,7 @@ export default async function HomePage() {
          ============================================================ */}
       <section className="px-6 md:px-8 py-14 md:py-[120px] text-center">
         <div className="max-w-[1200px] mx-auto" data-reveal>
-          <Eyebrow>{t('community.eyebrow')}</Eyebrow>
-          <SectionTitle>{t('community.title')}</SectionTitle>
-          <div className="mt-8 md:mt-12">
+          <div>
             <Link
               href="/feed"
               className="hero-pill-primary group inline-flex items-center gap-3 px-10 font-semibold text-[17px] rounded-[16px] transition-all hover:brightness-[1.05] active:translate-y-[0.5px] no-underline"
