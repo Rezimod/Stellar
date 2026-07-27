@@ -904,11 +904,9 @@
     "welcome": "Welcome to Stellar",
     "subtitle": "Sign in to start observing the night sky.",
     "continueEmail": "Continue with email",
-    "emailHelp": "Sign up free with email, Google, or X — no crypto needed",
+    "emailHelp": "Sign up free with email, Google, or X",
     "or": "or",
-    "connectWallet": "Connect wallet",
-    "walletList": "Phantom, Solflare, Backpack, Glow",
-    "metamaskNote": "MetaMask is Ethereum-only and can't sign Solana transactions here."
+    "connectWallet": "Connect wallet"
   },
   "onboarding": {
     "step1Title": "What do you observe with?",
@@ -1767,6 +1765,40 @@
         "tooMany": "Too many mints right now — try again in a minute.",
         "saveFailed": "Couldn't save your record — please retry.",
         "network": "Network error — please retry."
+      },
+      "panel": {
+        "captured": "Observation Captured",
+        "photoAlt": "Observation photo",
+        "clearSky": "Clear sky",
+        "cloudy": "Cloudy",
+        "skyData": "Sky Data",
+        "cloud": "Cloud",
+        "visibility": "Visibility",
+        "temp": "Temp",
+        "humidity": "Humidity",
+        "wind": "Wind",
+        "kmh": "km/h",
+        "signature": "Signature",
+        "oracle": "Sky Oracle",
+        "createNft": "Create NFT  +{stars} Stars",
+        "logCloudy": "Log Cloudy Observation",
+        "quality": {
+          "Exceptional": "Exceptional",
+          "Excellent": "Excellent",
+          "Good": "Good",
+          "Fair": "Fair",
+          "Poor": "Poor"
+        }
+      },
+      "rejection": {
+        "duplicate_image": "This exact photo was already submitted by another observer, so it earns no Stars. You can still keep it as an unverified NFT.",
+        "gps_mismatch": "The photo's location tag does not match where you say you are, so it can't be certified — no Stars. You can still keep it as an unverified NFT.",
+        "photo_too_old": "This photo was taken more than 24 hours ago, so it earns no Stars for tonight. You can still keep it as an unverified NFT.",
+        "stock_image_detected": "This image was found elsewhere on the web — it looks like a stock or downloaded photo, not your own observation, so it earns no Stars. You can still keep it as an unverified NFT.",
+        "verification_unavailable": "We couldn't read the analysis for this photo, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again.",
+        "ai_generated": "This looks AI-generated, so it earns no Stars — Stars are only awarded for real photos you took yourself. You can still keep it as an unverified NFT.",
+        "screenshot_detected": "This looks like a screenshot, so it earns no Stars — Stars are only awarded for real photos of the sky. You can still keep it as an unverified NFT.",
+        "too_cloudy": "The sky is too cloudy right now to certify an observation, so it earns no Stars. You can still keep it as an unverified NFT, or try again on a clearer night."
       }
     },
     "result": {
@@ -1787,7 +1819,58 @@
       "inscribe": "Inscribe",
       "skip": "Skip",
       "starNamed": "Your star is named.",
-      "viewProof": "View proof page"
+      "viewProof": "View proof page",
+      "sealed": {
+        "keepsakeMinted": "KEEPSAKE MINTED",
+        "discoverySealed": "DISCOVERY SEALED",
+        "kept": "kept",
+        "sealed": "sealed",
+        "certificate": "CERTIFICATE",
+        "observationTitle": "Stellar Observation",
+        "viewOnSolana": "View on Solana",
+        "viewInCollection": "View in collection",
+        "share": "Share",
+        "post": "Post",
+        "save": "Save",
+        "next": "Next",
+        "unverifiedFallback": "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours, minted on Solana as a personal record.",
+        "scoreLabel": {
+          "exceptional": "EXCEPTIONAL",
+          "good": "GOOD",
+          "fair": "FAIR",
+          "poor": "POOR"
+        },
+        "taglines": {
+          "fallback": "Sealed on Solana",
+          "jupiter": "Four Galilean moons, captured",
+          "quick-jupiter": "Four Galilean moons, captured",
+          "saturn": "Rings at their widest",
+          "quick-saturn": "Rings at their widest",
+          "moon": "Craters sharp at the terminator",
+          "venus": "The evening star, claimed",
+          "mars": "Rust-red and unmistakable",
+          "mercury": "Caught the fleeting one",
+          "pleiades": "Seven sisters, one glance",
+          "orion": "A stellar nursery, 1,344 ly close",
+          "andromeda": "A trillion suns",
+          "crab": "Ghost of a 1054 AD supernova"
+        },
+        "metaLines": {
+          "fallback": "CELESTIAL",
+          "jupiter": "GAS GIANT",
+          "quick-jupiter": "GAS GIANT",
+          "saturn": "RINGED PLANET",
+          "quick-saturn": "RINGED PLANET",
+          "moon": "SATELLITE · EARTH",
+          "venus": "EVENING STAR",
+          "mars": "TERRESTRIAL",
+          "mercury": "INNER PLANET",
+          "pleiades": "M45 · CLUSTER",
+          "orion": "M42 · NEBULA",
+          "andromeda": "M31 · GALAXY",
+          "crab": "M1 · REMNANT"
+        }
+      }
     },
     "toast": {
       "copied": "Copied to clipboard",
@@ -1916,7 +1999,9 @@
         "location": "Location",
         "oracleHash": "Oracle Hash"
       }
-    }
+    },
+    "keepsakeName": "Stellar Keepsake: {target}",
+    "keepsakeTarget": "Unverified observation"
   },
   "leaderboardPage": {
     "title": "Leaderboard",

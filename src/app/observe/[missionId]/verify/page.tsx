@@ -15,7 +15,8 @@ import { calculateRarity } from '@/lib/nft-rarity';
 import { rollCosmicBonus } from '@/lib/cosmic-bonus';
 import { consumeStarlight } from '@/lib/starlight';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
-import { urlToBlob } from '@/lib/data-url';
+import { urlToBlob, makeThumbnail } from '@/lib/data-url';
+import { isRejectionCode } from '@/lib/rejection-reason';
 import type { PhotoVerificationResult, SkyVerification } from '@/lib/types';
 import BackButton from '@/components/shared/BackButton';
 import Verification from '@/components/sky/Verification';
@@ -142,6 +143,10 @@ export default function ObserveVerifyPage() {
             fd.append('lat', String(lat));
             fd.append('lon', String(lon));
             fd.append('capturedAt', ts);
+            // A small copy of the same shot, stored server-side so the minted
+            // NFT — certified or keepsake — shows the real photo.
+            const thumb = await makeThumbnail(photo).catch(() => '');
+            if (thumb) fd.append('thumb', thumb);
             if (solanaWallet?.address) fd.append('wallet', solanaWallet.address);
             fd.append('uploadSource', source ?? 'upload');
             const pvRes = await fetch('/api/observe/verify', {
@@ -157,7 +162,11 @@ export default function ObserveVerifyPage() {
               // proceeds to the mint screen — it just mints as an unverified
               // keepsake worth 0 Stars, with a clear note explaining why.
               if (!pv.accepted) {
-                setMintError(pv.reason || t('verify.error.photoUnverified'));
+                setMintError(
+                  isRejectionCode(pv.rejectionReason)
+                    ? t(`verify.rejection.${pv.rejectionReason}`)
+                    : pv.reason || t('verify.error.photoUnverified'),
+                );
               }
             }
           } catch {

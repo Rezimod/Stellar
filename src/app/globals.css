@@ -1558,6 +1558,10 @@ html[data-field="on"]::after {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* The star layers below are inset -20%; without a clip they add that overhang
+     to the scrollable page whenever an ancestor transform makes this box the
+     containing block instead of the viewport. */
+  overflow: hidden;
   background:
     radial-gradient(78% 58% at 80% 6%, rgba(104, 68, 166, 0.16), transparent 60%),
     radial-gradient(66% 52% at 10% 24%, rgba(38, 84, 168, 0.15), transparent 62%),

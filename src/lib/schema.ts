@@ -116,6 +116,18 @@ export const observationLog = pgTable('observation_log', {
   index('obs_log_file_hash_idx').on(table.fileHash),
 ])
 
+// The observer's own photo, downscaled at capture time and keyed by the same
+// sha256 the verification token signs. Serving it from /api/observe/photo lets
+// every mint — verified or keepsake — carry the real image instead of generated
+// art, and keeps the picture when the device's localStorage is cleared.
+export const observationPhoto = pgTable('observation_photo', {
+  fileHash: text('file_hash').primaryKey(),
+  wallet: text('wallet'),
+  mimeType: text('mime_type').notNull(),
+  imageBase64: text('image_base64').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
+
 export const emailSubscribers = pgTable('email_subscribers', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),

@@ -23,6 +23,10 @@ export interface ObservationMintParams {
   tier?: 'C' | 'S' | 'U';
   demo?: boolean;
   verified?: boolean;
+  // Absolute URL of the observer's own photo (see /api/observe/photo). When set
+  // it becomes the NFT image, so the collection shows what they actually shot
+  // instead of generated certificate art.
+  photoUrl?: string;
 }
 
 function fitBytes(s: string, max: number): string {
@@ -77,7 +81,8 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
   // Metadata lives on Irys (permanent, decentralized). Fallback to the compact
   // app URL so a storage hiccup never blocks a mint. The Metaplex URI limit is
   // 200 bytes — Irys gateway URLs are ~60, the fallback stays short too.
-  const imageUrl = `${appUrl}/api/nft-image?target=${encodeURIComponent(params.target)}&ts=${params.timestampMs}&lat=${params.lat.toFixed(4)}&lon=${params.lon.toFixed(4)}&cc=${params.cloudCover}&stars=${params.stars}&rarity=${encodeURIComponent(params.rarity ?? 'Common')}`;
+  const artUrl = `${appUrl}/api/nft-image?target=${encodeURIComponent(params.target)}&ts=${params.timestampMs}&lat=${params.lat.toFixed(4)}&lon=${params.lon.toFixed(4)}&cc=${params.cloudCover}&stars=${params.stars}&rarity=${encodeURIComponent(params.rarity ?? 'Common')}`;
+  const imageUrl = params.photoUrl ?? artUrl;
   let uri = `${appUrl}/m/o?t=${encodeURIComponent(params.target)}&d=${params.timestampMs}&la=${params.lat.toFixed(4)}&lo=${params.lon.toFixed(4)}&cc=${params.cloudCover}&h=${shortHash}&s=${params.stars}&r=${encodeURIComponent(params.rarity ?? 'Common')}&m=${params.multiplier ?? 1}${tierSuffix}`;
   try {
     uri = await uploadJsonToIrys({
@@ -88,6 +93,14 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
         : `Unverified keepsake — a photo captured by the observer but not certified by the Stellar oracle as this object on this night. No Stars awarded. Minted on Solana as a personal record.`,
       image: imageUrl,
       external_url: appUrl,
+      properties: {
+        // The observer's photo is the NFT image when we have it; the generated
+        // certificate art stays alongside it as a second file.
+        files: params.photoUrl
+          ? [{ uri: params.photoUrl, type: 'image/jpeg' }, { uri: artUrl, type: 'image/png' }]
+          : [{ uri: artUrl, type: 'image/png' }],
+        category: 'image',
+      },
       attributes: [
         { trait_type: 'Target', value: params.target },
         { trait_type: 'Date', value: new Date(params.timestampMs).toISOString().split('T')[0] },

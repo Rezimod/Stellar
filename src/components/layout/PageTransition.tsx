@@ -12,8 +12,9 @@ export default function PageTransition({ children }: { children: ReactNode }) {
     const onEnd = () => {
       el.style.willChange = 'auto';
       // `transform` on this wrapper makes `position: fixed` descendants use this box as
-      // their containing block (not the viewport). Clear it after enter so e.g. solar
-      // system can truly cover the screen and receive correct hit targets.
+      // their containing block (not the viewport). The animation fills forwards, so its
+      // final transform outranks an inline `none` — drop the animation itself, then clear.
+      el.style.animation = 'none';
       el.style.transform = 'none';
     };
     el.addEventListener('animationend', onEnd, { once: true });

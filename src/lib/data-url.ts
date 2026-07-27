@@ -21,3 +21,25 @@ export async function urlToBlob(url: string): Promise<Blob> {
   const res = await fetch(url);
   return await res.blob();
 }
+
+// Downscale a captured/uploaded photo to a JPEG small enough to keep forever
+// (a phone upload is often 5 MB+; this lands around 100–250 KB). Used for the
+// copy we store server-side so an observation's real image survives the device.
+export async function makeThumbnail(url: string, maxPx = 1200, quality = 0.72): Promise<string> {
+  const img = document.createElement('img');
+  img.decoding = 'async';
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error('Image decode failed'));
+    img.src = url;
+  });
+
+  const scale = Math.min(1, maxPx / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas unavailable');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', quality);
+}

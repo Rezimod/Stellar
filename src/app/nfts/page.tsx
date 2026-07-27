@@ -55,6 +55,7 @@ interface NftAsset {
   photo?: string;
   _method?: 'onchain' | 'simulated';
   content?: {
+    links?: { image?: string };
     metadata?: {
       name?: string;
       attributes?: NftAttribute[];
@@ -65,6 +66,24 @@ interface NftAsset {
 
 function getAttr(attrs: NftAttribute[] | undefined, key: string): string {
   return String(attrs?.find(a => a.trait_type === key)?.value ?? '');
+}
+
+// The observation's real photo: this device's copy first, then the mint's
+// metadata image. Generated certificate art (some of it minted with a stale
+// origin) is not a photo — fall back to the same-origin art URL instead.
+function observationImage(item: NftAsset, generatedArtUrl: string): string {
+  if (item.photo) return item.photo;
+  const link = item.content?.links?.image;
+  if (link && !link.includes('/api/nft-image')) return link;
+  return generatedArtUrl;
+}
+
+// Unverified keepsakes all mint under this generic on-chain target, so the card
+// text is localized here rather than read straight from immutable metadata.
+const KEEPSAKE_TARGET = 'Unverified observation';
+
+function isKeepsake(name: string, target: string): boolean {
+  return target === KEEPSAKE_TARGET || name.startsWith('Stellar Keepsake:');
 }
 
 function buildExplorerUrl(id: string): string {
@@ -103,8 +122,11 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
   const t = useTranslations('nftsPage');
   const [confirmRemove, setConfirmRemove] = useState(false);
   const attrs = nft.content?.metadata?.attributes;
-  const name = nft.content?.metadata?.name ?? t('observationFallback');
-  const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || t('unknown');
+  const rawName = nft.content?.metadata?.name ?? t('observationFallback');
+  const target = getAttr(attrs, 'Target') || rawName.replace('Stellar: ', '') || t('unknown');
+  const keepsake = isKeepsake(rawName, target);
+  const targetLabel = keepsake ? t('keepsakeTarget') : target;
+  const name = keepsake ? t('keepsakeName', { target: targetLabel }) : rawName;
   const date = getAttr(attrs, 'Date');
   const cloudCover = getAttr(attrs, 'Cloud Cover');
   const starCount = getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars');
@@ -167,46 +189,52 @@ function NftDetailOverlay({ nft, onClose, onRetryMint, retrying, onRemove }: { n
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
 
-        {/* Observation photo — show actual captured image if available */}
-        {nft.photo && (
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{
-              border: '1px solid var(--border)',
-              background: 'var(--canvas)',
-              width: '100%',
-              aspectRatio: '4 / 3',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <img
-              src={nft.photo}
-              alt={t('detail.photoAlt')}
-              style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', display: 'block', objectFit: 'contain' }}
-            />
-          </div>
-        )}
-
-        {/* NFT certificate art — fallback only when no observation photo */}
-        {!nft.photo && (
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255, 179, 71,0.12)' }}>
-            <Image
-              src={nftImageUrl}
-              alt={target}
-              width={600}
-              height={600}
-              unoptimized
-              style={{ width: '100%', height: 'auto', display: 'block' }}
-            />
-          </div>
-        )}
+        {/* Observation photo — the shot itself where we have it, from this
+            device or from the mint's metadata; certificate art otherwise. */}
+        {(() => {
+          const resolved = observationImage(nft, nftImageUrl);
+          const photoSrc = resolved === nftImageUrl ? '' : resolved;
+          if (!photoSrc) {
+            return (
+              <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255, 179, 71,0.12)' }}>
+                <Image
+                  src={nftImageUrl}
+                  alt={target}
+                  width={600}
+                  height={600}
+                  unoptimized
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
+                />
+              </div>
+            );
+          }
+          return (
+            <div
+              className="rounded-2xl overflow-hidden"
+              style={{
+                border: '1px solid var(--border)',
+                background: 'var(--canvas)',
+                width: '100%',
+                aspectRatio: '4 / 3',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <img
+                src={photoSrc}
+                alt={t('detail.photoAlt')}
+                style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', display: 'block', objectFit: 'contain' }}
+                onError={e => { (e.currentTarget as HTMLImageElement).src = nftImageUrl; }}
+              />
+            </div>
+          );
+        })()}
 
         {/* Attributes grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {[
-            { label: t('detail.fields.target'), value: target },
+            { label: t('detail.fields.target'), value: targetLabel },
             { label: t('detail.fields.date'), value: date || t('unknown') },
             {
               label: t('detail.fields.cloudCover'),
@@ -462,10 +490,30 @@ export default function NftsPage() {
   const allNfts = useMemo<NftAsset[]>(() => {
     const hidden = new Set(state.hiddenObservationIds ?? []);
     const dasIds = new Set(nfts.map(n => n.id));
+
+    // An indexed asset and the local record of the same mint share an oracle
+    // hash but not an id. Match on it so the observation shows the photo this
+    // device kept (older mints predate server-side photo storage) and doesn't
+    // also render as a duplicate card.
+    const localByOracle = new Map<string, CompletedMission>();
+    for (const m of state.completedMissions) {
+      const oh = m.sky?.oracleHash;
+      if (oh && m.photo) localByOracle.set(oh, m);
+    }
+
+    const matchedLocalTx = new Set<string>();
+    const dasAssets = nfts.map(n => {
+      if (n.photo) return n;
+      const local = localByOracle.get(getAttr(n.content?.metadata?.attributes, 'Oracle Hash'));
+      if (!local) return n;
+      matchedLocalTx.add(local.txId);
+      return { ...n, photo: local.photo };
+    });
+
     const localAssets = state.completedMissions
-      .filter(m => m.status !== 'gallery' && !dasIds.has(m.txId))
+      .filter(m => m.status !== 'gallery' && !dasIds.has(m.txId) && !matchedLocalTx.has(m.txId))
       .map(localToNftAsset);
-    return [...nfts, ...localAssets].filter(n => !hidden.has(n.id));
+    return [...dasAssets, ...localAssets].filter(n => !hidden.has(n.id));
   }, [nfts, state.completedMissions, state.hiddenObservationIds]);
 
   const handleRemove = (id: string) => {
@@ -723,9 +771,12 @@ export default function NftsPage() {
       {!loading && !error && allNfts.length > 0 && (
         <StaggerChildren stagger={50} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {sortedNfts.map(item => {
-            const name = item.content?.metadata?.name ?? t('observationFallback');
+            const rawName = item.content?.metadata?.name ?? t('observationFallback');
             const attrs = item.content?.metadata?.attributes;
-            const target = getAttr(attrs, 'Target') || name.replace('Stellar: ', '') || t('unknown');
+            const target = getAttr(attrs, 'Target') || rawName.replace('Stellar: ', '') || t('unknown');
+            const keepsake = isKeepsake(rawName, target);
+            const targetLabel = keepsake ? t('keepsakeTarget') : target;
+            const name = keepsake ? t('keepsakeName', { target: targetLabel }) : rawName;
             const date = getAttr(attrs, 'Date');
             const cloudCover = getAttr(attrs, 'Cloud Cover');
             const stars = getAttr(attrs, 'Stars Earned') || getAttr(attrs, 'Stars');
@@ -778,26 +829,20 @@ export default function NftsPage() {
                   borderRadius: 'var(--radius-lg)',
                   overflow: 'hidden',
                 }}>
-                  {item.photo ? (
-                    <img
-                      src={item.photo}
-                      alt={target}
-                      className="nft-planet"
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                      onError={e => { (e.currentTarget as HTMLImageElement).src = nftImageUrl; }}
-                    />
-                  ) : (
-                    <Image
-                      src={nftImageUrl}
-                      alt={target}
-                      fill
-                      unoptimized
-                      className="nft-planet"
-                      style={{ objectFit: 'contain' }}
-                      loading="lazy"
-                      onError={e => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder-nft.svg'; }}
-                    />
-                  )}
+                  {/* The observer's own photo first — from this device, or from
+                      the mint's metadata image. Generated art is the fallback. */}
+                  <img
+                    src={observationImage(item, nftImageUrl)}
+                    alt={target}
+                    loading="lazy"
+                    className="nft-planet"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                    onError={e => {
+                      const el = e.currentTarget as HTMLImageElement;
+                      if (el.src.includes('placeholder-nft.svg')) return;
+                      el.src = el.src.includes('/api/nft-image') ? '/images/placeholder-nft.svg' : nftImageUrl;
+                    }}
+                  />
                   <button
                     type="button"
                     aria-label={t('detail.removeFromGallery')}
@@ -869,7 +914,7 @@ export default function NftsPage() {
 
                   {/* Attribute pills */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
-                    {target && <span className="badge-pill badge-accent" style={{ fontSize: 9, padding: '1px 6px' }}>{target}</span>}
+                    {targetLabel && <span className="badge-pill badge-accent" style={{ fontSize: 9, padding: '1px 6px' }}>{targetLabel}</span>}
                     {cloudCover && (
                       <span
                         className={`badge-pill ${ccNum < 20 ? 'badge-success' : ccNum < 50 ? 'badge-warning' : 'badge-error'}`}

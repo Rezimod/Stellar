@@ -3,7 +3,7 @@ import { mintCompressedNFT } from '@/lib/mint-nft';
 
 export const maxDuration = 60; // Solana confirmations can take 15-30s
 import { getDb } from '@/lib/db';
-import { observationLog } from '@/lib/schema';
+import { observationLog, observationPhoto } from '@/lib/schema';
 import { eq, and, gte, isNotNull, count } from 'drizzle-orm';
 import { awardStarsOnChain } from '@/lib/stars';
 import { remainingStarsAllowance } from '@/lib/stars-cap';
@@ -87,6 +87,9 @@ export async function POST(req: NextRequest) {
   // token (never the client body) — these drive certified rarity + Stars below.
   let signedConfidence = '';
   let signedIdentified = '';
+  // sha256 of the verified image — the key the observer's stored photo lives
+  // under, so the mint can point its metadata at the real picture.
+  let signedFileHash = '';
   // Signed capture source: 'upload' halves the NFT's certified Stars vs a live
   // 'camera' capture (kept in step with /api/observe/log's on-chain award).
   let signedUploadSource = '';
@@ -124,6 +127,7 @@ export async function POST(req: NextRequest) {
     verifiedTarget = tokenCheck.payload.target;
     signedConfidence = tokenCheck.payload.confidence;
     signedIdentified = tokenCheck.payload.identifiedObject;
+    signedFileHash = tokenCheck.payload.fileHash;
     signedUploadSource = tokenCheck.payload.uploadSource;
     effectiveCloudCover = tokenCheck.payload.cloudCover;
     // Overcast gate: never certify an observation taken under >70% cloud cover.
@@ -275,10 +279,30 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Point the NFT at the observer's own photo when /api/observe/verify stored
+  // one for this image. Confirm the row exists first — the metadata is
+  // immutable, so it must never link to a photo that was never saved.
+  let photoUrl: string | undefined;
+  if (db && signedFileHash) {
+    try {
+      const [stored] = await db
+        .select({ fileHash: observationPhoto.fileHash })
+        .from(observationPhoto)
+        .where(eq(observationPhoto.fileHash, signedFileHash))
+        .limit(1);
+      if (stored) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://stellarr.club';
+        photoUrl = `${appUrl}/api/observe/photo/${signedFileHash}`;
+      }
+    } catch (err) {
+      console.warn('[mint] photo lookup failed (using generated art):', err);
+    }
+  }
+
   try {
     const mintTarget = verifiedTarget ?? target;
     console.log('[mint] Starting mint for wallet:', userAddress ? userAddress.slice(0, 8) + '...' : 'unknown', 'target:', mintTarget, isDemoMint ? '(demo)' : '');
-    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover: effectiveCloudCover, oracleHash: effectiveOracleHash, stars: nftStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified });
+    const { txId } = await mintCompressedNFT({ userAddress, target: mintTarget, timestampMs, lat, lon, cloudCover: effectiveCloudCover, oracleHash: effectiveOracleHash, stars: nftStars, rarity: rarityVal, tier: tierChar, demo: isDemoMint, verified: !isUnverified, photoUrl });
     console.log('[mint] Success, txId:', txId.slice(0, 16) + '...');
 
     // Keepsake fun reward: a flat +10 for an unverified mint, clamped by the
@@ -312,6 +336,7 @@ export async function POST(req: NextRequest) {
         stars: isUnverified ? keepsakeStars : 0,
         confidence: isUnverified ? 'unverified' : 'minted',
         mintTx: txId,
+        oracleHash: effectiveOracleHash,
         observedDate: new Date().toISOString().split('T')[0],
         fileHash: typeof fileHash === 'string' ? fileHash : null,
         uploadSource: typeof uploadSource === 'string' ? uploadSource : null,

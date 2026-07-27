@@ -134,12 +134,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           {t('connectWallet')}
         </button>
 
-        <p style={{ fontSize: 11, color: 'rgba(var(--ink-warm),0.4)', textAlign: 'center', margin: '8px 0 0' }}>
-          {t('walletList')}
-        </p>
-        <p style={{ fontSize: 10, color: 'rgba(var(--ink-warm),0.3)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.45 }}>
-          {t('metamaskNote')}
-        </p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Mission } from '@/lib/types';
 import { ArrowRight, ExternalLink, Share2, Bookmark, Send } from 'lucide-react';
 import MissionRotateArt from './MissionRotateArt';
@@ -23,41 +24,11 @@ interface Props {
   onPostToFeed?: () => void;
 }
 
-const TAGLINES: Record<string, string> = {
-  jupiter:   'Four Galilean moons, captured',
-  'quick-jupiter': 'Four Galilean moons, captured',
-  saturn:    'Rings at their widest',
-  'quick-saturn': 'Rings at their widest',
-  moon:      'Craters sharp at the terminator',
-  venus:     'The evening star, claimed',
-  mars:      'Rust-red and unmistakable',
-  mercury:   'Caught the fleeting one',
-  pleiades:  'Seven sisters, one glance',
-  orion:     'A stellar nursery, 1,344 ly close',
-  andromeda: 'A trillion suns',
-  crab:      'Ghost of a 1054 AD supernova',
-};
-
-const META_LINES: Record<string, string> = {
-  jupiter:   'GAS GIANT',
-  'quick-jupiter': 'GAS GIANT',
-  saturn:    'RINGED PLANET',
-  'quick-saturn': 'RINGED PLANET',
-  moon:      'SATELLITE · EARTH',
-  venus:     'EVENING STAR',
-  mars:      'TERRESTRIAL',
-  mercury:   'INNER PLANET',
-  pleiades:  'M45 · CLUSTER',
-  orion:     'M42 · NEBULA',
-  andromeda: 'M31 · GALAXY',
-  crab:      'M1 · REMNANT',
-};
-
-function scoreLabel(score: number) {
-  if (score >= 85) return 'EXCEPTIONAL';
-  if (score >= 70) return 'GOOD';
-  if (score >= 50) return 'FAIR';
-  return 'POOR';
+function scoreKey(score: number) {
+  if (score >= 85) return 'exceptional';
+  if (score >= 70) return 'good';
+  if (score >= 50) return 'fair';
+  return 'poor';
 }
 
 export default function DiscoverySealed({
@@ -77,9 +48,12 @@ export default function DiscoverySealed({
   onContinue,
   onPostToFeed,
 }: Props) {
+  const t = useTranslations('observeFlow.result.sealed');
+  const tm = useTranslations('missions');
   const totalStars = starsBase + starsBonus;
-  const tagline = TAGLINES[mission.id] ?? 'Sealed on Solana';
-  const metaLine = META_LINES[mission.id] ?? 'CELESTIAL';
+  const tagline = t.has(`taglines.${mission.id}`) ? t(`taglines.${mission.id}`) : t('taglines.fallback');
+  const metaLine = t.has(`metaLines.${mission.id}`) ? t(`metaLines.${mission.id}`) : t('metaLines.fallback');
+  const missionName = tm.has(`briefs.${mission.id}.name`) ? tm(`briefs.${mission.id}.name`) : mission.name;
 
   const scoreDash = useMemo(() => {
     const circumference = 2 * Math.PI * 20;
@@ -130,7 +104,7 @@ export default function DiscoverySealed({
               fontWeight: 500,
             }}
           >
-            {unverified ? 'KEEPSAKE MINTED' : 'DISCOVERY SEALED'}
+            {unverified ? t('keepsakeMinted') : t('discoverySealed')}
           </span>
           <div className="w-1 h-1 rounded-full" style={{ background: 'var(--stl-gold)' }} />
         </div>
@@ -149,9 +123,9 @@ export default function DiscoverySealed({
             marginTop: 8,
           }}
         >
-          {mission.name}{' '}
+          {missionName}{' '}
           <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(var(--ink), 0.55)' }}>
-            {unverified ? 'kept' : 'sealed'}
+            {unverified ? t('kept') : t('sealed')}
           </span>
         </h1>
 
@@ -166,9 +140,7 @@ export default function DiscoverySealed({
               maxWidth: 320,
             }}
           >
-            {unverifiedReason
-              ? unverifiedReason
-              : "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours, minted on Solana as a personal record."}
+            {unverifiedReason ? unverifiedReason : t('unverifiedFallback')}
           </p>
         )}
 
@@ -278,7 +250,7 @@ export default function DiscoverySealed({
                   marginBottom: 1,
                 }}
               >
-                CERTIFICATE
+                {t('certificate')}
               </div>
               <div
                 style={{
@@ -289,7 +261,7 @@ export default function DiscoverySealed({
                   lineHeight: 1,
                 }}
               >
-                Stellar Observation{nftNumber > 0 ? ` #${nftNumber}` : ''}
+                {t('observationTitle')}{nftNumber > 0 ? ` #${nftNumber}` : ''}
               </div>
             </div>
 
@@ -320,7 +292,7 @@ export default function DiscoverySealed({
                     marginTop: 1,
                   }}
                 >
-                  {scoreLabel(skyScore)}
+                  {t(`scoreLabel.${scoreKey(skyScore)}`)}
                 </span>
               </div>
             </div>
@@ -374,7 +346,7 @@ export default function DiscoverySealed({
                 textDecoration: 'none',
               }}
             >
-              View on Solana
+              {t('viewOnSolana')}
               <ExternalLink size={9} />
             </a>
           </div>
@@ -399,24 +371,24 @@ export default function DiscoverySealed({
           onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
         >
-          View in collection
+          {t('viewInCollection')}
           <ArrowRight size={13} strokeWidth={2.5} />
         </button>
 
         <div className={`grid ${onPostToFeed ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5 w-full mt-1.5`}>
-          <SecondaryButton icon={<Share2 size={11} />} label="Share" onClick={onShare} />
+          <SecondaryButton icon={<Share2 size={11} />} label={t('share')} onClick={onShare} />
           {onPostToFeed && (
             <SecondaryButton
               icon={<Send size={11} />}
-              label="Post"
+              label={t('post')}
               onClick={onPostToFeed}
               accent
             />
           )}
-          <SecondaryButton icon={<Bookmark size={11} />} label="Save" onClick={onSave} />
+          <SecondaryButton icon={<Bookmark size={11} />} label={t('save')} onClick={onSave} />
           <SecondaryButton
             icon={<ArrowRight size={11} />}
-            label="Next"
+            label={t('next')}
             iconPosition="right"
             onClick={onContinue}
           />

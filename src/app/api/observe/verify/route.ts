@@ -9,7 +9,7 @@ import { findDuplicateByHash } from '@/lib/observations-dedup';
 import { checkReverseImage } from '@/lib/reverse-image';
 import { classifyDevice, type DeviceTier } from '@/lib/device-tier';
 import { getDb } from '@/lib/db';
-import { observationLog } from '@/lib/schema';
+import { observationLog, observationPhoto } from '@/lib/schema';
 import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
 import { createObservationToken } from '@/lib/observation-token';
@@ -105,6 +105,9 @@ export async function POST(req: NextRequest) {
   // requires the signed verificationToken at /api/observe/log.
   const walletParam = ((formData.get('wallet') as string | null) ?? '').slice(0, 64);
   const uploadSourceParam = ((formData.get('uploadSource') as string | null) ?? 'upload').slice(0, 32);
+  // Downscaled JPEG of the same photo — kept so the mint can carry the real
+  // image, whatever the verdict. Optional: an older client just sends nothing.
+  const thumbParam = (formData.get('thumb') as string | null) ?? '';
 
   // Require an authenticated principal before the expensive vision call: a
   // verified Privy session OR a syntactically valid wallet pubkey. The Stars/
@@ -148,6 +151,23 @@ export async function POST(req: NextRequest) {
 
   const fileHash = '0x' + createHash('sha256').update(buffer).digest('hex').slice(0, 40);
 
+  // Persist the observer's own image up front, so a rejected photo (which still
+  // mints as a keepsake) keeps its picture just like a certified one does.
+  async function storePhoto(database: NonNullable<ReturnType<typeof getDb>>) {
+    const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(thumbParam);
+    if (!match) return;
+    const [, mimeType, base64] = match;
+    if (Math.floor((base64.length * 3) / 4) > 2_000_000) return;
+    try {
+      await database
+        .insert(observationPhoto)
+        .values({ fileHash, wallet: walletParam || null, mimeType, imageBase64: base64 })
+        .onConflictDoNothing();
+    } catch (err) {
+      console.warn('[verify] photo store failed (non-fatal):', err);
+    }
+  }
+
   // ───────────────────────── Pre-check pipeline ─────────────────────────
   // Run cheap, deterministic checks before the expensive Gemini Vision call.
   // Each check that fails writes a `confidence: 'rejected'` row to
@@ -158,6 +178,7 @@ export async function POST(req: NextRequest) {
   // photo can still be minted as a keepsake NFT clearly labelled "not
   // certified". So every rejection still carries a signed verification token.
   const db = getDb();
+  if (db && thumbParam) await storePhoto(db);
 
   // EXIF + device tier are computed up front so every rejection below carries
   // consistent device/location metadata and a mint-able token.

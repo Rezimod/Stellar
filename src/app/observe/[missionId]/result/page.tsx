@@ -14,6 +14,7 @@ import DiscoverySealed from '@/components/sky/DiscoverySealed';
 import StarMark from '@/components/ui/StarMark';
 import { useObserveFlow } from '../ObserveFlowContext';
 import { useAppState } from '@/hooks/useAppState';
+import { isRejectionCode } from '@/lib/rejection-reason';
 import PageContainer from '@/components/layout/PageContainer';
 
 export default function ObserveResultPage() {
@@ -37,6 +38,9 @@ export default function ObserveResultPage() {
   } = useObserveFlow();
 
   const isUnverified = !!photoVerification && !photoVerification.accepted;
+  const unverifiedReason = isRejectionCode(photoVerification?.rejectionReason)
+    ? t(`verify.rejection.${photoVerification?.rejectionReason}`)
+    : photoVerification?.reason;
 
   useEffect(() => {
     if (mission && !mintTxId) {
@@ -265,7 +269,7 @@ export default function ObserveResultPage() {
         solanaTxShort={solanaTxShort}
         solanaExplorerUrl={solanaExplorerUrl}
         unverified={isUnverified}
-        unverifiedReason={photoVerification?.reason}
+        unverifiedReason={unverifiedReason}
         onViewCollection={() => router.push('/nfts')}
         onShare={handleShare}
         onSave={handleSave}

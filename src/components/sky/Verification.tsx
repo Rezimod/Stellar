@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, AlertTriangle, Wind, Thermometer, Droplets, Eye, Cloud, ShieldCheck } from 'lucide-react';
 import type { SkyVerification } from '@/lib/types';
 import { calculateSkyScore, visibilityToMeters } from '@/lib/sky-score';
@@ -18,6 +19,7 @@ interface VerificationProps {
 }
 
 export default function Verification({ photo, sky, stars, timestamp, latitude, longitude, onMint, compact = false, mintLabel }: VerificationProps) {
+  const t = useTranslations('observeFlow.verify.panel');
   const conditionOk = sky.verified;
 
   const skyScore = calculateSkyScore({
@@ -27,12 +29,16 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
     windSpeed: sky.windSpeed ?? 5,
   });
 
+  // Grades and visibility share one scale (Exceptional…Poor) — keyed off the
+  // English value the sky oracle and score helper produce.
+  const quality = (value: string) => (t.has(`quality.${value}`) ? t(`quality.${value}`) : value);
+
   const metrics = [
-    { icon: <Cloud size={12} />, label: 'Cloud', value: `${sky.cloudCover}%`, bar: sky.cloudCover, good: sky.cloudCover < 30 },
-    { icon: <Eye size={12} />, label: 'Visibility', value: sky.visibility, bar: null, good: conditionOk },
-    { icon: <Thermometer size={12} />, label: 'Temp', value: `${sky.temperature}°C`, bar: null, good: true },
-    { icon: <Droplets size={12} />, label: 'Humidity', value: `${sky.humidity}%`, bar: sky.humidity, good: (sky.humidity ?? 50) < 70 },
-    { icon: <Wind size={12} />, label: 'Wind', value: `${sky.windSpeed} km/h`, bar: null, good: (sky.windSpeed ?? 0) < 30 },
+    { icon: <Cloud size={12} />, label: t('cloud'), value: `${sky.cloudCover}%`, bar: sky.cloudCover, good: sky.cloudCover < 30 },
+    { icon: <Eye size={12} />, label: t('visibility'), value: quality(sky.visibility), bar: null, good: conditionOk },
+    { icon: <Thermometer size={12} />, label: t('temp'), value: `${sky.temperature}°C`, bar: null, good: true },
+    { icon: <Droplets size={12} />, label: t('humidity'), value: `${sky.humidity}%`, bar: sky.humidity, good: (sky.humidity ?? 50) < 70 },
+    { icon: <Wind size={12} />, label: t('wind'), value: `${sky.windSpeed} ${t('kmh')}`, bar: null, good: (sky.windSpeed ?? 0) < 30 },
   ];
 
   return (
@@ -42,13 +48,13 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
       <div
         className="relative rounded-xl overflow-hidden bg-canvas flex-1 min-h-0"
       >
-        <img src={photo} alt="Observation" className="w-full h-full object-contain" style={{ opacity: 0.9 }} />
+        <img src={photo} alt={t('photoAlt')} className="w-full h-full object-contain" style={{ opacity: 0.9 }} />
         <div
           className="absolute bottom-2 left-2.5 flex items-center gap-1.5 px-2 py-0.5 rounded-lg"
           style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
         >
           <CheckCircle2 size={10} className="text-[var(--seafoam)]" />
-          <span className="text-text-primary text-[10px] font-medium">Observation Captured</span>
+          <span className="text-text-primary text-[10px] font-medium">{t('captured')}</span>
         </div>
         <div className="absolute bottom-2 right-2.5 text-[10px] font-mono text-text-primary/40">
           {new Date(timestamp).toLocaleTimeString()}
@@ -69,12 +75,12 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
                 color: conditionOk ? 'var(--success)' : 'var(--terracotta)',
               }}
             >
-              {conditionOk ? <><CheckCircle2 size={10} /> Clear sky</> : <><AlertTriangle size={10} /> Cloudy</>}
+              {conditionOk ? <><CheckCircle2 size={10} /> {t('clearSky')}</> : <><AlertTriangle size={10} /> {t('cloudy')}</>}
             </div>
             <p className="text-text-muted text-[10px] mt-0.5 truncate">{latitude.toFixed(3)}°N {longitude.toFixed(3)}°E</p>
           </div>
           <div className="flex-shrink-0">
-            <ScoreRing size={compact ? 60 : 72} value={skyScore.score} color="gradient" sublabel={skyScore.grade} />
+            <ScoreRing size={compact ? 60 : 72} value={skyScore.score} color="gradient" sublabel={quality(skyScore.grade)} />
           </div>
         </div>
 
@@ -85,7 +91,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
         >
           <div className="flex items-center gap-1.5 mb-1.5">
             <div className="w-1 h-1 rounded-full bg-[var(--terracotta)]/60" />
-            <span className="text-[9px] text-text-muted uppercase tracking-widest font-medium">Sky Data</span>
+            <span className="text-[9px] text-text-muted uppercase tracking-widest font-medium">{t('skyData')}</span>
           </div>
           <div className="grid grid-cols-3 gap-1">
             {metrics.map((m) => (
@@ -111,7 +117,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
               style={{ background: 'rgba(var(--ink),0.03)', border: '1px solid rgba(var(--ink),0.05)' }}>
               <div className="flex items-center gap-1" style={{ color: 'rgba(255, 179, 71,0.55)' }}>
                 <ShieldCheck size={12} />
-                <span className="text-[9px] text-text-muted truncate">Signature</span>
+                <span className="text-[9px] text-text-muted truncate">{t('signature')}</span>
               </div>
               <p className="text-[var(--terracotta)]/80 text-[10px] font-mono truncate">
                 {sky.oracleHash.slice(0, 6)}…{sky.oracleHash.slice(-4)}
@@ -124,7 +130,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
           <span style={{ fontSize: 9, color: 'rgba(var(--ink),0.25)' }}>
-            Sky Oracle · Open-Meteo · {new Date(sky.verifiedAt).toLocaleTimeString()}
+            {t('oracle')} · Open-Meteo · {new Date(sky.verifiedAt).toLocaleTimeString()}
           </span>
         </div>
 
@@ -142,7 +148,7 @@ export default function Verification({ photo, sky, stars, timestamp, latitude, l
             boxShadow: stars > 0 ? '0 0 24px rgba(255, 179, 71,0.2)' : '0 0 16px rgba(255, 179, 71,0.08)',
           }}
         >
-          {mintLabel ?? (stars > 0 ? `Create NFT  +${stars} Stars` : 'Log Cloudy Observation')}
+          {mintLabel ?? (stars > 0 ? t('createNft', { stars }) : t('logCloudy'))}
         </button>
       </div>
     </div>
