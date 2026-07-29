@@ -15,6 +15,7 @@ import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
 import { trackServer } from '@/lib/track-server';
+import { certifyAllObservations } from '@/lib/verify-window';
 
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -134,7 +135,9 @@ export async function POST(req: NextRequest) {
     // /api/observe/verify already rejects these (issuing a 'rejected' token), so
     // a non-rejected token over the threshold should be impossible — this is the
     // defense-in-depth backstop, enforced on the signed value, not the client's.
-    if (tokenCheck.payload.confidence !== 'rejected' && effectiveCloudCover > 70) {
+    // Skipped inside the certify-all beta window, where /api/observe/verify
+    // deliberately certifies overcast submissions (see verify-window.ts).
+    if (!certifyAllObservations() && tokenCheck.payload.confidence !== 'rejected' && effectiveCloudCover > 70) {
       return NextResponse.json({ error: 'Sky too cloudy to certify this observation' }, { status: 403 });
     }
   }

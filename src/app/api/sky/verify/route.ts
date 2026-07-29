@@ -3,6 +3,7 @@ import type { SkyVerification } from '@/lib/types';
 import { fetchOpenMeteo } from '@/lib/open-meteo';
 import { estimateBortle } from '@/lib/light-pollution';
 import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
+import { certifyAllObservations } from '@/lib/verify-window';
 
 const CARDINALS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 function azimuthToCardinal(az: number): string {
@@ -54,7 +55,11 @@ export async function GET(req: NextRequest) {
     const oracleHash = await computeOracleHash(lat, lon, cloudCover, currentHourSlot());
 
     const result: SkyVerification = {
-      verified: cloudCover < 70,
+      // Beta window: the observation flows read this flag to decide whether a
+      // session can be certified at all, so it stays true regardless of cloud
+      // cover while the window is open. Real conditions are still reported
+      // below. Self-expires — see verify-window.ts.
+      verified: certifyAllObservations() || cloudCover < 70,
       cloudCover,
       visibility,
       visibilityMeters: visMeters,
