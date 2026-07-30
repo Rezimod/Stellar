@@ -58,8 +58,17 @@ export function useCamera() {
 
     let s: MediaStream | null = null;
     try {
+      // Ask for the sensor's full resolution. `ideal` means the browser hands
+      // back the largest mode the camera actually supports rather than failing,
+      // so this is 4032x3024 on a modern iPhone and degrades gracefully on
+      // anything older. The old 1280x960 request was throwing away ~90% of
+      // every phone's pixels before the shutter was even pressed.
       s = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: facing }, width: { ideal: 1280 }, height: { ideal: 960 } },
+        video: {
+          facingMode: { exact: facing },
+          width: { ideal: 4096 },
+          height: { ideal: 4096 },
+        },
       });
     } catch {
       try {
@@ -105,33 +114,63 @@ export function useCamera() {
     }
   }, [zoomCap, stream]);
 
-  const capture = useCallback((_missionName: string): string | null => {
-    if (videoRef.current && stream) {
-      const video = videoRef.current;
-      const canvas = document.createElement('canvas');
-      canvas.width = 640;
-      canvas.height = 480;
-      const ctx = canvas.getContext('2d')!;
+  const capture = useCallback(async (_missionName: string): Promise<string | null> => {
+    const video = videoRef.current;
+    if (!video || !stream) return null; // caller shows upload or retry UI
 
-      // Hardware zoom is already baked into the stream — draw 1:1.
-      // Digital zoom: crop the centered region from the source video and stretch it.
-      if (!zoomCap.hardware && zoom > 1) {
-        const sw = (video.videoWidth || 640) / zoom;
-        const sh = (video.videoHeight || 480) / zoom;
-        const sx = ((video.videoWidth || 640) - sw) / 2;
-        const sy = ((video.videoHeight || 480) - sh) / 2;
-        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, 640, 480);
-      } else {
-        ctx.drawImage(video, 0, 0, 640, 480);
+    const track = stream.getVideoTracks()[0];
+
+    // Where the browser supports it (Chrome/Android), takePhoto() pulls a still
+    // straight off the sensor at its photo resolution — higher than the preview
+    // stream and free of video-pipeline compression. Skipped when digital zoom
+    // is engaged, since the crop below has to happen on the drawn frame.
+    const canUseStill = track && 'ImageCapture' in window && (zoomCap.hardware || zoom <= 1.001);
+    if (canUseStill) {
+      try {
+        type ImageCaptureCtor = new (t: MediaStreamTrack) => { takePhoto(): Promise<Blob> };
+        const Ctor = (window as unknown as { ImageCapture: ImageCaptureCtor }).ImageCapture;
+        const blob = await new Ctor(track).takePhoto();
+        if (blob.size > 0) {
+          return await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error('read failed'));
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch {
+        // Not every device implements takePhoto honestly — fall through to the
+        // canvas path, which always works.
       }
-
-      if (isImageBlack(canvas)) {
-        return null; // Too dark — caller must prompt user to try again
-      }
-
-      return canvas.toDataURL('image/jpeg', 0.85);
     }
-    return null; // No camera stream — caller must show upload or retry UI
+
+    // Canvas path: draw the frame at the video's OWN pixel dimensions. The old
+    // code forced every capture into a 640x480 box, which both destroyed
+    // resolution and stretched anything that wasn't 4:3.
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (!vw || !vh) return null;
+
+    // Digital zoom crops rather than upscales, so the result stays sharp.
+    const factor = !zoomCap.hardware && zoom > 1 ? zoom : 1;
+    const sw = vw / factor;
+    const sh = vh / factor;
+    const sx = (vw - sw) / 2;
+    const sy = (vh - sh) / 2;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(sw);
+    canvas.height = Math.round(sh);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+    if (isImageBlack(canvas)) {
+      return null; // Too dark — caller prompts the user to try again
+    }
+
+    return canvas.toDataURL('image/jpeg', 0.95);
   }, [stream, zoom, zoomCap.hardware]);
 
   return {

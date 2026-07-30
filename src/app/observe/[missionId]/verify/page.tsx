@@ -15,7 +15,7 @@ import { calculateRarity } from '@/lib/nft-rarity';
 import { rollCosmicBonus } from '@/lib/cosmic-bonus';
 import { consumeStarlight } from '@/lib/starlight';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
-import { urlToBlob, makeThumbnail } from '@/lib/data-url';
+import { urlToBlob, makeThumbnail, fitForUpload } from '@/lib/data-url';
 import { isRejectionCode } from '@/lib/rejection-reason';
 import type { PhotoVerificationResult, SkyVerification } from '@/lib/types';
 import BackButton from '@/components/shared/BackButton';
@@ -134,7 +134,9 @@ export default function ObserveVerifyPage() {
           setStage('verifying-photo');
           try {
             const verifyToken = await getAccessToken().catch(() => null);
-            const blob = await urlToBlob(photo);
+            // Full-resolution phone photos can exceed the verify route's 10 MB
+            // limit; this only steps down when it has to.
+            const blob = await urlToBlob(await fitForUpload(photo));
             const mimeType = blob.type || 'image/jpeg';
             const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
             const file = new File([blob], `observation.${ext}`, { type: mimeType });
@@ -189,6 +191,12 @@ export default function ObserveVerifyPage() {
     if (!mission) return;
     setStage('minting');
     setMintDone(false);
+
+    // The gallery lives in localStorage, which holds ~5 MB in total — a single
+    // full-resolution phone photo would fill it and evict every earlier
+    // observation. The full-quality image already went to the server (and is
+    // what the cNFT points at), so keep a screen-sized copy on the device.
+    const localPhoto = await makeThumbnail(photo, 900, 0.78).catch(() => photo);
 
     let streakCount = 0;
     if (solanaWallet?.address) {
@@ -304,7 +312,7 @@ export default function ObserveVerifyPage() {
         emoji: mission.emoji,
         stars: 0,
         txId: 'gallery_' + Date.now().toString(36),
-        photo: isSafePhoto(photo) ? photo : '',
+        photo: isSafePhoto(localPhoto) ? localPhoto : '',
         timestamp,
         latitude: coords.lat,
         longitude: coords.lon,
@@ -428,7 +436,7 @@ export default function ObserveVerifyPage() {
         emoji: mission.emoji,
         stars: totalStars,
         txId,
-        photo: isSafePhoto(photo) ? photo : '',
+        photo: isSafePhoto(localPhoto) ? localPhoto : '',
         timestamp,
         latitude: coords.lat,
         longitude: coords.lon,

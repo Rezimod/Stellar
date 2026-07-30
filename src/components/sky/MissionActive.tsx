@@ -23,7 +23,7 @@ import { getStarlight, consumeStarlight } from '@/lib/starlight';
 import { getTierForStreak, type StreakTier } from '@/lib/constellation-streak';
 import { calculateRarity, type RarityInfo } from '@/lib/nft-rarity';
 import { rollCosmicBonus, type CosmicBonus } from '@/lib/cosmic-bonus';
-import { urlToBlob } from '@/lib/data-url';
+import { urlToBlob, fitForUpload, makeThumbnail } from '@/lib/data-url';
 import { recordChallengeProgress, claimChallengeReward, getActiveChallenge } from '@/lib/celestial-challenges';
 import MoonPhase from '@/components/shared/MoonPhase';
 import { useLocation } from '@/lib/location';
@@ -181,7 +181,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       if (!mission.demo) {
         try {
           const verifyToken = await getAccessToken().catch(() => null);
-          const blob = await urlToBlob(p);
+          const blob = await urlToBlob(await fitForUpload(p));
           const mimeType = blob.type || 'image/jpeg';
           const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
           const file = new File([blob], `observation.${ext}`, { type: mimeType });
@@ -226,13 +226,16 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                   url.startsWith('data:image/webp;base64,') ||
                   url.startsWith('blob:') ||
                   url.startsWith('/images/');
+                // Screen-sized copy only: localStorage holds ~5 MB total and a
+                // full-resolution photo would evict the rest of the gallery.
+                const localPhoto = await makeThumbnail(p, 900, 0.78).catch(() => p);
                 addMission({
                   id: mission.id + '_gallery_' + Date.now().toString(36),
                   name: mission.name,
                   emoji: mission.emoji,
                   stars: 0,
                   txId: 'gallery_' + Date.now().toString(36),
-                  photo: isSafePhoto(p) ? p : '',
+                  photo: isSafePhoto(localPhoto) ? localPhoto : '',
                   timestamp: ts,
                   latitude: lat,
                   longitude: lon,
@@ -452,7 +455,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
       }).catch(() => {});
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const isSafePhoto = (url: string) =>
         url.startsWith('data:image/jpeg;base64,') ||
         url.startsWith('data:image/png;base64,') ||
@@ -460,13 +463,14 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         url.startsWith('blob:') ||
         url.startsWith('/images/');
 
+      const localPhoto = await makeThumbnail(photo, 900, 0.78).catch(() => photo);
       addMission({
         id: mission.id,
         name: mission.target || (mission.name === 'Demo Observation' ? 'Jupiter' : mission.name),
         emoji: mission.emoji,
         stars: totalStars,
         txId,
-        photo: isSafePhoto(photo) ? photo : '',
+        photo: isSafePhoto(localPhoto) ? localPhoto : '',
         timestamp,
         latitude: coords.lat,
         longitude: coords.lon,

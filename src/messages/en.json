@@ -1780,7 +1780,10 @@
       "howTo": "How to capture",
       "tip1": "Point your telescope at the target object",
       "tip2": "Hold your phone camera to the eyepiece",
-      "tip3": "Center the object and press shutter — or tap the upload icon"
+      "tip3": "Center the object and press shutter — or tap the upload icon",
+      "phoneCameraTitle": "Shoot with your phone's camera",
+      "usePhoneCamera": "Use phone camera",
+      "phoneCameraHint": "For the sharpest shot, tap the phone icon — it opens your own camera app, so you get Night mode, HDR and full resolution."
     },
     "verify": {
       "close": "Close",

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCamera } from '@/hooks/useCamera';
-import { RefreshCw, RotateCcw, Camera, Upload, Plus, Minus } from 'lucide-react';
+import { RefreshCw, RotateCcw, Camera, Upload, Plus, Minus, Smartphone } from 'lucide-react';
 
 interface CameraCaptureProps {
   missionName: string;
@@ -18,6 +18,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   const [flash, setFlash] = useState(false);
   const [captureError, setCaptureError] = useState<string | null>(null);
   const [isUploadPreview, setIsUploadPreview] = useState(false);
+  const [dimensions, setDimensions] = useState<{ w: number; h: number } | null>(null);
   const pinchRef = useRef<{ baseDist: number; baseZoom: number } | null>(null);
 
   useEffect(() => {
@@ -26,10 +27,18 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCapture = () => {
+  // Read the real pixel dimensions of whatever we are about to submit, so the
+  // observer can see the quality they actually captured instead of guessing.
+  const measure = (dataUrl: string) => {
+    const img = document.createElement('img');
+    img.onload = () => setDimensions({ w: img.naturalWidth, h: img.naturalHeight });
+    img.src = dataUrl;
+  };
+
+  const handleCapture = async () => {
     setFlash(true);
     setTimeout(() => setFlash(false), 120);
-    const photo = capture(missionName);
+    const photo = await capture(missionName);
     if (photo === null) {
       setCaptureError(t('capture.tooDark'));
       return;
@@ -37,18 +46,24 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
     stopCamera();
     setIsUploadPreview(false);
     setPreview(photo);
+    measure(photo);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // `fromCamera` marks a shot the OS camera app produced (the `capture`
+  // attribute opens it directly), which counts as a live capture rather than a
+  // gallery pick. Reading the file as a data URL keeps the original bytes —
+  // and therefore the EXIF the verification pipeline checks — intact.
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, fromCamera = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
       stopCamera();
-      setIsUploadPreview(true);
+      setIsUploadPreview(!fromCamera);
       setCaptureError(null);
       setPreview(dataUrl);
+      measure(dataUrl);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -58,6 +73,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
     setPreview(null);
     setCaptureError(null);
     setIsUploadPreview(false);
+    setDimensions(null);
     startCamera('environment');
   };
 
@@ -97,11 +113,16 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
     return (
       <div className="flex flex-col gap-2.5 w-full">
         <div className="relative rounded-2xl overflow-hidden bg-canvas w-full mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 360 }}>
-          <img src={preview} alt={t('capture.previewAlt')} className="w-full h-full object-cover" />
-          <div className="absolute bottom-0 left-0 right-0 px-3 py-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
+          <img src={preview} alt={t('capture.previewAlt')} className="w-full h-full object-contain" />
+          <div className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-center justify-between gap-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
             <p className="text-[var(--terracotta)] text-[10px] font-mono tracking-widest">
               STELLAR · {missionName.toUpperCase()} · {isUploadPreview ? t('capture.uploaded') : t('capture.captured')}
             </p>
+            {dimensions && (
+              <p className="text-white/70 text-[10px] font-mono whitespace-nowrap">
+                {dimensions.w}×{dimensions.h} · {((dimensions.w * dimensions.h) / 1_000_000).toFixed(1)}MP
+              </p>
+            )}
           </div>
         </div>
         <button
@@ -135,8 +156,15 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
+          <Smartphone size={15} /> {t('capture.usePhoneCamera')}
+          <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => handleFileUpload(e, true)} />
+        </label>
+        <label
+          className="inline-flex items-center gap-2 px-5 py-2.5 mt-3 rounded-xl text-sm cursor-pointer"
+          style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.12)', color: 'var(--stl-text-muted)' }}
+        >
           <Upload size={15} /> {t('capture.uploadDevice')}
-          <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
+          <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileUpload(e)} />
         </label>
       </div>
     );
@@ -154,12 +182,15 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
       >
+        {/* object-contain, not cover: the capture keeps the sensor's full frame,
+            so the viewfinder must show that whole frame or the observer frames
+            a square and gets something wider. */}
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           style={zoomCap.hardware ? undefined : { transform: `scale(${zoom})`, transformOrigin: 'center center' }}
         />
         {flash && <div className="absolute inset-0 bg-white/30 pointer-events-none" />}
@@ -249,8 +280,16 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         <p className="text-terracotta text-xs text-center px-4 flex-shrink-0">{captureError}</p>
       )}
 
-      {/* Shutter + Upload row */}
+      {/* Gallery · Shutter · Phone camera */}
       <div className="flex items-center justify-center gap-5 py-1 flex-shrink-0">
+        <label
+          className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+          style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.12)' }}
+          title={t('capture.uploadTitle')}
+        >
+          <Upload size={15} className="text-text-muted" />
+          <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileUpload(e)} />
+        </label>
         <button
           onClick={handleCapture}
           className="w-14 h-14 rounded-full flex items-center justify-center active:scale-90 transition-transform"
@@ -262,15 +301,28 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         >
           <div className="w-10 h-10 rounded-full" style={{ background: 'var(--text-primary)' }} />
         </button>
+        {/* Hands off to the phone's own camera app. This is the only route to
+            Night mode, HDR and the full sensor — a browser video stream cannot
+            reach them — and it keeps the EXIF the verifier reads. */}
         <label
           className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
-          style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.12)' }}
-          title={t('capture.uploadTitle')}
+          style={{ background: 'rgba(255, 179, 71,0.10)', border: '1px solid rgba(255, 179, 71,0.28)' }}
+          title={t('capture.phoneCameraTitle')}
         >
-          <Upload size={15} className="text-text-muted" />
-          <input type="file" accept="image/*" className="sr-only" onChange={handleFileUpload} />
+          <Smartphone size={15} style={{ color: 'var(--accent-text)' }} />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="sr-only"
+            onChange={(e) => handleFileUpload(e, true)}
+          />
         </label>
       </div>
+
+      <p className="text-[11px] text-center leading-snug px-3 flex-shrink-0" style={{ color: 'var(--stl-text-muted)' }}>
+        {t('capture.phoneCameraHint')}
+      </p>
 
       {/* Capture guide */}
       <div
