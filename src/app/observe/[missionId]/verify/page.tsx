@@ -126,7 +126,7 @@ export default function ObserveVerifyPage() {
           humidity: skyData.humidity ?? 50,
           windSpeed: skyData.windSpeed ?? 5,
         }));
-        if (!skyData.verified && !mission.demo) {
+        if (!skyData.verified && !mission.demo && !mission.cloudTolerant) {
           setMintError(t('verify.error.cloudy'));
         }
 
@@ -207,11 +207,19 @@ export default function ObserveVerifyPage() {
     // 0 Stars and "Unverified" rarity (server enforces both). No streak/bonus.
     const isUnverifiedMint = !!photoVerification && !photoVerification.accepted;
 
+    // The server's estimate is authoritative: it already accounts for the
+    // subject (a daytime sky log pays less than Saturn), the sky conditions, and
+    // whether this was a live capture or a gallery upload. Falling back to the
+    // mission's advertised Stars only when there is no verification result at
+    // all (demo missions) keeps the displayed number honest.
+    const serverStars = photoVerification?.starsEstimate;
     const baseStars = (sky?.verified && !isUnverifiedMint) ? mission.stars : 0;
     // Gallery uploads earn half a live capture's Stars (server enforces this in
     // /api/observe/log + /api/mint; this keeps the displayed total honest).
     const sourceMultiplier = source === 'upload' ? 0.5 : 1;
-    const effectiveStars = isUnverifiedMint ? 0 : Math.round(baseStars * tier.multiplier * sourceMultiplier);
+    const effectiveStars = isUnverifiedMint
+      ? 0
+      : serverStars ?? Math.round(baseStars * tier.multiplier * sourceMultiplier);
 
     const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);
     setMintRarity(rarityInfo);

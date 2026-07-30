@@ -16,6 +16,10 @@ export interface Mission {
   repeatable?: boolean;   // true = always visible, never hidden after completion
   demo?: boolean;         // true = simulated photo, real NFT, no photo verification
   demoPhoto?: string;     // preset photo path for demo missions (e.g. /images/planets/saturn.jpg)
+  // Cloud cover is the subject, not an obstacle — a halo needs cirrus and a sky
+  // log records whatever is up there. These missions never show a "too cloudy"
+  // warning and are never gated on sky conditions.
+  cloudTolerant?: boolean;
 }
 
 export interface SkyVerification {
@@ -82,7 +86,13 @@ export interface AppState {
   favorites: string[];
 }
 
-export type ObservationTarget = 'moon' | 'planet' | 'stars' | 'constellation' | 'deep_sky' | 'unknown'
+export type ObservationTarget =
+  | 'moon' | 'planet' | 'stars' | 'constellation' | 'deep_sky'
+  // Daytime subjects. Verifiable against the Sun's real altitude at the
+  // observer's coordinates, so they certify honestly — they just sit at a lower
+  // confidence ceiling than a night observation (see observation-kind.ts).
+  | 'sun' | 'daytime_moon' | 'atmospheric' | 'day_sky'
+  | 'unknown'
 
 export type VerificationConfidence = 'high' | 'medium' | 'low' | 'rejected'
 
@@ -99,6 +109,10 @@ export interface PhotoVerificationResult {
     objectVisible: boolean
     expectedPhase?: string
     expectedAltitude?: number
+    sunAltitude?: number
+    // The sky in the photo matched the cloud cover Open-Meteo reports over the
+    // observer right now — positive evidence the shot is live and local.
+    skyMatch?: boolean
   }
   imageAnalysis: {
     isScreenshot: boolean

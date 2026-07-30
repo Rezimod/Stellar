@@ -1,4 +1,11 @@
-import { Body, Observer, SearchAltitude, SearchRiseSet } from 'astronomy-engine';
+import { Body, Equator, Horizon, Observer, SearchAltitude, SearchRiseSet } from 'astronomy-engine';
+
+/** The Sun's altitude in degrees above the horizon, right now, where you are. */
+export function getSunAltitude(lat: number, lon: number, date: Date): number {
+  const observer = new Observer(lat, lon, 0);
+  const eq = Equator(Body.Sun, date, observer, true, true);
+  return Horizon(date, observer, eq.ra, eq.dec, 'normal').altitude;
+}
 
 export interface TonightDarkWindow {
   duskStart: Date | null;

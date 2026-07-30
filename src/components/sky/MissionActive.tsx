@@ -277,8 +277,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
     setMintTier(tier);
 
     // --- Compute effective stars with multiplier ---
+    const serverStars = photoVerification?.starsEstimate;
     const baseStars = sky?.verified ? mission.stars : 0;
-    const effectiveStars = Math.round(baseStars * tier.multiplier);
+    const effectiveStars = serverStars ?? Math.round(baseStars * tier.multiplier);
 
     // --- Compute rarity from sky score + streak ---
     const rarityInfo = calculateRarity(skyScore?.score ?? 0, streakCount);

@@ -12,6 +12,7 @@ import { getDb } from '@/lib/db';
 import { observationLog, observationPhoto } from '@/lib/schema';
 import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER, CLOUD_COVER_CERTIFY_MAX } from '@/lib/constants';
+import { isDaytimeTarget, capConfidence, overcastGateApplies } from '@/lib/observation-kind';
 import { createObservationToken } from '@/lib/observation-token';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
@@ -29,6 +30,10 @@ interface VisionAnalysis {
   sharpness: 'high' | 'medium' | 'low';
   reason: string;
   liveCaptureConfirmed?: boolean;
+  // How much of the visible sky the model reads as cloud-covered, 0-100. Cross-
+  // checked against Open-Meteo below: a photo that agrees with the weather at
+  // the observer's coordinates right now is hard to fake with a stock image.
+  estimatedCloudCover?: number;
 }
 
 const FALLBACK_ANALYSIS: VisionAnalysis = {
@@ -354,9 +359,30 @@ export async function POST(req: NextRequest) {
 
   const singleImagePrompt = `Analyze this image. The user claims it was taken at coordinates ${lat}, ${lon} at ${capturedAt}.
 
+SUBJECT — pick exactly one:
+NIGHT: "moon" (the Moon at night), "planet" (Venus/Mars/Jupiter/Saturn/Mercury,
+often just a bright dot), "stars" (star field, star trails), "constellation"
+(recognisable pattern), "deep_sky" (nebula, galaxy, star cluster).
+DAY: "sun" (the Sun itself, incl. sunspots or an eclipsed Sun), "daytime_moon"
+(the pale Moon in a blue daylight sky), "atmospheric" (a real optical
+phenomenon: 22-degree halo, sundog/parhelion, rainbow, crepuscular or
+anticrepuscular rays, iridescent or nacreous cloud, glory, light pillar,
+noctilucent cloud), "day_sky" (an honest photo of the sky right now — clouds,
+sunset or sunrise colour, blue sky, storm front, contrails).
+"unknown" only if the photo is not of the sky at all.
+
+Daytime subjects are FIRST-CLASS observations, not failures. A phone photo of a
+sundog or of today's cloudscape is a valid, welcome observation. Do NOT mark a
+daytime sky photo as unknown just because no celestial object is in it — use
+"day_sky". Do NOT set hasNightSkyCharacteristics for a daytime photo; that flag
+describes night photos only, and leaving it false is correct in daylight.
+
 Determine:
-1. What celestial object is shown? (moon, specific planet, stars/constellation pattern, deep sky object, or unknown)
-2. Is this image authentic? Check for:
+1. Which subject above is shown, and name it specifically.
+2. estimatedCloudCover: looking only at the sky in the photo, roughly what
+percentage is covered by cloud? 0 = completely clear, 100 = solid overcast. If
+no sky is visible, use -1.
+3. Is this image authentic? Check for:
    - Screenshot indicators (status bar, UI elements, sharp rectangular edges, notification bar)
    - AI generation artifacts (too-perfect details, unnatural star patterns, impossible physics)
    - Night sky characteristics (noise grain, atmospheric distortion, realistic star sizes)
@@ -365,12 +391,14 @@ Determine:
 Be GENEROUS with phone photos. A blurry phone photo of the moon is VALID.
 A phone photo of Jupiter as a bright dot is VALID.
 A phone photo showing star trails or constellations is VALID.
+A plain daytime photo of clouds or a sunset is VALID as "day_sky".
 Only reject obvious fakes: screenshots of planetarium apps, downloaded wallpapers, AI art.
 
 Return ONLY valid JSON, no markdown, no preamble:
 {
-  "target": "moon" | "planet" | "stars" | "constellation" | "deep_sky" | "unknown",
-  "identifiedObject": "specific name like 'Waxing Gibbous Moon' or 'Jupiter' or 'Orion constellation'",
+  "target": "moon" | "planet" | "stars" | "constellation" | "deep_sky" | "sun" | "daytime_moon" | "atmospheric" | "day_sky" | "unknown",
+  "identifiedObject": "specific name like 'Waxing Gibbous Moon', 'Jupiter', 'Orion constellation', '22-degree solar halo' or 'Cumulus over Tbilisi'",
+  "estimatedCloudCover": 0,
   "isScreenshot": false,
   "isAiGenerated": false,
   "hasNightSkyCharacteristics": true,
@@ -380,22 +408,44 @@ Return ONLY valid JSON, no markdown, no preamble:
 
   const doubleImagePrompt = `Analyze these TWO images taken 3 seconds apart. The user claims they were taken at coordinates ${lat}, ${lon} at ${capturedAt}.
 
+SUBJECT — pick exactly one:
+NIGHT: "moon" (the Moon at night), "planet" (Venus/Mars/Jupiter/Saturn/Mercury,
+often just a bright dot), "stars" (star field, star trails), "constellation"
+(recognisable pattern), "deep_sky" (nebula, galaxy, star cluster).
+DAY: "sun" (the Sun itself, incl. sunspots or an eclipsed Sun), "daytime_moon"
+(the pale Moon in a blue daylight sky), "atmospheric" (a real optical
+phenomenon: 22-degree halo, sundog/parhelion, rainbow, crepuscular or
+anticrepuscular rays, iridescent or nacreous cloud, glory, light pillar,
+noctilucent cloud), "day_sky" (an honest photo of the sky right now — clouds,
+sunset or sunrise colour, blue sky, storm front, contrails).
+"unknown" only if the photo is not of the sky at all.
+
+Daytime subjects are FIRST-CLASS observations, not failures. A phone photo of a
+sundog or of today's cloudscape is a valid, welcome observation. Do NOT mark a
+daytime sky photo as unknown just because no celestial object is in it — use
+"day_sky". Do NOT set hasNightSkyCharacteristics for a daytime photo; that flag
+describes night photos only, and leaving it false is correct in daylight.
+
 Determine:
-1. What celestial object is shown? (moon, specific planet, stars/constellation pattern, deep sky object, or unknown)
-2. Is this image authentic? Check for:
+1. Which subject above is shown, and name it specifically.
+2. estimatedCloudCover: looking only at the sky in the photo, roughly what
+percentage is covered by cloud? 0 = completely clear, 100 = solid overcast. If
+no sky is visible, use -1.
+3. Is this image authentic? Check for:
    - Screenshot indicators (status bar, UI elements, sharp rectangular edges, notification bar)
    - AI generation artifacts (too-perfect details, unnatural star patterns, impossible physics)
    - Night sky characteristics (noise grain, atmospheric distortion, realistic star sizes)
    - Image sharpness (phone photos are naturally less sharp — that's OK and expected)
-3. LIVE CAPTURE CHECK: Compare the two photos. If they show the same object with natural slight variation (hand movement, slight blur difference, atmospheric shimmer) that confirms they were taken live 3 seconds apart, set liveCaptureConfirmed: true. Identical photos or completely different photos → false.
+4. LIVE CAPTURE CHECK: Compare the two photos. If they show the same object with natural slight variation (hand movement, slight blur difference, atmospheric shimmer) that confirms they were taken live 3 seconds apart, set liveCaptureConfirmed: true. Identical photos or completely different photos → false.
 
 Be GENEROUS with phone photos. A blurry phone photo of the moon is VALID.
 Only reject obvious fakes: screenshots of planetarium apps, downloaded wallpapers, AI art.
 
 Return ONLY valid JSON, no markdown, no preamble:
 {
-  "target": "moon" | "planet" | "stars" | "constellation" | "deep_sky" | "unknown",
-  "identifiedObject": "specific name like 'Waxing Gibbous Moon' or 'Jupiter' or 'Orion constellation'",
+  "target": "moon" | "planet" | "stars" | "constellation" | "deep_sky" | "sun" | "daytime_moon" | "atmospheric" | "day_sky" | "unknown",
+  "identifiedObject": "specific name like 'Waxing Gibbous Moon', 'Jupiter', 'Orion constellation', '22-degree solar halo' or 'Cumulus over Tbilisi'",
+  "estimatedCloudCover": 0,
   "isScreenshot": false,
   "isAiGenerated": false,
   "hasNightSkyCharacteristics": true,
@@ -493,7 +543,11 @@ Return ONLY valid JSON, no markdown, no preamble:
   // reject (0 Stars, no attestation), but the photo can still be kept as an
   // unverified NFT. The real cloud cover is signed into the token so /api/mint
   // can independently enforce this and can't be fed a fake clear sky.
-  if (cloudCover !== null && cloudCover > CLOUD_COVER_CERTIFY_MAX) {
+  if (
+    cloudCover !== null &&
+    cloudCover > CLOUD_COVER_CERTIFY_MAX &&
+    overcastGateApplies(analysis.target)
+  ) {
     await writeRejectionRow('too_cloudy', { cloudCover });
     return NextResponse.json(buildRejection(
       'too_cloudy',
@@ -511,11 +565,33 @@ Return ONLY valid JSON, no markdown, no preamble:
     timestamp: new Date(capturedAt),
   });
 
+  // Cloud-cover cross-check: does the sky in the photo match the sky Open-Meteo
+  // reports over those coordinates right now? Agreement is positive evidence
+  // that this is a live photo of this place — a downloaded or old image only
+  // matches by luck. Disagreement is not proof of fraud (a narrow crop of a
+  // gap in the cloud reads as clear), so it costs a level rather than rejecting.
+  const claimedCloud = typeof analysis.estimatedCloudCover === 'number' && analysis.estimatedCloudCover >= 0
+    ? analysis.estimatedCloudCover
+    : null;
+  const cloudDelta = claimedCloud !== null && cloudCover !== null
+    ? Math.abs(claimedCloud - cloudCover)
+    : null;
+  const cloudMatches = cloudDelta !== null && cloudDelta <= 35;
+
+  const isDay = isDaytimeTarget(analysis.target);
+
   // Confidence scoring
   let confidence: VerificationConfidence = 'medium';
 
   if (analysis.isScreenshot || analysis.isAiGenerated) {
     confidence = 'rejected';
+  } else if (isDay) {
+    // Daytime subjects can't show night-sky characteristics, so they are scored
+    // on what IS checkable: the Sun really was up at those coordinates at that
+    // moment, and the sky in the frame matches the weather over them.
+    confidence = astroCheck.objectVisible
+      ? (cloudMatches ? 'high' : 'medium')
+      : 'low';
   } else if (
     analysis.hasNightSkyCharacteristics &&
     !analysis.isScreenshot &&
@@ -542,6 +618,10 @@ Return ONLY valid JSON, no markdown, no preamble:
     };
     confidence = BOOST[confidence];
   }
+
+  // A daytime subject is genuinely verified but far easier to capture than a
+  // telescope target at 1am, so it tops out below a night observation.
+  confidence = capConfidence(confidence, analysis.target);
 
   // Stars reward
   const REWARD_TABLE: Record<VerificationConfidence, { base: number; rare_bonus: number }> = {
@@ -608,7 +688,7 @@ Return ONLY valid JSON, no markdown, no preamble:
     reason: weatherUnavailable
       ? analysis.reason + ' (weather data unavailable — confidence reduced)'
       : analysis.reason,
-    astronomyCheck: astroCheck,
+    astronomyCheck: { ...astroCheck, ...(cloudDelta !== null ? { skyMatch: cloudMatches } : {}) },
     imageAnalysis: {
       isScreenshot: analysis.isScreenshot,
       isAiGenerated: analysis.isAiGenerated,

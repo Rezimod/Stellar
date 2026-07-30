@@ -875,6 +875,26 @@
       "crab": {
         "name": "Crab Nebula",
         "hint": "Requires at least 8\" aperture and dark skies. Located 1° NW of ζ Tauri."
+      },
+      "day-sky": {
+        "name": "Today's Sky",
+        "hint": "Point the camera up and include plenty of sky. We check it against the live weather over your coordinates, so shoot what is actually there."
+      },
+      "daytime-moon": {
+        "name": "Daytime Moon",
+        "hint": "Best in the afternoon around first quarter, or the morning around last quarter. Look for a pale chalk mark high up."
+      },
+      "sky-optics": {
+        "name": "Halos & Sundogs",
+        "hint": "Thin high cirrus is what makes halos and sundogs. Block the Sun with your hand or a building and look either side of it."
+      },
+      "sunset": {
+        "name": "Sunset & Blue Hour",
+        "hint": "The best colour is usually 10–20 minutes after the Sun drops below the horizon. Keep the horizon in frame."
+      },
+      "the-sun": {
+        "name": "The Sun",
+        "hint": "Never look at the Sun through a telescope, binoculars or a viewfinder without a certified solar filter. A phone at arm's length, pointed at a low or veiled Sun, is what this mission is for."
       }
     },
     "difficultyLabels": {
@@ -1123,7 +1143,10 @@
       "scopeMeta": "4 quick rules",
       "observer": "Before you step out",
       "observerMeta": "field checklist",
-      "earn": "Ways to earn"
+      "earn": "Ways to earn",
+      "daytime": "Daytime missions",
+      "daytimeNow": "observable right now",
+      "daytimeLater": "after sunrise"
     },
     "filters": {
       "all": "All",
@@ -1291,6 +1314,26 @@
       "crab": {
         "name": "Crab Nebula (M1)",
         "desc": "Supernova remnant from 1054 AD"
+      },
+      "day-sky": {
+        "name": "Today's Sky",
+        "desc": "Photograph the sky above you right now — clouds, blue, storm front, whatever it is doing."
+      },
+      "daytime-moon": {
+        "name": "Daytime Moon",
+        "desc": "Catch the Moon in a blue daylight sky — most people never notice it is there."
+      },
+      "sky-optics": {
+        "name": "Halos & Sundogs",
+        "desc": "Photograph a real atmospheric optic: a 22° halo, a sundog, a rainbow, crepuscular rays, iridescent cloud."
+      },
+      "sunset": {
+        "name": "Sunset & Blue Hour",
+        "desc": "Photograph the colour of the sky as the Sun goes down — the start of every observing night."
+      },
+      "the-sun": {
+        "name": "The Sun",
+        "desc": "Photograph the Sun itself — low over the horizon, through cloud, or behind a building."
       }
     },
     "tips": {

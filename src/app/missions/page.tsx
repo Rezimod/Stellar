@@ -13,7 +13,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useLocation } from '@/lib/location';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { getVisiblePlanets, getWindowPlanets } from '@/lib/planets';
-import { getTonightDarkWindow } from '@/lib/dark-window';
+import { getTonightDarkWindow, getSunAltitude } from '@/lib/dark-window';
 import { getChartDeepSky } from '@/lib/sky-chart';
 import { QUIZZES, quizReward } from '@/lib/quizzes';
 import { SkyOrb } from '@/components/sky/SkyOrb';
@@ -68,6 +68,19 @@ const GRID: GridEntry[] = [
   { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion',     estMin: 10 },
   { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda', estMin: 12 },
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab',      estMin: 15 },
+];
+
+// Daytime missions. Anyone with a phone can do these at lunchtime, in any
+// weather — they are verified against the Sun's real altitude here plus a
+// cloud-cover cross-check server-side, and pay less than a night target
+// because they are far easier. Kept in their own block so they never compete
+// with, or dilute the count of, tonight's real observing list.
+const DAY_GRID: GridEntry[] = [
+  { id: 'day-sky',      stars: 10, diff: 'easy', equip: 'naked', routeId: 'day-sky',      estMin: 2 },
+  { id: 'daytime-moon', stars: 25, diff: 'easy', equip: 'naked', routeId: 'daytime-moon', estMin: 4 },
+  { id: 'sky-optics',   stars: 25, diff: 'med',  equip: 'naked', routeId: 'sky-optics',   estMin: 5 },
+  { id: 'sunset',       stars: 10, diff: 'easy', equip: 'naked', routeId: 'sunset',       estMin: 3 },
+  { id: 'the-sun',      stars: 10, diff: 'easy', equip: 'naked', routeId: 'the-sun',      estMin: 3 },
 ];
 
 // Synodic phase (0 = new, 0.5 = full) → the moonPhase key under the `sky` i18n
@@ -313,6 +326,12 @@ export default function MissionsPage() {
     }
     return out;
   }, [lat, lon, evalTime, tonightWindowPlanets]);
+
+  // Daylight drives the daytime block: every subject in it needs the Sun up
+  // (or barely down, for sunset colour), which is exactly what the server
+  // checks when it certifies the photo.
+  const sunAltitude = useMemo(() => getSunAltitude(lat, lon, now), [lat, lon, now]);
+  const isDaylight = sunAltitude > -6;
 
   const completedIds = useMemo(
     () => new Set(state.completedMissions.filter((m) => m.status === 'completed').map((m) => m.id)),
@@ -571,6 +590,46 @@ export default function MissionsPage() {
                     peak: (deg: number) => t('iss.peak', { deg }),
                   }}
                 />
+              </div>
+            </section>
+
+            {/* Daytime missions — something to observe when the Sun is up */}
+            <section className="mis-block">
+              <div className="mis-block-head">
+                <h2 className="mis-block-title">{t('sections.daytime')}</h2>
+                <span className="mis-block-meta">
+                  {isDaylight ? t('sections.daytimeNow') : t('sections.daytimeLater')}
+                </span>
+              </div>
+              <div className="mis-list">
+                {DAY_GRID.map((g) => {
+                  const lg = localize(g);
+                  // The Sun itself and the daytime Moon need real daylight;
+                  // sunset colour and a sky log stay open through dusk.
+                  const above = g.id === 'sunset' ? sunAltitude > -8 : isDaylight;
+                  return (
+                    <MissionRow
+                      key={g.id}
+                      entry={lg}
+                      above={above}
+                      pct={above ? 92 : 0}
+                      rise={null}
+                      dateLocale={dateLocale}
+                      onStart={() => startMission(g.routeId)}
+                      onExplain={(rect) => {
+                        setActiveExplainerAnchor(rect);
+                        setActiveExplainer({ kind: 'mission', id: g.id, title: lg.name });
+                      }}
+                      labels={{
+                        visibleNow: t('list.visibleNow'),
+                        after: (time: string) => t('list.after', { time }),
+                        comingLater: t('sections.daytimeLater'),
+                        observe: t('list.observe'),
+                        min: (n: number) => t('list.min', { n }),
+                      }}
+                    />
+                  );
+                })}
               </div>
             </section>
 
