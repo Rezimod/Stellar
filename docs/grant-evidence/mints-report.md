@@ -10,31 +10,36 @@ on-chain data — every row is independently verifiable on Solscan.
 
 | Metric | Value |
 | --- | ---: |
-| **Total verified-observation cNFT mints** | **7** |
-| Unique owner wallets | 1 |
-| Date range | 2026-07-30 → 2026-07-30 |
+| **Total verified-observation cNFT mints** | **0** |
+| Unique owner wallets | 0 |
+| Date range | n/a |
 | Unverified keepsake mints (excluded above) | 26 |
+| Certify-all window mints (excluded above) | 14 |
 | Internal test mints (excluded above) | 4 |
+
+> **Disclosure — certify-all window.** Between 2026-07-29 22:33 UTC and
+> 2026-07-30 18:15 UTC the photo-verification pipeline was deliberately set to
+> certify every submission: hash dedup, EXIF GPS/age, reverse-image,
+> screenshot/AI detection and the overcast gate all still ran, but none of them
+> could reject. 14 cNFTs minted in that window therefore carry
+> `Verified: Yes` in immutable metadata without having passed verification.
+> They are excluded from the headline above and must not be counted toward any
+> milestone. The change (commit `72cc9a9`) and its revert are both in the
+> public git history. Affected mints: [`CBR6QjzQ…`](https://solscan.io/token/CBR6QjzQYrn9K1jMGT28DwHCCc45AnzxGYH2VKe11Ccp), [`fvvFtNAa…`](https://solscan.io/token/fvvFtNAaxDxmYyy9k8HPDqvra12nD4TeRRq4KZ7uqEN), [`CHXYY64m…`](https://solscan.io/token/CHXYY64mLCKdPeyDaqwBaB4KrZsgnKd83Tj5a4Ci1LyJ), [`AJTc6agz…`](https://solscan.io/token/AJTc6agzJcEuk9vpqvEkNbNFSjz3Y1YEmZ2dK59kwkAk), [`6Tqh1PQf…`](https://solscan.io/token/6Tqh1PQfqxsDiQLJEbHEzRgxWZeXQFmhZN5cLtShNrVW), [`Gp7Z7XS3…`](https://solscan.io/token/Gp7Z7XS3cKWiyBy8V3Z7S8RAuJduE5JvehkcFunn7XF6), [`4NinB42r…`](https://solscan.io/token/4NinB42rktkubJcUz32YDXvHb4P9f28kRvTBNwxjw8Ta), [`7CJzrGev…`](https://solscan.io/token/7CJzrGevUwKhbckTS6KcSUsDeWTmYzVaA968nwnfnvG2), [`5VHKDQH7…`](https://solscan.io/token/5VHKDQH7Fe34HbJ2vwhQ8EwRsCnnCkWibhHUYMGekocY), [`36c7QUTo…`](https://solscan.io/token/36c7QUToWxfXkaSTzEFc6nrdEhvt5w7ApDwjrChdnYd8), [`4B1YdcA1…`](https://solscan.io/token/4B1YdcA1daq8sjGj4Kg2NaNq4M6Bqh3qayNFJyDBy19o), [`GFSnT4Le…`](https://solscan.io/token/GFSnT4LeEqVcqvRdbwMvk8HRgkduPDByMQXZBKQMZVHg), [`9N79MAWg…`](https://solscan.io/token/9N79MAWgCaEzjnbrFQe3FvGMG9pcgQK27hY6iUSAhTHx), [`4fSRf562…`](https://solscan.io/token/4fSRf562aAfP7qQopW1sbo7VVbyA3mFuENaoHdAeDmE9).
 
 ## Mints per day
 
 | Date | Mints |
 | --- | ---: |
-| 2026-07-30 | 7 |
+
 
 ## Wallet concentration
 
-Flagged wallets with ≥7 mints (mean 7.0/wallet — review for non-organic activity):
-
-- [`BzkSn1e8fHs2VV94MyKWvZK29PqJxVBxPSshsp2Ye2TE`](https://solscan.io/account/BzkSn1e8fHs2VV94MyKWvZK29PqJxVBxPSshsp2Ye2TE) — 7 mints
+No outlier wallets — no wallet holds ≥5 mints (mean 0.0 per wallet).
 
 ## Sample mints (most recent)
 
-- 2026-07-30 — [Stellar: None](https://solscan.io/token/4NinB42rktkubJcUz32YDXvHb4P9f28kRvTBNwxjw8Ta) ([mint tx](https://solscan.io/tx/QJhJVwqZdc28g1mbRmBA2ZgF4tQzZCFxXKKskBYBuhXBw9mp9hQGnGfGbFxn835YtV2JvTqMVnjRyG4WUL3WJSu))
-- 2026-07-30 — [Stellar: Night sky observation](https://solscan.io/token/Gp7Z7XS3cKWiyBy8V3Z7S8RAuJduE5JvehkcFunn7XF6) ([mint tx](https://solscan.io/tx/3eYg44nJEQfEpyyg9THdfWXMorrRTgwomCXDAym5VJysCA7oRn4pRSEvfPUQmKM8ASaBiLsKUYR4PZHAYmRihhAG))
-- 2026-07-30 — [Stellar: ](https://solscan.io/token/6Tqh1PQfqxsDiQLJEbHEzRgxWZeXQFmhZN5cLtShNrVW) ([mint tx](https://solscan.io/tx/rmM2XN2RWp4c6XAabzeFB4SpY86V75vqoZEbs2Wx3BDrvNMbciB3nxHqRpVpyngzB4wPkFKujD7mcfVjdYJ5wQb))
-- 2026-07-30 — [Stellar: No celestial object…](https://solscan.io/token/AJTc6agzJcEuk9vpqvEkNbNFSjz3Y1YEmZ2dK59kwkAk) ([mint tx](https://solscan.io/tx/26BLakFLFFK35k1NjZtUdyQUqM7xCEis9YAFXmskeMoeEAMnhNzHNNfsrWgXMnRZkA2NdmyfEfkNi8DH2dKMWRAM))
-- 2026-07-30 — [Stellar: Night sky observation](https://solscan.io/token/CHXYY64mLCKdPeyDaqwBaB4KrZsgnKd83Tj5a4Ci1LyJ) ([mint tx](https://solscan.io/tx/5wbC2VNU3icURydPuFaya3jwtfvxijLH3j7HqRBfJrPT4m1LEiYV6zWTMWQgtDDTTmax3GE2WeASo52JmiRy3dys))
+_none_
 
 ## App-DB cross-check
 
@@ -43,11 +48,11 @@ Flagged wallets with ≥7 mints (mean 7.0/wallet — review for non-organic acti
 | Onboarded users (`users`) | 45 |
 | Cohort-tracked wallets (`user_cohorts`) | 8 |
 | `observation_log` mint rows — devnet pilot (before 2026-06-21) | 59 |
-| `observation_log` mint rows — mainnet era | 22 |
-| `observation_log` rows with an off-chain event tag (not mints) | 30 |
+| `observation_log` mint rows — mainnet era | 24 |
+| `observation_log` rows with an off-chain event tag (not mints) | 31 |
 
-Mainnet-era DB mint rows verified against chain: **22 landed**, 0 failed on-chain, 0 not found.
+Mainnet-era DB mint rows verified against chain: **24 landed**, 0 failed on-chain, 0 not found.
 
-On-chain vs DB: **33** live user cNFTs on-chain (verified + keepsakes) vs **22** landed mainnet mint rows in the app DB — investigate the gap (test mints, retries, or out-of-app mints).
+On-chain vs DB: **26** live user cNFTs on-chain (verified + keepsakes) vs **24** landed mainnet mint rows in the app DB — investigate the gap (test mints, retries, or out-of-app mints).
 
 Full row-level data: [mints-report.csv](./mints-report.csv)

@@ -137,6 +137,14 @@ export const STAR_PAYOUT_BY_TIER: Record<MissionTier, number> = {
 // and mirrored in /api/observe/verify so the UI estimate matches the mint.
 export const EVENT_BONUS_MULTIPLIER = 2;
 
+// Cloud cover above which an observation can't be certified. The bar is "the
+// sky is effectively closed", not "the sky is imperfect" — a Tbilisi summer
+// night sits at 70–90% on plenty of evenings where the Moon and the bright
+// planets are still perfectly observable through gaps. Enforced in
+// /api/observe/verify, backstopped in /api/mint against the signed token, and
+// mirrored by /api/sky/verify so the observe flow agrees end to end.
+export const CLOUD_COVER_CERTIFY_MAX = 90;
+
 export const TELESCOPE_BRANDS = ['Celestron', 'National Geographic', 'Meade', 'Sky-Watcher', 'Orion', 'Other'];
 
 export const AGENT_META = {

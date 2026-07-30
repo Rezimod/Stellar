@@ -11,12 +11,11 @@ import { classifyDevice, type DeviceTier } from '@/lib/device-tier';
 import { getDb } from '@/lib/db';
 import { observationLog, observationPhoto } from '@/lib/schema';
 import { eventsForTarget } from '@/lib/astro-events';
-import { EVENT_BONUS_MULTIPLIER } from '@/lib/constants';
+import { EVENT_BONUS_MULTIPLIER, CLOUD_COVER_CERTIFY_MAX } from '@/lib/constants';
 import { createObservationToken } from '@/lib/observation-token';
 import { verifyPrivy } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { isValidPublicKey } from '@/lib/validate';
-import { certifyAllObservations } from '@/lib/verify-window';
 
 // Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
 export const maxDuration = 60;
@@ -60,25 +59,9 @@ function parseVisionResponse(text: string): { analysis: VisionAnalysis; isFallba
   }
 }
 
-// Permissive stand-in used only inside the certify-all window, when the vision
-// call fails or returns unparseable JSON. Outside the window those cases return
-// an unverified keepsake instead (see FALLBACK_ANALYSIS).
-const BYPASS_ANALYSIS: VisionAnalysis = {
-  target: 'unknown',
-  identifiedObject: 'Night sky observation',
-  isScreenshot: false,
-  isAiGenerated: false,
-  hasNightSkyCharacteristics: true,
-  sharpness: 'medium',
-  reason: 'Observation certified — analysis unavailable',
-};
-
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
-  // Beta window: certify every submission. Checks below still run and record
-  // their findings, but none of them reject. Self-expires — see verify-window.ts.
-  const certifyAll = certifyAllObservations();
   // Use auth token as rate-limit key when present (prevents IP spoofing)
   const authHeader = req.headers.get('authorization');
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -293,7 +276,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 1. Cross-wallet hash dedup
-  if (walletParam && !certifyAll) {
+  if (walletParam) {
     try {
       const dup = await findDuplicateByHash(fileHash, walletParam);
       if (dup) {
@@ -309,7 +292,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. EXIF GPS mismatch (> 0.5° ≈ 55km) — only check if EXIF GPS exists
-  if (!certifyAll && exifLat !== null && exifLon !== null) {
+  if (exifLat !== null && exifLon !== null) {
     if (Math.abs(exifLat - lat) > 0.5 || Math.abs(exifLon - lon) > 0.5) {
       const notes = { exifLat, exifLon, clientLat: lat, clientLon: lon };
       await writeRejectionRow('gps_mismatch', notes);
@@ -321,7 +304,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 3. Photo too old (> 24h before submission). Mission-configurable later.
-  if (!certifyAll && exifTakenAt) {
+  if (exifTakenAt) {
     const ageMs = Date.now() - exifTakenAt.getTime();
     if (ageMs > 24 * 60 * 60 * 1000) {
       await writeRejectionRow('photo_too_old', { exifTakenAt: exifTakenAt.toISOString(), ageHours: Math.floor(ageMs / 3_600_000) });
@@ -335,7 +318,7 @@ export async function POST(req: NextRequest) {
   // 4. Reverse image lookup (optional — gated on GOOGLE_VISION_API_KEY)
   const reverse = await checkReverseImage(buffer);
   isInternetSourced = reverse.matchCount > 0;
-  if (isInternetSourced && !certifyAll) {
+  if (isInternetSourced) {
     await writeRejectionRow('stock_image_detected', { matchCount: reverse.matchCount, sampleUrls: reverse.sampleUrls });
     return NextResponse.json(buildRejection(
       'stock_image_detected',
@@ -448,35 +431,28 @@ Return ONLY valid JSON, no markdown, no preamble:
     verificationFailed = parsed.isFallback;
   } catch (err) {
     console.error('[observe/verify] Gemini vision error:', err);
-    if (!certifyAll) {
-      // Don't dead-end the user on a service hiccup — return an unverified
-      // outcome they can still mint as a keepsake (0 Stars, not certified).
-      return NextResponse.json(buildRejection(
-        'verification_unavailable',
-        "We couldn't analyze this photo right now, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again in a moment.",
-      ));
-    }
-    analysis = BYPASS_ANALYSIS;
+    // Don't dead-end the user on a service hiccup — return an unverified
+    // outcome they can still mint as a keepsake (0 Stars, not certified).
+    return NextResponse.json(buildRejection(
+      'verification_unavailable',
+      "We couldn't analyze this photo right now, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again in a moment.",
+    ));
   }
 
   // Vision response couldn't be parsed → treat as unverified rather than
   // mislabelling it (the fallback shape would otherwise read as a screenshot).
   if (verificationFailed) {
-    if (!certifyAll) {
-      return NextResponse.json(buildRejection(
-        'verification_unavailable',
-        "We couldn't read the analysis for this photo, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again.",
-      ));
-    }
-    analysis = BYPASS_ANALYSIS;
-    verificationFailed = false;
+    return NextResponse.json(buildRejection(
+      'verification_unavailable',
+      "We couldn't read the analysis for this photo, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again.",
+    ));
   }
 
   // AI-generated images and screenshots can't earn Stars or an on-chain
   // attestation, but the user may still keep the photo as an unverified NFT.
   // Returning early gives clients a clear `rejectionReason` and persists a
   // rejection row for hash-dedup of synthetic images.
-  if (analysis.isAiGenerated && !certifyAll) {
+  if (analysis.isAiGenerated) {
     await writeRejectionRow('ai_generated', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
       'ai_generated',
@@ -484,7 +460,7 @@ Return ONLY valid JSON, no markdown, no preamble:
       { identifiedObject: analysis.identifiedObject, isAiGenerated: true },
     ));
   }
-  if (analysis.isScreenshot && !certifyAll) {
+  if (analysis.isScreenshot) {
     await writeRejectionRow('screenshot_detected', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
       'screenshot_detected',
@@ -513,12 +489,11 @@ Return ONLY valid JSON, no markdown, no preamble:
     cloudCoverForToken = cloudCover;
   }
 
-  // Overcast gate: a sky with >70% cloud cover can't yield a certifiable
-  // observation — reject (0 Stars, no attestation), but the photo can still be
-  // kept as an unverified NFT. The real cloud cover is signed into the token so
-  // /api/mint can independently enforce this and can't be fed a fake clear sky.
-  const CLOUD_COVER_MAX = 70;
-  if (!certifyAll && cloudCover !== null && cloudCover > CLOUD_COVER_MAX) {
+  // Overcast gate: a sky this closed can't yield a certifiable observation —
+  // reject (0 Stars, no attestation), but the photo can still be kept as an
+  // unverified NFT. The real cloud cover is signed into the token so /api/mint
+  // can independently enforce this and can't be fed a fake clear sky.
+  if (cloudCover !== null && cloudCover > CLOUD_COVER_CERTIFY_MAX) {
     await writeRejectionRow('too_cloudy', { cloudCover });
     return NextResponse.json(buildRejection(
       'too_cloudy',
@@ -566,13 +541,6 @@ Return ONLY valid JSON, no markdown, no preamble:
       low: 'medium', medium: 'high', high: 'high', rejected: 'rejected',
     };
     confidence = BOOST[confidence];
-  }
-
-  // Beta window: nothing comes back uncertified. A photo the pipeline would
-  // normally reject or rate 'low' is certified at 'medium' (Stellar rarity);
-  // a genuinely clean high-confidence photo keeps its 'high'.
-  if (certifyAll && (confidence === 'rejected' || confidence === 'low')) {
-    confidence = 'medium';
   }
 
   // Stars reward

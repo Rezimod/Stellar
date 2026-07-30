@@ -166,7 +166,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Idempotency: reject duplicate submissions within 60s
+    // Idempotency: reject duplicate submissions within 60s. Only *certified*
+    // rows count. /api/mint writes a `confidence: 'minted'` row for this same
+    // observation seconds earlier and `obs_daily_unique` (wallet+target+date)
+    // means there can only ever be one row per target per day — so treating
+    // that row as a duplicate is what silently zeroed every observation's
+    // Stars. It is claimed below instead.
+    const CERTIFIED = ['high', 'medium', 'low']
     const sixtySecondsAgo = new Date(Date.now() - 60_000)
     const existing = await db
       .select({ id: observationLog.id })
@@ -175,6 +181,7 @@ export async function POST(req: NextRequest) {
         and(
           eq(observationLog.wallet, wallet),
           eq(observationLog.target, target),
+          inArray(observationLog.confidence, CERTIFIED),
           gte(observationLog.createdAt, sixtySecondsAgo)
         )
       )
@@ -208,7 +215,9 @@ export async function POST(req: NextRequest) {
     const standing = tierForCount(priorAccepted)
     const reputationStars = applyReputationMultiplier(stars, priorAccepted)
 
-    // Per-object cooldown: user can only submit same target once per 24 hours
+    // Per-object cooldown: user can only submit same target once per 24 hours.
+    // Certified rows only, for the same reason as the idempotency check above —
+    // this observation's own 'minted' row must not lock the observer out of it.
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recentSameTarget = await db
       .select({ id: observationLog.id })
@@ -217,6 +226,7 @@ export async function POST(req: NextRequest) {
         and(
           eq(observationLog.wallet, wallet),
           eq(observationLog.target, target),
+          inArray(observationLog.confidence, CERTIFIED),
           gte(observationLog.createdAt, oneDayAgo)
         )
       )
@@ -259,7 +269,8 @@ export async function POST(req: NextRequest) {
     }
 
     const exifTakenDate = typeof body.exifTakenAt === 'string' ? new Date(body.exifTakenAt) : null;
-    const [inserted] = await db.insert(observationLog).values({
+    const observedDate = new Date().toISOString().split('T')[0];
+    const row = {
       wallet,
       target,
       stars: starsToAward,
@@ -270,7 +281,7 @@ export async function POST(req: NextRequest) {
       identifiedObject: body.identifiedObject ?? target ?? null,
       starsAwarded: starsToAward,
       oracleHash: body.oracleHash ?? null,
-      observedDate: new Date().toISOString().split('T')[0],
+      observedDate,
       fileHash: typeof body.fileHash === 'string' ? body.fileHash : null,
       uploadSource: typeof body.uploadSource === 'string' ? body.uploadSource : null,
       deviceTier: typeof body.deviceTier === 'string' ? body.deviceTier : null,
@@ -282,7 +293,28 @@ export async function POST(req: NextRequest) {
       isInternetSourced: body.isInternetSourced === true,
       chainTx: chain?.txId ?? null,
       chainPda: chain?.pda ?? null,
-    }).returning({ id: observationLog.id })
+    }
+
+    // Claim the row /api/mint wrote for this observation seconds ago, promoting
+    // it from 'minted' to its real confidence + Stars. The compare-and-swap on
+    // confidence = 'minted' is the idempotency guard: a second concurrent log
+    // for the same observation matches nothing and awards nothing.
+    const [claimed] = await db
+      .update(observationLog)
+      .set(row)
+      .where(
+        and(
+          eq(observationLog.wallet, wallet),
+          eq(observationLog.target, target),
+          eq(observationLog.observedDate, observedDate),
+          eq(observationLog.confidence, 'minted'),
+        ),
+      )
+      .returning({ id: observationLog.id })
+
+    // No mint row to claim (the mint failed, or this observation was logged
+    // without one) — write the row ourselves.
+    const inserted = claimed ?? (await db.insert(observationLog).values(row).returning({ id: observationLog.id }))[0]
 
     // Award Stars on-chain. AWAIT the mint (bounded) so the response reflects
     // reality — never report starsMinted:true while the mint silently failed.

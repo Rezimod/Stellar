@@ -123,10 +123,20 @@ const iso = (t) => (t ? new Date(t * 1000).toISOString() : '');
 const day = (t) => (t ? iso(t).slice(0, 10) : 'unknown');
 
 // 3. Aggregates.
+// Certify-all window: between commit 72cc9a9 (2026-07-29 22:33 UTC) and its
+// revert (2026-07-30 18:15 UTC), /api/observe/verify certified every submitted
+// photo without requiring a passing verdict. Anything minted in that window
+// carries `Verified: Yes` in its metadata but is NOT evidence of a verified
+// observation, so it is excluded from the headline and disclosed separately.
+const WINDOW_START = Date.parse('2026-07-29T22:33:00Z') / 1000;
+const WINDOW_END = Date.parse('2026-07-30T18:15:00Z') / 1000;
+const inCertifyAllWindow = (r) => r.blockTime && r.blockTime >= WINDOW_START && r.blockTime <= WINDOW_END;
+
 const isTest = (r) => /verify test|smoke test/i.test(r.name);
 const isKeepsake = (r) => /^Stellar Keepsake/i.test(r.name);
 const keepsakes = rows.filter((r) => !isTest(r) && isKeepsake(r));
-const real = rows.filter((r) => !isTest(r) && !isKeepsake(r));
+const windowMints = rows.filter((r) => !isTest(r) && !isKeepsake(r) && inCertifyAllWindow(r));
+const real = rows.filter((r) => !isTest(r) && !isKeepsake(r) && !inCertifyAllWindow(r));
 const owners = new Map();
 for (const r of real) owners.set(r.owner, (owners.get(r.owner) ?? 0) + 1);
 const perDay = new Map();
@@ -191,11 +201,11 @@ if (process.env.DATABASE_URL) {
 // 5. Outputs.
 const solscanAsset = (id) => `https://solscan.io/token/${id}`;
 const csv = [
-  'asset_id,owner,mint_timestamp_utc,mint_tx,solscan_asset,solscan_tx,name,is_test,is_keepsake',
+  'asset_id,owner,mint_timestamp_utc,mint_tx,solscan_asset,solscan_tx,name,is_test,is_keepsake,in_certify_all_window',
   ...rows.map((r) =>
     [r.id, r.owner, iso(r.blockTime), r.signature, solscanAsset(r.id),
      r.signature ? `https://solscan.io/tx/${r.signature}` : '',
-     `"${r.name.replaceAll('"', '""')}"`, isTest(r), isKeepsake(r)].join(',')),
+     `"${r.name.replaceAll('"', '""')}"`, isTest(r), isKeepsake(r), inCertifyAllWindow(r)].join(',')),
 ].join('\n');
 fs.writeFileSync(path.join(OUT_DIR, 'mints-report.csv'), csv + '\n');
 
@@ -217,7 +227,18 @@ on-chain data — every row is independently verifiable on Solscan.
 | Unique owner wallets | ${owners.size} |
 | Date range | ${dated.length ? `${day(dated[0].blockTime)} → ${day(dated[dated.length - 1].blockTime)}` : 'n/a'} |
 | Unverified keepsake mints (excluded above) | ${keepsakes.length} |
-| Internal test mints (excluded above) | ${rows.length - real.length - keepsakes.length} |
+| Certify-all window mints (excluded above) | ${windowMints.length} |
+| Internal test mints (excluded above) | ${rows.length - real.length - keepsakes.length - windowMints.length} |
+
+${windowMints.length ? `> **Disclosure — certify-all window.** Between 2026-07-29 22:33 UTC and
+> 2026-07-30 18:15 UTC the photo-verification pipeline was deliberately set to
+> certify every submission: hash dedup, EXIF GPS/age, reverse-image,
+> screenshot/AI detection and the overcast gate all still ran, but none of them
+> could reject. ${windowMints.length} cNFT${windowMints.length === 1 ? '' : 's'} minted in that window therefore carry
+> \`Verified: Yes\` in immutable metadata without having passed verification.
+> They are excluded from the headline above and must not be counted toward any
+> milestone. The change (commit \`72cc9a9\`) and its revert are both in the
+> public git history. Affected mints: ${windowMints.map((r) => `[\`${r.id.slice(0, 8)}…\`](https://solscan.io/token/${r.id})`).join(', ')}.` : ''}
 
 ## Mints per day
 
@@ -245,5 +266,5 @@ Full row-level data: [mints-report.csv](./mints-report.csv)
 fs.writeFileSync(path.join(OUT_DIR, 'mints-report.md'), md);
 
 console.log(`\nHEADLINE: ${real.length} verified-observation cNFT mints on mainnet`);
-console.log(`  unique owners: ${owners.size}, keepsakes excluded: ${keepsakes.length}, test mints excluded: ${rows.length - real.length - keepsakes.length}`);
+console.log(`  unique owners: ${owners.size}, keepsakes excluded: ${keepsakes.length}, certify-all-window mints excluded: ${windowMints.length}, test mints excluded: ${rows.length - real.length - keepsakes.length - windowMints.length}`);
 console.log(`  wrote docs/grant-evidence/mints-report.csv + mints-report.md`);

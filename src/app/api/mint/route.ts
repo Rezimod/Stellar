@@ -15,7 +15,7 @@ import { computeOracleHash, currentHourSlot } from '@/lib/oracle-hash';
 import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
 import { trackServer } from '@/lib/track-server';
-import { certifyAllObservations } from '@/lib/verify-window';
+import { CLOUD_COVER_CERTIFY_MAX } from '@/lib/constants';
 
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -131,13 +131,11 @@ export async function POST(req: NextRequest) {
     signedFileHash = tokenCheck.payload.fileHash;
     signedUploadSource = tokenCheck.payload.uploadSource;
     effectiveCloudCover = tokenCheck.payload.cloudCover;
-    // Overcast gate: never certify an observation taken under >70% cloud cover.
+    // Overcast gate: never certify an observation taken under a closed sky.
     // /api/observe/verify already rejects these (issuing a 'rejected' token), so
     // a non-rejected token over the threshold should be impossible — this is the
     // defense-in-depth backstop, enforced on the signed value, not the client's.
-    // Skipped inside the certify-all beta window, where /api/observe/verify
-    // deliberately certifies overcast submissions (see verify-window.ts).
-    if (!certifyAllObservations() && tokenCheck.payload.confidence !== 'rejected' && effectiveCloudCover > 70) {
+    if (tokenCheck.payload.confidence !== 'rejected' && effectiveCloudCover > CLOUD_COVER_CERTIFY_MAX) {
       return NextResponse.json({ error: 'Sky too cloudy to certify this observation' }, { status: 403 });
     }
   }

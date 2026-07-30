@@ -128,6 +128,24 @@ Every Astroman customer is a potential Stellar user. Every Stellar observer beco
 
 ---
 
+## On-Chain Evidence
+
+Every Discovery Attestation is a compressed NFT in the collection above — anyone
+can enumerate them with a DAS-capable RPC and verify each one on Solscan,
+without taking our word for anything.
+
+[`docs/grant-evidence/mints-report.md`](docs/grant-evidence/mints-report.md) is
+generated from live chain data by [`scripts/mint-report.mjs`](scripts/mint-report.mjs)
+(`npm run report:mints`) and committed as-is — including the mints it excludes
+and the gaps it can't explain. The row-level data is in
+[`mints-report.csv`](docs/grant-evidence/mints-report.csv).
+
+Grant applications, security audit reports and internal working notes are not in
+this repository — they are business and ops material, kept in a private repo and
+shared with reviewers on request. Reporting evidence stays public.
+
+---
+
 ## Running Locally
 
 ```bash
