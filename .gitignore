@@ -66,15 +66,15 @@ apps/field/artifacts/current-screen.png
 # Internal working docs — kept local, mirrored to the private stellar-internal
 # repo. Grant applications, security audit reports and agent instruction files
 # are business/ops material, not part of the public codebase.
-CLAUDE.md
-AGENTS.md
-.claude/
-.impeccable.md
-PROMPTS_STELLAR_FIXES.md
-STELLAR_UI_PLAYBOOK.md
-UX_UI_AUDIT_STELLAR.md
-SECURITY_MAINNET_AUDIT.md
-audit/
+/CLAUDE.md
+/AGENTS.md
+/.claude/
+/.impeccable.md
+/PROMPTS_STELLAR_FIXES.md
+/STELLAR_UI_PLAYBOOK.md
+/UX_UI_AUDIT_STELLAR.md
+/SECURITY_MAINNET_AUDIT.md
+/audit/
 docs/dependency-security.md
 docs/grant-applications.md
 docs/gita-grant-application.md

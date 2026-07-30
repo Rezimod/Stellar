@@ -245,6 +245,7 @@ export async function POST(req: NextRequest) {
       wallet: walletParam,
       uploadSource: uploadSourceParam,
       cloudCover: cloudCoverForToken,
+      subject: 'unknown',
     }) ?? undefined;
     return {
       accepted: false,
@@ -672,6 +673,7 @@ Return ONLY valid JSON, no markdown, no preamble:
     wallet: walletParam,
     uploadSource: uploadSourceParam,
     cloudCover: cloudCoverForToken,
+    subject: analysis.target,
   });
   if (!verificationToken) {
     return NextResponse.json({ error: 'Server misconfigured: OBSERVATION_TOKEN_SECRET not set' }, { status: 503 });

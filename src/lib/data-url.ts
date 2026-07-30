@@ -59,9 +59,16 @@ function dataUrlBytes(url: string): number {
 // rather than flattening every capture to a fixed size.
 export async function fitForUpload(url: string, maxBytes = 8_500_000): Promise<string> {
   if (dataUrlBytes(url) <= maxBytes) return url;
-  for (const [maxPx, quality] of [[4032, 0.92], [3200, 0.9], [2400, 0.88], [1800, 0.85]] as const) {
-    const shrunk = await makeThumbnail(url, maxPx, quality);
-    if (dataUrlBytes(shrunk) <= maxBytes) return shrunk;
+  try {
+    for (const [maxPx, quality] of [[4032, 0.92], [3200, 0.9], [2400, 0.88], [1800, 0.85]] as const) {
+      const shrunk = await makeThumbnail(url, maxPx, quality);
+      if (dataUrlBytes(shrunk) <= maxBytes) return shrunk;
+    }
+    return await makeThumbnail(url, 1400, 0.8);
+  } catch {
+    // Undecodable format (an exotic HEIC variant, say). Send the original and
+    // let the server answer with a clear size/format error rather than failing
+    // silently here and losing the verification token further down.
+    return url;
   }
-  return await makeThumbnail(url, 1400, 0.8);
 }

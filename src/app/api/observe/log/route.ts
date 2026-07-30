@@ -313,8 +313,20 @@ export async function POST(req: NextRequest) {
       .returning({ id: observationLog.id })
 
     // No mint row to claim (the mint failed, or this observation was logged
-    // without one) — write the row ourselves.
-    const inserted = claimed ?? (await db.insert(observationLog).values(row).returning({ id: observationLog.id }))[0]
+    // without one) — write the row ourselves. `obs_daily_unique` allows one row
+    // per wallet+target+day, so this can still collide with a row that isn't
+    // ours to claim: an unverified keepsake for the same target earlier today,
+    // for instance.
+    const inserted = claimed ?? (
+      await db.insert(observationLog).values(row).onConflictDoNothing().returning({ id: observationLog.id })
+    )[0]
+
+    // Nothing was written. Stars are ledgered in this table — the daily and
+    // monthly issuance caps are sums over it — so minting them without a row
+    // would put unaccounted Stars into circulation. Award nothing instead.
+    if (!inserted) {
+      return NextResponse.json({ logged: true, starsAwarded: 0, duplicate: true })
+    }
 
     // Award Stars on-chain. AWAIT the mint (bounded) so the response reflects
     // reality — never report starsMinted:true while the mint silently failed.

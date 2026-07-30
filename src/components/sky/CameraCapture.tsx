@@ -19,12 +19,22 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   const [captureError, setCaptureError] = useState<string | null>(null);
   const [isUploadPreview, setIsUploadPreview] = useState(false);
   const [dimensions, setDimensions] = useState<{ w: number; h: number } | null>(null);
+  const [capturing, setCapturing] = useState(false);
+  // `capture="environment"` only opens the OS camera on a real device; on a
+  // desktop it degrades to an ordinary file picker, which would let a gallery
+  // photo be labelled a live capture. Detected after mount to keep SSR and the
+  // first client render identical.
+  const [hasDeviceCamera, setHasDeviceCamera] = useState(false);
   const pinchRef = useRef<{ baseDist: number; baseZoom: number } | null>(null);
 
   useEffect(() => {
     startCamera('environment');
     return () => stopCamera();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setHasDeviceCamera(window.matchMedia?.('(pointer: coarse)').matches ?? false);
   }, []);
 
   // Read the real pixel dimensions of whatever we are about to submit, so the
@@ -36,17 +46,23 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
   };
 
   const handleCapture = async () => {
+    if (capturing) return; // takePhoto() is async — don't let a double-tap fire twice
+    setCapturing(true);
     setFlash(true);
     setTimeout(() => setFlash(false), 120);
-    const photo = await capture(missionName);
-    if (photo === null) {
-      setCaptureError(t('capture.tooDark'));
-      return;
+    try {
+      const photo = await capture(missionName);
+      if (photo === null) {
+        setCaptureError(t('capture.tooDark'));
+        return;
+      }
+      stopCamera();
+      setIsUploadPreview(false);
+      setPreview(photo);
+      measure(photo);
+    } finally {
+      setCapturing(false);
     }
-    stopCamera();
-    setIsUploadPreview(false);
-    setPreview(photo);
-    measure(photo);
   };
 
   // `fromCamera` marks a shot the OS camera app produced (the `capture`
@@ -152,16 +168,20 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         </div>
         <p className="text-terracotta text-sm mb-2">{t('capture.cameraRequired')}</p>
         <p className="text-text-muted text-xs mb-5">{t('capture.cameraHelp')}</p>
+        {hasDeviceCamera && (
+          <label
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
+          >
+            <Smartphone size={15} /> {t('capture.usePhoneCamera')}
+            <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => handleFileUpload(e, true)} />
+          </label>
+        )}
         <label
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold cursor-pointer transition-all hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
-        >
-          <Smartphone size={15} /> {t('capture.usePhoneCamera')}
-          <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => handleFileUpload(e, true)} />
-        </label>
-        <label
-          className="inline-flex items-center gap-2 px-5 py-2.5 mt-3 rounded-xl text-sm cursor-pointer"
-          style={{ background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.12)', color: 'var(--stl-text-muted)' }}
+          className={`inline-flex items-center gap-2 px-5 rounded-xl text-sm cursor-pointer ${hasDeviceCamera ? 'py-2.5 mt-3' : 'py-3 font-semibold'}`}
+          style={hasDeviceCamera
+            ? { background: 'rgba(var(--ink), 0.04)', border: '1px solid rgba(var(--ink), 0.12)', color: 'var(--stl-text-muted)' }
+            : { background: 'linear-gradient(135deg, var(--terracotta), var(--terracotta))', color: 'var(--canvas)' }}
         >
           <Upload size={15} /> {t('capture.uploadDevice')}
           <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileUpload(e)} />
@@ -304,6 +324,7 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
         {/* Hands off to the phone's own camera app. This is the only route to
             Night mode, HDR and the full sensor — a browser video stream cannot
             reach them — and it keeps the EXIF the verifier reads. */}
+        {hasDeviceCamera && (
         <label
           className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
           style={{ background: 'rgba(255, 179, 71,0.10)', border: '1px solid rgba(255, 179, 71,0.28)' }}
@@ -318,11 +339,14 @@ export default function CameraCapture({ missionName, onCapture, onUpload }: Came
             onChange={(e) => handleFileUpload(e, true)}
           />
         </label>
+        )}
       </div>
 
-      <p className="text-[11px] text-center leading-snug px-3 flex-shrink-0" style={{ color: 'var(--stl-text-muted)' }}>
-        {t('capture.phoneCameraHint')}
-      </p>
+      {hasDeviceCamera && (
+        <p className="text-[11px] text-center leading-snug px-3 flex-shrink-0" style={{ color: 'var(--stl-text-muted)' }}>
+          {t('capture.phoneCameraHint')}
+        </p>
+      )}
 
       {/* Capture guide */}
       <div

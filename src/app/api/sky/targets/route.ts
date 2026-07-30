@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Observer, Horizon, Equator, Body } from 'astronomy-engine';
 import { getVisiblePlanets } from '@/lib/planets';
 import { MISSIONS } from '@/lib/constants';
+import { DAYTIME_MISSION_IDS } from '@/lib/observation-kind';
+import { getSunAltitude } from '@/lib/dark-window';
 
 export type EquipmentType = 'naked_eye' | 'binoculars' | 'telescope';
 
@@ -28,6 +30,11 @@ const DSO_COORDS: Record<string, { ra: number; dec: number }> = {
 
 const EQUIPMENT_MAP: Record<string, EquipmentType> = {
   'free-observation': 'naked_eye',
+  'day-sky':      'naked_eye',
+  'daytime-moon': 'naked_eye',
+  'sky-optics':   'naked_eye',
+  sunset:         'naked_eye',
+  'the-sun':      'naked_eye',
   moon:       'naked_eye',
   pleiades:   'naked_eye',
   jupiter:    'binoculars',
@@ -89,6 +96,40 @@ export async function GET(req: NextRequest) {
           stars: mission.stars,
           equipment,
           reason: 'Available any clear night',
+        };
+      }
+
+      // Daytime missions follow the Sun, not the dark window. Without this they
+      // fall through to the deep-sky branch and report "Visibility unknown",
+      // which is both wrong and discouraging at noon.
+      if (DAYTIME_MISSION_IDS.has(mission.id)) {
+        const sunAlt = Math.round(getSunAltitude(lat, lon, now) * 10) / 10;
+        const daylight = mission.id === 'sunset' ? sunAlt > -8 : sunAlt > -6;
+        const moonAlt = planetMap.get('moon')?.altitude ?? null;
+        const visible = mission.id === 'daytime-moon'
+          ? daylight && moonAlt !== null && moonAlt > 0
+          : daylight;
+        let reason: string;
+        if (!daylight) {
+          reason = 'After sunrise';
+        } else if (mission.id === 'daytime-moon' && !visible) {
+          reason = 'Moon below the horizon';
+        } else if (mission.id === 'daytime-moon') {
+          reason = `Moon ${moonAlt}° up in daylight`;
+        } else {
+          reason = `Sun ${sunAlt}° — observable now`;
+        }
+        return {
+          missionId: mission.id,
+          name: mission.name,
+          emoji: mission.emoji,
+          target: mission.id,
+          visible,
+          altitude: mission.id === 'daytime-moon' ? moonAlt : sunAlt,
+          difficulty: mission.difficulty,
+          stars: mission.stars,
+          equipment,
+          reason,
         };
       }
 

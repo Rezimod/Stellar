@@ -11,6 +11,13 @@ export function isDaytimeTarget(target: ObservationTarget): boolean {
   return DAYTIME.has(target)
 }
 
+// Mission ids whose subject is the daylight sky. Their availability follows the
+// Sun, not the night's dark window, so anything that ranks or filters missions
+// by altitude has to treat them separately.
+export const DAYTIME_MISSION_IDS: ReadonlySet<string> = new Set([
+  'day-sky', 'daytime-moon', 'sky-optics', 'sunset', 'the-sun',
+])
+
 // Confidence ceiling per subject. A daytime shot is genuinely verifiable — the
 // Sun's altitude, the Moon's altitude and the cloud-cover cross-check all
 // confirm it — but it is far easier to capture than Saturn through a telescope

@@ -16,6 +16,8 @@ import { paused } from '@/lib/kill-switch';
 import { networkMisconfig } from '@/lib/network-guard';
 import { trackServer } from '@/lib/track-server';
 import { CLOUD_COVER_CERTIFY_MAX } from '@/lib/constants';
+import { overcastGateApplies } from '@/lib/observation-kind';
+import type { ObservationTarget } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   const p = paused();
@@ -135,7 +137,15 @@ export async function POST(req: NextRequest) {
     // /api/observe/verify already rejects these (issuing a 'rejected' token), so
     // a non-rejected token over the threshold should be impossible — this is the
     // defense-in-depth backstop, enforced on the signed value, not the client's.
-    if (tokenCheck.payload.confidence !== 'rejected' && effectiveCloudCover > CLOUD_COVER_CERTIFY_MAX) {
+    // The signed subject decides whether cloud is an obstacle at all: a halo
+    // needs cirrus and a sky log records whatever is overhead, so those certify
+    // under any sky. /api/observe/verify enforces the same rule; this is the
+    // backstop against a bug there, read from the signed value not the client's.
+    if (
+      tokenCheck.payload.confidence !== 'rejected' &&
+      effectiveCloudCover > CLOUD_COVER_CERTIFY_MAX &&
+      overcastGateApplies(tokenCheck.payload.subject as ObservationTarget)
+    ) {
       return NextResponse.json({ error: 'Sky too cloudy to certify this observation' }, { status: 403 });
     }
   }

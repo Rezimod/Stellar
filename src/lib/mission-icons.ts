@@ -61,6 +61,13 @@ const MISSION_IMAGES: Record<string, string> = {
   'pleiades':         '/images/dso/m45.jpg',
   'andromeda':        '/images/dso/m31.jpg',
   'crab':             '/images/dso/m1.jpg',
+  // Daytime missions. No solar or cloudscape art in the library yet, so the
+  // daylight subjects share the Earth plate and the daytime Moon uses the Moon.
+  'daytime-moon':     '/images/planets/moon.jpg',
+  'day-sky':          '/images/planets/earth.jpg',
+  'sky-optics':       '/images/planets/earth.jpg',
+  'sunset':           '/images/planets/earth.jpg',
+  'the-sun':          '/images/planets/earth.jpg',
 };
 
 export function getMissionImage(id: string): string {

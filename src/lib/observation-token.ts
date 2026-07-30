@@ -25,6 +25,11 @@ export interface ObservationTokenFields {
   // Server-fetched cloud cover (0–100) at verify time. Signed here so /api/mint
   // can trust it (the client can't claim a clear sky) and reject overcast nights.
   cloudCover: number;
+  // The classified subject (an ObservationTarget: 'moon', 'atmospheric', …).
+  // Signed but, like cloudCover, never echoed by the client, so validators can
+  // read it from the payload — /api/mint needs it to know that an overcast sky
+  // is the subject of a halo or a sky log rather than an obstacle to it.
+  subject: string;
 }
 
 export type ObservationTokenResult =
@@ -59,6 +64,7 @@ function canonicalPayload(fields: ObservationTokenPayload): string {
     wallet: fields.wallet,
     uploadSource: fields.uploadSource,
     cloudCover: Math.round(fields.cloudCover),
+    subject: fields.subject,
     exp: fields.exp,
   });
 }
@@ -161,7 +167,10 @@ export function verifyObservationTokenForWallet(
 // (which covers cloudCover) already guarantees it wasn't tampered with.
 export function verifyObservationToken(
   token: string | undefined | null,
-  fields: Omit<ObservationTokenFields, 'cloudCover'>,
+  // cloudCover and subject are server-derived: they are signed into the token
+  // but never echoed by the client, so validators read them from the payload
+  // rather than comparing them.
+  fields: Omit<ObservationTokenFields, 'cloudCover' | 'subject'>,
 ): ObservationTokenResult {
   if (!token) {
     return { ok: false, status: 401, reason: 'Missing verification token' };
