@@ -321,16 +321,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 4. Reverse image lookup (optional — gated on GOOGLE_VISION_API_KEY)
+  // 4. Reverse image lookup (optional — gated on GOOGLE_VISION_API_KEY). A match
+  // is strong evidence but not proof by itself: the Moon and other common
+  // targets are the most-photographed objects on Earth, and Google's near-
+  // duplicate matcher can false-positive on a low-detail, high-similarity shot
+  // like an overexposed lunar disc. It downgrades confidence instead of an
+  // outright reject — see the scoring block after the vision call for how it
+  // combines with the AI-generation flag.
   const reverse = await checkReverseImage(buffer);
   isInternetSourced = reverse.matchCount > 0;
-  if (isInternetSourced) {
-    await writeRejectionRow('stock_image_detected', { matchCount: reverse.matchCount, sampleUrls: reverse.sampleUrls });
-    return NextResponse.json(buildRejection(
-      'stock_image_detected',
-      'This image was found elsewhere on the web — it looks like a stock or downloaded photo, not your own observation, so it earns no Stars. You can still keep it as an unverified NFT.',
-    ));
-  }
   // ──────────────────────── End pre-check pipeline ────────────────────────
 
   // Base64 for Gemini Vision
@@ -499,18 +498,14 @@ Return ONLY valid JSON, no markdown, no preamble:
     ));
   }
 
-  // AI-generated images and screenshots can't earn Stars or an on-chain
-  // attestation, but the user may still keep the photo as an unverified NFT.
-  // Returning early gives clients a clear `rejectionReason` and persists a
-  // rejection row for hash-dedup of synthetic images.
-  if (analysis.isAiGenerated) {
-    await writeRejectionRow('ai_generated', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
-    return NextResponse.json(buildRejection(
-      'ai_generated',
-      'This looks AI-generated, so it earns no Stars — Stars are only awarded for real photos you took yourself. You can still keep it as an unverified NFT.',
-      { identifiedObject: analysis.identifiedObject, isAiGenerated: true },
-    ));
-  }
+  // Screenshots can't earn Stars or an on-chain attestation, but the user may
+  // still keep the photo as an unverified NFT. Returning early gives clients a
+  // clear `rejectionReason` and persists a rejection row for hash-dedup.
+  //
+  // AI-generation suspicion is scored below rather than rejected outright here:
+  // an overexposed real Moon photo (clean bright disc on black) structurally
+  // resembles the same "too-perfect" signature the model is told to flag, so a
+  // lone isAiGenerated flag is a strong-but-fallible signal, not proof.
   if (analysis.isScreenshot) {
     await writeRejectionRow('screenshot_detected', { identifiedObject: analysis.identifiedObject, visionReason: analysis.reason });
     return NextResponse.json(buildRejection(
@@ -581,12 +576,12 @@ Return ONLY valid JSON, no markdown, no preamble:
 
   const isDay = isDaytimeTarget(analysis.target);
 
-  // Confidence scoring
+  // Confidence scoring — base tier from what the photo actually shows.
+  // analysis.isScreenshot is always false here (it hard-rejects above), so it's
+  // not part of this branch.
   let confidence: VerificationConfidence = 'medium';
 
-  if (analysis.isScreenshot || analysis.isAiGenerated) {
-    confidence = 'rejected';
-  } else if (isDay) {
+  if (isDay) {
     // Daytime subjects can't show night-sky characteristics, so they are scored
     // on what IS checkable: the Sun really was up at those coordinates at that
     // moment, and the sky in the frame matches the weather over them.
@@ -595,7 +590,6 @@ Return ONLY valid JSON, no markdown, no preamble:
       : 'low';
   } else if (
     analysis.hasNightSkyCharacteristics &&
-    !analysis.isScreenshot &&
     astroCheck.objectVisible &&
     analysis.target !== 'unknown'
   ) {
@@ -604,12 +598,39 @@ Return ONLY valid JSON, no markdown, no preamble:
     confidence = 'low';
   }
 
+  const DOWNGRADE_ONE: Record<VerificationConfidence, VerificationConfidence> = {
+    high: 'medium', medium: 'low', low: 'low', rejected: 'rejected',
+  };
+
+  // Authenticity heuristics are fallible, not proof — a real overexposed phone
+  // photo of the Moon (clean bright disc, black background) can trip either
+  // check on its own: it structurally resembles an "AI-generated" image, and
+  // it's exactly the kind of low-detail, high-similarity shot Google's near-
+  // duplicate matcher false-positives on for the most-photographed object in
+  // the sky. One flag downgrades a tier instead of zeroing the observation.
+  // Both flags together — far more likely for an actual lifted or generated
+  // image than a real capture — reject outright.
+  let fakeImageRejected = false;
+  if (analysis.isAiGenerated && isInternetSourced) {
+    confidence = 'rejected';
+    fakeImageRejected = true;
+  } else {
+    if (analysis.isAiGenerated) confidence = DOWNGRADE_ONE[confidence];
+    if (isInternetSourced) confidence = DOWNGRADE_ONE[confidence];
+  }
+
+  if (fakeImageRejected) {
+    await writeRejectionRow('stock_image_detected', {
+      identifiedObject: analysis.identifiedObject,
+      visionReason: analysis.reason,
+      matchCount: reverse.matchCount,
+      sampleUrls: reverse.sampleUrls,
+    });
+  }
+
   // Weather unavailable: reduce confidence one level
   if (weatherUnavailable && confidence !== 'rejected') {
-    const DOWNGRADE: Record<VerificationConfidence, VerificationConfidence> = {
-      high: 'medium', medium: 'low', low: 'low', rejected: 'rejected',
-    };
-    confidence = DOWNGRADE[confidence];
+    confidence = DOWNGRADE_ONE[confidence];
   }
 
   // Double-capture boost: live capture confirmation bumps confidence one level
@@ -685,6 +706,7 @@ Return ONLY valid JSON, no markdown, no preamble:
     verificationToken,
     ...(verificationFailed ? { verificationFailed: true } : {}),
     ...(weatherUnavailable ? { weatherUnavailable: true } : {}),
+    ...(fakeImageRejected ? { rejectionReason: 'stock_image_detected' } : {}),
     target: analysis.target,
     identifiedObject: analysis.identifiedObject,
     reason: weatherUnavailable
