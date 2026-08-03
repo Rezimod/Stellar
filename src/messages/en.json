@@ -1806,7 +1806,7 @@
         "offline": "No internet connection — try again when back online",
         "skyUnavailable": "Sky data unavailable — proceeding with estimated conditions.",
         "cloudy": "Cloudy sky — observation logged with 0 stars. You can still mint.",
-        "photoUnverified": "This photo couldn't be verified, so it earns no Stars — you can still keep it as a personal record.",
+        "photoUnverified": "Couldn't verify this photo — no Stars. You can still keep it as a record.",
         "skyOffline": "Sky check offline — proceeding with estimated conditions.",
         "tooMany": "Too many mints right now — try again in a minute.",
         "saveFailed": "Couldn't save your record — please retry.",
@@ -1837,14 +1837,14 @@
         }
       },
       "rejection": {
-        "duplicate_image": "This exact photo was already submitted by another observer, so it earns no Stars. You can still keep it as an unverified NFT.",
-        "gps_mismatch": "The photo's location tag does not match where you say you are, so it can't be certified — no Stars. You can still keep it as an unverified NFT.",
-        "photo_too_old": "This photo was taken more than 24 hours ago, so it earns no Stars for tonight. You can still keep it as an unverified NFT.",
-        "stock_image_detected": "This image was found elsewhere on the web — it looks like a stock or downloaded photo, not your own observation, so it earns no Stars. You can still keep it as an unverified NFT.",
-        "verification_unavailable": "We couldn't read the analysis for this photo, so it can't be certified — no Stars. You can still keep it as an unverified NFT, or try again.",
-        "ai_generated": "This looks AI-generated, so it earns no Stars — Stars are only awarded for real photos you took yourself. You can still keep it as an unverified NFT.",
-        "screenshot_detected": "This looks like a screenshot, so it earns no Stars — Stars are only awarded for real photos of the sky. You can still keep it as an unverified NFT.",
-        "too_cloudy": "The sky is too cloudy right now to certify an observation, so it earns no Stars. You can still keep it as an unverified NFT, or try again on a clearer night."
+        "duplicate_image": "Someone already submitted this photo — no Stars. You can keep it anyway.",
+        "gps_mismatch": "Location doesn't match — no Stars. You can keep it anyway.",
+        "photo_too_old": "Photo is over 24h old — no Stars tonight. You can keep it anyway.",
+        "stock_image_detected": "Found elsewhere online — no Stars. You can keep it anyway.",
+        "verification_unavailable": "Couldn't analyze this photo — no Stars. Keep it anyway, or try again.",
+        "ai_generated": "Looks AI-generated — no Stars. You can keep it anyway.",
+        "screenshot_detected": "Looks like a screenshot — no Stars. You can keep it anyway.",
+        "too_cloudy": "Too cloudy to verify — no Stars. Keep it, or try again on a clearer night."
       }
     },
     "result": {
