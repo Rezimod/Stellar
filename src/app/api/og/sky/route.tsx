@@ -38,7 +38,7 @@ export async function GET() {
             marginTop: 12,
           }}
         >
-          Observe the Sky · Earn on Solana
+          Observe the Sky · Earn Rewards
         </div>
 
         {/* Stat boxes */}
@@ -49,7 +49,7 @@ export async function GET() {
             marginTop: 32,
           }}
         >
-          {['🔭 Observations', '⭐ Stars', '🪐 NFTs'].map((label) => (
+          {['🔭 Observations', '⭐ Stars', '🪐 Discoveries'].map((label) => (
             <div
               key={label}
               style={{
@@ -78,9 +78,6 @@ export async function GET() {
         >
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>
             stellarr.club
-          </span>
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.12)' }}>
-            · Powered by Solana
           </span>
         </div>
       </div>

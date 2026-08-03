@@ -868,8 +868,8 @@ function EarnStarsScreen({ labels }: { labels: { sealed: string; target: string;
       <div className="text-white text-[13px] font-bold mt-1">{labels.target}</div>
       <div className="text-[#FFB347] font-mono text-[11px] font-semibold tabular-nums mt-2">{labels.stars}</div>
       <div className="mt-3 w-full rounded-[7px] bg-white/[0.04] border border-white/10 px-2 py-1.5 flex items-center justify-between">
-        <span className="text-white/50 text-[7.5px]">Solana</span>
-        <span className="text-[#5EEAD4] text-[7px] font-mono">✓ on-chain</span>
+        <span className="text-white/50 text-[7.5px]">Stellar</span>
+        <span className="text-[#5EEAD4] text-[7px] font-mono">✓ certified</span>
       </div>
     </div>
   );

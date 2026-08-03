@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
           padding: '0 48px 28px',
         }}>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.15)' }}>
-            stellarr.club · Powered by Solana
+            stellarr.club
           </span>
         </div>
       </div>

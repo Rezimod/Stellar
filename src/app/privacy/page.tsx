@@ -5,7 +5,7 @@ import { getLocale } from 'next-intl/server';
 export const metadata: Metadata = {
   title: 'Privacy Policy — Stellar Astronomy App',
   description:
-    'How Stellar collects, uses and protects your data — including location, observations and Web3 wallet information. Your privacy, explained plainly.',
+    'How Stellar collects, uses and protects your data — including location, observations and wallet information. Your privacy, explained plainly.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -32,14 +32,14 @@ export default async function PrivacyPage() {
             {isKa ? (
               <>
                 <li>ელფოსტას ან სოციალურ ავტორიზაციას, რომლითაც შედიხარ სისტემაში (ამას Privy ამუშავებს).</li>
-                <li>Solana-ს საფულის მისამართს, რომელიც შენს ანგარიშს ავტომატურად ებმება.</li>
+                <li>საფულის მისამართს, რომელიც შენს ანგარიშს ავტომატურად ებმება.</li>
                 <li>შენს დაკვირვებებს: სამიზნეს, დროს, სავარაუდო მდებარეობას და შენ მიერ ატვირთულ მტკიცებულების ფოტოს.</li>
                 <li>პროფილის დამატებით მონაცემებს, რომელსაც თავად ავსებ (ტელესკოპი, იუზერნეიმი, ავატარი).</li>
               </>
             ) : (
               <>
                 <li>The email or social login you sign in with (handled by Privy).</li>
-                <li>The Solana wallet address auto-created for your account.</li>
+                <li>The wallet address auto-created for your account.</li>
                 <li>Your observations: target, timestamp, approximate location, and the proof image you uploaded.</li>
                 <li>Optional profile data you enter yourself (telescope, username, avatar).</li>
               </>
@@ -52,13 +52,13 @@ export default async function PrivacyPage() {
           <ul className="list-disc pl-5 flex flex-col gap-1.5">
             {isKa ? (
               <>
-                <li>საფულის seed phrase-ს ან private key-ს — ეს Privy-სთან რჩება.</li>
+                <li>საფულის აღდგენის ფრაზას ან პირად გასაღებს — ეს მხოლოდ Privy-სთან რჩება, ჩვენთან არასდროს.</li>
                 <li>ბარათის მონაცემებს — ისინი პირდაპირ გადახდის პროვაიდერთან მიდის.</li>
                 <li>მუდმივ მდებარეობის ისტორიას — GPS-ს მხოლოდ შენი მოთხოვნით ვკითხულობთ.</li>
               </>
             ) : (
               <>
-                <li>Wallet seed phrases or private keys — these stay with Privy.</li>
+                <li>Wallet recovery phrases or private keys — these stay with Privy, never with us.</li>
                 <li>Payment card details — these go directly to our payment processor.</li>
                 <li>Continuous location data — we only read GPS when you ask us to.</li>
               </>
@@ -83,8 +83,8 @@ export default async function PrivacyPage() {
               info@astroman.ge
             </a>
             {isKa
-              ? '. ბლოკჩეინზე არსებული ჩანაწერები (NFT-ები, ტრანზაქციები) Solana-ზე რჩება და ჩვენ ვერ წავშლით, მაგრამ ყველა off-chain ასლს მოვაშორებთ.'
-              : '. On-chain records (NFTs, transactions) live on Solana and can’t be deleted by us, but we will remove every off-chain copy.'}
+              ? '. ზოგიერთი ჩანაწერი — შენი დამოწმებული დაკვირვებები და მასთან დაკავშირებული ტრანზაქციები — საჯარო, მუდმივ რეესტრში ინახება და ჩვენ ვერ წავშლით, თუმცა ყველა სხვა ასლს, რასაც ვმართავთ, მოვაშორებთ.'
+              : '. Some records — your certified observations and related transactions — live on a public, permanent ledger and can’t be deleted by us, but we will remove every other copy we control.'}
           </p>
         </section>
 

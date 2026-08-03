@@ -69,7 +69,7 @@ function observationChips(post: FeedPost): string[] {
   chips.push(...eyepieces.slice(0, 2))
   if (post.observationBortle != null) chips.push(`Bortle ${post.observationBortle}`)
   if (post.observationLat || post.observationLon) chips.push('Location logged')
-  if (post.observationNftAddress) chips.push('Discovery NFT')
+  if (post.observationNftAddress) chips.push('Certified Discovery')
 
   return Array.from(new Set(chips)).slice(0, 5)
 }
@@ -421,7 +421,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
           {post.observationNftAddress && (
             <div className="media-badge">
               <Telescope size={11} />
-              NFT · Sealed
+              Certified
             </div>
           )}
           {post.observationTarget && (
@@ -463,7 +463,7 @@ function FeedPostCardImpl({ post, myWallet, myInitial, myDisplayName, myAvatarGl
             <div className="achievement-title">{post.achievementTarget}</div>
             <div className="achievement-sub">
               {post.achievementDifficulty ? `${post.achievementDifficulty} · ` : ''}
-              Verified by sky oracle{post.achievementMintTx ? ' · NFT minted on Solana' : ''}
+              Verified by sky check{post.achievementMintTx ? ' · Certified' : ''}
             </div>
           </div>
           {post.achievementStars != null && (

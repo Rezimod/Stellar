@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <span style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>
-            {`+${stars} Stars earned · Sealed on Solana`}
+            {`+${stars} Stars earned · Certified`}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div
@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
                 background: '#FFB347',
               }}
             />
-            <span style={{ fontSize: 18, color: '#FFB347', fontWeight: 600 }}>Solana</span>
+            <span style={{ fontSize: 18, color: '#FFB347', fontWeight: 600 }}>Stellar</span>
           </div>
         </div>
       </div>

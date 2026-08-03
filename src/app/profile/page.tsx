@@ -236,7 +236,7 @@ function ProfilePageContent() {
   const tk = profileTokens(isLight);
   const { hairline, divider: dividerColor } = tk;
   const cardBg = isLight ? '#FFFFFF' : 'var(--surface)';
-  const clusterLabel = cluster.startsWith('mainnet') ? 'Solana mainnet' : t('devnet');
+  const clusterLabel = cluster.startsWith('mainnet') ? 'Verified' : t('devnet');
   const nextRankText = rank.nextRank ? t('nextRank', { rank: rank.nextRank }) : t('maxRank');
   const missionsText = `${completed.length} ${t('statMissions').toLowerCase()}`;
 

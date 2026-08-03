@@ -134,7 +134,7 @@ export default async function EarnPage() {
           <p className="mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
             {isKa
               ? 'ტელეფონი, კამერა, ტელესკოპი — ყველა დონე იღებს ჯილდოს. დადასტურებული კადრები მეტ ქულას გაძლევს. Stars შეგიძლია Astroman-ში რეალურ ტელესკოპებზე გადაცვალო.'
-              : 'Phone, camera, telescope — every tier earns. Verified captures earn more. Stars redeem for real telescopes at Astroman, or trade on-chain.'}
+              : 'Phone, camera, telescope — every tier earns. Verified captures earn more. Stars redeem for real telescopes at Astroman.'}
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
@@ -314,8 +314,8 @@ export default async function EarnPage() {
         <div className="mx-auto max-w-5xl">
           <p className="font-mono text-xs leading-relaxed text-white/40">
             {isKa
-              ? 'Stars არის SPL ტოკენი Solana mainnet-ზე. ჯილდოები ეფუძნება დადასტურებულ დაკვირვებებს — EXIF მეტამონაცემები, wallet-ებს შორის hash dedup და reverse-image შემოწმება განსაზღვრავს კოეფიციენტს. სტოკ ფოტოები და EXIF-ის გარეშე ატვირთვები მხოლოდ 0.25× ჯილდოს იღებს და NFT-ს არ ქმნის.'
-              : 'Stars are an SPL token on Solana mainnet. Earnings are based on verified observations — EXIF metadata, cross-wallet hash dedup, and reverse-image checks gate the multiplier. Stock photos and EXIF-stripped uploads earn at 0.25× and do not mint NFTs.'}
+              ? 'Stars არის Stellar-ის შიდა ჯილდო. ჯილდოები ეფუძნება დადასტურებულ დაკვირვებებს — EXIF მეტამონაცემები, ანგარიშებს შორის hash dedup და reverse-image შემოწმება განსაზღვრავს კოეფიციენტს. სტოკ ფოტოები და EXIF-ის გარეშე ატვირთვები მხოლოდ 0.25× ჯილდოს იღებს და არ მოწმდება.'
+              : 'Stars are Stellar’s in-app reward. Earnings are based on verified observations — EXIF metadata, cross-account hash dedup, and reverse-image checks gate the multiplier. Stock photos and EXIF-stripped uploads earn at 0.25× and are not certified.'}
           </p>
         </div>
       </section>

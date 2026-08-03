@@ -5,7 +5,7 @@ import { getLocale } from 'next-intl/server';
 export const metadata: Metadata = {
   title: 'Terms of Service — Stellar Astronomy App',
   description:
-    'The terms of service governing your use of Stellar — the gamified astronomy app by Astroman. Read the rules for accounts, rewards and Web3 features.',
+    'The terms of service governing your use of Stellar — the gamified astronomy app by Astroman. Read the rules for accounts and rewards.',
   alternates: { canonical: '/terms' },
 };
 
@@ -30,8 +30,8 @@ export default async function TermsPage() {
           <h2 className="font-display text-xl text-text-primary">{isKa ? 'რა არის Stellar' : 'What Stellar is'}</h2>
           <p>
             {isKa
-              ? 'ღამის ცის დაგეგმვისა და დაკვირვების თანამგზავრია ყველასთვის, ვისაც ცისკენ გახედვა უყვარს — სმარტფონის მომხმარებლისთვის, მოყვარული დამკვირვებლისთვის და ტელესკოპის მფლობელისთვისაც. ჩვენ ვაძლევთ ცის პროგნოზს, ვადევნებთ თვალს პლანეტებს, ვქმნით compressed NFT-ებს დადასტურებული დაკვირვებებისთვის და გაძლევთ შესაძლებლობას ჯილდოები რეალურ ტელესკოპებსა და ოპტიკაზე გადაცვალოთ Astroman-სა და პარტნიორ მაღაზიებში.'
-              : 'A planning and observation companion for anyone curious about the night sky — smartphone users, casual stargazers, telescope owners alike. We forecast sky conditions, track planets, mint compressed NFTs for verified observations, and let you redeem rewards for real telescopes and optics from Astroman and partner dealers.'}
+              ? 'ღამის ცის დაგეგმვისა და დაკვირვების თანამგზავრია ყველასთვის, ვისაც ცისკენ გახედვა უყვარს — სმარტფონის მომხმარებლისთვის, მოყვარული დამკვირვებლისთვის და ტელესკოპის მფლობელისთვისაც. ჩვენ ვაძლევთ ცის პროგნოზს, ვადევნებთ თვალს პლანეტებს, ვქმნით მუდმივ ციფრულ ჩანაწერებს დადასტურებული დაკვირვებებისთვის და გაძლევთ შესაძლებლობას ჯილდოები რეალურ ტელესკოპებსა და ოპტიკაზე გადაცვალოთ Astroman-სა და პარტნიორ მაღაზიებში.'
+              : 'A planning and observation companion for anyone curious about the night sky — smartphone users, casual stargazers, telescope owners alike. We forecast sky conditions, track planets, create permanent digital records for verified observations, and let you redeem rewards for real telescopes and optics from Astroman and partner dealers.'}
           </p>
         </section>
 
@@ -39,17 +39,17 @@ export default async function TermsPage() {
           <h2 className="font-display text-xl text-text-primary">{isKa ? 'შენი ანგარიში' : 'Your account'}</h2>
           <p>
             {isKa
-              ? 'ანგარიშზე შედიხარ ელფოსტით ან სოციალური ავტორიზაციით Privy-ს მეშვეობით. ჩვენ ავტომატურად ვქმნით Solana-ს საფულეს და ბეტა პერიოდში ვფარავთ ქსელის საკომისიოებს. არ გააზიარო ანგარიში და 13 წლამდე ასაკში ნუ გამოიყენებ Stellar-ს მშობლის ან მეურვის თანხმობის გარეშე.'
-              : 'You sign in with email or a social account through Privy. We auto-create a Solana wallet for you and cover network fees while the app is in beta. Don’t share your account, and don’t use Stellar if you’re under 13 without a parent or guardian.'}
+              ? 'ანგარიშზე შედიხარ ელფოსტით ან სოციალური ავტორიზაციით Privy-ს მეშვეობით. ჩვენ ავტომატურად ვქმნით საფულეს შენთვის და ბეტა პერიოდში ვფარავთ ყველა ქსელურ საკომისიოს. არ გააზიარო ანგარიში და 13 წლამდე ასაკში ნუ გამოიყენებ Stellar-ს მშობლის ან მეურვის თანხმობის გარეშე.'
+              : 'You sign in with email or a social account through Privy. We auto-create a wallet for you and cover network fees while the app is in beta. Don’t share your account, and don’t use Stellar if you’re under 13 without a parent or guardian.'}
           </p>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl text-text-primary">{isKa ? 'ონჩეინ აქტივები' : 'On-chain assets'}</h2>
+          <h2 className="font-display text-xl text-text-primary">{isKa ? 'ციფრული ჩანაწერები' : 'Digital records'}</h2>
           <p>
             {isKa
-              ? 'Stellar-ში შექმნილი NFT-ები შენივე დაკვირვების ჩანაწერებია. მათ არ აქვთ გარანტირებული ფინანსური ღირებულება და ჩვენ არ ვიძლევით მეორად ბაზარზე ლიკვიდობის დაპირებას. Stars ქულები აპის შიდა ჯილდოა და ბეტა პერიოდში შეიძლება გადაითვალოს, განულდეს ან საერთოდ შეწყდეს.'
-              : 'NFTs minted in Stellar are records of your own observations. They have no guaranteed financial value and we make no promise of secondary-market liquidity. Stars points are an in-app reward and may be reset, recalculated, or sunset at any time during beta.'}
+              ? 'Stellar-ში შექმნილი დამოწმებული ჩანაწერები შენივე დაკვირვების ჩანაწერებია. მათ არ აქვთ გარანტირებული ფინანსური ღირებულება და ჩვენ არ ვიძლევით მეორად ბაზარზე ლიკვიდობის დაპირებას. Stars ქულები აპის შიდა ჯილდოა და ბეტა პერიოდში შეიძლება გადაითვალოს, განულდეს ან საერთოდ შეწყდეს.'
+              : 'The certified records created in Stellar are records of your own observations. They have no guaranteed financial value and we make no promise of secondary-market liquidity. Stars points are an in-app reward and may be reset, recalculated, or sunset at any time during beta.'}
           </p>
         </section>
 

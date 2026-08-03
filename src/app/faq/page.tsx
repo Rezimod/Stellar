@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
-  title: 'FAQ — How Stellar Works, Stars, NFTs & Rewards | Stellar',
+  title: 'FAQ — How Stellar Works, Stars & Rewards | Stellar',
   description:
-    'Answers to common questions about Stellar: how to earn Stars, what discovery NFTs are, whether you need a telescope, how the Solana wallet works, and more.',
+    'Answers to common questions about Stellar: how to earn Stars, what discovery certificates are, whether you need a telescope, how your account works, and more.',
   alternates: { canonical: '/faq' },
 };
 
@@ -38,33 +38,33 @@ const faqs: Faq[] = [
   },
   {
     q: 'What can I do with Stars?',
-    a: 'Stars are Stellar’s in-app reward and an SPL token on Solana. You can put them toward real telescopes, eyepieces and accessories from Astroman and partner dealers through the shop — roughly 4.69 Stars are earned per 1 GEL of catalog value.',
+    a: 'Stars are Stellar’s in-app reward. You can put them toward real telescopes, eyepieces and accessories from Astroman and partner dealers through the shop — roughly 4.69 Stars are earned per 1 GEL of catalog value.',
     qKa: 'რისთვის გამოვიყენო Stars?',
-    aKa: 'Stars არის აპის შიდა ჯილდო და ამავე დროს SPL ტოკენი Solana-ზე. მაღაზიაში მისი გამოყენება შეგიძლია ნამდვილ ტელესკოპებზე, ოკულარებსა და აქსესუარებზე Astroman-სა და პარტნიორ დილერებთან — კატალოგის 1 ლარის ღირებულებაზე დაახლოებით 4.69 Star მოდის.',
+    aKa: 'Stars არის აპის შიდა ჯილდო. მაღაზიაში მისი გამოყენება შეგიძლია ნამდვილ ტელესკოპებზე, ოკულარებსა და აქსესუარებზე Astroman-სა და პარტნიორ დილერებთან — კატალოგის 1 ლარის ღირებულებაზე დაახლოებით 4.69 Star მოდის.',
   },
   {
-    q: 'What are discovery NFTs?',
-    a: 'When you log a verified observation, Stellar mints a compressed NFT on Solana mainnet as a permanent, tamper-proof record that you observed a given object at a given time. They’re keepsakes of your own observations, not financial instruments.',
-    qKa: 'რა არის აღმოჩენის NFT-ები?',
-    aKa: 'როცა დადასტურებულ დაკვირვებას ჩაწერ, Stellar Solana-ს mainnet-ზე ქმნის compressed NFT-ს — მუდმივ, გაუყალბებელ ჩანაწერს იმის შესახებ, რომ კონკრეტული ობიექტი კონკრეტულ დროს დააკვირდი. ეს შენივე დაკვირვების სუვენირია და არა ფინანსური ინსტრუმენტი.',
+    q: 'What are discovery certificates?',
+    a: 'When you log a verified observation, Stellar creates a permanent, tamper-proof digital record that you observed a given object at a given time. They’re keepsakes of your own observations, not financial instruments.',
+    qKa: 'რა არის აღმოჩენის სერტიფიკატები?',
+    aKa: 'როცა დადასტურებულ დაკვირვებას ჩაწერ, Stellar ქმნის მუდმივ, გაუყალბებელ ციფრულ ჩანაწერს იმის შესახებ, რომ კონკრეტული ობიექტი კონკრეტულ დროს დააკვირდი. ეს შენივე დაკვირვების სუვენირია და არა ფინანსური ინსტრუმენტი.',
   },
   {
-    q: 'Do discovery NFTs have monetary value?',
+    q: 'Do discovery certificates have monetary value?',
     a: 'No. They are records of your observations with no guaranteed financial value, and we make no promise of secondary-market liquidity.',
-    qKa: 'აქვს აღმოჩენის NFT-ებს ფულადი ღირებულება?',
+    qKa: 'აქვს აღმოჩენის სერტიფიკატებს ფულადი ღირებულება?',
     aKa: 'არა. ისინი შენი დაკვირვებების ჩანაწერებია, გარანტირებული ფინანსური ღირებულების გარეშე, და მეორად ბაზარზე ლიკვიდობას არ გპირდებით.',
   },
   {
-    q: 'How does the Solana wallet work?',
-    a: 'A wallet is created for you automatically when you sign in with email or a social account through Privy. You never see a seed phrase, and we cover network fees, so you don’t need any crypto to get started.',
-    qKa: 'როგორ მუშაობს Solana-ს საფულე?',
-    aKa: 'საფულე ავტომატურად იქმნება, როცა ელფოსტით ან სოციალური ანგარიშით შედიხარ Privy-ს მეშვეობით. seed phrase-ს საერთოდ ვერ ნახავ, ქსელის საკომისიოებს კი ჩვენ ვფარავთ — დასაწყებად კრიპტოვალუტა არ გჭირდება.',
+    q: 'How does my account work?',
+    a: 'An account is created for you automatically when you sign in with email or a social account through Privy. There’s no password to manage and nothing technical to set up — it just works.',
+    qKa: 'როგორ მუშაობს ჩემი ანგარიში?',
+    aKa: 'ანგარიში ავტომატურად იქმნება, როცა ელფოსტით ან სოციალური ანგარიშით შედიხარ Privy-ს მეშვეობით. პაროლის მართვა და ტექნიკური მორგება საერთოდ არ გჭირდება — უბრალოდ მუშაობს.',
   },
   {
-    q: 'Do I need any crypto or SOL to start?',
-    a: 'No. The wallet is provisioned silently and network fees are covered by us. You can use everything without buying or holding any tokens.',
-    qKa: 'მჭირდება კრიპტო ან SOL დასაწყებად?',
-    aKa: 'არა. საფულე შეუმჩნევლად იქმნება და ქსელის საკომისიოებს ჩვენ ვფარავთ. ყველაფრით სარგებლობა შეგიძლია ტოკენების ყიდვისა და ფლობის გარეშე.',
+    q: 'Do I need to download or buy anything to start?',
+    a: 'No. Everything is set up for you automatically the moment you sign in — just open Stellar and start observing.',
+    qKa: 'მჭირდება რამის ჩამოტვირთვა ან ყიდვა დასაწყებად?',
+    aKa: 'არა. ყველაფერი ავტომატურად ეწყობა შესვლისთანავე — უბრალოდ გახსენი Stellar და დაიწყე დაკვირვება.',
   },
   {
     q: 'Which devices does Stellar support?',
@@ -92,9 +92,9 @@ const faqs: Faq[] = [
   },
   {
     q: 'How is my observation verified?',
-    a: 'Your photo is checked by an AI vision model, cross-referenced with the image’s EXIF time and location, de-duplicated against earlier uploads, and compared against what was actually visible from your position that night. Only then can a discovery NFT be minted.',
+    a: 'Your photo is checked by an AI vision model, cross-referenced with the image’s EXIF time and location, de-duplicated against earlier uploads, and compared against what was actually visible from your position that night. Only then is it certified and added to your collection.',
     qKa: 'როგორ დასტურდება ჩემი დაკვირვება?',
-    aKa: 'ფოტოს ამოწმებს AI ხედვის მოდელი, შემდეგ ის ჯვარედინად ედრება სურათის EXIF დროსა და ლოკაციას, მოწმდება ადრე ატვირთულ ფოტოებთან დუბლიკატებზე და დარდება იმას, რაც იმ ღამეს შენი პოზიციიდან ნამდვილად ჩანდა. მხოლოდ ამის შემდეგ იქმნება აღმოჩენის NFT.',
+    aKa: 'ფოტოს ამოწმებს AI ხედვის მოდელი, შემდეგ ის ჯვარედინად ედრება სურათის EXIF დროსა და ლოკაციას, მოწმდება ადრე ატვირთულ ფოტოებთან დუბლიკატებზე და დარდება იმას, რაც იმ ღამეს შენი პოზიციიდან ნამდვილად ჩანდა. მხოლოდ ამის შემდეგ მოწმდება და ემატება შენს კოლექციას.',
   },
   {
     q: 'What happens to my data?',
@@ -162,8 +162,8 @@ export default async function FaqPage() {
       <h1 className="font-display text-3xl sm:text-4xl mb-2">{isKa ? 'ხშირად დასმული კითხვები' : 'Frequently asked questions'}</h1>
       <p className="text-text-muted text-sm mb-10">
         {isKa
-          ? 'ყველაფერი, რაც Stellar-ის, Stars-ის, NFT-ებისა და ჯილდოების შესახებ უნდა იცოდე.'
-          : 'Everything you need to know about Stellar, Stars, NFTs and rewards.'}
+          ? 'ყველაფერი, რაც Stellar-ის, Stars-ისა და ჯილდოების შესახებ უნდა იცოდე.'
+          : 'Everything you need to know about Stellar, Stars and rewards.'}
       </p>
 
       <div className="flex flex-col gap-6 text-[15px] leading-relaxed text-text-primary/80">

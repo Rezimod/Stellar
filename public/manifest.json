@@ -1,7 +1,7 @@
 {
   "name": "Stellar",
   "short_name": "Stellar",
-  "description": "Observe the night sky. Earn Stars tokens. Collect discovery NFTs on Solana.",
+  "description": "Observe the night sky. Earn Stars. Collect your discoveries.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

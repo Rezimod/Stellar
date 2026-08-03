@@ -15,7 +15,7 @@ export default function JsonLd() {
         logo: 'https://stellarr.club/apple-touch-icon.png',
         sameAs: ['https://x.com/StellarClub26', 'https://astroman.ge'],
         description:
-          'Stellar is a gamified astronomy app: photograph the night sky, complete missions, earn Stars and collect discovery NFTs.',
+          'Stellar is a gamified astronomy app: photograph the night sky, complete missions, earn Stars and collect discoveries.',
       },
       {
         '@type': 'WebApplication',

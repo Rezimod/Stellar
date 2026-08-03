@@ -141,7 +141,7 @@ export default async function StarProofPage({
   }
 
   const conName = star.con ? (CONSTELLATIONS[star.con] ?? star.con) : null;
-  const tweetText = `I named a star "${star.claimed_name}" while observing the night sky — sealed on Solana ✦ ${pageUrl}`;
+  const tweetText = `I named a star "${star.claimed_name}" while observing the night sky — certified on Stellar ✦ ${pageUrl}`;
   const farcasterText = `I named a star "${star.claimed_name}" on Stellar ✦`;
 
   return (
@@ -263,7 +263,7 @@ export default async function StarProofPage({
                 gap: 4,
               }}
             >
-              View observation NFT on Solana Explorer →
+              View Certificate →
             </a>
           </div>
         )}
@@ -319,7 +319,7 @@ export default async function StarProofPage({
             textAlign: 'center',
           }}
         >
-          This is a personal commemorative record on Solana. It is not an IAU official star
+          This is a personal commemorative record. It is not an IAU official star
           designation.
         </p>
       </div>

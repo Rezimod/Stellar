@@ -247,7 +247,7 @@ function CheckoutContent() {
       if (data.requiresBurn) {
         const wallet = privyWallets[0];
         if (!wallet?.address) {
-          throw new Error('Stars wallet not ready — sign in and retry');
+          throw new Error('Your account isn’t ready yet — sign in and retry');
         }
         setBurning(true);
         try {
@@ -261,7 +261,7 @@ function CheckoutContent() {
           setBurnSig(result.signature);
           track('stars_spent', { source: 'discount_burn', amount: data.burnStars ?? burnStars, product: product.id }, walletAddress);
         } catch (e) {
-          throw new Error(`Stars burn failed: ${e instanceof Error ? e.message : 'unknown error'}`);
+          throw new Error(`Stars redemption failed: ${e instanceof Error ? e.message : 'unknown error'}`);
         } finally {
           setBurning(false);
         }

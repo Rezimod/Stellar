@@ -86,7 +86,7 @@ export default async function StarIndexPage() {
             }}
           >
             Complete a sky observation and name the star you watched.
-            Each name is sealed on Solana with a proof page anyone can visit.
+            Each name is certified with a proof page anyone can visit.
           </p>
           <div style={{ marginTop: 24, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link

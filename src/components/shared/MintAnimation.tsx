@@ -16,9 +16,9 @@ export default function MintAnimation({
   done = false,
   slowMsg,
   title = 'Sealing Observation',
-  subtitle = 'Writing to Solana devnet',
-  doneTitle = 'Sealed on Solana ✦',
-  doneSubtitle = 'Proof recorded on-chain',
+  subtitle = 'Saving your discovery',
+  doneTitle = 'Certified ✦',
+  doneSubtitle = 'Proof saved to your profile',
 }: MintAnimationProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function MintAnimation({
         )}
         {slowMsg && !done && (
           <p className="text-[11px] mt-3 text-center max-w-[220px] leading-relaxed" style={{ color: '#A8B4C8' }}>
-            Still sealing — Solana devnet can be slow. Don&apos;t close the app.
+            Still sealing — this can take a moment. Don&apos;t close the app.
           </p>
         )}
       </div>

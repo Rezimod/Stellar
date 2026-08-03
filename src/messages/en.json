@@ -62,7 +62,7 @@
       "verify": "Verify",
       "verifyDesc": "AI verifies your sky conditions",
       "mint": "Collect",
-      "mintDesc": "Your discovery is permanently recorded on Solana"
+      "mintDesc": "Your discovery is saved permanently to your profile"
     },
     "trust": {
       "astronomers": "Trusted by amateur astronomers",
@@ -74,7 +74,7 @@
       "title": "Sign in to open the sky",
       "body": "See tonight's targets, planet positions, and your 7-night forecast — then earn Stars for every object you find.",
       "signIn": "Sign in",
-      "sub": "Email or connect a Solana wallet"
+      "sub": "Email or Google — takes 10 seconds"
     },
     "title": "Sky Forecast",
     "today": "Today",
@@ -703,7 +703,7 @@
       "soon": "Available shortly",
       "platform": "Android · physical device · ~700MB first-launch model download"
     },
-    "credit": "Tether Frontier Track Winner · Powered by QVAC · on-chain proof on Solana"
+    "credit": "Tether Frontier Track Winner · Powered by QVAC · verified sky proof"
   },
   "marketplace": {
     "title": "Marketplace",
@@ -748,13 +748,13 @@
     "rank": "Rank",
     "discoveries": "Discoveries",
     "signOut": "Sign Out",
-    "viewOnExplorer": "View on Solana Explorer ↗",
+    "viewOnExplorer": "View Certificate ↗",
     "noDiscoveries": "No discoveries yet — start observing!",
     "accountLabel": "Account",
     "missionHistory": "Mission History",
     "purchaseHistory": "Purchase History",
     "addViaCard": "Add via Card",
-    "sendCrypto": "Send Crypto",
+    "sendCrypto": "Transfer from Wallet",
     "noMissionsYet": "No missions completed yet",
     "startFirstMission": "Start your first mission →",
     "noPurchasesYet": "No purchases yet",
@@ -763,7 +763,7 @@
     "statStars": "Stars",
     "lifetimeEarned": "Earned",
     "lifetimeBurned": "Burned",
-    "devnet": "Solana devnet",
+    "devnet": "Test Mode",
     "goToMissions": "Go to Missions",
     "signInSubtitle": "Your cosmic identity awaits",
     "viewAll": "View all",
@@ -796,22 +796,22 @@
     "hero": "Observe & Earn",
     "heroDesc": "Photograph the night sky with whatever camera you have — phone, telescope, DSLR. Every verified observation earns real rewards from your local astronomy partner.",
     "signIn": "Sign In to Start Observing →",
-    "signInSub": "Free forever · No seed phrase required"
+    "signInSub": "Free forever · Just email or Google"
   },
   "club": {
     "title": "Join the Club",
     "connectWallet": "Connect Wallet",
-    "walletConnected": "Solana wallet connected",
+    "walletConnected": "Account connected",
     "continueEmail": "Continue with Email",
-    "continueEmailDesc": "We create a Solana wallet for you automatically. No app needed.",
+    "continueEmailDesc": "We set up your account automatically. No app needed.",
     "emailPlaceholder": "your@email.com",
-    "activatingWallet": "Activating wallet on Solana devnet…",
-    "walletActivated": "Wallet activated — 1 devnet SOL funded",
-    "viewOnExplorer": "View on Solana Explorer ↗"
+    "activatingWallet": "Setting up your account…",
+    "walletActivated": "Account ready",
+    "viewOnExplorer": "View Certificate ↗"
   },
   "missions": {
     "title": "Sky Missions",
-    "subtitle": "Observe the Moon, Jupiter, Saturn and more. Earn Stars, mint NFTs.",
+    "subtitle": "Observe the Moon, Jupiter, Saturn and more. Earn Stars and collect discoveries.",
     "signIn": "Sign In →",
     "availableMissions": "Available Missions",
     "tonightsSky": "Tonight's Sky",
@@ -826,11 +826,11 @@
       },
       "quick-jupiter": {
         "name": "Jupiter",
-        "hint": "Upload a photo of Jupiter or the night sky. Sky conditions are ignored — your NFT mints regardless."
+        "hint": "Upload a photo of Jupiter or the night sky. Sky conditions are ignored — you'll still get credit."
       },
       "quick-saturn": {
         "name": "Saturn",
-        "hint": "Upload a photo of Saturn or the night sky. Sky conditions are ignored — your NFT mints regardless."
+        "hint": "Upload a photo of Saturn or the night sky. Sky conditions are ignored — you'll still get credit."
       },
       "free-observation": {
         "name": "Tonight's Sky",
@@ -1005,8 +1005,8 @@
     "astraAiSub": "Chat with your AI astronomer",
     "astroGuide": "Astronomy Guide",
     "astroGuideSub": "Planets, deep sky, quizzes, events",
-    "nftGallery": "NFT Gallery",
-    "nftGallerySub": "Your discovery attestations",
+    "nftGallery": "My Discoveries",
+    "nftGallerySub": "Your certified sky observations",
     "moon": "Moon",
     "moonSub": "Earth's natural satellite, brightest object at night",
     "jupiter": "Jupiter",
@@ -1123,9 +1123,9 @@
   "missionsPage": {
     "auth": {
       "title": "Sign in to start observing",
-      "body": "Complete sky missions, earn Stars, and mint discovery NFTs on Solana.",
+      "body": "Complete sky missions, earn Stars, and collect certified discoveries.",
       "signIn": "Sign in",
-      "sub": "Email or connect a Solana wallet"
+      "sub": "Email or Google — takes 10 seconds"
     },
     "sections": {
       "tonight": "Missions tonight",
@@ -1428,14 +1428,14 @@
     "shipsTo": "{dealer} ships to:",
     "starsShort": "You have ✦ {balance} — {short} more Stars needed.",
     "earnMore": "Earn Stars",
-    "burnTitle": "Burn Stars · up to {pct}% off",
+    "burnTitle": "Redeem Stars · up to {pct}% off",
     "burnBalance": "Balance",
-    "burningLabel": "burning",
+    "burningLabel": "redeeming",
     "newTotal": "New total",
-    "burnConfirmed": "Burn confirmed → view on Solana Explorer",
-    "burningStars": "Burning Stars…",
+    "burnConfirmed": "Redeemed → view certificate",
+    "burningStars": "Redeeming Stars…",
     "creatingOrder": "Creating order…",
-    "preparingWallet": "Preparing wallet…",
+    "preparingWallet": "Preparing your order…",
     "redeemStars": "Redeem {stars} stars",
     "paySolAmount": "Pay {sol} SOL",
     "payWithSol": "Pay with SOL",
@@ -1457,7 +1457,7 @@
     "keepShopping": "Keep shopping",
     "summary": "Order summary",
     "price": "Price",
-    "starsBurned": "Stars burned",
+    "starsBurned": "Stars redeemed",
     "discount": "Discount",
     "stars": "Stars",
     "order": "Order",
@@ -1496,7 +1496,7 @@
     "trustShippingTitle": "Free Shipping",
     "trustShippingSub": "Over $100",
     "trustPaymentTitle": "Secure Payment",
-    "trustPaymentSub": "Crypto & Cards",
+    "trustPaymentSub": "Cards Accepted",
     "trustProtectionTitle": "Buyer Protection",
     "trustProtectionSub": "30-day guarantee",
     "trustBrandsTitle": "Authentic Brands",
@@ -1790,7 +1790,7 @@
       "keepAnyway": "Keep it anyway",
       "aiConfidence": "AI: {object} · {confidence} confidence",
       "notVerifiedLabel": "Not verified",
-      "keepsakeNote": "mints as a keepsake · +10 ✦ (max 25 a day)",
+      "keepsakeNote": "saved as a keepsake · +10 ✦ (max 25 a day)",
       "uploadHalfNote": "Uploaded photo · earns half the Stars of an in-app capture",
       "keepsakeLimit": "Daily keepsake limit reached — photo saved to your gallery, no Stars this time.",
       "checkForecast": "Check sky forecast",
@@ -1805,10 +1805,10 @@
       "error": {
         "offline": "No internet connection — try again when back online",
         "skyUnavailable": "Sky data unavailable — proceeding with estimated conditions.",
-        "cloudy": "Cloudy sky — observation logged with 0 stars. You can still mint.",
+        "cloudy": "Cloudy sky — observation logged with 0 stars. You can still save it.",
         "photoUnverified": "Couldn't verify this photo — no Stars. You can still keep it as a record.",
         "skyOffline": "Sky check offline — proceeding with estimated conditions.",
-        "tooMany": "Too many mints right now — try again in a minute.",
+        "tooMany": "Too many at once right now — try again in a minute.",
         "saveFailed": "Couldn't save your record — please retry.",
         "network": "Network error — please retry."
       },
@@ -1825,8 +1825,8 @@
         "wind": "Wind",
         "kmh": "km/h",
         "signature": "Signature",
-        "oracle": "Sky Oracle",
-        "createNft": "Create NFT  +{stars} Stars",
+        "oracle": "Sky Check",
+        "createNft": "Certify Discovery  +{stars} Stars",
         "logCloudy": "Log Cloudy Observation",
         "quality": {
           "Exceptional": "Exceptional",
@@ -1850,7 +1850,7 @@
     "result": {
       "starClaimError": "Could not claim star",
       "shareObserved": "I just observed {name} on Stellar",
-      "shareSealed": "Sealed on Solana.",
+      "shareSealed": "Certified.",
       "shareTitle": "I sealed {name} on Stellar",
       "feedBody": "Sealed {name} on Stellar",
       "cosmicBonus": "Cosmic Bonus",
@@ -1860,26 +1860,26 @@
       "nameStar": "Name a star",
       "starIn": "in {constellation}",
       "starMagnitude": "magnitude {mag}",
-      "inscribeNote": "Your name will be inscribed on your NFT.",
+      "inscribeNote": "Your name will be inscribed on your discovery certificate.",
       "starPlaceholder": "e.g. Nino's Star, Tbilisi",
       "inscribe": "Inscribe",
       "skip": "Skip",
       "starNamed": "Your star is named.",
       "viewProof": "View proof page",
       "sealed": {
-        "keepsakeMinted": "KEEPSAKE MINTED",
+        "keepsakeMinted": "KEEPSAKE SAVED",
         "discoverySealed": "DISCOVERY SEALED",
         "kept": "kept",
         "sealed": "sealed",
         "certificate": "CERTIFICATE",
         "observationTitle": "Stellar Observation",
-        "viewOnSolana": "View on Solana",
+        "viewOnSolana": "View Certificate",
         "viewInCollection": "View in collection",
         "share": "Share",
         "post": "Post",
         "save": "Save",
         "next": "Next",
-        "unverifiedFallback": "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours, minted on Solana as a personal record.",
+        "unverifiedFallback": "This photo couldn't be certified as taken tonight on this object, so it earned no Stars — but it's yours to keep as a personal record.",
         "scoreLabel": {
           "exceptional": "EXCEPTIONAL",
           "good": "GOOD",
@@ -1887,7 +1887,7 @@
           "poor": "POOR"
         },
         "taglines": {
-          "fallback": "Sealed on Solana",
+          "fallback": "Certified",
           "jupiter": "Four Galilean moons, captured",
           "quick-jupiter": "Four Galilean moons, captured",
           "saturn": "Rings at their widest",
@@ -1934,7 +1934,7 @@
       "change": "Change avatar"
     },
     "hero": {
-      "explorer": "Solana Explorer"
+      "explorer": "Certificate"
     },
     "target": {
       "moon": "Moon",
@@ -1951,14 +1951,14 @@
       "high": "High"
     },
     "onchain": {
-      "title": "On-chain record · Proof of Observation",
-      "reading": "Reading registry…",
-      "verifiedOnSolana": "verified on Solana",
-      "observerAccount": "Observer account",
+      "title": "Verified Record · Proof of Observation",
+      "reading": "Loading record…",
+      "verifiedOnSolana": "verified",
+      "observerAccount": "Observer ID",
       "starsMultiplier": "Stars",
       "progressToNext": "{count} more to {tier}",
       "telescopePassport": "Telescope Passport",
-      "soulbound": "soulbound",
+      "soulbound": "permanent",
       "revoked": "revoked"
     },
     "username": {
@@ -1973,7 +1973,7 @@
   "nftsPage": {
     "title": "My Observations",
     "collection": "Your collection",
-    "signInDesc": "Sign in to view your observation NFTs.",
+    "signInDesc": "Sign in to view your observations.",
     "signIn": "Sign In →",
     "exampleObservations": "Example Observations",
     "signInToView": "Sign in to view",
@@ -1987,7 +1987,7 @@
       "celestial": "Celestial"
     },
     "stats": {
-      "nfts": "NFTs",
+      "nfts": "Discoveries",
       "stars": "Stars",
       "clear": "Clear",
       "bestNight": "Best night"
@@ -2025,25 +2025,25 @@
       "photoAlt": "Your observation",
       "share": "Share",
       "farcaster": "Farcaster",
-      "syncing": "Syncing to Solana…",
-      "seal": "Seal on Solana →",
+      "syncing": "Saving your discovery…",
+      "seal": "Certify →",
       "demoLocal": "Demo · local proof only",
-      "viewExplorer": "View on Solana Explorer",
+      "viewExplorer": "View Certificate",
       "removeFromGallery": "Remove from gallery",
       "confirmDeleteLocal": "Permanently delete this local observation?",
-      "confirmHide": "Hide from your gallery? The on-chain NFT is not burned.",
+      "confirmHide": "Hide from your gallery? This won't delete your certified record.",
       "cancel": "Cancel",
       "delete": "Delete",
       "hide": "Hide",
-      "shareTweet": "I observed {target} and sealed it on Solana with @StellarClub26 ✦ #Astronomy #Solana",
-      "shareFarcaster": "Observed {target} and sealed it on Solana with @StellarClub26 ✦",
+      "shareTweet": "I observed {target} and certified it with @StellarClub26 ✦ #Astronomy #Stellar",
+      "shareFarcaster": "Observed {target} and certified it with @StellarClub26 ✦",
       "fields": {
         "target": "Target",
         "date": "Date",
         "cloudCover": "Cloud Cover",
         "starsEarned": "Stars Earned",
         "location": "Location",
-        "oracleHash": "Oracle Hash"
+        "oracleHash": "Verification ID"
       }
     },
     "keepsakeName": "Stellar Keepsake: {target}",
@@ -2051,14 +2051,14 @@
   },
   "leaderboardPage": {
     "title": "Leaderboard",
-    "liveNotice": "Leaderboard updates with real observer data as missions are completed on-chain",
+    "liveNotice": "Leaderboard updates with real observer data as missions are completed",
     "error": "Couldn't load the leaderboard.",
     "tryAgain": "Try again",
     "obs": "{count} obs",
     "rankings": "Rankings",
     "you": "You",
     "yourRank": "Your Rank: #{rank}",
-    "footer": "Updated every 5 minutes · Observations sealed as NFTs on Solana",
+    "footer": "Updated every 5 minutes · Observations certified in real time",
     "tabs": {
       "week": "This Week",
       "month": "This Month",
@@ -2112,7 +2112,7 @@
     "fieldModeSub": "Red-on-black to protect your night vision at the eyepiece",
     "walletTitle": "Wallet",
     "noWallet": "No wallet yet",
-    "walletSub": "Embedded Solana wallet · view on Explorer",
+    "walletSub": "Your account · view certificate",
     "walletSignInSub": "Sign in to create your wallet",
     "privacyTitle": "Privacy & Data",
     "privacyPolicy": "Privacy Policy",

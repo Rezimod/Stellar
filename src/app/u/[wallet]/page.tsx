@@ -108,7 +108,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ wallet
                 href={`https://explorer.solana.com/address/${wallet}?cluster=${cluster}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="View on Solana Explorer"
+                aria-label="View Certificate"
                 style={{ marginLeft: 6, color: 'var(--stl-text-dim)' }}
               >
                 <ExternalLink size={11} style={{ verticalAlign: -1 }} />
@@ -210,7 +210,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ wallet
                     color: 'var(--stl-green)',
                     fontFamily: 'var(--font-mono)',
                     fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  }}>NFT</span>
+                  }}>Certified</span>
                 )}
               </button>
             ))}

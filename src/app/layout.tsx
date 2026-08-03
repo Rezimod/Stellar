@@ -69,7 +69,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Stellar — Observe the Night Sky, Earn Rewards, Collect Discovery NFTs',
+    default: 'Stellar — Observe the Night Sky, Earn Rewards, Collect Discoveries',
     template: '%s',
   },
   description:
