@@ -10,15 +10,17 @@ export const NIGHT_STAR_GOAL = 450;
 // the page picks the best visible incomplete target (falls back to Saturn).
 export const MAIN_QUEST_ID: string | null = null;
 
-// Global community mission. Every observer of TARGET today nudges the counter
-// toward GOAL; contributors share BONUS_STARS. The live count is SEED + the real
-// observation_log rows for TARGET today — SEED reflects the existing community so
-// a freshly shipped counter doesn't read zero. Tune target/goal here.
+// Global community mission. Every observer of TARGET nudges the counter toward
+// GOAL; contributors share BONUS_STARS. The live count is SEED + the real
+// observation_log rows for TARGET since the mission opened.
+// sponsor/eventName surface in the GlobalMissionCard as branding context.
 export const GLOBAL_MISSION = {
   target: 'Saturn',
-  seed: 12845,
-  goal: 25000,
-  bonusStars: 30,
+  seed: 0,
+  goal: 10000,
+  bonusStars: 100,
+  sponsor: 'Astroman',
+  eventName: 'Perseids 2026',
 } as const;
 
 // Astroman coupon ladder — a separate, percentage-based reward track (not the
