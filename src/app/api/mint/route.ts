@@ -334,11 +334,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Server-side log (non-blocking) — Stars are awarded by the client via /api/award-stars with idempotency
+    // Server-side log — awaited (not fire-and-forget): /api/observe/log runs
+    // moments later and claims this exact row via compare-and-swap on
+    // confidence='minted', so it must already be committed by the time this
+    // response reaches the client and the client's next request lands. An
+    // un-awaited insert here races that claim and can leave the observation
+    // stuck at confidence='minted' with no Stars ever awarded.
     // Skip DB log for demo mints to avoid polluting production records
     if (db && userAddress && !isDemoMint) {
       const exifTakenDate = typeof exifTakenAt === 'string' ? new Date(exifTakenAt) : null;
-      db.insert(observationLog).values({
+      await db.insert(observationLog).values({
         wallet: userAddress,
         target: mintTarget,
         // Certified mints record 0 here — the observation's real Stars are
