@@ -166,7 +166,7 @@ const QUIZ_UI: Record<string, QuizUi> = {
 interface SkyPos { altitude: number; azimuth: number; rise: Date | null; transit: Date | null; }
 
 interface IssPass { startsAt: string; peakAt: string; peakElevation: number; peakAzimuth: number }
-interface GlobalMissionData { target: string; current: number; goal: number; bonusStars: number }
+interface GlobalMissionData { target: string; current: number; goal: number; bonusStars: number; sponsor?: string; eventName?: string }
 
 type LocalizedGridEntry = GridEntry & { name: string; desc: string; diffLabel: string; equipLabel: string };
 
@@ -1019,6 +1019,24 @@ function GlobalMissionCard({
     <section className="mis-card mis-card--global">
       <div className="mis-card-head">
         <span className="mis-card-eyebrow"><Globe size={12} strokeWidth={1.9} /> {labels.title}</span>
+        {data?.eventName && (
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              padding: '2px 7px',
+              borderRadius: 20,
+              background: 'rgba(255,179,71,0.12)',
+              color: 'var(--accent-text)',
+              border: '1px solid rgba(255,179,71,0.25)',
+              marginLeft: 'auto',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {data.eventName}
+          </span>
+        )}
       </div>
       {data ? (
         <>
@@ -1029,6 +1047,11 @@ function GlobalMissionCard({
             <b>{data.current.toLocaleString()}</b> / {data.goal.toLocaleString()} {labels.observers}
           </p>
           <p className="mis-global-reward"><Star size={11} strokeWidth={2} className="mis-star-icn" /> {labels.reward(data.bonusStars)}</p>
+          {data.sponsor && (
+            <p style={{ fontSize: 10, color: 'var(--color-text-muted)', marginTop: 6 }}>
+              Sponsored by <span style={{ color: 'var(--accent-text)', fontWeight: 600 }}>{data.sponsor}</span>
+            </p>
+          )}
         </>
       ) : (
         <div role="status" aria-live="polite">
