@@ -895,6 +895,10 @@
       "the-sun": {
         "name": "The Sun",
         "hint": "Never look at the Sun through a telescope, binoculars or a viewfinder without a certified solar filter. A phone at arm's length, pointed at a low or veiled Sun, is what this mission is for."
+      },
+      "perseids": {
+        "name": "Perseid Meteor Shower",
+        "hint": "Face away from the Moon and city lights any time after 10 PM. Meteors streak across the whole sky, so you don't need to aim at Perseus."
       }
     },
     "difficultyLabels": {
@@ -1182,6 +1186,18 @@
       "observers": "observers",
       "reward": "+{n} bonus Stars",
       "loading": "Loading community goal…"
+    },
+    "perseidsEvent": {
+      "badge": "Special edition",
+      "title": "Perseid Meteor Shower",
+      "rate": "~{zhr}/hr · peak {peak}",
+      "peakToday": "Peak night — tonight",
+      "peakTomorrow": "Peak night tomorrow",
+      "peakInDays": "Peak in {n} days",
+      "active": "Still active",
+      "reward": "Reward",
+      "bonus": "2x near peak",
+      "observe": "Observe →"
     },
     "quest": {
       "badge": "Tonight's main quest",
@@ -2266,5 +2282,174 @@
   "offlineBanner": {
     "offline": "Offline — observations will queue and sync when you reconnect",
     "backOnline": "Back online — syncing queued observations…"
+  },
+  "games": {
+    "upNow": {
+      "title": "Up Now?",
+      "tagline": "{n} objects. One question each: is it above the horizon right now?",
+      "shareTitle": "Up Now?",
+      "loading": "Loading tonight's sky…",
+      "error": "Couldn't load today's round.",
+      "retry": "Try again",
+      "submitting": "Recording your score…",
+      "locationFallback": "Answers computed for {city} — location unavailable",
+      "missionsCardDesc": "12 objects, one question each — is it up right now?",
+      "missionsCardScored": "Today: {score}/12",
+      "intro": {
+        "play": "Play",
+        "streakHint": "Play daily — a {n}-day streak earns bonus Stars.",
+        "nextRound": "Next round opens at 4am."
+      },
+      "round": {
+        "progress": "Round {n} of {total}",
+        "question": "Is it above the horizon right now?",
+        "identify": {
+          "question": "What are you looking at?",
+          "correct": "Correct",
+          "incorrect": "Not quite — this is",
+          "continue": "Continue"
+        },
+        "above": "Above horizon",
+        "below": "Below horizon",
+        "correct": "Correct",
+        "incorrect": "Not quite",
+        "next": "Next",
+        "seeResults": "See results",
+        "hint": {
+          "rise": "Rises at {time}",
+          "set": "Sets at {time}",
+          "circumpolarAlways": "Always above the horizon from here",
+          "circumpolarNever": "Never rises from here"
+        }
+      },
+      "result": {
+        "title": "Result",
+        "score": "Score",
+        "streak": "Streak",
+        "starsAwarded": "Stars",
+        "streakValue": "{n}-day streak",
+        "starsValue": "+{n} Stars",
+        "copy": "Copy result",
+        "copied": "Copied",
+        "viewSky": "Tonight's sky",
+        "startMission": "Start a mission"
+      },
+      "kind": {
+        "sun": "Sun",
+        "moon": "Moon",
+        "planet": "Planet",
+        "star": "Star",
+        "nebula": "Nebula",
+        "cluster": "Cluster",
+        "galaxy": "Galaxy"
+      },
+      "objects": {
+        "sun": {
+          "name": "Sun"
+        },
+        "moon": {
+          "name": "Moon"
+        },
+        "mercury": {
+          "name": "Mercury"
+        },
+        "venus": {
+          "name": "Venus"
+        },
+        "mars": {
+          "name": "Mars"
+        },
+        "jupiter": {
+          "name": "Jupiter"
+        },
+        "saturn": {
+          "name": "Saturn"
+        },
+        "uranus": {
+          "name": "Uranus"
+        },
+        "neptune": {
+          "name": "Neptune"
+        },
+        "sirius": {
+          "name": "Sirius"
+        },
+        "vega": {
+          "name": "Vega"
+        },
+        "deneb": {
+          "name": "Deneb"
+        },
+        "altair": {
+          "name": "Altair"
+        },
+        "arcturus": {
+          "name": "Arcturus"
+        },
+        "capella": {
+          "name": "Capella"
+        },
+        "rigel": {
+          "name": "Rigel"
+        },
+        "betelgeuse": {
+          "name": "Betelgeuse"
+        },
+        "aldebaran": {
+          "name": "Aldebaran"
+        },
+        "antares": {
+          "name": "Antares"
+        },
+        "spica": {
+          "name": "Spica"
+        },
+        "regulus": {
+          "name": "Regulus"
+        },
+        "procyon": {
+          "name": "Procyon"
+        },
+        "polaris": {
+          "name": "Polaris"
+        },
+        "fomalhaut": {
+          "name": "Fomalhaut"
+        },
+        "castor": {
+          "name": "Castor"
+        },
+        "pollux": {
+          "name": "Pollux"
+        },
+        "m42": {
+          "name": "Orion Nebula"
+        },
+        "m45": {
+          "name": "Pleiades"
+        },
+        "m31": {
+          "name": "Andromeda Galaxy"
+        },
+        "m13": {
+          "name": "Hercules Cluster"
+        },
+        "m57": {
+          "name": "Ring Nebula"
+        },
+        "m51": {
+          "name": "Whirlpool Galaxy"
+        },
+        "m8": {
+          "name": "Lagoon Nebula"
+        },
+        "m1": {
+          "name": "Crab Nebula"
+        },
+        "ngc869": {
+          "name": "Double Cluster"
+        }
+      }
+    }
   }
 }

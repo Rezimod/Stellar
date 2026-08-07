@@ -53,6 +53,21 @@ import { pgTable, uuid, text, integer, timestamp, doublePrecision, boolean, uniq
 //     ON redeem_codes (wallet_address);
 //   CREATE INDEX IF NOT EXISTS redeem_codes_status_idx
 //     ON redeem_codes (status);
+//
+// "Up Now?" daily game — required SQL:
+//   CREATE TABLE IF NOT EXISTS game_daily_plays (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     wallet text NOT NULL,
+//     game text NOT NULL,
+//     utc_date date NOT NULL,
+//     score integer NOT NULL,
+//     stars integer NOT NULL,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE UNIQUE INDEX IF NOT EXISTS game_daily_plays_wallet_game_date_unique
+//     ON game_daily_plays (wallet, game, utc_date);
+//   CREATE INDEX IF NOT EXISTS game_daily_plays_wallet_game_idx
+//     ON game_daily_plays (wallet, game);
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   privyId: text('privy_id').unique().notNull(),
@@ -333,6 +348,22 @@ export const userCohorts = pgTable('user_cohorts', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   index('user_cohorts_campaign_idx').on(t.utmSource, t.utmCampaign),
+])
+
+// "Up Now?" daily game (§ up-now.ts). One row per wallet+game+day; the unique
+// index is what enforces once-per-UTC-day — the route relies on it rather
+// than a racy SELECT-then-INSERT.
+export const gameDailyPlays = pgTable('game_daily_plays', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  wallet: text('wallet').notNull(),
+  game: text('game').notNull(),
+  utcDate: date('utc_date').notNull(),
+  score: integer('score').notNull(),
+  stars: integer('stars').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('game_daily_plays_wallet_game_date_unique').on(t.wallet, t.game, t.utcDate),
+  index('game_daily_plays_wallet_game_idx').on(t.wallet, t.game),
 ])
 
 // Web Push subscriptions. One row per browser/device endpoint. `lat`/`lon`
