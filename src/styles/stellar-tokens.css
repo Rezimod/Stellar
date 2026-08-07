@@ -3893,57 +3893,69 @@
 .mis-scope-step-title { font-size: 12.5px; font-weight: 600; color: var(--mis-t1); }
 .mis-scope-step-body { font-size: 11.5px; color: var(--mis-t2); line-height: 1.4; }
 
-/* === Observer assist (reused) === */
-.mis-observer-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-@media (min-width: 640px) { .mis-observer-grid { grid-template-columns: repeat(2, 1fr); } }
-.mis-observer-item {
+/* === Observer assist — flat checklist, verdict-first ===
+ * Was a 2-col grid of 5 gradient/glass cards (banned pattern: identical
+ * card grids + gradients). A vertical checklist reads faster for "how's
+ * tonight" and each row now carries a real verdict (good/neutral/caution)
+ * derived from the actual moon/altitude/cloud numbers, not just a restated
+ * fact with no read on whether it's good or bad. */
+.mis-observer-list {
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 12px 13px;
-  border: 1px solid rgba(var(--ink), 0.1);
-  border-radius: 13px;
-  background:
-    linear-gradient(180deg, rgba(var(--ink), 0.058), rgba(var(--ink), 0.012));
-  box-shadow:
-    inset 0 1px 0 rgba(var(--ink), 0.09),
-    0 1px 2px rgba(0, 0, 0, 0.28);
+  flex-direction: column;
+  border: 1px solid var(--mis-bd);
+  border-radius: 14px;
+  background: var(--mis-card);
+  overflow: hidden;
 }
+.mis-observer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--mis-bd);
+}
+.mis-observer-row:last-child { border-bottom: 0; }
+
+.mis-observer-dot {
+  flex-shrink: 0;
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  margin-top: 6px;
+  background: var(--mis-t3);
+}
+.mis-observer-dot--good { background: var(--mis-grn); }
+.mis-observer-dot--caution { background: var(--negative); }
+
 .mis-observer-icon {
   flex-shrink: 0;
-  width: 30px; height: 30px;
-  border-radius: 9px;
-  background:
-    linear-gradient(180deg, rgba(var(--ink), 0.12), rgba(var(--ink), 0.03));
-  border: 1px solid rgba(var(--ink), 0.08);
-  box-shadow: inset 0 1px 0 rgba(var(--ink), 0.14);
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--mis-bd);
   display: flex; align-items: center; justify-content: center;
-  color: #E4E6EC;
+  color: var(--mis-t2);
 }
-.mis-observer-copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.mis-observer-copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.mis-observer-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
 .mis-observer-label {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: #C6CAD4;
+  color: var(--mis-t1);
 }
 .mis-observer-value {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--mis-t1);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.mis-observer-body { font-size: 11px; color: #9CA0AC; line-height: 1.4; margin-top: 2px; }
-
-/* Day mode: hex grays on the observer checklist */
-[data-theme="light"] .mis-observer-icon { color: var(--text-primary); }
-[data-theme="light"] .mis-observer-label { color: var(--text-secondary); }
-[data-theme="light"] .mis-observer-body { color: var(--text-dim); }
+.mis-observer-body { font-size: 11px; color: var(--mis-t3); line-height: 1.4; margin-top: 2px; }
 
 /* Phones — pack the telescope tips + observer checklist onto one screen. */
 @media (max-width: 639px) {
@@ -3951,15 +3963,8 @@
   .mis-scope-steps { gap: 7px; }
   .mis-scope-step-body { line-height: 1.35; }
 
-  .mis-observer-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
-  .mis-observer-item { padding: 9px 10px; gap: 8px; }
-  .mis-observer-icon { width: 26px; height: 26px; }
-  .mis-observer-body {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  .mis-observer-row { padding: 9px 11px; gap: 8px; }
+  .mis-observer-icon { width: 24px; height: 24px; }
 }
 
 /* === Auth gate === */

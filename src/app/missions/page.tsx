@@ -925,11 +925,30 @@ export default function MissionsPage() {
           </div>
           <ObserverAssist
             items={[
-              { Icon: Clock, label: t('observer.dark.label'), value: dark.duskStart && dark.dawnEnd ? `${fmtClock(dark.duskStart, dateLocale)}–${fmtClock(dark.dawnEnd, dateLocale)}` : t('glance.unknown'), body: t('observer.dark.body') },
-              { Icon: LcMoon, label: t('observer.moon.label'), value: moonGlance ? t('observer.moon.value', { pct: moonGlance.illum }) : t('glance.unknown'), body: t('observer.moon.body') },
-              { Icon: Crosshair, label: t('observer.target.label'), value: questPos ? t('observer.target.value', { deg: Math.round(questPos.altitude) }) : t('glance.unknown'), body: t('observer.target.body') },
-              { Icon: Cloud, label: t('observer.comfort.label'), value: cloudCoverPct == null ? t('glance.unknown') : t('observer.comfort.value', { pct: cloudCoverPct }), body: t('observer.comfort.body') },
-              { Icon: Eye, label: t('observer.phone.label'), value: t('observer.phone.value'), body: t('observer.phone.body') },
+              {
+                Icon: Clock, label: t('observer.dark.label'),
+                value: dark.duskStart && dark.dawnEnd ? `${fmtClock(dark.duskStart, dateLocale)}–${fmtClock(dark.dawnEnd, dateLocale)}` : t('glance.unknown'),
+                body: t('observer.dark.body'), tone: 'neutral',
+              },
+              {
+                Icon: LcMoon, label: t('observer.moon.label'),
+                value: moonGlance ? t('observer.moon.value', { pct: moonGlance.illum }) : t('glance.unknown'),
+                body: t('observer.moon.body'),
+                tone: !moonGlance ? 'neutral' : moonGlance.illum < 30 ? 'good' : moonGlance.illum < 70 ? 'neutral' : 'caution',
+              },
+              {
+                Icon: Crosshair, label: t('observer.target.label'),
+                value: questPos ? t('observer.target.value', { deg: Math.round(questPos.altitude) }) : t('glance.unknown'),
+                body: t('observer.target.body'),
+                tone: !questPos ? 'neutral' : questPos.altitude >= 30 ? 'good' : questPos.altitude >= 10 ? 'neutral' : 'caution',
+              },
+              {
+                Icon: Cloud, label: t('observer.comfort.label'),
+                value: cloudCoverPct == null ? t('glance.unknown') : t('observer.comfort.value', { pct: cloudCoverPct }),
+                body: t('observer.comfort.body'),
+                tone: cloudCoverPct == null ? 'neutral' : cloudCoverPct < 20 ? 'good' : cloudCoverPct < 50 ? 'neutral' : 'caution',
+              },
+              { Icon: Eye, label: t('observer.phone.label'), value: t('observer.phone.value'), body: t('observer.phone.body'), tone: 'neutral' },
             ]}
           />
         </section>
@@ -1380,20 +1399,23 @@ function TelescopeGuide({
 function ObserverAssist({
   items,
 }: {
-  items: { label: string; value: string; body: string; Icon: LucideIcon }[];
+  items: { label: string; value: string; body: string; Icon: LucideIcon; tone: 'good' | 'neutral' | 'caution' }[];
 }) {
   return (
-    <div className="mis-observer-grid">
+    <div className="mis-observer-list">
       {items.map((item) => {
         const Icon = item.Icon;
         return (
-          <div key={item.label} className="mis-observer-item">
+          <div key={item.label} className="mis-observer-row">
+            <span className={`mis-observer-dot mis-observer-dot--${item.tone}`} aria-hidden />
             <span className="mis-observer-icon" aria-hidden>
               <Icon size={14} strokeWidth={1.8} />
             </span>
             <span className="mis-observer-copy">
-              <span className="mis-observer-label">{item.label}</span>
-              <span className="mis-observer-value">{item.value}</span>
+              <span className="mis-observer-top">
+                <span className="mis-observer-label">{item.label}</span>
+                <span className="mis-observer-value">{item.value}</span>
+              </span>
               <span className="mis-observer-body">{item.body}</span>
             </span>
           </div>
