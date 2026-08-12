@@ -18,6 +18,7 @@ const ORB_SRC: Record<string, string> = {
   orion: '/images/dso/m42.jpg',
   andromeda: '/images/dso/m31.jpg',
   crab: '/images/dso/m1.jpg',
+  perseids: '/images/dso/m13-cluster.jpg',
 };
 
 // `raw` swaps to the alpha-cut PNG (black space removed) and drops the circular

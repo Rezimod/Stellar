@@ -164,6 +164,13 @@ export const MISSIONS: Mission[] = [
     desc: 'Capture M1 — the supernova remnant in Taurus. One of the hardest deep-sky targets.',
     hint: 'Requires at least 8" aperture and dark skies. Located 1° NW of ζ Tauri.',
     context: 'deep_sky_m1_supernova_remnant' },
+  { id: 'perseids', name: 'Perseid Meteor Shower', emoji: '🌠', difficulty: 'Intermediate',
+    stars: 150, type: 'naked_eye',
+    desc: 'Watch the Perseid peak — up to 100 meteors per hour from Comet Swift-Tuttle. The best summer shower.',
+    hint: 'Drive 30+ min from city lights. Lie back, face northeast where Perseus rises. No equipment needed.',
+    target: 'Perseids',
+    context: 'meteor_shower_perseids',
+    repeatable: true },
 ];
 
 // Star payout per mission tier. Mission rows on /missions and the Sky page

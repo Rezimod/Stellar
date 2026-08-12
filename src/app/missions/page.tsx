@@ -69,6 +69,7 @@ const GRID: GridEntry[] = [
   { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion',     estMin: 10 },
   { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda', estMin: 12 },
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab',      estMin: 15 },
+  { id: 'perseids',  stars: 150, diff: 'med',    equip: 'naked',      routeId: 'perseids',  estMin: 30 },
 ];
 
 // Special-edition Perseids mission — kept out of GRID because it has no fixed

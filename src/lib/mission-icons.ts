@@ -36,6 +36,7 @@ export const MISSION_ICON_IDS_BY_ID: Record<string, string> = {
   'pleiades':         'pleiades',
   'andromeda':        'andromeda',
   'crab':             'crab',
+  'perseids':         'night',
 };
 
 export function getMissionIconKey(missionName: string): string {
@@ -68,6 +69,7 @@ const MISSION_IMAGES: Record<string, string> = {
   'sky-optics':       '/images/planets/earth.jpg',
   'sunset':           '/images/planets/earth.jpg',
   'the-sun':          '/images/planets/earth.jpg',
+  'perseids':         '/images/dso/m13-cluster.jpg',
 };
 
 export function getMissionImage(id: string): string {
@@ -87,4 +89,5 @@ export const MISSION_GLOW: Record<string, string> = {
   'andromeda':        'rgba(255,248,231,0.1)',
   'crab':             'rgba(239,68,68,0.1)',
   'free-observation': 'rgba(99,102,241,0.1)',
+  'perseids':         'rgba(99,180,255,0.1)',
 };
