@@ -21,11 +21,10 @@ import QuizActive from '@/components/sky/QuizActive';
 import EventInfoSheet from '@/components/sky/EventInfoSheet';
 import DifficultyExplainer from '@/components/sky/DifficultyExplainer';
 import { getRareEvents, getUpcomingEvents, localizeEvent, type AstroEvent } from '@/lib/astro-events';
-import { activeMeteorShower } from '@/lib/meteor-showers';
 import type { QuizDef } from '@/lib/quizzes';
 import {
   Snowflake, Telescope as LcTelescope, Crosshair, Moon as LcMoon, Sun, Star, Globe,
-  Rocket, Clock, Eye, Cloud, ChevronRight, Lightbulb, Satellite, Users, Check, Compass, Sparkles,
+  Rocket, Clock, Eye, Cloud, ChevronRight, Lightbulb, Satellite, Users, Check, Compass,
 } from 'lucide-react';
 import { NIGHT_STAR_GOAL, MAIN_QUEST_ID, GLOBAL_MISSION } from '@/lib/missions-tonight';
 import type { LucideIcon } from 'lucide-react';
@@ -69,15 +68,7 @@ const GRID: GridEntry[] = [
   { id: 'orion',     stars: 100, diff: 'med',    equip: 'telescope',  routeId: 'orion',     estMin: 10 },
   { id: 'andromeda', stars: 175, diff: 'hard',   equip: 'binoculars', routeId: 'andromeda', estMin: 12 },
   { id: 'crab',      stars: 250, diff: 'expert', equip: 'telescope',  routeId: 'crab',      estMin: 15 },
-  { id: 'perseids',  stars: 150, diff: 'med',    equip: 'naked',      routeId: 'perseids',  estMin: 30 },
 ];
-
-// Special-edition Perseids mission — kept out of GRID because it has no fixed
-// altitude/azimuth (meteors streak across the whole sky), so the above/visible
-// logic that drives GRID's mission rows doesn't apply. Mirrors the real
-// MISSIONS['perseids'] row in src/lib/constants.ts — keep the reward in sync.
-const PERSEIDS_ROUTE_ID = 'perseids';
-const PERSEIDS_STARS = 150;
 
 // Daytime missions. Anyone with a phone can do these at lunchtime, in any
 // weather — they are verified against the Sun's real altitude here plus a
@@ -222,13 +213,6 @@ export default function MissionsPage() {
 
   const upcomingEvents = useMemo(() => getUpcomingEvents(new Date(), 30).map((e) => localizeEvent(e, locale)), [locale]);
   const rareEvents = useMemo(() => getRareEvents(new Date(), 5).map((e) => localizeEvent(e, locale)), [locale]);
-
-  // Perseids special edition — only live while the shower's real active window
-  // (~Jul 17 – Aug 24, see meteor-showers.ts) contains today.
-  const perseids = useMemo(() => {
-    const shower = activeMeteorShower(now);
-    return shower && shower.name === 'Perseids' ? shower : null;
-  }, [now]);
 
   useVisibleInterval(() => setNow(new Date()), 60_000);
 
@@ -560,27 +544,6 @@ export default function MissionsPage() {
                 later: (time: string) => t('quest.comingLater', { time }),
               }}
             />
-
-            {/* Perseids special edition — only rendered while the shower is active */}
-            {perseids && (
-              <EventMissionCard
-                shower={perseids}
-                stars={PERSEIDS_STARS}
-                onObserve={() => startMission(PERSEIDS_ROUTE_ID)}
-                labels={{
-                  badge: t('perseidsEvent.badge'),
-                  title: t('perseidsEvent.title'),
-                  rate: t('perseidsEvent.rate', { zhr: perseids.zhr, peak: perseids.peakLabel }),
-                  peakToday: t('perseidsEvent.peakToday'),
-                  peakTomorrow: t('perseidsEvent.peakTomorrow'),
-                  peakInDays: (n: number) => t('perseidsEvent.peakInDays', { n }),
-                  active: t('perseidsEvent.active'),
-                  reward: (n: number) => t('perseidsEvent.reward', { n }),
-                  bonus: t('perseidsEvent.bonus'),
-                  observe: t('perseidsEvent.observe'),
-                }}
-              />
-            )}
 
             {/* Daily quiz spotlight — promotes the rail's quizzes above the fold */}
             {dailyQuiz && dailyQuizUi && (
@@ -1195,59 +1158,6 @@ function MainQuestCard({
           <button type="button" className="mis-quest-cta" onClick={onObserve}>
             {labels.observe}
             {altitude != null && altitude > 0 && <em>{Math.round(altitude)}°</em>}
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ---- Perseids special-edition event card ----
-
-function EventMissionCard({
-  shower, stars, onObserve, labels,
-}: {
-  shower: { zhr: number; peakLabel: string; daysFromPeak: number };
-  stars: number;
-  onObserve: () => void;
-  labels: {
-    badge: string; title: string; rate: string;
-    peakToday: string; peakTomorrow: string; peakInDays: (n: number) => string;
-    active: string; reward: (n: number) => string; bonus: string; observe: string;
-  };
-}) {
-  const untilPeak = -shower.daysFromPeak;
-  const peakText = untilPeak === 0 ? labels.peakToday
-    : untilPeak === 1 ? labels.peakTomorrow
-    : untilPeak > 1 ? labels.peakInDays(untilPeak)
-    : labels.active;
-  // 2x Stars applies within ±24h of the real peak date — see EVENT_BONUS_MULTIPLIER.
-  const nearPeak = Math.abs(shower.daysFromPeak) <= 1;
-  return (
-    <section className="mis-quest mis-quest--event">
-      <span className="mis-quest-art" aria-hidden>
-        <span className="mis-event-icon"><Sparkles size={34} strokeWidth={1.6} /></span>
-      </span>
-      <div className="mis-quest-body">
-        <span className="mis-quest-badge mis-quest-badge--event"><Sparkles size={11} strokeWidth={2} /> {labels.badge}</span>
-        <h2 className="mis-quest-name">{labels.title}</h2>
-        <div className="mis-quest-meta">
-          <span className="mis-quest-meta-item">
-            <Clock size={12} strokeWidth={1.8} />
-            <span className="mis-quest-meta-val"><i>{peakText}</i><b>{labels.rate}</b></span>
-          </span>
-          <span className="mis-quest-meta-item">
-            <Star size={12} strokeWidth={2} fill="currentColor" className="mis-star-icn" />
-            <span className="mis-quest-meta-val">
-              <i>{labels.reward(stars)}</i>
-              <b className="mis-quest-reward-b">+{stars}{nearPeak ? ` (${labels.bonus})` : ''}</b>
-            </span>
-          </span>
-        </div>
-        <div className="mis-quest-foot">
-          <span />
-          <button type="button" className="mis-quest-cta mis-quest-cta--event" onClick={onObserve}>
-            {labels.observe}
           </button>
         </div>
       </div>
