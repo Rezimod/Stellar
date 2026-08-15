@@ -2454,6 +2454,26 @@
           "name": "Double Cluster"
         }
       }
+    },
+    "shootingStars": {
+      "title": "Shooting Stars",
+      "tagline": "Tap the shooting stars before they disappear. 30 seconds. Any time of day.",
+      "scoreLabel": "Catch",
+      "play": "Play",
+      "oncePerDay": "Earn Stars once per day",
+      "tapHint": "Tap the streaks of light",
+      "catchLabel": "Catch shooting star",
+      "caught": "caught",
+      "outOf": "out of {total} possible",
+      "saving": "Recording…",
+      "starsEarned": "Stars added to your wallet",
+      "noCatch": "Catch at least 1 next time",
+      "alreadyPlayed": "Already played today — come back tomorrow",
+      "missions": "Missions",
+      "tryAgain": "Try Again",
+      "back": "Back",
+      "missionsCardDesc": "30-second sky game — tap shooting stars",
+      "missionsCardScored": "Today: {score} caught"
     }
   }
 }

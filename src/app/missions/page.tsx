@@ -182,6 +182,7 @@ export default function MissionsPage() {
   const t = useTranslations('missionsPage');
   const tSky = useTranslations('sky');
   const tUpNow = useTranslations('games.upNow');
+  const tShootingStars = useTranslations('games.shootingStars');
 
   // Missions are location-aware (what's up tonight from here) — prompt for GPS
   // on open rather than on site entry.
@@ -328,6 +329,7 @@ export default function MissionsPage() {
     });
     return () => { cancelled = true; };
   }, [authenticated, getAccessToken]);
+
 
   const skyPositions = useMemo(() => {
     const out: Record<string, SkyPos> = {};
@@ -807,6 +809,15 @@ export default function MissionsPage() {
                   reward={10}
                   done={!!upNowPlayed}
                   onClick={() => router.push('/games/up-now')}
+                />
+                <QuizRow
+                  Icon={Satellite}
+                  gradient={HUB_GRADIENTS.rose}
+                  title={tShootingStars('title')}
+                  meta={tShootingStars('missionsCardDesc')}
+                  reward={10}
+                  done={false}
+                  onClick={() => router.push('/games/shooting-stars')}
                 />
               </div>
             </section>
