@@ -458,11 +458,17 @@ Return ONLY valid JSON, no markdown, no preamble:
   const isHighValueTarget = ['saturn', 'jupiter', 'deep sky', 'nebula', 'galaxy', 'cluster']
     .some(t => targetParam.toLowerCase().includes(t));
 
-  const strictnessNote = isHighValueTarget
-    ? `\nThis is a HIGH-VALUE observation target. Be MORE careful about authenticity. Require clear identifying features visible (rings for Saturn, cloud bands for Jupiter, etc.). If the image is too blurry to confirm the specific target, mark confidence as 'low' rather than 'medium'.`
-    : `\nBe generous with phone photos. A blurry phone photo is valid if the celestial object is recognizable.`;
+  // If we know the mission target, tell Gemini exactly what to look for so it
+  // doesn't mark a real bright-dot photo of Venus as "unknown".
+  const targetHint = targetParam
+    ? `\nThe user is on the "${targetParam}" mission. Planets (Venus, Jupiter, Mars, Saturn, Mercury) naturally appear as a single bright point or small dot through a phone camera — that IS a valid planet photo. A bright white dot on a dark sky background is the expected result for any planet observed with a smartphone. Set target:"planet" and identifiedObject to the planet name if the context matches.`
+    : '';
 
-  const visionPrompt = (isDoubleCapture ? doubleImagePrompt : singleImagePrompt) + strictnessNote;
+  const strictnessNote = isHighValueTarget
+    ? `\nThis is a HIGH-VALUE observation target. Be careful about screenshots and AI art, but remember that real telescope or phone photos of Saturn may still show limited detail. Rings visible = high confidence; bright dot without rings = medium. Never reject a real phone photo just because it's low resolution.`
+    : `\nBe generous with phone photos. A blurry or low-detail phone photo is valid if the photo itself is real (not a screenshot or AI art).`;
+
+  const visionPrompt = (isDoubleCapture ? doubleImagePrompt : singleImagePrompt) + targetHint + strictnessNote;
 
   // Vision call — Gemini free tier (gemini-2.5-flash). responseMimeType=json
   // means the model returns raw JSON we can parse directly.
@@ -576,26 +582,47 @@ Return ONLY valid JSON, no markdown, no preamble:
 
   const isDay = isDaytimeTarget(analysis.target);
 
-  // Confidence scoring — base tier from what the photo actually shows.
-  // analysis.isScreenshot is always false here (it hard-rejects above), so it's
-  // not part of this branch.
+  // Confidence scoring — primary gate is astronomy (was the target actually
+  // visible from this location at this time?), not photo visual quality.
+  //
+  // Rationale: planets appear as single bright dots through phone cameras.
+  // hasNightSkyCharacteristics (grain, star fields) is absent for a clean white
+  // dot on a black background — that is the expected appearance of Venus, not
+  // evidence of a fake. We cannot require Gemini to visually distinguish a real
+  // bright-dot planet from a blank screen; we CAN verify that the planet was
+  // above the horizon, the sky was clear, and the photo is authentic.
   let confidence: VerificationConfidence = 'medium';
 
   if (isDay) {
-    // Daytime subjects can't show night-sky characteristics, so they are scored
-    // on what IS checkable: the Sun really was up at those coordinates at that
-    // moment, and the sky in the frame matches the weather over them.
+    // Daytime subjects: verified by Sun altitude and cloud cross-check.
     confidence = astroCheck.objectVisible
       ? (cloudMatches ? 'high' : 'medium')
       : 'low';
-  } else if (
-    analysis.hasNightSkyCharacteristics &&
-    astroCheck.objectVisible &&
-    analysis.target !== 'unknown'
-  ) {
-    confidence = analysis.sharpness === 'low' ? 'medium' : 'high';
-  } else if (!astroCheck.objectVisible) {
-    confidence = 'low';
+  } else {
+    const photoIsAuthentic = !analysis.isScreenshot && !analysis.isAiGenerated;
+
+    if (!astroCheck.objectVisible) {
+      // Target wasn't above the horizon at this location/time — low confidence
+      // regardless of what the photo shows.
+      confidence = 'low';
+    } else if (photoIsAuthentic && analysis.target !== 'unknown') {
+      // Astronomy check passes + photo is authentic + Gemini identified a sky
+      // object (even just "planet" for a bright dot). This is the main path for
+      // phone photos of Venus, Jupiter, the Moon, etc.
+      // hasNightSkyCharacteristics is NOT required — a single-point planet has
+      // no star-field grain, and that is normal and expected.
+      confidence = cloudMatches ? 'high' : 'medium';
+    } else if (photoIsAuthentic && analysis.hasNightSkyCharacteristics) {
+      // Gemini couldn't identify the object but the photo has real night-sky
+      // characteristics (grain, dark sky). Give partial credit.
+      confidence = 'medium';
+    } else if (photoIsAuthentic) {
+      // Authentic photo but object unidentifiable and no night-sky markers.
+      // Could be a very faint target or camera pointed near-but-not-at target.
+      confidence = 'low';
+    }
+    // If photoIsAuthentic is false but !isAiGenerated (only one flag): handled
+    // by the fake-image downgrade block below.
   }
 
   const DOWNGRADE_ONE: Record<VerificationConfidence, VerificationConfidence> = {

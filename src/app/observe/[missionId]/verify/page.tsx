@@ -145,6 +145,10 @@ export default function ObserveVerifyPage() {
             fd.append('lat', String(lat));
             fd.append('lon', String(lon));
             fd.append('capturedAt', ts);
+            // Tell the verify API what the user is trying to photograph so the
+            // Gemini prompt knows the target and can recognise that a bright dot
+            // IS what Venus or Jupiter looks like through a phone camera.
+            if (mission.target) fd.append('target', mission.target);
             // A small copy of the same shot, stored server-side so the minted
             // NFT — certified or keepsake — shows the real photo.
             const thumb = await makeThumbnail(photo).catch(() => '');
