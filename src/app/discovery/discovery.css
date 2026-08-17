@@ -472,6 +472,291 @@ body[data-discovery-immersive='1'] #stellar-main {
   text-align: right;
 }
 
+/* ══════════════════════════ REVEAL PAGE ═════════════════════════════════ */
+
+/* ── The sequence stage ──────────────────────────────────────────────────
+   Fixed, so "the screen goes fully black" is literally true: it has to cover
+   the starfield, the back link and the preview badge, none of which are inside
+   the 560px content column the sequence renders in.
+
+   The usual caveat about PageTransition applies but is harmless here — its
+   wrapper transform lasts 350ms and shifts by 12px, while the blackout runs
+   1500ms, and the wrapper box is full-width and full-height regardless. */
+.dsc-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  overflow: hidden;
+}
+
+/* Phase 2 — the single point of light, which then blows past the viewport. */
+.dsc-spark {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow:
+    0 0 18px 5px rgba(255, 255, 255, 0.85),
+    0 0 60px 18px rgba(0, 200, 240, 0.55);
+  animation: dsc-spark-in 2500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes dsc-spark-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.15);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(4);
+  }
+}
+
+.dsc-shockwave {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(0, 200, 240, 0.28) 38%,
+    rgba(0, 200, 240, 0) 70%
+  );
+  animation: dsc-shockwave 2500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dsc-shockwave {
+  0% {
+    opacity: 0;
+    transform: scale(0.05);
+  }
+  24% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(16);
+  }
+}
+
+/* Phase 3 — the card resolves out of the light. */
+.dsc-materialize {
+  animation: dsc-materialize 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dsc-materialize {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+    filter: blur(16px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.dsc-skip {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  min-height: 0;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.dsc-skip:hover {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+/* ── Generative object visual ────────────────────────────────────────────
+   Layered radial gradients keyed off the object's palette. A placeholder for
+   real astrophotography, but structured like the real thing: hot core, mid
+   field, cool outer halo. */
+.dsc-object-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  /* --dsc-vis-* not --dsc-halo: SealedObject already uses --dsc-halo for a
+     length (its pulse radius), and colliding the two would be a nasty bug the
+     day these components end up nested. */
+  background:
+    radial-gradient(circle at 50% 50%, var(--dsc-vis-core) 0%, transparent 26%),
+    radial-gradient(circle at 46% 44%, var(--dsc-vis-mid) 0%, transparent 52%),
+    radial-gradient(circle at 58% 60%, var(--dsc-vis-mid) 0%, transparent 44%),
+    radial-gradient(circle at 50% 50%, var(--dsc-vis-halo) 0%, #01020a 78%);
+}
+
+.dsc-object-visual::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(circle at 32% 68%, rgba(255, 255, 255, 0.16) 0%, transparent 12%),
+    radial-gradient(circle at 71% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 9%),
+    radial-gradient(circle at 24% 26%, rgba(255, 255, 255, 0.1) 0%, transparent 7%);
+  animation: dsc-object-drift 24s ease-in-out infinite;
+}
+
+@keyframes dsc-object-drift {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(7deg) scale(1.05);
+  }
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────── */
+.dsc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dsc-badge--type {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--dsc-ghost);
+}
+
+.dsc-badge--rarity {
+  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 45%, transparent);
+  background: color-mix(in srgb, var(--dsc-tier, #fff) 13%, transparent);
+  color: var(--dsc-tier, #fff);
+}
+
+/* Legendary gets the one moving gradient in the whole system. */
+.dsc-badge--legendary {
+  border-color: transparent;
+  color: #2a1d02;
+  background: linear-gradient(100deg, #8a6320, #ffda6b, #fff3c4, #ffda6b, #8a6320);
+  background-size: 300% 100%;
+  animation: dsc-gold-shimmer 4.5s ease-in-out infinite;
+}
+
+@keyframes dsc-gold-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ── Prize callout ──────────────────────────────────────────────────────── */
+.dsc-prize {
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 32%, transparent);
+  background: color-mix(in srgb, var(--dsc-tier, #fff) 8%, transparent);
+}
+
+.dsc-prize-label {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dsc-ghost-dim);
+}
+
+.dsc-prize-value {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--dsc-text);
+  margin-top: 5px;
+}
+
+/* ── Locked (pre-reveal) card ───────────────────────────────────────────── */
+.dsc-locked-card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 360 / 460;
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.028);
+  border: 1px solid var(--dsc-glass-edge);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* ── Shipping claim form ────────────────────────────────────────────────── */
+.dsc-form-input {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dsc-glass-edge);
+  color: var(--dsc-text);
+  font-family: var(--font-body);
+  outline: none;
+}
+
+.dsc-form-input::placeholder {
+  color: var(--dsc-ghost-dim);
+}
+
+.dsc-form-input:focus {
+  border-color: rgba(0, 200, 240, 0.45);
+}
+
+.dsc-form-label {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dsc-ghost-dim);
+  margin-bottom: 6px;
+  display: block;
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────────
    Twinkling dots and a breathing halo are exactly the kind of ambient motion
    that triggers vestibular discomfort. Hold them at their mid state. */
@@ -496,7 +781,23 @@ body[data-discovery-immersive='1'] #stellar-main {
     border-color: rgba(138, 147, 166, 0.55);
     box-shadow: 0 0 38px rgba(138, 147, 166, 0.08);
   }
-  .dsc-progress-fill {
+  .dsc-progress-fill,
+  .dsc-object-visual::after {
     animation: none;
+  }
+  /* The reveal sequence is skipped entirely for these users — see
+     RevealSequence, which jumps straight to the card. These rules only cover
+     the case where an element is already on screen. */
+  .dsc-materialize,
+  .dsc-spark,
+  .dsc-shockwave {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .dsc-badge--legendary {
+    animation: none;
+    background-position: 50% 50%;
   }
 }

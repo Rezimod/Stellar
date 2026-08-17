@@ -77,3 +77,10 @@ export const TIERS: Tier[] = [
 
 /** Best-first, for the reward breakdown. */
 export const TIERS_BY_VALUE: Tier[] = [...TIERS].reverse();
+
+export const TIER_BY_ID = Object.fromEntries(TIERS.map((t) => [t.id, t])) as Record<TierId, Tier>;
+
+/** Physical rewards ship, so these tiers need a shipping address collected. */
+export function needsShipping(id: TierId): boolean {
+  return TIER_BY_ID[id].physical !== null;
+}

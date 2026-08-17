@@ -1,25 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-type Remaining = {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  reached: boolean;
-};
-
-function remainingUntil(targetMs: number, nowMs: number): Remaining {
-  const total = Math.max(0, Math.floor((targetMs - nowMs) / 1000));
-  return {
-    days: Math.floor(total / 86_400),
-    hours: Math.floor((total % 86_400) / 3_600),
-    minutes: Math.floor((total % 3_600) / 60),
-    seconds: total % 60,
-    reached: total === 0,
-  };
-}
+import { remainingUntil, type Remaining } from '@/lib/discovery/countdown';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
