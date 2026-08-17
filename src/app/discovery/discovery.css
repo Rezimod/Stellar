@@ -60,7 +60,10 @@ body[data-discovery-immersive='1'] #stellar-main {
   isolation: isolate;
   min-height: 100dvh;
   width: 100%;
-  overflow: hidden;
+  /* `clip`, not `hidden`: hidden would make this a scroll container and break
+     position:sticky inside it (the mint page's left column). The starfield
+     clips its own dots, so this only guards against stray glow overhang. */
+  overflow-x: clip;
   background: var(--dsc-bg);
   color: var(--dsc-text);
   font-family: var(--font-body);
@@ -116,17 +119,19 @@ body[data-discovery-immersive='1'] #stellar-main {
   animation: dsc-pulse 3s ease-in-out infinite;
 }
 
+/* --dsc-halo is the glow radius at the pulse peak; SealedObject scales it with
+   the diameter so the 120px card version isn't swallowed by a 280px halo. */
 @keyframes dsc-pulse {
   0%,
   100% {
     box-shadow:
       0 0 0 1px rgba(0, 200, 240, 0.06),
-      0 0 44px rgba(0, 200, 240, 0.1);
+      0 0 calc(var(--dsc-halo, 76px) * 0.58) rgba(0, 200, 240, 0.1);
   }
   50% {
     box-shadow:
       0 0 0 1px rgba(0, 200, 240, 0.16),
-      0 0 76px rgba(0, 200, 240, 0.2);
+      0 0 var(--dsc-halo, 76px) rgba(0, 200, 240, 0.2);
   }
 }
 
@@ -239,6 +244,214 @@ body[data-discovery-immersive='1'] #stellar-main {
   outline-offset: 2px;
 }
 
+/* ══════════════════════════ MINT PAGE ═══════════════════════════════════ */
+
+/* ── The mystery pass card ───────────────────────────────────────────────
+   360 x 500 at full size, scaling down proportionally on narrow screens.
+   The edge slowly cycles the five rarity colors — the only hint of what is
+   inside before the reveal. */
+.dsc-pass-card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 360 / 500;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0) 62%),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(138, 147, 166, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: dsc-rarity-cycle 20s ease-in-out infinite;
+}
+
+/* 0% and 100% are both Common so the loop closes without a jump. */
+@keyframes dsc-rarity-cycle {
+  0%,
+  100% {
+    border-color: rgba(138, 147, 166, 0.55);
+    box-shadow: 0 0 38px rgba(138, 147, 166, 0.08);
+  }
+  20% {
+    border-color: rgba(0, 200, 240, 0.55);
+    box-shadow: 0 0 38px rgba(0, 200, 240, 0.12);
+  }
+  40% {
+    border-color: rgba(145, 82, 215, 0.55);
+    box-shadow: 0 0 38px rgba(145, 82, 215, 0.14);
+  }
+  60% {
+    border-color: rgba(255, 178, 0, 0.55);
+    box-shadow: 0 0 38px rgba(255, 178, 0, 0.14);
+  }
+  80% {
+    border-color: rgba(255, 218, 107, 0.6);
+    box-shadow: 0 0 44px rgba(255, 218, 107, 0.18);
+  }
+}
+
+.dsc-card-eyebrow {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dsc-ghost-dim);
+}
+
+.dsc-unknown {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ── Odds pills ─────────────────────────────────────────────────────────── */
+.dsc-odds-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  /* The tier color at full strength is far too loud for five stacked pills —
+     mix it down to a tint for the edge and keep it saturated on the label. */
+  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 38%, transparent);
+}
+
+.dsc-odds-name {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dsc-tier, #fff);
+}
+
+.dsc-odds-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dsc-ghost);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Progress ───────────────────────────────────────────────────────────── */
+.dsc-progress-track {
+  height: 6px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.dsc-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--dsc-cyan);
+  width: var(--dsc-pct, 0%);
+  animation: dsc-fill 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dsc-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--dsc-pct, 0%);
+  }
+}
+
+/* ── Calls to action ────────────────────────────────────────────────────── */
+.dsc-cta {
+  width: 100%;
+  height: 52px;
+  min-height: 52px;
+  border-radius: 12px;
+  background: var(--dsc-cyan);
+  color: #02121a;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    box-shadow 220ms ease,
+    filter 220ms ease;
+}
+
+.dsc-cta:hover:not(:disabled) {
+  filter: brightness(1.07);
+  box-shadow: 0 0 26px rgba(0, 200, 240, 0.42);
+}
+
+.dsc-cta--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--dsc-text);
+}
+
+.dsc-cta--ghost:hover:not(:disabled) {
+  filter: none;
+  border-color: rgba(0, 200, 240, 0.5);
+  box-shadow: 0 0 22px rgba(0, 200, 240, 0.16);
+}
+
+.dsc-cta:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Reward tiers ───────────────────────────────────────────────────────── */
+.dsc-tier-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--dsc-hairline);
+}
+
+.dsc-tier-name {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--dsc-tier, #fff);
+  white-space: nowrap;
+}
+
+/* The label column keeps its intrinsic width; only the reward copy wraps.
+   Without this the flex squeeze breaks "40 total" across two lines at 320px. */
+.dsc-tier-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dsc-tier-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dsc-ghost-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dsc-tier-reward {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--dsc-ghost);
+  text-align: right;
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────────
    Twinkling dots and a breathing halo are exactly the kind of ambient motion
    that triggers vestibular discomfort. Hold them at their mid state. */
@@ -251,9 +464,19 @@ body[data-discovery-immersive='1'] #stellar-main {
     animation: none;
     box-shadow:
       0 0 0 1px rgba(0, 200, 240, 0.12),
-      0 0 60px rgba(0, 200, 240, 0.15);
+      0 0 calc(var(--dsc-halo, 76px) * 0.79) rgba(0, 200, 240, 0.15);
   }
-  .dsc-submit {
+  .dsc-submit,
+  .dsc-cta {
     transition: none;
+  }
+  /* Hold the card on its Common edge rather than cycling. */
+  .dsc-pass-card {
+    animation: none;
+    border-color: rgba(138, 147, 166, 0.55);
+    box-shadow: 0 0 38px rgba(138, 147, 166, 0.08);
+  }
+  .dsc-progress-fill {
+    animation: none;
   }
 }
