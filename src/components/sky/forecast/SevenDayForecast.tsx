@@ -30,6 +30,15 @@ function verdictOf(score: number): Verdict {
   return 'skip';
 }
 
+/**
+ * Parse a `YYYY-MM-DD` forecast date as local midnight. `new Date('2026-07-31')`
+ * is parsed as UTC midnight, which formats as the *previous* weekday for every
+ * viewer west of Greenwich — Friday's column would read "Thu".
+ */
+function localDate(ymd: string): Date {
+  return new Date(`${ymd}T00:00:00`);
+}
+
 /** Cloud cover → plain-language sky-cover description key. */
 function cloudKey(pct: number): string {
   if (pct <= 10) return 'clear';
@@ -114,7 +123,7 @@ export function SevenDayForecast({ days, loading = false, locationLabel }: Seven
           {best && (
             <p className="fcw__best">
               {t.rich('bestLine', {
-                day: best.isToday ? t('today') : longDayFmt.format(new Date(best.day.date)),
+                day: best.isToday ? t('today') : longDayFmt.format(localDate(best.day.date)),
                 score: best.score,
                 sky: t(`sky.${cloudKey(best.day.cloudCoverPct)}`).toLowerCase(),
                 b: (chunks) => <b>{chunks}</b>,
@@ -124,7 +133,7 @@ export function SevenDayForecast({ days, loading = false, locationLabel }: Seven
 
           <ol className="fcw__chart">
             {week.map(({ day, isToday, score, verdict }) => {
-              const date = new Date(day.date);
+              const date = localDate(day.date);
               // Short form in the column: "Tonight" overflows a 7-column grid
               // on a phone, and shrinking it further would breach the 12px
               // microcopy floor. The full word still carries the aria label

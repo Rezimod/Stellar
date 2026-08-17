@@ -14,6 +14,7 @@ import {
   SearchRiseSet,
   SearchAltitude,
 } from 'astronomy-engine';
+import { precessJ2000ToDate } from '@/lib/sky/catalog';
 
 // J2000 RA (hours) / Dec (degrees) for fixed deep-sky targets.
 const DEEP_SKY = [
@@ -111,8 +112,12 @@ export async function GET(request: Request) {
         ra = eq.ra;
         dec = eq.dec;
       } else {
-        ra = target.ra;
-        dec = target.dec;
+        // Horizon() expects equator-of-date coordinates — the planets above
+        // come from Equator(..., ofdate=true). Feeding it raw J2000 put the
+        // DSOs ~0.4° off the bodies they share the chart with.
+        const od = precessJ2000ToDate(target.ra, target.dec, t);
+        ra = od.raHours;
+        dec = od.decDeg;
       }
       const horiz = Horizon(time, observer, ra, dec, 'normal');
       if (horiz.altitude > 0) {

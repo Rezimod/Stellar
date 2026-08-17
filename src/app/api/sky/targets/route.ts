@@ -4,6 +4,7 @@ import { getVisiblePlanets } from '@/lib/planets';
 import { MISSIONS } from '@/lib/constants';
 import { DAYTIME_MISSION_IDS } from '@/lib/observation-kind';
 import { getSunAltitude } from '@/lib/dark-window';
+import { precessJ2000ToDate } from '@/lib/sky/catalog';
 
 export type EquipmentType = 'naked_eye' | 'binoculars' | 'telescope';
 
@@ -52,7 +53,9 @@ function getDSOAltitude(id: string, lat: number, lon: number, date: Date): numbe
   if (!coords) return null;
   try {
     const observer = new Observer(lat, lon, 0);
-    const horiz = Horizon(date, observer, coords.ra, coords.dec, 'normal');
+    // Horizon() takes equator-of-date coordinates; DSO_COORDS is J2000.
+    const od = precessJ2000ToDate(coords.ra, coords.dec, date);
+    const horiz = Horizon(date, observer, od.raHours, od.decDeg, 'normal');
     return Math.round(horiz.altitude * 10) / 10;
   } catch {
     return null;

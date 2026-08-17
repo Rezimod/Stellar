@@ -11,17 +11,19 @@ import {
 } from 'astronomy-engine';
 import { DEFAULT_LAT, DEFAULT_LON } from '@/lib/observer-location';
 
-function fmtHHmm(d: Date): string {
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
 export async function GET(req: NextRequest) {
   const lat = parseFloat(req.nextUrl.searchParams.get('lat') ?? String(DEFAULT_LAT));
   const lng = parseFloat(req.nextUrl.searchParams.get('lng') ?? req.nextUrl.searchParams.get('lon') ?? String(DEFAULT_LON));
   const now = new Date();
 
-  const midnight = new Date(now);
-  midnight.setHours(0, 0, 0, 0);
+  // Search from local midnight at the observer's longitude. `setHours(0,...)`
+  // would use the runtime zone — UTC on Vercel — and anchor a Tbilisi user's
+  // day four hours late.
+  const lonOffsetMs = (lng / 15) * 3_600_000;
+  const localNow = new Date(now.getTime() + lonOffsetMs);
+  const midnight = new Date(
+    Date.UTC(localNow.getUTCFullYear(), localNow.getUTCMonth(), localNow.getUTCDate()) - lonOffsetMs,
+  );
 
   const observer = new Observer(lat, lng, 0);
 
@@ -38,9 +40,11 @@ export async function GET(req: NextRequest) {
     const duskSearchStart = sunSet?.date ?? midnight;
     const duskHit = SearchAltitude(Body.Sun, observer, -1, duskSearchStart, 1, -18);
     if (duskHit) {
-      astronomicalDuskStart = fmtHHmm(duskHit.date);
+      // ISO, not HH:mm — a wall-clock string built on the server would be
+      // rendered verbatim by the client in the server's timezone.
+      astronomicalDuskStart = duskHit.date.toISOString();
       const dawnHit = SearchAltitude(Body.Sun, observer, +1, duskHit.date, 1, -18);
-      if (dawnHit) astronomicalDawnEnd = fmtHHmm(dawnHit.date);
+      if (dawnHit) astronomicalDawnEnd = dawnHit.date.toISOString();
     }
   } catch {
     // High-latitude summers: sun never reaches -18°. Leave nulls; UI falls back.

@@ -31,6 +31,11 @@ export async function fetchSkyForecast(lat: number, lng: number): Promise<SkyDay
     longitude: lng.toString(),
     hourly: 'cloud_cover,visibility,temperature_2m,relative_humidity_2m,wind_speed_10m',
     forecast_days: '7',
+    // Without this Open-Meteo answers in GMT, and every consumer reads the
+    // hour straight off the timestamp (`time.slice(11,13)`) to pick the
+    // 20:00→04:00 observing window. In Tbilisi that silently graded the
+    // 00:00→08:00 window instead. `auto` resolves the zone from the coords.
+    timezone: 'auto',
   });
 
   const { data } = await fetchOpenMeteo<OpenMeteoResponse>(

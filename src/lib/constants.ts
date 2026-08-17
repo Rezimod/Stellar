@@ -164,6 +164,18 @@ export const MISSIONS: Mission[] = [
     desc: 'Capture M1 — the supernova remnant in Taurus. One of the hardest deep-sky targets.',
     hint: 'Requires at least 8" aperture and dark skies. Located 1° NW of ζ Tauri.',
     context: 'deep_sky_m1_supernova_remnant' },
+  // ── Special edition: seasonal event mission ──────────────────────────────
+  // Live only while src/lib/meteor-showers.ts reports the Perseids active
+  // (~Jul 17 – Aug 24). Target string contains both 'meteor' and 'perseid' so
+  // it auto-matches the Perseid Meteor Shower AstroEvent's boostTargets and
+  // picks up the existing EVENT_BONUS_MULTIPLIER within ±24h of peak (Aug 12).
+  { id: 'perseids', name: 'Perseid Meteor Shower', emoji: '☄️', difficulty: 'Beginner',
+    stars: 150, type: 'naked_eye',
+    desc: 'Photograph the Perseid meteor shower — up to 100 meteors an hour at peak. No telescope needed, just look up.',
+    hint: "Face away from the Moon and city lights any time after 10 PM. Meteors streak across the whole sky, so you don't need to aim at Perseus.",
+    target: 'Perseid meteor shower',
+    repeatable: true,
+    context: 'perseid_meteor_shower_observation' },
 ];
 
 // Star payout per mission tier. Mission rows on /missions and the Sky page

@@ -15,19 +15,35 @@ type MissionKind =
   | { kind: 'sphere'; texture: string; spin: number; rings?: boolean; tilt?: number; retrograde?: boolean }
   | { kind: 'dso'; image: string; tone: string };
 
+// Every mission id in src/lib/constants.ts has an entry here — a completed
+// mission must never fall back to a flat placeholder. DEFAULT_ART catches any
+// id added later (and the quiz/game pseudo-missions) with a spinning Earth.
+const DEFAULT_ART: MissionKind = { kind: 'sphere', texture: '/hero/planets/earth.jpg', spin: 24 };
+
 const ART: Record<string, MissionKind> = {
   moon:           { kind: 'sphere', texture: '/images/planets/moon.jpg',     spin: 90 },
+  'daytime-moon': { kind: 'sphere', texture: '/images/planets/moon.jpg',     spin: 90 },
   jupiter:        { kind: 'sphere', texture: '/hero/planets/jupiter.jpg',    spin: 6 },
   'quick-jupiter':{ kind: 'sphere', texture: '/hero/planets/jupiter.jpg',    spin: 6 },
+  demo:           { kind: 'sphere', texture: '/hero/planets/jupiter.jpg',    spin: 6 },
   saturn:         { kind: 'sphere', texture: '/hero/planets/saturn.jpg',     spin: 7,  rings: true, tilt: -22 },
   'quick-saturn': { kind: 'sphere', texture: '/hero/planets/saturn.jpg',     spin: 7,  rings: true, tilt: -22 },
   mars:           { kind: 'sphere', texture: '/hero/planets/mars.jpg',       spin: 14 },
   mercury:        { kind: 'sphere', texture: '/hero/planets/mercury.jpg',    spin: 28 },
   venus:          { kind: 'sphere', texture: '/hero/planets/venus.jpg',      spin: 40, retrograde: true },
+  'the-sun':      { kind: 'sphere', texture: '/hero/planets/sun.jpg',        spin: 34 },
+  // Atmospheric + whole-sky subjects are observed from Earth, so they spin Earth.
+  // The night-lights plate reads as "after dark"; the daylight plate as "right now".
+  'free-observation': { kind: 'sphere', texture: '/solar-system/planets/earth-night.jpg', spin: 24 },
+  'day-sky':      { kind: 'sphere', texture: '/hero/planets/earth.jpg',      spin: 24 },
+  sunset:         { kind: 'sphere', texture: '/hero/planets/earth.jpg',      spin: 24 },
+  'sky-optics':   { kind: 'sphere', texture: '/hero/planets/earth.jpg',      spin: 24 },
   pleiades:       { kind: 'dso',    image: '/images/dso/m45.jpg', tone: 'rgba(160,200,255,0.5)' },
   orion:          { kind: 'dso',    image: '/images/dso/m42.jpg', tone: 'rgba(255,140,140,0.45)' },
   andromeda:      { kind: 'dso',    image: '/images/dso/m31.jpg', tone: 'rgba(255,210,170,0.4)' },
   crab:           { kind: 'dso',    image: '/images/dso/m1.jpg',  tone: 'rgba(255,180,200,0.5)' },
+  // Double Cluster sits in Perseus, right by the Perseid radiant.
+  perseids:       { kind: 'dso',    image: '/images/dso/ngc869.jpg', tone: 'rgba(190,215,255,0.45)' },
 };
 
 export default function MissionRotateArt({
@@ -37,10 +53,9 @@ export default function MissionRotateArt({
   missionId: string;
   size?: number;
 }) {
-  const art = ART[missionId];
+  const art = ART[missionId] ?? DEFAULT_ART;
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
 
-  if (!art) return <FallbackOrb size={size} uid={uid} />;
   if (art.kind === 'dso') return <DsoArt size={size} image={art.image} tone={art.tone} uid={uid} />;
   return <SphereArt size={size} art={art} uid={uid} />;
 }
@@ -202,31 +217,6 @@ function DsoArt({
       </g>
 
       <circle cx={r} cy={r} r={r - 0.5} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-    </svg>
-  );
-}
-
-function FallbackOrb({ size, uid }: { size: number; uid: string }) {
-  const r = size / 2;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <style>{`
-        @keyframes mra-orb-${uid} { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .mra-orb-${uid} { transform-origin: ${r}px ${r}px; transform-box: view-box; animation: mra-orb-${uid} 60s linear infinite; }
-        @media (prefers-reduced-motion: reduce) { .mra-orb-${uid} { animation: none !important; } }
-      `}</style>
-      <defs>
-        <radialGradient id={`mra-fb-${uid}`} cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#5EEAD4" stopOpacity="0.6" />
-          <stop offset="60%" stopColor="#FFB347" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="transparent" />
-        </radialGradient>
-      </defs>
-      <g className={`mra-orb-${uid}`}>
-        <circle cx={r} cy={r} r={r - 4} fill={`url(#mra-fb-${uid})`} />
-        <circle cx={r * 0.65} cy={r * 0.7} r={size * 0.04} fill="#fff" opacity="0.7" />
-        <circle cx={r * 1.2} cy={r * 1.1} r={size * 0.03} fill="#fff" opacity="0.55" />
-      </g>
     </svg>
   );
 }

@@ -126,7 +126,7 @@ export default function SkyWidget({ lat, lon, cityLabel }: Props) {
   const darkWindow = dark.duskStart && dark.dawnEnd
     ? `${fmtTime(dark.duskStart)} → ${fmtTime(dark.dawnEnd)}`
     : sunMoon?.astronomicalDuskStart && sunMoon?.astronomicalDawnEnd
-      ? `${sunMoon.astronomicalDuskStart} → ${sunMoon.astronomicalDawnEnd}`
+      ? `${fmtTime(sunMoon.astronomicalDuskStart)} → ${fmtTime(sunMoon.astronomicalDawnEnd)}`
       : sunMoon?.sunSet
         ? `${fmtTime(sunMoon.sunSet)} → ${fmtTime(sunMoon.sunRise)}`
         : null
@@ -137,7 +137,9 @@ export default function SkyWidget({ lat, lon, cityLabel }: Props) {
     : 'No planets up after dark tonight'
 
   const next7 = forecast.slice(0, 7).map((day, i) => {
-    const d = new Date(day.date)
+    // Local midnight — `new Date('2026-07-31')` is UTC midnight and names the
+    // previous weekday for viewers west of Greenwich.
+    const d = new Date(`${day.date}T00:00:00`)
     const eveningHours = day.hours.slice(18, 24)
     const cloud = avgCloud(eveningHours.length ? eveningHours : day.hours)
     return { name: DAY_LABELS[d.getDay()] ?? `D${i}`, badge: badgeClass(cloud) }

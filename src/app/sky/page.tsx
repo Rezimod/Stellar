@@ -832,8 +832,11 @@ function AzimuthStrip({ activeObject }: { activeObject: SkyObject | null }) {
     { dir: 'SW', deg: 225 }, { dir: 'W', deg: 270 },
   ];
   const az = activeObject?.azimuth ?? null;
-  // Map 90..270 → 0..1; objects in the northern half clamp to the nearest end.
-  const marker = az == null ? null : Math.max(0, Math.min(1, (az - 90) / 180));
+  // Map 90..270 → 0..1. A target in the northern half has no place on this
+  // ruler, so it gets no marker — clamping it to an end read as "due east"
+  // for something sitting at 350°, which is exactly the kind of lie that
+  // sends someone outside pointing the wrong way.
+  const marker = az == null || az < 90 || az > 270 ? null : (az - 90) / 180;
   return (
     <div className="skx__azim" role="presentation">
       {marker != null && (

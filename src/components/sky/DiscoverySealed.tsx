@@ -113,18 +113,18 @@ export default function DiscoverySealed({
 
         <h1
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 24,
+            fontFamily: 'var(--font-body)',
+            fontSize: 27,
             color: 'var(--text)',
             fontWeight: 500,
             margin: 0,
-            lineHeight: 1.05,
-            letterSpacing: '-0.015em',
-            marginTop: 8,
+            lineHeight: 1.1,
+            letterSpacing: '-0.025em',
+            marginTop: 10,
           }}
         >
           {missionName}{' '}
-          <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(var(--ink), 0.55)' }}>
+          <span style={{ fontStyle: 'italic', fontWeight: 400, color: 'rgba(var(--ink), 0.5)' }}>
             {unverified ? t('kept') : t('sealed')}
           </span>
         </h1>
@@ -133,10 +133,10 @@ export default function DiscoverySealed({
           <p
             style={{
               fontFamily: 'var(--font-body)',
-              fontSize: 11,
+              fontSize: 11.5,
               color: 'rgba(var(--ink), 0.5)',
-              lineHeight: 1.4,
-              marginTop: 6,
+              lineHeight: 1.45,
+              marginTop: 7,
               maxWidth: 320,
             }}
           >
@@ -158,75 +158,68 @@ export default function DiscoverySealed({
           <span style={{ color: 'rgba(var(--ink), 0.2)', fontSize: 9 }}>·</span>
           <span
             style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 11,
+              fontFamily: 'var(--font-body)',
+              fontSize: 11.5,
               color: 'rgba(var(--ink), 0.65)',
               fontStyle: 'italic',
               fontWeight: 400,
+              letterSpacing: '-0.005em',
             }}
           >
             {tagline}
           </span>
         </div>
 
-        <div
-          className="w-full relative overflow-hidden flex items-center justify-between"
-          style={{
-            marginTop: 10,
-            padding: '8px 14px',
-            borderRadius: 12,
-            background: 'linear-gradient(145deg, rgba(255, 179, 71,0.1) 0%, rgba(255, 179, 71,0.02) 100%)',
-            border: '1px solid rgba(255, 179, 71,0.28)',
-          }}
-        >
-          <div className="flex items-center gap-2.5">
-            {streakMultiplier > 1 && (
-              <span
-                className="px-1.5 py-0.5 rounded-full"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 8.5,
-                  color: '#C9B8F0',
-                  letterSpacing: '0.1em',
-                  fontWeight: 500,
-                  background: 'rgba(181,163,232,0.14)',
-                  border: '1px solid rgba(181,163,232,0.3)',
-                }}
-              >
-                {streakMultiplier}× STREAK
-              </span>
-            )}
+        <div className="w-full flex flex-col items-center" style={{ marginTop: 14 }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 8.5,
+              color: 'var(--accent-text)',
+              opacity: 0.6,
+              letterSpacing: '0.24em',
+              fontWeight: 500,
+            }}
+          >
+            STARS
+          </span>
+
+          <div className="flex items-center justify-center gap-1.5" style={{ marginTop: 3 }}>
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 8.5,
-                color: 'var(--accent-text)',
-                opacity: 0.65,
-                letterSpacing: '0.2em',
-                fontWeight: 500,
-              }}
-            >
-              STARS
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <span
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 26,
+                fontSize: 30,
                 color: 'var(--accent-text)',
                 fontWeight: 600,
                 lineHeight: 1,
-                letterSpacing: '-0.02em',
+                letterSpacing: '-0.03em',
+                fontVariantNumeric: 'tabular-nums',
               }}
             >
               +{totalStars}
             </span>
-            <svg width="16" height="16" viewBox="0 0 24 24">
+            <svg width="17" height="17" viewBox="0 0 24 24">
               <path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z" style={{ fill: 'var(--accent-text)' }} />
             </svg>
           </div>
+
+          {streakMultiplier > 1 && (
+            <span
+              className="px-2 py-0.5 rounded-full"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 8.5,
+                color: '#C9B8F0',
+                letterSpacing: '0.1em',
+                fontWeight: 500,
+                background: 'rgba(181,163,232,0.14)',
+                border: '1px solid rgba(181,163,232,0.3)',
+                marginTop: 7,
+              }}
+            >
+              {streakMultiplier}× STREAK
+            </span>
+          )}
         </div>
 
         <div
@@ -254,47 +247,54 @@ export default function DiscoverySealed({
               </div>
               <div
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 13,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 13.5,
                   color: 'var(--text)',
-                  fontWeight: 500,
-                  lineHeight: 1,
+                  fontWeight: 600,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.01em',
                 }}
               >
                 {t('observationTitle')}{nftNumber > 0 ? ` #${nftNumber}` : ''}
               </div>
             </div>
 
-            <div className="relative" style={{ width: 36, height: 36 }}>
-              <svg width="36" height="36" viewBox="0 0 50 50" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="25" cy="25" r="20" fill="none" style={{ stroke: 'rgba(var(--ink), 0.08)' }} strokeWidth="3" />
-                <circle
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  fill="none"
-                  style={{ stroke: skyScore >= 70 ? 'var(--accent-text)' : skyScore >= 50 ? 'var(--teal-text)' : 'var(--negative)' }}
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeDasharray={scoreDash}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1 }}>
-                  {skyScore}
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 5.5,
-                    color: 'rgba(var(--ink), 0.5)',
-                    letterSpacing: '0.1em',
-                    marginTop: 1,
-                  }}
-                >
-                  {t(`scoreLabel.${scoreKey(skyScore)}`)}
-                </span>
+            {/* Verdict word sits outside the ring — inside it, "exceptional"
+                truncates at any size that fits a 42px circle. */}
+            <div className="shrink-0 flex flex-col items-center" style={{ width: 74 }}>
+              <div className="relative" style={{ width: 40, height: 40 }}>
+                <svg width="40" height="40" viewBox="0 0 50 50" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx="25" cy="25" r="20" fill="none" style={{ stroke: 'rgba(var(--ink), 0.08)' }} strokeWidth="3" />
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r="20"
+                    fill="none"
+                    style={{ stroke: skyScore >= 70 ? 'var(--accent-text)' : skyScore >= 50 ? 'var(--teal-text)' : 'var(--negative)' }}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={scoreDash}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-primary)', fontWeight: 600, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    {skyScore}
+                  </span>
+                </div>
               </div>
+              <span
+                className="w-full text-center"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 7.5,
+                  color: 'rgba(var(--ink), 0.5)',
+                  letterSpacing: '0.06em',
+                  lineHeight: 1,
+                  marginTop: 4,
+                }}
+              >
+                {t(`scoreLabel.${scoreKey(skyScore)}`)}
+              </span>
             </div>
           </div>
 
@@ -339,9 +339,9 @@ export default function DiscoverySealed({
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{
-                fontSize: 10.5,
+                fontSize: 11,
                 color: 'var(--teal-text)',
-                fontFamily: 'var(--font-display)',
+                fontFamily: 'var(--font-body)',
                 fontWeight: 500,
                 textDecoration: 'none',
               }}
@@ -362,9 +362,10 @@ export default function DiscoverySealed({
             color: 'var(--canvas)',
             border: 'none',
             borderRadius: 11,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: 600,
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-cta)',
+            letterSpacing: '-0.01em',
             cursor: 'pointer',
             transition: 'transform 180ms cubic-bezier(.2,.7,.2,1)',
           }}
@@ -427,9 +428,9 @@ function SecondaryButton({
         border: `1px solid ${borderColor}`,
         color,
         borderRadius: 10,
-        fontSize: 10.5,
+        fontSize: 11,
         fontWeight: 500,
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-cta)',
         cursor: 'pointer',
       }}
       onMouseEnter={e => {

@@ -18,6 +18,9 @@ const ORB_SRC: Record<string, string> = {
   orion: '/images/dso/m42.jpg',
   andromeda: '/images/dso/m31.jpg',
   crab: '/images/dso/m1.jpg',
+  // The Perseid radiant sits in Perseus — the Double Cluster stands in for a
+  // shower that has no single photographable body.
+  perseids: '/images/dso/ngc869.jpg',
 };
 
 // `raw` swaps to the alpha-cut PNG (black space removed) and drops the circular

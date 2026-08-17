@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Body, Equator, Horizon, Observer, SearchAltitude, SearchRiseSet } from 'astronomy-engine';
 import { getVisiblePlanets, type PlanetInfo } from '@/lib/planets';
 import { fetchSkyForecast } from '@/lib/sky-data';
+import { skyForecastRateLimit, checkRateLimit } from '@/lib/rate-limit';
 import { azimuthToCompass, altitudeToFists } from '@/lib/sky/directions';
 import {
   CATALOG,
@@ -134,14 +135,22 @@ function cloudQuality(pct: number): { quality: FinderResponse['conditions']['qua
   return { quality: 'Poor', summary: 'Mostly clouded out tonight' };
 }
 
-function eveningCloud(forecastDay: { hours: { time: string; cloudCover: number }[] } | undefined): number {
-  if (!forecastDay?.hours?.length) return 50;
-  const evening = forecastDay.hours.filter((h) => {
-    const hr = parseInt(h.time.slice(11, 13), 10);
-    return hr >= 20 || hr <= 4;
-  });
-  const pool = evening.length ? evening : forecastDay.hours;
-  return Math.round(pool.reduce((s, h) => s + h.cloudCover, 0) / pool.length);
+type ForecastDay = { hours: { time: string; cloudCover: number }[] };
+
+/**
+ * Mean cloud cover over the coming night: 20:00–23:00 of today plus
+ * 00:00–04:00 of tomorrow. Reading `hr <= 4` off today alone would average
+ * *this* morning's sky — hours already in the past — into tonight's verdict.
+ */
+function eveningCloud(today: ForecastDay | undefined, tomorrow: ForecastDay | undefined): number {
+  const hourOf = (t: string) => parseInt(t.slice(11, 13), 10);
+  const pool = [
+    ...(today?.hours ?? []).filter((h) => hourOf(h.time) >= 20),
+    ...(tomorrow?.hours ?? today?.hours ?? []).filter((h) => hourOf(h.time) <= 4),
+  ];
+  const src = pool.length ? pool : (today?.hours ?? []);
+  if (!src.length) return 50;
+  return Math.round(src.reduce((s, h) => s + h.cloudCover, 0) / src.length);
 }
 
 function planetObject(id: string, p: PlanetInfo | undefined): FinderObject {
@@ -187,6 +196,22 @@ function planetObject(id: string, p: PlanetInfo | undefined): FinderObject {
 }
 
 export async function GET(req: NextRequest) {
+  // This route proxies Open-Meteo (via fetchSkyForecast) on every call, and
+  // /sky polls it once a minute per client. Without the same per-IP ceiling
+  // /api/sky/forecast carries, it is an unmetered path to the same upstream
+  // quota — the guard on the other route can just be walked around.
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown';
+  const { success, remaining } = await checkRateLimit(skyForecastRateLimit, ip);
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Try again in a minute.' },
+      { status: 429, headers: { 'X-RateLimit-Remaining': String(remaining) } },
+    );
+  }
+
   const latRaw = req.nextUrl.searchParams.get('lat');
   const lonRaw = req.nextUrl.searchParams.get('lon') ?? req.nextUrl.searchParams.get('lng');
   const lat = parseFloat(latRaw ?? '');
@@ -211,7 +236,7 @@ export async function GET(req: NextRequest) {
   let cloudCoverPct = 50;
   try {
     const forecast = await fetchSkyForecast(lat, lon);
-    cloudCoverPct = eveningCloud(forecast[0]);
+    cloudCoverPct = eveningCloud(forecast[0], forecast[1]);
   } catch (err) {
     console.warn('[api/sky/finder] forecast failed:', err instanceof Error ? err.message : err);
   }

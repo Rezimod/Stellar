@@ -13,7 +13,7 @@ on-chain data — every row is independently verifiable on Solscan.
 | **Total verified-observation cNFT mints** | **0** |
 | Unique owner wallets | 0 |
 | Date range | n/a |
-| Unverified keepsake mints (excluded above) | 33 |
+| Unverified keepsake mints (excluded above) | 39 |
 | Certify-all window mints (excluded above) | 14 |
 | Internal test mints (excluded above) | 4 |
 
@@ -48,11 +48,11 @@ _none_
 | Onboarded users (`users`) | 45 |
 | Cohort-tracked wallets (`user_cohorts`) | 8 |
 | `observation_log` mint rows — devnet pilot (before 2026-06-21) | 59 |
-| `observation_log` mint rows — mainnet era | 29 |
-| `observation_log` rows with an off-chain event tag (not mints) | 32 |
+| `observation_log` mint rows — mainnet era | 35 |
+| `observation_log` rows with an off-chain event tag (not mints) | 39 |
 
-Mainnet-era DB mint rows verified against chain: **29 landed**, 0 failed on-chain, 0 not found.
+Mainnet-era DB mint rows verified against chain: **35 landed**, 0 failed on-chain, 0 not found.
 
-On-chain vs DB: **33** live user cNFTs on-chain (verified + keepsakes) vs **29** landed mainnet mint rows in the app DB — investigate the gap (test mints, retries, or out-of-app mints).
+On-chain vs DB: **39** live user cNFTs on-chain (verified + keepsakes) vs **35** landed mainnet mint rows in the app DB — investigate the gap (test mints, retries, or out-of-app mints).
 
 Full row-level data: [mints-report.csv](./mints-report.csv)

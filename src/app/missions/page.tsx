@@ -1225,7 +1225,7 @@ function EventMissionCard({
   return (
     <section className="mis-quest mis-quest--event">
       <span className="mis-quest-art" aria-hidden>
-        <span className="mis-event-icon"><Sparkles size={34} strokeWidth={1.6} /></span>
+        <SkyOrb name="perseids" />
       </span>
       <div className="mis-quest-body">
         <span className="mis-quest-badge mis-quest-badge--event"><Sparkles size={11} strokeWidth={2} /> {labels.badge}</span>

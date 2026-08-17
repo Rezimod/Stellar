@@ -217,8 +217,12 @@ export function useSkyData() {
             visibilityKm: Math.round((verify.visibilityMeters ?? 20000) / 1000),
             windKmh: Math.round(verify.windSpeed ?? 0),
             windDirection: verify.windDirection ?? 'W',
-            astronomicalDarkStart: sunMoon?.astronomicalDuskStart ?? '22:48',
-            astronomicalDarkEnd: sunMoon?.astronomicalDawnEnd ?? '04:12',
+            astronomicalDarkStart: sunMoon?.astronomicalDuskStart
+              ? formatHHmm(sunMoon.astronomicalDuskStart)
+              : '22:48',
+            astronomicalDarkEnd: sunMoon?.astronomicalDawnEnd
+              ? formatHHmm(sunMoon.astronomicalDawnEnd)
+              : '04:12',
             bestWindow: computeBestWindow(planets),
             bortleClass: verify.bortleClass ?? 5,
           }
