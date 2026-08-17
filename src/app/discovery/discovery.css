@@ -15,7 +15,21 @@
 /* ── Immersive mode ───────────────────────────────────────────────────────
    Mirrors the existing `data-solar-immersive` contract in globals.css: hide
    the global chrome and neutralise #stellar-main's padding so the teaser owns
-   the full viewport. Set by <DiscoveryImmersive /> on mount. */
+   the full viewport.
+
+   Two triggers, deliberately:
+
+   1. `:has(.dsc-root)` — .dsc-root is in the server-rendered HTML, so this
+      matches on the FIRST PAINT. Without it the nav, footer and bottom bar
+      render for as long as hydration takes and then vanish, which on a launch
+      page is a visible flash of someone else's UI.
+   2. `[data-discovery-immersive]` — set by <DiscoveryImmersive /> on mount.
+      Kept as the fallback for engines without :has() support.
+
+   Either one alone is sufficient; together they cover first paint and old
+   browsers. */
+html:has(.dsc-root),
+body:has(.dsc-root),
 html:has(body[data-discovery-immersive='1']),
 body[data-discovery-immersive='1'] {
   overscroll-behavior: none;
@@ -25,6 +39,11 @@ body[data-discovery-immersive='1'] {
   background: #04061a !important;
 }
 
+body:has(.dsc-root) [data-stellar-chrome='top'],
+body:has(.dsc-root) [data-stellar-chrome='bottom'],
+body:has(.dsc-root) [data-stellar-chrome='footer'],
+body:has(.dsc-root) [data-stellar-chrome='starfield'],
+body:has(.dsc-root) .skip-link,
 body[data-discovery-immersive='1'] [data-stellar-chrome='top'],
 body[data-discovery-immersive='1'] [data-stellar-chrome='bottom'],
 body[data-discovery-immersive='1'] [data-stellar-chrome='footer'],
@@ -33,6 +52,7 @@ body[data-discovery-immersive='1'] .skip-link {
   display: none !important;
 }
 
+body:has(.dsc-root) #stellar-main,
 body[data-discovery-immersive='1'] #stellar-main {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
