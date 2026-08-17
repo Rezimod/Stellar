@@ -1,0 +1,259 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Cosmic Discovery — scoped stylesheet for the /discovery experience layer.
+
+   SCOPING CONTRACT: every selector below is gated behind either
+   `body[data-discovery-immersive="1"]` or the `.dsc-` prefix. This file is
+   bundled app-wide, so that gating is what guarantees it cannot alter /sky,
+   /missions or any existing surface.
+
+   The palette here is deliberately NOT the app's token set (`--canvas`,
+   `--terracotta`, `--seafoam`). Discovery is a launch funnel with its own
+   visual language — cyan/amber/purple on near-black — and it is confined to
+   this scope precisely so the two systems never bleed into each other.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Immersive mode ───────────────────────────────────────────────────────
+   Mirrors the existing `data-solar-immersive` contract in globals.css: hide
+   the global chrome and neutralise #stellar-main's padding so the teaser owns
+   the full viewport. Set by <DiscoveryImmersive /> on mount. */
+html:has(body[data-discovery-immersive='1']),
+body[data-discovery-immersive='1'] {
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  /* Paint the teaser ground behind the page so overscroll and the area under
+     a hidden footer never flash the app's --canvas blue. */
+  background: #04061a !important;
+}
+
+body[data-discovery-immersive='1'] [data-stellar-chrome='top'],
+body[data-discovery-immersive='1'] [data-stellar-chrome='bottom'],
+body[data-discovery-immersive='1'] [data-stellar-chrome='footer'],
+body[data-discovery-immersive='1'] [data-stellar-chrome='starfield'],
+body[data-discovery-immersive='1'] .skip-link {
+  display: none !important;
+}
+
+body[data-discovery-immersive='1'] #stellar-main {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ── Root + palette ──────────────────────────────────────────────────────
+   Tokens are declared on .dsc-root, not :root, so they exist only inside the
+   discovery subtree. Colors are absolute: the teaser stays dark even when the
+   user has the app's light theme on. */
+.dsc-root {
+  --dsc-bg: #04061a;
+  --dsc-cyan: #00c8f0;
+  --dsc-amber: #ffb200;
+  --dsc-purple: #9152d7;
+
+  --dsc-text: #ffffff;
+  --dsc-ghost: rgba(255, 255, 255, 0.58);
+  --dsc-ghost-dim: rgba(255, 255, 255, 0.32);
+  --dsc-hairline: rgba(255, 255, 255, 0.09);
+
+  --dsc-glass: rgba(255, 255, 255, 0.035);
+  --dsc-glass-edge: rgba(255, 255, 255, 0.1);
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  background: var(--dsc-bg);
+  color: var(--dsc-text);
+  font-family: var(--font-body);
+}
+
+/* ── Starfield ───────────────────────────────────────────────────────────
+   Absolute, not fixed: PageTransition puts a transform on its wrapper during
+   the page-enter animation, which would make a fixed child resolve against
+   that box instead of the viewport and snap on animation end. */
+.dsc-starfield {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dsc-star {
+  position: absolute;
+  border-radius: 9999px;
+  background: #ffffff;
+  animation: dsc-twinkle var(--dsc-dur, 4s) ease-in-out infinite;
+  animation-delay: var(--dsc-delay, 0s);
+  will-change: opacity;
+}
+
+@keyframes dsc-twinkle {
+  0%,
+  100% {
+    opacity: var(--dsc-dim, 0.25);
+  }
+  50% {
+    opacity: var(--dsc-bright, 0.9);
+  }
+}
+
+/* A handful of cyan stars tie the starfield to the accent without becoming a
+   "cyan glow" wash. */
+.dsc-star--accent {
+  background: var(--dsc-cyan);
+}
+
+/* ── Sealed object ───────────────────────────────────────────────────────
+   The blacked-out celestial body. Reads as an unlit sphere: near-black radial
+   fill, hairline cyan limb, slow breathing halo. */
+.dsc-sealed {
+  position: relative;
+  width: min(280px, 68vw);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 45%, #0a0d1c 0%, #04050d 62%, #000000 100%);
+  border: 1px solid rgba(0, 200, 240, 0.2);
+  animation: dsc-pulse 3s ease-in-out infinite;
+}
+
+@keyframes dsc-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 200, 240, 0.06),
+      0 0 44px rgba(0, 200, 240, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0, 200, 240, 0.16),
+      0 0 76px rgba(0, 200, 240, 0.2);
+  }
+}
+
+/* ── Glass card ──────────────────────────────────────────────────────────
+   One level only — never nest a .dsc-glass inside another. */
+.dsc-glass {
+  background: var(--dsc-glass);
+  border: 1px solid var(--dsc-glass-edge);
+  border-radius: 16px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* ── Countdown ───────────────────────────────────────────────────────────── */
+.dsc-digit {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--dsc-cyan);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.dsc-unit-label {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--dsc-ghost-dim);
+  margin-top: 7px;
+}
+
+@media (min-width: 640px) {
+  .dsc-digit {
+    font-size: 38px;
+  }
+  .dsc-unit-label {
+    font-size: 10px;
+  }
+}
+
+/* ── Email capture ───────────────────────────────────────────────────────── */
+.dsc-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--dsc-text);
+  font-family: var(--font-body);
+  padding: 0 14px;
+}
+
+.dsc-input::placeholder {
+  color: var(--dsc-ghost-dim);
+}
+
+.dsc-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 12px;
+  background: var(--dsc-glass);
+  border: 1px solid var(--dsc-glass-edge);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color 180ms ease;
+}
+
+.dsc-field:focus-within {
+  border-color: rgba(0, 200, 240, 0.45);
+}
+
+.dsc-field[data-invalid='true'] {
+  border-color: rgba(255, 178, 0, 0.5);
+}
+
+.dsc-submit {
+  flex-shrink: 0;
+  padding: 0 18px;
+  /* Matches the 44px touch target globals.css enforces on inputs at <=640px,
+     so the field and its button stay the same height on mobile. */
+  height: 44px;
+  min-height: 44px;
+  border-radius: 9px;
+  background: var(--dsc-cyan);
+  color: #02121a;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    filter 180ms ease,
+    opacity 180ms ease;
+}
+
+.dsc-submit:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.dsc-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.dsc-root :focus-visible {
+  outline: 2px solid var(--dsc-cyan);
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────
+   Twinkling dots and a breathing halo are exactly the kind of ambient motion
+   that triggers vestibular discomfort. Hold them at their mid state. */
+@media (prefers-reduced-motion: reduce) {
+  .dsc-star {
+    animation: none;
+    opacity: var(--dsc-dim, 0.25);
+  }
+  .dsc-sealed {
+    animation: none;
+    box-shadow:
+      0 0 0 1px rgba(0, 200, 240, 0.12),
+      0 0 60px rgba(0, 200, 240, 0.15);
+  }
+  .dsc-submit {
+    transition: none;
+  }
+}
