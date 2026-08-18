@@ -178,6 +178,23 @@ export default function HeroSaturn() {
           {t('ctaPrimary')}
           <ArrowIcon />
         </Link>
+
+        {/* The only entry point to the Cosmic Discovery funnel from the main
+            site. Deliberately secondary: it sits under the primary CTA and
+            takes the app's teal accent rather than the hero's terracotta. */}
+        <Link
+          href="/discovery"
+          className="mt-4 inline-flex items-center gap-1.5 text-[13px] no-underline transition-opacity hover:opacity-80"
+          style={{
+            color: 'var(--teal-text)',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+            animation: 'heroCardSwap 0.7s ease 0.24s both',
+          }}
+        >
+          Discover the Universe
+          <span aria-hidden>&rarr;</span>
+        </Link>
       </div>
     </section>
   );

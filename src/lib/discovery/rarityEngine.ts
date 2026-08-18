@@ -30,6 +30,17 @@ export type ObjectType =
   | 'PULSAR'
   | 'SUPERNOVA';
 
+/** Display names for ObjectType, for badges and prose. */
+export const OBJECT_TYPE_LABEL: Record<ObjectType, string> = {
+  STAR: 'Star',
+  NEBULA: 'Nebula',
+  PLANET: 'Planet',
+  EXOPLANET: 'Exoplanet',
+  BLACK_HOLE: 'Black Hole',
+  PULSAR: 'Pulsar',
+  SUPERNOVA: 'Supernova',
+};
+
 export type Rarity = 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
 
 export type CelestialObject = {
@@ -51,7 +62,7 @@ export type CelestialObject = {
  *  security note above. */
 export const REVEAL_SALT = 'ORIONIDS_2026';
 
-const RARITY_TO_TIER: Record<Rarity, TierId> = {
+export const RARITY_TO_TIER: Record<Rarity, TierId> = {
   COMMON: 'common',
   UNCOMMON: 'uncommon',
   RARE: 'rare',

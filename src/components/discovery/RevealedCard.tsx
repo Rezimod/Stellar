@@ -1,14 +1,8 @@
 import ObjectVisual from '@/components/discovery/ObjectVisual';
 import { OBJECT_TYPE_LABEL, type RevealedObject } from '@/lib/discovery/mockReveal';
-import { TIER_BY_ID } from '@/lib/discovery/tiers';
+import { TIER_BY_ID, rewardLine } from '@/lib/discovery/tiers';
 
 const fmt = (n: number) => n.toLocaleString('en-US');
-
-/** "Full Astroman Telescope + 50,000 STRLLR" */
-export function rewardLine(tier: RevealedObject['tier']): string {
-  const t = TIER_BY_ID[tier];
-  return t.physical ? `${t.physical} + ${fmt(t.strllr)} STRLLR` : `${fmt(t.strllr)} STRLLR`;
-}
 
 export default function RevealedCard({ object }: { object: RevealedObject }) {
   const tier = TIER_BY_ID[object.tier];

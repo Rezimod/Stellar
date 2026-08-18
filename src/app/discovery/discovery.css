@@ -59,10 +59,16 @@ body[data-discovery-immersive='1'] #stellar-main {
 }
 
 /* ── Root + palette ──────────────────────────────────────────────────────
-   Tokens are declared on .dsc-root, not :root, so they exist only inside the
-   discovery subtree. Colors are absolute: the teaser stays dark even when the
-   user has the app's light theme on. */
-.dsc-root {
+   Tokens are declared on the discovery roots, not :root, so they exist only
+   inside the discovery subtree. Colors are absolute: the teaser stays dark
+   even when the user has the app's light theme on.
+
+   .dsc-nav and .dsc-nav-sheet are listed alongside .dsc-root because both are
+   fixed to the viewport and therefore rendered as siblings of .dsc-root, not
+   children — they would inherit nothing otherwise. */
+.dsc-root,
+.dsc-nav,
+.dsc-nav-sheet {
   --dsc-bg: #04061a;
   --dsc-cyan: #00c8f0;
   --dsc-amber: #ffb200;
@@ -76,6 +82,12 @@ body[data-discovery-immersive='1'] #stellar-main {
   --dsc-glass: rgba(255, 255, 255, 0.035);
   --dsc-glass-edge: rgba(255, 255, 255, 0.1);
 
+  /* Height of the fixed discovery bar. .dsc-root reserves it as padding, and
+     any full-height child measures against 100dvh minus this. */
+  --dsc-nav-h: 48px;
+}
+
+.dsc-root {
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
@@ -84,9 +96,16 @@ body[data-discovery-immersive='1'] #stellar-main {
      position:sticky inside it (the mint page's left column). The starfield
      clips its own dots, so this only guards against stray glow overhang. */
   overflow-x: clip;
+  padding-top: var(--dsc-nav-h);
   background: var(--dsc-bg);
   color: var(--dsc-text);
   font-family: var(--font-body);
+}
+
+/* A child that should fill what is left of the viewport under the bar.
+   `min-h-dvh` would overflow by exactly the bar's height. */
+.dsc-screen {
+  min-height: calc(100dvh - var(--dsc-nav-h));
 }
 
 /* ── Starfield ───────────────────────────────────────────────────────────
@@ -661,6 +680,14 @@ body[data-discovery-immersive='1'] #stellar-main {
   color: var(--dsc-tier, #fff);
 }
 
+/* Marks a surface that is showing fabricated data, so nothing on screen can be
+   mistaken for a real holder's result. */
+.dsc-badge--demo {
+  border: 1px solid color-mix(in srgb, var(--dsc-amber) 45%, transparent);
+  background: color-mix(in srgb, var(--dsc-amber) 13%, transparent);
+  color: var(--dsc-amber);
+}
+
 /* Legendary gets the one moving gradient in the whole system. */
 .dsc-badge--legendary {
   border-color: transparent;
@@ -757,6 +784,291 @@ body[data-discovery-immersive='1'] #stellar-main {
   display: block;
 }
 
+/* ── Share card ──────────────────────────────────────────────────────────
+   Only the Legendary ring needs CSS: every other rarity in ShareCard is a
+   static box-shadow, so it renders identically in the OG image. The conic
+   gradient is masked to a hairline annulus and rotated. */
+.dsc-share-ring {
+  animation: dsc-share-ring-spin 14s linear infinite;
+}
+
+@keyframes dsc-share-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ══════════════════════════ LEADERBOARD ═════════════════════════════════ */
+
+/* ── Tabs ────────────────────────────────────────────────────────────────
+   An underline rail rather than pill buttons: the board below is already a
+   dense stack of bordered rows, and a second bordered control on top of it
+   reads as another row. */
+.dsc-lb-tabs {
+  display: flex;
+  gap: 26px;
+  border-bottom: 1px solid var(--dsc-hairline);
+}
+
+.dsc-lb-tab {
+  position: relative;
+  padding: 0 0 12px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dsc-ghost-dim);
+  transition: color 180ms ease;
+  /* globals.css gives every button a 44px min-height, which would push the
+     underline rail away from the border it is supposed to sit on. */
+  min-height: 0;
+}
+
+.dsc-lb-tab:hover {
+  color: var(--dsc-ghost);
+}
+
+.dsc-lb-tab[aria-selected='true'] {
+  color: var(--dsc-text);
+}
+
+.dsc-lb-tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--dsc-cyan);
+}
+
+/* ── Rows ────────────────────────────────────────────────────────────────
+   Mobile stacks the meta under the name; from 760px the row becomes a single
+   line. One DOM either way — the flex direction is the only thing that
+   changes. */
+.dsc-lb-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.028);
+  border: 1px solid var(--dsc-hairline);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.dsc-lb-row:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Legendary rows carry a gold wash and a slowly travelling edge — the same
+   shimmer as the legendary badge, at a fraction of the amplitude so a row of
+   them does not turn the page into a slot machine. */
+.dsc-lb-row--legendary {
+  background:
+    linear-gradient(90deg, rgba(255, 218, 107, 0.09), rgba(255, 218, 107, 0.02) 62%),
+    rgba(255, 255, 255, 0.028);
+  border-color: transparent;
+  background-clip: padding-box;
+}
+
+.dsc-lb-row--legendary::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(100deg, rgba(255, 218, 107, 0.15), #ffda6b, rgba(255, 218, 107, 0.15));
+  background-size: 300% 100%;
+  animation: dsc-gold-shimmer 6s ease-in-out infinite;
+  /* Paint the gradient in the 1px padding ring only, so it reads as a border
+     rather than a filled card. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.dsc-lb-rank {
+  flex-shrink: 0;
+  width: 26px;
+  padding-top: 1px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dsc-ghost-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.dsc-lb-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dsc-lb-name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--dsc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Collector rows put an address where an object name goes. */
+.dsc-lb-name--mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dsc-lb-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dsc-lb-wallet {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dsc-ghost-dim);
+  white-space: nowrap;
+}
+
+.dsc-lb-reward {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--dsc-ghost);
+}
+
+.dsc-lb-view {
+  flex-shrink: 0;
+  align-self: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dsc-cyan);
+  text-decoration: none;
+  padding: 4px 2px;
+}
+
+.dsc-lb-view:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 760px) {
+  .dsc-lb-row {
+    align-items: center;
+  }
+  .dsc-lb-body {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+  .dsc-lb-name {
+    flex: 1;
+    min-width: 0;
+  }
+  .dsc-lb-meta {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .dsc-lb-badge-col {
+    width: 96px;
+  }
+  .dsc-lb-wallet {
+    width: 88px;
+  }
+  /* Wide enough to hold the longest reward line — "Full Astroman Telescope +
+     50,000 STRLLR" — on one line, so Legendary rows keep the same height as
+     the rest of the board. */
+  .dsc-lb-reward {
+    width: 252px;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+/* ── Collector medals ────────────────────────────────────────────────────
+   Gold, silver, bronze on the top three; everyone else keeps the rank digit. */
+.dsc-lb-medal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* ── Pre-reveal ticker ───────────────────────────────────────────────────
+   The track holds the list twice; translating it by exactly half its width
+   loops seamlessly. Duplicated items are hidden from assistive tech, and the
+   whole rail is decorative — the same facts are in the stats above it. */
+.dsc-ticker {
+  overflow: hidden;
+  border-top: 1px solid var(--dsc-hairline);
+  border-bottom: 1px solid var(--dsc-hairline);
+  padding: 10px 0;
+  /* Fade the ends so items enter and leave rather than being cut off. */
+  -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.dsc-ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 34px;
+  animation: dsc-ticker-roll 42s linear infinite;
+}
+
+.dsc-ticker-item {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--dsc-ghost-dim);
+  white-space: nowrap;
+}
+
+.dsc-ticker-item b {
+  font-weight: 400;
+  color: var(--dsc-ghost);
+}
+
+@keyframes dsc-ticker-roll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* Half the track is the first copy of the list; the 17px offset accounts
+       for the gap that sits between the two copies. */
+    transform: translateX(calc(-50% - 17px));
+  }
+}
+
 /* ── Reduced motion ──────────────────────────────────────────────────────
    Twinkling dots and a breathing halo are exactly the kind of ambient motion
    that triggers vestibular discomfort. Hold them at their mid state. */
@@ -785,6 +1097,21 @@ body[data-discovery-immersive='1'] #stellar-main {
   .dsc-object-visual::after {
     animation: none;
   }
+  .dsc-share-ring {
+    animation: none;
+  }
+  .dsc-lb-row {
+    transition: none;
+  }
+  .dsc-lb-row--legendary::before {
+    animation: none;
+    background-position: 50% 50%;
+  }
+  /* A rail that scrolls forever is the clearest case for holding still; the
+     first few entries stay readable at rest. */
+  .dsc-ticker-track {
+    animation: none;
+  }
   /* The reveal sequence is skipped entirely for these users — see
      RevealSequence, which jumps straight to the card. These rules only cover
      the case where an element is already on screen. */
@@ -800,4 +1127,293 @@ body[data-discovery-immersive='1'] #stellar-main {
     animation: none;
     background-position: 50% 50%;
   }
+  .dsc-nav-sheet {
+    animation: none;
+  }
+  .dsc-nav-burger span {
+    transition: none;
+  }
+}
+
+/* ── Discovery nav ────────────────────────────────────────────────────────
+   The app's own Nav is hidden across /discovery (see the immersive block at
+   the top of this file), so this bar is the only chrome the funnel has. It is
+   fixed rather than sticky: several discovery pages are single-screen, and a
+   sticky bar in a non-scrolling page would simply scroll away on the ones that
+   do scroll. */
+.dsc-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: var(--dsc-nav-h);
+  background: rgba(4, 6, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--dsc-hairline);
+  color: var(--dsc-text);
+  font-family: var(--font-body);
+}
+
+.dsc-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.dsc-nav-brand {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dsc-cyan);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 180ms ease;
+}
+
+.dsc-nav-brand:hover {
+  opacity: 0.78;
+}
+
+/* Centre group. Absolute so the three links stay optically centred regardless
+   of how wide the wallet address on the right happens to render. */
+.dsc-nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  align-items: center;
+  gap: 26px;
+}
+
+.dsc-nav-link {
+  position: relative;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--dsc-ghost);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 180ms ease;
+}
+
+.dsc-nav-link:hover {
+  color: var(--dsc-text);
+}
+
+.dsc-nav-link[aria-current='page'] {
+  color: var(--dsc-text);
+}
+
+.dsc-nav-link[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: var(--dsc-cyan);
+}
+
+.dsc-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Compact wallet pill. The global mobile rule stretches every <button> to a
+   44px minimum, which inside a 48px bar leaves no breathing room — hence the
+   explicit min-height. */
+.dsc-nav-wallet {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 200, 240, 0.34);
+  background: rgba(0, 200, 240, 0.1);
+  color: var(--dsc-cyan);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.dsc-nav-wallet:hover:not(:disabled) {
+  background: rgba(0, 200, 240, 0.18);
+  border-color: rgba(0, 200, 240, 0.55);
+}
+
+.dsc-nav-wallet:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.dsc-nav-wallet--connected {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dsc-ghost);
+}
+
+.dsc-nav-wallet--connected:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--dsc-text);
+}
+
+/* ── Hamburger ───────────────────────────────────────────────────────────── */
+.dsc-nav-burger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--dsc-hairline);
+  background: transparent;
+  cursor: pointer;
+}
+
+.dsc-nav-burger span {
+  display: block;
+  width: 14px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: var(--dsc-text);
+  transition:
+    transform 200ms ease,
+    opacity 160ms ease;
+}
+
+.dsc-nav-burger[aria-expanded='true'] span:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+
+.dsc-nav-burger[aria-expanded='true'] span:nth-child(2) {
+  opacity: 0;
+}
+
+.dsc-nav-burger[aria-expanded='true'] span:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
+
+/* ── Mobile overlay ──────────────────────────────────────────────────────
+   Opaque, not translucent: this sits over live page content, and a blurred
+   sheet over a starfield reads as a rendering fault rather than a menu. */
+.dsc-nav-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--dsc-nav-h) 28px 28px;
+  background: #04061a;
+  animation: dsc-sheet-in 200ms ease-out both;
+}
+
+@keyframes dsc-sheet-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dsc-nav-sheet-link {
+  font-family: var(--font-body);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--dsc-ghost);
+  text-decoration: none;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--dsc-hairline);
+}
+
+.dsc-nav-sheet-link[aria-current='page'] {
+  color: var(--dsc-text);
+}
+
+.dsc-nav-sheet-foot {
+  margin-top: 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--dsc-ghost-dim);
+}
+
+@media (min-width: 760px) {
+  .dsc-nav-links {
+    display: flex;
+  }
+  .dsc-nav-burger {
+    display: none;
+  }
+}
+
+/* ── Shareable discovery page ────────────────────────────────────────────
+   The share card is authored at a fixed 1200x630 (it has to be — the same
+   markup backs the OG image), so it is scaled down to fit rather than
+   reflowed. ShareCardFrame measures the box and sets --dsc-card-scale. */
+.dsc-card-frame {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  aspect-ratio: 1200 / 630;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--dsc-glass-edge);
+}
+
+.dsc-card-frame > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scale(var(--dsc-card-scale, 1));
+  transform-origin: top left;
+}
+
+.dsc-detail-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--dsc-hairline);
+}
+
+.dsc-detail-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dsc-ghost-dim);
+  white-space: nowrap;
+}
+
+.dsc-detail-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--dsc-text);
+  text-align: right;
+  overflow-wrap: anywhere;
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import MintActions from '@/components/discovery/MintActions';
 import MintCard from '@/components/discovery/MintCard';
 import MintProgress from '@/components/discovery/MintProgress';
@@ -20,21 +19,7 @@ export default function MintPage() {
       <Starfield />
 
       <div className="relative z-10 mx-auto w-full max-w-[1080px] px-5 py-8 sm:py-10">
-        {/* The global nav is hidden on /discovery, so the way back has to live
-            on the page itself. */}
-        <Link
-          href="/discovery"
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 11.5,
-            letterSpacing: '0.06em',
-            color: 'var(--dsc-ghost-dim)',
-          }}
-        >
-          &larr; Back
-        </Link>
-
-        <div className="mt-7 grid grid-cols-1 items-start gap-10 lg:grid-cols-[360px_1fr] lg:gap-14">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[360px_1fr] lg:gap-14">
           {/* ── Left: the pass ── */}
           <div className="flex justify-center lg:sticky lg:top-10">
             <MintCard />

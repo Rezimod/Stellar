@@ -80,6 +80,14 @@ export const TIERS_BY_VALUE: Tier[] = [...TIERS].reverse();
 
 export const TIER_BY_ID = Object.fromEntries(TIERS.map((t) => [t.id, t])) as Record<TierId, Tier>;
 
+/** "Full Astroman Telescope + 50,000 STRLLR", or just the STRLLR for the
+ *  token-only tiers. Shared by the reveal card and the leaderboard. */
+export function rewardLine(id: TierId): string {
+  const t = TIER_BY_ID[id];
+  const strllr = `${t.strllr.toLocaleString('en-US')} STRLLR`;
+  return t.physical ? `${t.physical} + ${strllr}` : strllr;
+}
+
 /** Physical rewards ship, so these tiers need a shipping address collected. */
 export function needsShipping(id: TierId): boolean {
   return TIER_BY_ID[id].physical !== null;

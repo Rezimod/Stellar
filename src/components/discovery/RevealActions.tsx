@@ -39,7 +39,7 @@ export default function RevealActions({ object }: { object: RevealedObject }) {
       {shipping && claiming && <ShippingClaimForm onClose={() => setClaiming(false)} />}
 
       <Link
-        href="/leaderboard"
+        href="/discovery/leaderboard"
         className="text-center"
         style={{
           fontFamily: 'var(--font-body)',

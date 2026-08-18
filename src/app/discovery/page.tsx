@@ -15,21 +15,10 @@ export default function DiscoveryPage() {
     <div className="dsc-root">
       <Starfield />
 
-      <div className="relative z-10 flex min-h-dvh flex-col items-center px-5 py-8 sm:py-10">
-        <p
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 12,
-            fontWeight: 500,
-            letterSpacing: '0.42em',
-            textTransform: 'uppercase',
-            color: 'var(--dsc-cyan)',
-            margin: 0,
-          }}
-        >
-          Stellarr
-        </p>
-
+      {/* dsc-screen, not min-h-dvh: the fixed nav takes the first 48px, so a
+          full viewport height here would overflow by exactly that much. The
+          wordmark lives in the nav now. */}
+      <div className="dsc-screen relative z-10 flex flex-col items-center px-5 py-8 sm:py-10">
         <div className="flex flex-1 flex-col items-center justify-center gap-7 py-12 sm:gap-8">
           <SealedObject />
 
