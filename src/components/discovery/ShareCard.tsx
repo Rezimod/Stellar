@@ -1,4 +1,5 @@
 import { REVEAL_AT_MS } from '@/lib/discovery/constants';
+import { objectArt } from '@/lib/discovery/passArt';
 import { generateVisualGradient, type CelestialObject, type Rarity } from '@/lib/discovery/rarityEngine';
 
 /**
@@ -140,6 +141,7 @@ type Props = {
 export default function ShareCard({ object, scale = 1, discoveredAtMs = REVEAL_AT_MS }: Props) {
   const v = RARITY_VISUAL[object.rarity] ?? RARITY_VISUAL.COMMON;
   const stars = shareCardStars(object.visualSeed);
+  const art = objectArt(object.id);
 
   return (
     <div
@@ -218,16 +220,36 @@ export default function ShareCard({ object, scale = 1, discoveredAtMs = REVEAL_A
                 }}
               />
             )}
-            <div
-              aria-hidden="true"
-              style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: 999,
-                background: generateVisualGradient(object.visualSeed, object.rarity),
-                boxShadow: v.glow,
-              }}
-            />
+            {/* A real frame when the object has one; the deterministic gradient
+                otherwise. Only 13 of 110 objects have ever been imaged, so the
+                gradient is a permanent fallback, not a placeholder. */}
+            {art ? (
+              <img
+                src={art.src}
+                alt=""
+                aria-hidden="true"
+                width={380}
+                height={380}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: 999,
+                  objectFit: 'cover',
+                  boxShadow: v.glow,
+                }}
+              />
+            ) : (
+              <div
+                aria-hidden="true"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: 999,
+                  background: generateVisualGradient(object.visualSeed, object.rarity),
+                  boxShadow: v.glow,
+                }}
+              />
+            )}
           </div>
         </div>
 
@@ -297,6 +319,7 @@ export default function ShareCard({ object, scale = 1, discoveredAtMs = REVEAL_A
               }}
             >
               Discovered {formatDiscoveredOn(discoveredAtMs)}
+              {art ? ` · ${art.instrument}` : ''}
             </div>
             <div
               style={{

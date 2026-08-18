@@ -11,6 +11,7 @@ import {
   shareCardStars,
 } from '@/components/discovery/ShareCard';
 import { REVEAL_AT_MS, TOTAL_PASSES } from '@/lib/discovery/constants';
+import { objectArt } from '@/lib/discovery/passArt';
 import { determineObject, generateVisualGradient } from '@/lib/discovery/rarityEngine';
 
 /**
@@ -252,6 +253,10 @@ export async function GET(request: NextRequest) {
 
   const object = determineObject(wallet, pass);
   const v = RARITY_VISUAL[object.rarity];
+  const art = objectArt(object.id);
+  // satori fetches over the network — a root-relative path resolves to nothing
+  // here, so the photograph needs an absolute URL built from this request.
+  const artUrl = art ? new URL(art.src, request.nextUrl.origin).toString() : null;
 
   return png(
     <Frame seed={object.visualSeed}>
@@ -275,22 +280,37 @@ export async function GET(request: NextRequest) {
             }}
           />
         )}
-        <div
-          style={{
-            width: 380,
-            height: 380,
-            borderRadius: 999,
-            background: generateVisualGradient(object.visualSeed, object.rarity),
-            boxShadow: v.glow,
-          }}
-        />
+        {artUrl ? (
+          <img
+            src={artUrl}
+            width={380}
+            height={380}
+            style={{
+              width: 380,
+              height: 380,
+              borderRadius: 999,
+              objectFit: 'cover',
+              boxShadow: v.glow,
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 380,
+              height: 380,
+              borderRadius: 999,
+              background: generateVisualGradient(object.visualSeed, object.rarity),
+              boxShadow: v.glow,
+            }}
+          />
+        )}
       </div>
       <Identity
         title={object.name}
         titleSize={shareCardNameSize(object.name)}
         badge={object.rarity}
         badgeStyle={{ background: v.tint, border: `1px solid ${v.edge}`, color: v.accent }}
-        footNote={`Discovered ${revealDate}`}
+        footNote={`Discovered ${revealDate}${art ? ` · ${art.instrument}` : ''}`}
       />
     </Frame>,
     // The draw is fixed once revealed, so this is safe to cache hard.

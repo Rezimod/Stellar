@@ -82,6 +82,39 @@ export const PASS_ART: Record<TierId, PassArt> = {
   },
 };
 
+/**
+ * Photograph per catalogue object, for the reveal and the share card.
+ *
+ * Only 13 of the 110 objects have a frame, and that is not a backlog — most of
+ * the catalogue has never been directly imaged. So this is a lookup with a
+ * fallback, not a table to be completed: an object with a photograph shows it,
+ * and everything else keeps the deterministic generated artwork. Adding a file
+ * here upgrades that object everywhere at once.
+ *
+ * Every key is asserted against the real draw pools in discovery-art.test.ts —
+ * a typo would silently fall back to a gradient forever.
+ */
+export const OBJECT_ART: Record<string, { src: string; instrument: string; credit: string }> = {
+  betelgeuse: { src: '/images/dso/betelgeuse.jpg', instrument: 'ALMA', credit: 'ALMA (ESO/NAOJ/NRAO)' },
+  'eta-carinae': { src: '/images/dso/eta-carinae.jpg', instrument: 'Hubble', credit: 'NASA, N. Smith (UC Berkeley)' },
+  hr8799e: { src: '/images/dso/hr8799.jpg', instrument: 'VLT', credit: 'ESO' },
+  'm1-crab': { src: '/images/dso/m1.jpg', instrument: 'Hubble', credit: 'NASA, ESA, J. Hester, A. Loll' },
+  'm13-hercules': { src: '/images/dso/m13-cluster.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'm17-omega': { src: '/images/dso/m17-omega.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'm31-andromeda': { src: '/images/dso/m31.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'm42-orion': { src: '/images/dso/m42.jpg', instrument: 'Hubble', credit: 'NASA, ESA, M. Robberto' },
+  'm45-pleiades': { src: '/images/dso/m45.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'm51-whirlpool': { src: '/images/dso/m51.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'm57-ring': { src: '/images/dso/m57-ring.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'm8-lagoon': { src: '/images/dso/m8.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+  'ngc869-double': { src: '/images/dso/ngc869.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
+};
+
+/** The photograph for an object, or null when it has never been imaged. */
+export function objectArt(objectId: string) {
+  return OBJECT_ART[objectId] ?? null;
+}
+
 /** Distinct credit lines, for the attribution note under a set of cards. */
 export function artCredits(): string[] {
   return [...new Set(Object.values(PASS_ART).map((a) => a.credit))];

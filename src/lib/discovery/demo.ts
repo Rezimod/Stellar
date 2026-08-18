@@ -12,12 +12,16 @@
  */
 
 /** Placeholder address. Base58 has no `0`, `O`, `I` or `l`, hence `DEMo`. */
-export const DEMO_WALLET = 'DEMoPass1111111111111111111111111111111112wk';
+export const DEMO_WALLET = 'DEMoPass1111111111111111111111111111111111Da';
 
 /**
  * The demo pass. This pair — DEMO_WALLET at 9999 — hashes to LEGENDARY
- * "TON 618" with the current REVEAL_SALT, which is the outcome worth showing:
- * a Full Astroman Telescope plus 50,000 STRLLR.
+ * "Eta Carinae" with the current REVEAL_SALT, which is the outcome worth
+ * showing: a Full Astroman Telescope plus 50,000 STRLLR.
+ *
+ * Eta Carinae specifically, not TON 618: it is the rare Legendary object that
+ * has actually been photographed, so the demo reveal shows a real Hubble frame
+ * rather than the generated fallback.
  *
  * The tail of DEMO_WALLET was searched for precisely to land this draw. If
  * REVEAL_SALT ever changes (it will — see the commit-and-reveal note in
