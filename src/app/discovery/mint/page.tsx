@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import MintActions from '@/components/discovery/MintActions';
 import MintCard from '@/components/discovery/MintCard';
 import MintProgress from '@/components/discovery/MintProgress';
-import RewardTiers from '@/components/discovery/RewardTiers';
+import PassGallery from '@/components/discovery/PassGallery';
 import Starfield from '@/components/discovery/Starfield';
 import { PASS_PRICE_SOL } from '@/lib/discovery/constants';
 
@@ -88,23 +88,6 @@ export default function MintPage() {
               <MintActions />
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h2
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: 'var(--dsc-ghost-dim)',
-                  margin: 0,
-                }}
-              >
-                What a pass can reveal
-              </h2>
-              <RewardTiers />
-            </div>
-
             <p
               style={{
                 fontFamily: 'var(--font-body)',
@@ -119,6 +102,25 @@ export default function MintPage() {
               reveal.
             </p>
           </div>
+        </div>
+
+        {/* Full width, not inside the right column: five cards at column width
+            clip their own value and reward lines. */}
+        <div className="mt-14 flex flex-col gap-4">
+          <h2
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: 'var(--dsc-ghost-dim)',
+              margin: 0,
+            }}
+          >
+            What a pass can reveal
+          </h2>
+          <PassGallery />
         </div>
       </div>
     </div>
