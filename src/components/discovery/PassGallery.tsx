@@ -1,4 +1,5 @@
 import PassCard from '@/components/discovery/PassCard';
+import { artCredits } from '@/lib/discovery/passArt';
 import { expectedValueUSD } from '@/lib/discovery/passValue';
 import { TIERS_BY_VALUE } from '@/lib/discovery/tiers';
 
@@ -32,6 +33,21 @@ export default function PassGallery() {
       >
         Values are the tier&rsquo;s STRLLR at the Astroman catalogue rate, excluding physical
         rewards. Average token value across all odds: ${expectedValueUSD().toFixed(2)} per pass.
+      </p>
+
+      {/* Two of these frames are CC BY 4.0, which requires attribution
+          wherever they are shown. */}
+      <p
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 9.5,
+          lineHeight: 1.6,
+          letterSpacing: '0.03em',
+          color: 'var(--dsc-ghost-dim)',
+          margin: 0,
+        }}
+      >
+        Imagery: {artCredits().join(' · ')}
       </p>
     </div>
   );

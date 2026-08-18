@@ -1,3 +1,4 @@
+import Backdrop from '@/components/discovery/Backdrop';
 import CountdownTimer from '@/components/discovery/CountdownTimer';
 import EmailCapture from '@/components/discovery/EmailCapture';
 import SealedObject from '@/components/discovery/SealedObject';
@@ -13,6 +14,7 @@ import { PASS_PRICE_SOL, REVEAL_AT_MS, TOTAL_PASSES } from '@/lib/discovery/cons
 export default function DiscoveryPage() {
   return (
     <div className="dsc-root">
+      <Backdrop src="/images/dso/m8.jpg" intensity={0.26} />
       <Starfield />
 
       {/* dsc-screen, not min-h-dvh: the fixed nav takes the first 48px, so a

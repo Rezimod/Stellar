@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Backdrop from '@/components/discovery/Backdrop';
 import MintActions from '@/components/discovery/MintActions';
 import MintCard from '@/components/discovery/MintCard';
 import MintProgress from '@/components/discovery/MintProgress';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function MintPage() {
   return (
     <div className="dsc-root">
+      <Backdrop src="/images/dso/m17-omega.jpg" intensity={0.18} />
       <Starfield />
 
       <div className="relative z-10 mx-auto w-full max-w-[1080px] px-5 py-8 sm:py-10">

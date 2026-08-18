@@ -1419,18 +1419,19 @@ body[data-discovery-immersive='1'] #stellar-main {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   PREMIUM PASS CARDS
+   PASS CARDS
 
-   Register borrowed from ripcars.io: near-black ground, one accent per card,
-   heavy uppercase display type against small letterspaced micro-caps, a real
-   product render as the hero, and — the part that actually does the work — a
-   plain money figure on every card. A pack that shows only colours feels like
-   colours; a pack that shows "$3,951" feels like it contains something.
+   Real telescope photographs, framed five different ways. The register is
+   ripcars.io — near-black ground, one accent per card, heavy uppercase against
+   letterspaced mono micro-caps, and a money figure on every card — but where
+   they photograph a die-cast car under studio light, the product here is an
+   actual Hubble or ALMA frame.
 
-   Escalation is the whole design. Common is deliberately plain: matte, thin,
-   unlit. Each tier up adds exactly one treatment — glow, then a ring, then a
-   foil sheen, then movement — so rarity is legible at a glance across the five
-   without any of them shouting. If Common were pretty, Legendary could not be.
+   `data-art` selects the architecture, `data-tier` the accent. The two are
+   separate so a tier can change colour without changing shape.
+
+   The escalation ladder: aperture size grows, the frame gets more hardware,
+   and only Legendary moves. Common is mostly empty black by design.
    ═════════════════════════════════════════════════════════════════════════ */
 
 .dsc-pass {
@@ -1438,36 +1439,143 @@ body[data-discovery-immersive='1'] #stellar-main {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 310px;
-  padding: 16px 16px 14px;
-  border-radius: 16px;
+  min-height: 340px;
+  padding: 15px 15px 13px;
+  border-radius: 15px;
   overflow: hidden;
   isolation: isolate;
-  /* Top-lit, like a card under a single studio light. */
-  background:
-    radial-gradient(120% 80% at 50% -20%, rgba(255, 255, 255, 0.07), transparent 60%),
-    linear-gradient(180deg, #0a0c1c 0%, #04050f 100%);
-  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 18%, transparent);
+  background: linear-gradient(180deg, #070912 0%, #030409 100%);
+  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 16%, transparent);
   transition:
-    transform 320ms cubic-bezier(0.2, 0.7, 0.3, 1),
-    border-color 320ms ease,
-    box-shadow 320ms ease;
+    transform 340ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    border-color 340ms ease,
+    box-shadow 340ms ease;
 }
 
 .dsc-pass:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--dsc-tier, #fff) 40%, transparent);
-  box-shadow: 0 18px 50px -20px color-mix(in srgb, var(--dsc-tier, #fff) 45%, transparent);
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--dsc-tier, #fff) 42%, transparent);
+  box-shadow: 0 22px 56px -22px color-mix(in srgb, var(--dsc-tier, #fff) 50%, transparent);
 }
 
-/* ── Header: tier name + serial ─────────────────────────────────────────── */
+/* ── The photograph ─────────────────────────────────────────────────────── */
+.dsc-pass-photo {
+  object-fit: cover;
+  /* Every source is a black-field astrophoto, so the card ground and the
+     image edge dissolve into each other rather than butting up. */
+  transform-origin: center;
+}
+
+.dsc-pass-bleed {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Keeps the type legible over a bright nebula without flattening the image. */
+.dsc-pass-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(3, 4, 9, 0.86) 0%, rgba(3, 4, 9, 0.12) 32%),
+    linear-gradient(0deg, rgba(3, 4, 9, 0.94) 0%, rgba(3, 4, 9, 0.72) 26%, transparent 58%);
+}
+
+/* ── Contained stages ───────────────────────────────────────────────────── */
+.dsc-pass-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0 10px;
+  min-height: 124px;
+}
+
+.dsc-pass-frame {
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* plate — a small port in a wide black field. The most restrained. */
+.dsc-pass[data-art='plate'] .dsc-pass-frame {
+  width: 84px;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.02);
+}
+
+/* window — a wide aperture across the upper card. */
+.dsc-pass[data-art='window'] .dsc-pass-frame {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--dsc-tier) 26%, transparent);
+  box-shadow: 0 0 30px -8px color-mix(in srgb, var(--dsc-tier) 45%, transparent);
+}
+
+/* aperture — a circular port with instrument hardware around it. */
+.dsc-pass[data-art='aperture'] .dsc-pass-frame {
+  width: 108px;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--dsc-tier) 40%, transparent);
+  box-shadow: 0 0 34px -6px color-mix(in srgb, var(--dsc-tier) 55%, transparent);
+}
+
+.dsc-pass-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 142px;
+  max-width: 94%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--dsc-tier) 22%, transparent);
+  z-index: 1;
+}
+
+/* Four ticks at the cardinal points — a reticle, not decoration. */
+.dsc-pass-ticks {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 160px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  z-index: 1;
+  background:
+    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 50% 0 / 1px 7px no-repeat,
+    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 50% 100% / 1px 7px no-repeat,
+    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 0 50% / 7px 1px no-repeat,
+    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 100% 50% / 7px 1px no-repeat;
+  opacity: 0.5;
+}
+
+/* framed — full bleed with a gold inner rule held off the edge. */
+.dsc-pass[data-art='framed']::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--dsc-tier) 34%, transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ── Type ───────────────────────────────────────────────────────────────── */
 .dsc-pass-head {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  position: relative;
-  z-index: 2;
 }
 
 .dsc-pass-tier {
@@ -1487,88 +1595,53 @@ body[data-discovery-immersive='1'] #stellar-main {
   font-size: 9px;
   letter-spacing: 0.06em;
   white-space: nowrap;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.3);
 }
 
-/* ── The render ─────────────────────────────────────────────────────────── */
-.dsc-pass-stage {
-  position: relative;
-  flex: 1;
-  min-height: 118px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 10px 0;
+/* Full-bleed tiers have no stage, so the foot has to claim the space itself
+   and sit at the bottom of the photograph. */
+.dsc-pass[data-art='bleed'] .dsc-pass-foot,
+.dsc-pass[data-art='framed'] .dsc-pass-foot {
+  margin-top: auto;
 }
 
-.dsc-pass-orb {
+.dsc-pass-foot {
   position: relative;
-  width: 96px;
-  max-width: 62%;
-  aspect-ratio: 1;
-  border-radius: 9999px;
   z-index: 2;
 }
 
-/* Rings are drawn as siblings so they can sit outside the orb's own box. */
-.dsc-pass-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 30%, transparent);
-  z-index: 1;
-}
-
-.dsc-pass-ring--inner {
-  width: 124px;
-  max-width: 80%;
-  aspect-ratio: 1;
-}
-
-.dsc-pass-ring--outer {
-  width: 148px;
-  max-width: 96%;
-  aspect-ratio: 1;
-  border-color: color-mix(in srgb, var(--dsc-tier, #fff) 16%, transparent);
-}
-
-/* ── Example object ─────────────────────────────────────────────────────── */
 .dsc-pass-example {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.34);
-  text-align: center;
-  margin: 0 0 11px;
-  position: relative;
-  z-index: 2;
-  /* One line, clipped: a two-line name would make one card taller than the
-     rest and break the row. */
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin: 0 0 9px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ── Value + reward ─────────────────────────────────────────────────────── */
-.dsc-pass-foot {
-  position: relative;
-  z-index: 2;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 12px;
+/* The instrument is the proof the picture is real — quiet, but present. */
+.dsc-pass-instrument {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
 }
 
-/* The Rip Cars move: a dark pill, a tier dot, and a number. */
 .dsc-pass-value {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 5px 11px 5px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 24%, transparent);
+  background: rgba(6, 8, 16, 0.72);
+  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 30%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .dsc-pass-value::before {
@@ -1584,7 +1657,6 @@ body[data-discovery-immersive='1'] #stellar-main {
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.01em;
   color: #fff;
 }
 
@@ -1593,7 +1665,7 @@ body[data-discovery-immersive='1'] #stellar-main {
   font-size: 11px;
   line-height: 1.4;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.66);
   margin: 9px 0 0;
   min-height: 31px;
 }
@@ -1603,68 +1675,50 @@ body[data-discovery-immersive='1'] #stellar-main {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 9px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
-  /* Common carries the longest counts on the narrowest card; without this the
-     row wraps and that one card grows taller than the rest of the grid. */
+  color: rgba(255, 255, 255, 0.32);
   white-space: nowrap;
 }
 
-/* ── Tier escalation ────────────────────────────────────────────────────
-   One added treatment per step. Common gets nothing on purpose. */
-
-/* Uncommon and up: the orb is lit. */
-.dsc-pass[data-tier='uncommon'] .dsc-pass-orb,
-.dsc-pass[data-tier='rare'] .dsc-pass-orb,
-.dsc-pass[data-tier='epic'] .dsc-pass-orb,
-.dsc-pass[data-tier='legendary'] .dsc-pass-orb {
-  box-shadow: 0 0 42px -6px color-mix(in srgb, var(--dsc-tier) 55%, transparent);
+/* ── Legendary only: the card moves ─────────────────────────────────────── */
+.dsc-pass[data-tier='legendary'] {
+  border-color: color-mix(in srgb, var(--dsc-tier) 44%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 196, 0.2),
+    0 0 42px -16px color-mix(in srgb, var(--dsc-tier) 60%, transparent);
 }
 
-/* Epic and up: a foil sheen across the whole card. */
-.dsc-pass[data-tier='epic']::before,
 .dsc-pass[data-tier='legendary']::before {
   content: '';
   position: absolute;
   inset: -40%;
   z-index: 1;
   pointer-events: none;
-  /* Wide, low-opacity and blurred. A narrow high-contrast band reads as a
-     rendering artifact cutting across the card, not as foil catching light. */
   background: linear-gradient(
     72deg,
-    transparent 22%,
-    color-mix(in srgb, var(--dsc-tier) 7%, transparent) 40%,
-    rgba(255, 255, 255, 0.05) 50%,
-    color-mix(in srgb, var(--dsc-tier) 7%, transparent) 60%,
-    transparent 78%
+    transparent 24%,
+    color-mix(in srgb, var(--dsc-tier) 8%, transparent) 42%,
+    rgba(255, 255, 255, 0.06) 50%,
+    color-mix(in srgb, var(--dsc-tier) 8%, transparent) 58%,
+    transparent 76%
   );
-  filter: blur(6px);
-}
-
-/* Legendary only: the sheen moves, and the edge is gold rather than tinted. */
-.dsc-pass[data-tier='legendary'] {
-  border-color: color-mix(in srgb, var(--dsc-tier) 45%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 243, 196, 0.22),
-    0 0 40px -14px color-mix(in srgb, var(--dsc-tier) 60%, transparent);
-}
-
-.dsc-pass[data-tier='legendary']::before {
-  animation: dsc-pass-foil 5.5s ease-in-out infinite;
+  filter: blur(7px);
+  animation: dsc-pass-foil 6s ease-in-out infinite;
 }
 
 @keyframes dsc-pass-foil {
   0%,
   100% {
-    transform: translateX(-18%);
+    transform: translateX(-16%);
   }
   50% {
-    transform: translateX(18%);
+    transform: translateX(16%);
   }
 }
 
@@ -1683,12 +1737,102 @@ body[data-discovery-immersive='1'] #stellar-main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dsc-pass,
-  .dsc-pass[data-tier='legendary']::before {
+  .dsc-pass {
     transition: none;
-    animation: none;
   }
   .dsc-pass:hover {
     transform: none;
   }
+  .dsc-pass[data-tier='legendary']::before {
+    animation: none;
+  }
+}
+
+/* ── Sealed pass ─────────────────────────────────────────────────────────
+   The photograph behind the seal is blurred past recognition and pushed well
+   down in luminance. It has to read as "something is in there" without giving
+   up a single identifiable feature — at lower blur the Orion Nebula is
+   recognisable, which would make every sealed pass look like an Orion pass. */
+.dsc-sealed-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.dsc-sealed-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.dsc-sealed-photo {
+  object-fit: cover;
+  filter: blur(26px) saturate(0.7) brightness(0.5);
+  opacity: 0.42;
+  /* Scaled up so the blur's soft edge never reaches the card border. */
+  transform: scale(1.5);
+}
+
+.dsc-sealed-card > *:not(.dsc-sealed-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+.dsc-sealed-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* An unlit disc over the blur: the object is present, and occluded. */
+.dsc-sealed-disc {
+  width: 108px;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 42%, #0b0e1d 0%, #04050d 62%, #000 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 18px 50px -18px rgba(0, 0, 0, 0.9);
+}
+
+.dsc-sealed-note {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.34);
+  margin: 0;
+}
+
+/* ── Photographic backdrop ───────────────────────────────────────────────
+   Sits under .dsc-starfield (z-index 0) and over the flat --dsc-bg, so the
+   stack reads: ground, photograph, twinkling dots, content. */
+.dsc-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dsc-backdrop-photo {
+  object-fit: cover;
+  /* Desaturated and dimmed so it reads as depth rather than as a photo the
+     page is trying to show you. */
+  filter: saturate(0.75) brightness(0.62) contrast(1.05);
+}
+
+/* Vignette + top fade: keeps the nav edge and the page centre clean, which is
+   where the type lives. */
+.dsc-backdrop-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 42%, transparent 0%, rgba(4, 6, 26, 0.72) 78%),
+    linear-gradient(180deg, rgba(4, 6, 26, 0.9) 0%, transparent 26%, transparent 70%, rgba(4, 6, 26, 0.95) 100%);
 }

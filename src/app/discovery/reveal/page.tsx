@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Backdrop from '@/components/discovery/Backdrop';
 import DemoReveal from '@/components/discovery/DemoReveal';
 import RevealExperience from '@/components/discovery/RevealExperience';
 import RevealSequence from '@/components/discovery/RevealSequence';
@@ -28,6 +29,7 @@ export default async function RevealPage({
 
   return (
     <div className="dsc-root">
+      <Backdrop src="/images/dso/ngc869.jpg" intensity={0.2} />
       <Starfield />
 
       <div className="relative z-10 mx-auto flex w-full max-w-[560px] flex-col items-center px-5 py-8 sm:py-10">
