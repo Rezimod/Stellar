@@ -31,6 +31,10 @@ export type RevealedObject = {
   blurb: string;
   /** Palette for the generative visual — core, mid field, outer halo. */
   visual: { core: string; mid: string; halo: string };
+  /** Key into OBJECT_ART when this object has actually been photographed.
+   *  Three of the five fixtures have not, and never will be — a black hole and
+   *  an exoplanet do not have portraits — so they keep the palette above. */
+  artId?: string;
 };
 
 export const MOCK_REVEALS: Record<TierId, RevealedObject> = {
@@ -44,6 +48,7 @@ export const MOCK_REVEALS: Record<TierId, RevealedObject> = {
     blurb:
       'An open cluster of hot blue stars, drifting through a field of dust they happen to be lighting up. Visible to the unaided eye from a dark site.',
     visual: { core: '#DCE6FF', mid: '#4B6BC4', halo: '#131E45' },
+    artId: 'm45-pleiades',
   },
   uncommon: {
     catalog: 'M42',
@@ -55,6 +60,7 @@ export const MOCK_REVEALS: Record<TierId, RevealedObject> = {
     blurb:
       'A stellar nursery in the sword of Orion, where more than a thousand young stars are still forming. The brightest nebula in the night sky.',
     visual: { core: '#9BE8F5', mid: '#1F7FA8', halo: '#0A2434' },
+    artId: 'm42-orion',
   },
   rare: {
     catalog: 'Kepler-186f',

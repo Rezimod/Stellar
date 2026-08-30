@@ -48,8 +48,8 @@ export async function GET(request: Request) {
   // Accept either `lon` or `lng` for parity with every other sky route.
   const lon = parseFloat(searchParams.get('lon') ?? searchParams.get('lng') ?? '');
 
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-    return NextResponse.json({ error: 'lat and lon required' }, { status: 400 });
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json({ error: 'Valid lat and lon required' }, { status: 400 });
   }
 
   const observer = new Observer(lat, lon, 0);

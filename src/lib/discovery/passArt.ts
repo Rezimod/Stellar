@@ -94,11 +94,21 @@ export const PASS_ART: Record<TierId, PassArt> = {
  * Every key is asserted against the real draw pools in discovery-art.test.ts —
  * a typo would silently fall back to a gradient forever.
  */
-export const OBJECT_ART: Record<string, { src: string; instrument: string; credit: string }> = {
-  betelgeuse: { src: '/images/dso/betelgeuse.jpg', instrument: 'ALMA', credit: 'ALMA (ESO/NAOJ/NRAO)' },
-  'eta-carinae': { src: '/images/dso/eta-carinae.jpg', instrument: 'Hubble', credit: 'NASA, N. Smith (UC Berkeley)' },
-  hr8799e: { src: '/images/dso/hr8799.jpg', instrument: 'VLT', credit: 'ESO' },
-  'm1-crab': { src: '/images/dso/m1.jpg', instrument: 'Hubble', credit: 'NASA, ESA, J. Hester, A. Loll' },
+export type ObjectArt = {
+  src: string;
+  instrument: string;
+  credit: string;
+  /** Zoom applied to the crop, for frames whose subject is small in a wide dark
+   *  field. Omitted means 1x. Mirrors PassArt.scale so a tier's gallery card
+   *  and its reveal card show the same crop of the same frame. */
+  scale?: number;
+};
+
+export const OBJECT_ART: Record<string, ObjectArt> = {
+  betelgeuse: { src: '/images/dso/betelgeuse.jpg', instrument: 'ALMA', credit: 'ALMA (ESO/NAOJ/NRAO)', scale: 1.15 },
+  'eta-carinae': { src: '/images/dso/eta-carinae.jpg', instrument: 'Hubble', credit: 'NASA, N. Smith (UC Berkeley)', scale: 1.25 },
+  hr8799e: { src: '/images/dso/hr8799.jpg', instrument: 'VLT', credit: 'ESO', scale: 2.1 },
+  'm1-crab': { src: '/images/dso/m1.jpg', instrument: 'Hubble', credit: 'NASA, ESA, J. Hester, A. Loll', scale: 1.05 },
   'm13-hercules': { src: '/images/dso/m13-cluster.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
   'm17-omega': { src: '/images/dso/m17-omega.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },
   'm31-andromeda': { src: '/images/dso/m31.jpg', instrument: 'Hubble', credit: 'NASA, ESA' },

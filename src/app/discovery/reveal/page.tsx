@@ -44,7 +44,7 @@ export default async function RevealPage({
             className="mb-7 w-full text-right"
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 10,
+              fontSize: 10.5,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
               color: 'var(--dsc-amber)',

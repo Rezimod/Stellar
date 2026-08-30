@@ -83,7 +83,7 @@ export default function LeaderboardLocked() {
               <span
                 style={{
                   fontFamily: 'var(--font-body)',
-                  fontSize: 10,
+                  fontSize: 10.5,
                   fontWeight: 500,
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',

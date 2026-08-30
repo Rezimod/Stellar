@@ -49,7 +49,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   const router = useRouter();
   const t = useTranslations('searchModal');
 
-  const MISSION_ITEMS: ResolvedItem[] = MISSIONS.map(m => ({
+  const MISSION_ITEMS: ResolvedItem[] = MISSIONS.filter(m => !m.demo).map(m => ({
     type: 'mission',
     label: m.name,
     sub: m.desc,

@@ -4,100 +4,111 @@ import { formatTierValueUSD } from '@/lib/discovery/passValue';
 import { TIER_BY_ID, rewardLine, type TierId } from '@/lib/discovery/tiers';
 
 /**
- * One pass, as a collectible card.
+ * One pass, composed like a graded collectible — the same four blocks on every
+ * tier, top to bottom: rail, plate, specimen label, value block.
  *
- * The five are deliberately different objects, not one template in five
- * colours — that was the flaw in the previous version. Each tier gets its own
- * `data-art` architecture:
+ * The previous version gave each tier its own architecture, which meant the two
+ * cheapest tiers showed their photograph through a small circular port. An 84px
+ * disc reads as an icon, not as an artifact, so the photograph is now the whole
+ * middle of every card. Restraint between tiers is carried instead by the
+ * MATERIAL (graphite → steel → anodized blue → bronze → gold foil) and by how
+ * the mat around the print is treated:
  *
- *   plate    (common)     a small circular aperture in a wide black field
- *   window   (uncommon)   a rounded window across the upper two thirds
- *   aperture (rare)       a circular port with instrument ticks and an orbit
- *   bleed    (epic)       full-bleed photograph under a scrim
- *   framed   (legendary)  full bleed, gold inner frame, moving foil
- *
- * Restraint escalates with rarity. Common is mostly empty black on purpose; if
- * it were pretty there would be nowhere for Legendary to go.
+ *   common     desaturated and darkened — it reads archival
+ *   uncommon   natural, one steel hairline
+ *   rare       natural, blue hairline, one orbit ring
+ *   epic       slightly warm, amber hairline
+ *   legendary  full colour, double gold hairline, foil sweeping over the print
  */
 
-const ART_STYLE: Record<TierId, 'plate' | 'window' | 'aperture' | 'bleed' | 'framed'> = {
-  common: 'plate',
-  uncommon: 'window',
-  rare: 'aperture',
-  epic: 'bleed',
-  legendary: 'framed',
+/**
+ * Where a card sits in the desktop fan and how it is staged there: Legendary
+ * centre, largest, lifted; Rare and Epic flanking it; the two cheapest tiers
+ * outermost, smaller, and tipped away like the ends of a fanned hand.
+ *
+ * `shift` pulls each card toward the middle so the neighbours overlap; it is
+ * also what keeps the tipped ends inside the container, since rotating a tall
+ * card about its bottom edge swings its top corner outward by roughly the same
+ * amount. The DOM order is value-descending (Legendary first), which is the
+ * order the phone's scroll row wants, so the fan reorders with `grid-column`
+ * rather than with markup. These variables are only read inside the ≥1080px
+ * media query — below that they are declared and ignored.
+ */
+const FAN: Record<TierId, { col: number; z: number; scale: number; lift: string; rot: string; shift: string }> = {
+  common: { col: 1, z: 1, scale: 0.96, lift: '14px', rot: '-2.2deg', shift: '14px' },
+  rare: { col: 2, z: 2, scale: 1, lift: '4px', rot: '-1.2deg', shift: '7px' },
+  legendary: { col: 3, z: 4, scale: 1.06, lift: '-10px', rot: '0deg', shift: '0px' },
+  epic: { col: 4, z: 2, scale: 1, lift: '4px', rot: '1.2deg', shift: '-7px' },
+  uncommon: { col: 5, z: 1, scale: 0.96, lift: '14px', rot: '2.2deg', shift: '-14px' },
 };
 
 export default function PassCard({ id, index }: { id: TierId; index: number }) {
   const tier = TIER_BY_ID[id];
   const art = PASS_ART[id];
-  const style = ART_STYLE[id];
-  const bleed = style === 'bleed' || style === 'framed';
-
-  const photo = (
-    <Image
-      src={art.src}
-      alt={`${art.objectName}, imaged by ${art.instrument}`}
-      fill
-      sizes="(max-width: 720px) 45vw, 20vw"
-      className="dsc-pass-photo"
-      style={{
-        objectPosition: `${art.focus.x}% ${art.focus.y}%`,
-        transform: `scale(${art.scale})`,
-      }}
-    />
-  );
+  const fan = FAN[id];
 
   return (
-    <article
-      className="dsc-pass"
-      data-tier={id}
-      data-art={style}
-      style={{ '--dsc-tier': tier.color } as React.CSSProperties}
+    <div
+      className="dsc-pass-tilt"
+      style={
+        {
+          '--dsc-fan-col': fan.col,
+          '--dsc-fan-z': fan.z,
+          '--dsc-fan-scale': fan.scale,
+          '--dsc-fan-lift': fan.lift,
+          '--dsc-fan-rot': fan.rot,
+          '--dsc-fan-shift': fan.shift,
+        } as React.CSSProperties
+      }
     >
-      {/* Full-bleed tiers put the photograph behind everything; the contained
-          tiers frame it inside the stage instead. */}
-      {bleed && (
-        <div className="dsc-pass-bleed" aria-hidden={false}>
-          {photo}
-          <span className="dsc-pass-scrim" aria-hidden="true" />
+      <article
+        className="dsc-pass dsc-mat"
+        data-tier={id}
+        style={
+          {
+            '--dsc-tier': tier.color,
+            /* Stagger the specular sweep so five cards never flash in unison. */
+            '--dsc-sweep-delay': `${index * -1.55}s`,
+          } as React.CSSProperties
+        }
+      >
+        <header className="dsc-pass-rail">
+          <h3 className="dsc-pass-tier">{tier.name}</h3>
+          <span className="dsc-pass-serial">{String(index + 1).padStart(2, '0')} / 05</span>
+        </header>
+
+        <div className="dsc-pass-plate">
+          <Image
+            src={art.src}
+            alt={`${art.objectName}, imaged by ${art.instrument}`}
+            fill
+            sizes="(max-width: 1079px) 208px, 200px"
+            className="dsc-pass-photo"
+            style={{
+              objectPosition: `${art.focus.x}% ${art.focus.y}%`,
+              transform: `scale(${art.scale})`,
+            }}
+          />
+          {id === 'rare' && <span className="dsc-pass-orbit" aria-hidden="true" />}
         </div>
-      )}
 
-      <header className="dsc-pass-head">
-        <h3 className="dsc-pass-tier">{tier.name}</h3>
-        <span className="dsc-pass-serial">{String(index + 1).padStart(2, '0')} / 05</span>
-      </header>
-
-      {!bleed && (
-        <div className="dsc-pass-stage">
-          {style === 'aperture' && (
-            <>
-              <span className="dsc-pass-orbit" aria-hidden="true" />
-              <span className="dsc-pass-ticks" aria-hidden="true" />
-            </>
-          )}
-          <div className="dsc-pass-frame">{photo}</div>
+        {/* Museum placard: what is in frame, and the instrument that took it. */}
+        <div className="dsc-pass-label">
+          <p className="dsc-pass-object">{art.objectName}</p>
+          <p className="dsc-pass-instrument">{art.instrument}</p>
         </div>
-      )}
 
-      <div className="dsc-pass-foot">
-        <p className="dsc-pass-example">
-          {art.objectName}
-          <span className="dsc-pass-instrument"> · {art.instrument}</span>
-        </p>
-
-        <span className="dsc-pass-value">
-          <b>{formatTierValueUSD(id)}</b>
-        </span>
-
-        <p className="dsc-pass-reward">{rewardLine(id)}</p>
-
-        <div className="dsc-pass-odds">
-          <span>{tier.odds}% odds</span>
-          <span>{tier.count.toLocaleString('en-US')} / 10,000</span>
+        <div className="dsc-pass-values">
+          <p className="dsc-pass-value">{formatTierValueUSD(id)}</p>
+          <p className="dsc-pass-reward">{rewardLine(id)}</p>
+          <div className="dsc-pass-odds">
+            <span>{tier.odds.toFixed(1)}% odds</span>
+            <span>{tier.count.toLocaleString('en-US')} / 10,000</span>
+          </div>
         </div>
-      </div>
-    </article>
+
+        <span className="dsc-pass-sweep" aria-hidden="true" />
+      </article>
+    </div>
   );
 }

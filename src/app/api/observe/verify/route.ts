@@ -14,7 +14,7 @@ import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER, CLOUD_COVER_CERTIFY_MAX } from '@/lib/constants';
 import { isDaytimeTarget, capConfidence, overcastGateApplies } from '@/lib/observation-kind';
 import { createObservationToken } from '@/lib/observation-token';
-import { verifyPrivy } from '@/lib/api-auth';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
 import { isValidPublicKey } from '@/lib/validate';
 
@@ -67,17 +67,11 @@ function parseVisionResponse(text: string): { analysis: VisionAnalysis; isFallba
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
-  // Use auth token as rate-limit key when present (prevents IP spoofing)
-  const authHeader = req.headers.get('authorization');
-  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const privyId = bearerToken ? await verifyPrivy(req) : null;
-  if (bearerToken && !privyId) {
+  const privyId = await verifyPrivy(req);
+  if (!privyId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
-  const rateLimitKey = privyId
-    ? createHash('sha256').update(privyId).digest('hex').slice(0, 16)
-    : ip;
+  const rateLimitKey = createHash('sha256').update(privyId).digest('hex').slice(0, 16);
   const { success, remaining } = await checkRateLimit(verifyRateLimit, rateLimitKey);
   if (!success) {
     return NextResponse.json(
@@ -114,12 +108,12 @@ export async function POST(req: NextRequest) {
   // image, whatever the verdict. Optional: an older client just sends nothing.
   const thumbParam = (formData.get('thumb') as string | null) ?? '';
 
-  // Require an authenticated principal before the expensive vision call: a
-  // verified Privy session OR a syntactically valid wallet pubkey. The Stars/
-  // mint path downstream (/api/observe/log) requires a Privy session + wallet
-  // ownership, so a token issued to an unauthenticated wallet can't be cashed in.
-  if (!privyId && !isValidPublicKey(walletParam)) {
+  if (!isValidPublicKey(walletParam)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const ownsWallet = await assertOwnsWallet(privyId, walletParam);
+  if (!ownsWallet) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   // Validation
@@ -149,9 +143,8 @@ export async function POST(req: NextRequest) {
   const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8;
   const isPng = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
   const isWebp = buffer.length >= 12 && buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50;
-  const isHeic = buffer.length >= 12 && buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70;
-  if (!isJpeg && !isPng && !isWebp && !isHeic) {
-    return NextResponse.json({ error: 'file must be a valid image (JPEG, PNG, WebP, or HEIC)' }, { status: 400 });
+  if (!isJpeg && !isPng && !isWebp) {
+    return NextResponse.json({ error: 'file must be a valid JPEG, PNG, or WebP image' }, { status: 400 });
   }
 
   const fileHash = '0x' + createHash('sha256').update(buffer).digest('hex').slice(0, 40);
@@ -334,11 +327,8 @@ export async function POST(req: NextRequest) {
 
   // Base64 for Gemini Vision
   const base64 = buffer.toString('base64');
-  const rawType = file.type;
   const mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' =
-    rawType === 'image/heic' || rawType === 'image/heif' || isHeic
-      ? 'image/jpeg'
-      : (rawType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp');
+    isJpeg ? 'image/jpeg' : isPng ? 'image/png' : 'image/webp';
 
   // Optional second frame (double capture anti-cheat)
   const file2 = formData.get('file2') as File | null;

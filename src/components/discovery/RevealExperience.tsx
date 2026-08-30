@@ -9,6 +9,7 @@ import RevealSequence from '@/components/discovery/RevealSequence';
 import RevealedCard from '@/components/discovery/RevealedCard';
 import { REVEAL_AT_MS } from '@/lib/discovery/constants';
 import { MOCK_PASS_NUMBER, MOCK_REVEALS, mockTierForAddress } from '@/lib/discovery/mockReveal';
+import { revealCardFromMock } from '@/lib/discovery/revealCard';
 import type { TierId } from '@/lib/discovery/tiers';
 
 /**
@@ -36,8 +37,8 @@ export default function RevealExperience({ previewTier }: { previewTier: TierId 
     const object = MOCK_REVEALS[previewTier];
     return (
       <RevealSequence seenKey={null}>
-        <div className="flex flex-col items-center gap-5">
-          <RevealedCard object={object} />
+        <div className="flex flex-col items-center gap-6">
+          <RevealedCard object={revealCardFromMock(object)} passNumber={MOCK_PASS_NUMBER} />
           <RevealActions object={object} />
         </div>
       </RevealSequence>
@@ -88,8 +89,8 @@ export default function RevealExperience({ previewTier }: { previewTier: TierId 
 
   return (
     <RevealSequence seenKey={`stellar_discovery_reveal_seen:${tier}`}>
-      <div className="flex flex-col items-center gap-5">
-        <RevealedCard object={object} />
+      <div className="flex flex-col items-center gap-6">
+        <RevealedCard object={revealCardFromMock(object)} passNumber={MOCK_PASS_NUMBER} />
         <RevealActions object={object} />
       </div>
     </RevealSequence>

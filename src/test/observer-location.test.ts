@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_OBSERVER,
   LOCATION_STALE_MS,
@@ -8,7 +8,12 @@ import {
   locationBucket,
   movedSignificantly,
   parseStoredLocation,
+  reverseGeocode,
 } from '@/lib/observer-location';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('parseStoredLocation', () => {
   it('returns null for invalid JSON', () => {
@@ -71,5 +76,25 @@ describe('movedSignificantly', () => {
 describe('distanceMeters', () => {
   it('is zero for identical points', () => {
     expect(distanceMeters(41.7, 44.8, 41.7, 44.8)).toBe(0);
+  });
+});
+
+describe('reverseGeocode', () => {
+  it('returns an empty label when the lookup fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+
+    await expect(reverseGeocode(41.7151, 44.8271)).resolves.toEqual({
+      countryCode: '',
+      city: '',
+    });
+  });
+
+  it('returns an empty label for an unsuccessful response', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false } as Response);
+
+    await expect(reverseGeocode(41.7151, 44.8271)).resolves.toEqual({
+      countryCode: '',
+      city: '',
+    });
   });
 });

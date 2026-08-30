@@ -24,7 +24,12 @@ export async function POST(req: NextRequest) {
   if (p) return p;
   const n = networkMisconfig();
   if (n) return n;
-  const body = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
   const {
     userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, demo,
     fileHash, deviceTier, deviceMake, deviceModel, exifLat, exifLon, exifTakenAt,
@@ -34,26 +39,20 @@ export async function POST(req: NextRequest) {
 
   const isDemoMint = demo === true;
 
-  // Auth: accept either a verified Privy token OR a valid wallet-adapter pubkey.
-  // This lets Phantom/Solflare/Backpack users (who have no Privy token) mint NFTs.
-  // Abuse is bounded by /api/mint's per-wallet rate limits below.
-  const isDevNoWallet = process.env.NODE_ENV === 'development' && isDemoMint && !body.userAddress;
-  if (!isDevNoWallet) {
-    const privyId = await verifyPrivy(req);
-    const addr = typeof body.userAddress === 'string' ? body.userAddress : '';
-    if (!privyId) {
-      // External-wallet path (Phantom/Solflare/Backpack). The wallet pubkey
-      // itself is the principal; rate limits below cap abuse.
-      if (!isValidPublicKey(addr)) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    } else if (addr) {
-      // Privy session present + wallet supplied: prove the wallet is theirs.
-      const owns = await assertOwnsWallet(privyId, addr);
-      if (!owns) {
-        return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
-      }
-    }
+  // Demo mints bypass verification and spend the server fee payer's SOL. They
+  // must never be reachable from a public API.
+  if (isDemoMint) {
+    return NextResponse.json({ error: 'Demo minting is unavailable' }, { status: 403 });
+  }
+
+  const privyId = await verifyPrivy(req);
+  const addr = typeof body.userAddress === 'string' ? body.userAddress : '';
+  if (!privyId || !isValidPublicKey(addr)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const owns = await assertOwnsWallet(privyId, addr);
+  if (!owns) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   if (!target || typeof target !== 'string' || target.length === 0) {

@@ -220,8 +220,8 @@ const EVENTS_2026: AstroEvent[] = [
   },
   {
     name: 'Perseid Meteor Shower',
-    date: '2026-08-12',
-    description: 'One of the best annual showers — up to 100 meteors per hour. Coincides with the Aug 12 total solar eclipse this year.',
+    date: '2026-08-13',
+    description: 'One of the best annual showers — up to 100 meteors per hour, peaking the night after the Aug 12 total solar eclipse.',
     viewingTip: 'Look northeast after 10 PM. No equipment needed.',
     type: 'meteor-shower',
     difficulty: 'naked-eye',
@@ -229,7 +229,7 @@ const EVENTS_2026: AstroEvent[] = [
     infoBar: 'The Perseids are debris from Comet Swift-Tuttle. Peak runs the night of Aug 12–13; you don\'t need to face Perseus directly — meteors streak across the whole sky.',
     ka: {
       name: 'პერსეიდების მეტეორული ნაკადი',
-      description: 'წლის ერთ-ერთი საუკეთესო ნაკადი — საათში 100 მეტეორამდე. წელს 12 აგვისტოს მზის სრულ დაბნელებას ემთხვევა.',
+      description: 'წლის ერთ-ერთი საუკეთესო ნაკადი — საათში 100 მეტეორამდე; პიკი 12 აგვისტოს მზის სრული დაბნელების შემდეგ ღამეს მოდის.',
       viewingTip: 'შეხედე ჩრდილო-აღმოსავლეთით 22:00-ის შემდეგ. აღჭურვილობა არ გჭირდება.',
       visibilityRegion: 'ჩრდილოეთ ნახევარსფერო',
       infoBar: 'პერსეიდები კომეტა სვიფტ-ტატლის ნამსხვრევებია. პიკი 12–13 აგვისტოს ღამეს მოდის; პერსევსისკენ ყურება არ არის აუცილებელი — მეტეორები მთელ ცაზე ისრიალებენ.',
@@ -286,22 +286,25 @@ const EVENTS_2026: AstroEvent[] = [
  */
 export function getRareEvents(fromDate: Date, limit = 5): AstroEvent[] {
   const year = fromDate.getFullYear();
+  const from = fromDate.toISOString().slice(0, 10);
   const RARE_TYPES: AstroEventType[] = ['eclipse-solar', 'eclipse-lunar', 'comet'];
   return EVENTS_2026
     .filter(e => RARE_TYPES.includes(e.type))
     .filter(e => new Date(e.date + 'T12:00:00').getFullYear() === year)
+    .filter(e => e.date >= from)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, limit);
 }
 
 export function getUpcomingEvents(fromDate: Date, daysAhead = 30): AstroEvent[] {
-  const from = fromDate.getTime();
-  const cutoff = from + daysAhead * 24 * 60 * 60 * 1000;
+  const from = fromDate.toISOString().slice(0, 10);
+  const cutoffDate = new Date(fromDate);
+  cutoffDate.setUTCDate(cutoffDate.getUTCDate() + daysAhead);
+  const cutoff = cutoffDate.toISOString().slice(0, 10);
 
-  return EVENTS_2026.filter(e => {
-    const t = new Date(e.date + 'T12:00:00').getTime();
-    return t >= from && t <= cutoff;
-  }).sort((a, b) => a.date.localeCompare(b.date));
+  return EVENTS_2026
+    .filter(e => e.date >= from && e.date <= cutoff)
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 /**

@@ -33,7 +33,7 @@ export default async function DiscoveryLeaderboardPage({
             className="mb-7 text-right"
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 10,
+              fontSize: 10.5,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
               color: 'var(--dsc-amber)',

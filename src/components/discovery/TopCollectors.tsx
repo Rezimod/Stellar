@@ -1,6 +1,6 @@
 import { Crown, Medal } from 'lucide-react';
+import TierChip from '@/components/discovery/TierChip';
 import { TOP_COLLECTORS, shortWallet } from '@/lib/discovery/mockLeaderboard';
-import { TIER_BY_ID } from '@/lib/discovery/tiers';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const fmt = (n: number) => n.toLocaleString('en-US');
@@ -12,16 +12,11 @@ export default function TopCollectors() {
   return (
     <ul className="flex list-none flex-col gap-2 p-0">
       {TOP_COLLECTORS.map((collector, i) => {
-        const tier = TIER_BY_ID[collector.highestTier];
         const medal = MEDALS[i];
         const Icon = i === 0 ? Crown : Medal;
 
         return (
-          <li
-            key={collector.wallet}
-            className="dsc-lb-row"
-            style={{ '--dsc-tier': tier.color } as React.CSSProperties}
-          >
+          <li key={collector.wallet} className="dsc-lb-row">
             {medal ? (
               <span className="dsc-lb-medal" title={`Rank ${i + 1}`}>
                 <Icon size={16} strokeWidth={1.75} color={medal} aria-hidden="true" />
@@ -38,15 +33,7 @@ export default function TopCollectors() {
 
               <div className="dsc-lb-meta">
                 <span className="dsc-lb-badge-col">
-                  <span
-                    className={
-                      collector.highestTier === 'legendary'
-                        ? 'dsc-badge dsc-badge--rarity dsc-badge--legendary'
-                        : 'dsc-badge dsc-badge--rarity'
-                    }
-                  >
-                    {tier.name}
-                  </span>
+                  <TierChip tier={collector.highestTier} />
                 </span>
 
                 <span className="dsc-lb-wallet">

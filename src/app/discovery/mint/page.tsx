@@ -3,6 +3,7 @@ import Backdrop from '@/components/discovery/Backdrop';
 import MintActions from '@/components/discovery/MintActions';
 import MintCard from '@/components/discovery/MintCard';
 import MintProgress from '@/components/discovery/MintProgress';
+import MintTierList from '@/components/discovery/MintTierList';
 import PassGallery from '@/components/discovery/PassGallery';
 import Starfield from '@/components/discovery/Starfield';
 import { PASS_PRICE_SOL } from '@/lib/discovery/constants';
@@ -21,8 +22,8 @@ export default function MintPage() {
       <Starfield />
 
       <div className="relative z-10 mx-auto w-full max-w-[1080px] px-5 py-8 sm:py-10">
-        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[360px_1fr] lg:gap-14">
-          {/* ── Left: the pass ── */}
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[400px_1fr] lg:gap-14">
+          {/* ── Left: the pack, on an empty stage ── */}
           <div className="flex justify-center lg:sticky lg:top-10">
             <MintCard />
           </div>
@@ -67,7 +68,7 @@ export default function MintPage() {
                 <span
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 38,
+                    fontSize: 28,
                     fontWeight: 700,
                     lineHeight: 1,
                     letterSpacing: '-0.02em',
@@ -78,8 +79,10 @@ export default function MintPage() {
                 </span>
                 <span
                   style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 12,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
                     color: 'var(--dsc-ghost-dim)',
                   }}
                 >
@@ -90,11 +93,15 @@ export default function MintPage() {
               <MintActions />
             </div>
 
+            <div className="max-w-[420px]">
+              <MintTierList />
+            </div>
+
             <p
               style={{
-                fontFamily: 'var(--font-body)',
+                fontFamily: 'var(--font-mono)',
                 fontSize: 11,
-                lineHeight: 1.55,
+                lineHeight: 1.6,
                 color: 'var(--dsc-ghost-dim)',
                 maxWidth: 480,
                 margin: 0,
@@ -109,14 +116,17 @@ export default function MintPage() {
         {/* Full width, not inside the right column: five cards at column width
             clip their own value and reward lines. */}
         <div className="mt-14 flex flex-col gap-4">
+          {/* Body face, not the display one. The display face is spent on the
+              three things that earn it — a tier name, the pack front, and a
+              page hero — and a section label is none of them. */}
           <h2
             style={{
               fontFamily: 'var(--font-body)',
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 600,
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
-              color: 'var(--dsc-ghost-dim)',
+              color: 'var(--dsc-ghost)',
               margin: 0,
             }}
           >

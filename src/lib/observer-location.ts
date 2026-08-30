@@ -120,19 +120,24 @@ export async function reverseGeocode(lat: number, lon: number): Promise<{
   countryCode: string;
   city: string;
 }> {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,
-  );
-  const data = (await res.json()) as {
-    address?: { country_code?: string; city?: string; town?: string; state?: string };
-  };
-  const countryCode = (data.address?.country_code ?? '').toUpperCase();
-  const city =
-    data.address?.city ||
-    data.address?.town ||
-    data.address?.state ||
-    '';
-  return { countryCode, city };
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,
+    );
+    if (!res.ok) return { countryCode: '', city: '' };
+    const data = (await res.json()) as {
+      address?: { country_code?: string; city?: string; town?: string; state?: string };
+    };
+    const countryCode = (data.address?.country_code ?? '').toUpperCase();
+    const city =
+      data.address?.city ||
+      data.address?.town ||
+      data.address?.state ||
+      '';
+    return { countryCode, city };
+  } catch {
+    return { countryCode: '', city: '' };
+  }
 }
 
 export function readGpsPosition(options: PositionOptions): Promise<GeolocationPosition> {

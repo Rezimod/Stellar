@@ -47,8 +47,10 @@ export async function POST(req: NextRequest) {
 
   const privateKeyB58 = process.env.FEE_PAYER_PRIVATE_KEY;
   if (!privateKeyB58) {
-    // Fee payer not configured — return a local activation token (dev/demo mode)
-    return NextResponse.json({ txId: 'local_' + Date.now().toString(36) });
+    if (process.env.NODE_ENV === 'development') {
+      return NextResponse.json({ txId: 'local_' + Date.now().toString(36) });
+    }
+    return NextResponse.json({ error: 'Club activation is temporarily unavailable' }, { status: 503 });
   }
 
   try {
@@ -87,7 +89,9 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[club/activate] Error:', message);
-    // Fall back to local activation so the UX isn't blocked
-    return NextResponse.json({ txId: 'local_' + Date.now().toString(36), warning: message });
+    if (process.env.NODE_ENV === 'development') {
+      return NextResponse.json({ txId: 'local_' + Date.now().toString(36) });
+    }
+    return NextResponse.json({ error: 'Club activation failed' }, { status: 502 });
   }
 }

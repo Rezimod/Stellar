@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
     const daily = await checkRateLimit(chatDailyLimit, userId);
     if (!daily.success) {
       return NextResponse.json(
-        { error: "You've reached today's free ASTRA limit. Come back tomorrow, or upgrade for unlimited chat." },
+        { error: "You've reached today's ASTRA limit. Come back tomorrow." },
         { status: 429, headers: { 'X-RateLimit-Remaining': String(daily.remaining), 'X-RateLimit-Window': 'daily' } },
       );
     }
@@ -158,7 +158,11 @@ export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('[AstroChat] ANTHROPIC_API_KEY is not set on this deployment');
     return NextResponse.json(
-      { error: 'ANTHROPIC_API_KEY is missing on the server. Add it to Vercel Project Settings → Environment Variables and redeploy.' },
+      {
+        error: process.env.NODE_ENV === 'development'
+          ? 'ANTHROPIC_API_KEY is missing on the server.'
+          : 'ASTRA is temporarily unavailable. Please try again shortly.',
+      },
       { status: 503, headers: { 'X-Astra-Reason': 'no-anthropic-key' } },
     );
   }

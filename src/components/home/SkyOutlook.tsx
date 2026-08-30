@@ -35,8 +35,9 @@ interface MeteorEvent {
 
 const METEOR_SHOWERS: MeteorEvent[] = [
   { date: '2026-04-22', label: 'Lyrids peak' },
-  { date: '2026-05-05', label: 'Eta Aquariids peak' },
-  { date: '2026-08-12', label: 'Perseids peak' },
+  { date: '2026-05-06', label: 'Eta Aquariids peak' },
+  { date: '2026-08-13', label: 'Perseids peak' },
+  { date: '2026-12-13', label: 'Geminids peak' },
 ];
 
 function dayLabel(dateStr: string, isToday: boolean): string {
@@ -65,8 +66,8 @@ function targetsFor(dateStr: string, verdict: Verdict): string {
   const shower = METEOR_SHOWERS.find((e) => e.date === dateStr);
   if (shower) return shower.label;
   if (verdict === 'skip') return 'Stay in';
-  if (verdict === 'maybe') return 'Bright planets';
-  return 'Jupiter, Saturn';
+  if (verdict === 'maybe') return 'Bright targets';
+  return 'Deep-sky targets';
 }
 
 function ClearSvg() {

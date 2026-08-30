@@ -367,30 +367,6 @@ export function SkyMap({
     return { x: CX, y: CY - dist, belowHorizon: (userAltitude ?? 0) < 0 };
   }, [isLive, hasTilt, userAltitude]);
 
-  const starfield = useMemo(() => {
-    let seed = 1729;
-    const rand = () => {
-      seed = (seed * 9301 + 49297) % 233280;
-      return seed / 233280;
-    };
-    const stars: { x: number; y: number; r: number; o: number }[] = [];
-    const target = 130;
-    const innerR = R - 4;
-    let attempts = 0;
-    while (stars.length < target && attempts < target * 8) {
-      attempts++;
-      const x = rand() * SIZE;
-      const y = rand() * SIZE;
-      const dx = x - CX;
-      const dy = y - CY;
-      if (dx * dx + dy * dy > innerR * innerR) continue;
-      const r = 0.35 + rand() * 1.05;
-      const o = 0.22 + rand() * 0.55;
-      stars.push({ x, y, r, o });
-    }
-    return stars;
-  }, []);
-
   // Decorative deep-space field filling the square's corners (outside the
   // horizon dome) so the whole panel reads as sky, not an empty box. Purely
   // cosmetic — dimmer than the in-dome stars so the dome stays the focus.
@@ -543,19 +519,6 @@ export function SkyMap({
           r={R}
           fill="url(#skymap-bg)"
         />
-
-        <g clipPath="url(#skymap-clip)" pointerEvents="none">
-          {starfield.map((s, i) => (
-            <circle
-              key={`bg-${i}`}
-              cx={s.x}
-              cy={s.y}
-              r={s.r}
-              fill="#F8F4EC"
-              opacity={s.o}
-            />
-          ))}
-        </g>
 
         {/* Concentric altitude rings at 30° and 60° (radii 2R/3 and R/3). */}
         {[1 / 3, 2 / 3].map((k) => (
@@ -1176,4 +1139,3 @@ function CompassIcon() {
     </svg>
   );
 }
-

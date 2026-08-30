@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { PLANETS } from '@/lib/learn-data';
 import { MISSIONS } from '@/lib/constants';
 import { Moon } from 'lucide-react';
+import { useLocation } from '@/lib/location';
+import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 
 interface PlanetInfo {
   key: string;
@@ -18,11 +20,14 @@ interface Props {
 }
 
 export default function TonightsBanner({ locale }: Props) {
+  const { location } = useLocation();
   const [best, setBest] = useState<{ key: string; altitude: number; missionId: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/sky/planets')
+    const lat = location.lat ?? DEFAULT_OBSERVER.lat;
+    const lon = location.lon ?? DEFAULT_OBSERVER.lon;
+    fetch(`/api/sky/planets?lat=${lat}&lon=${lon}`)
       .then(r => r.json())
       .then((planets: PlanetInfo[]) => {
         const missionKeys = new Set(MISSIONS.map(m => m.id));
@@ -42,7 +47,7 @@ export default function TonightsBanner({ locale }: Props) {
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [location.lat, location.lon]);
 
   // Skeleton
   if (!loaded) {

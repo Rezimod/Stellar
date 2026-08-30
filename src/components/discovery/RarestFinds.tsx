@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import TierChip from '@/components/discovery/TierChip';
 import { RAREST_FINDS, shortWallet } from '@/lib/discovery/mockLeaderboard';
 import { passIdFor } from '@/lib/discovery/passId';
-import { TIER_BY_ID, rewardLine } from '@/lib/discovery/tiers';
+import { rewardLine } from '@/lib/discovery/tiers';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -16,14 +17,12 @@ export default function RarestFinds() {
   return (
     <ul className="flex list-none flex-col gap-2 p-0">
       {RAREST_FINDS.map((find, i) => {
-        const tier = TIER_BY_ID[find.tier];
         const legendary = find.tier === 'legendary';
 
         return (
           <li
             key={`${find.objectId}-${find.passNumber}`}
             className={legendary ? 'dsc-lb-row dsc-lb-row--legendary' : 'dsc-lb-row'}
-            style={{ '--dsc-tier': tier.color } as React.CSSProperties}
           >
             <span className="dsc-lb-rank">{pad(i + 1)}</span>
 
@@ -32,15 +31,7 @@ export default function RarestFinds() {
 
               <div className="dsc-lb-meta">
                 <span className="dsc-lb-badge-col">
-                  <span
-                    className={
-                      legendary
-                        ? 'dsc-badge dsc-badge--rarity dsc-badge--legendary'
-                        : 'dsc-badge dsc-badge--rarity'
-                    }
-                  >
-                    {tier.name}
-                  </span>
+                  <TierChip tier={find.tier} />
                 </span>
 
                 <span className="dsc-lb-wallet" title={find.wallet}>

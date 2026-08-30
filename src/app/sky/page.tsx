@@ -106,7 +106,7 @@ function targetRank(o: SkyObject): number {
 }
 
 export default function SkyPage() {
-  const { location, locationReady, requestLocation, gpsState, loading: locationLoading } = useLocation();
+  const { location, locationReady, requestLocation, ensureLocation, gpsState, loading: locationLoading } = useLocation();
   const router = useRouter();
   const tErrors = useTranslations('sky.errors');
   const tDir = useTranslations('sky.directions.compass');
@@ -118,6 +118,8 @@ export default function SkyPage() {
   const { getAccessToken } = usePrivy();
   const { field, toggleField } = useTheme();
   const compass = useDeviceHeading(location.lat, location.lon);
+
+  useEffect(() => { ensureLocation(); }, [ensureLocation]);
 
   // First-entry location chooser. Replaces the inline location pill.
   const [showLocModal, setShowLocModal] = useState(false);

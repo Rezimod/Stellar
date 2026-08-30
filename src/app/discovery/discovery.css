@@ -8,8 +8,9 @@
 
    The palette here is deliberately NOT the app's token set (`--canvas`,
    `--terracotta`, `--seafoam`). Discovery is a launch funnel with its own
-   visual language — cyan/amber/purple on near-black — and it is confined to
-   this scope precisely so the two systems never bleed into each other.
+   visual language — cyan and amber on near-black, with the five tier MATERIALS
+   carrying everything else — and it is confined to this scope precisely so the
+   two systems never bleed into each other.
    ═════════════════════════════════════════════════════════════════════════ */
 
 /* ── Immersive mode ───────────────────────────────────────────────────────
@@ -72,11 +73,16 @@ body[data-discovery-immersive='1'] #stellar-main {
   --dsc-bg: #04061a;
   --dsc-cyan: #00c8f0;
   --dsc-amber: #ffb200;
-  --dsc-purple: #9152d7;
 
+  /* Three text weights, and every one of them clears 4.5:1 against the ground.
+     --dsc-ghost-dim is the floor: at its old 0.32 it measured 2.8:1, which is
+     below even the large-text threshold, and it carries the unit labels, the
+     rank digits, the wallets and the odds — the whole quiet layer of the
+     funnel. 0.48 is the lowest alpha that clears 4.5:1 over #04061a and over
+     the brightest part of a backdrop photograph. */
   --dsc-text: #ffffff;
-  --dsc-ghost: rgba(255, 255, 255, 0.58);
-  --dsc-ghost-dim: rgba(255, 255, 255, 0.32);
+  --dsc-ghost: rgba(255, 255, 255, 0.62);
+  --dsc-ghost-dim: rgba(255, 255, 255, 0.48);
   --dsc-hairline: rgba(255, 255, 255, 0.09);
 
   --dsc-glass: rgba(255, 255, 255, 0.035);
@@ -197,9 +203,9 @@ body[data-discovery-immersive='1'] #stellar-main {
 
 .dsc-unit-label {
   font-family: var(--font-body);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   color: var(--dsc-ghost-dim);
   margin-top: 7px;
 }
@@ -209,7 +215,8 @@ body[data-discovery-immersive='1'] #stellar-main {
     font-size: 38px;
   }
   .dsc-unit-label {
-    font-size: 10px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
   }
 }
 
@@ -285,100 +292,299 @@ body[data-discovery-immersive='1'] #stellar-main {
 
 /* ══════════════════════════ MINT PAGE ═══════════════════════════════════ */
 
-/* ── The mystery pass card ───────────────────────────────────────────────
-   360 x 500 at full size, scaling down proportionally on narrow screens.
-   The edge slowly cycles the five rarity colors — the only hint of what is
-   inside before the reveal. */
-.dsc-pass-card {
+/* ── The sealed foil pack ────────────────────────────────────────────────
+   The product itself: a heat-sealed metalized pouch, not a card with a
+   question mark on it. Every part of it is drawn — the foil is a near-black
+   blue base under a soft top-left highlight and a slow oil-slick sheen, the
+   crimps are 2px ridge stripes, and the tear notch is a rotated square of the
+   page ground clipped by the pack's own overflow.
+
+   The pack floats on an otherwise empty stage: floor glow, contact shadow,
+   nothing else competing with it. */
+.dsc-pack-stage {
   position: relative;
-  width: 100%;
-  max-width: 360px;
-  aspect-ratio: 360 / 500;
-  border-radius: 20px;
-  padding: 20px;
   display: flex;
-  flex-direction: column;
-  background:
-    radial-gradient(circle at 50% 34%, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0) 62%),
-    rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(138, 147, 166, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  animation: dsc-rarity-cycle 20s ease-in-out infinite;
+  justify-content: center;
+  width: 100%;
+  padding: 30px 0 56px;
+  perspective: 1000px;
 }
 
-/* 0% and 100% are both Common so the loop closes without a jump. */
-@keyframes dsc-rarity-cycle {
+/* Cool floor bounce plus a tight dark contact shadow, centred on the pack's
+   bottom edge so the near half is occluded by the pack itself. */
+.dsc-pack-floor {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 18px;
+  translate: -50% 0;
+  width: 88%;
+  height: 76px;
+  pointer-events: none;
+  background:
+    radial-gradient(50% 40% at 50% 50%, rgba(0, 0, 0, 0.7) 0%, transparent 74%),
+    radial-gradient(78% 100% at 50% 46%, rgba(88, 132, 214, 0.18) 0%, transparent 72%);
+  filter: blur(8px);
+}
+
+.dsc-pack {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 3 / 4.2;
+  border-radius: 7px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(
+      74% 54% at 22% 10%,
+      rgba(196, 220, 255, 0.17) 0%,
+      rgba(196, 220, 255, 0.05) 36%,
+      transparent 68%
+    ),
+    linear-gradient(168deg, #0b1226 0%, #070b18 48%, #04060f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    0 26px 46px -22px rgba(0, 0, 0, 0.85);
+  /* The float uses `translate` and the hover tilt uses `transform`, so the two
+     compose instead of overwriting each other. */
+  animation: dsc-pack-float 7.5s ease-in-out infinite;
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes dsc-pack-float {
   0%,
   100% {
-    border-color: rgba(138, 147, 166, 0.55);
-    box-shadow: 0 0 38px rgba(138, 147, 166, 0.08);
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+.dsc-pack:hover {
+  transform: rotateX(-4deg) rotateY(4deg) scale(1.02);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    0 36px 60px -24px rgba(0, 0, 0, 0.9);
+}
+
+/* Oil slick on metalized film: an oversized conic wheel of faint cyan, violet
+   and gold turning behind the type. Blurred hard so no stop ever reads as a
+   band — it should look like light moving, not like a gradient. */
+.dsc-pack-slick {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 175%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    rgba(0, 200, 240, 0) 0deg,
+    rgba(0, 200, 240, 0.08) 48deg,
+    rgba(145, 82, 215, 0.07) 120deg,
+    rgba(255, 178, 0, 0.06) 198deg,
+    rgba(0, 200, 240, 0.05) 268deg,
+    rgba(145, 82, 215, 0.07) 322deg,
+    rgba(0, 200, 240, 0) 360deg
+  );
+  filter: blur(16px);
+  animation: dsc-pack-slick 12s linear infinite;
+}
+
+@keyframes dsc-pack-slick {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ── Crimps ──────────────────────────────────────────────────────────────
+   The heat seal: 8px of fine vertical ridges, shaded top-lit to bottom-dark so
+   the band reads as pinched material rather than as a printed stripe. */
+.dsc-pack-crimp {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.34) 100%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.13) 0px,
+      rgba(255, 255, 255, 0.13) 1px,
+      rgba(0, 0, 0, 0.42) 1px,
+      rgba(0, 0, 0, 0.42) 2px
+    );
+}
+
+.dsc-pack-crimp--top {
+  top: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.55);
+}
+
+.dsc-pack-crimp--bottom {
+  bottom: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.55);
+}
+
+/* Tear notch: a square of the page ground rotated 45deg and hung over the top
+   edge, so the pack's own overflow clips it into a V cut in the crimp. */
+.dsc-pack-notch {
+  position: absolute;
+  z-index: 4;
+  top: -6px;
+  right: 20px;
+  width: 13px;
+  height: 13px;
+  rotate: 45deg;
+  pointer-events: none;
+  background: var(--dsc-bg);
+  /* Only the two lower faces of the square survive the clip; the light on them
+     is what makes the cut read as material rather than as a printed arrow. */
+  border: 1px solid rgba(255, 255, 255, 0.17);
+}
+
+/* The line you would tear along. Purely an affordance — it brightens on hover
+   and does nothing else. */
+.dsc-pack-tear {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  top: 15px;
+  height: 1px;
+  opacity: 0.36;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(204, 238, 255, 0.8) 0px,
+    rgba(204, 238, 255, 0.8) 3px,
+    transparent 3px,
+    transparent 8px
+  );
+  transition: opacity 320ms ease;
+}
+
+.dsc-pack:hover .dsc-pack-tear {
+  opacity: 1;
+}
+
+/* ── Pack front ─────────────────────────────────────────────────────────── */
+.dsc-pack-face {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  /* Top padding clears the crimp and the tear line. */
+  padding: 40px 22px 30px;
+  text-align: center;
+}
+
+.dsc-pack-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.dsc-pack-title span {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  /* The trailing letter-space would push centred text left without this. */
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.dsc-pack-window {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 1;
+  width: 100%;
+}
+
+/* What is inside is unknown, so the only honest thing the pack can show is the
+   range: the five tier colours cycling behind the sealed object. `currentColor`
+   inside the gradient is what makes the colour interpolate at all. */
+.dsc-pack-shimmer {
+  position: absolute;
+  width: 170px;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  color: #8a93a6;
+  background: radial-gradient(circle at 50% 50%, currentColor 0%, transparent 66%);
+  opacity: 0.34;
+  filter: blur(14px);
+  animation: dsc-pack-shimmer 20s ease-in-out infinite;
+}
+
+@keyframes dsc-pack-shimmer {
+  0%,
+  100% {
+    color: #8a93a6;
   }
   20% {
-    border-color: rgba(0, 200, 240, 0.55);
-    box-shadow: 0 0 38px rgba(0, 200, 240, 0.12);
+    color: #00c8f0;
   }
   40% {
-    border-color: rgba(145, 82, 215, 0.55);
-    box-shadow: 0 0 38px rgba(145, 82, 215, 0.14);
+    color: #9152d7;
   }
   60% {
-    border-color: rgba(255, 178, 0, 0.55);
-    box-shadow: 0 0 38px rgba(255, 178, 0, 0.14);
+    color: #ffb200;
   }
   80% {
-    border-color: rgba(255, 218, 107, 0.6);
-    box-shadow: 0 0 44px rgba(255, 218, 107, 0.18);
+    color: #ffda6b;
   }
+}
+
+.dsc-pack-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsc-pack-count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.dsc-pack-date {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.52);
 }
 
 .dsc-card-eyebrow {
   font-family: var(--font-body);
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--dsc-ghost-dim);
-}
-
-.dsc-unknown {
-  font-family: var(--font-display);
-  font-size: 44px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* ── Odds pills ─────────────────────────────────────────────────────────── */
-.dsc-odds-pill {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
-  /* The tier color at full strength is far too loud for five stacked pills —
-     mix it down to a tint for the edge and keep it saturated on the label. */
-  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 38%, transparent);
-}
-
-.dsc-odds-name {
-  font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--dsc-tier, #fff);
-}
-
-.dsc-odds-value {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--dsc-ghost);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ── Progress ───────────────────────────────────────────────────────────── */
@@ -446,50 +652,50 @@ body[data-discovery-immersive='1'] #stellar-main {
   cursor: default;
 }
 
-/* ── Reward tiers ───────────────────────────────────────────────────────── */
-.dsc-tier-row {
+/* ── Tier rail ───────────────────────────────────────────────────────────
+   Five compact rows next to the price. Each carries a 3px chip of its tier's
+   material — the same graphite → steel → anodized blue → bronze → gold foil
+   escalation the pass cards are built from, and the only place that material
+   appears outside a card. */
+.dsc-mat-row {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 11px 0;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
   border-top: 1px solid var(--dsc-hairline);
 }
 
-.dsc-tier-name {
+.dsc-mat-row:last-child {
+  border-bottom: 1px solid var(--dsc-hairline);
+}
+
+.dsc-mat-chip {
+  flex: none;
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--mat-chip);
+}
+
+.dsc-mat-name {
+  flex: 1;
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--dsc-tier, #fff);
+  color: var(--mat-ink);
   white-space: nowrap;
 }
 
-/* The label column keeps its intrinsic width; only the reward copy wraps.
-   Without this the flex squeeze breaks "40 total" across two lines at 320px. */
-.dsc-tier-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.dsc-tier-count {
+.dsc-mat-odds {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--dsc-ghost-dim);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
-.dsc-tier-reward {
-  font-family: var(--font-body);
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--dsc-ghost);
-  text-align: right;
-}
+/* --mat-chip and --mat-ink come from .dsc-mat, which these rows carry. */
 
 /* ══════════════════════════ REVEAL PAGE ═════════════════════════════════ */
 
@@ -614,55 +820,14 @@ body[data-discovery-immersive='1'] #stellar-main {
   border-color: rgba(255, 255, 255, 0.32);
 }
 
-/* ── Generative object visual ────────────────────────────────────────────
-   Layered radial gradients keyed off the object's palette. A placeholder for
-   real astrophotography, but structured like the real thing: hot core, mid
-   field, cool outer halo. */
-.dsc-object-visual {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 14px;
-  overflow: hidden;
-  /* --dsc-vis-* not --dsc-halo: SealedObject already uses --dsc-halo for a
-     length (its pulse radius), and colliding the two would be a nasty bug the
-     day these components end up nested. */
-  background:
-    radial-gradient(circle at 50% 50%, var(--dsc-vis-core) 0%, transparent 26%),
-    radial-gradient(circle at 46% 44%, var(--dsc-vis-mid) 0%, transparent 52%),
-    radial-gradient(circle at 58% 60%, var(--dsc-vis-mid) 0%, transparent 44%),
-    radial-gradient(circle at 50% 50%, var(--dsc-vis-halo) 0%, #01020a 78%);
-}
-
-.dsc-object-visual::after {
-  content: '';
-  position: absolute;
-  inset: -12%;
-  background:
-    radial-gradient(circle at 32% 68%, rgba(255, 255, 255, 0.16) 0%, transparent 12%),
-    radial-gradient(circle at 71% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 9%),
-    radial-gradient(circle at 24% 26%, rgba(255, 255, 255, 0.1) 0%, transparent 7%);
-  animation: dsc-object-drift 24s ease-in-out infinite;
-}
-
-@keyframes dsc-object-drift {
-  0%,
-  100% {
-    transform: rotate(0deg) scale(1);
-  }
-  50% {
-    transform: rotate(7deg) scale(1.05);
-  }
-}
-
 /* ── Badges ─────────────────────────────────────────────────────────────── */
 .dsc-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
   font-family: var(--font-body);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -717,9 +882,9 @@ body[data-discovery-immersive='1'] #stellar-main {
 
 .dsc-prize-label {
   font-family: var(--font-body);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--dsc-ghost-dim);
 }
@@ -782,20 +947,6 @@ body[data-discovery-immersive='1'] #stellar-main {
   color: var(--dsc-ghost-dim);
   margin-bottom: 6px;
   display: block;
-}
-
-/* ── Share card ──────────────────────────────────────────────────────────
-   Only the Legendary ring needs CSS: every other rarity in ShareCard is a
-   static box-shadow, so it renders identically in the OG image. The conic
-   gradient is masked to a hairline annulus and rotated. */
-.dsc-share-ring {
-  animation: dsc-share-ring-spin 14s linear infinite;
-}
-
-@keyframes dsc-share-ring-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ══════════════════════════ LEADERBOARD ═════════════════════════════════ */
@@ -872,37 +1023,15 @@ body[data-discovery-immersive='1'] #stellar-main {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
-/* Legendary rows carry a gold wash and a slowly travelling edge — the same
-   shimmer as the legendary badge, at a fraction of the amplitude so a row of
-   them does not turn the page into a slot machine. */
+/* Legendary rows keep the gold wash. The travelling border they used to carry
+   is gone: the row now shows a foil chip, and a moving edge around a row that
+   already contains foil is the second animation in one object — which is how a
+   board of ten of them started reading as a slot machine. */
 .dsc-lb-row--legendary {
   background:
     linear-gradient(90deg, rgba(255, 218, 107, 0.09), rgba(255, 218, 107, 0.02) 62%),
     rgba(255, 255, 255, 0.028);
-  border-color: transparent;
-  background-clip: padding-box;
-}
-
-.dsc-lb-row--legendary::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 12px;
-  padding: 1px;
-  background: linear-gradient(100deg, rgba(255, 218, 107, 0.15), #ffda6b, rgba(255, 218, 107, 0.15));
-  background-size: 300% 100%;
-  animation: dsc-gold-shimmer 6s ease-in-out infinite;
-  /* Paint the gradient in the 1px padding ring only, so it reads as a border
-     rather than a filled card. */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  border-color: rgba(255, 218, 107, 0.24);
 }
 
 .dsc-lb-rank {
@@ -998,8 +1127,12 @@ body[data-discovery-immersive='1'] #stellar-main {
     justify-content: flex-end;
     gap: 12px;
   }
+  /* Holds the widest chip — swatch, gap and "LEGENDARY" at 10.5px — on one
+     line, so the columns to its right stay aligned down the board. That name
+     measures 100px, so the column carries a real margin rather than the 2px it
+     had before the microcopy floor moved. */
   .dsc-lb-badge-col {
-    width: 96px;
+    width: 112px;
   }
   .dsc-lb-wallet {
     width: 88px;
@@ -1012,6 +1145,44 @@ body[data-discovery-immersive='1'] #stellar-main {
     text-align: right;
     white-space: nowrap;
   }
+}
+
+/* ── Material chips ──────────────────────────────────────────────────────
+   The board's rarity marker. A coloured pill only said "this row is purple";
+   a 16px square of the actual material says "this holder pulled the anodized
+   one" — the same statement the cards make, at list scale. The swatch carries
+   the tier, so the name beside it can stay quiet.
+
+   Needs `.dsc-mat` alongside for --mat-chip / --mat-edge / --mat-ink. */
+.dsc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.dsc-chip-swatch {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--mat-chip);
+  border: 1px solid var(--mat-edge);
+  /* The same two-sided bevel the cards have, at 1px. Without it a swatch this
+     small reads as a colour sample rather than as a piece of the material. */
+  box-shadow:
+    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.3),
+    inset -1px -1px 1px -0.5px rgba(0, 0, 0, 0.55);
+}
+
+.dsc-chip-name {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--mat-ink, #fff);
 }
 
 /* ── Collector medals ────────────────────────────────────────────────────
@@ -1087,25 +1258,28 @@ body[data-discovery-immersive='1'] #stellar-main {
   .dsc-cta {
     transition: none;
   }
-  /* Hold the card on its Common edge rather than cycling. */
-  .dsc-pass-card {
+  /* The pack holds still: no float, no turning slick, no colour cycle. The
+     tilt stays available on hover, as it does on the pass cards. */
+  .dsc-pack {
     animation: none;
-    border-color: rgba(138, 147, 166, 0.55);
-    box-shadow: 0 0 38px rgba(138, 147, 166, 0.08);
+    translate: none;
+    transition: none;
   }
-  .dsc-progress-fill,
-  .dsc-object-visual::after {
+  .dsc-pack:hover {
+    transform: none;
+  }
+  .dsc-pack-slick,
+  .dsc-pack-shimmer {
     animation: none;
   }
-  .dsc-share-ring {
+  .dsc-pack-tear {
+    transition: none;
+  }
+  .dsc-progress-fill {
     animation: none;
   }
   .dsc-lb-row {
     transition: none;
-  }
-  .dsc-lb-row--legendary::before {
-    animation: none;
-    background-position: 50% 50%;
   }
   /* A rail that scrolls forever is the clearest case for holding still; the
      first few entries stay readable at rest. */
@@ -1295,9 +1469,11 @@ body[data-discovery-immersive='1'] #stellar-main {
   height: 1.5px;
   border-radius: 2px;
   background: var(--dsc-text);
+  /* The bars morph on a click, not on hover, so they hold to the 300ms floor
+     the rest of the layer's non-hover motion is on. */
   transition:
-    transform 200ms ease,
-    opacity 160ms ease;
+    transform 300ms ease,
+    opacity 300ms ease;
 }
 
 .dsc-nav-burger[aria-expanded='true'] span:nth-child(1) {
@@ -1325,7 +1501,7 @@ body[data-discovery-immersive='1'] #stellar-main {
   gap: 4px;
   padding: var(--dsc-nav-h) 28px 28px;
   background: #04061a;
-  animation: dsc-sheet-in 200ms ease-out both;
+  animation: dsc-sheet-in 300ms ease-out both;
 }
 
 @keyframes dsc-sheet-in {
@@ -1421,318 +1597,682 @@ body[data-discovery-immersive='1'] #stellar-main {
 /* ══════════════════════════════════════════════════════════════════════════
    PASS CARDS
 
-   Real telescope photographs, framed five different ways. The register is
-   ripcars.io — near-black ground, one accent per card, heavy uppercase against
-   letterspaced mono micro-caps, and a money figure on every card — but where
-   they photograph a die-cast car under studio light, the product here is an
-   actual Hubble or ALMA frame.
+   Real telescope photographs, graded and slabbed. Every card is the same four
+   blocks in the same order — rail, plate, specimen label, value block — so the
+   five read as one series rather than five layouts, and a buyer comparing two
+   tiers is comparing the money and the material, not hunting for where each
+   card put its number.
 
-   `data-art` selects the architecture, `data-tier` the accent. The two are
-   separate so a tier can change colour without changing shape.
+   `data-tier` selects the MATERIAL. That is the only thing that varies between
+   cards: the slab, its machined edge, the mat around the print, and what the
+   photograph is graded to. The escalation is therefore in finish, not in
+   layout — Common is a desaturated print in matte graphite on purpose; if it
+   shone there would be nowhere for Legendary to go.
 
-   The escalation ladder: aperture size grows, the frame gets more hardware,
-   and only Legendary moves. Common is mostly empty black by design.
+   Every card is rendered as a photographed physical object, not a UI panel:
+   bevelled thickness, a contact shadow, a specular band sweeping the face on a
+   slow cycle, and a 3D tip on hover. `--dsc-tier` survives for the orbit ring
+   only — the material owns every other surface and edge.
    ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Materials ───────────────────────────────────────────────────────────
+   One material per tier. --mat-surface is the slab itself (always with its own
+   vignette so the face reads as lit, not flat), --mat-sheen is the finish
+   painted over it (anisotropic brushing, a specular band, an ember, foil),
+   --mat-edge is the machined rim the border uses, --mat-ink is that same edge
+   colour at full strength for the tier name, and --mat-frame is the hairline
+   mat drawn around the print.
+
+   --mat-chip is the same material compressed to a 16px swatch. A swatch that
+   small cannot carry a vignette and a 0.14-alpha sheen — legendary would read
+   as a brown square — so each tier gets one punchy gradient that survives at
+   that size. It is the material, restated, not a different palette.
+
+   Declared on .dsc-mat rather than on .dsc-pass so the pass cards, the reveal
+   card and the leaderboard chips all draw from one definition. Carry both
+   classes: `.dsc-mat` for the tokens, the component class for the geometry.
+   ───────────────────────────────────────────────────────────────────────── */
+.dsc-mat[data-tier='common'] {
+  /* Matte graphite: soft-touch near-black, the faintest vignette, no shine. */
+  --mat-surface:
+    radial-gradient(120% 100% at 50% 50%, transparent 56%, rgba(0, 0, 0, 0.35) 100%),
+    radial-gradient(130% 110% at 50% 18%, #131519 0%, #0c0d10 52%, #070809 100%);
+  --mat-sheen: none;
+  --mat-edge: rgba(255, 255, 255, 0.07);
+  --mat-ink: #97a0ad;
+  --mat-frame: rgba(255, 255, 255, 0.11);
+  --mat-chip: linear-gradient(135deg, #2f343c 0%, #16181c 52%, #0a0b0e 100%);
+}
+
+.dsc-mat[data-tier='uncommon'] {
+  /* Brushed steel: vertical 1px anisotropic grain under a broad cool band. */
+  --mat-surface:
+    radial-gradient(120% 100% at 50% 50%, transparent 56%, rgba(0, 0, 0, 0.4) 100%),
+    linear-gradient(180deg, #191e26 0%, #11151c 55%, #0b0e13 100%);
+  --mat-sheen:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0px,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(
+      90deg,
+      transparent 8%,
+      rgba(205, 220, 235, 0.05) 32%,
+      rgba(235, 244, 252, 0.03) 50%,
+      rgba(205, 220, 235, 0.05) 70%,
+      transparent 94%
+    );
+  --mat-edge: rgba(200, 212, 226, 0.24);
+  --mat-ink: #c8d4e2;
+  --mat-frame: rgba(200, 212, 226, 0.34);
+  --mat-chip: linear-gradient(135deg, #8b9aad 0%, #232a33 46%, #6f8093 78%, #aebdcd 100%);
+}
+
+.dsc-mat[data-tier='rare'] {
+  /* Deep blue anodized metal: saturated midnight with a cold specular band. */
+  --mat-surface:
+    radial-gradient(120% 100% at 50% 50%, transparent 54%, rgba(0, 0, 12, 0.45) 100%),
+    linear-gradient(160deg, #0b1533 0%, #0d1c4a 44%, #060d24 100%);
+  --mat-sheen: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgba(150, 190, 255, 0.09) 46%,
+    rgba(215, 235, 255, 0.13) 50%,
+    rgba(150, 190, 255, 0.09) 54%,
+    transparent 68%
+  );
+  --mat-edge: rgba(130, 168, 255, 0.3);
+  --mat-ink: #92b0ff;
+  --mat-frame: rgba(130, 168, 255, 0.42);
+  --mat-chip: linear-gradient(135deg, #6f97ff 0%, #16255c 44%, #0b1435 72%, #5b83f0 100%);
+}
+
+.dsc-mat[data-tier='epic'] {
+  /* Amber bronze: warm dark metal with an ember glowing inside the surface. */
+  --mat-surface:
+    radial-gradient(120% 100% at 50% 50%, transparent 54%, rgba(10, 3, 0, 0.42) 100%),
+    linear-gradient(170deg, #251507 0%, #190d04 52%, #100802 100%);
+  --mat-sheen: radial-gradient(
+    120% 85% at 50% 88%,
+    rgba(255, 138, 52, 0.16) 0%,
+    rgba(255, 96, 32, 0.06) 42%,
+    transparent 68%
+  );
+  --mat-edge: rgba(255, 168, 92, 0.28);
+  --mat-ink: #ffb673;
+  --mat-frame: rgba(255, 168, 92, 0.42);
+  --mat-chip: linear-gradient(135deg, #ffb673 0%, #7a3d0d 46%, #3a1c05 72%, #ff9a45 100%);
+}
+
+.dsc-mat[data-tier='legendary'] {
+  /* Gold foil: layered champagne / gold / rose gradient that drifts slowly.
+     The animation lives on the ::before that paints this sheen. */
+  --mat-surface:
+    radial-gradient(120% 100% at 50% 50%, transparent 54%, rgba(12, 6, 0, 0.4) 100%),
+    linear-gradient(160deg, #211505 0%, #171004 58%, #0e0a03 100%);
+  --mat-sheen: linear-gradient(
+    105deg,
+    rgba(247, 231, 206, 0.05) 0%,
+    rgba(255, 215, 110, 0.14) 18%,
+    rgba(255, 190, 120, 0.08) 34%,
+    rgba(232, 160, 150, 0.13) 50%,
+    rgba(255, 215, 110, 0.12) 66%,
+    rgba(247, 231, 206, 0.05) 84%,
+    rgba(232, 160, 150, 0.1) 100%
+  );
+  --mat-edge: rgba(255, 213, 118, 0.42);
+  --mat-ink: #ffd576;
+  --mat-frame: rgba(255, 213, 118, 0.5);
+  --mat-chip: linear-gradient(
+    135deg,
+    #fff3c4 0%,
+    #ffd576 22%,
+    #8a6320 48%,
+    #ffd576 72%,
+    #e8a096 100%
+  );
+}
+
+/* Perspective container: the card tilts inside it on hover. Kept on a wrapper
+   so the foreshortening reads as depth instead of a skew. It is also the piece
+   the desktop fan moves, which keeps the fan's placement transform and the
+   hover's 3D transform on separate elements instead of fighting over one. */
+.dsc-pass-tilt {
+  perspective: 900px;
+}
 
 .dsc-pass {
   position: relative;
   display: flex;
   flex-direction: column;
+  /* The 10px rhythm the whole card is built on. Blocks never set their own
+     top margin; this gap is the only thing between them. */
+  gap: 10px;
   width: 100%;
-  min-height: 340px;
-  padding: 15px 15px 13px;
+  height: 100%;
+  padding: 14px;
   border-radius: 15px;
   overflow: hidden;
   isolation: isolate;
-  background: linear-gradient(180deg, #070912 0%, #030409 100%);
-  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 16%, transparent);
+  background: var(--mat-surface);
+  border: 1px solid var(--mat-edge);
+  /* Physical thickness: a 2px bevel lit from the top-left, plus a contact
+     shadow dropped straight down in neutral black — never a tier-color glow. */
+  --mat-bevel:
+    inset 2px 2px 1px -1px rgba(255, 255, 255, 0.09),
+    inset -2px -2px 1px -1px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    var(--mat-bevel),
+    0 14px 22px -10px rgba(0, 0, 0, 0.55),
+    0 30px 48px -18px rgba(0, 0, 0, 0.6);
   transition:
-    transform 340ms cubic-bezier(0.2, 0.7, 0.3, 1),
-    border-color 340ms ease,
-    box-shadow 340ms ease;
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.dsc-pass:hover {
-  transform: translateY(-5px);
-  border-color: color-mix(in srgb, var(--dsc-tier, #fff) 42%, transparent);
-  box-shadow: 0 22px 56px -22px color-mix(in srgb, var(--dsc-tier, #fff) 50%, transparent);
+/* The finish layer — brushing, specular band, ember, foil — over the surface,
+   under the type. On Legendary the plate drops below this so the foil sweeps
+   over the print itself; on every other tier the plate sits above it. */
+.dsc-pass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--mat-sheen);
 }
 
-/* ── The photograph ─────────────────────────────────────────────────────── */
+.dsc-pass-tilt:hover .dsc-pass {
+  transform: rotateX(-4deg) rotateY(4deg) scale(1.02);
+  box-shadow:
+    var(--mat-bevel),
+    0 20px 30px -12px rgba(0, 0, 0, 0.6),
+    0 44px 68px -20px rgba(0, 0, 0, 0.68);
+}
+
+/* ── Specular sweep ──────────────────────────────────────────────────────
+   A soft diagonal light band crosses each card once per 8s cycle;
+   --dsc-sweep-delay (set inline per card index) staggers the five. The
+   keyframes own `transform`, so the hover shift uses the separate `translate`
+   property and the two compose. */
+.dsc-pass-sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0.04) 55%,
+    transparent 62%
+  );
+  transform: translateX(-85%);
+  animation: dsc-pass-sweep 8s ease-in-out infinite;
+  animation-delay: var(--dsc-sweep-delay, 0s);
+  transition: translate 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dsc-pass[data-tier='legendary'] .dsc-pass-sweep {
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 222, 150, 0.06) 45%,
+    rgba(255, 232, 180, 0.11) 50%,
+    rgba(255, 222, 150, 0.06) 55%,
+    transparent 62%
+  );
+}
+
+.dsc-pass-tilt:hover .dsc-pass-sweep {
+  translate: 6% 0;
+}
+
+@keyframes dsc-pass-sweep {
+  0% {
+    transform: translateX(-85%);
+  }
+  24% {
+    transform: translateX(85%);
+  }
+  100% {
+    transform: translateX(85%);
+  }
+}
+
+/* ── 1. Top rail ─────────────────────────────────────────────────────────
+   Tier name in the display face at the material's edge colour, serial in mono
+   opposite it, a hairline underneath. The tier's own accent is deliberately
+   NOT used here: five saturated names across a set makes the row read as a
+   legend, and the material is what actually separates the cards. */
+.dsc-pass-rail {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dsc-pass-tier {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  /* Real small caps rather than `text-transform: uppercase` — the tier names
+     are stored mixed-case, so the capital stays tall and the rest drops. */
+  font-variant-caps: small-caps;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  white-space: nowrap;
+  margin: 0;
+  color: var(--mat-ink, #fff);
+}
+
+/* 0.5, not the 0.4 this started at: on the darkest material 0.4 measures
+   3.7:1, and on Rare's anodized blue — the lightest of the five surfaces — it
+   is worse. 0.5 clears 4.5:1 on all of them and is still a clear step below
+   the object name. The same floor applies to every quiet line on a card:
+   serial, instrument, odds, and the reveal card's "You won". */
+.dsc-pass-serial {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── 2. The plate ────────────────────────────────────────────────────────
+   The photograph is the entire middle of the card: full width of the slab
+   (negative margins cancel the 14px padding, the card's own radius clips it)
+   and square, with a hairline mat held 10px inside the edge like the border
+   around a print. Small photographs read as icons; this one reads as the
+   artifact the pass is actually about. */
+.dsc-pass-plate {
+  position: relative;
+  flex: none;
+  z-index: 2;
+  margin-inline: -14px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #04060c;
+}
+
+/* Legendary only: the print sits UNDER the foil, so the sheen crosses the
+   photograph rather than stopping at its edge. */
+.dsc-pass[data-tier='legendary'] .dsc-pass-plate {
+  z-index: 0;
+}
+
 .dsc-pass-photo {
   object-fit: cover;
-  /* Every source is a black-field astrophoto, so the card ground and the
-     image edge dissolve into each other rather than butting up. */
   transform-origin: center;
 }
 
-.dsc-pass-bleed {
+/* Objects that have never been directly imaged — most of the catalogue — get
+   their deterministic gradient in the same plate, at the same size, under the
+   same mat. The fallback is a permanent branch, not a gap waiting on files. */
+.dsc-pass-fallback {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  overflow: hidden;
 }
 
-/* Keeps the type legible over a bright nebula without flattening the image. */
-.dsc-pass-scrim {
+/* Common is an archival print: the colour has been pulled out of it and the
+   exposure brought down, which is what a $10 pull should look like next to a
+   $2,000 one. Epic is warmed slightly toward its bronze. */
+.dsc-pass[data-tier='common'] .dsc-pass-photo {
+  filter: saturate(0.65) brightness(0.8);
+}
+
+.dsc-pass[data-tier='epic'] .dsc-pass-photo {
+  filter: sepia(0.12) saturate(1.15);
+}
+
+/* The mat. One hairline for every tier; Legendary gets a second 3px inside it,
+   which is the only doubled hardware on any card. */
+.dsc-pass-plate::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(3, 4, 9, 0.86) 0%, rgba(3, 4, 9, 0.12) 32%),
-    linear-gradient(0deg, rgba(3, 4, 9, 0.94) 0%, rgba(3, 4, 9, 0.72) 26%, transparent 58%);
-}
-
-/* ── Contained stages ───────────────────────────────────────────────────── */
-.dsc-pass-stage {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 12px 0 10px;
-  min-height: 124px;
-}
-
-.dsc-pass-frame {
-  position: relative;
-  overflow: hidden;
+  inset: 10px;
   z-index: 2;
+  pointer-events: none;
+  border: 1px solid var(--mat-frame);
 }
 
-/* plate — a small port in a wide black field. The most restrained. */
-.dsc-pass[data-art='plate'] .dsc-pass-frame {
-  width: 84px;
-  aspect-ratio: 1;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.02);
+.dsc-pass[data-tier='legendary'] .dsc-pass-plate::before {
+  content: '';
+  position: absolute;
+  inset: 13px;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid var(--mat-frame);
 }
 
-/* window — a wide aperture across the upper card. */
-.dsc-pass[data-art='window'] .dsc-pass-frame {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--dsc-tier) 26%, transparent);
-  box-shadow: 0 0 30px -8px color-mix(in srgb, var(--dsc-tier) 45%, transparent);
-}
-
-/* aperture — a circular port with instrument hardware around it. */
-.dsc-pass[data-art='aperture'] .dsc-pass-frame {
-  width: 108px;
-  aspect-ratio: 1;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--dsc-tier) 40%, transparent);
-  box-shadow: 0 0 34px -6px color-mix(in srgb, var(--dsc-tier) 55%, transparent);
-}
-
+/* Rare keeps one instrument ring from the old aperture treatment — the single
+   piece of that hardware worth carrying forward. */
 .dsc-pass-orbit {
   position: absolute;
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  width: 142px;
-  max-width: 94%;
+  width: 62%;
   aspect-ratio: 1;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--dsc-tier) 22%, transparent);
-  z-index: 1;
-}
-
-/* Four ticks at the cardinal points — a reticle, not decoration. */
-.dsc-pass-ticks {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  width: 160px;
-  max-width: 100%;
-  aspect-ratio: 1;
-  z-index: 1;
-  background:
-    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 50% 0 / 1px 7px no-repeat,
-    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 50% 100% / 1px 7px no-repeat,
-    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 0 50% / 7px 1px no-repeat,
-    linear-gradient(var(--dsc-tier), var(--dsc-tier)) 100% 50% / 7px 1px no-repeat;
-  opacity: 0.5;
-}
-
-/* framed — full bleed with a gold inner rule held off the edge. */
-.dsc-pass[data-art='framed']::after {
-  content: '';
-  position: absolute;
-  inset: 7px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--dsc-tier) 34%, transparent);
+  z-index: 2;
   pointer-events: none;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--dsc-tier) 38%, transparent);
+}
+
+/* ── 3. Specimen label ───────────────────────────────────────────────────
+   A museum placard: the object on one line, the instrument that imaged it on
+   the next. The instrument is the proof the picture is real. */
+.dsc-pass-label {
+  position: relative;
   z-index: 3;
+  /* Absorbs any slack when one card's reward line wraps further than another's,
+     so the value blocks below still sit on a shared baseline. */
+  flex: 1 0 auto;
 }
 
-/* ── Type ───────────────────────────────────────────────────────────────── */
-.dsc-pass-head {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.dsc-pass-tier {
+.dsc-pass-object {
   font-family: var(--font-body);
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-  margin: 0;
-  color: var(--dsc-tier, #fff);
-}
-
-.dsc-pass-serial {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-/* Full-bleed tiers have no stage, so the foot has to claim the space itself
-   and sit at the bottom of the photograph. */
-.dsc-pass[data-art='bleed'] .dsc-pass-foot,
-.dsc-pass[data-art='framed'] .dsc-pass-foot {
-  margin-top: auto;
-}
-
-.dsc-pass-foot {
-  position: relative;
-  z-index: 2;
-}
-
-.dsc-pass-example {
-  font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.25;
   letter-spacing: -0.01em;
   color: #fff;
-  margin: 0 0 9px;
+  margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* The instrument is the proof the picture is real — quiet, but present. */
 .dsc-pass-instrument {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 400;
+  line-height: 1.3;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.42);
+  color: rgba(255, 255, 255, 0.54);
+  margin: 4px 0 0;
 }
 
-.dsc-pass-value {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 11px 5px 8px;
-  border-radius: 999px;
-  background: rgba(6, 8, 16, 0.72);
-  border: 1px solid color-mix(in srgb, var(--dsc-tier, #fff) 30%, transparent);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.dsc-pass-value::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--dsc-tier, #fff);
+/* ── 4. Value block ──────────────────────────────────────────────────────
+   The money is the loudest thing on the card after the photograph. */
+.dsc-pass-values {
+  position: relative;
+  z-index: 3;
   flex: none;
 }
 
-.dsc-pass-value b {
+.dsc-pass-value {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: #fff;
+  margin: 0;
 }
 
 .dsc-pass-reward {
   font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.4;
+  font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.66);
-  margin: 9px 0 0;
-  min-height: 31px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 6px 0 0;
+  /* Two lines reserved: the two physical tiers wrap, the three token-only
+     tiers do not, and without the floor their odds rows would sit at three
+     different heights across the set. */
+  min-height: 34px;
 }
 
+/* The tightest row on the card: two nowrap mono strings that have to sit at
+   opposite edges of a ~168px column at the fan's narrowest. The tracking is
+   held at 0.01em (rather than the 0.03em the other mono rows use) purely to
+   buy that row the slack it needs — see the fan's breakpoint note. */
 .dsc-pass-odds {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
 }
 
-/* ── Legendary only: the card moves ─────────────────────────────────────── */
+/* ── Legendary only: the foil is alive ──────────────────────────────────
+   The gold sheen is a wide multi-stop gradient travelling across its own
+   background box, so the face shifts champagne → gold → rose rather than a
+   single highlight sliding past. Warmer bevel, warmer contact shadow. */
 .dsc-pass[data-tier='legendary'] {
-  border-color: color-mix(in srgb, var(--dsc-tier) 44%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 243, 196, 0.2),
-    0 0 42px -16px color-mix(in srgb, var(--dsc-tier) 60%, transparent);
+  --mat-bevel:
+    inset 2px 2px 1px -1px rgba(255, 240, 205, 0.16),
+    inset -2px -2px 1px -1px rgba(0, 0, 0, 0.62);
 }
 
 .dsc-pass[data-tier='legendary']::before {
-  content: '';
-  position: absolute;
-  inset: -40%;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    72deg,
-    transparent 24%,
-    color-mix(in srgb, var(--dsc-tier) 8%, transparent) 42%,
-    rgba(255, 255, 255, 0.06) 50%,
-    color-mix(in srgb, var(--dsc-tier) 8%, transparent) 58%,
-    transparent 76%
-  );
-  filter: blur(7px);
-  animation: dsc-pass-foil 6s ease-in-out infinite;
+  background-size: 260% 100%;
+  animation: dsc-pass-foil 9s ease-in-out infinite;
 }
 
 @keyframes dsc-pass-foil {
   0%,
   100% {
-    transform: translateX(-16%);
+    background-position: 0% 50%;
   }
   50% {
-    transform: translateX(16%);
+    background-position: 100% 50%;
   }
 }
 
-/* ── Gallery ────────────────────────────────────────────────────────────── */
-.dsc-pass-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* ── The reveal card ─────────────────────────────────────────────────────
+   The object you opened, at 420px instead of 208px.
+
+   Deliberately not a second design. The whole promise of the reveal is that
+   the thing landing in front of you is the artifact you were comparing in the
+   gallery — same material, same bevel, same four blocks in the same order —
+   so this modifier only restates the type scale at the larger size. Anything
+   that is not a size lives on .dsc-pass and is shared.
+   ───────────────────────────────────────────────────────────────────────── */
+.dsc-pass--lg {
   gap: 12px;
+  padding: 18px;
+  border-radius: 18px;
 }
 
-@media (min-width: 720px) {
-  .dsc-pass-grid {
+.dsc-pass--lg .dsc-pass-rail {
+  padding-bottom: 12px;
+}
+
+.dsc-pass--lg .dsc-pass-tier {
+  font-size: 15px;
+  letter-spacing: 0.2em;
+}
+
+.dsc-pass--lg .dsc-pass-serial {
+  font-size: 12px;
+}
+
+.dsc-pass--lg .dsc-pass-plate {
+  margin-inline: -18px;
+}
+
+.dsc-pass--lg .dsc-pass-plate::after {
+  inset: 14px;
+}
+
+.dsc-pass--lg[data-tier='legendary'] .dsc-pass-plate::before {
+  inset: 18px;
+}
+
+.dsc-pass--lg .dsc-pass-object {
+  font-size: 19px;
+  /* The gallery card truncates a long name because five cards have to agree on
+     a height. The reveal card has no neighbour to match and is showing the one
+     object you actually own, so it wraps instead. */
+  white-space: normal;
+  overflow: visible;
+}
+
+.dsc-pass--lg .dsc-pass-instrument {
+  font-size: 11.5px;
+  margin-top: 6px;
+}
+
+.dsc-pass--lg .dsc-pass-value {
+  font-size: 26px;
+}
+
+.dsc-pass--lg .dsc-pass-reward {
+  font-size: 13.5px;
+  /* No shared baseline to hold here — one card, one reward line. */
+  min-height: 0;
+}
+
+.dsc-pass--lg .dsc-pass-odds {
+  font-size: 11px;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+/* "You won", above the money. The only block the reveal card adds. */
+.dsc-pass-vlabel {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 8px;
+}
+
+/* The resting sweep waits out the materialise: a light band crossing the face
+   while the card is still resolving out of blur muddies both. */
+.dsc-pass--lg .dsc-pass-sweep {
+  animation-delay: 900ms;
+}
+
+/* LEGENDARY: one bright gold pass across the face as the card lands, once,
+   and then it settles into the same slow loop every other tier is on.
+   Its own element rather than a second animation on .dsc-pass-sweep — the two
+   would be fighting over `transform`, and the one-shot has to be far brighter
+   than the band it hands off to. */
+.dsc-pass--lg[data-tier='legendary'] .dsc-pass-sweep {
+  animation-delay: 2400ms;
+}
+
+.dsc-reveal-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    102deg,
+    transparent 30%,
+    rgba(255, 232, 170, 0.12) 42%,
+    rgba(255, 248, 220, 0.4) 50%,
+    rgba(255, 232, 170, 0.12) 58%,
+    transparent 70%
+  );
+  transform: translateX(-115%);
+  animation: dsc-reveal-flash 1300ms cubic-bezier(0.36, 0, 0.2, 1) 850ms 1 both;
+}
+
+@keyframes dsc-reveal-flash {
+  from {
+    transform: translateX(-115%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(115%);
+    opacity: 0;
+  }
+}
+
+/* ── Staging ─────────────────────────────────────────────────────────────
+   Phone: a flat scroll row, Legendary first — which is the DOM order, so the
+   row needs no reordering. Five tall cards in a two-column grid would push the
+   cheapest tiers a full screen below the fold. */
+.dsc-pass-fan {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* Room for the contact shadow, which a scroll container would otherwise
+     clip flat against the top and bottom of the row. */
+  padding-block: 6px 14px;
+}
+
+.dsc-pass-fan > * {
+  flex: 0 0 208px;
+  scroll-snap-align: start;
+}
+
+/* Desktop: a fanned hand, not a flat row of five equals. Legendary centre and
+   largest, Rare and Epic flanking, the two cheapest tiers outermost, smaller,
+   and tipped away. Each card is pulled toward the middle so the neighbours
+   overlap the way cards held in one hand do. The order variables are set per
+   card in PassCard.tsx; the DOM stays value-descending for the phone row.
+
+   1080px, not the 720px this started at. The fan divides the column into five,
+   so its card width is a function of the container, and the container is
+   capped at 1080px — meaning every viewport at or above that gets exactly the
+   same ~168px of usable card. Below it the columns narrow with the viewport,
+   and at 1024px and under the widest odds row ("90.0% odds / 9,000 / 10,000")
+   and the tier rail ran past the card's own `overflow: hidden` and were cut
+   mid-number. The scroll row's cards are a fixed 208px, so tablet keeps whole
+   cards instead of five clipped ones, and the fan appears only at the width
+   where it is already at full size. */
+@media (min-width: 1080px) {
+  .dsc-pass-fan {
+    display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 14px;
+    gap: 10px;
+    /* The cards leave their columns, so the grid must not clip or scroll. */
+    overflow: visible;
+    scroll-snap-type: none;
+    /* Scale and rotation grow from a shared bottom edge. */
+    align-items: end;
+    /* Headroom for the lifted centre card, the tipped ends, and the contact
+       shadows — none of which are inside a column's box. */
+    padding: 40px 6px 48px;
+  }
+
+  /* Scoped to the fan: .dsc-pass-tilt is also the reveal card's perspective
+     wrapper, and that card is not in a grid. */
+  .dsc-pass-fan .dsc-pass-tilt {
+    grid-column: var(--dsc-fan-col, auto);
+    /* Pinned explicitly: the cards are placed out of DOM order, and sparse
+       auto-placement never moves its cursor backwards — Rare asking for
+       column 2 after Epic took column 4 would start a second row. */
+    grid-row: 1;
+    z-index: var(--dsc-fan-z, 1);
+    transform-origin: 50% 100%;
+    transform: translate(var(--dsc-fan-shift, 0), var(--dsc-fan-lift, 0))
+      rotate(var(--dsc-fan-rot, 0deg)) scale(var(--dsc-fan-scale, 1));
+  }
+
+  /* A hovered card comes out from under its neighbours. */
+  .dsc-pass-fan .dsc-pass-tilt:hover {
+    z-index: 10;
   }
 }
 
@@ -1740,73 +2280,30 @@ body[data-discovery-immersive='1'] #stellar-main {
   .dsc-pass {
     transition: none;
   }
-  .dsc-pass:hover {
+  /* The tilt is the whole hover affordance, so it is held rather than
+     removed — the material and bevel still read without the rotation. */
+  .dsc-pass-tilt:hover .dsc-pass {
     transform: none;
+  }
+  /* A light band crossing five cards on a loop is ambient motion; park it
+     off the face so the sweep is simply absent. */
+  .dsc-pass-sweep {
+    animation: none;
+    transition: none;
+    opacity: 0;
+  }
+  .dsc-pass-tilt:hover .dsc-pass-sweep {
+    translate: none;
   }
   .dsc-pass[data-tier='legendary']::before {
     animation: none;
+    background-position: 50% 50%;
   }
-}
-
-/* ── Sealed pass ─────────────────────────────────────────────────────────
-   The photograph behind the seal is blurred past recognition and pushed well
-   down in luminance. It has to read as "something is in there" without giving
-   up a single identifiable feature — at lower blur the Orion Nebula is
-   recognisable, which would make every sealed pass look like an Orion pass. */
-.dsc-sealed-card {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.dsc-sealed-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.dsc-sealed-photo {
-  object-fit: cover;
-  filter: blur(26px) saturate(0.7) brightness(0.5);
-  opacity: 0.42;
-  /* Scaled up so the blur's soft edge never reaches the card border. */
-  transform: scale(1.5);
-}
-
-.dsc-sealed-card > *:not(.dsc-sealed-bg) {
-  position: relative;
-  z-index: 1;
-}
-
-.dsc-sealed-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-
-/* An unlit disc over the blur: the object is present, and occluded. */
-.dsc-sealed-disc {
-  width: 108px;
-  aspect-ratio: 1;
-  border-radius: 9999px;
-  background: radial-gradient(circle at 50% 42%, #0b0e1d 0%, #04050d 62%, #000 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 18px 50px -18px rgba(0, 0, 0, 0.9);
-}
-
-.dsc-sealed-note {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.34);
-  margin: 0;
+  /* A one-shot is still a light band travelling across the screen. */
+  .dsc-reveal-flash {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* ── Photographic backdrop ───────────────────────────────────────────────
@@ -1828,11 +2325,15 @@ body[data-discovery-immersive='1'] #stellar-main {
 }
 
 /* Vignette + top fade: keeps the nav edge and the page centre clean, which is
-   where the type lives. */
+   where the type lives.
+   The centre stop is a scrim rather than `transparent`: the hero copy sits
+   exactly there, and a nebula core landing under it took the quiet lines below
+   4.5:1. Dimming the photograph under the type is the fix — shrinking or
+   dropping the photograph is not. */
 .dsc-backdrop-veil {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 50% 42%, transparent 0%, rgba(4, 6, 26, 0.72) 78%),
+    radial-gradient(120% 90% at 50% 42%, rgba(4, 6, 26, 0.3) 0%, rgba(4, 6, 26, 0.8) 78%),
     linear-gradient(180deg, rgba(4, 6, 26, 0.9) 0%, transparent 26%, transparent 70%, rgba(4, 6, 26, 0.95) 100%);
 }

@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Backdrop from '@/components/discovery/Backdrop';
 import CountdownTimer from '@/components/discovery/CountdownTimer';
+import RevealedCard from '@/components/discovery/RevealedCard';
 import SealedObject from '@/components/discovery/SealedObject';
-import ShareCard, { SHARE_CARD_WIDTH } from '@/components/discovery/ShareCard';
-import ShareCardFrame from '@/components/discovery/ShareCardFrame';
 import Starfield from '@/components/discovery/Starfield';
 import { REVEAL_AT_MS } from '@/lib/discovery/constants';
 import { parsePassId, type PassRef } from '@/lib/discovery/passId';
-import { OBJECT_TYPE_LABEL, RARITY_TO_TIER, determineObject } from '@/lib/discovery/rarityEngine';
-import { TIER_BY_ID, rewardLine } from '@/lib/discovery/tiers';
+import { determineObject } from '@/lib/discovery/rarityEngine';
+import { revealCardFromDraw } from '@/lib/discovery/revealCard';
 
 /**
  * The public page for one pass — what a shared link on X resolves to.
@@ -114,68 +114,28 @@ export default async function DiscoveryPassPage({ params }: Params) {
 
   return (
     <div className="dsc-root">
+      {/* The one discovery page a stranger lands on cold. It was the only one
+          without a photograph behind it, which left the shared link the
+          flattest surface in the funnel. */}
+      <Backdrop src="/images/dso/m51.jpg" intensity={0.2} />
       <Starfield />
 
       <div className="relative z-10 mx-auto w-full max-w-[820px] px-5 py-8 sm:py-10">
         {object ? (
-          <>
-            <ShareCardFrame cardWidth={SHARE_CARD_WIDTH}>
-              <ShareCard object={object} />
-            </ShareCardFrame>
-
-            <div className="mt-8 flex flex-wrap items-center gap-2">
-              <span className="dsc-badge dsc-badge--type">{OBJECT_TYPE_LABEL[object.type]}</span>
-              <span
-                className={
-                  object.rarity === 'LEGENDARY'
-                    ? 'dsc-badge dsc-badge--rarity dsc-badge--legendary'
-                    : 'dsc-badge dsc-badge--rarity'
-                }
-                style={{ '--dsc-tier': object.rarityColor } as React.CSSProperties}
-              >
-                {TIER_BY_ID[RARITY_TO_TIER[object.rarity]].name}
-              </span>
-            </div>
-
-            <h1
-              className="text-[28px] sm:text-[38px]"
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontWeight: 700,
-                lineHeight: 1.12,
-                letterSpacing: '-0.02em',
-                color: 'var(--dsc-text)',
-                margin: '14px 0 0',
-              }}
-            >
-              {object.name}
-            </h1>
-
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: 15,
-                lineHeight: 1.6,
-                color: 'var(--dsc-ghost)',
-                maxWidth: 560,
-                margin: '14px 0 0',
-              }}
-            >
-              {object.description}
-            </p>
+          /* The same card the holder was handed at reveal, animation and all —
+             a shared link should land on the artifact, not on a flat picture
+             of it. Everything the card already states (name, instrument,
+             reward, odds, coordinates) is deliberately absent below it. */
+          <div className="mx-auto flex w-full max-w-[420px] flex-col">
+            <RevealedCard object={revealCardFromDraw(object)} passNumber={ref.passNumber} />
 
             <div className="mt-8">
               <Detail label="Pass" value={`#${ref.passNumber}`} />
               <Detail label="Holder" value={shortWallet(ref.wallet)} />
-              <Detail
-                label="Coordinates"
-                value={`${object.coordinates.ra} / ${object.coordinates.dec}`}
-              />
-              <Detail label="Reward" value={rewardLine(RARITY_TO_TIER[object.rarity])} />
             </div>
 
             <Cta />
-          </>
+          </div>
         ) : (
           <div className="flex flex-col items-center gap-7 py-6 text-center">
             <SealedObject size={220} />

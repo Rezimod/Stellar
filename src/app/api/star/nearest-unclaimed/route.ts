@@ -25,8 +25,8 @@ export async function GET(req: NextRequest) {
   const lat = parseFloat(searchParams.get('lat') ?? '');
   const lon = parseFloat(searchParams.get('lon') ?? searchParams.get('lng') ?? '');
 
-  if (!isFinite(lat) || !isFinite(lon)) {
-    return NextResponse.json({ error: 'lat and lon are required' }, { status: 400 });
+  if (!isFinite(lat) || !isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json({ error: 'Valid lat and lon are required' }, { status: 400 });
   }
 
   const databaseUrl = process.env.DATABASE_URL;

@@ -31,6 +31,7 @@ export const trackRateLimit = { limit: (id: string) => makeLimit('60 s', 120, 'r
 // 20 push-subscription writes/hour/IP — a device subscribes once; this blocks
 // spam rows from an unauthenticated caller.
 export const pushSubscribeRateLimit = { limit: (id: string) => makeLimit('3600 s', 20, 'rl:push').limit(id) };
+export const emailSubscribeRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:email').limit(id) };
 // Club activation spends the server fee-payer's SOL on a memo tx each call —
 // cap per wallet so it can't be looped to drain the hot wallet.
 export const clubActivateRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:club').limit(id) };

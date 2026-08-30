@@ -10,11 +10,15 @@ import { TIERS_BY_VALUE } from '@/lib/discovery/tiers';
  * themselves is that a buyer sees the actual range of what a pass becomes —
  * the artwork, a real object name, and the money — instead of reading five
  * rows and being asked to imagine it.
+ *
+ * The DOM order is value-descending because that is what the phone wants: a
+ * flat scroll row that opens on Legendary. Desktop re-seats the same five into
+ * a fanned hand with `grid-column`, Legendary centre — see `.dsc-pass-fan`.
  */
 export default function PassGallery() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="dsc-pass-grid">
+      <div className="dsc-pass-fan">
         {TIERS_BY_VALUE.map((tier, i) => (
           <PassCard key={tier.id} id={tier.id} index={i} />
         ))}
@@ -40,7 +44,7 @@ export default function PassGallery() {
       <p
         style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: 9.5,
+          fontSize: 10.5,
           lineHeight: 1.6,
           letterSpacing: '0.03em',
           color: 'var(--dsc-ghost-dim)',

@@ -33,7 +33,7 @@ export default function DemoReveal() {
       style={{ '--dsc-tier': object.rarityColor } as React.CSSProperties}
     >
       <ShareCardFrame cardWidth={SHARE_CARD_WIDTH}>
-        <ShareCard object={object} />
+        <ShareCard object={object} passNumber={DEMO_PASS} />
       </ShareCardFrame>
 
       <div className="flex w-full flex-col items-start gap-3">
