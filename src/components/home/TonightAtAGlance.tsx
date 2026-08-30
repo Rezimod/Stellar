@@ -126,7 +126,7 @@ function compassDir(azimuth: number, dirs: readonly string[]): string {
 function StripLegend({ copy }: { copy: Copy }) {
   const items = [
     { color: 'rgba(94, 234, 212, 0.75)', label: copy.legendClear },
-    { color: 'rgba(255, 179, 71, 0.6)', label: copy.legendPartly },
+    { color: 'rgba(227, 218, 201, 0.6)', label: copy.legendPartly },
     { color: 'rgba(148, 163, 184, 0.3)', label: copy.legendCloudy },
   ];
   return (
@@ -168,7 +168,7 @@ export default function TonightAtAGlance() {
         <p className="text-[13px] text-white/60">{copy.unavailable}</p>
         <Link
           href="/sky"
-          className="inline-block mt-3 font-mono text-[12px] text-[#FFB347] no-underline"
+          className="inline-block mt-3 font-mono text-[12px] text-[#E3DAC9] no-underline"
         >
           {copy.openForecast}
         </Link>
@@ -289,7 +289,7 @@ export default function TonightAtAGlance() {
       <div className="text-center">
         <Link
           href="/sky"
-          className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
+          className="inline-flex items-center gap-2 text-[#E3DAC9] font-mono text-[12px] md:text-[13px] hover:gap-3 transition-all no-underline"
         >
           {copy.openForecast}
         </Link>

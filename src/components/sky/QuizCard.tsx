@@ -15,11 +15,11 @@ const THEMES: Record<QuizTheme, {
 }> = {
   solar: {
     background:
-      'radial-gradient(circle at 85% 30%, rgba(255,180,80,0.18) 0%, transparent 55%), radial-gradient(circle at 20% 80%, rgba(255,100,40,0.1) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
-    border: 'rgba(255,180,80,0.18)',
+      'radial-gradient(circle at 85% 30%, rgba(227,218,201,0.18) 0%, transparent 55%), radial-gradient(circle at 20% 80%, rgba(206,194,170,0.1) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
+    border: 'rgba(227,218,201,0.18)',
     accent: 'var(--accent-text)',
-    buttonBg: 'rgba(255,180,80,0.1)',
-    buttonBorder: 'rgba(255,180,80,0.3)',
+    buttonBg: 'rgba(227,218,201,0.1)',
+    buttonBorder: 'rgba(227,218,201,0.3)',
     buttonFill: 'var(--accent-text)',
   },
   stars: {
@@ -51,7 +51,7 @@ const THEMES: Record<QuizTheme, {
   },
   exploration: {
     background:
-      'radial-gradient(circle at 80% 20%, rgba(255,143,184,0.14) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,180,80,0.08) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
+      'radial-gradient(circle at 80% 20%, rgba(255,143,184,0.14) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(227,218,201,0.08) 0%, transparent 50%), linear-gradient(145deg, var(--canvas) 0%, var(--canvas) 100%)',
     border: 'rgba(255,143,184,0.14)',
     accent: 'var(--negative)',
     buttonBg: 'rgba(255,143,184,0.08)',

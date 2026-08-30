@@ -209,7 +209,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           height: ${ghost ? '22px' : compact ? '22px' : '30px'};
           padding: 0 ${ghost ? '6px' : compact ? '7px' : '14px'};
           background: ${ghost ? 'transparent' : 'rgba(15, 18, 28, 0.55)'};
-          border: ${ghost ? '1px solid transparent' : '1px solid rgba(255, 179, 71, 0.32)'};
+          border: ${ghost ? '1px solid transparent' : '1px solid rgba(227, 218, 201, 0.32)'};
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
         }
@@ -227,7 +227,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         `}
         .loc-pill:hover {
           background: ${ghost ? 'var(--surface)' : 'var(--bg-panel)'};
-          border-color: ${ghost ? 'transparent' : 'rgba(255, 179, 71, 0.55)'};
+          border-color: ${ghost ? 'transparent' : 'rgba(227, 218, 201, 0.55)'};
         }
         .loc-city-btn {
           display: flex;
@@ -244,8 +244,8 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         }
         .loc-city-btn:hover { background: var(--surface-hover); }
         .loc-city-btn.active {
-          background: rgba(255, 179, 71, 0.14);
-          border-color: rgba(255, 179, 71, 0.32);
+          background: rgba(227, 218, 201, 0.14);
+          border-color: rgba(227, 218, 201, 0.32);
         }
         .loc-gps-btn {
           display: flex;
@@ -254,8 +254,8 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           gap: 8px;
           width: 100%;
           padding: 9px 12px;
-          background: rgba(255, 179, 71, 0.10);
-          border: 1px solid rgba(255, 179, 71, 0.32);
+          background: rgba(227, 218, 201, 0.10);
+          border: 1px solid rgba(227, 218, 201, 0.32);
           border-radius: 10px;
           color: var(--terracotta);
           font-size: 12px;
@@ -264,8 +264,8 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           transition: background 0.15s, border-color 0.15s;
         }
         .loc-gps-btn:hover:not(:disabled) {
-          background: rgba(255, 179, 71, 0.20);
-          border-color: rgba(255, 179, 71, 0.55);
+          background: rgba(227, 218, 201, 0.20);
+          border-color: rgba(227, 218, 201, 0.55);
         }
         .loc-gps-btn:disabled { opacity: 0.5; cursor: default; }
         .loc-search-input {
@@ -281,13 +281,13 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           transition: border-color 0.15s, background 0.15s;
         }
         .loc-search-input:focus {
-          border-color: rgba(255, 179, 71, 0.55);
+          border-color: rgba(227, 218, 201, 0.55);
           background: var(--surface-hover);
         }
         .loc-search-input::placeholder { color: rgba(var(--ink-warm),0.45); }
         .loc-city-list::-webkit-scrollbar { width: 4px; }
         .loc-city-list::-webkit-scrollbar-track { background: transparent; }
-        .loc-city-list::-webkit-scrollbar-thumb { background: rgba(255, 179, 71,0.30); border-radius: 2px; }
+        .loc-city-list::-webkit-scrollbar-thumb { background: rgba(227, 218, 201,0.30); border-radius: 2px; }
         @keyframes loc-spin { to { transform: rotate(360deg); } }
         .loc-spinning { animation: loc-spin 0.8s linear infinite; }
       `}</style>
@@ -315,7 +315,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
           size={ghost ? 10 : compact ? 11 : 13}
           color={ghost
             ? (location.source === 'gps' ? 'var(--terracotta)' : 'var(--text-secondary)')
-            : (location.source === 'gps' ? 'var(--terracotta)' : 'rgba(255, 179, 71,0.85)')}
+            : (location.source === 'gps' ? 'var(--terracotta)' : 'rgba(227, 218, 201,0.85)')}
           className="loc-pill-mappin"
           style={{ flexShrink: 0 }}
         />
@@ -332,7 +332,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
         </span>
         <ChevronDown
           size={ghost ? 9 : compact ? 9 : 11}
-          color={ghost ? 'var(--text-muted)' : 'rgba(255, 179, 71,0.7)'}
+          color={ghost ? 'var(--text-muted)' : 'rgba(227, 218, 201,0.7)'}
           className="loc-pill-chevron"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
         />
@@ -349,7 +349,7 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
             width: PANEL_WIDTH,
             maxWidth: 'calc(100vw - 32px)',
             background: 'linear-gradient(160deg, rgba(18,22,38,0.98) 0%, rgba(12,16,28,0.99) 100%)',
-            border: '1px solid rgba(255, 179, 71,0.32)',
+            border: '1px solid rgba(227, 218, 201,0.32)',
             borderRadius: 14,
             boxShadow: '0 18px 44px rgba(0,0,0,0.65)',
             display: 'flex', flexDirection: 'column',
@@ -418,8 +418,8 @@ export default function LocationPicker({ compact = false, ghost = false }: { com
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '5px 10px', borderRadius: 999,
                     fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-                    background: active ? 'rgba(255, 179, 71,0.14)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(255, 179, 71,0.45)' : 'rgba(var(--ink-warm),0.12)'}`,
+                    background: active ? 'rgba(227, 218, 201,0.14)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(227, 218, 201,0.45)' : 'rgba(var(--ink-warm),0.12)'}`,
                     color: active ? 'var(--terracotta)' : 'rgba(var(--ink-warm),0.7)',
                     cursor: 'pointer', whiteSpace: 'nowrap',
                     transition: 'background 0.15s, border-color 0.15s, color 0.15s',

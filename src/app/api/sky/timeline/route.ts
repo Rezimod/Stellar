@@ -23,7 +23,7 @@ const DEEP_SKY = [
 ];
 
 const PLANET_BODIES = [
-  { name: 'Jupiter', body: Body.Jupiter, color: '#FFB347' },
+  { name: 'Jupiter', body: Body.Jupiter, color: '#E3DAC9' },
   { name: 'Venus', body: Body.Venus, color: '#F0E5C0' },
   { name: 'Mars', body: Body.Mars, color: '#C84A2E' },
   { name: 'Saturn', body: Body.Saturn, color: '#D4A954' },

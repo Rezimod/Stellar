@@ -8,7 +8,7 @@ import ScrollReveals from '@/components/home/ScrollReveals';
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[12px] md:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#FFB347] mb-5">
+    <div className="text-[12px] md:text-[13px] font-semibold tracking-[0.22em] uppercase text-[#E3DAC9] mb-5">
       {children}
     </div>
   );
@@ -95,11 +95,11 @@ function AchievementBadge({
       <p className="home-achievement-label text-white text-[14px] md:text-[15px] font-semibold tracking-[-0.01em] leading-tight">
         {label}
       </p>
-      <p className="home-achievement-rank text-[12px] md:text-[13px] font-semibold mt-1" style={{ color: color === '#FFB347' ? 'var(--accent-text)' : color }}>
+      <p className="home-achievement-rank text-[12px] md:text-[13px] font-semibold mt-1" style={{ color: color === '#E3DAC9' ? 'var(--accent-text)' : color }}>
         {rank}
       </p>
       <p className="home-achievement-date text-white/40 font-mono text-[11px] mt-1 tabular-nums">{date}</p>
-      <span className="home-achievement-arrow mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#FFB347]/80 transition-colors">
+      <span className="home-achievement-arrow mt-3 text-[10px] font-mono text-white/25 group-hover:text-[#E3DAC9]/80 transition-colors">
         ↗
       </span>
     </a>
@@ -110,7 +110,7 @@ function SectionLink({ href, children }: { href: string; children: React.ReactNo
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-[#FFB347] font-mono text-[11.5px] md:text-[12.5px] hover:gap-3 transition-all no-underline"
+      className="inline-flex items-center gap-2 text-[#E3DAC9] font-mono text-[11.5px] md:text-[12.5px] hover:gap-3 transition-all no-underline"
     >
       {children}
     </Link>
@@ -216,7 +216,7 @@ function PhoneTopBar({ size }: { size: IPhoneSize }) {
             border: '1px solid rgba(255,255,255,0.10)',
           }}
         >
-          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#FFB347">
+          <svg width={cfg.mark * 0.55} height={cfg.mark * 0.55} viewBox="0 0 12 12" fill="#E3DAC9">
             <path d="M6 1l1.5 3.5L11 5l-2.5 2L9 10.5 6 8.5 3 10.5l.5-3.5L1 5l3.5-.5z" />
           </svg>
         </span>
@@ -289,7 +289,7 @@ function PhoneBottomNav({
     >
       {tabs.map((t) => {
         const isActive = t === active;
-        const color = isActive ? '#FFB347' : 'rgba(255,255,255,0.42)';
+        const color = isActive ? '#E3DAC9' : 'rgba(255,255,255,0.42)';
         return (
           <div
             key={t}
@@ -307,7 +307,7 @@ function PhoneBottomNav({
                   width: cfg.dashW,
                   height: cfg.dashH,
                   borderRadius: cfg.dashH,
-                  background: '#FFB347',
+                  background: 'var(--orange)',
                 }}
               />
             )}
@@ -506,13 +506,13 @@ function MissionsScreen({ labels }: { labels: { label: string; title: string; su
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[10px] font-mono uppercase tracking-wider">{labels.label}</span>
-        <span className="text-[#FFB347] text-[9.5px] font-mono tabular-nums">2 / 7</span>
+        <span className="text-[#E3DAC9] text-[9.5px] font-mono tabular-nums">2 / 7</span>
       </div>
       <div className="mt-1 text-white text-[14px] font-bold leading-tight">{labels.title}</div>
       <div className="text-white/50 text-[10px]">{labels.sub}</div>
 
       <div className="mt-2 h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
-        <div className="h-full rounded-full bg-[#FFB347]" style={{ width: '28%' }} />
+        <div className="h-full rounded-full bg-[#E3DAC9]" style={{ width: '28%' }} />
       </div>
 
       <div className="mt-2.5 grid grid-cols-2 gap-1.5">
@@ -535,7 +535,7 @@ function MissionsScreen({ labels }: { labels: { label: string; title: string; su
             </div>
             <div className="px-1.5 py-1 flex items-center justify-between">
               <span className="text-white text-[9.5px] font-medium leading-none">{t.name}</span>
-              <span className="text-[#FFB347] text-[8.5px] font-mono tabular-nums">+{t.stars}</span>
+              <span className="text-[#E3DAC9] text-[8.5px] font-mono tabular-nums">+{t.stars}</span>
             </div>
           </div>
         ))}
@@ -604,7 +604,7 @@ function LearnScreen({
           <div className="text-white/55 text-[8px] font-mono uppercase tracking-wider">{labels.quizLabel}</div>
           <div className="text-white text-[10px] leading-tight">{labels.quizSubject}</div>
         </div>
-        <span className="text-[#FFB347] font-mono text-[9.5px] tabular-nums">+100 ★</span>
+        <span className="text-[#E3DAC9] font-mono text-[9.5px] tabular-nums">+100 ★</span>
       </div>
     </div>
   );
@@ -648,9 +648,9 @@ function SkyMapScreen({ labels }: { labels: { location: string; visible: string;
             <circle key={i} cx={cx} cy={cy} r={r} fill="white" opacity={0.4 + (i % 3) * 0.15} />
           ))}
 
-          <circle cx="38" cy="42" r="3.2" fill="none" stroke="#FFB347" strokeWidth="0.5" opacity="0.6" />
-          <circle cx="38" cy="42" r="1.8" fill="#FFB347" />
-          <text x="38" y="36" fill="#FFB347" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
+          <circle cx="38" cy="42" r="3.2" fill="none" stroke="#E3DAC9" strokeWidth="0.5" opacity="0.6" />
+          <circle cx="38" cy="42" r="1.8" fill="#E3DAC9" />
+          <text x="38" y="36" fill="#E3DAC9" fontSize="3" textAnchor="middle" fontFamily="monospace" fontWeight="bold">JUP</text>
 
           <circle cx="65" cy="55" r="1.4" fill="#B07FE8" />
           <text x="65" y="50" fill="#B07FE8" fontSize="2.6" textAnchor="middle" fontFamily="monospace">SAT</text>
@@ -668,7 +668,7 @@ function SkyARScreen({ labels }: { labels: { label: string; jupiterName: string 
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-[8px] font-mono uppercase tracking-wider">{labels.label}</span>
-        <span className="text-[#FFB347] text-[8px] font-mono">SE 142°</span>
+        <span className="text-[#E3DAC9] text-[8px] font-mono">SE 142°</span>
       </div>
 
       <div className="mt-2 relative flex-1 rounded-[10px] overflow-hidden bg-gradient-to-b from-[#0a1430] via-[#0f1a40] to-[#1a1030]">
@@ -697,14 +697,14 @@ function SkyARScreen({ labels }: { labels: { label: string; jupiterName: string 
 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            <div className="w-[42px] h-[42px] rounded-full border border-[#FFB347]/70" />
-            <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#FFB347] shadow-[0_0_10px_#FFB347]" />
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFB347]/70" />
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#FFB347]/70" />
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
-            <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#FFB347]/70" />
+            <div className="w-[42px] h-[42px] rounded-full border border-[#E3DAC9]/70" />
+            <div className="absolute inset-0 m-auto w-[7px] h-[7px] rounded-full bg-[#E3DAC9] shadow-[0_0_10px_#E3DAC9]" />
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#E3DAC9]/70" />
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-px h-2 bg-[#E3DAC9]/70" />
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#E3DAC9]/70" />
+            <div className="absolute -right-2 top-1/2 -translate-y-1/2 h-px w-2 bg-[#E3DAC9]/70" />
             <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
-              <div className="text-[#FFB347] text-[9px] font-bold leading-none">{labels.jupiterName}</div>
+              <div className="text-[#E3DAC9] text-[9px] font-bold leading-none">{labels.jupiterName}</div>
               <div className="text-white/55 text-[7px] font-mono mt-0.5">alt 38° · mag −2.1</div>
             </div>
           </div>
@@ -729,15 +729,15 @@ function EventGlyph({ kind }: { kind: SkyEventKind }) {
     case 'solar':
       return (
         <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
-          <circle cx="6" cy="6" r="5" fill="none" stroke="#FFE3A1" strokeWidth="1.1" />
+          <circle cx="6" cy="6" r="5" fill="none" stroke="#EFE9DE" strokeWidth="1.1" />
           <circle cx="6" cy="6" r="2.8" fill="#0A1224" />
         </svg>
       );
     case 'meteors':
       return (
         <svg viewBox="0 0 12 12" className="w-3 h-3" aria-hidden="true">
-          <line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="#FFE3A1" strokeWidth="1.4" strokeLinecap="round" />
-          <circle cx="9.5" cy="2.5" r="1" fill="#FFE3A1" />
+          <line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="#EFE9DE" strokeWidth="1.4" strokeLinecap="round" />
+          <circle cx="9.5" cy="2.5" r="1" fill="#EFE9DE" />
         </svg>
       );
     case 'opp':
@@ -838,8 +838,8 @@ function SignInScreen({ labels }: { labels: { title: string; subtitle: string; e
   return (
     <div className="flex flex-col h-full justify-center px-1">
       <div className="text-center">
-        <div className="mx-auto mb-2 w-8 h-8 rounded-full bg-[#FFB347]/15 border border-[#FFB347]/35 flex items-center justify-center">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB347" aria-hidden="true">
+        <div className="mx-auto mb-2 w-8 h-8 rounded-full bg-[#E3DAC9]/15 border border-[#E3DAC9]/35 flex items-center justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#E3DAC9" aria-hidden="true">
             <path d="M12 1l1.5 3.5L17 5l-2.5 2L15 10.5 12 8.5 9 10.5l.5-3.5L7 5l3.5-.5z" />
           </svg>
         </div>
@@ -849,7 +849,7 @@ function SignInScreen({ labels }: { labels: { title: string; subtitle: string; e
       <div className="mt-3 rounded-[7px] bg-white/[0.05] border border-white/10 px-2 py-1.5 text-white/35 text-[8px]">
         {labels.email}
       </div>
-      <div className="mt-2 rounded-[7px] bg-[#FFB347] text-[#0A1735] text-[8.5px] font-semibold text-center py-1.5">
+      <div className="mt-2 rounded-[7px] bg-[#E3DAC9] text-[#0A1735] text-[8.5px] font-semibold text-center py-1.5">
         {labels.cta}
       </div>
     </div>
@@ -866,7 +866,7 @@ function EarnStarsScreen({ labels }: { labels: { sealed: string; target: string;
       </div>
       <div className="text-[#5EEAD4] text-[8px] font-mono uppercase tracking-wider">{labels.sealed}</div>
       <div className="text-white text-[13px] font-bold mt-1">{labels.target}</div>
-      <div className="text-[#FFB347] font-mono text-[11px] font-semibold tabular-nums mt-2">{labels.stars}</div>
+      <div className="text-[#E3DAC9] font-mono text-[11px] font-semibold tabular-nums mt-2">{labels.stars}</div>
       <div className="mt-3 w-full rounded-[7px] bg-white/[0.04] border border-white/10 px-2 py-1.5 flex items-center justify-between">
         <span className="text-white/50 text-[7.5px]">Stellar</span>
         <span className="text-[#5EEAD4] text-[7px] font-mono">✓ certified</span>
@@ -892,8 +892,8 @@ function HowItWorksStep({
     <div className="home-how-step flex flex-col items-center min-w-0 flex-1">
       <div className="home-how-phone-wrap relative flex justify-center w-full h-[228px] sm:h-[268px] md:h-auto overflow-visible">
         <span
-          className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#FFB347] tabular-nums"
-          style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
+          className="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-mono font-semibold text-[#E3DAC9] tabular-nums"
+          style={{ background: 'rgba(227,218,201,0.08)', border: '1px solid rgba(227,218,201,0.35)' }}
         >
           {step}
         </span>
@@ -963,7 +963,7 @@ export default async function HomePage() {
     },
     {
       key: 'superteam',
-      color: '#FFB347',
+      color: '#E3DAC9',
       href: 'https://superteam.fun/earn/grants/solana-foundation-georgia-grants',
       logoSrc: '/brand-partners/superteam.webp',
       logoAlt: 'Superteam',
@@ -1349,7 +1349,7 @@ export default async function HomePage() {
                       ₾
                     </span>
                   </span>
-                  <span className="font-mono text-[#FFB347] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
+                  <span className="font-mono text-[#E3DAC9] tabular-nums text-[11px] md:text-[12px] tracking-[0.04em]">
                     ★ {p.stars}
                   </span>
                 </div>
@@ -1398,10 +1398,10 @@ export default async function HomePage() {
                 paddingTop: 18,
                 paddingBottom: 18,
                 fontFamily: 'var(--font-cta, var(--font-body))',
-                color: '#241503',
-                background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
+                color: '#1C1608',
+                background: 'linear-gradient(180deg,#F2ECE0 0%,#E3DAC9 55%,#CEC2AA 100%)',
                 boxShadow:
-                  'inset 0 1px 0 rgba(255,235,200,0.7), inset 0 -2px 0 rgba(120,60,0,0.35), 0 10px 34px rgba(245,158,46,0.38)',
+                  'inset 0 1px 0 rgba(255,253,248,0.7), inset 0 -2px 0 rgba(110,100,84,0.35), 0 10px 34px rgba(227,218,201,0.38)',
               }}
             >
               {t('community.cta')}

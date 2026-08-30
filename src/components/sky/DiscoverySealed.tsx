@@ -66,7 +66,7 @@ export default function DiscoverySealed({
       className="relative min-h-full w-full overflow-hidden"
       style={{
         background: [
-          'radial-gradient(ellipse 480px 360px at 50% 18%, rgba(255, 179, 71,0.07) 0%, transparent 55%)',
+          'radial-gradient(ellipse 480px 360px at 50% 18%, rgba(227, 218, 201,0.07) 0%, transparent 55%)',
           'var(--canvas)',
         ].join(', '),
       }}
@@ -304,7 +304,7 @@ export default function DiscoverySealed({
               aspectRatio: '21 / 9',
               borderRadius: 9,
               background: [
-                'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.16) 0%, rgba(255, 179, 71,0.06) 35%, transparent 60%)',
+                'radial-gradient(circle at 50% 50%, rgba(184,212,255,0.16) 0%, rgba(227, 218, 201,0.06) 35%, transparent 60%)',
                 'linear-gradient(135deg, #080414 0%, #02050E 100%)',
               ].join(', '),
               border: '1px solid rgba(var(--ink), 0.05)',
@@ -464,7 +464,7 @@ function SealStamp({ missionId, unverified = false }: { missionId: string; unver
         className="stl-seal-glow absolute inset-0"
         style={{
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255, 179, 71,0.22) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(227, 218, 201,0.22) 0%, transparent 65%)',
         }}
       />
 
@@ -474,8 +474,8 @@ function SealStamp({ missionId, unverified = false }: { missionId: string; unver
         height="112"
         viewBox="0 0 200 200"
       >
-        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255, 179, 71,0.22)" strokeWidth="1" strokeDasharray="2 4" />
-        <g stroke="rgba(255, 179, 71,0.45)" strokeWidth="1">
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(227, 218, 201,0.22)" strokeWidth="1" strokeDasharray="2 4" />
+        <g stroke="rgba(227, 218, 201,0.45)" strokeWidth="1">
           <line x1="100" y1="10" x2="100" y2="14" />
           <line x1="100" y1="186" x2="100" y2="190" />
           <line x1="10" y1="100" x2="14" y2="100" />
@@ -493,8 +493,8 @@ function SealStamp({ missionId, unverified = false }: { missionId: string; unver
             'radial-gradient(circle at 30% 25%, rgba(255,232,164,0.15) 0%, transparent 50%)',
             'radial-gradient(circle at 50% 50%, #1a1408 0%, #0a0a14 100%)',
           ].join(', '),
-          border: '1px solid rgba(255, 179, 71,0.32)',
-          boxShadow: 'inset 0 0 22px rgba(255, 179, 71,0.1), 0 0 18px rgba(255, 179, 71,0.13)',
+          border: '1px solid rgba(227, 218, 201,0.32)',
+          boxShadow: 'inset 0 0 22px rgba(227, 218, 201,0.1), 0 0 18px rgba(227, 218, 201,0.13)',
           overflow: 'hidden',
         }}
       >

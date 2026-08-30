@@ -91,7 +91,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
       className="relative grid grid-cols-1 md:grid-cols-[1.15fr_1fr] rounded-[20px] overflow-hidden mb-4"
       style={{
         border: '1px solid rgba(var(--ink), 0.08)',
-        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.08), rgba(94, 234, 212,0.04) 60%, transparent)',
+        background: 'linear-gradient(135deg, rgba(227, 218, 201,0.08), rgba(94, 234, 212,0.04) 60%, transparent)',
       }}
     >
       <div className="relative px-6 py-7 sm:px-8 sm:py-8 min-h-[280px] sm:min-h-[340px] flex flex-col justify-between overflow-hidden">
@@ -106,7 +106,7 @@ export default function MissionsHero({ onStart }: MissionsHeroProps) {
               fontFamily: 'var(--font-mono)',
               letterSpacing: '0.2em',
               color: 'var(--accent-text)',
-              border: '1px solid rgba(255, 179, 71,0.35)',
+              border: '1px solid rgba(227, 218, 201,0.35)',
             }}
           >
             PRIME TARGET

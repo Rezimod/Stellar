@@ -104,13 +104,13 @@ const PODIUM_CONFIG = [
   {
     rankNum: 1,
     rankColor: 'var(--accent-text)',
-    border: 'rgba(255, 179, 71,0.4)',
-    bg: 'rgba(255, 179, 71,0.07)',
+    border: 'rgba(227, 218, 201,0.4)',
+    bg: 'rgba(227, 218, 201,0.07)',
     padTop: 0,
     avatarSize: 48,
     rankFontSize: '2.25rem',
     slideFrom: '0px',
-    glow: '0 0 30px rgba(255, 179, 71,0.2), 0 0 60px rgba(255, 179, 71,0.08)',
+    glow: '0 0 30px rgba(227, 218, 201,0.2), 0 0 60px rgba(227, 218, 201,0.08)',
     scale: 'scale(1.04)',
     crown: true,
   },
@@ -210,8 +210,8 @@ export default function LeaderboardPage() {
       <div
         className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
         style={{
-          background: 'rgba(255, 179, 71,0.05)',
-          border: '1px solid rgba(255, 179, 71,0.12)',
+          background: 'rgba(227, 218, 201,0.05)',
+          border: '1px solid rgba(227, 218, 201,0.12)',
           color: 'color-mix(in srgb, var(--accent-text) 70%, transparent)',
         }}
       >
@@ -231,7 +231,7 @@ export default function LeaderboardPage() {
             className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
             style={
               activeTab === tab
-                ? { background: 'rgba(255, 179, 71,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.22)' }
+                ? { background: 'rgba(227, 218, 201,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(227, 218, 201,0.22)' }
                 : { color: 'var(--color-text-secondary)' }
             }
           >
@@ -248,7 +248,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => { setLeaderError(false); setActiveTab(prev => prev); }}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+            style={{ background: 'rgba(227, 218, 201,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(227, 218, 201,0.2)' }}
           >
             {t('tryAgain')}
           </button>
@@ -264,7 +264,7 @@ export default function LeaderboardPage() {
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
+              background: 'linear-gradient(135deg, #E3DAC9 0%, #E3DAC9 100%)',
               boxShadow: '0 6px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
             }}
           >
@@ -277,7 +277,7 @@ export default function LeaderboardPage() {
           <Link
             href="/missions"
             className="mt-1 px-5 py-2 rounded-xl text-xs font-bold transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(255, 179, 71,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+            style={{ background: 'rgba(227, 218, 201,0.12)', color: 'var(--accent-text)', border: '1px solid rgba(227, 218, 201,0.2)' }}
           >
             {t('empty.cta')}
           </Link>
@@ -442,8 +442,8 @@ export default function LeaderboardPage() {
             <div
               className="flex items-center gap-3 px-4 py-3 rounded-xl"
               style={{
-                background: 'rgba(255, 179, 71,0.05)',
-                border: '1px solid rgba(255, 179, 71,0.15)',
+                background: 'rgba(227, 218, 201,0.05)',
+                border: '1px solid rgba(227, 218, 201,0.15)',
                 boxShadow: 'inset 2px 0 0 var(--terracotta)',
               }}
             >

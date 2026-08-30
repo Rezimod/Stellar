@@ -146,7 +146,7 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
       {/* Streak flame */}
       <div className="flex flex-col items-center justify-center shrink-0 w-[50px]">
         <div className="flex items-center gap-1">
-          <Flame size={14} className={streak > 0 ? 'text-[#FFB347]' : 'text-white/30'} strokeWidth={1.8} />
+          <Flame size={14} className={streak > 0 ? 'text-[#E3DAC9]' : 'text-white/30'} strokeWidth={1.8} />
           <span className="font-mono text-[17px] leading-none tabular-nums text-white/90">{streak}</span>
         </div>
         <span className="text-[8.5px] uppercase tracking-[0.14em] text-white/35 mt-0.5 text-center leading-tight" style={{ fontFamily: 'var(--font-body)' }}>
@@ -163,7 +163,7 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
         </span>
         <p className="text-white text-[13.5px] font-medium leading-tight mt-0.5">
           {tierName(tier.name)}
-          {tier.multiplier > 1 && <span className="text-[#FFB347] ml-1.5 font-mono text-[12px]">×{tier.multiplier}</span>}
+          {tier.multiplier > 1 && <span className="text-[#E3DAC9] ml-1.5 font-mono text-[12px]">×{tier.multiplier}</span>}
         </p>
         {tier.nextName && (
           <p className="text-white/40 text-[10.5px] leading-tight mt-0.5 truncate">
@@ -183,8 +183,8 @@ export function DailyCheckInCard({ lat, lon, address, getAccessToken }: DailyChe
           type="button"
           onClick={checkIn}
           disabled={busy}
-          className="shrink-0 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-semibold text-[#0A0E1A] transition-all active:scale-[0.98] disabled:opacity-60"
-          style={{ background: '#FFD166', fontFamily: 'var(--font-cta, var(--font-body))' }}
+          className="shrink-0 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all active:scale-[0.98] disabled:opacity-60"
+          style={{ background: 'var(--orange)', color: 'var(--on-accent)', fontFamily: 'var(--font-cta, var(--font-body))' }}
         >
           {c.checkInCta}
           <span className="font-mono text-[12px]">{c.earned(pendingReward)}</span>

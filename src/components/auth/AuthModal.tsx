@@ -81,7 +81,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           style={{
             width: '100%',
             background: 'var(--terracotta)',
-            color: '#1a1208',
+            color: 'var(--on-accent)',
             fontSize: 13,
             fontWeight: 600,
             padding: '12px 16px',

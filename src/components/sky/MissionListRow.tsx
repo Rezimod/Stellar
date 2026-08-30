@@ -38,7 +38,7 @@ export default function MissionListRow({ mission, Art, metaLine, badge, isPrime,
           style={{
             background: disabled
               ? 'radial-gradient(circle at 50% 50%, rgba(var(--ink), 0.04) 0%, transparent 62%)'
-              : 'radial-gradient(circle at 50% 50%, rgba(255, 179, 71,0.09) 0%, transparent 62%)',
+              : 'radial-gradient(circle at 50% 50%, rgba(227, 218, 201,0.09) 0%, transparent 62%)',
             filter: 'blur(2px)',
           }}
         />

@@ -76,7 +76,7 @@ type Mission = {
    while the `${accent}1A` chip backgrounds keep the raw hex. */
 const ACCENT_ICON: Record<string, string> = {
   '#5EEAD4': 'var(--teal-text)',
-  '#FFB347': 'var(--accent-text)',
+  '#E3DAC9': 'var(--accent-text)',
   '#34D399': 'var(--yes)',
   '#A8B4C8': 'var(--text-muted)',
 };
@@ -122,7 +122,7 @@ function buildMissions(sky: TonightSky | null, c: (typeof COPY)[keyof typeof COP
       sub: `${c.altShort} ${Math.round(p.altitude)}° · ${p.azimuthDir}`,
       href: '/sky',
       icon: i === 0 ? Telescope : Compass,
-      accent: '#FFB347',
+      accent: '#E3DAC9',
     });
   });
 
@@ -147,7 +147,7 @@ function buildMissions(sky: TonightSky | null, c: (typeof COPY)[keyof typeof COP
       sub: c.eventIn(daysUntil(ev.date)),
       href: '/sky',
       icon: CalendarDays,
-      accent: '#FB923C',
+      accent: '#E3DAC9',
     });
   }
 
@@ -155,8 +155,8 @@ function buildMissions(sky: TonightSky | null, c: (typeof COPY)[keyof typeof COP
   // live sky is quiet (e.g. daytime or a moonless, planet-free window).
   const evergreen: Mission[] = [
     { id: 'observe', title: c.logObs, sub: c.logSub, href: '/observe', icon: Telescope, accent: '#34D399' },
-    { id: 'learn', title: c.learnSky, sub: c.learnSub, href: '/learn', icon: Compass, accent: '#FFB347' },
-    { id: 'forecast', title: c.weekAhead, sub: c.weekSub, href: '/sky', icon: CalendarDays, accent: '#FB923C' },
+    { id: 'learn', title: c.learnSky, sub: c.learnSub, href: '/learn', icon: Compass, accent: '#E3DAC9' },
+    { id: 'forecast', title: c.weekAhead, sub: c.weekSub, href: '/sky', icon: CalendarDays, accent: '#E3DAC9' },
   ];
   for (const e of evergreen) {
     if (out.length >= 3) break;
@@ -227,7 +227,7 @@ export function HubTonightBand() {
               </span>
               <LocationPicker compact ghost />
               {isFallback && (
-                <span className="text-[9.5px] font-mono text-[#FFB347]/80 shrink-0">· {c.defaultHint}</span>
+                <span className="text-[9.5px] font-mono text-[#E3DAC9]/80 shrink-0">· {c.defaultHint}</span>
               )}
             </div>
             {loading ? (

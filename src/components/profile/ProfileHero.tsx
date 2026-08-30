@@ -53,7 +53,7 @@ export function ProfileHero({
             height: 320,
             borderRadius: '50%',
             background:
-              'radial-gradient(circle at 35% 35%, rgba(255, 179, 71,0.18), rgba(59,130,246,0.10) 45%, transparent 70%)',
+              'radial-gradient(circle at 35% 35%, rgba(227, 218, 201,0.18), rgba(59,130,246,0.10) 45%, transparent 70%)',
             filter: 'blur(8px)',
             pointerEvents: 'none',
           }}
@@ -142,8 +142,8 @@ export function ProfileHero({
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
                 color: 'var(--accent-text)',
-                background: isLight ? 'rgba(255, 179, 71,0.08)' : 'rgba(255, 179, 71,0.12)',
-                border: '1px solid rgba(255, 179, 71,0.3)',
+                background: isLight ? 'rgba(227, 218, 201,0.08)' : 'rgba(227, 218, 201,0.12)',
+                border: '1px solid rgba(227, 218, 201,0.3)',
                 whiteSpace: 'nowrap',
               }}
             >

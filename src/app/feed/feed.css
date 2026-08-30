@@ -2,7 +2,7 @@
   --ink: #06122B;
   --ink-2: #0A1735;
   --bone: #F8F4EC;
-  --brass: #FFB347;
+  --brass: #E3DAC9;
   --brass-dim: #c89a3e;
   --teal: #5EEAD4;
   --violet: #8465CB;
@@ -94,9 +94,9 @@
 }
 .feed-page .side-link:hover { background: var(--card-bg-hover); color: var(--slate-100); }
 .feed-page .side-link.active {
-  background: rgba(255,179,71,0.07); color: var(--accent-text);
-  border-color: rgba(255,179,71,0.22);
-  box-shadow: inset 0 0 0 1px rgba(255,179,71,0.06);
+  background: rgba(227,218,201,0.07); color: var(--accent-text);
+  border-color: rgba(227,218,201,0.22);
+  box-shadow: inset 0 0 0 1px rgba(227,218,201,0.06);
 }
 .feed-page .side-link-icon { width: 16px; height: 16px; opacity: 0.65; transition: opacity 0.2s; }
 .feed-page .side-link:hover .side-link-icon { opacity: 0.9; }
@@ -114,9 +114,9 @@
   transition: border-color 0.2s, background 0.2s;
 }
 .composer:focus-within {
-  border-color: rgba(255,179,71,0.28);
+  border-color: rgba(227,218,201,0.28);
   background:
-    linear-gradient(180deg, rgba(255,179,71,0.04), rgba(255,255,255,0.02));
+    linear-gradient(180deg, rgba(227,218,201,0.04), rgba(255,255,255,0.02));
 }
 .composer-row { display: flex; gap: 14px; align-items: flex-start; }
 .composer-avatar {
@@ -210,7 +210,7 @@
 .tool-btn:hover { background: var(--card-bg-hover); border-color: var(--hairline); color: var(--slate-100); }
 .tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .tool-btn svg { width: 14px; height: 14px; }
-.tool-btn.active { background: rgba(255,179,71,0.08); border-color: rgba(255,179,71,0.25); color: var(--accent-text); }
+.tool-btn.active { background: rgba(227,218,201,0.08); border-color: rgba(227,218,201,0.25); color: var(--accent-text); }
 
 .post-btn {
   padding: 8px 18px;
@@ -218,12 +218,12 @@
   background: var(--brass);
   color: var(--ink);
   font-family: var(--feed-sans); font-size: 13px; font-weight: 600;
-  border: 1px solid rgba(255,179,71,0.45); border-radius: 999px;
+  border: 1px solid rgba(227,218,201,0.45); border-radius: 999px;
   cursor: pointer; letter-spacing: 0.02em;
   transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
-.post-btn:hover:not(:disabled) { transform: translateY(-1px); background: #ffc05d; box-shadow: 0 6px 20px rgba(255,179,71,0.16); }
+.post-btn:hover:not(:disabled) { transform: translateY(-1px); background: #F0E9DC; box-shadow: 0 6px 20px rgba(227,218,201,0.16); }
 .post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .composer-auth {
@@ -257,7 +257,7 @@
   background: var(--brass);
   color: var(--ink);
   font-weight: 600;
-  box-shadow: 0 1px 6px rgba(255,179,71,0.18);
+  box-shadow: 0 1px 6px rgba(227,218,201,0.18);
 }
 .filter-tab.active:hover { transform: none; background: var(--brass); }
 
@@ -410,7 +410,7 @@
   min-height: 38px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255,179,71,0.4);
+  border: 1px solid rgba(227,218,201,0.4);
   background: var(--brass);
   color: var(--ink);
   font: inherit;
@@ -475,7 +475,7 @@
   /* No backdrop-filter here — every photo card would trigger GPU compositing.
      A solid translucent background reads almost identically over a photo. */
   background: rgba(7,11,20,0.78);
-  border: 1px solid rgba(255,179,71,0.25);
+  border: 1px solid rgba(227,218,201,0.25);
   border-radius: 999px;
   font-family: var(--feed-mono);
   font-size: 10px; color: var(--brass);
@@ -515,8 +515,8 @@
 }
 
 .achievement {
-  background: linear-gradient(135deg, rgba(255,179,71,0.06), rgba(132,101,203,0.04));
-  border: 1px solid rgba(255,179,71,0.18);
+  background: linear-gradient(135deg, rgba(227,218,201,0.06), rgba(132,101,203,0.04));
+  border: 1px solid rgba(227,218,201,0.18);
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 14px;
@@ -525,7 +525,7 @@
 }
 .achievement::before {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 90% 20%, rgba(255,179,71,0.15), transparent 30%);
+  background: radial-gradient(circle at 90% 20%, rgba(227,218,201,0.15), transparent 30%);
   pointer-events: none;
 }
 .achievement-icon {
@@ -533,7 +533,7 @@
   background: radial-gradient(circle, var(--brass), var(--brass-dim));
   display: grid; place-items: center;
   flex-shrink: 0;
-  box-shadow: 0 0 32px rgba(255,179,71,0.25);
+  box-shadow: 0 0 32px rgba(227,218,201,0.25);
 }
 .achievement-body { flex: 1; position: relative; }
 .achievement-label {
@@ -764,7 +764,7 @@
   content: ''; position: absolute;
   top: -20px; right: -20px;
   width: 80px; height: 80px;
-  background: radial-gradient(circle, rgba(255,179,71,0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(227,218,201,0.15), transparent 70%);
   pointer-events: none;
 }
 .sky-condition {
@@ -863,7 +863,7 @@
   white-space: nowrap;
 }
 .planet-cloud-pill.go { color: var(--green); border-color: rgba(94,234,212,0.25); }
-.planet-cloud-pill.maybe { color: var(--accent-text); border-color: rgba(255,179,71,0.25); }
+.planet-cloud-pill.maybe { color: var(--accent-text); border-color: rgba(227,218,201,0.25); }
 .planet-cloud-pill.skip { color: var(--red); border-color: rgba(255,140,140,0.25); }
 .planet-dark {
   display: flex; align-items: center; gap: 6px;
@@ -1062,7 +1062,7 @@
   font-weight: 600;
   font-size: 12.5px;
   letter-spacing: 0.02em;
-  border: 1px solid rgba(255,179,71,0.45);
+  border: 1px solid rgba(227,218,201,0.45);
   border-radius: 999px;
   cursor: pointer;
   font-family: var(--feed-sans);
@@ -1070,7 +1070,7 @@
 }
 .feed-empty button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(255,179,71,0.18);
+  box-shadow: 0 6px 18px rgba(227,218,201,0.18);
 }
 
 .composer-input:focus-visible,
@@ -1091,7 +1091,7 @@
 .post-edit-btn:focus-visible,
 .feed-empty button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255,179,71,0.65);
+  box-shadow: 0 0 0 2px rgba(227,218,201,0.65);
 }
 
 /* === MOBILE FACEBOOK-STYLE REDESIGN (max-width: 767px) ===
@@ -1139,7 +1139,7 @@
   }
   .composer-input:focus {
     background: rgba(var(--chrome),0.06);
-    border-color: rgba(255,179,71,0.25);
+    border-color: rgba(227,218,201,0.25);
   }
 
   .composer-preview { margin-top: 10px; gap: 8px; }
@@ -1177,8 +1177,8 @@
   }
   .tool-btn:hover { background: rgba(var(--chrome),0.05); border-color: rgba(148,163,184,0.2); color: var(--slate-100); }
   .tool-btn.active {
-    background: rgba(255,179,71,0.1);
-    border-color: rgba(255,179,71,0.24);
+    background: rgba(227,218,201,0.1);
+    border-color: rgba(227,218,201,0.24);
     color: var(--accent-text);
   }
   .tool-btn-label { display: inline; }
@@ -1274,8 +1274,8 @@
   .tonight-overview-head button {
     min-height: 36px;
     border-radius: 999px;
-    border: 1px solid rgba(255,179,71,0.3);
-    background: rgba(255,179,71,0.12);
+    border: 1px solid rgba(227,218,201,0.3);
+    background: rgba(227,218,201,0.12);
     color: var(--accent-text);
     font: inherit;
     font-size: 12px;
@@ -1397,7 +1397,7 @@
     gap: 6px;
     max-width: calc(100% - 20px);
     border-radius: 999px;
-    border: 1px solid rgba(255,179,71,0.26);
+    border: 1px solid rgba(227,218,201,0.26);
     background: rgba(5,9,20,0.78);
     color: var(--brass);
     padding: 6px 10px;

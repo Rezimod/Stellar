@@ -138,7 +138,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
       <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
         <defs>
           <radialGradient id="evSun" cx="50%" cy="50%">
-            <stop offset="0%" stopColor="#FFB23A" />
+            <stop offset="0%" stopColor="#E3DAC9" />
             <stop offset="80%" stopColor="#F25A1A" />
             <stop offset="100%" stopColor="#9A2A0E" />
           </radialGradient>
@@ -185,7 +185,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
       <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
         <defs>
           <radialGradient id="evPlanet" cx="40%" cy="40%">
-            <stop offset="0%" stopColor="#FFB347" />
+            <stop offset="0%" stopColor="#E3DAC9" />
             <stop offset="80%" stopColor="#B45309" />
             <stop offset="100%" stopColor="#3B1607" />
           </radialGradient>
@@ -194,7 +194,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
         <circle cx="52" cy="50" r="1" fill="#FFFFFF" opacity="0.6" />
         <circle cx="50" cy="14" r="1.2" fill="#FFFFFF" opacity="0.7" />
         <circle cx="32" cy="32" r="18" fill="url(#evPlanet)" />
-        <ellipse cx="32" cy="32" rx="28" ry="6" fill="none" stroke="#FFB347" strokeOpacity="0.45" strokeWidth="1.5" />
+        <ellipse cx="32" cy="32" rx="28" ry="6" fill="none" stroke="#E3DAC9" strokeOpacity="0.45" strokeWidth="1.5" />
       </svg>
     );
   }
@@ -203,7 +203,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
       <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
         <circle cx="14" cy="14" r="1" fill="#FFFFFF" opacity="0.7" />
         <circle cx="52" cy="50" r="1" fill="#FFFFFF" opacity="0.6" />
-        <circle cx="22" cy="32" r="9" fill="#FCD34D" />
+        <circle cx="22" cy="32" r="9" fill="#EDE4D3" />
         <circle cx="44" cy="34" r="6" fill="#E2C896" />
       </svg>
     );
@@ -214,7 +214,7 @@ function EventArt({ type }: { type: AstroEvent['type'] }) {
       <defs>
         <linearGradient id="evMeteor" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0" />
-          <stop offset="100%" stopColor="#FCD34D" stopOpacity="1" />
+          <stop offset="100%" stopColor="#EDE4D3" stopOpacity="1" />
         </linearGradient>
       </defs>
       <circle cx="14" cy="14" r="1" fill="#FFFFFF" opacity="0.7" />

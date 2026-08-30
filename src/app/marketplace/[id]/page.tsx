@@ -85,7 +85,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           <div className="flex flex-wrap items-center gap-[8px] mb-[10px]">
             {product.badge && (
               <span className="inline-flex items-center rounded-full px-[8px] py-[3px] text-[9px] font-bold tracking-[0.1em] uppercase leading-none"
-                style={{ background: 'rgba(255,179,71,0.10)', color: 'var(--accent-text)', border: '1px solid rgba(255,179,71,0.30)' }}>
+                style={{ background: 'rgba(227,218,201,0.10)', color: 'var(--accent-text)', border: '1px solid rgba(227,218,201,0.30)' }}>
                 {product.badge}
               </span>
             )}
@@ -136,8 +136,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               style={{
                 background: 'var(--terracotta)',
                 border: '1px solid var(--terracotta)',
-                color: '#1a1208',
-                boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,179,71,0.22)',
+                color: 'var(--on-accent)',
+                boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(227,218,201,0.22)',
               }}
             >
               <SolMark className="h-[16px] w-[16px]" />
@@ -147,7 +147,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <Link
                 href={`/marketplace/checkout?id=${encodeURIComponent(product.id)}&mode=stars`}
                 className="w-full inline-flex items-center justify-center gap-[6px] h-[40px] rounded-none text-[12px] font-semibold text-[var(--accent-text)] transition-colors hover:text-white"
-                style={{ background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.35)' }}
+                style={{ background: 'rgba(227,218,201,0.08)', border: '1px solid rgba(227,218,201,0.35)' }}
               >
                 <Star className="w-[12px] h-[12px]" style={{ fill: 'currentColor' }} />
                 <span className="tabular-nums">{t('redeemStars', { stars: product.starsPrice.toLocaleString() })}</span>

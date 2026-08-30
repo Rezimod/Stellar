@@ -59,12 +59,12 @@ const variantStyles: Record<ToastVariant, { border: string; icon: string; bg: st
   },
   info: {
     bg:     'rgba(15, 29, 50, 0.92)',
-    border: 'rgba(255, 179, 71, 0.35)',
+    border: 'rgba(227, 218, 201, 0.35)',
     icon:   'var(--terracotta)',
   },
   reward: {
     bg:     'rgba(15, 29, 50, 0.92)',
-    border: 'rgba(255, 179, 71, 0.40)',
+    border: 'rgba(227, 218, 201, 0.40)',
     icon:   'var(--stars)',
   },
 };

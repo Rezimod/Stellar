@@ -239,8 +239,8 @@ function SolarEclipseArt({ large }: { large: boolean }) {
         <radialGradient id="se-corona" cx="50%" cy="50%" r="65%">
           <stop offset="42%" stopColor="rgba(255,233,180,0)" />
           <stop offset="50%" stopColor="rgba(255,233,180,0.95)" />
-          <stop offset="62%" stopColor="rgba(255,179,71,0.45)" />
-          <stop offset="100%" stopColor="rgba(255,179,71,0)" />
+          <stop offset="62%" stopColor="rgba(227,218,201,0.45)" />
+          <stop offset="100%" stopColor="rgba(227,218,201,0)" />
         </radialGradient>
       </defs>
       <BackgroundDots />
@@ -268,7 +268,7 @@ function MeteorShowerArt({ large }: { large: boolean }) {
         <linearGradient id="ms-streak" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="rgba(255,255,255,0)" />
           <stop offset="55%" stopColor="rgba(255,255,255,0.92)" />
-          <stop offset="100%" stopColor="#FFE3A1" />
+          <stop offset="100%" stopColor="#EFE9DE" />
         </linearGradient>
       </defs>
       <circle cx={radiantX} cy={radiantY} r={1.6} fill="rgba(255, 226, 180, 0.85)" />

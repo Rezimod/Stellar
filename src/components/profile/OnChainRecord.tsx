@@ -208,8 +208,8 @@ export function OnChainRecord({ wallet }: { wallet: string }) {
                     color: 'var(--stl-gold)',
                     padding: '2px 8px',
                     borderRadius: 999,
-                    background: 'rgba(255,179,71,0.10)',
-                    border: '1px solid rgba(255,179,71,0.25)',
+                    background: 'rgba(227,218,201,0.10)',
+                    border: '1px solid rgba(227,218,201,0.25)',
                   }}
                 >
                   ✦ ×{data.reputation.multiplier} {t('onchain.starsMultiplier')}

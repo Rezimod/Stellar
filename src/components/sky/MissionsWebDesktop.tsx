@@ -181,13 +181,13 @@ export default function MissionsWebDesktop({
               style={{
                 position: 'relative',
                 overflow: 'hidden',
-                border: '1px solid rgba(255, 179, 71,0.32)',
+                border: '1px solid rgba(227, 218, 201,0.32)',
                 borderRadius: 18,
                 padding: '16px 16px 14px',
                 background:
-                  'linear-gradient(135deg, rgba(255, 179, 71,0.09) 0%, rgba(255, 179, 71,0.02) 55%, transparent 100%), var(--bg-panel)',
+                  'linear-gradient(135deg, rgba(227, 218, 201,0.09) 0%, rgba(227, 218, 201,0.02) 55%, transparent 100%), var(--bg-panel)',
                 boxShadow:
-                  '0 0 0 1px rgba(255, 179, 71,0.05) inset, 0 10px 30px rgba(0,0,0,0.35)',
+                  '0 0 0 1px rgba(227, 218, 201,0.05) inset, 0 10px 30px rgba(0,0,0,0.35)',
               }}
             >
               <div
@@ -197,7 +197,7 @@ export default function MissionsWebDesktop({
                   inset: 0,
                   pointerEvents: 'none',
                   background:
-                    'radial-gradient(250px 160px at 80% -10%, rgba(255, 179, 71,0.18), transparent 60%)',
+                    'radial-gradient(250px 160px at 80% -10%, rgba(227, 218, 201,0.18), transparent 60%)',
                 }}
               />
               {/* kicker */}
@@ -209,7 +209,7 @@ export default function MissionsWebDesktop({
                     borderRadius: 999,
                     background: 'var(--stars)',
                     boxShadow:
-                      '0 0 0 3px rgba(255, 179, 71,0.14), 0 0 10px rgba(255, 179, 71,0.6)',
+                      '0 0 0 3px rgba(227, 218, 201,0.14), 0 0 10px rgba(227, 218, 201,0.6)',
                     animation: 'stl-pulse 2.4s ease-in-out infinite',
                   }}
                 />
@@ -337,7 +337,7 @@ export default function MissionsWebDesktop({
                   fontSize: 13,
                   letterSpacing: '0.01em',
                   boxShadow:
-                    'inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(255, 179, 71,0.22)',
+                    'inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(227, 218, 201,0.22)',
                 }}
               >
                 <span>Observe {primeMission.name}</span>
@@ -419,7 +419,7 @@ export default function MissionsWebDesktop({
                     padding: '9px 14px',
                     borderTop: i === 0 ? 'none' : '1px solid rgba(var(--ink), 0.05)',
                     cursor: 'pointer',
-                    background: isActive ? 'rgba(255, 179, 71,0.04)' : 'transparent',
+                    background: isActive ? 'rgba(227, 218, 201,0.04)' : 'transparent',
                     opacity: dim ? 0.45 : 1,
                     width: '100%',
                     textAlign: 'left',
@@ -491,7 +491,7 @@ export default function MissionsWebDesktop({
                         height: '100%',
                         width: `${altPct}%`,
                         borderRadius: 2,
-                        background: 'linear-gradient(90deg, rgba(255, 179, 71,0.4), rgba(255, 179, 71,0.9))',
+                        background: 'linear-gradient(90deg, rgba(227, 218, 201,0.4), rgba(227, 218, 201,0.9))',
                       }}
                     />
                   </span>
@@ -602,9 +602,9 @@ export default function MissionsWebDesktop({
                     gap: 8,
                     marginTop: 10,
                     padding: '6px 10px',
-                    border: '1px solid rgba(255, 179, 71,0.18)',
+                    border: '1px solid rgba(227, 218, 201,0.18)',
                     borderRadius: 8,
-                    background: 'rgba(255, 179, 71,0.04)',
+                    background: 'rgba(227, 218, 201,0.04)',
                     fontFamily: 'var(--font-mono)',
                     fontSize: 10,
                     letterSpacing: '0.12em',
@@ -649,10 +649,10 @@ export default function MissionsWebDesktop({
               zIndex: 5,
             }}
           >
-            <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--stars)', boxShadow: '0 0 6px rgba(255, 179, 71,0.6)' }} />}>Prime</LegendItem>
+            <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--stars)', boxShadow: '0 0 6px rgba(227, 218, 201,0.6)' }} />}>Prime</LegendItem>
             <LegendItem swatch={<span style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(var(--ink), 1)', opacity: 0.7 }} />}>Target</LegendItem>
             <LegendItem swatch={
-              <span style={{ width: 18, height: 1, background: 'repeating-linear-gradient(90deg,rgba(255, 179, 71,0.7) 0 4px,transparent 4px 8px)' }} />
+              <span style={{ width: 18, height: 1, background: 'repeating-linear-gradient(90deg,rgba(227, 218, 201,0.7) 0 4px,transparent 4px 8px)' }} />
             }>Ecliptic</LegendItem>
           </div>
 
@@ -831,7 +831,7 @@ export default function MissionsWebDesktop({
                       height: 12,
                       borderRadius: 2,
                       background: i < 6 ? 'var(--stars)' : 'rgba(var(--ink), 0.06)',
-                      boxShadow: i < 6 ? '0 0 6px rgba(255, 179, 71,0.5)' : 'none',
+                      boxShadow: i < 6 ? '0 0 6px rgba(227, 218, 201,0.5)' : 'none',
                     }}
                   />
                 ))}
@@ -992,8 +992,8 @@ export default function MissionsWebDesktop({
                     fontSize: 10.5,
                     padding: '2px 6px',
                     borderRadius: 5,
-                    background: 'rgba(255, 179, 71,0.14)',
-                    border: '1px solid rgba(255, 179, 71,0.3)',
+                    background: 'rgba(227, 218, 201,0.14)',
+                    border: '1px solid rgba(227, 218, 201,0.3)',
                     color: 'var(--accent-text)',
                     marginLeft: 4,
                   }}
@@ -1144,12 +1144,12 @@ export default function MissionsWebDesktop({
                         background: isToday
                           ? 'rgba(94, 234, 212,0.14)'
                           : isOn
-                          ? 'rgba(255, 179, 71,0.14)'
+                          ? 'rgba(227, 218, 201,0.14)'
                           : 'rgba(var(--ink), 0.04)',
                         border: isToday
                           ? '1px solid rgba(94, 234, 212,0.35)'
                           : isOn
-                          ? '1px solid rgba(255, 179, 71,0.3)'
+                          ? '1px solid rgba(227, 218, 201,0.3)'
                           : '1px solid rgba(var(--ink), 0.05)',
                         display: 'flex',
                         alignItems: 'center',
@@ -1208,10 +1208,10 @@ export default function MissionsWebDesktop({
         </div>
         <div style={{ position: 'relative', height: 40 }}>
           <svg viewBox="0 0 1000 40" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-            <rect x="0" y="15" width="180" height="10" fill="rgba(255, 179, 71,0.18)" rx="3"/>
-            <rect x="820" y="15" width="180" height="10" fill="rgba(255, 179, 71,0.18)" rx="3"/>
+            <rect x="0" y="15" width="180" height="10" fill="rgba(227, 218, 201,0.18)" rx="3"/>
+            <rect x="820" y="15" width="180" height="10" fill="rgba(227, 218, 201,0.18)" rx="3"/>
             <rect x="180" y="15" width="640" height="10" style={{ fill: 'rgba(var(--ink), 0.04)' }} rx="3"/>
-            <path d="M0 25 Q 500 -40 1000 25" stroke="rgba(255, 179, 71,0.25)" strokeWidth="1" fill="none" strokeDasharray="2 4"/>
+            <path d="M0 25 Q 500 -40 1000 25" stroke="rgba(227, 218, 201,0.25)" strokeWidth="1" fill="none" strokeDasharray="2 4"/>
             <g style={{ stroke: 'rgba(var(--ink), 0.15)' }} strokeWidth="1">
               <line x1="125" y1="12" x2="125" y2="28"/>
               <line x1="375" y1="12" x2="375" y2="28"/>
@@ -1234,7 +1234,7 @@ export default function MissionsWebDesktop({
               height: 24,
               borderRadius: '50%',
               background: 'radial-gradient(circle at 35% 30%,var(--terracotta),var(--terracotta) 55%,var(--terracotta))',
-              boxShadow: '0 0 0 2px rgba(255, 179, 71,0.25), 0 0 20px rgba(255, 179, 71,0.4)',
+              boxShadow: '0 0 0 2px rgba(227, 218, 201,0.25), 0 0 20px rgba(227, 218, 201,0.4)',
             }}
           />
         </div>

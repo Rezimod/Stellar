@@ -76,11 +76,11 @@
 .moonpg__caret {
   position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
   width: 2.5px; height: 34px; border-radius: 2px; background: var(--terracotta);
-  box-shadow: 0 0 0 3px rgba(255,179,71,.14); pointer-events: none;
+  box-shadow: 0 0 0 3px rgba(227,218,201,.14); pointer-events: none;
 }
 .moonpg__ticks i { width: 2px; border-radius: 2px; background: rgba(255,255,255,.16); height: 12px; display: block; }
 .moonpg__ticks i.tall { height: 22px; background: rgba(255,255,255,.28); }
-.moonpg__ticks i.now { height: 30px; width: 2.5px; background: var(--terracotta); box-shadow: 0 0 0 3px rgba(255,179,71,.14); }
+.moonpg__ticks i.now { height: 30px; width: 2.5px; background: var(--terracotta); box-shadow: 0 0 0 3px rgba(227,218,201,.14); }
 .moonpg__marks {
   display: flex; justify-content: space-between; margin-top: 9px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; color: var(--color-text-muted);

@@ -337,7 +337,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
         <div className="max-w-sm w-full text-center flex flex-col items-center gap-4">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+            style={{ background: 'rgba(227, 218, 201,0.08)', border: '1px solid rgba(227, 218, 201,0.2)' }}
           >
             <CalendarClock size={24} className="text-[var(--terracotta)]" strokeWidth={1.8} />
           </div>
@@ -406,7 +406,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
           <div className="max-w-sm w-full flex flex-col items-center gap-6">
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+              style={{ background: 'rgba(227, 218, 201,0.08)', border: '1px solid rgba(227, 218, 201,0.2)' }}
             >
               <IntroIcon size={26} strokeWidth={1.8} className="text-[var(--terracotta)]" />
             </div>
@@ -494,7 +494,7 @@ export default function QuizActive({ quiz, onClose }: Props) {
         {phase === 'result' ? (
           <div className="flex flex-col items-center justify-center min-h-full gap-6 text-center py-4">
             <div className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}>
+              style={{ background: 'rgba(227, 218, 201,0.08)', border: '1px solid rgba(227, 218, 201,0.2)' }}>
               {score >= 8
                 ? <Trophy size={34} strokeWidth={1.6} className="text-[var(--terracotta)]" />
                 : score >= 5

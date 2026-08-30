@@ -59,7 +59,7 @@ export default async function Image() {
         {/* Amber ambient glow */}
         <div style={{
           position: 'absolute', top: 200, left: -60, width: 500, height: 340,
-          background: 'radial-gradient(ellipse at center,rgba(255,179,71,0.09) 0%,rgba(255,179,71,0) 70%)',
+          background: 'radial-gradient(ellipse at center,rgba(227,218,201,0.09) 0%,rgba(227,218,201,0) 70%)',
           borderRadius: '50%',
         }} />
 
@@ -69,9 +69,9 @@ export default async function Image() {
             position: 'absolute',
             width: r * 2, height: r * 2,
             borderRadius: '50%',
-            background: isAmber ? 'rgba(255,179,71,0.75)' : 'rgba(255,255,255,0.55)',
+            background: isAmber ? 'rgba(227,218,201,0.75)' : 'rgba(255,255,255,0.55)',
             left: x, top: y,
-            boxShadow: isAmber ? '0 0 4px rgba(255,179,71,0.5)' : 'none',
+            boxShadow: isAmber ? '0 0 4px rgba(227,218,201,0.5)' : 'none',
           }} />
         ))}
 
@@ -89,8 +89,8 @@ export default async function Image() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
-              background: '#FFB347',
-              boxShadow: '0 0 8px rgba(255,179,71,0.9)',
+              background: '#E3DAC9',
+              boxShadow: '0 0 8px rgba(227,218,201,0.9)',
             }} />
             <div style={{
               fontFamily: 'Orbitron', fontSize: 20, fontWeight: 600,
@@ -106,9 +106,9 @@ export default async function Image() {
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10,
               fontSize: 17, fontWeight: 500, letterSpacing: 2.5,
-              color: 'rgba(255,179,71,0.85)',
+              color: 'rgba(227,218,201,0.85)',
             }}>
-              <div style={{ width: 28, height: 1, background: 'rgba(255,179,71,0.55)' }} />
+              <div style={{ width: 28, height: 1, background: 'rgba(227,218,201,0.55)' }} />
               THE NIGHT SKY. NOW.
             </div>
 
@@ -120,7 +120,7 @@ export default async function Image() {
               <div style={{ fontSize: 80, fontWeight: 600, letterSpacing: -3, lineHeight: 1.04, color: '#FFFFFF' }}>
                 Discover
               </div>
-              <div style={{ fontSize: 80, fontWeight: 600, letterSpacing: -3, lineHeight: 1.04, color: '#FFB347' }}>
+              <div style={{ fontSize: 80, fontWeight: 600, letterSpacing: -3, lineHeight: 1.04, color: '#E3DAC9' }}>
                 everything.
               </div>
             </div>
@@ -153,7 +153,7 @@ export default async function Image() {
             </div>
             <div style={{
               fontSize: 22, fontWeight: 600,
-              color: '#FFB347', letterSpacing: 0.4,
+              color: '#E3DAC9', letterSpacing: 0.4,
             }}>
               stellarr.club
             </div>

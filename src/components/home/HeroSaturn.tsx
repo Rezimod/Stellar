@@ -166,12 +166,12 @@ export default function HeroSaturn() {
           href="/missions"
           className="hero-pill-primary mt-4 inline-flex w-full max-w-[440px] items-center justify-center gap-2.5 rounded-xl px-8 py-4 no-underline"
           style={{
-            background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
-            color: '#241503',
+            background: 'linear-gradient(180deg,#F2ECE0 0%,#E3DAC9 55%,#CEC2AA 100%)',
+            color: '#1C1608',
             fontWeight: 600,
             fontSize: 15,
             fontFamily: 'var(--font-cta, var(--font-body))',
-            boxShadow: 'inset 0 1px 0 rgba(255,235,200,0.7), inset 0 -2px 0 rgba(120,60,0,0.35), 0 8px 26px rgba(245,158,46,0.35)',
+            boxShadow: 'inset 0 1px 0 rgba(255,253,248,0.7), inset 0 -2px 0 rgba(110,100,84,0.35), 0 8px 26px rgba(227,218,201,0.35)',
             animation: 'heroCardSwap 0.7s ease 0.18s both',
           }}
         >
@@ -213,7 +213,7 @@ function SkyTicker() {
 
   const row = (
     <div className="flex items-center gap-11 whitespace-nowrap px-6 py-2.5 font-mono text-[12px] tracking-[0.14em] text-[#9aa6c8]">
-      <span className="text-[#f5a83d]">SKY CALENDAR 2026</span>
+      <span className="text-[#E3DAC9]">SKY CALENDAR 2026</span>
       {events.map((e) => (
         <span key={e} className="flex items-center gap-11">
           <span>{e}</span>
@@ -336,15 +336,15 @@ function TonightCard() {
               <Image src={mission.img} alt="" fill sizes="40px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="mb-0.5 block font-mono text-[10px] tracking-[0.22em] text-[#f5a83d]">
+              <span className="mb-0.5 block font-mono text-[10px] tracking-[0.22em] text-[#E3DAC9]">
                 {t('cards.missionsLabel').toUpperCase()}
               </span>
               <span className="flex items-baseline gap-2">
                 <span className="truncate text-[15px] font-semibold text-[#f4f7ff]">{mission.title}</span>
-                <span className="shrink-0 font-mono text-[12.5px] text-[#ffc877] tabular-nums">+{mission.stars} ★</span>
+                <span className="shrink-0 font-mono text-[12.5px] text-[#F0E9DC] tabular-nums">+{mission.stars} ★</span>
               </span>
             </span>
-            <span className="flex-none text-[#ffc877]" aria-hidden><ArrowIcon /></span>
+            <span className="flex-none text-[#F0E9DC]" aria-hidden><ArrowIcon /></span>
           </>
         )}
       </Link>

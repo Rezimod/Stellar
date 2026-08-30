@@ -1107,9 +1107,9 @@ function GlobalMissionCard({
               letterSpacing: '0.04em',
               padding: '2px 7px',
               borderRadius: 20,
-              background: 'rgba(255,179,71,0.12)',
+              background: 'rgba(227,218,201,0.12)',
               color: 'var(--accent-text)',
-              border: '1px solid rgba(255,179,71,0.25)',
+              border: '1px solid rgba(227,218,201,0.25)',
               marginLeft: 'auto',
               whiteSpace: 'nowrap',
             }}
@@ -1487,7 +1487,7 @@ function RareEventArt({ type }: { type: AstroEvent['type'] }) {
       <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden>
         <defs>
           <radialGradient id="rareSun" cx="50%" cy="50%">
-            <stop offset="0%" stopColor="#FFB23A" />
+            <stop offset="0%" stopColor="#E3DAC9" />
             <stop offset="80%" stopColor="#F25A1A" />
             <stop offset="100%" stopColor="#9A2A0E" />
           </radialGradient>

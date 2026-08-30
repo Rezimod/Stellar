@@ -323,7 +323,7 @@ function CheckoutContent() {
         [data-theme="light"] .stl-checkout-field { background: #FFFFFF; }
         .stl-checkout-field:hover { border-color: var(--border-strong); }
         .stl-checkout-field:focus {
-          border-color: rgba(255, 179, 71, 0.55);
+          border-color: rgba(227, 218, 201, 0.55);
           background: #1C2235;
         }
         [data-theme="light"] .stl-checkout-field:focus { background: #F4F7FF; }
@@ -385,7 +385,7 @@ function CheckoutContent() {
               {mode === 'stars' && starsShort > 0 && (
                 <div
                   className="rounded-md p-4 flex flex-col gap-1"
-                  style={{ background: 'rgba(255,179,71,0.05)', border: '0.5px solid rgba(255,179,71,0.28)' }}
+                  style={{ background: 'rgba(227,218,201,0.05)', border: '0.5px solid rgba(227,218,201,0.28)' }}
                 >
                   <p className="text-[12px] text-[#F8F4EC] tabular-nums">
                     {t('starsShort', { balance: starsBalance.toLocaleString(), short: starsShort.toLocaleString() })}
@@ -419,8 +419,8 @@ function CheckoutContent() {
                 style={{
                   background: 'var(--terracotta)',
                   border: '1px solid var(--terracotta)',
-                  color: '#1a1208',
-                  boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px rgba(255,179,71,0.28)',
+                  color: 'var(--on-accent)',
+                  boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px rgba(227,218,201,0.28)',
                 }}
               >
                 {mode === 'sol' ? (
@@ -529,7 +529,7 @@ function CheckoutContent() {
               )}
               <div className="flex gap-3 mt-4">
                 <Link href="/profile" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full text-[#F8F4EC]"
-                  style={{ background: 'rgba(255,179,71,0.10)', border: '0.5px solid rgba(255,179,71,0.45)' }}>
+                  style={{ background: 'rgba(227,218,201,0.10)', border: '0.5px solid rgba(227,218,201,0.45)' }}>
                   {t('orderHistory')}
                 </Link>
                 <Link href="/marketplace" className="text-[11px] tracking-[0.18em] uppercase font-semibold px-[16px] py-[9px] rounded-full text-[#F8F4EC]"
@@ -557,7 +557,7 @@ function CheckoutContent() {
               className="relative w-[70px] h-[70px] rounded-md flex-shrink-0 overflow-hidden"
               style={{
                 background:
-                  'radial-gradient(ellipse at 50% 50%, rgba(255, 179, 71,0.05) 0%, transparent 70%), rgba(var(--ink), 0.02)',
+                  'radial-gradient(ellipse at 50% 50%, rgba(227, 218, 201,0.05) 0%, transparent 70%), rgba(var(--ink), 0.02)',
                 border: '0.5px solid rgba(var(--ink), 0.06)',
               }}
             >
@@ -650,8 +650,8 @@ function BurnSlider({
     <div
       className="rounded-md p-4 flex flex-col gap-2"
       style={{
-        background: 'rgba(255, 179, 71, 0.05)',
-        border: '0.5px solid rgba(255, 179, 71, 0.28)',
+        background: 'rgba(227, 218, 201, 0.05)',
+        border: '0.5px solid rgba(227, 218, 201, 0.28)',
       }}
     >
       <div className="flex items-baseline justify-between">
@@ -684,7 +684,7 @@ function BurnSlider({
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-[rgba(255,179,71,0.18)]">
+      <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-[rgba(227,218,201,0.18)]">
         <span className="text-[#F8F4EC]">{t('newTotal')}</span>
         <span className="text-[#F8F4EC]" style={{ fontWeight: 600 }}>
           {newTotal.toFixed(2)} ₾
@@ -790,7 +790,7 @@ function SuggestedCard({ product }: { product: Product }) {
         className="relative w-full rounded-md mb-[10px] overflow-hidden aspect-[1.2]"
         style={{
           background:
-            'radial-gradient(ellipse at 50% 50%, rgba(255,179,71,0.05) 0%, transparent 70%), rgba(var(--ink), 0.02)',
+            'radial-gradient(ellipse at 50% 50%, rgba(227,218,201,0.05) 0%, transparent 70%), rgba(var(--ink), 0.02)',
           border: '0.5px solid rgba(var(--ink), 0.06)',
         }}
       >

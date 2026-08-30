@@ -50,7 +50,7 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
       onClick={onClear}
       aria-label={`Remove filter: ${label}`}
       className="inline-flex items-center gap-[6px] h-[26px] px-[10px] rounded-full text-[10.5px] tracking-[0.1em] uppercase font-semibold text-[var(--accent-text)] transition-colors hover:text-white"
-      style={{ minHeight: 0, background: 'rgba(255,179,71,0.10)', border: '1px solid rgba(255,179,71,0.30)' }}
+      style={{ minHeight: 0, background: 'rgba(227,218,201,0.10)', border: '1px solid rgba(227,218,201,0.30)' }}
     >
       {label}
       <X className="w-[11px] h-[11px]" />

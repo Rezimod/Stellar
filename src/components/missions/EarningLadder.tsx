@@ -38,7 +38,7 @@ export function EarningLadder() {
               <r.Icon size={14} strokeWidth={1.8} className="text-white/55" />
             </span>
             <span className="flex-1 min-w-0 truncate text-white/80 text-[13px] leading-tight">{r.label[locale]}</span>
-            <span className="font-mono text-[#FFD166] text-[12px] tabular-nums shrink-0">{r.reward} ✦</span>
+            <span className="font-mono text-[#E3DAC9] text-[12px] tabular-nums shrink-0">{r.reward} ✦</span>
           </>
         );
         const cls = 'flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5';

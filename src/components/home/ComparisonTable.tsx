@@ -42,7 +42,7 @@ function Row({
           <Check
             size={18}
             strokeWidth={2.5}
-            className={highlight ? 'text-[#FFB347]' : 'text-white/55'}
+            className={highlight ? 'text-[#E3DAC9]' : 'text-white/55'}
           />
         ) : (
           <Minus size={18} strokeWidth={2.5} className="text-white/25" />
@@ -87,13 +87,13 @@ export default function ComparisonTable({
 
         {/* Stellar */}
         <div
-          className="rounded-[18px] border border-[#FFB347]/25 p-6 md:p-8"
+          className="rounded-[18px] border border-[#E3DAC9]/25 p-6 md:p-8"
           style={{
             background:
-              'linear-gradient(155deg, rgba(255,179,71,0.06) 0%, #0F1422 60%)',
+              'linear-gradient(155deg, rgba(227,218,201,0.06) 0%, #0F1422 60%)',
           }}
         >
-          <div className="text-[12px] font-semibold tracking-[0.18em] uppercase text-[#FFB347] mb-4 md:mb-5">
+          <div className="text-[12px] font-semibold tracking-[0.18em] uppercase text-[#E3DAC9] mb-4 md:mb-5">
             {stellarLabel}
           </div>
           <ul className="font-body">

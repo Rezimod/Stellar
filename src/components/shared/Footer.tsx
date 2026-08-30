@@ -240,7 +240,7 @@ export default function Footer() {
             align-items: center;
             gap: 12px;
             width: 100%;
-            color: var(--accent-text, #F5A623) !important;
+            color: var(--accent-text, #E3DAC9) !important;
           }
           .stellar-footer-col-title::after {
             content: '';

@@ -179,7 +179,7 @@ export default function SettingsPage() {
       <Section title={t('accountTitle')}>
         <Row
           icon={<Mail size={15} />}
-          iconBg="rgba(255, 179, 71,0.08)"
+          iconBg="rgba(227, 218, 201,0.08)"
           iconColor="var(--accent-text)"
           label={email ? email : t('addEmail')}
           sublabel={email ? t('primaryEmail') : t('linkEmail')}
@@ -192,7 +192,7 @@ export default function SettingsPage() {
         {hasGoogle && (
           <Row
             icon={<Chrome size={15} />}
-            iconBg="rgba(255, 179, 71,0.08)"
+            iconBg="rgba(227, 218, 201,0.08)"
             iconColor="var(--accent-text)"
             label={t('googleAccount')}
             sublabel={t('connected')}
@@ -255,7 +255,7 @@ export default function SettingsPage() {
         />
         <Row
           icon={<Sparkles size={15} />}
-          iconBg="rgba(255, 179, 71,0.08)"
+          iconBg="rgba(227, 218, 201,0.08)"
           iconColor="var(--accent-text)"
           label={t('skyEvents')}
           sublabel={t('skyEventsSub')}
@@ -263,7 +263,7 @@ export default function SettingsPage() {
         />
         <Row
           icon={<Cloud size={15} />}
-          iconBg="rgba(255, 179, 71,0.08)"
+          iconBg="rgba(227, 218, 201,0.08)"
           iconColor="var(--accent-text)"
           label={t('weatherAlerts')}
           sublabel={t('weatherAlertsSub')}
@@ -276,7 +276,7 @@ export default function SettingsPage() {
       <Section id="appearance" title={t('appearanceTitle')}>
         <Row
           icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
-          iconBg="rgba(255, 179, 71,0.08)"
+          iconBg="rgba(227, 218, 201,0.08)"
           iconColor="var(--accent-text)"
           label={theme === 'dark' ? t('darkMode') : t('dayMode')}
           sublabel={theme === 'dark' ? t('darkModeSub') : t('dayModeSub')}
@@ -320,7 +320,7 @@ export default function SettingsPage() {
         />
         <Row
           icon={<ShieldCheck size={15} />}
-          iconBg="rgba(255, 179, 71,0.08)"
+          iconBg="rgba(227, 218, 201,0.08)"
           iconColor="var(--accent-text)"
           label={t('terms')}
           sublabel={t('termsSub')}
@@ -347,13 +347,13 @@ export default function SettingsPage() {
                   borderRadius: 14,
                   cursor: 'pointer',
                   background: active
-                    ? 'linear-gradient(180deg, rgba(255,179,71,0.16) 0%, rgba(255,179,71,0.04) 100%)'
+                    ? 'linear-gradient(180deg, rgba(227,218,201,0.16) 0%, rgba(227,218,201,0.04) 100%)'
                     : 'rgba(var(--ink), 0.04)',
-                  border: `1px solid ${active ? 'rgba(255,179,71,0.45)' : 'rgba(var(--ink), 0.08)'}`,
+                  border: `1px solid ${active ? 'rgba(227,218,201,0.45)' : 'rgba(var(--ink), 0.08)'}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                   transition: 'all 0.2s',
                   boxShadow: active
-                    ? 'inset 0 1px 0 rgba(var(--ink), 0.10), 0 8px 24px -14px rgba(255,179,71,0.45)'
+                    ? 'inset 0 1px 0 rgba(var(--ink), 0.10), 0 8px 24px -14px rgba(227,218,201,0.45)'
                     : 'inset 0 1px 0 rgba(var(--ink), 0.05)',
                 }}
               >

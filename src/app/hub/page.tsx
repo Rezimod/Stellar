@@ -20,14 +20,14 @@ type HubItem = {
 type HubSection = { labelKey: string; items: HubItem[] };
 
 const G = {
-  amber:   'linear-gradient(135deg, #FFB347 0%, #FFB347 100%)',
+  amber:   'linear-gradient(135deg, #E3DAC9 0%, #E3DAC9 100%)',
   violet:  'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
   fuchsia: 'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
   emerald: 'linear-gradient(135deg, #34D399 0%, #5EEAD4 100%)',
   blue:    'linear-gradient(135deg, #5EEAD4 0%, var(--seafoam) 100%)',
   teal:    'linear-gradient(135deg, #5EEAD4 0%, #5EEAD4 100%)',
   rose:    'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)',
-  orange:  'linear-gradient(135deg, #FB923C 0%, #EA580C 100%)',
+  orange:  'linear-gradient(135deg, #E3DAC9 0%, #C9BBA1 100%)',
   indigo:  'linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta) 100%)',
 };
 
@@ -115,8 +115,8 @@ export default function HubPage() {
                         className="absolute top-1.5 right-1.5 px-1 py-0.5 rounded text-[7.5px] font-semibold tracking-[0.16em] uppercase"
                         style={{
                           color: 'color-mix(in srgb, var(--accent-text) 85%, transparent)',
-                          background: 'rgba(255,179,71,0.08)',
-                          border: '1px solid rgba(255,179,71,0.28)',
+                          background: 'rgba(227,218,201,0.08)',
+                          border: '1px solid rgba(227,218,201,0.28)',
                           fontFamily: 'var(--font-mono)',
                         }}
                       >

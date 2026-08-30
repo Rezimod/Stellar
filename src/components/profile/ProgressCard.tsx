@@ -37,7 +37,7 @@ export function ProgressCard({ tokens, kicker, countLabel, milestones, nextLabel
         {milestones.map((m, i) => {
           const filled = m.reached;
           const dot = m.current
-            ? { bg: 'var(--terracotta)', ring: '0 0 0 5px rgba(255, 179, 71,0.22)', size: 16 }
+            ? { bg: 'var(--terracotta)', ring: '0 0 0 5px rgba(227, 218, 201,0.22)', size: 16 }
             : filled
               ? { bg: 'var(--terracotta)', ring: 'none', size: 14 }
               : { bg: isLight ? '#FFFFFF' : 'var(--canvas)', ring: 'none', size: 14 };

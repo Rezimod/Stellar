@@ -175,7 +175,7 @@ export default function ClubPage() {
           {starsEarned > 0 ? (
             <div
               className="mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
-              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)' }}
+              style={{ background: 'rgba(227, 218, 201,0.08)', border: '1px solid rgba(227, 218, 201,0.2)' }}
             >
               <StarMark size={20} className="text-[var(--accent-text)]" />
               <div>

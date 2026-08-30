@@ -182,7 +182,7 @@ export const DSO = [
     desc: { en: 'One of the finest globular clusters in the northern sky — a sphere of ~300,000 stars packed together. In 1974 scientists sent the Arecibo radio message toward it.', ka: 'ჩრდილოეთ ნახევარსფეროში ერთ-ერთი საუკეთესო გლობულარული გროვა — ~300,000 ვარსკვლავი.' },
     scope: { en: 'Small telescope shows a fuzzy ball. 150mm+ resolves individual stars at the edges. Best in summer.', ka: 'პატარა ტელესკოპი ბუნდოვან ბურთს აჩვენებს. 150 მმ+ ინდივიდუალურ ვარსკვლავებს გამოყოფს.' },
     kidsLine: { en: 'A ball of 300,000 stars all packed together — like a giant cosmic city!', ka: '300,000 ვარსკვლავი ერთად — გიგანტური კოსმოსური ქალაქივით!' },
-    color: '#FFB347',
+    color: '#E3DAC9',
   },
   {
     id: 'm57', emoji: '💍', img: '/images/dso/m57-ring.jpg',
@@ -204,7 +204,7 @@ export const DSO = [
     desc: { en: 'One of the brightest nebulas in the sky — a cloud of glowing gas where new stars are actively forming. Shaped like a swan or the Greek letter Omega, depending on how you look at it.', ka: 'ცის ერთ-ერთი ყველაზე კაშკაში ნისლეული — გამბრწყინავი გაზის ღრუბელი, სადაც ახალი ვარსკვლავები იქმნება.' },
     scope: { en: 'Visible in binoculars. Any telescope shows the glowing bar clearly. 150mm+ begins to reveal wispy detail.', ka: 'ბინოკლით ჩანს. ნებისმიერი ტელესკოპი კარგად აჩვენებს.' },
     kidsLine: { en: 'A baby star factory — hundreds of new suns being born here right now!', ka: 'ვარსკვლავების სამეანო სახლი — ასობით ახალი მზე იბადება ახლა!' },
-    color: '#f97316',
+    color: '#D2C6B0',
   },
   {
     id: 'm51', emoji: '🌀', img: '/images/dso/m51.jpg',
@@ -252,7 +252,7 @@ export const CONSTELLATIONS = [
     stars: 7,
     desc: { en: 'The Hunter — easiest constellation to find. Three bright stars form the famous belt.', ka: 'მონადირე — ყველაზე ადვილად მოსაძებნი. სამი კაშკაში ვარსკვლავი ქმნის სარტყელს.' },
     highlight: { en: 'Contains the Orion Nebula (M42) and red supergiant Betelgeuse', ka: 'შეიცავს ორიონის ნისლეულს (M42) და ბეთელგეიზეს' },
-    color: '#f97316',
+    color: '#D2C6B0',
     brightestStar: {
       name: { en: 'Rigel (β Orionis)', ka: 'რიგელი (β Orionis)' },
       magnitude: 0.13,
@@ -344,7 +344,7 @@ export const CONSTELLATIONS = [
     stars: 9,
     desc: { en: 'The Swan — forms a clear cross (Northern Cross) flying along the Milky Way.', ka: 'გედი — ნათელ ჯვარს ქმნის (ჩრდილოეთის ჯვარი) ირმის ნახტომში.' },
     highlight: { en: 'Deneb marks the tail — one of the most luminous stars visible to the naked eye', ka: 'დენები კუდს ნიშნავს — ერთ-ერთი ყველაზე ნათელი ვარსკვლავი' },
-    color: '#FFB347',
+    color: '#E3DAC9',
     brightestStar: {
       name: { en: 'Deneb (α Cygni)', ka: 'დენები (α Cygni)' },
       magnitude: 1.25,
@@ -390,7 +390,7 @@ export const CONSTELLATIONS = [
     stars: 9,
     desc: { en: 'The Bull — a V-shaped face of stars (the Hyades cluster) with long horns. Home to both the Pleiades and the Crab Nebula.', ka: 'კურო — ვარსკვლავების V-ფორმის სახე (ჰიადების გროვა) გრძელი რქებით. აქვეა პლეიადები და კიბოს ნისლეული.' },
     highlight: { en: 'Two naked-eye star clusters in one constellation: the Hyades and the Pleiades', ka: 'ორი შიშველი თვალით ხილული გროვა ერთ თანავარსკვლავედში: ჰიადები და პლეიადები' },
-    color: '#FFB347',
+    color: '#E3DAC9',
     brightestStar: {
       name: { en: 'Aldebaran (α Tauri)', ka: 'ალდებარანი (α Tauri)' },
       magnitude: 0.85,

@@ -79,7 +79,7 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
 
   function segColor(cover: number): string {
     if (cover < 30) return 'rgba(94, 234, 212,0.65)';
-    if (cover < 60) return 'rgba(255, 179, 71,0.5)';
+    if (cover < 60) return 'rgba(227, 218, 201,0.5)';
     return 'rgba(var(--ink), 0.07)';
   }
 
@@ -115,7 +115,7 @@ function NightTimeline({ hours, statusColor }: { hours: SkyHour[]; statusColor: 
       <div style={{ display: 'flex', gap: 10, marginTop: 7 }}>
         {[
           { color: 'rgba(94, 234, 212,0.65)', label: 'Clear' },
-          { color: 'rgba(255, 179, 71,0.5)', label: 'Partly cloudy' },
+          { color: 'rgba(227, 218, 201,0.5)', label: 'Partly cloudy' },
           { color: 'rgba(var(--ink), 0.15)', label: 'Overcast' },
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -210,8 +210,8 @@ export default function HomeSkyPreview() {
   const moonWarn = moonIllum > 0.7 && status !== 'Skip';
 
   const SC = {
-    Go:    { color: 'var(--success)', border: 'rgba(94, 234, 212,0.22)',   bg: 'rgba(94, 234, 212,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(94, 234, 212,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(255, 179, 71,0.06) 0%, transparent 55%)' },
-    Maybe: { color: 'var(--accent-text)', border: 'rgba(255, 179, 71,0.2)',   bg: 'rgba(255, 179, 71,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(255, 179, 71,0.10) 0%, transparent 55%)' },
+    Go:    { color: 'var(--success)', border: 'rgba(94, 234, 212,0.22)',   bg: 'rgba(94, 234, 212,0.06)',  nebula: 'radial-gradient(ellipse at 10% 0%, rgba(94, 234, 212,0.12) 0%, transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(227, 218, 201,0.06) 0%, transparent 55%)' },
+    Maybe: { color: 'var(--accent-text)', border: 'rgba(227, 218, 201,0.2)',   bg: 'rgba(227, 218, 201,0.05)', nebula: 'radial-gradient(ellipse at 10% 0%, rgba(227, 218, 201,0.10) 0%, transparent 55%)' },
     Skip:  { color: 'rgba(148,163,184,0.5)', border: 'rgba(var(--ink), 0.07)', bg: 'transparent', nebula: 'none' },
   }[status];
 
@@ -328,7 +328,7 @@ export default function HomeSkyPreview() {
           {moonWarn && (
             <div style={{
               marginTop: 10, padding: '8px 12px', borderRadius: 10,
-              background: 'rgba(255, 179, 71,0.05)', border: '1px solid rgba(255, 179, 71,0.15)',
+              background: 'rgba(227, 218, 201,0.05)', border: '1px solid rgba(227, 218, 201,0.15)',
               color: 'color-mix(in srgb, var(--accent-text) 65%, transparent)', fontSize: 11, lineHeight: 1.4,
             }}>
               ☽ Full moon ({moonPct}%) — faint deep-sky targets will be washed out
@@ -400,7 +400,7 @@ export default function HomeSkyPreview() {
                         <div style={{
                           height: '100%',
                           width: `${Math.max(2, Math.min(100, (p.altitude / 90) * 100))}%`,
-                          background: `linear-gradient(to right, rgba(255, 179, 71,0.4), rgba(255, 179, 71,0.8))`,
+                          background: `linear-gradient(to right, rgba(227, 218, 201,0.4), rgba(227, 218, 201,0.8))`,
                           borderRadius: 2,
                           transition: 'width 0.8s ease-out',
                         }} />
@@ -440,7 +440,7 @@ export default function HomeSkyPreview() {
             const { avgCloud: dc } = getNightStats(day);
             const sel2 = i === selectedDay;
             const bs = badge === 'Go'    ? { color: 'var(--success)',               border: 'rgba(94, 234, 212,0.3)',   bg: 'rgba(94, 234, 212,0.07)' }
-                      : badge === 'Maybe' ? { color: 'var(--accent-text)',               border: 'rgba(255, 179, 71,0.25)', bg: 'rgba(255, 179, 71,0.06)' }
+                      : badge === 'Maybe' ? { color: 'var(--accent-text)',               border: 'rgba(227, 218, 201,0.25)', bg: 'rgba(227, 218, 201,0.06)' }
                       :                     { color: 'rgba(148,163,184,0.45)', border: 'rgba(var(--ink), 0.07)', bg: 'rgba(var(--ink), 0.02)' };
             return (
               <button key={day.date} onClick={() => selectDay(i, day.date)} style={{

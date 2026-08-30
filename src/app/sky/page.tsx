@@ -770,7 +770,7 @@ export default function SkyPage() {
 /* ── Accent colour for an object's dot — by catalog type. ── */
 function objectAccent(o: SkyObject): string {
   if (o.id === 'moon') return '#CFD6E4';
-  if (o.id === 'sun') return '#FFD166';
+  if (o.id === 'sun') return '#E3DAC9';
   if (o.type === 'planet') return '#F4D98C';
   if (o.type === 'nebula' || o.type === 'galaxy' || o.type === 'cluster') return '#B98CFF';
   return '#FF9B54'; // stars / doubles
@@ -810,7 +810,7 @@ function QualityRing({ score }: { score: number }) {
   const r = 18;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(1, score / 10));
-  const color = score >= 7 ? 'var(--teal-text, #5EEAD4)' : score >= 5 ? 'var(--accent-text, #FFB347)' : '#FF8A6A';
+  const color = score >= 7 ? 'var(--teal-text, #5EEAD4)' : score >= 5 ? 'var(--accent-text, #E3DAC9)' : '#FF8A6A';
   return (
     <span className="skx__qring" aria-hidden="true">
       <svg width={44} height={44} viewBox="0 0 44 44">

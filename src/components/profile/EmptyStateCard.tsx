@@ -35,8 +35,8 @@ export function EmptyStateCard({ tokens, kicker, headerRight, children, empty, f
     cursor: 'pointer',
     textDecoration: 'none',
     color: 'var(--accent-text)',
-    background: isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)',
-    border: '1px solid rgba(255, 179, 71,0.32)',
+    background: isLight ? 'rgba(227, 218, 201,0.06)' : 'rgba(227, 218, 201,0.10)',
+    border: '1px solid rgba(227, 218, 201,0.32)',
   } as const;
 
   return (
@@ -71,7 +71,7 @@ export function EmptyStateCard({ tokens, kicker, headerRight, children, empty, f
               marginBottom: 14,
               color: 'var(--accent-text)',
               border: `1px solid ${hairline}`,
-              background: isLight ? 'rgba(255, 179, 71,0.05)' : 'rgba(255, 179, 71,0.07)',
+              background: isLight ? 'rgba(227, 218, 201,0.05)' : 'rgba(227, 218, 201,0.07)',
             }}
           >
             {empty.icon}

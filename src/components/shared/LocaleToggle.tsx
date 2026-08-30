@@ -29,7 +29,7 @@ export default function LocaleToggle() {
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-full border border-[#ffb347]/15 bg-[#ffb347]/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_-14px_rgba(255,179,71,0.9)] transition-transform duration-200 ease-out"
+        className="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-full border border-[#E3DAC9]/15 bg-[#E3DAC9]/12 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_-14px_rgba(227,218,201,0.9)] transition-transform duration-200 ease-out"
         style={{
           transform: locale === 'ka' ? 'translateX(calc(100% - 1px))' : 'translateX(0)',
         }}

@@ -330,7 +330,7 @@ function ProfilePageContent() {
         {/* decorative cosmic glow — scoped to the profile page */}
         {!isLight && (
           <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-            <div style={{ position: 'absolute', top: -80, right: '8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 179, 71,0.10), transparent 70%)' }} />
+            <div style={{ position: 'absolute', top: -80, right: '8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(227, 218, 201,0.10), transparent 70%)' }} />
             <div style={{ position: 'absolute', bottom: 40, left: '-6%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%)' }} />
           </div>
         )}
@@ -503,7 +503,7 @@ function ProfilePageContent() {
                       </div>
                       <Link
                         href="/marketplace"
-                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--accent-text)', background: isLight ? 'rgba(255, 179, 71,0.06)' : 'rgba(255, 179, 71,0.10)', border: '1px solid rgba(255, 179, 71,0.32)' }}
+                        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '9px 20px', borderRadius: 12, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, textDecoration: 'none', color: 'var(--accent-text)', background: isLight ? 'rgba(227, 218, 201,0.06)' : 'rgba(227, 218, 201,0.10)', border: '1px solid rgba(227, 218, 201,0.32)' }}
                       >
                         {t('viewGifts')}
                       </Link>
@@ -591,7 +591,7 @@ function ProfilePageContent() {
               <Section title={t('settingsTitle')} action={seeAllLink('/settings', t('allSettings'))}>
                 <Row
                   icon={theme === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
-                  iconBg="rgba(255, 179, 71,0.08)"
+                  iconBg="rgba(227, 218, 201,0.08)"
                   iconColor="var(--accent-text)"
                   label={theme === 'dark' ? t('darkMode') : t('dayMode')}
                   sublabel={theme === 'dark' ? t('themeSubDark') : t('themeSubDay')}
@@ -599,7 +599,7 @@ function ProfilePageContent() {
                 />
                 <Row
                   icon={<Bell size={15} />}
-                  iconBg="rgba(255, 179, 71,0.08)"
+                  iconBg="rgba(227, 218, 201,0.08)"
                   iconColor="var(--accent-text)"
                   label={t('notifications')}
                   sublabel={t('notificationsSub')}

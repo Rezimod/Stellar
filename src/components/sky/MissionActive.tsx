@@ -555,7 +555,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
         id="mission-done-overlay"
         className="fixed inset-0 z-[58] overflow-hidden flex flex-col"
         style={{
-          background: 'radial-gradient(ellipse at 50% -10%, rgba(255, 179, 71,0.07) 0%, transparent 55%), var(--bg-base)',
+          background: 'radial-gradient(ellipse at 50% -10%, rgba(227, 218, 201,0.07) 0%, transparent 55%), var(--bg-base)',
           height: '100dvh',
         }}
       >
@@ -600,7 +600,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div className="flex items-center gap-3 animate-slide-up flex-shrink-0 pr-10">
             <div
               className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center"
-              style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(255, 179, 71,0.25)' }}
+              style={{ background: 'var(--accent-dim)', border: '2px solid var(--accent)', boxShadow: '0 0 16px rgba(227, 218, 201,0.25)' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M6 12 l4 4 l8-8" stroke="var(--accent)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
@@ -635,9 +635,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <div
               className="flex items-center gap-3 px-4 py-2 rounded-xl animate-cosmic-reveal flex-shrink-0"
               style={{
-                background: 'linear-gradient(135deg, rgba(255, 179, 71,0.95) 0%, rgba(255, 179, 71,0.95) 100%)',
+                background: 'linear-gradient(135deg, rgba(227, 218, 201,0.95) 0%, rgba(227, 218, 201,0.95) 100%)',
                 border: '1px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 12px 28px rgba(255, 179, 71,0.35)',
+                boxShadow: '0 12px 28px rgba(227, 218, 201,0.35)',
               }}
             >
               <StarMark size={20} style={{ filter: 'drop-shadow(0 0 6px white)' }} />
@@ -670,16 +670,16 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div
             className="rounded-2xl py-2 px-5 text-center relative overflow-hidden animate-scale-in flex-shrink-0"
             style={{
-              background: 'linear-gradient(135deg, rgba(255, 179, 71,0.08) 0%, rgba(255,180,50,0.04) 100%)',
-              border: '1px solid rgba(255, 179, 71,0.3)',
-              boxShadow: '0 0 40px rgba(255, 179, 71,0.08), inset 0 1px 0 rgba(255, 179, 71,0.1)',
+              background: 'linear-gradient(135deg, rgba(227, 218, 201,0.08) 0%, rgba(227,218,201,0.04) 100%)',
+              border: '1px solid rgba(227, 218, 201,0.3)',
+              boxShadow: '0 0 40px rgba(227, 218, 201,0.08), inset 0 1px 0 rgba(227, 218, 201,0.1)',
             }}
           >
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(255, 179, 71,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(227, 218, 201,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
             {mintTier && mintTier.multiplier > 1 && (
               <div
                 className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(255, 179, 71,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
+                style={{ background: 'rgba(7,11,20,0.6)', border: '1px solid rgba(227, 218, 201,0.25)', fontSize: 10, fontWeight: 700, color: 'var(--stars)' }}
               >
                 <MoonPhase phase={mintTier.phase} size={11} />
                 <span>{mintTier.multiplier}×</span>
@@ -687,7 +687,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             )}
             <p
               className="relative font-black leading-none"
-              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--accent-text)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(255, 179, 71,0.8), 0 0 48px rgba(255, 179, 71,0.4)', letterSpacing: '-0.02em' }}
+              style={{ fontSize: "clamp(32px, 8vw, 48px)", color: "var(--accent-text)", fontFamily: 'monospace', textShadow: '0 0 24px rgba(227, 218, 201,0.8), 0 0 48px rgba(227, 218, 201,0.4)', letterSpacing: '-0.02em' }}
             >
               +{starsEarned}
             </p>
@@ -708,12 +708,12 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
           <div
             className={`relative rounded-2xl overflow-hidden animate-fade-in lg:h-full ${mintRarity?.rarity === 'Celestial' ? 'animate-rarity-pulse' : ''}`}
             style={{
-              border: `2px solid ${mintRarity?.color ?? 'rgba(255, 179, 71,0.15)'}`,
+              border: `2px solid ${mintRarity?.color ?? 'rgba(227, 218, 201,0.15)'}`,
               boxShadow: mintRarity?.rarity === 'Celestial'
                 ? `0 0 32px ${mintRarity.color}55`
                 : mintRarity?.rarity === 'Astral'
                   ? `0 0 24px ${mintRarity.color}40`
-                  : '0 0 20px rgba(255, 179, 71,0.08)',
+                  : '0 0 20px rgba(227, 218, 201,0.08)',
               background: 'var(--canvas)',
               minHeight: 220,
             }}
@@ -751,7 +751,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-3 left-3 flex items-center gap-1 text-[11px]"
-                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '4px 9px', backdropFilter: 'blur(6px)', border: '1px solid rgba(255, 179, 71,0.25)' }}
+                style={{ color: 'var(--accent)', textDecoration: 'none', background: 'rgba(7,11,20,0.7)', borderRadius: 8, padding: '4px 9px', backdropFilter: 'blur(6px)', border: '1px solid rgba(227, 218, 201,0.25)' }}
               >
                 View on Solana <ExternalLink size={10} />
               </a>
@@ -844,9 +844,9 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         className="flex-1 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5"
                         style={{
                           background: !starName.trim() || starClaiming
-                            ? 'rgba(255, 179, 71,0.15)'
-                            : 'rgba(255, 179, 71,0.2)',
-                          border: '1px solid rgba(255, 179, 71,0.35)',
+                            ? 'rgba(227, 218, 201,0.15)'
+                            : 'rgba(227, 218, 201,0.2)',
+                          border: '1px solid rgba(227, 218, 201,0.35)',
                           color: 'var(--accent-text)',
                           opacity: !starName.trim() || starClaiming ? 0.5 : 1,
                           cursor: !starName.trim() || starClaiming ? 'not-allowed' : 'pointer',
@@ -855,7 +855,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                         {starClaiming && (
                           <div
                             className="w-3 h-3 rounded-full border-2 animate-spin"
-                            style={{ borderColor: 'rgba(255, 179, 71,0.4)', borderTopColor: 'var(--accent-text)' }}
+                            style={{ borderColor: 'rgba(227, 218, 201,0.4)', borderTopColor: 'var(--accent-text)' }}
                           />
                         )}
                         Inscribe
@@ -948,7 +948,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
             <button
               onClick={onClose}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'rgba(255, 179, 71,0.08)', border: '1px solid rgba(255, 179, 71,0.2)', color: 'var(--accent-text)' }}
+              style={{ background: 'rgba(227, 218, 201,0.08)', border: '1px solid rgba(227, 218, 201,0.2)', color: 'var(--accent-text)' }}
             >
               Done
             </button>
@@ -992,7 +992,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                       className="flex-1 h-px mx-1"
                       style={{
                         width: 24,
-                        background: i < current ? 'rgba(255, 179, 71,0.5)' : 'var(--border-subtle)',
+                        background: i < current ? 'rgba(227, 218, 201,0.5)' : 'var(--border-subtle)',
                       }}
                     />
                   )}
@@ -1027,8 +1027,8 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: [
-                  'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(255, 179, 71,0.10) 0%, transparent 60%)',
-                  'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(255, 179, 71,0.10) 0%, transparent 65%)',
+                  'radial-gradient(ellipse 360px 260px at 50% 38%, rgba(227, 218, 201,0.10) 0%, transparent 60%)',
+                  'radial-gradient(ellipse 320px 240px at 20% 70%, rgba(227, 218, 201,0.10) 0%, transparent 65%)',
                   'radial-gradient(ellipse 320px 240px at 80% 75%, rgba(56,155,240,0.08) 0%, transparent 65%)',
                 ].join(', '),
               }}
@@ -1049,7 +1049,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                 aria-hidden
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, rgba(255, 179, 71,0.28) 0%, rgba(255, 179, 71,0.06) 45%, transparent 70%)',
+                  background: 'radial-gradient(circle, rgba(227, 218, 201,0.28) 0%, rgba(227, 218, 201,0.06) 45%, transparent 70%)',
                   filter: 'blur(18px)',
                   transform: 'scale(1.55)',
                 }}
@@ -1065,7 +1065,7 @@ export default function MissionActive({ mission, onClose }: MissionActiveProps) 
                     src={ringed ? img.replace('.jpg', '.png') : img}
                     alt={mission.name}
                     className={`relative w-full h-full stl-chart-in ${ringed ? 'object-contain' : 'rounded-full object-cover'}`}
-                    style={ringed ? { transform: 'scale(1.4)' } : { boxShadow: '0 0 60px rgba(255, 179, 71,0.22), inset 0 0 0 1px rgba(255, 179, 71,0.15)' }}
+                    style={ringed ? { transform: 'scale(1.4)' } : { boxShadow: '0 0 60px rgba(227, 218, 201,0.22), inset 0 0 0 1px rgba(227, 218, 201,0.15)' }}
                   />
                 );
               })()}

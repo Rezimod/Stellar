@@ -41,10 +41,10 @@ export default function CategoryCircles({ active, counts, onSelect }: Props) {
             <span
               className="inline-flex items-center justify-center w-[52px] h-[52px] rounded-full transition-[background,border-color,transform] duration-150 group-hover:-translate-y-[1px]"
               style={isActive
-                ? { background: 'var(--terracotta)', border: '1px solid var(--terracotta)', boxShadow: '0 4px 14px rgba(255,179,71,0.22)' }
+                ? { background: 'var(--terracotta)', border: '1px solid var(--terracotta)', boxShadow: '0 4px 14px rgba(227,218,201,0.22)' }
                 : { background: 'rgba(var(--ink-warm), 0.045)', border: '1px solid rgba(var(--ink-warm), 0.12)' }}
             >
-              <Icon className="w-[20px] h-[20px]" style={{ color: isActive ? '#1a1208' : 'var(--accent-text)' }} />
+              <Icon className="w-[20px] h-[20px]" style={{ color: isActive ? 'var(--on-accent)' : 'var(--accent-text)' }} />
             </span>
             <span
               className="text-[10.5px] text-center leading-tight tracking-[0.02em]"

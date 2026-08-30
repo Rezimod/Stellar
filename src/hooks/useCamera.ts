@@ -244,12 +244,12 @@ export function generateSimPhoto(name: string): string {
     ctx.scale(1, 0.28);
     ctx.beginPath();
     ctx.arc(0, 0, 85, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(200,170,80,0.7)';
+    ctx.strokeStyle = 'rgba(227,218,201,0.7)';
     ctx.lineWidth = 10;
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(0, 0, 100, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(180,150,60,0.4)';
+    ctx.strokeStyle = 'rgba(206,194,170,0.4)';
     ctx.lineWidth = 6;
     ctx.stroke();
     ctx.restore();

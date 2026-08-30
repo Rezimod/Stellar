@@ -2,7 +2,7 @@
 
 :root {
   /* === Unified token system ===
-     Deep midnight canvas, vivid terracotta, mint seafoam.
+     Deep midnight canvas, warm bone accent, mint seafoam.
      Cards/surfaces are tinted-white overlays so they stay legible on the dark base.
 
      Design-system role map (use these in components):
@@ -11,14 +11,14 @@
        border           → --border
        primary text     → --text-primary    (alias of --text)
        secondary text   → --text-secondary  (alias of --text-muted)
-       primary accent   → --accent          (alias of --terracotta)  — orange, used sparingly
+       primary accent   → --accent          (alias of --terracotta)  — warm bone, used sparingly
        secondary accent → --accent-teal     (alias of --seafoam)     — for "visible / available"
        error / negative → --negative
        Markets Yes/No   → --yes / --no      (binary outcome ONLY, never decorative)
   */
   --canvas: #0A1735;
-  --terracotta: #FFB347;    /* unified to missions-page orange (was #FFD166) */
-  --orange: #FFB347;        /* alias of terracotta — kept for explicit "orange" semantics */
+  --terracotta: #E3DAC9;    /* warm bone (elephant-bone off-white) -- was orange #FFB347 */
+  --orange: #E3DAC9;        /* alias of terracotta — name kept, value is bone */
   --seafoam: #5EEAD4;
   --negative: #FB7185;
   --text: #F8F4EC;
@@ -32,6 +32,8 @@
      rgba(255,255,255,X). */
   --ink: 255, 255, 255;
   --ink-warm: 232, 230, 221; /* E8E6DD family used on landing surfaces */
+  /* Text that sits ON the accent surface — flips with the theme. */
+  --on-accent: #0A1735;
   /* Accent-as-TEXT — brand accents are too light to read on the day canvas.
      Backgrounds/glows keep --terracotta / --seafoam; text uses these. */
   --accent-text: var(--terracotta);
@@ -69,16 +71,16 @@
   --text-dim: var(--text-muted);
   --text-faint: rgba(255, 255, 255, 0.18);
 
-  /* PRIMARY ACCENT — terracotta (badges, Stars, gold highlights) */
+  /* PRIMARY ACCENT — warm bone (badges, Stars, highlights) */
   --accent: var(--terracotta);
-  --accent-dim: rgba(255, 179, 71, 0.10);
-  --accent-glow: rgba(255, 179, 71, 0.20);
-  --accent-border: rgba(255, 179, 71, 0.25);
+  --accent-dim: rgba(227, 218, 201, 0.10);
+  --accent-glow: rgba(227, 218, 201, 0.20);
+  --accent-border: rgba(227, 218, 201, 0.25);
 
-  /* TERTIARY ACCENT — light orange (missions, bets, event highlights) */
-  --orange-dim: rgba(255, 179, 71, 0.10);
-  --orange-glow: rgba(255, 179, 71, 0.20);
-  --orange-border: rgba(255, 179, 71, 0.25);
+  /* TERTIARY ACCENT — warm bone (missions, bets, event highlights) */
+  --orange-dim: rgba(227, 218, 201, 0.10);
+  --orange-glow: rgba(227, 218, 201, 0.20);
+  --orange-border: rgba(227, 218, 201, 0.25);
 
   /* Legacy accent aliases (kept for backward compat) */
   --accent-cyan: var(--seafoam);
@@ -90,23 +92,23 @@
   --accent-amber: var(--orange);
   --accent-red: var(--negative);
 
-  /* Stars token — terracotta */
+  /* Stars token — warm bone */
   --stars: var(--terracotta);
-  --stars-dim: rgba(255, 179, 71, 0.12);
-  --stars-border: rgba(255, 179, 71, 0.20);
+  --stars-dim: rgba(227, 218, 201, 0.12);
+  --stars-border: rgba(227, 218, 201, 0.20);
   --accent-gold: var(--terracotta);
   --accent-gold-light: var(--terracotta);
-  --accent-gold-dim: rgba(255, 179, 71, 0.12);
+  --accent-gold-dim: rgba(227, 218, 201, 0.12);
 
   /* Status colors — functional only */
   --success: var(--seafoam);
   --success-dim: rgba(94, 234, 212, 0.12);
   --warning: var(--orange);
-  --warning-dim: rgba(255, 179, 71, 0.12);
+  --warning-dim: rgba(227, 218, 201, 0.12);
   --error: var(--negative);
   --error-dim: rgba(251, 113, 133, 0.12);
 
-  /* Gradients — flattened to solid terracotta */
+  /* Gradients — flattened to solid bone */
   --gradient-accent: var(--terracotta);
   --gradient-stars: var(--terracotta);
   --gradient-score: var(--seafoam);
@@ -121,18 +123,18 @@
   --stellar-night: var(--canvas);
   --stellar-surface: var(--surface);
   --stellar-border: var(--border);
-  --stellar-border-hover: rgba(255, 179, 71, 0.20);
+  --stellar-border-hover: rgba(58, 52, 40, 0.20);
   --stellar-teal: var(--seafoam);
   --stellar-teal-glow: rgba(94, 234, 212, 0.15);
   --stellar-brass: var(--text);
-  --stellar-sol-purple: rgba(255, 179, 71, 0.08);
+  --stellar-sol-purple: rgba(227, 218, 201, 0.08);
   --stellar-sol-green: rgba(94, 234, 212, 0.06);
-  --stellar-gradient-sol: linear-gradient(135deg, rgba(255, 179, 71, 0.04) 0%, rgba(255, 179, 71, 0.06) 50%, rgba(255, 179, 71, 0.03) 100%);
+  --stellar-gradient-sol: linear-gradient(135deg, rgba(227, 218, 201, 0.04) 0%, rgba(227, 218, 201, 0.06) 50%, rgba(227, 218, 201, 0.03) 100%);
 
   /* Shadows — globals-only. Card / hover / teal / gold live in design-tokens.css */
   --shadow-elevated: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
-  --shadow-glow-accent: 0 0 20px rgba(255, 179, 71, 0.25);
-  --shadow-glow-stars: 0 0 20px rgba(255, 179, 71, 0.20);
+  --shadow-glow-accent: 0 0 20px rgba(227, 218, 201, 0.25);
+  --shadow-glow-stars: 0 0 20px rgba(227, 218, 201, 0.20);
 
   /* Radii */
   --radius-sm: 8px;
@@ -169,10 +171,15 @@
 
   --ink: 15, 23, 42;
   --ink-warm: 15, 23, 42;
-  --accent-text: #B45309;
+  /* Bone has no contrast on a white canvas — the day palette inverts the
+     accent to warm dark stone and puts bone on top of it instead. */
+  --terracotta: #3A3428;
+  --orange: #3A3428;
+  --on-accent: #EDE6D8;
+  --accent-text: #3A3428;
   --teal-text: #0F766E;
   --success: #059669;
-  --warning: #B45309;
+  --warning: #3A3428;
 
   --bg-void: #EDF0F7;
   --bg-cosmos: #E2E8F5;
@@ -195,17 +202,17 @@
   --text-dim: #64748B;
   --text-faint: rgba(15, 23, 42, 0.35);
 
-  --accent-dim: rgba(255, 179, 71, 0.1);
-  --accent-glow: rgba(255, 179, 71, 0.18);
-  --accent-border: rgba(255, 179, 71, 0.3);
+  --accent-dim: rgba(58, 52, 40, 0.08);
+  --accent-glow: rgba(58, 52, 40, 0.16);
+  --accent-border: rgba(58, 52, 40, 0.28);
 
-  --stars-dim: rgba(202, 138, 4, 0.12);
-  --stars-border: rgba(202, 138, 4, 0.25);
-  --accent-gold: #B45309;
-  --accent-gold-dim: rgba(180, 83, 9, 0.1);
+  --stars-dim: rgba(58, 52, 40, 0.12);
+  --stars-border: rgba(58, 52, 40, 0.25);
+  --accent-gold: #3A3428;
+  --accent-gold-dim: rgba(58, 52, 40, 0.1);
 
   --success-dim: rgba(5, 150, 105, 0.1);
-  --warning-dim: rgba(217, 119, 6, 0.1);
+  --warning-dim: rgba(58, 52, 40, 0.1);
   --error-dim: rgba(220, 38, 38, 0.1);
 
   /* Markets Yes/No — darker tones for light theme contrast */
@@ -217,14 +224,14 @@
   --no-border: rgba(220, 38, 38, 0.35);
 
   --shadow-card: 0 1px 4px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.06);
-  --shadow-card-hover: 0 4px 16px rgba(15,23,42,0.12), 0 0 0 1px rgba(255,179,71,0.15);
+  --shadow-card-hover: 0 4px 16px rgba(15,23,42,0.12), 0 0 0 1px rgba(58,52,40,0.15);
   --shadow-elevated: 0 8px 32px rgba(15,23,42,0.12), 0 0 0 1px rgba(15,23,42,0.06);
 
   --stellar-void: #EDF0F7;
   --stellar-night: #E2E8F5;
   --stellar-surface: #FFFFFF;
   --stellar-border: rgba(15, 23, 42, 0.08);
-  --stellar-border-hover: rgba(255, 179, 71, 0.20);
+  --stellar-border-hover: rgba(58, 52, 40, 0.20);
   --stellar-teal-glow: rgba(94, 234, 212, 0.12);
   --stellar-brass: #0A0E1A;
 }
@@ -280,9 +287,9 @@
   filter: brightness(0) opacity(0.72) !important;
 }
 
-/* Selection color flips to terracotta-on-dark-text */
+/* Selection color flips to bone-on-dark-text */
 [data-theme="light"] ::selection {
-  background: rgba(255, 179, 71, 0.35);
+  background: rgba(227, 218, 201, 0.35);
   color: #0F172A;
 }
 
@@ -306,7 +313,7 @@
 }
 [data-theme="light"] .glass-card:hover {
   background: rgba(15, 23, 42, 0.05);
-  border-color: rgba(255, 179, 71, 0.30);
+  border-color: rgba(227, 218, 201, 0.30);
 }
 
 /* ── Light-mode remap of dark-only Tailwind utilities ──
@@ -382,11 +389,11 @@
   .text-\[\#8d99bd\], .text-\[\#7f8cad\]):not(.stay-dark, .stay-dark *) {
   color: var(--text-secondary);
 }
-/* Amber accent text is ~1.9:1 on the day canvas — darken to readable amber */
+/* Bone accent text is invisible on the day canvas — darken to warm stone */
 [data-theme="light"] :is(.text-terracotta, .text-accent, .text-amber-300,
-  .text-\[\#FFB347\], .text-\[\#FFB347\]\/80, .text-\[\#ffc877\],
-  .text-\[\#f5a83d\], .text-\[\#FFD166\]):not(.stay-dark, .stay-dark *),
-[data-theme="light"] .group:hover .group-hover\:text-\[\#FFB347\]\/80:not(.stay-dark, .stay-dark *) {
+  .text-\[\#E3DAC9\], .text-\[\#E3DAC9\]\/80, .text-\[\#F0E9DC\],
+  .text-\[\#D2C6B0\]):not(.stay-dark, .stay-dark *),
+[data-theme="light"] .group:hover .group-hover\:text-\[\#E3DAC9\]\/80:not(.stay-dark, .stay-dark *) {
   color: var(--accent-text);
 }
 /* Seafoam text is ~1.4:1 on the day canvas — darken to deep teal */
@@ -400,6 +407,9 @@
 [data-theme="light"] .stay-dark {
   --ink: 255, 255, 255;
   --ink-warm: 232, 230, 221;
+  --terracotta: #E3DAC9;
+  --orange: #E3DAC9;
+  --on-accent: #0A1735;
   --accent-text: var(--terracotta);
   --teal-text: var(--seafoam);
 }
@@ -435,11 +445,11 @@
   --color-stellar-card-hover: var(--surface-hover);
   --color-stellar-elevated: var(--surface-hover);
   --color-accent: var(--terracotta);
-  --color-accent-dim: rgba(255, 179, 71, 0.10);
-  --color-accent-glow: rgba(255, 179, 71, 0.20);
-  --color-accent-border: rgba(255, 179, 71, 0.25);
+  --color-accent-dim: rgba(227, 218, 201, 0.10);
+  --color-accent-glow: rgba(227, 218, 201, 0.20);
+  --color-accent-border: rgba(227, 218, 201, 0.25);
   --color-stars: var(--terracotta);
-  --color-stars-dim: rgba(255, 179, 71, 0.12);
+  --color-stars-dim: rgba(227, 218, 201, 0.12);
   --color-success: var(--seafoam);
   --color-warning: var(--terracotta);
   --color-error: var(--negative);
@@ -524,8 +534,8 @@ body::after {
   height: 100%;
   z-index: -1;
   background:
-    radial-gradient(ellipse 480px 360px at 50% 20%, rgba(255, 179, 71, 0.06) 0%, transparent 55%),
-    radial-gradient(ellipse 420px 320px at 50% 70%, rgba(255, 179, 71, 0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 480px 360px at 50% 20%, rgba(227, 218, 201, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 420px 320px at 50% 70%, rgba(227, 218, 201, 0.06) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -597,7 +607,7 @@ code, pre, .mono, [class*="font-mono"] {
 }
 .glass-card:hover {
   background: var(--surface-hover);
-  border-color: rgba(255, 179, 71, 0.20);
+  border-color: rgba(227, 218, 201, 0.20);
 }
 @media (min-width: 640px) {
   .glass-card:hover {
@@ -610,7 +620,7 @@ code, pre, .mono, [class*="font-mono"] {
 @media (min-width: 640px) {
   .product-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(255, 179, 71, 0.35);
+    border-color: rgba(227, 218, 201, 0.35);
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
     will-change: transform;
   }
@@ -618,7 +628,7 @@ code, pre, .mono, [class*="font-mono"] {
 
 .glass-card:active {
   background: var(--surface-hover);
-  border-color: rgba(255, 179, 71, 0.25);
+  border-color: rgba(227, 218, 201, 0.25);
   transform: scale(0.985);
   transition-duration: 0.1s;
 }
@@ -631,14 +641,14 @@ code, pre, .mono, [class*="font-mono"] {
 }
 
 /* === CTA tokens ===
-   Solid orange primary, dark navy secondary. Rectangular with subtle
+   Solid bone primary, dark navy secondary. Rectangular with subtle
    rounding. No gradients, no glow. Used by .btn-primary, .btn-ghost,
    .btn-stellar*, and .icon-badge-gradient. */
 :root {
-  --cta-orange:       #FFB347;
-  --cta-orange-hover: #FFC36B;
-  --cta-orange-from:  #FFB347;
-  --cta-orange-to:    #FFB347;
+  --cta-orange:       #E3DAC9;
+  --cta-orange-hover: #F0E9DC;
+  --cta-orange-from:  #E3DAC9;
+  --cta-orange-to:    #E3DAC9;
   --cta-gradient:        var(--cta-orange);
   --cta-gradient-orange: var(--cta-orange);
   --cta-glow:        none;
@@ -649,14 +659,29 @@ code, pre, .mono, [class*="font-mono"] {
   --cta-radius: 8px;
 }
 
-/* Button styles — solid orange primary, dark navy secondary, rectangular */
+/* Day mode: the bone CTA surface disappears on a white canvas — invert it to
+   the warm dark stone and let --on-accent carry the bone label. */
+[data-theme="light"] {
+  --cta-orange:       #3A3428;
+  --cta-orange-hover: #4A4234;
+  --cta-orange-from:  #3A3428;
+  --cta-orange-to:    #3A3428;
+}
+[data-theme="light"] .stay-dark {
+  --cta-orange:       #E3DAC9;
+  --cta-orange-hover: #F0E9DC;
+  --cta-orange-from:  #E3DAC9;
+  --cta-orange-to:    #E3DAC9;
+}
+
+/* Button styles — solid bone primary, dark navy secondary, rectangular */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   background: var(--cta-orange);
-  color: #0A1735;
+  color: var(--on-accent);
   font-family: var(--font-cta, var(--font-body));
   font-weight: 600;
   font-size: 14px;
@@ -694,10 +719,10 @@ code, pre, .mono, [class*="font-mono"] {
 .btn-ghost:active:not(:disabled) { filter: brightness(0.96); }
 .btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* Aliases — same orange / navy treatment */
+/* Aliases — same bone / navy treatment */
 .btn-stellar {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--cta-orange); color: #FFFFFF;
+  background: var(--cta-orange); color: var(--on-accent);
   font-family: var(--font-cta, var(--font-body)); font-weight: 600; font-size: 14px;
   letter-spacing: 0.005em; border: none; border-radius: var(--cta-radius);
   padding: 12px 22px; min-height: 48px; cursor: pointer; box-shadow: none;
@@ -718,7 +743,7 @@ code, pre, .mono, [class*="font-mono"] {
 .btn-stellar-ghost:active:not(:disabled) { filter: brightness(0.96); }
 
 /* Home hero CTAs */
-.hero-cta-primary:hover   { background: #FFC36B !important; }
+.hero-cta-primary:hover   { background: #F0E9DC !important; }
 .hero-cta-secondary:hover { background: #223054 !important; }
 
 /* Live indicator dot in the hero console header */
@@ -751,7 +776,7 @@ code, pre, .mono, [class*="font-mono"] {
     radial-gradient(1px 1px at 11% 78%, rgba(255,250,235,0.7)  50%, transparent 100%),
     radial-gradient(1px 1px at 17% 32%, rgba(220,230,255,0.85) 50%, transparent 100%),
     radial-gradient(1.4px 1.4px at 23% 64%, rgba(255,255,255,0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 29% 18%, rgba(255,240,210,0.6)  50%, transparent 100%),
+    radial-gradient(1px 1px at 29% 18%, rgba(245,240,230,0.6)  50%, transparent 100%),
     radial-gradient(1px 1px at 36% 88%, rgba(255,255,255,0.75) 50%, transparent 100%),
     radial-gradient(1px 1px at 41% 44%, rgba(200,220,255,0.7)  50%, transparent 100%),
     radial-gradient(1.6px 1.6px at 47% 22%, rgba(255,255,255,0.95) 50%, transparent 100%),
@@ -778,7 +803,7 @@ code, pre, .mono, [class*="font-mono"] {
     radial-gradient(1px 1px at 21% 92%, rgba(220,230,255,0.6)  50%, transparent 100%),
     radial-gradient(1px 1px at 27% 50%, rgba(255,255,255,0.5)  50%, transparent 100%),
     radial-gradient(1.6px 1.6px at 33% 26%, rgba(255,255,255,0.95) 50%, transparent 100%),
-    radial-gradient(1px 1px at 39% 72%, rgba(255,240,210,0.65) 50%, transparent 100%),
+    radial-gradient(1px 1px at 39% 72%, rgba(245,240,230,0.65) 50%, transparent 100%),
     radial-gradient(1px 1px at 44% 4%,  rgba(255,255,255,0.6)  50%, transparent 100%),
     radial-gradient(1px 1px at 50% 56%, rgba(220,230,255,0.7)  50%, transparent 100%),
     radial-gradient(1.4px 1.4px at 56% 84%, rgba(255,255,255,0.8) 50%, transparent 100%),
@@ -792,7 +817,7 @@ code, pre, .mono, [class*="font-mono"] {
   /* Big rare bright stars with a soft halo */
   background-image:
     radial-gradient(2px 2px at 19% 24%, rgba(255,255,255,1) 30%, rgba(255,255,255,0.25) 60%, transparent 100%),
-    radial-gradient(2px 2px at 58% 14%, rgba(255,240,210,1) 30%, rgba(255,240,210,0.2) 60%, transparent 100%),
+    radial-gradient(2px 2px at 58% 14%, rgba(245,240,230,1) 30%, rgba(245,240,230,0.2) 60%, transparent 100%),
     radial-gradient(2px 2px at 12% 70%, rgba(220,235,255,1) 30%, rgba(220,235,255,0.2) 60%, transparent 100%),
     radial-gradient(2.4px 2.4px at 44% 86%, rgba(255,255,255,1) 30%, rgba(255,255,255,0.25) 60%, transparent 100%),
     radial-gradient(2px 2px at 8% 50%, rgba(255,250,235,1) 30%, rgba(255,250,235,0.18) 60%, transparent 100%);
@@ -875,11 +900,16 @@ code, pre, .mono, [class*="font-mono"] {
   .hero-horizon-glow { animation: none; }
 }
 
-/* === Hero CTA button (amber gradient) === */
+/* === Hero CTA button (bone) === */
 .hero-pill-primary { transition: transform 150ms ease, box-shadow 200ms ease; }
+[data-theme="light"] .hero-pill-primary:not(.stay-dark, .stay-dark *) {
+  background: linear-gradient(180deg, #4A4234 0%, #3A3428 55%, #2C271D 100%) !important;
+  color: var(--on-accent) !important;
+  box-shadow: inset 0 1px 0 rgba(255,253,248,0.10), 0 8px 26px rgba(58,52,40,0.28) !important;
+}
 .hero-pill-primary:hover {
   transform: translateY(-2px);
-  box-shadow: inset 0 1px 0 rgba(255,240,210,0.8), inset 0 -2px 0 rgba(120,60,0,0.35), 0 14px 36px rgba(245,158,46,0.5);
+  box-shadow: inset 0 1px 0 rgba(245,240,230,0.8), inset 0 -2px 0 rgba(110,100,84,0.35), 0 14px 36px rgba(227,218,201,0.5);
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-pill-primary:hover { transform: none; }
@@ -896,12 +926,12 @@ code, pre, .mono, [class*="font-mono"] {
   height: 80px;
   border-radius: 9999px;
   background: var(--cta-gradient);
-  color: #FFFFFF;
+  color: var(--on-accent);
   box-shadow: 0 16px 40px rgba(91, 108, 255, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
 }
 .icon-badge-gradient.is-orange {
   background: var(--orange);
-  box-shadow: 0 16px 40px rgba(255, 179, 71, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
+  box-shadow: 0 16px 40px rgba(227, 218, 201, 0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
 }
 .icon-badge-gradient svg { width: 32px; height: 32px; }
 
@@ -1078,15 +1108,15 @@ code, pre, .mono, [class*="font-mono"] {
 .glow-teal { box-shadow: 0 0 20px rgba(94, 234, 212, 0.25); }
 .glow-emerald { box-shadow: 0 0 20px rgba(94, 234, 212, 0.25); }
 .glow-cyan { box-shadow: 0 0 20px rgba(94, 234, 212, 0.30); }
-.glow-purple { box-shadow: 0 0 20px rgba(255, 179, 71, 0.30); }
+.glow-purple { box-shadow: 0 0 20px rgba(227, 218, 201, 0.30); }
 .glow-accent { box-shadow: var(--shadow-glow-accent); }
 .glow-stars { box-shadow: var(--shadow-glow-stars); }
 
-.btn-glow-cyan:hover:not(:disabled) { box-shadow: 0 0 16px rgba(255, 179, 71, 0.35); }
-.btn-glow-gold:hover:not(:disabled) { box-shadow: 0 0 16px rgba(255, 179, 71, 0.3); }
+.btn-glow-cyan:hover:not(:disabled) { box-shadow: 0 0 16px rgba(227, 218, 201, 0.35); }
+.btn-glow-gold:hover:not(:disabled) { box-shadow: 0 0 16px rgba(227, 218, 201, 0.3); }
 /* Hover-only styles via pointer:fine so iOS touch never triggers hover state */
 @media (hover: hover) and (pointer: fine) {
-  .solana-explorer-link:hover { background: rgba(255, 179, 71, 0.12) !important; }
+  .solana-explorer-link:hover { background: rgba(227, 218, 201, 0.12) !important; }
 }
 
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -1211,10 +1241,10 @@ input, select, textarea { font-size: 16px !important; }
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 179, 71, 0.18) 20%,
-    rgba(255, 179, 71, 0.35) 45%,
-    rgba(255, 179, 71, 0.35) 55%,
-    rgba(255, 179, 71, 0.18) 80%,
+    rgba(227, 218, 201, 0.18) 20%,
+    rgba(227, 218, 201, 0.35) 45%,
+    rgba(227, 218, 201, 0.35) 55%,
+    rgba(227, 218, 201, 0.18) 80%,
     transparent 100%
   );
 }
@@ -1225,7 +1255,7 @@ input, select, textarea { font-size: 16px !important; }
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 7px;
-  color: rgba(255, 179, 71, 0.55);
+  color: rgba(227, 218, 201, 0.55);
   background: var(--canvas);
   padding: 0 10px;
   letter-spacing: 0;
@@ -1236,7 +1266,7 @@ input, select, textarea { font-size: 16px !important; }
 .elite-border {
   background:
     linear-gradient(var(--canvas), var(--canvas)) padding-box,
-    linear-gradient(135deg, rgba(255, 179, 71, 0.6), rgba(94, 234, 212, 0.5), rgba(255, 179, 71, 0.6)) border-box;
+    linear-gradient(135deg, rgba(227, 218, 201, 0.6), rgba(94, 234, 212, 0.5), rgba(227, 218, 201, 0.6)) border-box;
   border: 1px solid transparent;
   border-radius: 14px;
 }
@@ -1280,8 +1310,8 @@ input, select, textarea { font-size: 16px !important; }
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 5px rgba(255, 179, 71, 0.2); }
-  50%       { box-shadow: 0 0 20px rgba(255, 179, 71, 0.5), 0 0 40px rgba(255, 179, 71, 0.15); }
+  0%, 100% { box-shadow: 0 0 5px rgba(227, 218, 201, 0.2); }
+  50%       { box-shadow: 0 0 20px rgba(227, 218, 201, 0.5), 0 0 40px rgba(227, 218, 201, 0.15); }
 }
 @keyframes pulseDot {
   0%, 100% { opacity: 1; transform: scale(1); }
@@ -1334,13 +1364,13 @@ input, select, textarea { font-size: 16px !important; }
 }
 
 /* --- Selection color --- */
-::selection { background: rgba(255, 179, 71, 0.25); color: var(--text); }
+::selection { background: rgba(227, 218, 201, 0.25); color: var(--text); }
 
 /* ===== Game mechanics animations ===== */
 
 @keyframes starlightFlicker {
-  0%, 100% { opacity: 1;   box-shadow: 0 0 4px rgba(255, 179, 71, 0.5); }
-  50%      { opacity: 0.85; box-shadow: 0 0 10px rgba(255, 179, 71, 0.85), 0 0 18px rgba(255, 179, 71, 0.25); }
+  0%, 100% { opacity: 1;   box-shadow: 0 0 4px rgba(227, 218, 201, 0.5); }
+  50%      { opacity: 0.85; box-shadow: 0 0 10px rgba(227, 218, 201, 0.85), 0 0 18px rgba(227, 218, 201, 0.25); }
 }
 
 @keyframes rarityShimmer {
@@ -1411,8 +1441,8 @@ input, select, textarea { font-size: 16px !important; }
   right: -10%;
   height: 320px;
   background:
-    radial-gradient(ellipse 60% 100% at 30% 0%, rgba(255, 179, 71, 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 100% at 80% 0%, rgba(255, 179, 71, 0.04) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 100% at 30% 0%, rgba(227, 218, 201, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 100% at 80% 0%, rgba(227, 218, 201, 0.04) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1436,7 +1466,7 @@ input, select, textarea { font-size: 16px !important; }
 .mkt-guide:hover,
 .mkt-guide:focus-visible {
   background: rgba(232, 230, 221, 0.06);
-  border-color: rgba(255, 179, 71, 0.32);
+  border-color: rgba(227, 218, 201, 0.32);
 }
 @media (prefers-reduced-motion: reduce) {
   .mkt-card, .mkt-guide { transition: none; }
@@ -1566,7 +1596,7 @@ html[data-field="on"]::after {
     radial-gradient(78% 58% at 80% 6%, rgba(104, 68, 166, 0.16), transparent 60%),
     radial-gradient(66% 52% at 10% 24%, rgba(38, 84, 168, 0.15), transparent 62%),
     radial-gradient(58% 46% at 88% 62%, rgba(70, 120, 200, 0.10), transparent 60%),
-    radial-gradient(96% 70% at 50% 112%, rgba(255, 150, 74, 0.07), transparent 58%),
+    radial-gradient(96% 70% at 50% 112%, rgba(227, 218, 201, 0.07), transparent 58%),
     #0A1735;
 }
 .home-cosmos::before,

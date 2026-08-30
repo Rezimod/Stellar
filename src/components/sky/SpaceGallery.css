@@ -55,7 +55,7 @@
   transition: border-color 140ms ease, transform 140ms ease;
 }
 .space-gal__card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
-.space-gal__card:focus-visible { outline: 2px solid var(--terracotta, #FFB347); outline-offset: 2px; }
+.space-gal__card:focus-visible { outline: 2px solid var(--terracotta, #E3DAC9); outline-offset: 2px; }
 
 .space-gal__thumb {
   position: relative;
@@ -180,7 +180,7 @@
   gap: 7px;
   padding: 9px 15px;
   border-radius: 999px;
-  background: var(--terracotta, #FFB347);
+  background: var(--terracotta, #E3DAC9);
   color: #1a1205;
   font-family: var(--mono);
   font-size: 11px;

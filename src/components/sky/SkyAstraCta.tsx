@@ -12,12 +12,12 @@ export default function SkyAstraCta() {
       href={authenticated ? '/chat' : '/missions'}
       className="flex items-center gap-3 px-5 py-4 rounded-2xl transition-all hover:border-[var(--terracotta)]/30"
       style={{
-        background: 'linear-gradient(135deg, rgba(255, 179, 71,0.06), rgba(26,143,160,0.03))',
-        border: '1px solid rgba(255, 179, 71,0.12)',
+        background: 'linear-gradient(135deg, rgba(227, 218, 201,0.06), rgba(26,143,160,0.03))',
+        border: '1px solid rgba(227, 218, 201,0.12)',
       }}
     >
       <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{ background: 'rgba(255, 179, 71,0.1)', border: '1px solid rgba(255, 179, 71,0.2)' }}>
+        style={{ background: 'rgba(227, 218, 201,0.1)', border: '1px solid rgba(227, 218, 201,0.2)' }}>
         <StarMark size={16} style={{ color: 'var(--accent-text)' }} />
       </div>
       <div>

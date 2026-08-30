@@ -88,7 +88,7 @@ export function NightCloudStrip({
           h.cloudCover < 30
             ? 'rgba(94, 234, 212, 0.75)'
             : h.cloudCover < 70
-            ? 'rgba(255, 179, 71, 0.6)'
+            ? 'rgba(227, 218, 201, 0.6)'
             : 'rgba(148, 163, 184, 0.16)';
         return (
           <span

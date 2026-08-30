@@ -151,8 +151,8 @@ export default function ProductCard({
         style={{
           background: 'var(--terracotta)',
           border: '1px solid var(--terracotta)',
-          color: '#1a1208',
-          boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(255,179,71,0.22)',
+          color: 'var(--on-accent)',
+          boxShadow: '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 14px rgba(227,218,201,0.22)',
         }}
         aria-label={`Pay for ${product.name} with SOL`}
       >

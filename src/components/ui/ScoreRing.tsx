@@ -22,7 +22,7 @@ export default function ScoreRing({
   size = 160,
   strokeWidth = 8,
   color = 'gradient',
-  glowColor = 'rgba(255, 179, 71, 0.25)',
+  glowColor = 'rgba(227, 218, 201, 0.25)',
   label,
   sublabel,
   animate = true,
