@@ -1,18 +1,17 @@
-import type { MissionState } from '@/lib/observatory/mission';
 import { formatExposure } from './ControlPanel';
+import { airmass, formatHours } from '@/lib/observatory/site-time';
 
 export type Telemetry = {
-  state: MissionState;
   altitude: number;
   azimuth: number;
+  hourAngle: number | null;
+  siderealHours: number;
   fovArcmin: number;
-  /** Null while the mount is parked — there is nothing to measure. */
   targetArcmin: number | null;
   subs: number;
   exposureSec: number;
   gain: number;
   seeingArcsec: number;
-  /** What the stack currently resolves — seeing at first, diffraction at best. */
   resolvedArcsec: number;
   focalLengthMm: number;
   plateScaleArcsecPx: number;
@@ -20,14 +19,11 @@ export type Telemetry = {
   cloudCover: number | null;
 };
 
-/** Data reads in mono; the eye can compare digits down a column. */
-function Row({ label, value }: { label: string; value: string }) {
+function Readout({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</dt>
-      <dd className="font-mono text-sm tabular-nums" style={{ color: 'var(--text-primary)' }}>
-        {value}
-      </dd>
+    <div className={`obs-readout${alert ? ' obs-readout--alert' : ''}`}>
+      <dt className="obs-label">{label}</dt>
+      <dd className="obs-readout__value">{value}</dd>
     </div>
   );
 }
@@ -35,13 +31,8 @@ function Row({ label, value }: { label: string; value: string }) {
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h4
-        className="mb-2 text-[11px] uppercase tracking-wide"
-        style={{ color: 'var(--text-muted)' }}
-      >
-        {title}
-      </h4>
-      <dl className="flex flex-col gap-2">{children}</dl>
+      <h4 className="obs-label" style={{ marginBottom: '0.4rem' }}>{title}</h4>
+      <dl>{children}</dl>
     </section>
   );
 }
@@ -50,53 +41,63 @@ const arcmin = (v: number) => (v < 1 ? `${(v * 60).toFixed(1)}″` : `${v.toFixe
 
 export default function TelemetryPanel({ t }: { t: Telemetry }) {
   const integration = t.subs * t.exposureSec;
+  const mass = airmass(t.altitude);
 
   return (
-    <div
-      className="rounded-lg border p-4"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-    >
-      <h3 className="mb-4 text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-        Telemetry
-      </h3>
+    <div className="obs-panel">
+      <div className="obs-panel__bar">
+        <span className="obs-panel__title">Telemetry</span>
+        <span className="obs-panel__title">LST {formatHours(t.siderealHours)}</span>
+      </div>
+      <div className="obs-panel__body">
+        <div className="grid gap-x-8 gap-y-5 sm:grid-cols-3">
+          <Group title="Pointing">
+            <Readout label="Alt" value={`${t.altitude.toFixed(2)}°`} />
+            <Readout label="Az" value={`${t.azimuth.toFixed(2)}°`} />
+            <Readout label="HA" value={t.hourAngle === null ? '—' : formatHours(t.hourAngle)} />
+            <Readout
+              label="Airmass"
+              value={mass === null ? '—' : mass.toFixed(2)}
+              alert={mass !== null && mass > 2}
+            />
+            <Readout
+              label="Field rot"
+              value={t.rotationDegPerHour === null ? '—' : `${t.rotationDegPerHour.toFixed(1)}°/h`}
+            />
+          </Group>
 
-      <div className="grid gap-6 sm:grid-cols-3">
-        <Group title="Pointing">
-          <Row label="Altitude" value={`${t.altitude.toFixed(2)}°`} />
-          <Row label="Azimuth" value={`${t.azimuth.toFixed(2)}°`} />
-          <Row
-            label="Field rotation"
-            value={t.rotationDegPerHour === null ? '—' : `${t.rotationDegPerHour.toFixed(1)}°/h`}
-          />
-          <Row label="Cloud" value={t.cloudCover === null ? '—' : `${Math.round(t.cloudCover)}%`} />
-        </Group>
+          <Group title="Optics">
+            <Readout label="Focal" value={`${Math.round(t.focalLengthMm)} mm`} />
+            <Readout label="Scale" value={`${t.plateScaleArcsecPx.toFixed(2)}″/px`} />
+            <Readout label="FOV" value={arcmin(t.fovArcmin)} />
+            <Readout label="Target" value={t.targetArcmin === null ? '—' : arcmin(t.targetArcmin)} />
+            <Readout
+              label="Fills"
+              value={t.targetArcmin === null ? '—' : `${((t.targetArcmin / t.fovArcmin) * 100).toFixed(1)}%`}
+            />
+          </Group>
 
-        <Group title="Optics">
-          <Row label="Focal length" value={`${Math.round(t.focalLengthMm)} mm`} />
-          <Row label="Plate scale" value={`${t.plateScaleArcsecPx.toFixed(2)}″/px`} />
-          <Row label="Field of view" value={arcmin(t.fovArcmin)} />
-          <Row label="Target size" value={t.targetArcmin === null ? '—' : arcmin(t.targetArcmin)} />
-          <Row
-            label="Fills frame"
-            value={t.targetArcmin === null ? '—' : `${((t.targetArcmin / t.fovArcmin) * 100).toFixed(1)}%`}
-          />
-        </Group>
-
-        <Group title="Integration">
-          <Row label="Sub-exposure" value={formatExposure(t.exposureSec)} />
-          <Row label="Gain" value={String(t.gain)} />
-          <Row label="Subs stacked" value={t.subs.toLocaleString()} />
-          <Row
-            label="Integration"
-            value={
-              integration >= 60
-                ? `${Math.floor(integration / 60)}m ${Math.round(integration % 60)}s`
-                : `${integration.toFixed(integration < 10 ? 1 : 0)}s`
-            }
-          />
-          <Row label="Seeing" value={`${t.seeingArcsec.toFixed(1)}″`} />
-          <Row label="Resolving" value={`${t.resolvedArcsec.toFixed(2)}″`} />
-        </Group>
+          <Group title="Integration">
+            <Readout label="Sub" value={formatExposure(t.exposureSec)} />
+            <Readout label="Gain" value={String(t.gain)} />
+            <Readout label="Frames" value={t.subs.toLocaleString()} />
+            <Readout
+              label="Total"
+              value={
+                integration >= 60
+                  ? `${Math.floor(integration / 60)}m ${Math.round(integration % 60)}s`
+                  : `${integration.toFixed(integration < 10 ? 1 : 0)}s`
+              }
+            />
+            <Readout label="Seeing" value={`${t.seeingArcsec.toFixed(1)}″ FWHM`} />
+            <Readout label="Resolving" value={`${t.resolvedArcsec.toFixed(2)}″`} />
+            <Readout
+              label="Cloud"
+              value={t.cloudCover === null ? '—' : `${Math.round(t.cloudCover)}%`}
+              alert={t.cloudCover !== null && t.cloudCover > 70}
+            />
+          </Group>
+        </div>
       </div>
     </div>
   );

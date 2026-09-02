@@ -25,10 +25,14 @@ import {
   targetAltAz,
   targetPhoto,
   targetSizeArcmin,
+  targetRaHours,
   targetFrameSpan,
   type SimTarget,
 } from '@/lib/observatory/sim-targets';
 import { effectiveBlurArcsec } from '@/lib/observatory/render';
+import { MotorAudio } from '@/lib/observatory/motor-audio';
+import { hourAngle, localSiderealHours } from '@/lib/observatory/site-time';
+import EventsPanel from './EventsPanel';
 import { getTonightDarkWindow } from '@/lib/dark-window';
 import type { ObservatoryNode } from '@/lib/observatory/types';
 
@@ -64,11 +68,11 @@ export default function SessionConsole({
   node: ObservatoryNode;
   cloudCover: number | null;
 }) {
-  const [clock, setClock] = useState(() => Date.now());
+  const [clock, setClock] = useState<number | null>(null);
   // Simulated time runs forward from the real clock plus an offset, so the
   // console keeps ticking wherever the visitor moved it to.
   const [offsetMs, setOffsetMs] = useState(0);
-  const now = clock + offsetMs;
+  const now = (clock ?? 0) + offsetMs;
   const [acquisition, setAcquisition] = useState<Acquisition | null>(null);
   const [exposureSec, setExposureSec] = useState(2);
   const [trainId, setTrainId] = useState('native');
@@ -77,8 +81,12 @@ export default function SessionConsole({
   const [log, setLog] = useState<LogEntry[]>([]);
   const [captures, setCaptures] = useState(0);
   const [splitAt, setSplitAt] = useState<number | null>(null);
+  const [audioOn, setAudioOn] = useState(false);
+  const audioRef = useRef<MotorAudio | null>(null);
+  if (audioRef.current === null && typeof window !== 'undefined') audioRef.current = new MotorAudio();
 
   useEffect(() => {
+    setClock(Date.now());
     const id = setInterval(() => setClock(Date.now()), TICK_MS);
     return () => clearInterval(id);
   }, []);
@@ -117,6 +125,41 @@ export default function SessionConsole({
   const settledMs = acquisition && status?.state === 'OBSERVING' ? now - acquisition.settledAtMs : 0;
   const subs = Math.floor(settledMs / (exposureSec * 1000));
   const rotationRate = fieldRotationDegPerHour(node.lat, pointing.altitude, pointing.azimuth);
+
+  const slewing = status?.state === 'SLEWING';
+  const observing = status?.state === 'OBSERVING';
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioOn) return;
+
+    // A real mount ramps its axes up and back down rather than stepping to
+    // full rate, so the pitch follows an acceleration profile.
+    const ramp = (p: number) => Math.min(1, Math.min(p, 1 - p) / 0.15);
+    audio.setSlew(slewing ? 3 * ramp(status?.progress ?? 0) : 0);
+    audio.setTracking(observing);
+  }, [audioOn, slewing, observing, status?.progress]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioOn) return;
+    audio.click('relay');
+  }, [audioOn, slewing]);
+
+  useEffect(() => () => audioRef.current?.stop(), []);
+
+  const toggleAudio = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audioOn) {
+      audio.setSlew(0);
+      audio.setTracking(false);
+      setAudioOn(false);
+      return;
+    }
+    // Browsers only allow an audio context to start inside a user gesture.
+    setAudioOn(await audio.start());
+  }, [audioOn]);
 
   const append = useCallback((text: string, refused = false) => {
     setLog((prev) => [...prev, { at: nowRef.current, text, refused }].slice(-60));
@@ -157,9 +200,10 @@ export default function SessionConsole({
 
   const capture = useCallback(() => {
     if (!target) return;
+    if (audioOn) audioRef.current?.click('shutter');
     setCaptures((c) => c + 1);
     append(`Captured ${target.name} — ${subs} subs, ${(subs * exposureSec).toFixed(0)}s integration`);
-  }, [append, exposureSec, subs, target]);
+  }, [append, audioOn, exposureSec, subs, target]);
 
   const jumpToNight = useCallback(() => {
     const real = Date.now();
@@ -186,8 +230,25 @@ export default function SessionConsole({
     append('Parked. Mount at home, camera idle.');
   }, [append]);
 
+  // Every number on this console comes from a clock, and the server's clock is
+  // not the visitor's — rendering any of it before mount is a guaranteed
+  // hydration mismatch. The shell holds the layout until the browser takes over.
+  if (clock === null) {
+    return (
+      <div className="obs-panel" style={{ minHeight: '28rem' }}>
+        <div className="obs-panel__bar">
+          <span className="flex items-center gap-2">
+            <span className="obs-led" aria-hidden="true" />
+            <span className="obs-panel__title">Standby</span>
+          </span>
+          <span className="obs-panel__title">Acquiring site clock</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)] lg:items-start">
       <div className="flex flex-col gap-4">
         <TimeControl
           now={now}
@@ -197,7 +258,7 @@ export default function SessionConsole({
           onReturnToNow={returnToNow}
         />
 
-        <div className="relative">
+        <div className="obs-frame">
           <LiveView
             state={status?.state ?? 'SCHEDULED'}
             progress={status?.progress ?? 0}
@@ -217,57 +278,66 @@ export default function SessionConsole({
             splitAt={status?.state === 'OBSERVING' ? splitAt : null}
           />
 
-          <span
-            className="absolute left-3 top-3 rounded border px-2 py-1 font-mono text-[11px] uppercase tracking-wide"
-            style={{ borderColor: 'var(--no-border)', background: 'var(--no-dim)', color: 'var(--no)' }}
-          >
-            Simulated · no instrument connected
-          </span>
+          <span className="obs-frame__tag">Simulated</span>
 
           {splitAt !== null && status?.state === 'OBSERVING' && (
             <>
-              <span
-                className="pointer-events-none absolute bottom-3 left-3 font-mono text-[11px] uppercase tracking-wide"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                1 sub
-              </span>
-              <span
-                className="pointer-events-none absolute bottom-3 right-3 font-mono text-[11px] uppercase tracking-wide"
-                style={{ color: 'var(--text-secondary)' }}
-              >
+              <span className="obs-frame__corner-note obs-frame__corner-note--left">1 sub</span>
+              <span className="obs-frame__corner-note obs-frame__corner-note--right">
                 {subs.toLocaleString()} stacked
               </span>
             </>
           )}
         </div>
 
-        <div
-          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border px-4 py-2.5"
-          style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-        >
-          <p className="font-mono text-sm" style={{ color: 'var(--text-primary)' }}>
-            {status ? status.detail : 'Mount parked'}
-          </p>
-          {status && status.state !== 'OBSERVING' && (
-            <p className="font-mono text-sm tabular-nums" style={{ color: 'var(--accent-text)' }}>
-              {Math.round(status.progress * 100)}%
-              {status.msToSettled > 0 && ` · ${Math.ceil(status.msToSettled / 1000)}s to target`}
-            </p>
-          )}
+        <div className="obs-panel">
+          <div className="obs-panel__bar" style={{ borderBottom: 0 }}>
+            <span className="flex items-center gap-2">
+              <span
+                className={`obs-led ${
+                  observing ? 'obs-led--nominal' : status ? 'obs-led--active' : ''
+                }`}
+                aria-hidden="true"
+              />
+              <span className="obs-panel__title">{status?.state ?? 'Parked'}</span>
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {status ? status.detail : 'Mount at home'}
+              </span>
+            </span>
+
+            <span className="flex items-center gap-3">
+              {status && !observing && (
+                <span className="obs-panel__title" style={{ color: 'var(--accent-text)' }}>
+                  {Math.round(status.progress * 100)}%
+                  {status.msToSettled > 0 && ` · T-${Math.ceil(status.msToSettled / 1000)}s`}
+                </span>
+              )}
+              <button
+                type="button"
+                className="obs-action"
+                onClick={toggleAudio}
+                aria-pressed={audioOn}
+                title="Servo and drive audio"
+              >
+                {audioOn ? 'Audio on' : 'Audio off'}
+              </button>
+            </span>
+          </div>
         </div>
 
         <CompareControl
           splitAt={splitAt}
           onSplit={setSplitAt}
-          subs={subs}
           disabled={status?.state !== 'OBSERVING'}
         />
 
+        <EventsPanel lat={node.lat} lon={node.lon} now={now} timezone={node.timezone} />
+
         <TelemetryPanel
           t={{
-            state: status?.state ?? 'SCHEDULED',
             altitude: pointing.altitude,
+            hourAngle: target ? hourAngle(targetRaHours(target, date), node.lon, date) : null,
+            siderealHours: localSiderealHours(node.lon, date),
             azimuth: pointing.azimuth,
             fovArcmin: fov.widthArcmin,
             targetArcmin: target ? targetSizeArcmin(target, date) : null,
@@ -309,10 +379,8 @@ export default function SessionConsole({
         />
         <MissionLog entries={log} timezone={node.timezone} />
         {captures > 0 && (
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <span className="font-mono">{captures}</span> simulated capture
-            {captures === 1 ? '' : 's'} this session. Simulated frames are never saved to a
-            Collection and never mint.
+          <p className="obs-label">
+            {captures} simulated capture{captures === 1 ? '' : 's'} · not saved, never minted
           </p>
         )}
       </div>
