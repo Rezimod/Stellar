@@ -26,6 +26,15 @@ export type FrameInputs = {
   bortle: number;
   /** Subframes stacked so far. Noise falls as the square root of this. */
   subs: number;
+  /**
+   * Stack depth used for the atmospheric shift only.
+   *
+   * In the split comparison both halves must sit on the same pixels or the
+   * seam reads as a broken image rather than a before and after. Registering
+   * them is also the truer statement: stacking *aligns* frames, so what a
+   * stack removes is the noise and the blur, not the object's position.
+   */
+  jitterSubs?: number;
   /** Camera gain, 0-100. Raises signal and noise together. */
   gain: number;
   /** Field rotation accumulated since the stack began, degrees. */
@@ -145,7 +154,7 @@ function blurPx(i: FrameInputs): number {
  */
 export function jitterPx(i: FrameInputs, frame: number): { x: number; y: number } {
   const arcsecPerPx = (i.fovArcmin * 60) / i.width;
-  const amplitude = (i.seeingArcsec / arcsecPerPx) / Math.sqrt(Math.max(1, i.subs));
+  const amplitude = (i.seeingArcsec / arcsecPerPx) / Math.sqrt(Math.max(1, i.jitterSubs ?? i.subs));
   // Two incommensurate frequencies read as turbulence rather than a wobble.
   return {
     x: Math.sin(frame * 0.31) * amplitude * 0.5 + Math.sin(frame * 0.11) * amplitude * 0.3,
@@ -238,4 +247,21 @@ export function makeNoiseTile(size = 96): HTMLCanvasElement {
   }
   ctx.putImageData(data, 0, 0);
   return canvas;
+}
+
+/**
+ * One complete frame, so the same scene can be drawn twice under different
+ * stack depths and clipped side by side. That comparison — a single raw sub
+ * against the built stack — is the clearest statement the simulator makes
+ * about what stacking actually buys you.
+ */
+export function drawScene(
+  ctx: CanvasRenderingContext2D,
+  i: FrameInputs,
+  frame: number,
+  opts: { image: HTMLImageElement | null; showFieldStars: boolean; showTarget: boolean },
+) {
+  drawSky(ctx, i);
+  if (opts.showFieldStars) drawFieldStars(ctx, i);
+  if (opts.image && opts.showTarget) drawTarget(ctx, opts.image, i, frame);
 }

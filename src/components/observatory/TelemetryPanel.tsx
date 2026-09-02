@@ -32,6 +32,22 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h4
+        className="mb-2 text-[11px] uppercase tracking-wide"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        {title}
+      </h4>
+      <dl className="flex flex-col gap-2">{children}</dl>
+    </section>
+  );
+}
+
+const arcmin = (v: number) => (v < 1 ? `${(v * 60).toFixed(1)}″` : `${v.toFixed(1)}′`);
+
 export default function TelemetryPanel({ t }: { t: Telemetry }) {
   const integration = t.subs * t.exposureSec;
 
@@ -40,44 +56,48 @@ export default function TelemetryPanel({ t }: { t: Telemetry }) {
       className="rounded-lg border p-4"
       style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
     >
-      <h3 className="mb-3 text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+      <h3 className="mb-4 text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
         Telemetry
       </h3>
-      <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-x-8">
-        <Row label="Altitude" value={`${t.altitude.toFixed(2)}°`} />
-        <Row label="Azimuth" value={`${t.azimuth.toFixed(2)}°`} />
-        <Row label="Field of view" value={`${t.fovArcmin.toFixed(1)}′ wide`} />
-        <Row
-          label="Target size"
-          value={
-            t.targetArcmin === null
-              ? '—'
-              : t.targetArcmin < 1
-                ? `${(t.targetArcmin * 60).toFixed(1)}″`
-                : `${t.targetArcmin.toFixed(1)}′`
-          }
-        />
-        <Row
-          label="Fills frame"
-          value={t.targetArcmin === null ? '—' : `${((t.targetArcmin / t.fovArcmin) * 100).toFixed(1)}%`}
-        />
-        <Row label="Seeing" value={`${t.seeingArcsec.toFixed(1)}″`} />
-        <Row label="Resolving" value={`${t.resolvedArcsec.toFixed(2)}″`} />
-        <Row label="Focal length" value={`${Math.round(t.focalLengthMm)} mm`} />
-        <Row label="Plate scale" value={`${t.plateScaleArcsecPx.toFixed(2)}″/px`} />
-        <Row label="Sub-exposure" value={formatExposure(t.exposureSec)} />
-        <Row label="Gain" value={String(t.gain)} />
-        <Row label="Subs stacked" value={String(t.subs)} />
-        <Row
-          label="Integration"
-          value={integration >= 60 ? `${Math.floor(integration / 60)}m ${Math.round(integration % 60)}s` : `${integration.toFixed(0)}s`}
-        />
-        <Row
-          label="Field rotation"
-          value={t.rotationDegPerHour === null ? '—' : `${t.rotationDegPerHour.toFixed(1)}°/h`}
-        />
-        <Row label="Cloud" value={t.cloudCover === null ? '—' : `${Math.round(t.cloudCover)}%`} />
-      </dl>
+
+      <div className="grid gap-6 sm:grid-cols-3">
+        <Group title="Pointing">
+          <Row label="Altitude" value={`${t.altitude.toFixed(2)}°`} />
+          <Row label="Azimuth" value={`${t.azimuth.toFixed(2)}°`} />
+          <Row
+            label="Field rotation"
+            value={t.rotationDegPerHour === null ? '—' : `${t.rotationDegPerHour.toFixed(1)}°/h`}
+          />
+          <Row label="Cloud" value={t.cloudCover === null ? '—' : `${Math.round(t.cloudCover)}%`} />
+        </Group>
+
+        <Group title="Optics">
+          <Row label="Focal length" value={`${Math.round(t.focalLengthMm)} mm`} />
+          <Row label="Plate scale" value={`${t.plateScaleArcsecPx.toFixed(2)}″/px`} />
+          <Row label="Field of view" value={arcmin(t.fovArcmin)} />
+          <Row label="Target size" value={t.targetArcmin === null ? '—' : arcmin(t.targetArcmin)} />
+          <Row
+            label="Fills frame"
+            value={t.targetArcmin === null ? '—' : `${((t.targetArcmin / t.fovArcmin) * 100).toFixed(1)}%`}
+          />
+        </Group>
+
+        <Group title="Integration">
+          <Row label="Sub-exposure" value={formatExposure(t.exposureSec)} />
+          <Row label="Gain" value={String(t.gain)} />
+          <Row label="Subs stacked" value={t.subs.toLocaleString()} />
+          <Row
+            label="Integration"
+            value={
+              integration >= 60
+                ? `${Math.floor(integration / 60)}m ${Math.round(integration % 60)}s`
+                : `${integration.toFixed(integration < 10 ? 1 : 0)}s`
+            }
+          />
+          <Row label="Seeing" value={`${t.seeingArcsec.toFixed(1)}″`} />
+          <Row label="Resolving" value={`${t.resolvedArcsec.toFixed(2)}″`} />
+        </Group>
+      </div>
     </div>
   );
 }

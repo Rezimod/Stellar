@@ -5,6 +5,7 @@ import LiveView from './LiveView';
 import TelemetryPanel from './TelemetryPanel';
 import ControlPanel from './ControlPanel';
 import MissionLog, { type LogEntry } from './MissionLog';
+import CompareControl from './CompareControl';
 import TimeControl from './TimeControl';
 import { acquisitionStateAt, planAcquisition, pointingAt, type Acquisition } from '@/lib/observatory/mission';
 import { evaluateSafety, type AltAz, type SafetyVerdict } from '@/lib/observatory/safety';
@@ -75,6 +76,7 @@ export default function SessionConsole({
   const [gain, setGain] = useState(40);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [captures, setCaptures] = useState(0);
+  const [splitAt, setSplitAt] = useState<number | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setClock(Date.now()), TICK_MS);
@@ -212,6 +214,7 @@ export default function SessionConsole({
             seed={Math.round(pointing.altitude * 10) * 1000 + Math.round(pointing.azimuth * 10)}
             frameSpan={target ? targetFrameSpan(target) : 1}
             showFieldStars={target?.brightness !== 'bright'}
+            splitAt={status?.state === 'OBSERVING' ? splitAt : null}
           />
 
           <span
@@ -221,14 +224,45 @@ export default function SessionConsole({
             Simulated · no instrument connected
           </span>
 
-          <span
-            className="absolute bottom-3 left-3 font-mono text-xs"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            {status ? status.detail : 'Mount parked'}
-            {status && status.state !== 'OBSERVING' && ` · ${Math.round(status.progress * 100)}%`}
-          </span>
+          {splitAt !== null && status?.state === 'OBSERVING' && (
+            <>
+              <span
+                className="pointer-events-none absolute bottom-3 left-3 font-mono text-[11px] uppercase tracking-wide"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                1 sub
+              </span>
+              <span
+                className="pointer-events-none absolute bottom-3 right-3 font-mono text-[11px] uppercase tracking-wide"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {subs.toLocaleString()} stacked
+              </span>
+            </>
+          )}
         </div>
+
+        <div
+          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border px-4 py-2.5"
+          style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+        >
+          <p className="font-mono text-sm" style={{ color: 'var(--text-primary)' }}>
+            {status ? status.detail : 'Mount parked'}
+          </p>
+          {status && status.state !== 'OBSERVING' && (
+            <p className="font-mono text-sm tabular-nums" style={{ color: 'var(--accent-text)' }}>
+              {Math.round(status.progress * 100)}%
+              {status.msToSettled > 0 && ` · ${Math.ceil(status.msToSettled / 1000)}s to target`}
+            </p>
+          )}
+        </div>
+
+        <CompareControl
+          splitAt={splitAt}
+          onSplit={setSplitAt}
+          subs={subs}
+          disabled={status?.state !== 'OBSERVING'}
+        />
 
         <TelemetryPanel
           t={{
