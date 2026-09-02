@@ -1,11 +1,10 @@
 /**
  * The simulated clock.
  *
- * A real booking is made for a time in the future, and the sky at that time is
- * what decides whether the booking is worth making. Defaulting to "now" is
- * honest but leaves the console refusing everything through the working day,
- * so the visitor can step the clock to tonight's dark window — the same window
- * the forecast pages already compute.
+ * A booking is made for a time in the future, and the sky at that time decides
+ * whether it is worth making. Defaulting to now is honest but leaves the
+ * console refusing everything through the working day, so the visitor can step
+ * to tonight's dark window — the same window the forecast pages compute.
  */
 export default function TimeControl({
   now,
@@ -29,38 +28,26 @@ export default function TimeControl({
   }).format(new Date(now));
 
   return (
-    <div
-      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-    >
-      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-        Site time{' '}
-        <span className="font-mono tabular-nums" style={{ color: 'var(--text-primary)' }}>
-          {stamp}
+    <div className="obs-panel">
+      <div className="obs-panel__bar" style={{ borderBottom: 0 }}>
+        <span className="flex items-center gap-3">
+          <span className="obs-panel__title">Site time</span>
+          <span className="obs-readout__value">{stamp}</span>
+          {offsetMs !== 0 && (
+            <span className="obs-panel__title" style={{ color: 'var(--accent-text)' }}>
+              Simulated forward
+            </span>
+          )}
         </span>
-        {offsetMs !== 0 && (
-          <span style={{ color: 'var(--accent-text)' }}> · simulated forward</span>
-        )}
-      </p>
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onJumpToNight}
-          className="rounded-md border px-3 py-1.5 text-sm"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-        >
-          Jump to tonight
-        </button>
-        <button
-          type="button"
-          onClick={onReturnToNow}
-          disabled={offsetMs === 0}
-          className="rounded-md border px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-        >
-          Now
-        </button>
+        <span className="flex gap-2">
+          <button type="button" className="obs-action" onClick={onJumpToNight}>
+            Jump to tonight
+          </button>
+          <button type="button" className="obs-action" onClick={onReturnToNow} disabled={offsetMs === 0}>
+            Now
+          </button>
+        </span>
       </div>
     </div>
   );

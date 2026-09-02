@@ -17,31 +17,27 @@ export default function MissionLog({ entries, timezone }: { entries: LogEntry[];
     }).format(new Date(at));
 
   return (
-    <div
-      className="rounded-lg border p-4"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-    >
-      <h3 className="mb-3 text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-        Mission log
-      </h3>
-      {entries.length === 0 ? (
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Nothing yet. Choose a target to begin.
-        </p>
-      ) : (
-        <ol className="flex max-h-64 flex-col-reverse gap-1.5 overflow-y-auto">
-          {entries.map((entry) => (
-            <li key={`${entry.at}-${entry.text}`} className="flex gap-3 text-sm">
-              <span className="font-mono text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                {time(entry.at)}
-              </span>
-              <span style={{ color: entry.refused ? 'var(--no)' : 'var(--text-secondary)' }}>
-                {entry.text}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
+    <div className="obs-panel">
+      <div className="obs-panel__bar">
+        <span className="obs-panel__title">Mission log</span>
+        <span className="obs-panel__title">{entries.length}</span>
+      </div>
+      <div className="obs-panel__body">
+        {entries.length === 0 ? (
+          <p className="obs-label">Awaiting first command</p>
+        ) : (
+          <ol className="obs-log">
+            {entries.map((entry) => (
+              <li key={`${entry.at}-${entry.text}`} className="flex gap-3">
+                <span className="obs-log__time">{time(entry.at)}</span>
+                <span style={{ color: entry.refused ? 'var(--no)' : 'var(--text-secondary)' }}>
+                  {entry.text}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </div>
   );
 }

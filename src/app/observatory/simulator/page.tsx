@@ -4,6 +4,7 @@ import PageContainer from '@/components/layout/PageContainer';
 import SessionConsole from '@/components/observatory/SessionConsole';
 import { getNodesWithReadiness } from '@/lib/observatory/nodes';
 import { fieldOfView } from '@/lib/observatory/optics';
+import './../observatory.css';
 
 export const metadata: Metadata = {
   title: 'Telescope simulator — Stellar',
@@ -21,38 +22,42 @@ export default async function SimulatorPage() {
     <PageContainer variant="wide" className="py-6 sm:py-10">
       <BackButton />
 
-      <header className="mt-4 max-w-2xl">
-        <h1 className="text-2xl font-medium sm:text-3xl" style={{ color: 'var(--text-primary)' }}>
-          Telescope simulator
-        </h1>
-        <p className="mt-2 text-base" style={{ color: 'var(--text-secondary)' }}>
-          {node.instrument.optics} with a {node.instrument.camera}, at {node.site}. The field
-          of view, the slew times, the stacking and the refusals are the real ones. Point it
-          anywhere it will let you.
-        </p>
-        <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Bare at f/10 the sensor frames{' '}
-          <span className="font-mono">{fov.widthArcmin.toFixed(1)}′ × {fov.heightArcmin.toFixed(1)}′</span>{' '}
-          at <span className="font-mono">{fov.plateScaleArcsecPx.toFixed(2)}″</span> per pixel, which
-          undersamples this scope — so planetary work runs a Barlow and crops the read-out to a
-          few hundred pixels, exactly as capture software does. Choosing a target sets the train
-          the way an observer would, and you can override it.
-        </p>
+      <header className="obs-panel mt-4">
+        <div className="obs-panel__bar">
+          <span className="flex items-center gap-2">
+            <span className="obs-led obs-led--nominal" aria-hidden="true" />
+            <h1 className="obs-panel__title" style={{ color: 'var(--text-primary)' }}>
+              Tbilisi One · Simulator
+            </h1>
+          </span>
+          <span className="obs-panel__title">
+            {node.instrument.apertureMm} mm f/{(node.instrument.focalLengthMm / node.instrument.apertureMm).toFixed(0)} ·{' '}
+            {fov.plateScaleArcsecPx.toFixed(2)}″/px
+          </span>
+        </div>
+        <div className="obs-panel__body">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {node.instrument.optics} and a {node.instrument.camera} on a roof in {node.site}.
+            Real field of view, real slew times, real refusals.
+          </p>
+        </div>
       </header>
 
       <div className="mt-6">
         <SessionConsole node={node} cloudCover={node.readiness.cloudCover} />
       </div>
 
-      <p className="mt-8 max-w-2xl text-sm" style={{ color: 'var(--text-muted)' }}>
-        Reference imagery is public-domain NASA, ESA and Hubble material, scaled to the true
-        angular size the target presents at the current focal length, then degraded to what this
-        aperture and this sky can actually deliver: smeared by the seeing, shifted frame to frame
-        by the same turbulence, lifted by the site&apos;s sky glow and buried in sensor noise. As
-        the stack builds, the turbulence averages out and the image walks toward the aperture&apos;s
-        diffraction limit — which it never beats. That is what a 150 mm telescope shows. It is not
-        a claim about what it captured.
-      </p>
+      <details className="mt-6 max-w-2xl">
+        <summary className="obs-label cursor-pointer">How the frame is built</summary>
+        <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+          Public-domain NASA and ESA imagery supplies the content. Everything else is computed:
+          the target is scaled to its true angular size at the current focal length, smeared by
+          the seeing, shifted frame to frame by the same turbulence, lifted by the site&apos;s sky
+          glow and buried in sensor noise. As the stack builds, the turbulence averages out and
+          the image walks toward the aperture&apos;s diffraction limit, which it never beats. This
+          is a simulation of what a 150 mm telescope shows, not a claim about what it captured.
+        </p>
+      </details>
     </PageContainer>
   );
 }

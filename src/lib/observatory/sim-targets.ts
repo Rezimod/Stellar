@@ -86,6 +86,13 @@ export function targetPhoto(target: SimTarget): TargetPhoto | null {
   return TARGET_PHOTOS[target.id] ?? null;
 }
 
+/** Right ascension in hours, for the hour-angle readout. */
+export function targetRaHours(target: SimTarget, date: Date): number {
+  if (target.kind === 'fixed') return target.ra!;
+  const observer = new Observer(0, 0, 0);
+  return Equator(BODIES[target.id]!, date, observer, true, true).ra;
+}
+
 export function targetAltAz(target: SimTarget, node: ObservatoryNode, date: Date): AltAz {
   if (target.kind === 'fixed') {
     const { altitude, azimuth } = raDecToAzAlt(target.ra!, target.dec!, node.lat, node.lon, date);

@@ -1,0 +1,204 @@
+/*
+ * Console styling for the observatory surfaces.
+ *
+ * The reference is a control room, not a dashboard: hairline rules, uppercase
+ * mono labels, and every number in a fixed column so the eye can scan down it.
+ * The frame is the only thing allowed to be large. Prose is kept out — a
+ * status board reads in glances, not sentences.
+ */
+
+.obs {
+  --obs-rule: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  --obs-rule-strong: color-mix(in srgb, var(--text-primary) 26%, transparent);
+  --obs-label: var(--text-muted);
+  --obs-nominal: var(--seafoam);
+}
+
+/* --- panels --------------------------------------------------------- */
+
+.obs-panel {
+  border: 1px solid var(--obs-rule);
+  background: var(--surface);
+}
+
+.obs-panel__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--obs-rule);
+}
+
+.obs-panel__title,
+.obs-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--obs-label);
+}
+
+.obs-panel__body { padding: 0.75rem; }
+
+/* --- readouts ------------------------------------------------------- */
+
+.obs-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+.obs-readout:last-child { border-bottom: 0; }
+
+.obs-readout__value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.obs-readout--alert .obs-readout__value { color: var(--no); }
+
+/* --- status light ---------------------------------------------------- */
+
+.obs-led {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--obs-label);
+  flex: none;
+}
+.obs-led--nominal { background: var(--obs-nominal); }
+.obs-led--active  { background: var(--accent); animation: obs-pulse 1.6s ease-in-out infinite; }
+.obs-led--fault   { background: var(--no); }
+
+@keyframes obs-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* --- frame ----------------------------------------------------------- */
+
+.obs-frame {
+  position: relative;
+  border: 1px solid var(--obs-rule-strong);
+  background: #05070c;
+}
+
+/* Corner ticks. A framing reference, and it reads as an instrument. */
+.obs-frame::before,
+.obs-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--obs-rule-strong);
+  pointer-events: none;
+}
+.obs-frame::before { top: 8px;    left: 8px;  border-right: 0; border-bottom: 0; }
+.obs-frame::after  { bottom: 8px; right: 8px; border-left: 0;  border-top: 0; }
+
+.obs-frame__tag {
+  position: absolute;
+  top: 10px;
+  left: 34px;
+  padding: 2px 7px;
+  border: 1px solid var(--no-border);
+  background: var(--no-dim);
+  color: var(--no);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.obs-frame__corner-note {
+  position: absolute;
+  bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+.obs-frame__corner-note--left  { left: 34px; }
+.obs-frame__corner-note--right { right: 34px; }
+
+/* --- command buttons -------------------------------------------------- */
+
+.obs-cmd {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--obs-rule);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.obs-cmd:hover:not(:disabled) { border-color: var(--obs-rule-strong); }
+.obs-cmd[aria-pressed='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+.obs-cmd:disabled { cursor: not-allowed; color: var(--text-muted); }
+
+.obs-cmd__meta {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.obs-cmd:disabled .obs-cmd__meta { color: var(--no); }
+
+.obs-action {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--obs-rule-strong);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.obs-action--primary {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent-text);
+}
+.obs-action:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* --- misc ------------------------------------------------------------- */
+
+.obs-field {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--obs-rule);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.obs-log {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.3rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  font-size: 12px;
+}
+.obs-log__time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex: none;
+}
