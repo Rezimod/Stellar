@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import LiveView from './LiveView';
 import TelemetryPanel from './TelemetryPanel';
 import ControlPanel from './ControlPanel';
@@ -50,6 +50,11 @@ export default function SessionConsole({
   }, []);
 
   const date = useMemo(() => new Date(now), [now]);
+  // Commands must be evaluated on the same clock the buttons were graded on.
+  // Reading Date.now() inside a handler instead let a target be offered at the
+  // simulated hour and then refused at the real one.
+  const nowRef = useRef(now);
+  nowRef.current = now;
   const fov = useMemo(() => fieldOfView(node.instrument), [node.instrument]);
 
   // Recomputed each tick: a target that is safe now can set below the limit
@@ -71,12 +76,13 @@ export default function SessionConsole({
   const rotationRate = fieldRotationDegPerHour(node.lat, pointing.altitude, pointing.azimuth);
 
   const append = useCallback((text: string, refused = false) => {
-    setLog((prev) => [...prev, { at: Date.now(), text, refused }].slice(-60));
+    setLog((prev) => [...prev, { at: nowRef.current, text, refused }].slice(-60));
   }, []);
 
   const goTo = useCallback(
     (next: SimTarget) => {
-      const at = new Date();
+      const atMs = nowRef.current;
+      const at = new Date(atMs);
       const to = targetAltAz(next, node, at);
       const verdict = evaluateSafety(node, to, at);
 
@@ -85,14 +91,14 @@ export default function SessionConsole({
         return;
       }
 
-      const from = acquisition ? pointingAt(acquisition, at.getTime()) : PARKED;
+      const from = acquisition ? pointingAt(acquisition, atMs) : PARKED;
       setAcquisition(
         planAcquisition({
           targetId: next.id,
           targetName: next.name,
           from,
           to,
-          startedAtMs: at.getTime(),
+          startedAtMs: atMs,
           warm: acquisition !== null,
         }),
       );
@@ -114,13 +120,16 @@ export default function SessionConsole({
     const midpoint = window.midpoint ?? window.duskStart;
     if (!midpoint) return;
 
-    setOffsetMs(Math.max(0, midpoint.getTime() - real));
+    const nextOffset = Math.max(0, midpoint.getTime() - real);
+    setOffsetMs(nextOffset);
+    nowRef.current = real + nextOffset;
     setAcquisition(null);
     append('Clock moved to tonight\u2019s dark window.');
   }, [append, node.lat, node.lon]);
 
   const returnToNow = useCallback(() => {
     setOffsetMs(0);
+    nowRef.current = Date.now();
     setAcquisition(null);
     append('Clock returned to now.');
   }, [append]);
