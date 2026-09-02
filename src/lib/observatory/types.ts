@@ -35,6 +35,11 @@ export type Instrument = {
   focalLengthMm: number;
   mount: string;
   camera: string;
+  /** Sensor width and height in millimetres — sets the field of view. */
+  sensorWidthMm: number;
+  sensorHeightMm: number;
+  /** Pixel pitch in microns — sets the plate scale. */
+  pixelSizeUm: number;
   /** What this rig is actually good for, in plain words. */
   suitedTo: string[];
 };
