@@ -19,12 +19,17 @@ export type LiveViewProps = {
   fovArcmin: number;
   targetArcmin: number;
   seeingArcsec: number;
+  diffractionArcsec: number;
+  plateScaleArcsecPx: number;
   bortle: number;
   subs: number;
   gain: number;
   rotationDeg: number;
   /** Deterministic field seed — the pointing, rounded. */
   seed: number;
+  frameSpan: number;
+  /** A lunar or planetary sub is far too short to record a field star. */
+  showFieldStars: boolean;
 };
 
 /** States in which the target is somewhere in the frame. */
@@ -88,6 +93,8 @@ export default function LiveView(props: LiveViewProps) {
         fovArcmin: p.fovArcmin,
         targetArcmin: p.targetArcmin,
         seeingArcsec: p.seeingArcsec,
+        diffractionArcsec: p.diffractionArcsec,
+        plateScaleArcsecPx: p.plateScaleArcsecPx,
         bortle: p.bortle,
         subs: p.subs,
         gain: p.gain,
@@ -98,14 +105,15 @@ export default function LiveView(props: LiveViewProps) {
         // A moving mount smears the field; regenerating the seed each frame is
         // what that looks like at video rate.
         seed: slewing ? frame * 2654435761 : p.seed,
+        frameSpan: p.frameSpan,
       };
 
       drawSky(ctx, inputs);
 
-      if (p.state !== 'PREPARING') drawFieldStars(ctx, inputs);
+      if (p.state !== 'PREPARING' && p.showFieldStars) drawFieldStars(ctx, inputs);
 
       if (imageRef.current && ON_SKY.includes(p.state)) {
-        drawTarget(ctx, imageRef.current, inputs);
+        drawTarget(ctx, imageRef.current, inputs, frame);
       }
 
       // Regrain a few times a second rather than every frame — the tile is an

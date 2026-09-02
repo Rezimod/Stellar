@@ -31,9 +31,12 @@ export default async function SimulatorPage() {
           anywhere it will let you.
         </p>
         <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Framing <span className="font-mono">{fov.widthArcmin.toFixed(1)}′ × {fov.heightArcmin.toFixed(1)}′</span>{' '}
-          at <span className="font-mono">{fov.plateScaleArcsecPx.toFixed(2)}″</span> per pixel — narrower
-          than the full Moon. Most of what this teaches is how small things really are.
+          Bare at f/10 the sensor frames{' '}
+          <span className="font-mono">{fov.widthArcmin.toFixed(1)}′ × {fov.heightArcmin.toFixed(1)}′</span>{' '}
+          at <span className="font-mono">{fov.plateScaleArcsecPx.toFixed(2)}″</span> per pixel, which
+          undersamples this scope — so planetary work runs a Barlow and crops the read-out to a
+          few hundred pixels, exactly as capture software does. Choosing a target sets the train
+          the way an observer would, and you can override it.
         </p>
       </header>
 
@@ -43,9 +46,12 @@ export default async function SimulatorPage() {
 
       <p className="mt-8 max-w-2xl text-sm" style={{ color: 'var(--text-muted)' }}>
         Reference imagery is public-domain NASA, ESA and Hubble material, scaled to the true
-        angular size the target would present in this instrument and degraded by the site&apos;s
-        seeing, sky glow and sensor noise. It is a simulation of what a 150 mm telescope shows,
-        not a claim about what it captured.
+        angular size the target presents at the current focal length, then degraded to what this
+        aperture and this sky can actually deliver: smeared by the seeing, shifted frame to frame
+        by the same turbulence, lifted by the site&apos;s sky glow and buried in sensor noise. As
+        the stack builds, the turbulence averages out and the image walks toward the aperture&apos;s
+        diffraction limit — which it never beats. That is what a 150 mm telescope shows. It is not
+        a claim about what it captured.
       </p>
     </PageContainer>
   );
