@@ -43,10 +43,17 @@ function rng(seed: number) {
   };
 }
 
-/** Sky background luminance from the site's Bortle class, 0-1. */
+/**
+ * Sky background luminance from the site's Bortle class, 0-1.
+ *
+ * Even a Bortle 8 city sky is dark grey on a short sub, not the pale fog that
+ * a naive linear ramp produces — the eye adapts, the sensor does not, and an
+ * over-bright background hides exactly the faint structure the simulator is
+ * supposed to reveal as the stack builds.
+ */
 function skyGlow(bortle: number): number {
-  // Bortle 1 is effectively black; 9 is a bright grey that eats faint detail.
-  return Math.min(0.34, Math.max(0.01, (bortle - 1) / 8) * 0.34);
+  const ceiling = 0.13;
+  return Math.min(ceiling, Math.max(0.008, (bortle - 1) / 8) * ceiling);
 }
 
 export function drawSky(ctx: CanvasRenderingContext2D, i: FrameInputs) {
@@ -55,8 +62,10 @@ export function drawSky(ctx: CanvasRenderingContext2D, i: FrameInputs) {
   // Light pollution is warm and brightest toward the horizon; a flat fill
   // would read as a black rectangle rather than a real sky.
   const gradient = ctx.createLinearGradient(0, i.height, 0, 0);
-  gradient.addColorStop(0, `rgb(${level + 8}, ${level + 5}, ${level})`);
-  gradient.addColorStop(1, `rgb(${Math.max(0, level - 4)}, ${Math.max(0, level - 3)}, ${level})`);
+  // Light pollution is warm and strongest toward the horizon, but only just —
+  // a heavy tint reads as brown haze rather than sky.
+  gradient.addColorStop(0, `rgb(${level + 5}, ${level + 3}, ${level})`);
+  gradient.addColorStop(1, `rgb(${Math.max(0, level - 2)}, ${Math.max(0, level - 1)}, ${level})`);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, i.width, i.height);
 }

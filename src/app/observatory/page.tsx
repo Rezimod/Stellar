@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import NodeCard from '@/components/observatory/NodeCard';
@@ -63,7 +64,32 @@ export default async function ObservatoryPage() {
       )}
 
       <section
-        className="mt-8 rounded-xl border p-5"
+        className="mt-6 rounded-xl border p-5"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+      >
+        <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
+          Try the instrument before you book it
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          A simulator of the same telescope, with the real field of view, the real slew
+          times and the real safety envelope. It will refuse the same targets the
+          instrument would, for the same reasons.
+        </p>
+        <Link
+          href="/observatory/simulator"
+          className="mt-3 inline-block rounded-md border px-3 py-2 text-sm"
+          style={{
+            borderColor: 'var(--accent-border)',
+            background: 'var(--accent-dim)',
+            color: 'var(--accent-text)',
+          }}
+        >
+          Open the simulator
+        </Link>
+      </section>
+
+      <section
+        className="mt-4 rounded-xl border p-5"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
         <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
