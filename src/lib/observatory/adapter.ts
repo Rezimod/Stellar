@@ -50,7 +50,10 @@ export class SimNodeAdapter implements ObservatoryAdapter {
         state: 'daylight',
         cloudCover: null,
         nextWindowAt,
-        detail: `Sun is ${sunAltitude.toFixed(0)}° above the horizon at ${node.site}.`,
+        detail:
+          sunAltitude > 0
+            ? `Sun is ${sunAltitude.toFixed(0)}° above the horizon at ${node.site}.`
+            : `Twilight at ${node.site} — the sky is not dark enough yet.`,
       };
     }
 

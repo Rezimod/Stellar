@@ -29,6 +29,10 @@ export const NODES: ObservatoryNode[] = [
       focalLengthMm: 1500,
       mount: 'Single-fork altazimuth, GoTo',
       camera: 'ZWO ASI585MC',
+      // 3856 x 2180 at 2.9 um.
+      sensorWidthMm: 11.18,
+      sensorHeightMm: 6.32,
+      pixelSizeUm: 2.9,
       suitedTo: ['Moon', 'Planets', 'Bright deep sky'],
     },
     priceGel: 40,

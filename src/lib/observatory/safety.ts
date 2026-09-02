@@ -37,6 +37,20 @@ export const LIMITS = {
   sunAltitudeCeilingDeg: -12,
 } as const;
 
+/**
+ * Why the sky is too bright.
+ *
+ * The gate closes at -12 degrees, so between sunset and then the Sun is below
+ * the horizon and it is still too bright to observe. Saying "-1 degrees above
+ * the horizon" would be both ungrammatical and wrong about what is happening.
+ */
+function sunReason(site: string, sunAltitude: number): string {
+  if (sunAltitude > 0) {
+    return `The Sun is ${sunAltitude.toFixed(0)}° above the horizon at ${site}.`;
+  }
+  return `Twilight at ${site} — the Sun is ${Math.abs(sunAltitude).toFixed(0)}° below the horizon, and missions start at ${LIMITS.sunAltitudeCeilingDeg}°.`;
+}
+
 /** Angular separation between two horizon coordinates, in degrees. */
 export function angularSeparation(a: AltAz, b: AltAz): number {
   const toRad = Math.PI / 180;
@@ -66,11 +80,7 @@ export function evaluateSafety(node: ObservatoryNode, target: AltAz, now: Date):
   const sun = sunPosition(node, now);
 
   if (sun.altitude > LIMITS.sunAltitudeCeilingDeg) {
-    return {
-      ok: false,
-      code: 'daylight',
-      reason: `The Sun is ${sun.altitude.toFixed(0)}° above the horizon at ${node.site}.`,
-    };
+    return { ok: false, code: 'daylight', reason: sunReason(node.site, sun.altitude) };
   }
 
   if (target.altitude <= 0) {
