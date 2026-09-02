@@ -1,4 +1,5 @@
 import type { MissionState } from '@/lib/observatory/mission';
+import { formatExposure } from './ControlPanel';
 
 export type Telemetry = {
   state: MissionState;
@@ -11,6 +12,10 @@ export type Telemetry = {
   exposureSec: number;
   gain: number;
   seeingArcsec: number;
+  /** What the stack currently resolves — seeing at first, diffraction at best. */
+  resolvedArcsec: number;
+  focalLengthMm: number;
+  plateScaleArcsecPx: number;
   rotationDegPerHour: number | null;
   cloudCover: number | null;
 };
@@ -57,7 +62,10 @@ export default function TelemetryPanel({ t }: { t: Telemetry }) {
           value={t.targetArcmin === null ? '—' : `${((t.targetArcmin / t.fovArcmin) * 100).toFixed(1)}%`}
         />
         <Row label="Seeing" value={`${t.seeingArcsec.toFixed(1)}″`} />
-        <Row label="Sub-exposure" value={`${t.exposureSec.toFixed(1)} s`} />
+        <Row label="Resolving" value={`${t.resolvedArcsec.toFixed(2)}″`} />
+        <Row label="Focal length" value={`${Math.round(t.focalLengthMm)} mm`} />
+        <Row label="Plate scale" value={`${t.plateScaleArcsecPx.toFixed(2)}″/px`} />
+        <Row label="Sub-exposure" value={formatExposure(t.exposureSec)} />
         <Row label="Gain" value={String(t.gain)} />
         <Row label="Subs stacked" value={String(t.subs)} />
         <Row

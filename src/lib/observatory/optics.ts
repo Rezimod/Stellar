@@ -15,6 +15,43 @@ import type { Instrument } from './types';
 const ARCMIN_PER_RAD = 3437.7468;
 const ARCSEC_PER_RAD = 206264.806;
 
+/**
+ * What sits between the mirror and the sensor.
+ *
+ * The 585's 2.9 um pixels undersample a 150 mm f/10 SCT, so planetary work
+ * runs a Barlow — 1.5x to 3x — and lunar work often runs the f/6.3 reducer to
+ * fit the disc. Modelling only the native focal length was the mistake that
+ * made everything look absurdly small.
+ */
+export type OpticalTrain = { id: string; label: string; multiplier: number };
+
+export const TRAINS: OpticalTrain[] = [
+  { id: 'reducer', label: 'f/6.3 reducer', multiplier: 0.63 },
+  { id: 'native', label: 'Native f/10', multiplier: 1 },
+  { id: 'barlow2', label: '2x Barlow', multiplier: 2 },
+  { id: 'barlow3', label: '3x Barlow', multiplier: 3 },
+];
+
+export const TRAIN_BY_ID = new Map(TRAINS.map((t) => [t.id, t]));
+
+/**
+ * The read-out window.
+ *
+ * Capture software crops to a small region around the planet: it lifts the
+ * frame rate into the hundreds, which is what makes lucky imaging work. The
+ * crop is also why a planet looks large on screen despite covering a sliver
+ * of the sensor.
+ */
+export type Roi = { id: string; label: string; widthPx: number | null };
+
+export const ROIS: Roi[] = [
+  { id: 'full', label: 'Full sensor', widthPx: null },
+  { id: '640', label: '640 x 480', widthPx: 640 },
+  { id: '400', label: '400 x 400', widthPx: 400 },
+];
+
+export const ROI_BY_ID = new Map(ROIS.map((r) => [r.id, r]));
+
 export type FieldOfView = {
   widthArcmin: number;
   heightArcmin: number;
@@ -24,21 +61,43 @@ export type FieldOfView = {
   widthPx: number;
 };
 
-export function fieldOfView(instrument: Instrument): FieldOfView {
-  const { sensorWidthMm, sensorHeightMm, pixelSizeUm, focalLengthMm } = instrument;
+export function effectiveFocalLength(instrument: Instrument, train: OpticalTrain): number {
+  return instrument.focalLengthMm * train.multiplier;
+}
+
+export function fieldOfView(
+  instrument: Instrument,
+  train: OpticalTrain = TRAIN_BY_ID.get('native')!,
+  roi: Roi = ROIS[0],
+): FieldOfView {
+  const { sensorWidthMm, sensorHeightMm, pixelSizeUm } = instrument;
+  const focal = effectiveFocalLength(instrument, train);
+
+  const sensorPxWide = Math.round((sensorWidthMm * 1000) / pixelSizeUm);
+  const sensorPxHigh = Math.round((sensorHeightMm * 1000) / pixelSizeUm);
+  // A ROI never exceeds the sensor, and it crops both axes.
+  const widthPx = Math.min(roi.widthPx ?? sensorPxWide, sensorPxWide);
+  const heightPx = Math.min(
+    roi.widthPx ? Math.round(roi.widthPx * 0.75) : sensorPxHigh,
+    sensorPxHigh,
+  );
+
+  const plateScaleArcsecPx = ((pixelSizeUm / 1000) / focal) * ARCSEC_PER_RAD;
 
   return {
-    // Small-angle: the sensor is millimetres against a metre of focal length.
-    widthArcmin: (sensorWidthMm / focalLengthMm) * ARCMIN_PER_RAD,
-    heightArcmin: (sensorHeightMm / focalLengthMm) * ARCMIN_PER_RAD,
-    plateScaleArcsecPx: ((pixelSizeUm / 1000) / focalLengthMm) * ARCSEC_PER_RAD,
-    widthPx: Math.round((sensorWidthMm * 1000) / pixelSizeUm),
+    widthArcmin: (widthPx * plateScaleArcsecPx) / 60,
+    heightArcmin: (heightPx * plateScaleArcsecPx) / 60,
+    plateScaleArcsecPx,
+    widthPx,
   };
 }
 
 /** Focal ratio — what governs how fast faint things appear. */
-export function focalRatio(instrument: Instrument): number {
-  return instrument.focalLengthMm / instrument.apertureMm;
+export function focalRatio(
+  instrument: Instrument,
+  train: OpticalTrain = TRAIN_BY_ID.get('native')!,
+): number {
+  return effectiveFocalLength(instrument, train) / instrument.apertureMm;
 }
 
 /**

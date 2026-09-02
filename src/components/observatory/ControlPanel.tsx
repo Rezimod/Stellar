@@ -1,5 +1,6 @@
-import { SIM_TARGETS, type SimTarget } from '@/lib/observatory/sim-targets';
+import { EXPOSURES, SIM_TARGETS, type SimTarget, type TargetBrightness } from '@/lib/observatory/sim-targets';
 import type { SafetyVerdict } from '@/lib/observatory/safety';
+import { ROIS, TRAINS } from '@/lib/observatory/optics';
 
 export type ControlProps = {
   targetId: string | null;
@@ -8,15 +9,23 @@ export type ControlProps = {
   onGoTo: (target: SimTarget) => void;
   exposureSec: number;
   onExposure: (v: number) => void;
+  brightness: TargetBrightness;
   gain: number;
   onGain: (v: number) => void;
+  trainId: string;
+  onTrain: (id: string) => void;
+  roiId: string;
+  onRoi: (id: string) => void;
   onCapture: () => void;
   canCapture: boolean;
   onPark: () => void;
   parked: boolean;
 };
 
-const EXPOSURES = [0.5, 2, 8, 30];
+/** Milliseconds below a second — nobody writes a lunar sub as 0.01 s. */
+export function formatExposure(sec: number): string {
+  return sec < 1 ? `${Math.round(sec * 1000)} ms` : `${sec} s`;
+}
 
 export default function ControlPanel(p: ControlProps) {
   return (
@@ -69,6 +78,39 @@ export default function ControlPanel(p: ControlProps) {
         })}
       </div>
 
+      <p className="mt-4 mb-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+        Optical train — set for you on GoTo, and yours to change
+      </p>
+      <div className="grid grid-cols-2 gap-4">
+        <label className="block">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Barlow / reducer</span>
+          <select
+            value={p.trainId}
+            onChange={(e) => p.onTrain(e.target.value)}
+            className="mt-1 w-full rounded-md border px-2 py-1.5 text-sm"
+            style={{ borderColor: 'var(--border)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+          >
+            {TRAINS.map((t) => (
+              <option key={t.id} value={t.id}>{t.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Read-out window</span>
+          <select
+            value={p.roiId}
+            onChange={(e) => p.onRoi(e.target.value)}
+            className="mt-1 w-full rounded-md border px-2 py-1.5 text-sm"
+            style={{ borderColor: 'var(--border)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+          >
+            {ROIS.map((r) => (
+              <option key={r.id} value={r.id}>{r.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <div className="mt-4 grid grid-cols-2 gap-4">
         <label className="block">
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Sub-exposure</span>
@@ -78,8 +120,8 @@ export default function ControlPanel(p: ControlProps) {
             className="mt-1 w-full rounded-md border px-2 py-1.5 font-mono text-sm"
             style={{ borderColor: 'var(--border)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
           >
-            {EXPOSURES.map((v) => (
-              <option key={v} value={v}>{v} s</option>
+            {EXPOSURES[p.brightness].map((v) => (
+              <option key={v} value={v}>{formatExposure(v)}</option>
             ))}
           </select>
         </label>

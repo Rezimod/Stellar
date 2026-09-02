@@ -14,9 +14,17 @@ import { apparentDiameterArcsec } from './optics';
 import type { AltAz } from './safety';
 import type { ObservatoryNode } from './types';
 
+/**
+ * Bright targets are imaged in milliseconds and faint ones in seconds, and the
+ * gap is four orders of magnitude. It also decides whether any field star
+ * survives the exposure: on a 10 ms lunar sub, none do.
+ */
+export type TargetBrightness = 'bright' | 'faint';
+
 export type SimTarget = {
   id: string;
   name: string;
+  brightness: TargetBrightness;
   /** Solar-system bodies move; their position and size are computed. */
   kind: 'body' | 'fixed';
   /** J2000 coordinates, for fixed targets only. */
@@ -26,6 +34,12 @@ export type SimTarget = {
   sizeArcmin?: number;
   /** One line about what you will actually see, not what Hubble saw. */
   expect: string;
+  /**
+   * How many target diameters the reference photo spans. Saturn's photo is
+   * cropped to the rings, which run ~2.3 globe diameters; most others are a
+   * disc with a little margin.
+   */
+  frameSpan?: number;
 };
 
 const BODIES: Partial<Record<string, Body>> = {
@@ -37,25 +51,36 @@ const BODIES: Partial<Record<string, Body>> = {
 };
 
 export const SIM_TARGETS: SimTarget[] = [
-  { id: 'moon', name: 'The Moon', kind: 'body',
+  { frameSpan: 1.02, id: 'moon', brightness: 'bright', name: 'The Moon', kind: 'body',
     expect: 'Overflows the frame. Crater shadows along the terminator are the show.' },
-  { id: 'jupiter', name: 'Jupiter', kind: 'body',
+  { id: 'jupiter', brightness: 'bright', name: 'Jupiter', kind: 'body',
     expect: 'A small bright disc. Two cloud belts and the four Galilean moons.' },
-  { id: 'saturn', name: 'Saturn', kind: 'body',
+  { frameSpan: 2.35, id: 'saturn', brightness: 'bright', name: 'Saturn', kind: 'body',
     expect: 'Smaller than you expect, and the rings are still unmistakable.' },
-  { id: 'mars', name: 'Mars', kind: 'body',
+  { id: 'mars', brightness: 'bright', name: 'Mars', kind: 'body',
     expect: 'A tiny ochre disc. Surface detail only near opposition.' },
-  { id: 'venus', name: 'Venus', kind: 'body',
+  { id: 'venus', brightness: 'bright', name: 'Venus', kind: 'body',
     expect: 'A brilliant featureless phase. Bright enough to hurt at low gain.' },
-  { id: 'm42', name: 'Orion Nebula', kind: 'fixed', ra: 5.591, dec: -5.391, sizeArcmin: 85,
+  { frameSpan: 1.0, id: 'm42', brightness: 'faint', name: 'Orion Nebula', kind: 'fixed', ra: 5.591, dec: -5.391, sizeArcmin: 85,
     expect: 'Overflows the frame. The Trapezium and the bright core fill it.' },
-  { id: 'm31', name: 'Andromeda Galaxy', kind: 'fixed', ra: 0.712, dec: 41.269, sizeArcmin: 178,
+  { frameSpan: 1.0, id: 'm31', brightness: 'faint', name: 'Andromeda Galaxy', kind: 'fixed', ra: 0.712, dec: 41.269, sizeArcmin: 178,
     expect: 'Far larger than the field. You are looking at the core only.' },
-  { id: 'm57', name: 'Ring Nebula', kind: 'fixed', ra: 18.886, dec: 33.029, sizeArcmin: 1.4,
+  { frameSpan: 2.0, id: 'm57', brightness: 'faint', name: 'Ring Nebula', kind: 'fixed', ra: 18.886, dec: 33.029, sizeArcmin: 1.4,
     expect: 'A small grey smoke ring. Stacking is what brings it out.' },
 ];
 
 export const SIM_TARGET_BY_ID = new Map(SIM_TARGETS.map((t) => [t.id, t]));
+
+/** Sub-exposure choices, in seconds. Lucky imaging on the left, DSO on the right. */
+export const EXPOSURES: Record<TargetBrightness, number[]> = {
+  bright: [0.005, 0.01, 0.02, 0.05],
+  faint: [0.5, 2, 8, 30],
+};
+
+/** Default when a target does not declare one: a disc with a little margin. */
+export function targetFrameSpan(target: SimTarget): number {
+  return target.frameSpan ?? 1.15;
+}
 
 export function targetPhoto(target: SimTarget): TargetPhoto | null {
   return TARGET_PHOTOS[target.id] ?? null;

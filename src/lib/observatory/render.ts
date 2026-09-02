@@ -18,6 +18,10 @@ export type FrameInputs = {
   targetArcmin: number;
   /** Seeing FWHM in arcseconds — 1.5 is excellent, 4 is poor. */
   seeingArcsec: number;
+  /** Dawes limit for the aperture — the floor stacking can approach, never beat. */
+  diffractionArcsec: number;
+  /** Arcseconds per sensor pixel at the current focal length. */
+  plateScaleArcsecPx: number;
   /** Bortle class at the site, 1-9. Sets the background level. */
   bortle: number;
   /** Subframes stacked so far. Noise falls as the square root of this. */
@@ -30,6 +34,12 @@ export type FrameInputs = {
   centeringOffset: number;
   /** Deterministic seed so a given pointing always draws the same field. */
   seed: number;
+  /**
+   * How many target diameters the reference photo spans across its width.
+   * Saturn's rings run about 2.3 globe diameters, so a ring-cropped photo is
+   * that wide; a tight planetary disc is barely wider than 1.
+   */
+  frameSpan: number;
 };
 
 /** Mulberry32 — small, fast, and repeatable, so a field does not shimmer. */
@@ -81,7 +91,7 @@ export function drawFieldStars(ctx: CanvasRenderingContext2D, i: FrameInputs) {
   const random = rng(i.seed);
   const areaFactor = (i.fovArcmin / 26) ** 2;
   const count = Math.round(90 * areaFactor * (1 - skyGlow(i.bortle)));
-  const blurPx = seeingPx(i);
+  const starBlur = blurPx(i);
 
   for (let n = 0; n < count; n++) {
     const x = random() * i.width;
@@ -89,7 +99,7 @@ export function drawFieldStars(ctx: CanvasRenderingContext2D, i: FrameInputs) {
     // Faint stars vastly outnumber bright ones; the cube pushes the
     // distribution that way without needing a real luminosity function.
     const brightness = random() ** 3;
-    const radius = Math.max(0.4, blurPx * (0.35 + brightness * 0.5));
+    const radius = Math.max(0.4, starBlur * (0.35 + brightness * 0.5));
 
     const halo = ctx.createRadialGradient(x, y, 0, x, y, radius * 2.4);
     halo.addColorStop(0, `rgba(255, 252, 245, ${0.25 + brightness * 0.75})`);
@@ -101,10 +111,46 @@ export function drawFieldStars(ctx: CanvasRenderingContext2D, i: FrameInputs) {
   }
 }
 
-/** Seeing disc radius in pixels for the current field. */
-function seeingPx(i: FrameInputs): number {
+/**
+ * Effective blur, in display pixels.
+ *
+ * This is lucky imaging in one line. A single frame is smeared by the seeing;
+ * stacking the best of many averages the turbulence out and the result walks
+ * toward the aperture's diffraction limit, which it can never beat. It is why
+ * a planet starts as a soft blob and resolves into belts and a Cassini
+ * division as the stack builds — the thing the simulator most needs to show.
+ */
+export function effectiveBlurArcsec(i: {
+  seeingArcsec: number;
+  diffractionArcsec: number;
+  subs: number;
+}): number {
+  const averaged = i.seeingArcsec / Math.sqrt(Math.max(1, i.subs));
+  return Math.max(i.diffractionArcsec, averaged);
+}
+
+/** Gaussian sigma for a given FWHM. CSS blur() takes sigma, seeing is quoted as FWHM. */
+const FWHM_TO_SIGMA = 1 / 2.355;
+
+function blurPx(i: FrameInputs): number {
   const arcsecPerPx = (i.fovArcmin * 60) / i.width;
-  return Math.max(0.6, i.seeingArcsec / arcsecPerPx / 2);
+  return Math.max(0.3, (effectiveBlurArcsec(i) / arcsecPerPx) * FWHM_TO_SIGMA);
+}
+
+/**
+ * Atmospheric wobble for the current frame, in display pixels.
+ *
+ * Seeing does not only blur, it moves the image around between frames. The
+ * stack aligns them, so the shake dies away as subs accumulate.
+ */
+export function jitterPx(i: FrameInputs, frame: number): { x: number; y: number } {
+  const arcsecPerPx = (i.fovArcmin * 60) / i.width;
+  const amplitude = (i.seeingArcsec / arcsecPerPx) / Math.sqrt(Math.max(1, i.subs));
+  // Two incommensurate frequencies read as turbulence rather than a wobble.
+  return {
+    x: Math.sin(frame * 0.31) * amplitude * 0.5 + Math.sin(frame * 0.11) * amplitude * 0.3,
+    y: Math.cos(frame * 0.27) * amplitude * 0.5 + Math.cos(frame * 0.13) * amplitude * 0.3,
+  };
 }
 
 /**
@@ -127,20 +173,29 @@ export function targetDiameterPx(targetArcmin: number, fovArcmin: number, widthP
 
 export function drawTarget(
   ctx: CanvasRenderingContext2D,
-  image: CanvasImageSource,
+  image: HTMLImageElement,
   i: FrameInputs,
+  frame: number,
 ) {
   const diameterPx = targetDiameterPx(i.targetArcmin, i.fovArcmin, i.width);
-  const cx = i.width / 2 + i.centeringOffset * i.width;
-  const cy = i.height / 2;
+  // Honour the photo's own proportions. Forcing a 640x310 ring-crop of Saturn
+  // into a square stretches the globe into an egg.
+  const drawW = diameterPx * i.frameSpan;
+  const drawH = image.naturalWidth ? drawW * (image.naturalHeight / image.naturalWidth) : drawW;
+  const shake = jitterPx(i, frame);
+  const cx = i.width / 2 + i.centeringOffset * i.width + shake.x;
+  const cy = i.height / 2 + shake.y;
 
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate((i.rotationDeg * Math.PI) / 180);
   // Astronomical signal adds to the sky rather than covering it.
   ctx.globalCompositeOperation = 'lighter';
-  ctx.filter = `blur(${seeingPx(i).toFixed(2)}px)`;
-  ctx.drawImage(image, -diameterPx / 2, -diameterPx / 2, diameterPx, diameterPx);
+  // Contrast climbs with the stack: a single sub is too noisy to stretch, and
+  // stretching it is exactly the mistake the sources warn against.
+  const contrast = 1 + Math.min(0.45, Math.log2(Math.max(1, i.subs)) * 0.09);
+  ctx.filter = `blur(${blurPx(i).toFixed(2)}px) contrast(${contrast.toFixed(2)}) brightness(1.06)`;
+  ctx.drawImage(image, -drawW / 2, -drawH / 2, drawW, drawH);
   ctx.restore();
 }
 
