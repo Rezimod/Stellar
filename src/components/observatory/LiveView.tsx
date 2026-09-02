@@ -2,10 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import {
-  drawFieldStars,
   drawNoise,
-  drawSky,
-  drawTarget,
+  drawScene,
   makeNoiseTile,
   type FrameInputs,
 } from '@/lib/observatory/render';
@@ -30,6 +28,11 @@ export type LiveViewProps = {
   frameSpan: number;
   /** A lunar or planetary sub is far too short to record a field star. */
   showFieldStars: boolean;
+  /**
+   * Fraction of the frame width showing a single raw sub instead of the stack.
+   * Null hides the comparison entirely.
+   */
+  splitAt: number | null;
 };
 
 /** States in which the target is somewhere in the frame. */
@@ -108,12 +111,41 @@ export default function LiveView(props: LiveViewProps) {
         frameSpan: p.frameSpan,
       };
 
-      drawSky(ctx, inputs);
+      const scene = {
+        image: imageRef.current,
+        showFieldStars: p.state !== 'PREPARING' && p.showFieldStars,
+        showTarget: ON_SKY.includes(p.state),
+      };
 
-      if (p.state !== 'PREPARING' && p.showFieldStars) drawFieldStars(ctx, inputs);
+      if (p.splitAt === null) {
+        drawScene(ctx, inputs, frame, scene);
+      } else {
+        const boundary = Math.round(width * p.splitAt);
 
-      if (imageRef.current && ON_SKY.includes(p.state)) {
-        drawTarget(ctx, imageRef.current, inputs, frame);
+        // Left: one raw sub, the frame as the sensor delivered it.
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, boundary, height);
+        ctx.clip();
+        drawScene(ctx, { ...inputs, subs: 1, jitterSubs: inputs.subs }, frame, scene);
+        ctx.restore();
+
+        // Right: the stack as it stands.
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(boundary, 0, width - boundary, height);
+        ctx.clip();
+        drawScene(ctx, inputs, frame, scene);
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(boundary + 0.5, 0);
+        ctx.lineTo(boundary + 0.5, height);
+        ctx.stroke();
+        ctx.restore();
       }
 
       // Regrain a few times a second rather than every frame — the tile is an
@@ -122,7 +154,28 @@ export default function LiveView(props: LiveViewProps) {
         noiseRef.current = makeNoiseTile();
         lastNoiseSwap = time;
       }
-      if (noiseRef.current) drawNoise(ctx, inputs, noiseRef.current);
+      if (noiseRef.current) {
+        if (p.splitAt === null) {
+          drawNoise(ctx, inputs, noiseRef.current);
+        } else {
+          // Noise is the loudest part of a single sub, so it has to respect
+          // the split too or the comparison understates the difference.
+          const boundary = Math.round(width * p.splitAt);
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0, 0, boundary, height);
+          ctx.clip();
+          drawNoise(ctx, { ...inputs, subs: 1, jitterSubs: inputs.subs }, noiseRef.current);
+          ctx.restore();
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(boundary, 0, width - boundary, height);
+          ctx.clip();
+          drawNoise(ctx, inputs, noiseRef.current);
+          ctx.restore();
+        }
+      }
 
       requestAnimationFrame(render);
     };
