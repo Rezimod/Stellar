@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import LiveView from './LiveView';
 import TelemetryPanel from './TelemetryPanel';
 import ControlPanel from './ControlPanel';
@@ -73,8 +74,9 @@ export default function SessionConsole({
    * A booked slot. The console runs on the real clock inside it — there is no
    * moving time when the instrument is somebody else's for twenty minutes.
    */
-  session?: { startsAtMs: number; endsAtMs: number };
+  session?: { id: string; startsAtMs: number; endsAtMs: number };
 }) {
+  const { getAccessToken } = usePrivy();
   const [clock, setClock] = useState<number | null>(null);
   // Simulated time runs forward from the real clock plus an offset, so the
   // console keeps ticking wherever the visitor moved it to.
@@ -205,12 +207,38 @@ export default function SessionConsole({
     [acquisition, append, node],
   );
 
-  const capture = useCallback(() => {
+  const capture = useCallback(async () => {
     if (!target) return;
     if (audioOn) audioRef.current?.click('shutter');
     setCaptures((c) => c + 1);
     append(`Captured ${target.name} — ${subs} subs, ${(subs * exposureSec).toFixed(0)}s integration`);
-  }, [append, audioOn, exposureSec, subs, target]);
+
+    // The sandbox keeps its frames in the browser. A booked session files them,
+    // and the server decides what they are worth — the log says which.
+    if (!session) return;
+    try {
+      const token = await getAccessToken();
+      const res = await fetch('/api/observatory/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          sessionId: session.id,
+          targetId: target.id,
+          targetName: target.name,
+          exposureSec,
+          subs,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        append(`Frame not filed — ${data.error ?? 'the store refused it'}.`);
+        return;
+      }
+      append(data.admitted ? 'Filed to your Collection.' : data.reason);
+    } catch {
+      append('Frame not filed — network error.');
+    }
+  }, [append, audioOn, exposureSec, getAccessToken, session, subs, target]);
 
   const jumpToNight = useCallback(() => {
     const real = Date.now();

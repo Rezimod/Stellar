@@ -31,6 +31,14 @@ This is enforced at the boundary, not by UI discipline. `provenance:
 and the mint and award paths refuse anything that is not `'instrument'`. The
 July certify-all window is why this rail exists before the feature does.
 
+**Built** (`src/lib/observatory/provenance.ts`). The adapter declares what its
+frames are worth, so a capture cannot acquire instrument provenance by passing
+through a surface that forgot to ask — and the capture route reads it from the
+adapter, never from the request body. `admitToCollection` is the single gate,
+it refuses anything that is not exactly `'instrument'`, and a test asserts that
+no node on the network currently produces evidence. When the first instrument
+adapter lands, that test is what says so.
+
 ---
 
 ## Stage 1 — the mission spine
@@ -145,7 +153,7 @@ Staged so nothing breaks and nothing is thrown away.
 | **A** *(done)* | `/observatory` exists, unlinked | — |
 | **B** *(done)* | Hub tile and a live band on `/hub`; an observatory section on the landing page | Stage 2 |
 | **C** | `/sky` gains routing — *your sky is clouded, this node's is not* | 2+ nodes |
-| **D** | `/observe` and the session room become two capture paths into one Collection | Stage 3 |
+| **D** *(rail done)* | Provenance rides every capture; the Collection admits only instrument frames. The second path opens when a node is wired | Stage 3 |
 | **E** | Home reframes around booking; the companion becomes the supporting act | Stage 4 |
 
 Nothing is deleted. Forecast, planets, ASTRA, missions, marketplace and Field

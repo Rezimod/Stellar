@@ -49,6 +49,11 @@ const adapters: Record<ObservatoryNode['tier'], ObservatoryAdapter> = {
   byo: new SimNodeAdapter(),
 };
 
+/** The adapter that speaks for this node — and therefore what its frames are worth. */
+export function adapterFor(node: ObservatoryNode): ObservatoryAdapter {
+  return adapters[node.tier];
+}
+
 export function getNode(id: string): ObservatoryNode | null {
   return NODES.find((n) => n.id === id) ?? null;
 }

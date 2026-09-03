@@ -13,10 +13,18 @@
 
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { fetchSkyForecast } from '@/lib/sky-data';
+import type { Provenance } from './provenance';
 import { siteHourStamp } from './site-time';
 import type { NodeReadiness, ObservatoryNode, ReadinessState } from './types';
 
 export interface ObservatoryAdapter {
+  /**
+   * What frames from this adapter are worth. Declared by the adapter itself,
+   * so a capture cannot acquire instrument provenance by passing through a
+   * surface that forgot to ask.
+   */
+  readonly provenance: Provenance;
+
   /** Live operational state. Must never throw — a node that cannot answer is offline. */
   getReadiness(node: ObservatoryNode, now?: Date): Promise<NodeReadiness>;
 }
@@ -35,6 +43,8 @@ const SUN_LIMIT_DEG = -12;
  * and only its hardware state is assumed.
  */
 export class SimNodeAdapter implements ObservatoryAdapter {
+  readonly provenance = 'simulated' as const;
+
   async getReadiness(node: ObservatoryNode, now = new Date()): Promise<NodeReadiness> {
     const base = {
       nodeId: node.id,

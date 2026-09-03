@@ -415,3 +415,45 @@ export const observatoryReservation = pgTable('observatory_reservation', {
   index('observatory_reservation_node_idx').on(t.nodeId, t.startsAt),
   index('observatory_reservation_privy_idx').on(t.privyId, t.startsAt),
 ])
+
+// What a session actually produced. `provenance` rides from the adapter to
+// this row and decides everything downstream: a 'simulated' capture stays in
+// the session log, and only an 'instrument' one may become an observation —
+// `observation_log_id` is where that link lands. See lib/observatory/provenance.
+//
+//   CREATE TABLE IF NOT EXISTS observatory_capture (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     session_id uuid NOT NULL,
+//     node_id text NOT NULL,
+//     privy_id text NOT NULL,
+//     target_id text NOT NULL,
+//     target_name text NOT NULL,
+//     provenance text NOT NULL,
+//     exposure_sec double precision NOT NULL,
+//     subs integer NOT NULL,
+//     captured_at timestamptz NOT NULL,
+//     observation_log_id uuid,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE INDEX IF NOT EXISTS observatory_capture_session_idx
+//     ON observatory_capture (session_id, captured_at);
+//   CREATE INDEX IF NOT EXISTS observatory_capture_privy_idx
+//     ON observatory_capture (privy_id, captured_at);
+export const observatoryCapture = pgTable('observatory_capture', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sessionId: uuid('session_id').notNull(),
+  nodeId: text('node_id').notNull(),
+  privyId: text('privy_id').notNull(),
+  targetId: text('target_id').notNull(),
+  targetName: text('target_name').notNull(),
+  provenance: text('provenance').notNull(),
+  exposureSec: doublePrecision('exposure_sec').notNull(),
+  subs: integer('subs').notNull(),
+  capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
+  /** Set only when the capture was admitted to the Collection. */
+  observationLogId: uuid('observation_log_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('observatory_capture_session_idx').on(t.sessionId, t.capturedAt),
+  index('observatory_capture_privy_idx').on(t.privyId, t.capturedAt),
+])

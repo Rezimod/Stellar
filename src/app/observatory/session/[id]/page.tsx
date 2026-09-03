@@ -9,6 +9,7 @@ import SessionConsole from '@/components/observatory/SessionConsole';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import { PREP_LEAD_MS, sessionPhase } from '@/lib/observatory/session-phase';
+import type { Capture } from '@/lib/observatory/captures';
 import type { ObservatoryNode } from '@/lib/observatory/types';
 import '../../observatory.css';
 
@@ -167,10 +168,12 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           </div>
           <div className="obs-panel__body">
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              This was a dry run on the simulator, so nothing was captured to your Collection
-              and no Stars were awarded. Frames from the instrument itself arrive when
-              {' '}{node.name} finishes commissioning.
+              This was a dry run on the simulator, so nothing entered your Collection and no
+              Stars were awarded. Frames from the instrument itself arrive when {node.name}
+              {' '}finishes commissioning.
             </p>
+
+            <CaptureList sessionId={session.id} />
             <Link
               href={`/observatory/${node.id}`}
               className="mt-3 inline-block rounded-md border px-3 py-2 text-sm"
@@ -192,9 +195,64 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     <Shell>
       <Header node={node} line={`Live — your slot runs to ${siteClock(endsAtMs)} site time`} />
       <div className="mt-4">
-        <SessionConsole node={node} cloudCover={cloudCover} session={{ startsAtMs, endsAtMs }} />
+        <SessionConsole
+          node={node}
+          cloudCover={cloudCover}
+          session={{ id: session.id, startsAtMs, endsAtMs }}
+        />
       </div>
     </Shell>
+  );
+}
+
+/** What the session produced, and what each frame was worth. */
+function CaptureList({ sessionId }: { sessionId: string }) {
+  const { getAccessToken } = usePrivy();
+  const [captures, setCaptures] = useState<Capture[] | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    getAccessToken()
+      .then((token) =>
+        fetch(`/api/observatory/capture?session=${encodeURIComponent(sessionId)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      )
+      .then((res) => (res.ok ? res.json() : { captures: [] }))
+      .then((data) => {
+        if (live) setCaptures(data.captures as Capture[]);
+      })
+      .catch(() => {
+        if (live) setCaptures([]);
+      });
+    return () => {
+      live = false;
+    };
+  }, [getAccessToken, sessionId]);
+
+  if (captures === null || captures.length === 0) return null;
+
+  return (
+    <div className="mt-4">
+      <h2 className="obs-panel__title">
+        {captures.length} {captures.length === 1 ? 'frame' : 'frames'}
+      </h2>
+      <ul className="mt-2 flex flex-col">
+        {captures.map((c) => (
+          <li
+            key={c.id}
+            className="flex flex-wrap items-baseline justify-between gap-x-4 border-b py-2 font-mono text-xs"
+            style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+          >
+            <span style={{ color: 'var(--text-primary)' }}>{c.targetName}</span>
+            <span>
+              {c.subs} × {c.exposureSec}s ·{' '}
+              {c.observationLogId ? 'in your Collection' : 'simulated · session log only'}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
