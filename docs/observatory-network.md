@@ -131,10 +131,31 @@ countries. Banks make that impossible; a program makes it a line of code.
 - The operator sees **"₾ 240 earned this month"** and a cash-out button. The
   word *wallet* does not appear.
 
-Proposed split: **80 / 20** operator / platform, matching the 20% we already
-take on partner brands. The number has to survive the kit's payback maths — an
-operator must see the kit paid off in a plausible number of nights or Tier 2
-does not recruit.
+**The split is earned, not fixed.** An operator starts at **60 / 40** and works
+up to **80 / 20** on hours actually delivered — not nights listed, not a
+subscription, not a promise. Delivered hours are the one number an operator
+cannot fake and a customer can feel: an instrument that has run 150 hours of
+other people's sessions has been aligned, cleaned, unparked and fixed 150
+hours' worth. The rungs carry the real job titles of a staffed observatory, in
+the order a career runs.
+
+| Tier | Delivered hours | Operator keeps | Per 40 ₾ session |
+| --- | --- | --- | --- |
+| Night Assistant | 0 | 60% | 24 ₾ |
+| Telescope Operator | 25 | 65% | 26 ₾ |
+| Support Astronomer | 75 | 70% | 28 ₾ |
+| Staff Astronomer | 150 | 75% | 30 ₾ |
+| Observatory Director | 300 | 80% | 32 ₾ |
+
+At a 20-minute session, three sessions make an hour. The second rung sits where
+a ~2,000 ₾ Node Kit pays for itself: 84 sessions at the starting share, which is
+28 delivered hours. The 80/20 that matches our partner-brand commission is
+therefore where an operator arrives, not where they begin — and the platform's
+larger early cut is what funds the kit subsidy and the first customers.
+
+`src/lib/observatory/operator-tiers.ts` is the source of truth; fees divide in
+tetri and settle by subtraction, so the two halves always add back to exactly
+what the customer paid.
 
 ## 7. What goes on chain
 
@@ -225,7 +246,9 @@ exposure in `docs/discovery-business-plan.md` §4–5, for passes granting
 
 1. **Do passes grant telescope time?** Assumed yes throughout §10. Blocks card
    copy; reveal is 21 Oct 2026.
-2. **Commission split.** 80/20 proposed in §6, pending the kit payback maths.
+2. ~~**Commission split.**~~ **Decided:** a ladder from 60/40 to 80/20 on
+   delivered hours — §6. The thresholds are a first pass and are meant to move
+   once real utilisation is known.
 3. **Observer seats in v1, or controller-only?** They are most of the revenue
    on a scarce instrument and cost one more socket, but they add a sharing
    surface to the session model.
