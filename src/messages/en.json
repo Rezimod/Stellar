@@ -1577,7 +1577,8 @@
     "feed": "Feed",
     "leaderboard": "Leaderboard",
     "profile": "Profile",
-    "discoveries": "Discoveries"
+    "discoveries": "Discoveries",
+    "observatory": "Observatory"
   },
   "footer": {
     "tagline": "The night-sky companion for anyone with a smartphone. Forecast, photograph, earn real optics.",
@@ -1758,6 +1759,16 @@
       "eyebrow": "Community",
       "title": "Looking up, together.",
       "cta": "Open the feed"
+    },
+    "observatory": {
+      "eyebrow": "In development",
+      "title": "Clouded out shouldn’t end the night.",
+      "lead": "Stellar is becoming a network of telescopes. When your sky closes, book time on one where it is open and watch it live.",
+      "point1": "Owners rent out the clear nights their instrument sits idle.",
+      "point2": "You book a slot, drive the telescope, and keep what it captures.",
+      "point3": "Solana settles the operator’s payout, where you never have to see it.",
+      "status": "First node: Tbilisi, under commissioning. The simulator is open to everyone now.",
+      "cta": "See the observatory →"
     }
   },
   "observeFlow": {

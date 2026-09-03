@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   Sun, Target, Sparkles, BookOpen, MessageCircle,
-  Trophy, Gem, ShoppingBag, Search, User, Orbit,
+  Trophy, Gem, ShoppingBag, Search, User, Orbit, Telescope,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SearchModal from '@/components/shared/SearchModal';
 import { HubTonightBand } from '@/components/hub/HubTonightBand';
+import { HubObservatoryBand } from '@/components/hub/HubObservatoryBand';
 type HubItem = {
   href: string;
   labelKey: string;
@@ -36,6 +37,7 @@ const SECTIONS: HubSection[] = [
     labelKey: 'explore',
     items: [
       { href: '/sky',           labelKey: 'skyWatcher',    icon: Sun,           gradient: G.amber },
+      { href: '/observatory',   labelKey: 'observatory',   icon: Telescope,     gradient: G.teal },
       { href: '/solar-system',  labelKey: 'solarSystem3d', icon: Orbit,         gradient: G.blue },
       { href: '/missions',    labelKey: 'missions',    icon: Target,        gradient: G.violet },
       { href: '/marketplace', labelKey: 'marketplace', icon: ShoppingBag,   gradient: G.indigo },
@@ -79,6 +81,7 @@ export default function HubPage() {
         </header>
 
         <HubTonightBand />
+        <HubObservatoryBand />
 
         {SECTIONS.map((section) => (
           <section key={section.labelKey} className="mb-4 last:mb-0">

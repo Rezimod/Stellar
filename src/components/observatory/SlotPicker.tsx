@@ -48,6 +48,7 @@ export default function SlotPicker({ nodeId, timezone, sessionMinutes, priceGel 
   const { authenticated } = useStellarUser();
 
   const [slots, setSlots] = useState<BookableSlot[] | null>(null);
+  const [holdsKnown, setHoldsKnown] = useState(true);
   const [error, setError] = useState('');
   const [pending, setPending] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
@@ -62,6 +63,7 @@ export default function SlotPicker({ nodeId, timezone, sessionMinutes, priceGel 
       if (!res.ok) throw new Error('failed');
       const data = await res.json();
       setSlots(data.slots as BookableSlot[]);
+      setHoldsKnown(data.holdsKnown !== false);
     } catch {
       setSlots([]);
       setError('The timetable could not be loaded. Try again in a moment.');
@@ -122,11 +124,18 @@ export default function SlotPicker({ nodeId, timezone, sessionMinutes, priceGel 
           {sessionMinutes}
         </span>{' '}
         minutes on the instrument ·{' '}
-        <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-          {priceGel} ₾
+        <span style={{ color: 'var(--text-primary)' }}>
+          <span className="font-mono">{priceGel}</span> ₾
         </span>{' '}
         when sessions open. Holding a slot costs nothing today — no card, no payment.
       </p>
+
+      {!holdsKnown && (
+        <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+          Bookings are offline, so which slots are already taken is unknown. The nights below
+          are still the real ones.
+        </p>
+      )}
 
       {error && (
         <p className="mt-3 text-sm" style={{ color: 'var(--no)' }} role="alert">

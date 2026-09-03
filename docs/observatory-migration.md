@@ -143,7 +143,7 @@ Staged so nothing breaks and nothing is thrown away.
 | Phase | Change | Depends on |
 | --- | --- | --- |
 | **A** *(done)* | `/observatory` exists, unlinked | — |
-| **B** | Nav entry; a "tonight" module on the home surface | Stage 2 |
+| **B** *(done)* | Hub tile and a live band on `/hub`; an observatory section on the landing page | Stage 2 |
 | **C** | `/sky` gains routing — *your sky is clouded, this node's is not* | 2+ nodes |
 | **D** | `/observe` and the session room become two capture paths into one Collection | Stage 3 |
 | **E** | Home reframes around booking; the companion becomes the supporting act | Stage 4 |
