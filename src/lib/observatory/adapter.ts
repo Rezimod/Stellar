@@ -13,6 +13,7 @@
 
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { fetchSkyForecast } from '@/lib/sky-data';
+import { siteHourStamp } from './site-time';
 import type { NodeReadiness, ObservatoryNode, ReadinessState } from './types';
 
 export interface ObservatoryAdapter {
@@ -90,31 +91,9 @@ async function currentCloudCover(node: ObservatoryNode, now: Date): Promise<numb
     const hours = days.flatMap((d) => d.hours);
     if (hours.length === 0) return null;
 
-    // fetchSkyForecast asks Open-Meteo for the site's own timezone, so every
-    // `time` is a local wall-clock string with no offset ("2026-09-02T21:00").
-    // Parsing one with `new Date` would read it in the runtime's zone — UTC on
-    // Vercel — and silently select the wrong hour by the site's UTC offset.
-    // Match on the site's own wall clock instead.
     const stamp = siteHourStamp(node.timezone, now);
     return hours.find((h) => h.time.slice(0, 13) === stamp)?.cloudCover ?? null;
   } catch {
     return null;
   }
-}
-
-/** `now` as "YYYY-MM-DDTHH" on the wall clock of an IANA timezone. */
-function siteHourStamp(timezone: string, now: Date): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(now);
-
-  const get = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((p) => p.type === type)?.value ?? '';
-
-  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}`;
 }

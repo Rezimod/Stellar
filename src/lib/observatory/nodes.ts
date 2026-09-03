@@ -37,6 +37,9 @@ export const NODES: ObservatoryNode[] = [
     },
     priceGel: 40,
     sessionMinutes: 20,
+    // A roof in a residential district: the operator takes work from dusk
+    // until two, not through to dawn.
+    availability: { fromHourLocal: 20, toHourLocal: 2 },
   },
 ];
 
