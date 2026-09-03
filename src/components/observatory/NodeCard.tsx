@@ -62,7 +62,7 @@ export default function NodeCard({ node }: { node: NodeWithReadiness }) {
           Best for {instrument.suitedTo.join(' · ')}
         </p>
         <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
-          <span className="font-mono">{node.priceGel} ₾</span>
+          <span className="font-mono">{node.priceGel}</span> ₾
           <span style={{ color: 'var(--text-secondary)' }}>
             {' '}per <span className="font-mono">{node.sessionMinutes}</span> min
           </span>

@@ -81,8 +81,11 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
   }
 
-  const released = await release(slotId, privyId);
-  if (!released) {
+  const outcome = await release(slotId, privyId);
+  if (outcome === 'unavailable') {
+    return NextResponse.json({ error: 'Booking is unavailable right now' }, { status: 503 });
+  }
+  if (outcome === 'not_held') {
     return NextResponse.json({ error: 'You do not hold that slot' }, { status: 404 });
   }
   return NextResponse.json({ released: true });

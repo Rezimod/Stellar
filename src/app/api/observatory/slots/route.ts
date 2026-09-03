@@ -15,7 +15,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unknown node' }, { status: 404 });
   }
 
-  const requested = Number(req.nextUrl.searchParams.get('nights'));
+  // `Number(null)` is 0, not NaN — so an absent parameter has to be handled
+  // before the clamp, or every caller silently gets a single night.
+  const raw = req.nextUrl.searchParams.get('nights');
+  const requested = raw === null ? DEFAULT_NIGHTS : Number(raw);
   const nights = Number.isFinite(requested)
     ? Math.min(Math.max(Math.trunc(requested), 1), DEFAULT_NIGHTS)
     : DEFAULT_NIGHTS;
@@ -25,7 +28,7 @@ export async function GET(req: NextRequest) {
   // An unauthenticated visitor still sees what is free; they just cannot see
   // whose booking a taken slot is, which is nobody's business but the holder's.
   const privyId = await verifyPrivy(req);
-  const held =
+  const holds =
     slots.length > 0
       ? await heldSlots(
           node.id,
@@ -33,6 +36,7 @@ export async function GET(req: NextRequest) {
           new Date(new Date(slots[slots.length - 1].startsAt).getTime() + 1),
         )
       : new Map<string, Holder>();
+  const held = holds ?? new Map<string, Holder>();
 
   return NextResponse.json({
     node: {
@@ -44,6 +48,9 @@ export async function GET(req: NextRequest) {
       priceGel: node.priceGel,
       sessionMinutes: node.sessionMinutes,
     },
+    // False when the booking store could not be read: the nights are still
+    // real, but which slots are taken is not known.
+    holdsKnown: holds !== null,
     slots: slots.map((slot) => {
       const holder = held.get(slot.id);
       const mine = privyId !== null && holder?.privyId === privyId;

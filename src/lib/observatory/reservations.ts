@@ -6,6 +6,11 @@
  * with the escrow slice (docs/observatory-network.md §6). What matters here is
  * that two people cannot hold the same slot, which the unique index on
  * `slot_id` enforces in the database rather than in a read-then-write race.
+ *
+ * Every call reports its own failure instead of throwing. The timetable is
+ * computed from the sky and needs no database at all, so a store that cannot
+ * answer costs a visitor the held marks and the booking button — not the
+ * night's schedule.
  */
 
 import { and, eq, gte, lt } from 'drizzle-orm'
@@ -28,32 +33,43 @@ export type Reservation = {
 export type Holder = { id: string; privyId: string }
 
 export type BookOutcome = 'reserved' | 'taken' | 'at_limit' | 'unavailable'
+export type ReleaseOutcome = 'released' | 'not_held' | 'unavailable'
 
-/** Slot id → who holds it, for one node over one time range. */
+/**
+ * Slot id → who holds it, for one node over one time range.
+ *
+ * Null means the store could not answer, which the caller must tell apart from
+ * an empty map — that one reads as "everything is free".
+ */
 export async function heldSlots(
   nodeId: string,
   from: Date,
   to: Date,
-): Promise<Map<string, Holder>> {
+): Promise<Map<string, Holder> | null> {
   const db = getDb()
-  if (!db) return new Map()
+  if (!db) return null
 
-  const rows = await db
-    .select({
-      id: observatoryReservation.id,
-      slotId: observatoryReservation.slotId,
-      privyId: observatoryReservation.privyId,
-    })
-    .from(observatoryReservation)
-    .where(
-      and(
-        eq(observatoryReservation.nodeId, nodeId),
-        gte(observatoryReservation.startsAt, from),
-        lt(observatoryReservation.startsAt, to),
-      ),
-    )
+  try {
+    const rows = await db
+      .select({
+        id: observatoryReservation.id,
+        slotId: observatoryReservation.slotId,
+        privyId: observatoryReservation.privyId,
+      })
+      .from(observatoryReservation)
+      .where(
+        and(
+          eq(observatoryReservation.nodeId, nodeId),
+          gte(observatoryReservation.startsAt, from),
+          lt(observatoryReservation.startsAt, to),
+        ),
+      )
 
-  return new Map(rows.map((r) => [r.slotId, { id: r.id, privyId: r.privyId }]))
+    return new Map(rows.map((r) => [r.slotId, { id: r.id, privyId: r.privyId }]))
+  } catch (err) {
+    console.error('[observatory] cannot read reservations', err)
+    return null
+  }
 }
 
 /** Everything this account holds from `from` onwards, soonest first. */
@@ -82,13 +98,18 @@ export async function reservationById(id: string): Promise<Reservation | null> {
   const db = getDb()
   if (!db) return null
 
-  const [row] = await db
-    .select()
-    .from(observatoryReservation)
-    .where(eq(observatoryReservation.id, id))
-    .limit(1)
+  try {
+    const [row] = await db
+      .select()
+      .from(observatoryReservation)
+      .where(eq(observatoryReservation.id, id))
+      .limit(1)
 
-  return row ? shape(row) : null
+    return row ? shape(row) : null
+  } catch (err) {
+    console.error('[observatory] cannot read reservation', err)
+    return null
+  }
 }
 
 export async function reserve(input: {
@@ -101,44 +122,57 @@ export async function reserve(input: {
   const db = getDb()
   if (!db) return { outcome: 'unavailable', id: null }
 
-  const open = await reservationsFor(input.privyId)
-  if (open.length >= MAX_OPEN_RESERVATIONS) return { outcome: 'at_limit', id: null }
+  try {
+    const open = await reservationsFor(input.privyId)
+    if (open.length >= MAX_OPEN_RESERVATIONS) return { outcome: 'at_limit', id: null }
 
-  // The insert is the lock: a second caller for the same slot conflicts on the
-  // unique index and gets nothing back, whoever checked availability first.
-  const inserted = await db
-    .insert(observatoryReservation)
-    .values({
-      slotId: input.slotId,
-      nodeId: input.nodeId,
-      privyId: input.privyId,
-      startsAt: input.startsAt,
-      endsAt: input.endsAt,
-    })
-    .onConflictDoNothing({ target: observatoryReservation.slotId })
-    .returning({ id: observatoryReservation.id })
+    // The insert is the lock: a second caller for the same slot conflicts on
+    // the unique index and gets nothing back, whoever checked availability
+    // first.
+    const inserted = await db
+      .insert(observatoryReservation)
+      .values({
+        slotId: input.slotId,
+        nodeId: input.nodeId,
+        privyId: input.privyId,
+        startsAt: input.startsAt,
+        endsAt: input.endsAt,
+      })
+      .onConflictDoNothing({ target: observatoryReservation.slotId })
+      .returning({ id: observatoryReservation.id })
 
-  return inserted.length > 0
-    ? { outcome: 'reserved', id: inserted[0].id }
-    : { outcome: 'taken', id: null }
+    return inserted.length > 0
+      ? { outcome: 'reserved', id: inserted[0].id }
+      : { outcome: 'taken', id: null }
+  } catch (err) {
+    console.error('[observatory] cannot hold slot', err)
+    return { outcome: 'unavailable', id: null }
+  }
 }
 
-/** Release a slot. True when this account held it; false when it did not. */
-export async function release(slotId: string, privyId: string): Promise<boolean> {
+/**
+ * Release a slot.
+ *
+ * A store that cannot answer says so. Telling someone they never held a slot
+ * they are looking at, because the database blinked, is worse than an outage.
+ */
+export async function release(slotId: string, privyId: string): Promise<ReleaseOutcome> {
   const db = getDb()
-  if (!db) return false
+  if (!db) return 'unavailable'
 
-  const deleted = await db
-    .delete(observatoryReservation)
-    .where(
-      and(
-        eq(observatoryReservation.slotId, slotId),
-        eq(observatoryReservation.privyId, privyId),
-      ),
-    )
-    .returning({ id: observatoryReservation.id })
+  try {
+    const deleted = await db
+      .delete(observatoryReservation)
+      .where(
+        and(eq(observatoryReservation.slotId, slotId), eq(observatoryReservation.privyId, privyId)),
+      )
+      .returning({ id: observatoryReservation.id })
 
-  return deleted.length > 0
+    return deleted.length > 0 ? 'released' : 'not_held'
+  } catch (err) {
+    console.error('[observatory] cannot release slot', err)
+    return 'unavailable'
+  }
 }
 
 function shape(row: typeof observatoryReservation.$inferSelect): Reservation {
