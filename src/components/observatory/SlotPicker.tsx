@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import type { Slot } from '@/lib/observatory/availability';
 
-type BookableSlot = Slot & { taken: boolean; mine: boolean };
+type BookableSlot = Slot & { taken: boolean; mine: boolean; sessionId: string | null };
 
 type Props = {
   nodeId: string;
@@ -159,7 +160,7 @@ export default function SlotPicker({ nodeId, timezone, sessionMinutes, priceGel 
                 {slots
                   .filter((s) => s.night === night)
                   .map((slot) => (
-                    <SlotButton
+                    <SlotTile
                       key={slot.id}
                       slot={slot}
                       timezone={timezone}
@@ -178,7 +179,7 @@ export default function SlotPicker({ nodeId, timezone, sessionMinutes, priceGel 
   );
 }
 
-function SlotButton({
+function SlotTile({
   slot,
   timezone,
   busy,
@@ -194,9 +195,40 @@ function SlotButton({
 
   const tone = slot.mine
     ? { fg: 'var(--yes)', bg: 'var(--yes-dim)', bd: 'var(--yes-border)' }
-    : taken
-      ? { fg: 'var(--text-muted)', bg: 'var(--surface)', bd: 'var(--border)' }
-      : { fg: 'var(--text-primary)', bg: 'var(--surface)', bd: 'var(--border)' };
+    : { fg: taken ? 'var(--text-muted)' : 'var(--text-primary)', bg: 'var(--surface)', bd: 'var(--border)' };
+
+  const shell = 'flex flex-col items-start gap-1 rounded-lg border px-3 py-2 text-left';
+  const clock = <span className="font-mono text-sm">{siteClock(slot.startsAt, timezone)}</span>;
+
+  // A held slot carries two actions, so it cannot be one button — nesting a
+  // control inside a control is invalid, and the whole tile is no longer a
+  // single choice.
+  if (slot.mine) {
+    return (
+      <div className={shell} style={{ color: tone.fg, background: tone.bg, borderColor: tone.bd }}>
+        {clock}
+        <span className="flex items-center gap-3 text-xs">
+          <Link
+            href={`/observatory/session/${slot.sessionId}`}
+            className="underline"
+            style={{ color: 'var(--yes)' }}
+          >
+            Open session
+          </Link>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onSelect}
+            className="underline disabled:cursor-not-allowed"
+            // The global 44px control floor would stretch this line into a pill.
+            style={{ color: 'var(--text-muted)', minHeight: 0, padding: 0 }}
+          >
+            {busy ? 'Releasing…' : 'Release'}
+          </button>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <button
@@ -204,24 +236,20 @@ function SlotButton({
       disabled={taken || busy}
       onClick={onSelect}
       title={localClock(slot.startsAt)}
-      className="flex flex-col items-start gap-1 rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed"
+      className={`${shell} transition-colors disabled:cursor-not-allowed`}
       style={{ color: tone.fg, background: tone.bg, borderColor: tone.bd }}
     >
-      <span className="font-mono text-sm">{siteClock(slot.startsAt, timezone)}</span>
+      {clock}
       <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-        {slot.mine
-          ? busy
-            ? 'Releasing…'
-            : 'Held · release'
-          : taken
-            ? 'Taken'
-            : busy
-              ? 'Holding…'
-              : slot.cloudCover === null
-                ? 'Free'
-                : `${Math.round(slot.cloudCover)}% cloud`}
+        {taken
+          ? 'Taken'
+          : busy
+            ? 'Holding…'
+            : slot.cloudCover === null
+              ? 'Free'
+              : `${Math.round(slot.cloudCover)}% cloud`}
       </span>
-      {clouded && !taken && !slot.mine && (
+      {clouded && !taken && (
         <span className="text-xs" style={{ color: 'var(--no)' }}>
           Likely clouded
         </span>

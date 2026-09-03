@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { attachForecast, buildSlots, DEFAULT_NIGHTS } from '@/lib/observatory/availability';
 import { getNode } from '@/lib/observatory/nodes';
-import { heldSlots } from '@/lib/observatory/reservations';
+import { heldSlots, type Holder } from '@/lib/observatory/reservations';
 import { verifyPrivy } from '@/lib/api-auth';
 
 // Slots expire as the night runs down, and which of them are taken depends on
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
           new Date(slots[0].startsAt),
           new Date(new Date(slots[slots.length - 1].startsAt).getTime() + 1),
         )
-      : new Map<string, string>();
+      : new Map<string, Holder>();
 
   return NextResponse.json({
     node: {
@@ -44,10 +44,16 @@ export async function GET(req: NextRequest) {
       priceGel: node.priceGel,
       sessionMinutes: node.sessionMinutes,
     },
-    slots: slots.map((slot) => ({
-      ...slot,
-      taken: held.has(slot.id),
-      mine: privyId !== null && held.get(slot.id) === privyId,
-    })),
+    slots: slots.map((slot) => {
+      const holder = held.get(slot.id);
+      const mine = privyId !== null && holder?.privyId === privyId;
+      return {
+        ...slot,
+        taken: holder !== undefined,
+        mine,
+        // The session room's id, and only for the person who holds it.
+        sessionId: mine && holder ? holder.id : null,
+      };
+    }),
   });
 }
