@@ -136,11 +136,35 @@ Neon — `npm run db:push`, or the statement in the header comment.
 Still to come here: what a held slot becomes when money moves (Stage 5), and a
 place for a visitor to see everything they hold across nodes.
 
-## Stage 5 — money
+## Stage 5 — money *(ledger done, settlement off-chain)*
 
-Escrow at booking, release on `COMPLETE`, automatic refund on any terminal
-failure, operator payout ledger. Gated on the commission decision in
-`docs/observatory-network.md` §12.
+The commission decision landed (`docs/observatory-network.md` §6): an operator
+starts at 60/40 and climbs to 80/20 on delivered hours.
+
+Built:
+
+- **The arithmetic** — `settlement.ts`. A completed mission releases at the
+  operator's tier *at that moment*; any terminal failure refunds the customer in
+  full. No partial nights, no pro-rating. Fees divide in tetri and settle by
+  subtraction, so the halves always add back to what was paid.
+- **The ledger** — `observatory_settlement`, append-only, one row per session,
+  idempotent on `session_id`. A sweep that runs twice cannot pay twice, and the
+  unique index is what guarantees it rather than a careful caller.
+- **The sweep** — `/api/cron/settle`, hourly. Settlement is a server's job: a
+  customer who closes the tab still bought the session, and one who leaves it
+  open must not be able to settle it twice.
+- **The rail again** — `payable` is false while the node is simulated. The
+  arithmetic runs, the obligation does not, and simulated sessions add nothing
+  to the delivered hours that set an operator's share. A ladder that could be
+  climbed indoors would be a ladder to real money.
+
+Still to come, and both need the escrow program funded and deployed: charging
+the card at booking, and moving the operator's share on chain at release. A
+session that ends without the customer ever opening the room still settles as
+complete — the instrument was held for them.
+
+Requires `observatory_settlement` on Neon; SQL in the `src/lib/schema.ts`
+header comment.
 
 ---
 

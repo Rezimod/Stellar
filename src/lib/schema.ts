@@ -457,3 +457,47 @@ export const observatoryCapture = pgTable('observatory_capture', {
   index('observatory_capture_session_idx').on(t.sessionId, t.capturedAt),
   index('observatory_capture_privy_idx').on(t.privyId, t.capturedAt),
 ])
+
+// The payout ledger. One row per session, append-only and idempotent by
+// session_id — a settlement sweep that runs twice must not pay twice, and the
+// unique index is what guarantees that rather than a careful caller.
+// `payable` is false for a session the simulator ran: the arithmetic is real,
+// the obligation is not. See lib/observatory/settlement.
+//
+//   CREATE TABLE IF NOT EXISTS observatory_settlement (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     session_id uuid NOT NULL UNIQUE,
+//     node_id text NOT NULL,
+//     privy_id text NOT NULL,
+//     state text NOT NULL,
+//     fee_tetri integer NOT NULL,
+//     operator_tetri integer NOT NULL,
+//     platform_tetri integer NOT NULL,
+//     refund_tetri integer NOT NULL,
+//     payable boolean NOT NULL DEFAULT false,
+//     tier_id text,
+//     hours_delivered double precision NOT NULL DEFAULT 0,
+//     reason text,
+//     settled_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE INDEX IF NOT EXISTS observatory_settlement_node_idx
+//     ON observatory_settlement (node_id, settled_at);
+export const observatorySettlement = pgTable('observatory_settlement', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sessionId: uuid('session_id').notNull().unique(),
+  nodeId: text('node_id').notNull(),
+  privyId: text('privy_id').notNull(),
+  state: text('state').notNull(),
+  feeTetri: integer('fee_tetri').notNull(),
+  operatorTetri: integer('operator_tetri').notNull(),
+  platformTetri: integer('platform_tetri').notNull(),
+  refundTetri: integer('refund_tetri').notNull(),
+  payable: boolean('payable').notNull().default(false),
+  tierId: text('tier_id'),
+  /** The operator's delivered hours when this session settled — why they got this share. */
+  hoursDelivered: doublePrecision('hours_delivered').notNull().default(0),
+  reason: text('reason'),
+  settledAt: timestamp('settled_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('observatory_settlement_node_idx').on(t.nodeId, t.settledAt),
+])
