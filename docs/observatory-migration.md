@@ -52,9 +52,21 @@ Pure logic, no UI, fully tested.
 Acceptance: the machine can run a whole mission in fast-forward under test,
 and every safety refusal has a test.
 
-## Stage 2 — the session room
+## Stage 2 — the session room *(done)*
 
-`/observatory/session/[id]`, the surface a customer actually uses.
+`/observatory/session/[id]`, the surface a customer actually uses. The id is the
+reservation: a session is a booked slot, and one that belongs to another account
+answers 404 rather than 403, because "not yours" still confirms the slot existed
+and who was on the instrument that night.
+
+Three phases, from the clock alone (`session-phase.ts`): **scheduled** until
+five minutes before the slot — the room opens while the mount unparks, not when
+the paid time starts — then **live**, then **ended** on the second the slot runs
+out, because the next booking's mount is already moving.
+
+The console is the simulator's, with one difference: a booked room runs on the
+real clock. `TimeControl` is the sandbox's privilege; a session gets
+`SessionClock`, which counts the slot down instead.
 
 - **Live view** — the frame, at the instrument's true field of view.
 - **Telemetry**, mono, always visible: RA/Dec, Alt/Az, tracking state, sub

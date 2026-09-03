@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'That slot is no longer available' }, { status: 409 });
   }
 
-  const outcome = await reserve({
+  const { outcome, id } = await reserve({
     slotId: slot.id,
     nodeId: node.id,
     privyId,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (outcome === 'reserved') {
-    return NextResponse.json({ reserved: true, slot }, { status: 201 });
+    return NextResponse.json({ reserved: true, slot, sessionId: id }, { status: 201 });
   }
   if (outcome === 'taken') {
     return NextResponse.json({ error: 'Someone else holds that slot' }, { status: 409 });

@@ -7,6 +7,7 @@ import ControlPanel from './ControlPanel';
 import MissionLog, { type LogEntry } from './MissionLog';
 import CompareControl from './CompareControl';
 import TimeControl from './TimeControl';
+import SessionClock from './SessionClock';
 import { acquisitionStateAt, planAcquisition, pointingAt, type Acquisition } from '@/lib/observatory/mission';
 import { evaluateSafety, type AltAz, type SafetyVerdict } from '@/lib/observatory/safety';
 import {
@@ -64,9 +65,15 @@ const TICK_MS = 250;
 export default function SessionConsole({
   node,
   cloudCover,
+  session,
 }: {
   node: ObservatoryNode;
   cloudCover: number | null;
+  /**
+   * A booked slot. The console runs on the real clock inside it — there is no
+   * moving time when the instrument is somebody else's for twenty minutes.
+   */
+  session?: { startsAtMs: number; endsAtMs: number };
 }) {
   const [clock, setClock] = useState<number | null>(null);
   // Simulated time runs forward from the real clock plus an offset, so the
@@ -250,13 +257,22 @@ export default function SessionConsole({
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)] lg:items-start">
       <div className="flex flex-col gap-4">
-        <TimeControl
-          now={now}
-          timezone={node.timezone}
-          offsetMs={offsetMs}
-          onJumpToNight={jumpToNight}
-          onReturnToNow={returnToNow}
-        />
+        {session ? (
+          <SessionClock
+            now={now}
+            timezone={node.timezone}
+            startsAtMs={session.startsAtMs}
+            endsAtMs={session.endsAtMs}
+          />
+        ) : (
+          <TimeControl
+            now={now}
+            timezone={node.timezone}
+            offsetMs={offsetMs}
+            onJumpToNight={jumpToNight}
+            onReturnToNow={returnToNow}
+          />
+        )}
 
         <div className="obs-frame">
           <LiveView

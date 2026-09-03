@@ -16,25 +16,34 @@ import { observatoryReservation } from '@/lib/schema'
 export const MAX_OPEN_RESERVATIONS = 3
 
 export type Reservation = {
+  id: string
   slotId: string
   nodeId: string
+  privyId: string
   startsAt: string
   endsAt: string
 }
 
+/** Who holds a slot, and the session room it opens. */
+export type Holder = { id: string; privyId: string }
+
 export type BookOutcome = 'reserved' | 'taken' | 'at_limit' | 'unavailable'
 
-/** Slot id → the account holding it, for one node over one time range. */
+/** Slot id → who holds it, for one node over one time range. */
 export async function heldSlots(
   nodeId: string,
   from: Date,
   to: Date,
-): Promise<Map<string, string>> {
+): Promise<Map<string, Holder>> {
   const db = getDb()
   if (!db) return new Map()
 
   const rows = await db
-    .select({ slotId: observatoryReservation.slotId, privyId: observatoryReservation.privyId })
+    .select({
+      id: observatoryReservation.id,
+      slotId: observatoryReservation.slotId,
+      privyId: observatoryReservation.privyId,
+    })
     .from(observatoryReservation)
     .where(
       and(
@@ -44,7 +53,7 @@ export async function heldSlots(
       ),
     )
 
-  return new Map(rows.map((r) => [r.slotId, r.privyId]))
+  return new Map(rows.map((r) => [r.slotId, { id: r.id, privyId: r.privyId }]))
 }
 
 /** Everything this account holds from `from` onwards, soonest first. */
@@ -53,25 +62,33 @@ export async function reservationsFor(privyId: string, from = new Date()): Promi
   if (!db) return []
 
   const rows = await db
-    .select({
-      slotId: observatoryReservation.slotId,
-      nodeId: observatoryReservation.nodeId,
-      startsAt: observatoryReservation.startsAt,
-      endsAt: observatoryReservation.endsAt,
-    })
+    .select()
     .from(observatoryReservation)
     .where(
       and(eq(observatoryReservation.privyId, privyId), gte(observatoryReservation.startsAt, from)),
     )
 
-  return rows
-    .map((r) => ({
-      slotId: r.slotId,
-      nodeId: r.nodeId,
-      startsAt: r.startsAt.toISOString(),
-      endsAt: r.endsAt.toISOString(),
-    }))
-    .sort((a, b) => (a.startsAt < b.startsAt ? -1 : 1))
+  return rows.map(shape).sort((a, b) => (a.startsAt < b.startsAt ? -1 : 1))
+}
+
+/**
+ * One reservation by its id.
+ *
+ * The session room asks for this and then checks the holder itself: a
+ * reservation someone else made is not this visitor's to see, and answering
+ * "not yours" would still confirm that it exists.
+ */
+export async function reservationById(id: string): Promise<Reservation | null> {
+  const db = getDb()
+  if (!db) return null
+
+  const [row] = await db
+    .select()
+    .from(observatoryReservation)
+    .where(eq(observatoryReservation.id, id))
+    .limit(1)
+
+  return row ? shape(row) : null
 }
 
 export async function reserve(input: {
@@ -80,12 +97,12 @@ export async function reserve(input: {
   privyId: string
   startsAt: Date
   endsAt: Date
-}): Promise<BookOutcome> {
+}): Promise<{ outcome: BookOutcome; id: string | null }> {
   const db = getDb()
-  if (!db) return 'unavailable'
+  if (!db) return { outcome: 'unavailable', id: null }
 
   const open = await reservationsFor(input.privyId)
-  if (open.length >= MAX_OPEN_RESERVATIONS) return 'at_limit'
+  if (open.length >= MAX_OPEN_RESERVATIONS) return { outcome: 'at_limit', id: null }
 
   // The insert is the lock: a second caller for the same slot conflicts on the
   // unique index and gets nothing back, whoever checked availability first.
@@ -101,7 +118,9 @@ export async function reserve(input: {
     .onConflictDoNothing({ target: observatoryReservation.slotId })
     .returning({ id: observatoryReservation.id })
 
-  return inserted.length > 0 ? 'reserved' : 'taken'
+  return inserted.length > 0
+    ? { outcome: 'reserved', id: inserted[0].id }
+    : { outcome: 'taken', id: null }
 }
 
 /** Release a slot. True when this account held it; false when it did not. */
@@ -120,4 +139,15 @@ export async function release(slotId: string, privyId: string): Promise<boolean>
     .returning({ id: observatoryReservation.id })
 
   return deleted.length > 0
+}
+
+function shape(row: typeof observatoryReservation.$inferSelect): Reservation {
+  return {
+    id: row.id,
+    slotId: row.slotId,
+    nodeId: row.nodeId,
+    privyId: row.privyId,
+    startsAt: row.startsAt.toISOString(),
+    endsAt: row.endsAt.toISOString(),
+  }
 }
