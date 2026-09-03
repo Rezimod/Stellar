@@ -64,6 +64,11 @@ export type ObservatoryNode = {
   priceGel: number;
   /** Minutes of telescope time one session buys. */
   sessionMinutes: number;
+  /**
+   * The recurring window, on the site's own wall clock, when the operator
+   * accepts work. Omitted means the dark window is the only limit.
+   */
+  availability?: { fromHourLocal: number; toHourLocal: number };
 };
 
 export type NodeReadiness = {

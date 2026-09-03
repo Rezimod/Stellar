@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import ReadinessBadge from './ReadinessBadge';
 import type { NodeWithReadiness } from '@/lib/observatory/types';
 
@@ -67,6 +68,18 @@ export default function NodeCard({ node }: { node: NodeWithReadiness }) {
           </span>
         </p>
       </div>
+
+      <Link
+        href={`/observatory/${node.id}`}
+        className="mt-4 inline-block rounded-md border px-3 py-2 text-sm"
+        style={{
+          borderColor: 'var(--accent-border)',
+          background: 'var(--accent-dim)',
+          color: 'var(--accent-text)',
+        }}
+      >
+        Instrument and availability
+      </Link>
     </article>
   );
 }

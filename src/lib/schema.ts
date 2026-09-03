@@ -384,3 +384,34 @@ export const pushSubscription = pgTable('push_subscription', {
 }, (t) => [
   index('push_sub_wallet_idx').on(t.wallet),
 ])
+
+// Observatory bookings. One row per reserved slot; the slot id is derived from
+// the node and the start time (`nodeId:2026-09-04T18:30Z`), so the unique index
+// on it is what stops two people holding the same twenty minutes. No money
+// moves yet — a row here is a dry-run reservation, and cancelling deletes it.
+//
+//   CREATE TABLE IF NOT EXISTS observatory_reservation (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     slot_id text NOT NULL UNIQUE,
+//     node_id text NOT NULL,
+//     privy_id text NOT NULL,
+//     starts_at timestamptz NOT NULL,
+//     ends_at timestamptz NOT NULL,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+//   CREATE INDEX IF NOT EXISTS observatory_reservation_node_idx
+//     ON observatory_reservation (node_id, starts_at);
+//   CREATE INDEX IF NOT EXISTS observatory_reservation_privy_idx
+//     ON observatory_reservation (privy_id, starts_at);
+export const observatoryReservation = pgTable('observatory_reservation', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slotId: text('slot_id').notNull().unique(),
+  nodeId: text('node_id').notNull(),
+  privyId: text('privy_id').notNull(),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index('observatory_reservation_node_idx').on(t.nodeId, t.startsAt),
+  index('observatory_reservation_privy_idx').on(t.privyId, t.startsAt),
+])

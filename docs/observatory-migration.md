@@ -90,10 +90,31 @@ A reference photograph supplies the *content*; the optics, the sky and the
 sensor supply everything else. The result is what that instrument would show,
 and it is labelled simulated regardless.
 
-## Stage 4 — booking
+## Stage 4 — booking *(done)*
 
-Slot picker over `node_availability`, a dry-run reservation, no money. Enough to
-run a session end to end with a real account.
+Slot picker over the node's availability, a dry-run reservation, no money.
+
+- **A slot exists only where two windows overlap**: the Sun is below −12° at the
+  site, and the operator is taking work (`availability` on the node, in the
+  site's own wall clock). `src/lib/observatory/availability.ts` is pure and
+  deterministic, so the same night always yields the same slots and the same
+  ids — which is what lets the booking route validate a slot id by rebuilding
+  the timetable rather than trusting the client.
+- **The Sun decides, not the dark-window search.** `getTonightDarkWindow` bounds
+  the search cheaply; every candidate is then checked with `getSunAltitude`,
+  the same measure the readiness gate uses. The two disagree by a few minutes
+  at dusk, on the side that would hand a booked session a sky still too bright.
+- **The insert is the lock.** `observatory_reservation.slot_id` is unique, so
+  two people cannot hold the same twenty minutes however the race falls out.
+  Three open reservations per account while this is a dry run.
+- Surfaces: `/observatory/[nodeId]` (instrument + timetable),
+  `GET /api/observatory/slots`, `POST`/`DELETE /api/observatory/book`.
+
+Requires the SQL in `src/lib/schema.ts` (`observatory_reservation`) to be run on
+Neon — `npm run db:push`, or the statement in the header comment.
+
+Still to come here: what a held slot becomes when money moves (Stage 5), and a
+place for a visitor to see everything they hold across nodes.
 
 ## Stage 5 — money
 
@@ -119,9 +140,10 @@ Nothing is deleted. Forecast, planets, ASTRA, missions, marketplace and Field
 all keep working; they change role, and the roles are in
 `docs/observatory-network.md` §9.
 
-## Open question
+## Decided
 
-**Is the simulator public?** A clearly-labelled sandbox where anyone can drive a
-telescope that behaves correctly is the best marketing asset this project could
-have, and it is the Colosseum demo. The alternative is an internal harness
-behind a flag. It changes how much the session room UI is worth polishing.
+**The simulator is public**, clearly labelled. A sandbox where anyone can drive a
+telescope that behaves correctly is the best marketing asset this project has,
+and it is the demo that works on a stage with no sky. It is linked from
+`/observatory` and from every node page, and the provenance rail above is what
+makes it safe to leave open: a simulated frame cannot mint, award or be logged.
