@@ -12,6 +12,7 @@ import SessionClock from './SessionClock';
 import { acquisitionStateAt, planAcquisition, pointingAt, type Acquisition } from '@/lib/observatory/mission';
 import { evaluateSafety, type AltAz, type SafetyVerdict } from '@/lib/observatory/safety';
 import {
+  DEFAULT_SEEING_ARCSEC,
   ROIS,
   ROI_BY_ID,
   TRAINS,
@@ -59,8 +60,7 @@ const RECOMMENDED_SETUP: Record<string, { train: string; roi: string; exposureSe
 
 /** Where the mount sits when it is not working. */
 const PARKED: AltAz = { altitude: 0, azimuth: 0 };
-/** Typical Tbilisi seeing. Good nights reach 2", poor ones 4". */
-const SEEING_ARCSEC = 2.6;
+const SEEING_ARCSEC = DEFAULT_SEEING_ARCSEC;
 const TICK_MS = 250;
 
 export default function SessionConsole({
@@ -227,6 +227,8 @@ export default function SessionConsole({
           targetName: target.name,
           exposureSec,
           subs,
+          opticalTrain: trainId,
+          roi: roiId,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -238,7 +240,7 @@ export default function SessionConsole({
     } catch {
       append('Frame not filed — network error.');
     }
-  }, [append, audioOn, exposureSec, getAccessToken, session, subs, target]);
+  }, [append, audioOn, exposureSec, getAccessToken, roiId, session, subs, target, trainId]);
 
   const jumpToNight = useCallback(() => {
     const real = Date.now();

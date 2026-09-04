@@ -101,6 +101,15 @@ export function focalRatio(
 }
 
 /**
+ * Typical Tbilisi seeing. Good nights reach 2", poor ones 4".
+ *
+ * A property of the site's air rather than of any one surface, so the console
+ * and the gallery blur a frame by the same amount — a capture must not look
+ * sharper in the gallery than it did through the eyepiece.
+ */
+export const DEFAULT_SEEING_ARCSEC = 2.6;
+
+/**
  * Dawes' limit: the finest detail this aperture can resolve, in arcseconds.
  * Seeing is usually worse, which is why the simulator blurs by the larger of
  * the two.

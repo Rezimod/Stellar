@@ -449,6 +449,19 @@ export const observatoryCapture = pgTable('observatory_capture', {
   provenance: text('provenance').notNull(),
   exposureSec: doublePrecision('exposure_sec').notNull(),
   subs: integer('subs').notNull(),
+  /**
+   * How the light path was configured. Without these the gallery redraws a
+   * planetary capture at native focal length across the whole sensor, and
+   * Saturn — which the imager saw through a Barlow on a 400 px crop — comes
+   * back as a dot. A record of a capture has to include what it was taken
+   * through.
+   *
+   *   ALTER TABLE observatory_capture
+   *     ADD COLUMN IF NOT EXISTS optical_train text NOT NULL DEFAULT 'native',
+   *     ADD COLUMN IF NOT EXISTS roi text NOT NULL DEFAULT 'full';
+   */
+  opticalTrain: text('optical_train').notNull().default('native'),
+  roi: text('roi').notNull().default('full'),
   capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
   /** Set only when the capture was admitted to the Collection. */
   observationLogId: uuid('observation_log_id'),

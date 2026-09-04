@@ -1779,7 +1779,10 @@
       "ownerTitle": "Own a telescope that sits idle?",
       "ownerLead": "There is no box to buy. The software connects the mount and camera you already own, and you keep 60% from the first session — 80% once the instrument has earned it.",
       "ownerCta": "What an operator earns →",
-      "proofCta": "How a capture is proved →"
+      "proofCta": "How a capture is proved →",
+      "capturesTitle": "What the network has photographed",
+      "capturesLead": "Every frame carries the instrument that took it and where it came from. Simulated frames are labelled as such — always.",
+      "capturesCta": "See every capture →"
     }
   },
   "observeFlow": {

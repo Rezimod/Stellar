@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { capturesForSession, recordCapture } from '@/lib/observatory/captures';
+import { ROI_BY_ID, TRAIN_BY_ID } from '@/lib/observatory/optics';
 import { adapterFor, getNode } from '@/lib/observatory/nodes';
 import { reservationById } from '@/lib/observatory/reservations';
 import { PREP_LEAD_MS } from '@/lib/observatory/session-phase';
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest) {
     targetName?: unknown;
     exposureSec?: unknown;
     subs?: unknown;
+    opticalTrain?: unknown;
+    roi?: unknown;
   };
   try {
     body = await req.json();
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
   }
 
-  const { sessionId, targetId, targetName, exposureSec, subs } = body;
+  const { sessionId, targetId, targetName, exposureSec, subs, opticalTrain, roi } = body;
   if (
     typeof sessionId !== 'string' ||
     typeof targetId !== 'string' ||
@@ -44,6 +47,16 @@ export async function POST(req: NextRequest) {
     subs < 1 ||
     subs > MAX_SUBS
   ) {
+    return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
+  }
+
+  // The light path is the client's to describe — it is a console setting, not
+  // a claim about the sky — but only in the configurations this rig has. An
+  // unknown train or crop would make the gallery redraw a field that never
+  // existed, so it is rejected rather than defaulted.
+  const train = typeof opticalTrain === 'string' ? opticalTrain : 'native';
+  const readout = typeof roi === 'string' ? roi : 'full';
+  if (!TRAIN_BY_ID.has(train) || !ROI_BY_ID.has(readout)) {
     return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
   }
 
@@ -77,6 +90,8 @@ export async function POST(req: NextRequest) {
     provenance: adapterFor(node).provenance,
     exposureSec,
     subs,
+    opticalTrain: train,
+    roi: readout,
     capturedAt: new Date(now),
   });
 

@@ -40,6 +40,8 @@ export async function recordCapture(input: {
   provenance: Provenance
   exposureSec: number
   subs: number
+  opticalTrain: string
+  roi: string
   capturedAt: Date
 }): Promise<CaptureResult> {
   const db = getDb()
@@ -59,6 +61,8 @@ export async function recordCapture(input: {
         provenance: input.provenance,
         exposureSec: input.exposureSec,
         subs: input.subs,
+        opticalTrain: input.opticalTrain,
+        roi: input.roi,
         capturedAt: input.capturedAt,
       })
       .returning()

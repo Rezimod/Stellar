@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import HomeHeroSaturn from '@/components/home/HomeHeroSaturn';
+import HomeCaptureStrip from '@/components/home/HomeCaptureStrip';
 import ComparisonTable from '@/components/home/ComparisonTable';
 import ScrollReveals from '@/components/home/ScrollReveals';
 
@@ -1192,6 +1193,14 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ============================================================
+          CAPTURES — the network's own frames
+
+          Renders nothing until there are frames to show, so the page never
+          carries an empty gallery waiting on first light.
+         ============================================================ */}
+      <HomeCaptureStrip />
 
       {/* ============================================================
           HOW IT WORKS — three phones, one screen

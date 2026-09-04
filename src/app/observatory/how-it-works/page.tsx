@@ -210,6 +210,13 @@ export default function HowItWorksPage() {
           >
             See the network
           </Link>
+          <Link
+            href="/observatory/captures"
+            className="inline-block rounded-md border px-3 py-2 text-sm"
+            style={{ borderColor: 'var(--obs-rule-strong)', color: 'var(--text-primary)' }}
+          >
+            Every capture so far
+          </Link>
         </div>
       </section>
     </PageContainer>
