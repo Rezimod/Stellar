@@ -30,6 +30,7 @@ import { SkyMap } from '@/components/sky/finder/SkyMap';
 import { PlanetIcon } from '@/components/sky/finder/PlanetIcon';
 import { MoonGlyph } from '@/components/sky/finder/MoonGlyph';
 import { SevenDayForecast } from '@/components/sky/forecast/SevenDayForecast';
+import SkyRoutingBand from '@/components/sky/SkyRoutingBand';
 import { SkyEvents2026 } from '@/components/sky/SkyEvents2026';
 import { SpaceGallery } from '@/components/sky/SpaceGallery';
 import type { FinderResponse, ObjectId, SkyObject } from '@/components/sky/finder/types';
@@ -583,6 +584,11 @@ export default function SkyPage() {
               </div>
             </section>
             </div>
+
+            {/* ── Routing: when this sky is shut, whose is open ──
+                 Renders nothing unless there is a node meaningfully clearer
+                 than here, so it stays believable on the night it matters. */}
+            <SkyRoutingBand lat={location.lat} lon={location.lon} />
 
             {/* ── Dashboard: map + rail + overview/tips (grid on desktop, stack on mobile) ── */}
             <div className="skx__dash">
