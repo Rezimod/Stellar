@@ -74,6 +74,15 @@ export type ObservatoryNode = {
    * first-party node: Stellar operates it, and nobody is owed a share.
    */
   operatorPrivyId?: string;
+  /**
+   * The node platform Stellar talks to, and the environment variable holding
+   * its address. Absent means there is no hardware link and the simulator
+   * speaks for this node.
+   *
+   * The URL is a name here rather than a value so no observatory's address is
+   * committed to a public repository.
+   */
+  link?: { platform: 'darkview'; baseUrlEnv: string };
 };
 
 export type NodeReadiness = {

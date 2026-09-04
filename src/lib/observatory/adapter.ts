@@ -19,20 +19,31 @@ import type { NodeReadiness, ObservatoryNode, ReadinessState } from './types';
 
 export interface ObservatoryAdapter {
   /**
-   * What frames from this adapter are worth. Declared by the adapter itself,
+   * What a frame taken *right now* is worth. Declared by the adapter itself,
    * so a capture cannot acquire instrument provenance by passing through a
    * surface that forgot to ask.
+   *
+   * This was a constant until a real node platform arrived and turned out to
+   * have two modes. Darkview's own contract says SIMULATED is its default,
+   * always, and REAL is reachable only through an explicit attended operator
+   * action — so an adapter that answered 'instrument' because of what it is
+   * connected to, rather than what that thing is doing, would mint a
+   * simulator's output onto mainnet. Provenance is a property of the frame,
+   * not of the class that fetched it.
+   *
+   * Must never throw and must fail closed: an adapter that cannot find out
+   * answers 'simulated'.
    */
-  readonly provenance: Provenance;
+  provenanceNow(node: ObservatoryNode, now?: Date): Promise<Provenance>;
 
   /** Live operational state. Must never throw — a node that cannot answer is offline. */
   getReadiness(node: ObservatoryNode, now?: Date): Promise<NodeReadiness>;
 }
 
 /** Above this cloud cover the sky is not worth an instrument's time. */
-const CLOUD_LIMIT = 70;
+export const CLOUD_LIMIT = 70;
 /** The Sun must be at least this far down before a mission can start. */
-const SUN_LIMIT_DEG = -12;
+export const SUN_LIMIT_DEG = -12;
 
 /**
  * Readiness for a node with no hardware link yet.
@@ -43,7 +54,10 @@ const SUN_LIMIT_DEG = -12;
  * and only its hardware state is assumed.
  */
 export class SimNodeAdapter implements ObservatoryAdapter {
-  readonly provenance = 'simulated' as const;
+  /** A model of the optics can never be evidence, whatever the sky is doing. */
+  async provenanceNow(): Promise<Provenance> {
+    return 'simulated';
+  }
 
   async getReadiness(node: ObservatoryNode, now = new Date()): Promise<NodeReadiness> {
     const base = {
@@ -95,7 +109,7 @@ export class SimNodeAdapter implements ObservatoryAdapter {
 }
 
 /** Cloud cover at the site for the hour containing `now`, or null if unavailable. */
-async function currentCloudCover(node: ObservatoryNode, now: Date): Promise<number | null> {
+export async function currentCloudCover(node: ObservatoryNode, now: Date): Promise<number | null> {
   try {
     const days = await fetchSkyForecast(node.lat, node.lon);
     const hours = days.flatMap((d) => d.hours);

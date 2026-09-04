@@ -101,6 +101,50 @@ node. This is not a style preference — Darkview's funding is conditioned on
 that separation, and breaking it is expensive in ways a refactor cannot undo.
 Treat it as a compile error.
 
+### 4.2 Integrating a Darkview observatory
+
+Darkview publishes `contracts/openapi.yaml` and Stellar is a client of it like
+any other. `src/lib/observatory/darkview.ts` reads one public operation,
+`getObservatoryStatus` (`GET /observatory/state`), and nothing else. No Darkview
+source, generated or otherwise, is vendored here; the response shape in that
+file is the subset Stellar reads, validated at the boundary.
+
+**Darkview has two modes, and this changes the provenance rail.** Its contract
+states that `SIMULATED` is the default *always*, and that `REAL` is reachable
+only through an explicit, attended operator action. An adapter that answered
+`instrument` because of what it is *connected to* would therefore mint a
+simulator's output onto mainnet — the July certify-all incident, mechanised.
+
+So `ObservatoryAdapter.provenance` is no longer a constant. It is
+`provenanceNow(node)`, asked at the moment of capture, and it answers
+`instrument` only while the observatory reports `mode: REAL` **and**
+`link: ONLINE`. Everything else resolves to `simulated`: simulated mode, a
+`DEGRADED` heartbeat, an unreachable node, an HTTP error, a reply carrying an
+enum value we do not recognise. Provenance is a property of the frame, not of
+the class that fetched it.
+
+**Settlement reads the frames, not the node.** `sessionProvenance(sessionId)`
+returns `instrument` only if that session recorded at least one instrument
+capture. Re-deriving it from the adapter at sweep time answers a question about
+*now* and pays it against work done hours earlier, so a session that ran on the
+simulator would settle as payable if the telescope were switched on before the
+cron ran. A session with no captures is `simulated` — the conservative
+direction, and an economics question for §6 if it should ever change.
+
+**Wiring a node.** A node declares its link in the registry:
+
+```ts
+link: { platform: 'darkview', baseUrlEnv: 'DARKVIEW_API_URL' }
+```
+
+The environment variable is named rather than valued so no observatory address
+is committed to a public repository. A node that declares a link keeps the
+Darkview adapter even when that variable is unset — a misconfigured instrument
+reads as **offline**, and must never silently demote to the simulator.
+
+Nothing is wired today. `tbilisi-01` has no `link`, so the simulator speaks for
+it and `/observatory/how-it-works` correctly reports zero instruments.
+
 ## 5. Session lifecycle
 
 ```

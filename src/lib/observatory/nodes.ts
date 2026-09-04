@@ -9,6 +9,7 @@
 
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { SimNodeAdapter, type ObservatoryAdapter } from './adapter';
+import { DarkviewAdapter } from './darkview';
 import type { NodeWithReadiness, ObservatoryNode } from './types';
 
 export const NODES: ObservatoryNode[] = [
@@ -43,15 +44,21 @@ export const NODES: ObservatoryNode[] = [
   },
 ];
 
-const adapters: Record<ObservatoryNode['tier'], ObservatoryAdapter> = {
-  first_party: new SimNodeAdapter(),
-  kitted: new SimNodeAdapter(),
-  byo: new SimNodeAdapter(),
-};
+const SIMULATOR = new SimNodeAdapter();
 
-/** The adapter that speaks for this node — and therefore what its frames are worth. */
+/**
+ * The adapter that speaks for this node — and therefore what its frames are
+ * worth.
+ *
+ * Keyed on the hardware link rather than the tier: how a node joined the
+ * network says nothing about whether a telescope is on the other end of it.
+ * A node that declares a link keeps its platform adapter even when the address
+ * is unset, because a misconfigured instrument must read as offline and never
+ * silently demote to the simulator.
+ */
 export function adapterFor(node: ObservatoryNode): ObservatoryAdapter {
-  return adapters[node.tier];
+  if (!node.link) return SIMULATOR;
+  return new DarkviewAdapter(process.env[node.link.baseUrlEnv] ?? '');
 }
 
 export function getNode(id: string): ObservatoryNode | null {
@@ -65,7 +72,7 @@ export async function getNodesWithReadiness(now = new Date()): Promise<NodeWithR
   return Promise.all(
     visible.map(async (node) => ({
       ...node,
-      readiness: await adapters[node.tier].getReadiness(node, now),
+      readiness: await adapterFor(node).getReadiness(node, now),
     })),
   );
 }

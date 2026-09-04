@@ -43,7 +43,7 @@ const STEPS: Step[] = [
     title: 'Provenance is declared by the adapter, never by the client',
     where: 'adapter.ts · capture route',
     body:
-      'Every adapter carries a readonly provenance. The capture endpoint reads it from adapterFor(node) and ignores the request body entirely — there is no field a client could set. This is the step that matters most, because it is the one an attacker would look for: a browser cannot describe its own frame as instrument-grade, since it is never asked to describe it at all.',
+      'The capture endpoint asks adapterFor(node) what a frame taken this second is worth, and ignores the request body entirely — there is no field a client could set. It is asked at the moment of capture rather than read off the adapter once, because a node platform can be connected and still running its own simulator, and being wired to a telescope is not the same as that telescope being the thing that took the picture. Every uncertainty resolves downward: an unreachable node, a late heartbeat, a reply we do not recognise, all mean simulated.',
   },
   {
     title: 'One gate decides what a frame is worth',
@@ -65,9 +65,12 @@ const STEPS: Step[] = [
   },
 ];
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
   const nodes = NODES;
-  const live = nodes.filter((node) => adapterFor(node).provenance === 'instrument');
+  const provenances = await Promise.all(
+    nodes.map((node) => adapterFor(node).provenanceNow(node)),
+  );
+  const live = provenances.filter((p) => p === 'instrument');
 
   return (
     <PageContainer variant="wide" className="obs py-6 sm:py-10">

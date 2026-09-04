@@ -80,14 +80,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Provenance comes from the adapter, never from the request body: a client
-  // cannot describe its own frame as instrument-grade.
+  // cannot describe its own frame as instrument-grade. It is asked for at the
+  // moment of capture rather than read off the class, because a node platform
+  // can be running its own simulator while connected.
+  const provenance = await adapterFor(node).provenanceNow(node, new Date(now));
+
   const result = await recordCapture({
     sessionId: reservation.id,
     nodeId: node.id,
     privyId,
     targetId,
     targetName,
-    provenance: adapterFor(node).provenance,
+    provenance,
     exposureSec,
     subs,
     opticalTrain: train,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adapterFor, getNode } from '@/lib/observatory/nodes';
+import { getNode } from '@/lib/observatory/nodes';
+import { sessionProvenance } from '@/lib/observatory/captures';
 import { settleDueSessions } from '@/lib/observatory/settlements';
 import { verifyCronSecret } from '@/lib/cron-auth';
 
@@ -20,11 +21,11 @@ export async function GET(req: NextRequest) {
 
   const priceTetri = (nodeId: string) => Math.round((getNode(nodeId)?.priceGel ?? 0) * 100);
   const minutes = (nodeId: string) => getNode(nodeId)?.sessionMinutes ?? 0;
-  const provenance = (nodeId: string) => {
-    const node = getNode(nodeId);
-    // A session on a node that no longer exists is not evidence of anything.
-    return node ? adapterFor(node).provenance : 'simulated';
-  };
+  // Read back off the frames the session recorded, never asked of the node
+  // now: a Darkview observatory is SIMULATED by default and REAL only while an
+  // operator has put it there, so asking at sweep time would pay a simulated
+  // session because the telescope happens to be on an hour later.
+  const provenance = (session: { id: string }) => sessionProvenance(session.id);
 
   const result = await settleDueSessions({
     feeTetriFor: priceTetri,

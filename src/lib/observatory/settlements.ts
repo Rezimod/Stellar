@@ -134,7 +134,8 @@ export async function settleDueSessions(input: {
   now?: Date
   feeTetriFor: (nodeId: string) => number
   minutesFor: (nodeId: string) => number
-  provenanceFor: (nodeId: string) => Provenance
+  /** Asked per session, because provenance was decided when the frames were taken. */
+  provenanceFor: (session: { id: string; nodeId: string }) => Promise<Provenance>
 }): Promise<{ settled: number; skipped: number }> {
   const now = input.now ?? new Date()
   const due = await unsettledSessions(now)
@@ -152,7 +153,7 @@ export async function settleDueSessions(input: {
       settlement: settleComplete({
         feeTetri: input.feeTetriFor(session.nodeId),
         hoursDelivered: hours,
-        provenance: input.provenanceFor(session.nodeId),
+        provenance: await input.provenanceFor(session),
       }),
     })
     if (written) settled++

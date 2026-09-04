@@ -119,3 +119,41 @@ function shape(row: typeof observatoryCapture.$inferSelect): Capture {
     observationLogId: row.observationLogId,
   }
 }
+
+/**
+ * What a finished session actually produced.
+ *
+ * Read back from the frames it recorded, never re-derived from the node. A
+ * node's provenance is a live fact — a Darkview observatory is SIMULATED by
+ * default and REAL only while an operator has explicitly put it there — so
+ * asking it at settlement time answers a question about *now* and pays it
+ * against work done hours ago. A session that ran on the simulator and settles
+ * after the telescope was switched on must not become payable retroactively.
+ *
+ * A session with no captures at all is 'simulated': nothing instrument-grade
+ * was produced, so nothing instrument-grade is owed. That is deliberately the
+ * conservative direction — see docs/observatory-network.md §6 if the
+ * economics of a completed-but-uncaptured session should ever change.
+ */
+export async function sessionProvenance(sessionId: string): Promise<Provenance> {
+  const db = getDb()
+  if (!db) return 'simulated'
+
+  try {
+    const [row] = await db
+      .select({ id: observatoryCapture.id })
+      .from(observatoryCapture)
+      .where(
+        and(
+          eq(observatoryCapture.sessionId, sessionId),
+          eq(observatoryCapture.provenance, 'instrument'),
+        ),
+      )
+      .limit(1)
+
+    return row ? 'instrument' : 'simulated'
+  } catch (err) {
+    console.error('[observatory] cannot read session provenance', err)
+    return 'simulated'
+  }
+}
