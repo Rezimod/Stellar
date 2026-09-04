@@ -2496,5 +2496,63 @@
       "missionsCardDesc": "30-second sky game — tap shooting stars",
       "missionsCardScored": "Today: {score} caught"
     }
+  },
+  "observatory": {
+    "network": {
+      "title": "Observatory",
+      "lead": "Book time on a real telescope and watch a real object, live. When your sky is clouded over, someone else’s is not.",
+      "proofLink": "How a capture is proved",
+      "capturesLink": "What the network has photographed",
+      "requestsLink": "Ask for a photograph",
+      "firstLightLink": "First Light — the sky on a night that mattered",
+      "instrumentCount": "{count, plural, one {# instrument} other {# instruments}} on the network",
+      "observableNow": "{count} observable right now",
+      "empty": "No instruments are listed yet. The first node comes online with the beta.",
+      "tryTitle": "Try the instrument before you book it",
+      "tryLead": "A simulator of the same telescope, with the real field of view, the real slew times and the real safety envelope. It will refuse the same targets the instrument would, for the same reasons.",
+      "tryCta": "Open the simulator",
+      "ownerTitle": "Own a telescope that sits idle?",
+      "ownerLead": "Most instruments are used a handful of nights a year. Put yours on the network and it earns on the clear nights you are not out with it. You keep 60% from the first session and 80% once the instrument has earned it.",
+      "ownerCta": "What an operator earns"
+    },
+    "routing": {
+      "here": "{cloud}% cloud where you are.",
+      "under": "{name} in {site} is under {cloud}%.",
+      "openNow": "{name} in {site} is open right now.",
+      "nextSlot": "Its next free slot is {time} in your time, {minutes} minutes for {price} ₾.",
+      "full": "Its timetable is full tonight.",
+      "book": "Book {name}",
+      "askInstead": "Or ask for a photograph instead",
+      "sameSky": "{cloud}% cloud where you are — and the only instrument on the network is under the same weather. More telescopes in more places is the whole fix.",
+      "registered": "{count, plural, one {# owner has} other {# owners have}} registered one, not yet online.",
+      "putOnNetwork": "Put a telescope on the network"
+    },
+    "requests": {
+      "title": "Ask for a photograph",
+      "lead": "You do not have to be awake. Name an object and how long you are willing to wait, and the instrument works your request on the first night the sky allows it.",
+      "object": "object",
+      "wait": "willing to wait",
+      "nights3": "3 nights",
+      "week": "a week",
+      "fortnight": "a fortnight",
+      "priceNote": "{cls} · {price} ₾ · nothing is charged while the network is a dry run, and a window that closes without a photograph costs nothing at all.",
+      "join": "Join the queue",
+      "signIn": "Sign in to request",
+      "placing": "Placing…",
+      "failed": "That did not go through.",
+      "network": "Network error — try again.",
+      "yours": "Your requests",
+      "withdraw": "withdraw",
+      "waiting": "waiting for a clear night before {date}",
+      "scheduled": "scheduled for {date}",
+      "scheduledPlain": "scheduled",
+      "delivered": "delivered",
+      "expired": "the window closed without a clear night — nothing charged",
+      "cancelled": "withdrawn",
+      "footer": "A request is worked between booked sessions, so it never takes a slot from someone driving the telescope themselves.",
+      "classBright": "Bright",
+      "classDeepShort": "Deep sky",
+      "classDeepLong": "Deep sky, long"
+    }
   }
 }

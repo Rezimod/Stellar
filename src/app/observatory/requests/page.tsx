@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
 import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import { useStellarUser } from '@/hooks/useStellarUser';
-import { REQUEST_CLASSES, classOf, priceTetriFor } from '@/lib/observatory/capture-requests';
+import { classOf, priceTetriFor } from '@/lib/observatory/capture-requests';
 import { SIM_TARGETS } from '@/lib/observatory/sim-targets';
 import type { CaptureRequest } from '@/lib/observatory/requests';
 import '../observatory.css';
@@ -15,12 +16,20 @@ import '../observatory.css';
 const NODE_ID = 'tbilisi-01';
 
 const PATIENCE = [
-  { days: 3, label: '3 nights' },
-  { days: 7, label: 'a week' },
-  { days: 14, label: 'a fortnight' },
-];
+  { days: 3, key: 'nights3' },
+  { days: 7, key: 'week' },
+  { days: 14, key: 'fortnight' },
+] as const;
+
+const CLASS_KEY = {
+  bright: 'classBright',
+  deep_short: 'classDeepShort',
+  deep_long: 'classDeepLong',
+} as const;
 
 export default function RequestsPage() {
+  const t = useTranslations('observatory.requests');
+  const tNetwork = useTranslations('observatory.network');
   const { getAccessToken, login } = usePrivy();
   const { authenticated, ready } = useStellarUser();
 
@@ -67,12 +76,12 @@ export default function RequestsPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? 'That did not go through.');
+        setError(data.error ?? t('failed'));
         return;
       }
       await load();
     } catch {
-      setError('Network error — try again.');
+      setError(t('network'));
     } finally {
       setBusy(false);
     }
@@ -87,7 +96,7 @@ export default function RequestsPage() {
       });
       await load();
     } catch {
-      setError('Network error — try again.');
+      setError(t('network'));
     }
   };
 
@@ -99,11 +108,10 @@ export default function RequestsPage() {
 
       <header className="mt-4 max-w-2xl">
         <h1 className="text-2xl font-medium sm:text-3xl" style={{ color: 'var(--text-primary)' }}>
-          Ask for a photograph
+          {t('title')}
         </h1>
         <p className="mt-2 text-base" style={{ color: 'var(--text-secondary)' }}>
-          You do not have to be awake. Name an object and how long you are willing to wait,
-          and the instrument works your request on the first night the sky allows it.
+          {t('lead')}
         </p>
       </header>
 
@@ -113,7 +121,7 @@ export default function RequestsPage() {
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="obs-label">object</span>
+            <span className="obs-label">{t('object')}</span>
             <select
               value={targetId}
               onChange={(e) => setTargetId(e.target.value)}
@@ -133,7 +141,7 @@ export default function RequestsPage() {
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="obs-label">willing to wait</span>
+            <span className="obs-label">{t('wait')}</span>
             <select
               value={days}
               onChange={(e) => setDays(Number(e.target.value))}
@@ -146,7 +154,7 @@ export default function RequestsPage() {
             >
               {PATIENCE.map((p) => (
                 <option key={p.days} value={p.days}>
-                  {p.label}
+                  {t(p.key)}
                 </option>
               ))}
             </select>
@@ -158,12 +166,10 @@ export default function RequestsPage() {
         </p>
 
         <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {REQUEST_CLASSES[classOf(targetId) ?? 'bright'].label} ·{' '}
-          <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-            {((price ?? 0) / 100).toFixed(0)}
-          </span>{' '}
-          ₾ · nothing is charged while the network is a dry run, and a window that closes
-          without a photograph costs nothing at all.
+          {t('priceNote', {
+            cls: t(CLASS_KEY[classOf(targetId) ?? 'bright']),
+            price: ((price ?? 0) / 100).toFixed(0),
+          })}
         </p>
 
         {error && (
@@ -183,14 +189,14 @@ export default function RequestsPage() {
             color: 'var(--accent-text)',
           }}
         >
-          {busy ? 'Placing…' : authenticated ? 'Join the queue' : 'Sign in to request'}
+          {busy ? t('placing') : authenticated ? t('join') : t('signIn')}
         </button>
       </section>
 
       {requests.length > 0 && (
         <section className="mt-8">
           <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-            Your requests
+            {t('yours')}
           </h2>
           <ul className="mt-3 flex flex-col">
             {requests.map((r) => (
@@ -203,7 +209,7 @@ export default function RequestsPage() {
                   <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
                     {r.targetName}
                   </span>
-                  <span className="obs-label">{explain(r)}</span>
+                  <span className="obs-label">{explain(r, t)}</span>
                 </div>
                 <div className="flex items-baseline gap-4">
                   <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -217,7 +223,7 @@ export default function RequestsPage() {
                       className="text-xs underline"
                       style={{ color: 'var(--text-muted)' }}
                     >
-                      withdraw
+                      {t('withdraw')}
                     </button>
                   )}
                 </div>
@@ -228,10 +234,9 @@ export default function RequestsPage() {
       )}
 
       <p className="mt-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        A request is worked between booked sessions, so it never takes a slot from someone
-        driving the telescope themselves.{' '}
+        {t('footer')}{' '}
         <Link href="/observatory/how-it-works" className="underline">
-          How a capture is proved
+          {tNetwork('proofLink')}
         </Link>
         .
       </p>
@@ -239,20 +244,28 @@ export default function RequestsPage() {
   );
 }
 
-function explain(r: CaptureRequest): string {
-  const until = new Date(r.windowEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+function explain(
+  r: CaptureRequest,
+  t: (key: string, values?: Record<string, string>) => string,
+): string {
+  const date = new Date(r.windowEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   switch (r.state) {
     case 'queued':
-      return `waiting for a clear night before ${until}`;
+      return t('waiting', { date });
     case 'scheduled':
       return r.scheduledAt
-        ? `scheduled for ${new Date(r.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
-        : 'scheduled';
+        ? t('scheduled', {
+            date: new Date(r.scheduledAt).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'short',
+            }),
+          })
+        : t('scheduledPlain');
     case 'delivered':
-      return 'delivered';
+      return t('delivered');
     case 'expired':
-      return 'the window closed without a clear night — nothing charged';
+      return t('expired');
     case 'cancelled':
-      return 'withdrawn';
+      return t('cancelled');
   }
 }

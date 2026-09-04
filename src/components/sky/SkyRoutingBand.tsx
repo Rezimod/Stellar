@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Routing } from '@/lib/observatory/routing';
 
 /**
@@ -13,6 +14,7 @@ import type { Routing } from '@/lib/observatory/routing';
  * night it matters is the night it has to be believed.
  */
 export default function SkyRoutingBand({ lat, lon }: { lat: number; lon: number }) {
+  const t = useTranslations('observatory.routing');
   const [routing, setRouting] = useState<Routing | null>(null);
 
   useEffect(() => {
@@ -47,24 +49,13 @@ export default function SkyRoutingBand({ lat, lon }: { lat: number; lon: number 
     return (
       <Band>
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-            {Math.round(here)}%
-          </span>{' '}
-          cloud where you are — and the only instrument on the network is under the same
-          weather. More telescopes in more places is the whole fix.
+          {t('sameSky', { cloud: Math.round(here) })}
           {routing.registeredNotOnline > 0 && (
-            <>
-              {' '}
-              <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-                {routing.registeredNotOnline}
-              </span>{' '}
-              {routing.registeredNotOnline === 1 ? 'owner has' : 'owners have'} registered one,
-              not yet online.
-            </>
+            <> {t('registered', { count: routing.registeredNotOnline })}</>
           )}
         </p>
         <Actions>
-          <Action href="/observatory/operator">Put a telescope on the network</Action>
+          <Action href="/observatory/operator">{t('putOnNetwork')}</Action>
         </Actions>
       </Band>
     );
@@ -76,52 +67,32 @@ export default function SkyRoutingBand({ lat, lon }: { lat: number; lon: number 
   return (
     <Band>
       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {comparable ? (
-          <>
-            <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-              {Math.round(here)}%
-            </span>{' '}
-            cloud where you are.{' '}
-            <span style={{ color: 'var(--text-primary)' }}>{best.name}</span> in {best.site} is
-            under{' '}
-            <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-              {Math.round(cloud)}%
-            </span>
-            .
-          </>
-        ) : (
-          <>
-            <span style={{ color: 'var(--text-primary)' }}>{best.name}</span> in {best.site} is
-            open right now.
-          </>
-        )}{' '}
-        {best.nextSlot ? (
-          <>
-            Its next free slot is{' '}
-            <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-              {/* 24-hour, like every other clock in the app — a mono span
-                  reading "06:23 PM" belongs to a different product. */}
-              {new Date(best.nextSlot.startsAt).toLocaleString(undefined, {
+        {comparable
+          ? `${t('here', { cloud: Math.round(here) })} ${t('under', {
+              name: best.name,
+              site: best.site,
+              cloud: Math.round(cloud),
+            })}`
+          : t('openNow', { name: best.name, site: best.site })}{' '}
+        {best.nextSlot
+          ? t('nextSlot', {
+              // 24-hour, like every other clock in the app — a mono span
+              // reading "06:23 PM" belongs to a different product.
+              time: new Date(best.nextSlot.startsAt).toLocaleString(undefined, {
                 weekday: 'short',
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false,
-              })}
-            </span>{' '}
-            in your time, {best.sessionMinutes} minutes for{' '}
-            <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-              {best.priceGel}
-            </span>{' '}
-            ₾.
-          </>
-        ) : (
-          <>Its timetable is full tonight.</>
-        )}
+              }),
+              minutes: best.sessionMinutes,
+              price: best.priceGel,
+            })
+          : t('full')}
       </p>
       <Actions>
-        <Action href={`/observatory/${best.nodeId}`}>Book {best.name}</Action>
+        <Action href={`/observatory/${best.nodeId}`}>{t('book', { name: best.name })}</Action>
         <Action href="/observatory/requests" quiet>
-          Or ask for a photograph instead
+          {t('askInstead')}
         </Action>
       </Actions>
     </Band>
