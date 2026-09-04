@@ -1113,6 +1113,87 @@ export default async function HomePage() {
       </section>
 
       {/* ============================================================
+          OBSERVATORY — the lead, not the footnote (Phase E)
+
+          Sits directly under the credentials because the home reframes around
+          booking: the forecast, the missions and the companion below are now
+          the supporting act. docs/observatory-migration.md.
+         ============================================================ */}
+      <section className="px-4 md:px-8 py-14 md:py-[120px]">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[820px] mx-auto text-center" data-reveal>
+            <Eyebrow>{t('observatory.eyebrow')}</Eyebrow>
+            <h2 className="text-white text-[28px] md:text-[44px] font-semibold leading-[1.08] tracking-[-0.02em]">
+              {t('observatory.title')}
+            </h2>
+            <p className="mt-4 md:mt-5 text-[15px] md:text-[17px] leading-relaxed text-white/60">
+              {t('observatory.lead')}
+            </p>
+          </div>
+
+          <ol
+            className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-y-6 md:gap-x-8 max-w-[1000px] mx-auto"
+            data-reveal-stagger
+          >
+            {[t('observatory.point1'), t('observatory.point2'), t('observatory.point3')].map(
+              (line, i) => (
+                <li key={line} className="border-t border-white/[0.08] pt-4">
+                  <div className="font-mono text-[11.5px] text-[#E3DAC9]">
+                    {String(i + 1).padStart(2, '0')}
+                  </div>
+                  <p className="mt-2 text-white text-[15px] md:text-[16.5px] leading-snug tracking-[-0.005em]">
+                    {line}
+                  </p>
+                </li>
+              ),
+            )}
+          </ol>
+
+
+          <div
+            className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 max-w-[1000px] mx-auto"
+            data-reveal-stagger
+          >
+            <div className="border border-white/[0.08] rounded-xl p-5 md:p-6">
+              <h3 className="text-white text-[16px] md:text-[17px] font-medium tracking-[-0.01em]">
+                {t('observatory.tryTitle')}
+              </h3>
+              <p className="mt-2 text-[14px] md:text-[15px] leading-relaxed text-white/60">
+                {t('observatory.tryLead')}
+              </p>
+              <div className="mt-4">
+                <SectionLink href="/observatory/simulator">{t('observatory.tryCta')}</SectionLink>
+              </div>
+            </div>
+
+            <div className="border border-white/[0.08] rounded-xl p-5 md:p-6">
+              <h3 className="text-white text-[16px] md:text-[17px] font-medium tracking-[-0.01em]">
+                {t('observatory.ownerTitle')}
+              </h3>
+              <p className="mt-2 text-[14px] md:text-[15px] leading-relaxed text-white/60">
+                {t('observatory.ownerLead')}
+              </p>
+              <div className="mt-4">
+                <SectionLink href="/observatory/operator">{t('observatory.ownerCta')}</SectionLink>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 md:mt-14 text-center" data-reveal>
+            <p className="font-mono text-[11.5px] md:text-[12.5px] text-white/45">
+              {t('observatory.status')}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+              <SectionLink href="/observatory">{t('observatory.cta')}</SectionLink>
+              <SectionLink href="/observatory/how-it-works">
+                {t('observatory.proofCta')}
+              </SectionLink>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           HOW IT WORKS — three phones, one screen
          ============================================================ */}
       <section className="px-4 md:px-8 py-10 md:py-16">
@@ -1276,50 +1357,6 @@ export default async function HomePage() {
 
           <div className="mt-10 md:mt-16 text-center" data-reveal>
             <SectionLink href="/sky">{t('skyPage.cta')}</SectionLink>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          OBSERVATORY — what comes next
-         ============================================================ */}
-      <section className="px-4 md:px-8 py-14 md:py-[120px]">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="max-w-[820px] mx-auto text-center" data-reveal>
-            <Eyebrow>{t('observatory.eyebrow')}</Eyebrow>
-            <h2 className="text-white text-[28px] md:text-[44px] font-semibold leading-[1.08] tracking-[-0.02em]">
-              {t('observatory.title')}
-            </h2>
-            <p className="mt-4 md:mt-5 text-[15px] md:text-[17px] leading-relaxed text-white/60">
-              {t('observatory.lead')}
-            </p>
-          </div>
-
-          <ol
-            className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-y-6 md:gap-x-8 max-w-[1000px] mx-auto"
-            data-reveal-stagger
-          >
-            {[t('observatory.point1'), t('observatory.point2'), t('observatory.point3')].map(
-              (line, i) => (
-                <li key={line} className="border-t border-white/[0.08] pt-4">
-                  <div className="font-mono text-[11.5px] text-[#E3DAC9]">
-                    {String(i + 1).padStart(2, '0')}
-                  </div>
-                  <p className="mt-2 text-white text-[15px] md:text-[16.5px] leading-snug tracking-[-0.005em]">
-                    {line}
-                  </p>
-                </li>
-              ),
-            )}
-          </ol>
-
-          <div className="mt-10 md:mt-14 text-center" data-reveal>
-            <p className="font-mono text-[11.5px] md:text-[12.5px] text-white/45">
-              {t('observatory.status')}
-            </p>
-            <div className="mt-4">
-              <SectionLink href="/observatory">{t('observatory.cta')}</SectionLink>
-            </div>
           </div>
         </div>
       </section>

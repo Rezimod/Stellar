@@ -163,7 +163,7 @@ export default function HeroSaturn() {
         </div>
 
         <Link
-          href="/missions"
+          href="/observatory"
           className="hero-pill-primary mt-4 inline-flex w-full max-w-[440px] items-center justify-center gap-2.5 rounded-xl px-8 py-4 no-underline"
           style={{
             background: 'linear-gradient(180deg,#ffc866 0%,#f59e2e 55%,#df8214 100%)',
@@ -177,6 +177,20 @@ export default function HeroSaturn() {
         >
           {t('ctaPrimary')}
           <ArrowIcon />
+        </Link>
+
+        {/* The simulator needs no account, so it is the honest second door:
+            someone who will not sign up can still drive the instrument. */}
+        <Link
+          href="/observatory/simulator"
+          className="mt-3 text-[14px] underline underline-offset-4 no-underline hover:underline"
+          style={{
+            color: '#aab4d4',
+            fontFamily: 'var(--font-cta, var(--font-body))',
+            animation: 'heroCardSwap 0.7s ease 0.24s both',
+          }}
+        >
+          {t('ctaSecondary')}
         </Link>
       </div>
     </section>
