@@ -31,6 +31,13 @@ export default async function ObservatoryPage() {
           Book time on a real telescope and watch a real object, live. When your sky is
           clouded over, someone else&apos;s is not.
         </p>
+        <Link
+          href="/observatory/how-it-works"
+          className="mt-3 inline-block text-sm underline"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          How a capture is proved
+        </Link>
       </header>
 
       <p className="mt-6 text-sm" style={{ color: 'var(--text-secondary)' }}>

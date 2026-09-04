@@ -155,7 +155,12 @@ export default function OperatorPage() {
         Want to see what a session looks like from the customer&apos;s side first?{' '}
         <Link href="/observatory/simulator" className="underline">
           The simulator is open.
+        </Link>{' '}
+        What the network does with a frame your instrument takes is written out in{' '}
+        <Link href="/observatory/how-it-works" className="underline">
+          how a capture is proved
         </Link>
+        .
       </p>
     </PageContainer>
   );
