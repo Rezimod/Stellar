@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
 import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import OperatorInterestForm from '@/components/observatory/OperatorInterestForm';
@@ -20,6 +21,8 @@ type OperatorNode = {
 };
 
 export default function OperatorPage() {
+  const t = useTranslations('observatory.operator');
+  const tTier = useTranslations('observatory.tiers');
   const { getAccessToken } = usePrivy();
   const { authenticated, ready } = useStellarUser();
 
@@ -53,34 +56,30 @@ export default function OperatorPage() {
 
       <header className="mt-4 max-w-2xl">
         <h1 className="text-2xl font-medium sm:text-3xl" style={{ color: 'var(--text-primary)' }}>
-          Put your telescope to work
+          {t('title')}
         </h1>
         <p className="mt-2 text-base" style={{ color: 'var(--text-secondary)' }}>
-          Most instruments are used a handful of nights a year. On the clear nights you are not
-          out with yours, someone else can be — and you are paid for it.
+          {t('lead')}
         </p>
       </header>
 
       {nodes.map((node) => (
-        <EarningsPanel key={node.id} node={node} />
+        <EarningsPanel key={node.id} node={node} t={t} tTier={tTier} />
       ))}
 
       <section className="mt-8">
         <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          What you keep
+          {t('keepTitle')}
         </h2>
         <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Your share rises with hours actually delivered — not nights listed, not a
-          subscription. An instrument that has run 150 hours of other people&apos;s sessions has
-          been aligned, cleaned and unparked 150 hours&apos; worth, and that is the only number
-          worth paying for.
+          {t('keepLead')}
         </p>
 
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[34rem] border-collapse text-sm">
             <thead>
               <tr>
-                {['Tier', 'Delivered hours', 'You keep', 'Per 40 ₾ session'].map((head) => (
+                {[t('colTier'), t('colHours'), t('colKeep'), t('colPerSession')].map((head) => (
                   <th
                     key={head}
                     className="border-b px-3 py-2 text-left text-xs font-medium uppercase tracking-wide"
@@ -98,7 +97,7 @@ export default function OperatorPage() {
                     className="border-b px-3 py-2"
                     style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                   >
-                    {tier.name}
+                    {tTier(tier.id)}
                   </td>
                   <td
                     className="border-b px-3 py-2 font-mono"
@@ -125,40 +124,37 @@ export default function OperatorPage() {
         </div>
 
         <p className="mt-3 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          At three sessions a night on a hundred clear nights, a Node Kit pays for itself inside
-          the first season. A session that clouds out refunds the customer in full and costs you
-          nothing.
+          {t('keepNote')}
         </p>
       </section>
 
       <section className="mt-8">
         <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          What a node needs
+          {t('needsTitle')}
         </h2>
         <ul
           className="mt-3 flex max-w-2xl flex-col gap-2 text-sm"
           style={{ color: 'var(--text-secondary)' }}
         >
-          <li>A computerised GoTo mount, and somewhere it can stay set up.</li>
-          <li>A camera and a mini-PC — the Node Kit is both, pre-flashed.</li>
-          <li>A network connection, and a horizon you would observe from yourself.</li>
+          <li>{t('needs1')}</li>
+          <li>{t('needs2')}</li>
+          <li>{t('needs3')}</li>
         </ul>
         <p className="mt-3 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          If you already run ASCOM, Alpaca or INDI, the agent installs on what you have and you
-          skip the kit entirely.
+          {t('needsNote')}
         </p>
       </section>
 
       <OperatorInterestForm />
 
       <p className="mt-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        Want to see what a session looks like from the customer&apos;s side first?{' '}
+        {t('simFooter')}{' '}
         <Link href="/observatory/simulator" className="underline">
-          The simulator is open.
+          {t('simLink')}
         </Link>{' '}
-        What the network does with a frame your instrument takes is written out in{' '}
+        {t('proofFooter')}{' '}
         <Link href="/observatory/how-it-works" className="underline">
-          how a capture is proved
+          {t('proofLink')}
         </Link>
         .
       </p>
@@ -166,7 +162,17 @@ export default function OperatorPage() {
   );
 }
 
-function EarningsPanel({ node }: { node: OperatorNode }) {
+type Translator = (key: string, values?: Record<string, string | number>) => string;
+
+function EarningsPanel({
+  node,
+  t,
+  tTier,
+}: {
+  node: OperatorNode;
+  t: Translator;
+  tTier: Translator;
+}) {
   const { earnings } = node;
 
   return (
@@ -179,7 +185,7 @@ function EarningsPanel({ node }: { node: OperatorNode }) {
           {node.name}
         </h2>
         <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {earnings.tier.name}
+          {tTier(earnings.tier.id)}
         </span>
       </div>
 
@@ -187,24 +193,23 @@ function EarningsPanel({ node }: { node: OperatorNode }) {
         <span className="font-mono">{lari(earnings.monthTetri)}</span> ₾
       </p>
       <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        earned this month ·{' '}
-        <span className="font-mono">{lari(earnings.lifetimeTetri)}</span> ₾ in total ·{' '}
-        <span className="font-mono">{earnings.hoursDelivered.toFixed(1)}</span> hours delivered
+        {t('earnedMonth')} · {t('lifetime', { amount: lari(earnings.lifetimeTetri) })} ·{' '}
+        {t('hoursDelivered', { hours: earnings.hoursDelivered.toFixed(1) })}
       </p>
 
       {earnings.next && (
         <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <span className="font-mono">{earnings.next.hoursRemaining.toFixed(1)}</span> hours to{' '}
-          {earnings.next.tier.name}, which keeps{' '}
-          <span className="font-mono">{Math.round(earnings.next.tier.operatorShare * 100)}%</span>.
+          {t('toNext', {
+            hours: earnings.next.hoursRemaining.toFixed(1),
+            tier: tTier(earnings.next.tier.id),
+            pct: Math.round(earnings.next.tier.operatorShare * 100),
+          })}
         </p>
       )}
 
       {earnings.dryRun && (
         <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Nothing has settled yet. {node.name} runs on the simulator until the instrument is
-          wired, and simulated sessions pay nothing and count for nothing — the figures above
-          start moving the night it goes live.
+          {t('dryRunNote', { name: node.name })}
         </p>
       )}
     </section>

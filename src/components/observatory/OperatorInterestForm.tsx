@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
 import { useStellarUser } from '@/hooks/useStellarUser';
 
 /**
@@ -13,6 +14,7 @@ import { useStellarUser } from '@/hooks/useStellarUser';
  * list should not have to make an account first.
  */
 export default function OperatorInterestForm() {
+  const t = useTranslations('observatory.operator');
   const { getAccessToken } = usePrivy();
   const { authenticated } = useStellarUser();
 
@@ -46,13 +48,13 @@ export default function OperatorInterestForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.error ?? 'That did not send. Try again.');
+        setError(data.error ?? t('formFailed'));
         setState('idle');
         return;
       }
       setState('done');
     } catch {
-      setError('Network error — try again.');
+      setError(t('network'));
       setState('idle');
     }
   };
@@ -64,11 +66,10 @@ export default function OperatorInterestForm() {
         style={{ borderColor: 'var(--yes-border)', background: 'var(--yes-dim)' }}
       >
         <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          Your telescope is on the list
+          {t('doneTitle')}
         </h2>
         <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          We will write when the first partner nodes are commissioned, and we will tell you
-          plainly whether your rig needs the kit or just the agent.
+          {t('doneLead')}
         </p>
       </section>
     );
@@ -80,26 +81,30 @@ export default function OperatorInterestForm() {
       style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
     >
       <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-        Register your telescope
+        {t('formTitle')}
       </h2>
       <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-        No commitment, and nothing to install yet. Listing opens as the first partner nodes come
-        online, oldest registrations first.
+        {t('formLead')}
       </p>
 
       <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
-        <Field label="Email" required value={form.email} onChange={set('email')} type="email" />
-        <Field label="City" required value={form.city} onChange={set('city')} />
+        <Field label={t('email')} required value={form.email} onChange={set('email')} type="email" />
+        <Field label={t('city')} required value={form.city} onChange={set('city')} />
         <Field
-          label="Telescope"
+          label={t('telescope')}
           required
           value={form.telescope}
           onChange={set('telescope')}
           placeholder="Celestron NexStar 6SE"
         />
-        <Field label="Mount" value={form.mount} onChange={set('mount')} placeholder="GoTo, EQ, none" />
-        <Field label="Camera" value={form.camera} onChange={set('camera')} placeholder="ZWO ASI585MC" />
-        <Field label="Anything else" value={form.note} onChange={set('note')} />
+        <Field
+          label={t('mount')}
+          value={form.mount}
+          onChange={set('mount')}
+          placeholder={t('mountHint')}
+        />
+        <Field label={t('camera')} value={form.camera} onChange={set('camera')} placeholder="ZWO ASI585MC" />
+        <Field label={t('note')} value={form.note} onChange={set('note')} />
 
         {error && (
           <p className="text-sm sm:col-span-2" style={{ color: 'var(--no)' }} role="alert">
@@ -118,7 +123,7 @@ export default function OperatorInterestForm() {
               color: 'var(--accent-text)',
             }}
           >
-            {state === 'sending' ? 'Sending…' : 'Register'}
+            {state === 'sending' ? t('sending') : t('register')}
           </button>
         </div>
       </form>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
 import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import { useStellarUser } from '@/hooks/useStellarUser';
@@ -21,7 +22,16 @@ import '../observatory/observatory.css';
 
 const TIERS = Object.keys(FIRST_LIGHT_TIERS) as FirstLightTier[];
 
+/** The tier's name and note live in messages; only its price lives in the lib. */
+const TIER_KEY = {
+  digital: ['tierDigital', 'tierDigitalNote'],
+  print: ['tierPrint', 'tierPrintNote'],
+  framed: ['tierFramed', 'tierFramedNote'],
+} as const;
+
 export default function FirstLightPage() {
+  const t = useTranslations('observatory.firstLight');
+  const tNetwork = useTranslations('observatory.network');
   const { getAccessToken, login } = usePrivy();
   const { authenticated } = useStellarUser();
 
@@ -82,13 +92,13 @@ export default function FirstLightPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? 'That did not go through.');
+        setError(data.error ?? t('failed'));
         setState('idle');
         return;
       }
       setState('done');
     } catch {
-      setError('Network error — try again.');
+      setError(t('network'));
       setState('idle');
     }
   };
@@ -99,11 +109,10 @@ export default function FirstLightPage() {
 
       <header className="mt-4 max-w-2xl">
         <h1 className="text-2xl font-medium sm:text-3xl" style={{ color: 'var(--text-primary)' }}>
-          First Light
+          {t('title')}
         </h1>
         <p className="mt-2 text-base" style={{ color: 'var(--text-secondary)' }}>
-          The sky on somebody&apos;s night, and a photograph of one thing in it. Two true
-          things on one sheet, each carrying its own date.
+          {t('lead')}
         </p>
       </header>
 
@@ -114,7 +123,7 @@ export default function FirstLightPage() {
             style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
           >
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="for">
+              <Field label={t('for')}>
                 <input
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
@@ -124,7 +133,7 @@ export default function FirstLightPage() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label="occasion">
+              <Field label={t('occasion')}>
                 <input
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
@@ -134,7 +143,7 @@ export default function FirstLightPage() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label="the night">
+              <Field label={t('night')}>
                 <input
                   type="date"
                   value={date}
@@ -143,7 +152,7 @@ export default function FirstLightPage() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label="the hour (UTC)">
+              <Field label={t('hour')}>
                 <input
                   type="time"
                   value={time}
@@ -152,7 +161,7 @@ export default function FirstLightPage() {
                   style={inputStyle}
                 />
               </Field>
-              <Field label="place">
+              <Field label={t('place')}>
                 <select
                   value={placeId}
                   onChange={(e) => setPlaceId(e.target.value)}
@@ -166,7 +175,7 @@ export default function FirstLightPage() {
                   ))}
                 </select>
               </Field>
-              <Field label="object">
+              <Field label={t('object')}>
                 <select
                   value={targetId}
                   onChange={(e) => setTargetId(e.target.value)}
@@ -188,24 +197,33 @@ export default function FirstLightPage() {
               className="border p-5"
               style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
             >
-              <h2 className="obs-label">the sky that night</h2>
+              <h2 className="obs-label">{t('skyTitle')}</h2>
               <dl className="mt-3 flex flex-col">
-                <Reading label="Moon" value={`${sky.moon.phase} · ${(sky.moon.illumination * 100).toFixed(0)}% lit`} />
+                <Reading
+                  label={t('moon')}
+                  value={t('moonValue', {
+                    phase: sky.moon.phase,
+                    pct: (sky.moon.illumination * 100).toFixed(0),
+                  })}
+                />
                 <Reading
                   label={sky.target?.name ?? 'Object'}
                   value={
                     sky.target
                       ? sky.target.up
-                        ? `${sky.target.altitude.toFixed(0)}° above the horizon, ${compassPoint(sky.target.azimuth)}`
-                        : 'below the horizon that hour — try another time of night'
-                      : 'position not computed'
+                        ? t('aboveHorizon', {
+                            deg: sky.target.altitude.toFixed(0),
+                            compass: compassPoint(sky.target.azimuth),
+                          })
+                        : t('belowHorizon')
+                      : t('notComputed')
                   }
                 />
                 <Reading
-                  label="Also up"
+                  label={t('alsoUp')}
                   value={
                     sky.bodies.filter((b) => b.up).map((b) => b.name).join(' · ') ||
-                    'no planets above the horizon'
+                    t('noPlanets')
                   }
                 />
               </dl>
@@ -220,16 +238,16 @@ export default function FirstLightPage() {
                     color: 'var(--accent-text)',
                   }}
                 >
-                  {sky.target?.name} was highest that night at{' '}
-                  <span className="font-mono">{better.at.toISOString().slice(11, 16)}</span> UTC,{' '}
-                  <span className="font-mono">{better.altitude.toFixed(0)}</span>° up — use that
-                  hour
+                  {t('better', {
+                    name: sky.target?.name ?? '',
+                    time: better.at.toISOString().slice(11, 16),
+                    deg: better.altitude.toFixed(0),
+                  })}
                 </button>
               )}
 
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Computed for that exact moment and place. This half is never wrong, and it is
-                the half no weather can spoil.
+                {t('computed')}
               </p>
             </section>
           )}
@@ -238,7 +256,7 @@ export default function FirstLightPage() {
             className="border p-5"
             style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
           >
-            <h2 className="obs-label">the photograph</h2>
+            <h2 className="obs-label">{t('photoTitle')}</h2>
             <label className="mt-3 flex items-start gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <input
                 type="checkbox"
@@ -247,17 +265,14 @@ export default function FirstLightPage() {
                 className="mt-1"
               />
               <span>
-                Photograph it for this poster, on the first clear night after the order.
+                {t('commission')}
                 <span className="block" style={{ color: 'var(--text-muted)' }}>
-                  The certificate names that night and the instrument.{' '}
-                  <span className="font-mono">+{(COMMISSION_TETRI / 100).toFixed(0)}</span> ₾
+                  {t('commissionNote', { price: (COMMISSION_TETRI / 100).toFixed(0) })}
                 </span>
               </span>
             </label>
             <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Left unticked, the poster uses a frame the network has already taken. No
-              instrument has photographed anything yet, so today every poster is a
-              commission — and the frame stays blank until first light.
+              {t('archiveNote')}
             </p>
           </section>
         </div>
@@ -267,26 +282,26 @@ export default function FirstLightPage() {
             className="border p-4"
             style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
           >
-            <h2 className="obs-label">what you get</h2>
+            <h2 className="obs-label">{t('whatYouGet')}</h2>
             <div className="mt-3 flex flex-col gap-2">
-              {TIERS.map((t) => (
-                <label key={t} className="flex items-baseline gap-3 text-sm">
+              {TIERS.map((tierId) => (
+                <label key={tierId} className="flex items-baseline gap-3 text-sm">
                   <input
                     type="radio"
                     name="tier"
-                    checked={tier === t}
-                    onChange={() => setTier(t)}
+                    checked={tier === tierId}
+                    onChange={() => setTier(tierId)}
                   />
                   <span className="flex flex-1 flex-col">
                     <span style={{ color: 'var(--text-primary)' }}>
-                      {FIRST_LIGHT_TIERS[t].label} ·{' '}
+                      {t(TIER_KEY[tierId][0])} ·{' '}
                       <span className="font-mono">
-                        {(FIRST_LIGHT_TIERS[t].priceTetri / 100).toFixed(0)}
+                        {(FIRST_LIGHT_TIERS[tierId].priceTetri / 100).toFixed(0)}
                       </span>{' '}
                       ₾
                     </span>
                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {FIRST_LIGHT_TIERS[t].note}
+                      {t(TIER_KEY[tierId][1])}
                     </span>
                   </span>
                 </label>
@@ -305,8 +320,7 @@ export default function FirstLightPage() {
 
             {state === 'done' ? (
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Ordered. We will write when the photograph is taken, and again when the print
-                is ready.
+                {t('done')}
               </p>
             ) : (
               <button
@@ -320,12 +334,12 @@ export default function FirstLightPage() {
                   color: 'var(--accent-text)',
                 }}
               >
-                {state === 'sending' ? 'Ordering…' : authenticated ? 'Order' : 'Sign in to order'}
+                {state === 'sending' ? t('ordering') : authenticated ? t('order') : t('signIn')}
               </button>
             )}
 
             <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-              Nothing is charged while the network is a dry run.
+              {t('dryRun')}
             </p>
           </section>
 
@@ -334,7 +348,7 @@ export default function FirstLightPage() {
               className="border p-4"
               style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
             >
-              <h2 className="obs-label">the sheet</h2>
+              <h2 className="obs-label">{t('sheet')}</h2>
               {/* The poster is generated server-side, so this is the real thing
                   rather than a mock of it. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -350,10 +364,9 @@ export default function FirstLightPage() {
       </div>
 
       <p className="mt-8 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-        A commissioned photograph joins the same queue anyone else&apos;s request does, and is
-        worked between booked sessions.{' '}
+        {t('footer')}{' '}
         <Link href="/observatory/how-it-works" className="underline">
-          How a capture is proved
+          {tNetwork('proofLink')}
         </Link>
         .
       </p>
