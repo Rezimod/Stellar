@@ -609,3 +609,55 @@ export const observatoryCaptureRequest = pgTable('observatory_capture_request', 
   index('observatory_capture_request_privy_idx').on(t.privyId, t.createdAt),
   index('observatory_capture_request_queue_idx').on(t.state, t.windowEnd),
 ])
+
+// A First Light order: the sky on somebody's night, and a photograph of one
+// object in it. Two dates, both true — see docs/stellar-v2-plan.md §5.3.
+// Fulfilment (print, frame, post) is handled outside this table; what is
+// recorded here is what was ordered and what it is waiting on.
+//
+//   CREATE TABLE IF NOT EXISTS first_light_order (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     privy_id text NOT NULL,
+//     recipient text NOT NULL,
+//     occasion text,
+//     place_id text NOT NULL,
+//     moment timestamptz NOT NULL,
+//     target_id text NOT NULL,
+//     target_name text NOT NULL,
+//     tier text NOT NULL,
+//     commissioned boolean NOT NULL DEFAULT false,
+//     price_tetri integer NOT NULL,
+//     state text NOT NULL DEFAULT 'placed',
+//     capture_request_id uuid,
+//     capture_id uuid,
+//     created_at timestamptz NOT NULL DEFAULT now(),
+//     fulfilled_at timestamptz
+//   );
+//   CREATE INDEX IF NOT EXISTS first_light_order_privy_idx
+//     ON first_light_order (privy_id, created_at DESC);
+export const firstLightOrder = pgTable('first_light_order', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  privyId: text('privy_id').notNull(),
+  /** Whose night it was. Printed on the poster. */
+  recipient: text('recipient').notNull(),
+  /** "seven years old", "your first night" — free text, printed as given. */
+  occasion: text('occasion'),
+  placeId: text('place_id').notNull(),
+  /** The exact instant the sky is computed for. This half is never wrong. */
+  moment: timestamp('moment', { withTimezone: true }).notNull(),
+  targetId: text('target_id').notNull(),
+  targetName: text('target_name').notNull(),
+  tier: text('tier').notNull(),
+  /** True when the photograph is being taken for this order rather than reused. */
+  commissioned: boolean('commissioned').notNull().default(false),
+  priceTetri: integer('price_tetri').notNull(),
+  state: text('state').notNull().default('placed'),
+  /** The queue entry a commissioned order created, if any. */
+  captureRequestId: uuid('capture_request_id'),
+  /** The frame that ended up on the poster. */
+  captureId: uuid('capture_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  fulfilledAt: timestamp('fulfilled_at', { withTimezone: true }),
+}, (t) => [
+  index('first_light_order_privy_idx').on(t.privyId, t.createdAt),
+])

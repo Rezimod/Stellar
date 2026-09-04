@@ -41,6 +41,9 @@ export default async function ObservatoryPage() {
           <Link href="/observatory/requests" className="underline" style={{ color: 'var(--text-secondary)' }}>
             Ask for a photograph
           </Link>
+          <Link href="/first-light" className="underline" style={{ color: 'var(--text-secondary)' }}>
+            First Light — the sky on a night that mattered
+          </Link>
         </div>
       </header>
 
