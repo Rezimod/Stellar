@@ -1,12 +1,5 @@
+import { useTranslations } from 'next-intl';
 import type { NodeReadiness } from '@/lib/observatory/types';
-
-const LABELS: Record<NodeReadiness['state'], string> = {
-  online: 'Observable now',
-  busy: 'Session in progress',
-  weather: 'Clouded out',
-  daylight: 'Daylight',
-  offline: 'Offline',
-};
 
 /** Green only when the sky and the instrument both say yes. */
 const TONE: Record<NodeReadiness['state'], { fg: string; bg: string; bd: string }> = {
@@ -18,6 +11,7 @@ const TONE: Record<NodeReadiness['state'], { fg: string; bg: string; bd: string 
 };
 
 export default function ReadinessBadge({ readiness }: { readiness: NodeReadiness }) {
+  const t = useTranslations('observatory.state');
   const tone = TONE[readiness.state];
 
   return (
@@ -30,7 +24,7 @@ export default function ReadinessBadge({ readiness }: { readiness: NodeReadiness
         className="h-1.5 w-1.5 rounded-full"
         style={{ background: tone.fg }}
       />
-      {LABELS[readiness.state]}
+      {t(readiness.state)}
     </span>
   );
 }

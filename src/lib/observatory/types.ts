@@ -85,6 +85,11 @@ export type ObservatoryNode = {
   link?: { platform: 'darkview'; baseUrlEnv: string };
 };
 
+export type ReadinessDetail = {
+  key: string;
+  values?: Record<string, string | number>;
+};
+
 export type NodeReadiness = {
   nodeId: string;
   state: ReadinessState;
@@ -94,8 +99,17 @@ export type NodeReadiness = {
   checkedAt: string;
   /** Next moment the node could start a mission, ISO. Null when unknown. */
   nextWindowAt: string | null;
-  /** Human-readable reason when the node cannot observe. */
-  detail: string | null;
+  /**
+   * Why the node is in this state, as a message key and its values rather than
+   * a sentence.
+   *
+   * An adapter runs on the server and has no locale; a reader does. Composing
+   * English here and showing it to a Georgian customer was the whole problem,
+   * and word order is not something a translator can fix after the fact.
+   * Free text that is genuinely somebody else's — an operator's own note —
+   * travels as a value under a key that renders it unchanged.
+   */
+  detail: ReadinessDetail | null;
 };
 
 /** A node plus its live state — what the browse surface renders. */

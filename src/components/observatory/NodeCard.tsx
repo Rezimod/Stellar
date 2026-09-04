@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import ReadinessBadge from './ReadinessBadge';
 import type { NodeWithReadiness } from '@/lib/observatory/types';
 
-const TIER_LABEL = {
-  first_party: 'Stellar-operated',
-  kitted: 'Partner · Node Kit',
-  byo: 'Partner · own rig',
+const TIER_KEY = {
+  first_party: 'tierFirstParty',
+  kitted: 'tierKitted',
+  byo: 'tierByo',
 } as const;
 
 /** Site-local time, so "next window" reads in the sky's clock, not the visitor's. */
@@ -19,6 +20,8 @@ function siteTime(iso: string, timezone: string) {
 }
 
 export default function NodeCard({ node }: { node: NodeWithReadiness }) {
+  const t = useTranslations('observatory.node');
+  const tReady = useTranslations('observatory.readiness');
   const { instrument, readiness } = node;
 
   return (
@@ -32,7 +35,7 @@ export default function NodeCard({ node }: { node: NodeWithReadiness }) {
             {node.name}
           </h2>
           <p className="mt-0.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {node.site} · Bortle {node.bortle} · {TIER_LABEL[node.tier]}
+            {node.site} · Bortle {node.bortle} · {t(TIER_KEY[node.tier])}
           </p>
         </div>
         <ReadinessBadge readiness={readiness} />
@@ -40,18 +43,18 @@ export default function NodeCard({ node }: { node: NodeWithReadiness }) {
 
       {readiness.detail && (
         <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {readiness.detail}
+          {tReady(readiness.detail.key, readiness.detail.values)}
           {readiness.nextWindowAt && readiness.state !== 'online' && (
-            <> Next dark window at {siteTime(readiness.nextWindowAt, node.timezone)} site time.</>
+            <> {tReady('nextWindow', { time: siteTime(readiness.nextWindowAt, node.timezone) })}</>
           )}
         </p>
       )}
 
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
-        <Spec label="Optics" value={instrument.optics} />
-        <Spec label="Aperture" value={`${instrument.apertureMm} mm`} mono />
-        <Spec label="Focal length" value={`${instrument.focalLengthMm} mm`} mono />
-        <Spec label="Camera" value={instrument.camera} />
+        <Spec label={t('optics')} value={instrument.optics} />
+        <Spec label={t('aperture')} value={`${instrument.apertureMm} mm`} mono />
+        <Spec label={t('focalLength')} value={`${instrument.focalLengthMm} mm`} mono />
+        <Spec label={t('camera')} value={instrument.camera} />
       </dl>
 
       <div
@@ -59,13 +62,10 @@ export default function NodeCard({ node }: { node: NodeWithReadiness }) {
         style={{ borderColor: 'var(--border)' }}
       >
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Best for {instrument.suitedTo.join(' · ')}
+          {t('bestFor', { targets: instrument.suitedTo.join(' · ') })}
         </p>
         <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
-          <span className="font-mono">{node.priceGel}</span> ₾
-          <span style={{ color: 'var(--text-secondary)' }}>
-            {' '}per <span className="font-mono">{node.sessionMinutes}</span> min
-          </span>
+          {t('price', { price: node.priceGel, minutes: node.sessionMinutes })}
         </p>
       </div>
 
@@ -78,7 +78,7 @@ export default function NodeCard({ node }: { node: NodeWithReadiness }) {
           color: 'var(--accent-text)',
         }}
       >
-        Instrument and availability
+        {t('open')}
       </Link>
     </article>
   );

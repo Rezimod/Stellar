@@ -87,7 +87,9 @@ describe('SimNodeAdapter readiness', () => {
     );
 
     expect(r.state).toBe('offline');
-    expect(r.detail).toMatch(/commissioning/i);
+    // The adapter hands back a message key and its values, not a sentence:
+    // it runs on the server with no locale, and the reader has one.
+    expect(r.detail?.key).toBe('commissioning');
   });
 
   it('degrades to unknown cloud cover rather than failing when the forecast is down', async () => {

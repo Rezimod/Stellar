@@ -117,7 +117,9 @@ export class SimNodeAdapter implements ObservatoryAdapter {
       return {
         ok: false,
         kind: 'retry',
-        reason: readiness.detail ?? `${node.name} could not work: ${readiness.state}.`,
+        // A reason recorded for the sweep's own log, not shown to anyone —
+        // the customer sees the request go back in the queue, not this.
+        reason: readiness.detail?.key ?? readiness.state,
       };
     }
 
@@ -151,8 +153,8 @@ export class SimNodeAdapter implements ObservatoryAdapter {
         nextWindowAt,
         detail:
           sunAltitude > 0
-            ? `Sun is ${sunAltitude.toFixed(0)}° above the horizon at ${node.site}.`
-            : `Twilight at ${node.site} — the sky is not dark enough yet.`,
+            ? { key: 'sunAbove', values: { deg: sunAltitude.toFixed(0), site: node.site } }
+            : { key: 'twilight', values: { site: node.site } },
       };
     }
 
@@ -164,7 +166,7 @@ export class SimNodeAdapter implements ObservatoryAdapter {
         state: 'weather',
         cloudCover,
         nextWindowAt,
-        detail: `${Math.round(cloudCover)}% cloud over ${node.site}.`,
+        detail: { key: 'cloud', values: { pct: Math.round(cloudCover), site: node.site } },
       };
     }
 
@@ -174,10 +176,7 @@ export class SimNodeAdapter implements ObservatoryAdapter {
       state,
       cloudCover,
       nextWindowAt,
-      detail:
-        node.status === 'commissioning'
-          ? 'Built and under commissioning — not yet taking bookings.'
-          : null,
+      detail: node.status === 'commissioning' ? { key: 'commissioning' } : null,
     };
   }
 }

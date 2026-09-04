@@ -97,7 +97,7 @@ export class DarkviewAdapter implements ObservatoryAdapter {
         ...base,
         state: 'offline',
         cloudCover: null,
-        detail: status ? `No agent connection at ${node.site}.` : null,
+        detail: status ? { key: 'noAgent', values: { site: node.site } } : null,
       };
     }
     if (status.link === 'DEGRADED') {
@@ -105,7 +105,7 @@ export class DarkviewAdapter implements ObservatoryAdapter {
         ...base,
         state: 'offline',
         cloudCover: null,
-        detail: `Heartbeat is late at ${node.site}.`,
+        detail: { key: 'heartbeatLate', values: { site: node.site } },
       };
     }
 
@@ -118,8 +118,8 @@ export class DarkviewAdapter implements ObservatoryAdapter {
         cloudCover: null,
         detail:
           sunAltitude > 0
-            ? `Sun is ${sunAltitude.toFixed(0)}° above the horizon at ${node.site}.`
-            : `Twilight at ${node.site} — the sky is not dark enough yet.`,
+            ? { key: 'sunAbove', values: { deg: sunAltitude.toFixed(0), site: node.site } }
+            : { key: 'twilight', values: { site: node.site } },
       };
     }
 
@@ -131,7 +131,11 @@ export class DarkviewAdapter implements ObservatoryAdapter {
         ...base,
         state: 'weather',
         cloudCover,
-        detail: status.weatherNote ?? `The operator has held ${node.site} for weather.`,
+        // The operator's own words, when they left any: theirs to say, not
+        // ours to translate.
+        detail: status.weatherNote
+          ? { key: 'operatorNote', values: { note: status.weatherNote } }
+          : { key: 'weatherHold', values: { site: node.site } },
       };
     }
     if (status.weatherStatus === 'CLOUDY' || (cloudCover !== null && cloudCover > CLOUD_LIMIT)) {
@@ -141,23 +145,20 @@ export class DarkviewAdapter implements ObservatoryAdapter {
         cloudCover,
         detail:
           cloudCover !== null
-            ? `${Math.round(cloudCover)}% cloud over ${node.site}.`
-            : `Cloud over ${node.site}.`,
+            ? { key: 'cloud', values: { pct: Math.round(cloudCover), site: node.site } }
+            : { key: 'cloudy', values: { site: node.site } },
       };
     }
 
     if (status.missionInProgress) {
-      return { ...base, state: 'busy', cloudCover, detail: 'A mission is running.' };
+      return { ...base, state: 'busy', cloudCover, detail: { key: 'missionRunning' } };
     }
 
     return {
       ...base,
       state: 'online',
       cloudCover,
-      detail:
-        status.mode === 'SIMULATED'
-          ? 'Connected, and running its own simulator — frames are not evidence.'
-          : null,
+      detail: status.mode === 'SIMULATED' ? { key: 'simulatorMode' } : null,
     };
   }
 

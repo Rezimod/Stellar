@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import ReadinessBadge from '@/components/observatory/ReadinessBadge';
 import SlotPicker from '@/components/observatory/SlotPicker';
-import { SimNodeAdapter } from '@/lib/observatory/adapter';
-import { getNode } from '@/lib/observatory/nodes';
+import { adapterFor, getNode } from '@/lib/observatory/nodes';
 import { fieldOfView, focalRatio, resolvingPowerArcsec } from '@/lib/observatory/optics';
 
 type Params = { params: Promise<{ nodeId: string }> };
@@ -28,7 +28,10 @@ export default async function NodePage({ params }: Params) {
   const node = getNode((await params).nodeId);
   if (!node) notFound();
 
-  const readiness = await new SimNodeAdapter().getReadiness(node);
+  const tReady = await getTranslations('observatory.readiness');
+  // adapterFor, not a fresh simulator: a node wired to real hardware must not
+  // have its readiness answered by the simulator standing in for it.
+  const readiness = await adapterFor(node).getReadiness(node);
   const { instrument } = node;
   const fov = fieldOfView(instrument);
 
@@ -50,7 +53,7 @@ export default async function NodePage({ params }: Params) {
 
       {readiness.detail && (
         <p className="mt-3 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {readiness.detail}
+          {tReady(readiness.detail.key, readiness.detail.values)}
         </p>
       )}
 

@@ -2553,6 +2553,39 @@
       "classBright": "Bright",
       "classDeepShort": "Deep sky",
       "classDeepLong": "Deep sky, long"
+    },
+    "readiness": {
+      "sunAbove": "Sun is {deg}° above the horizon at {site}.",
+      "twilight": "Twilight at {site} — the sky is not dark enough yet.",
+      "cloud": "{pct}% cloud over {site}.",
+      "cloudy": "Cloud over {site}.",
+      "commissioning": "Built and under commissioning — not yet taking bookings.",
+      "noAgent": "No agent connection at {site}.",
+      "heartbeatLate": "Heartbeat is late at {site}.",
+      "weatherHold": "The operator has held {site} for weather.",
+      "operatorNote": "{note}",
+      "missionRunning": "A mission is running.",
+      "simulatorMode": "Connected, and running its own simulator — frames are not evidence.",
+      "nextWindow": "Next dark window at {time} site time."
+    },
+    "node": {
+      "tierFirstParty": "Stellar-operated",
+      "tierKitted": "Partner · Node Kit",
+      "tierByo": "Partner · own rig",
+      "optics": "Optics",
+      "aperture": "Aperture",
+      "focalLength": "Focal length",
+      "camera": "Camera",
+      "bestFor": "Best for {targets}",
+      "price": "{price} ₾ per {minutes} min",
+      "open": "Instrument and availability"
+    },
+    "state": {
+      "online": "Observable now",
+      "busy": "Session in progress",
+      "weather": "Clouded out",
+      "daylight": "Daylight",
+      "offline": "Offline"
     }
   }
 }
