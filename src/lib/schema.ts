@@ -408,6 +408,23 @@ export const observatoryReservation = pgTable('observatory_reservation', {
   slotId: text('slot_id').notNull().unique(),
   nodeId: text('node_id').notNull(),
   privyId: text('privy_id').notNull(),
+  /**
+   * Why this slot is held. A live booking is driven by the customer; a request
+   * is worked by the instrument while they sleep, and must not appear as a
+   * session anyone can steer.
+   *
+   *   ALTER TABLE observatory_reservation
+   *     ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'live',
+   *     ADD COLUMN IF NOT EXISTS fee_tetri integer NOT NULL DEFAULT 0;
+   */
+  source: text('source').notNull().default('live'),
+  /**
+   * What was agreed when the slot was taken. Settlement reads this rather than
+   * the node's current price: re-deriving it would pay an old session at a new
+   * rate, which is the same mistake as asking a node for provenance after the
+   * fact.
+   */
+  feeTetri: integer('fee_tetri').notNull().default(0),
   startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
   endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -543,3 +560,52 @@ export const observatoryOperatorInterest = pgTable('observatory_operator_interes
   note: text('note'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
+
+// A photograph asked for rather than driven. The window is the whole point: a
+// customer who does not need to be awake can be served on whichever night the
+// sky opens, which is what lets a node work at three in the morning.
+// docs/stellar-v2-plan.md §5.2.
+//
+//   CREATE TABLE IF NOT EXISTS observatory_capture_request (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     privy_id text NOT NULL,
+//     node_id text NOT NULL,
+//     target_id text NOT NULL,
+//     target_name text NOT NULL,
+//     window_start timestamptz NOT NULL,
+//     window_end timestamptz NOT NULL,
+//     price_tetri integer NOT NULL,
+//     state text NOT NULL DEFAULT 'queued',
+//     slot_id text,
+//     reservation_id uuid,
+//     capture_id uuid,
+//     created_at timestamptz NOT NULL DEFAULT now(),
+//     scheduled_at timestamptz,
+//     closed_at timestamptz
+//   );
+//   CREATE INDEX IF NOT EXISTS observatory_capture_request_privy_idx
+//     ON observatory_capture_request (privy_id, created_at DESC);
+//   CREATE INDEX IF NOT EXISTS observatory_capture_request_queue_idx
+//     ON observatory_capture_request (state, window_end);
+export const observatoryCaptureRequest = pgTable('observatory_capture_request', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  privyId: text('privy_id').notNull(),
+  nodeId: text('node_id').notNull(),
+  targetId: text('target_id').notNull(),
+  targetName: text('target_name').notNull(),
+  /** The span the customer agreed to wait. Nothing is promised inside one night. */
+  windowStart: timestamp('window_start', { withTimezone: true }).notNull(),
+  windowEnd: timestamp('window_end', { withTimezone: true }).notNull(),
+  /** Priced by target class when the request was placed, and never re-derived. */
+  priceTetri: integer('price_tetri').notNull(),
+  state: text('state').notNull().default('queued'),
+  slotId: text('slot_id'),
+  reservationId: uuid('reservation_id'),
+  captureId: uuid('capture_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+}, (t) => [
+  index('observatory_capture_request_privy_idx').on(t.privyId, t.createdAt),
+  index('observatory_capture_request_queue_idx').on(t.state, t.windowEnd),
+])

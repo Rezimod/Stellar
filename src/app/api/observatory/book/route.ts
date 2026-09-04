@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
     slotId: slot.id,
     nodeId: node.id,
     privyId,
+    // The price agreed now, so settlement never re-rates this session.
+    feeTetri: Math.round(node.priceGel * 100),
     startsAt: new Date(slot.startsAt),
     endsAt: new Date(slot.endsAt),
   });

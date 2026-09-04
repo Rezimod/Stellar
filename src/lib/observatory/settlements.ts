@@ -58,6 +58,7 @@ export async function unsettledSessions(before: Date, limit = 100) {
         id: observatoryReservation.id,
         nodeId: observatoryReservation.nodeId,
         privyId: observatoryReservation.privyId,
+        feeTetri: observatoryReservation.feeTetri,
         startsAt: observatoryReservation.startsAt,
         endsAt: observatoryReservation.endsAt,
       })
@@ -132,7 +133,6 @@ export async function recordSettlement(input: {
  */
 export async function settleDueSessions(input: {
   now?: Date
-  feeTetriFor: (nodeId: string) => number
   minutesFor: (nodeId: string) => number
   /** Asked per session, because provenance was decided when the frames were taken. */
   provenanceFor: (session: { id: string; nodeId: string }) => Promise<Provenance>
@@ -151,7 +151,9 @@ export async function settleDueSessions(input: {
       privyId: session.privyId,
       minutes: input.minutesFor(session.nodeId),
       settlement: settleComplete({
-        feeTetri: input.feeTetriFor(session.nodeId),
+        // Read off the reservation, not the node: a price change must not
+        // re-rate a session that was agreed weeks ago.
+        feeTetri: session.feeTetri,
         hoursDelivered: hours,
         provenance: await input.provenanceFor(session),
       }),

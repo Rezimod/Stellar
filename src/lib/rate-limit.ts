@@ -34,6 +34,9 @@ export const pushSubscribeRateLimit = { limit: (id: string) => makeLimit('3600 s
 // Registering a telescope for the network writes one row per owner. 5/hour/IP
 // is plenty for a real person filling in a form once.
 export const operatorInterestRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:obs:interest').limit(id) };
+// A capture request is cheap to place and is worked by a scheduler, so the
+// limit is on queue spam rather than on a person changing their mind.
+export const observatoryRequestRateLimit = { limit: (id: string) => makeLimit('3600 s', 20, 'rl:obs:req').limit(id) };
 // Booking holds a slot on a real instrument's night. 10/hour/account is far
 // more than anyone needs and stops a script from papering the timetable.
 export const observatoryBookRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:obs:book').limit(id) };

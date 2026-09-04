@@ -38,6 +38,9 @@ export default async function ObservatoryPage() {
           <Link href="/observatory/captures" className="underline" style={{ color: 'var(--text-secondary)' }}>
             What the network has photographed
           </Link>
+          <Link href="/observatory/requests" className="underline" style={{ color: 'var(--text-secondary)' }}>
+            Ask for a photograph
+          </Link>
         </div>
       </header>
 

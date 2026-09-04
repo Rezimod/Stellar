@@ -128,6 +128,31 @@ export default async function NodePage({ params }: Params) {
           Open the simulator
         </Link>
       </section>
+
+      <section
+        className="mt-4 rounded-xl border p-5"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+      >
+        <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
+          Not awake at three in the morning?
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Ask for the object instead of the hour. Name what you want photographed and how
+          long you will wait, and the instrument works your request on the first night the
+          sky allows it — between the sessions people booked to drive themselves.
+        </p>
+        <Link
+          href="/observatory/requests"
+          className="mt-3 inline-block rounded-md border px-3 py-2 text-sm"
+          style={{
+            borderColor: 'var(--accent-border)',
+            background: 'var(--accent-dim)',
+            color: 'var(--accent-text)',
+          }}
+        >
+          Ask for a photograph
+        </Link>
+      </section>
     </PageContainer>
   );
 }

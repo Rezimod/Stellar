@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/settle",
       "schedule": "20 * * * *"
+    },
+    {
+      "path": "/api/cron/capture-requests",
+      "schedule": "10 * * * *"
     }
   ]
 }

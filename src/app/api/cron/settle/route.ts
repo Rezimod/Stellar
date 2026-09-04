@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const priceTetri = (nodeId: string) => Math.round((getNode(nodeId)?.priceGel ?? 0) * 100);
   const minutes = (nodeId: string) => getNode(nodeId)?.sessionMinutes ?? 0;
   // Read back off the frames the session recorded, never asked of the node
   // now: a Darkview observatory is SIMULATED by default and REAL only while an
@@ -28,7 +27,6 @@ export async function GET(req: NextRequest) {
   const provenance = (session: { id: string }) => sessionProvenance(session.id);
 
   const result = await settleDueSessions({
-    feeTetriFor: priceTetri,
     minutesFor: minutes,
     provenanceFor: provenance,
   });

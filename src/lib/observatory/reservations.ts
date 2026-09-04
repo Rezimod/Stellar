@@ -20,11 +20,15 @@ import { observatoryReservation } from '@/lib/schema'
 /** How many upcoming slots one account may hold at once, while this is a dry run. */
 export const MAX_OPEN_RESERVATIONS = 3
 
+export type ReservationSource = 'live' | 'request'
+
 export type Reservation = {
   id: string
   slotId: string
   nodeId: string
   privyId: string
+  source: ReservationSource
+  feeTetri: number
   startsAt: string
   endsAt: string
 }
@@ -72,7 +76,13 @@ export async function heldSlots(
   }
 }
 
-/** Everything this account holds from `from` onwards, soonest first. */
+/**
+ * Live bookings this account holds from `from` onwards, soonest first.
+ *
+ * Requests are excluded on purpose: they are worked by the scheduler, not
+ * driven by the customer, and listing them as sessions would offer a console
+ * for a night nobody intends to be awake for.
+ */
 export async function reservationsFor(privyId: string, from = new Date()): Promise<Reservation[]> {
   const db = getDb()
   if (!db) return []
@@ -81,7 +91,11 @@ export async function reservationsFor(privyId: string, from = new Date()): Promi
     .select()
     .from(observatoryReservation)
     .where(
-      and(eq(observatoryReservation.privyId, privyId), gte(observatoryReservation.startsAt, from)),
+      and(
+        eq(observatoryReservation.privyId, privyId),
+        eq(observatoryReservation.source, 'live'),
+        gte(observatoryReservation.startsAt, from),
+      ),
     )
 
   return rows.map(shape).sort((a, b) => (a.startsAt < b.startsAt ? -1 : 1))
@@ -116,15 +130,25 @@ export async function reserve(input: {
   slotId: string
   nodeId: string
   privyId: string
+  /** A live booking is driven; a request is worked while the customer sleeps. */
+  source?: ReservationSource
+  /** What was agreed now. Settlement reads this back rather than re-pricing. */
+  feeTetri: number
   startsAt: Date
   endsAt: Date
 }): Promise<{ outcome: BookOutcome; id: string | null }> {
   const db = getDb()
   if (!db) return { outcome: 'unavailable', id: null }
 
+  const source = input.source ?? 'live'
+
   try {
-    const open = await reservationsFor(input.privyId)
-    if (open.length >= MAX_OPEN_RESERVATIONS) return { outcome: 'at_limit', id: null }
+    // The cap is on slots a person holds to drive themselves. A queue worked on
+    // their behalf is the scheduler's business and is bounded by the night.
+    if (source === 'live') {
+      const open = await reservationsFor(input.privyId)
+      if (open.length >= MAX_OPEN_RESERVATIONS) return { outcome: 'at_limit', id: null }
+    }
 
     // The insert is the lock: a second caller for the same slot conflicts on
     // the unique index and gets nothing back, whoever checked availability
@@ -135,6 +159,8 @@ export async function reserve(input: {
         slotId: input.slotId,
         nodeId: input.nodeId,
         privyId: input.privyId,
+        source,
+        feeTetri: input.feeTetri,
         startsAt: input.startsAt,
         endsAt: input.endsAt,
       })
@@ -181,6 +207,11 @@ function shape(row: typeof observatoryReservation.$inferSelect): Reservation {
     slotId: row.slotId,
     nodeId: row.nodeId,
     privyId: row.privyId,
+    // Anything the column holds that is not the word request is a live
+    // booking, which is the safe direction: a driveable session that reads as
+    // a queue entry disappears from its owner, and that is the worse failure.
+    source: row.source === 'request' ? 'request' : 'live',
+    feeTetri: row.feeTetri,
     startsAt: row.startsAt.toISOString(),
     endsAt: row.endsAt.toISOString(),
   }
