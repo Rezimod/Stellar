@@ -30,9 +30,13 @@ const node: ObservatoryNode = {
   sessionMinutes: 20,
 };
 
-/** Open-Meteo answers in the site's own timezone, with no offset on the stamp. */
-function siteForecast(localHour: string, cloudCover: number) {
-  return [{ date: localHour.slice(0, 10), hours: [{ time: localHour, cloudCover, visibility: 0, temp: 0, humidity: 0, wind: 0 }] }];
+/**
+ * Open-Meteo is queried without a `timezone` parameter, so it answers in GMT:
+ * the live API reports `"timezone":"GMT"` and a zero offset for this exact
+ * query. Its `time` strings are therefore UTC, and so are these.
+ */
+function utcForecast(utcHour: string, cloudCover: number) {
+  return [{ date: utcHour.slice(0, 10), hours: [{ time: utcHour, cloudCover, visibility: 0, temp: 0, humidity: 0, wind: 0 }] }];
 }
 
 async function readiness(now: Date) {
@@ -51,10 +55,12 @@ describe('SimNodeAdapter readiness', () => {
     expect(fetchSkyForecast).not.toHaveBeenCalled();
   });
 
-  it('matches the forecast hour on the site wall clock, not the runtime zone', async () => {
-    // 20:00 UTC = 00:00 next day in Tbilisi (+4). Reading the stamp as UTC
-    // would look for 20:00 and miss, which is the bug this guards.
-    fetchSkyForecast.mockResolvedValue(siteForecast('2026-01-16T00:00', 95));
+  it('matches the forecast hour the forecast is actually keyed by', async () => {
+    // 20:00 UTC over Tbilisi. This test used to assert the opposite — that the
+    // hour was found by the site's wall clock, 00:00 the next day — which
+    // encoded a four-hour error as if it were the intent. Open-Meteo answers
+    // in GMT, so 20:00 is the row to find.
+    fetchSkyForecast.mockResolvedValue(utcForecast('2026-01-15T20:00', 95));
 
     const r = await readiness(new Date('2026-01-15T20:00:00Z'));
 
@@ -63,15 +69,16 @@ describe('SimNodeAdapter readiness', () => {
   });
 
   it('is observable on a clear night when the node is active', async () => {
-    fetchSkyForecast.mockResolvedValue(siteForecast('2026-01-16T00:00', 10));
+    fetchSkyForecast.mockResolvedValue(utcForecast('2026-01-15T20:00', 10));
 
     const r = await readiness(new Date('2026-01-15T20:00:00Z'));
 
     expect(r.state).toBe('online');
+    expect(r.cloudCover).toBe(10);
   });
 
   it('never reports online while a node is commissioning', async () => {
-    fetchSkyForecast.mockResolvedValue(siteForecast('2026-01-16T00:00', 10));
+    fetchSkyForecast.mockResolvedValue(utcForecast('2026-01-15T20:00', 10));
     const { SimNodeAdapter } = await import('@/lib/observatory/adapter');
 
     const r = await new SimNodeAdapter().getReadiness(
