@@ -69,6 +69,11 @@ export type ObservatoryNode = {
    * accepts work. Omitted means the dark window is the only limit.
    */
   availability?: { fromHourLocal: number; toHourLocal: number };
+  /**
+   * The account that owns the instrument and is paid for it. Absent on a
+   * first-party node: Stellar operates it, and nobody is owed a share.
+   */
+  operatorPrivyId?: string;
 };
 
 export type NodeReadiness = {

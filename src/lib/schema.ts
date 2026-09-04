@@ -501,3 +501,32 @@ export const observatorySettlement = pgTable('observatory_settlement', {
 }, (t) => [
   index('observatory_settlement_node_idx').on(t.nodeId, t.settledAt),
 ])
+
+// Telescope owners who want to put their instrument on the network. The gear
+// details are the point: §3 of the network design says the supply side is
+// addressable by name because Astroman has 45,000 buyers with brand and model
+// on file, and this is where that record starts for everyone else.
+//
+//   CREATE TABLE IF NOT EXISTS observatory_operator_interest (
+//     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//     privy_id text,
+//     email text NOT NULL UNIQUE,
+//     city text NOT NULL,
+//     telescope text NOT NULL,
+//     mount text,
+//     camera text,
+//     note text,
+//     created_at timestamptz NOT NULL DEFAULT now()
+//   );
+export const observatoryOperatorInterest = pgTable('observatory_operator_interest', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  privyId: text('privy_id'),
+  /** Lower-cased before it is written, so the unique index means one owner. */
+  email: text('email').notNull().unique(),
+  city: text('city').notNull(),
+  telescope: text('telescope').notNull(),
+  mount: text('mount'),
+  camera: text('camera'),
+  note: text('note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})

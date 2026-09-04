@@ -31,6 +31,17 @@ describe('the ladder', () => {
     expect(tierFor(25).id).toBe('telescope_operator');
   });
 
+  it('is not held short of a raise by floating-point dust', () => {
+    // Seventy-five 20-minute sessions summed as thirds land at
+    // 24.999999999999996, and an operator who has delivered them has earned
+    // the rung.
+    let hours = 0;
+    for (let i = 0; i < 75; i++) hours += 20 / 60;
+    expect(hours).toBeLessThan(25);
+    expect(tierFor(hours).id).toBe('telescope_operator');
+    expect(nextTier(hours)?.hoursRemaining).toBe(50);
+  });
+
   it('treats a nonsense hour count as a new operator rather than a generous one', () => {
     expect(tierFor(-40).operatorShare).toBe(0.6);
     expect(tierFor(Number.NaN).operatorShare).toBe(0.6);

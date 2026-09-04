@@ -34,12 +34,26 @@ export const OPERATOR_TIERS: OperatorTier[] = [
   { id: 'observatory_director', name: 'Observatory Director', minHours: 300, operatorShare: 0.8 },
 ];
 
+/**
+ * Delivered hours as whole minutes.
+ *
+ * Hours accumulate as a sum of thirds — a 20-minute session is 0.333… — and
+ * seventy-five of them add up to 24.999999999999996, which is not 25. Left
+ * alone that dust holds an operator one session short of a raise they have
+ * earned, so the comparison happens in minutes, rounded. A raise lands on the
+ * minute, not on the last bit of a float.
+ */
+function minutesOf(hoursDelivered: number): number {
+  const hours = Number.isFinite(hoursDelivered) ? Math.max(0, hoursDelivered) : 0;
+  return Math.round(hours * 60);
+}
+
 /** The tier this many delivered hours has earned. */
 export function tierFor(hoursDelivered: number): OperatorTier {
-  const hours = Number.isFinite(hoursDelivered) ? Math.max(0, hoursDelivered) : 0;
+  const minutes = minutesOf(hoursDelivered);
   // Walk down: the highest rung whose threshold has been passed.
   for (let i = OPERATOR_TIERS.length - 1; i >= 0; i--) {
-    if (hours >= OPERATOR_TIERS[i].minHours) return OPERATOR_TIERS[i];
+    if (minutes >= OPERATOR_TIERS[i].minHours * 60) return OPERATOR_TIERS[i];
   }
   return OPERATOR_TIERS[0];
 }
@@ -48,9 +62,9 @@ export function tierFor(hoursDelivered: number): OperatorTier {
 export function nextTier(
   hoursDelivered: number,
 ): { tier: OperatorTier; hoursRemaining: number } | null {
-  const hours = Number.isFinite(hoursDelivered) ? Math.max(0, hoursDelivered) : 0;
-  const next = OPERATOR_TIERS.find((t) => hours < t.minHours);
-  return next ? { tier: next, hoursRemaining: next.minHours - hours } : null;
+  const minutes = minutesOf(hoursDelivered);
+  const next = OPERATOR_TIERS.find((t) => minutes < t.minHours * 60);
+  return next ? { tier: next, hoursRemaining: (next.minHours * 60 - minutes) / 60 } : null;
 }
 
 export type Split = {

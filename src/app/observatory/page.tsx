@@ -97,9 +97,20 @@ export default async function ObservatoryPage() {
         </h2>
         <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
           Most instruments are used a handful of nights a year. Put yours on the network
-          and it earns on the clear nights you are not out with it. Listing opens with the
-          beta.
+          and it earns on the clear nights you are not out with it. You keep 60% from the
+          first session and 80% once the instrument has earned it.
         </p>
+        <Link
+          href="/observatory/operator"
+          className="mt-3 inline-block rounded-md border px-3 py-2 text-sm"
+          style={{
+            borderColor: 'var(--accent-border)',
+            background: 'var(--accent-dim)',
+            color: 'var(--accent-text)',
+          }}
+        >
+          What an operator earns
+        </Link>
       </section>
     </PageContainer>
   );

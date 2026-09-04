@@ -31,6 +31,9 @@ export const trackRateLimit = { limit: (id: string) => makeLimit('60 s', 120, 'r
 // 20 push-subscription writes/hour/IP — a device subscribes once; this blocks
 // spam rows from an unauthenticated caller.
 export const pushSubscribeRateLimit = { limit: (id: string) => makeLimit('3600 s', 20, 'rl:push').limit(id) };
+// Registering a telescope for the network writes one row per owner. 5/hour/IP
+// is plenty for a real person filling in a form once.
+export const operatorInterestRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:obs:interest').limit(id) };
 // Booking holds a slot on a real instrument's night. 10/hour/account is far
 // more than anyone needs and stops a script from papering the timetable.
 export const observatoryBookRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:obs:book').limit(id) };
