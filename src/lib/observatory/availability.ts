@@ -14,7 +14,7 @@
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import { LIMITS } from './safety';
-import { siteDateStamp, siteHourStamp, siteLocalHours } from './site-time';
+import { siteDateStamp, siteLocalHours, utcHourStamp } from './site-time';
 import type { ObservatoryNode } from './types';
 
 /** Minutes between one session ending and the next starting: park, hand over, re-align. */
@@ -137,7 +137,7 @@ export async function attachForecast(node: ObservatoryNode, slots: Slot[]): Prom
 
     return slots.map((slot) => ({
       ...slot,
-      cloudCover: byHour.get(siteHourStamp(node.timezone, new Date(slot.startsAt))) ?? null,
+      cloudCover: byHour.get(utcHourStamp(new Date(slot.startsAt))) ?? null,
     }));
   } catch {
     return slots;

@@ -14,7 +14,7 @@
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import type { Provenance } from './provenance';
-import { siteHourStamp } from './site-time';
+import { utcHourStamp } from './site-time';
 import type { NodeReadiness, ObservatoryNode, ReadinessState } from './types';
 
 export interface ObservatoryAdapter {
@@ -115,7 +115,7 @@ export async function currentCloudCover(node: ObservatoryNode, now: Date): Promi
     const hours = days.flatMap((d) => d.hours);
     if (hours.length === 0) return null;
 
-    const stamp = siteHourStamp(node.timezone, now);
+    const stamp = utcHourStamp(now);
     return hours.find((h) => h.time.slice(0, 13) === stamp)?.cloudCover ?? null;
   } catch {
     return null;

@@ -54,8 +54,17 @@ export function formatHours(hours: number): string {
  * silently select the wrong hour by the site's UTC offset. Match on the site's
  * own clock instead.
  */
-export function siteHourStamp(timezone: string, date: Date): string {
-  return `${siteDateStamp(timezone, date)}T${sitePart(timezone, date, { hour: '2-digit' }, 'hour')}`;
+/**
+ * `date` as "YYYY-MM-DDTHH" in UTC — the key a forecast hour is found by.
+ *
+ * Open-Meteo is queried without a `timezone` parameter, so it answers in GMT
+ * and its `time` strings are UTC. Matching them against a site's wall clock
+ * looks right and is wrong by the site's offset: Tbilisi is UTC+4, so every
+ * lookup returned the cloud cover for four hours later than the moment asked
+ * about. Keyed in UTC on both sides, the two agree.
+ */
+export function utcHourStamp(date: Date): string {
+  return date.toISOString().slice(0, 13);
 }
 
 /** `date` as "YYYY-MM-DD" on the wall clock of an IANA timezone. */
