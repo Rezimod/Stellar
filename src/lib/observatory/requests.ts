@@ -11,7 +11,7 @@
  * escrow arrives with docs/observatory-network.md §6.
  */
 
-import { and, asc, desc, eq, lt } from 'drizzle-orm'
+import { and, asc, desc, eq, lt, lte } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { observatoryCaptureRequest } from '@/lib/schema'
 import type { RequestState } from './capture-requests'
@@ -228,5 +228,121 @@ function shape(row: typeof observatoryCaptureRequest.$inferSelect): CaptureReque
     slotId: row.slotId,
     createdAt: row.createdAt.toISOString(),
     scheduledAt: row.scheduledAt?.toISOString() ?? null,
+  }
+}
+
+/**
+ * Every request currently holding a slot.
+ *
+ * Deliberately not filtered by time here: the slot's start is encoded in its
+ * id and its length belongs to the node, so whether a request is due, still
+ * ahead, or missed is decided by the caller with the node in hand. This just
+ * hands over the short list of rows that could be any of those.
+ */
+export async function scheduledRequests(now = new Date(), limit = 20): Promise<CaptureRequest[]> {
+  const db = getDb()
+  if (!db) return []
+
+  try {
+    const rows = await db
+      .select()
+      .from(observatoryCaptureRequest)
+      .where(eq(observatoryCaptureRequest.state, 'scheduled'))
+      .orderBy(asc(observatoryCaptureRequest.scheduledAt))
+      .limit(limit)
+
+    return rows.map(shape)
+  } catch (err) {
+    console.error('[observatory] cannot read due requests', err)
+    return []
+  }
+}
+
+/**
+ * A photograph came back.
+ *
+ * Conditional on the request still being scheduled, so a sweep that overlaps
+ * another does not deliver the same order twice.
+ */
+export async function markDelivered(id: string, captureId: string, at = new Date()): Promise<boolean> {
+  const db = getDb()
+  if (!db) return false
+
+  try {
+    const updated = await db
+      .update(observatoryCaptureRequest)
+      .set({ state: 'delivered', captureId, closedAt: at })
+      .where(
+        and(
+          eq(observatoryCaptureRequest.id, id),
+          eq(observatoryCaptureRequest.state, 'scheduled'),
+        ),
+      )
+      .returning({ id: observatoryCaptureRequest.id })
+
+    return updated.length > 0
+  } catch (err) {
+    console.error('[observatory] cannot mark request delivered', err)
+    return false
+  }
+}
+
+/**
+ * The night did not work out — put the request back in the queue.
+ *
+ * Weather, a target that had drifted under the roofline, an agent that did not
+ * answer: none of those are the customer's fault and none of them are final
+ * while the window is still open. The request loses its slot and waits for the
+ * next one. When the window does close, `expireStale` refunds it.
+ */
+export async function returnToQueue(id: string): Promise<boolean> {
+  const db = getDb()
+  if (!db) return false
+
+  try {
+    const updated = await db
+      .update(observatoryCaptureRequest)
+      .set({ state: 'queued', slotId: null, reservationId: null, scheduledAt: null })
+      .where(
+        and(
+          eq(observatoryCaptureRequest.id, id),
+          eq(observatoryCaptureRequest.state, 'scheduled'),
+        ),
+      )
+      .returning({ id: observatoryCaptureRequest.id })
+
+    return updated.length > 0
+  } catch (err) {
+    console.error('[observatory] cannot return request to the queue', err)
+    return false
+  }
+}
+
+/**
+ * Close a scheduled request whose window ran out before it could be worked.
+ *
+ * `expireStale` only sees queued rows; one that held a slot on the last night
+ * of its window and failed there would otherwise sit scheduled forever.
+ */
+export async function expireScheduled(now = new Date()): Promise<number> {
+  const db = getDb()
+  if (!db) return 0
+
+  try {
+    const closed = await db
+      .update(observatoryCaptureRequest)
+      .set({ state: 'expired', closedAt: now })
+      .where(
+        and(
+          eq(observatoryCaptureRequest.state, 'scheduled'),
+          lte(observatoryCaptureRequest.windowEnd, now),
+        ),
+      )
+      .returning({ id: observatoryCaptureRequest.id })
+
+    return closed.length
+  } catch (err) {
+    console.error('[observatory] cannot expire scheduled requests', err)
+    return 0
   }
 }

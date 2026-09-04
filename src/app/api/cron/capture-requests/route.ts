@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { planRequest } from '@/lib/observatory/capture-requests';
+import { deliverDueRequests } from '@/lib/observatory/deliver';
 import { getNode } from '@/lib/observatory/nodes';
 import { heldSlots, release, reserve } from '@/lib/observatory/reservations';
 import { expireStale, markScheduled, queuedRequests } from '@/lib/observatory/requests';
@@ -25,6 +26,11 @@ export async function GET(req: NextRequest) {
   }
 
   const now = new Date();
+
+  // Work anything whose slot has arrived before handing out new ones, so a
+  // request cannot be scheduled into a slot this same sweep is about to free.
+  const delivery = await deliverDueRequests(now);
+
   const expired = await expireStale(now);
 
   const queue = await queuedRequests();
@@ -96,5 +102,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, expired, scheduled, waiting });
+  return NextResponse.json({ ok: true, ...delivery, expired, scheduled, waiting });
 }

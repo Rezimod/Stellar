@@ -21,6 +21,7 @@ import {
   CLOUD_LIMIT,
   SUN_LIMIT_DEG,
   currentCloudCover,
+  type CaptureOutcome,
   type ObservatoryAdapter,
 } from './adapter';
 import type { Provenance } from './provenance';
@@ -58,6 +59,28 @@ export class DarkviewAdapter implements ObservatoryAdapter {
     const status = await this.status();
     if (!status) return 'simulated';
     return status.mode === 'REAL' && status.link === 'ONLINE' ? 'instrument' : 'simulated';
+  }
+
+  /**
+   * Not yet possible, and deliberately not guessed at.
+   *
+   * Darkview's contract carries mission and capture operations, but they are
+   * its own customer-facing flows behind a user session — there is no
+   * machine-to-machine operation for "take this photograph unattended on
+   * Stellar's behalf". That contract is explicit that a task needing a field
+   * which does not exist must stop and raise a contract issue rather than
+   * invent a private endpoint, and it is the source of truth for both sides.
+   *
+   * So this reports a retryable failure: the request keeps its window and
+   * waits, and refunds by itself if the window closes. It becomes real when
+   * the operation exists — one method, in this file.
+   */
+  async capture(): Promise<CaptureOutcome> {
+    return {
+      ok: false,
+      kind: 'retry',
+      reason: 'Unattended capture is not in the observatory contract yet.',
+    };
   }
 
   async getReadiness(node: ObservatoryNode, now = new Date()): Promise<NodeReadiness> {

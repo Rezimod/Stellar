@@ -14,6 +14,8 @@
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
 import { fetchSkyForecast } from '@/lib/sky-data';
 import type { Provenance } from './provenance';
+import { evaluateSafety } from './safety';
+import { EXPOSURES, SIM_TARGET_BY_ID, targetAltAz } from './sim-targets';
 import { utcHourStamp } from './site-time';
 import type { NodeReadiness, ObservatoryNode, ReadinessState } from './types';
 
@@ -38,7 +40,40 @@ export interface ObservatoryAdapter {
 
   /** Live operational state. Must never throw — a node that cannot answer is offline. */
   getReadiness(node: ObservatoryNode, now?: Date): Promise<NodeReadiness>;
+
+  /**
+   * Take a photograph, unattended.
+   *
+   * This is the half of the network nobody is awake for: a queued request
+   * reaches its slot and something has to point the telescope without a
+   * browser in the loop. The adapter reports what it did — how long each sub
+   * ran and how many were stacked — and never what the frame is *worth*, which
+   * stays with `provenanceNow`.
+   *
+   * Must never throw. A failure is an outcome, because the caller has to
+   * decide between trying another night and refunding.
+   */
+  capture(
+    node: ObservatoryNode,
+    input: { targetId: string },
+    now?: Date,
+  ): Promise<CaptureOutcome>;
 }
+
+export type CaptureOutcome =
+  | {
+      ok: true;
+      exposureSec: number;
+      subs: number;
+      opticalTrain: string;
+      roi: string;
+    }
+  | {
+      ok: false;
+      /** `retry` means another night could work; `terminal` means it never will. */
+      kind: 'retry' | 'terminal';
+      reason: string;
+    };
 
 /** Above this cloud cover the sky is not worth an instrument's time. */
 export const CLOUD_LIMIT = 70;
@@ -57,6 +92,45 @@ export class SimNodeAdapter implements ObservatoryAdapter {
   /** A model of the optics can never be evidence, whatever the sky is doing. */
   async provenanceNow(): Promise<Provenance> {
     return 'simulated';
+  }
+
+  /**
+   * The rehearsal of an unattended capture.
+   *
+   * It refuses for the same reasons the instrument would — daylight, weather,
+   * a target under the horizon or through the zenith — so the queue, the
+   * retries and the refunds are all exercised before any hardware exists. What
+   * it produces is still simulated, and the rail downstream knows it.
+   */
+  async capture(
+    node: ObservatoryNode,
+    input: { targetId: string },
+    now = new Date(),
+  ): Promise<CaptureOutcome> {
+    const target = SIM_TARGET_BY_ID.get(input.targetId);
+    if (!target) {
+      return { ok: false, kind: 'terminal', reason: 'This instrument does not carry that target.' };
+    }
+
+    const readiness = await this.getReadiness(node, now);
+    if (readiness.state !== 'online') {
+      return {
+        ok: false,
+        kind: 'retry',
+        reason: readiness.detail ?? `${node.name} could not work: ${readiness.state}.`,
+      };
+    }
+
+    const verdict = evaluateSafety(node, targetAltAz(target, node, now), now);
+    if (!verdict.ok) return { ok: false, kind: 'retry', reason: verdict.reason };
+
+    // Lucky imaging on a bright target, long subs on a faint one — the same
+    // two regimes the console offers, at the setting a sensible operator picks.
+    const exposures = EXPOSURES[target.brightness];
+    const exposureSec = exposures[Math.floor(exposures.length / 2)];
+    const subs = target.brightness === 'bright' ? 600 : 60;
+
+    return { ok: true, exposureSec, subs, opticalTrain: 'native', roi: 'full' };
   }
 
   async getReadiness(node: ObservatoryNode, now = new Date()): Promise<NodeReadiness> {
