@@ -1122,6 +1122,18 @@
         "name": "Pluto",
         "blurb": "Kuiper Belt dwarf with a binary companion (Charon) — representative of the third zone of the Solar System."
       }
+    },
+    "flight": {
+      "explore": "Explore",
+      "exit": "Exit flight mode",
+      "launch": "Launch",
+      "speed": "Speed",
+      "kills": "Kills",
+      "hull": "Hull",
+      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · Esc exit",
+      "fire": "Fire",
+      "boost": "Boost",
+      "respawn": "Hull lost — respawning near Earth"
     }
   },
   "missionsPage": {

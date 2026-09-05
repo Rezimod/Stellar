@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { getSaturnRingStripTexture } from '@/lib/solar-system/saturn-ring-strip';
 import { GeoMoon } from 'astronomy-engine';
 import {
   helioEqjToThree,
@@ -463,23 +464,33 @@ function moonTexture(): THREE.CanvasTexture {
 const ATMOSPHERE_VERT = `
   varying vec3 vNormal;
   varying vec3 vView;
+  varying vec3 vWorldPos;
+  varying vec3 vWorldNrm;
   void main() {
     vNormal = normalize(normalMatrix * normal);
     vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
     vView = normalize(-mvPos.xyz);
+    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    vWorldNrm = normalize(mat3(modelMatrix) * normal);
     gl_Position = projectionMatrix * mvPos;
   }
 `;
 
+// Rayleigh-style limb: fresnel rim that is brightest on the sunlit side and
+// fades around the terminator. The Sun sits at the scene origin.
 const ATMOSPHERE_FRAG = `
   uniform vec3 uColor;
   uniform float uIntensity;
   uniform float uPower;
   varying vec3 vNormal;
   varying vec3 vView;
+  varying vec3 vWorldPos;
+  varying vec3 vWorldNrm;
   void main() {
     float fresnel = pow(1.0 - max(dot(vNormal, vView), 0.0), uPower);
-    gl_FragColor = vec4(uColor * fresnel * uIntensity, fresnel);
+    float sunFacing = dot(normalize(vWorldNrm), normalize(-vWorldPos));
+    float lit = 0.28 + 0.72 * smoothstep(-0.35, 0.4, sunFacing);
+    gl_FragColor = vec4(uColor * fresnel * uIntensity * lit, fresnel * lit);
   }
 `;
 
@@ -660,7 +671,9 @@ export function makeEarthExtras(earthRadius: number, lite: boolean): EarthExtras
 
 export interface SunExtrasHandle {
   group: THREE.Group;
-  update: (cameraPos: THREE.Vector3, sunPos: THREE.Vector3, dtSec: number) => void;
+  /** Pass `camera` to drive the directional lens flare (ghosts appear as the
+   *  view swings toward the Sun). */
+  update: (cameraPos: THREE.Vector3, sunPos: THREE.Vector3, dtSec: number, camera?: THREE.Camera) => void;
   dispose: () => void;
 }
 
@@ -679,6 +692,71 @@ function lensFlareSprite(): THREE.CanvasTexture {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = SRGB;
   return t;
+}
+
+/** Corona streamers — radial rays with a soft core, spun slowly as sprites. */
+function coronaRaysTexture(): THREE.CanvasTexture {
+  const s = 512;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, s, s);
+  ctx.globalCompositeOperation = 'lighter';
+  const cx = s / 2;
+  const cy = s / 2;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 170; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const len = s * (0.16 + Math.pow(Math.random(), 1.6) * 0.34);
+    const alpha = 0.06 + Math.random() * 0.2;
+    const ex = cx + Math.cos(a) * len;
+    const ey = cy + Math.sin(a) * len;
+    const g = ctx.createLinearGradient(cx, cy, ex, ey);
+    g.addColorStop(0, `rgba(255,225,170,${alpha})`);
+    g.addColorStop(0.45, `rgba(255,170,90,${alpha * 0.55})`);
+    g.addColorStop(1, 'rgba(255,120,50,0)');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1 + Math.random() * 3;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+  }
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, s * 0.24);
+  core.addColorStop(0, 'rgba(255,238,205,0.85)');
+  core.addColorStop(0.5, 'rgba(255,190,110,0.32)');
+  core.addColorStop(1, 'rgba(255,150,70,0)');
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, s, s);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  return tex;
+}
+
+/** Lens ghost: soft disc or thin ring. */
+function flareGhostTexture(ring: boolean): THREE.CanvasTexture {
+  const s = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, s, s);
+  const g = ring
+    ? ctx.createRadialGradient(s / 2, s / 2, s * 0.3, s / 2, s / 2, s * 0.48)
+    : ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s * 0.48);
+  if (ring) {
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.55, 'rgba(255,255,255,0.7)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+  } else {
+    g.addColorStop(0, 'rgba(255,255,255,0.75)');
+    g.addColorStop(0.6, 'rgba(255,255,255,0.25)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+  }
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, s, s);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  return tex;
 }
 
 /** Glowing prominence loop — a fiery arc that stands on the solar limb. */
@@ -738,18 +816,31 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
   const group = new THREE.Group();
   group.name = 'sunExtras';
 
-  // Outer corona shell
-  const corona = new THREE.Mesh(
-    new THREE.SphereGeometry(sunRadius * 1.85, 48, 48),
-    new THREE.MeshBasicMaterial({
-      color: 0xffd07a,
+  // ── Multi-layer corona: additive billboards, two of them slowly
+  // counter-rotating streamer layers, all breathing on their own phase. ──
+  const flareTex = lensFlareSprite();
+  const raysTex = coronaRaysTexture();
+  const CORONA_SPECS = [
+    { tex: flareTex, scale: 3.0, opacity: 0.55, color: 0xffd9a0, spin: 0 },
+    { tex: raysTex, scale: 5.2, opacity: 0.55, color: 0xffc078, spin: 0.025 },
+    { tex: raysTex, scale: 7.4, opacity: 0.32, color: 0xff9a50, spin: -0.014 },
+    { tex: flareTex, scale: 10.5, opacity: 0.16, color: 0xff8040, spin: 0 },
+  ];
+  const corona = CORONA_SPECS.map((spec, i) => {
+    const mat = new THREE.SpriteMaterial({
+      map: spec.tex,
+      color: spec.color,
       transparent: true,
-      opacity: 0.06,
+      opacity: spec.opacity,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-    }),
-  );
-  corona.name = 'sunCorona';
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.name = 'sunCorona';
+    sprite.scale.setScalar(sunRadius * spec.scale);
+    group.add(sprite);
+    return { sprite, mat, base: sunRadius * spec.scale, spin: spec.spin, phase: i * 1.7 };
+  });
 
   // ── Prominence loops — fiery arcs anchored on the limb, carried around
   // by the Sun's slow rotation, each breathing on its own rhythm. ──
@@ -801,39 +892,82 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
   let flareT = -1;    // <0 = idle, otherwise seconds since eruption began
   const FLARE_DUR = 3.2;
 
-  // Lens flare sprite (always faces camera, scales w/ distance)
-  const flareTex = lensFlareSprite();
-  const flare = new THREE.Sprite(
-    new THREE.SpriteMaterial({
-      map: flareTex,
-      transparent: true,
-      opacity: 0.55,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    }),
-  );
+  // ── Lens flare: glare sprite at the Sun plus ghosts strung along the
+  // line from the Sun through the screen centre. Ghosts only show while the
+  // camera looks toward the Sun; they're lens artefacts, so no depth test. ──
+  const flareMat = new THREE.SpriteMaterial({
+    map: flareTex,
+    transparent: true,
+    opacity: 0.4,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const flare = new THREE.Sprite(flareMat);
   flare.scale.set(sunRadius * 6, sunRadius * 6, 1);
   flare.name = 'sunFlare';
+  const discTex = flareGhostTexture(false);
+  const ringTex = flareGhostTexture(true);
+  const GHOST_SPECS = [
+    { tex: discTex, k: 0.35, size: 0.035, opacity: 0.35, color: 0x7fd0ff },
+    { tex: ringTex, k: 0.62, size: 0.06, opacity: 0.25, color: 0xffa060 },
+    { tex: discTex, k: 0.85, size: 0.025, opacity: 0.4, color: 0xc0a0ff },
+    { tex: ringTex, k: 1.25, size: 0.09, opacity: 0.18, color: 0x80ffd0 },
+  ];
+  const ghosts = GHOST_SPECS.map((spec) => {
+    const mat = new THREE.SpriteMaterial({
+      map: spec.tex,
+      color: spec.color,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.renderOrder = 999;
+    sprite.visible = false;
+    group.add(sprite);
+    return { sprite, mat, ...spec };
+  });
 
-  group.add(corona);
   group.add(flare);
   group.add(promGroup);
 
   let pulse = 0;
+  const camFwd = new THREE.Vector3();
+  const toSun = new THREE.Vector3();
+  const centre = new THREE.Vector3();
 
   return {
     group,
-    update(cameraPos, sunPos, dtSec) {
+    update(cameraPos, sunPos, dtSec, camera) {
       pulse += dtSec * 0.8;
-      const breath = 1 + Math.sin(pulse) * 0.03;
-      corona.scale.setScalar(breath);
+      group.position.copy(sunPos);
+      for (const c of corona) {
+        c.mat.rotation += c.spin * dtSec;
+        c.sprite.scale.setScalar(c.base * (1 + Math.sin(pulse * 1.3 + c.phase) * 0.03));
+      }
       // Flare scales with camera distance so it doesn't get monstrous at zoom-in.
       const dist = cameraPos.distanceTo(sunPos);
       const flareScale = THREE.MathUtils.clamp(dist * 0.42, sunRadius * 5, sunRadius * 24);
       flare.scale.set(flareScale, flareScale, 1);
-      flare.position.copy(sunPos);
-      corona.position.copy(sunPos);
-      promGroup.position.copy(sunPos);
+
+      let vis = 0;
+      if (camera && dist > 1e-6) {
+        camera.getWorldDirection(camFwd);
+        toSun.copy(sunPos).sub(cameraPos).divideScalar(dist);
+        vis = THREE.MathUtils.smoothstep(camFwd.dot(toSun), 0.72, 0.97);
+        centre.copy(cameraPos).addScaledVector(camFwd, dist);
+      }
+      flareMat.opacity = 0.3 + 0.4 * vis;
+      for (const g of ghosts) {
+        g.sprite.visible = vis > 0.01;
+        if (!g.sprite.visible) continue;
+        // Ghost positions are group-local; the group sits on the Sun.
+        g.sprite.position.copy(centre).sub(sunPos).multiplyScalar(g.k);
+        g.sprite.scale.setScalar(dist * g.size);
+        g.mat.opacity = g.opacity * vis;
+      }
 
       // Prominences are a close-range detail — from system distance the
       // flat arc planes would read as odd rings, so fade them out beyond
@@ -875,10 +1009,13 @@ export function makeSunExtras(sunRadius: number): SunExtrasHandle {
       }
     },
     dispose() {
-      corona.geometry.dispose();
-      (corona.material as THREE.Material).dispose();
-      (flare.material as THREE.SpriteMaterial).dispose();
+      for (const c of corona) c.mat.dispose();
+      for (const g of ghosts) g.mat.dispose();
+      flareMat.dispose();
       flareTex.dispose();
+      raysTex.dispose();
+      discTex.dispose();
+      ringTex.dispose();
       promGeom.dispose();
       for (const p of proms) p.mat.dispose();
       promTex.dispose();
@@ -937,6 +1074,177 @@ export function disposeMilkyWayBand(pts: THREE.Points) {
   (pts.material as THREE.Material).dispose();
 }
 
+export interface MilkyWayGlowHandle {
+  group: THREE.Group;
+  setFade: (k: number) => void;
+  dispose: () => void;
+}
+
+/** Bright core along the band's plane, mottled along its length, cut by
+ *  dark dust lanes. Sampled around a torus tube: v = 0.5 is the plane. */
+function milkyGlowTexture(): THREE.CanvasTexture {
+  const W = 1024;
+  const H = 128;
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d')!;
+  const img = ctx.createImageData(W, H);
+  const lanes: [number, number, number][] = [];
+  for (let i = 0; i < 14; i++) lanes.push([Math.random() * W, 0.44 + Math.random() * 0.12, 18 + Math.random() * 50]);
+  for (let x = 0; x < W; x++) {
+    const mottle =
+      0.6 +
+      0.4 * Math.sin(x * 0.021) * Math.sin(x * 0.0073 + 1.2) +
+      0.18 * Math.sin(x * 0.11 + 0.4) * Math.sin(x * 0.037);
+    for (let y = 0; y < H; y++) {
+      const v = y / H;
+      let b = Math.max(0, -Math.cos(v * Math.PI * 2));
+      b = Math.pow(b, 1.6) * mottle;
+      for (const [lx, lv, lw] of lanes) {
+        const dx = Math.min(Math.abs(x - lx), W - Math.abs(x - lx)) / lw;
+        const dv = (v - lv) / 0.05;
+        b *= 1 - 0.75 * Math.exp(-(dx * dx + dv * dv));
+      }
+      const i = (y * W + x) * 4;
+      img.data[i] = 255;
+      img.data[i + 1] = 226;
+      img.data[i + 2] = 190;
+      img.data[i + 3] = Math.round(Math.min(1, b) * 255);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  tex.wrapS = THREE.RepeatWrapping;
+  return tex;
+}
+
+/** Soft luminous ribbon behind the particle band — a textured torus seen
+ *  from inside, additive and faint. Sits at the band's inclination. */
+export function makeMilkyWayGlow(lite: boolean): MilkyWayGlowHandle {
+  const group = new THREE.Group();
+  group.name = 'milkyWayGlow';
+  const tex = milkyGlowTexture();
+  const geom = new THREE.TorusGeometry(305, 36, lite ? 14 : 24, lite ? 64 : 112);
+  const BASE_OPACITY = 0.22;
+  const mat = new THREE.MeshBasicMaterial({
+    map: tex,
+    transparent: true,
+    opacity: BASE_OPACITY,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+  });
+  const mesh = new THREE.Mesh(geom, mat);
+  // Torus lies in XY; lay it into the ecliptic, then tilt to the band.
+  mesh.rotation.x = 0.42 - Math.PI / 2;
+  group.add(mesh);
+  return {
+    group,
+    setFade(k) {
+      mat.opacity = BASE_OPACITY * k;
+      mesh.visible = k > 0.01;
+    },
+    dispose() {
+      geom.dispose();
+      mat.dispose();
+      tex.dispose();
+    },
+  };
+}
+
+export interface NebulaeHandle {
+  group: THREE.Group;
+  setFade: (k: number) => void;
+  dispose: () => void;
+}
+
+function nebulaTexture(r: number, g: number, b: number): THREE.CanvasTexture {
+  const s = 256;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, s, s);
+  ctx.globalCompositeOperation = 'lighter';
+  const blob = (cx: number, cy: number, rx: number, ry: number, a: number, rot: number) => {
+    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    grad.addColorStop(0, `rgba(${r},${g},${b},${a})`);
+    grad.addColorStop(0.45, `rgba(${r},${g},${b},${a * 0.4})`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.scale(rx, ry);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  blob(s / 2, s / 2, s * 0.46, s * 0.4, 0.5, 0);
+  for (let i = 0; i < 6; i++) {
+    blob(
+      s * (0.3 + Math.random() * 0.4),
+      s * (0.3 + Math.random() * 0.4),
+      s * (0.12 + Math.random() * 0.2),
+      s * (0.08 + Math.random() * 0.14),
+      0.22 + Math.random() * 0.2,
+      Math.random() * Math.PI,
+    );
+  }
+  // Fade hard to transparent at the sprite edge so no square ever shows.
+  ctx.globalCompositeOperation = 'destination-in';
+  const mask = ctx.createRadialGradient(s / 2, s / 2, s * 0.2, s / 2, s / 2, s * 0.5);
+  mask.addColorStop(0, 'rgba(0,0,0,1)');
+  mask.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = mask;
+  ctx.fillRect(0, 0, s, s);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = SRGB;
+  return tex;
+}
+
+/** Two or three faint nebulae far behind the star shell, at staggered
+ *  depths, for a sense of cosmic distance at the solar tier. */
+export function makeNebulae(lite: boolean): NebulaeHandle {
+  const group = new THREE.Group();
+  group.name = 'nebulae';
+  const specs = [
+    { rgb: [255, 120, 190], dir: [0.62, 0.28, -0.73], r: 430, scale: 300, opacity: 0.16 },
+    { rgb: [90, 150, 255], dir: [-0.55, -0.12, -0.83], r: 560, scale: 420, opacity: 0.13 },
+    { rgb: [160, 95, 255], dir: [-0.2, 0.5, 0.84], r: 690, scale: 520, opacity: 0.11 },
+  ].slice(0, lite ? 2 : 3);
+  const items = specs.map((spec) => {
+    const tex = nebulaTexture(spec.rgb[0], spec.rgb[1], spec.rgb[2]);
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      opacity: spec.opacity,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.position.set(spec.dir[0], spec.dir[1], spec.dir[2]).normalize().multiplyScalar(spec.r);
+    sprite.scale.setScalar(spec.scale);
+    group.add(sprite);
+    return { tex, mat, base: spec.opacity };
+  });
+  return {
+    group,
+    setFade(k) {
+      for (const it of items) it.mat.opacity = it.base * k;
+      group.visible = k > 0.01;
+    },
+    dispose() {
+      for (const it of items) {
+        it.mat.dispose();
+        it.tex.dispose();
+      }
+    },
+  };
+}
+
 /* ───────────────────────── saturn particle rings ───────────────────────── */
 /**
  * Particle-based Saturn ring system matching the home-page hero look:
@@ -952,67 +1260,6 @@ export interface SaturnRingsHandle {
   dispose: () => void;
 }
 
-/**
- * Radial color+alpha strip encoding Saturn's real ring structure, sampled by
- * radius across the ring mesh: D (faint) → C (translucent) → B (bright,
- * opaque) → Cassini Division → A with the Encke and Keeler gaps → F (thin
- * bright thread). Fine-grained noise adds the ringlet banding Cassini saw.
- */
-function saturnRingStripTexture(): THREE.CanvasTexture {
-  const W = 1024;
-  const H = 16;
-  const c = document.createElement('canvas');
-  c.width = W;
-  c.height = H;
-  const ctx = c.getContext('2d')!;
-  ctx.clearRect(0, 0, W, H);
-  const R0 = 1.11;
-  const R1 = 2.33;
-  const img = ctx.createImageData(W, H);
-  // Band lookup: [rIn, rOut, r, g, b, alpha]
-  const bands: [number, number, number, number, number, number][] = [
-    [1.110, 1.236, 150, 135, 120, 0.05],  // D ring
-    [1.239, 1.526, 168, 146, 122, 0.30],  // C ring
-    [1.526, 1.951, 232, 214, 184, 0.94],  // B ring — brightest
-    [1.951, 2.027, 130, 118, 100, 0.10],  // Cassini Division
-    [2.027, 2.211, 214, 196, 164, 0.78],  // A ring (inner)
-    [2.217, 2.261, 208, 190, 158, 0.72],  // A ring (mid) — Encke gap before
-    [2.265, 2.269, 200, 184, 152, 0.66],  // A ring (outer edge) — Keeler gap before
-    [2.320, 2.328, 240, 228, 205, 0.42],  // F ring — thin bright thread
-  ];
-  for (let x = 0; x < W; x++) {
-    const R = R0 + (x / W) * (R1 - R0);
-    let cr = 0, cg = 0, cb = 0, ca = 0;
-    for (const [ri, ro, r, g, b, a] of bands) {
-      if (R >= ri && R <= ro) {
-        const t = (R - ri) / (ro - ri);
-        // Slight inner-to-outer shading within each band.
-        const shade = 0.92 + 0.08 * Math.sin(t * Math.PI);
-        cr = r * shade; cg = g * shade; cb = b * shade; ca = a;
-        break;
-      }
-    }
-    // Ringlet noise — fine radial brightness striations.
-    if (ca > 0.02) {
-      const n = 0.86 + 0.14 * Math.sin(x * 0.9) * Math.sin(x * 0.23 + 1.7) + (Math.random() - 0.5) * 0.1;
-      cr *= n; cg *= n; cb *= n;
-      ca *= 0.9 + (Math.random() - 0.5) * 0.16;
-    }
-    for (let y = 0; y < H; y++) {
-      const i = (y * W + x) * 4;
-      img.data[i] = Math.min(255, cr);
-      img.data[i + 1] = Math.min(255, cg);
-      img.data[i + 2] = Math.min(255, cb);
-      img.data[i + 3] = Math.min(255, Math.round(ca * 255));
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = SRGB;
-  tex.anisotropy = 8;
-  return tex;
-}
-
 export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): SaturnRingsHandle {
   // ── Banded ring plane — carries the photoreal look ──────────────
   const meshInner = saturnRadius * 1.11;
@@ -1026,12 +1273,61 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
     const len = Math.hypot(posAttr2.getX(i), posAttr2.getY(i));
     uvAttr.setXY(i, (len - meshInner) / (meshOuter - meshInner), 0.5);
   }
-  const ringTex = saturnRingStripTexture();
-  const ringMat = new THREE.MeshBasicMaterial({
-    map: ringTex,
+  // Lit ring plane: sunlit face bright, unlit face dimmer (light scattered
+  // through the ice), and Saturn's globe casts a hard shadow across it.
+  // The Sun sits at the scene origin; the planet centre is the mesh origin.
+  const ringMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uMap: { value: getSaturnRingStripTexture() },
+      uPlanetRadius: { value: saturnRadius },
+    },
     transparent: true,
     side: THREE.DoubleSide,
     depthWrite: false,
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNrm;
+      varying vec3 vCenter;
+      void main() {
+        vUv = uv;
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWorldPos = wp.xyz;
+        vWorldNrm = normalize(mat3(modelMatrix) * vec3(0.0, 0.0, 1.0));
+        vCenter = modelMatrix[3].xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D uMap;
+      uniform float uPlanetRadius;
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNrm;
+      varying vec3 vCenter;
+      void main() {
+        vec4 tex = texture2D(uMap, vUv);
+        if (tex.a < 0.01) discard;
+        vec3 toSun = normalize(-vWorldPos);
+        float facing = dot(vWorldNrm, toSun);
+        // Which face are we looking at, and is it the sunlit one?
+        float front = gl_FrontFacing ? 1.0 : -1.0;
+        float sunlit = step(0.0, facing * front);
+        float lambert = abs(facing);
+        float light = mix(0.16 + 0.34 * lambert, 0.28 + 0.9 * lambert, sunlit);
+        // Planet shadow: ray from this ring point toward the Sun vs the globe.
+        vec3 d = vWorldPos - vCenter;
+        float b = dot(d, toSun);
+        float c = dot(d, d) - uPlanetRadius * uPlanetRadius;
+        float disc = b * b - c;
+        float shadow = 1.0;
+        if (disc > 0.0) {
+          float tHit = -b + sqrt(disc);
+          if (tHit > 0.0) shadow = 0.08 + 0.92 * (1.0 - smoothstep(0.0, uPlanetRadius * 0.06, sqrt(disc)));
+        }
+        gl_FragColor = vec4(tex.rgb * light * shadow, tex.a);
+      }
+    `,
   });
   const ringMesh = new THREE.Mesh(ringGeom, ringMat);
   ringMesh.rotation.x = -Math.PI / 2; // lie in the equatorial plane
@@ -1148,7 +1444,6 @@ export function makeSaturnParticleRings(saturnRadius: number, lite: boolean): Sa
     },
     dispose() {
       ringGeom.dispose();
-      ringTex.dispose();
       ringMat.dispose();
       geo.dispose();
       mat.dispose();

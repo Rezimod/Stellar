@@ -7,17 +7,44 @@
 //   dogfight — a dart-fighter chases a saucer trading laser bolts; hits
 //              spark against the saucer's shield.
 //   battle   — a small skirmish: two darts circle a saucer + scout, bolts
-//              cross, impacts throw sparks, and one dart is destroyed in a
+//               cross, impacts throw sparks, and one dart is destroyed in a
 //              brief explosion before the rest warp away.
 // First sighting comes shortly after the view opens; later ones arrive
 // every minute or so. Everything is real-time and disabled by reduce-motion.
+//
+// HOSTILE mode (Explore Mode's player ship): while a target is set the
+// passive sightings stop and waves of the same ships hunt the target
+// instead — they hold attack tracks around it, fire red bolts at it, take
+// damage from its lasers, and explode with the same flash + sparks.
 
 import * as THREE from 'three';
+
+export interface HostileTarget {
+  group: THREE.Group;
+  /** Called when an enemy bolt connects with the target. */
+  onHit: (damage: number) => void;
+}
+
+export interface AlienEnemy {
+  group: THREE.Group;
+  hp: number;
+  maxHp: number;
+  /** Hit-test radius in scene units. */
+  radius: number;
+}
 
 export interface AlienHandle {
   group: THREE.Group;
   update: (dtSec: number, earthPos: THREE.Vector3 | null) => void;
   dispose: () => void;
+  /** Switch between passive sightings (null) and waves that hunt `target`. */
+  setHostile: (target: HostileTarget | null) => void;
+  /** Live, targetable ships of the current hostile wave. Reused array — read only. */
+  enemies: AlienEnemy[];
+  /** Apply damage; returns true when the ship is destroyed. */
+  damage: (enemy: AlienEnemy, amount: number) => boolean;
+  /** Pooled impact debris burst at `at`. */
+  spawnSparks: (at: THREE.Vector3, speed: number) => void;
 }
 
 function glowSprite(): THREE.CanvasTexture {
@@ -198,8 +225,10 @@ export function makeAlienEncounters(): AlienHandle {
   }
   group.add(warpFlash);
 
-  // Laser bolts — short emissive sticks reused from a small pool.
-  const boltMat = new THREE.MeshBasicMaterial({ color: 0x8cff5a, transparent: true, opacity: 0.95 });
+  // Laser bolts — short emissive sticks reused from a small pool. HDR colours
+  // so the bloom pass catches them; red is reserved for shots at the player.
+  const boltMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.9, 2.2, 0.6), transparent: true, opacity: 0.95 });
+  const boltMatRed = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 0.35, 0.25), transparent: true, opacity: 0.95 });
   const boltGeom = new THREE.CylinderGeometry(S * 0.014, S * 0.014, S * 0.45, 5);
   boltGeom.rotateX(Math.PI / 2); // along +Z
   const bolts: Bolt[] = [];
@@ -223,7 +252,7 @@ export function makeAlienEncounters(): AlienHandle {
   // Impact sparks — small pooled bursts of glowing debris.
   const SPARK_N = 16;
   const sparks: SparkBurst[] = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SPARK_N * 3), 3));
     const mat = new THREE.PointsMaterial({
@@ -255,9 +284,11 @@ export function makeAlienEncounters(): AlienHandle {
     b.life = 0;
     b.mat.opacity = 1;
     b.points.visible = true;
+    // Sparks live in this group, which is hidden between encounters.
+    group.visible = true;
   };
 
-  // Explosion flash for the battle's destroyed dart.
+  // Explosion flash for destroyed ships.
   const boomMat = new THREE.SpriteMaterial({
     map: glowTex,
     color: new THREE.Color(1.0, 0.62, 0.3),
@@ -266,8 +297,16 @@ export function makeAlienEncounters(): AlienHandle {
   const boomFlash = new THREE.Sprite(boomMat);
   group.add(boomFlash);
 
+  const explode = (ship: THREE.Group) => {
+    boomFlash.position.copy(ship.position);
+    boomFlash.scale.setScalar(S * (ship === mothership ? 4.5 : 2.4));
+    boomMat.opacity = 1;
+    spawnSparks(ship.position, S * 4.5);
+    ship.visible = false;
+  };
+
   // Encounter state.
-  type Mode = 'idle' | 'flyby' | 'dogfight' | 'battle';
+  type Mode = 'idle' | 'flyby' | 'dogfight' | 'battle' | 'hostile';
   let mode: Mode = 'idle';
   let lead: THREE.Group = saucer; // the ship flying the bezier path
   // First sighting shortly after the view opens; later ones every 45–90 s.
@@ -313,7 +352,29 @@ export function makeAlienEncounters(): AlienHandle {
     return out;
   };
 
-  const begin = (m: Exclude<Mode, 'idle'>, earth: THREE.Vector3 | null) => {
+  // ── Hostile mode state ──
+  let hostile: HostileTarget | null = null;
+  let wave = 0;
+  const enemyByShip = new Map<THREE.Group, AlienEnemy>([
+    [saucer, { group: saucer, hp: 60, maxHp: 60, radius: S * 0.62 }],
+    [dartA, { group: dartA, hp: 30, maxHp: 30, radius: S * 0.5 }],
+    [dartB, { group: dartB, hp: 30, maxHp: 30, radius: S * 0.5 }],
+    [probe, { group: probe, hp: 30, maxHp: 30, radius: S * 0.42 }],
+    [mothership, { group: mothership, hp: 240, maxHp: 240, radius: S * 1.5 }],
+  ]);
+  const enemies: AlienEnemy[] = [];
+  const refreshEnemies = () => {
+    enemies.length = 0;
+    if (mode !== 'hostile') return;
+    for (const tr of tracks) {
+      if (tr.ship.visible) enemies.push(enemyByShip.get(tr.ship)!);
+    }
+  };
+  const resetHp = () => {
+    enemyByShip.forEach((e) => { e.hp = e.maxHp; });
+  };
+
+  const begin = (m: Exclude<Mode, 'idle' | 'hostile'>, earth: THREE.Vector3 | null) => {
     mode = m;
     encT = 0;
     dartBDown = false;
@@ -368,9 +429,41 @@ export function makeAlienEncounters(): AlienHandle {
     group.visible = true;
   };
 
+  // A hostile wave: ships take attack tracks around a point that trails the
+  // target, so the formation keeps hunting while the player manoeuvres.
+  const beginHostile = (target: HostileTarget) => {
+    mode = 'hostile';
+    encT = 0;
+    encDur = 45;
+    fireAcc = 1.2;
+    wave += 1;
+    resetHp();
+    randDir(rand);
+    battleCenter.copy(target.group.position).addScaledVector(rand, 0.26);
+    tracks.length = 0;
+    if (wave % 4 === 0) {
+      tracks.push(
+        makeTrack(mothership, S * 9, 0.35),
+        makeTrack(dartA, S * 12, 1.4),
+        makeTrack(dartB, S * 15, -1.2),
+      );
+    } else {
+      tracks.push(makeTrack(saucer, S * 6, 0.9), makeTrack(dartA, S * 11, 1.5));
+      if (wave >= 2) tracks.push(makeTrack(dartB, S * 14, -1.15));
+      if (wave >= 3) tracks.push(makeTrack(probe, S * 8, -1.3));
+    }
+    for (const s of ships) s.visible = false;
+    for (const tr of tracks) {
+      tr.ship.visible = true;
+      trackPos(tr, 0, tr.ship.position);
+    }
+    refreshEnemies();
+    group.visible = true;
+  };
+
   const endEncounter = () => {
     mode = 'idle';
-    clock = 45 + Math.random() * 45;
+    clock = hostile ? 6 + Math.random() * 6 : 45 + Math.random() * 45;
     for (const s of ships) {
       s.visible = false;
       s.scale.setScalar(1);
@@ -381,12 +474,14 @@ export function makeAlienEncounters(): AlienHandle {
       b.t = -1;
       b.mesh.visible = false;
     }
+    enemies.length = 0;
     group.visible = false;
   };
 
-  const fireBolt = (from: THREE.Group, target: THREE.Group, spread: number) => {
+  const fireBolt = (from: THREE.Group, target: THREE.Group, spread: number, red = false) => {
     const b = bolts.find((x) => x.t < 0);
     if (!b) return;
+    b.mesh.material = red ? boltMatRed : boltMat;
     b.from.copy(from.position);
     b.to.copy(target.position);
     if (Math.random() < 0.55) {
@@ -403,10 +498,32 @@ export function makeAlienEncounters(): AlienHandle {
 
   return {
     group,
+    enemies,
+    spawnSparks,
+    setHostile(target) {
+      if (target === hostile) return;
+      hostile = target;
+      wave = 0;
+      endEncounter();
+      // Sparks may still be decaying — keep them visible.
+      for (const sp of sparks) if (sp.life >= 0) group.visible = true;
+      clock = target ? 2.5 : 45 + Math.random() * 45;
+    },
+    damage(enemy, amount) {
+      if (!enemy.group.visible || enemy.hp <= 0) return false;
+      enemy.hp -= amount;
+      if (enemy.group === saucer) hitMat.opacity = 0.9;
+      if (enemy.hp > 0) return false;
+      explode(enemy.group);
+      refreshEnemies();
+      return true;
+    },
     update(dtSec: number, earthPos: THREE.Vector3 | null) {
       // Sparks decay regardless of mode so bursts finish after warp-out.
+      let sparksAlive = false;
       for (const sp of sparks) {
         if (sp.life < 0) continue;
+        sparksAlive = true;
         sp.life += dtSec;
         const p = sp.points.geometry.getAttribute('position') as THREE.BufferAttribute;
         for (let i = 0; i < SPARK_N; i++) {
@@ -427,18 +544,53 @@ export function makeAlienEncounters(): AlienHandle {
       boomMat.opacity = Math.max(0, boomMat.opacity - dtSec * 2.2);
 
       if (mode === 'idle') {
+        if (!sparksAlive && boomMat.opacity <= 0) group.visible = false;
         clock -= dtSec;
         if (clock <= 0) {
-          const r = Math.random();
-          begin(r < 0.5 ? 'flyby' : r < 0.75 ? 'dogfight' : 'battle', earthPos);
+          if (hostile) {
+            beginHostile(hostile);
+          } else {
+            const r = Math.random();
+            begin(r < 0.5 ? 'flyby' : r < 0.75 ? 'dogfight' : 'battle', earthPos);
+          }
         }
         return;
       }
 
       encT += dtSec;
-      const t = Math.min(1, encT / encDur);
+      let t = Math.min(1, encT / encDur);
 
-      if (mode === 'battle') {
+      if (mode === 'hostile' && hostile) {
+        // The engagement point trails the target; every ship holds its
+        // attack track around it and keeps its nose on the target.
+        battleCenter.lerp(hostile.group.position, 1 - Math.exp(-dtSec * 0.9));
+        let alive = 0;
+        for (const tr of tracks) {
+          if (!tr.ship.visible) continue;
+          alive += 1;
+          trackPos(tr, encT, tr.ship.position);
+          if (tr.ship === saucer) {
+            saucer.rotation.y += dtSec * 2.0;
+          } else {
+            tr.ship.lookAt(tmp.copy(hostile.group.position));
+          }
+        }
+        fireAcc -= dtSec;
+        if (fireAcc <= 0 && alive > 0 && t < 0.9) {
+          fireAcc = 0.9 + Math.random() * 0.6;
+          let pick = Math.floor(Math.random() * alive);
+          for (const tr of tracks) {
+            if (!tr.ship.visible) continue;
+            if (pick === 0) {
+              fireBolt(tr.ship, hostile.group, S * 3, true);
+              break;
+            }
+            pick -= 1;
+          }
+        }
+        // Wave cleared — skip straight to the end, no warp-out theatre.
+        if (alive === 0) t = 1;
+      } else if (mode === 'battle') {
         // Combatants hold their circular tracks with military precision.
         for (const tr of tracks) {
           if (tr.ship === dartB && dartBDown) continue;
@@ -465,11 +617,7 @@ export function makeAlienEncounters(): AlienHandle {
         // Dart B is destroyed late in the fight — flash, sparks, gone.
         if (!dartBDown && t > 0.72) {
           dartBDown = true;
-          boomFlash.position.copy(dartB.position);
-          boomFlash.scale.setScalar(S * 2.4);
-          boomMat.opacity = 1;
-          spawnSparks(dartB.position, S * 4.5);
-          dartB.visible = false;
+          explode(dartB);
         }
       } else {
         bezier(t, pos);
@@ -503,13 +651,17 @@ export function makeAlienEncounters(): AlienHandle {
       }
 
       // Advance bolts; a bolt that reaches its target sparks against it.
+      const playerGroup = hostile?.group ?? null;
       for (const b of bolts) {
         if (b.t < 0) continue;
         b.t += dtSec * 2.6;
+        // Shots at the player home on a moving target.
+        if (b.target && b.target === playerGroup) b.to.copy(b.target.position);
         if (b.t >= 1) {
           if (b.target) {
             spawnSparks(b.target.position, S * 2.8);
             if (b.target === saucer) hitMat.opacity = 0.9;
+            if (b.target === playerGroup && hostile) hostile.onHit(10);
           }
           b.t = -1;
           b.mesh.visible = false;
@@ -524,7 +676,7 @@ export function makeAlienEncounters(): AlienHandle {
       // Warp-out flash at the end of the run.
       if (t > 0.94) {
         const k = (t - 0.94) / 0.06;
-        const anchorShip = mode === 'battle' ? saucer : lead;
+        const anchorShip = mode === 'battle' || mode === 'hostile' ? saucer : lead;
         warpFlash.position.copy(anchorShip.position);
         warpFlash.scale.setScalar(S * (1 + k * 6) * (lead === mothership ? 1.8 : 1));
         warpMat.opacity = Math.sin(k * Math.PI) * 0.9;
@@ -546,6 +698,7 @@ export function makeAlienEncounters(): AlienHandle {
           (o.material as THREE.SpriteMaterial).dispose();
         }
       });
+      boltMatRed.dispose();
       glowTex.dispose();
     },
   };
