@@ -17,11 +17,16 @@ interface PlayerShipProps {
 
 type Phase = 'idle' | 'countdown' | 'flying';
 
-const STICK_RADIUS = 56;
-const RADAR_PX = 96;
+const STICK_RADIUS = 62;
+const RADAR_PX = 92;
+/** Auto-cruise throttle on touch: a phone has no spare thumb for a throttle,
+ *  so the ship always makes way and the controls are steer, boost, brake. */
+const CRUISE = 0.85;
+const BRAKE = -0.7;
 
 interface Stick {
   id: number;
+  /** Where the thumb landed — the stick centres itself there. */
   ox: number;
   oy: number;
   x: number;
@@ -29,8 +34,8 @@ interface Stick {
 }
 
 /**
- * Explore Mode chrome: the EXPLORE button, launch countdown, the flight HUD
- * (speed, hull bar, radar) and the touch controls. The HUD is painted
+ * Explore Mode chrome: the Explore button, launch countdown, the flight HUD
+ * (speed, hull, radar) and the touch controls. The HUD is painted
  * imperatively from `session.telemetry` each frame — React only renders on
  * phase changes, never inside the animation loop.
  */
@@ -48,9 +53,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const hpTextRef = useRef<HTMLSpanElement>(null);
   const killsRef = useRef<HTMLSpanElement>(null);
   const flashRef = useRef<HTMLDivElement>(null);
-  const respawnRef = useRef<HTMLDivElement>(null);
   const detachRef = useRef<(() => void) | null>(null);
   const timersRef = useRef<number[]>([]);
+  const brakeRef = useRef(false);
   const phaseRef = useRef<Phase>('idle');
   phaseRef.current = phase;
 
@@ -68,6 +73,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     clearTimers();
     detachRef.current?.();
     detachRef.current = null;
+    brakeRef.current = false;
     session.active = false;
     clearFlightInput(session.input);
     setPhase('idle');
@@ -108,69 +114,56 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     [session],
   );
 
-  // ── Touch sticks (mobile): left = thrust / yaw, right = pitch / yaw. ──
-  const sticksRef = useRef<{ left: Stick; right: Stick }>({
-    left: { id: -1, ox: 0, oy: 0, x: 0, y: 0 },
-    right: { id: -1, ox: 0, oy: 0, x: 0, y: 0 },
-  });
+  // ── Touch steering. One stick, anywhere in the left half of the screen:
+  // left/right yaws, up/down pitches. The right half is reserved for the
+  // action buttons so a thumb never has to share space with the stick. ──
+  const stickRef = useRef<Stick>({ id: -1, ox: 0, oy: 0, x: 0, y: 0 });
   useEffect(() => {
     const pad = padRef.current;
     if (phase !== 'flying' || !touch || !pad) return;
-    const sticks = sticksRef.current;
+    const stick = stickRef.current;
     const input = session.input;
-    const applyStick = (s: Stick, left: boolean) => {
-      if (left) {
-        input.yaw = s.x;
-        input.thrust = -s.y;
-      } else {
-        input.lookYaw = s.x;
-        input.pitch = -s.y;
-      }
+    const apply = () => {
+      input.yaw = stick.x;
+      input.pitch = -stick.y;
     };
     const onStart = (e: TouchEvent) => {
       const rect = pad.getBoundingClientRect();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const tch = e.changedTouches[i];
-        const x = tch.clientX - rect.left;
-        const y = tch.clientY - rect.top;
-        const s = x < rect.width / 2 ? sticks.left : sticks.right;
-        if (s.id >= 0) continue;
-        s.id = tch.identifier;
-        s.ox = x;
-        s.oy = y;
-        s.x = s.y = 0;
+        if (stick.id >= 0) continue;
+        stick.id = tch.identifier;
+        stick.ox = tch.clientX - rect.left;
+        stick.oy = tch.clientY - rect.top;
+        stick.x = stick.y = 0;
       }
+      apply();
       e.preventDefault();
     };
     const onMove = (e: TouchEvent) => {
       const rect = pad.getBoundingClientRect();
       for (let i = 0; i < e.changedTouches.length; i++) {
         const tch = e.changedTouches[i];
-        const s = tch.identifier === sticks.left.id ? sticks.left
-          : tch.identifier === sticks.right.id ? sticks.right : null;
-        if (!s) continue;
-        let dx = (tch.clientX - rect.left - s.ox) / STICK_RADIUS;
-        let dy = (tch.clientY - rect.top - s.oy) / STICK_RADIUS;
+        if (tch.identifier !== stick.id) continue;
+        let dx = (tch.clientX - rect.left - stick.ox) / STICK_RADIUS;
+        let dy = (tch.clientY - rect.top - stick.oy) / STICK_RADIUS;
         const len = Math.hypot(dx, dy);
         if (len > 1) {
           dx /= len;
           dy /= len;
         }
-        s.x = dx;
-        s.y = dy;
-        applyStick(s, s === sticks.left);
+        stick.x = dx;
+        stick.y = dy;
+        apply();
       }
       e.preventDefault();
     };
     const onEnd = (e: TouchEvent) => {
       for (let i = 0; i < e.changedTouches.length; i++) {
-        const id = e.changedTouches[i].identifier;
-        for (const s of [sticks.left, sticks.right]) {
-          if (s.id !== id) continue;
-          s.id = -1;
-          s.x = s.y = 0;
-          applyStick(s, s === sticks.left);
-        }
+        if (e.changedTouches[i].identifier !== stick.id) continue;
+        stick.id = -1;
+        stick.x = stick.y = 0;
+        apply();
       }
     };
     pad.addEventListener('touchstart', onStart, { passive: false });
@@ -182,8 +175,8 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       pad.removeEventListener('touchmove', onMove);
       pad.removeEventListener('touchend', onEnd);
       pad.removeEventListener('touchcancel', onEnd);
-      sticks.left.id = sticks.right.id = -1;
-      sticks.left.x = sticks.left.y = sticks.right.x = sticks.right.y = 0;
+      stick.id = -1;
+      stick.x = stick.y = 0;
     };
   }, [phase, touch, session]);
 
@@ -191,6 +184,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   useEffect(() => {
     if (phase !== 'flying') return;
     const tel = session.telemetry;
+    const input = session.input;
     const radar = radarRef.current;
     const pad = padRef.current;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -212,27 +206,31 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     let lastSpeed = -1;
     const paint = () => {
       raf = requestAnimationFrame(paint);
+
+      // Touch flight holds a cruise throttle so steering is the only stick.
+      if (touch) input.thrust = brakeRef.current ? BRAKE : CRUISE;
+
       const speed = Math.round(tel.speed * 10);
       if (speed !== lastSpeed && speedRef.current) {
         lastSpeed = speed;
         speedRef.current.textContent = (speed / 10).toFixed(1);
       }
-      if (tel.hp !== lastHp) {
-        lastHp = tel.hp;
+      const hp = Math.round(tel.hp);
+      if (hp !== lastHp) {
+        lastHp = hp;
         const k = tel.hp / tel.maxHp;
         if (hpFillRef.current) {
           hpFillRef.current.style.width = `${Math.max(0, k * 100)}%`;
           hpFillRef.current.style.background =
             k > 0.5 ? '#5eead4' : k > 0.25 ? '#ffb347' : '#ff5a5a';
         }
-        if (hpTextRef.current) hpTextRef.current.textContent = String(Math.round(tel.hp));
+        if (hpTextRef.current) hpTextRef.current.textContent = String(hp);
       }
       if (tel.kills !== lastKills && killsRef.current) {
         lastKills = tel.kills;
         killsRef.current.textContent = String(tel.kills);
       }
       if (flashRef.current) flashRef.current.style.opacity = String(tel.hitFlash * 0.4);
-      if (respawnRef.current) respawnRef.current.hidden = tel.respawnIn <= 0;
 
       if (radar) {
         const ctx = radar.getContext('2d');
@@ -279,21 +277,22 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
         const ctx = pad.getContext('2d');
         if (ctx) {
           ctx.clearRect(0, 0, pad.width, pad.height);
-          for (const s of [sticksRef.current.left, sticksRef.current.right]) {
-            if (s.id < 0) continue;
-            const ox = s.ox * dpr;
-            const oy = s.oy * dpr;
-            const r = STICK_RADIUS * dpr;
-            ctx.strokeStyle = 'rgba(248, 244, 236, 0.35)';
-            ctx.lineWidth = 1.5 * dpr;
-            ctx.beginPath();
-            ctx.arc(ox, oy, r, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.fillStyle = 'rgba(94, 234, 212, 0.55)';
-            ctx.beginPath();
-            ctx.arc(ox + s.x * r, oy + s.y * r, r * 0.38, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          const st = stickRef.current;
+          const r = STICK_RADIUS * dpr;
+          // Idle, the stick shows a home ring in the left thumb zone so it is
+          // obvious where to reach; on contact it re-centres under the thumb.
+          const active = st.id >= 0;
+          const ox = active ? st.ox * dpr : pad.width * 0.26;
+          const oy = active ? st.oy * dpr : pad.height - r - 26 * dpr;
+          ctx.strokeStyle = active ? 'rgba(94, 234, 212, 0.5)' : 'rgba(248, 244, 236, 0.22)';
+          ctx.lineWidth = 1.5 * dpr;
+          ctx.beginPath();
+          ctx.arc(ox, oy, r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = active ? 'rgba(94, 234, 212, 0.55)' : 'rgba(248, 244, 236, 0.16)';
+          ctx.beginPath();
+          ctx.arc(ox + st.x * r, oy + st.y * r, r * 0.36, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
     };
@@ -301,8 +300,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', sizePad);
+      input.thrust = 0;
     };
-  }, [phase, session]);
+  }, [phase, session, touch]);
 
   const hold = (key: 'fire' | 'boost') => ({
     onPointerDown: (e: React.PointerEvent) => {
@@ -319,6 +319,21 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       session.input[key] = false;
     },
   });
+  const holdBrake = {
+    onPointerDown: (e: React.PointerEvent) => {
+      e.preventDefault();
+      brakeRef.current = true;
+    },
+    onPointerUp: () => {
+      brakeRef.current = false;
+    },
+    onPointerCancel: () => {
+      brakeRef.current = false;
+    },
+    onPointerLeave: () => {
+      brakeRef.current = false;
+    },
+  };
 
   return (
     <div ref={rootRef} className="flight-hud" data-phase={phase}>
@@ -373,16 +388,21 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
             </div>
             {!touch && <div className="flight-hud__hint">{t('hint')}</div>}
           </div>
-          <div ref={respawnRef} className="flight-hud__respawn" role="status" hidden>
-            {t('respawn')}
-          </div>
           {touch && (
             <>
               <canvas ref={padRef} className="flight-hud__pad" aria-hidden />
+              <button type="button" className="flight-hud__brake" {...holdBrake}>
+                {t('brake')}
+              </button>
               <button type="button" className="flight-hud__boost" {...hold('boost')}>
                 {t('boost')}
               </button>
-              <button type="button" className="flight-hud__fire" {...hold('fire')} aria-label={t('fire')}>
+              <button
+                type="button"
+                className="flight-hud__fire"
+                {...hold('fire')}
+                aria-label={t('fire')}
+              >
                 <span className="flight-hud__fire-dot" aria-hidden />
               </button>
             </>

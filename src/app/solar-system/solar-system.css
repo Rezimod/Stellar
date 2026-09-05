@@ -418,6 +418,12 @@
   letter-spacing: 0.06em;
   opacity: 0.85;
 }
+@media (max-width: 680px) {
+  /* The phone dock is three rows tall; the hint rides above it. */
+  .solar-system__viewport-hint--compact {
+    bottom: calc(178px + env(safe-area-inset-bottom));
+  }
+}
 
 /* Floating timelapse pill — hovers over the map, bottom centre. */
 .solar-system__dockbar {
@@ -837,7 +843,7 @@
    wraps to two or three lines in Georgian, hence the generous clearance. */
 @media (max-width: 680px) {
   .flight-hud__explore {
-    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 132px);
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 236px);
   }
 }
 
@@ -846,6 +852,41 @@
   top: max(10px, env(safe-area-inset-top));
   left: max(10px, env(safe-area-inset-left));
   z-index: 2;
+}
+
+/* The dock used to be one row that ran off the side of a phone, clipping the
+   last speed chip and the settings button. Below 680px the speed chips take
+   a row of their own and the controls sit under them, all at full size. */
+@media (max-width: 680px) {
+  .solar-system__dockbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100vw - 20px);
+    max-width: none;
+    padding: 8px 10px;
+    border-radius: 22px;
+  }
+  /* Every speed chip stays on screen: the strip wraps into rows instead of
+     scrolling part of itself out of reach. */
+  .solar-system__dockbar-chips {
+    order: -1;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+    justify-content: center;
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+  .solar-system__dockbar .solar-system__chip {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+  .solar-system__dockbtn {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .flight-hud__countdown {
@@ -947,79 +988,109 @@
   text-align: center;
 }
 
-.flight-hud__respawn {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  padding: 8px 14px;
-  border-radius: 8px;
-  background: rgba(6, 9, 14, 0.8);
-  border: 0.5px solid rgba(255, 90, 90, 0.5);
-  color: #ff8a8a;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
+/* On phones the bottom band belongs to the stick and the action buttons,
+   so the hull readout moves up under the speed panel, top-left. Declared
+   after the base rule so it wins at equal specificity. */
+@media (max-width: 680px) {
+  .flight-hud__hull {
+    left: max(12px, env(safe-area-inset-left));
+    right: auto;
+    bottom: auto;
+    top: calc(max(10px, env(safe-area-inset-top)) + 150px);
+    transform: none;
+    width: 150px;
+    align-items: flex-start;
+  }
+  .flight-hud__hull-row {
+    align-self: flex-start;
+  }
 }
 
 .flight-hud__pad {
   position: absolute;
   z-index: 1;
-  inset: 0;
-  width: 100%;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  /* The stick owns the left of the screen only — the right side belongs to
+     the action buttons, so a thumb reaching for fire never drags the nose. */
+  width: 52%;
   height: 100%;
   pointer-events: auto;
   touch-action: none;
 }
 
+/* Action buttons: round, large, and far enough apart that a thumb in the
+   dark hits the one it meant to. All three sit in the right thumb arc. */
 .flight-hud__fire,
-.flight-hud__boost {
+.flight-hud__boost,
+.flight-hud__brake {
   pointer-events: auto;
   position: absolute;
   z-index: 2;
-  right: max(16px, env(safe-area-inset-right));
   border-radius: 50%;
+  min-height: 0;
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-}
-.flight-hud__fire {
-  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 8px);
-  width: 68px;
-  height: 68px;
-  border: 2px solid rgba(255, 90, 90, 0.8);
-  background: rgba(255, 60, 60, 0.28);
-  display: flex;
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  line-height: 1.1;
+  transition: transform 90ms ease, background 90ms ease;
 }
-.flight-hud__fire:active {
-  background: rgba(255, 60, 60, 0.55);
+.flight-hud__fire:active,
+.flight-hud__boost:active,
+.flight-hud__brake:active {
+  transform: scale(0.94);
 }
+
+.flight-hud__fire {
+  right: max(18px, env(safe-area-inset-right));
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 10px);
+  width: 88px;
+  height: 88px;
+  border: 2px solid rgba(255, 90, 90, 0.85);
+  background: rgba(255, 60, 60, 0.26);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+}
+.flight-hud__fire:active { background: rgba(255, 60, 60, 0.55); }
 .flight-hud__fire-dot {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: #ff5a5a;
 }
+
 .flight-hud__boost {
-  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 92px);
-  width: 54px;
-  height: 54px;
-  min-height: 0;
-  border: 1.5px solid rgba(94, 234, 212, 0.7);
-  background: rgba(94, 234, 212, 0.18);
+  right: calc(max(18px, env(safe-area-inset-right)) + 96px);
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 36px);
+  width: 70px;
+  height: 70px;
+  border: 2px solid rgba(94, 234, 212, 0.8);
+  background: rgba(94, 234, 212, 0.2);
   color: #5eead4;
-  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
 }
-.flight-hud__boost:active {
-  background: rgba(94, 234, 212, 0.4);
+.flight-hud__boost:active { background: rgba(94, 234, 212, 0.45); }
+
+.flight-hud__brake {
+  right: max(18px, env(safe-area-inset-right));
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 112px);
+  width: 62px;
+  height: 62px;
+  border: 2px solid rgba(248, 244, 236, 0.4);
+  background: rgba(10, 14, 24, 0.66);
+  color: rgba(248, 244, 236, 0.85);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
 }
+.flight-hud__brake:active { background: rgba(248, 244, 236, 0.22); }
 
 /* ──────────────────── planet info chip (opens the facts card) ────────────────────
    Picking a body no longer throws a panel over it. A callout docks beside the

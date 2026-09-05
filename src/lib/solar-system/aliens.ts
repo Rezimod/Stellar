@@ -309,8 +309,9 @@ export function makeAlienEncounters(): AlienHandle {
   type Mode = 'idle' | 'flyby' | 'dogfight' | 'battle' | 'hostile';
   let mode: Mode = 'idle';
   let lead: THREE.Group = saucer; // the ship flying the bezier path
-  // First sighting shortly after the view opens; later ones every 45–90 s.
-  let clock = 12 + Math.random() * 6;
+  // Sightings are meant to be rare enough to feel like luck: the first no
+  // sooner than a minute in, later ones several minutes apart.
+  let clock = 70 + Math.random() * 50;
   let encT = 0;
   let encDur = 15;
   let fireAcc = 0;
@@ -463,7 +464,8 @@ export function makeAlienEncounters(): AlienHandle {
 
   const endEncounter = () => {
     mode = 'idle';
-    clock = hostile ? 6 + Math.random() * 6 : 45 + Math.random() * 45;
+    // Long quiet between waves — an attack should be an event, not weather.
+    clock = hostile ? 210 + Math.random() * 210 : 260 + Math.random() * 280;
     for (const s of ships) {
       s.visible = false;
       s.scale.setScalar(1);
@@ -507,7 +509,7 @@ export function makeAlienEncounters(): AlienHandle {
       endEncounter();
       // Sparks may still be decaying — keep them visible.
       for (const sp of sparks) if (sp.life >= 0) group.visible = true;
-      clock = target ? 2.5 : 45 + Math.random() * 45;
+      clock = target ? 100 + Math.random() * 140 : 260 + Math.random() * 280;
     },
     damage(enemy, amount) {
       if (!enemy.group.visible || enemy.hp <= 0) return false;
@@ -577,7 +579,7 @@ export function makeAlienEncounters(): AlienHandle {
         }
         fireAcc -= dtSec;
         if (fireAcc <= 0 && alive > 0 && t < 0.9) {
-          fireAcc = 0.9 + Math.random() * 0.6;
+          fireAcc = 1.6 + Math.random() * 1.2;
           let pick = Math.floor(Math.random() * alive);
           for (const tr of tracks) {
             if (!tr.ship.visible) continue;

@@ -616,14 +616,43 @@ export function makeAndromedaGalaxy(lite: boolean): AndromedaHandle {
   group.name = 'galactic.andromeda';
 
   const R = 1500;
-  const { pos, col } = sampleSpiralStars(lite ? 4500 : 11000, R, {
-    pitchDeg: 20,
-    barFraction: 0.13,
+  // M31 is tightly wound (Sb), not a loose grand-design spiral.
+  const armN = lite ? 4500 : 11000;
+  const { pos, col } = sampleSpiralStars(armN, R, {
+    pitchDeg: 11,
+    barFraction: 0.1,
     hiiChance: 0.025,
   });
+  // Andromeda's defining feature is not its arms but the star-forming ring
+  // at roughly 10 kpc — the "ring of fire" that dominates every infrared
+  // image of it. Blue-white young stars, concentrated in a narrow annulus.
+  const ringN = lite ? 1600 : 4200;
+  const ringPos = new Float32Array(ringN * 3);
+  const ringCol = new Float32Array(ringN * 3);
+  for (let i = 0; i < ringN; i++) {
+    const a = Math.random() * Math.PI * 2;
+    // Narrow annulus with a gaussian-ish radial spread.
+    const r = R * (0.62 + (Math.random() + Math.random() - 1) * 0.055);
+    const h = (Math.random() + Math.random() - 1) * R * 0.012; // thin disk
+    ringPos[i * 3] = Math.cos(a) * r;
+    ringPos[i * 3 + 1] = h;
+    ringPos[i * 3 + 2] = Math.sin(a) * r;
+    // Young OB associations: blue-white, with the occasional pink HII knot.
+    const hii = Math.random() < 0.06;
+    const b = 0.6 + Math.random() * 0.4;
+    ringCol[i * 3] = (hii ? 1.0 : 0.66) * b;
+    ringCol[i * 3 + 1] = (hii ? 0.6 : 0.78) * b;
+    ringCol[i * 3 + 2] = (hii ? 0.72 : 1.0) * b;
+  }
+  const allPos = new Float32Array(pos.length + ringPos.length);
+  allPos.set(pos, 0);
+  allPos.set(ringPos, pos.length);
+  const allCol = new Float32Array(col.length + ringCol.length);
+  allCol.set(col, 0);
+  allCol.set(ringCol, col.length);
   const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geom.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geom.setAttribute('position', new THREE.BufferAttribute(allPos, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(allCol, 3));
   const sprite = softStarSprite();
   const mat = new THREE.PointsMaterial({
     map: sprite,
@@ -652,6 +681,32 @@ export function makeAndromedaGalaxy(lite: boolean): AndromedaHandle {
   glow.scale.setScalar(R * 0.9);
   group.add(glow);
 
+  // M32 and M110, the two satellite ellipticals. They sit in every real
+  // photograph of Andromeda, one tucked against the disk and one further
+  // out along the minor axis, and their absence is what makes a rendered
+  // M31 look synthetic.
+  const companionMats: THREE.SpriteMaterial[] = [];
+  const COMPANIONS: { at: [number, number, number]; size: number; peak: number }[] = [
+    { at: [R * 0.30, R * 0.02, -R * 0.16], size: R * 0.13, peak: 0.55 }, // M32
+    { at: [-R * 0.16, R * 0.06, R * 0.52], size: R * 0.19, peak: 0.34 }, // M110
+  ];
+  for (const c of COMPANIONS) {
+    const m = new THREE.SpriteMaterial({
+      map: sprite,
+      color: new THREE.Color(1.0, 0.9, 0.74),
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const sp = new THREE.Sprite(m);
+    sp.position.set(c.at[0], c.at[1], c.at[2]);
+    sp.scale.setScalar(c.size);
+    sp.userData.peak = c.peak;
+    group.add(sp);
+    companionMats.push(m);
+  }
+
   // M31's real position sense: high above the Milky Way plane in our frame,
   // disk inclined ~77° so it shows the classic near-edge-on ellipse.
   group.position.set(6200, 2800, -4800);
@@ -661,6 +716,9 @@ export function makeAndromedaGalaxy(lite: boolean): AndromedaHandle {
     const f = THREE.MathUtils.clamp(fade, 0, 1);
     mat.opacity = f * 0.9;
     glowMat.opacity = f * 0.5;
+    for (let i = 0; i < companionMats.length; i++) {
+      companionMats[i].opacity = f * COMPANIONS[i].peak;
+    }
     group.visible = f > 0.005;
   };
 
@@ -671,6 +729,7 @@ export function makeAndromedaGalaxy(lite: boolean): AndromedaHandle {
       geom.dispose();
       mat.dispose();
       glowMat.dispose();
+      for (const m of companionMats) m.dispose();
       sprite.dispose();
     },
   };

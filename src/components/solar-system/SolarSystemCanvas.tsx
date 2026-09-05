@@ -16,6 +16,7 @@ import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import {
   makeOrbitRings,
   disposeOrbitRings,
+  setOrbitRingsFade,
   makeAsteroidBelt,
   makeKuiperBelt,
   clampedPointsMaterial,
@@ -1018,7 +1019,7 @@ export function SolarSystemCanvas({
 
       const focus = focusRef.current;
       if (ship) {
-        ship.update(dtSec, (now - t0) / 1000, camera, aliens, earthPos);
+        ship.update(dtSec, (now - t0) / 1000, camera, aliens);
       } else if (focus && meshById.has(focus)) {
         vTarget.copy(meshById.get(focus)!.position);
         const pr = worldRadiusForBody(focus);
@@ -1100,6 +1101,10 @@ export function SolarSystemCanvas({
       milkyMat.opacity = 0.55 * (1 - currentTier.galactic);
       milkyGlow.setFade(1 - currentTier.galactic);
       nebulae.setFade(1 - currentTier.stellar);
+      // Orbit paths orient you from far out. Close in — orbiting a body, or
+      // flying — they just draw lines across the thing you came to look at,
+      // so they fade away as the camera closes on the subject.
+      setOrbitRingsFade(orbitRings, ship ? 0.35 : focus ? 0 : THREE.MathUtils.clamp((sysRadius - 9) / 9, 0, 1));
 
       // Stream the view + projected anchor positions to the parent so it
       // can place the Sun pin / Milky Way tap label as HTML overlays.

@@ -1134,7 +1134,7 @@
       "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · Esc exit",
       "fire": "Fire",
       "boost": "Boost",
-      "respawn": "Hull lost — respawning near Earth"
+      "brake": "Brake"
     }
   },
   "missionsPage": {
