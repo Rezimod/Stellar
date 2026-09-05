@@ -1,8 +1,21 @@
 import * as THREE from 'three';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
-import { bodyColor } from '@/lib/solar-system/ephemeris';
+import { bodyColor, worldRadiusForBody } from '@/lib/solar-system/ephemeris';
+import { AXIAL_TILT_DEG } from '@/lib/solar-system/planet-spin';
+import {
+  getSaturnRingStripTexture,
+  SATURN_RING_INNER,
+  SATURN_RING_OUTER,
+} from '@/lib/solar-system/saturn-ring-strip';
 
 const SRGB = THREE.SRGBColorSpace;
+
+const GAS_GIANTS: ReadonlySet<SolarBodyId> = new Set(['jupiter', 'saturn', 'uranus', 'neptune']);
+
+/** Spec: metalness 0 everywhere; rocky bodies 0.8, gas giants 0.4. */
+function roughnessFor(id: SolarBodyId): number {
+  return GAS_GIANTS.has(id) ? 0.4 : 0.8;
+}
 
 function canvasTexture(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
@@ -35,61 +48,184 @@ function noiseRoughness(ctx: CanvasRenderingContext2D, w: number, h: number, gra
   ctx.putImageData(img, 0, 0);
 }
 
-/** Procedural diffuse fallback when hero JPG is unavailable (e.g. Pluto). */
+/* ───────────── shader hooks (onBeforeCompile on MeshStandardMaterial) ───────────── */
+
+type CompiledShader = Parameters<NonNullable<THREE.Material['onBeforeCompile']>>[0];
+
+// World-space position + normal varyings; the Sun is fixed at the scene
+// origin (see sampleSolarSystem), so the light direction is simply -worldPos.
+const WORLD_PARS = /* glsl */ `
+varying vec3 vWorldPos;
+varying vec3 vWorldNrm;
+varying vec3 vWorldCenter;
+`;
+const WORLD_VERTEX = /* glsl */ `
+vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+vWorldNrm = normalize(mat3(modelMatrix) * objectNormal);
+vWorldCenter = modelMatrix[3].xyz;
+`;
+
+function injectWorldVaryings(shader: CompiledShader) {
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', `#include <common>\n${WORLD_PARS}`)
+    .replace('#include <fog_vertex>', `#include <fog_vertex>\n${WORLD_VERTEX}`);
+  shader.fragmentShader = shader.fragmentShader.replace(
+    '#include <common>',
+    `#include <common>\n${WORLD_PARS}`,
+  );
+}
+
+/** Earth: city lights only on the hemisphere facing away from the Sun. */
+function hookEarthNight(mat: THREE.MeshStandardMaterial) {
+  mat.onBeforeCompile = (shader) => {
+    injectWorldVaryings(shader);
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <emissivemap_fragment>',
+      /* glsl */ `#include <emissivemap_fragment>
+      {
+        float sunFacing = dot(normalize(vWorldNrm), normalize(-vWorldPos));
+        totalEmissiveRadiance *= smoothstep(0.12, -0.2, sunFacing);
+      }`,
+    );
+    mat.userData.shader = shader;
+  };
+}
+
+/** Jupiter / Neptune: zonal jets shear the cloud map, eddies wobble it. */
+function hookCloudBands(mat: THREE.MeshStandardMaterial, lite: boolean) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uBandTime = { value: 0 };
+    shader.uniforms.uBandAmp = { value: lite ? 0.0015 : 0.0026 };
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        /* glsl */ `#include <common>
+        uniform float uBandTime;
+        uniform float uBandAmp;`,
+      )
+      .replace(
+        'vec4 sampledDiffuseColor = texture2D( map, vMapUv );',
+        /* glsl */ `vec2 bUv = vMapUv;
+        float bLat = (bUv.y - 0.5) * 3.14159265;
+        // Alternating east/west jets by latitude, faster near the equator.
+        float jet = sin(bLat * 7.0 + 0.6) * 0.55 + sin(bLat * 3.0) * 0.45;
+        bUv.x += jet * uBandTime * 0.004;
+        bUv.x += sin(bUv.y * 40.0 + uBandTime * 0.35) * uBandAmp;
+        bUv.y += sin(bUv.x * 30.0 + uBandTime * 0.27 + bLat * 2.0) * uBandAmp * 0.6;
+        vec4 sampledDiffuseColor = texture2D( map, bUv );`,
+      );
+    mat.userData.shader = shader;
+  };
+}
+
+/** Saturn: the ring system casts its banded shadow onto the globe. */
+function hookRingShadow(mat: THREE.MeshStandardMaterial) {
+  const R = worldRadiusForBody('saturn');
+  const tilt = THREE.MathUtils.degToRad(AXIAL_TILT_DEG.saturn);
+  mat.onBeforeCompile = (shader) => {
+    injectWorldVaryings(shader);
+    shader.uniforms.uRingTex = { value: getSaturnRingStripTexture() };
+    // Ring plane normal in world space: the rings share the planet's Z tilt.
+    shader.uniforms.uRingNormal = { value: new THREE.Vector3(-Math.sin(tilt), Math.cos(tilt), 0) };
+    shader.uniforms.uRingInner = { value: R * SATURN_RING_INNER };
+    shader.uniforms.uRingOuter = { value: R * SATURN_RING_OUTER };
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        /* glsl */ `#include <common>
+        uniform sampler2D uRingTex;
+        uniform vec3 uRingNormal;
+        uniform float uRingInner;
+        uniform float uRingOuter;`,
+      )
+      .replace(
+        '#include <lights_fragment_end>',
+        /* glsl */ `#include <lights_fragment_end>
+        {
+          vec3 toSun = normalize(-vWorldPos);
+          vec3 rel = vWorldPos - vWorldCenter;
+          float denom = dot(toSun, uRingNormal);
+          float ringShadow = 1.0;
+          if (abs(denom) > 1e-4) {
+            float tHit = -dot(rel, uRingNormal) / denom;
+            if (tHit > 0.0) {
+              float rHit = length(rel + toSun * tHit);
+              float u = (rHit - uRingInner) / (uRingOuter - uRingInner);
+              if (u > 0.0 && u < 1.0) {
+                ringShadow = 1.0 - texture2D(uRingTex, vec2(u, 0.5)).a * 0.88;
+              }
+            }
+          }
+          reflectedLight.directDiffuse *= ringShadow;
+          reflectedLight.directSpecular *= ringShadow;
+        }`,
+      );
+    mat.userData.shader = shader;
+  };
+}
+
+function applyHooks(id: SolarBodyId, mat: THREE.MeshStandardMaterial, lite: boolean) {
+  if (id === 'earth') hookEarthNight(mat);
+  else if (id === 'jupiter' || id === 'neptune') hookCloudBands(mat, lite);
+  else if (id === 'saturn') hookRingShadow(mat);
+}
+
+/** Per-frame time for the animated cloud-band materials (no-op for the rest). */
+export function tickPlanetMaterial(mat: THREE.Material, timeSec: number) {
+  const shader = mat.userData.shader as CompiledShader | undefined;
+  const u = shader?.uniforms.uBandTime;
+  if (u) u.value = timeSec;
+}
+
+/* ───────────────────────────── materials ───────────────────────────── */
+
+/** Hero NASA map when available, procedural diffuse fallback otherwise. */
 export function createPlanetMaterial(
   id: SolarBodyId,
   lite: boolean,
   diffuseTexture?: THREE.Texture | null,
 ): THREE.MeshStandardMaterial {
-  if (diffuseTexture) {
-    if (id === 'sun') {
-      return new THREE.MeshStandardMaterial({
-        map: diffuseTexture,
-        emissive: new THREE.Color(0xfff0cc),
-        emissiveMap: diffuseTexture,
-        emissiveIntensity: lite ? 1.15 : 1.35,
-        roughness: 0.92,
-        metalness: 0,
-      });
-    }
-    // Per-body roughness/metalness tuned for the sharper space lighting in
-    // SolarSystemCanvas (low ambient + bright sun). Lower roughness on
-    // Earth/Jupiter/ice-giants gives a subtle ocean/cloud specular highlight
-    // when the sun grazes the limb; higher roughness on Mercury/Mars keeps
-    // their dry surfaces matte.
-    const rough =
-      id === 'earth' ? 0.48 :
-      id === 'mars' ? 0.86 :
-      id === 'mercury' ? 0.94 :
-      id === 'saturn' ? 0.66 :
-      id === 'jupiter' ? 0.58 :
-      id === 'uranus' ? 0.52 :
-      id === 'neptune' ? 0.50 :
-      id === 'venus' ? 0.72 :
-      0.74;
-    const metal =
-      id === 'earth' ? 0.06 :
-      id === 'jupiter' ? 0.02 :
-      id === 'saturn' ? 0.03 :
-      id === 'uranus' || id === 'neptune' ? 0.05 :
-      0.02;
-    const mat = new THREE.MeshStandardMaterial({
-      map: diffuseTexture,
-      roughness: rough,
-      metalness: metal,
-    });
-    // Reuse the diffuse map as a bump map on the dry rocky bodies — under the
-    // sharp low-ambient sun lighting this gives craters and ridges real relief
-    // at the terminator without needing a dedicated height map.
-    if (id === 'mercury' || id === 'mars' || id === 'pluto') {
-      mat.bumpMap = diffuseTexture;
-      mat.bumpScale = id === 'mars' ? 0.016 : 0.01;
-    }
-    return mat;
-  }
+  const mat = diffuseTexture
+    ? texturedMaterial(id, lite, diffuseTexture)
+    : proceduralMaterial(id, lite);
+  applyHooks(id, mat, lite);
+  return mat;
+}
 
+function texturedMaterial(
+  id: SolarBodyId,
+  lite: boolean,
+  diffuseTexture: THREE.Texture,
+): THREE.MeshStandardMaterial {
+  if (id === 'sun') {
+    return new THREE.MeshStandardMaterial({
+      map: diffuseTexture,
+      emissive: new THREE.Color(0xfff0cc),
+      emissiveMap: diffuseTexture,
+      emissiveIntensity: lite ? 1.15 : 1.35,
+      roughness: 0.92,
+      metalness: 0,
+    });
+  }
+  const mat = new THREE.MeshStandardMaterial({
+    map: diffuseTexture,
+    roughness: roughnessFor(id),
+    metalness: 0,
+  });
+  // Reuse the diffuse map as a bump map on the dry rocky bodies — under the
+  // sharp low-ambient sun lighting this gives craters and ridges real relief
+  // at the terminator without needing a dedicated height map.
+  if (id === 'mercury' || id === 'mars' || id === 'pluto') {
+    mat.bumpMap = diffuseTexture;
+    mat.bumpScale = id === 'mars' ? 0.016 : 0.01;
+  }
+  return mat;
+}
+
+function proceduralMaterial(id: SolarBodyId, lite: boolean): THREE.MeshStandardMaterial {
   const base = bodyColor(id);
   const hex = `#${base.toString(16).padStart(6, '0')}`;
+  const roughness = roughnessFor(id);
 
   if (id === 'sun') {
     const map = canvasTexture((ctx, w, h) => {
@@ -124,11 +260,7 @@ export function createPlanetMaterial(
         ctx.fillRect(0, y0, w, y1 - y0);
       }
     });
-    return new THREE.MeshStandardMaterial({
-      map,
-      roughness: 0.82,
-      metalness: 0.04,
-    });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   if (id === 'earth') {
@@ -152,11 +284,7 @@ export function createPlanetMaterial(
         ctx.fill();
       }
     });
-    return new THREE.MeshStandardMaterial({
-      map,
-      roughness: 0.72,
-      metalness: 0.05,
-    });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   if (id === 'mars') {
@@ -168,7 +296,7 @@ export function createPlanetMaterial(
         ctx.fillRect(Math.random() * w, Math.random() * h, 4 + Math.random() * 30, 3 + Math.random() * 20);
       }
     });
-    return new THREE.MeshStandardMaterial({ map, roughness: 0.88, metalness: 0.02 });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   if (id === 'venus') {
@@ -186,7 +314,7 @@ export function createPlanetMaterial(
       }
       ctx.globalAlpha = 1;
     });
-    return new THREE.MeshStandardMaterial({ map, roughness: 0.78, metalness: 0.02 });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   if (id === 'mercury') {
@@ -201,7 +329,7 @@ export function createPlanetMaterial(
         ctx.fill();
       }
     });
-    return new THREE.MeshStandardMaterial({ map, roughness: 0.94, metalness: 0.01 });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   if (id === 'uranus' || id === 'neptune') {
@@ -218,7 +346,7 @@ export function createPlanetMaterial(
       ctx.fillRect(0, 0, w, h);
       noiseRoughness(ctx, w, h, 0.08);
     });
-    return new THREE.MeshStandardMaterial({ map, roughness: 0.55, metalness: 0.06 });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   if (id === 'pluto') {
@@ -231,7 +359,7 @@ export function createPlanetMaterial(
         ctx.fillRect(Math.random() * w, Math.random() * h, 20, 12);
       }
     });
-    return new THREE.MeshStandardMaterial({ map, roughness: 0.9, metalness: 0 });
+    return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
   }
 
   const map = canvasTexture((ctx, w, h) => {
@@ -239,7 +367,7 @@ export function createPlanetMaterial(
     ctx.fillRect(0, 0, w, h);
     noiseRoughness(ctx, w, h, 0.18);
   });
-  return new THREE.MeshStandardMaterial({ map, roughness: 0.8, metalness: 0.03 });
+  return new THREE.MeshStandardMaterial({ map, roughness, metalness: 0 });
 }
 
 export function disposePlanetMaterial(mat: THREE.Material) {

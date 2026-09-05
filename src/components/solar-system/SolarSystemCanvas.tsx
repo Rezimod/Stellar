@@ -11,7 +11,7 @@ import {
 } from '@/lib/solar-system/ephemeris';
 import { AXIAL_TILT_DEG, siderealSpinY } from '@/lib/solar-system/planet-spin';
 import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
-import { createPlanetMaterial, disposePlanetMaterial } from '@/lib/solar-system/planet-textures';
+import { createPlanetMaterial, disposePlanetMaterial, tickPlanetMaterial } from '@/lib/solar-system/planet-textures';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import {
   makeOrbitRings,
@@ -28,6 +28,8 @@ import {
   makeSunExtras,
   makeMilkyWayBand,
   disposeMilkyWayBand,
+  makeMilkyWayGlow,
+  makeNebulae,
   makeSaturnParticleRings,
   makeUranusRings,
   makePlanetMoons,
@@ -43,7 +45,12 @@ import {
   type SaturnRingsHandle,
   type PlanetMoonsHandle,
   type CometHandle,
+  type MilkyWayGlowHandle,
+  type NebulaeHandle,
 } from '@/lib/solar-system/scene-extras';
+import { makeSunSurface } from '@/lib/solar-system/sun-surface';
+import { makePostFx } from '@/lib/solar-system/post-processing';
+import { createPlayerShip, type FlightSession, type PlayerShipHandle } from '@/lib/solar-system/player-ship';
 import { makeAlienEncounters } from '@/lib/solar-system/aliens';
 import { makeDeepSpaceProbes } from '@/lib/solar-system/probes';
 import {
@@ -91,6 +98,10 @@ export interface SolarSystemCanvasProps {
   /** Imperative zoom target: if non-null, the canvas eases `sysRadius` toward this value. */
   zoomTo?: number | null;
   onZoomToConsumed?: () => void;
+  /** Explore Mode session. While `flight.active` the canvas spawns the player
+   *  ship, hands the camera to it and turns the alien encounters hostile;
+   *  the orbit camera state is left untouched and resumes on exit. */
+  flight?: FlightSession;
 }
 
 /** Project a world-space point onto CSS pixel coords. Returns null when the
@@ -163,6 +174,7 @@ export function SolarSystemCanvas({
   onZoomToSun,
   zoomTo,
   onZoomToConsumed,
+  flight,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const epochRef = useRef(epochMs);
@@ -175,6 +187,7 @@ export function SolarSystemCanvas({
   const onZoomToSunRef = useRef(onZoomToSun);
   const zoomToRef = useRef(zoomTo);
   const onZoomToConsumedRef = useRef(onZoomToConsumed);
+  const flightRef = useRef(flight);
 
   epochRef.current = epochMs;
   scaleRef.current = scaleMode;
@@ -186,6 +199,7 @@ export function SolarSystemCanvas({
   onZoomToSunRef.current = onZoomToSun;
   zoomToRef.current = zoomTo;
   onZoomToConsumedRef.current = onZoomToConsumed;
+  flightRef.current = flight;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -265,6 +279,10 @@ export function SolarSystemCanvas({
 
     updateSystemCamera();
 
+    // Scene → bloom → tone-mapped output (the Sun, engine glows and bolts
+    // bloom; lit planet surfaces sit under the threshold and stay sharp).
+    const postFx = makePostFx(renderer, scene, camera, lite);
+
     // Space lighting: the sun is the only real source, but a dim ambient
     // keeps night sides identifiable — without it, the Moon and any planet
     // showing us its dark side render as anonymous black balls (users read
@@ -282,27 +300,26 @@ export function SolarSystemCanvas({
 
     const starSprite = softSpriteTexture();
 
-    const STAR_N = lite ? 2600 : 9000;
+    // 8,000 white pinpricks + 2,000 tinted stars (warm K/M orange, cool O/B
+    // blue, a few blue-white) — the mix the eye reads as a real sky.
+    const STAR_WHITE = lite ? 2400 : 8000;
+    const STAR_TINTED = lite ? 600 : 2000;
+    const STAR_N = STAR_WHITE + STAR_TINTED;
     const starPos = new Float32Array(STAR_N * 3);
     const starCol = new Float32Array(STAR_N * 3);
     const starSize = new Float32Array(STAR_N);
-    // Spectral classes — rough population mix: most stars are cool M/K (red/orange),
-    // fewer are hot O/B (blue). Gives the sky a real, varied tint.
-    const SPECTRAL = [
-      { weight: 0.04, r: 0.66, g: 0.78, b: 1.00 }, // O/B — blue
-      { weight: 0.10, r: 0.84, g: 0.90, b: 1.00 }, // A — blue-white
-      { weight: 0.18, r: 0.98, g: 0.98, b: 1.00 }, // F — white
-      { weight: 0.18, r: 1.00, g: 0.96, b: 0.84 }, // G — sun yellow
-      { weight: 0.25, r: 1.00, g: 0.86, b: 0.66 }, // K — warm orange
-      { weight: 0.25, r: 1.00, g: 0.70, b: 0.52 }, // M — red
+    const TINTS = [
+      { weight: 0.45, r: 1.00, g: 0.78, b: 0.55 }, // warm orange
+      { weight: 0.35, r: 0.62, g: 0.76, b: 1.00 }, // cool blue
+      { weight: 0.20, r: 0.86, g: 0.92, b: 1.00 }, // blue-white
     ];
-    const pickSpectral = () => {
+    const pickTint = () => {
       let r = Math.random();
-      for (const s of SPECTRAL) {
-        if (r < s.weight) return s;
-        r -= s.weight;
+      for (const t of TINTS) {
+        if (r < t.weight) return t;
+        r -= t.weight;
       }
-      return SPECTRAL[SPECTRAL.length - 1];
+      return TINTS[TINTS.length - 1];
     };
     // Real sky statistics: brightness follows a steep power law (a handful of
     // bright stars over thousands of faint ones), and ~40% of stars crowd
@@ -326,11 +343,18 @@ export function SolarSystemCanvas({
       starPos[i * 3] = x;
       starPos[i * 3 + 1] = yBand * Math.cos(BAND_INCL) - zBand * Math.sin(BAND_INCL);
       starPos[i * 3 + 2] = yBand * Math.sin(BAND_INCL) + zBand * Math.cos(BAND_INCL);
-      const sp = pickSpectral();
       const c = 0.4 + Math.random() * 0.6;
-      starCol[i * 3] = sp.r * c;
-      starCol[i * 3 + 1] = sp.g * c;
-      starCol[i * 3 + 2] = sp.b * c;
+      if (i < STAR_WHITE) {
+        const w = 0.94 + Math.random() * 0.06;
+        starCol[i * 3] = w * c;
+        starCol[i * 3 + 1] = w * c;
+        starCol[i * 3 + 2] = c;
+      } else {
+        const tint = pickTint();
+        starCol[i * 3] = tint.r * c;
+        starCol[i * 3 + 1] = tint.g * c;
+        starCol[i * 3 + 2] = tint.b * c;
+      }
       // Power-law magnitudes — mostly pinpricks, the occasional bright star.
       starSize[i] = 0.35 + Math.pow(Math.random(), 3.2) * 2.3;
     }
@@ -355,6 +379,11 @@ export function SolarSystemCanvas({
 
     const milkyWay = makeMilkyWayBand(lite);
     scene.add(milkyWay);
+    const milkyGlow: MilkyWayGlowHandle = makeMilkyWayGlow(lite);
+    scene.add(milkyGlow.group);
+    // Deep-background nebulae — behind the star shell, fade out with the tier.
+    const nebulae: NebulaeHandle = makeNebulae(lite);
+    scene.add(nebulae.group);
 
     // Galactic-tier layers — start fully faded; the per-frame loop dials
     // them up as the camera radius grows past the solar-system tier.
@@ -402,6 +431,8 @@ export function SolarSystemCanvas({
 
     const sunExtras: SunExtrasHandle = makeSunExtras(worldRadiusForBody('sun'));
     scene.add(sunExtras.group);
+    // Photosphere shader — the NASA map warped by animated convection noise.
+    const sunSurface = makeSunSurface(lite);
 
     let earthExtras: EarthExtrasHandle | null = null;
     let earthRocket: EarthRocketHandle | null = null;
@@ -455,6 +486,10 @@ export function SolarSystemCanvas({
       tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.magFilter = THREE.LinearFilter;
       textureById.set(id, tex);
+      if (id === 'sun') {
+        sunSurface.setMap(tex);
+        return;
+      }
       const mesh = meshById.get(id);
       if (mesh) {
         disposeMat(mesh.material as THREE.Material);
@@ -476,7 +511,7 @@ export function SolarSystemCanvas({
         },
         undefined,
         () => {
-          if (textureLoadsCancelled) return;
+          if (textureLoadsCancelled || id === 'sun') return;
           const mesh = meshById.get(id);
           if (mesh) {
             disposeMat(mesh.material as THREE.Material);
@@ -516,7 +551,9 @@ export function SolarSystemCanvas({
         id === 'neptune' ? 0.983 :
         1;
       if (oblate !== 1) geom.scale(1, oblate, 1);
-      const mat = createPlanetMaterial(id, lite, textureById.get(id) ?? null);
+      const mat = id === 'sun'
+        ? sunSurface.material
+        : createPlanetMaterial(id, lite, textureById.get(id) ?? null);
       const mesh = new THREE.Mesh(geom, mat);
       mesh.userData.bodyId = id;
       // Real axial tilt. Euler order ZYX applies the tilt (Z) on top of the
@@ -599,31 +636,6 @@ export function SolarSystemCanvas({
           hitById.set(s.id, hit);
           bodies.add(hit);
 
-          if (s.id === 'sun') {
-            // Soft billboard glow — smooth radial falloff. The old nested
-            // translucent spheres drew hard-edged brown rings around the Sun.
-            const sunR = worldRadiusForBody('sun');
-            const glowLayers = [
-              { scale: 3.0, opacity: 0.5, color: 0xffd9a0 },
-              { scale: 5.6, opacity: 0.22, color: 0xffa050 },
-            ];
-            for (const layer of glowLayers) {
-              const glow = new THREE.Sprite(
-                new THREE.SpriteMaterial({
-                  map: softSpriteTexture(),
-                  color: layer.color,
-                  transparent: true,
-                  opacity: layer.opacity,
-                  depthWrite: false,
-                  blending: THREE.AdditiveBlending,
-                }),
-              );
-              glow.name = 'sunGlow';
-              glow.scale.setScalar(sunR * layer.scale);
-              mesh.add(glow);
-            }
-          }
-
           if (s.id === 'earth' && !earthExtras) {
             const er = worldRadiusForBody('earth');
             earthExtras = makeEarthExtras(er, lite);
@@ -696,13 +708,15 @@ export function SolarSystemCanvas({
 
       const sel = selectedRef.current;
       meshById.forEach((mesh, id) => {
+        const isSel = sel === id;
+        mesh.scale.setScalar(isSel ? 1.08 : 1);
+        if (id === 'sun') {
+          sunSurface.setBoost(isSel ? 1 : 0);
+          return;
+        }
         const mat = mesh.material as THREE.MeshStandardMaterial;
         const base = bodyColor(id);
-        const isSel = sel === id;
-        if (id === 'sun') {
-          mat.emissive.setHex(base);
-          mat.emissiveIntensity = isSel ? 1.55 : 1.25;
-        } else if (id === 'earth' && mat.emissiveMap) {
+        if (id === 'earth' && mat.emissiveMap) {
           // Night-side city lights ride the emissive map; selection just
           // boosts the same channel.
           mat.emissive.setHex(0xffd9a0);
@@ -714,7 +728,6 @@ export function SolarSystemCanvas({
           mat.emissive.setHex(0x000000);
           mat.emissiveIntensity = 0;
         }
-        mesh.scale.setScalar(isSel ? 1.08 : 1);
       });
 
       const focus = focusRef.current;
@@ -766,8 +779,10 @@ export function SolarSystemCanvas({
     let pinchActive = false;
     let lastPinchDist = 0;
 
+    const flying = () => !!flightRef.current?.active;
+
     const onPointerDown = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
+      if (e.pointerType === 'touch' || flying()) return;
       downOk = true;
       drag = true;
       downX = lx = e.clientX;
@@ -775,7 +790,7 @@ export function SolarSystemCanvas({
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
+      if (e.pointerType === 'touch' || flying()) return;
       if (!drag) return;
       const dx = e.clientX - lx;
       const dy = e.clientY - ly;
@@ -792,7 +807,7 @@ export function SolarSystemCanvas({
     };
 
     const onPointerUp = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
+      if (e.pointerType === 'touch' || flying()) return;
       if (downOk && drag) {
         const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
         if (moved < 8) pick(e.clientX, e.clientY);
@@ -808,6 +823,7 @@ export function SolarSystemCanvas({
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      if (flying()) return;
       if (focusRef.current) {
         orbDist *= Math.exp(e.deltaY * 0.0011);
       } else {
@@ -826,6 +842,7 @@ export function SolarSystemCanvas({
     };
 
     const onTouchStart = (e: TouchEvent) => {
+      if (flying()) return;
       if (e.touches.length === 2) {
         pinchActive = true;
         lastPinchDist = touchDist(e.touches);
@@ -843,6 +860,7 @@ export function SolarSystemCanvas({
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      if (flying()) return;
       if (e.touches.length >= 2) {
         const d = touchDist(e.touches);
         if (lastPinchDist > 4 && d > 4) {
@@ -881,6 +899,7 @@ export function SolarSystemCanvas({
     };
 
     const onTouchEnd = (e: TouchEvent) => {
+      if (flying()) return;
       if (e.touches.length < 2) {
         pinchActive = false;
         lastPinchDist = 0;
@@ -911,12 +930,29 @@ export function SolarSystemCanvas({
       camera.aspect = mount.clientWidth / mount.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(mount.clientWidth, mount.clientHeight);
+      postFx.setSize(mount.clientWidth, mount.clientHeight);
     };
     window.addEventListener('resize', onResize);
 
     let raf = 0;
     let lastFrame = performance.now();
+    const t0 = lastFrame;
     let docVisible = !document.hidden;
+
+    // Explore Mode: the ship exists only while the session is active. It is
+    // created lazily inside the loop and torn down the frame the session
+    // goes inactive (or on unmount), so repeated enter/exit never leaks.
+    let ship: PlayerShipHandle | null = null;
+    const teardownShip = () => {
+      if (!ship) return;
+      aliens.setHostile(null);
+      scene.remove(ship.group);
+      scene.remove(ship.boltGroup);
+      ship.dispose();
+      ship = null;
+      // The follow camera rolls its up vector; orbit lookAt needs it upright.
+      camera.up.set(0, 1, 0);
+    };
     // Epoch anchor for shader time uniforms — keeps the float32 value the GPU
     // sees small enough to stay precise across the ±2 year scrub range.
     const baseEpochMs = epochRef.current;
@@ -949,19 +985,41 @@ export function SolarSystemCanvas({
       const now = performance.now();
       const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
       lastFrame = now;
+      // Wall-clock seconds for shader animation (convection, cloud bands).
+      const sceneTime = reduceMotion ? 0 : (now - t0) / 1000;
 
       syncMeshes();
       // Spin phase is a pure function of the simulation epoch — bodies hold
       // still while time is paused and track playback/scrubbing exactly.
       meshById.forEach((mesh, id) => {
         mesh.rotation.y = siderealSpinY(id, epochRef.current);
+        tickPlanetMaterial(mesh.material as THREE.Material, sceneTime);
       });
+      sunSurface.setTime(sceneTime);
 
       const sunMesh = meshById.get('sun');
       if (sunMesh) sunLight.position.copy(sunMesh.position);
+      const earthPos = meshById.get('earth')?.position ?? null;
+
+      const session = flightRef.current;
+      const flightActive = !!session?.active;
+      if (session && flightActive) {
+        if (!ship) {
+          ship = createPlayerShip(session);
+          scene.add(ship.group);
+          scene.add(ship.boltGroup);
+          ship.spawn(earthPos);
+          const live = ship;
+          aliens.setHostile({ group: live.group, onHit: (dmg) => live.takeDamage(dmg) });
+        }
+      } else if (ship) {
+        teardownShip();
+      }
 
       const focus = focusRef.current;
-      if (focus && meshById.has(focus)) {
+      if (ship) {
+        ship.update(dtSec, (now - t0) / 1000, camera, aliens, earthPos);
+      } else if (focus && meshById.has(focus)) {
         vTarget.copy(meshById.get(focus)!.position);
         const pr = worldRadiusForBody(focus);
         updateOrbitCamera(vTarget, pr);
@@ -970,21 +1028,25 @@ export function SolarSystemCanvas({
       }
       if (!reduceMotion) {
         // Ambient background drift + decorative real-time layers: rocket
-        // launches, aurora shimmer, alien sightings.
+        // launches, aurora shimmer.
         stars.rotation.y += 0.000055;
         milkyWay.rotation.y += 0.000022;
+        milkyGlow.group.rotation.y += 0.000022;
         earthRocket?.update(dtSec);
         earthMeteors?.update(dtSec);
-        aliens.update(dtSec, meshById.get('earth')?.position ?? null);
         for (const a of auroraHandles) a.update(dtSec);
       }
+      // Alien sightings are decorative (reduce-motion pauses them) — but in
+      // Explore Mode they are the opposition, so they always run.
+      if (!reduceMotion || flightActive) aliens.update(dtSec, earthPos);
       // Epoch-accurate motion — belts, clouds, the real Moon, and Saturn's
       // ring particles all track simulation time (Kepler rates), so they
       // respond to play/scrub/speed exactly like the planets do.
       asteroidBelt.update(epochRef.current);
       kuiperBelt.update(epochRef.current);
       earthExtras?.update(epochRef.current, reduceMotion ? 0 : dtSec);
-      probes.update(epochRef.current, focusRef.current ? 0 : sysRadius);
+      // Probe labels are system-view furniture — hidden in low orbit and in flight.
+      probes.update(epochRef.current, focusRef.current || ship ? 0 : sysRadius);
       saturnRings?.update((epochRef.current - baseEpochMs) / 1000);
       if (earthExtras) {
         const earthMesh = meshById.get('earth');
@@ -1002,7 +1064,7 @@ export function SolarSystemCanvas({
         const saturnMesh = meshById.get('saturn');
         if (saturnMesh) saturnRings.group.position.copy(saturnMesh.position);
       }
-      sunExtras.update(camera.position, sunMesh?.position ?? vZero, dtSec);
+      sunExtras.update(camera.position, sunMesh?.position ?? vZero, dtSec, camera);
 
       // Moons + comet at their epoch-accurate orbital phases (real periods).
       planetMoons.update(epochRef.current, (id) => meshById.get(id)?.position ?? null);
@@ -1036,6 +1098,8 @@ export function SolarSystemCanvas({
       // visually with the new disk — fade it out once the disk takes over.
       const milkyMat = milkyWay.material as THREE.PointsMaterial;
       milkyMat.opacity = 0.55 * (1 - currentTier.galactic);
+      milkyGlow.setFade(1 - currentTier.galactic);
+      nebulae.setFade(1 - currentTier.stellar);
 
       // Stream the view + projected anchor positions to the parent so it
       // can place the Sun pin / Milky Way tap label as HTML overlays.
@@ -1074,7 +1138,7 @@ export function SolarSystemCanvas({
         });
       }
 
-      renderer.render(scene, camera);
+      postFx.render(dtSec);
       raf = requestAnimationFrame(loop);
     };
     startLoop();
@@ -1092,6 +1156,7 @@ export function SolarSystemCanvas({
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
 
+      teardownShip();
       textureLoadsCancelled = true;
       textureById.forEach((tex) => tex.dispose());
       textureById.clear();
@@ -1137,8 +1202,13 @@ export function SolarSystemCanvas({
       scene.remove(comet.group);
       comet.dispose();
       sunExtras.dispose();
+      sunSurface.dispose();
       disposeOrbitRings(orbitRings);
       disposeMilkyWayBand(milkyWay);
+      scene.remove(milkyGlow.group);
+      milkyGlow.dispose();
+      scene.remove(nebulae.group);
+      nebulae.dispose();
       scene.remove(nearbyStars.group);
       scene.remove(galaxyDisk.group);
       scene.remove(andromeda.group);
@@ -1159,6 +1229,7 @@ export function SolarSystemCanvas({
       hitById.clear();
       starGeo.dispose();
       (stars.material as THREE.Material).dispose();
+      postFx.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) {
         mount.removeChild(renderer.domElement);

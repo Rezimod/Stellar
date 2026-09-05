@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarClock,
   Orbit,
@@ -15,6 +15,8 @@ import {
 import { useFormatter, useTranslations } from 'next-intl';
 import { SolarSystemCanvas, type CosmicView } from '@/components/solar-system/SolarSystemCanvas';
 import { PlanetDetailPanel } from '@/components/solar-system/PlanetDetailPanel';
+import { PlayerShip } from '@/components/solar-system/PlayerShip';
+import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
 import type { ScaleMode, SolarBodyId } from '@/lib/solar-system/ephemeris';
 
 const SPEED_STEPS = [
@@ -75,6 +77,11 @@ export default function SolarSystemExplorer() {
     setZoomTo(26);
   }, []);
   const consumeZoomTo = useCallback(() => setZoomTo(null), []);
+  // Explore Mode shares one mutable session between the HUD (input) and the
+  // canvas (ship + telemetry); React only re-renders on enter / exit.
+  const flightRef = useRef<FlightSession | null>(null);
+  if (!flightRef.current) flightRef.current = createFlightSession();
+  const [flightActive, setFlightActive] = useState(false);
 
   const simRate = SPEED_STEPS[speedIdx].simSecPerRealSec;
 
@@ -147,7 +154,7 @@ export default function SolarSystemExplorer() {
 
   return (
     <div className="solar-system solar-system--immersive">
-      <div className="solar-system__chrome-float">
+      {!flightActive && <div className="solar-system__chrome-float">
         <button
           type="button"
           className="solar-system__fab solar-system__fab--close"
@@ -157,7 +164,7 @@ export default function SolarSystemExplorer() {
           <X size={20} strokeWidth={2.2} aria-hidden />
         </button>
         <span className="solar-system__mini-clock" aria-live="polite">{dateLabel}</span>
-      </div>
+      </div>}
 
       <div className="solar-system__viewport solar-system__viewport--fill">
         <SolarSystemCanvas
@@ -171,17 +178,21 @@ export default function SolarSystemExplorer() {
           onZoomToSun={handleZoomToSun}
           zoomTo={zoomTo}
           onZoomToConsumed={consumeZoomTo}
+          flight={flightRef.current}
         />
-        <CosmicOverlay cosmic={cosmic} onZoomToSun={handleZoomToSun} />
-        <div className="solar-system__viewport-hint solar-system__viewport-hint--compact">
-          <Orbit size={14} aria-hidden />
-          <span>{t('dragHint')}</span>
-        </div>
+        {!flightActive && <CosmicOverlay cosmic={cosmic} onZoomToSun={handleZoomToSun} />}
+        {!flightActive && (
+          <div className="solar-system__viewport-hint solar-system__viewport-hint--compact">
+            <Orbit size={14} aria-hidden />
+            <span>{t('dragHint')}</span>
+          </div>
+        )}
+        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} />
       </div>
 
       {/* Floating timelapse pill — sits over the map instead of docking a
           full-height control panel under it. */}
-      <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
+      {!flightActive && <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
         <button
           type="button"
           className="solar-system__dockbtn solar-system__dockbtn--primary"
@@ -232,9 +243,9 @@ export default function SolarSystemExplorer() {
         >
           <Settings2 size={16} aria-hidden />
         </button>
-      </div>
+      </div>}
 
-      {scrubOpen && (
+      {scrubOpen && !flightActive && (
         <div className="solar-system__scrub-pop">
           <label className="solar-system__dock-label" htmlFor="solar-epoch-range">
             {t('time.scrub')}
@@ -255,7 +266,7 @@ export default function SolarSystemExplorer() {
         </div>
       )}
 
-      {viewOpen && (
+      {viewOpen && !flightActive && (
         <div className="solar-system__view-pop solar-system__view-pop--float">
           <div className="solar-system__view-pop-head">
             <Sparkles size={14} aria-hidden />
@@ -288,7 +299,7 @@ export default function SolarSystemExplorer() {
         </div>
       )}
 
-      {selectedId && (
+      {selectedId && !flightActive && (
         <div
           className="solar-system__popover"
           style={popoverStyle(
