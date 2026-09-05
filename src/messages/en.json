@@ -1079,7 +1079,8 @@
       "askTheSky": "Ask the Sky",
       "gearRecommender": "What gear?",
       "clear": "Clear selection",
-      "closeSheet": "Close details — camera stays on this body; zoom out to pick another"
+      "closeSheet": "Close details — camera stays on this body; zoom out to pick another",
+      "openInfo": "Planet info"
     },
     "bodies": {
       "sun": {

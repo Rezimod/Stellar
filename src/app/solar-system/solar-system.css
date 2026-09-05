@@ -1020,3 +1020,136 @@
 .flight-hud__boost:active {
   background: rgba(94, 234, 212, 0.4);
 }
+
+/* ──────────────────── planet info chip (opens the facts card) ────────────────────
+   Picking a body no longer throws a panel over it. A callout docks beside the
+   planet — leader line first, then the tag — and the facts card only appears
+   once the chip is pressed. */
+
+.solar-system__infochip {
+  position: absolute;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  min-height: 0;
+  border-radius: 12px;
+  border: 0.5px solid rgba(248, 244, 236, 0.18);
+  background: rgba(6, 10, 18, 0.82);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  animation: solar-chip-in 260ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.solar-system__infochip::before { content: none; }
+.solar-system__infochip:hover { border-color: rgba(255, 179, 71, 0.5); }
+.solar-system__infochip:focus-visible {
+  outline: 2px solid var(--terracotta, #ffb347);
+  outline-offset: 2px;
+}
+.solar-system__infochip svg { color: var(--terracotta, #ffb347); flex-shrink: 0; }
+
+.solar-system__infochip-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.solar-system__infochip-name {
+  font-family: var(--font-display, 'Orbitron'), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.solar-system__infochip-cta {
+  font-family: var(--mono, ui-monospace), monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 179, 71, 0.9);
+  line-height: 1;
+}
+
+/* Leader line back to the planet — draws out from the chip's docked edge. */
+.solar-system__infochip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 1px;
+  background: rgba(255, 179, 71, 0.55);
+  transform-origin: left center;
+  animation: solar-leader-draw 220ms ease-out both;
+}
+.solar-system__infochip[data-side='right']::after { left: -20px; transform-origin: right center; }
+.solar-system__infochip[data-side='left']::after  { right: -20px; }
+.solar-system__infochip[data-side='bottom']::after { display: none; }
+
+@keyframes solar-chip-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes solar-leader-draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ──────────────────── facts card: telemetry-style write-in ────────────────────
+   The frame sweeps open from the planet's side, then each block wipes in left
+   to right, the way a mission readout fills a panel line by line. */
+
+.solar-system__popover .solar-system__popcard {
+  animation: solar-popcard-in 300ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.solar-system__popover[data-side='left'] .solar-system__popcard {
+  animation-name: solar-popcard-in-left;
+}
+
+@keyframes solar-popcard-in {
+  from { opacity: 0; clip-path: inset(0 100% 0 0 round 14px); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0 round 14px); }
+}
+@keyframes solar-popcard-in-left {
+  from { opacity: 0; clip-path: inset(0 0 0 100% round 14px); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0 round 14px); }
+}
+
+.solar-system__popcard > * {
+  animation: solar-write-in 260ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.solar-system__popcard > *:nth-child(1) { animation-delay: 180ms; }
+.solar-system__popcard > *:nth-child(2) { animation-delay: 250ms; }
+.solar-system__popcard > *:nth-child(3) { animation-delay: 310ms; }
+.solar-system__popcard > *:nth-child(4) { animation-delay: 370ms; }
+.solar-system__popcard > *:nth-child(5) { animation-delay: 430ms; }
+.solar-system__popcard > *:nth-child(6) { animation-delay: 490ms; }
+
+/* Rows fill in sequence inside each block, so the numbers arrive one at a time. */
+.solar-system__popcard .solar-system__dl > div {
+  animation: solar-write-in 220ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.solar-system__popcard .solar-system__dl > div:nth-child(1) { animation-delay: 300ms; }
+.solar-system__popcard .solar-system__dl > div:nth-child(2) { animation-delay: 345ms; }
+.solar-system__popcard .solar-system__dl > div:nth-child(3) { animation-delay: 390ms; }
+.solar-system__popcard .solar-system__dl > div:nth-child(4) { animation-delay: 435ms; }
+.solar-system__popcard .solar-system__dl > div:nth-child(5) { animation-delay: 480ms; }
+.solar-system__popcard .solar-system__dl > div:nth-child(6) { animation-delay: 525ms; }
+
+@keyframes solar-write-in {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to   { opacity: 1; clip-path: inset(0 -4px 0 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .solar-system__infochip,
+  .solar-system__infochip::after,
+  .solar-system__popover .solar-system__popcard,
+  .solar-system__popcard > *,
+  .solar-system__popcard .solar-system__dl > div {
+    animation: none;
+  }
+}

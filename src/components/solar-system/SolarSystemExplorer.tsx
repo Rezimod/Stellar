@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarClock,
+  Info,
   Orbit,
   Pause,
   Play,
@@ -30,28 +31,45 @@ const SPEED_STEPS = [
   { id: '7d', simSecPerRealSec: 86400 * 7 },
 ] as const;
 
-/** Anchored-popup placement: dock beside the selected body, clamped to the
- *  viewport; on narrow screens fall back to a bottom card above the dock. */
-function popoverStyle(
+/** How far past its projected radius a body actually paints — rings included
+ *  (Saturn's reach 2.33 R, Uranus' 2.04 R), so a docked box clears the lot. */
+const BODY_SPREAD: Partial<Record<SolarBodyId, number>> = { saturn: 2.45, uranus: 2.15 };
+
+/** Anchored placement: dock a box beside the selected body and clear of its
+ *  apparent disc, clamped to the viewport; on narrow screens fall back to a
+ *  bottom card above the dock. The side it lands on is returned so the leader
+ *  line and the panel's sweep-in point back at the planet. */
+function anchoredPlacement(
   anchor: { x: number; y: number; rPx: number } | null,
   vw: number,
   vh: number,
-): React.CSSProperties {
-  if (vw < 560) {
-    return { left: 12, right: 12, bottom: 76 };
-  }
-  const W = 320;
-  const H = 400; // upper bound used only for clamping
+  w: number,
+  h: number,
+  bodyId: SolarBodyId | null,
+): { style: React.CSSProperties; side: 'left' | 'right' | 'bottom' } {
   const margin = 12;
-  if (!anchor) return { right: margin, top: 72 };
-  const gap = Math.min(Math.max(anchor.rPx, 24) + 24, vw * 0.3);
-  let left = anchor.x + gap;
-  if (left + W + margin > vw) left = anchor.x - gap - W;
-  left = Math.min(Math.max(left, margin), vw - W - margin);
-  let top = anchor.y - 120;
-  top = Math.min(Math.max(top, 64), Math.max(64, vh - H - margin));
-  return { left, top, width: W };
+  if (vw < 560) return { style: { left: margin, right: margin, bottom: 76 }, side: 'bottom' };
+  if (!anchor) return { style: { right: margin, top: 72, width: w }, side: 'right' };
+  // Clear what is actually drawn, not just the globe: the projected radius is
+  // the body's, so ringed planets need their rings' reach added on top.
+  const spread = bodyId ? (BODY_SPREAD[bodyId] ?? 1.15) : 1.15;
+  const gap = Math.max(anchor.rPx * spread, 18) + 26;
+  const roomRight = vw - (anchor.x + gap) - margin;
+  const roomLeft = anchor.x - gap - margin;
+  const side: 'left' | 'right' = roomRight >= w || roomRight >= roomLeft ? 'right' : 'left';
+  const left = side === 'right'
+    ? Math.min(anchor.x + gap, vw - w - margin)
+    : Math.max(anchor.x - gap - w, margin);
+  const top = Math.min(Math.max(anchor.y - h * 0.35, 64), Math.max(64, vh - h - margin));
+  // Whole pixels only: the anchor is re-projected every frame, and sub-pixel
+  // drift would leave the docked box shimmering against the moving planet.
+  return { style: { left: Math.round(left), top: Math.round(top), width: w }, side };
 }
+
+const POPCARD_W = 320;
+const POPCARD_H = 420; // upper bound, matches the card's max-height
+const INFOCHIP_W = 176;
+const INFOCHIP_H = 48;
 
 export default function SolarSystemExplorer() {
   const t = useTranslations('solarSystem');
@@ -62,6 +80,9 @@ export default function SolarSystemExplorer() {
   const [scaleMode, setScaleMode] = useState<ScaleMode>('orrery');
   const [includePluto, setIncludePluto] = useState(true);
   const [selectedId, setSelectedId] = useState<SolarBodyId | null>(null);
+  // Picking a body only aims the camera. The facts card is opened deliberately,
+  // from the info chip docked beside it.
+  const [detailOpen, setDetailOpen] = useState(false);
   const [focusId, setFocusId] = useState<SolarBodyId | null>(null);
   const [playing, setPlaying] = useState(true);
   const [speedIdx, setSpeedIdx] = useState(2);
@@ -85,9 +106,18 @@ export default function SolarSystemExplorer() {
 
   const simRate = SPEED_STEPS[speedIdx].simSecPerRealSec;
 
+  const [viewport, setViewport] = useState({ w: 1280, h: 800 });
+
   useEffect(() => {
     document.body.setAttribute('data-solar-immersive', '1');
     return () => document.body.removeAttribute('data-solar-immersive');
+  }, []);
+
+  useEffect(() => {
+    const read = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    read();
+    window.addEventListener('resize', read);
+    return () => window.removeEventListener('resize', read);
   }, []);
 
   useEffect(() => {
@@ -124,13 +154,16 @@ export default function SolarSystemExplorer() {
 
   const handleBodyPick = useCallback((id: SolarBodyId | null) => {
     setSelectedId(id);
+    setDetailOpen(false);
     if (id) setFocusId(id);
     else setFocusId(null);
   }, []);
 
+  const openDetail = useCallback(() => setDetailOpen(true), []);
+
   const closeDetail = useCallback(() => {
-    setSelectedId(null);
-    /* Keep focus so the camera stays on the body; user can zoom out and pick another. */
+    setDetailOpen(false);
+    /* Keep the selection so the camera stays on the body and the chip returns. */
   }, []);
 
   const exitToSky = useCallback(() => {
@@ -299,23 +332,43 @@ export default function SolarSystemExplorer() {
         </div>
       )}
 
-      {selectedId && !flightActive && (
-        <div
-          className="solar-system__popover"
-          style={popoverStyle(
-            cosmic.selectedScreen,
-            typeof window === 'undefined' ? 1280 : window.innerWidth,
-            typeof window === 'undefined' ? 800 : window.innerHeight,
-          )}
-        >
-          <PlanetDetailPanel
-            bodyId={selectedId}
-            bodyName={bodyCopy[selectedId].name}
-            bodyBlurb={bodyCopy[selectedId].blurb}
-            onClose={closeDetail}
-          />
-        </div>
-      )}
+      {selectedId && !flightActive && !detailOpen && (() => {
+        const place = anchoredPlacement(
+          cosmic.selectedScreen, viewport.w, viewport.h, INFOCHIP_W, INFOCHIP_H, selectedId,
+        );
+        return (
+          <button
+            type="button"
+            className="solar-system__infochip"
+            data-side={place.side}
+            style={place.style}
+            onClick={openDetail}
+            aria-label={t('detail.openInfo')}
+          >
+            <Info size={14} aria-hidden />
+            <span className="solar-system__infochip-text">
+              <span className="solar-system__infochip-name">{bodyCopy[selectedId].name}</span>
+              <span className="solar-system__infochip-cta">{t('detail.openInfo')}</span>
+            </span>
+          </button>
+        );
+      })()}
+
+      {selectedId && !flightActive && detailOpen && (() => {
+        const place = anchoredPlacement(
+          cosmic.selectedScreen, viewport.w, viewport.h, POPCARD_W, POPCARD_H, selectedId,
+        );
+        return (
+          <div className="solar-system__popover" data-side={place.side} style={place.style}>
+            <PlanetDetailPanel
+              bodyId={selectedId}
+              bodyName={bodyCopy[selectedId].name}
+              bodyBlurb={bodyCopy[selectedId].blurb}
+              onClose={closeDetail}
+            />
+          </div>
+        );
+      })()}
     </div>
   );
 }
