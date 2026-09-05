@@ -24,7 +24,22 @@ export async function POST(req: NextRequest) {
   if (p) return p;
   const n = networkMisconfig();
   if (n) return n;
-  const body = await req.json();
+  let body: {
+    userAddress: string; target: string; timestampMs: number; lat: number; lon: number;
+    cloudCover: number; stars: number; demo?: boolean; oracleHash?: string;
+    fileHash?: string; deviceTier?: string; deviceMake?: string; deviceModel?: string;
+    exifLat?: number; exifLon?: number; exifTakenAt?: string; isInternetSourced?: boolean;
+    uploadSource?: string; verificationToken?: string; identifiedObject?: string;
+    confidence?: string; capturedAt?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
   const {
     userAddress, target, timestampMs, lat, lon, cloudCover, oracleHash, stars, demo,
     fileHash, deviceTier, deviceMake, deviceModel, exifLat, exifLon, exifTakenAt,
@@ -33,26 +48,25 @@ export async function POST(req: NextRequest) {
   } = body;
 
   const isDemoMint = demo === true;
+  if (isDemoMint && (process.env.NODE_ENV !== 'development' || process.env.NEXT_PUBLIC_SOLANA_CLUSTER !== 'devnet')) {
+    return NextResponse.json({ error: 'Demo minting is only available in local devnet development' }, { status: 403 });
+  }
 
-  // Auth: accept either a verified Privy token OR a valid wallet-adapter pubkey.
-  // This lets Phantom/Solflare/Backpack users (who have no Privy token) mint NFTs.
-  // Abuse is bounded by /api/mint's per-wallet rate limits below.
+  // A public key identifies a wallet; it does not prove control of it.
+  // External wallets must be linked to the authenticated Privy session too.
   const isDevNoWallet = process.env.NODE_ENV === 'development' && isDemoMint && !body.userAddress;
   if (!isDevNoWallet) {
     const privyId = await verifyPrivy(req);
     const addr = typeof body.userAddress === 'string' ? body.userAddress : '';
     if (!privyId) {
-      // External-wallet path (Phantom/Solflare/Backpack). The wallet pubkey
-      // itself is the principal; rate limits below cap abuse.
-      if (!isValidPublicKey(addr)) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    } else if (addr) {
-      // Privy session present + wallet supplied: prove the wallet is theirs.
-      const owns = await assertOwnsWallet(privyId, addr);
-      if (!owns) {
-        return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
-      }
+      return NextResponse.json({ error: 'Sign in to mint an observation' }, { status: 401 });
+    }
+    if (!isValidPublicKey(addr)) {
+      return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 });
+    }
+    const owns = await assertOwnsWallet(privyId, addr);
+    if (!owns) {
+      return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
     }
   }
 
@@ -150,8 +164,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Upstash rate limit: 2 mints per wallet per hour — skipped for demo missions
-  if (!isDemoMint && userAddress) {
+  // Rate-limit every wallet-backed mint, including local demos.
+  if (userAddress) {
     const { success, remaining } = await checkRateLimit(mintRateLimit, userAddress);
     if (!success) {
       return NextResponse.json(
@@ -204,6 +218,9 @@ export async function POST(req: NextRequest) {
 
   // DB rate limit: one NFT per wallet+target per hour — skipped for demo missions
   const db = getDb();
+  if (!isDemoMint && !db) {
+    return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
+  }
   if (!isDemoMint && db && userAddress) {
     try {
       // Per-target hourly cap applies to certified mints only. Unverified
@@ -234,7 +251,7 @@ export async function POST(req: NextRequest) {
           .where(
             and(
               eq(observationLog.wallet, userAddress),
-              eq(observationLog.target, target),
+              eq(observationLog.target, verifiedTarget ?? target),
               gte(observationLog.createdAt, oneHourAgo),
               isNotNull(observationLog.mintTx)
             )
@@ -343,7 +360,7 @@ export async function POST(req: NextRequest) {
     // Skip DB log for demo mints to avoid polluting production records
     if (db && userAddress && !isDemoMint) {
       const exifTakenDate = typeof exifTakenAt === 'string' ? new Date(exifTakenAt) : null;
-      await db.insert(observationLog).values({
+      const mintRow = {
         wallet: userAddress,
         target: mintTarget,
         // Certified mints record 0 here — the observation's real Stars are
@@ -363,7 +380,16 @@ export async function POST(req: NextRequest) {
         exifLon: typeof exifLon === 'number' && isFinite(exifLon) ? exifLon : null,
         exifTakenAt: exifTakenDate && !isNaN(exifTakenDate.getTime()) ? exifTakenDate : null,
         isInternetSourced: isInternetSourced === true,
-      }).catch(err => console.error('[mint] db.insert failed:', err));
+      };
+      // A rejected attempt at this target earlier today holds the same
+      // (wallet, target, day) slot; the mint that succeeded replaces it.
+      await db.insert(observationLog).values(mintRow)
+        .onConflictDoUpdate({
+          target: [observationLog.wallet, observationLog.target, observationLog.observedDate],
+          set: mintRow,
+          setWhere: eq(observationLog.confidence, 'rejected'),
+        })
+        .catch(err => console.error('[mint] db.insert failed:', err));
 
       // Cohort analytics — fires only for real (non-demo) mints, after the NFT
       // is confirmed on-chain. Server-side so it lands even if the tab closes.

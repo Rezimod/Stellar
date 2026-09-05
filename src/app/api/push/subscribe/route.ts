@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { pushSubscription } from '@/lib/schema';
 import { pushSubscribeRateLimit, checkRateLimit } from '@/lib/rate-limit';
+import { isAllowedPushEndpoint, isPushKey } from '@/lib/push/validation';
 
 export const runtime = 'nodejs';
 
@@ -39,13 +40,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Invalid subscription' }, { status: 400 });
+  }
   const { endpoint, keys } = body;
   if (!endpoint || !keys?.p256dh || !keys?.auth) {
     return NextResponse.json({ error: 'endpoint and keys required' }, { status: 400 });
   }
-  // Web Push endpoints are https URLs; reject anything else and cap length.
-  if (typeof endpoint !== 'string' || !endpoint.startsWith('https://') || endpoint.length > 1024) {
+  if (!isAllowedPushEndpoint(endpoint)) {
     return NextResponse.json({ error: 'invalid endpoint' }, { status: 400 });
+  }
+  if (!isPushKey(keys.p256dh, 65) || !isPushKey(keys.auth, 16)) {
+    return NextResponse.json({ error: 'Invalid push keys' }, { status: 400 });
+  }
+  if (body.prefs !== undefined && (
+    !body.prefs || typeof body.prefs !== 'object' || Array.isArray(body.prefs)
+    || Object.keys(body.prefs).length > 20
+    || Object.entries(body.prefs).some(([key, value]) => key.length > 64 || typeof value !== 'boolean')
+  )) {
+    return NextResponse.json({ error: 'Invalid preferences' }, { status: 400 });
   }
 
   // Only persist coordinates that are real, in-range values.
@@ -95,7 +108,7 @@ export async function DELETE(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  if (!endpoint) return NextResponse.json({ error: 'endpoint required' }, { status: 400 });
+  if (!isAllowedPushEndpoint(endpoint)) return NextResponse.json({ error: 'invalid endpoint' }, { status: 400 });
 
   try {
     await db.delete(pushSubscription).where(eq(pushSubscription.endpoint, endpoint));

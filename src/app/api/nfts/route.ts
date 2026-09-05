@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
+// Edge runtime: a base58 shape check instead of pulling web3.js into the bundle.
+const BASE58_PUBKEY = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address');
-  if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 });
+  if (!address || !BASE58_PUBKEY.test(address)) {
+    return NextResponse.json({ error: 'valid address required' }, { status: 400 });
+  }
 
-  const endpoint = process.env.HELIUS_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL ?? 'https://api.devnet.solana.com';
+  const endpoint = process.env.HELIUS_RPC_URL ?? process.env.NEXT_PUBLIC_HELIUS_RPC_URL;
   const collectionMint = process.env.NEXT_PUBLIC_COLLECTION_MINT_ADDRESS;
+  // The gallery reads the DAS API, which only Helius serves. Without it there
+  // is nothing to list — a public RPC would only fail slowly.
+  if (!endpoint || !collectionMint) return NextResponse.json({ items: [] });
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -23,13 +31,6 @@ export async function GET(req: NextRequest) {
 
   const data = await res.json();
   const items = data?.result?.items ?? [];
-
-  if (!collectionMint) {
-    return NextResponse.json(
-      { error: 'Collection mint address not configured', nfts: [] },
-      { status: 200 }
-    );
-  }
 
   const filtered = items.filter((item: { grouping?: { group_key: string; group_value: string; verified?: boolean }[] }) =>
     item.grouping?.some(

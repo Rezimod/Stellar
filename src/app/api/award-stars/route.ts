@@ -7,8 +7,8 @@ import { getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import { STARS_TOKEN_PROGRAM_ID, getStarsMintAuthority } from '@/lib/stars';
 import bs58 from 'bs58';
 import { getDb } from '@/lib/db';
-import { observationLog } from '@/lib/schema';
-import { and, eq, gte, like, count } from 'drizzle-orm';
+import { observationLog, telescopes } from '@/lib/schema';
+import { and, eq, gte, like, count, or } from 'drizzle-orm';
 import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { isAllowedAwardReason, maxAwardAmountForReason } from '@/lib/award-stars-policy';
 import { remainingStarsAllowance } from '@/lib/stars-cap';
@@ -98,6 +98,9 @@ export async function POST(req: NextRequest) {
   }
 
   const db = getDb();
+  if (!db) {
+    return NextResponse.json({ error: 'Rewards are temporarily unavailable' }, { status: 503 });
+  }
 
   // ── Server-authoritative amount ────────────────────────────────────────────
   // Activity rewards (quiz / find / daily_checkin) are computed from server-held
@@ -183,6 +186,18 @@ export async function POST(req: NextRequest) {
       // derived completion is a follow-up.)
       amount = getActiveChallenge().bonusStars;
     }
+  } else if (reasonStr === 'telescope:first-registration') {
+    // Paid once, for a telescope this account actually registered. The amount
+    // and the idempotency key are the server's, not the request's.
+    const [scope] = await db
+      .select({ starsAwarded: telescopes.starsAwarded })
+      .from(telescopes)
+      .where(eq(telescopes.privyId, privyId))
+      .limit(1);
+    if (!scope || scope.starsAwarded) {
+      return NextResponse.json({ success: true, txId: null, awarded: 0 });
+    }
+    amount = 50;
   } else {
     const clientAmount = body.amount;
     if (typeof clientAmount !== 'number' || !Number.isInteger(clientAmount) || clientAmount < 1 || clientAmount > 500) {
@@ -250,9 +265,8 @@ export async function POST(req: NextRequest) {
 
   // Idempotency: claim a slot BEFORE the mint so concurrent retries can't
   // double-mint. The slot is a 'pending' ledger row keyed by (wallet, mintTx =
-  // idempotencyKey). On a confirmed mint it flips to 'minted'; on a FAILED mint
-  // it is released (in the catch below) so a genuine retry can re-mint — a
-  // failed mint never leaves a silent "already awarded" with no Stars.
+  // idempotencyKey). Confirmed mints flip to 'minted'; uncertain outcomes stay
+  // pending until reconciled, so a retry cannot issue the same reward twice.
   const todayStr = new Date().toISOString().split('T')[0];
   // Activity rewards use a server-derived slot key — a crafted client key can't
   // dodge the once-per-day dedup. Other reasons keep the client's key (it is
@@ -260,6 +274,7 @@ export async function POST(req: NextRequest) {
   const idemKey =
     reasonStr.startsWith('quiz:') ? `${reasonStr}:${recipient}:${todayStr}`
     : reasonStr === 'daily_checkin' ? `checkin:${recipient}:${todayStr}`
+    : reasonStr === 'telescope:first-registration' ? `telescope:${recipient}:first`
     : (reasonStr.startsWith('cosmic_bonus:') || reasonStr === 'weekly_challenge')
       // Bind the slot to the signed observation (fileHash) + reason + wallet, so
       // replaying the same 30-min token with new client keys can't re-claim.
@@ -275,28 +290,28 @@ export async function POST(req: NextRequest) {
       await claim();
       claimed = true;
     } catch (err) {
-      if ((err as { code?: string })?.code !== '23505') {
-        // Non-uniqueness DB error — proceed without the idempotency guarantee.
-      } else {
-        // A row already blocks the insert. If it is THIS idempotency key stalled
-        // in 'pending' (a crashed/timed-out prior attempt > 2 min old), reclaim
-        // it; otherwise it is a genuine duplicate (already minted, in-flight, or
-        // the same reason already awarded today) → return cached.
-        const existing = await db
-          .select({ id: observationLog.id, confidence: observationLog.confidence, createdAt: observationLog.createdAt })
-          .from(observationLog)
-          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)))
-          .limit(1);
-        const row = existing[0];
-        const stale = !!row && row.confidence === 'pending' && !!row.createdAt && row.createdAt.getTime() < Date.now() - 120_000;
-        if (stale && row) {
-          await db.delete(observationLog).where(eq(observationLog.id, row.id));
-          try { await claim(); claimed = true; }
-          catch { return NextResponse.json({ success: true, txId: 'already_awarded', cached: true }); }
-        } else {
-          return NextResponse.json({ success: true, txId: 'already_awarded', cached: true });
-        }
+      const cause = (err as { cause?: { code?: string } })?.cause;
+      if ((err as { code?: string })?.code !== '23505' && cause?.code !== '23505') {
+        console.error('[award-stars] cannot record reward claim', err);
+        return NextResponse.json({ error: 'Rewards are temporarily unavailable' }, { status: 503 });
       }
+      // A timeout is not proof of a failed mint. Retain the claim until its
+      // on-chain outcome is reconciled, even when it is old.
+      const existing = await db
+        .select({ confidence: observationLog.confidence })
+        .from(observationLog)
+        .where(and(
+          eq(observationLog.wallet, recipient),
+          or(
+            eq(observationLog.mintTx, idemKey),
+            and(eq(observationLog.target, reasonStr), eq(observationLog.observedDate, todayStr)),
+          ),
+        ))
+        .limit(1);
+      if (existing[0]?.confidence === 'minted') {
+        return NextResponse.json({ success: true, txId: 'already_awarded', cached: true });
+      }
+      return NextResponse.json({ error: 'Reward confirmation is pending', pending: true }, { status: 503 });
     }
   }
 
@@ -339,6 +354,11 @@ export async function POST(req: NextRequest) {
           .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)));
       } catch { /* non-fatal — the row already serves idempotency */ }
     }
+    if (reasonStr === 'telescope:first-registration') {
+      try {
+        await db.update(telescopes).set({ starsAwarded: true }).where(eq(telescopes.privyId, privyId));
+      } catch { /* the once-ever idempotency key above already holds */ }
+    }
 
     return NextResponse.json({
       success: true,
@@ -348,13 +368,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('[award-stars]', err);
-    // Release the claimed slot so a retry can re-mint — never strand the award.
-    if (db && claimed) {
-      try {
-        await db.delete(observationLog)
-          .where(and(eq(observationLog.wallet, recipient), eq(observationLog.mintTx, idemKey)));
-      } catch { /* best-effort slot release */ }
-    }
-    return NextResponse.json({ error: 'Failed to award Stars' }, { status: 500 });
+    return NextResponse.json({ error: 'Reward confirmation is pending', pending: true }, { status: 503 });
   }
 }

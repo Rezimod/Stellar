@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
-import { observationPhoto } from '@/lib/schema'
+import { observationLog, observationPhoto } from '@/lib/schema'
 
 // Serves the observer's own photo for an observation, keyed by the sha256 the
 // verification token signs. This is the `image` a minted cNFT points at, so it
@@ -18,6 +18,16 @@ export async function GET(
 
   const db = getDb()
   if (!db) return NextResponse.json({ error: 'Unavailable' }, { status: 503 })
+
+  // The store is written at verify time, before the verdict. Only a photo an
+  // observation actually stands behind is public — otherwise this route would
+  // be an anonymous image host with a year-long cache.
+  const [backing] = await db
+    .select({ id: observationLog.id })
+    .from(observationLog)
+    .where(and(eq(observationLog.fileHash, hash), ne(observationLog.confidence, 'rejected')))
+    .limit(1)
+  if (!backing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const [row] = await db
     .select({ mimeType: observationPhoto.mimeType, imageBase64: observationPhoto.imageBase64 })

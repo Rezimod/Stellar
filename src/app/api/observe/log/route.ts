@@ -32,6 +32,13 @@ const STARS_BY_CONFIDENCE: Record<string, { base: number; rare_bonus: number }> 
 }
 const RARE_OBJECTS = ['saturn', 'jupiter', 'mars', 'venus', 'mercury', 'deep_sky']
 
+// A Solana signature is base58. Anything else the client sends is not a mint
+// and is not recorded as one — the public network map reads this column.
+const SIGNATURE_RE = /^[1-9A-HJ-NP-Za-km-z]{64,88}$/
+function plausibleSignature(value: unknown): string | null {
+  return typeof value === 'string' && SIGNATURE_RE.test(value) ? value : null
+}
+
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
@@ -275,7 +282,7 @@ export async function POST(req: NextRequest) {
       target,
       stars: starsToAward,
       confidence,
-      mintTx: body.mintTx ?? null,
+      mintTx: confidence === 'rejected' ? null : plausibleSignature(body.mintTx),
       lat: typeof body.lat === 'number' ? body.lat : null,
       lon: typeof body.lon === 'number' ? body.lon : null,
       identifiedObject: body.identifiedObject ?? target ?? null,
@@ -299,9 +306,11 @@ export async function POST(req: NextRequest) {
     // it from 'minted' to its real confidence + Stars. The compare-and-swap on
     // confidence = 'minted' is the idempotency guard: a second concurrent log
     // for the same observation matches nothing and awards nothing.
+    // The mint row already holds the real signature; a log that arrives
+    // without one must not blank it.
     const [claimed] = await db
       .update(observationLog)
-      .set(row)
+      .set(row.mintTx ? row : { ...row, mintTx: undefined })
       .where(
         and(
           eq(observationLog.wallet, wallet),
@@ -317,8 +326,19 @@ export async function POST(req: NextRequest) {
     // per wallet+target+day, so this can still collide with a row that isn't
     // ours to claim: an unverified keepsake for the same target earlier today,
     // for instance.
+    // A rejected attempt at this target earlier today holds the same
+    // (wallet, target, day) slot. It was never an observation, so this one
+    // takes the row over instead of being turned away as a duplicate.
     const inserted = claimed ?? (
-      await db.insert(observationLog).values(row).onConflictDoNothing().returning({ id: observationLog.id })
+      await db
+        .insert(observationLog)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [observationLog.wallet, observationLog.target, observationLog.observedDate],
+          set: row,
+          setWhere: eq(observationLog.confidence, 'rejected'),
+        })
+        .returning({ id: observationLog.id })
     )[0]
 
     // Nothing was written. Stars are ledgered in this table — the daily and

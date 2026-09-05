@@ -8,6 +8,7 @@ import { base58 } from '@metaplex-foundation/umi/serializers';
 import { mintToCollectionV1, mplBubblegum } from '@metaplex-foundation/mpl-bubblegum';
 import { mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
 import { uploadJsonToIrys } from './irys';
+import { shouldRetryMint } from './mint-retry';
 
 export interface ObservationMintParams {
   userAddress: string | null;
@@ -157,10 +158,13 @@ export async function mintCompressedNFT(params: ObservationMintParams): Promise<
     return base58.deserialize(signature)[0];
   }
 
-  // One retry on transient devnet failures (timeouts, blockhash expiry, etc.)
+  // One retry on failures that prove the first transaction never executed. A
+  // timeout is not one of those: the mint may still land, and a retry on top
+  // of it is a second NFT for the same observation.
   try {
     return { txId: await attempt() };
   } catch (err) {
+    if (!shouldRetryMint(err)) throw err;
     console.warn('[mint-nft] First attempt failed, retrying once:', err instanceof Error ? err.message : err);
     return { txId: await attempt() };
   }

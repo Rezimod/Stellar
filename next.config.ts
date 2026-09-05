@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   // OG image reads its background + fonts from disk at request time.
   outputFileTracingIncludes: {
     '/opengraph-image': ['./src/app/_og/**'],
+    '/api/first-light/poster': ['./src/app/_og/noto-sans-georgian-400.ttf'],
   },
   images: {
     formats: ['image/avif', 'image/webp'],

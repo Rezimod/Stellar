@@ -1,12 +1,15 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
-  BIRTH_PLACES,
   compassPoint,
+  parseFirstLightMoment,
   placeById,
   skyAt,
 } from '@/lib/observatory/first-light';
 import { SIM_TARGET_BY_ID } from '@/lib/observatory/sim-targets';
+import { checkRateLimit, firstLightPosterRateLimit } from '@/lib/rate-limit';
 
 // Node, not edge: the sky is computed with astronomy-engine, which is a Node
 // library and takes the edge runtime down with it.
@@ -22,8 +25,8 @@ export const runtime = 'nodejs';
  * modest frame with its measurements set around it, the way an observatory
  * plate or a herbarium sheet is laid out — does not.
  *
- * Everything printed here is measured. Nothing on this sheet is decoration
- * standing in for a number we did not have.
+ * Sky positions are computed. Instrument measurements belong to a separate,
+ * dated capture, which this preview does not contain.
  */
 
 const W = 1000;
@@ -38,18 +41,33 @@ const ACCENT = '#FFB347';
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
 
-  const place = placeById(q.get('place') ?? '') ?? BIRTH_PLACES[0];
+  const place = placeById(q.get('place') ?? '');
   const target = SIM_TARGET_BY_ID.get(q.get('target') ?? '') ?? null;
-  const moment = new Date(q.get('at') ?? '');
+  const moment = parseFirstLightMoment(q.get('at'));
   const recipient = (q.get('for') ?? '').slice(0, 40);
   const occasion = (q.get('occasion') ?? '').slice(0, 60);
 
-  if (!target || Number.isNaN(moment.getTime())) {
-    return new Response('Poster needs a target and a moment', { status: 400 });
+  if (!place || !target || !moment) {
+    return new Response('Poster needs a valid place, target, and UTC date between 1900 and 2100', { status: 400 });
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+    ?? req.headers.get('x-real-ip') ?? 'unknown';
+  try {
+    const limit = await checkRateLimit(firstLightPosterRateLimit, ip);
+    if (!limit.success) {
+      return new Response('Too many previews. Please try again shortly.', {
+        status: 429,
+        headers: { 'Retry-After': String(Math.max(1, Math.ceil((limit.reset - Date.now()) / 1000))) },
+      });
+    }
+  } catch {
+    return new Response('Poster previews are temporarily unavailable.', { status: 503 });
   }
 
   const sky = skyAt({ place, at: moment, targetId: target.id });
   const up = sky.bodies.filter((b) => b.up);
+  const font = await readFile(join(process.cwd(), 'src/app/_og/noto-sans-georgian-400.ttf'));
 
   const nightOf = moment.toLocaleDateString('en-GB', {
     weekday: 'long',
@@ -74,7 +92,7 @@ export async function GET(req: NextRequest) {
           flexDirection: 'column',
           background: GROUND,
           color: INK,
-          fontFamily: 'sans-serif',
+          fontFamily: 'Noto Sans Georgian',
           padding: 64,
         }}
       >
@@ -109,7 +127,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <div style={{ display: 'flex', fontSize: 18, color: DIM, letterSpacing: 2, textAlign: 'center', padding: 40 }}>
-            AWAITING FIRST LIGHT — NO INSTRUMENT HAS PHOTOGRAPHED THIS YET
+            PREVIEW — NO TELESCOPE PHOTOGRAPH ATTACHED
           </div>
         </div>
 
@@ -119,6 +137,7 @@ export async function GET(req: NextRequest) {
           </div>
 
           <Row label="Moon" value={`${sky.moon.phase} · ${(sky.moon.illumination * 100).toFixed(0)}% lit`} />
+          <Row label="Sky conditions" value={sky.darkEnough ? 'Sun at least 6° below horizon; weather unknown' : 'Daylight or bright twilight; weather unknown'} />
           <Row
             label={target.name}
             value={
@@ -138,9 +157,9 @@ export async function GET(req: NextRequest) {
 
         <div style={{ display: 'flex', flexDirection: 'column', borderTop: `1px solid ${RULE}`, paddingTop: 22 }}>
           <div style={{ display: 'flex', fontSize: 17, color: DIM, lineHeight: 1.5 }}>
-            The sky above is computed for that exact moment and place, and is
-            not an illustration. The photograph is taken by a real telescope on
-            the first clear night it can be — its own date is printed with it.
+            Sky positions are computed for the selected moment and place.
+            Weather and local obstructions are not reconstructed. This preview
+            contains no telescope photograph or proof of an observation.
           </div>
           <div style={{ display: 'flex', fontSize: 16, color: DIM, marginTop: 14, letterSpacing: 1 }}>
             stellarr.club/first-light
@@ -148,7 +167,15 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
     ),
-    { width: W, height: H },
+    {
+      width: W,
+      height: H,
+      fonts: [{ name: 'Noto Sans Georgian', data: font, weight: 400, style: 'normal' }],
+      headers: {
+        'Cache-Control': 'private, no-store',
+        'X-Robots-Tag': 'noindex, nofollow',
+      },
+    },
   );
 }
 

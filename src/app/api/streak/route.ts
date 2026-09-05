@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { observationLog } from '@/lib/schema'
-import { eq, desc } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 
 function streakBonusStars(streak: number): number {
   if (streak >= 30) return 100
@@ -26,7 +26,12 @@ export async function GET(req: NextRequest) {
     const rows = await db
       .select({ createdAt: observationLog.createdAt })
       .from(observationLog)
-      .where(eq(observationLog.wallet, walletAddress))
+      // A streak is nights observed, so rejected attempts and reward-ledger
+      // rows do not extend it.
+      .where(and(
+        eq(observationLog.wallet, walletAddress),
+        inArray(observationLog.confidence, ['high', 'medium', 'low', 'unverified']),
+      ))
       .orderBy(desc(observationLog.createdAt))
       .limit(60)
 

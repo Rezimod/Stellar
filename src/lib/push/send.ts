@@ -1,4 +1,5 @@
 import webpush from 'web-push';
+import { isAllowedPushEndpoint, isPushKey } from './validation';
 
 let configured: boolean | null = null;
 
@@ -32,11 +33,14 @@ export interface PushTarget {
 
 /** Send one notification. Returns 'gone' for expired endpoints (caller deletes). */
 export async function sendPush(target: PushTarget, payload: PushPayload): Promise<'ok' | 'gone' | 'error'> {
+  if (!isAllowedPushEndpoint(target.endpoint)
+    || !isPushKey(target.p256dh, 65) || !isPushKey(target.auth, 16)) return 'error';
   if (!ensureConfigured()) return 'error';
   try {
     await webpush.sendNotification(
       { endpoint: target.endpoint, keys: { p256dh: target.p256dh, auth: target.auth } },
       JSON.stringify(payload),
+      { timeout: 10_000 },
     );
     return 'ok';
   } catch (err) {

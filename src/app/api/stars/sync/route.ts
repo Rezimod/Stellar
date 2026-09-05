@@ -20,10 +20,10 @@ import { networkMisconfig } from '@/lib/network-guard';
 
 export const maxDuration = 60;
 
-// Per-wallet cap on how many stars `sync` is willing to top up to. The user's
-// lifetime total comes from the client (local-state mission count), and we
-// mint the gap between (current SPL balance) and (expectedTotal). Hard cap
-// prevents the client from claiming an absurd amount.
+// Per-wallet ceiling on how far `sync` will top a balance up. The target
+// itself is the ledger's own figure — lifetime earned minus everything burned
+// — so no client number reaches the mint. This cap only bounds the worst case
+// if that ledger were ever wrong.
 const MAX_EXPECTED_TOTAL = 5000;
 
 async function getServerEarnedStars(wallet: string): Promise<number | null> {
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { address?: unknown; expectedTotal?: unknown };
+  let body: { address?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -94,23 +94,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
-  const expected = Number(body.expectedTotal);
-  if (!Number.isFinite(expected) || !Number.isInteger(expected) || expected <= 0) {
-    return NextResponse.json({ error: 'expectedTotal must be a positive integer' }, { status: 400 });
-  }
-  let target = Math.min(expected, MAX_EXPECTED_TOTAL);
-
   // Spendable = lifetime earned MINUS everything already burned (redeem codes,
   // marketplace discounts, shop purchases). Re-minting must never exceed this:
   // otherwise a user could burn Stars for real GEL value, call sync to re-mint
   // the balance back to lifetime-earned, and burn again — an unbounded value
   // loop. Fail closed: if the earned record is unavailable (DB down),
-  // getServerEarnedStars returns null → treat earned as 0, so target clamps to 0.
+  // getServerEarnedStars returns null → treat earned as 0, so the target is 0
+  // and nothing mints.
+  //
+  // The request used to carry an `expectedTotal` the server clamped to this
+  // figure. The clamp was right, but a mint route should take no number from
+  // the client at all — the ledger already knows what this wallet is owed.
   const serverEarned = (await getServerEarnedStars(address)) ?? 0;
   const burned = await getBurnedStars(address);
   const spendable = Math.max(0, serverEarned - burned);
-  if (target > spendable) {
-    target = spendable;
+  const target = Math.min(spendable, MAX_EXPECTED_TOTAL);
+  if (target <= 0) {
+    return NextResponse.json({ synced: false, balance: 0, target: 0, reason: 'nothing_owed' });
   }
 
   const mintAddress = process.env.STARS_TOKEN_MINT;

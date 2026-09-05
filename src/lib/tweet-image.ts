@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import sharp from 'sharp'
+import sharp, { type OverlayOptions } from 'sharp'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { TweetKind } from './tweet-agent'
@@ -84,7 +84,7 @@ async function compositeBranding(photo: Buffer, kind: TweetKind, body: string): 
   const resized = await sharp(photo).resize(SIZE.width, SIZE.height, { fit: 'cover' }).toBuffer()
   const logoLeft = Math.round((SIZE.width - logoW) / 2)
   const textSvg = buildTextOverlay(body)
-  const overlays: sharp.OverlayOptions[] = [
+  const overlays: OverlayOptions[] = [
     { input: Buffer.from(textSvg), top: 0, left: 0 },
     { input: logoPng, top: TOP_PAD, left: logoLeft },
   ]

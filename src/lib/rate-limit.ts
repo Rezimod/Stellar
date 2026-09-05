@@ -40,8 +40,13 @@ export const observatoryRequestRateLimit = { limit: (id: string) => makeLimit('3
 // Booking holds a slot on a real instrument's night. 10/hour/account is far
 // more than anyone needs and stops a script from papering the timetable.
 export const observatoryBookRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:obs:book').limit(id) };
+export const observatoryCaptureRateLimit = { limit: (id: string) => makeLimit('60 s', 20, 'rl:obs:capture').limit(id) };
+export const firstLightPosterRateLimit = { limit: (id: string) => makeLimit('60 s', 30, 'rl:first-light:poster').limit(id) };
 // Club activation spends the server fee-payer's SOL on a memo tx each call —
 // cap per wallet so it can't be looped to drain the hot wallet.
+// A mailing-list signup is one row per person. 10/hour/IP stops a script from
+// filling the table with addresses that never asked.
+export const subscribeRateLimit = { limit: (id: string) => makeLimit('3600 s', 10, 'rl:subscribe').limit(id) };
 export const clubActivateRateLimit = { limit: (id: string) => makeLimit('3600 s', 5, 'rl:club').limit(id) };
 
 // Daily ceilings (24h sliding) — bound the worst-case AI cost / token

@@ -10,6 +10,7 @@ export const REJECTION_CODES = [
   'ai_generated',
   'screenshot_detected',
   'too_cloudy',
+  'timestamp_invalid',
 ] as const;
 
 export function isRejectionCode(code: string | undefined): boolean {

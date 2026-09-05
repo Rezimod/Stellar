@@ -1122,6 +1122,18 @@
         "name": "Pluto",
         "blurb": "Kuiper Belt dwarf with a binary companion (Charon) — representative of the third zone of the Solar System."
       }
+    },
+    "flight": {
+      "explore": "Explore",
+      "exit": "Exit flight mode",
+      "launch": "Launch",
+      "speed": "Speed",
+      "kills": "Kills",
+      "hull": "Hull",
+      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · Esc exit",
+      "fire": "Fire",
+      "boost": "Boost",
+      "respawn": "Hull lost — respawning near Earth"
     }
   },
   "missionsPage": {
@@ -1885,7 +1897,8 @@
         "verification_unavailable": "Couldn't analyze this photo — no Stars. Keep it anyway, or try again.",
         "ai_generated": "Looks AI-generated — no Stars. You can keep it anyway.",
         "screenshot_detected": "Looks like a screenshot — no Stars. You can keep it anyway.",
-        "too_cloudy": "Too cloudy to verify — no Stars. Keep it, or try again on a clearer night."
+        "too_cloudy": "Too cloudy to verify — no Stars. Keep it, or try again on a clearer night.",
+        "timestamp_invalid": "The capture time isn't plausible — no Stars. You can keep it anyway."
       }
     },
     "result": {
@@ -2605,11 +2618,11 @@
       "noPlanets": "no planets above the horizon",
       "notComputed": "position not computed",
       "better": "{name} was highest that night at {time} UTC, {deg}° up — use that hour",
-      "computed": "Computed for that exact moment and place. This half is never wrong, and it is the half no weather can spoil.",
+      "computed": "Computed sky positions for your selected moment and place. Weather and local obstructions are not reconstructed; being above the horizon does not guarantee visibility.",
       "photoTitle": "the photograph",
       "commission": "Photograph it for this poster, on the first clear night after the order.",
       "commissionNote": "The certificate names that night and the instrument. +{price} ₾",
-      "archiveNote": "Left unticked, the poster uses a frame the network has already taken. No instrument has photographed anything yet, so today every poster is a commission — and the frame stays blank until first light.",
+      "archiveNote": "Without a commission, this is a computed sky sheet only. No archive photograph is attached. A commissioned photograph carries its own capture date when an instrument delivers it.",
       "whatYouGet": "what you get",
       "tierDigital": "Digital file",
       "tierDigitalNote": "Delivered as a file, to print or keep.",
@@ -2620,12 +2633,23 @@
       "order": "Order",
       "signIn": "Sign in to order",
       "ordering": "Ordering…",
-      "done": "Ordered. We will write when the photograph is taken, and again when the print is ready.",
+      "done": "Request recorded. No payment has been taken. Photograph delivery is not yet available while the observatory is commissioning.",
       "dryRun": "Nothing is charged while the network is a dry run.",
       "sheet": "the sheet",
       "failed": "That did not go through.",
       "network": "Network error — try again.",
-      "footer": "A commissioned photograph joins the same queue anyone else’s request does, and is worked between booked sessions."
+      "footer": "A commissioned photograph joins the same queue anyone else’s request does, and is worked between booked sessions.",
+      "skyConditions": "Night-sky window",
+      "darkSky": "Sun at least 6° below the horizon; weather unknown",
+      "daylightSky": "Daylight or bright twilight — above the horizon does not mean visible",
+      "noNightWindow": "No suitable night-time window was found for this object on this UTC date. Try another object or date; you can still keep this computed sky record.",
+      "invalidDate": "Choose a valid date between 1900 and 2100 and an hour in UTC.",
+      "previewLoading": "Preparing your sky sheet…",
+      "previewAlt": "First Light preview showing computed sky positions and an empty photograph frame",
+      "previewFailed": "The preview could not load. Wait a moment, then try again.",
+      "previewRetry": "Try preview again",
+      "downloadPreview": "Download preview PNG",
+      "previewNote": "Preview only, 1000 × 1414 pixels. Includes computed positions; no telescope photograph or observation certificate."
     },
     "operator": {
       "title": "Put your telescope to work",

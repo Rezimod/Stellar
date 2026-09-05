@@ -6,11 +6,15 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useTranslations } from 'next-intl';
 import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
+import FirstLightPreview from '@/components/observatory/FirstLightPreview';
 import { useStellarUser } from '@/hooks/useStellarUser';
 import {
   BIRTH_PLACES,
   COMMISSION_TETRI,
   FIRST_LIGHT_TIERS,
+  FIRST_LIGHT_MIN_DATE,
+  FIRST_LIGHT_MAX_DATE,
+  parseFirstLightMoment,
   bestMomentOn,
   compassPoint,
   priceTetriFor,
@@ -47,12 +51,12 @@ export default function FirstLightPage() {
   const [error, setError] = useState('');
 
   const place = BIRTH_PLACES.find((p) => p.id === placeId)!;
-  const moment = useMemo(() => new Date(`${date}T${time}:00Z`), [date, time]);
-  const valid = !Number.isNaN(moment.getTime());
+  const moment = useMemo(() => parseFirstLightMoment(`${date}T${time}:00Z`), [date, time]);
+  const valid = moment !== null;
 
-  // The half that is exact and needs no telescope. Computed as you type.
+  // Computed positions for the selected moment; no telescope is needed.
   const sky = useMemo(
-    () => (valid ? skyAt({ place, at: moment, targetId }) : null),
+    () => (moment ? skyAt({ place, at: moment, targetId }) : null),
     [valid, place, moment, targetId],
   );
 
@@ -60,19 +64,20 @@ export default function FirstLightPage() {
   // horizon at the hour given, offer the hour it was highest instead of leaving
   // the sheet reading "below the horizon".
   const better = useMemo(() => {
-    if (!sky || sky.target?.up !== false) return null;
+    if (!sky || !moment || (sky.target?.up && sky.darkEnough)) return null;
     return bestMomentOn({ place, date: moment, targetId });
   }, [sky, place, moment, targetId]);
 
   const price = priceTetriFor(tier, commissioned);
 
-  const posterUrl = valid
+  const posterUrl = moment
     ? `/api/first-light/poster?target=${targetId}&place=${placeId}&at=${encodeURIComponent(
         moment.toISOString(),
       )}&for=${encodeURIComponent(recipient)}&occasion=${encodeURIComponent(occasion)}`
     : null;
 
   const order = async () => {
+    if (!moment) return;
     setState('sending');
     setError('');
     try {
@@ -146,6 +151,8 @@ export default function FirstLightPage() {
               <Field label={t('night')}>
                 <input
                   type="date"
+                  min={FIRST_LIGHT_MIN_DATE}
+                  max={FIRST_LIGHT_MAX_DATE}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full rounded-md border px-3 py-2 text-sm"
@@ -199,6 +206,7 @@ export default function FirstLightPage() {
             >
               <h2 className="obs-label">{t('skyTitle')}</h2>
               <dl className="mt-3 flex flex-col">
+                <Reading label={t('skyConditions')} value={sky.darkEnough ? t('darkSky') : t('daylightSky')} />
                 <Reading
                   label={t('moon')}
                   value={t('moonValue', {
@@ -244,6 +252,9 @@ export default function FirstLightPage() {
                     deg: better.altitude.toFixed(0),
                   })}
                 </button>
+              )}
+              {!better && (!sky.darkEnough || !sky.target?.up) && (
+                <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>{t('noNightWindow')}</p>
               )}
 
               <p className="mt-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -326,7 +337,7 @@ export default function FirstLightPage() {
               <button
                 type="button"
                 onClick={() => (authenticated ? void order() : login())}
-                disabled={state === 'sending' || !recipient || !valid}
+                disabled={state === 'sending' || !recipient.trim() || !valid}
                 className="mt-3 w-full rounded-md border px-4 py-2 text-sm disabled:opacity-60"
                 style={{
                   borderColor: 'var(--accent-border)',
@@ -343,23 +354,8 @@ export default function FirstLightPage() {
             </p>
           </section>
 
-          {posterUrl && (
-            <section
-              className="border p-4"
-              style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
-            >
-              <h2 className="obs-label">{t('sheet')}</h2>
-              {/* The poster is generated server-side, so this is the real thing
-                  rather than a mock of it. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={posterUrl}
-                alt="First Light poster"
-                className="mt-3 w-full border"
-                style={{ borderColor: 'var(--obs-rule)' }}
-              />
-            </section>
-          )}
+          {!valid && <p role="alert" className="text-sm">{t('invalidDate')}</p>}
+          {posterUrl && <FirstLightPreview url={posterUrl} />}
         </aside>
       </div>
 

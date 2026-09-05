@@ -5,10 +5,10 @@ import { getDb } from '@/lib/db';
 import { firstLightOrder } from '@/lib/schema';
 import {
   COMMISSION_TETRI,
-  FIRST_LIGHT_TIERS,
+  isFirstLightTier,
+  parseFirstLightMoment,
   placeById,
   priceTetriFor,
-  type FirstLightTier,
 } from '@/lib/observatory/first-light';
 import { MAX_WINDOW_DAYS, priceTetriFor as capturePrice } from '@/lib/observatory/capture-requests';
 import { cancelRequest, placeRequest } from '@/lib/observatory/requests';
@@ -56,15 +56,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
+  }
   const recipient = typeof body.recipient === 'string' ? body.recipient.trim().slice(0, 40) : '';
   const occasion = typeof body.occasion === 'string' ? body.occasion.trim().slice(0, 60) : '';
-  const tier = body.tier as FirstLightTier;
+  const tier = body.tier;
   const commissioned = body.commissioned === true;
 
   if (!recipient) {
     return NextResponse.json({ error: 'A poster needs a name on it.' }, { status: 400 });
   }
-  if (!(tier in FIRST_LIGHT_TIERS)) {
+  if (!isFirstLightTier(tier)) {
     return NextResponse.json({ error: 'Malformed request' }, { status: 400 });
   }
 
@@ -74,9 +77,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No such place or object' }, { status: 404 });
   }
 
-  const moment = new Date(typeof body.moment === 'string' ? body.moment : '');
-  if (Number.isNaN(moment.getTime())) {
-    return NextResponse.json({ error: 'That is not a date.' }, { status: 400 });
+  const moment = parseFirstLightMoment(body.moment);
+  if (!moment) {
+    return NextResponse.json({ error: 'Choose a valid UTC date between 1900 and 2100.' }, { status: 400 });
   }
 
   // Priced server-side from the tier, never from the body: a client that could

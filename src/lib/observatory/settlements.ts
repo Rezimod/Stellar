@@ -124,6 +124,12 @@ export async function recordSettlement(input: {
   }
 }
 
+/** The span a session was actually held for, in minutes. */
+function reservedMinutes(session: { startsAt: Date; endsAt: Date }): number {
+  const ms = session.endsAt.getTime() - session.startsAt.getTime()
+  return Number.isFinite(ms) && ms > 0 ? ms / 60_000 : 0
+}
+
 /**
  * Settle everything whose slot has ended.
  *
@@ -133,6 +139,7 @@ export async function recordSettlement(input: {
  */
 export async function settleDueSessions(input: {
   now?: Date
+  /** Fallback only, for a reservation whose stored span is unusable. */
   minutesFor: (nodeId: string) => number
   /** Asked per session, because provenance was decided when the frames were taken. */
   provenanceFor: (session: { id: string; nodeId: string }) => Promise<Provenance>
@@ -149,7 +156,10 @@ export async function settleDueSessions(input: {
       sessionId: session.id,
       nodeId: session.nodeId,
       privyId: session.privyId,
-      minutes: input.minutesFor(session.nodeId),
+      // The reservation's own span, not the node's current session length:
+      // re-reading the node pays a session that ran for twenty minutes at
+      // whatever length that node happens to offer today.
+      minutes: reservedMinutes(session) || input.minutesFor(session.nodeId),
       settlement: settleComplete({
         // Read off the reservation, not the node: a price change must not
         // re-rate a session that was agreed weeks ago.

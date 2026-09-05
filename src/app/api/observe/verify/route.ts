@@ -14,9 +14,9 @@ import { eventsForTarget } from '@/lib/astro-events';
 import { EVENT_BONUS_MULTIPLIER, CLOUD_COVER_CERTIFY_MAX } from '@/lib/constants';
 import { isDaytimeTarget, capConfidence, overcastGateApplies } from '@/lib/observation-kind';
 import { createObservationToken } from '@/lib/observation-token';
-import { verifyPrivy } from '@/lib/api-auth';
+import { verifyPrivy, assertOwnsWallet } from '@/lib/api-auth';
 import { paused } from '@/lib/kill-switch';
-import { isValidPublicKey } from '@/lib/validate';
+import { classifyCaptureTime, normalizeUploadSource } from '@/lib/capture-time';
 
 // Vision + reverse-image + open-meteo + retries can take a while on a slow tick.
 export const maxDuration = 60;
@@ -67,17 +67,13 @@ function parseVisionResponse(text: string): { analysis: VisionAnalysis; isFallba
 export async function POST(req: NextRequest) {
   const p = paused();
   if (p) return p;
-  // Use auth token as rate-limit key when present (prevents IP spoofing)
-  const authHeader = req.headers.get('authorization');
-  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const privyId = bearerToken ? await verifyPrivy(req) : null;
-  if (bearerToken && !privyId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Every verification runs a vision call and can write rows keyed by wallet,
+  // so it needs a signed-in account. The mission flow always has one.
+  const privyId = await verifyPrivy(req);
+  if (!privyId) {
+    return NextResponse.json({ error: 'Sign in to verify a photo' }, { status: 401 });
   }
-  const ip = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? 'unknown';
-  const rateLimitKey = privyId
-    ? createHash('sha256').update(privyId).digest('hex').slice(0, 16)
-    : ip;
+  const rateLimitKey = createHash('sha256').update(privyId).digest('hex').slice(0, 16);
   const { success, remaining } = await checkRateLimit(verifyRateLimit, rateLimitKey);
   if (!success) {
     return NextResponse.json(
@@ -109,17 +105,22 @@ export async function POST(req: NextRequest) {
   // a lying client only sabotages their own dedup — stars/cNFT-binding still
   // requires the signed verificationToken at /api/observe/log.
   const walletParam = ((formData.get('wallet') as string | null) ?? '').slice(0, 64);
-  const uploadSourceParam = ((formData.get('uploadSource') as string | null) ?? 'upload').slice(0, 32);
+  const captureTime = classifyCaptureTime(capturedAt);
+  // 'camera' doubles the Stars, so it is only honoured for a capture fresh
+  // enough to have been taken in-app. A stale one is an upload.
+  const uploadSourceParam = normalizeUploadSource(
+    ((formData.get('uploadSource') as string | null) ?? 'upload').slice(0, 32),
+    captureTime,
+  );
   // Downscaled JPEG of the same photo — kept so the mint can carry the real
   // image, whatever the verdict. Optional: an older client just sends nothing.
   const thumbParam = (formData.get('thumb') as string | null) ?? '';
 
-  // Require an authenticated principal before the expensive vision call: a
-  // verified Privy session OR a syntactically valid wallet pubkey. The Stars/
-  // mint path downstream (/api/observe/log) requires a Privy session + wallet
-  // ownership, so a token issued to an unauthenticated wallet can't be cashed in.
-  if (!privyId && !isValidPublicKey(walletParam)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // The wallet names whose rows this verification may write — rejections, the
+  // stored photo, the cross-wallet dedup exclusion — so it has to be this
+  // session's own. Otherwise one account could plant rows under another's.
+  if (walletParam && !(await assertOwnsWallet(privyId, walletParam))) {
+    return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
 
   // Validation
@@ -279,6 +280,17 @@ export async function POST(req: NextRequest) {
         uploadSource: uploadSourceParam,
       },
     };
+  }
+
+  // 0. The claimed capture time must be plausible: not in the future, not
+  // older than a gallery upload may be. Everything downstream — the visibility
+  // cross-check, the event bonus — is computed at this instant.
+  if (!captureTime.ok) {
+    await writeRejectionRow('timestamp_invalid', { capturedAt, reason: captureTime.reason });
+    return NextResponse.json(buildRejection(
+      'timestamp_invalid',
+      'The capture time on this photo is not plausible, so it cannot be certified — no Stars. You can still keep it as an unverified NFT.',
+    ));
   }
 
   // 1. Cross-wallet hash dedup

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { observationLog } from '@/lib/schema';
-import { desc } from 'drizzle-orm';
+import { desc, inArray } from 'drizzle-orm';
 import { LOCATIONS } from '@/lib/darksky-locations';
 
 export type NodeType = 'passive' | 'observer' | 'advanced';
@@ -33,9 +33,12 @@ export async function GET() {
 
   if (db) {
     try {
+      // Reward-ledger rows (quizzes, check-ins) and rejected attempts share
+      // this table; the map shows photographs of the sky, nothing else.
       const rows = await db
         .select()
         .from(observationLog)
+        .where(inArray(observationLog.confidence, ['high', 'medium', 'low', 'unverified']))
         .orderBy(desc(observationLog.createdAt))
         .limit(20);
 

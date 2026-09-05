@@ -59,6 +59,10 @@ apps/field/artifacts/current-screen.png
 # duplicate of .claude/skills generated for other agent tools
 .agents/
 
+# Editor and installer backups. The solana-ai-kit installer writes
+# CLAUDE.md.bak, and this repository is public.
+*.bak
+
 # transient audit/debug scripts and shots
 *.tmp.mjs
 *.tmp.png

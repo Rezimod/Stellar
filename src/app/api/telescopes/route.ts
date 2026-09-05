@@ -99,7 +99,10 @@ export async function POST(req: NextRequest) {
     })
     .returning();
 
-  // Award 50 Stars on first registration (non-blocking)
+  // Award 50 Stars on first registration (non-blocking). /api/award-stars
+  // re-checks this telescope row, decides the amount itself, and marks the
+  // bonus paid only once the Stars are on chain — so nothing is recorded as
+  // awarded here, where a failed request would look like a success.
   if (isFirst && typeof walletAddress === 'string' && walletAddress) {
     fetch(`${req.nextUrl.origin}/api/award-stars`, {
       method: 'POST',
@@ -113,11 +116,6 @@ export async function POST(req: NextRequest) {
         reason: 'telescope:first-registration',
         idempotencyKey: `telescope:${privyId}:first`,
       }),
-    }).then(() => {
-      db.update(telescopes)
-        .set({ starsAwarded: true })
-        .where(eq(telescopes.privyId, privyId))
-        .catch((err) => console.error('[telescopes] starsAwarded update failed:', err));
     }).catch((err) => console.error('[telescopes] award-stars request failed:', err));
   }
 

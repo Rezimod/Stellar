@@ -9,8 +9,8 @@
  * So a First Light poster carries **two true things, each with its own date**:
  *
  *   1. The sky computed for the exact moment and place. Moon phase, what was
- *      above the horizon, where the chosen object stood. This half is exact,
- *      needs no telescope, and is never wrong.
+ *      above the horizon, where the chosen object stood. These are computed
+ *      positions, without historical weather or local obstructions.
  *   2. A real photograph of that object, carrying *its own* night, instrument
  *      and operator — taken whenever the sky allowed it.
  *
@@ -22,11 +22,28 @@
  */
 
 import { Body, Equator, Horizon, Illumination, MoonPhase, Observer } from 'astronomy-engine';
+import { precessJ2000ToDate } from '@/lib/sky/catalog';
 import { getSunAltitude } from '@/lib/dark-window';
 import { DEFAULT_OBSERVER } from '@/lib/observer-location';
 import { SIM_TARGET_BY_ID, type SimTarget } from './sim-targets';
 
 export type FirstLightTier = 'digital' | 'print' | 'framed';
+
+export const FIRST_LIGHT_MIN_DATE = '1900-01-01';
+export const FIRST_LIGHT_MAX_DATE = '2100-12-31';
+
+export function isFirstLightTier(value: unknown): value is FirstLightTier {
+  return typeof value === 'string' && Object.hasOwn(FIRST_LIGHT_TIERS, value);
+}
+
+export function parseFirstLightMoment(value: unknown): Date | null {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value)) return null;
+  const at = new Date(value);
+  if (!Number.isFinite(at.getTime())) return null;
+  const iso = at.toISOString();
+  if (iso.slice(0, 19) !== value.slice(0, 19)) return null;
+  return iso.slice(0, 10) >= FIRST_LIGHT_MIN_DATE && iso.slice(0, 10) <= FIRST_LIGHT_MAX_DATE ? at : null;
+}
 
 export const FIRST_LIGHT_TIERS: Record<
   FirstLightTier,
@@ -85,6 +102,8 @@ export type SkyBody = {
 export type SkyMoment = {
   at: string;
   place: BirthPlace;
+  sunAltitude: number;
+  darkEnough: boolean;
   moon: {
     /** 0-360°, the Moon's elongation from the Sun. */
     angle: number;
@@ -127,7 +146,7 @@ export function moonPhaseName(angleDeg: number): string {
   return 'Waning Crescent';
 }
 
-/** The sky over one place at one instant. Exact, and the half no weather can spoil. */
+/** Computed sky positions over one place at one instant. */
 export function skyAt(input: { place: BirthPlace; at: Date; targetId?: string }): SkyMoment {
   const { place, at } = input;
   const observer = new Observer(place.lat, place.lon, 0);
@@ -135,6 +154,7 @@ export function skyAt(input: { place: BirthPlace; at: Date; targetId?: string })
   const moonAngle = MoonPhase(at);
   const moonHorizon = horizonOf(Body.Moon, at, observer);
   const illumination = safeIllumination(at);
+  const sunAltitude = getSunAltitude(place.lat, place.lon, at);
 
   const bodies: SkyBody[] = [];
   for (const { key, name, body } of NAMED_BODIES) {
@@ -146,6 +166,8 @@ export function skyAt(input: { place: BirthPlace; at: Date; targetId?: string })
   return {
     at: at.toISOString(),
     place,
+    sunAltitude,
+    darkEnough: sunAltitude <= DARK_ENOUGH_DEG,
     moon: {
       angle: moonAngle,
       illumination,
@@ -177,7 +199,8 @@ function placeTarget(targetId: string, at: Date, observer: Observer): SkyBody | 
 function fixedHorizon(target: SimTarget, at: Date, observer: Observer) {
   if (target.ra === undefined || target.dec === undefined) return null;
   try {
-    return Horizon(at, observer, target.ra, target.dec, 'normal');
+    const ofDate = precessJ2000ToDate(target.ra, target.dec, at);
+    return Horizon(at, observer, ofDate.raHours, ofDate.decDeg, 'normal');
   } catch {
     return null;
   }

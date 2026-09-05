@@ -9,10 +9,34 @@ import {
   placeById,
   priceTetriFor,
   skyAt,
+  isFirstLightTier,
+  parseFirstLightMoment,
 } from '@/lib/observatory/first-light';
 import { getSunAltitude } from '@/lib/dark-window';
+import { targetAltAz, SIM_TARGET_BY_ID } from '@/lib/observatory/sim-targets';
+import { NODES } from '@/lib/observatory/nodes';
 
 const tbilisi = BIRTH_PLACES[0];
+
+describe('First Light request boundaries', () => {
+  it.each(['__proto__', 'constructor', 'toString', null, {}, ['digital']])('rejects a non-tier %j', (tier) => {
+    expect(isFirstLightTier(tier)).toBe(false);
+  });
+
+  it.each(['digital', 'print', 'framed'])('accepts %s', (tier) => {
+    expect(isFirstLightTier(tier)).toBe(true);
+  });
+
+  it.each(['2026-02-30T21:00:00Z', '2026-09-05', '2026-09-05T24:00:00Z', '1899-12-31T23:59:59Z', '2101-01-01T00:00:00Z', '2026-09-05T21:00:00', null, 0])('rejects ambiguous or unsupported moments %j', (at) => {
+    expect(parseFirstLightMoment(at)).toBeNull();
+  });
+
+  it('accepts a leap day and the supported boundaries', () => {
+    for (const at of ['2000-02-29T21:00:00.000Z', '1900-01-01T00:00:00Z', '2100-12-31T23:59:59Z']) {
+      expect(parseFirstLightMoment(at)).not.toBeNull();
+    }
+  });
+});
 
 describe('what a poster costs', () => {
   it('adds the commission to the sheet, and only when one is asked for', () => {
@@ -50,6 +74,23 @@ describe('the sky at a moment', () => {
   // quarter, which is exactly the case the naming has to get right, since a
   // half-lit disc is also last quarter a fortnight later.
   const at = new Date('2019-03-14T21:00:00Z');
+
+  it('does not describe a daytime deep-sky target as a night-sky opportunity', () => {
+    const sky = skyAt({ place: tbilisi, at: new Date('2019-06-21T09:00:00Z'), targetId: 'm42' });
+    expect(sky.target!.up).toBe(true);
+    expect(sky.darkEnough).toBe(false);
+    expect(sky.sunAltitude).toBeGreaterThan(0);
+  });
+
+  it('agrees with the observatory finder for historical catalogue positions', () => {
+    const moment = new Date('1900-01-01T18:00:00Z');
+    const sky = skyAt({ place: tbilisi, at: moment, targetId: 'm42' });
+    const finder = targetAltAz(SIM_TARGET_BY_ID.get('m42')!, NODES[0], moment);
+    // The finder uses approximate sidereal time; require agreement within
+    // 1.2 arcminutes, far below the uncorrected century of precession.
+    expect(Math.abs(sky.target!.altitude - finder.altitude)).toBeLessThan(0.02);
+    expect(Math.abs(sky.target!.azimuth - finder.azimuth)).toBeLessThan(0.02);
+  });
 
   it('computes a phase and a lit fraction that agree with each other', () => {
     const sky = skyAt({ place: tbilisi, at });

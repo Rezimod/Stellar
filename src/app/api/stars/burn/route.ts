@@ -239,7 +239,7 @@ export async function POST(req: NextRequest) {
   if (!owns) {
     return NextResponse.json({ error: 'Wallet does not match session' }, { status: 403 });
   }
-  if (typeof body.amount !== 'number' || !Number.isInteger(body.amount) || body.amount <= 0) {
+  if (typeof body.amount !== 'number' || !Number.isSafeInteger(body.amount) || body.amount <= 0) {
     return NextResponse.json({ error: 'amount must be a positive integer' }, { status: 400 });
   }
   if (body.kind !== 'discount-burn' && body.kind !== 'shop-purchase' && body.kind !== 'redeem-code') {
@@ -262,6 +262,9 @@ export async function POST(req: NextRequest) {
         .where(and(eq(starsBurns.orderId, body.orderId), eq(starsBurns.kind, body.kind)))
         .limit(1);
       if (existing.length > 0) {
+        if (existing[0].walletAddress !== body.walletAddress) {
+          return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
         return NextResponse.json({
           signature: existing[0].signature,
           burned: existing[0].amount,
@@ -314,7 +317,7 @@ export async function POST(req: NextRequest) {
   const burnIx = signedTx.instructions.find(
     ix => ix.programId.equals(STARS_TOKEN_PROGRAM_ID),
   );
-  if (!burnIx) {
+  if (!burnIx || burnIx.keys.length < 3) {
     return NextResponse.json({ error: 'No SPL token instruction in transaction' }, { status: 400 });
   }
   // SPL Burn ix layout: data[0] = 8 (Burn) or 15 (BurnChecked); accounts: [source, mint, authority, ...]
@@ -423,7 +426,9 @@ export async function GET(req: NextRequest) {
   if (!db) return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
   const rows = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
   const order = rows[0];
-  if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+  if (!order || order.walletAddress !== wallet) {
+    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+  }
   if (order.currency !== 'GEL') return NextResponse.json({ maxBurn: 0, balance: 0 });
   const balance = await getStarsBalance(wallet).catch(() => 0);
   const maxBurn = computeMaxBurn(order.amountFiat + order.gelDiscount, balance);

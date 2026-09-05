@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { and, eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { observatoryOperatorInterest } from '@/lib/schema';
 import { verifyPrivy } from '@/lib/api-auth';
@@ -44,30 +45,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Registration is unavailable right now' }, { status: 503 });
   }
 
+  const privyId = await verifyPrivy(req);
+  const address = email.toLowerCase();
+  const gear = {
+    city,
+    telescope,
+    mount: clean(body.mount, MAX.mount),
+    camera: clean(body.camera, MAX.camera),
+    note: clean(body.note, MAX.note),
+  };
+
   try {
-    // One row per owner: a second submission updates the gear rather than
-    // filling the list with the same person twice.
-    await db
+    // One row per owner. The first submission for an address wins; only the
+    // account that made it may update the gear later. A stranger typing
+    // someone else's email overwrites nothing, and is told nothing about
+    // whether the address was already on the list.
+    const inserted = await db
       .insert(observatoryOperatorInterest)
-      .values({
-        privyId: await verifyPrivy(req),
-        email: email.toLowerCase(),
-        city,
-        telescope,
-        mount: clean(body.mount, MAX.mount),
-        camera: clean(body.camera, MAX.camera),
-        note: clean(body.note, MAX.note),
-      })
-      .onConflictDoUpdate({
-        target: observatoryOperatorInterest.email,
-        set: {
-          city,
-          telescope,
-          mount: clean(body.mount, MAX.mount),
-          camera: clean(body.camera, MAX.camera),
-          note: clean(body.note, MAX.note),
-        },
-      });
+      .values({ privyId, email: address, ...gear })
+      .onConflictDoNothing({ target: observatoryOperatorInterest.email })
+      .returning({ id: observatoryOperatorInterest.id });
+
+    if (inserted.length === 0 && privyId) {
+      await db
+        .update(observatoryOperatorInterest)
+        .set(gear)
+        .where(and(
+          eq(observatoryOperatorInterest.email, address),
+          eq(observatoryOperatorInterest.privyId, privyId),
+        ));
+    }
 
     return NextResponse.json({ registered: true }, { status: 201 });
   } catch (err) {

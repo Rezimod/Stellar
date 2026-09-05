@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
     const baseQuery = db
       .select({
         wallet: observationLog.wallet,
-        observations: sql<number>`count(*)::int`,
+        // Stars sum the whole ledger; the count is photographs only.
+        observations: sql<number>`count(*) filter (where ${observationLog.confidence} in ('high', 'medium', 'low', 'unverified'))::int`,
         total_stars: sql<number>`coalesce(sum(${observationLog.stars}), 0)::int`,
       })
       .from(observationLog)

@@ -1,17 +1,8 @@
 // Shared auth helpers for API routes.
 //
-// Two patterns are used across this app:
-//
-//   1. Privy-only routes (chat, redeem-code, orders, feed/follow, …) require
-//      a verified Privy session. Use `verifyPrivy(req)` — returns the user's
-//      privyId or null.
-//
-//   2. Mixed routes (mint) accept *either* a Privy session OR a raw wallet
-//      pubkey (Phantom/Solflare/Backpack flow). For these, use `verifyPrivy`
-//      and treat absence as "external wallet" — but if a Privy token IS
-//      provided, ensure the body's walletAddress matches the session's recorded
-//      wallet via `assertOwnsWallet`. Reward/token minting routes should require
-//      Privy or a real wallet signature before issuing value.
+// Value routes, including mint, require a verified Privy session and a linked
+// wallet. A raw wallet public key is never proof of control. External wallets
+// can use these routes after linking to the authenticated Privy account.
 //
 // `assertOwnsWallet` verifies the wallet against the Privy session's own
 // linked accounts (the source of truth), not a mirrored DB row. It fails
