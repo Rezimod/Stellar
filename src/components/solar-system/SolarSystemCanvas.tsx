@@ -61,6 +61,7 @@ import {
   type PlayerShipHandle,
 } from '@/lib/solar-system/player-ship';
 import { makeAlphaCentauri } from '@/lib/solar-system/star-systems';
+import { makeSmallBodies } from '@/lib/solar-system/small-bodies';
 import { makeAlienEncounters } from '@/lib/solar-system/aliens';
 import { makeDeepSpaceProbes } from '@/lib/solar-system/probes';
 import {
@@ -461,6 +462,9 @@ export function SolarSystemCanvas({
     const alphaCen = makeAlphaCentauri(sunSurface.material, lite);
     alphaCen.group.visible = false;
     scene.add(alphaCen.group);
+    // Ceres and Vesta — small worlds in the belt, always on their orbits.
+    const smallBodies = makeSmallBodies(lite);
+    scene.add(smallBodies.group);
 
     let earthExtras: EarthExtrasHandle | null = null;
     let earthRocket: EarthRocketHandle | null = null;
@@ -990,7 +994,19 @@ export function SolarSystemCanvas({
     // The flight model's view of the world: every solid body with its real
     // radius and surface gravity, the respawn point of whichever system the
     // ship is in, and the hyperdrive's destination — the other system.
-    const flightBodies = new Map<SolarBodyId, FlightBody>();
+    const flightBodies = new Map<string, FlightBody>();
+    const bodyFor = (
+      id: string, kind: FlightBody['kind'], radius: number, radiusKm: number, surfaceG: number, atmosphere: number,
+    ): FlightBody => {
+      let b = flightBodies.get(id);
+      if (!b) {
+        b = { id, kind, position: new THREE.Vector3(), radius, radiusKm, surfaceG, atmosphere };
+        flightBodies.set(id, b);
+      }
+      return b;
+    };
+    // A rammed or shot-down station stays dark for a while, then is back.
+    let stationDownUntil = 0;
     const world: FlightWorld = {
       bodies: [],
       home: { position: new THREE.Vector3(), lookAt: new THREE.Vector3(), yaw: 0 },
@@ -1016,24 +1032,41 @@ export function SolarSystemCanvas({
       to.lookAt.copy(from.lookAt);
       to.yaw = from.yaw;
     };
-    const syncWorld = (shipPos: THREE.Vector3 | null, earth: THREE.Vector3 | null) => {
+    const syncWorld = (shipPos: THREE.Vector3 | null, earth: THREE.Vector3 | null, nowMs: number) => {
       world.bodies.length = 0;
       meshById.forEach((mesh, id) => {
-        let b = flightBodies.get(id);
-        if (!b) {
-          b = {
-            id,
-            position: new THREE.Vector3(),
-            radius: worldRadiusForBody(id),
-            radiusKm: MEAN_RADIUS_KM[id],
-            surfaceG: SURFACE_G[id],
-            atmosphere: ATMOSPHERE[id],
-          };
-          flightBodies.set(id, b);
-        }
+        const b = bodyFor(id, id === 'sun' ? 'star' : 'planet', worldRadiusForBody(id), MEAN_RADIUS_KM[id], SURFACE_G[id], ATMOSPHERE[id]);
         b.position.copy(mesh.position);
         world.bodies.push(b);
       });
+      // The Moon, every planet's moons, the belt's dwarf planets, the station.
+      if (earthExtras && earth) {
+        const er = worldRadiusForBody('earth');
+        const moon = bodyFor('moon', 'moon', er * 0.273, 1737, 1.62, 1);
+        moon.position.copy(earth).add(earthExtras.moonMesh.position);
+        world.bodies.push(moon);
+      }
+      for (const m of planetMoons.moons) {
+        const planet = meshById.get(m.planet);
+        if (!planet) continue;
+        const km = MEAN_RADIUS_KM[m.planet] * (m.radius / worldRadiusForBody(m.planet));
+        const b = bodyFor(m.name.toLowerCase(), 'moon', m.radius, km, 1.62 * (km / 1737), 1);
+        b.position.copy(planet.position).add(m.mesh.position);
+        world.bodies.push(b);
+      }
+      for (const b of smallBodies.bodies) world.bodies.push(b);
+      if (earthSats && earth) {
+        const iss = bodyFor('iss', 'station', earthSats.stationRadius, 0.11, 0, 1);
+        iss.position.copy(earth).add(earthSats.station.position);
+        if (iss.destroyed && stationDownUntil === 0) stationDownUntil = nowMs + 90_000;
+        if (iss.destroyed && nowMs >= stationDownUntil) {
+          iss.destroyed = false;
+          iss.hp = undefined;
+          stationDownUntil = 0;
+        }
+        earthSats.station.visible = !iss.destroyed;
+        world.bodies.push(iss);
+      }
       for (const b of alphaCen.bodies) world.bodies.push(b);
       const atSol = !shipPos || shipPos.length() < shipPos.distanceTo(alphaCen.center);
       world.systemName = atSol ? 'sol' : 'alphaCentauri';
@@ -1104,7 +1137,7 @@ export function SolarSystemCanvas({
           scene.add(ship.boltGroup);
           scene.add(ship.fxGroup);
           alphaCen.group.visible = true;
-          syncWorld(null, earthPos);
+          syncWorld(null, earthPos, now);
           ship.spawn(world.home);
           const live = ship;
           aliens.setHostile({ group: live.group, onHit: (dmg) => live.takeDamage(dmg) });
@@ -1115,7 +1148,7 @@ export function SolarSystemCanvas({
 
       const focus = focusRef.current;
       if (ship) {
-        syncWorld(ship.group.position, earthPos);
+        syncWorld(ship.group.position, earthPos, now);
         ship.update(dtSec, (now - t0) / 1000, camera, aliens, world);
         alphaCen.update(dtSec, camera.position, camera);
       } else if (focus && meshById.has(focus)) {
@@ -1143,6 +1176,7 @@ export function SolarSystemCanvas({
       // respond to play/scrub/speed exactly like the planets do.
       asteroidBelt.update(epochRef.current);
       kuiperBelt.update(epochRef.current);
+      smallBodies.update(epochRef.current, scaleRef.current);
       earthExtras?.update(epochRef.current, reduceMotion ? 0 : dtSec);
       // Probe labels are system-view furniture — hidden in low orbit and in flight.
       probes.update(epochRef.current, focusRef.current || ship ? 0 : sysRadius);
@@ -1307,6 +1341,8 @@ export function SolarSystemCanvas({
       sunExtras.dispose();
       scene.remove(alphaCen.group);
       alphaCen.dispose();
+      scene.remove(smallBodies.group);
+      smallBodies.dispose();
       sunSurface.dispose();
       disposeOrbitRings(orbitRings);
       disposeMilkyWayBand(milkyWay);

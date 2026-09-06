@@ -10,12 +10,11 @@ import * as THREE from 'three';
 import { nearbyStarPosition } from '@/lib/solar-system/galactic-scene';
 import { makeSunExtras, type SunExtrasHandle } from '@/lib/solar-system/scene-extras';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import { bandedTexture, crateredTexture, sceneRadius } from '@/lib/solar-system/small-bodies';
 import type { FlightAnchor, FlightBody } from '@/lib/solar-system/player-ship';
 
 const R_SUN_KM = 696_000;
 const R_EARTH_KM = 6371;
-/** Same law as `worldRadiusForBody`, taking a radius in km. */
-const sceneRadius = (km: number) => 0.028 * Math.pow(km / R_EARTH_KM, 0.36);
 
 export interface StarSystemHandle {
   group: THREE.Group;
@@ -42,6 +41,7 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
   const addBody = (
     id: string, local: THREE.Vector3, radiusKm: number, surfaceG: number, atmosphere: number,
     material: THREE.Material, glow: { color: THREE.Color; scale: number } | null,
+    kind: FlightBody['kind'] = 'star',
   ) => {
     const r = sceneRadius(radiusKm);
     const geom = new THREE.SphereGeometry(r, segs, segs);
@@ -66,6 +66,7 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
     }
     const body: FlightBody = {
       id,
+      kind,
       position: local.clone().add(center),
       radius: r,
       radiusKm,
@@ -103,13 +104,37 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
   lightP.position.copy(proximaLocal);
   group.add(lightP);
 
-  // Proxima b — a rocky world of 1.07 R⊕ in an 11-day orbit, tidally close.
-  const matPb = new THREE.MeshStandardMaterial({ color: 0x8c5e4c, roughness: 0.92, metalness: 0.05 });
-  owned.push(matPb);
+  // Proxima's worlds: b, a rocky 1.07 R⊕ in an 11-day orbit with a thin
+  // air; d, a sub-Earth skimming the star every five days. Both cratered,
+  // tidally locked, lit red by their sun.
+  const texPb = crateredTexture(41, [126, 92, 76], 90);
+  const matPb = new THREE.MeshStandardMaterial({ map: texPb, bumpMap: texPb, bumpScale: 0.003, roughness: 0.9, metalness: 0.05 });
+  const texPd = crateredTexture(57, [96, 88, 84], 160);
+  const matPd = new THREE.MeshStandardMaterial({ map: texPd, bumpMap: texPd, bumpScale: 0.002, roughness: 0.95, metalness: 0.02 });
+  owned.push(matPb, matPd);
+  const textures = [texPb, texPd];
   const PB_ORBIT = 0.24;
-  const pbLocal = proximaLocal.clone().add(new THREE.Vector3(PB_ORBIT, 0, 0));
-  const pb = addBody('proximaB', pbLocal, 1.07 * R_EARTH_KM, 11.2, 1.2, matPb, null);
+  const PD_ORBIT = 0.14;
+  const pb = addBody('proximaB', proximaLocal.clone().add(new THREE.Vector3(PB_ORBIT, 0, 0)), 1.07 * R_EARTH_KM, 11.2, 1.2, matPb, null, 'planet');
+  const pd = addBody('proximaD', proximaLocal.clone().add(new THREE.Vector3(0, 0, PD_ORBIT)), 0.81 * R_EARTH_KM, 6.5, 1, matPd, null, 'planet');
   let pbAngle = 0;
+
+  // Alpha Centauri A's Neptune-size candidate (Wagner et al. 2021): a banded
+  // ice giant with a faint ring, on a compressed 1.1 AU orbit.
+  const texC1 = bandedTexture(73, [[96, 150, 190], [128, 178, 208], [70, 120, 170], [150, 190, 214]]);
+  const matC1 = new THREE.MeshStandardMaterial({ map: texC1, roughness: 0.7, metalness: 0.05 });
+  owned.push(matC1);
+  textures.push(texC1);
+  const C1_ORBIT = 0.95;
+  const c1 = addBody('alphaCenAc', new THREE.Vector3(-C1_ORBIT, 0.02, 0), 3.9 * R_EARTH_KM, 11, 1.22, matC1, null, 'planet');
+  const ringGeom = new THREE.RingGeometry(c1.body.radius * 1.5, c1.body.radius * 2.2, 96);
+  geoms.push(ringGeom);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0x9fc4dc, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false });
+  owned.push(ringMat);
+  const ring = new THREE.Mesh(ringGeom, ringMat);
+  ring.rotation.x = Math.PI / 2 + 0.35;
+  c1.mesh.add(ring);
+  let c1Angle = 0;
 
   // Drop out of hyperspace twelve radii short of A on the side away from B,
   // nose on the star, so the pair reads as A in front and B beyond it.
@@ -130,13 +155,16 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
       // The corona group is a child here, so undo the world position it sets.
       coronaA.group.position.set(0, 0, 0);
       pbAngle += dtSec * 0.06;
-      pb.mesh.position.set(
-        proximaLocal.x + Math.cos(pbAngle) * PB_ORBIT,
-        proximaLocal.y,
-        proximaLocal.z + Math.sin(pbAngle) * PB_ORBIT,
-      );
+      pb.mesh.position.set(proximaLocal.x + Math.cos(pbAngle) * PB_ORBIT, proximaLocal.y, proximaLocal.z + Math.sin(pbAngle) * PB_ORBIT);
       pb.mesh.rotation.y = pbAngle;
       pb.body.position.copy(pb.mesh.position).add(center);
+      pd.mesh.position.set(proximaLocal.x + Math.sin(pbAngle * 2.2) * PD_ORBIT, proximaLocal.y + 0.01, proximaLocal.z + Math.cos(pbAngle * 2.2) * PD_ORBIT);
+      pd.mesh.rotation.y = -pbAngle * 2.2;
+      pd.body.position.copy(pd.mesh.position).add(center);
+      c1Angle += dtSec * 0.012;
+      c1.mesh.position.set(-Math.cos(c1Angle) * C1_ORBIT, 0.02, Math.sin(c1Angle) * C1_ORBIT);
+      c1.mesh.rotation.y += dtSec * 0.3;
+      c1.body.position.copy(c1.mesh.position).add(center);
     },
     dispose() {
       coronaA.dispose();
@@ -144,6 +172,7 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
       lightP.dispose();
       for (const g of geoms) g.dispose();
       for (const m of owned) m.dispose();
+      for (const t of textures) t.dispose();
     },
   };
 }

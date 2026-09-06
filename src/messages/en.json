@@ -1131,7 +1131,17 @@
       "speed": "Speed",
       "kills": "Kills",
       "hull": "Hull",
-      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · 1 2 3 speed · H jump · F S-foils · Esc exit",
+      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · 1 2 3 speed · H jump · F S-foils · V eject / board · Esc exit",
+      "hangar": "Hangar",
+      "ships": {
+        "xfoil": "X-foil",
+        "interceptor": "Interceptor"
+      },
+      "eject": "Eject",
+      "board": "Board",
+      "evaOut": "EVA — suit jets",
+      "evaBoard": "EVA — press V to board",
+      "evaBoardTouch": "EVA — tap Board",
       "fire": "Fire",
       "boost": "Boost",
       "brake": "Brake",
@@ -1140,7 +1150,8 @@
       "modes": {
         "cruise": "Cruise",
         "fast": "Fast",
-        "jump": "Light speed"
+        "jump": "Light speed",
+        "eva": "EVA suit"
       },
       "kmS": "km/s",
       "c": "c",
@@ -1170,7 +1181,25 @@
         "alphaCenA": "Alpha Centauri A",
         "alphaCenB": "Alpha Centauri B",
         "proxima": "Proxima Centauri",
-        "proximaB": "Proxima b"
+        "proximaB": "Proxima b",
+        "proximaD": "Proxima d",
+        "alphaCenAc": "Alpha Centauri A c",
+        "moon": "Moon",
+        "iss": "ISS",
+        "ceres": "Ceres",
+        "vesta": "Vesta",
+        "phobos": "Phobos",
+        "deimos": "Deimos",
+        "io": "Io",
+        "europa": "Europa",
+        "ganymede": "Ganymede",
+        "callisto": "Callisto",
+        "titan": "Titan",
+        "rhea": "Rhea",
+        "titania": "Titania",
+        "oberon": "Oberon",
+        "triton": "Triton",
+        "charon": "Charon"
       }
     }
   },

@@ -40,7 +40,7 @@ const aliens = {
 } as unknown as AlienHandle;
 
 function body(id: string, x: number, radius: number, radiusKm: number, surfaceG: number, atmosphere: number): FlightBody {
-  return { id, position: new THREE.Vector3(x, 0, 0), radius, radiusKm, surfaceG, atmosphere };
+  return { id, kind: 'planet', position: new THREE.Vector3(x, 0, 0), radius, radiusKm, surfaceG, atmosphere };
 }
 
 function makeWorld(): FlightWorld {
@@ -244,6 +244,75 @@ describe('gravity and solid bodies', () => {
     }
     expect(crashed).toBe(true);
     expect(ship.group.position.length()).toBeLessThan(0.01);
+  });
+});
+
+describe('EVA and stations', () => {
+  it('ejects into the suit, flies it, and boards again when close', () => {
+    faceAway();
+    session.input.eject = true;
+    step(1);
+    expect(session.telemetry.pilot).toBe('eva');
+    expect(session.telemetry.canBoard).toBe(true);
+    // The suit is slow and unarmed; the ship holds station behind it.
+    session.input.thrust = 1;
+    session.input.fire = true;
+    seconds(9);
+    expect(session.telemetry.speed).toBeCloseTo(0.5, 1);
+    expect(session.telemetry.foilsOpen).toBe(false);
+    expect(session.telemetry.canBoard).toBe(false);
+    session.input.eject = true;
+    step(1);
+    expect(session.telemetry.pilot).toBe('eva');
+    session.input.thrust = 0;
+    session.input.fire = false;
+    // Fast is for the ship only.
+    session.input.modeRequest = 'fast';
+    step(1);
+    expect(session.telemetry.mode).toBe('cruise');
+    // Walk back within range and climb aboard.
+    ship.group.position.copy(ship.fxGroup.children.find((o) => o.name === 'cosmonaut')!.position);
+    step(1);
+    expect(session.telemetry.canBoard).toBe(true);
+    session.input.eject = true;
+    step(1);
+    expect(session.telemetry.pilot).toBe('ship');
+  });
+
+  it('interceptor is the faster ship', () => {
+    const fast = createFlightSession();
+    fast.shipKind = 'interceptor';
+    const other = createPlayerShip(fast);
+    other.spawn(world.home);
+    other.group.lookAt(new THREE.Vector3(1, 0, 10));
+    fast.input.thrust = 1;
+    for (let i = 0; i < 240; i++) other.update(DT, i * DT, camera, aliens, world);
+    expect(fast.telemetry.speed).toBeCloseTo(3.0, 1);
+    other.dispose();
+  });
+
+  it('ramming a station destroys both; shots wear one down', () => {
+    const iss = body('iss', 1, 0.0015, 0.11, 0, 1);
+    iss.kind = 'station';
+    iss.position.set(1, 0, EARTH_R * 5 + 0.02);
+    world.bodies.push(iss);
+    ship.group.lookAt(iss.position);
+    session.input.thrust = 1;
+    seconds(3);
+    expect(session.telemetry.crashed).toBe(true);
+    expect(iss.destroyed).toBe(true);
+  });
+
+  it('bolts spark off bodies and take a station apart', () => {
+    const iss = body('iss', 1, 0.0015, 0.11, 0, 1);
+    iss.kind = 'station';
+    iss.position.set(1, 0, EARTH_R * 5 + 0.03);
+    world.bodies.push(iss);
+    ship.group.lookAt(iss.position);
+    session.input.fire = true;
+    seconds(3);
+    expect(iss.destroyed).toBe(true);
+    expect(session.telemetry.crashed).toBe(false);
   });
 });
 

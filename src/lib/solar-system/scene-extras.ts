@@ -1878,6 +1878,9 @@ export function makeEarthRocket(earthRadius: number): EarthRocketHandle {
  */
 export interface EarthSatellitesHandle {
   group: THREE.Group;
+  /** The station node (local to `group`) and its collision radius. */
+  station: THREE.Group;
+  stationRadius: number;
   /** `earthPos` — Earth's heliocentric scene position (fixes JWST on the
    *  anti-sunward Sun–Earth line; the Sun sits at the scene origin). */
   update: (epochMs: number, earthPos: THREE.Vector3) => void;
@@ -2071,8 +2074,12 @@ export function makeEarthSatellites(earthRadius: number, lite: boolean): EarthSa
   const haloA = new THREE.Vector3();
   const haloB = new THREE.Vector3();
 
+  const stationRec = recs.find((r) => r.spec.kind === 'station') ?? recs[0];
+
   return {
     group,
+    station: stationRec.node,
+    stationRadius: b * 1.3,
     update(epochMs: number, earthPos: THREE.Vector3) {
       for (const { node, spec } of recs) {
         if (spec.kind === 'jwst') {
@@ -2316,6 +2323,8 @@ const MOON_SPECS: MoonSpec[] = [
 
 export interface PlanetMoonsHandle {
   group: THREE.Group;
+  /** Every moon with its planet, mesh (local to the planet's sub-group) and radius. */
+  moons: { name: string; planet: SolarBodyId; mesh: THREE.Mesh; radius: number }[];
   /** Pins each planet's moon sub-group to its planet, then places every moon
    *  at its epoch-accurate orbital phase (real sidereal periods). */
   update: (epochMs: number, planetPos: (id: SolarBodyId) => THREE.Vector3 | null | undefined) => void;
@@ -2356,6 +2365,12 @@ export function makePlanetMoons(lite: boolean): PlanetMoonsHandle {
 
   return {
     group,
+    moons: recs.map((r) => ({
+      name: r.spec.name,
+      planet: r.spec.planet,
+      mesh: r.mesh,
+      radius: worldRadiusForBody(r.spec.planet) * r.spec.radiusMul,
+    })),
     update(epochMs, planetPos) {
       subgroups.forEach((sub, id) => {
         const p = planetPos(id);

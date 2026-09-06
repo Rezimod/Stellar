@@ -8,6 +8,7 @@ import {
   clearFlightInput,
   type FlightAlert,
   type FlightSession,
+  type ShipKind,
   type SpeedMode,
 } from '@/lib/solar-system/player-ship';
 
@@ -21,11 +22,13 @@ type Phase = 'idle' | 'countdown' | 'flying';
 
 const STICK_RADIUS = 62;
 const RADAR_PX = 92;
+const GAUGE_PX = 150;
 /** Auto-cruise throttle on touch: a phone has no spare thumb for a throttle,
  *  so the ship always makes way and the controls are steer, boost, brake. */
 const CRUISE = 0.85;
 const BRAKE = -0.7;
 const MODES: SpeedMode[] = ['cruise', 'fast', 'jump'];
+const SHIPS: ShipKind[] = ['xfoil', 'interceptor'];
 const SOLAR_IDS = new Set(['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 
 interface Stick {
@@ -43,11 +46,11 @@ function fmtKm(km: number): string {
 }
 
 /**
- * Explore Mode chrome: the Explore button, launch countdown, the flight HUD
- * (speed regime, hull, radar, nearest body, alerts, crash and jump overlays)
- * and the touch controls. The HUD is painted imperatively from
- * `session.telemetry` each frame — React only renders on phase changes,
- * never inside the animation loop.
+ * Explore Mode chrome: the hangar (ship choice + Explore), launch countdown,
+ * the flight deck (speed gauge, regime selector, hull, radar, alerts, crash
+ * and jump overlays) and the touch controls. The deck is painted
+ * imperatively from `session.telemetry` each frame — React only renders on
+ * phase changes, never inside the animation loop.
  */
 export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
@@ -55,22 +58,24 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [count, setCount] = useState(3);
   const [touch, setTouch] = useState(false);
+  const [shipKind, setShipKind] = useState<ShipKind>(session.shipKind);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const padRef = useRef<HTMLCanvasElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
+  const gaugeRef = useRef<HTMLCanvasElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
-  const unitRef = useRef<HTMLSpanElement>(null);
   const cRef = useRef<HTMLSpanElement>(null);
   const modeRef = useRef<HTMLSpanElement>(null);
-  const foilsRef = useRef<HTMLSpanElement>(null);
   const nearRef = useRef<HTMLSpanElement>(null);
   const altRef = useRef<HTMLSpanElement>(null);
   const systemRef = useRef<HTMLSpanElement>(null);
-  const targetRef = useRef<HTMLSpanElement>(null);
+  const foilsRef = useRef<HTMLSpanElement>(null);
+  const killsRef = useRef<HTMLSpanElement>(null);
+  const pilotRef = useRef<HTMLDivElement>(null);
+  const ejectRef = useRef<HTMLButtonElement>(null);
   const hpFillRef = useRef<HTMLDivElement>(null);
   const hpTextRef = useRef<HTMLSpanElement>(null);
-  const killsRef = useRef<HTMLSpanElement>(null);
   const flashRef = useRef<HTMLDivElement>(null);
   const whiteRef = useRef<HTMLDivElement>(null);
   const heatRef = useRef<HTMLDivElement>(null);
@@ -110,6 +115,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
 
   const enter = () => {
     if (phaseRef.current !== 'idle') return;
+    session.shipKind = shipKind;
     setPhase('countdown');
     setCount(3);
     onActiveChange(true);
@@ -206,17 +212,22 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     };
   }, [phase, touch, session]);
 
-  // ── HUD paint loop — DOM writes + two small canvases, no React state. ──
+  // ── Deck paint loop — DOM writes + three small canvases, no React state. ──
   useEffect(() => {
     if (phase !== 'flying') return;
     const tel = session.telemetry;
     const input = session.input;
     const radar = radarRef.current;
+    const gauge = gaugeRef.current;
     const pad = padRef.current;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     if (radar) {
       radar.width = RADAR_PX * dpr;
       radar.height = RADAR_PX * dpr;
+    }
+    if (gauge) {
+      gauge.width = GAUGE_PX * dpr;
+      gauge.height = GAUGE_PX * dpr;
     }
     const sizePad = () => {
       if (!pad) return;
@@ -226,7 +237,10 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     sizePad();
     window.addEventListener('resize', sizePad);
 
-    const bodyName = (id: string) => (SOLAR_IDS.has(id) ? tb(`${id}.name`) : t(`bodies.${id}`));
+    const bodyName = (id: string) => {
+      if (SOLAR_IDS.has(id)) return tb(`${id}.name`);
+      return t.has(`bodies.${id}`) ? t(`bodies.${id}`) : id.toUpperCase();
+    };
     const systemName = (id: string) => t(`systems.${id}`);
     const alertText = (a: FlightAlert): string => {
       if (a === 'jump' || a === 'charging') return t(`alerts.${a}`, { target: systemName(lastTarget) });
@@ -251,6 +265,8 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     let lastAlert: FlightAlert | null = null;
     let lastCrashed: boolean | null = null;
     let lastRespawn = -1;
+    let lastPilotKey = '';
+    let shownFrac = 0;
     const paint = () => {
       raf = requestAnimationFrame(paint);
 
@@ -262,23 +278,23 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       if (speed !== lastSpeed) {
         lastSpeed = speed;
         setText(speedRef.current, jumping ? '299,792' : speed.toLocaleString('en-US'));
-        setText(unitRef.current, t('kmS'));
       }
       const c = Math.round(tel.speedC * 1000);
       if (c !== lastC) {
         lastC = c;
-        setText(cRef.current, `${(c / 1000).toFixed(3)} ${t('c')}`);
+        setText(cRef.current, `${(c / 1000).toFixed(3)} c`);
       }
-      if (tel.mode !== lastMode) {
-        lastMode = tel.mode;
-        setText(modeRef.current, t(`modes.${tel.mode}`));
+      const modeKey = tel.pilot === 'eva' ? 'eva' : tel.mode;
+      if (modeKey !== lastMode) {
+        lastMode = modeKey as SpeedMode;
+        setText(modeRef.current, t(`modes.${modeKey}`));
         modeBtnRefs.current.forEach((btn, i) => {
-          if (btn) btn.dataset.active = MODES[i] === tel.mode ? 'true' : 'false';
+          if (btn) btn.dataset.active = MODES[i] === tel.mode && tel.pilot === 'ship' ? 'true' : 'false';
         });
       }
       if (tel.foilsOpen !== lastFoils) {
         lastFoils = tel.foilsOpen;
-        setText(foilsRef.current, t(tel.foilsOpen ? 'foilsOpen' : 'foilsLocked'));
+        if (foilsRef.current) foilsRef.current.dataset.on = tel.foilsOpen ? 'true' : 'false';
       }
       if (tel.nearId !== lastNear) {
         lastNear = tel.nearId;
@@ -289,16 +305,20 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
         lastAlt = alt;
         setText(altRef.current, alt < 0 ? '—' : `${fmtKm(alt * 10)} km`);
       }
-      // System + next star come through the alert copy too, so track them
-      // before the alert is formatted.
       const sys = tel.systemName;
       if (sys !== lastSystem) {
         lastSystem = sys;
         setText(systemRef.current, systemName(sys));
       }
-      if (tel.targetName !== lastTarget) {
-        lastTarget = tel.targetName;
-        setText(targetRef.current, `${systemName(tel.targetName)} · ${tel.targetLy.toFixed(2)} ${t('ly')}`);
+      if (tel.targetName !== lastTarget) lastTarget = tel.targetName;
+      const pilotKey = tel.pilot === 'eva' ? (tel.canBoard ? 'board' : 'eva') : 'ship';
+      if (pilotKey !== lastPilotKey) {
+        lastPilotKey = pilotKey;
+        if (pilotRef.current) {
+          pilotRef.current.hidden = pilotKey === 'ship';
+          setText(pilotRef.current, pilotKey === 'board' ? t(touch ? 'evaBoardTouch' : 'evaBoard') : t('evaOut'));
+        }
+        setText(ejectRef.current, t(pilotKey === 'ship' ? 'eject' : 'board'));
       }
       if (tel.alert !== lastAlert) {
         lastAlert = tel.alert;
@@ -306,10 +326,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
         if (el) {
           el.hidden = !tel.alert;
           el.dataset.kind = tel.alert;
-          if (tel.alert) {
-            const label = el.firstElementChild as HTMLElement | null;
-            setText(label, alertText(tel.alert));
-          }
+          if (tel.alert) setText(el.firstElementChild as HTMLElement | null, alertText(tel.alert));
         }
       }
       if (jumpBarRef.current) {
@@ -342,6 +359,52 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       if (respawn !== lastRespawn) {
         lastRespawn = respawn;
         if (respawn >= 0) setText(respawnRef.current, t('respawn', { n: respawn }));
+      }
+
+      // ── Speed gauge: a 270° arc filled to the regime's ceiling, ticks
+      // every tenth, colour warming as the needle climbs. ──
+      if (gauge) {
+        const ctx = gauge.getContext('2d');
+        if (ctx) {
+          const s = GAUGE_PX * dpr;
+          const cx = s / 2;
+          const r = s / 2 - 8 * dpr;
+          const a0 = Math.PI * 0.75;
+          const a1 = Math.PI * 2.25;
+          const frac = tel.maxKmS > 0 ? Math.min(1, tel.speedKmS / tel.maxKmS) : 0;
+          shownFrac += (frac - shownFrac) * 0.18;
+          ctx.clearRect(0, 0, s, s);
+          ctx.fillStyle = 'rgba(6, 9, 14, 0.72)';
+          ctx.beginPath();
+          ctx.arc(cx, cx, s / 2 - 1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.lineCap = 'butt';
+          ctx.strokeStyle = 'rgba(248, 244, 236, 0.14)';
+          ctx.lineWidth = 6 * dpr;
+          ctx.beginPath();
+          ctx.arc(cx, cx, r, a0, a1);
+          ctx.stroke();
+          const hue = shownFrac < 0.5 ? '#5eead4' : shownFrac < 0.85 ? '#ffb347' : '#ff5a5a';
+          ctx.strokeStyle = hue;
+          ctx.beginPath();
+          ctx.arc(cx, cx, r, a0, a0 + (a1 - a0) * shownFrac);
+          ctx.stroke();
+          ctx.strokeStyle = 'rgba(248, 244, 236, 0.5)';
+          ctx.lineWidth = dpr;
+          for (let i = 0; i <= 10; i++) {
+            const a = a0 + (a1 - a0) * (i / 10);
+            const len = (i % 5 === 0 ? 8 : 4) * dpr;
+            ctx.beginPath();
+            ctx.moveTo(cx + Math.cos(a) * (r - 6 * dpr), cx + Math.sin(a) * (r - 6 * dpr));
+            ctx.lineTo(cx + Math.cos(a) * (r - 6 * dpr - len), cx + Math.sin(a) * (r - 6 * dpr - len));
+            ctx.stroke();
+          }
+          const na = a0 + (a1 - a0) * shownFrac;
+          ctx.fillStyle = hue;
+          ctx.beginPath();
+          ctx.arc(cx + Math.cos(na) * r, cx + Math.sin(na) * r, 4 * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       if (radar) {
@@ -450,10 +513,27 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   return (
     <div ref={rootRef} className="flight-hud" data-phase={phase}>
       {phase === 'idle' && (
-        <button type="button" className="flight-hud__explore" onClick={enter}>
-          <Rocket size={16} strokeWidth={2.2} aria-hidden />
-          <span>{t('explore')}</span>
-        </button>
+        <div className="flight-hud__hangar" role="group" aria-label={t('hangar')}>
+          <span className="flight-hud__panel-label">{t('hangar')}</span>
+          <div className="flight-hud__ships">
+            {SHIPS.map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                className="flight-hud__ship"
+                data-active={kind === shipKind ? 'true' : 'false'}
+                onClick={() => setShipKind(kind)}
+              >
+                <span className="flight-hud__led" aria-hidden />
+                {t(`ships.${kind}`)}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="flight-hud__explore" onClick={enter}>
+            <Rocket size={15} strokeWidth={2.2} aria-hidden />
+            <span>{t('explore')}</span>
+          </button>
+        </div>
       )}
 
       {phase === 'countdown' && (
@@ -495,6 +575,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
                   session.input.modeRequest = m;
                 }}
               >
+                <span className="flight-hud__led" aria-hidden />
                 {t(`modes.${m}`)}
               </button>
             ))}
@@ -505,27 +586,35 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
             <div ref={jumpBarRef} className="flight-hud__jumpbar" aria-hidden />
           </div>
 
-          <div className="flight-hud__speed" aria-live="off">
-            <span className="flight-hud__label">{t('speed')}</span>
-            <span className="flight-hud__value">
-              <span ref={speedRef}>0</span> <span ref={unitRef} className="flight-hud__unit">{t('kmS')}</span>
-            </span>
-            <span className="flight-hud__label" />
-            <span ref={cRef} className="flight-hud__value flight-hud__value--dim">0.000 c</span>
-            <span className="flight-hud__label flight-hud__row--wide">{t('modeLabel')}</span>
-            <span ref={modeRef} className="flight-hud__value flight-hud__row--wide">{t('modes.cruise')}</span>
-            <span className="flight-hud__label flight-hud__row--wide">{t('foils')}</span>
-            <span ref={foilsRef} className="flight-hud__value flight-hud__value--dim flight-hud__row--wide">{t('foilsLocked')}</span>
-            <span className="flight-hud__label">{t('kills')}</span>
-            <span ref={killsRef} className="flight-hud__value">0</span>
-            <span className="flight-hud__label">{t('near')}</span>
-            <span ref={nearRef} className="flight-hud__value">—</span>
-            <span className="flight-hud__label">{t('alt')}</span>
-            <span ref={altRef} className="flight-hud__value">—</span>
-            <span className="flight-hud__label">{t('system')}</span>
-            <span ref={systemRef} className="flight-hud__value">{t('systems.sol')}</span>
-            <span className="flight-hud__label flight-hud__row--wide">{t('target')}</span>
-            <span ref={targetRef} className="flight-hud__value flight-hud__value--dim flight-hud__row--wide">—</span>
+          <div className="flight-hud__deck" aria-live="off">
+            <div className="flight-hud__gauge">
+              <canvas ref={gaugeRef} style={{ width: GAUGE_PX, height: GAUGE_PX }} aria-hidden />
+              <div className="flight-hud__gauge-read">
+                <span ref={speedRef} className="flight-hud__gauge-speed">0</span>
+                <span className="flight-hud__gauge-unit">{t('kmS')}</span>
+                <span ref={cRef} className="flight-hud__gauge-c">0.000 c</span>
+              </div>
+            </div>
+            <div className="flight-hud__readout">
+              <span className="flight-hud__label">{t('modeLabel')}</span>
+              <span ref={modeRef} className="flight-hud__value">{t('modes.cruise')}</span>
+              <span className="flight-hud__label">{t('near')}</span>
+              <span ref={nearRef} className="flight-hud__value">—</span>
+              <span className="flight-hud__label">{t('alt')}</span>
+              <span ref={altRef} className="flight-hud__value">—</span>
+              <span className="flight-hud__label">{t('system')}</span>
+              <span ref={systemRef} className="flight-hud__value">{t('systems.sol')}</span>
+            </div>
+            <div className="flight-hud__status">
+              <span ref={foilsRef} className="flight-hud__stat" data-on="false">
+                <span className="flight-hud__led" aria-hidden />
+                {t('foils')}
+              </span>
+              <span className="flight-hud__stat">
+                {t('kills')} <span ref={killsRef}>0</span>
+              </span>
+            </div>
+            <div ref={pilotRef} className="flight-hud__pilot" hidden />
           </div>
           <canvas
             ref={radarRef}
@@ -552,6 +641,16 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
           {touch && (
             <>
               <canvas ref={padRef} className="flight-hud__pad" aria-hidden />
+              <button
+                ref={ejectRef}
+                type="button"
+                className="flight-hud__eject"
+                onClick={() => {
+                  session.input.eject = true;
+                }}
+              >
+                {t('eject')}
+              </button>
               <button type="button" className="flight-hud__brake" {...holdBrake}>
                 {t('brake')}
               </button>
