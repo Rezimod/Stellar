@@ -911,11 +911,61 @@
 }
 .flight-hud__explore:hover { background: rgba(255, 179, 71, 0.22); }
 
-/* On phones the hangar sits above the dock and its wrapped chip rows. */
+.flight-hud__hangar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.flight-hud__hangar-close {
+  min-height: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid var(--deck-line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--deck-dim);
+  cursor: pointer;
+}
+.flight-hud__hangar-close::before { content: none; }
+
+/* Phone: one small key opens the hangar, so the sky stays clear until you
+   actually want to fly. */
+.flight-hud__hangar-key {
+  pointer-events: auto;
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 60px);
+  width: 46px;
+  height: 46px;
+  min-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 179, 71, 0.7);
+  border-radius: 12px;
+  background: rgba(7, 10, 16, 0.86);
+  color: var(--deck-warn);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.flight-hud__hangar-key::before { content: none; }
+body[data-solar-hangar='1'] .solar-system__viewport-hint { opacity: 0; }
+.flight-hud__hangar-key:active { transform: scale(0.94); }
+
 @media (max-width: 680px) {
   .flight-hud__hangar {
-    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 236px);
+    right: max(12px, env(safe-area-inset-right));
+    left: max(12px, env(safe-area-inset-left));
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 60px);
   }
+  .flight-hud__ships { justify-content: space-between; }
+  .flight-hud__ship { flex: 1; justify-content: center; }
 }
 
 .flight-hud__exit {
@@ -929,34 +979,70 @@
 /* The dock used to be one row that ran off the side of a phone, clipping the
    last speed chip and the settings button. Below 680px the speed chips take
    a row of their own and the controls sit under them, all at full size. */
+/* On a phone the dock stays one slim row: play, the current rate (which
+   opens a short list), and three icon keys. Six wrapped chips used to take
+   a third of the sky. */
 @media (max-width: 680px) {
   .solar-system__dockbar {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    width: calc(100vw - 20px);
-    max-width: none;
-    padding: 8px 10px;
-    border-radius: 22px;
-  }
-  .solar-system__dockbar-chips {
-    order: -1;
-    flex-basis: 100%;
-    flex-wrap: wrap;
-    overflow: visible;
-    justify-content: center;
-    gap: 6px;
-    padding-bottom: 2px;
-  }
-  .solar-system__dockbar .solar-system__chip {
-    min-height: 38px;
-    padding: 0 12px;
-    font-size: 11px;
+    gap: 5px;
+    padding: 4px 5px;
   }
   .solar-system__dockbtn {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
   }
+}
+
+.solar-system__ratebtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.solar-system__ratebtn svg {
+  opacity: 0.7;
+  transition: transform 140ms ease;
+}
+.solar-system__ratebtn.is-active svg { transform: rotate(180deg); }
+
+/* Rate list — a short column right above the dock. */
+.solar-system__rate-pop {
+  position: absolute;
+  z-index: 16;
+  left: 50%;
+  bottom: calc(56px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 14px;
+  background: rgba(5, 9, 18, 0.92);
+  border: 0.5px solid rgba(248, 244, 236, 0.14);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.solar-system__rate-item {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 0.5px solid transparent;
+  background: transparent;
+  color: rgba(232, 236, 244, 0.85);
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.solar-system__rate-item::before { content: none; }
+.solar-system__rate-item.is-active {
+  border-color: rgba(255, 179, 71, 0.45);
+  background: rgba(255, 179, 71, 0.12);
+  color: #ffd79a;
 }
 
 .flight-hud__countdown {

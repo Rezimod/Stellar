@@ -59,6 +59,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const [count, setCount] = useState(3);
   const [touch, setTouch] = useState(false);
   const [shipKind, setShipKind] = useState<ShipKind>(session.shipKind);
+  /** On a phone the hangar starts as a single key and opens on demand, so
+   *  the panel never sits on top of the sky while you are just looking. */
+  const [hangarOpen, setHangarOpen] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const padRef = useRef<HTMLCanvasElement>(null);
@@ -96,6 +99,16 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   useEffect(() => {
     setTouch(window.matchMedia('(pointer: coarse)').matches);
   }, []);
+
+  // The open hangar covers the drag hint; fade the hint out rather than
+  // leaving a sliver of it behind the panel.
+  useEffect(() => {
+    if (!hangarOpen) return;
+    document.body.dataset.solarHangar = '1';
+    return () => {
+      delete document.body.dataset.solarHangar;
+    };
+  }, [hangarOpen]);
 
   const clearTimers = () => {
     for (const id of timersRef.current) window.clearTimeout(id);
@@ -544,9 +557,33 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
 
   return (
     <div ref={rootRef} className="flight-hud" data-phase={phase}>
-      {phase === 'idle' && (
+      {phase === 'idle' && touch && !hangarOpen && (
+        <button
+          type="button"
+          className="flight-hud__hangar-key"
+          onClick={() => setHangarOpen(true)}
+          aria-expanded={false}
+          aria-label={t('hangar')}
+        >
+          <Rocket size={17} strokeWidth={2.2} aria-hidden />
+        </button>
+      )}
+
+      {phase === 'idle' && (!touch || hangarOpen) && (
         <div className="flight-hud__hangar" role="group" aria-label={t('hangar')}>
-          <span className="flight-hud__panel-label">{t('hangar')}</span>
+          <div className="flight-hud__hangar-head">
+            <span className="flight-hud__panel-label">{t('hangar')}</span>
+            {touch && (
+              <button
+                type="button"
+                className="flight-hud__hangar-close"
+                onClick={() => setHangarOpen(false)}
+                aria-label={t('exit')}
+              >
+                <X size={14} strokeWidth={2.4} aria-hidden />
+              </button>
+            )}
+          </div>
           <div className="flight-hud__ships">
             {SHIPS.map((kind) => (
               <button

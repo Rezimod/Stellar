@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarClock,
+  ChevronUp,
   Info,
   Orbit,
   Pause,
@@ -107,6 +108,10 @@ export default function SolarSystemExplorer() {
   const simRate = SPEED_STEPS[speedIdx].simSecPerRealSec;
 
   const [viewport, setViewport] = useState({ w: 1280, h: 800 });
+  // On a phone the six speed chips wrapped into rows and swallowed the sky,
+  // so the dock keeps one row and the rate opens as a short list instead.
+  const compact = viewport.w <= 680;
+  const [speedOpen, setSpeedOpen] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute('data-solar-immersive', '1');
@@ -235,19 +240,32 @@ export default function SolarSystemExplorer() {
         >
           {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
         </button>
-        <div className="solar-system__dockbar-chips" role="tablist" aria-label={t('time.speedAria')}>
-          {SPEED_STEPS.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              role="tab"
-              className={`solar-system__chip${i === speedIdx ? ' is-active' : ''}`}
-              onClick={() => setSpeedIdx(i)}
-            >
-              {t(`time.speed.${s.id}`)}
-            </button>
-          ))}
-        </div>
+        {compact ? (
+          <button
+            type="button"
+            className={`solar-system__chip solar-system__ratebtn${speedOpen ? ' is-active' : ''}`}
+            onClick={() => setSpeedOpen((o) => !o)}
+            aria-expanded={speedOpen}
+            aria-label={t('time.speedAria')}
+          >
+            {t(`time.speed.${SPEED_STEPS[speedIdx].id}`)}
+            <ChevronUp size={13} aria-hidden />
+          </button>
+        ) : (
+          <div className="solar-system__dockbar-chips" role="tablist" aria-label={t('time.speedAria')}>
+            {SPEED_STEPS.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                className={`solar-system__chip${i === speedIdx ? ' is-active' : ''}`}
+                onClick={() => setSpeedIdx(i)}
+              >
+                {t(`time.speed.${s.id}`)}
+              </button>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           className="solar-system__dockbtn"
@@ -277,6 +295,26 @@ export default function SolarSystemExplorer() {
           <Settings2 size={16} aria-hidden />
         </button>
       </div>}
+
+      {compact && speedOpen && !flightActive && (
+        <div className="solar-system__rate-pop" role="tablist" aria-label={t('time.speedAria')}>
+          {SPEED_STEPS.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={i === speedIdx}
+              className={`solar-system__rate-item${i === speedIdx ? ' is-active' : ''}`}
+              onClick={() => {
+                setSpeedIdx(i);
+                setSpeedOpen(false);
+              }}
+            >
+              {t(`time.speed.${s.id}`)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {scrubOpen && !flightActive && (
         <div className="solar-system__scrub-pop">
