@@ -14,8 +14,13 @@ export const NASA_PLANET_TEXTURE_URL: Record<SolarBodyId, string> = {
   earth: '/solar-system/planets/earth.jpg',
   mars: '/solar-system/planets/mars.jpg',
   jupiter: '/solar-system/planets/jupiter.jpg',
-  /** 2K Cassini-style globe (Solar System Scope texture set, NASA-derived). */
-  saturn: '/solar-system/planets/saturn-2k.jpg',
+  /**
+   * The 720px globe, not the 2K one. `5ab6075` swapped Saturn onto saturn-2k.jpg
+   * for the resolution, but that map carries about a third of Saturn's chroma and
+   * almost none of its cloud structure, so the planet renders as flat cream. This
+   * one is softer up close and much the better picture.
+   */
+  saturn: '/solar-system/planets/saturn.jpg',
   uranus: '/solar-system/planets/uranus.jpg',
   neptune: '/solar-system/planets/neptune.jpg',
   pluto: '/solar-system/planets/pluto.jpg',

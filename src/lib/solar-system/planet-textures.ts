@@ -12,9 +12,11 @@ const SRGB = THREE.SRGBColorSpace;
 
 const GAS_GIANTS: ReadonlySet<SolarBodyId> = new Set(['jupiter', 'saturn', 'uranus', 'neptune']);
 
-/** Spec: metalness 0 everywhere; rocky bodies 0.8, gas giants 0.4. */
+/** Metalness 0 everywhere. A gas giant's cloud deck is a diffuse scatterer —
+ *  Voyager and Cassini never caught a specular highlight on one — so it wants to
+ *  be nearly fully rough; at 0.4 the giants carried a glossy sheen. */
 function roughnessFor(id: SolarBodyId): number {
-  return GAS_GIANTS.has(id) ? 0.4 : 0.8;
+  return GAS_GIANTS.has(id) ? 0.95 : 0.8;
 }
 
 function canvasTexture(
@@ -66,6 +68,12 @@ vWorldCenter = modelMatrix[3].xyz;
 `;
 
 function injectWorldVaryings(shader: CompiledShader) {
+  // A planet can carry several hooks that want these, so this has to be
+  // idempotent. Match vWorldNrm, not vWorldPos: three declares its own
+  // `vWorldPosition`, which vWorldPos is a substring of, and testing for that
+  // skips the injection every time and leaves the hooks referencing
+  // identifiers nobody declared.
+  if (shader.vertexShader.includes('vWorldNrm')) return;
   shader.vertexShader = shader.vertexShader
     .replace('#include <common>', `#include <common>\n${WORLD_PARS}`)
     .replace('#include <fog_vertex>', `#include <fog_vertex>\n${WORLD_VERTEX}`);
@@ -75,54 +83,108 @@ function injectWorldVaryings(shader: CompiledShader) {
   );
 }
 
+/** A shader edit a material can carry alongside others — Saturn needs three at
+ *  once (cloud shear, its own ring shadow, limb falloff) and `onBeforeCompile`
+ *  is a single slot. */
+type ShaderMutator = (shader: CompiledShader) => void;
+
 /** Earth: city lights only on the hemisphere facing away from the Sun. */
-function hookEarthNight(mat: THREE.MeshStandardMaterial) {
-  mat.onBeforeCompile = (shader) => {
-    injectWorldVaryings(shader);
-    shader.fragmentShader = shader.fragmentShader.replace(
-      '#include <emissivemap_fragment>',
-      /* glsl */ `#include <emissivemap_fragment>
-      {
-        float sunFacing = dot(normalize(vWorldNrm), normalize(-vWorldPos));
-        totalEmissiveRadiance *= smoothstep(0.12, -0.2, sunFacing);
-      }`,
-    );
-    mat.userData.shader = shader;
-  };
+const earthNight: ShaderMutator = (shader) => {
+  injectWorldVaryings(shader);
+  shader.fragmentShader = shader.fragmentShader.replace(
+    '#include <emissivemap_fragment>',
+    /* glsl */ `#include <emissivemap_fragment>
+    {
+      float sunFacing = dot(normalize(vWorldNrm), normalize(-vWorldPos));
+      totalEmissiveRadiance *= smoothstep(0.12, -0.2, sunFacing);
+    }`,
+  );
+};
+
+/** Measured peak zonal wind at each giant's equator (m/s, signed against the
+ *  body's own rotation) and how many alternating jets run from equator to pole.
+ *  Saturn's equatorial jet is the fastest prograde flow in the solar system;
+ *  Uranus and Neptune blow retrograde at the equator, Neptune hardest of all.
+ *  Driving the shear from the real figures keeps the four visibly different
+ *  from one another instead of all drifting alike. */
+interface WindField {
+  equatorialMs: number;
+  jets: number;
+  /** Relative eddy activity — Uranus is famously bland, Jupiter is not. */
+  eddy: number;
 }
 
-/** Jupiter / Neptune: zonal jets shear the cloud map, eddies wobble it. */
-function hookCloudBands(mat: THREE.MeshStandardMaterial, lite: boolean) {
-  mat.onBeforeCompile = (shader) => {
+const WIND_FIELD: Partial<Record<SolarBodyId, WindField>> = {
+  jupiter: { equatorialMs: 100, jets: 7, eddy: 1 },
+  saturn: { equatorialMs: 470, jets: 5, eddy: 0.7 },
+  uranus: { equatorialMs: -100, jets: 3, eddy: 0.3 },
+  neptune: { equatorialMs: -400, jets: 4, eddy: 0.9 },
+};
+
+/** Jupiter sets the on-screen pace; the rest scale off it sub-linearly, so
+ *  Saturn still reads as the fastest without whipping round the globe. */
+function driftRate(wind: WindField): number {
+  const ratio = Math.abs(wind.equatorialMs) / 100;
+  return Math.sign(wind.equatorialMs) * ratio ** 0.6 * 0.004;
+}
+
+/** Gas giants: zonal jets shear the cloud map, eddies wobble it. */
+function cloudBands(wind: WindField, lite: boolean): ShaderMutator {
+  return (shader) => {
     shader.uniforms.uBandTime = { value: 0 };
-    shader.uniforms.uBandAmp = { value: lite ? 0.0015 : 0.0026 };
+    shader.uniforms.uBandAmp = { value: wind.eddy * (lite ? 0.0015 : 0.0026) };
+    shader.uniforms.uDrift = { value: driftRate(wind) };
+    shader.uniforms.uJets = { value: wind.jets };
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
         /* glsl */ `#include <common>
         uniform float uBandTime;
-        uniform float uBandAmp;`,
+        uniform float uBandAmp;
+        uniform float uDrift;
+        uniform float uJets;`,
       )
       .replace(
         'vec4 sampledDiffuseColor = texture2D( map, vMapUv );',
         /* glsl */ `vec2 bUv = vMapUv;
         float bLat = (bUv.y - 0.5) * 3.14159265;
-        // Alternating east/west jets by latitude, faster near the equator.
-        float jet = sin(bLat * 7.0 + 0.6) * 0.55 + sin(bLat * 3.0) * 0.45;
-        bUv.x += jet * uBandTime * 0.004;
+        // Alternating east/west jets by latitude, fastest at the equator.
+        float jet = sin(bLat * uJets + 0.6) * 0.55 + sin(bLat * uJets * 0.43) * 0.45;
+        bUv.x += jet * uBandTime * uDrift;
         bUv.x += sin(bUv.y * 40.0 + uBandTime * 0.35) * uBandAmp;
         bUv.y += sin(bUv.x * 30.0 + uBandTime * 0.27 + bLat * 2.0) * uBandAmp * 0.6;
         vec4 sampledDiffuseColor = texture2D( map, bUv );`,
       );
-    mat.userData.shader = shader;
+  };
+}
+
+/** A deep atmosphere scatters less light back at you as the view angle grazes,
+ *  so a giant's disc falls off toward the limb instead of reading as a flat
+ *  cut-out of its map. */
+function limbDarken(strength: number): ShaderMutator {
+  return (shader) => {
+    injectWorldVaryings(shader);
+    shader.uniforms.uLimb = { value: strength };
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uLimb;')
+      .replace(
+        '#include <lights_fragment_end>',
+        /* glsl */ `#include <lights_fragment_end>
+        {
+          float mu = clamp(dot(normalize(vWorldNrm), normalize(cameraPosition - vWorldPos)), 0.0, 1.0);
+          float limb = mix(1.0, pow(mu, 0.55), uLimb);
+          reflectedLight.directDiffuse *= limb;
+          reflectedLight.indirectDiffuse *= limb;
+        }`,
+      );
   };
 }
 
 /** Saturn: the ring system casts its banded shadow onto the globe. */
-function hookRingShadow(mat: THREE.MeshStandardMaterial) {
+function ringShadow(): ShaderMutator {
   const R = worldRadiusForBody('saturn');
   const tilt = THREE.MathUtils.degToRad(AXIAL_TILT_DEG.saturn);
-  mat.onBeforeCompile = (shader) => {
+  return (shader) => {
     injectWorldVaryings(shader);
     shader.uniforms.uRingTex = { value: getSaturnRingStripTexture() };
     // Ring plane normal in world space: the rings share the planet's Z tilt.
@@ -160,14 +222,22 @@ function hookRingShadow(mat: THREE.MeshStandardMaterial) {
           reflectedLight.directSpecular *= ringShadow;
         }`,
       );
-    mat.userData.shader = shader;
   };
 }
 
 function applyHooks(id: SolarBodyId, mat: THREE.MeshStandardMaterial, lite: boolean) {
-  if (id === 'earth') hookEarthNight(mat);
-  else if (id === 'jupiter' || id === 'neptune') hookCloudBands(mat, lite);
-  else if (id === 'saturn') hookRingShadow(mat);
+  const mutators: ShaderMutator[] = [];
+  if (id === 'earth') mutators.push(earthNight);
+  const wind = WIND_FIELD[id];
+  if (wind) mutators.push(cloudBands(wind, lite));
+  if (id === 'saturn') mutators.push(ringShadow());
+  // The Sun lights itself, so grazing angles don't dim it.
+  if (GAS_GIANTS.has(id)) mutators.push(limbDarken(0.55));
+  if (!mutators.length) return;
+  mat.onBeforeCompile = (shader) => {
+    for (const mutate of mutators) mutate(shader);
+    mat.userData.shader = shader;
+  };
 }
 
 /** Per-frame time for the animated cloud-band materials (no-op for the rest). */
