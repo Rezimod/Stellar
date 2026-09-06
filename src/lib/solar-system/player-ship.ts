@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import type { AlienHandle } from '@/lib/solar-system/aliens';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
+import { makeRadio } from '@/lib/solar-system/radio';
 
 export const FLIGHT_UNIT = 0.006;
 const U = FLIGHT_UNIT;
@@ -22,6 +23,7 @@ const LIGHT_KM_S = 299_792.458;
 export type SpeedMode = 'cruise' | 'fast' | 'jump';
 export type ShipKind = 'xfoil' | 'interceptor';
 export type Pilot = 'ship' | 'eva';
+export type ViewMode = 'chase' | 'cockpit';
 export type JumpPhase = 'none' | 'charge' | 'travel';
 export type FlightAlert =
   | ''
@@ -55,6 +57,15 @@ const EVA_HULL_RADIUS = 0.6 * E;
 /** How close the suit must be to climb back aboard. */
 const BOARD_RANGE = 14 * H;
 const STATION_HP = 6;
+/** Pilot's eye inside the hull, and the lens it looks through. */
+const COCKPIT_EYE = new THREE.Vector3(0, 0.55 * H, 0.9 * H);
+const COCKPIT_FOV = 70;
+/** A hailing world opens its channel this close, in radii. */
+const HAIL_RADII = 8;
+const COMMS_LINES = 4;
+const COMMS_LINE_SEC = 3.4;
+const COMMS_GAP_SEC = 1.1;
+const COMMS_COOLDOWN = 240;
 /** Where the cannons' fire crosses the centreline. */
 const BORESIGHT = 120 * H;
 const JUMP_CAM_BACK = 44 * H;
@@ -123,6 +134,8 @@ export interface FlightInput {
   foilsToggle: boolean;
   /** One-shot: leave the ship in the suit, or climb back aboard. */
   eject: boolean;
+  /** One-shot: chase camera ↔ cockpit. */
+  viewToggle: boolean;
 }
 
 export interface FlightTelemetry {
@@ -166,6 +179,14 @@ export interface FlightTelemetry {
   maxKmS: number;
   /** In the suit and close enough to climb back aboard. */
   canBoard: boolean;
+  view: ViewMode;
+  /** Airframe bank (rad) and pitch rate, for the cockpit overlay. */
+  bank: number;
+  pitchRate: number;
+  /** Incoming transmission: who, which line (1-based, 0 = none), how far typed. */
+  commsFrom: string;
+  commsLine: number;
+  commsProgress: number;
 }
 
 export interface FlightSession {
@@ -191,6 +212,8 @@ export interface FlightBody {
   /** Stations can be shot down or rammed; the scene hides them while set. */
   destroyed?: boolean;
   hp?: number;
+  /** An inhabited world: it opens a radio channel when the ship comes near. */
+  hails?: boolean;
 }
 
 export interface FlightAnchor {
@@ -222,6 +245,7 @@ export function clearFlightInput(input: FlightInput) {
   input.modeRequest = null;
   input.foilsToggle = false;
   input.eject = false;
+  input.viewToggle = false;
 }
 
 export function createFlightSession(): FlightSession {
@@ -231,7 +255,7 @@ export function createFlightSession(): FlightSession {
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, mouseDX: 0, mouseDY: 0,
-      modeRequest: null, foilsToggle: false, eject: false,
+      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false,
     },
     telemetry: {
       speed: 0,
@@ -262,6 +286,12 @@ export function createFlightSession(): FlightSession {
       pilot: 'ship',
       maxKmS: 5 * U * KM_PER_SCENE_UNIT,
       canBoard: false,
+      view: 'chase',
+      bank: 0,
+      pitchRate: 0,
+      commsFrom: '',
+      commsLine: 0,
+      commsProgress: 0,
     },
   };
 }
@@ -271,7 +301,7 @@ export function createFlightSession(): FlightSession {
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight',
-  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyV',
+  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyV', 'KeyC',
 ]);
 
 /**
@@ -307,6 +337,7 @@ export function attachDesktopControls(
     else if (e.code === 'Digit3' || e.code === 'KeyH') input.modeRequest = 'jump';
     else if (e.code === 'KeyF') input.foilsToggle = true;
     else if (e.code === 'KeyV') input.eject = true;
+    else if (e.code === 'KeyC') input.viewToggle = true;
     pressed.add(e.code);
     sync();
   };
@@ -377,6 +408,8 @@ interface ShipParts {
   plasmaMat: THREE.SpriteMaterial;
   plasma: THREE.Sprite;
   strobeMat: THREE.MeshBasicMaterial;
+  /** Navigation lights — their base colour lives in `userData.base`. */
+  navMats: THREE.MeshBasicMaterial[];
   /** Materials shared across meshes — disposed once, by hand. */
   owned: THREE.Material[];
 }
@@ -484,6 +517,7 @@ function buildShip(): ShipParts {
   const glowSprites: THREE.Sprite[] = [];
   const foils: Foil[] = [];
   const cannonTips: THREE.Object3D[] = [];
+  const navMats: THREE.MeshBasicMaterial[] = [];
   // Forward is +Z with +Y up, so the pilot's left (port) is +X.
   const navColour: Record<number, number> = { 1: 0xff3b30, [-1]: 0x30ff6a };
   for (const side of [1, -1]) {
@@ -548,10 +582,12 @@ function buildShip(): ShipParts {
 
       if (layer === 1) {
         const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(navColour[side]).multiplyScalar(1.6) });
+        m.userData.base = navColour[side];
         const light = new THREE.Mesh(navGeom, m);
         light.position.set(side * 3.42 * H, 0.06 * H, -0.2 * H);
         pivot.add(light);
         owned.push(m);
+        navMats.push(m);
       }
     }
   }
@@ -578,7 +614,7 @@ function buildShip(): ShipParts {
 
   return {
     group, hull, foils, cannonTips, skinMat, engineMat, glowMats, glowSprites,
-    plasmaMat, plasma, strobeMat, owned,
+    plasmaMat, plasma, strobeMat, navMats, owned,
   };
 }
 
@@ -646,6 +682,7 @@ function buildInterceptor(): ShipParts {
   const glowMats: THREE.SpriteMaterial[] = [];
   const glowSprites: THREE.Sprite[] = [];
   const cannonTips: THREE.Object3D[] = [];
+  const navMats: THREE.MeshBasicMaterial[] = [];
   const navColour: Record<number, number> = { 1: 0xff3b30, [-1]: 0x30ff6a };
   for (const side of [1, -1]) {
     const canard = new THREE.Mesh(canardGeom, panel);
@@ -680,10 +717,12 @@ function buildInterceptor(): ShipParts {
     hull.add(tip);
     cannonTips.push(tip);
     const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(navColour[side]).multiplyScalar(1.6) });
+    m.userData.base = navColour[side];
     const light = new THREE.Mesh(navGeom, m);
     light.position.set(side * 1.72 * H, 0.05 * H, 1.35 * H);
     hull.add(light);
     owned.push(m);
+    navMats.push(m);
   }
   const strobeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const strobe = new THREE.Mesh(navGeom, strobeMat);
@@ -696,7 +735,7 @@ function buildInterceptor(): ShipParts {
   plasma.scale.setScalar(4 * H);
   hull.add(plasma);
 
-  return { group, hull, foils: [], cannonTips, skinMat, engineMat, glowMats, glowSprites, plasmaMat, plasma, strobeMat, owned };
+  return { group, hull, foils: [], cannonTips, skinMat, engineMat, glowMats, glowSprites, plasmaMat, plasma, strobeMat, navMats, owned };
 }
 
 /**
@@ -780,7 +819,7 @@ function buildCosmonaut(): ShipParts {
   plasma.position.set(0, 0.2 * E, 0.5 * E);
   plasma.scale.setScalar(2.2 * E);
   hull.add(plasma);
-  return { group, hull, foils: [], cannonTips: [], skinMat, engineMat, glowMats, glowSprites, plasmaMat, plasma, strobeMat, owned };
+  return { group, hull, foils: [], cannonTips: [], skinMat, engineMat, glowMats, glowSprites, plasmaMat, plasma, strobeMat, navMats: [], owned };
 }
 
 /* ───────────────────────── audio ───────────────────────── */
@@ -1154,6 +1193,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   const tel = session.telemetry;
   const input = session.input;
   const audio = makeFlightAudio();
+  const radio = makeRadio();
   const crash = makeCrashFx();
 
   const fxGroup = new THREE.Group();
@@ -1242,7 +1282,14 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   const qB = new THREE.Quaternion();
 
   let pilot: Pilot = 'ship';
+  let view: ViewMode = 'chase';
   let mode: SpeedMode = 'cruise';
+  // Radio: -1 idle, 0 = channel opening, 1..N = line N, then the tail.
+  let commsLine = -1;
+  let commsT = 0;
+  let commsCool = 0;
+  let commsFrom = '';
+  const eye = new THREE.Vector3();
   let regime: Regime = regimes.cruise;
   let jumpPhase: JumpPhase = 'none';
   let jumpT = 0;
@@ -1356,6 +1403,15 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       // Hold position over the wreck; the shake does the talking.
       camera.up.copy(camUp);
       camera.lookAt(crashLook);
+    } else if (view === 'cockpit' && pilot === 'ship') {
+      // Pilot's eye: no lag, the frame is the ship's own.
+      up.set(0, 1, 0).applyQuaternion(group.quaternion);
+      eye.copy(COCKPIT_EYE).applyQuaternion(group.quaternion).add(group.position);
+      camera.position.copy(eye);
+      camUp.copy(up);
+      camera.up.copy(camUp);
+      lookPt.copy(eye).addScaledVector(fwd, 10 * U);
+      camera.lookAt(lookPt);
     } else {
       up.set(0, 1, 0).applyQuaternion(a.quaternion);
       camTarget.copy(a.position).addScaledVector(fwd, -camBack).addScaledVector(up, pilot === 'ship' ? CAM_UP : EVA_CAM_UP);
@@ -1502,8 +1558,14 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           }
         }
       }
+      if (input.viewToggle) {
+        input.viewToggle = false;
+        view = view === 'chase' ? 'cockpit' : 'chase';
+        snapCamera = true;
+      }
       const me = actor();
       tel.pilot = pilot;
+      tel.view = view;
       regime = pilot === 'eva' ? EVA : mode === 'jump' ? regime : regimes[mode];
 
       // ── Regime requests. A jump needs clear space: inside a few radii of
@@ -1759,6 +1821,54 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       const flashing = beat < 0.07 || (beat > 0.18 && beat < 0.25);
       shipParts.strobeMat.color.setScalar(flashing ? 2.4 : 0.05);
       evaParts.strobeMat.color.setScalar(flashing ? 2.4 : 0.05);
+      // Position lights breathe very slightly, the way an airliner's do.
+      const beacon = 1.45 + 0.25 * (0.5 + 0.5 * Math.sin(timeSec * 2.4));
+      for (const m of shipParts.navMats) m.color.setHex(m.userData.base as number).multiplyScalar(beacon);
+      // From the pilot's seat the hull is the cockpit overlay, not the mesh.
+      group.visible = crashT < 0 && !(view === 'cockpit' && pilot === 'ship');
+
+      // ── Radio: an inhabited world opens a channel when the ship comes
+      // near, speaks its lines, and signs off; then a long quiet. ──
+      commsCool -= dt;
+      let hailing: FlightBody | null = null;
+      for (const b of world.bodies) {
+        if (b.hails && !b.destroyed && me.position.distanceTo(b.position) < b.radius * HAIL_RADII) {
+          hailing = b;
+          break;
+        }
+      }
+      if (commsLine < 0) {
+        if (hailing && commsCool <= 0 && pilot === 'ship' && crashT < 0) {
+          commsLine = 0;
+          commsT = 0;
+          commsFrom = hailing.id;
+          radio.open();
+        }
+      } else {
+        commsT += dt;
+        const gone = !hailing || hailing.id !== commsFrom;
+        if (commsLine === 0 && commsT > 0.7) {
+          commsLine = 1;
+          commsT = 0;
+          radio.speak(COMMS_LINE_SEC * 0.85, 11);
+        } else if (commsLine >= 1 && commsLine <= COMMS_LINES && commsT > COMMS_LINE_SEC + COMMS_GAP_SEC) {
+          commsLine += 1;
+          commsT = 0;
+          if (commsLine <= COMMS_LINES) radio.speak(COMMS_LINE_SEC * 0.85, 11 + commsLine * 7);
+          else radio.close();
+        } else if (commsLine > COMMS_LINES && commsT > 1.2) {
+          commsLine = -1;
+          commsCool = COMMS_COOLDOWN;
+        }
+        if (gone && commsLine >= 0) {
+          radio.close();
+          commsLine = -1;
+          commsCool = 20;
+        }
+      }
+      tel.commsFrom = commsLine >= 0 ? commsFrom : '';
+      tel.commsLine = commsLine >= 1 && commsLine <= COMMS_LINES ? commsLine : 0;
+      tel.commsProgress = tel.commsLine ? Math.min(1, commsT / COMMS_LINE_SEC) : 0;
 
       // Bolts advance in world space and hit-test against the live enemies
       // and every solid body — a shot at the Moon sparks off the regolith;
@@ -1817,8 +1927,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       fwd.set(0, 0, 1).applyQuaternion(me.quaternion);
       const camBackTarget = jumpPhase !== 'none' ? JUMP_CAM_BACK : regime.camBack;
       camBack += (camBackTarget - camBack) * (1 - Math.exp(-dt * 2.5));
-      const fovTarget = jumpPhase !== 'none' ? JUMP_FOV : regime.fov;
+      const fovTarget = jumpPhase !== 'none' ? JUMP_FOV : view === 'cockpit' && pilot === 'ship' ? COCKPIT_FOV : regime.fov;
       updateCamera(dt, camera, fovTarget);
+      tel.bank = bank;
+      tel.pitchRate = angVel.x;
 
       // Hyperspace glow sits far down the tunnel and swells as you close.
       if (jumpPhase === 'travel') {
@@ -1867,6 +1979,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     },
     dispose() {
       audio.dispose();
+      radio.dispose();
       crash.dispose();
       boltGeom.dispose();
       boltMat.dispose();

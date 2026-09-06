@@ -1208,6 +1208,9 @@
   text-align: center;
 }
 
+/* From the seat the dashboard carries the hull figure; keep the strip off the glass. */
+.flight-hud[data-view='cockpit'] .flight-hud__hull { display: none; }
+
 /* The wreck: a dark wash, the verdict, the respawn count. */
 .flight-hud__crash {
   position: absolute;
@@ -1254,7 +1257,8 @@
 .flight-hud__fire,
 .flight-hud__boost,
 .flight-hud__brake,
-.flight-hud__eject {
+.flight-hud__eject,
+.flight-hud__view {
   pointer-events: auto;
   position: absolute;
   z-index: 2;
@@ -1282,7 +1286,8 @@
 .flight-hud__fire:active,
 .flight-hud__boost:active,
 .flight-hud__brake:active,
-.flight-hud__eject:active {
+.flight-hud__eject:active,
+.flight-hud__view:active {
   transform: scale(0.94);
 }
 .flight-hud__fire {
@@ -1325,6 +1330,51 @@
 }
 .flight-hud__eject:active { background: rgba(255, 179, 71, 0.3); }
 
+/* View toggle sits beside eject. */
+.flight-hud__view {
+  right: calc(max(18px, env(safe-area-inset-right)) + 176px);
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 120px);
+  width: 62px;
+  height: 44px;
+}
+.flight-hud__view:active { background: rgba(248, 244, 236, 0.22); }
+
+/* ── Comms: an incoming transmission, typed line by line ── */
+.flight-hud__comms {
+  position: absolute;
+  z-index: 3;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 12px);
+  width: min(360px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid rgba(94, 234, 212, 0.55);
+  border-radius: 6px;
+  background: var(--deck-bg);
+}
+.flight-hud__comms[hidden] { display: none; }
+.flight-hud__comms-head {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--deck-on);
+  animation: flight-alert-blink 900ms steps(2, end) infinite;
+}
+.flight-hud__comms-line {
+  margin: 0;
+  min-height: 1.5em;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(248, 244, 236, 0.9);
+}
+.flight-hud__comms-line:empty { min-height: 0; }
+.flight-hud__comms-line[data-live='true']::after {
+  content: '▌';
+  color: var(--deck-on);
+  animation: flight-alert-blink 500ms steps(2, end) infinite;
+}
+
 /* ── Phone layout: exit and radar own the top corners, the regime keys
    stack under the radar, the deck keeps only what steering needs. ── */
 @media (max-width: 680px) {
@@ -1353,6 +1403,17 @@
     flex-direction: column;
   }
   .flight-hud__mode { height: 36px; padding: 0 10px; }
+  .flight-hud__view {
+    right: calc(max(18px, env(safe-area-inset-right)) + 176px);
+    width: 56px;
+  }
+  .flight-hud__comms {
+    right: max(12px, env(safe-area-inset-right));
+    left: max(12px, env(safe-area-inset-left));
+    width: auto;
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 190px);
+    font-size: 10px;
+  }
   .flight-hud__alert {
     top: max(10px, env(safe-area-inset-top));
     max-width: calc(100vw - 210px);

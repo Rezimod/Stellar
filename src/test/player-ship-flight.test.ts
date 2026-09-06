@@ -316,6 +316,42 @@ describe('EVA and stations', () => {
   });
 });
 
+describe('cockpit and radio', () => {
+  it('toggles into the cockpit and hides the hull mesh', () => {
+    session.input.viewToggle = true;
+    step(1);
+    expect(session.telemetry.view).toBe('cockpit');
+    expect(ship.group.visible).toBe(false);
+    // The eye sits inside the hull, not behind it.
+    expect(camera.position.distanceTo(ship.group.position)).toBeLessThan(0.002);
+    session.input.viewToggle = true;
+    step(1);
+    expect(session.telemetry.view).toBe('chase');
+    expect(ship.group.visible).toBe(true);
+  });
+
+  it('an inhabited world opens a channel, speaks four lines, then signs off', () => {
+    const home = body('centauriPrime', 1, EARTH_R, 7327, 9.9, 1.25);
+    home.hails = true;
+    home.position.set(1, 0, EARTH_R * 11);
+    world.bodies.push(home);
+    step(1);
+    expect(session.telemetry.commsFrom).toBe('centauriPrime');
+    expect(session.telemetry.commsLine).toBe(0);
+    seconds(1);
+    expect(session.telemetry.commsLine).toBe(1);
+    seconds(1);
+    expect(session.telemetry.commsProgress).toBeGreaterThan(0.2);
+    seconds(16);
+    expect(session.telemetry.commsLine).toBe(4);
+    seconds(4);
+    expect(session.telemetry.commsFrom).toBe('');
+    // Quiet afterwards — no second hail straight away.
+    seconds(2);
+    expect(session.telemetry.commsFrom).toBe('');
+  });
+});
+
 describe('hull and S-foils', () => {
   it('enemy fire and heat never destroy the ship', () => {
     ship.takeDamage(500);

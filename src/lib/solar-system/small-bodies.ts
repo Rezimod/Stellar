@@ -91,6 +91,84 @@ export function bandedTexture(seed: number, colours: [number, number, number][])
   return tex;
 }
 
+/** An inhabited ocean world: day map with continents and ice, a night map
+ *  of city lights clustered on the land, and a broken cloud deck. */
+export function livingWorldTextures(seed: number): { day: THREE.CanvasTexture; night: THREE.CanvasTexture; clouds: THREE.CanvasTexture } {
+  const w = 1024;
+  const h = 512;
+  const rnd = seeded(seed);
+  const make = () => {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    return { c, g: c.getContext('2d')! };
+  };
+  const day = make();
+  const night = make();
+  const clouds = make();
+  // Ocean with depth banding.
+  const sea = day.g.createLinearGradient(0, 0, 0, h);
+  sea.addColorStop(0, '#9fd3ff');
+  sea.addColorStop(0.15, '#1d5aa8');
+  sea.addColorStop(0.5, '#123f86');
+  sea.addColorStop(0.85, '#1d5aa8');
+  sea.addColorStop(1, '#9fd3ff');
+  day.g.fillStyle = sea;
+  day.g.fillRect(0, 0, w, h);
+  // Continents: clusters of soft blobs, greener near the equator, drier inland.
+  const land: [number, number, number][] = [];
+  for (let k = 0; k < 7; k++) {
+    const cx = rnd() * w;
+    const cy = h * (0.2 + rnd() * 0.6);
+    for (let i = 0; i < 70; i++) {
+      const x = cx + (rnd() - 0.5) * w * 0.22;
+      const y = cy + (rnd() - 0.5) * h * 0.3;
+      const r = 8 + rnd() * 34;
+      const lat = Math.abs(y / h - 0.5) * 2;
+      const green = 90 + (1 - lat) * 60 + rnd() * 30;
+      day.g.fillStyle = `rgb(${70 + lat * 60 + rnd() * 20},${green},${50 + rnd() * 20})`;
+      day.g.beginPath();
+      day.g.arc(x, y, r, 0, Math.PI * 2);
+      day.g.fill();
+      land.push([x, y, r]);
+    }
+  }
+  // Ice caps.
+  for (const [y0, y1] of [[0, h * 0.06], [h * 0.94, h]]) {
+    day.g.fillStyle = 'rgba(240,246,255,0.95)';
+    day.g.fillRect(0, y0, w, y1 - y0);
+  }
+  // Night: cities on the land, brightest on the coasts.
+  night.g.fillStyle = '#000000';
+  night.g.fillRect(0, 0, w, h);
+  for (const [x, y, r] of land) {
+    const n = Math.floor(r * 0.6);
+    for (let i = 0; i < n; i++) {
+      const a = rnd() * Math.PI * 2;
+      const d = Math.sqrt(rnd()) * r;
+      night.g.fillStyle = `rgba(255,${200 + rnd() * 40},${140 + rnd() * 60},${0.35 + rnd() * 0.65})`;
+      night.g.fillRect(x + Math.cos(a) * d, y + Math.sin(a) * d, 1 + rnd() * 2, 1 + rnd() * 2);
+    }
+  }
+  // Clouds: streaky white on transparent.
+  clouds.g.clearRect(0, 0, w, h);
+  for (let i = 0; i < 260; i++) {
+    const x = rnd() * w;
+    const y = rnd() * h;
+    clouds.g.fillStyle = `rgba(255,255,255,${0.25 + rnd() * 0.5})`;
+    clouds.g.beginPath();
+    clouds.g.ellipse(x, y, 18 + rnd() * 70, 5 + rnd() * 16, (rnd() - 0.5) * 0.5, 0, Math.PI * 2);
+    clouds.g.fill();
+  }
+  const tex = (c: HTMLCanvasElement) => {
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = THREE.RepeatWrapping;
+    return t;
+  };
+  return { day: tex(day.c), night: tex(night.c), clouds: tex(clouds.c) };
+}
+
 interface SmallWorldSpec {
   id: string;
   radiusKm: number;

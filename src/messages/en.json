@@ -1131,7 +1131,17 @@
       "speed": "Speed",
       "kills": "Kills",
       "hull": "Hull",
-      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · 1 2 3 speed · H jump · F S-foils · V eject / board · Esc exit",
+      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · 1 2 3 speed · H jump · F S-foils · V eject / board · C view · Esc exit",
+      "view": "View",
+      "commsHeader": "Incoming transmission · {from}",
+      "comms": {
+        "centauriPrime": {
+          "l1": "Unknown craft, this is Kaelith Harbour Control. We read your drive signature. You are welcome here.",
+          "l2": "Hold your course above the cloud line. Our freighters keep the lower lanes.",
+          "l3": "We have watched your star for a long time. Your Sun rises in our east, as ours does in yours.",
+          "l4": "Transmission ends. Safe orbits, traveller."
+        }
+      },
       "hangar": "Hangar",
       "ships": {
         "xfoil": "X-foil",
@@ -1184,6 +1194,7 @@
         "proximaB": "Proxima b",
         "proximaD": "Proxima d",
         "alphaCenAc": "Alpha Centauri A c",
+        "centauriPrime": "Centauri Prime",
         "moon": "Moon",
         "iss": "ISS",
         "ceres": "Ceres",

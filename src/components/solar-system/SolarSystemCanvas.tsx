@@ -62,6 +62,7 @@ import {
 } from '@/lib/solar-system/player-ship';
 import { makeAlphaCentauri } from '@/lib/solar-system/star-systems';
 import { makeSmallBodies } from '@/lib/solar-system/small-bodies';
+import { makeCockpit, type CockpitHandle } from '@/lib/solar-system/cockpit';
 import { makeAlienEncounters } from '@/lib/solar-system/aliens';
 import { makeDeepSpaceProbes } from '@/lib/solar-system/probes';
 import {
@@ -963,6 +964,7 @@ export function SolarSystemCanvas({
       camera.updateProjectionMatrix();
       renderer.setSize(mount.clientWidth, mount.clientHeight);
       postFx.setSize(mount.clientWidth, mount.clientHeight);
+      cockpit?.setAspect(mount.clientWidth / mount.clientHeight);
     };
     window.addEventListener('resize', onResize);
 
@@ -975,6 +977,7 @@ export function SolarSystemCanvas({
     // created lazily inside the loop and torn down the frame the session
     // goes inactive (or on unmount), so repeated enter/exit never leaks.
     let ship: PlayerShipHandle | null = null;
+    let cockpit: CockpitHandle | null = null;
     const teardownShip = () => {
       if (!ship) return;
       aliens.setHostile(null);
@@ -983,6 +986,8 @@ export function SolarSystemCanvas({
       scene.remove(ship.fxGroup);
       ship.dispose();
       ship = null;
+      cockpit?.dispose();
+      cockpit = null;
       alphaCen.group.visible = false;
       // The follow camera rolls its up vector and widens the lens; the
       // orbit camera needs both back.
@@ -1137,6 +1142,8 @@ export function SolarSystemCanvas({
           scene.add(ship.boltGroup);
           scene.add(ship.fxGroup);
           alphaCen.group.visible = true;
+          cockpit = makeCockpit(session.shipKind === 'interceptor' ? 0x3aa8ff : 0x5eead4);
+          cockpit.setAspect(mount.clientWidth / mount.clientHeight);
           syncWorld(null, earthPos, now);
           ship.spawn(world.home);
           const live = ship;
@@ -1276,6 +1283,19 @@ export function SolarSystemCanvas({
       }
 
       postFx.render(dtSec);
+      // Cockpit view: the interior is its own scene, drawn over the frame
+      // with the depth buffer cleared, so it is never clipped by the world's
+      // near plane and never bloomed.
+      if (ship && cockpit && session) {
+        const tel = session.telemetry;
+        if (tel.view === 'cockpit' && tel.pilot === 'ship' && !tel.crashed) {
+          cockpit.update(dtSec, tel.bank, tel.pitchRate, tel.shake, tel.speedKmS, tel.nearAltKm, tel.nearId, tel.hp);
+          renderer.autoClear = false;
+          renderer.clearDepth();
+          renderer.render(cockpit.scene, cockpit.camera);
+          renderer.autoClear = true;
+        }
+      }
       raf = requestAnimationFrame(loop);
     };
     startLoop();

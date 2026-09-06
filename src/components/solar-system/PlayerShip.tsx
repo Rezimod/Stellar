@@ -73,6 +73,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const foilsRef = useRef<HTMLSpanElement>(null);
   const killsRef = useRef<HTMLSpanElement>(null);
   const pilotRef = useRef<HTMLDivElement>(null);
+  const commsRef = useRef<HTMLDivElement>(null);
+  const commsHeadRef = useRef<HTMLSpanElement>(null);
+  const commsLineRefs = useRef<(HTMLParagraphElement | null)[]>([]);
   const ejectRef = useRef<HTMLButtonElement>(null);
   const hpFillRef = useRef<HTMLDivElement>(null);
   const hpTextRef = useRef<HTMLSpanElement>(null);
@@ -266,7 +269,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     let lastCrashed: boolean | null = null;
     let lastRespawn = -1;
     let lastPilotKey = '';
+    let lastComms = '';
     let shownFrac = 0;
+    let commsText: string[] = [];
     const paint = () => {
       raf = requestAnimationFrame(paint);
 
@@ -311,6 +316,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
         setText(systemRef.current, systemName(sys));
       }
       if (tel.targetName !== lastTarget) lastTarget = tel.targetName;
+      if (rootRef.current && rootRef.current.dataset.view !== tel.view) rootRef.current.dataset.view = tel.view;
       const pilotKey = tel.pilot === 'eva' ? (tel.canBoard ? 'board' : 'eva') : 'ship';
       if (pilotKey !== lastPilotKey) {
         lastPilotKey = pilotKey;
@@ -331,6 +337,29 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       }
       if (jumpBarRef.current) {
         jumpBarRef.current.style.width = tel.jumpPhase === 'none' ? '0%' : `${Math.round(tel.jumpT * 100)}%`;
+      }
+      // Incoming transmission: the header names the caller, each line is
+      // typed out as the voice speaks it.
+      if (tel.commsFrom !== lastComms) {
+        lastComms = tel.commsFrom;
+        const box = commsRef.current;
+        if (box) {
+          box.hidden = !tel.commsFrom;
+          if (tel.commsFrom) {
+            setText(commsHeadRef.current, t('commsHeader', { from: bodyName(tel.commsFrom) }));
+            commsText = [1, 2, 3, 4].map((n) => (t.has(`comms.${tel.commsFrom}.l${n}`) ? t(`comms.${tel.commsFrom}.l${n}`) : ''));
+          }
+        }
+      }
+      if (tel.commsFrom) {
+        commsLineRefs.current.forEach((el, i) => {
+          if (!el) return;
+          const full = commsText[i] ?? '';
+          const n = i + 1;
+          const shown = n < tel.commsLine ? full : n === tel.commsLine ? full.slice(0, Math.round(full.length * tel.commsProgress)) : '';
+          setText(el, shown);
+          el.dataset.live = n === tel.commsLine ? 'true' : 'false';
+        });
       }
 
       const hp = Math.round(tel.hp);
@@ -494,6 +523,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       session.input[key] = false;
     },
   });
+  const oneShot = (key: 'eject' | 'viewToggle') => () => {
+    session.input[key] = true;
+  };
   const holdBrake = {
     onPointerDown: (e: React.PointerEvent) => {
       e.preventDefault();
@@ -633,6 +665,19 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
             {!touch && <div className="flight-hud__hint">{t('hint')}</div>}
           </div>
 
+          <div ref={commsRef} className="flight-hud__comms" role="log" aria-live="polite" hidden>
+            <span ref={commsHeadRef} className="flight-hud__comms-head" />
+            {[0, 1, 2, 3].map((i) => (
+              <p
+                key={i}
+                ref={(el) => {
+                  commsLineRefs.current[i] = el;
+                }}
+                className="flight-hud__comms-line"
+              />
+            ))}
+          </div>
+
           <div ref={crashRef} className="flight-hud__crash" role="alert" hidden>
             <span className="flight-hud__crash-title">{t('hullLost')}</span>
             <span ref={respawnRef} className="flight-hud__crash-sub" />
@@ -641,15 +686,11 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
           {touch && (
             <>
               <canvas ref={padRef} className="flight-hud__pad" aria-hidden />
-              <button
-                ref={ejectRef}
-                type="button"
-                className="flight-hud__eject"
-                onClick={() => {
-                  session.input.eject = true;
-                }}
-              >
+              <button ref={ejectRef} type="button" className="flight-hud__eject" onClick={oneShot('eject')}>
                 {t('eject')}
+              </button>
+              <button type="button" className="flight-hud__view" onClick={oneShot('viewToggle')}>
+                {t('view')}
               </button>
               <button type="button" className="flight-hud__brake" {...holdBrake}>
                 {t('brake')}

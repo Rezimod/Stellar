@@ -8,9 +8,9 @@
 
 import * as THREE from 'three';
 import { nearbyStarPosition } from '@/lib/solar-system/galactic-scene';
-import { makeSunExtras, type SunExtrasHandle } from '@/lib/solar-system/scene-extras';
+import { makeAtmosphereShell, disposeAtmosphereShell, makeSunExtras, type SunExtrasHandle } from '@/lib/solar-system/scene-extras';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
-import { bandedTexture, crateredTexture, sceneRadius } from '@/lib/solar-system/small-bodies';
+import { bandedTexture, crateredTexture, livingWorldTextures, sceneRadius } from '@/lib/solar-system/small-bodies';
 import type { FlightAnchor, FlightBody } from '@/lib/solar-system/player-ship';
 
 const R_SUN_KM = 696_000;
@@ -36,6 +36,7 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
   const glowTex = softSpriteTexture();
   const owned: THREE.Material[] = [];
   const geoms: THREE.BufferGeometry[] = [];
+  const textures: THREE.CanvasTexture[] = [];
   const bodies: FlightBody[] = [];
 
   const addBody = (
@@ -89,9 +90,92 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
   // separation is compressed the way the planets' orbits are.
   const matB = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.0, 1.15, 0.5) });
   owned.push(matB);
-  addBody('alphaCenB', new THREE.Vector3(1.15, 0.06, 0.42), 0.86 * R_SUN_KM, 274, 1.5, matB, {
+  const bLocal = new THREE.Vector3(1.15, 0.06, 0.42);
+  addBody('alphaCenB', bLocal, 0.86 * R_SUN_KM, 274, 1.5, matB, {
     color: new THREE.Color(1.0, 0.62, 0.3), scale: 7,
   });
+  const lightB = new THREE.PointLight(0xffc890, 4.0, 3.5, 1.1);
+  lightB.position.copy(bLocal);
+  group.add(lightB);
+
+  // Centauri Prime — a fictional inhabited ocean world in B's habitable
+  // zone: continents, ice caps, a cloud deck, a blue limb, and cities that
+  // light the night side. Two satellites and three freighters keep it
+  // company, and it hails ships that come close.
+  const lw = livingWorldTextures(97);
+  const matLife = new THREE.MeshStandardMaterial({
+    map: lw.day, roughness: 0.62, metalness: 0.02,
+    emissiveMap: lw.night, emissive: new THREE.Color(0xffd9a0), emissiveIntensity: 0.9,
+  });
+  const matClouds = new THREE.MeshStandardMaterial({ map: lw.clouds, transparent: true, depthWrite: false, roughness: 1, metalness: 0 });
+  owned.push(matLife, matClouds);
+  textures.push(lw.day, lw.night, lw.clouds);
+  const LIFE_ORBIT = 0.5;
+  const lifeLocal = bLocal.clone().add(new THREE.Vector3(LIFE_ORBIT, -0.03, 0));
+  const life = addBody('centauriPrime', lifeLocal, 1.15 * R_EARTH_KM, 9.9, 1.25, matLife, null, 'planet');
+  life.body.hails = true;
+  life.mesh.rotation.z = 0.35;
+  const cloudGeom = new THREE.SphereGeometry(life.body.radius * 1.02, segs, segs);
+  geoms.push(cloudGeom);
+  const clouds = new THREE.Mesh(cloudGeom, matClouds);
+  life.mesh.add(clouds);
+  const atmo = makeAtmosphereShell(life.body.radius, 0x7fb4ff, 1.07, 1.35, 2.4);
+  life.mesh.add(atmo);
+  let lifeAngle = 0;
+
+  // Satellites: a bus with two panels, on two inclined orbits.
+  const satMat = new THREE.MeshStandardMaterial({ color: 0xd0d6dc, roughness: 0.4, metalness: 0.8 });
+  const panelMat = new THREE.MeshStandardMaterial({ color: 0x1c2f6e, roughness: 0.4, metalness: 0.5, emissive: 0x16255a, emissiveIntensity: 0.5 });
+  owned.push(satMat, panelMat);
+  const sr = life.body.radius;
+  const sats: { g: THREE.Group; r: number; rate: number; incl: number; phase: number }[] = [];
+  for (let i = 0; i < 2; i++) {
+    const g = new THREE.Group();
+    const bus = new THREE.Mesh(new THREE.BoxGeometry(sr * 0.05, sr * 0.05, sr * 0.08), satMat);
+    geoms.push(bus.geometry);
+    g.add(bus);
+    for (const side of [-1, 1]) {
+      const pnl = new THREE.Mesh(new THREE.BoxGeometry(sr * 0.16, sr * 0.005, sr * 0.06), panelMat);
+      geoms.push(pnl.geometry);
+      pnl.position.x = side * sr * 0.12;
+      g.add(pnl);
+    }
+    group.add(g);
+    sats.push({ g, r: sr * (1.6 + i * 0.7), rate: 0.5 - i * 0.18, incl: 0.3 + i * 0.6, phase: i * 2.1 });
+  }
+
+  // Freighters: long hulls with a ring habitat and cargo pods, drifting on
+  // the lanes below the satellites, running lights pulsing.
+  const hullMat = new THREE.MeshStandardMaterial({ color: 0x8e949c, roughness: 0.55, metalness: 0.6 });
+  const podMat = new THREE.MeshStandardMaterial({ color: 0xb4522f, roughness: 0.7, metalness: 0.3 });
+  const engMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.6, 1.6, 2.2) });
+  const lampMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 2.0, 1.2) });
+  owned.push(hullMat, podMat, engMat, lampMat);
+  const freighters: { g: THREE.Group; r: number; rate: number; y: number; phase: number }[] = [];
+  const fl = sr * 0.5;
+  for (let i = 0; i < 3; i++) {
+    const g = new THREE.Group();
+    const add = (geom: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number, rx = 0) => {
+      geoms.push(geom);
+      const o = new THREE.Mesh(geom, m);
+      o.position.set(x, y, z);
+      o.rotation.x = rx;
+      g.add(o);
+      return o;
+    };
+    add(new THREE.CylinderGeometry(fl * 0.05, fl * 0.06, fl, 12), hullMat, 0, 0, 0, Math.PI / 2);
+    add(new THREE.TorusGeometry(fl * 0.16, fl * 0.025, 10, 32), hullMat, 0, 0, fl * 0.15, 0);
+    add(new THREE.BoxGeometry(fl * 0.12, fl * 0.12, fl * 0.18), hullMat, 0, 0, fl * 0.42);
+    for (let k = 0; k < 4; k++) {
+      add(new THREE.BoxGeometry(fl * 0.07, fl * 0.07, fl * 0.12), podMat, Math.cos(k * 1.57) * fl * 0.09, Math.sin(k * 1.57) * fl * 0.09, -fl * 0.15);
+    }
+    add(new THREE.CylinderGeometry(fl * 0.03, fl * 0.05, fl * 0.08, 10), engMat, 0, 0, -fl * 0.52, Math.PI / 2);
+    add(new THREE.SphereGeometry(fl * 0.012, 6, 6), lampMat, 0, fl * 0.07, fl * 0.5);
+    add(new THREE.SphereGeometry(fl * 0.012, 6, 6), lampMat, 0, -fl * 0.07, -fl * 0.4);
+    group.add(g);
+    freighters.push({ g, r: sr * (3.2 + i * 1.1), rate: 0.09 - i * 0.02, y: (i - 1) * sr * 0.4, phase: i * 2.0 });
+  }
+  let lampClock = 0;
 
   // Proxima Centauri — M5.5V red dwarf, 0.154 R☉, well out from the pair.
   const matP = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.9, 0.5, 0.28) });
@@ -112,7 +196,7 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
   const texPd = crateredTexture(57, [96, 88, 84], 160);
   const matPd = new THREE.MeshStandardMaterial({ map: texPd, bumpMap: texPd, bumpScale: 0.002, roughness: 0.95, metalness: 0.02 });
   owned.push(matPb, matPd);
-  const textures = [texPb, texPd];
+  textures.push(texPb, texPd);
   const PB_ORBIT = 0.24;
   const PD_ORBIT = 0.14;
   const pb = addBody('proximaB', proximaLocal.clone().add(new THREE.Vector3(PB_ORBIT, 0, 0)), 1.07 * R_EARTH_KM, 11.2, 1.2, matPb, null, 'planet');
@@ -161,6 +245,36 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
       pd.mesh.position.set(proximaLocal.x + Math.sin(pbAngle * 2.2) * PD_ORBIT, proximaLocal.y + 0.01, proximaLocal.z + Math.cos(pbAngle * 2.2) * PD_ORBIT);
       pd.mesh.rotation.y = -pbAngle * 2.2;
       pd.body.position.copy(pd.mesh.position).add(center);
+      lifeAngle += dtSec * 0.01;
+      life.mesh.position.set(bLocal.x + Math.cos(lifeAngle) * LIFE_ORBIT, bLocal.y - 0.03, bLocal.z + Math.sin(lifeAngle) * LIFE_ORBIT);
+      life.mesh.rotation.y += dtSec * 0.12;
+      clouds.rotation.y += dtSec * 0.02;
+      life.body.position.copy(life.mesh.position).add(center);
+      for (const sat of sats) {
+        const a = sat.phase + lampClock * sat.rate;
+        sat.g.position.set(
+          life.mesh.position.x + Math.cos(a) * sat.r,
+          life.mesh.position.y + Math.sin(a) * sat.r * Math.sin(sat.incl),
+          life.mesh.position.z + Math.sin(a) * sat.r * Math.cos(sat.incl),
+        );
+        sat.g.lookAt(life.mesh.position.x, life.mesh.position.y, life.mesh.position.z);
+      }
+      lampClock += dtSec;
+      lampMat.color.setRGB(2.4, 2.0, 1.2).multiplyScalar(0.75 + 0.25 * Math.sin(lampClock * 2.2));
+      for (const f of freighters) {
+        const a = f.phase + lampClock * f.rate;
+        f.g.position.set(
+          life.mesh.position.x + Math.cos(a) * f.r,
+          life.mesh.position.y + f.y,
+          life.mesh.position.z + Math.sin(a) * f.r,
+        );
+        // Nose along the lane.
+        f.g.lookAt(
+          life.mesh.position.x + Math.cos(a + 0.05) * f.r,
+          life.mesh.position.y + f.y,
+          life.mesh.position.z + Math.sin(a + 0.05) * f.r,
+        );
+      }
       c1Angle += dtSec * 0.012;
       c1.mesh.position.set(-Math.cos(c1Angle) * C1_ORBIT, 0.02, Math.sin(c1Angle) * C1_ORBIT);
       c1.mesh.rotation.y += dtSec * 0.3;
@@ -169,7 +283,9 @@ export function makeAlphaCentauri(sunMaterial: THREE.Material, lite: boolean): S
     dispose() {
       coronaA.dispose();
       lightA.dispose();
+      lightB.dispose();
       lightP.dispose();
+      disposeAtmosphereShell(atmo);
       for (const g of geoms) g.dispose();
       for (const m of owned) m.dispose();
       for (const t of textures) t.dispose();
