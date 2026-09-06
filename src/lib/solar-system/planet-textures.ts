@@ -112,13 +112,24 @@ interface WindField {
   jets: number;
   /** Relative eddy activity — Uranus is famously bland, Jupiter is not. */
   eddy: number;
+  /** How much procedural cloud structure rides on top of the map. This is
+   *  what holds the surface together under close zoom: the map runs out of
+   *  pixels, the noise does not. */
+  detail: number;
+  /** A signature storm the base map doesn't carry, as
+   *  [longitude, latitude, radius, spin] in UV units. */
+  storm?: [number, number, number, number];
 }
 
 const WIND_FIELD: Partial<Record<SolarBodyId, WindField>> = {
-  jupiter: { equatorialMs: 100, jets: 7, eddy: 1 },
-  saturn: { equatorialMs: 470, jets: 5, eddy: 0.7 },
-  uranus: { equatorialMs: -100, jets: 3, eddy: 0.3 },
-  neptune: { equatorialMs: -400, jets: 4, eddy: 0.9 },
+  jupiter: { equatorialMs: 100, jets: 7, eddy: 1, detail: 0.30 },
+  saturn: { equatorialMs: 470, jets: 5, eddy: 0.7, detail: 0.22 },
+  uranus: { equatorialMs: -100, jets: 3, eddy: 0.3, detail: 0.07 },
+  // Neptune's map is a bare blue ball. The Great Dark Spot Voyager 2 found in
+  // 1989 sat at about 22° S — an anticyclone the width of Earth, trailed by
+  // bright methane cirrus. It's the picture everyone knows of the planet, so
+  // it gets drawn rather than left off.
+  neptune: { equatorialMs: -400, jets: 4, eddy: 0.9, detail: 0.20, storm: [0.32, 0.38, 0.075, 1.0] },
 };
 
 /** Jupiter sets the on-screen pace; the rest scale off it sub-linearly, so
@@ -128,13 +139,61 @@ function driftRate(wind: WindField): number {
   return Math.sign(wind.equatorialMs) * ratio ** 0.6 * 0.004;
 }
 
-/** Gas giants: zonal jets shear the cloud map, eddies wobble it. */
-function cloudBands(wind: WindField, lite: boolean): ShaderMutator {
+/** Value-noise fBm that tiles along longitude. The naive version leaves a
+ *  visible seam down the prime meridian of every gas giant, so the lattice
+ *  wraps on a period that doubles with each octave. */
+const noiseGlsl = (octaves: number) => /* glsl */ `
+float atmHash(vec2 p) {
+  p = fract(p * vec2(127.31, 311.7));
+  p += dot(p, p + 47.13);
+  return fract(p.x * p.y);
+}
+float atmNoise(vec2 p, float period) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float a = atmHash(vec2(mod(i.x, period), i.y));
+  float b = atmHash(vec2(mod(i.x + 1.0, period), i.y));
+  float c = atmHash(vec2(mod(i.x, period), i.y + 1.0));
+  float d = atmHash(vec2(mod(i.x + 1.0, period), i.y + 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+float atmFbm(vec2 p, float period) {
+  float v = 0.0;
+  float amp = 0.5;
+  for (int i = 0; i < ${octaves}; i++) {
+    v += amp * atmNoise(p, period);
+    p *= 2.0;
+    period *= 2.0;
+    amp *= 0.5;
+  }
+  return v;
+}
+`;
+
+/**
+ * A gas giant's weather. Alternating zonal jets advect the cloud map by
+ * latitude, a domain-warped turbulence field curls it into eddies at the
+ * shear boundaries, and a high-frequency band of the same field paints
+ * ammonia cirrus over the zones and dark festoons over the belts.
+ *
+ * The cirrus layer is the answer to close zoom: it's procedural, so it has
+ * detail at every scale, and it fades up as the planet grows on screen —
+ * exactly where a finite map would otherwise go soft.
+ */
+function gasGiantAtmosphere(id: SolarBodyId, wind: WindField, lite: boolean): ShaderMutator {
+  const octaves = lite ? 3 : 5;
+  const storm = wind.storm ?? [0, 0, 0, 0];
   return (shader) => {
+    injectWorldVaryings(shader);
     shader.uniforms.uBandTime = { value: 0 };
     shader.uniforms.uBandAmp = { value: wind.eddy * (lite ? 0.0015 : 0.0026) };
     shader.uniforms.uDrift = { value: driftRate(wind) };
     shader.uniforms.uJets = { value: wind.jets };
+    shader.uniforms.uCurl = { value: wind.eddy * 0.022 };
+    shader.uniforms.uDetail = { value: lite ? wind.detail * 0.6 : wind.detail };
+    shader.uniforms.uRadius = { value: worldRadiusForBody(id) };
+    shader.uniforms.uStorm = { value: new THREE.Vector4(...storm) };
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
@@ -142,7 +201,12 @@ function cloudBands(wind: WindField, lite: boolean): ShaderMutator {
         uniform float uBandTime;
         uniform float uBandAmp;
         uniform float uDrift;
-        uniform float uJets;`,
+        uniform float uJets;
+        uniform float uCurl;
+        uniform float uDetail;
+        uniform float uRadius;
+        uniform vec4 uStorm;
+        ${noiseGlsl(octaves)}`,
       )
       .replace(
         'vec4 sampledDiffuseColor = texture2D( map, vMapUv );',
@@ -150,10 +214,57 @@ function cloudBands(wind: WindField, lite: boolean): ShaderMutator {
         float bLat = (bUv.y - 0.5) * 3.14159265;
         // Alternating east/west jets by latitude, fastest at the equator.
         float jet = sin(bLat * uJets + 0.6) * 0.55 + sin(bLat * uJets * 0.43) * 0.45;
-        bUv.x += jet * uBandTime * uDrift;
+        float adv = jet * uBandTime * uDrift;
+        bUv.x += adv;
         bUv.x += sin(bUv.y * 40.0 + uBandTime * 0.35) * uBandAmp;
         bUv.y += sin(bUv.x * 30.0 + uBandTime * 0.27 + bLat * 2.0) * uBandAmp * 0.6;
-        vec4 sampledDiffuseColor = texture2D( map, bUv );`,
+
+        // Turbulence, stretched hard along longitude the way zonal flow
+        // stretches everything into ribbons. Each field's lattice period has
+        // to equal its longitude frequency, or the noise fails to wrap and
+        // leaves a seam down the prime meridian — hence the whole integers.
+        vec2 warpUv = vec2(bUv.x * 8.0 + adv * 16.0 + uBandTime * 0.03, bUv.y * 32.0);
+        float warp = atmFbm(warpUv, 8.0);
+        vec2 tUv = vec2(bUv.x * 24.0 + adv * 48.0, bUv.y * 96.0);
+        float turb = atmFbm(tUv + vec2(warp * 2.2, warp * 0.6), 24.0);
+
+        // Shear the map by the turbulence so its own belts curl into eddies
+        // instead of sliding rigidly past one another.
+        bUv.x += (turb - 0.5) * uCurl;
+        bUv.y += (turb - 0.5) * uCurl * 0.2;
+
+        // A resident anticyclone, where the base map lacks one. Inside its
+        // ellipse the sample is rotated, which drags the surrounding bands
+        // around the vortex the way a real storm does.
+        float stormMask = 0.0;
+        if (uStorm.z > 0.0) {
+          vec2 sd = vec2(fract(bUv.x - uStorm.x + 0.5) - 0.5, (bUv.y - uStorm.y) * 1.9);
+          float sr = length(sd) / uStorm.z;
+          stormMask = 1.0 - smoothstep(0.55, 1.0, sr);
+          float spin = uStorm.w * stormMask * (0.9 + uBandTime * 0.012);
+          float cs = cos(spin);
+          float sn = sin(spin);
+          bUv += vec2(sd.x * cs - sd.y * sn - sd.x, (sd.x * sn + sd.y * cs - sd.y) / 1.9) * 0.5;
+        }
+
+        vec4 sampledDiffuseColor = texture2D( map, bUv );
+
+        // Cloud detail on top of the map — bright ammonia cirrus over the
+        // zones, dark festoons over the belts. It is off entirely at a
+        // distance, where features this fine would only alias into shimmer,
+        // and comes up as the planet grows on screen: structure exactly where
+        // the map itself runs out of pixels.
+        float appar = uRadius / max(length(cameraPosition - vWorldPos), 1e-4);
+        float amt = uDetail * smoothstep(0.02, 0.15, appar);
+        vec2 fineUv = vec2(bUv.x * 64.0 + adv * 128.0, bUv.y * 256.0);
+        float fine = atmFbm(fineUv + vec2(warp * 1.4, 0.0), 64.0) - 0.5;
+        sampledDiffuseColor.rgb *= 1.0 + fine * amt * 1.6;
+        if (uStorm.z > 0.0) {
+          // The spot itself, plus the bright methane cirrus along its edge.
+          sampledDiffuseColor.rgb *= 1.0 - stormMask * 0.42;
+          float rim = stormMask * (1.0 - stormMask) * 4.0;
+          sampledDiffuseColor.rgb += vec3(0.10, 0.13, 0.16) * rim * max(0.0, fine + 0.35);
+        }`,
       );
   };
 }
@@ -229,7 +340,7 @@ function applyHooks(id: SolarBodyId, mat: THREE.MeshStandardMaterial, lite: bool
   const mutators: ShaderMutator[] = [];
   if (id === 'earth') mutators.push(earthNight);
   const wind = WIND_FIELD[id];
-  if (wind) mutators.push(cloudBands(wind, lite));
+  if (wind) mutators.push(gasGiantAtmosphere(id, wind, lite));
   if (id === 'saturn') mutators.push(ringShadow());
   // The Sun lights itself, so grazing angles don't dim it.
   if (GAS_GIANTS.has(id)) mutators.push(limbDarken(0.55));

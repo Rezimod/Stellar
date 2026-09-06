@@ -11,7 +11,11 @@ import {
   type SolarBodyId,
 } from '@/lib/solar-system/ephemeris';
 import { AXIAL_TILT_DEG, siderealSpinY } from '@/lib/solar-system/planet-spin';
-import { NASA_PLANET_TEXTURE_URL, NASA_TEXTURE_IDS } from '@/lib/solar-system/planet-texture-urls';
+import {
+  NASA_PLANET_DETAIL_URL,
+  NASA_PLANET_TEXTURE_URL,
+  NASA_TEXTURE_IDS,
+} from '@/lib/solar-system/planet-texture-urls';
 import { createPlanetMaterial, disposePlanetMaterial, tickPlanetMaterial } from '@/lib/solar-system/planet-textures';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import {
@@ -81,7 +85,9 @@ export interface CosmicView {
   stellar: number;
   /** 0..1 — Milky Way disk layer presence. */
   galactic: number;
-  /** 0..1 — other-galaxy backdrop presence. */
+  /** 0..1 — Local Group presence (Magellanic Clouds, Andromeda, Triangulum). */
+  local: number;
+  /** 0..1 — nearby-universe galaxy backdrop presence. */
   universe: number;
   /** 0..1 — cosmic web / large-scale-structure presence. */
   web: number;
@@ -258,14 +264,20 @@ export function SolarSystemCanvas({
     renderer.domElement.style.touchAction = 'none';
 
     const scene = new THREE.Scene();
-    // Far plane reaches past the cosmic-web tier (~26k units out) so the
-    // large-scale structure stays in view at maximum zoom-out.
+    // Far plane reaches past the cosmic-web shell (112k units out) plus the
+    // widest camera radius, so the large-scale structure stays in view at
+    // maximum zoom-out instead of being clipped away.
     const camera = new THREE.PerspectiveCamera(
       42,
       mount.clientWidth / mount.clientHeight,
       0.02,
-      64000,
+      140000,
     );
+
+    // Furthest the camera pulls back. Everything past the Milky Way is laid
+    // out beyond this, so you frame the galaxy and its neighbours rather than
+    // flying through them (see tierBlendFromRadius).
+    const MAX_SYS_RADIUS = 22000;
 
     let sysTheta = 0.72;
     let sysPhi = 1.02;
@@ -426,7 +438,7 @@ export function SolarSystemCanvas({
     scene.add(andromeda.group);
 
     const otherGalaxies = makeOtherGalaxies();
-    otherGalaxies.setFade(0);
+    otherGalaxies.setFade(0, 0);
     scene.add(otherGalaxies.group);
 
     const cosmicWeb = makeCosmicWeb(lite);
@@ -553,6 +565,27 @@ export function SolarSystemCanvas({
         },
       );
     }
+
+    // Once a body fills enough of the frame that a 2K map would show its
+    // pixels, pull the 4K one in behind it. One fetch per body per session.
+    const detailRequested = new Set<SolarBodyId>();
+    const maybeLoadDetailMap = (id: SolarBodyId, mesh: THREE.Mesh) => {
+      if (detailRequested.has(id)) return;
+      const url = NASA_PLANET_DETAIL_URL[id];
+      if (!url) return;
+      // Apparent radius as a fraction of the viewport height.
+      const apparent =
+        worldRadiusForBody(id) / Math.max(camera.position.distanceTo(mesh.position), 1e-6);
+      if (apparent < 0.06) return;
+      detailRequested.add(id);
+      loader.load(url, (tex) => {
+        if (textureLoadsCancelled) {
+          tex.dispose();
+          return;
+        }
+        applyLoadedTexture(id, tex);
+      });
+    };
 
     const hitPickRadiusMul = 4.2;
 
@@ -863,7 +896,7 @@ export function SolarSystemCanvas({
         sysRadius *= Math.exp(e.deltaY * 0.0011 * zoomAccel());
         // Clamp spans the stellar neighbourhood, the Milky Way disk, the
         // Local Group, and the cosmic-web tier.
-        sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, 34000);
+        sysRadius = THREE.MathUtils.clamp(sysRadius, 5.2, MAX_SYS_RADIUS);
       }
     };
 
@@ -905,7 +938,7 @@ export function SolarSystemCanvas({
             sysRadius = THREE.MathUtils.clamp(
               sysRadius / Math.pow(factor, zoomAccel()),
               5.2,
-              34000,
+              MAX_SYS_RADIUS,
             );
           }
         }
@@ -1126,6 +1159,7 @@ export function SolarSystemCanvas({
       meshById.forEach((mesh, id) => {
         mesh.rotation.y = siderealSpinY(id, epochRef.current);
         tickPlanetMaterial(mesh.material as THREE.Material, sceneTime);
+        maybeLoadDetailMap(id, mesh);
       });
       sunSurface.setTime(sceneTime);
 
@@ -1229,10 +1263,16 @@ export function SolarSystemCanvas({
       currentTier = tierBlendFromRadius(sysRadius);
       // Star-system labels belong to the stellar tier only — over the whole
       // galaxy thirty floating names would just be noise.
-      nearbyStars.setFade(currentTier.stellar, currentTier.stellar * (1 - currentTier.galactic));
+      // The catalogue stars are drawn on a compressed local scale — at the
+      // galactic tier they would sprawl across half the disk, so they hand
+      // over to the Milky Way's own star volume as it arrives.
+      nearbyStars.setFade(
+        currentTier.stellar * (1 - currentTier.galactic * 0.92),
+        currentTier.stellar * (1 - currentTier.galactic),
+      );
       galaxyDisk.setFade(currentTier.galactic);
-      andromeda.setFade(currentTier.universe);
-      otherGalaxies.setFade(currentTier.universe);
+      andromeda.setFade(currentTier.local);
+      otherGalaxies.setFade(currentTier.local, currentTier.universe);
       cosmicWeb.setFade(currentTier.web);
       // The dense particle Milky Way ribbon at the solar tier overlaps
       // visually with the new disk — fade it out once the disk takes over.
@@ -1253,10 +1293,11 @@ export function SolarSystemCanvas({
         const height = mount.clientHeight;
         const sunWorld = sunMesh ? sunMesh.position : new THREE.Vector3();
         const sunScreen = projectToScreen(sunWorld, camera, width, height);
-        // Milky-way label sits near the Sun on the disk — when zoomed out
-        // it visually points to "our solar system in the Milky Way".
+        // Anchored on the galactic centre, not on us: the Sun already has
+        // its own pin out in the Orion Spur, and labelling the galaxy at our
+        // position read as though the Milky Way were something we sit beside.
         const mwAnchor = galaxyDisk.group.visible
-          ? localToScreen(new THREE.Vector3(0, 0, 0), galaxyDisk.group, camera, width, height)
+          ? localToScreen(galaxyDisk.center, galaxyDisk.group, camera, width, height)
           : null;
         // Selected body anchor + apparent radius — the planet popup docks
         // beside the body instead of covering the map.

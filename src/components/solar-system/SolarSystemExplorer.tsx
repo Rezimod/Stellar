@@ -90,7 +90,7 @@ export default function SolarSystemExplorer() {
   const [viewOpen, setViewOpen] = useState(false);
   const [scrubOpen, setScrubOpen] = useState(false);
   const [cosmic, setCosmic] = useState<CosmicView>({
-    solar: 1, stellar: 0, galactic: 0, universe: 0, web: 0,
+    solar: 1, stellar: 0, galactic: 0, local: 0, universe: 0, web: 0,
     sunScreen: null, milkyWayScreen: null, selectedScreen: null,
   });
   const [zoomTo, setZoomTo] = useState<number | null>(null);
