@@ -1339,7 +1339,7 @@
     left: max(12px, env(safe-area-inset-left));
     right: auto;
     bottom: auto;
-    top: calc(max(10px, env(safe-area-inset-top)) + 346px;
+    top: calc(max(10px, env(safe-area-inset-top)) + 346px);
     transform: none;
     width: 164px;
     align-items: flex-start;
