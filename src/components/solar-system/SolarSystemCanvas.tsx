@@ -1330,7 +1330,11 @@ export function SolarSystemCanvas({
       if (ship && cockpit && session) {
         const tel = session.telemetry;
         if (tel.view === 'cockpit' && tel.pilot === 'ship' && !tel.crashed) {
-          cockpit.update(dtSec, tel.bank, tel.pitchRate, tel.shake, tel.speedKmS, tel.nearAltKm, tel.nearId, tel.hp);
+          cockpit.update(
+            dtSec, tel.bank, tel.pitchRate, tel.shake,
+            tel.speedKmS, tel.speedC, tel.maxKmS,
+            tel.nearAltKm, tel.nearId, tel.hp, tel.mode, tel.heat,
+          );
           renderer.autoClear = false;
           renderer.clearDepth();
           renderer.render(cockpit.scene, cockpit.camera);

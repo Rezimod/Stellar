@@ -1294,8 +1294,10 @@ body[data-solar-hangar='1'] .solar-system__viewport-hint { opacity: 0; }
   text-align: center;
 }
 
-/* From the seat the dashboard carries the hull figure; keep the strip off the glass. */
-.flight-hud[data-view='cockpit'] .flight-hud__hull { display: none; }
+/* From the seat the dashboard carries velocity, altitude, hull and heat, so
+   the floating deck and hull strip come off the glass. */
+.flight-hud[data-view='cockpit'] .flight-hud__hull,
+.flight-hud[data-view='cockpit'] .flight-hud__deck { display: none; }
 
 /* The wreck: a dark wash, the verdict, the respawn count. */
 .flight-hud__crash {
@@ -1464,35 +1466,87 @@ body[data-solar-hangar='1'] .solar-system__viewport-hint { opacity: 0; }
 /* ── Phone layout: exit and radar own the top corners, the regime keys
    stack under the radar, the deck keeps only what steering needs. ── */
 @media (max-width: 680px) {
+  /* The deck shrinks to a slim strip: a small dial, two lines of numbers,
+     and the status lamps. Everything else is either on a key or implied. */
   .flight-hud__deck {
-    width: 164px;
-    padding: 8px;
+    top: calc(max(10px, env(safe-area-inset-top)) + 54px);
+    width: 124px;
+    padding: 7px;
+    gap: 6px;
+    border-radius: 10px;
   }
-  .flight-hud__gauge { width: 120px; height: 120px; }
-  .flight-hud__gauge canvas { width: 120px !important; height: 120px !important; }
-  .flight-hud__gauge-speed { font-size: 18px; }
+  .flight-hud__gauge { width: 84px; height: 84px; }
+  .flight-hud__gauge canvas { width: 84px !important; height: 84px !important; }
+  .flight-hud__gauge-read { padding-top: 3px; gap: 0; }
+  .flight-hud__gauge-speed { font-size: 15px; }
+  .flight-hud__gauge-unit { font-size: 7px; letter-spacing: 0.1em; }
+  .flight-hud__gauge-c { margin-top: 2px; font-size: 9px; }
+  .flight-hud__readout {
+    column-gap: 6px;
+    row-gap: 2px;
+    padding-top: 6px;
+  }
+  .flight-hud__label { font-size: 8px; letter-spacing: 0.1em; }
+  .flight-hud__value { font-size: 10px; }
+  .flight-hud__status { padding-top: 6px; }
+  .flight-hud__stat { font-size: 8px; gap: 4px; }
+  .flight-hud__pilot { font-size: 8px; padding: 4px 5px; }
+  /* Regime and system live on the pills and the alert line already. */
+  .flight-hud__readout > :nth-child(1),
+  .flight-hud__readout > :nth-child(2),
+  .flight-hud__readout > :nth-child(7),
+  .flight-hud__readout > :nth-child(8) { display: none; }
   .flight-hud__hull {
     left: max(12px, env(safe-area-inset-left));
     right: auto;
     bottom: auto;
-    top: calc(max(10px, env(safe-area-inset-top)) + 346px);
+    top: calc(max(10px, env(safe-area-inset-top)) + 250px);
     transform: none;
-    width: 164px;
+    width: 124px;
     align-items: flex-start;
   }
   .flight-hud__hull-row { align-self: flex-start; }
   .flight-hud__modes {
-    top: calc(max(10px, env(safe-area-inset-top)) + 100px);
+    top: calc(max(10px, env(safe-area-inset-top)) + 84px);
     left: auto;
     right: max(10px, env(safe-area-inset-right));
     transform: none;
     flex-direction: column;
   }
-  .flight-hud__mode { height: 36px; padding: 0 10px; }
-  .flight-hud__view {
-    right: calc(max(18px, env(safe-area-inset-right)) + 176px);
-    width: 56px;
+  .flight-hud__modes { padding: 3px; gap: 3px; border-radius: 10px; }
+  .flight-hud__mode { height: 30px; padding: 0 8px; font-size: 9px; letter-spacing: 0.1em; }
+  .flight-hud__mode .flight-hud__led { width: 5px; height: 5px; }
+  /* Thumb keys: still comfortably tappable, no longer the whole corner. */
+  .flight-hud__fire { width: 66px; height: 66px; }
+  .flight-hud__fire-dot { width: 22px; height: 22px; }
+  .flight-hud__boost {
+    right: calc(max(18px, env(safe-area-inset-right)) + 74px);
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 30px);
+    width: 54px;
+    height: 54px;
+    font-size: 9px;
   }
+  .flight-hud__brake {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 86px);
+    width: 50px;
+    height: 50px;
+    font-size: 9px;
+  }
+  .flight-hud__eject {
+    right: calc(max(18px, env(safe-area-inset-right)) + 74px);
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px);
+    width: 54px;
+    height: 36px;
+    font-size: 9px;
+  }
+  .flight-hud__view {
+    right: calc(max(18px, env(safe-area-inset-right)) + 136px);
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px);
+    width: 50px;
+    height: 36px;
+    font-size: 9px;
+  }
+  .flight-hud__radar { width: 74px !important; height: 74px !important; }
   .flight-hud__comms {
     right: max(12px, env(safe-area-inset-right));
     left: max(12px, env(safe-area-inset-left));
