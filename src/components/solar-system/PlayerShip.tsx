@@ -6,7 +6,9 @@ import { useTranslations } from 'next-intl';
 import {
   attachDesktopControls,
   clearFlightInput,
+  type FlightAlert,
   type FlightSession,
+  type SpeedMode,
 } from '@/lib/solar-system/player-ship';
 
 interface PlayerShipProps {
@@ -23,6 +25,8 @@ const RADAR_PX = 92;
  *  so the ship always makes way and the controls are steer, boost, brake. */
 const CRUISE = 0.85;
 const BRAKE = -0.7;
+const MODES: SpeedMode[] = ['cruise', 'fast', 'jump'];
+const SOLAR_IDS = new Set(['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 
 interface Stick {
   id: number;
@@ -33,14 +37,21 @@ interface Stick {
   y: number;
 }
 
+function fmtKm(km: number): string {
+  if (km >= 1e6) return `${(km / 1e6).toFixed(2)} M`;
+  return Math.round(km).toLocaleString('en-US');
+}
+
 /**
  * Explore Mode chrome: the Explore button, launch countdown, the flight HUD
- * (speed, hull, radar) and the touch controls. The HUD is painted
- * imperatively from `session.telemetry` each frame — React only renders on
- * phase changes, never inside the animation loop.
+ * (speed regime, hull, radar, nearest body, alerts, crash and jump overlays)
+ * and the touch controls. The HUD is painted imperatively from
+ * `session.telemetry` each frame — React only renders on phase changes,
+ * never inside the animation loop.
  */
 export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
+  const tb = useTranslations('solarSystem.bodies');
   const [phase, setPhase] = useState<Phase>('idle');
   const [count, setCount] = useState(3);
   const [touch, setTouch] = useState(false);
@@ -49,10 +60,25 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const padRef = useRef<HTMLCanvasElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
+  const unitRef = useRef<HTMLSpanElement>(null);
+  const cRef = useRef<HTMLSpanElement>(null);
+  const modeRef = useRef<HTMLSpanElement>(null);
+  const foilsRef = useRef<HTMLSpanElement>(null);
+  const nearRef = useRef<HTMLSpanElement>(null);
+  const altRef = useRef<HTMLSpanElement>(null);
+  const systemRef = useRef<HTMLSpanElement>(null);
+  const targetRef = useRef<HTMLSpanElement>(null);
   const hpFillRef = useRef<HTMLDivElement>(null);
   const hpTextRef = useRef<HTMLSpanElement>(null);
   const killsRef = useRef<HTMLSpanElement>(null);
   const flashRef = useRef<HTMLDivElement>(null);
+  const whiteRef = useRef<HTMLDivElement>(null);
+  const heatRef = useRef<HTMLDivElement>(null);
+  const alertRef = useRef<HTMLDivElement>(null);
+  const jumpBarRef = useRef<HTMLDivElement>(null);
+  const crashRef = useRef<HTMLDivElement>(null);
+  const respawnRef = useRef<HTMLSpanElement>(null);
+  const modeBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const detachRef = useRef<(() => void) | null>(null);
   const timersRef = useRef<number[]>([]);
   const brakeRef = useRef(false);
@@ -200,21 +226,96 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     sizePad();
     window.addEventListener('resize', sizePad);
 
+    const bodyName = (id: string) => (SOLAR_IDS.has(id) ? tb(`${id}.name`) : t(`bodies.${id}`));
+    const systemName = (id: string) => t(`systems.${id}`);
+    const alertText = (a: FlightAlert): string => {
+      if (a === 'jump' || a === 'charging') return t(`alerts.${a}`, { target: systemName(lastTarget) });
+      if (a === 'arrived') return t('alerts.arrived', { system: systemName(lastSystem) });
+      return t(`alerts.${a}`);
+    };
+    const setText = (el: HTMLElement | null, text: string) => {
+      if (el && el.textContent !== text) el.textContent = text;
+    };
+
     let raf = 0;
     let lastHp = -1;
     let lastKills = -1;
     let lastSpeed = -1;
+    let lastC = -1;
+    let lastMode: SpeedMode | '' = '';
+    let lastFoils: boolean | null = null;
+    let lastNear = '';
+    let lastAlt = -1;
+    let lastSystem = '';
+    let lastTarget = '';
+    let lastAlert: FlightAlert | null = null;
+    let lastCrashed: boolean | null = null;
+    let lastRespawn = -1;
     const paint = () => {
       raf = requestAnimationFrame(paint);
 
       // Touch flight holds a cruise throttle so steering is the only stick.
       if (touch) input.thrust = brakeRef.current ? BRAKE : CRUISE;
 
-      const speed = Math.round(tel.speed * 10);
-      if (speed !== lastSpeed && speedRef.current) {
+      const jumping = tel.jumpPhase === 'travel';
+      const speed = jumping ? -2 : Math.round(tel.speedKmS);
+      if (speed !== lastSpeed) {
         lastSpeed = speed;
-        speedRef.current.textContent = (speed / 10).toFixed(1);
+        setText(speedRef.current, jumping ? '299,792' : speed.toLocaleString('en-US'));
+        setText(unitRef.current, t('kmS'));
       }
+      const c = Math.round(tel.speedC * 1000);
+      if (c !== lastC) {
+        lastC = c;
+        setText(cRef.current, `${(c / 1000).toFixed(3)} ${t('c')}`);
+      }
+      if (tel.mode !== lastMode) {
+        lastMode = tel.mode;
+        setText(modeRef.current, t(`modes.${tel.mode}`));
+        modeBtnRefs.current.forEach((btn, i) => {
+          if (btn) btn.dataset.active = MODES[i] === tel.mode ? 'true' : 'false';
+        });
+      }
+      if (tel.foilsOpen !== lastFoils) {
+        lastFoils = tel.foilsOpen;
+        setText(foilsRef.current, t(tel.foilsOpen ? 'foilsOpen' : 'foilsLocked'));
+      }
+      if (tel.nearId !== lastNear) {
+        lastNear = tel.nearId;
+        setText(nearRef.current, tel.nearId ? bodyName(tel.nearId) : '—');
+      }
+      const alt = tel.nearId ? Math.round(tel.nearAltKm / 10) : -1;
+      if (alt !== lastAlt) {
+        lastAlt = alt;
+        setText(altRef.current, alt < 0 ? '—' : `${fmtKm(alt * 10)} km`);
+      }
+      // System + next star come through the alert copy too, so track them
+      // before the alert is formatted.
+      const sys = tel.systemName;
+      if (sys !== lastSystem) {
+        lastSystem = sys;
+        setText(systemRef.current, systemName(sys));
+      }
+      if (tel.targetName !== lastTarget) {
+        lastTarget = tel.targetName;
+        setText(targetRef.current, `${systemName(tel.targetName)} · ${tel.targetLy.toFixed(2)} ${t('ly')}`);
+      }
+      if (tel.alert !== lastAlert) {
+        lastAlert = tel.alert;
+        const el = alertRef.current;
+        if (el) {
+          el.hidden = !tel.alert;
+          el.dataset.kind = tel.alert;
+          if (tel.alert) {
+            const label = el.firstElementChild as HTMLElement | null;
+            setText(label, alertText(tel.alert));
+          }
+        }
+      }
+      if (jumpBarRef.current) {
+        jumpBarRef.current.style.width = tel.jumpPhase === 'none' ? '0%' : `${Math.round(tel.jumpT * 100)}%`;
+      }
+
       const hp = Math.round(tel.hp);
       if (hp !== lastHp) {
         lastHp = hp;
@@ -224,48 +325,59 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
           hpFillRef.current.style.background =
             k > 0.5 ? '#5eead4' : k > 0.25 ? '#ffb347' : '#ff5a5a';
         }
-        if (hpTextRef.current) hpTextRef.current.textContent = String(hp);
+        setText(hpTextRef.current, String(hp));
       }
-      if (tel.kills !== lastKills && killsRef.current) {
+      if (tel.kills !== lastKills) {
         lastKills = tel.kills;
-        killsRef.current.textContent = String(tel.kills);
+        setText(killsRef.current, String(tel.kills));
       }
       if (flashRef.current) flashRef.current.style.opacity = String(tel.hitFlash * 0.4);
+      if (whiteRef.current) whiteRef.current.style.opacity = String(tel.jumpFlash);
+      if (heatRef.current) heatRef.current.style.opacity = String(tel.heat * 0.85);
+      if (tel.crashed !== lastCrashed) {
+        lastCrashed = tel.crashed;
+        if (crashRef.current) crashRef.current.hidden = !tel.crashed;
+      }
+      const respawn = tel.crashed ? Math.ceil(tel.respawnIn) : -1;
+      if (respawn !== lastRespawn) {
+        lastRespawn = respawn;
+        if (respawn >= 0) setText(respawnRef.current, t('respawn', { n: respawn }));
+      }
 
       if (radar) {
         const ctx = radar.getContext('2d');
         if (ctx) {
           const s = RADAR_PX * dpr;
-          const c = s / 2;
+          const cx = s / 2;
           ctx.clearRect(0, 0, s, s);
           ctx.fillStyle = 'rgba(6, 9, 14, 0.7)';
           ctx.beginPath();
-          ctx.arc(c, c, c - 1, 0, Math.PI * 2);
+          ctx.arc(cx, cx, cx - 1, 0, Math.PI * 2);
           ctx.fill();
           ctx.strokeStyle = 'rgba(248, 244, 236, 0.18)';
           ctx.lineWidth = dpr;
           ctx.beginPath();
-          ctx.arc(c, c, c - 1, 0, Math.PI * 2);
-          ctx.moveTo(c, 2);
-          ctx.lineTo(c, s - 2);
-          ctx.moveTo(2, c);
-          ctx.lineTo(s - 2, c);
+          ctx.arc(cx, cx, cx - 1, 0, Math.PI * 2);
+          ctx.moveTo(cx, 2);
+          ctx.lineTo(cx, s - 2);
+          ctx.moveTo(2, cx);
+          ctx.lineTo(s - 2, cx);
           ctx.stroke();
           ctx.beginPath();
-          ctx.arc(c, c, c * 0.5, 0, Math.PI * 2);
+          ctx.arc(cx, cx, cx * 0.5, 0, Math.PI * 2);
           ctx.stroke();
           ctx.fillStyle = '#5eead4';
           ctx.beginPath();
-          ctx.moveTo(c, c - 5 * dpr);
-          ctx.lineTo(c + 3.5 * dpr, c + 4 * dpr);
-          ctx.lineTo(c - 3.5 * dpr, c + 4 * dpr);
+          ctx.moveTo(cx, cx - 5 * dpr);
+          ctx.lineTo(cx + 3.5 * dpr, cx + 4 * dpr);
+          ctx.lineTo(cx - 3.5 * dpr, cx + 4 * dpr);
           ctx.closePath();
           ctx.fill();
           ctx.fillStyle = '#ff5a5a';
-          const reach = c - 6 * dpr;
+          const reach = cx - 6 * dpr;
           for (let i = 0; i < tel.radarCount; i++) {
-            const x = c + tel.radar[i * 2] * reach;
-            const y = c - tel.radar[i * 2 + 1] * reach;
+            const x = cx + tel.radar[i * 2] * reach;
+            const y = cx - tel.radar[i * 2 + 1] * reach;
             ctx.beginPath();
             ctx.arc(x, y, 2.5 * dpr, 0, Math.PI * 2);
             ctx.fill();
@@ -302,7 +414,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       window.removeEventListener('resize', sizePad);
       input.thrust = 0;
     };
-  }, [phase, session, touch]);
+  }, [phase, session, touch, t, tb]);
 
   const hold = (key: 'fire' | 'boost') => ({
     onPointerDown: (e: React.PointerEvent) => {
@@ -365,12 +477,55 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
 
       {phase === 'flying' && (
         <>
+          <div ref={heatRef} className="flight-hud__heat" aria-hidden />
           <div ref={flashRef} className="flight-hud__flash" aria-hidden />
+          <div ref={whiteRef} className="flight-hud__white" aria-hidden />
+
+          <div className="flight-hud__modes" role="group" aria-label={t('speedMode')}>
+            {MODES.map((m, i) => (
+              <button
+                key={m}
+                ref={(el) => {
+                  modeBtnRefs.current[i] = el;
+                }}
+                type="button"
+                className={`flight-hud__mode flight-hud__mode--${m}`}
+                data-active={m === 'cruise' ? 'true' : 'false'}
+                onClick={() => {
+                  session.input.modeRequest = m;
+                }}
+              >
+                {t(`modes.${m}`)}
+              </button>
+            ))}
+          </div>
+
+          <div ref={alertRef} className="flight-hud__alert" role="status" aria-live="polite" hidden>
+            <span />
+            <div ref={jumpBarRef} className="flight-hud__jumpbar" aria-hidden />
+          </div>
+
           <div className="flight-hud__speed" aria-live="off">
             <span className="flight-hud__label">{t('speed')}</span>
-            <span ref={speedRef} className="flight-hud__value">0.0</span>
+            <span className="flight-hud__value">
+              <span ref={speedRef}>0</span> <span ref={unitRef} className="flight-hud__unit">{t('kmS')}</span>
+            </span>
+            <span className="flight-hud__label" />
+            <span ref={cRef} className="flight-hud__value flight-hud__value--dim">0.000 c</span>
+            <span className="flight-hud__label flight-hud__row--wide">{t('modeLabel')}</span>
+            <span ref={modeRef} className="flight-hud__value flight-hud__row--wide">{t('modes.cruise')}</span>
+            <span className="flight-hud__label flight-hud__row--wide">{t('foils')}</span>
+            <span ref={foilsRef} className="flight-hud__value flight-hud__value--dim flight-hud__row--wide">{t('foilsLocked')}</span>
             <span className="flight-hud__label">{t('kills')}</span>
             <span ref={killsRef} className="flight-hud__value">0</span>
+            <span className="flight-hud__label">{t('near')}</span>
+            <span ref={nearRef} className="flight-hud__value">—</span>
+            <span className="flight-hud__label">{t('alt')}</span>
+            <span ref={altRef} className="flight-hud__value">—</span>
+            <span className="flight-hud__label">{t('system')}</span>
+            <span ref={systemRef} className="flight-hud__value">{t('systems.sol')}</span>
+            <span className="flight-hud__label flight-hud__row--wide">{t('target')}</span>
+            <span ref={targetRef} className="flight-hud__value flight-hud__value--dim flight-hud__row--wide">—</span>
           </div>
           <canvas
             ref={radarRef}
@@ -388,6 +543,12 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
             </div>
             {!touch && <div className="flight-hud__hint">{t('hint')}</div>}
           </div>
+
+          <div ref={crashRef} className="flight-hud__crash" role="alert" hidden>
+            <span className="flight-hud__crash-title">{t('hullLost')}</span>
+            <span ref={respawnRef} className="flight-hud__crash-sub" />
+          </div>
+
           {touch && (
             <>
               <canvas ref={padRef} className="flight-hud__pad" aria-hidden />

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import {
   bodyColor,
+  MEAN_RADIUS_KM,
   sampleSolarSystem,
   worldRadiusForBody,
   type ScaleMode,
@@ -51,7 +52,15 @@ import {
 } from '@/lib/solar-system/scene-extras';
 import { makeSunSurface } from '@/lib/solar-system/sun-surface';
 import { makePostFx } from '@/lib/solar-system/post-processing';
-import { createPlayerShip, type FlightSession, type PlayerShipHandle } from '@/lib/solar-system/player-ship';
+import {
+  createPlayerShip,
+  type FlightAnchor,
+  type FlightBody,
+  type FlightSession,
+  type FlightWorld,
+  type PlayerShipHandle,
+} from '@/lib/solar-system/player-ship';
+import { makeAlphaCentauri } from '@/lib/solar-system/star-systems';
 import { makeAlienEncounters } from '@/lib/solar-system/aliens';
 import { makeDeepSpaceProbes } from '@/lib/solar-system/probes';
 import {
@@ -134,6 +143,20 @@ function localToScreen(
   world.applyMatrix4(parent.matrixWorld);
   return projectToScreen(world, camera, cssWidth, cssHeight);
 }
+
+/** Surface gravity (m/s²) and atmosphere top (× radius) for the flight
+ *  model — every body is solid, the ones with air heat a ship that dives.
+ *  The air is drawn thicker than the real few percent of a radius: the
+ *  fighter's own hull spans that, so re-entry has to start higher up to be
+ *  felt at all before the ground arrives. */
+const SURFACE_G: Record<SolarBodyId, number> = {
+  sun: 274, mercury: 3.7, venus: 8.87, earth: 9.81, mars: 3.71,
+  jupiter: 24.79, saturn: 10.44, uranus: 8.87, neptune: 11.15, pluto: 0.62,
+};
+const ATMOSPHERE: Record<SolarBodyId, number> = {
+  sun: 1.5, mercury: 1, venus: 1.3, earth: 1.25, mars: 1.15,
+  jupiter: 1.22, saturn: 1.22, uranus: 1.2, neptune: 1.2, pluto: 1,
+};
 
 function disposeMat(m: THREE.Material) {
   if (m instanceof THREE.MeshStandardMaterial) disposePlanetMaterial(m);
@@ -434,6 +457,10 @@ export function SolarSystemCanvas({
     scene.add(sunExtras.group);
     // Photosphere shader — the NASA map warped by animated convection noise.
     const sunSurface = makeSunSurface(lite);
+    // The next star over — only rendered while a ship can fly there.
+    const alphaCen = makeAlphaCentauri(sunSurface.material, lite);
+    alphaCen.group.visible = false;
+    scene.add(alphaCen.group);
 
     let earthExtras: EarthExtrasHandle | null = null;
     let earthRocket: EarthRocketHandle | null = null;
@@ -949,10 +976,76 @@ export function SolarSystemCanvas({
       aliens.setHostile(null);
       scene.remove(ship.group);
       scene.remove(ship.boltGroup);
+      scene.remove(ship.fxGroup);
       ship.dispose();
       ship = null;
-      // The follow camera rolls its up vector; orbit lookAt needs it upright.
+      alphaCen.group.visible = false;
+      // The follow camera rolls its up vector and widens the lens; the
+      // orbit camera needs both back.
       camera.up.set(0, 1, 0);
+      camera.fov = 42;
+      camera.updateProjectionMatrix();
+    };
+
+    // The flight model's view of the world: every solid body with its real
+    // radius and surface gravity, the respawn point of whichever system the
+    // ship is in, and the hyperdrive's destination — the other system.
+    const flightBodies = new Map<SolarBodyId, FlightBody>();
+    const world: FlightWorld = {
+      bodies: [],
+      home: { position: new THREE.Vector3(), lookAt: new THREE.Vector3(), yaw: 0 },
+      jump: { name: 'alphaCentauri', distanceLy: 4.37, position: new THREE.Vector3(), lookAt: new THREE.Vector3(), yaw: 0 },
+      systemName: 'sol',
+    };
+    const anchorUp = new THREE.Vector3();
+    const anchorRight = new THREE.Vector3();
+    const anchorFwd = new THREE.Vector3();
+    // A few Earth radii out on a tangent, a little above the ecliptic, with
+    // the planet framed ahead and to one side of the nose.
+    const solAnchor = (earth: THREE.Vector3 | null, out: FlightAnchor) => {
+      const anchor = earth ?? anchorFwd.set(1, 0, 0);
+      anchorRight.copy(anchor).normalize();
+      anchorUp.set(0, 1, 0);
+      anchorFwd.crossVectors(anchorUp, anchorRight).normalize();
+      out.position.copy(anchor).addScaledVector(anchorFwd, 0.14).addScaledVector(anchorUp, 0.03);
+      out.lookAt.copy(anchor);
+      out.yaw = 0.45;
+    };
+    const copyAnchor = (from: FlightAnchor, to: FlightAnchor) => {
+      to.position.copy(from.position);
+      to.lookAt.copy(from.lookAt);
+      to.yaw = from.yaw;
+    };
+    const syncWorld = (shipPos: THREE.Vector3 | null, earth: THREE.Vector3 | null) => {
+      world.bodies.length = 0;
+      meshById.forEach((mesh, id) => {
+        let b = flightBodies.get(id);
+        if (!b) {
+          b = {
+            id,
+            position: new THREE.Vector3(),
+            radius: worldRadiusForBody(id),
+            radiusKm: MEAN_RADIUS_KM[id],
+            surfaceG: SURFACE_G[id],
+            atmosphere: ATMOSPHERE[id],
+          };
+          flightBodies.set(id, b);
+        }
+        b.position.copy(mesh.position);
+        world.bodies.push(b);
+      });
+      for (const b of alphaCen.bodies) world.bodies.push(b);
+      const atSol = !shipPos || shipPos.length() < shipPos.distanceTo(alphaCen.center);
+      world.systemName = atSol ? 'sol' : 'alphaCentauri';
+      if (atSol) {
+        solAnchor(earth, world.home);
+        copyAnchor(alphaCen.arrival, world.jump);
+        world.jump.name = 'alphaCentauri';
+      } else {
+        copyAnchor(alphaCen.arrival, world.home);
+        solAnchor(earth, world.jump);
+        world.jump.name = 'sol';
+      }
     };
     // Epoch anchor for shader time uniforms — keeps the float32 value the GPU
     // sees small enough to stay precise across the ±2 year scrub range.
@@ -1009,7 +1102,10 @@ export function SolarSystemCanvas({
           ship = createPlayerShip(session);
           scene.add(ship.group);
           scene.add(ship.boltGroup);
-          ship.spawn(earthPos);
+          scene.add(ship.fxGroup);
+          alphaCen.group.visible = true;
+          syncWorld(null, earthPos);
+          ship.spawn(world.home);
           const live = ship;
           aliens.setHostile({ group: live.group, onHit: (dmg) => live.takeDamage(dmg) });
         }
@@ -1019,7 +1115,9 @@ export function SolarSystemCanvas({
 
       const focus = focusRef.current;
       if (ship) {
-        ship.update(dtSec, (now - t0) / 1000, camera, aliens);
+        syncWorld(ship.group.position, earthPos);
+        ship.update(dtSec, (now - t0) / 1000, camera, aliens, world);
+        alphaCen.update(dtSec, camera.position, camera);
       } else if (focus && meshById.has(focus)) {
         vTarget.copy(meshById.get(focus)!.position);
         const pr = worldRadiusForBody(focus);
@@ -1207,6 +1305,8 @@ export function SolarSystemCanvas({
       scene.remove(comet.group);
       comet.dispose();
       sunExtras.dispose();
+      scene.remove(alphaCen.group);
+      alphaCen.dispose();
       sunSurface.dispose();
       disposeOrbitRings(orbitRings);
       disposeMilkyWayBand(milkyWay);

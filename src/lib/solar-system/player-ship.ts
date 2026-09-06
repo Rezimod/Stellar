@@ -1,9 +1,11 @@
-// Player fighter for Explore Mode — arcade flight through the solar system,
-// green lasers, and a follow camera. Everything here is scene-scale: the
-// spec's flight numbers (15-unit camera offset, 2.5 u/s cruise, 8 u/s bolts)
-// are expressed in "flight units" of FLIGHT_UNIT scene units, because the
-// ephemeris scene is tiny (Earth radius ≈ 0.028, alien saucer ≈ 0.012).
-// Earth → Mars at full boost still takes ~45 s at typical separations.
+// Player fighter for Explore Mode — a small X-foil starfighter flying the
+// real solar system, with three speed regimes, gravity wells, solid planets
+// you can crash into, and a hyperdrive that jumps to the next star.
+//
+// Everything here is scene-scale. The ephemeris scene is tiny (Earth radius
+// ≈ 0.028, alien saucer ≈ 0.012), so flight numbers live in "flight units"
+// of FLIGHT_UNIT scene units and the hull in H, a fraction of that: the ship
+// is about a third of an Earth radius long, so every planet towers over it.
 
 import * as THREE from 'three';
 import type { AlienHandle } from '@/lib/solar-system/aliens';
@@ -11,34 +13,81 @@ import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 
 export const FLIGHT_UNIT = 0.006;
 const U = FLIGHT_UNIT;
+/** Hull unit — the fighter is ~6.6 H long. */
+const H = 0.22 * U;
+/** Scene units → km, anchored on Earth's rendered radius (0.028 = 6,371 km). */
+export const KM_PER_SCENE_UNIT = 6371 / 0.028;
+const LIGHT_KM_S = 299_792.458;
 
-const MAX_SPEED = 2.5 * U;
-const BOOST_SPEED = 5.0 * U;
-const THRUST_ACCEL = 14 * U;
-const DRAG_PER_FRAME = 0.92; // at 60 fps; applied as pow(0.92, dt·60)
-const CAM_BACK = 27 * U;
-const CAM_UP = 7.5 * U;
+export type SpeedMode = 'cruise' | 'fast' | 'jump';
+export type JumpPhase = 'none' | 'charge' | 'travel';
+export type FlightAlert =
+  | ''
+  | 'proximity'
+  | 'entry'
+  | 'masslock'
+  | 'charging'
+  | 'jump'
+  | 'arrived';
+
+interface Regime {
+  max: number;
+  boost: number;
+  accel: number;
+  /** Turn-rate multiplier — a ship at a tenth of c cannot pivot like a dogfighter. */
+  turn: number;
+  camBack: number;
+  fov: number;
+}
+const REGIMES: Record<Exclude<SpeedMode, 'jump'>, Regime> = {
+  cruise: { max: 2.5 * U, boost: 5 * U, accel: 14 * U, turn: 1, camBack: 30 * H, fov: 46 },
+  // Drag settles thrust at accel / (60 · 0.08); the fast regime needs the
+  // extra push to actually reach its ceiling.
+  fast: { max: 22 * U, boost: 34 * U, accel: 120 * U, turn: 0.55, camBack: 40 * H, fov: 60 },
+};
+const JUMP_CAM_BACK = 44 * H;
+const JUMP_FOV = 74;
+const CAM_UP = 8 * H;
 const CAM_LERP = 0.08; // per 60 fps frame
+const DRAG_PER_FRAME = 0.92; // at 60 fps; applied as pow(0.92, dt·60)
 const YAW_RATE = 1.5;
 const PITCH_RATE = 1.3;
 const ROLL_RATE = 2.2;
 const MOUSE_SENS = 0.0022; // rad per px
-// Spec: 8 u/s for 0.4 s — that's a 3.2-unit reach, shorter than the camera
-// offset, so nothing past the nose could ever be hit. Bolts fly faster and
-// live a little longer so the alien attack tracks (6–15 flight units out)
-// are inside range.
+
 const BOLT_SPEED = 24 * U;
 const BOLT_LIFE = 0.8;
-const BOLT_POOL = 12;
-const FIRE_INTERVAL = 0.16;
+const BOLT_POOL = 16;
+const FIRE_INTERVAL = 0.13;
+
 const MAX_HP = 100;
-/** Hull integrity floors here — hits hurt and slow you down, but the ship
- *  is never destroyed. This is a sightseeing craft, not a life you can lose. */
+/** Enemy fire and re-entry heat floor here — only a planet kills you. */
 const MIN_HP = 15;
 const HP_REGEN_PER_SEC = 4.5;
 const HP_REGEN_DELAY = 4;
 const RADAR_RANGE = 60 * U;
 export const RADAR_MAX = 16;
+
+/** Collision sphere around the hull centre. */
+const HULL_RADIUS = 1.3 * H;
+/** Flight acceleration at 1 g on a body's surface. */
+const ONE_G = 3 * U;
+/** Gravity is felt out to this many radii. */
+const GRAVITY_REACH = 10;
+/** The nearest-body readout reaches further, so a star fills it on arrival. */
+const NEAR_REACH = 24;
+/** The Sun's real 274 m/s² would pin the inner system; cap the wells. */
+const MAX_SURFACE_G = 30;
+
+const JUMP_CHARGE = 2.4;
+const JUMP_TRAVEL = 4.6;
+/** Altitude (in radii) below which a body mass-locks the hyperdrive. */
+const MASS_LOCK_RADII = 3;
+const JUMP_FLOW = 40 * U;
+const RESPAWN_DELAY = 3.6;
+
+const DUST_N = 220;
+const DUST_BOX = 40 * U;
 
 export interface FlightInput {
   /** -1..1, forward positive. */
@@ -56,11 +105,19 @@ export interface FlightInput {
   /** Accumulated pointer deltas (px) since the last frame. */
   mouseDX: number;
   mouseDY: number;
+  /** One-shot: the HUD / keys asked for a regime; the ship consumes it. */
+  modeRequest: SpeedMode | null;
+  /** One-shot: flip the S-foils. */
+  foilsToggle: boolean;
 }
 
 export interface FlightTelemetry {
   /** Flight units per second. */
   speed: number;
+  speedKmS: number;
+  /** Fraction of c. */
+  speedC: number;
+  mode: SpeedMode;
   hp: number;
   maxHp: number;
   boost: boolean;
@@ -70,6 +127,26 @@ export interface FlightTelemetry {
   /** 1 right after taking damage, decays to 0. */
   hitFlash: number;
   kills: number;
+  foilsOpen: boolean;
+  /** 0..1 — atmospheric entry heating. */
+  heat: number;
+  alert: FlightAlert;
+  /** Nearest body ('' when nothing within reach) and altitude above its surface. */
+  nearId: string;
+  nearAltKm: number;
+  jumpPhase: JumpPhase;
+  /** 0..1 through the current jump phase. */
+  jumpT: number;
+  /** White-out at jump entry / exit, decays to 0. */
+  jumpFlash: number;
+  crashed: boolean;
+  respawnIn: number;
+  /** Camera shake amplitude, 0..~1.5. */
+  shake: number;
+  /** Which star system the ship is in, and where the hyperdrive points. */
+  systemName: string;
+  targetName: string;
+  targetLy: number;
 }
 
 export interface FlightSession {
@@ -77,6 +154,34 @@ export interface FlightSession {
   active: boolean;
   input: FlightInput;
   telemetry: FlightTelemetry;
+}
+
+/** A solid body the ship can orbit, burn up in, or hit. */
+export interface FlightBody {
+  id: string;
+  position: THREE.Vector3;
+  radius: number;
+  radiusKm: number;
+  /** Surface gravity, m/s². */
+  surfaceG: number;
+  /** Top of the atmosphere as a multiple of the radius (1 = airless). */
+  atmosphere: number;
+}
+
+export interface FlightAnchor {
+  position: THREE.Vector3;
+  lookAt: THREE.Vector3;
+  /** Extra yaw after the look-at, so a planet can sit off to one side. */
+  yaw: number;
+}
+
+export interface FlightWorld {
+  bodies: FlightBody[];
+  /** Where the ship respawns after a crash — a safe spot in the current system. */
+  home: FlightAnchor;
+  /** The hyperdrive's destination. */
+  jump: FlightAnchor & { name: string; distanceLy: number };
+  systemName: string;
 }
 
 export function clearFlightInput(input: FlightInput) {
@@ -89,6 +194,8 @@ export function clearFlightInput(input: FlightInput) {
   input.fire = false;
   input.mouseDX = 0;
   input.mouseDY = 0;
+  input.modeRequest = null;
+  input.foilsToggle = false;
 }
 
 export function createFlightSession(): FlightSession {
@@ -97,9 +204,13 @@ export function createFlightSession(): FlightSession {
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, mouseDX: 0, mouseDY: 0,
+      modeRequest: null, foilsToggle: false,
     },
     telemetry: {
       speed: 0,
+      speedKmS: 0,
+      speedC: 0,
+      mode: 'cruise',
       hp: MAX_HP,
       maxHp: MAX_HP,
       boost: false,
@@ -107,6 +218,20 @@ export function createFlightSession(): FlightSession {
       radarCount: 0,
       hitFlash: 0,
       kills: 0,
+      foilsOpen: false,
+      heat: 0,
+      alert: '',
+      nearId: '',
+      nearAltKm: 0,
+      jumpPhase: 'none',
+      jumpT: 0,
+      jumpFlash: 0,
+      crashed: false,
+      respawnIn: 0,
+      shake: 0,
+      systemName: 'sol',
+      targetName: 'alphaCentauri',
+      targetLy: 4.37,
     },
   };
 }
@@ -116,6 +241,7 @@ export function createFlightSession(): FlightSession {
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight',
+  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH',
 ]);
 
 /**
@@ -145,6 +271,11 @@ export function attachDesktopControls(
     }
     if (!HANDLED_KEYS.has(e.code)) return;
     e.preventDefault();
+    if (e.repeat) return;
+    if (e.code === 'Digit1') input.modeRequest = 'cruise';
+    else if (e.code === 'Digit2') input.modeRequest = 'fast';
+    else if (e.code === 'Digit3' || e.code === 'KeyH') input.modeRequest = 'jump';
+    else if (e.code === 'KeyF') input.foilsToggle = true;
     pressed.add(e.code);
     sync();
   };
@@ -194,204 +325,556 @@ export function attachDesktopControls(
 
 /* ───────────────────────── ship geometry ───────────────────────── */
 
+interface Foil {
+  pivot: THREE.Group;
+  /** +1 port (+X), -1 starboard. */
+  side: number;
+  /** +1 upper wing, -1 lower. */
+  layer: number;
+}
+
 interface ShipParts {
   group: THREE.Group;
+  /** Visual child — banks into turns while `group` carries the physics frame. */
+  hull: THREE.Group;
+  foils: Foil[];
+  cannonTips: THREE.Object3D[];
+  skinMat: THREE.MeshStandardMaterial;
   engineMat: THREE.MeshStandardMaterial;
   glowMats: THREE.SpriteMaterial[];
   glowSprites: THREE.Sprite[];
+  plasmaMat: THREE.SpriteMaterial;
+  plasma: THREE.Sprite;
   strobeMat: THREE.MeshBasicMaterial;
   /** Materials shared across meshes — disposed once, by hand. */
   owned: THREE.Material[];
 }
 
 /**
- * Fighter built from primitives, detailed the way a real airframe reads at
- * distance: a long tapered fuselage, a recessed canopy, swept wings with
- * thickness and hard leading edges, engine nacelles whose nozzles glow from
- * inside a dark shroud, and navigation lights on aviation convention —
- * red to port, green to starboard, a white strobe on the spine.
- * Forward is +Z, matching the alien ships.
+ * An X-foil starfighter built from primitives: a long tapered nose in front
+ * of a boxy engine fuselage, a faceted canopy with an astromech dome behind
+ * it, four S-foils that each carry an engine at the root and a laser cannon
+ * at the tip, red squadron stripes, and aviation navigation lights — red to
+ * port, green to starboard, a white strobe on the spine. Forward is +Z.
  */
 function buildShip(): ShipParts {
   const group = new THREE.Group();
   group.name = 'playerShip';
+  const hull = new THREE.Group();
+  group.add(hull);
 
-  // Three hull tones: a light dorsal skin, a darker ventral/panel grey, and
-  // near-black for shrouds and the canopy. Real spacecraft read as panelled
-  // metal, not one flat colour.
-  const skin = new THREE.MeshStandardMaterial({ color: 0xc6cedb, roughness: 0.38, metalness: 0.72 });
-  const panel = new THREE.MeshStandardMaterial({ color: 0x76808f, roughness: 0.52, metalness: 0.6 });
-  const shroud = new THREE.MeshStandardMaterial({ color: 0x22262e, roughness: 0.66, metalness: 0.45 });
+  // Matte, panelled, weathered grey-white — a working fighter, not chrome.
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xd7dbe0, roughness: 0.58, metalness: 0.32 });
+  const panel = new THREE.MeshStandardMaterial({ color: 0x8b929c, roughness: 0.6, metalness: 0.4 });
+  const shroud = new THREE.MeshStandardMaterial({ color: 0x2a2e36, roughness: 0.7, metalness: 0.45 });
+  const stripe = new THREE.MeshStandardMaterial({ color: 0xb3342b, roughness: 0.55, metalness: 0.2 });
   const glass = new THREE.MeshStandardMaterial({
-    color: 0x1a2634, roughness: 0.08, metalness: 0.9,
-    emissive: new THREE.Color(0x0d2233), emissiveIntensity: 0.5,
+    color: 0x18222e, roughness: 0.1, metalness: 0.85,
+    emissive: new THREE.Color(0x0c1e2c), emissiveIntensity: 0.5,
   });
+  const droid = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x3b7bff).multiplyScalar(1.4) });
   const engineMat = new THREE.MeshStandardMaterial({
-    color: 0xbdeeff,
-    emissive: new THREE.Color(0x49ddff),
+    color: 0xffc0b0,
+    emissive: new THREE.Color(0xff5a3c),
     emissiveIntensity: 1.8,
     roughness: 0.3,
     metalness: 0,
   });
-  const owned: THREE.Material[] = [skin, panel, shroud, glass, engineMat];
+  const owned: THREE.Material[] = [skinMat, panel, shroud, stripe, glass, droid, engineMat];
 
-  // ── Fuselage: tapered spine, not a plain tube ──
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3 * U, 0.44 * U, 2.7 * U, 16), skin);
-  body.rotation.x = Math.PI / 2;
-  group.add(body);
-  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.3 * U, 1.7 * U, 16), skin);
+  // ── Fuselage: engine box aft, long nose forward ──
+  const aft = new THREE.Mesh(new THREE.BoxGeometry(1.3 * H, 1.0 * H, 2.6 * H), panel);
+  aft.position.set(0, 0, -0.5 * H);
+  hull.add(aft);
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.7 * H, 0.26 * H, 2.2 * H), skinMat);
+  spine.position.set(0, 0.6 * H, -0.5 * H);
+  hull.add(spine);
+  const keel = new THREE.Mesh(new THREE.BoxGeometry(0.8 * H, 0.2 * H, 2.0 * H), shroud);
+  keel.position.set(0, -0.56 * H, -0.5 * H);
+  hull.add(keel);
+  const nose = new THREE.Mesh(new THREE.CylinderGeometry(0.3 * H, 0.55 * H, 3.0 * H, 18), skinMat);
   nose.rotation.x = Math.PI / 2;
-  nose.position.z = 2.2 * U;
-  group.add(nose);
-  // Sensor tip — the one bright point on the nose.
-  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.055 * U, 8, 8), shroud);
-  tip.position.z = 3.06 * U;
-  group.add(tip);
-  // Ventral panel running the length of the belly: breaks the silhouette.
-  const belly = new THREE.Mesh(new THREE.BoxGeometry(0.42 * U, 0.14 * U, 2.4 * U), panel);
-  belly.position.set(0, -0.3 * U, 0.1 * U);
-  group.add(belly);
-  // Dorsal spine strake.
-  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.16 * U, 0.16 * U, 1.9 * U), panel);
-  spine.position.set(0, 0.32 * U, -0.15 * U);
-  group.add(spine);
-
-  // ── Canopy: sunk into a dark coaming so it reads as glass in a frame ──
-  const coaming = new THREE.Mesh(new THREE.SphereGeometry(0.3 * U, 14, 10), shroud);
-  coaming.scale.set(1, 0.62, 1.9);
-  coaming.position.set(0, 0.26 * U, 0.62 * U);
-  group.add(coaming);
-  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.26 * U, 14, 10), glass);
-  canopy.scale.set(1, 0.6, 1.85);
-  canopy.position.set(0, 0.3 * U, 0.66 * U);
-  group.add(canopy);
-
-  // ── Wings: swept 30°, with thickness, a hard leading edge and end plates ──
-  const wingGeom = new THREE.BoxGeometry(2.9 * U, 0.075 * U, 1.0 * U);
-  const edgeGeom = new THREE.BoxGeometry(2.9 * U, 0.055 * U, 0.16 * U);
-  const plateGeom = new THREE.BoxGeometry(0.07 * U, 0.42 * U, 0.72 * U);
-  const pylonGeom = new THREE.BoxGeometry(0.16 * U, 0.2 * U, 0.9 * U);
+  nose.position.z = 2.3 * H;
+  hull.add(nose);
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.3 * H, 1.5 * H, 18), skinMat);
+  tip.rotation.x = Math.PI / 2;
+  tip.position.z = 4.55 * H;
+  hull.add(tip);
+  const sensor = new THREE.Mesh(new THREE.SphereGeometry(0.07 * H, 8, 8), shroud);
+  sensor.position.z = 5.3 * H;
+  hull.add(sensor);
+  // Squadron stripes down the nose.
+  const noseStripeGeom = new THREE.BoxGeometry(0.12 * H, 0.04 * H, 1.6 * H);
   for (const side of [-1, 1]) {
-    const wing = new THREE.Mesh(wingGeom, skin);
-    wing.position.set(side * 1.6 * U, -0.04 * U, -0.4 * U);
-    wing.rotation.y = side * (Math.PI / 6);
-    // A few degrees of dihedral — flat wings look like cardboard.
-    wing.rotation.z = side * -0.06;
-    group.add(wing);
-    const edge = new THREE.Mesh(edgeGeom, panel);
-    edge.position.set(side * 1.6 * U, -0.04 * U, -0.4 * U);
-    edge.rotation.y = side * (Math.PI / 6);
-    edge.rotation.z = side * -0.06;
-    edge.translateZ(0.42 * U);
-    group.add(edge);
-    const plate = new THREE.Mesh(plateGeom, panel);
-    plate.position.set(side * 2.92 * U, 0.06 * U, -1.12 * U);
-    group.add(plate);
-    const pylon = new THREE.Mesh(pylonGeom, panel);
-    pylon.position.set(side * 0.82 * U, -0.02 * U, -0.5 * U);
-    group.add(pylon);
+    const s = new THREE.Mesh(noseStripeGeom, stripe);
+    s.position.set(side * 0.17 * H, 0.4 * H, 2.4 * H);
+    s.rotation.x = -0.08;
+    hull.add(s);
+  }
+  // Side greebles break the box into panels.
+  const greebleGeom = new THREE.BoxGeometry(0.16 * H, 0.34 * H, 1.3 * H);
+  for (const side of [-1, 1]) {
+    const g = new THREE.Mesh(greebleGeom, shroud);
+    g.position.set(side * 0.7 * H, -0.08 * H, -0.4 * H);
+    hull.add(g);
   }
 
-  // ── Tail fins, canted outward ──
-  const finGeom = new THREE.BoxGeometry(0.06 * U, 0.8 * U, 0.8 * U);
-  for (const side of [-1, 1]) {
-    const fin = new THREE.Mesh(finGeom, skin);
-    fin.position.set(side * 0.3 * U, 0.42 * U, -1.15 * U);
-    fin.rotation.z = side * 0.28;
-    group.add(fin);
-  }
+  // ── Canopy in a dark coaming, astromech dome behind it ──
+  const coaming = new THREE.Mesh(new THREE.BoxGeometry(0.82 * H, 0.5 * H, 1.5 * H), shroud);
+  coaming.position.set(0, 0.55 * H, 1.0 * H);
+  hull.add(coaming);
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.42 * H, 14, 10), glass);
+  canopy.scale.set(0.85, 0.55, 1.5);
+  canopy.position.set(0, 0.72 * H, 1.0 * H);
+  hull.add(canopy);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.3 * H, 14, 10), skinMat);
+  dome.position.set(0, 0.72 * H, -0.35 * H);
+  hull.add(dome);
+  const band = new THREE.Mesh(new THREE.SphereGeometry(0.305 * H, 14, 10), droid);
+  band.scale.set(1, 0.32, 1);
+  band.position.set(0, 0.74 * H, -0.35 * H);
+  hull.add(band);
 
-  // ── Engines: a dark shroud with the glowing nozzle recessed inside ──
-  const nacelleGeom = new THREE.CylinderGeometry(0.3 * U, 0.34 * U, 1.5 * U, 14);
-  const shroudGeom = new THREE.CylinderGeometry(0.34 * U, 0.34 * U, 0.34 * U, 14, 1, true);
-  const nozzleGeom = new THREE.CylinderGeometry(0.25 * U, 0.2 * U, 0.12 * U, 14);
+  // ── S-foils: four wings on pivots at the fuselage sides. Each carries an
+  // engine at the root and a cannon at the tip, so opening the foils fans
+  // the engines and the guns out into the X. ──
+  const wingGeom = new THREE.BoxGeometry(3.3 * H, 0.08 * H, 1.15 * H);
+  const edgeGeom = new THREE.BoxGeometry(3.3 * H, 0.06 * H, 0.16 * H);
+  const wingStripeGeom = new THREE.BoxGeometry(2.0 * H, 0.1 * H, 0.2 * H);
+  const engineGeom = new THREE.CylinderGeometry(0.34 * H, 0.3 * H, 1.7 * H, 14);
+  const intakeGeom = new THREE.ConeGeometry(0.34 * H, 0.5 * H, 14);
+  const nozzleGeom = new THREE.CylinderGeometry(0.26 * H, 0.22 * H, 0.14 * H, 14);
+  const nozzleRingGeom = new THREE.CylinderGeometry(0.31 * H, 0.31 * H, 0.3 * H, 14, 1, true);
+  const cannonGeom = new THREE.CylinderGeometry(0.06 * H, 0.07 * H, 2.6 * H, 8);
+  const cannonTipGeom = new THREE.SphereGeometry(0.1 * H, 8, 8);
+  const navGeom = new THREE.SphereGeometry(0.08 * H, 8, 8);
   const glowTex = softSpriteTexture();
   const glowMats: THREE.SpriteMaterial[] = [];
   const glowSprites: THREE.Sprite[] = [];
-  for (const side of [-1, 1]) {
-    const x = side * 0.8 * U;
-    const nacelle = new THREE.Mesh(nacelleGeom, panel);
-    nacelle.rotation.x = Math.PI / 2;
-    nacelle.position.set(x, -0.06 * U, -1.1 * U);
-    group.add(nacelle);
-    const ring = new THREE.Mesh(shroudGeom, shroud);
-    ring.rotation.x = Math.PI / 2;
-    ring.position.set(x, -0.06 * U, -1.84 * U);
-    group.add(ring);
-    const nozzle = new THREE.Mesh(nozzleGeom, engineMat);
-    nozzle.rotation.x = Math.PI / 2;
-    nozzle.position.set(x, -0.06 * U, -1.9 * U);
-    group.add(nozzle);
-    // Exhaust bloom, sitting just behind the nozzle mouth.
-    const mat = new THREE.SpriteMaterial({
-      map: glowTex,
-      color: 0x5fe0ff,
-      transparent: true,
-      opacity: 0.75,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const sprite = new THREE.Sprite(mat);
-    sprite.position.set(x, -0.06 * U, -2.06 * U);
-    sprite.scale.setScalar(1.1 * U);
-    group.add(sprite);
-    glowMats.push(mat);
-    glowSprites.push(sprite);
+  const foils: Foil[] = [];
+  const cannonTips: THREE.Object3D[] = [];
+  // Forward is +Z with +Y up, so the pilot's left (port) is +X.
+  const navColour: Record<number, number> = { 1: 0xff3b30, [-1]: 0x30ff6a };
+  for (const side of [1, -1]) {
+    for (const layer of [1, -1]) {
+      const pivot = new THREE.Group();
+      pivot.position.set(side * 0.65 * H, layer * 0.16 * H, -0.6 * H);
+      hull.add(pivot);
+      foils.push({ pivot, side, layer });
+
+      const wing = new THREE.Mesh(wingGeom, skinMat);
+      wing.position.set(side * 1.75 * H, 0, 0);
+      pivot.add(wing);
+      const edge = new THREE.Mesh(edgeGeom, panel);
+      edge.position.set(side * 1.75 * H, 0, 0.62 * H);
+      pivot.add(edge);
+      const ws = new THREE.Mesh(wingStripeGeom, stripe);
+      ws.position.set(side * 2.1 * H, layer * 0.03 * H, 0.1 * H);
+      pivot.add(ws);
+
+      const engine = new THREE.Mesh(engineGeom, panel);
+      engine.rotation.x = Math.PI / 2;
+      engine.position.set(side * 0.45 * H, layer * 0.2 * H, -0.5 * H);
+      pivot.add(engine);
+      const intake = new THREE.Mesh(intakeGeom, shroud);
+      intake.rotation.x = Math.PI / 2;
+      intake.position.set(side * 0.45 * H, layer * 0.2 * H, 0.6 * H);
+      pivot.add(intake);
+      const ring = new THREE.Mesh(nozzleRingGeom, shroud);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(side * 0.45 * H, layer * 0.2 * H, -1.38 * H);
+      pivot.add(ring);
+      const nozzle = new THREE.Mesh(nozzleGeom, engineMat);
+      nozzle.rotation.x = Math.PI / 2;
+      nozzle.position.set(side * 0.45 * H, layer * 0.2 * H, -1.44 * H);
+      pivot.add(nozzle);
+      const mat = new THREE.SpriteMaterial({
+        map: glowTex,
+        color: 0xff7a55,
+        transparent: true,
+        opacity: 0.75,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const sprite = new THREE.Sprite(mat);
+      sprite.position.set(side * 0.45 * H, layer * 0.2 * H, -1.62 * H);
+      sprite.scale.setScalar(1.2 * H);
+      pivot.add(sprite);
+      glowMats.push(mat);
+      glowSprites.push(sprite);
+
+      const cannon = new THREE.Mesh(cannonGeom, shroud);
+      cannon.rotation.x = Math.PI / 2;
+      cannon.position.set(side * 3.35 * H, 0, 0.9 * H);
+      pivot.add(cannon);
+      const flare = new THREE.Mesh(cannonTipGeom, panel);
+      flare.position.set(side * 3.35 * H, 0, 2.25 * H);
+      pivot.add(flare);
+      const cannonTip = new THREE.Object3D();
+      cannonTip.position.set(side * 3.35 * H, 0, 2.4 * H);
+      pivot.add(cannonTip);
+      cannonTips.push(cannonTip);
+
+      if (layer === 1) {
+        const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(navColour[side]).multiplyScalar(1.6) });
+        const light = new THREE.Mesh(navGeom, m);
+        light.position.set(side * 3.42 * H, 0.06 * H, -0.2 * H);
+        pivot.add(light);
+        owned.push(m);
+      }
+    }
   }
 
-  // ── Navigation lights: red to port, green to starboard, white on the
-  // spine. Tiny unlit-looking basic materials so they read at any distance. ──
-  const navGeom = new THREE.SphereGeometry(0.075 * U, 8, 8);
-  const navMats: THREE.MeshBasicMaterial[] = [];
-  // Forward is +Z with +Y up, so the pilot's left (port) is +X.
-  const navSpecs: [number, number][] = [[1, 0xff3b30], [-1, 0x30ff6a]];
-  for (const [side, colour] of navSpecs) {
-    const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(colour).multiplyScalar(1.6) });
-    const light = new THREE.Mesh(navGeom, m);
-    light.position.set(side * 2.92 * U, 0.28 * U, -1.12 * U);
-    group.add(light);
-    navMats.push(m);
-    owned.push(m);
-  }
   const strobeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const strobe = new THREE.Mesh(navGeom, strobeMat);
-  strobe.position.set(0, 0.46 * U, -0.6 * U);
-  group.add(strobe);
+  strobe.position.set(0, 0.78 * H, -1.3 * H);
+  hull.add(strobe);
   owned.push(strobeMat);
 
-  return { group, engineMat, glowMats, glowSprites, strobeMat, owned };
+  // Re-entry plasma sheath on the nose — invisible until the air bites.
+  const plasmaMat = new THREE.SpriteMaterial({
+    map: glowTex,
+    color: 0xff8a3a,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const plasma = new THREE.Sprite(plasmaMat);
+  plasma.position.set(0, 0, 4.2 * H);
+  plasma.scale.setScalar(4 * H);
+  hull.add(plasma);
+
+  return {
+    group, hull, foils, cannonTips, skinMat, engineMat, glowMats, glowSprites,
+    plasmaMat, plasma, strobeMat, owned,
+  };
 }
 
-/* ───────────────────────── laser audio ───────────────────────── */
+/* ───────────────────────── audio ───────────────────────── */
 
-function makeLaserAudio() {
+function makeFlightAudio() {
   let ctx: AudioContext | null = null;
+  let noise: AudioBuffer | null = null;
+  const ready = () => {
+    if (!ctx) ctx = new AudioContext();
+    if (ctx.state === 'suspended') void ctx.resume();
+    if (!noise) {
+      noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const data = noise.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    }
+    return ctx;
+  };
+  const tone = (
+    c: AudioContext, type: OscillatorType, f0: number, f1: number, gain: number, dur: number,
+  ) => {
+    const t0 = c.currentTime;
+    const osc = c.createOscillator();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, t0);
+    g.gain.exponentialRampToValueAtTime(0.0005, t0 + dur);
+    osc.connect(g).connect(c.destination);
+    osc.onended = () => {
+      osc.disconnect();
+      g.disconnect();
+    };
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  };
+  const rumble = (c: AudioContext, cutoff0: number, cutoff1: number, gain: number, dur: number) => {
+    if (!noise) return;
+    const t0 = c.currentTime;
+    const src = c.createBufferSource();
+    src.buffer = noise;
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(cutoff0, t0);
+    lp.frequency.exponentialRampToValueAtTime(cutoff1, t0 + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, t0);
+    g.gain.exponentialRampToValueAtTime(0.0005, t0 + dur);
+    src.connect(lp).connect(g).connect(c.destination);
+    src.onended = () => {
+      src.disconnect();
+      lp.disconnect();
+      g.disconnect();
+    };
+    src.start(t0);
+    src.stop(t0 + dur + 0.02);
+  };
+  const safe = (fn: (c: AudioContext) => void) => {
+    try {
+      fn(ready());
+    } catch {
+      // No audio available (autoplay policy, missing API) — the flight stays silent.
+    }
+  };
   return {
-    play() {
-      try {
-        if (!ctx) ctx = new AudioContext();
-        if (ctx.state === 'suspended') void ctx.resume();
-        const t0 = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, t0);
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.16, t0);
-        gain.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.08);
-        osc.connect(gain).connect(ctx.destination);
-        osc.onended = () => {
-          osc.disconnect();
-          gain.disconnect();
-        };
-        osc.start(t0);
-        osc.stop(t0 + 0.085);
-      } catch {
-        // No audio available (autoplay policy, missing API) — lasers stay silent.
-      }
+    laser() {
+      safe((c) => tone(c, 'sawtooth', 620, 180, 0.09, 0.11));
+    },
+    boom() {
+      safe((c) => {
+        rumble(c, 900, 60, 0.7, 1.8);
+        tone(c, 'sine', 90, 28, 0.5, 1.4);
+      });
+    },
+    charge() {
+      safe((c) => tone(c, 'sine', 110, 880, 0.12, JUMP_CHARGE));
+    },
+    whoosh() {
+      safe((c) => rumble(c, 200, 4200, 0.35, 1.2));
     },
     dispose() {
       void ctx?.close();
       ctx = null;
+      noise = null;
+    },
+  };
+}
+
+/* ───────────────────────── crash effects ───────────────────────── */
+
+interface Debris {
+  mesh: THREE.Mesh;
+  vel: THREE.Vector3;
+  spin: THREE.Vector3;
+  settled: boolean;
+}
+
+interface CrashFx {
+  group: THREE.Group;
+  trigger: (point: THREE.Vector3, normal: THREE.Vector3, body: FlightBody, impactVel: THREE.Vector3) => void;
+  update: (dt: number) => void;
+  dispose: () => void;
+}
+
+function ringTexture(): THREE.CanvasTexture {
+  const s = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const g = c.getContext('2d')!;
+  const grad = g.createRadialGradient(s / 2, s / 2, s * 0.3, s / 2, s / 2, s / 2);
+  grad.addColorStop(0, 'rgba(255,255,255,0)');
+  grad.addColorStop(0.62, 'rgba(255,255,255,0)');
+  grad.addColorStop(0.8, 'rgba(255,220,180,0.9)');
+  grad.addColorStop(1, 'rgba(255,160,90,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, s, s);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/**
+ * Impact on a planet: a white-hot core inside an orange fireball, a dark
+ * smoke bloom that outlives both, a shock ring racing across the surface,
+ * a spray of sparks, and hull fragments thrown up the surface normal that
+ * fall back under the body's own gravity and come to rest on the ground.
+ */
+function makeCrashFx(): CrashFx {
+  const group = new THREE.Group();
+  group.name = 'playerCrash';
+  group.visible = false;
+  const glowTex = softSpriteTexture();
+  const ringTex = ringTexture();
+
+  const mkSprite = (color: number, additive: boolean) => {
+    const mat = new THREE.SpriteMaterial({
+      map: glowTex,
+      color,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+    });
+    const s = new THREE.Sprite(mat);
+    group.add(s);
+    return { s, mat };
+  };
+  const core = mkSprite(0xfff4dc, true);
+  const fire = mkSprite(0xff7a2a, true);
+  const smoke = mkSprite(0x14100c, false);
+
+  const ringMat = new THREE.MeshBasicMaterial({
+    map: ringTex,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+  });
+  const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), ringMat);
+  group.add(ring);
+
+  const SPARK_N = 160;
+  const sparkPos = new Float32Array(SPARK_N * 3);
+  const sparkVel: THREE.Vector3[] = [];
+  for (let i = 0; i < SPARK_N; i++) sparkVel.push(new THREE.Vector3());
+  const sparkGeom = new THREE.BufferGeometry();
+  sparkGeom.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+  const sparkMat = new THREE.PointsMaterial({
+    map: glowTex,
+    color: new THREE.Color(1.8, 0.9, 0.4),
+    size: 0.5 * H,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true,
+  });
+  const sparks = new THREE.Points(sparkGeom, sparkMat);
+  group.add(sparks);
+
+  const debrisSkin = new THREE.MeshStandardMaterial({ color: 0xb8bcc2, roughness: 0.7, metalness: 0.3, transparent: true });
+  const debrisDark = new THREE.MeshStandardMaterial({ color: 0x33373f, roughness: 0.75, metalness: 0.4, transparent: true });
+  const debris: Debris[] = [];
+  const debrisGeoms: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < 16; i++) {
+    const geom = new THREE.BoxGeometry(
+      (0.15 + Math.random() * 0.45) * H,
+      (0.05 + Math.random() * 0.15) * H,
+      (0.2 + Math.random() * 0.6) * H,
+    );
+    debrisGeoms.push(geom);
+    const mesh = new THREE.Mesh(geom, i % 3 === 0 ? debrisDark : debrisSkin);
+    mesh.visible = false;
+    group.add(mesh);
+    debris.push({ mesh, vel: new THREE.Vector3(), spin: new THREE.Vector3(), settled: false });
+  }
+
+  let life = -1;
+  let body: FlightBody | null = null;
+  const normal = new THREE.Vector3();
+  const point = new THREE.Vector3();
+  const tmp = new THREE.Vector3();
+  const tangent = new THREE.Vector3();
+  const bitangent = new THREE.Vector3();
+  const LIFE = 3.4;
+
+  const randomInHemisphere = (out: THREE.Vector3, spread: number) => {
+    out.copy(normal)
+      .addScaledVector(tangent, (Math.random() * 2 - 1) * spread)
+      .addScaledVector(bitangent, (Math.random() * 2 - 1) * spread)
+      .normalize();
+  };
+
+  return {
+    group,
+    trigger(at, n, hitBody, impactVel) {
+      life = 0;
+      body = hitBody;
+      point.copy(at);
+      normal.copy(n);
+      tangent.set(0, 1, 0);
+      if (Math.abs(normal.dot(tangent)) > 0.9) tangent.set(1, 0, 0);
+      tangent.cross(normal).normalize();
+      bitangent.crossVectors(normal, tangent);
+      group.position.copy(point);
+      group.visible = true;
+      core.s.position.set(0, 0, 0);
+      fire.s.position.copy(normal).multiplyScalar(0.8 * H);
+      smoke.s.position.copy(normal).multiplyScalar(2.2 * H);
+      ring.position.copy(normal).multiplyScalar(0.05 * H);
+      ring.quaternion.setFromUnitVectors(tmp.set(0, 0, 1), normal);
+      const kick = Math.min(1.6, 0.6 + impactVel.length() / (4 * U));
+      for (let i = 0; i < SPARK_N; i++) {
+        sparkPos[i * 3] = 0;
+        sparkPos[i * 3 + 1] = 0;
+        sparkPos[i * 3 + 2] = 0;
+        randomInHemisphere(sparkVel[i], 1.4);
+        sparkVel[i].multiplyScalar((1 + Math.random() * 5) * U * kick);
+      }
+      sparkGeom.getAttribute('position').needsUpdate = true;
+      for (const d of debris) {
+        d.mesh.visible = true;
+        d.settled = false;
+        d.mesh.position.set(0, 0, 0).addScaledVector(normal, 0.3 * H);
+        d.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+        randomInHemisphere(d.vel, 1.1);
+        d.vel.multiplyScalar((0.8 + Math.random() * 3.2) * U * kick);
+        d.spin.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(14);
+      }
+      debrisSkin.opacity = 1;
+      debrisDark.opacity = 1;
+    },
+    update(dt) {
+      if (life < 0) return;
+      life += dt;
+      if (life > LIFE) {
+        life = -1;
+        group.visible = false;
+        for (const d of debris) d.mesh.visible = false;
+        return;
+      }
+      const t = life;
+      // Fireball: the core flashes and dies, the fire swells then cools, the
+      // smoke keeps growing and lingers.
+      const coreK = Math.min(1, t / 0.45);
+      core.s.scale.setScalar((1.5 + 6 * coreK) * H);
+      core.mat.opacity = Math.max(0, 1 - t / 0.5);
+      const fireK = Math.min(1, t / 1.4);
+      fire.s.scale.setScalar((2 + 14 * Math.sqrt(fireK)) * H);
+      fire.mat.opacity = t < 0.15 ? t / 0.15 : Math.max(0, 1 - (t - 0.15) / 1.3) * 0.95;
+      fire.mat.color.setRGB(1.6, 0.45 + 0.5 * (1 - fireK), 0.15);
+      const smokeK = Math.min(1, t / 2.8);
+      smoke.s.scale.setScalar((3 + 20 * Math.sqrt(smokeK)) * H);
+      smoke.mat.opacity = t < 0.3 ? (t / 0.3) * 0.85 : Math.max(0, 1 - (t - 0.3) / 3.0) * 0.85;
+      // Shock ring races out across the ground and thins as it goes.
+      const ringK = Math.min(1, t / 1.0);
+      ring.scale.setScalar((1 + 22 * Math.sqrt(ringK)) * H);
+      ringMat.opacity = Math.max(0, 1 - ringK) * 0.9;
+
+      const g = body ? Math.min(MAX_SURFACE_G, body.surfaceG) / 9.81 * ONE_G : 0;
+      const floor = body ? body.radius : 0;
+      for (let i = 0; i < SPARK_N; i++) {
+        const v = sparkVel[i];
+        v.addScaledVector(normal, -g * dt);
+        v.multiplyScalar(Math.exp(-dt * 1.6));
+        sparkPos[i * 3] += v.x * dt;
+        sparkPos[i * 3 + 1] += v.y * dt;
+        sparkPos[i * 3 + 2] += v.z * dt;
+      }
+      sparkGeom.getAttribute('position').needsUpdate = true;
+      sparkMat.opacity = Math.max(0, 1 - t / 1.3);
+
+      for (const d of debris) {
+        if (d.settled) continue;
+        d.vel.addScaledVector(normal, -g * dt);
+        d.mesh.position.addScaledVector(d.vel, dt);
+        d.mesh.rotation.x += d.spin.x * dt;
+        d.mesh.rotation.y += d.spin.y * dt;
+        d.mesh.rotation.z += d.spin.z * dt;
+        if (body) {
+          // Local position → distance from the body centre; stop on the ground.
+          tmp.copy(d.mesh.position).add(point).sub(body.position);
+          if (tmp.length() < floor + 0.08 * H) {
+            tmp.normalize().multiplyScalar(floor + 0.08 * H).add(body.position).sub(point);
+            d.mesh.position.copy(tmp);
+            d.settled = true;
+          }
+        }
+      }
+      const fade = Math.max(0, Math.min(1, (LIFE - t) / 1.0));
+      debrisSkin.opacity = fade;
+      debrisDark.opacity = fade;
+    },
+    dispose() {
+      core.mat.dispose();
+      fire.mat.dispose();
+      smoke.mat.dispose();
+      ringMat.dispose();
+      ringTex.dispose();
+      ring.geometry.dispose();
+      sparkGeom.dispose();
+      sparkMat.dispose();
+      for (const gm of debrisGeoms) gm.dispose();
+      debrisSkin.dispose();
+      debrisDark.dispose();
     },
   };
 }
@@ -402,14 +885,16 @@ export interface PlayerShipHandle {
   group: THREE.Group;
   /** Bolts fly in world space — add this to the scene beside `group`. */
   boltGroup: THREE.Group;
-  /** Place the ship a few Earth radii out with the planet framed ahead. */
-  spawn: (earthPos: THREE.Vector3 | null) => void;
+  /** World-space effects: speed streaks, the hyperspace glow, crash debris. */
+  fxGroup: THREE.Group;
+  spawn: (anchor: FlightAnchor) => void;
   takeDamage: (amount: number) => void;
   update: (
     dtSec: number,
     timeSec: number,
     camera: THREE.PerspectiveCamera,
     aliens: AlienHandle,
+    world: FlightWorld,
   ) => void;
   dispose: () => void;
 }
@@ -421,15 +906,21 @@ interface Bolt {
 }
 
 export function createPlayerShip(session: FlightSession): PlayerShipHandle {
-  const { group, engineMat, glowMats, glowSprites, strobeMat, owned } = buildShip();
+  const parts = buildShip();
+  const { group, hull, foils, cannonTips, skinMat, engineMat, glowMats, glowSprites, plasmaMat, strobeMat, owned } = parts;
   const tel = session.telemetry;
   const input = session.input;
-  const audio = makeLaserAudio();
+  const audio = makeFlightAudio();
+  const crash = makeCrashFx();
 
-  // Pooled bolts — HDR green so the bloom pass lights them up.
-  const boltGeom = new THREE.CylinderGeometry(0.06 * U, 0.06 * U, 1.8 * U, 6);
+  const fxGroup = new THREE.Group();
+  fxGroup.name = 'playerFx';
+  fxGroup.add(crash.group);
+
+  // Pooled bolts — HDR red so the bloom pass lights them up.
+  const boltGeom = new THREE.CylinderGeometry(0.16 * H, 0.16 * H, 5 * H, 6);
   boltGeom.rotateX(Math.PI / 2); // along +Z
-  const boltMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.7, 2.4, 0.7) });
+  const boltMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.8, 0.7, 0.35) });
   const bolts: Bolt[] = [];
   const boltGroup = new THREE.Group();
   boltGroup.name = 'playerBolts';
@@ -440,126 +931,523 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     bolts.push({ mesh, dir: new THREE.Vector3(), life: -1 });
   }
 
+  // Speed streaks: a box of particles around the ship, drawn as segments
+  // stretched along the flow — dots at cruise, lines at a tenth of c, a
+  // tunnel in hyperspace.
+  const dustRel: THREE.Vector3[] = [];
+  const dustPos = new Float32Array(DUST_N * 6);
+  for (let i = 0; i < DUST_N; i++) {
+    dustRel.push(new THREE.Vector3(
+      (Math.random() - 0.5) * DUST_BOX,
+      (Math.random() - 0.5) * DUST_BOX,
+      (Math.random() - 0.5) * DUST_BOX,
+    ));
+  }
+  const dustGeom = new THREE.BufferGeometry();
+  dustGeom.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dustMat = new THREE.LineBasicMaterial({
+    color: 0xaac4ff,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const dust = new THREE.LineSegments(dustGeom, dustMat);
+  dust.frustumCulled = false;
+  fxGroup.add(dust);
+
+  const jumpGlowMat = new THREE.SpriteMaterial({
+    map: softSpriteTexture(),
+    color: new THREE.Color(1.2, 1.5, 2.4),
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const jumpGlow = new THREE.Sprite(jumpGlowMat);
+  jumpGlow.visible = false;
+  fxGroup.add(jumpGlow);
+
   const vel = new THREE.Vector3();
   const angVel = new THREE.Vector3();
   const angTarget = new THREE.Vector3();
   const fwd = new THREE.Vector3();
   const up = new THREE.Vector3();
-  const right = new THREE.Vector3();
   const camTarget = new THREE.Vector3();
   const camUp = new THREE.Vector3(0, 1, 0);
   const lookPt = new THREE.Vector3();
+  const prevPos = new THREE.Vector3();
   const tmp = new THREE.Vector3();
+  const tmp2 = new THREE.Vector3();
+  const seg = new THREE.Vector3();
+  const flow = new THREE.Vector3();
+  const jumpDir = new THREE.Vector3();
+  const jumpStart = new THREE.Vector3();
+  // The destination is latched when the drive starts charging: the world's
+  // idea of "the other system" flips halfway across, and a target that
+  // moved with it would fold the jump back on itself.
+  const jumpTarget: FlightAnchor = { position: new THREE.Vector3(), lookAt: new THREE.Vector3(), yaw: 0 };
+  let jumpName = '';
+  let jumpOrigin = '';
+  // The world only notices the new system once it has seen the ship there,
+  // so the arrival frames keep reporting the latched destination.
+  let arrivedHold = 0;
+  const crashLook = new THREE.Vector3();
   const invQ = new THREE.Quaternion();
+  const qA = new THREE.Quaternion();
+  const qB = new THREE.Quaternion();
+
+  let mode: SpeedMode = 'cruise';
+  let regime: Regime = REGIMES.cruise;
+  let jumpPhase: JumpPhase = 'none';
+  let jumpT = 0;
   let pendYaw = 0;
   let pendPitch = 0;
   let fireAcc = 0;
-  let fireSide = 1;
+  let cannonIdx = 0;
   let hp = MAX_HP;
   let sinceHit = 99;
   let snapCamera = true;
+  let camBack = REGIMES.cruise.camBack;
+  let bank = 0;
+  let foilT = 0;
+  let foilsForced: boolean | null = null;
+  let heat = 0;
+  let shake = 0;
+  let crashT = -1;
+  let alertHold = 0;
+  let heldAlert: FlightAlert = '';
+
+  const setAlert = (a: FlightAlert, hold: number) => {
+    heldAlert = a;
+    alertHold = hold;
+  };
 
   const fire = () => {
     const b = bolts.find((x) => x.life < 0);
     if (!b) return;
-    fireSide = -fireSide;
-    right.set(1, 0, 0).applyQuaternion(group.quaternion);
-    b.mesh.position.copy(group.position)
-      .addScaledVector(right, fireSide * 1.7 * U)
-      .addScaledVector(fwd, 1.2 * U);
+    cannonIdx = (cannonIdx + 1) % cannonTips.length;
+    group.updateMatrixWorld(true);
+    cannonTips[cannonIdx].getWorldPosition(b.mesh.position);
+    b.mesh.position.addScaledVector(fwd, 2 * H);
     b.mesh.quaternion.copy(group.quaternion);
     b.dir.copy(fwd);
     b.life = 0;
     b.mesh.visible = true;
-    audio.play();
+    audio.laser();
   };
 
-  const spawn = (earthPos: THREE.Vector3 | null) => {
-    const anchor = earthPos ?? tmp.set(1, 0, 0);
-    // Tangential offset a few Earth radii out, slightly above the ecliptic.
-    right.copy(anchor).normalize();
-    up.set(0, 1, 0);
-    fwd.crossVectors(up, right).normalize();
-    group.position.copy(anchor).addScaledVector(fwd, 0.14).addScaledVector(up, 0.03);
-    group.lookAt(anchor);
-    group.rotateY(0.45); // Earth sits ahead and to one side of the nose
+  const spawn = (anchor: FlightAnchor) => {
+    group.position.copy(anchor.position);
+    group.lookAt(anchor.lookAt);
+    group.rotateY(anchor.yaw);
     vel.set(0, 0, 0);
     angVel.set(0, 0, 0);
     pendYaw = pendPitch = 0;
     // Pointer deltas that piled up during the countdown must not jerk the nose.
     input.mouseDX = 0;
     input.mouseDY = 0;
+    input.modeRequest = null;
+    input.foilsToggle = false;
     hp = MAX_HP;
     sinceHit = 99;
+    heat = 0;
+    crashT = -1;
+    mode = 'cruise';
+    regime = REGIMES.cruise;
+    jumpPhase = 'none';
+    foilsForced = null;
     group.visible = true;
     snapCamera = true;
     tel.hp = hp;
+    tel.crashed = false;
+    tel.respawnIn = 0;
+  };
+
+  const doCrash = (at: THREE.Vector3, normal: THREE.Vector3, body: FlightBody) => {
+    crash.trigger(at, normal, body, vel);
+    crashLook.copy(at);
+    vel.set(0, 0, 0);
+    angVel.set(0, 0, 0);
+    hp = 0;
+    crashT = 0;
+    shake = 1.5;
+    heat = 0;
+    group.visible = false;
+    for (const b of bolts) {
+      b.life = -1;
+      b.mesh.visible = false;
+    }
+    audio.boom();
+    tel.hp = 0;
+    tel.hitFlash = 1;
+    tel.crashed = true;
+    tel.jumpFlash = 0.8;
+  };
+
+  const updateCamera = (dt: number, camera: THREE.PerspectiveCamera, fovTarget: number) => {
+    const k = 1 - Math.pow(1 - CAM_LERP, dt * 60);
+    if (crashT >= 0) {
+      // Hold position over the wreck; the shake does the talking.
+      camera.up.copy(camUp);
+      camera.lookAt(crashLook);
+    } else {
+      up.set(0, 1, 0).applyQuaternion(group.quaternion);
+      camTarget.copy(group.position).addScaledVector(fwd, -camBack).addScaledVector(up, CAM_UP);
+      if (snapCamera) {
+        snapCamera = false;
+        camera.position.copy(camTarget);
+        camUp.copy(up);
+      } else {
+        camera.position.lerp(camTarget, k);
+        camUp.lerp(up, k).normalize();
+      }
+      camera.up.copy(camUp);
+      lookPt.copy(group.position).addScaledVector(fwd, 6 * U);
+      camera.lookAt(lookPt);
+    }
+    if (shake > 0.002) {
+      const a = shake * 1.6 * H;
+      camera.position.x += (Math.random() - 0.5) * a;
+      camera.position.y += (Math.random() - 0.5) * a;
+      camera.position.z += (Math.random() - 0.5) * a;
+    }
+    const fov = camera.fov + (fovTarget - camera.fov) * (1 - Math.exp(-dt * 3));
+    if (Math.abs(fov - camera.fov) > 0.01) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
+  };
+
+  const updateDust = (dt: number, speed: number) => {
+    const jumping = jumpPhase === 'travel';
+    let stretch: number;
+    if (jumping) {
+      flow.copy(jumpDir).multiplyScalar(JUMP_FLOW);
+      stretch = 0.5;
+    } else {
+      flow.copy(vel);
+      stretch = 0.055;
+    }
+    const half = DUST_BOX / 2;
+    const p = group.position;
+    for (let i = 0; i < DUST_N; i++) {
+      const r = dustRel[i];
+      r.addScaledVector(flow, -dt);
+      if (r.x > half) r.x -= DUST_BOX; else if (r.x < -half) r.x += DUST_BOX;
+      if (r.y > half) r.y -= DUST_BOX; else if (r.y < -half) r.y += DUST_BOX;
+      if (r.z > half) r.z -= DUST_BOX; else if (r.z < -half) r.z += DUST_BOX;
+      const o = i * 6;
+      dustPos[o] = p.x + r.x;
+      dustPos[o + 1] = p.y + r.y;
+      dustPos[o + 2] = p.z + r.z;
+      dustPos[o + 3] = p.x + r.x - flow.x * stretch;
+      dustPos[o + 4] = p.y + r.y - flow.y * stretch;
+      dustPos[o + 5] = p.z + r.z - flow.z * stretch;
+    }
+    dustGeom.getAttribute('position').needsUpdate = true;
+    if (jumping) {
+      dustMat.opacity = 0.95;
+      dustMat.color.setRGB(0.9, 1.2, 2.0);
+    } else {
+      dustMat.opacity = THREE.MathUtils.clamp(speed / (3 * U), 0, 1) * 0.55;
+      dustMat.color.setRGB(0.67, 0.77, 1.0);
+    }
+    dust.visible = crashT < 0 && dustMat.opacity > 0.01;
   };
 
   return {
     group,
     boltGroup,
+    fxGroup,
     spawn,
     takeDamage(amount) {
+      if (crashT >= 0 || jumpPhase !== 'none') return;
       hp = Math.max(MIN_HP, hp - amount);
       sinceHit = 0;
       tel.hp = hp;
       tel.hitFlash = 1;
     },
-    update(dt, timeSec, camera, aliens) {
+    update(dt, timeSec, camera, aliens, world) {
+      tel.hitFlash = Math.max(0, tel.hitFlash - dt * 2.5);
+      tel.jumpFlash = Math.max(0, tel.jumpFlash - dt * 1.6);
+      shake *= Math.exp(-dt * 2.2);
+      alertHold -= dt;
+      crash.update(dt);
+      const enemies = aliens.enemies;
+      tel.systemName = arrivedHold > 0 ? jumpName : jumpPhase === 'none' ? world.systemName : jumpOrigin;
+      if (arrivedHold > 0) arrivedHold -= 1;
+      tel.targetName = jumpPhase === 'none' ? world.jump.name : jumpName;
+      tel.targetLy = world.jump.distanceLy;
+
+      // ── Wreck: hold the camera on the impact, count down, respawn. ──
+      if (crashT >= 0) {
+        crashT += dt;
+        if (crashT >= RESPAWN_DELAY) {
+          spawn(world.home);
+        } else {
+          tel.respawnIn = RESPAWN_DELAY - crashT;
+          tel.speed = tel.speedKmS = tel.speedC = 0;
+          tel.alert = '';
+          tel.heat = 0;
+          tel.shake = shake;
+          tel.radarCount = 0;
+          updateCamera(dt, camera, REGIMES.cruise.fov);
+          updateDust(dt, 0);
+          return;
+        }
+      }
+
       // Hull recharges once nobody has landed a hit for a few seconds.
       sinceHit += dt;
       if (hp < MAX_HP && sinceHit > HP_REGEN_DELAY) {
         hp = Math.min(MAX_HP, hp + HP_REGEN_PER_SEC * dt);
         tel.hp = hp;
       }
-      const boost = input.boost && input.thrust > 0;
 
-      // ── Attitude: keys / sticks drive smoothed angular rates; the mouse
-      // adds a pending angle that eases out over a few frames. ──
-      const yawIn = THREE.MathUtils.clamp(input.yaw + input.lookYaw, -1, 1);
-      angTarget.set(-input.pitch * PITCH_RATE, -yawIn * YAW_RATE, input.roll * ROLL_RATE);
-      angVel.lerp(angTarget, 1 - Math.exp(-dt * 7));
-      pendYaw += -input.mouseDX * MOUSE_SENS;
-      pendPitch += input.mouseDY * MOUSE_SENS;
-      input.mouseDX = 0;
-      input.mouseDY = 0;
-      const mk = 1 - Math.exp(-dt * 14);
-      const dYaw = pendYaw * mk;
-      const dPitch = pendPitch * mk;
-      pendYaw -= dYaw;
-      pendPitch -= dPitch;
-      group.rotateY(angVel.y * dt + dYaw);
-      group.rotateX(angVel.x * dt + dPitch);
-      group.rotateZ(angVel.z * dt);
+      // ── Regime requests. A jump needs clear space: inside a few radii of
+      // anything massive the drive is mass-locked, the way every serious
+      // space sim does it. ──
+      const req = input.modeRequest;
+      input.modeRequest = null;
+      if (req && jumpPhase === 'none') {
+        if (req === 'jump') {
+          let locked = false;
+          for (const b of world.bodies) {
+            if (group.position.distanceTo(b.position) < b.radius * (1 + MASS_LOCK_RADII)) {
+              locked = true;
+              break;
+            }
+          }
+          if (locked) {
+            setAlert('masslock', 1.8);
+          } else {
+            mode = 'jump';
+            jumpPhase = 'charge';
+            jumpT = 0;
+            foilsForced = null;
+            jumpTarget.position.copy(world.jump.position);
+            jumpTarget.lookAt.copy(world.jump.lookAt);
+            jumpTarget.yaw = world.jump.yaw;
+            jumpName = world.jump.name;
+            jumpOrigin = world.systemName;
+            audio.charge();
+          }
+        } else {
+          mode = req;
+          regime = REGIMES[req];
+          foilsForced = null;
+        }
+      }
+      if (input.foilsToggle) {
+        input.foilsToggle = false;
+        foilsForced = !(foilsForced ?? foilT > 0.5);
+      }
 
-      // ── Arcade thrust + per-frame drag, frame-rate independent. ──
-      fwd.set(0, 0, 1).applyQuaternion(group.quaternion);
-      vel.addScaledVector(fwd, input.thrust * THRUST_ACCEL * (boost ? 2 : 1) * dt);
-      vel.multiplyScalar(Math.pow(DRAG_PER_FRAME, dt * 60));
-      const max = boost ? BOOST_SPEED : MAX_SPEED;
-      const sp = vel.length();
-      if (sp > max) vel.multiplyScalar(max / sp);
-      group.position.addScaledVector(vel, dt);
+      // ── Hyperdrive. Charge: the nose swings onto the star and the ship
+      // comes to rest. Travel: the ship rides a straight line to the
+      // destination while the streak tunnel and the white-out sell the
+      // speed. Arrival: dead stop, facing the new system. ──
+      let speed = vel.length();
+      if (jumpPhase !== 'none') tel.boost = false;
+      if (jumpPhase === 'charge') {
+        jumpT += dt;
+        jumpDir.copy(jumpTarget.position).sub(group.position).normalize();
+        qA.copy(group.quaternion);
+        group.lookAt(tmp.copy(group.position).add(jumpDir));
+        qB.copy(group.quaternion);
+        group.quaternion.copy(qA).slerp(qB, 1 - Math.exp(-dt * 4));
+        vel.multiplyScalar(Math.exp(-dt * 3));
+        group.position.addScaledVector(vel, dt);
+        if (jumpT >= JUMP_CHARGE) {
+          jumpPhase = 'travel';
+          jumpT = 0;
+          jumpStart.copy(group.position);
+          group.lookAt(tmp.copy(group.position).add(jumpDir));
+          vel.set(0, 0, 0);
+          tel.jumpFlash = 1;
+          audio.whoosh();
+        }
+      } else if (jumpPhase === 'travel') {
+        jumpT += dt;
+        const s = Math.min(1, jumpT / JUMP_TRAVEL);
+        const e = s * s * (3 - 2 * s);
+        group.position.lerpVectors(jumpStart, jumpTarget.position, e);
+        shake = Math.max(shake, 0.25);
+        if (s >= 1) {
+          jumpPhase = 'none';
+          mode = 'cruise';
+          regime = REGIMES.cruise;
+          group.position.copy(jumpTarget.position);
+          group.lookAt(jumpTarget.lookAt);
+          group.rotateY(jumpTarget.yaw);
+          vel.set(0, 0, 0);
+          angVel.set(0, 0, 0);
+          snapCamera = true;
+          arrivedHold = 3;
+          tel.systemName = jumpName;
+          tel.jumpFlash = 1;
+          setAlert('arrived', 3);
+          audio.whoosh();
+        }
+      } else {
+        // ── Attitude: keys / sticks drive smoothed angular rates; the mouse
+        // adds a pending angle that eases out over a few frames. ──
+        const turn = regime.turn;
+        const yawIn = THREE.MathUtils.clamp(input.yaw + input.lookYaw, -1, 1);
+        angTarget.set(-input.pitch * PITCH_RATE * turn, -yawIn * YAW_RATE * turn, input.roll * ROLL_RATE);
+        angVel.lerp(angTarget, 1 - Math.exp(-dt * 7));
+        pendYaw += -input.mouseDX * MOUSE_SENS * turn;
+        pendPitch += input.mouseDY * MOUSE_SENS * turn;
+        input.mouseDX = 0;
+        input.mouseDY = 0;
+        const mk = 1 - Math.exp(-dt * 14);
+        const dYaw = pendYaw * mk;
+        const dPitch = pendPitch * mk;
+        pendYaw -= dYaw;
+        pendPitch -= dPitch;
+        group.rotateY(angVel.y * dt + dYaw);
+        group.rotateX(angVel.x * dt + dPitch);
+        group.rotateZ(angVel.z * dt);
+        // The airframe banks into a turn; the physics frame does not.
+        const bankTarget = -(yawIn * 0.5 + dYaw * 6) - angVel.y * 0.12;
+        bank += (THREE.MathUtils.clamp(bankTarget, -0.6, 0.6) - bank) * (1 - Math.exp(-dt * 5));
+        hull.rotation.z = bank;
+        hull.rotation.x = -angVel.x * 0.04;
 
-      // ── Lasers. ──
-      fireAcc -= dt;
-      if (input.fire && fireAcc <= 0) {
-        fireAcc = FIRE_INTERVAL;
-        fire();
+        // ── Thrust, drag, gravity. Drag is per-frame and frame-rate
+        // independent; every body within ten radii pulls with an inverse-
+        // square well scaled from its real surface gravity. ──
+        const boost = input.boost && input.thrust > 0;
+        fwd.set(0, 0, 1).applyQuaternion(group.quaternion);
+        vel.addScaledVector(fwd, input.thrust * regime.accel * (boost ? 2 : 1) * dt);
+        vel.multiplyScalar(Math.pow(DRAG_PER_FRAME, dt * 60));
+        for (const b of world.bodies) {
+          tmp.copy(b.position).sub(group.position);
+          const d = tmp.length();
+          const reach = b.radius * GRAVITY_REACH;
+          if (d >= reach || d < 1e-9) continue;
+          const g = (Math.min(MAX_SURFACE_G, b.surfaceG) / 9.81) * ONE_G;
+          const ratio = b.radius / Math.max(d, b.radius);
+          // Fade the well out over its last three radii so nothing pops.
+          const edge = THREE.MathUtils.clamp((reach - d) / (b.radius * 3), 0, 1);
+          vel.addScaledVector(tmp.divideScalar(d), g * ratio * ratio * edge * dt);
+        }
+        // Air bites: heat bleeds speed and scorches the hull.
+        vel.multiplyScalar(Math.exp(-dt * 2.5 * heat));
+        const max = boost ? regime.boost : regime.max;
+        speed = vel.length();
+        if (speed > max) {
+          vel.multiplyScalar(max / speed);
+          speed = max;
+        }
+        prevPos.copy(group.position);
+        group.position.addScaledVector(vel, dt);
+        tel.boost = boost;
+
+        // ── Solid bodies: swept sphere test, so a tenth of c cannot tunnel
+        // through a planet between two frames. ──
+        seg.copy(group.position).sub(prevPos);
+        const segLen2 = seg.lengthSq();
+        for (const b of world.bodies) {
+          tmp.copy(b.position).sub(prevPos);
+          const t = segLen2 > 0 ? THREE.MathUtils.clamp(tmp.dot(seg) / segLen2, 0, 1) : 0;
+          tmp2.copy(prevPos).addScaledVector(seg, t).sub(b.position);
+          const d = tmp2.length();
+          if (d < b.radius + HULL_RADIUS) {
+            tmp2.divideScalar(Math.max(d, 1e-9));
+            tmp.copy(b.position).addScaledVector(tmp2, b.radius);
+            doCrash(tmp, tmp2, b);
+            break;
+          }
+        }
+        if (crashT >= 0) {
+          tel.speed = tel.speedKmS = tel.speedC = 0;
+          tel.respawnIn = RESPAWN_DELAY;
+          tel.alert = '';
+          tel.heat = 0;
+          tel.shake = shake;
+          tel.radarCount = 0;
+          updateCamera(dt, camera, REGIMES.cruise.fov);
+          updateDust(dt, 0);
+          return;
+        }
+
+        // ── Lasers: the four wingtip cannons fire in rotation. ──
+        fireAcc -= dt;
+        if (input.fire && fireAcc <= 0) {
+          fireAcc = FIRE_INTERVAL;
+          fire();
+        }
+      }
+
+      // ── Nearest body: altitude readout, proximity warning, re-entry. ──
+      let near: FlightBody | null = null;
+      let nearD = Infinity;
+      for (const b of world.bodies) {
+        const d = group.position.distanceTo(b.position);
+        if (d - b.radius < nearD) {
+          nearD = d - b.radius;
+          near = b;
+        }
+      }
+      let heatTarget = 0;
+      let alert: FlightAlert = '';
+      if (near && nearD < near.radius * NEAR_REACH) {
+        tel.nearId = near.id;
+        tel.nearAltKm = Math.max(0, (nearD / near.radius) * near.radiusKm);
+        if (jumpPhase === 'none') {
+          const atmoTop = near.radius * (near.atmosphere - 1);
+          if (atmoTop > 0 && nearD < atmoTop) {
+            heatTarget = (1 - nearD / atmoTop) * THREE.MathUtils.clamp(speed / (2 * U), 0, 1.4);
+            heatTarget = Math.min(1, heatTarget);
+            alert = 'entry';
+          } else if (nearD < near.radius * 1.5) {
+            tmp.copy(near.position).sub(group.position).normalize();
+            if (vel.dot(tmp) > 0.3 * U) alert = 'proximity';
+          }
+        }
+      } else {
+        tel.nearId = '';
+        tel.nearAltKm = 0;
+      }
+      heat += (heatTarget - heat) * (1 - Math.exp(-dt * 4));
+      if (heat > 0.05) {
+        shake = Math.max(shake, heat * 0.4);
+        if (hp > MIN_HP) {
+          hp = Math.max(MIN_HP, hp - 18 * heat * dt);
+          sinceHit = 0;
+          tel.hp = hp;
+        }
+      }
+      plasmaMat.opacity = Math.min(1, heat * 1.3);
+      parts.plasma.scale.set((4 + 6 * heat) * H, (3 + 2 * heat) * H, 1);
+      skinMat.emissive.setRGB(1.0, 0.35, 0.08).multiplyScalar(heat * 0.9);
+      if (jumpPhase === 'charge') alert = 'charging';
+      else if (jumpPhase === 'travel') alert = 'jump';
+      else if (alertHold > 0) alert = heldAlert;
+
+      // ── S-foils: open for a fight (firing, or contacts on the radar), lock
+      // flat for speed. F overrides until the next regime change. ──
+      const foilsAuto = jumpPhase === 'none' && mode !== 'fast' && (input.fire || enemies.length > 0);
+      const foilsOpen = jumpPhase === 'none' && (foilsForced ?? foilsAuto);
+      foilT += ((foilsOpen ? 1 : 0) - foilT) * (1 - Math.exp(-dt * 3.2));
+      for (const f of foils) {
+        f.pivot.rotation.z = f.layer * f.side * (0.05 + 0.3 * foilT);
       }
 
       // Engine glow answers the throttle: idle shimmer, a hard step under
-      // thrust, and a longer plume on boost.
-      const pulse = 0.8 + 0.08 * Math.sin(timeSec * 7) + (input.thrust > 0 ? 0.55 : 0) + (boost ? 1.0 : 0);
+      // thrust, a longer plume on boost, and a surge while the drive charges.
+      const thrusting = jumpPhase === 'none' && input.thrust > 0;
+      const chargeK = jumpPhase === 'charge' ? jumpT / JUMP_CHARGE : jumpPhase === 'travel' ? 1 : 0;
+      const pulse = 0.8 + 0.08 * Math.sin(timeSec * 7)
+        + (thrusting ? 0.55 : 0) + (tel.boost ? 1.0 : 0)
+        + (mode === 'fast' ? 0.5 : 0) + chargeK * 1.6;
       engineMat.emissiveIntensity = 1.5 * pulse;
       for (let i = 0; i < glowMats.length; i++) {
         glowMats[i].opacity = Math.min(1, 0.5 * pulse);
-        glowSprites[i].scale.set(
-          (0.9 + 0.35 * (pulse - 0.8)) * U,
-          (0.9 + 0.35 * (pulse - 0.8)) * U,
-          1,
-        );
+        const gs = (1.0 + 0.4 * (pulse - 0.8)) * H;
+        glowSprites[i].scale.set(gs, gs, 1);
       }
       // Anti-collision strobe: a double flash roughly once a second, the
       // rhythm every real aircraft and spacecraft carries.
@@ -568,7 +1456,6 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       strobeMat.color.setScalar(flashing ? 2.4 : 0.05);
 
       // Bolts advance in world space and hit-test against the live enemies.
-      const enemies = aliens.enemies;
       for (const b of bolts) {
         if (b.life < 0) continue;
         b.life += dt;
@@ -591,26 +1478,38 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         }
       }
 
-      // ── Follow camera: 15 units back, 4 up, eased. ──
-      up.set(0, 1, 0).applyQuaternion(group.quaternion);
-      camTarget.copy(group.position).addScaledVector(fwd, -CAM_BACK).addScaledVector(up, CAM_UP);
-      if (snapCamera) {
-        snapCamera = false;
-        camera.position.copy(camTarget);
-        camUp.copy(up);
+      // ── Follow camera; the regime sets how far back it rides. ──
+      fwd.set(0, 0, 1).applyQuaternion(group.quaternion);
+      const camBackTarget = jumpPhase !== 'none' ? JUMP_CAM_BACK : regime.camBack;
+      camBack += (camBackTarget - camBack) * (1 - Math.exp(-dt * 2.5));
+      const fovTarget = jumpPhase !== 'none' ? JUMP_FOV : regime.fov;
+      updateCamera(dt, camera, fovTarget);
+
+      // Hyperspace glow sits far down the tunnel and swells as you close.
+      if (jumpPhase === 'travel') {
+        jumpGlow.visible = true;
+        jumpGlow.position.copy(group.position).addScaledVector(jumpDir, 30 * U);
+        const s = Math.min(1, jumpT / JUMP_TRAVEL);
+        jumpGlow.scale.setScalar((6 + 26 * s) * U);
+        jumpGlowMat.opacity = 0.9;
       } else {
-        const k = 1 - Math.pow(1 - CAM_LERP, dt * 60);
-        camera.position.lerp(camTarget, k);
-        camUp.lerp(up, k).normalize();
+        jumpGlow.visible = false;
       }
-      camera.up.copy(camUp);
-      lookPt.copy(group.position).addScaledVector(fwd, 6 * U);
-      camera.lookAt(lookPt);
+      updateDust(dt, speed);
 
       // ── Telemetry for the HUD (no allocations). ──
-      tel.speed = vel.length() / U;
-      tel.boost = boost;
-      tel.hitFlash = Math.max(0, tel.hitFlash - dt * 2.5);
+      const kmS = jumpPhase === 'travel' ? LIGHT_KM_S : (speed * KM_PER_SCENE_UNIT);
+      tel.speed = speed / U;
+      tel.speedKmS = kmS;
+      tel.speedC = kmS / LIGHT_KM_S;
+      tel.mode = mode;
+      tel.foilsOpen = foilT > 0.5;
+      tel.heat = heat;
+      tel.alert = alert;
+      tel.jumpPhase = jumpPhase;
+      tel.jumpT = jumpPhase === 'charge' ? jumpT / JUMP_CHARGE : jumpPhase === 'travel' ? Math.min(1, jumpT / JUMP_TRAVEL) : 0;
+      tel.shake = shake;
+      tel.respawnIn = 0;
       invQ.copy(group.quaternion).invert();
       let n = 0;
       for (let i = 0; i < enemies.length && n < RADAR_MAX; i++) {
@@ -631,8 +1530,12 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     },
     dispose() {
       audio.dispose();
+      crash.dispose();
       boltGeom.dispose();
       boltMat.dispose();
+      dustGeom.dispose();
+      dustMat.dispose();
+      jumpGlowMat.dispose();
       // Geometries and materials are shared across meshes here, so collect
       // them before disposing — traversing blind would free each many times.
       const geoms = new Set<THREE.BufferGeometry>();

@@ -86,6 +86,13 @@ function raDecPcToVec(ra: number, dec: number, pc: number): THREE.Vector3 {
   return new THREE.Vector3(x, y, z);
 }
 
+/** Scene position of a catalogue star by id, in the same frame the
+ *  nearby-stars layer draws it — null for an unknown id. */
+export function nearbyStarPosition(id: string): THREE.Vector3 | null {
+  const star = NEARBY_STARS.find((s) => s.id === id);
+  return star ? raDecPcToVec(star.ra, star.dec, star.pc) : null;
+}
+
 /* ───────────────────────── nearby stars layer ───────────────────────── */
 
 export interface NearbyStarsHandle {

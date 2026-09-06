@@ -1131,10 +1131,47 @@
       "speed": "Speed",
       "kills": "Kills",
       "hull": "Hull",
-      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · Esc exit",
+      "hint": "W A S D · mouse · Space fire · Shift boost · Q E roll · 1 2 3 speed · H jump · F S-foils · Esc exit",
       "fire": "Fire",
       "boost": "Boost",
-      "brake": "Brake"
+      "brake": "Brake",
+      "speedMode": "Speed mode",
+      "modeLabel": "Mode",
+      "modes": {
+        "cruise": "Cruise",
+        "fast": "Fast",
+        "jump": "Light speed"
+      },
+      "kmS": "km/s",
+      "c": "c",
+      "ly": "ly",
+      "near": "Near",
+      "alt": "Altitude",
+      "system": "System",
+      "target": "Next star",
+      "foils": "S-foils",
+      "foilsOpen": "Open",
+      "foilsLocked": "Locked",
+      "alerts": {
+        "proximity": "Pull up",
+        "entry": "Re-entry — hull heating",
+        "masslock": "Mass lock — too close to jump",
+        "charging": "Hyperdrive charging → {target}",
+        "jump": "Light speed → {target}",
+        "arrived": "Arrived: {system}"
+      },
+      "hullLost": "Hull lost",
+      "respawn": "Respawn in {n}",
+      "systems": {
+        "sol": "Solar System",
+        "alphaCentauri": "Alpha Centauri"
+      },
+      "bodies": {
+        "alphaCenA": "Alpha Centauri A",
+        "alphaCenB": "Alpha Centauri B",
+        "proxima": "Proxima Centauri",
+        "proximaB": "Proxima b"
+      }
     }
   },
   "missionsPage": {
