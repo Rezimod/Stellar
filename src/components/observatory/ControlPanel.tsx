@@ -1,11 +1,7 @@
-import { EXPOSURES, SIM_TARGETS, type SimTarget, type TargetBrightness } from '@/lib/observatory/sim-targets';
-import type { SafetyVerdict } from '@/lib/observatory/safety';
+import { EXPOSURES, type TargetBrightness } from '@/lib/observatory/sim-targets';
 import { ROIS, TRAINS } from '@/lib/observatory/optics';
 
 export type ControlProps = {
-  targetId: string | null;
-  verdicts: Record<string, SafetyVerdict>;
-  onGoTo: (target: SimTarget) => void;
   exposureSec: number;
   onExposure: (v: number) => void;
   brightness: TargetBrightness;
@@ -50,60 +46,15 @@ function Select({
 }
 
 export default function ControlPanel(p: ControlProps) {
-  // When the sky refuses everything it refuses it for one reason — the Sun is
-  // up, or the weather is in. Printing that reason under all eight buttons
-  // turns one fact into a wall of red, so it is said once instead.
-  const reasons = SIM_TARGETS.map((t) => {
-    const v = p.verdicts[t.id];
-    return v && !v.ok ? v.reason : null;
-  });
-  const blanketReason =
-    reasons.every((r) => r !== null) && new Set(reasons).size === 1 ? reasons[0] : null;
-
   return (
     <div className="obs-panel">
       <div className="obs-panel__bar">
-        <span className="obs-panel__title">Command</span>
+        <span className="obs-panel__title">Setup</span>
         <span className="obs-panel__title">{p.parked ? 'Parked' : 'Armed'}</span>
       </div>
 
       <div className="obs-panel__body">
-        <h4 className="obs-label" style={{ marginBottom: '0.4rem' }}>Target</h4>
-        {blanketReason && (
-          <p
-            className="mb-2 border px-2 py-1.5 text-xs"
-            style={{ borderColor: 'var(--no-border)', background: 'var(--no-dim)', color: 'var(--no)' }}
-            role="status"
-          >
-            {blanketReason}
-          </p>
-        )}
-        <div className="flex flex-col gap-1">
-          {SIM_TARGETS.map((target) => {
-            const verdict = p.verdicts[target.id];
-            const refused = verdict && !verdict.ok;
-            const active = p.targetId === target.id;
-
-            return (
-              <button
-                key={target.id}
-                type="button"
-                className="obs-cmd"
-                aria-pressed={active}
-                disabled={refused}
-                onClick={() => p.onGoTo(target)}
-              >
-                {target.name}
-                {refused && !verdict.ok && !blanketReason && (
-                  <span className="obs-cmd__meta">{verdict.reason}</span>
-                )}
-                {active && <span className="obs-cmd__meta">{target.expect}</span>}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Select
             label="Corrector"
             value={p.trainId}

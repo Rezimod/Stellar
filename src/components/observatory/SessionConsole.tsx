@@ -2,15 +2,29 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import LiveView from './LiveView';
+import LiveView, { type MountSample } from './LiveView';
 import TelemetryPanel from './TelemetryPanel';
 import ControlPanel from './ControlPanel';
+import TargetStrip from './TargetStrip';
+import HandControl from './HandControl';
 import MissionLog, { type LogEntry } from './MissionLog';
 import CompareControl from './CompareControl';
 import TimeControl from './TimeControl';
 import SessionClock from './SessionClock';
-import { acquisitionStateAt, planAcquisition, pointingAt, type Acquisition } from '@/lib/observatory/mission';
-import { LIMITS, evaluateSafety, type AltAz, type SafetyVerdict } from '@/lib/observatory/safety';
+import {
+  acquisitionStateAt,
+  planAcquisition,
+  pointingAt,
+  type Acquisition,
+} from '@/lib/observatory/mission';
+import {
+  LIMITS,
+  angularSeparation,
+  evaluateSafety,
+  sunPosition,
+  type AltAz,
+  type SafetyVerdict,
+} from '@/lib/observatory/safety';
 import {
   DEFAULT_SEEING_ARCSEC,
   ROIS,
@@ -26,14 +40,14 @@ import {
   SIM_TARGETS,
   SIM_TARGET_BY_ID,
   targetAltAz,
-  targetPhoto,
   targetSizeArcmin,
   targetRaHours,
-  targetFrameSpan,
   type SimTarget,
 } from '@/lib/observatory/sim-targets';
 import { effectiveBlurArcsec } from '@/lib/observatory/render';
 import { MotorAudio } from '@/lib/observatory/motor-audio';
+import { MountDrive, SPIN_DOWN_S, SPIN_UP_S, type Axis } from '@/lib/observatory/mount-drive';
+import { altAzToRaDec, skyObjectsNear, tangentOffsetDeg } from '@/lib/observatory/sky-field';
 import { hourAngle, localSiderealHours } from '@/lib/observatory/site-time';
 import EventsPanel from './EventsPanel';
 import { getSunAltitude, getTonightDarkWindow } from '@/lib/dark-window';
@@ -62,6 +76,16 @@ const RECOMMENDED_SETUP: Record<string, { train: string; roi: string; exposureSe
 const PARKED: AltAz = { altitude: 0, azimuth: 0 };
 
 /**
+ * Where a GoTo actually lands. An aligned NexStar puts the target a few
+ * arcminutes off centre, not dead on it, and the centring phase is what walks
+ * it the rest of the way. A tenth of a degree is a typical pointing error.
+ */
+const LANDING_ERROR: AltAz = { altitude: 0.04, azimuth: 0.11 };
+
+/** How far around the pointing the object list is kept fresh. Covers the widest field plus a tick of rate-9 slewing. */
+const OBJECT_RADIUS_DEG = 1.5;
+
+/**
  * The middle of the next dark window that has not happened yet.
  *
  * getTonightDarkWindow anchors at noon *yesterday* whenever it is asked before
@@ -80,6 +104,8 @@ function nextDarkMidpoint(lat: number, lon: number, from: Date): Date | null {
 }
 const SEEING_ARCSEC = DEFAULT_SEEING_ARCSEC;
 const TICK_MS = 250;
+
+const wrapDelta = (deg: number) => (deg > 180 ? deg - 360 : deg < -180 ? deg + 360 : deg);
 
 export default function SessionConsole({
   node,
@@ -101,6 +127,9 @@ export default function SessionConsole({
   const [offsetMs, setOffsetMs] = useState(0);
   const now = (clock ?? 0) + offsetMs;
   const [acquisition, setAcquisition] = useState<Acquisition | null>(null);
+  // Unparked. A mount that has been steered by hand is awake without a target.
+  const [awake, setAwake] = useState(false);
+  const [rate, setRate] = useState(9);
   const [exposureSec, setExposureSec] = useState(2);
   const [trainId, setTrainId] = useState('native');
   const [roiId, setRoiId] = useState('full');
@@ -109,8 +138,13 @@ export default function SessionConsole({
   const [captures, setCaptures] = useState(0);
   const [splitAt, setSplitAt] = useState<number | null>(null);
   const [audioOn, setAudioOn] = useState(false);
+  // The drive's pointing, copied out once a tick for everything React renders.
+  const [pointing, setPointing] = useState<AltAz>(PARKED);
+
   const audioRef = useRef<MotorAudio | null>(null);
   if (audioRef.current === null && typeof window !== 'undefined') audioRef.current = new MotorAudio();
+  const driveRef = useRef<MountDrive | null>(null);
+  if (driveRef.current === null) driveRef.current = new MountDrive();
 
   useEffect(() => {
     const real = Date.now();
@@ -139,6 +173,15 @@ export default function SessionConsole({
   // simulated hour and then refused at the real one.
   const nowRef = useRef(now);
   nowRef.current = now;
+  const offsetRef = useRef(offsetMs);
+  offsetRef.current = offsetMs;
+  const acquisitionRef = useRef(acquisition);
+  acquisitionRef.current = acquisition;
+  const rateRef = useRef(rate);
+  rateRef.current = rate;
+  const audioOnRef = useRef(audioOn);
+  audioOnRef.current = audioOn;
+
   const train = TRAIN_BY_ID.get(trainId) ?? TRAINS[1];
   const roi = ROI_BY_ID.get(roiId) ?? ROIS[0];
   const fov = useMemo(
@@ -161,32 +204,154 @@ export default function SessionConsole({
   }, [node, date]);
 
   const status = acquisition ? acquisitionStateAt(acquisition, now) : null;
-  const pointing = acquisition ? pointingAt(acquisition, now) : PARKED;
   const target = acquisition ? SIM_TARGET_BY_ID.get(acquisition.targetId) ?? null : null;
+  const targetNow = useMemo(
+    () => (target ? targetAltAz(target, node, date) : null),
+    [target, node, date],
+  );
+  const lstHours = useMemo(() => localSiderealHours(node.lon, date), [node.lon, date]);
+  const sunAltitude = useMemo(() => getSunAltitude(node.lat, node.lon, date), [node.lat, node.lon, date]);
+  const sun = useMemo(() => sunPosition(node, date), [node, date]);
+  // Everything real within reach of the frame, positioned for this instant.
+  const objects = useMemo(
+    () => skyObjectsNear(node, date, pointing, OBJECT_RADIUS_DEG, lstHours),
+    [node, date, pointing, lstHours],
+  );
 
   const settledMs = acquisition && status?.state === 'OBSERVING' ? now - acquisition.settledAtMs : 0;
   const subs = Math.floor(settledMs / (exposureSec * 1000));
   const rotationRate = fieldRotationDegPerHour(node.lat, pointing.altitude, pointing.azimuth);
 
-  const slewing = status?.state === 'SLEWING';
   const observing = status?.state === 'OBSERVING';
+  const offTarget = observing && targetNow ? tangentOffsetDeg(targetNow, pointing) : null;
+  const offTargetArcmin = offTarget ? Math.hypot(offTarget.x, offTarget.y) * 60 : null;
+
+  const targetNowRef = useRef(targetNow);
+  targetNowRef.current = targetNow;
+  const sunRef = useRef(sun);
+  sunRef.current = sun;
+  // The last target position the tracking drive was moved to follow.
+  const trackedRef = useRef<AltAz | null>(null);
+  const sampleRef = useRef<MountSample>({ pointing: PARKED, azRate: 0, altRate: 0 });
+  const sunRefusedRef = useRef(false);
+
+  const append = useCallback((text: string, refused = false) => {
+    setLog((prev) => [...prev, { at: nowRef.current, text, refused }].slice(-60));
+  }, []);
+
+  /**
+   * One frame of the mount. A GoTo in flight owns the axes and the drive is a
+   * passenger; on target, the drive follows the sky and takes nudges on top;
+   * awake without a target, it goes wherever the keys send it, untracked.
+   */
+  const stepMount = useCallback(
+    (perfNow: number) => {
+      const drive = driveRef.current!;
+      const audio = audioRef.current;
+      const simNow = Date.now() + offsetRef.current;
+      const acq = acquisitionRef.current;
+      const st = acq ? acquisitionStateAt(acq, simNow) : null;
+      let azRate = 0;
+      let altRate = 0;
+
+      if (acq && st && st.state !== 'OBSERVING') {
+        const targetAt = targetNowRef.current ?? acq.to;
+        const landed = {
+          altitude: acq.to.altitude + LANDING_ERROR.altitude,
+          azimuth: acq.to.azimuth + LANDING_ERROR.azimuth,
+        };
+        let p: AltAz;
+        if (st.state === 'CENTERING') {
+          p = {
+            altitude: landed.altitude + (targetAt.altitude - landed.altitude) * st.progress,
+            azimuth: landed.azimuth + wrapDelta(targetAt.azimuth - landed.azimuth) * st.progress,
+          };
+        } else if (st.state === 'VERIFYING') {
+          p = landed;
+        } else {
+          p = pointingAt(acq, simNow);
+        }
+        drive.setPointing(p);
+        drive.halt();
+        trackedRef.current = null;
+
+        if (st.state === 'SLEWING') {
+          const slew = acq.phases.find((ph) => ph.state === 'SLEWING')!;
+          const seconds = (slew.endsAtMs - slew.startsAtMs) / 1000;
+          const t = (simNow - slew.startsAtMs) / 1000;
+          // Both axes run for the whole phase at whatever rate covers their
+          // distance, spinning up at the start and down at the end.
+          const envelope = Math.min(1, t / SPIN_UP_S, (seconds - t) / SPIN_DOWN_S);
+          azRate = (Math.abs(wrapDelta(acq.to.azimuth - acq.from.azimuth)) / seconds) * Math.max(0, envelope);
+          altRate = (Math.abs(acq.to.altitude - acq.from.altitude) / seconds) * Math.max(0, envelope);
+        }
+      } else {
+        if (acq && st) {
+          // On target: the tracking drive moves the axes by exactly what the
+          // sky did since the last tick, and the hand control adds to that.
+          const targetAt = targetNowRef.current ?? acq.to;
+          const last = trackedRef.current;
+          if (!last) {
+            drive.setPointing(targetAt);
+            drive.halt();
+          } else if (last !== targetAt) {
+            drive.setPointing({
+              altitude: drive.altitude + (targetAt.altitude - last.altitude),
+              azimuth: drive.azimuth + wrapDelta(targetAt.azimuth - last.azimuth),
+            });
+          }
+          trackedRef.current = targetAt;
+        } else {
+          trackedRef.current = null;
+        }
+
+        const before = drive.pointing;
+        drive.step(perfNow);
+        if (drive.moving && angularSeparation(drive.pointing, sunRef.current) < LIMITS.sunAvoidanceDeg) {
+          // The envelope holds by hand as well as by GoTo.
+          drive.setPointing(before);
+          drive.halt();
+          if (!sunRefusedRef.current) {
+            sunRefusedRef.current = true;
+            append(`Slew refused — inside the ${LIMITS.sunAvoidanceDeg}° solar exclusion.`, true);
+          }
+        }
+        const rates = drive.rates;
+        azRate = rates.az;
+        altRate = rates.alt;
+      }
+
+      sampleRef.current = { pointing: drive.pointing, azRate, altRate };
+      if (audio && audioOnRef.current) {
+        audio.setAxisRates(azRate, altRate);
+        audio.setTracking(st?.state === 'OBSERVING');
+      }
+    },
+    [append],
+  );
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !audioOn) return;
+    let handle = 0;
+    let running = true;
+    const loop = (t: number) => {
+      if (!running) return;
+      stepMount(t);
+      handle = requestAnimationFrame(loop);
+    };
+    handle = requestAnimationFrame(loop);
+    return () => {
+      running = false;
+      cancelAnimationFrame(handle);
+    };
+  }, [stepMount]);
 
-    // A real mount ramps its axes up and back down rather than stepping to
-    // full rate, so the pitch follows an acceleration profile.
-    const ramp = (p: number) => Math.min(1, Math.min(p, 1 - p) / 0.15);
-    audio.setSlew(slewing ? 3 * ramp(status?.progress ?? 0) : 0);
-    audio.setTracking(observing);
-  }, [audioOn, slewing, observing, status?.progress]);
-
+  // Copy the drive out once a tick so telemetry and the object list follow it.
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !audioOn) return;
-    audio.click('relay');
-  }, [audioOn, slewing]);
+    const p = sampleRef.current.pointing;
+    setPointing((prev) =>
+      Math.abs(prev.altitude - p.altitude) < 1e-4 && Math.abs(prev.azimuth - p.azimuth) < 1e-4 ? prev : p,
+    );
+  }, [now]);
 
   useEffect(() => () => audioRef.current?.stop(), []);
 
@@ -194,7 +359,7 @@ export default function SessionConsole({
     const audio = audioRef.current;
     if (!audio) return;
     if (audioOn) {
-      audio.setSlew(0);
+      audio.setAxisRates(0, 0);
       audio.setTracking(false);
       setAudioOn(false);
       return;
@@ -202,10 +367,6 @@ export default function SessionConsole({
     // Browsers only allow an audio context to start inside a user gesture.
     setAudioOn(await audio.start());
   }, [audioOn]);
-
-  const append = useCallback((text: string, refused = false) => {
-    setLog((prev) => [...prev, { at: nowRef.current, text, refused }].slice(-60));
-  }, []);
 
   const goTo = useCallback(
     (next: SimTarget) => {
@@ -219,17 +380,19 @@ export default function SessionConsole({
         return;
       }
 
-      const from = acquisition ? pointingAt(acquisition, atMs) : PARKED;
+      const drive = driveRef.current!;
+      drive.halt();
       setAcquisition(
         planAcquisition({
           targetId: next.id,
           targetName: next.name,
-          from,
+          from: drive.pointing,
           to,
           startedAtMs: atMs,
-          warm: acquisition !== null,
+          warm: awake,
         }),
       );
+      setAwake(true);
       const setup = RECOMMENDED_SETUP[next.id] ?? { train: 'native', roi: 'full', exposureSec: 2 };
       setTrainId(setup.train);
       setRoiId(setup.roi);
@@ -237,12 +400,38 @@ export default function SessionConsole({
       setCaptures(0);
       append(`GoTo ${next.name} — ${to.altitude.toFixed(1)}° altitude, ${to.azimuth.toFixed(1)}° azimuth`);
     },
-    [acquisition, append, node],
+    [append, awake, node],
   );
+
+  const press = useCallback(
+    (axis: Axis, direction: 1 | -1) => {
+      const drive = driveRef.current!;
+      const acq = acquisitionRef.current;
+      const st = acq ? acquisitionStateAt(acq, nowRef.current) : null;
+      if (acq && st && st.state !== 'OBSERVING') {
+        // A direction key during a GoTo aborts it, as on the real hand control.
+        const name = SIM_TARGET_BY_ID.get(acq.targetId)?.name ?? acq.targetId;
+        acquisitionRef.current = null;
+        setAcquisition(null);
+        append(`GoTo ${name} aborted — hand control.`);
+      }
+      if (!awake) {
+        setAwake(true);
+        append('Hand control — mount awake, tracking off.');
+      }
+      sunRefusedRef.current = false;
+      drive.press(axis, direction, rateRef.current);
+    },
+    [append, awake],
+  );
+
+  const release = useCallback((axis: Axis) => {
+    driveRef.current!.release(axis);
+  }, []);
 
   const capture = useCallback(async () => {
     if (!target) return;
-    if (audioOn) audioRef.current?.click('shutter');
+    if (audioOn) audioRef.current?.click();
     setCaptures((c) => c + 1);
     append(`Captured ${target.name} — ${subs} subs, ${(subs * exposureSec).toFixed(0)}s integration`);
 
@@ -284,7 +473,7 @@ export default function SessionConsole({
     setOffsetMs(nextOffset);
     nowRef.current = real + nextOffset;
     setAcquisition(null);
-    append('Clock moved to tonight\u2019s dark window.');
+    append('Clock moved to tonight’s dark window.');
   }, [append, node.lat, node.lon]);
 
   const returnToNow = useCallback(() => {
@@ -295,9 +484,15 @@ export default function SessionConsole({
   }, [append]);
 
   const park = useCallback(() => {
+    const drive = driveRef.current!;
+    drive.halt();
+    drive.setPointing(PARKED);
     setAcquisition(null);
+    setAwake(false);
     append('Parked. Mount at home, camera idle.');
   }, [append]);
+
+  const sample = useCallback(() => sampleRef.current, []);
 
   // Every number on this console comes from a clock, and the server's clock is
   // not the visitor's — rendering any of it before mount is a guaranteed
@@ -316,9 +511,12 @@ export default function SessionConsole({
     );
   }
 
+  const stateLabel = status?.state ?? (awake ? 'MANUAL' : 'PARKED');
+  const stateDetail = status ? status.detail : awake ? 'Hand control, tracking off' : 'Mount at home';
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)] lg:items-start">
-      <div className="flex flex-col gap-4">
+    <div className="obs-console">
+      <div className="obs-console__main">
         {session ? (
           <SessionClock
             now={now}
@@ -336,86 +534,81 @@ export default function SessionConsole({
           />
         )}
 
+        <TargetStrip node={node} date={date} targetId={target?.id ?? null} verdicts={verdicts} onGoTo={goTo} />
+
         <div className="obs-frame">
           <LiveView
-            state={status?.state ?? 'SCHEDULED'}
-            progress={status?.progress ?? 0}
-            photoSrc={target ? targetPhoto(target)?.src ?? null : null}
+            sample={sample}
+            objects={objects}
+            latDeg={node.lat}
+            lstHours={lstHours}
+            sunAltitudeDeg={sunAltitude}
+            exposureSec={exposureSec}
             fovArcmin={fov.widthArcmin}
-            targetArcmin={target ? targetSizeArcmin(target, date) : 0}
             seeingArcsec={SEEING_ARCSEC}
             diffractionArcsec={diffractionArcsec}
             plateScaleArcsecPx={fov.plateScaleArcsecPx}
             bortle={node.bortle}
             subs={Math.max(1, subs)}
             gain={gain}
-            rotationDeg={(rotationRate * settledMs) / 3_600_000}
-            seed={Math.round(pointing.altitude * 10) * 1000 + Math.round(pointing.azimuth * 10)}
-            frameSpan={target ? targetFrameSpan(target) : 1}
-            showFieldStars={target?.brightness !== 'bright'}
-            splitAt={status?.state === 'OBSERVING' ? splitAt : null}
+            splitAt={observing ? splitAt : null}
           />
 
           <span className="obs-frame__tag">Simulated</span>
 
-          {splitAt !== null && status?.state === 'OBSERVING' && (
+          <span className="obs-frame__state" role="status">
+            <span
+              className={`obs-led ${
+                observing ? 'obs-led--nominal' : status || awake ? 'obs-led--active' : ''
+              }`}
+              aria-hidden="true"
+            />
+            {stateLabel}
+            {status && !observing && (
+              <span className="obs-frame__state-progress">
+                {Math.round(status.progress * 100)}%
+                {status.msToSettled > 0 && ` · T-${Math.ceil(status.msToSettled / 1000)}s`}
+              </span>
+            )}
+          </span>
+
+          {splitAt !== null && observing ? (
             <>
               <span className="obs-frame__corner-note obs-frame__corner-note--left">1 sub</span>
               <span className="obs-frame__corner-note obs-frame__corner-note--right">
                 {subs.toLocaleString()} stacked
               </span>
             </>
+          ) : (
+            <span className="obs-frame__target">
+              {target ? target.name : awake ? 'Hand control' : 'Parked'}
+              <span>{stateDetail}</span>
+            </span>
           )}
         </div>
 
-        <div className="obs-panel">
-          <div className="obs-panel__bar" style={{ borderBottom: 0 }}>
-            <span className="flex items-center gap-2">
-              <span
-                className={`obs-led ${
-                  observing ? 'obs-led--nominal' : status ? 'obs-led--active' : ''
-                }`}
-                aria-hidden="true"
-              />
-              <span className="obs-panel__title">{status?.state ?? 'Parked'}</span>
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {status ? status.detail : 'Mount at home'}
-              </span>
-            </span>
-
-            <span className="flex items-center gap-3">
-              {status && !observing && (
-                <span className="obs-panel__title" style={{ color: 'var(--accent-text)' }}>
-                  {Math.round(status.progress * 100)}%
-                  {status.msToSettled > 0 && ` · T-${Math.ceil(status.msToSettled / 1000)}s`}
-                </span>
-              )}
-              <button
-                type="button"
-                className="obs-action"
-                onClick={toggleAudio}
-                aria-pressed={audioOn}
-                title="Servo and drive audio"
-              >
-                {audioOn ? 'Audio on' : 'Audio off'}
-              </button>
-            </span>
-          </div>
+        <div className="obs-console__row">
+          <span className="obs-label">Servo and drive audio</span>
+          <button
+            type="button"
+            className="obs-action"
+            onClick={toggleAudio}
+            aria-pressed={audioOn}
+            title="Servo and drive audio"
+          >
+            {audioOn ? 'Audio on' : 'Audio off'}
+          </button>
         </div>
-
-        <CompareControl
-          splitAt={splitAt}
-          onSplit={setSplitAt}
-          disabled={status?.state !== 'OBSERVING'}
-        />
-
-        <EventsPanel lat={node.lat} lon={node.lon} now={now} timezone={node.timezone} />
 
         <TelemetryPanel
           t={{
             altitude: pointing.altitude,
-            hourAngle: target ? hourAngle(targetRaHours(target, date), node.lon, date) : null,
-            siderealHours: localSiderealHours(node.lon, date),
+            hourAngle: target
+              ? hourAngle(targetRaHours(target, date), node.lon, date)
+              : awake
+                ? hourAngle(altAzToRaDec(pointing, node.lat, lstHours).raHours, node.lon, date)
+                : null,
+            siderealHours: lstHours,
             azimuth: pointing.azimuth,
             fovArcmin: fov.widthArcmin,
             targetArcmin: target ? targetSizeArcmin(target, date) : null,
@@ -430,17 +623,30 @@ export default function SessionConsole({
             }),
             focalLengthMm: effectiveFocalLength(node.instrument, train),
             plateScaleArcsecPx: fov.plateScaleArcsecPx,
-            rotationDegPerHour: acquisition ? rotationRate : null,
+            rotationDegPerHour: awake ? rotationRate : null,
             cloudCover,
           }}
         />
+
+        <CompareControl
+          splitAt={splitAt}
+          onSplit={setSplitAt}
+          disabled={!observing}
+        />
+
+        <EventsPanel lat={node.lat} lon={node.lon} now={now} timezone={node.timezone} />
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="obs-console__rail">
+        <HandControl
+          rate={rate}
+          onRate={setRate}
+          onPress={press}
+          onRelease={release}
+          tracking={observing}
+          offTargetArcmin={offTargetArcmin}
+        />
         <ControlPanel
-          targetId={target?.id ?? null}
-          verdicts={verdicts}
-          onGoTo={goTo}
           exposureSec={exposureSec}
           brightness={target?.brightness ?? 'faint'}
           onExposure={setExposureSec}
@@ -451,9 +657,9 @@ export default function SessionConsole({
           gain={gain}
           onGain={setGain}
           onCapture={capture}
-          canCapture={status?.state === 'OBSERVING'}
+          canCapture={observing}
           onPark={park}
-          parked={acquisition === null}
+          parked={!awake}
         />
         <MissionLog entries={log} timezone={node.timezone} />
         {captures > 0 && (

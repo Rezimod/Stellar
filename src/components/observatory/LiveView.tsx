@@ -2,32 +2,33 @@
 
 import { useEffect, useRef } from 'react';
 import {
+  drawLiveScene,
   drawNoise,
-  drawScene,
   makeNoiseTile,
   type FrameInputs,
+  type LiveScene,
 } from '@/lib/observatory/render';
-import type { MissionState } from '@/lib/observatory/mission';
+import type { SkyObject } from '@/lib/observatory/sky-field';
+import type { AltAz } from '@/lib/observatory/safety';
+
+export type MountSample = { pointing: AltAz; azRate: number; altRate: number };
 
 export type LiveViewProps = {
-  state: MissionState;
-  /** 0-1 through the current phase, used to walk the target into the centre. */
-  progress: number;
-  photoSrc: string | null;
+  /** Read once per frame: where the axes are right now, and how fast they move. */
+  sample: () => MountSample;
+  /** Everything real near the pointing, refreshed a few times a second. */
+  objects: SkyObject[];
+  latDeg: number;
+  lstHours: number;
+  sunAltitudeDeg: number;
+  exposureSec: number;
   fovArcmin: number;
-  targetArcmin: number;
   seeingArcsec: number;
   diffractionArcsec: number;
   plateScaleArcsecPx: number;
   bortle: number;
   subs: number;
   gain: number;
-  rotationDeg: number;
-  /** Deterministic field seed — the pointing, rounded. */
-  seed: number;
-  frameSpan: number;
-  /** A lunar or planetary sub is far too short to record a field star. */
-  showFieldStars: boolean;
   /**
    * Fraction of the frame width showing a single raw sub instead of the stack.
    * Null hides the comparison entirely.
@@ -35,33 +36,14 @@ export type LiveViewProps = {
   splitAt: number | null;
 };
 
-/** States in which the target is somewhere in the frame. */
-const ON_SKY: MissionState[] = ['CENTERING', 'OBSERVING', 'CAPTURING', 'PROCESSING'];
-
 export default function LiveView(props: LiveViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageRef = useRef<HTMLImageElement | null>(null);
+  const imagesRef = useRef(new Map<string, HTMLImageElement>());
   const noiseRef = useRef<HTMLCanvasElement | null>(null);
   // The draw loop reads the newest props without being torn down and rebuilt
   // on every frame, which would restart the animation each render.
   const latest = useRef(props);
   latest.current = props;
-
-  useEffect(() => {
-    if (!props.photoSrc) {
-      imageRef.current = null;
-      return;
-    }
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = props.photoSrc;
-    image.onload = () => {
-      imageRef.current = image;
-    };
-    return () => {
-      image.onload = null;
-    };
-  }, [props.photoSrc]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -73,6 +55,18 @@ export default function LiveView(props: LiveViewProps) {
     let running = true;
     let lastNoiseSwap = 0;
 
+    // Reference photos load the first time an object comes near the field and
+    // are drawn from the next frame on; until then the object is a plain disc.
+    const image = (src: string): HTMLImageElement | null => {
+      const cached = imagesRef.current.get(src);
+      if (cached) return cached.complete && cached.naturalWidth > 0 ? cached : null;
+      const el = new Image();
+      el.decoding = 'async';
+      el.src = src;
+      imagesRef.current.set(src, el);
+      return null;
+    };
+
     const render = (time: number) => {
       if (!running) return;
       frame += 1;
@@ -80,7 +74,7 @@ export default function LiveView(props: LiveViewProps) {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const rect = canvas.getBoundingClientRect();
       const width = Math.round(rect.width);
-      const height = Math.round(rect.width * 9 / 16);
+      const height = Math.round((rect.width * 9) / 16);
       if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
         canvas.width = width * dpr;
         canvas.height = height * dpr;
@@ -88,55 +82,66 @@ export default function LiveView(props: LiveViewProps) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const p = latest.current;
-      const slewing = p.state === 'SLEWING';
+      const mount = p.sample();
 
       const inputs: FrameInputs = {
         width,
         height,
         fovArcmin: p.fovArcmin,
-        targetArcmin: p.targetArcmin,
+        targetArcmin: 0,
         seeingArcsec: p.seeingArcsec,
         diffractionArcsec: p.diffractionArcsec,
         plateScaleArcsecPx: p.plateScaleArcsecPx,
         bortle: p.bortle,
         subs: p.subs,
         gain: p.gain,
-        rotationDeg: p.rotationDeg,
-        // The mount lands close, then walks the target in over the centring
-        // phase — it does not arrive perfectly framed.
-        centeringOffset: p.state === 'CENTERING' ? 0.18 * (1 - p.progress) : 0,
-        // A moving mount smears the field; regenerating the seed each frame is
-        // what that looks like at video rate.
-        seed: slewing ? frame * 2654435761 : p.seed,
-        frameSpan: p.frameSpan,
+        rotationDeg: 0,
+        centeringOffset: 0,
+        seed: 0,
+        frameSpan: 1,
       };
 
-      const scene = {
-        image: imageRef.current,
-        showFieldStars: p.state !== 'PREPARING' && p.showFieldStars,
-        showTarget: ON_SKY.includes(p.state),
+      const scene: LiveScene = {
+        pointing: mount.pointing,
+        azRate: mount.azRate,
+        altRate: mount.altRate,
+        latDeg: p.latDeg,
+        lstHours: p.lstHours,
+        objects: p.objects,
+        image,
+        exposureSec: p.exposureSec,
+        sunAltitudeDeg: p.sunAltitudeDeg,
       };
+
+      // Regrain a few times a second rather than every frame — the tile is an
+      // ImageData round-trip and the eye cannot tell.
+      if (noiseRef.current && time - lastNoiseSwap > 180) {
+        noiseRef.current = makeNoiseTile();
+        lastNoiseSwap = time;
+      }
+      const noise = noiseRef.current;
 
       if (p.splitAt === null) {
-        drawScene(ctx, inputs, frame, scene);
+        drawLiveScene(ctx, inputs, frame, scene);
+        if (noise) drawNoise(ctx, inputs, noise);
       } else {
         const boundary = Math.round(width * p.splitAt);
-
-        // Left: one raw sub, the frame as the sensor delivered it.
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, boundary, height);
-        ctx.clip();
-        drawScene(ctx, { ...inputs, subs: 1, jitterSubs: inputs.subs }, frame, scene);
-        ctx.restore();
-
-        // Right: the stack as it stands.
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(boundary, 0, width - boundary, height);
-        ctx.clip();
-        drawScene(ctx, inputs, frame, scene);
-        ctx.restore();
+        // Left: one raw sub, the frame as the sensor delivered it. Right: the
+        // stack as it stands. Noise is the loudest part of a single sub, so it
+        // respects the split too.
+        const raw: FrameInputs = { ...inputs, subs: 1, jitterSubs: inputs.subs };
+        for (const [x, w, frameInputs] of [
+          [0, boundary, raw],
+          [boundary, width - boundary, inputs],
+        ] as const) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(x, 0, w, height);
+          ctx.clip();
+          drawLiveScene(ctx, frameInputs, frame, scene);
+          if (noise) drawNoise(ctx, frameInputs, noise);
+          ctx.restore();
+        }
 
         ctx.save();
         ctx.strokeStyle = 'rgba(255,255,255,0.55)';
@@ -146,35 +151,6 @@ export default function LiveView(props: LiveViewProps) {
         ctx.lineTo(boundary + 0.5, height);
         ctx.stroke();
         ctx.restore();
-      }
-
-      // Regrain a few times a second rather than every frame — the tile is an
-      // ImageData round-trip and the eye cannot tell.
-      if (noiseRef.current && time - lastNoiseSwap > 180) {
-        noiseRef.current = makeNoiseTile();
-        lastNoiseSwap = time;
-      }
-      if (noiseRef.current) {
-        if (p.splitAt === null) {
-          drawNoise(ctx, inputs, noiseRef.current);
-        } else {
-          // Noise is the loudest part of a single sub, so it has to respect
-          // the split too or the comparison understates the difference.
-          const boundary = Math.round(width * p.splitAt);
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(0, 0, boundary, height);
-          ctx.clip();
-          drawNoise(ctx, { ...inputs, subs: 1, jitterSubs: inputs.subs }, noiseRef.current);
-          ctx.restore();
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(boundary, 0, width - boundary, height);
-          ctx.clip();
-          drawNoise(ctx, inputs, noiseRef.current);
-          ctx.restore();
-        }
       }
 
       requestAnimationFrame(render);

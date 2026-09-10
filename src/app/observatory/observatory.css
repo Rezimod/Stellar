@@ -129,36 +129,6 @@
 .obs-frame__corner-note--left  { left: 34px; }
 .obs-frame__corner-note--right { right: 34px; }
 
-/* --- command buttons -------------------------------------------------- */
-
-.obs-cmd {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.5rem 0.65rem;
-  border: 1px solid var(--obs-rule);
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 13px;
-}
-.obs-cmd:hover:not(:disabled) { border-color: var(--obs-rule-strong); }
-.obs-cmd[aria-pressed='true'] {
-  border-color: var(--accent-border);
-  background: var(--accent-dim);
-}
-.obs-cmd:disabled { cursor: not-allowed; color: var(--text-muted); }
-
-.obs-cmd__meta {
-  display: block;
-  margin-top: 2px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-.obs-cmd:disabled .obs-cmd__meta { color: var(--no); }
-
 .obs-action {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--obs-rule-strong);
@@ -316,49 +286,6 @@
   :root:not([data-theme='light']) .obs-ground { --obs-canvas: #070E22; }
 }
 
-/* --- photographic hero -------------------------------------------------- */
-
-/*
- * Full-bleed picture, type over the dark half of it. The photograph is the
- * page's opening argument — this is an instrument that looks at the sky, and
- * the sky should be the first thing on screen rather than a card.
- */
-.obs-hero {
-  position: relative;
-  isolation: isolate;
-  min-height: 26rem;
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-  border-bottom: 1px solid var(--obs-rule);
-}
-
-.obs-hero__img {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 35%;
-}
-
-/* Legibility, and it seats the picture on the page's own ground. */
-.obs-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--obs-canvas) 55%, transparent) 0%,
-    color-mix(in srgb, var(--obs-canvas) 35%, transparent) 40%,
-    var(--obs-canvas) 100%
-  );
-}
-
-.obs-hero__body { padding-block: 3.5rem 2rem; }
-
 /* §4.3 — the heading carries the page, at a size the old 1.5rem never did. */
 .obs-h1 {
   font-family: var(--font-body);
@@ -378,18 +305,6 @@
   color: var(--text-secondary);
 }
 
-/* A picture we did not take says so, in the corner, in the instrument's voice. */
-.obs-hero__credit {
-  position: absolute;
-  right: 1rem;
-  bottom: 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
 /* --- rhythm ------------------------------------------------------------- */
 
 /* Sections breathe. The console packs data; the marketing surface does not. */
@@ -406,7 +321,773 @@
 }
 
 @media (max-width: 640px) {
-  .obs-hero { min-height: 20rem; }
-  .obs-hero__body { padding-block: 2.5rem 2.75rem; }
   .obs-section { margin-top: 2.75rem; }
+}
+
+/* --- voice ------------------------------------------------------------- */
+
+.obs-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.obs-eyebrow .font-display { color: var(--accent-text); letter-spacing: 0.2em; }
+.obs-label--alert { color: var(--no); }
+
+.obs-clock {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+/* A picture we did not take says so, in the corner, in the instrument's voice. */
+.obs-hero__credit {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.obs-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--obs-rule-strong);
+}
+.obs-section__lead {
+  margin-top: 1rem;
+  max-width: 62ch;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* --- stage -------------------------------------------------------------- */
+
+/*
+ * The opening of the network page is not a photograph of a sky we did not
+ * shoot; it is the Moon with this instrument's sensor drawn over it to scale.
+ * Type on the left, the plate on the right, and the plate is the brightest
+ * thing on the screen.
+ */
+.obs-stage {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--obs-rule);
+}
+.obs-stage__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 2.5rem;
+  padding-block: 2rem 3.5rem;
+}
+.obs-stage__plate {
+  width: min(100%, 24rem);
+  margin-inline: auto;
+}
+@media (min-width: 900px) {
+  .obs-stage__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 3rem;
+    min-height: 36rem;
+    padding-block: 3rem 4rem;
+  }
+  .obs-stage__plate { width: 100%; max-width: 33rem; justify-self: end; }
+}
+
+/* --- plate -------------------------------------------------------------- */
+
+.obs-plate {
+  position: relative;
+  aspect-ratio: 1;
+  margin: 0;
+}
+.obs-plate__disc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+}
+/* The photograph has a little black margin around the disc; scale it away. */
+.obs-plate__disc img { object-fit: cover; transform: scale(1.12); }
+
+.obs-plate__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.obs-plate__ring {
+  fill: none;
+  stroke: var(--obs-rule-strong);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: obs-draw 1.8s var(--ease-out-expo) forwards;
+}
+.obs-plate__ring--turning {
+  stroke-dasharray: 0.9 1.8;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: obs-appear 1.2s ease-out 0.6s forwards, obs-turn 240s linear infinite;
+}
+.obs-plate__ticks line {
+  stroke: var(--obs-rule-strong);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+.obs-plate__sensor {
+  fill: color-mix(in srgb, var(--accent) 9%, transparent);
+  stroke: var(--accent);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: obs-draw 1.4s var(--ease-out-expo) 0.5s forwards;
+}
+.obs-plate__jupiter { fill: var(--text-primary); }
+.obs-plate__leader {
+  stroke: var(--obs-rule-strong);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.obs-plate__notes {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.obs-plate__note {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0;
+  animation: obs-appear 0.8s ease-out 1.1s forwards;
+}
+.obs-plate__note b {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.obs-plate__note--sensor {
+  left: 50%;
+  translate: -50% -100%;
+  padding-bottom: 6px;
+  align-items: center;
+  text-align: center;
+}
+.obs-plate__note--sensor b { color: var(--accent-text); }
+.obs-plate__note--moon { left: 4%; bottom: 3%; }
+.obs-plate__note--jupiter { right: 2%; top: 79%; align-items: flex-end; text-align: right; }
+.obs-plate__note--optics { left: 4%; top: 3%; }
+
+@media (max-width: 640px) {
+  .obs-plate__note { font-size: 9px; letter-spacing: 0.1em; }
+  .obs-plate__note b { font-size: 12px; }
+}
+
+@keyframes obs-draw   { to { stroke-dashoffset: 0; } }
+@keyframes obs-appear { to { opacity: 1; } }
+@keyframes obs-turn   { to { rotate: 360deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-plate__ring,
+  .obs-plate__sensor { animation: none; stroke-dashoffset: 0; }
+  .obs-plate__ring--turning,
+  .obs-plate__note { animation: none; opacity: 1; }
+}
+
+/* --- tonight board -------------------------------------------------------- */
+
+/* Four figures on one hairline grid. The site's own clock is the first of them. */
+.obs-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 2rem;
+  border: 1px solid var(--obs-rule);
+  background: var(--obs-rule);
+}
+@media (min-width: 768px) {
+  .obs-board { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.obs-board__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem;
+  background: var(--obs-canvas);
+}
+.obs-board__cell .obs-clock,
+.obs-board__value {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.obs-board__value--online .obs-led  { background: var(--yes); }
+.obs-board__value--busy .obs-led    { background: var(--accent); }
+.obs-board__value--weather .obs-led { background: var(--no); }
+.obs-board__note {
+  grid-column: 1 / -1;
+  padding: 0.75rem 1.25rem;
+  background: var(--obs-canvas);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* --- instrument plate ------------------------------------------------------ */
+
+.obs-instrument {
+  border: 1px solid var(--obs-rule);
+  background: var(--surface);
+}
+.obs-instrument__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem 1.25rem;
+  padding: 1.25rem;
+}
+.obs-instrument__code {
+  padding-top: 0.2rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--accent-text);
+}
+.obs-instrument__name {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.obs-instrument__site { margin-top: 0.3rem; font-size: 0.875rem; color: var(--text-secondary); }
+
+.obs-specs {
+  display: flex;
+  margin: 0;
+  overflow-x: auto;
+  border-top: 1px solid var(--obs-rule);
+  border-bottom: 1px solid var(--obs-rule);
+  scrollbar-width: none;
+}
+.obs-specs::-webkit-scrollbar { display: none; }
+.obs-specs__item {
+  flex: 1 0 auto;
+  min-width: 9rem;
+  padding: 0.9rem 1.25rem;
+  border-right: 1px solid var(--obs-rule);
+}
+.obs-specs__item:last-child { border-right: 0; }
+.obs-specs__value {
+  margin-top: 0.35rem;
+  font-size: 1rem;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+.obs-specs__value--mono {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+.obs-instrument__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+.obs-instrument__status {
+  max-width: 58ch;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* --- ways ------------------------------------------------------------------ */
+
+/* Numbered, ruled, one line each: a list a visitor reads top to bottom. */
+.obs-ways {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--obs-rule);
+}
+.obs-way {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.6rem 1rem;
+  align-items: start;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--obs-rule);
+}
+.obs-way__n {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.obs-way__title {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+.obs-way__text {
+  margin-top: 0.35rem;
+  max-width: 64ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.obs-way__link {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--accent-text);
+}
+.obs-way:hover .obs-way__link { text-decoration: underline; text-underline-offset: 4px; }
+@media (min-width: 768px) {
+  .obs-way {
+    grid-template-columns: 4rem minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 1.75rem 0;
+  }
+  .obs-way__link { grid-column: auto; padding-left: 2rem; }
+}
+
+/* --- owner band ------------------------------------------------------------- */
+
+.obs-band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-top: 1px solid var(--obs-rule);
+  border-bottom: 1px solid var(--obs-rule);
+}
+.obs-band__img {
+  z-index: -2;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.6;
+}
+/* Legibility only: seats the picture on the page ground, darkest under the type. */
+.obs-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--obs-canvas) 94%, transparent) 0%,
+    color-mix(in srgb, var(--obs-canvas) 78%, transparent) 55%,
+    color-mix(in srgb, var(--obs-canvas) 45%, transparent) 100%
+  );
+}
+.obs-band__body {
+  display: grid;
+  gap: 2.5rem;
+  padding-block: 3.5rem 4rem;
+}
+.obs-band__text {
+  margin-top: 1rem;
+  max-width: 52ch;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.obs-h2--band { font-size: clamp(1.75rem, 3.2vw, 2.5rem); }
+.obs-band__figures {
+  display: flex;
+  gap: 2.5rem;
+  margin: 0;
+}
+.obs-band__figures > div { display: flex; flex-direction: column-reverse; gap: 0.5rem; }
+.obs-band__figure {
+  font-family: var(--font-mono);
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+@media (min-width: 900px) {
+  .obs-band__body { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+}
+
+.obs-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--obs-rule);
+}
+.obs-more a {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.obs-more a:hover { color: var(--text-primary); }
+
+/* --- instrument page -------------------------------------------------------- */
+
+.obs-node-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+.obs-node-head__state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.obs-node-head__state .obs-clock { font-size: 13px; }
+@media (min-width: 768px) {
+  .obs-node-head__state { align-items: flex-end; text-align: right; }
+}
+
+.obs-node-plate {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 2.5rem;
+}
+.obs-node-plate .obs-plate { width: min(100%, 24rem); margin-inline: auto; }
+@media (min-width: 900px) {
+  .obs-node-plate { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 3.5rem; }
+  .obs-node-plate .obs-plate { width: 100%; max-width: 32rem; }
+}
+
+.obs-sheet { margin: 0; }
+.obs-sheet__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--obs-rule);
+}
+.obs-sheet__value {
+  font-size: 0.9375rem;
+  text-align: right;
+  color: var(--text-primary);
+}
+.obs-sheet__value--mono {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.obs-sheet__note {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* --- simulator page --------------------------------------------------------- */
+
+.obs-sim-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+  margin-top: 2rem;
+}
+.obs-h1--sim { font-size: clamp(2rem, 4.5vw, 3.25rem); }
+.obs-sim-head__figures { display: flex; gap: 2rem; margin: 0; }
+.obs-sim-head__figures > div { display: flex; flex-direction: column-reverse; gap: 0.4rem; }
+.obs-sim-head__figure {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.obs-sim-head__figure span { margin-left: 0.1em; font-size: 0.6em; color: var(--text-secondary); }
+
+.obs-sim-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--obs-rule);
+}
+
+/* --- console ----------------------------------------------------------------- */
+
+.obs-console { display: grid; gap: 1rem; }
+.obs-console__main,
+.obs-console__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.obs-console__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.6rem;
+}
+@media (min-width: 1024px) {
+  .obs-console { grid-template-columns: minmax(0, 1fr) 19rem; align-items: start; }
+}
+
+/* Mount state and target live on the glass, where the eye already is. */
+.obs-frame__state,
+.obs-frame__target {
+  position: absolute;
+  padding: 4px 8px;
+  background: rgba(5, 7, 12, 0.72);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+.obs-frame__state {
+  top: 10px;
+  right: 34px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.obs-frame__state-progress { color: var(--accent-text); }
+.obs-frame__target {
+  left: 34px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.obs-frame__target span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* --- HUD ------------------------------------------------------------------- */
+
+.obs-hud {
+  display: flex;
+  margin: 0;
+  overflow-x: auto;
+  border: 1px solid var(--obs-rule);
+  background: var(--obs-rule);
+  gap: 1px;
+  scrollbar-width: none;
+}
+.obs-hud::-webkit-scrollbar { display: none; }
+.obs-hud__cell {
+  flex: 1 0 auto;
+  min-width: 5.25rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--obs-canvas);
+}
+.obs-hud__value {
+  margin-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+.obs-hud__cell--alert .obs-hud__value { color: var(--no); }
+@media (min-width: 640px) {
+  .obs-hud {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+    overflow: visible;
+  }
+}
+
+/* --- target strip ------------------------------------------------------------ */
+
+.obs-targets {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0 0.25rem;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.obs-targets::-webkit-scrollbar { display: none; }
+.obs-targets > li { flex: 0 0 auto; min-width: 7rem; }
+@media (min-width: 640px) {
+  .obs-targets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+  .obs-targets > li { min-width: 0; }
+}
+@media (min-width: 1280px) {
+  .obs-targets { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+}
+
+.obs-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 0;
+  padding: 0.75rem 0.4rem 0.65rem;
+  border: 1px solid var(--obs-rule);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text-primary);
+  text-align: center;
+  scroll-snap-align: start;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.obs-target:hover:not(:disabled) { border-color: var(--obs-rule-strong); }
+.obs-target[aria-pressed='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+.obs-target:disabled { cursor: not-allowed; color: var(--text-muted); }
+.obs-target:disabled .obs-target__disc { opacity: 0.35; filter: grayscale(1); }
+
+.obs-target__disc {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+}
+.obs-target__disc img { object-fit: cover; }
+.obs-target[aria-pressed='true'] .obs-target__disc { box-shadow: 0 0 0 2px var(--accent); }
+.obs-target__name { font-size: 13px; line-height: 1.2; }
+.obs-target__meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* --- hand control ----------------------------------------------------- */
+
+.obs-pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  width: min(100%, 13rem);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.obs-pad__key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  border: 1px solid var(--obs-rule-strong);
+  background: transparent;
+  color: var(--text-primary);
+  -webkit-touch-callout: none;
+}
+.obs-pad__key:hover:not(:disabled) { border-color: var(--accent-border); }
+.obs-pad__key[aria-pressed='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent-text);
+}
+.obs-pad__key:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.obs-pad__centre {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.obs-rates {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.obs-rates__key {
+  min-height: 0;
+  padding: 0.4rem 0;
+  border: 1px solid var(--obs-rule);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.obs-rates__key:hover { border-color: var(--obs-rule-strong); }
+.obs-rates__key[aria-pressed='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent-text);
 }

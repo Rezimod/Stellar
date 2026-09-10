@@ -2781,9 +2781,33 @@
       "tryLead": "A simulator of the same telescope, with the real field of view, the real slew times and the real safety envelope. It will refuse the same targets the instrument would, for the same reasons.",
       "tryCta": "Open the simulator",
       "ownerTitle": "Own a telescope that sits idle?",
-      "ownerLead": "Most instruments are used a handful of nights a year. Put yours on the network and it earns on the clear nights you are not out with it. You keep 60% from the first session and 80% once the instrument has earned it.",
+      "ownerLead": "Most instruments are used a handful of nights a year. Put yours on the network and it earns on the clear nights you are not out with it — the software connects the mount and camera you already own.",
       "ownerCta": "What an operator earns",
-      "heroCredit": "NASA · illustrative, not a network capture"
+      "heroCredit": "NASA · illustrative, not a network capture",
+      "heroBook": "Hold a slot",
+      "plateCredit": "Moon: Gregory H. Revera · sensor and Jupiter drawn to scale",
+      "tonightTitle": "Tonight at the site",
+      "boardSiteTime": "{site} · site time",
+      "boardInstrument": "Instrument",
+      "boardCloud": "Cloud",
+      "boardDark": "Next dark window",
+      "boardDarkNow": "Now",
+      "instrumentsTitle": "The instruments",
+      "waysTitle": "Three ways to use it",
+      "waysNote": "No account needed for the first",
+      "way1Title": "Drive the simulator",
+      "way1Body": "The same optical train, the real slew times and the same safety envelope. It refuses the targets the instrument would refuse, for the same reasons.",
+      "way1Cta": "Open the simulator",
+      "way2Title": "Hold a slot",
+      "way2Body": "Twenty minutes of the instrument on a night the sky over the site is dark. Only the hours the operator takes work are offered.",
+      "way2Cta": "See the timetable",
+      "way3Title": "Ask for a photograph",
+      "way3Body": "Name the object and how long you will wait. The instrument works your request on the first clear night, between booked sessions.",
+      "way3Cta": "Join the queue",
+      "ownerEyebrow": "For telescope owners",
+      "ownerFrom": "from the first session",
+      "ownerTo": "once the instrument has earned it",
+      "moreTitle": "Also here"
     },
     "routing": {
       "here": "{cloud}% cloud where you are.",
@@ -2949,7 +2973,10 @@
       "camera": "Camera",
       "bestFor": "Best for {targets}",
       "price": "{price} ₾ per {minutes} min",
-      "open": "Instrument and availability"
+      "open": "Instrument and availability",
+      "session": "Session",
+      "code": "Instrument {code}",
+      "siteTime": "Site time"
     },
     "state": {
       "online": "Observable now",
@@ -3055,6 +3082,13 @@
       "support_astronomer": "Support Astronomer",
       "staff_astronomer": "Staff Astronomer",
       "observatory_director": "Observatory Director"
+    },
+    "plate": {
+      "aria": "The Moon tonight with the instrument's sensor drawn over it to scale",
+      "sensor": "sensor",
+      "moon": "the Moon tonight",
+      "jupiter": "Jupiter, to scale",
+      "resolves": "plate scale · resolves {arcsec}″"
     }
   }
 }
