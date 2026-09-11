@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import {
   ExternalLink, Sparkles, CircleDot, BookOpen, ShoppingBag,
-  User, ShieldCheck, Lock, Mail,
+  User, ShieldCheck, Lock, Mail, Telescope,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AstroLogo from './AstroLogo';
@@ -29,6 +29,7 @@ const columns: FooterColumn[] = [
       { labelKey: 'missions', href: '/missions',    Icon: CircleDot },
       { labelKey: 'learning', href: '/learn',       Icon: BookOpen },
       { labelKey: 'shop',     href: '/marketplace', Icon: ShoppingBag },
+      { labelKey: 'observatory', href: '/observatory', Icon: Telescope },
     ],
   },
   {
