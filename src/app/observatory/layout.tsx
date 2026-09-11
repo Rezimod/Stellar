@@ -1,13 +1,23 @@
+import ObservatoryNav from '@/components/observatory/ObservatoryNav';
+import Starfield from '@/components/observatory/Starfield';
+import PageContainer from '@/components/layout/PageContainer';
 import './observatory.css';
 
 /**
- * The observatory runs on a darker ground than the rest of the app.
- *
- * `--canvas` is #0A1735, a blue bright enough to compete with a photograph.
- * These pages are photograph-led, so they drop to a deeper night sky and let
- * the picture be the brightest thing on the screen — the plan's §4.1, scoped to
- * this route rather than applied to every page in the app.
+ * The observatory runs on a darker ground than the rest of the app: a fixed
+ * field of stars under everything, and each page a scene over it — the object
+ * large, the controls floating on it. Scoped to this route by the layout.
  */
 export default function ObservatoryLayout({ children }: { children: React.ReactNode }) {
-  return <div className="obs obs-ground">{children}</div>;
+  return (
+    <div className="obs obs-ground">
+      <Starfield />
+      <div className="obs-ground__content">
+        <PageContainer variant="fullscreen" className="obs-ground__nav">
+          <ObservatoryNav />
+        </PageContainer>
+        {children}
+      </div>
+    </div>
+  );
 }

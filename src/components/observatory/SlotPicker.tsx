@@ -179,9 +179,9 @@ export default function SlotPicker({ nodeId, timezone, sessionMinutes, priceGel 
           {t('empty')}
         </p>
       ) : (
-        <div className="mt-5 flex flex-col gap-6">
+        <div className="obs-nights mt-4">
           {nights.map((night) => (
-            <section key={night}>
+            <section key={night} className="obs-night">
               <h3 className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="obs-label">
                   {t('nightHeading', { night: nightLabel(night, timezone, locale) })}

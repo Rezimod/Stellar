@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
 import LiveView, { type MountSample } from './LiveView';
 import TelemetryPanel from './TelemetryPanel';
 import ControlPanel from './ControlPanel';
-import TargetStrip from './TargetStrip';
 import HandControl from './HandControl';
 import MissionLog, { type LogEntry } from './MissionLog';
 import CompareControl from './CompareControl';
 import TimeControl from './TimeControl';
-import SessionClock from './SessionClock';
+import ConsoleTabs from './ConsoleTabs';
+import CornerClock from './CornerClock';
+import LiveDock from './LiveDock';
+import StagePanel from './StagePanel';
 import {
   acquisitionStateAt,
   planAcquisition,
@@ -120,6 +123,7 @@ export default function SessionConsole({
    */
   session?: { id: string; startsAtMs: number; endsAtMs: number };
 }) {
+  const t = useTranslations('observatory.console');
   const { getAccessToken } = usePrivy();
   const [clock, setClock] = useState<number | null>(null);
   // Simulated time runs forward from the real clock plus an offset, so the
@@ -136,6 +140,8 @@ export default function SessionConsole({
   const [gain, setGain] = useState(40);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [captures, setCaptures] = useState(0);
+  // The last frame taken, for the dock's thumbnail.
+  const [last, setLast] = useState<{ targetId: string; at: string } | null>(null);
   const [splitAt, setSplitAt] = useState<number | null>(null);
   const [audioOn, setAudioOn] = useState(false);
   // The drive's pointing, copied out once a tick for everything React renders.
@@ -433,6 +439,15 @@ export default function SessionConsole({
     if (!target) return;
     if (audioOn) audioRef.current?.click();
     setCaptures((c) => c + 1);
+    setLast({
+      targetId: target.id,
+      at: new Intl.DateTimeFormat('en-GB', {
+        timeZone: node.timezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      }).format(new Date(nowRef.current)),
+    });
     append(`Captured ${target.name} — ${subs} subs, ${(subs * exposureSec).toFixed(0)}s integration`);
 
     // The sandbox keeps its frames in the browser. A booked session files them,
@@ -462,7 +477,7 @@ export default function SessionConsole({
     } catch {
       append('Frame not filed — network error.');
     }
-  }, [append, audioOn, exposureSec, getAccessToken, roiId, session, subs, target, trainId]);
+  }, [append, audioOn, exposureSec, getAccessToken, node.timezone, roiId, session, subs, target, trainId]);
 
   const jumpToNight = useCallback(() => {
     const real = Date.now();
@@ -494,6 +509,48 @@ export default function SessionConsole({
 
   const sample = useCallback(() => sampleRef.current, []);
 
+  /**
+   * The simulator opens on something, already settled.
+   *
+   * A parked mount over an empty frame is honest and teaches nothing, and a
+   * ninety-second slew before the first photon is worse: the visitor waits at
+   * a dark rectangle wondering whether the page is broken. So the sandbox
+   * arrives mid-session — the acquisition is planned as though it began long
+   * enough ago to have finished, which is exactly what an observer who had
+   * been at the eyepiece for a minute would be looking at. Every slew after
+   * this one runs at the instrument's real speed.
+   *
+   * A booked session never does this. That telescope is somebody else's for
+   * twenty minutes and it moves when its operator says so.
+   */
+  const opened = useRef(false);
+  useEffect(() => {
+    if (session || clock === null || opened.current) return;
+    const first = SIM_TARGETS.find((target) => verdicts[target.id]?.ok);
+    if (!first) return;
+    opened.current = true;
+
+    const atMs = nowRef.current;
+    const to = targetAltAz(first, node, new Date(atMs));
+    // Backdated by exactly its own length plus a few seconds: settled on
+    // arrival, with a stack that is seconds old rather than minutes. A deep
+    // backdate would open on thousands of stacked subs — the theoretical best
+    // this instrument can ever do, handed over before anything was earned.
+    const plan = { targetId: first.id, targetName: first.name, from: PARKED, to, warm: false };
+    const dry = planAcquisition({ ...plan, startedAtMs: atMs });
+    setAcquisition(
+      planAcquisition({ ...plan, startedAtMs: atMs - (dry.settledAtMs - atMs) - 8_000 }),
+    );
+    setAwake(true);
+    const setup = RECOMMENDED_SETUP[first.id] ?? { train: 'native', roi: 'full', exposureSec: 2 };
+    setTrainId(setup.train);
+    setRoiId(setup.roi);
+    setExposureSec(setup.exposureSec);
+    append(`Session opened on ${first.name} — mount already tracking.`);
+    // Once, on the first tick that has both a clock and graded targets.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clock, session]);
+
   // Every number on this console comes from a clock, and the server's clock is
   // not the visitor's — rendering any of it before mount is a guaranteed
   // hydration mismatch. The shell holds the layout until the browser takes over.
@@ -512,162 +569,208 @@ export default function SessionConsole({
   }
 
   const stateLabel = status?.state ?? (awake ? 'MANUAL' : 'PARKED');
-  const stateDetail = status ? status.detail : awake ? 'Hand control, tracking off' : 'Mount at home';
+  const stateDetail = status ? status.detail : awake ? t('manualLine') : t('parkedLine');
 
   return (
-    <div className="obs-console">
-      <div className="obs-console__main">
-        {session ? (
-          <SessionClock
-            now={now}
-            timezone={node.timezone}
-            startsAtMs={session.startsAtMs}
-            endsAtMs={session.endsAtMs}
-          />
-        ) : (
-          <TimeControl
-            now={now}
-            timezone={node.timezone}
-            offsetMs={offsetMs}
-            onJumpToNight={jumpToNight}
-            onReturnToNow={returnToNow}
-          />
-        )}
-
-        <TargetStrip node={node} date={date} targetId={target?.id ?? null} verdicts={verdicts} onGoTo={goTo} />
-
-        <div className="obs-frame">
-          <LiveView
-            sample={sample}
-            objects={objects}
-            latDeg={node.lat}
-            lstHours={lstHours}
-            sunAltitudeDeg={sunAltitude}
-            exposureSec={exposureSec}
-            fovArcmin={fov.widthArcmin}
-            seeingArcsec={SEEING_ARCSEC}
-            diffractionArcsec={diffractionArcsec}
-            plateScaleArcsecPx={fov.plateScaleArcsecPx}
-            bortle={node.bortle}
-            subs={Math.max(1, subs)}
-            gain={gain}
-            splitAt={observing ? splitAt : null}
-          />
-
-          <span className="obs-frame__tag">Simulated</span>
-
-          <span className="obs-frame__state" role="status">
-            <span
-              className={`obs-led ${
-                observing ? 'obs-led--nominal' : status || awake ? 'obs-led--active' : ''
-              }`}
-              aria-hidden="true"
-            />
-            {stateLabel}
-            {status && !observing && (
-              <span className="obs-frame__state-progress">
-                {Math.round(status.progress * 100)}%
-                {status.msToSettled > 0 && ` · T-${Math.ceil(status.msToSettled / 1000)}s`}
-              </span>
-            )}
-          </span>
-
-          {splitAt !== null && observing ? (
-            <>
-              <span className="obs-frame__corner-note obs-frame__corner-note--left">1 sub</span>
-              <span className="obs-frame__corner-note obs-frame__corner-note--right">
-                {subs.toLocaleString()} stacked
-              </span>
-            </>
-          ) : (
-            <span className="obs-frame__target">
-              {target ? target.name : awake ? 'Hand control' : 'Parked'}
-              <span>{stateDetail}</span>
-            </span>
-          )}
-        </div>
-
-        <div className="obs-console__row">
-          <span className="obs-label">Servo and drive audio</span>
-          <button
-            type="button"
-            className="obs-action"
-            onClick={toggleAudio}
-            aria-pressed={audioOn}
-            title="Servo and drive audio"
-          >
-            {audioOn ? 'Audio on' : 'Audio off'}
-          </button>
-        </div>
-
-        <TelemetryPanel
-          t={{
-            altitude: pointing.altitude,
-            hourAngle: target
-              ? hourAngle(targetRaHours(target, date), node.lon, date)
-              : awake
-                ? hourAngle(altAzToRaDec(pointing, node.lat, lstHours).raHours, node.lon, date)
-                : null,
-            siderealHours: lstHours,
-            azimuth: pointing.azimuth,
-            fovArcmin: fov.widthArcmin,
-            targetArcmin: target ? targetSizeArcmin(target, date) : null,
-            subs,
-            exposureSec,
-            gain,
-            seeingArcsec: SEEING_ARCSEC,
-            resolvedArcsec: effectiveBlurArcsec({
-              seeingArcsec: SEEING_ARCSEC,
-              diffractionArcsec,
-              subs: Math.max(1, subs),
-            }),
-            focalLengthMm: effectiveFocalLength(node.instrument, train),
-            plateScaleArcsecPx: fov.plateScaleArcsecPx,
-            rotationDegPerHour: awake ? rotationRate : null,
-            cloudCover,
-          }}
-        />
-
-        <CompareControl
-          splitAt={splitAt}
-          onSplit={setSplitAt}
-          disabled={!observing}
-        />
-
-        <EventsPanel lat={node.lat} lon={node.lon} now={now} timezone={node.timezone} />
-      </div>
-
-      <div className="obs-console__rail">
-        <HandControl
-          rate={rate}
-          onRate={setRate}
-          onPress={press}
-          onRelease={release}
-          tracking={observing}
-          offTargetArcmin={offTargetArcmin}
-        />
-        <ControlPanel
+    <div className="obs-live">
+      {/* The frame is the page. Everything else floats on it. */}
+      <div className="obs-live__sky">
+        <LiveView
+          sample={sample}
+          objects={objects}
+          latDeg={node.lat}
+          lstHours={lstHours}
+          sunAltitudeDeg={sunAltitude}
           exposureSec={exposureSec}
-          brightness={target?.brightness ?? 'faint'}
-          onExposure={setExposureSec}
-          trainId={trainId}
-          onTrain={setTrainId}
-          roiId={roiId}
-          onRoi={setRoiId}
+          fovArcmin={fov.widthArcmin}
+          seeingArcsec={SEEING_ARCSEC}
+          diffractionArcsec={diffractionArcsec}
+          plateScaleArcsecPx={fov.plateScaleArcsecPx}
+          bortle={node.bortle}
+          subs={Math.max(1, subs)}
           gain={gain}
-          onGain={setGain}
-          onCapture={capture}
-          canCapture={observing}
-          onPark={park}
-          parked={!awake}
+          splitAt={observing ? splitAt : null}
         />
-        <MissionLog entries={log} timezone={node.timezone} />
-        {captures > 0 && (
-          <p className="obs-label">
-            {captures} simulated capture{captures === 1 ? '' : 's'} · not saved, never minted
-          </p>
-        )}
       </div>
+
+      <span className="obs-live__tag">{t('simulated')}</span>
+
+      {splitAt !== null && observing && (
+        <>
+          <span className="obs-live__split obs-live__split--left">{t('rawSub')}</span>
+          <span className="obs-live__split obs-live__split--right">
+            {t('stacked', { count: subs.toLocaleString() })}
+          </span>
+        </>
+      )}
+
+      <CornerClock timezone={node.timezone} zoneLabel={`${node.site} · ${t('siteTime')}`}>
+        {status && !observing && (
+          <span className="obs-pill obs-pill--busy">
+            <span className="obs-led" aria-hidden="true" />
+            {Math.round(status.progress * 100)}%
+            {status.msToSettled > 0 && ` · T-${Math.ceil(status.msToSettled / 1000)}s`}
+          </span>
+        )}
+      </CornerClock>
+
+      <div className="obs-live__body">
+        <StagePanel
+          node={node}
+          target={target}
+          state={stateLabel}
+          stateLine={stateDetail}
+          tracking={observing}
+          cloudCover={cloudCover}
+          verdicts={verdicts}
+          onGoTo={goTo}
+          session={
+            session
+              ? {
+                  startsAtMs: session.startsAtMs,
+                  endsAtMs: session.endsAtMs,
+                  now,
+                  timezone: node.timezone,
+                }
+              : undefined
+          }
+        >
+          {!session && (
+            <TimeControl
+              now={now}
+              timezone={node.timezone}
+              offsetMs={offsetMs}
+              onJumpToNight={jumpToNight}
+              onReturnToNow={returnToNow}
+            />
+          )}
+        </StagePanel>
+
+        <div className="obs-live__spacer" aria-hidden="true" />
+
+        <ConsoleTabs
+          label={t('tabs')}
+          tabs={[
+            {
+              id: 'hand',
+              label: t('handControl'),
+              panel: (
+                <>
+                  <HandControl
+                    rate={rate}
+                    onRate={setRate}
+                    onPress={press}
+                    onRelease={release}
+                    tracking={observing}
+                    offTargetArcmin={offTargetArcmin}
+                  />
+                </>
+              ),
+            },
+            {
+              id: 'camera',
+              label: t('camera'),
+              panel: (
+                <ControlPanel
+                  exposureSec={exposureSec}
+                  brightness={target?.brightness ?? 'faint'}
+                  onExposure={setExposureSec}
+                  trainId={trainId}
+                  onTrain={setTrainId}
+                  roiId={roiId}
+                  onRoi={setRoiId}
+                  gain={gain}
+                  onGain={setGain}
+                  parked={!awake}
+                />
+              ),
+            },
+            {
+              id: 'telemetry',
+              label: t('telemetry'),
+              panel: (
+                <>
+                  <TelemetryPanel
+                    t={{
+                      altitude: pointing.altitude,
+                      hourAngle: target
+                        ? hourAngle(targetRaHours(target, date), node.lon, date)
+                        : awake
+                          ? hourAngle(altAzToRaDec(pointing, node.lat, lstHours).raHours, node.lon, date)
+                          : null,
+                      siderealHours: lstHours,
+                      azimuth: pointing.azimuth,
+                      fovArcmin: fov.widthArcmin,
+                      targetArcmin: target ? targetSizeArcmin(target, date) : null,
+                      subs,
+                      exposureSec,
+                      gain,
+                      seeingArcsec: SEEING_ARCSEC,
+                      resolvedArcsec: effectiveBlurArcsec({
+                        seeingArcsec: SEEING_ARCSEC,
+                        diffractionArcsec,
+                        subs: Math.max(1, subs),
+                      }),
+                      focalLengthMm: effectiveFocalLength(node.instrument, train),
+                      plateScaleArcsecPx: fov.plateScaleArcsecPx,
+                      rotationDegPerHour: awake ? rotationRate : null,
+                      cloudCover,
+                    }}
+                  />
+                  <CompareControl splitAt={splitAt} onSplit={setSplitAt} disabled={!observing} />
+                </>
+              ),
+            },
+            {
+              id: 'events',
+              label: t('events'),
+              panel: <EventsPanel lat={node.lat} lon={node.lon} now={now} timezone={node.timezone} />,
+            },
+            {
+              id: 'log',
+              label: t('log'),
+              panel: (
+                <>
+                  <MissionLog entries={log} timezone={node.timezone} />
+                  {captures > 0 && (
+                    <p className="obs-label mt-2">{t('capturesNote', { count: captures })}</p>
+                  )}
+                </>
+              ),
+            },
+          ]}
+        />
+      </div>
+
+      <LiveDock
+        targetId={target?.id ?? null}
+        verdicts={verdicts}
+        onGoTo={(id) => {
+          const next = SIM_TARGET_BY_ID.get(id);
+          if (next) goTo(next);
+        }}
+        trainId={trainId}
+        onTrain={setTrainId}
+        exposureSec={exposureSec}
+        brightness={target?.brightness ?? 'faint'}
+        onExposure={setExposureSec}
+        audioOn={audioOn}
+        onAudio={() => void toggleAudio()}
+        onCapture={capture}
+        canCapture={observing}
+        onPark={park}
+        parked={!awake}
+        last={last}
+        labels={{
+          target: t('target'),
+          zoom: t('zoom'),
+          exposure: t('exposure'),
+          audio: t('audio'),
+          capture: t('capture'),
+          park: t('park'),
+          lastCapture: t('lastCapture'),
+        }}
+      />
     </div>
   );
 }

@@ -61,33 +61,19 @@ export default function OperatorInterestForm() {
 
   if (state === 'done') {
     return (
-      <section
-        className="mt-8 rounded-xl border p-5"
-        style={{ borderColor: 'var(--yes-border)', background: 'var(--yes-dim)' }}
-      >
-        <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          {t('doneTitle')}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {t('doneLead')}
-        </p>
+      <section className="obs-float obs-float--section" style={{ borderColor: 'var(--yes-border)' }}>
+        <h2 className="obs-h2">{t('doneTitle')}</h2>
+        <p className="obs-float__text" style={{ maxWidth: '64ch' }}>{t('doneLead')}</p>
       </section>
     );
   }
 
   return (
-    <section
-      className="mt-8 rounded-xl border p-5"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-    >
-      <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-        {t('formTitle')}
-      </h2>
-      <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {t('formLead')}
-      </p>
+    <section className="obs-float obs-float--section" id="register">
+      <h2 className="obs-h2">{t('formTitle')}</h2>
+      <p className="obs-float__text" style={{ maxWidth: '64ch' }}>{t('formLead')}</p>
 
-      <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
+      <form onSubmit={submit} className="mt-5 grid gap-4 sm:grid-cols-2">
         <Field label={t('email')} required value={form.email} onChange={set('email')} type="email" />
         <Field label={t('city')} required value={form.city} onChange={set('city')} />
         <Field
@@ -113,16 +99,7 @@ export default function OperatorInterestForm() {
         )}
 
         <div className="sm:col-span-2">
-          <button
-            type="submit"
-            disabled={state === 'sending'}
-            className="rounded-md border px-4 py-2 text-sm disabled:opacity-60"
-            style={{
-              borderColor: 'var(--accent-border)',
-              background: 'var(--accent-dim)',
-              color: 'var(--accent-text)',
-            }}
-          >
+          <button type="submit" disabled={state === 'sending'} className="obs-capture">
             {state === 'sending' ? t('sending') : t('register')}
           </button>
         </div>
@@ -147,8 +124,8 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+    <label className="obs-field-label">
+      <span>
         {label}
         {required && ' *'}
       </span>
@@ -158,12 +135,7 @@ function Field({
         onChange={onChange}
         required={required}
         placeholder={placeholder}
-        className="rounded-md border px-3 py-2 text-sm"
-        style={{
-          borderColor: 'var(--border)',
-          background: 'var(--canvas)',
-          color: 'var(--text-primary)',
-        }}
+        className="obs-input"
       />
     </label>
   );

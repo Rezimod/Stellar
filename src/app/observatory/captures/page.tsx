@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import CaptureCard from '@/components/observatory/CaptureCard';
 import { recentCaptures } from '@/lib/observatory/gallery';
@@ -21,20 +20,25 @@ export default async function CapturesPage() {
   const instrument = captures.filter((c) => c.provenance === 'instrument').length;
 
   return (
-    <PageContainer variant="wide" className="py-6 sm:py-10">
-      <BackButton />
-
-      <header className="mt-8 max-w-2xl">
-        {/* No photographic hero here on purpose: a NASA picture over "what the
-            network has photographed" would imply the very thing this page
-            exists to disprove. The frames arrive at first light. */}
-        <h1 className="obs-h1">{t('title')}</h1>
-        <p className="obs-lede max-w-2xl">{t('intro')}</p>
-        <Link
-          href="/observatory/how-it-works"
-          className="mt-5 inline-block text-sm underline"
-          style={{ color: 'var(--text-secondary)' }}
-        >
+    <PageContainer variant="fullscreen" className="obs-below" style={{ paddingTop: '1rem' }}>
+      {/* No photograph over this page on purpose: a NASA picture over "what
+          the network has photographed" would imply the very thing this page
+          exists to disprove. The frames arrive at first light. */}
+      <header className="obs-float obs-float--section">
+        <div className="obs-float__head">
+          <h1 className="obs-float__title" style={{ marginTop: 0 }}>{t('title')}</h1>
+          {captures.length > 0 && (
+            <span className="obs-pill">
+              {t.rich('count', {
+                count: captures.length,
+                instrument,
+                n: (chunks) => <b style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{chunks}</b>,
+              })}
+            </span>
+          )}
+        </div>
+        <p className="obs-float__text" style={{ maxWidth: '64ch' }}>{t('intro')}</p>
+        <Link href="/observatory/how-it-works" className="obs-ghost mt-5">
           {t('howLink')}
         </Link>
       </header>
@@ -42,25 +46,11 @@ export default async function CapturesPage() {
       {captures.length === 0 ? (
         <EmptyGallery />
       ) : (
-        <>
-          <p className="mt-6 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {t.rich('count', {
-              count: captures.length,
-              instrument,
-              n: (chunks) => (
-                <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
-                  {chunks}
-                </span>
-              ),
-            })}
-          </p>
-
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {captures.map((capture) => (
-              <CaptureCard key={capture.id} capture={capture} />
-            ))}
-          </div>
-        </>
+        <div className="obs-gallery">
+          {captures.map((capture) => (
+            <CaptureCard key={capture.id} capture={capture} />
+          ))}
+        </div>
       )}
     </PageContainer>
   );
@@ -75,22 +65,15 @@ async function EmptyGallery() {
   const t = await getTranslations('observatory.captures');
 
   return (
-    <section
-      className="obs-section border p-6"
-      style={{ borderColor: 'var(--obs-rule)', background: 'var(--surface)' }}
-    >
+    <section className="obs-float obs-float--section">
       <h2 className="obs-h2">{t('emptyTitle')}</h2>
-      <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {t('emptyWhy')}
-      </p>
-      <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {t('emptyNext')}
-      </p>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Link href="/observatory" className="obs-action obs-action--primary">
+      <p className="obs-float__text" style={{ maxWidth: '64ch' }}>{t('emptyWhy')}</p>
+      <p className="obs-float__text" style={{ maxWidth: '64ch' }}>{t('emptyNext')}</p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link href="/observatory" className="obs-ghost obs-ghost--primary">
           {t('book')}
         </Link>
-        <Link href="/observatory/simulator" className="obs-action">
+        <Link href="/observatory/simulator" className="obs-ghost">
           {t('simulator')}
         </Link>
       </div>

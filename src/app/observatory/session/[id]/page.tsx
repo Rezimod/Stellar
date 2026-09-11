@@ -3,7 +3,6 @@
 import { use, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
-import BackButton from '@/components/shared/BackButton';
 import PageContainer from '@/components/layout/PageContainer';
 import SessionConsole from '@/components/observatory/SessionConsole';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -87,16 +86,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             Back to the observatory
           </Link>
         ) : (
-          <button
-            type="button"
-            onClick={() => setAuthOpen(true)}
-            className="mt-4 rounded-md border px-3 py-2 text-sm"
-            style={{
-              borderColor: 'var(--accent-border)',
-              background: 'var(--accent-dim)',
-              color: 'var(--accent-text)',
-            }}
-          >
+          <button type="button" onClick={() => setAuthOpen(true)} className="obs-ghost obs-ghost--primary mt-4">
             Sign in
           </button>
         )}
@@ -134,15 +124,12 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     return (
       <Shell>
         <Header node={node} line={`Your slot opens ${siteClock(startsAtMs)} site time`} />
-        <div className="obs-panel mt-4">
-          <div className="obs-panel__bar">
-            <span className="flex items-center gap-2">
-              <span className="obs-led" aria-hidden="true" />
-              <span className="obs-panel__title">Scheduled</span>
-            </span>
-            <span className="obs-panel__title">{countdown(opensAtMs - now)} until the room opens</span>
+        <div className="obs-float obs-float--section">
+          <div className="obs-float__head">
+            <span className="obs-card__title">Scheduled</span>
+            <span className="obs-pill">{countdown(opensAtMs - now)} until the room opens</span>
           </div>
-          <div className="obs-panel__body">
+          <div className="mt-2">
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               The room opens five minutes before the slot, while the mount unparks and the
               camera wakes. Nothing is charged, and releasing the slot is still free until
@@ -159,14 +146,14 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     return (
       <Shell>
         <Header node={node} line={`Your slot ended ${siteClock(endsAtMs)} site time`} />
-        <div className="obs-panel mt-4">
-          <div className="obs-panel__bar">
-            <span className="obs-panel__title">Complete</span>
-            <span className="obs-panel__title">
+        <div className="obs-float obs-float--section">
+          <div className="obs-float__head">
+            <span className="obs-card__title">Complete</span>
+            <span className="obs-pill">
               {siteClock(startsAtMs)} — {siteClock(endsAtMs)}
             </span>
           </div>
-          <div className="obs-panel__body">
+          <div className="mt-2">
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               This was a dry run on the simulator, so nothing entered your Collection and no
               Stars were awarded. Frames from the instrument itself arrive when {node.name}
@@ -174,15 +161,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             </p>
 
             <CaptureList sessionId={session.id} />
-            <Link
-              href={`/observatory/${node.id}`}
-              className="mt-3 inline-block rounded-md border px-3 py-2 text-sm"
-              style={{
-                borderColor: 'var(--accent-border)',
-                background: 'var(--accent-dim)',
-                color: 'var(--accent-text)',
-              }}
-            >
+            <Link href={`/observatory/${node.id}`} className="obs-ghost obs-ghost--primary mt-4">
               Book another night
             </Link>
           </div>
@@ -192,16 +171,16 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <Shell>
-      <Header node={node} line={`Live — your slot runs to ${siteClock(endsAtMs)} site time`} />
-      <div className="mt-4">
-        <SessionConsole
-          node={node}
-          cloudCover={cloudCover}
-          session={{ id: session.id, startsAtMs, endsAtMs }}
-        />
-      </div>
-    </Shell>
+    <>
+      <SessionConsole
+        node={node}
+        cloudCover={cloudCover}
+        session={{ id: session.id, startsAtMs, endsAtMs }}
+      />
+      <Shell>
+        <Header node={node} line={`Live — your slot runs to ${siteClock(endsAtMs)} site time`} />
+      </Shell>
+    </>
   );
 }
 
@@ -258,32 +237,28 @@ function CaptureList({ sessionId }: { sessionId: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <PageContainer variant="wide" className="py-6 sm:py-10">
-      <BackButton />
-      <div className="mt-4">{children}</div>
+    <PageContainer variant="fullscreen" className="obs-below" style={{ paddingTop: '1rem' }}>
+      {children}
     </PageContainer>
   );
 }
 
 function Header({ node, line }: { node: ObservatoryNode; line: string }) {
   return (
-    <header className="obs-panel">
-      <div className="obs-panel__bar">
-        <span className="flex items-center gap-2">
+    <header className="obs-float obs-float--section">
+      <div className="obs-float__head">
+        <span className="obs-float__node">
           <span className="obs-led obs-led--nominal" aria-hidden="true" />
-          <h1 className="obs-panel__title" style={{ color: 'var(--text-primary)' }}>
-            {node.name} · Session
-          </h1>
+          {node.name}
         </span>
-        <span className="obs-panel__title">{line}</span>
+        <span className="obs-pill obs-pill--live">{line}</span>
       </div>
-      <div className="obs-panel__body">
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {node.instrument.optics} and a {node.instrument.camera} on a roof in {node.site}. Until
-          the instrument is wired, the room runs the simulator — every frame is marked simulated
-          and cannot be minted, awarded or logged as an observation.
-        </p>
-      </div>
+      <h1 className="obs-float__title">{node.site}</h1>
+      <p className="obs-float__text" style={{ maxWidth: '70ch' }}>
+        {node.instrument.optics} and a {node.instrument.camera} on a roof in {node.site}. Until
+        the instrument is wired, the room runs the simulator — every frame is marked simulated
+        and cannot be minted, awarded or logged as an observation.
+      </p>
     </header>
   );
 }

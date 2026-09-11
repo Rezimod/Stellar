@@ -11,9 +11,6 @@ export type ControlProps = {
   onRoi: (id: string) => void;
   gain: number;
   onGain: (v: number) => void;
-  onCapture: () => void;
-  canCapture: boolean;
-  onPark: () => void;
   parked: boolean;
 };
 
@@ -88,19 +85,6 @@ export default function ControlPanel(p: ControlProps) {
           </label>
         </div>
 
-        <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            className="obs-action obs-action--primary flex-1"
-            onClick={p.onCapture}
-            disabled={!p.canCapture}
-          >
-            Capture
-          </button>
-          <button type="button" className="obs-action" onClick={p.onPark} disabled={p.parked}>
-            Park
-          </button>
-        </div>
       </div>
     </div>
   );

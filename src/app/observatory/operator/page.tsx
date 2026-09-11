@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePrivy } from '@privy-io/react-auth';
 import { useTranslations } from 'next-intl';
-import BackButton from '@/components/shared/BackButton';
+import { Telescope } from 'lucide-react';
 import PageContainer from '@/components/layout/PageContainer';
 import OperatorInterestForm from '@/components/observatory/OperatorInterestForm';
 import { useStellarUser } from '@/hooks/useStellarUser';
@@ -23,6 +24,7 @@ type OperatorNode = {
 export default function OperatorPage() {
   const t = useTranslations('observatory.operator');
   const tTier = useTranslations('observatory.tiers');
+  const tNetwork = useTranslations('observatory.network');
   const { getAccessToken } = usePrivy();
   const { authenticated, ready } = useStellarUser();
 
@@ -50,115 +52,114 @@ export default function OperatorPage() {
     if (ready) void load();
   }, [ready, load]);
 
+  const first = OPERATOR_TIERS[0];
+  const last = OPERATOR_TIERS[OPERATOR_TIERS.length - 1];
+
   return (
-    <PageContainer variant="wide" className="py-6 sm:py-10">
-      <BackButton />
+    <>
+      <section className="obs-scene">
+        <div className="obs-scene__body">
+          <div className="obs-float obs-float--main">
+            <div className="obs-float__head">
+              <span className="obs-float__node">
+                <Telescope size={18} strokeWidth={1.75} aria-hidden="true" />
+                {t('keepTitle')}
+              </span>
+              <span className="obs-pill obs-pill--live">
+                {Math.round(first.operatorShare * 100)}% → {Math.round(last.operatorShare * 100)}%
+              </span>
+            </div>
 
-      <header className="mt-4 max-w-2xl">
-        <h1 className="text-2xl font-medium sm:text-3xl" style={{ color: 'var(--text-primary)' }}>
-          {t('title')}
-        </h1>
-        <p className="mt-2 text-base" style={{ color: 'var(--text-secondary)' }}>
-          {t('lead')}
-        </p>
-      </header>
+            <h1 className="obs-float__title">{t('title')}</h1>
+            <p className="obs-float__text">{t('lead')}</p>
 
-      {nodes.map((node) => (
-        <EarningsPanel key={node.id} node={node} t={t} tTier={tTier} />
-      ))}
+            <div className="obs-float__rule" />
 
-      <section className="mt-8">
-        <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          {t('keepTitle')}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {t('keepLead')}
-        </p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('keepLead')}</p>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[34rem] border-collapse text-sm">
-            <thead>
-              <tr>
-                {[t('colTier'), t('colHours'), t('colKeep'), t('colPerSession')].map((head) => (
-                  <th
-                    key={head}
-                    className="border-b px-3 py-2 text-left text-xs font-medium uppercase tracking-wide"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                  >
-                    {head}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {OPERATOR_TIERS.map((tier) => (
-                <tr key={tier.id}>
-                  <td
-                    className="border-b px-3 py-2"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                  >
-                    {tTier(tier.id)}
-                  </td>
-                  <td
-                    className="border-b px-3 py-2 font-mono"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-                  >
-                    {tier.minHours}
-                  </td>
-                  <td
-                    className="border-b px-3 py-2 font-mono"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                  >
-                    {Math.round(tier.operatorShare * 100)}%
-                  </td>
-                  <td
-                    className="border-b px-3 py-2 font-mono"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-                  >
-                    {Math.round(40 * tier.operatorShare)} ₾
-                  </td>
+            <table className="mt-4 w-full border-collapse text-sm">
+              <thead>
+                <tr>
+                  {[t('colTier'), t('colHours'), t('colKeep'), t('colPerSession')].map((head, i) => (
+                    <th
+                      key={head}
+                      className={`obs-label border-b pb-2 pl-3 font-normal ${i === 0 ? 'pl-0 text-left' : 'text-right'}`}
+                      style={{ borderColor: 'var(--obs-float-border)' }}
+                    >
+                      {head}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {OPERATOR_TIERS.map((tier) => (
+                  <tr key={tier.id}>
+                    <td className="border-b py-2.5" style={{ borderColor: 'var(--obs-float-border)', color: 'var(--text-primary)' }}>
+                      {tTier(tier.id)}
+                    </td>
+                    <td className="border-b py-2.5 pl-3 text-right font-mono" style={{ borderColor: 'var(--obs-float-border)', color: 'var(--text-secondary)' }}>
+                      {tier.minHours}
+                    </td>
+                    <td className="border-b py-2.5 pl-3 text-right font-mono" style={{ borderColor: 'var(--obs-float-border)', color: 'var(--text-primary)' }}>
+                      {Math.round(tier.operatorShare * 100)}%
+                    </td>
+                    <td className="border-b py-2.5 pl-3 text-right font-mono" style={{ borderColor: 'var(--obs-float-border)', color: 'var(--text-secondary)' }}>
+                      {Math.round(40 * tier.operatorShare)} ₾
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="obs-float__text" style={{ fontSize: '13px' }}>{t('keepNote')}</p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="#register" className="obs-ghost obs-ghost--primary">
+                {t('register')}
+              </a>
+              <Link href="/observatory/simulator" className="obs-ghost">
+                {tNetwork('tryCta')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="obs-scene__object obs-scene__object--photo">
+            <Image src="/hero/nebula.jpg" alt="" fill sizes="(max-width: 900px) 80vw, 40rem" priority />
+          </div>
         </div>
 
-        <p className="mt-3 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {t('keepNote')}
-        </p>
+        <div className="obs-dock obs-dock--wrap" aria-label={t('needsTitle')}>
+          <div className="obs-dock__seg" style={{ maxWidth: '16rem' }}>
+            <span className="obs-dock__label">{t('needsTitle')}</span>
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('needsNote')}</span>
+          </div>
+          {(['needs1', 'needs2', 'needs3'] as const).map((key, i) => (
+            <div key={key} className="obs-dock__seg obs-dock__way" style={{ maxWidth: '20rem' }}>
+              <span className="obs-dock__way-n font-display">{String(i + 1).padStart(2, '0')}</span>
+              <span className="obs-dock__way-line" style={{ color: 'var(--text-primary)', whiteSpace: 'normal' }}>
+                {t(key)}
+              </span>
+            </div>
+          ))}
+        </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          {t('needsTitle')}
-        </h2>
-        <ul
-          className="mt-3 flex max-w-2xl flex-col gap-2 text-sm"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          <li>{t('needs1')}</li>
-          <li>{t('needs2')}</li>
-          <li>{t('needs3')}</li>
-        </ul>
-        <p className="mt-3 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {t('needsNote')}
+      <PageContainer variant="fullscreen" className="obs-below">
+        {nodes.map((node) => (
+          <EarningsPanel key={node.id} node={node} t={t} tTier={tTier} />
+        ))}
+
+        <OperatorInterestForm />
+
+        <p className="obs-more" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <span>
+            {t('simFooter')}{' '}
+            <Link href="/observatory/simulator">{t('simLink')}</Link>{' '}
+            {t('proofFooter')}{' '}
+            <Link href="/observatory/how-it-works">{t('proofLink')}</Link>.
+          </span>
         </p>
-      </section>
-
-      <OperatorInterestForm />
-
-      <p className="mt-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {t('simFooter')}{' '}
-        <Link href="/observatory/simulator" className="underline">
-          {t('simLink')}
-        </Link>{' '}
-        {t('proofFooter')}{' '}
-        <Link href="/observatory/how-it-works" className="underline">
-          {t('proofLink')}
-        </Link>
-        .
-      </p>
-    </PageContainer>
+      </PageContainer>
+    </>
   );
 }
 
@@ -176,21 +177,14 @@ function EarningsPanel({
   const { earnings } = node;
 
   return (
-    <section
-      className="mt-6 rounded-xl border p-5"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>
-          {node.name}
-        </h2>
-        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-          {tTier(earnings.tier.id)}
-        </span>
+    <section className="obs-float obs-float--section">
+      <div className="obs-float__head">
+        <h2 className="obs-card__title" style={{ fontSize: '1.0625rem' }}>{node.name}</h2>
+        <span className="obs-pill">{tTier(earnings.tier.id)}</span>
       </div>
 
-      <p className="mt-4 text-3xl" style={{ color: 'var(--text-primary)' }}>
-        <span className="font-mono">{lari(earnings.monthTetri)}</span> ₾
+      <p className="obs-band__figure mt-4" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+        {lari(earnings.monthTetri)}<span style={{ fontFamily: 'var(--font-body)', fontSize: '0.5em' }}> ₾</span>
       </p>
       <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
         {t('earnedMonth')} · {t('lifetime', { amount: lari(earnings.lifetimeTetri) })} ·{' '}
