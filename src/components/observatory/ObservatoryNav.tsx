@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 const TABS = [
   { key: 'network', href: '/observatory', exact: true },
   { key: 'simulator', href: '/observatory/simulator' },
+  { key: 'telescope', href: '/observatory/telescope' },
   { key: 'captures', href: '/observatory/captures' },
   { key: 'requests', href: '/observatory/requests' },
   { key: 'operator', href: '/observatory/operator' },
