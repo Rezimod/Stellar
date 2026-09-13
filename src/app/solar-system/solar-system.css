@@ -1327,3 +1327,188 @@
   .flight-hud .flight-hud__speed { width: 74px; height: 74px; }
   .flight-hud__speed-value { font-size: 19px; }
 }
+
+/* ═══════════════════ Moon Mode: the surface ═══════════════════ */
+.moon-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  background: #000;
+  overflow: hidden;
+  animation: moon-arrive 1.2s ease-out both;
+}
+@keyframes moon-arrive { from { opacity: 0; } to { opacity: 1; } }
+.moon-surface__canvas { position: absolute; inset: 0; touch-action: none; cursor: grab; }
+.moon-surface__canvas:active { cursor: grabbing; }
+.moon-hud {
+  --hud-ink: #eef6ff;
+  --hud-dim: rgba(186, 214, 240, 0.6);
+  --hud-accent: #4db2ff;
+  --hud-line: rgba(120, 180, 235, 0.3);
+  --hud-glass: rgba(6, 14, 28, 0.52);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--hud-ink);
+  font: 400 12px var(--font-mono), monospace;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.moon-hud button {
+  pointer-events: auto;
+  min-height: 44px;
+  border: 1px solid var(--hud-line);
+  border-radius: 4px;
+  background: var(--hud-glass);
+  color: var(--hud-ink);
+  font: inherit;
+  cursor: pointer;
+  touch-action: none;
+  padding: 0;
+}
+.moon-hud button::before { content: none; }
+.moon-hud button:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 4px; }
+.moon-hud button:active { border-color: var(--hud-accent); }
+.moon-hud__head {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  display: grid;
+  gap: 6px;
+  padding: 10px 14px 10px 12px;
+  border-left: 2px solid var(--hud-accent);
+  border-radius: 0 4px 4px 0;
+  background: var(--hud-glass);
+  max-width: calc(100% - 200px);
+}
+.moon-hud__place { font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; }
+.moon-hud__reading { display: flex; gap: 10px; color: var(--hud-dim); }
+.moon-hud__reading > span:first-child { letter-spacing: 0.14em; text-transform: uppercase; font-size: 10px; align-self: baseline; }
+.moon-hud__reading > span:last-child { color: var(--hud-ink); }
+.moon-hud__top {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right));
+  display: flex;
+  gap: 8px;
+}
+.moon-hud__top button { width: 44px; display: grid; place-items: center; }
+.moon-hud__top .moon-hud__return { width: auto; display: flex; align-items: center; gap: 8px; padding: 0 14px; white-space: nowrap; }
+.moon-hud__help {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  width: min(330px, calc(100% - 40px));
+  display: grid;
+  gap: 7px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--hud-line);
+  border-radius: 6px;
+  background: rgba(6, 14, 28, 0.86);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  z-index: 4;
+}
+.moon-hud__help-head { display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.22em; text-transform: uppercase; color: var(--hud-accent); }
+.moon-hud__help-head button { min-height: 26px; width: 26px; display: grid; place-items: center; border: 0; background: transparent; color: var(--hud-dim); }
+.moon-hud__help p { margin: 0; font-size: 11px; line-height: 1.5; color: var(--hud-dim); }
+.moon-hud__impact {
+  position: absolute;
+  top: calc(max(20px, env(safe-area-inset-top)) + 120px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 179, 71, 0.5);
+  border-radius: 4px;
+  background: var(--hud-glass);
+  color: #ffd9a0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: moon-impact 0.5s ease-out both;
+}
+.moon-hud__impact[hidden] { display: none; }
+@keyframes moon-impact { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.moon-hud__foot {
+  position: absolute;
+  left: 50%;
+  bottom: max(28px, calc(env(safe-area-inset-bottom) + 20px));
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: min(560px, calc(100% - 32px));
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+.moon-hud__poi, .moon-hud__hint { padding: 8px 12px; border-radius: 4px; background: var(--hud-glass); }
+.moon-hud__poi { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+.moon-hud__poi[hidden], .moon-hud__hint[hidden] { display: none; }
+.moon-hud__hint { margin: 0; font-size: 12px; color: var(--hud-dim); }
+.moon-hud__aux {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.moon-hud__aux button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  height: 48px;
+  min-width: 96px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hud-dim);
+}
+.moon-hud__aux button.is-on { color: var(--hud-ink); border-color: var(--hud-accent); }
+.moon-hud__aux .moon-hud__jump { width: 84px; height: 84px; border-radius: 50%; color: var(--hud-ink); font-size: 11px; }
+.moon-hud__aux .moon-hud__jump:active { background: rgba(77, 178, 255, 0.22); }
+.moon-hud__pad { position: absolute; inset: 0 auto 0 0; width: 50%; height: 100%; pointer-events: none; }
+.moon-hud__descent {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  text-align: center;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7));
+}
+.moon-hud__descent[hidden] { display: none; }
+.moon-hud__descent-title { font-size: 15px; letter-spacing: 0.26em; text-transform: uppercase; animation: moon-pulse 2.4s ease-in-out infinite; }
+.moon-hud__descent-count { color: var(--hud-dim); }
+@keyframes moon-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+.moon-surface[data-phase='surface'] .moon-hud__foot { animation: moon-impact 0.6s ease-out both; }
+.flight-hud__land {
+  position: absolute;
+  left: 50%;
+  bottom: calc(150px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px !important;
+  white-space: nowrap;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  border-color: rgba(255, 179, 71, 0.6) !important;
+  color: #ffd9a0 !important;
+  animation: moon-impact 0.5s ease-out both;
+}
+.flight-hud__land[hidden] { display: none; }
+@media (max-width: 599px) {
+  .moon-hud__head { max-width: calc(100% - 140px); }
+  .moon-hud__top .moon-hud__return span { display: none; }
+  .moon-hud__top .moon-hud__return { width: 44px; padding: 0; }
+  .moon-hud__foot { bottom: 120px; }
+  .flight-hud__land { bottom: calc(170px + env(safe-area-inset-bottom)); }
+}

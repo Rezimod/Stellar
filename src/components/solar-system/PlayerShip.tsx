@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronsUp, Crosshair, HelpCircle, Pause, Play, Rocket, Shield, X, Zap } from 'lucide-react';
+import { ArrowDownToLine, ChevronsUp, Crosshair, HelpCircle, Pause, Play, Rocket, Shield, X, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput } from '@/lib/solar-system/flight-input';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
@@ -9,6 +9,10 @@ import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-shi
 interface PlayerShipProps {
   session: FlightSession;
   onActiveChange: (active: boolean) => void;
+  /** The ship is low over the Moon and the pilot asked to go down. */
+  onLand: () => void;
+  /** Moon Mode has the screen; the deck stays paused underneath. */
+  landed: boolean;
 }
 interface Stick { id: number; ox: number; oy: number; x: number; y: number }
 const STICK_RADIUS = 62;
@@ -21,7 +25,7 @@ const ICONS = [Shield, Zap, ChevronsUp];
 const SOLAR_IDS = new Set(['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 const fmt = (n: number) => n >= 1e6 ? `${(n / 1e6).toFixed(1)} M` : n >= 1e4 ? `${Math.round(n / 1000)} K` : n >= 100 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
 
-export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
+export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
   const [active, setActive] = useState(false);
@@ -47,6 +51,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
   const orderRef = useRef<HTMLDivElement>(null);
   const orderTextRef = useRef<HTMLSpanElement>(null);
   const orderBarRef = useRef<HTMLSpanElement>(null);
+  const landRef = useRef<HTMLButtonElement>(null);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const barValRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const detachRef = useRef<(() => void) | null>(null);
@@ -94,6 +99,10 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     session.input.camZoom = zoomRef.current;
     setPaused(false);
     attach();
+  };
+  const land = () => {
+    pause();
+    onLand();
   };
   const exit = () => {
     detachRef.current?.();
@@ -230,6 +239,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
       else if (tel.supply) status = t('supplying');
       else if (tel.pilot === 'eva') status = t(tel.canBoard ? 'evaBoardTouch' : 'evaOut');
       text(statusRef.current, status);
+      // Low over the Moon in the ship: the way down opens.
+      const canLand = tel.nearId === 'moon' && tel.nearAltKm < 2500 && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
+      if (landRef.current) landRef.current.hidden = !canLand;
 
       // Incoming transmission: the harbour that hails, one line at a time.
       const comms = commsRef.current;
@@ -330,7 +342,7 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
     };
   };
   return (
-    <div ref={rootRef} className="flight-hud" data-phase={active ? 'flying' : 'idle'} data-paused={paused}>
+    <div ref={rootRef} className="flight-hud" data-phase={active ? 'flying' : 'idle'} data-paused={paused} hidden={landed}>
       {!active ? (
         <div className="flight-hud__launch">
           <button type="button" className="flight-hud__ship" onClick={() => setShipKind(shipKind === 'kestrel' ? 'xfoil' : 'kestrel')} aria-label={t('hangar')}>
@@ -365,6 +377,9 @@ export function PlayerShip({ session, onActiveChange }: PlayerShipProps) {
             </div>
           )}
           <div ref={markerRef} className="flight-hud__marker" hidden><span ref={markerNameRef} /></div>
+          <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
+            <ArrowDownToLine size={16} aria-hidden />{t('land')}
+          </button>
           <div ref={commsRef} className="flight-hud__comms" role="status" hidden>
             <span ref={commsFromRef} className="flight-hud__comms-from" />
             <p ref={commsTextRef} />

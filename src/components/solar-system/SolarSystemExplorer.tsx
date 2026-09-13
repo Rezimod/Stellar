@@ -6,6 +6,7 @@ import { Pause, Play, RotateCcw, X } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { SolarSystemCanvas } from '@/components/solar-system/SolarSystemCanvas';
 import { PlayerShip } from '@/components/solar-system/PlayerShip';
+import { MoonSurface } from '@/components/solar-system/MoonSurface';
 import { createFlightSession, type FlightSession } from '@/lib/solar-system/player-ship';
 import type { SolarBodyId } from '@/lib/solar-system/ephemeris';
 
@@ -25,6 +26,7 @@ export default function SolarSystemExplorer() {
   const [playing, setPlaying] = useState(true);
   const [speedIdx, setSpeedIdx] = useState(2);
   const [flightActive, setFlightActive] = useState(false);
+  const [landed, setLanded] = useState(false);
   const [zoomTo, setZoomTo] = useState<number | null>(null);
   const flightRef = useRef<FlightSession | null>(null);
   if (!flightRef.current) flightRef.current = createFlightSession();
@@ -61,8 +63,9 @@ export default function SolarSystemExplorer() {
       </div>}
       <div className="solar-system__viewport solar-system__viewport--fill">
         <SolarSystemCanvas epochMs={epochMs} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
-          onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={flightRef.current} />
-        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} />
+          onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={flightRef.current} suspended={landed} />
+        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={() => setLanded(true)} landed={landed} />
+        {landed && <MoonSurface onReturn={() => setLanded(false)} />}
       </div>
       {!flightActive && <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>
         <button type="button" className="solar-system__dockbtn" onClick={() => setPlaying((p) => !p)} aria-label={t(playing ? 'time.pause' : 'time.play')}>

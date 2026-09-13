@@ -128,6 +128,8 @@ export interface SolarSystemCanvasProps {
    *  ship, hands the camera to it and turns the alien encounters hostile;
    *  the orbit camera state is left untouched and resumes on exit. */
   flight?: FlightSession;
+  /** Moon Mode has the screen: keep the scene but skip the frames. */
+  suspended?: boolean;
 }
 
 /** Project a world-space point onto CSS pixel coords. Returns null when the
@@ -217,6 +219,7 @@ export function SolarSystemCanvas({
   zoomTo,
   onZoomToConsumed,
   flight,
+  suspended = false,
 }: SolarSystemCanvasProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const epochRef = useRef(epochMs);
@@ -242,6 +245,8 @@ export function SolarSystemCanvas({
   zoomToRef.current = zoomTo;
   onZoomToConsumedRef.current = onZoomToConsumed;
   flightRef.current = flight;
+  const suspendedRef = useRef(suspended);
+  suspendedRef.current = suspended;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -1211,6 +1216,10 @@ export function SolarSystemCanvas({
       const now = performance.now();
       const dtSec = Math.min(0.1, (now - lastFrame) / 1000);
       lastFrame = now;
+      if (suspendedRef.current) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       // Wall-clock seconds for shader animation (convection, cloud bands).
       const sceneTime = reduceMotion ? 0 : (now - t0) / 1000;
 
