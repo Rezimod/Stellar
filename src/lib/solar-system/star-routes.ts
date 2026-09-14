@@ -1,6 +1,8 @@
 // The hyperdrive's routes: the systems a ship can drop into and how far
-// apart they are. Alpha Centauri is the real 4.37 light years; Gargantua is
-// the black hole from Interstellar, a galaxy away through the wormhole.
+// apart they are. Alpha Centauri is the real 4.37 light years; the third
+// system is the black hole — Gargantua from Interstellar, a galaxy away
+// through the wormhole, and the deck calls it simply "the black hole", so
+// the id stays `gargantua` and only the translations carry the name.
 
 export const STAR_SYSTEMS = ['sol', 'alphaCentauri', 'gargantua'] as const;
 export type StarSystemId = (typeof STAR_SYSTEMS)[number];

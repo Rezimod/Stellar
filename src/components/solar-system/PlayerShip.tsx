@@ -286,8 +286,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
         <>
           <div className="flight-hud__head">
             <span ref={placeRef} className="flight-hud__place" />
-            <span className="flight-hud__reading"><span>{t('altShort')}</span><span ref={altRef} /></span>
-            <span className="flight-hud__reading"><span>{t('velShort')}</span><span ref={velRef} /></span>
+            <div className="flight-hud__readings">
+              <span className="flight-hud__reading"><span>{t('altShort')}</span><span ref={altRef} /></span>
+              <span className="flight-hud__reading"><span>{t('velShort')}</span><span ref={velRef} /></span>
+            </div>
             <span ref={statusRef} className="flight-hud__status" role="status" />
           </div>
           <div className="flight-hud__pause">
@@ -309,9 +311,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             </div>
           )}
           <div ref={markerRef} className="flight-hud__marker" hidden><span ref={markerNameRef} /></div>
-          <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
-            <ArrowDownToLine size={16} aria-hidden />{t('land')}
-          </button>
           <div ref={commsRef} className="flight-hud__comms" role="status" hidden>
             <span ref={commsFromRef} className="flight-hud__comms-from" />
             <p ref={commsTextRef} />
@@ -320,59 +319,67 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             <span ref={orderTextRef} />
             <span className="flight-hud__track"><span ref={orderBarRef} /></span>
           </div>
-          <FlightDrive session={session} paused={paused} touch={touch} />
-          <div className="flight-hud__console">
-            <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={paused}>
-              <canvas ref={radarRef} aria-hidden />
+          <div className="flight-hud__dock">
+            <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
+              <ArrowDownToLine size={16} aria-hidden />{t('land')}
             </button>
-            <div className="flight-hud__panel">
-              <div className="flight-hud__odometer"><span>{t('odometer')}</span><span><span ref={odoRef}>0</span> <small>km</small></span></div>
-              <div className="flight-hud__speed">
-                <svg viewBox="0 0 120 120" aria-hidden>
-                  <circle cx="60" cy="60" r="52" />
-                  <circle className="flight-hud__speed-arc" cx="60" cy="60" r="52" pathLength="1" />
-                  <line className="flight-hud__speed-index" x1="60" y1="4" x2="60" y2="14" />
-                </svg>
-                <span ref={modeRef} className="flight-hud__mode" />
-                <span ref={speedRef} className="flight-hud__speed-value">0</span><small ref={unitRef}>{t('kmS')}</small>
-              </div>
-              <div className="flight-hud__systems">
-                {BARS.map((key, i) => { const Icon = ICONS[i]; return <div key={key} className="flight-hud__sys" aria-label={t(key)}>
-                  <Icon size={14} aria-hidden /><span className="flight-hud__sys-name">{t(key)}</span>
-                  <span className="flight-hud__track"><span ref={(el) => { barRefs.current[i] = el; }} /></span>
-                  <span ref={(el) => { barValRefs.current[i] = el; }} className="flight-hud__percent">100%</span>
-                </div>; })}
+            <div className="flight-hud__console">
+              <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={paused}>
+                <canvas ref={radarRef} aria-hidden />
+              </button>
+              <div className="flight-hud__panel">
+                <div className="flight-hud__odometer"><span>{t('odometer')}</span><span><span ref={odoRef}>0</span> <small>km</small></span></div>
+                <div className="flight-hud__speed">
+                  <svg viewBox="0 0 120 120" aria-hidden>
+                    <circle cx="60" cy="60" r="52" />
+                    <circle className="flight-hud__speed-arc" cx="60" cy="60" r="52" pathLength="1" />
+                    <line className="flight-hud__speed-index" x1="60" y1="4" x2="60" y2="14" />
+                  </svg>
+                  <span ref={modeRef} className="flight-hud__mode" />
+                  <span ref={speedRef} className="flight-hud__speed-value">0</span><small ref={unitRef}>{t('kmS')}</small>
+                </div>
+                <div className="flight-hud__systems">
+                  {BARS.map((key, i) => { const Icon = ICONS[i]; return <div key={key} className="flight-hud__sys" aria-label={t(key)}>
+                    <Icon size={14} aria-hidden /><span className="flight-hud__sys-name">{t(key)}</span>
+                    <span className="flight-hud__track"><span ref={(el) => { barRefs.current[i] = el; }} /></span>
+                    <span ref={(el) => { barValRefs.current[i] = el; }} className="flight-hud__percent">100%</span>
+                  </div>; })}
+                </div>
               </div>
             </div>
-            <div className="flight-hud__aux">
+            {/* The keypad: the drive on the left, the hands-on keys on the
+                right, sized for a thumb and never wider than the gap
+                between the two sticks. */}
+            <div className="flight-hud__keys">
+              <FlightDrive session={session} paused={paused} touch={touch} />
               {touch ? (
                 <>
-                  <button type="button" {...hold('fire')} disabled={paused} aria-label={t('fire')} title={t('fire')}><Crosshair size={20} aria-hidden /><span>{t('fire')}</span></button>
-                  <button type="button" {...hold('boost')} disabled={paused} aria-label={t('boost')} title={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
-                  <button type="button" {...hold('brake')} disabled={paused} aria-label={t('brake')} title={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
+                  <button type="button" className="flight-hud__key" {...hold('fire')} disabled={paused} aria-label={t('fire')} title={t('fire')}><Crosshair size={20} aria-hidden /><span>{t('fire')}</span></button>
+                  <button type="button" className="flight-hud__key" {...hold('boost')} disabled={paused} aria-label={t('boost')} title={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
+                  <button type="button" className="flight-hud__key" {...hold('brake')} disabled={paused} aria-label={t('brake')} title={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
                 </>
               ) : (
-                <button type="button" onClick={() => { session.input.foilsToggle = true; }} aria-label={t('foils')} disabled={paused}>
+                <button type="button" className="flight-hud__key" onClick={() => { session.input.foilsToggle = true; }} aria-label={t('foils')} title={t('foils')} disabled={paused}>
                   <ChevronsUp size={18} aria-hidden /><span>{t('foils')}</span>
                 </button>
               )}
             </div>
+            {touch && <>
+              <div className="flight-hud__move">
+                {!paused && <GameStick label={t('move')} onMove={(x, y) => {
+                  thrustRef.current = y;
+                  session.input.thrust = brakeRef.current ? -1 : y;
+                  session.input.yaw = x;
+                }} />}
+              </div>
+              <div className="flight-hud__look">
+                {!paused && <GameStick label={t('look')} onMove={(x, y) => {
+                  session.input.lookYaw = x;
+                  session.input.pitch = y;
+                }} />}
+              </div>
+            </>}
           </div>
-          {touch && !paused && <>
-            <div className="flight-hud__move">
-              <GameStick label={t('move')} onMove={(x, y) => {
-                thrustRef.current = y;
-                session.input.thrust = brakeRef.current ? -1 : y;
-                session.input.yaw = x;
-              }} />
-            </div>
-            <div className="flight-hud__look">
-              <GameStick label={t('look')} onMove={(x, y) => {
-                session.input.lookYaw = x;
-                session.input.pitch = y;
-              }} />
-            </div>
-          </>}
         </>
       )}
     </div>

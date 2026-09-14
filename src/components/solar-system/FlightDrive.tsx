@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Orbit } from 'lucide-react';
+import { Gauge, Orbit } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { FlightSession } from '@/lib/solar-system/player-ship';
+import type { FlightSession, SpeedMode } from '@/lib/solar-system/player-ship';
 import { STAR_SYSTEMS, lightYearsBetween } from '@/lib/solar-system/star-routes';
 
 interface FlightDriveProps {
@@ -12,16 +12,21 @@ interface FlightDriveProps {
   touch: boolean;
 }
 
+/** The three flown regimes, in the order the gear key walks them. */
+const GEARS: SpeedMode[] = ['cruise', 'fast', 'ultra'];
+
 const formatLy = (locale: string, n: number, unit: string) =>
   `${new Intl.NumberFormat(locale, { notation: n >= 1e5 ? 'compact' : 'standard', maximumFractionDigits: 2 }).format(n)} ${unit}`;
 
-/** The drive: slower / faster through the regimes, and the light-year jump
- *  with its destination list. */
+/** The drive, in two keys: one gear that walks cruise → fast → ultra and
+ *  wraps, and the light-year jump with its destination list. Both live in
+ *  the dock beside the thumb sticks; the regime's name is read off the
+ *  speed dial, so the keys themselves stay small. */
 export function FlightDrive({ session, paused, touch }: FlightDriveProps) {
   const t = useTranslations('solarSystem.flight');
   const locale = useLocale();
   const [menu, setMenu] = useState(false);
-  const gearsRef = useRef<HTMLDivElement>(null);
+  const gearRef = useRef<HTMLButtonElement>(null);
   const modeRef = useRef<HTMLSpanElement>(null);
   const jumpRef = useRef<HTMLButtonElement>(null);
   const destRef = useRef<HTMLSpanElement>(null);
@@ -36,7 +41,13 @@ export function FlightDrive({ session, paused, touch }: FlightDriveProps) {
       if (now - last < 100) return;
       last = now;
       const mode = tel.pilot === 'eva' ? 'eva' : tel.mode;
-      if (gearsRef.current) gearsRef.current.dataset.mode = mode;
+      const gear = gearRef.current;
+      if (gear && gear.dataset.mode !== mode) {
+        gear.dataset.mode = mode;
+        const label = `${t('speedMode')} · ${t(`modes.${mode}`)}`;
+        gear.setAttribute('aria-label', label);
+        gear.title = label;
+      }
       text(modeRef.current, t(`modes.${mode}`));
       const state = tel.jumpPhase !== 'none' ? 'jumping' : tel.driveReady ? 'ready' : 'locked';
       if (jumpRef.current) jumpRef.current.dataset.state = state;
@@ -47,10 +58,11 @@ export function FlightDrive({ session, paused, touch }: FlightDriveProps) {
     return () => cancelAnimationFrame(raf);
   }, [session, t, locale]);
 
-  const shift = (faster: boolean) => {
+  /** One key, three regimes: the next one up, then back to cruise. */
+  const cycle = () => {
     const tel = session.telemetry;
     if (session.paused || tel.jumpPhase !== 'none' || tel.pilot !== 'ship') return;
-    session.input.modeRequest = faster ? 'fast' : 'cruise';
+    session.input.modeRequest = GEARS[(GEARS.indexOf(tel.mode) + 1) % GEARS.length];
   };
   const engage = (id: string) => {
     setMenu(false);
@@ -62,25 +74,17 @@ export function FlightDrive({ session, paused, touch }: FlightDriveProps) {
 
   return (
     <>
-      <div ref={gearsRef} className="flight-drive" data-mode="cruise" role="group" aria-label={t('speedMode')}>
-        <button type="button" className="flight-drive__step" onClick={() => shift(false)} disabled={paused} aria-label={t('slower')} title={t('slower')}>
-          <ChevronDown size={22} aria-hidden />
-          {!touch && <kbd>1</kbd>}
-        </button>
-        <span className="flight-drive__gear">
-          <span ref={modeRef} className="flight-drive__mode" />
-          <span className="flight-drive__pips" aria-hidden><i /><i /></span>
-        </span>
-        <button type="button" className="flight-drive__step" onClick={() => shift(true)} disabled={paused} aria-label={t('faster')} title={t('faster')}>
-          <ChevronUp size={22} aria-hidden />
-          {!touch && <kbd>2</kbd>}
-        </button>
-      </div>
+      <button ref={gearRef} type="button" className="flight-drive__gear" data-mode="cruise" onClick={cycle} disabled={paused} aria-label={t('speedMode')}>
+        <Gauge size={17} aria-hidden />
+        <span ref={modeRef} className="flight-drive__mode" />
+        <span className="flight-drive__pips" aria-hidden><i /><i /><i /></span>
+        {!touch && <kbd>1·2·3</kbd>}
+      </button>
       <div className="flight-drive__jump-wrap">
-        <button ref={jumpRef} type="button" className="flight-drive__jump" onClick={() => setMenu((m) => !m)} disabled={paused} aria-expanded={menu && !paused} aria-haspopup="menu">
-          <Orbit size={18} aria-hidden />
+        <button ref={jumpRef} type="button" className="flight-drive__jump" onClick={() => setMenu((m) => !m)} disabled={paused} aria-expanded={menu && !paused} aria-haspopup="menu" aria-label={t('jumpLabel')}>
+          <Orbit size={17} aria-hidden />
           <span className="flight-drive__jump-text">
-            <span className="flight-drive__jump-label">{t('jumpLabel')}{!touch && <kbd>H</kbd>}</span>
+            <span className="flight-drive__jump-label">{touch ? t('jumpShort') : t('jumpLabel')}{!touch && <kbd>H</kbd>}</span>
             <span ref={destRef} className="flight-drive__dest" />
           </span>
         </button>

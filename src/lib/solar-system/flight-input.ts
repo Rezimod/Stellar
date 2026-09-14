@@ -73,7 +73,8 @@ export function attachDesktopControls(
     input.fire = has('Space');
     input.align = has('KeyG');
   };
-  const modeFor: Record<string, SpeedMode> = { Digit1: 'cruise', Digit2: 'fast', Digit3: 'jump', KeyH: 'jump' };
+  // 1 / 2 / 3 pick the regime outright; H is the jump, on its own key.
+  const modeFor: Record<string, SpeedMode> = { Digit1: 'cruise', Digit2: 'fast', Digit3: 'ultra', KeyH: 'jump' };
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.code === 'Escape' || e.code === 'KeyX') {
       onExit();

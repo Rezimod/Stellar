@@ -1174,6 +1174,7 @@
       "modes": {
         "cruise": "Cruise",
         "fast": "Fast",
+        "ultra": "Ultra",
         "jump": "Light speed",
         "eva": "EVA suit"
       },
@@ -1195,7 +1196,7 @@
         "jump": "Light speed → {target}",
         "arrived": "Arrived: {system}",
         "solar": "Solar proximity — hull heating",
-        "gravity": "Gravity well — fast drive limited",
+        "gravity": "Gravity well — the drive is throttled",
         "jumpready": "Jump ready",
         "hostile": "Hostile contact",
         "contact": "Unknown contact — scanning",
@@ -1211,7 +1212,7 @@
       "systems": {
         "sol": "Solar System",
         "alphaCentauri": "Alpha Centauri",
-        "gargantua": "Gargantua"
+        "gargantua": "Black hole"
       },
       "bodies": {
         "alphaCenA": "Alpha Centauri A",
@@ -1242,7 +1243,7 @@
         "pioneer10": "Pioneer 10",
         "pioneer11": "Pioneer 11",
         "newHorizons": "New Horizons",
-        "gargantua": "Gargantua",
+        "gargantua": "Black hole",
         "millersPlanet": "Miller's planet",
         "mannsPlanet": "Mann's planet",
         "edmundsPlanet": "Edmunds' planet",
@@ -1379,12 +1380,12 @@
           "fact": "A rocky world in Proxima's habitable zone, found in 2016."
         },
         "gargantua": {
-          "title": "Gargantua",
+          "title": "The black hole",
           "fact": "In Interstellar, an hour on Miller's planet cost seven years on Earth."
         },
         "millersPlanet": {
           "title": "Miller's planet",
-          "fact": "So close to Gargantua that its tides raise waves a kilometre high."
+          "fact": "So close to the black hole that its tides raise waves a kilometre high."
         }
       },
       "help": "Controls",
@@ -1395,26 +1396,25 @@
         "r3": "Mouse — steer",
         "r4": "Q / E — roll",
         "r5": "Shift — boost · Space — fire",
-        "r6": "1 / 2 or the arrows above the deck — slower, faster",
+        "r6": "1 / 2 / 3 — cruise, fast, ultra · or the gear key on the deck",
         "r7": "T — next target · G — hold to align",
         "r8": "F — wings · C — cockpit · Esc — pause",
         "t1": "Left stick — thrust and turn; release to coast",
-        "t2": "Right stick — aim; right keys — fire, boost, brake",
-        "t3": "Arrows on the left — slower, faster",
+        "t2": "Right stick — aim; keys — fire, boost, brake",
+        "t3": "Gear key — cruise → fast → ultra, then round again",
         "t4": "Tap the compass — next target",
         "t5": "Pause — top right",
         "r9": "Right mouse — hold and drag for a 360° look at the ship",
         "r10": "H — light-year jump · J — change destination",
-        "t6": "Light-year jump, top right — pick a star and go"
+        "t6": "Jump key — pick a star and cross the light years"
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
       "order": "Order · destroy {body}",
       "orderDone": "Objective complete",
       "land": "Land on the Moon",
-      "slower": "Slower",
-      "faster": "Faster",
       "jumpLabel": "Light-year jump",
+      "jumpShort": "Jump",
       "jumpMenu": "Choose a destination",
       "lyLeft": "ly to go"
     },

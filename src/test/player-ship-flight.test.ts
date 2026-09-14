@@ -118,6 +118,37 @@ describe('speed regimes', () => {
     expect(session.telemetry.speed).toBeCloseTo(20, 0);
   });
 
+  it('ultra is the interplanetary regime, and the wells still throttle it', () => {
+    faceAway();
+    session.input.modeRequest = 'ultra';
+    session.input.thrust = 1;
+    // The drive re-tunes over a second or so, and Earth's well holds the
+    // ship back until it is clear of the planet.
+    seconds(30);
+    expect(session.telemetry.mode).toBe('ultra');
+    expect(session.telemetry.speed).toBeCloseTo(90, 0);
+    expect(session.telemetry.speedC).toBeGreaterThan(0.3);
+    session.input.boost = true;
+    seconds(6);
+    expect(session.telemetry.speed).toBeCloseTo(150, 0);
+    // Back inside a gravity well the ceiling collapses to cruise.
+    session.input.boost = false;
+    ship.spawn(world.home);
+    session.input.thrust = 1;
+    seconds(4);
+    expect(session.telemetry.speed).toBeLessThan(12);
+  });
+
+  it('the gear walks cruise → fast → ultra and back to cruise', () => {
+    faceAway();
+    const walk = ['fast', 'ultra', 'cruise'] as const;
+    for (const next of walk) {
+      session.input.modeRequest = next;
+      step(1);
+      expect(session.telemetry.mode).toBe(next);
+    }
+  });
+
   it('turns slower at speed', () => {
     const start = heading();
     session.input.yaw = 1;

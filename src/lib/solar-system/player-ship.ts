@@ -1,5 +1,5 @@
 // Player spacecraft for Explore Mode — Stellar's own survey ship and
-// interceptor flying the real solar system, with three speed regimes,
+// interceptor flying the real solar system, with four speed regimes,
 // gravity wells, solid planets you can crash into, a shield-then-hull
 // damage model, a navigation target, an expedition log, and a hyperdrive
 // that jumps to the next star.
@@ -38,7 +38,7 @@ const H = 0.044 * U;
 export const KM_PER_SCENE_UNIT = 6371 / 0.028;
 const LIGHT_KM_S = 299_792.458;
 
-export type SpeedMode = 'cruise' | 'fast' | 'jump';
+export type SpeedMode = 'cruise' | 'fast' | 'ultra' | 'jump';
 export type Pilot = 'ship' | 'eva';
 export type ViewMode = 'chase' | 'cockpit';
 export type JumpPhase = 'none' | 'charge' | 'travel';
@@ -75,13 +75,20 @@ interface Regime {
 // the ship crosses Earth's disc in about fifteen seconds, so a planet has
 // time to grow, a pass has time to be flown, and the console reads in
 // hundreds rather than thousands. Fast is the concession that makes the
-// space between planets crossable.
+// space between planets crossable; ultra is the one that makes the outer
+// system and the deep probes reachable in a sitting — four tenths of c, and
+// two thirds of it on boost. Both answer to the gravity wells below, so the
+// pace always drops back to something flyable around a world.
 const REGIMES: Record<Exclude<SpeedMode, 'jump'>, Regime> = {
   cruise: { max: 0.6 * U, boost: 1.3 * U, accel: 4 * U, turn: 1, camBack: 24 * H, fov: 46 },
-  // Drag settles thrust at accel / (60 · 0.08); the fast regime needs the
-  // extra push to actually reach its ceiling.
+  // Drag settles thrust at accel / (60 · 0.08) — a factor of five — and boost
+  // doubles it, so each regime carries the push its ceiling actually needs.
   fast: { max: 12 * U, boost: 20 * U, accel: 70 * U, turn: 0.55, camBack: 34 * H, fov: 58 },
+  ultra: { max: 90 * U, boost: 150 * U, accel: 480 * U, turn: 0.34, camBack: 42 * H, fov: 66 },
 };
+/** Fast and ultra are the interplanetary regimes: throttled by gravity
+ *  wells, flown with the wings swept, and the two the drive can jump from. */
+const isDrive = (m: SpeedMode) => m === 'fast' || m === 'ultra';
 /** How quickly the drive re-tunes between regimes (per second). */
 const REGIME_BLEND = 1.6;
 /** EVA: the suit's SAFER jets — slow, precise, no weapons. */
@@ -771,7 +778,7 @@ function shipRegimes(kind: ShipKind): Record<Exclude<SpeedMode, 'jump'>, Regime>
   if (kind === 'kestrel') return REGIMES;
   const k = kind === 'xfoil' ? { speed: 1.2, accel: 1.3, turn: 1.15 } : { speed: 0.9, accel: 0.8, turn: 0.75 };
   const tune = (r: Regime): Regime => ({ ...r, max: r.max * k.speed, boost: r.boost * k.speed, accel: r.accel * k.accel, turn: r.turn * k.turn });
-  return { cruise: tune(REGIMES.cruise), fast: tune(REGIMES.fast) };
+  return { cruise: tune(REGIMES.cruise), fast: tune(REGIMES.fast), ultra: tune(REGIMES.ultra) };
 }
 
 // The Endurance's ring faces the chase camera square on, so it is built a
@@ -1204,8 +1211,10 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       stretch = 0.5;
     } else {
       flow.copy(vel);
-      // Motes at cruise, streaks once the ship is really moving.
-      stretch = 0.02 + 0.06 * THREE.MathUtils.clamp(speed / (10 * U), 0, 1);
+      // Motes at cruise, streaks once the ship is really moving, and long
+      // drawn lines in the ultra regime.
+      stretch = 0.02 + 0.06 * THREE.MathUtils.clamp(speed / (10 * U), 0, 1)
+        + 0.07 * THREE.MathUtils.clamp((speed - 12 * U) / (80 * U), 0, 1);
     }
     const half = DUST_BOX / 2;
     const p = actor().position;
@@ -1394,7 +1403,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       const wasLocked = lockedFor > 0;
       lockedFor = locked ? lockedFor + dt : 0;
       tel.driveReady = !locked && pilot === 'ship' && jumpPhase === 'none';
-      if (wasLocked && !locked && mode === 'fast' && pilot === 'ship') {
+      if (wasLocked && !locked && isDrive(mode) && pilot === 'ship') {
         setAlert('jumpready', 2.2);
       }
 
@@ -1557,8 +1566,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           tmp.copy(b.position).sub(me.position);
           const d = tmp.length();
           if (d < 1e-9) continue;
-          // The well throttles the fast drive: a tenth of c is for the
-          // space between worlds, not for the space around one.
+          // The well throttles the interplanetary drives: a tenth of c
+          // and up is for the space between worlds, not around one.
           const wk = THREE.MathUtils.clamp((d / b.radius - 1) / WELL_RADII, 0.1, 1);
           if (wk < wellK) wellK = wk;
           const reach = b.radius * GRAVITY_REACH;
@@ -1571,7 +1580,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         // Air bites: heat bleeds speed and scorches the hull.
         vel.multiplyScalar(Math.exp(-dt * 2.5 * heat));
         let max = boost ? eff.boost : eff.max;
-        if (mode === 'fast' && pilot === 'ship') max = Math.max(regimes.cruise.max, max * wellK);
+        if (isDrive(mode) && pilot === 'ship') max = Math.max(regimes.cruise.max, max * wellK);
         speed = vel.length();
         if (speed > max) {
           vel.multiplyScalar(max / speed);
@@ -1707,7 +1716,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
           return;
         }
       }
-      if (!alert && mode === 'fast' && wellK < 0.6 && jumpPhase === 'none' && pilot === 'ship') alert = 'gravity';
+      if (!alert && isDrive(mode) && wellK < 0.6 && jumpPhase === 'none' && pilot === 'ship') alert = 'gravity';
       const live = parts();
       live.plasmaMat.opacity = Math.min(1, heat * 1.3);
       const plasmaBase = pilot === 'ship' ? H : E;
@@ -1719,7 +1728,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
 
       // ── Wings: spread for a fight (firing, or contacts on the radar),
       // swept flat for speed. F overrides until the next regime change. ──
-      const foilsAuto = jumpPhase === 'none' && mode !== 'fast' && (input.fire || aliens.contactState === 'hostile');
+      const foilsAuto = jumpPhase === 'none' && !isDrive(mode) && (input.fire || aliens.contactState === 'hostile');
       const foilsOpen = pilot === 'ship' && jumpPhase === 'none' && (foilsForced ?? foilsAuto);
       foilT += ((foilsOpen ? 1 : 0) - foilT) * (1 - Math.exp(-dt * 3.2));
       for (const w of shipParts.wings) {
@@ -1738,7 +1747,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       heatSoak += ((thrusting ? (tel.boost ? 1 : 0.55) : 0) - heatSoak) * (1 - Math.exp(-dt * (thrusting ? 0.5 : 0.9)));
       const pulse = 0.8 + 0.08 * Math.sin(timeSec * 7)
         + (thrusting ? 0.55 : 0) + (tel.boost ? 1.0 : 0)
-        + (mode === 'fast' ? 0.5 : 0) + chargeK * 1.6;
+        + (mode === 'fast' ? 0.5 : mode === 'ultra' ? 1.1 : 0) + chargeK * 1.6;
       live.engineMat.emissiveIntensity = 1.5 * pulse;
       live.bellMat.emissive.setRGB(0.9, 0.22, 0.05).multiplyScalar(heatSoak * 0.6);
       const glowBase = pilot === 'ship' ? H : 0.45 * E;
