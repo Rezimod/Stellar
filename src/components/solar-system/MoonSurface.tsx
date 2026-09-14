@@ -9,8 +9,8 @@ import { GameStick } from './GameStick';
 interface MoonSurfaceProps {
   onReturn: () => void;
 }
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r8', 'r7'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't6', 't5'] as const;
 const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC']);
 const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 

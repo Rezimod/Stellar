@@ -63,6 +63,8 @@ export interface SurfaceTelemetry {
   roverSpeed: number;
   /** An airlock within reach is open. */
   airlockOpen: boolean;
+  /** The habitat the crew is standing in, or ''. */
+  inside: string;
 }
 
 export interface MoonSurfaceHandle {
@@ -251,7 +253,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     prints.stamp(e.x, e.y, e.z, e.yaw, e.side);
     audio.step(e.hard);
   };
-  const rover = makeRover(base.rover, base.roverCollider, base.roverWheels, terrain, dust, prints);
+  const rover = makeRover(base.rover, base.roverCollider, base.roverParts, terrain, dust, prints);
   const meteors = makeMeteors({
     heightAt: terrain.heightAt, stampCrater: terrain.stampCrater, dust, colliders: base.colliders,
     walkRadius: TERRAIN_WALK_RADIUS, first: 24, every: 58,
@@ -265,8 +267,10 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     phase: 'descent', touchdownIn: DESCENT, view: 'chase', poiId: '', poiDist: 0, impactDist: 0, impactHold: 0,
     airborne: false, altitude: 0, speed: 0, hint: 'walk', craters: 0,
     o2: 97.4, heartRate: 64, suitTemp: 21.5, evaSeconds: 0, distanceM: 0,
-    canDrive: false, roverSpeed: 0, airlockOpen: false,
+    canDrive: false, roverSpeed: 0, airlockOpen: false, inside: '',
   };
+  /** The ground under the crew: the base's own floors where it has them. */
+  const floorHeight = (x: number, z: number) => base.floorAt(x, z) ?? terrain.heightAt(x, z);
 
   // ── Camera. ──
   let view: SurfaceView = 'chase';
@@ -287,6 +291,9 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
   const tmp = new THREE.Vector3();
   const tmp2 = new THREE.Vector3();
   let jumpLatch = false;
+  /** Indoors the crew is seen from inside the helmet — a chase camera has
+   *  no room in a habitat — and the chase view comes back at the door. */
+  let autoHelmet = false;
   const wrap = (a: number) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
   const consumeOrbit = (dt: number) => {
@@ -315,8 +322,16 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     target.lerp(tmp, 1 - Math.exp(-dt * 9));
     const cp = Math.cos(camPitch);
     camPos.set(target.x + Math.sin(camYaw) * dist * cp, target.y + Math.sin(camPitch) * dist, target.z + Math.cos(camYaw) * dist * cp);
-    const floor = terrain.heightAt(camPos.x, camPos.z) + 0.55;
+    const floor = floorHeight(camPos.x, camPos.z) + 0.55;
     if (camPos.y < floor) camPos.y = floor;
+    // Indoors the camera stays under the dome with the crew.
+    const room = base.inside;
+    if (room) {
+      const dx = camPos.x - room.x; const dz = camPos.z - room.z;
+      const r = Math.hypot(dx, dz);
+      if (r > 4.4) { camPos.x = room.x + dx / r * 4.4; camPos.z = room.z + dz / r * 4.4; }
+      if (camPos.y > room.y + 3.3) camPos.y = room.y + 3.3;
+    }
     camera.position.copy(camPos);
     shakeCam();
     camera.lookAt(target);
@@ -367,7 +382,8 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
       camera.position.copy(camPos);
       camera.lookAt(target);
       walk.moveX = walk.moveZ = 0; walk.jump = false; walk.run = false;
-      cosmonaut.update(dt, walk, terrain.heightAt, base.colliders, TERRAIN_WALK_RADIUS);
+      cosmonaut.update(dt, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
+      base.confine(crew);
       rover.update(dt, 0, 0, base.colliders, TERRAIN_WALK_RADIUS);
       if (k >= 1) telemetry.phase = 'surface';
     } else {
@@ -393,6 +409,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
       }
       if (input.viewToggle) {
         input.viewToggle = false;
+        autoHelmet = false;
         if (view !== 'rover') setView(view === 'chase' ? 'helmet' : 'chase');
       }
 
@@ -412,7 +429,11 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
         walk.run = input.run;
         walk.jump = input.jump && !jumpLatch;
         jumpLatch = input.jump;
-        cosmonaut.update(dt, walk, terrain.heightAt, base.colliders, TERRAIN_WALK_RADIUS);
+        cosmonaut.update(dt, walk, floorHeight, base.walkColliders, TERRAIN_WALK_RADIUS);
+        base.confine(crew);
+        cosmonaut.indoors = !!base.inside;
+        if (base.inside && view === 'chase') { setView('helmet'); autoHelmet = true; }
+        else if (!base.inside && autoHelmet) { autoHelmet = false; if (view === 'helmet') setView('chase'); }
         if (view === 'helmet') {
           // Standing still, the body follows the eyes once they turn far enough.
           const rel = wrap(camYaw + Math.PI - cosmonaut.yaw);
@@ -420,7 +441,7 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
           cosmonaut.look(wrap(camYaw + Math.PI - cosmonaut.yaw), helmetPitch);
           placeHelmet();
         } else {
-          placeChase(dt, crew, cosmonaut.yaw, 1.35, camDist, cosmonaut.state.speed > 1);
+          placeChase(dt, crew, cosmonaut.yaw, 1.35, base.inside ? Math.min(camDist, 2.6) : camDist, cosmonaut.state.speed > 1);
         }
         if (!walked && cosmonaut.state.speed > 0.5) walked = true;
         if (!jumped && cosmonaut.state.airborne && cosmonaut.state.altitude > 0.3) jumped = true;
@@ -454,7 +475,8 @@ export function makeMoonSurface(mount: HTMLElement): MoonSurfaceHandle {
     lastPoi = best;
     telemetry.poiId = best;
     telemetry.poiDist = best ? bestD : 0;
-    telemetry.airlockOpen = base.airlocks.some((a) => a.open > 0.6 && Math.hypot(a.x - crew.x, a.z - crew.z) < 7);
+    telemetry.airlockOpen = base.airlocks.some((a) => a.open > 0.6 && Math.hypot(a.x - crew.x, a.z - crew.z) < 7) && !base.inside;
+    telemetry.inside = base.inside?.id ?? '';
 
     const impact = telemetry.phase === 'surface' ? meteors.update(dt, crew.x, crew.z) : null;
     if (impact) {

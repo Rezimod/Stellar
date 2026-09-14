@@ -48,6 +48,8 @@ export interface CosmonautHandle {
   look: (yaw: number, pitch: number) => void;
   onStep: ((e: StepEvent) => void) | null;
   update: (dt: number, input: WalkInput, heightAt: (x: number, z: number) => number, colliders: Collider[], walkRadius: number) => void;
+  /** Standing on a floor rather than regolith: no dust off the boots. */
+  indoors: boolean;
   dispose: () => void;
 }
 
@@ -172,6 +174,24 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   mesh(torso, new THREE.PlaneGeometry(0.17, 0.042), tapeMat, -0.13, 0.5, 0.232).rotation.y = -0.28;
   mesh(torso, new THREE.PlaneGeometry(0.09, 0.06), flagMat, 0.14, 0.5, 0.23).rotation.y = 0.3;
 
+  // ── Tool belt: a geology hammer on the right hip, a sample pouch on the
+  // left, the tether reel in front. ──
+  const beltRing = mesh(torso, new THREE.TorusGeometry(0.235, 0.018, 8, 28), dark, 0, -0.05, 0);
+  beltRing.rotation.x = Math.PI / 2;
+  beltRing.scale.set(1.1, 0.85, 1);
+  const hammer = new THREE.Group();
+  hammer.position.set(0.25, -0.1, 0.02);
+  hammer.rotation.z = 0.25;
+  torso.add(hammer);
+  mesh(hammer, new THREE.CylinderGeometry(0.012, 0.014, 0.26, 8), hoseMat, 0, -0.12, 0);
+  mesh(hammer, new THREE.BoxGeometry(0.04, 0.035, 0.11), bearing, 0, 0.02, 0);
+  mesh(hammer, new THREE.BoxGeometry(0.03, 0.03, 0.05), bearing, 0, 0.02, 0.07).rotation.x = 0.4;
+  mesh(torso, new RoundedBoxGeometry(0.11, 0.13, 0.06, 2, 0.02), clothDirty, -0.24, -0.14, 0.05);
+  mesh(torso, new THREE.BoxGeometry(0.11, 0.02, 0.065), dark, -0.24, -0.075, 0.05);
+  const reel = mesh(torso, new THREE.CylinderGeometry(0.035, 0.035, 0.03, 16), bearing, 0.11, -0.08, 0.2);
+  reel.rotation.x = Math.PI / 2;
+  mesh(torso, new THREE.CylinderGeometry(0.012, 0.012, 0.035, 8), dark, 0.11, -0.08, 0.2).rotation.x = Math.PI / 2;
+
   // ── Life-support pack: rounded shell, side covers, top cap, vents. ──
   const pack = new THREE.Group();
   pack.position.set(0, 0.36, -0.35);
@@ -242,6 +262,13 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
     mesh(hand, new RoundedBoxGeometry(0.085, 0.1, 0.05, 2, 0.02), glove, 0, -0.1, 0.005);
     mesh(hand, new RoundedBoxGeometry(0.08, 0.07, 0.042, 2, 0.018), glove, 0, -0.17, 0.02).rotation.x = -0.45;
     mesh(hand, new THREE.CapsuleGeometry(0.016, 0.04, 4, 8), glove, -side * 0.048, -0.09, 0.03).rotation.z = -side * 0.5;
+    // Left forearm: the cuff display and its checklist; right: a wrist mirror.
+    if (side < 0) {
+      mesh(el, new RoundedBoxGeometry(0.1, 0.075, 0.035, 2, 0.01), dark, 0, -0.19, 0.06).rotation.x = -0.35;
+      mesh(el, new THREE.PlaneGeometry(0.07, 0.04), screen, 0, -0.185, 0.081).rotation.x = -0.35;
+    } else {
+      mesh(el, new THREE.CylinderGeometry(0.03, 0.03, 0.008, 16), bearing, 0, -0.2, 0.066).rotation.x = Math.PI / 2 - 0.35;
+    }
     shoulders.push(sh); elbows.push(el);
 
     // Leg: hip bearing, thigh, knee convolutes, shin, ankle bellows, boot.
@@ -284,7 +311,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   let lookPitch = 0;
   let helmetView = false;
   const handle: CosmonautHandle = {
-    group, position, yaw: 0, state, onStep: null,
+    group, position, yaw: 0, state, onStep: null, indoors: false,
     eye(out) { return neck.localToWorld(out.copy(eyeLocal)); },
     setHelmetView(on) { helmetView = on; helmetParts.visible = !on; },
     look(y, p) { lookYaw = y; lookPitch = p; },
@@ -307,7 +334,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         vel.y = JUMP_V + (input.run ? 0.4 : 0);
         // Push off: a little extra carry in the direction of travel.
         vel.x *= 1.1; vel.z *= 1.1;
-        dust.burst({ x: position.x, y: ground, z: position.z, count: 14, speedMin: 0.6, speedMax: 1.8, cone: 0.9, size: 0.12 });
+        if (!handle.indoors) dust.burst({ x: position.x, y: ground, z: position.z, count: 14, speedMin: 0.6, speedMax: 1.8, cone: 0.9, size: 0.12 });
         squat = -0.4;
       }
       vel.y -= MOON_G * dt;
@@ -340,7 +367,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
           squat = Math.min(1, -vel.y / 4.5);
           handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: 1, hard: 1 });
           handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: -1, hard: 1 });
-          dust.burst({ x: position.x, y: g2, z: position.z, count: Math.round(10 + squat * 40), speedMin: 0.8, speedMax: 2.2 + squat * 2, cone: 1.25, size: 0.14 });
+          if (!handle.indoors) dust.burst({ x: position.x, y: g2, z: position.z, count: Math.round(10 + squat * 40), speedMin: 0.8, speedMax: 2.2 + squat * 2, cone: 1.25, size: 0.14 });
         }
         position.y = g2;
         vel.y = 0;
@@ -419,7 +446,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
           stepSide = -stepSide;
           const fx = position.x - Math.sin(handle.yaw) * 0.1;
           const fz = position.z - Math.cos(handle.yaw) * 0.1;
-          dust.burst({ x: fx, y: g2, z: fz, count: Math.round(3 + gait * 6), speedMin: 0.4, speedMax: 1 + gait * 1.4, cone: 0.7, size: 0.09, dirX: -Math.sin(handle.yaw), dirZ: -Math.cos(handle.yaw), bias: 0.6 });
+          if (!handle.indoors) dust.burst({ x: fx, y: g2, z: fz, count: Math.round(3 + gait * 6), speedMin: 0.4, speedMax: 1 + gait * 1.4, cone: 0.7, size: 0.09, dirX: -Math.sin(handle.yaw), dirZ: -Math.cos(handle.yaw), bias: 0.6 });
           handle.onStep?.({ x: fx, y: g2, z: fz, yaw: handle.yaw, side: stepSide, hard: gait });
         }
         lastStepPhase = stepPhase;

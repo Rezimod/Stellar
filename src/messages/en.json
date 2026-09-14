@@ -1406,7 +1406,7 @@
         "r7": "T — next target · G — hold to align",
         "r8": "F — wings · C — cockpit · Esc — pause",
         "t1": "Left stick — thrust and turn; release to coast",
-        "t2": "Right stick — aim; keys — fire, boost, brake",
+        "t2": "Right of the screen — drag anywhere to look and steer, like a mouse",
         "t3": "Gear key — cruise → fast → ultra, then round again",
         "t4": "Tap the compass — next target",
         "t5": "Pause — top right",
@@ -1417,7 +1417,9 @@
         "t8": "+ / − pull the camera; 3D drops you into the cockpit",
         "t9": "Eye key — the deck goes, the view stays; the pads still steer where they were",
         "t10": "Phone key — turn the whole deck to landscape and back",
-        "r11": "I — hide the deck for the view alone"
+        "r11": "I — hide the deck for the view alone",
+        "t11": "Fire, boost, brake and the gear sit under the right thumb",
+        "t12": "Menu, top right — targets, camera, landscape, and Customize the deck: drag every control where you want it, size it, save"
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
@@ -1432,7 +1434,27 @@
       "hudHide": "Hide the deck",
       "hudShow": "Show the deck",
       "landscape": "Turn to landscape",
-      "portrait": "Turn to portrait"
+      "portrait": "Turn to portrait",
+      "menu": "Menu",
+      "nextTarget": "Next target",
+      "customize": "Customize the deck",
+      "layoutHint": "Drag any control where you want it",
+      "layoutSave": "Save",
+      "layoutCancel": "Cancel",
+      "layoutReset": "Reset to default",
+      "sizeUp": "Bigger",
+      "sizeDown": "Smaller",
+      "places": {
+        "head": "Readouts",
+        "topkeys": "Menu keys",
+        "side": "Cards",
+        "move": "Move stick",
+        "fire": "Fire",
+        "boost": "Boost",
+        "brake": "Brake",
+        "gear": "Gear",
+        "console": "Console bar"
+      }
     },
     "moon": {
       "place": "Stellar Base · Moon",
@@ -1468,7 +1490,9 @@
         "t2": "Right half — drag to look around",
         "t3": "Lope — above the left stick; jump — bottom right",
         "t4": "Eye — inside the helmet and back",
-        "t5": "Meteoroids land now and then. They never land on you."
+        "t5": "Meteoroids land now and then. They never land on you.",
+        "r8": "The habitats are open: up a ramp, through the airlock, and you are in",
+        "t6": "The habitats are open: up a ramp, through the airlock, and you are in"
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
@@ -1493,7 +1517,8 @@
       "driveTouch": "Drive the rover",
       "dismount": "E — climb out",
       "dismountTouch": "Climb out",
-      "airlockOpen": "Airlock open — cycling"
+      "airlockOpen": "Airlock open — up the ramp and in",
+      "inside": "Inside {place}"
     }
   },
   "missionsPage": {

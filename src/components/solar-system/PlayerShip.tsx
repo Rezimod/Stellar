@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ArrowDownToLine, ChevronsUp, Crosshair, Eye, EyeOff, Globe, HelpCircle, Minus, Moon, Orbit, Pause, Play,
-  Plus, Radio, Rocket, Ruler, Satellite, Shield, Smartphone, Sparkles, Star, X, Zap,
+  ArrowDownToLine, Check, ChevronsUp, Crosshair, Eye, EyeOff, Globe, HelpCircle, LayoutGrid, LogOut, Menu, Minus, Moon,
+  Orbit, Pause, Play, Plus, Radio, Rocket, RotateCcw, Ruler, Satellite, Shield, Smartphone, Sparkles, Star, X, Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -26,11 +26,11 @@ interface PlayerShipProps {
 const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
 const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r7', 'r8', 'r11', 'r9'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't6', 't8', 't9', 't10', 't4', 't5'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't11', 't6', 't12', 't9', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
-/** The quick rail down the left edge: a named world, or a kind to walk
- *  through. A rail key only shows when the system it is flown in has one. */
+/** The quick targets in the menu: a named world, or a kind to walk through.
+ *  A key only shows when the system it is flown in has one. */
 interface RailKey {
   key: string;
   /** A world by name … */
@@ -50,6 +50,45 @@ const RAIL_IDS = new Set(RAIL.map((r) => r.id ?? ''));
 const SOLAR_IDS = new Set(['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 const fmt = (n: number) => n >= 1e9 ? `${(n / 1e9).toFixed(1)} B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} M` : n >= 1e4 ? `${Math.round(n / 1000)} K` : n >= 100 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
 
+/** The look pad: a finger dragged across the right of the glass turns the
+ *  nose, the way a mouse does on a desk. This is how much of a turn a pixel
+ *  of drag is worth against the mouse — a thumb has less room than a hand. */
+const LOOK_GAIN = 3.2;
+
+/** ── The pilot's own layout ──
+ *  Every control on the deck can be moved and sized by the pilot and the
+ *  result kept on the device: each placed control carries an offset as a
+ *  fraction of the deck's width and height (so the same layout survives a
+ *  turn to landscape or a bigger phone) and a scale. */
+const LAYOUT_KEY = 'stellar_hud_layout_v2';
+interface Place { x: number; y: number; s: number }
+type Layout = Record<string, Place>;
+const PLACEABLE = ['head', 'topkeys', 'side', 'move', 'fire', 'boost', 'brake', 'gear', 'console'] as const;
+type Placeable = (typeof PLACEABLE)[number];
+const loadLayout = (): Layout => {
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Layout;
+    const out: Layout = {};
+    for (const id of PLACEABLE) {
+      const p = parsed[id];
+      if (p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.s)) out[id] = { x: p.x, y: p.y, s: Math.min(1.6, Math.max(0.6, p.s)) };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+};
+const saveLayout = (layout: Layout) => {
+  try {
+    if (Object.keys(layout).length) localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
+    else localStorage.removeItem(LAYOUT_KEY);
+  } catch {
+    // Private mode — the layout lives for the session only.
+  }
+};
+
 export function PlayerShip({ session, onActiveChange, onLand, landed, landscape, onLandscape }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
@@ -58,9 +97,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const [touch, setTouch] = useState(false);
   const [shipKind, setShipKind] = useState<ShipKind>(session.shipKind);
   const [help, setHelp] = useState(false);
-  /** The deck hidden for the view alone: only the eye stays, and the pads
-   *  keep working where they were. */
+  const [menu, setMenu] = useState(false);
+  /** The deck hidden for the view alone: only the eye stays, and the pad
+   *  keeps working where it was. */
   const [immersive, setImmersive] = useState(false);
+  /** The layout editor: every control a handle to drag, a size to set. */
+  const [editing, setEditing] = useState(false);
+  const [layout, setLayout] = useState<Layout>({});
+  const [picked, setPicked] = useState<Placeable | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
   const placeRef = useRef<HTMLSpanElement>(null);
@@ -84,14 +128,39 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
   const landRef = useRef<HTMLButtonElement>(null);
   const railRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const placedRefs = useRef<Partial<Record<Placeable, HTMLElement | null>>>({});
+  const ghostRefs = useRef<Partial<Record<Placeable, HTMLElement | null>>>({});
+  const layoutBefore = useRef<Layout>({});
+  /** The ghost being dragged: which, by which pointer, from where. Kept
+   *  out of render so a re-render mid-drag does not lose the finger. */
+  const dragRef = useRef<{ id: Placeable; pointer: number; x: number; y: number } | null>(null);
   const detachRef = useRef<(() => void) | null>(null);
   const pauseRef = useRef<() => void>(() => {});
   const brakeRef = useRef(false);
   const thrustRef = useRef(0);
   const heldRef = useRef<Partial<Record<'fire' | 'boost' | 'brake', number>>>({});
+  const lookRef = useRef<{ id: number; x: number; y: number } | null>(null);
   const zoomRef = useRef(1);
+  const landscapeRef = useRef(landscape);
+  landscapeRef.current = landscape;
 
-  useEffect(() => setTouch(window.matchMedia('(pointer: coarse)').matches), []);
+  useEffect(() => {
+    setTouch(window.matchMedia('(pointer: coarse)').matches);
+    setLayout(loadLayout());
+  }, []);
+  // Each placed control wears its offset and scale as custom properties;
+  // the stylesheet turns them into a transform in deck units.
+  useEffect(() => {
+    for (const id of PLACEABLE) {
+      const el = placedRefs.current[id];
+      if (!el) continue;
+      const p = layout[id];
+      el.style.setProperty('--dx', String(p?.x ?? 0));
+      el.style.setProperty('--dy', String(p?.y ?? 0));
+      el.style.setProperty('--ds', String(p?.s ?? 1));
+    }
+  }, [layout, active, touch, immersive, editing]);
+
   const pause = useCallback(() => {
     if (!session.active || session.paused) return;
     zoomRef.current = session.input.camZoom;
@@ -102,6 +171,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     brakeRef.current = false;
     thrustRef.current = 0;
     heldRef.current = {};
+    lookRef.current = null;
     setPaused(true);
   }, [session]);
   pauseRef.current = pause;
@@ -117,7 +187,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     setActive(true);
     setPaused(false);
     onActiveChange(true);
-    // First flight opens the control card; after that it is on the key.
+    // First flight opens the control card; after that it is in the menu.
     try {
       if (!localStorage.getItem(HELP_SEEN)) {
         setHelp(true);
@@ -146,6 +216,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     setActive(false);
     setPaused(false);
     setHelp(false);
+    setMenu(false);
+    setEditing(false);
     setImmersive(false);
     onLandscape(false);
     onActiveChange(false);
@@ -222,8 +294,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       const canLand = tel.nearId === 'moon' && tel.nearAltKm < 2500 && tel.pilot === 'ship' && !tel.crashed && tel.jumpPhase === 'none' && !tel.docked && !session.paused;
       if (landRef.current) landRef.current.hidden = !canLand;
 
-      // The rail: a key for every kind of thing this system holds, lit when
-      // the deck is locked onto one of them.
+      // The quick targets in the menu: one for every kind of thing this
+      // system holds, lit when the deck is locked onto one of them.
       RAIL.forEach((r, i) => {
         const el = railRefs.current[i];
         if (!el) return;
@@ -232,8 +304,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
           ? tel.navList.some((c) => kinds.includes(c.kind))
           : tel.navList.some((c) => c.id === r.id);
         el.hidden = !on;
-        const active = kinds ? kinds.includes(tel.navKind) && !RAIL_IDS.has(tel.navId) : tel.navId === r.id;
-        el.dataset.on = String(active);
+        const lit = kinds ? kinds.includes(tel.navKind) && !RAIL_IDS.has(tel.navId) : tel.navId === r.id;
+        el.dataset.on = String(lit);
       });
 
       // Incoming transmission: the harbour that hails, one line at a time.
@@ -315,7 +387,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
     };
     return {
       onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
-        if (session.paused || e.button !== 0 || heldRef.current[key] !== undefined) return;
+        if (session.paused || editing || e.button !== 0 || heldRef.current[key] !== undefined) return;
         e.preventDefault();
         heldRef.current[key] = e.pointerId;
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -327,17 +399,117 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
       onPointerUp: release, onPointerCancel: release, onLostPointerCapture: release,
     };
   };
-  /** A rail key: a named world goes straight on the nav, a kind walks it. */
+  /** The look pad: one finger, the first one down, owns it until it lifts;
+   *  its travel goes to the model as mouse travel, turned with the deck. */
+  const look = {
+    onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+      if (session.paused || editing || lookRef.current) return;
+      e.preventDefault();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      lookRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
+    },
+    onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => {
+      const l = lookRef.current;
+      if (!l || l.id !== e.pointerId) return;
+      let dx = (e.clientX - l.x) * LOOK_GAIN;
+      let dy = (e.clientY - l.y) * LOOK_GAIN;
+      l.x = e.clientX; l.y = e.clientY;
+      // A quarter turn clockwise: the pad's right is the screen's down.
+      if (landscapeRef.current) [dx, dy] = [dy, -dx];
+      session.input.mouseDX += dx;
+      session.input.mouseDY += dy;
+    },
+    onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => { if (lookRef.current?.id === e.pointerId) lookRef.current = null; },
+    onPointerCancel: (e: React.PointerEvent<HTMLDivElement>) => { if (lookRef.current?.id === e.pointerId) lookRef.current = null; },
+  };
+  /** A quick target: a named world goes straight on the nav, a kind walks it. */
   const pick = (r: RailKey) => {
     if (session.paused) return;
     if (r.id) session.input.targetRequest = r.id;
     else session.input.targetKind = r.kinds ?? null;
+    setMenu(false);
   };
   const railLabel = (key: string) =>
     key === 'earth' ? tb('earth.name') : key === 'planets' || key === 'stars' ? t(`groups.${key}`) : t(`bodies.${key}`);
 
+  // ── The layout editor. ──
+  const openEditor = () => {
+    setMenu(false);
+    setHelp(false);
+    onLandscape(false);
+    pause();
+    layoutBefore.current = layout;
+    setPicked(null);
+    setEditing(true);
+  };
+  const closeEditor = (keep: boolean) => {
+    if (keep) saveLayout(layout);
+    else setLayout(layoutBefore.current);
+    setEditing(false);
+    setPicked(null);
+  };
+  const nudgeSize = (dir: number) => {
+    if (!picked) return;
+    setLayout((l) => {
+      const p = l[picked] ?? { x: 0, y: 0, s: 1 };
+      return { ...l, [picked]: { ...p, s: Math.min(1.6, Math.max(0.6, +(p.s + dir * 0.1).toFixed(2))) } };
+    });
+  };
+  /** Ghosts sit over the controls they move; they are re-fitted from the
+   *  live boxes whenever the layout changes. */
+  useEffect(() => {
+    if (!editing) return;
+    const root = rootRef.current;
+    if (!root) return;
+    const fit = () => {
+      const R = root.getBoundingClientRect();
+      for (const id of PLACEABLE) {
+        const el = placedRefs.current[id];
+        const ghost = ghostRefs.current[id];
+        if (!el || !ghost) continue;
+        const r = el.getBoundingClientRect();
+        const off = r.width === 0 || getComputedStyle(el).visibility === 'hidden';
+        ghost.hidden = off;
+        if (off) continue;
+        ghost.style.left = `${r.left - R.left}px`;
+        ghost.style.top = `${r.top - R.top}px`;
+        ghost.style.width = `${r.width}px`;
+        ghost.style.height = `${r.height}px`;
+      }
+    };
+    fit();
+    const id = requestAnimationFrame(fit);
+    window.addEventListener('resize', fit);
+    return () => { cancelAnimationFrame(id); window.removeEventListener('resize', fit); };
+  }, [editing, layout, picked]);
+  const ghostDrag = (id: Placeable) => ({
+    onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => {
+      if (dragRef.current || e.button !== 0) return;
+      e.preventDefault();
+      dragRef.current = { id, pointer: e.pointerId, x: e.clientX, y: e.clientY };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setPicked(id);
+    },
+    onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => {
+      const d = dragRef.current;
+      const root = rootRef.current;
+      if (!d || d.id !== id || d.pointer !== e.pointerId || !root) return;
+      const dx = (e.clientX - d.x) / root.clientWidth;
+      const dy = (e.clientY - d.y) / root.clientHeight;
+      d.x = e.clientX; d.y = e.clientY;
+      setLayout((l) => {
+        const p = l[id] ?? { x: 0, y: 0, s: 1 };
+        return { ...l, [id]: { ...p, x: +(p.x + dx).toFixed(4), y: +(p.y + dy).toFixed(4) } };
+      });
+    },
+    onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => { if (dragRef.current?.pointer === e.pointerId) dragRef.current = null; },
+    onPointerCancel: (e: React.PointerEvent<HTMLDivElement>) => { if (dragRef.current?.pointer === e.pointerId) dragRef.current = null; },
+  });
+  const placed = (id: Placeable) => ({ 'data-place': id, ref: (el: HTMLElement | null) => { placedRefs.current[id] = el; } });
+  const keysOff = (paused && !editing);
+
   return (
-    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} data-immersive={immersive} hidden={landed}>
+    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} data-immersive={immersive} data-editing={editing} hidden={landed}>
       {!active ? (
         <div className="flight-hud__launch">
           <button type="button" className="flight-hud__ship" onClick={() => setShipKind(SHIPS[(SHIPS.indexOf(shipKind) + 1) % SHIPS.length])} aria-label={t('hangar')}>
@@ -347,7 +519,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
         </div>
       ) : (
         <>
-          <div className="flight-hud__head">
+          {/* The look pad: the right of the glass, under everything else on it. */}
+          {touch && <div className="flight-hud__lookpad" {...look} aria-hidden />}
+
+          <div className="flight-hud__head" {...placed('head')}>
             <span ref={placeRef} className="flight-hud__title" />
             <span ref={subRef} className="flight-hud__sub" />
             <div className="flight-hud__readings">
@@ -362,32 +537,55 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
             <Eye size={19} aria-hidden />
           </button>
 
-          {/* Top right: the session keys, round and out of the way. */}
-          <div className="flight-hud__top-keys">
-            <button type="button" className="flight-hud__round" onClick={() => setImmersive(true)} aria-label={t('hudHide')} title={t('hudHide')}>
+          {/* Top right: the menu and the eye. Everything else lives in the menu. */}
+          <div className="flight-hud__top-keys" {...placed('topkeys')}>
+            <button type="button" className="flight-hud__round" onClick={() => setMenu((m) => !m)} aria-expanded={menu} aria-haspopup="menu" aria-label={t('menu')} title={t('menu')}>
+              {menu ? <X size={19} aria-hidden /> : <Menu size={19} aria-hidden />}
+            </button>
+            <button type="button" className="flight-hud__round" onClick={() => { setImmersive(true); setMenu(false); }} aria-label={t('hudHide')} title={t('hudHide')}>
               <EyeOff size={19} aria-hidden />
             </button>
-            {touch && (
-              <button type="button" className="flight-hud__round flight-hud__turn" data-on={landscape} onClick={() => onLandscape(!landscape)} aria-pressed={landscape} aria-label={t(landscape ? 'portrait' : 'landscape')} title={t(landscape ? 'portrait' : 'landscape')}>
-                <Smartphone size={19} aria-hidden />
-              </button>
+            {menu && (
+              <div className="flight-hud__menu" role="menu" aria-label={t('menu')}>
+                <button type="button" role="menuitem" onClick={() => { (paused ? resume : pause)(); setMenu(false); }}>
+                  {paused ? <Play size={16} aria-hidden /> : <Pause size={16} aria-hidden />}<span>{t(paused ? 'resume' : 'pause')}</span>
+                </button>
+                <button type="button" role="menuitem" disabled={paused} onClick={() => { session.input.targetStep = 1; setMenu(false); }}>
+                  <Crosshair size={16} aria-hidden /><span>{t('nextTarget')}</span>
+                </button>
+                <div className="flight-hud__menu-group" role="group" aria-label={t('targets')}>
+                  {RAIL.map((r, i) => { const Icon = r.icon; return (
+                    <button key={r.key} ref={(el) => { railRefs.current[i] = el; }} type="button" role="menuitem" className="flight-hud__rail-key" onClick={() => pick(r)} disabled={paused} hidden>
+                      <Icon size={15} aria-hidden /><span>{railLabel(r.key)}</span>
+                    </button>
+                  ); })}
+                </div>
+                <div className="flight-hud__menu-row">
+                  <button type="button" role="menuitem" disabled={paused} onClick={() => zoomFlightCamera(session.input, -1)} aria-label={t('camIn')} title={t('camIn')}><Plus size={16} aria-hidden /></button>
+                  <button type="button" role="menuitem" disabled={paused} onClick={() => zoomFlightCamera(session.input, 1)} aria-label={t('camOut')} title={t('camOut')}><Minus size={16} aria-hidden /></button>
+                  <button type="button" role="menuitem" disabled={paused} className="flight-hud__view" onClick={() => { session.input.viewToggle = true; setMenu(false); }} aria-label={t('view')} title={t('view')}>3D</button>
+                </div>
+                {touch && (
+                  <button type="button" role="menuitem" className="flight-hud__turn" data-on={landscape} onClick={() => { onLandscape(!landscape); setMenu(false); }}>
+                    <Smartphone size={16} aria-hidden /><span>{t(landscape ? 'portrait' : 'landscape')}</span>
+                  </button>
+                )}
+                <button type="button" role="menuitem" onClick={openEditor}>
+                  <LayoutGrid size={16} aria-hidden /><span>{t('customize')}</span>
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setHelp((h) => !h); setMenu(false); }}>
+                  <HelpCircle size={16} aria-hidden /><span>{t('help')}</span>
+                </button>
+                <button type="button" role="menuitem" className="flight-hud__menu-exit" onClick={exit}>
+                  <LogOut size={16} aria-hidden /><span>{t('exit')}</span>
+                </button>
+              </div>
             )}
-            <button type="button" className="flight-hud__round" onClick={() => { session.input.targetStep = 1; }} disabled={paused} aria-label={t('target')} title={t('target')}>
-              <Crosshair size={19} aria-hidden />
-            </button>
-            <button type="button" className="flight-hud__round" onClick={() => setHelp((h) => !h)} aria-label={t('helpShow')} aria-expanded={help}>
-              <HelpCircle size={19} aria-hidden />
-            </button>
-            <button type="button" className="flight-hud__round" onClick={paused ? resume : pause} aria-label={t(paused ? 'resume' : 'pause')}>
-              {paused ? <Play size={19} aria-hidden /> : <Pause size={19} aria-hidden />}
-            </button>
-            {paused && <button type="button" className="flight-hud__round" onClick={exit} aria-label={t('exit')}><X size={19} aria-hidden /></button>}
           </div>
 
-          {/* Right: the drive card, the standing order, and the camera keys
-              under them — one column, so nothing on this side can collide. */}
-          <div className="flight-hud__side">
-            <FlightJumpCard session={session} paused={paused} touch={touch} />
+          {/* Right: the drive card and the standing order. */}
+          <div className="flight-hud__side" {...placed('side')}>
+            <FlightJumpCard session={session} paused={keysOff} touch={touch} />
             <div ref={orderRef} className="flight-hud__card flight-hud__order" hidden>
               <span className="flight-hud__card-icon"><Radio size={18} aria-hidden /></span>
               <span className="flight-hud__card-text">
@@ -397,24 +595,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
               </span>
               <span className="flight-hud__dot" aria-hidden />
             </div>
-            <div className="flight-hud__cam">
-              <div className="flight-hud__zoom">
-                <button type="button" onClick={() => zoomFlightCamera(session.input, -1)} disabled={paused} aria-label={t('camIn')} title={t('camIn')}><Plus size={18} aria-hidden /></button>
-                <button type="button" onClick={() => zoomFlightCamera(session.input, 1)} disabled={paused} aria-label={t('camOut')} title={t('camOut')}><Minus size={18} aria-hidden /></button>
-              </div>
-              <button type="button" className="flight-hud__view" onClick={() => { session.input.viewToggle = true; }} disabled={paused} aria-label={t('view')} title={t('view')}>3D</button>
-            </div>
-          </div>
-
-          {/* Left: one key per kind of thing out there. */}
-          <div className="flight-hud__rail" role="group" aria-label={t('targets')}>
-            {RAIL.map((r, i) => { const Icon = r.icon; return (
-              <button key={r.key} ref={(el) => { railRefs.current[i] = el; }} type="button" className="flight-hud__rail-key"
-                onClick={() => pick(r)} disabled={paused} hidden>
-                <span className="flight-hud__rail-icon"><Icon size={16} aria-hidden /></span>
-                <span>{railLabel(r.key)}</span>
-              </button>
-            ); })}
           </div>
 
           {help && (
@@ -432,42 +612,40 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
             <p ref={commsTextRef} />
           </div>
 
-          {/* The dock: the pads, the keys between them, the console bar. */}
+          {/* The dock: the stick, the thumb keys, the console bar. */}
           <div className="flight-hud__dock">
             <button ref={landRef} type="button" className="flight-hud__land" onClick={land} hidden>
               <ArrowDownToLine size={16} aria-hidden />{t('land')}
             </button>
-            {touch && <>
-              <div className="flight-hud__move">
-                {!paused && <GameStick label={t('move')} rotated={landscape} onMove={(x, y) => {
+            {touch && (
+              <div className="flight-hud__move" {...placed('move')}>
+                {(!paused || editing) && <GameStick label={t('move')} rotated={landscape} onMove={(x, y) => {
+                  if (editing) return;
                   thrustRef.current = y;
                   session.input.thrust = brakeRef.current ? -1 : y;
                   session.input.yaw = x;
                 }} />}
               </div>
-              <div className="flight-hud__look">
-                {!paused && <GameStick label={t('look')} rotated={landscape} onMove={(x, y) => {
-                  session.input.lookYaw = x;
-                  session.input.pitch = y;
-                }} />}
-              </div>
-            </>}
+            )}
             <div className="flight-hud__keys">
-              <FlightGear session={session} paused={paused} touch={touch} />
               {touch ? (
                 <>
-                  <button type="button" className="flight-hud__key" {...hold('fire')} disabled={paused} aria-label={t('fire')} title={t('fire')}><Crosshair size={20} aria-hidden /><span>{t('fire')}</span></button>
-                  <button type="button" className="flight-hud__key" {...hold('boost')} disabled={paused} aria-label={t('boost')} title={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
-                  <button type="button" className="flight-hud__key" {...hold('brake')} disabled={paused} aria-label={t('brake')} title={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
+                  <button type="button" className="flight-hud__key flight-hud__key--fire" {...placed('fire')} {...hold('fire')} disabled={keysOff} aria-label={t('fire')} title={t('fire')}><Crosshair size={26} aria-hidden /><span>{t('fire')}</span></button>
+                  <button type="button" className="flight-hud__key" {...placed('boost')} {...hold('boost')} disabled={keysOff} aria-label={t('boost')} title={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
+                  <button type="button" className="flight-hud__key" {...placed('brake')} {...hold('brake')} disabled={keysOff} aria-label={t('brake')} title={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
+                  <div className="flight-hud__gear-slot" {...placed('gear')}><FlightGear session={session} paused={keysOff} touch={touch} /></div>
                 </>
               ) : (
-                <button type="button" className="flight-hud__key" onClick={() => { session.input.foilsToggle = true; }} aria-label={t('foils')} title={t('foils')} disabled={paused}>
-                  <ChevronsUp size={18} aria-hidden /><span>{t('foils')}</span>
-                </button>
+                <>
+                  <div className="flight-hud__gear-slot" {...placed('gear')}><FlightGear session={session} paused={keysOff} touch={touch} /></div>
+                  <button type="button" className="flight-hud__key" onClick={() => { session.input.foilsToggle = true; }} aria-label={t('foils')} title={t('foils')} disabled={keysOff}>
+                    <ChevronsUp size={18} aria-hidden /><span>{t('foils')}</span>
+                  </button>
+                </>
               )}
             </div>
-            <div className="flight-hud__console">
-              <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={paused}>
+            <div className="flight-hud__console" {...placed('console')}>
+              <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={keysOff}>
                 <canvas ref={radarRef} aria-hidden />
               </button>
               <div className="flight-hud__range">
@@ -490,6 +668,26 @@ export function PlayerShip({ session, onActiveChange, onLand, landed, landscape,
               </div>
             </div>
           </div>
+
+          {/* The layout editor: a ghost over every control, a bar to keep or
+              drop the result, and a size for whichever ghost is held. */}
+          {editing && (
+            <div className="flight-hud__editor" role="dialog" aria-label={t('customize')}>
+              {PLACEABLE.map((id) => (
+                <div key={id} ref={(el) => { ghostRefs.current[id] = el; }} className="flight-hud__ghost" data-picked={picked === id} {...ghostDrag(id)} hidden>
+                  <span>{t(`places.${id}`)}</span>
+                </div>
+              ))}
+              <div className="flight-hud__editor-bar">
+                <span className="flight-hud__editor-hint">{picked ? t(`places.${picked}`) : t('layoutHint')}</span>
+                <button type="button" onClick={() => nudgeSize(-1)} disabled={!picked} aria-label={t('sizeDown')} title={t('sizeDown')}><Minus size={16} aria-hidden /></button>
+                <button type="button" onClick={() => nudgeSize(1)} disabled={!picked} aria-label={t('sizeUp')} title={t('sizeUp')}><Plus size={16} aria-hidden /></button>
+                <button type="button" onClick={() => { setLayout({}); setPicked(null); }} aria-label={t('layoutReset')} title={t('layoutReset')}><RotateCcw size={16} aria-hidden /></button>
+                <button type="button" onClick={() => closeEditor(false)} aria-label={t('layoutCancel')} title={t('layoutCancel')}><X size={16} aria-hidden /></button>
+                <button type="button" className="flight-hud__editor-save" onClick={() => closeEditor(true)}><Check size={16} aria-hidden /><span>{t('layoutSave')}</span></button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
