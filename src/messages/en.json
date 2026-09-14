@@ -1166,6 +1166,8 @@
       "fire": "Fire",
       "boost": "Boost",
       "brake": "Brake",
+      "move": "Thrust and turn",
+      "look": "Pitch and yaw",
       "speedMode": "Speed mode",
       "modeLabel": "Mode",
       "modes": {
@@ -1378,8 +1380,8 @@
         "r6": "1 2 3 or the dial — cruise, fast, light speed",
         "r7": "T — next target · G — hold to align",
         "r8": "F — wings · C — cockpit · Esc — pause",
-        "t1": "Left half of the screen — steer",
-        "t2": "Right keys — fire, boost, brake",
+        "t1": "Left stick — thrust and turn; release to coast",
+        "t2": "Right stick — aim; right keys — fire, boost, brake",
         "t3": "Tap the dial — cruise, fast, light speed",
         "t4": "Tap the compass — next target",
         "t5": "Pause — top right",
@@ -1402,6 +1404,7 @@
       "craters": "New craters",
       "jump": "Jump",
       "run": "Lope",
+      "move": "Move astronaut",
       "help": "Surface controls",
       "helpShow": "Show controls",
       "close": "Close",
@@ -1417,11 +1420,14 @@
         "r2": "Shift — lope (the fast gait)",
         "r3": "Space — jump",
         "r4": "Mouse drag — look around · wheel — zoom",
-        "r5": "Meteoroids land now and then. They never land on you.",
-        "t1": "Left half — walk",
+        "r5": "C — inside the helmet and back",
+        "r6": "E — drive the rover when you stand beside it",
+        "r7": "Meteoroids land now and then. They never land on you.",
+        "t1": "Left stick — walk",
         "t2": "Right half — drag to look around",
-        "t3": "Jump and Lope — bottom right",
-        "t4": "Meteoroids land now and then. They never land on you."
+        "t3": "Lope — above the left stick; jump — bottom right",
+        "t4": "Eye — inside the helmet and back",
+        "t5": "Meteoroids land now and then. They never land on you."
       },
       "pois": {
         "habitatA": "Habitat A — crew quarters",
@@ -1436,7 +1442,17 @@
         "flag": "Flag of Georgia",
         "seismometer": "Passive seismometer",
         "sign": "Stellar Base — founded by Astroman, Tbilisi"
-      }
+      },
+      "view": "Helmet view",
+      "eva": "EVA",
+      "pulse": "Pulse",
+      "suitTemp": "Suit",
+      "distance": "Walked",
+      "drive": "E — drive the rover",
+      "driveTouch": "Drive the rover",
+      "dismount": "E — climb out",
+      "dismountTouch": "Climb out",
+      "airlockOpen": "Airlock open — cycling"
     }
   },
   "missionsPage": {

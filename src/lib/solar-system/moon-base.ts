@@ -17,14 +17,26 @@ export interface PointOfInterest {
   r: number;
 }
 
+export interface Airlock {
+  x: number; z: number; yaw: number;
+  panel: THREE.Mesh;
+  /** 0 shut … 1 open. */
+  open: number;
+}
+
 export interface BaseHandle {
   group: THREE.Group;
   colliders: Collider[];
   pois: PointOfInterest[];
   /** Where the crew steps out. */
   spawn: THREE.Vector3;
-  /** Blink the beacons and turn the dish. */
-  update: (t: number, earthDir: THREE.Vector3) => void;
+  airlocks: Airlock[];
+  /** The cargo rover: its group (driven by moon-rover) and its collider (moved with it). */
+  rover: THREE.Group;
+  roverCollider: Collider;
+  roverWheels: THREE.Object3D[];
+  /** Blink the beacons, turn the dish, slide the airlocks. */
+  update: (dt: number, t: number, earthDir: THREE.Vector3, crewX: number, crewZ: number) => void;
   dispose: () => void;
 }
 
@@ -83,6 +95,7 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   group.name = 'moon-base';
   const colliders: Collider[] = [];
   const pois: PointOfInterest[] = [];
+  const airlocks: Airlock[] = [];
   const geoms: THREE.BufferGeometry[] = [];
   const textures: THREE.Texture[] = [];
   const white = new THREE.MeshStandardMaterial({ color: 0xcfcfca, roughness: 0.68, metalness: 0.02 });
@@ -143,8 +156,13 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     }
     // Airlock: a hard module on the front with the door and a stair-ramp.
     mesh(g, new THREE.BoxGeometry(2.4, 2.6, 2.2), white, 0, 2.7, 5.6);
-    mesh(g, new THREE.BoxGeometry(1.1, 1.9, 0.1), skirt, 0, 2.55, 6.72);
-    mesh(g, new THREE.BoxGeometry(0.28, 0.28, 0.06), glass, 0.0, 3.0, 6.78);
+    // A lit chamber behind the door, and the door itself slides up into the frame.
+    mesh(g, new THREE.BoxGeometry(1.2, 2.0, 1.6), skirt, 0, 2.6, 5.9).material = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.6, side: THREE.BackSide });
+    mesh(g, new THREE.BoxGeometry(0.6, 0.04, 0.6), airlockLight, 0, 3.55, 5.9);
+    const door = mesh(g, new THREE.BoxGeometry(1.1, 1.9, 0.1), skirt, 0, 2.55, 6.72);
+    mesh(door, new THREE.BoxGeometry(0.28, 0.28, 0.06), glass, 0.0, 0.45, 0.06);
+    mesh(g, new THREE.BoxGeometry(1.3, 0.12, 0.16), dark, 0, 3.6, 6.72);
+    airlocks.push({ x: x + Math.sin(yaw) * 6.9, z: z + Math.cos(yaw) * 6.9, yaw, panel: door, open: 0 });
     mesh(g, new THREE.BoxGeometry(0.5, 0.06, 0.06), airlockLight, 0, 3.85, 6.74);
     const ramp = mesh(g, new THREE.BoxGeometry(1.6, 0.12, 5.2), alu, 0, 0.9, 9.3);
     ramp.rotation.x = Math.atan2(1.5, 5);
@@ -258,8 +276,11 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   }
 
   // ── Cargo rover: cabin, flatbed, six wheels. ──
+  const rover = place(px + 12, pz + 10, 0.9);
+  const roverCollider: Collider = { x: px + 12, z: pz + 10, r: 2.8 };
+  const roverWheels: THREE.Object3D[] = [];
   {
-    const g = place(px + 12, pz + 10, 0.9);
+    const g = rover;
     mesh(g, new THREE.BoxGeometry(2.2, 0.5, 4.6), steel, 0, 1.05, 0);
     mesh(g, new THREE.BoxGeometry(2.1, 1.5, 1.8), white, 0, 2.05, 1.3);
     mesh(g, new THREE.BoxGeometry(1.9, 0.9, 0.1), glass, 0, 2.2, 2.22);
@@ -270,13 +291,22 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
     mesh(g, new THREE.BoxGeometry(0.16, 0.08, 0.08), lamp, 0.7, 2.4, 2.24);
     for (const s of [-1, 1]) {
       for (let k = -1; k <= 1; k++) {
-        const w = mesh(g, new THREE.CylinderGeometry(0.55, 0.55, 0.36, 18), dark, s * 1.35, 0.55, k * 1.55);
+        const hub = new THREE.Group();
+        hub.position.set(s * 1.35, 0.55, k * 1.55);
+        g.add(hub);
+        roverWheels.push(hub);
+        const w = mesh(hub, new THREE.CylinderGeometry(0.55, 0.55, 0.36, 18), dark);
         w.rotation.z = Math.PI / 2;
-        mesh(g, new THREE.TorusGeometry(0.5, 0.09, 6, 18), steel, s * 1.35, 0.55, k * 1.55).rotation.y = Math.PI / 2;
+        for (let tr = 0; tr < 10; tr++) {
+          const bar = mesh(hub, new THREE.BoxGeometry(0.38, 0.06, 0.12), steel);
+          bar.position.set(0, Math.cos(tr * Math.PI / 5) * 0.55, Math.sin(tr * Math.PI / 5) * 0.55);
+          bar.rotation.x = -tr * Math.PI / 5;
+        }
+        mesh(hub, new THREE.TorusGeometry(0.5, 0.09, 6, 18), steel).rotation.y = Math.PI / 2;
         mesh(g, new THREE.CylinderGeometry(0.12, 0.12, 0.6, 8), steel, s * 0.9, 0.7, k * 1.55).rotation.z = Math.PI / 2;
       }
     }
-    colliders.push({ x: px + 12, z: pz + 10, r: 2.8 });
+    colliders.push(roverCollider);
     pois.push({ id: 'rover', x: px + 12, z: pz + 10, r: 5.5 });
   }
 
@@ -378,14 +408,23 @@ export function makeMoonBase(heightAt: (x: number, z: number) => number, lite: b
   const beaconMats = [beacon];
   const spawn = new THREE.Vector3(px, heightAt(px, pz + 4), pz + 4);
   const tmp = new THREE.Vector3();
+  const roverPoi = pois.find((p) => p.id === 'rover')!;
   return {
-    group, colliders, pois, spawn,
-    update(t, earthDir) {
+    group, colliders, pois, spawn, airlocks, rover, roverCollider, roverWheels,
+    update(dt, t, earthDir, crewX, crewZ) {
       const blink = (Math.sin(t * 2.2) > 0.6 ? 1 : 0.15) * 2;
       for (const m of beaconMats) m.emissiveIntensity = blink;
       // The dish tracks Earth.
       dishHead.getWorldPosition(tmp).add(earthDir);
       dishHead.lookAt(tmp);
+      // Airlock doors slide up when the crew comes to the foot of the ramp.
+      for (const a of airlocks) {
+        const near = Math.hypot(crewX - a.x, crewZ - a.z) < 7;
+        a.open += ((near ? 1 : 0) - a.open) * (1 - Math.exp(-dt * 2.2));
+        a.panel.position.y = 2.55 + a.open * 1.75;
+      }
+      roverPoi.x = roverCollider.x;
+      roverPoi.z = roverCollider.z;
     },
     dispose() {
       for (const g of geoms) g.dispose();

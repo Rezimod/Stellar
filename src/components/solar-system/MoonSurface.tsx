@@ -1,18 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronsUp, HelpCircle, Rocket, X } from 'lucide-react';
+import { ChevronsUp, Eye, HelpCircle, Rocket, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { makeMoonSurface, type MoonSurfaceHandle } from '@/lib/solar-system/moon-surface';
+import { GameStick } from './GameStick';
 
 interface MoonSurfaceProps {
   onReturn: () => void;
 }
-interface Stick { id: number; ox: number; oy: number; x: number; y: number }
-const STICK_RADIUS = 58;
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't4'] as const;
-const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight']);
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't5'] as const;
+const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyC']);
+const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const t = useTranslations('solarSystem.moon');
@@ -21,7 +21,6 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const [run, setRun] = useState(false);
   const mountRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const padRef = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<MoonSurfaceHandle | null>(null);
   const descentRef = useRef<HTMLDivElement>(null);
   const touchdownRef = useRef<HTMLSpanElement>(null);
@@ -31,7 +30,15 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
   const poiRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
   const impactRef = useRef<HTMLDivElement>(null);
-  const stickRef = useRef<Stick>({ id: -1, ox: 0, oy: 0, x: 0, y: 0 });
+  const o2Ref = useRef<HTMLSpanElement>(null);
+  const hrRef = useRef<HTMLSpanElement>(null);
+  const tempRef = useRef<HTMLSpanElement>(null);
+  const evaRef = useRef<HTMLSpanElement>(null);
+  const distRef = useRef<HTMLSpanElement>(null);
+  const actionRef = useRef<HTMLButtonElement>(null);
+  const airlockRef = useRef<HTMLDivElement>(null);
+  const movingRef = useRef(false);
+  const keyboardMoveRef = useRef({ x: 0, y: 0 });
   const runRef = useRef(false);
   runRef.current = run;
 
@@ -50,7 +57,8 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       const x = (has('KeyD') || has('ArrowRight') ? 1 : 0) - (has('KeyA') || has('ArrowLeft') ? 1 : 0);
       const y = (has('KeyW') || has('ArrowUp') ? 1 : 0) - (has('KeyS') || has('ArrowDown') ? 1 : 0);
       const len = Math.hypot(x, y) || 1;
-      if (stickRef.current.id < 0) {
+      keyboardMoveRef.current = { x: x / len, y: y / len };
+      if (!movingRef.current) {
         input.moveX = x / len;
         input.moveY = y / len;
       }
@@ -59,9 +67,12 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (!MOVE_KEYS.has(e.code)) return;
+      handle.startAudio();
       if (e.repeat) { e.preventDefault(); return; }
       pressed.add(e.code);
       if (e.code === 'Space') input.jump = true;
+      if (e.code === 'KeyE') input.interact = true;
+      if (e.code === 'KeyC') input.viewToggle = true;
       sync();
       e.preventDefault();
     };
@@ -71,29 +82,28 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (e.code === 'Space') input.jump = false;
       sync();
     };
-    const onBlur = () => { pressed.clear(); input.moveX = input.moveY = 0; input.jump = false; input.run = runRef.current; };
+    const onBlur = () => {
+      pressed.clear(); input.moveX = input.moveY = 0; input.jump = false; input.run = false;
+      keyboardMoveRef.current = { x: 0, y: 0 };
+      input.orbitDX = input.orbitDY = 0;
+      orbitId = -1;
+      runRef.current = false;
+      setRun(false);
+    };
+    const onHidden = () => { if (document.hidden) onBlur(); };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onHidden);
 
-    // Pointer: a drag anywhere (right half on touch) orbits the camera; a
-    // touch on the left half is the walking stick.
+    // Scene drags orbit the camera independently of the movement station.
     let orbitId = -1;
     let lastX = 0; let lastY = 0;
-    const stick = stickRef.current;
     const onDown = (e: PointerEvent) => {
-      if (e.target instanceof HTMLElement && e.target.closest('button')) return;
-      const rect = mount.getBoundingClientRect();
-      const px = e.clientX - rect.left; const py = e.clientY - rect.top;
-      if (e.pointerType === 'touch' && px < rect.width / 2) {
-        if (stick.id >= 0) return;
-        stick.id = e.pointerId;
-        stick.ox = px; stick.oy = py; stick.x = stick.y = 0;
-      } else {
-        if (orbitId >= 0) return;
-        orbitId = e.pointerId;
-        lastX = e.clientX; lastY = e.clientY;
-      }
+      handle.startAudio();
+      if (e.button !== 0 || orbitId >= 0) return;
+      orbitId = e.pointerId;
+      lastX = e.clientX; lastY = e.clientY;
       mount.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
@@ -102,40 +112,22 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         input.orbitDX += e.clientX - lastX;
         input.orbitDY += e.clientY - lastY;
         lastX = e.clientX; lastY = e.clientY;
-      } else if (e.pointerId === stick.id) {
-        const rect = mount.getBoundingClientRect();
-        let dx = (e.clientX - rect.left - stick.ox) / STICK_RADIUS;
-        let dy = (e.clientY - rect.top - stick.oy) / STICK_RADIUS;
-        const len = Math.hypot(dx, dy);
-        if (len > 1) { dx /= len; dy /= len; }
-        stick.x = dx; stick.y = dy;
-        input.moveX = dx;
-        input.moveY = -dy;
       }
     };
     const onUp = (e: PointerEvent) => {
       if (e.pointerId === orbitId) orbitId = -1;
-      if (e.pointerId === stick.id) {
-        stick.id = -1; stick.x = stick.y = 0;
-        input.moveX = input.moveY = 0;
-        sync();
-      }
     };
     const onWheel = (e: WheelEvent) => { input.zoom += Math.sign(e.deltaY); e.preventDefault(); };
     mount.addEventListener('pointerdown', onDown);
     mount.addEventListener('pointermove', onMove);
     mount.addEventListener('pointerup', onUp);
     mount.addEventListener('pointercancel', onUp);
+    mount.addEventListener('lostpointercapture', onUp);
     mount.addEventListener('wheel', onWheel, { passive: false });
 
     // HUD paint at ~30 Hz off the telemetry, no React state churn.
     const tel = handle.telemetry;
     const text = (el: HTMLElement | null, v: string) => { if (el && el.textContent !== v) el.textContent = v; };
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const pad = padRef.current;
-    const resizePad = () => { if (pad) { pad.width = pad.clientWidth * dpr; pad.height = pad.clientHeight * dpr; } };
-    resizePad();
-    window.addEventListener('resize', resizePad);
     let raf = 0;
     let lastPaint = 0;
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -144,11 +136,24 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
       if (now - lastPaint < 33) return;
       lastPaint = now;
       root.dataset.phase = tel.phase;
+      root.dataset.view = tel.view;
       if (descentRef.current) descentRef.current.hidden = tel.phase !== 'descent';
       text(touchdownRef.current, t('touchdown', { n: Math.ceil(tel.touchdownIn) }));
       text(altRef.current, `${tel.altitude.toFixed(1)} m`);
       text(speedRef.current, `${tel.speed.toFixed(1)} m/s`);
       text(cratersRef.current, String(tel.craters));
+      text(o2Ref.current, `${tel.o2.toFixed(1)} %`);
+      text(hrRef.current, `${Math.round(tel.heartRate)} bpm`);
+      text(tempRef.current, `${tel.suitTemp.toFixed(1)} °C`);
+      text(evaRef.current, fmtTime(tel.evaSeconds));
+      text(distRef.current, tel.distanceM >= 1000 ? `${(tel.distanceM / 1000).toFixed(2)} km` : `${Math.round(tel.distanceM)} m`);
+      const action = actionRef.current;
+      if (action) {
+        const show = tel.phase === 'surface' && (tel.canDrive || tel.view === 'rover');
+        action.hidden = !show;
+        if (show) text(action, t(tel.view === 'rover' ? (isTouch ? 'dismountTouch' : 'dismount') : (isTouch ? 'driveTouch' : 'drive')));
+      }
+      if (airlockRef.current) airlockRef.current.hidden = !tel.airlockOpen || tel.view === 'rover';
       const poi = poiRef.current;
       if (poi) {
         poi.hidden = !tel.poiId;
@@ -165,30 +170,19 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         impact.hidden = tel.impactHold <= 0;
         if (tel.impactHold > 0) text(impact, t('impact', { n: Math.round(tel.impactDist) }));
       }
-      if (pad) {
-        const ctx = pad.getContext('2d');
-        if (ctx) {
-          ctx.clearRect(0, 0, pad.width, pad.height);
-          if (stick.id >= 0) {
-            ctx.strokeStyle = 'rgba(230, 236, 245, 0.45)';
-            ctx.lineWidth = dpr;
-            ctx.beginPath(); ctx.arc(stick.ox * dpr, stick.oy * dpr, STICK_RADIUS * dpr, 0, Math.PI * 2); ctx.stroke();
-            ctx.beginPath(); ctx.arc((stick.ox + stick.x * STICK_RADIUS) * dpr, (stick.oy + stick.y * STICK_RADIUS) * dpr, 12 * dpr, 0, Math.PI * 2); ctx.stroke();
-          }
-        }
-      }
     };
     raf = requestAnimationFrame(paint);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resizePad);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onHidden);
       mount.removeEventListener('pointerdown', onDown);
       mount.removeEventListener('pointermove', onMove);
       mount.removeEventListener('pointerup', onUp);
       mount.removeEventListener('pointercancel', onUp);
+      mount.removeEventListener('lostpointercapture', onUp);
       mount.removeEventListener('wheel', onWheel);
       handle.dispose();
       handleRef.current = null;
@@ -203,7 +197,10 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
     },
     onPointerUp: () => { if (handleRef.current) handleRef.current.input.jump = false; },
     onPointerCancel: () => { if (handleRef.current) handleRef.current.input.jump = false; },
+    onLostPointerCapture: () => { if (handleRef.current) handleRef.current.input.jump = false; },
   };
+  const act = () => { if (handleRef.current) handleRef.current.input.interact = true; };
+  const toggleView = () => { if (handleRef.current) handleRef.current.input.viewToggle = true; };
   const toggleRun = () => {
     setRun((r) => {
       if (handleRef.current) handleRef.current.input.run = !r;
@@ -222,11 +219,22 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
           <span className="moon-hud__reading"><span>{t('speed')}</span><span ref={speedRef} /></span>
           <span className="moon-hud__reading"><span>{t('craters')}</span><span ref={cratersRef}>0</span></span>
         </div>
+        <div className="moon-hud__suit">
+          <span className="moon-hud__reading"><span>{t('eva')}</span><span ref={evaRef}>00:00</span></span>
+          <span className="moon-hud__reading"><span>O₂</span><span ref={o2Ref} /></span>
+          <span className="moon-hud__reading"><span>{t('pulse')}</span><span ref={hrRef} /></span>
+          <span className="moon-hud__reading"><span>{t('suitTemp')}</span><span ref={tempRef} /></span>
+          <span className="moon-hud__reading"><span>{t('distance')}</span><span ref={distRef} /></span>
+        </div>
+        <div className="moon-hud__visor" aria-hidden />
         <div className="moon-hud__top">
           <button type="button" onClick={() => setHelp((h) => !h)} aria-label={t('helpShow')} aria-expanded={help}>
             <HelpCircle size={19} aria-hidden />
           </button>
-          <button type="button" className="moon-hud__return" onClick={onReturn}>
+          <button type="button" onClick={toggleView} aria-label={t('view')}>
+            <Eye size={19} aria-hidden />
+          </button>
+          <button type="button" className="moon-hud__return" onClick={onReturn} aria-label={t('returnOrbit')}>
             <Rocket size={16} aria-hidden /><span>{t('returnOrbit')}</span>
           </button>
         </div>
@@ -241,20 +249,29 @@ export function MoonSurface({ onReturn }: MoonSurfaceProps) {
         )}
         <div ref={impactRef} className="moon-hud__impact" role="status" hidden />
         <div className="moon-hud__foot">
+          <div ref={airlockRef} className="moon-hud__airlock" hidden>{t('airlockOpen')}</div>
           <div ref={poiRef} className="moon-hud__poi" hidden />
+          <button ref={actionRef} type="button" className="moon-hud__action" onClick={act} hidden />
           <p ref={hintRef} className="moon-hud__hint" hidden />
         </div>
-        {touch && (
-          <div className="moon-hud__aux">
-            <button type="button" className={run ? 'is-on' : undefined} onClick={toggleRun} aria-pressed={run}>
-              <ChevronsUp size={18} aria-hidden /><span>{t('run')}</span>
-            </button>
-            <button type="button" className="moon-hud__jump" {...hold} aria-label={t('jump')}>
-              <span>{t('jump')}</span>
-            </button>
-          </div>
-        )}
-        {touch && <canvas ref={padRef} className="moon-hud__pad" aria-hidden />}
+        <div className="moon-hud__station">
+          <button type="button" className={run ? 'is-on' : undefined} onClick={toggleRun} aria-pressed={run} title={t('run')}>
+            <ChevronsUp size={20} aria-hidden /><span>{t('run')}</span>
+          </button>
+          <GameStick label={t('move')} onMove={(x, y) => {
+            movingRef.current = x !== 0 || y !== 0;
+            if (handleRef.current) {
+              if (movingRef.current) handleRef.current.startAudio();
+              handleRef.current.input.moveX = movingRef.current ? x : keyboardMoveRef.current.x;
+              handleRef.current.input.moveY = movingRef.current ? y : keyboardMoveRef.current.y;
+            }
+          }} />
+        </div>
+        <div className="moon-hud__aux">
+          <button type="button" className="moon-hud__jump" {...hold} aria-label={t('jump')}>
+            <span>{t('jump')}</span>
+          </button>
+        </div>
         <div ref={descentRef} className="moon-hud__descent">
           <span className="moon-hud__descent-title">{t('descending')}</span>
           <span ref={touchdownRef} className="moon-hud__descent-count" />

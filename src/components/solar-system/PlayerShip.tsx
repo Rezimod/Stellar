@@ -5,6 +5,7 @@ import { ArrowDownToLine, ChevronsUp, Crosshair, HelpCircle, Pause, Play, Rocket
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput } from '@/lib/solar-system/flight-input';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
+import { GameStick } from './GameStick';
 
 interface PlayerShipProps {
   session: FlightSession;
@@ -14,9 +15,6 @@ interface PlayerShipProps {
   /** Moon Mode has the screen; the deck stays paused underneath. */
   landed: boolean;
 }
-interface Stick { id: number; ox: number; oy: number; x: number; y: number }
-const STICK_RADIUS = 62;
-const SHIPS: ShipKind[] = ['kestrel', 'xfoil'];
 const BARS = ['shield', 'energy', 'boost'] as const;
 const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9'] as const;
 const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't5'] as const;
@@ -34,7 +32,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
   const [shipKind, setShipKind] = useState<ShipKind>(session.shipKind);
   const [help, setHelp] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const padRef = useRef<HTMLCanvasElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
   const placeRef = useRef<HTMLSpanElement>(null);
   const altRef = useRef<HTMLSpanElement>(null);
@@ -57,6 +54,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
   const detachRef = useRef<(() => void) | null>(null);
   const pauseRef = useRef<() => void>(() => {});
   const brakeRef = useRef(false);
+  const thrustRef = useRef(0);
+  const heldRef = useRef<Partial<Record<'fire' | 'boost' | 'brake', number>>>({});
   const zoomRef = useRef(1);
 
   useEffect(() => setTouch(window.matchMedia('(pointer: coarse)').matches), []);
@@ -68,6 +67,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
     detachRef.current = null;
     clearFlightInput(session.input);
     brakeRef.current = false;
+    thrustRef.current = 0;
+    heldRef.current = {};
     setPaused(true);
   }, [session]);
   pauseRef.current = pause;
@@ -127,79 +128,11 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
     };
   }, [pause, session]);
 
-  // ── Touch steering: one stick anywhere in the left half of the screen. ──
-  const stickRef = useRef<Stick>({ id: -1, ox: 0, oy: 0, x: 0, y: 0 });
-  useEffect(() => {
-    const pad = padRef.current;
-    if (!active || paused || !touch || !pad) return;
-    const stick = stickRef.current;
-    const input = session.input;
-    const apply = () => {
-      input.yaw = stick.x;
-      input.pitch = -stick.y;
-    };
-    const onStart = (e: TouchEvent) => {
-      const rect = pad.getBoundingClientRect();
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const tch = e.changedTouches[i];
-        if (stick.id >= 0) continue;
-        stick.id = tch.identifier;
-        stick.ox = tch.clientX - rect.left;
-        stick.oy = tch.clientY - rect.top;
-        stick.x = stick.y = 0;
-      }
-      apply();
-      e.preventDefault();
-    };
-    const onMove = (e: TouchEvent) => {
-      const rect = pad.getBoundingClientRect();
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const tch = e.changedTouches[i];
-        if (tch.identifier !== stick.id) continue;
-        let dx = (tch.clientX - rect.left - stick.ox) / STICK_RADIUS;
-        let dy = (tch.clientY - rect.top - stick.oy) / STICK_RADIUS;
-        const len = Math.hypot(dx, dy);
-        if (len > 1) {
-          dx /= len;
-          dy /= len;
-        }
-        // A soft curve: fine near the centre, full authority at the rim.
-        stick.x = Math.sign(dx) * Math.pow(Math.abs(dx), 1.4);
-        stick.y = Math.sign(dy) * Math.pow(Math.abs(dy), 1.4);
-        apply();
-      }
-      e.preventDefault();
-    };
-    const onEnd = (e: TouchEvent) => {
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        if (e.changedTouches[i].identifier !== stick.id) continue;
-        stick.id = -1;
-        stick.x = stick.y = 0;
-        apply();
-      }
-    };
-    pad.addEventListener('touchstart', onStart, { passive: false });
-    pad.addEventListener('touchmove', onMove, { passive: false });
-    pad.addEventListener('touchend', onEnd);
-    pad.addEventListener('touchcancel', onEnd);
-    return () => {
-      pad.removeEventListener('touchstart', onStart);
-      pad.removeEventListener('touchmove', onMove);
-      pad.removeEventListener('touchend', onEnd);
-      pad.removeEventListener('touchcancel', onEnd);
-      stick.id = -1;
-      stick.x = stick.y = 0;
-    };
-  }, [active, paused, touch, session]);
-
-
   useEffect(() => {
     if (!active) return;
     const tel = session.telemetry;
-    const input = session.input;
     const root = rootRef.current;
     const radar = radarRef.current;
-    const pad = padRef.current;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let radarPx = 0;
     let vw = 0;
@@ -211,7 +144,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
         radarPx = radar.clientWidth;
         radar.width = radar.height = Math.round(radarPx * dpr);
       }
-      if (pad) { pad.width = pad.clientWidth * dpr; pad.height = pad.clientHeight * dpr; }
     };
     resize();
     window.addEventListener('resize', resize);
@@ -223,7 +155,6 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
       raf = requestAnimationFrame(paint);
       if (now - lastPaint < 33) return;
       lastPaint = now;
-      if (touch) input.thrust = session.paused ? 0 : brakeRef.current ? -0.7 : 0.85;
       text(placeRef.current, tel.nearId ? t('orbitOf', { body: name(tel.nearId) }) : t(`systems.${tel.systemName}`));
       text(altRef.current, tel.nearId ? `${fmt(tel.nearAltKm)} km` : '—');
       text(velRef.current, `${fmt(tel.speedKmS)} ${t('kmS')}`);
@@ -308,41 +239,36 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
           }
         }
       }
-      if (pad) {
-        const ctx = pad.getContext('2d');
-        if (ctx) {
-          ctx.clearRect(0, 0, pad.width, pad.height);
-          const s = stickRef.current;
-          if (s.id >= 0) {
-            ctx.strokeStyle = 'rgba(160, 210, 245, 0.4)';
-            ctx.lineWidth = dpr;
-            ctx.beginPath();
-            ctx.arc(s.ox * dpr, s.oy * dpr, STICK_RADIUS * dpr, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc((s.ox + s.x * STICK_RADIUS) * dpr, (s.oy + s.y * STICK_RADIUS) * dpr, 12 * dpr, 0, Math.PI * 2);
-            ctx.stroke();
-          }
-        }
-      }
     };
     raf = requestAnimationFrame(paint);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
   }, [active, paused, touch, session, t, tb]);
 
   const hold = (key: 'fire' | 'boost' | 'brake') => {
-    const release = () => { if (key === 'brake') brakeRef.current = false; else session.input[key] = false; };
+    const release = (e: React.PointerEvent<HTMLButtonElement>) => {
+      if (heldRef.current[key] !== e.pointerId) return;
+      delete heldRef.current[key];
+      if (key === 'brake') {
+        brakeRef.current = false;
+        session.input.thrust = thrustRef.current;
+      } else session.input[key] = false;
+    };
     return {
       onPointerDown: (e: React.PointerEvent<HTMLButtonElement>) => {
+        if (session.paused || e.button !== 0 || heldRef.current[key] !== undefined) return;
         e.preventDefault();
+        heldRef.current[key] = e.pointerId;
         e.currentTarget.setPointerCapture(e.pointerId);
-        if (key === 'brake') brakeRef.current = true; else session.input[key] = true;
+        if (key === 'brake') {
+          brakeRef.current = true;
+          session.input.thrust = -1;
+        } else session.input[key] = true;
       },
       onPointerUp: release, onPointerCancel: release, onLostPointerCapture: release,
     };
   };
   return (
-    <div ref={rootRef} className="flight-hud" data-phase={active ? 'flying' : 'idle'} data-paused={paused} hidden={landed}>
+    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} hidden={landed}>
       {!active ? (
         <div className="flight-hud__launch">
           <button type="button" className="flight-hud__ship" onClick={() => setShipKind(shipKind === 'kestrel' ? 'xfoil' : 'kestrel')} aria-label={t('hangar')}>
@@ -414,9 +340,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             <div className="flight-hud__aux">
               {touch ? (
                 <>
-                  <button type="button" {...hold('fire')} aria-label={t('fire')}><Crosshair size={20} aria-hidden /><span>{t('fire')}</span></button>
-                  <button type="button" {...hold('boost')} aria-label={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
-                  <button type="button" {...hold('brake')} aria-label={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
+                  <button type="button" {...hold('fire')} disabled={paused} aria-label={t('fire')} title={t('fire')}><Crosshair size={20} aria-hidden /><span>{t('fire')}</span></button>
+                  <button type="button" {...hold('boost')} disabled={paused} aria-label={t('boost')} title={t('boost')}><ChevronsUp size={20} aria-hidden /><span>{t('boost')}</span></button>
+                  <button type="button" {...hold('brake')} disabled={paused} aria-label={t('brake')} title={t('brake')}><Pause size={16} aria-hidden /><span>{t('brake')}</span></button>
                 </>
               ) : (
                 <button type="button" onClick={() => { session.input.foilsToggle = true; }} aria-label={t('foils')} disabled={paused}>
@@ -425,7 +351,21 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
               )}
             </div>
           </div>
-          {touch && !paused && <canvas ref={padRef} className="flight-hud__pad" aria-hidden />}
+          {touch && !paused && <>
+            <div className="flight-hud__move">
+              <GameStick label={t('move')} onMove={(x, y) => {
+                thrustRef.current = y;
+                session.input.thrust = brakeRef.current ? -1 : y;
+                session.input.yaw = x;
+              }} />
+            </div>
+            <div className="flight-hud__look">
+              <GameStick label={t('look')} onMove={(x, y) => {
+                session.input.lookYaw = x;
+                session.input.pitch = y;
+              }} />
+            </div>
+          </>}
         </>
       )}
     </div>

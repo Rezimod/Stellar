@@ -52,7 +52,7 @@ export default function SolarSystemExplorer() {
   }, [playing, speedIdx, flightActive]);
 
   return (
-    <div className="solar-system solar-system--immersive">
+    <div className="solar-system solar-system--immersive" onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()}>
       {!flightActive && <div className="solar-system__chrome-float">
         <button type="button" className="solar-system__fab solar-system__fab--close" onClick={() => router.push('/sky')} aria-label={t('immersive.exit')}>
           <X size={20} aria-hidden />

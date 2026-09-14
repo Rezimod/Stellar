@@ -25,12 +25,21 @@ export interface CosmonautState {
   landed: boolean;
 }
 
+export interface StepEvent { x: number; y: number; z: number; yaw: number; side: number; hard: number }
+
 export interface CosmonautHandle {
   group: THREE.Group;
   position: THREE.Vector3;
   /** Facing yaw, rad, +Z forward at 0. */
   yaw: number;
   state: CosmonautState;
+  /** Eye point inside the helmet, world space. */
+  eye: (out: THREE.Vector3) => THREE.Vector3;
+  /** Inside the helmet the helmet itself is not drawn. */
+  setHelmetView: (on: boolean) => void;
+  /** Turn the head toward a look direction (helmet view) — yaw relative to the body, pitch. */
+  look: (yaw: number, pitch: number) => void;
+  onStep: ((e: StepEvent) => void) | null;
   update: (dt: number, input: WalkInput, heightAt: (x: number, z: number) => number, colliders: Collider[], walkRadius: number) => void;
   dispose: () => void;
 }
@@ -75,6 +84,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   group.add(body);
   const weave = fabricNormal();
   const cloth = new THREE.MeshStandardMaterial({ color: 0xd8d8d4, roughness: 0.78, metalness: 0, normalMap: weave, normalScale: new THREE.Vector2(0.35, 0.35) });
+  const bellows = new THREE.MeshStandardMaterial({ color: 0xc9c9c4, roughness: 0.85, metalness: 0, normalMap: weave, normalScale: new THREE.Vector2(0.6, 0.6) });
   const clothDirty = new THREE.MeshStandardMaterial({ color: 0xbdbab3, roughness: 0.9, metalness: 0, normalMap: weave, normalScale: new THREE.Vector2(0.5, 0.5) });
   const bearing = new THREE.MeshStandardMaterial({ color: 0x8f959c, roughness: 0.45, metalness: 0.7 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.6, metalness: 0.3 });
@@ -83,7 +93,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   const visor = new THREE.MeshPhysicalMaterial({ color: 0xc89a2c, roughness: 0.06, metalness: 1, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.6 });
   const glass = new THREE.MeshPhysicalMaterial({ color: 0xbfd8ee, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.35, clearcoat: 1 });
   const screen = new THREE.MeshStandardMaterial({ color: 0x0a2a2a, emissive: new THREE.Color(0x5eead4), emissiveIntensity: 0.8, roughness: 0.3 });
-  const owned = [cloth, clothDirty, bearing, dark, red, blue, visor, glass, screen];
+  const owned = [cloth, clothDirty, bellows, bearing, dark, red, blue, visor, glass, screen];
   const geoms: THREE.BufferGeometry[] = [];
   const mesh = (parent: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
     geoms.push(g);
@@ -107,6 +117,21 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   mesh(torso, new THREE.BoxGeometry(0.18, 0.08, 0.02), screen, 0, 0.4, 0.275);
   mesh(torso, new THREE.BoxGeometry(0.08, 0.05, 0.02), red, 0.13, 0.5, 0.21);
   mesh(torso, new THREE.BoxGeometry(0.42, 0.04, 0.02), red, 0, 0.2, 0.2);
+  // Name tape over the heart, and the mission patch on the other side.
+  const tape = document.createElement('canvas');
+  tape.width = 256; tape.height = 64;
+  const tc = tape.getContext('2d')!;
+  tc.fillStyle = '#e9e9e4'; tc.fillRect(0, 0, 256, 64);
+  tc.fillStyle = '#1b1f26'; tc.font = '600 34px "JetBrains Mono", ui-monospace, monospace';
+  tc.textAlign = 'center'; tc.textBaseline = 'middle'; tc.fillText('MODEBADZE', 128, 34);
+  const tapeTex = new THREE.CanvasTexture(tape);
+  tapeTex.colorSpace = THREE.SRGBColorSpace;
+  const tapeMat = new THREE.MeshStandardMaterial({ map: tapeTex, roughness: 0.8 });
+  owned.push(tapeMat);
+  mesh(torso, new THREE.PlaneGeometry(0.2, 0.05), tapeMat, -0.12, 0.28, 0.253);
+  mesh(torso, new THREE.CircleGeometry(0.035, 16), red, 0.13, 0.28, 0.253);
+  // Antenna on the pack.
+  mesh(torso, new THREE.CylinderGeometry(0.006, 0.006, 0.5, 6), bearing, 0.2, 0.9, -0.38);
   // Life-support pack: a big backpack with a radiator plate and two tanks.
   mesh(torso, new THREE.BoxGeometry(0.5, 0.66, 0.26), clothDirty, 0, 0.32, -0.32);
   mesh(torso, new THREE.BoxGeometry(0.46, 0.5, 0.02), bearing, 0, 0.36, -0.46);
@@ -129,13 +154,18 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   const neck = new THREE.Group();
   neck.position.set(0, 0.62, 0);
   torso.add(neck);
+  const helmetParts = new THREE.Group();
+  neck.add(helmetParts);
   mesh(neck, new THREE.TorusGeometry(0.16, 0.03, 8, 24), bearing, 0, 0.02, 0).rotation.x = Math.PI / 2;
-  mesh(neck, new THREE.SphereGeometry(0.2, 24, 18), cloth, 0, 0.19, 0).scale.set(1, 1.05, 1);
-  const vis = mesh(neck, new THREE.SphereGeometry(0.19, 24, 18, -Math.PI * 0.44, Math.PI * 0.88, Math.PI * 0.2, Math.PI * 0.55), visor, 0, 0.19, 0.013);
+  mesh(helmetParts, new THREE.SphereGeometry(0.2, 24, 18), cloth, 0, 0.19, 0).scale.set(1, 1.05, 1);
+  const vis = mesh(helmetParts, new THREE.SphereGeometry(0.19, 24, 18, -Math.PI * 0.44, Math.PI * 0.88, Math.PI * 0.2, Math.PI * 0.55), visor, 0, 0.19, 0.013);
   vis.scale.set(1, 1.05, 1);
-  mesh(neck, new THREE.SphereGeometry(0.205, 24, 18, -Math.PI * 0.48, Math.PI * 0.96, Math.PI * 0.16, Math.PI * 0.62), glass, 0, 0.19, 0.01).scale.set(1, 1.05, 1);
+  mesh(helmetParts, new THREE.SphereGeometry(0.205, 24, 18, -Math.PI * 0.48, Math.PI * 0.96, Math.PI * 0.16, Math.PI * 0.62), glass, 0, 0.19, 0.01).scale.set(1, 1.05, 1);
+  const lampMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(0xfff4dc), emissiveIntensity: 1.2 });
+  owned.push(lampMat);
   for (const side of [-1, 1]) {
-    mesh(neck, new THREE.CylinderGeometry(0.035, 0.035, 0.08, 10), dark, side * 0.18, 0.3, 0.06).rotation.set(Math.PI / 2, 0, side * 0.3);
+    mesh(helmetParts, new THREE.CylinderGeometry(0.035, 0.035, 0.08, 10), dark, side * 0.18, 0.3, 0.06).rotation.set(Math.PI / 2, 0, side * 0.3);
+    mesh(helmetParts, new THREE.CircleGeometry(0.026, 12), lampMat, side * 0.19, 0.31, 0.105);
   }
 
   // Limbs. Each joint is a group at the pivot so the swing reads correctly.
@@ -160,6 +190,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
     el.position.set(0, -0.38, 0);
     sh.add(el);
     mesh(el, jointG, bearing);
+    for (let b = 0; b < 3; b++) mesh(el, new THREE.TorusGeometry(0.072, 0.02, 6, 14), bellows, 0, -0.03 - b * 0.035, 0).rotation.x = Math.PI / 2;
     mesh(el, foreArmG, cloth, 0, -0.18, 0);
     mesh(el, new THREE.TorusGeometry(0.07, 0.015, 6, 16), bearing, 0, -0.32, 0).rotation.x = Math.PI / 2;
     mesh(el, gloveG, dark, 0, -0.4, 0.02);
@@ -175,6 +206,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
     kn.position.set(0, -0.46, 0);
     hip.add(kn);
     mesh(kn, jointG, cloth);
+    for (let b = 0; b < 4; b++) mesh(kn, new THREE.TorusGeometry(0.095, 0.022, 6, 16), bellows, 0, 0.02 - b * 0.04, 0).rotation.x = Math.PI / 2;
     mesh(kn, shinG, cloth, 0, -0.22, 0);
     mesh(kn, new THREE.TorusGeometry(0.095, 0.018, 6, 16), bearing, 0, -0.4, 0).rotation.x = Math.PI / 2;
     mesh(kn, bootG, clothDirty, 0, -0.47, 0.05);
@@ -193,8 +225,15 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
   let stepSide = 1;
   let lastStepPhase = 0;
   let idleT = 0;
+  const eyeLocal = new THREE.Vector3(0, 0.2, 0.08);
+  let lookYaw = 0;
+  let lookPitch = 0;
+  let helmetView = false;
   const handle: CosmonautHandle = {
-    group, position, yaw: 0, state,
+    group, position, yaw: 0, state, onStep: null,
+    eye(out) { return neck.localToWorld(out.copy(eyeLocal)); },
+    setHelmetView(on) { helmetView = on; helmetParts.visible = !on; },
+    look(y, p) { lookYaw = y; lookPitch = p; },
     update(dt, input, heightAt, colliders, walkRadius) {
       state.landed = false;
       idleT += dt;
@@ -245,6 +284,8 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         if (vel.y < -1.6) {
           state.landed = true;
           squat = Math.min(1, -vel.y / 4.5);
+          handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: 1, hard: 1 });
+          handle.onStep?.({ x: position.x, y: g2, z: position.z, yaw: handle.yaw, side: -1, hard: 1 });
           dust.burst({ x: position.x, y: g2, z: position.z, count: Math.round(10 + squat * 40), speedMin: 0.8, speedMax: 2.2 + squat * 2, cone: 1.25, size: 0.14 });
         }
         position.y = g2;
@@ -296,9 +337,14 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
         elbows[i].rotation.x = -(0.45 + Math.max(0, sw * s) * 0.5 * amp + legTuck * 0.4);
         elbows[i].rotation.z = s * -0.15;
       }
-      // Idle: a look about.
-      neck.rotation.y = speed < 0.3 ? Math.sin(idleT * 0.35) * 0.35 : Math.sin(idleT * 0.8) * 0.06;
-      neck.rotation.x = airborne ? -0.15 : 0.05;
+      // Idle: a look about. In the helmet the head follows the view.
+      if (helmetView) {
+        neck.rotation.y = THREE.MathUtils.clamp(lookYaw, -1.1, 1.1);
+        neck.rotation.x = THREE.MathUtils.clamp(-lookPitch, -0.7, 0.7);
+      } else {
+        neck.rotation.y = speed < 0.3 ? Math.sin(idleT * 0.35) * 0.35 : Math.sin(idleT * 0.8) * 0.06;
+        neck.rotation.x = airborne ? -0.15 : 0.05;
+      }
       // Footfalls on the ground raise a little dust.
       if (!airborne && speed > 0.8) {
         const stepPhase = Math.sin(phase) * stepSide;
@@ -307,6 +353,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
           const fx = position.x - Math.sin(handle.yaw) * 0.1;
           const fz = position.z - Math.cos(handle.yaw) * 0.1;
           dust.burst({ x: fx, y: g2, z: fz, count: Math.round(3 + gait * 6), speedMin: 0.4, speedMax: 1 + gait * 1.4, cone: 0.7, size: 0.09, dirX: -Math.sin(handle.yaw), dirZ: -Math.cos(handle.yaw), bias: 0.6 });
+          handle.onStep?.({ x: fx, y: g2, z: fz, yaw: handle.yaw, side: stepSide, hard: gait });
         }
         lastStepPhase = stepPhase;
       }
@@ -315,6 +362,7 @@ export function makeCosmonaut(dust: DustHandle): CosmonautHandle {
       for (const g of geoms) g.dispose();
       for (const m of owned) m.dispose();
       weave.dispose();
+      tapeTex.dispose();
     },
   };
   return handle;

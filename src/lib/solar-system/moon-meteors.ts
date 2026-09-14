@@ -60,6 +60,64 @@ export function makeMeteors(p: Params): MeteorHandle {
   const rock = new THREE.Mesh(new THREE.IcosahedronGeometry(0.35, 1), new THREE.MeshStandardMaterial({ color: 0x3a3632, roughness: 0.9 }));
   rock.visible = false;
   group.add(rock);
+  // Ejecta blocks: thrown out on impact, bounce once, then stay as new rocks.
+  const EJECTA = 64;
+  const ejGeom = new THREE.IcosahedronGeometry(1, 1);
+  const ejMat = new THREE.MeshStandardMaterial({ color: 0x9b9893, roughness: 0.95 });
+  const ejecta = new THREE.InstancedMesh(ejGeom, ejMat, EJECTA);
+  ejecta.count = 0;
+  ejecta.castShadow = true;
+  ejecta.frustumCulled = false;
+  group.add(ejecta);
+  const ejPos = new Float32Array(EJECTA * 3);
+  const ejVel = new Float32Array(EJECTA * 3);
+  const ejSize = new Float32Array(EJECTA);
+  const ejLive = new Uint8Array(EJECTA);
+  const ejSpin = new Float32Array(EJECTA);
+  let ejHead = 0;
+  const ejM = new THREE.Matrix4(); const ejQ = new THREE.Quaternion(); const ejS = new THREE.Vector3(); const ejP = new THREE.Vector3(); const ejE = new THREE.Euler();
+  const throwEjecta = (x: number, y: number, z: number, count: number) => {
+    for (let n = 0; n < count; n++) {
+      const i = ejHead; ejHead = (ejHead + 1) % EJECTA;
+      const a = Math.random() * Math.PI * 2; const el = 0.55 + Math.random() * 0.8;
+      const sp = 4 + Math.random() * 9;
+      ejPos[i * 3] = x; ejPos[i * 3 + 1] = y + 0.3; ejPos[i * 3 + 2] = z;
+      ejVel[i * 3] = Math.cos(a) * Math.cos(el) * sp; ejVel[i * 3 + 1] = Math.sin(el) * sp; ejVel[i * 3 + 2] = Math.sin(a) * Math.cos(el) * sp;
+      ejSize[i] = 0.12 + Math.random() * 0.3;
+      ejLive[i] = 2;
+      ejSpin[i] = Math.random() * Math.PI * 2;
+      ejecta.count = Math.min(EJECTA, ejecta.count + 1);
+    }
+  };
+  const updateEjecta = (dt: number) => {
+    let any = false;
+    for (let i = 0; i < ejecta.count; i++) {
+      if (ejLive[i] === 0) continue;
+      any = true;
+      ejVel[i * 3 + 1] -= 1.62 * dt;
+      ejPos[i * 3] += ejVel[i * 3] * dt; ejPos[i * 3 + 1] += ejVel[i * 3 + 1] * dt; ejPos[i * 3 + 2] += ejVel[i * 3 + 2] * dt;
+      ejSpin[i] += dt * 4;
+      const g = p.heightAt(ejPos[i * 3], ejPos[i * 3 + 2]) + ejSize[i] * 0.6;
+      if (ejPos[i * 3 + 1] <= g && ejVel[i * 3 + 1] < 0) {
+        ejPos[i * 3 + 1] = g;
+        if (ejLive[i] === 2 && ejVel[i * 3 + 1] < -2) {
+          // One bounce, dust where it lands.
+          ejVel[i * 3 + 1] *= -0.3; ejVel[i * 3] *= 0.5; ejVel[i * 3 + 2] *= 0.5;
+          ejLive[i] = 1;
+          p.dust.burst({ x: ejPos[i * 3], y: g, z: ejPos[i * 3 + 2], count: 6, speedMin: 0.5, speedMax: 1.6, cone: 1, size: 0.12 });
+        } else {
+          ejVel[i * 3] = ejVel[i * 3 + 1] = ejVel[i * 3 + 2] = 0;
+          ejLive[i] = 0;
+        }
+      }
+      ejP.set(ejPos[i * 3], ejPos[i * 3 + 1], ejPos[i * 3 + 2]);
+      ejQ.setFromEuler(ejE.set(ejSpin[i], ejSpin[i] * 0.7, 0));
+      ejS.setScalar(ejSize[i]);
+      ejM.compose(ejP, ejQ, ejS);
+      ejecta.setMatrixAt(i, ejM);
+    }
+    if (any) ejecta.instanceMatrix.needsUpdate = true;
+  };
 
   let timer = p.first;
   let flying = false;
@@ -131,6 +189,7 @@ export function makeMeteors(p: Params): MeteorHandle {
     nudge() { timer = 0; },
     update(dt, px, pz) {
       handle.shake *= Math.exp(-dt * 3);
+      updateEjecta(dt);
       let event: MeteorEvent | null = null;
       if (flashT >= 0) {
         flashT += dt;
@@ -182,6 +241,7 @@ export function makeMeteors(p: Params): MeteorHandle {
           flashT = 0;
           const depth = craterR * 0.3;
           p.stampCrater(to.x, to.z, craterR, depth);
+          throwEjecta(to.x, to.y, to.z, 10 + Math.round(craterR * 2));
           p.dust.burst({ x: to.x, y: to.y, z: to.z, count: 240, speedMin: 5, speedMax: 19, cone: 0.9, size: 0.34, brightness: 1.15 });
           p.dust.burst({ x: to.x, y: to.y, z: to.z, count: 120, speedMin: 2, speedMax: 6, cone: 1.4, size: 0.5, brightness: 0.9 });
           const distance = Math.hypot(to.x - px, to.z - pz);
@@ -195,6 +255,7 @@ export function makeMeteors(p: Params): MeteorHandle {
     dispose() {
       headMat.dispose(); trailMat.dispose(); trailGeom.dispose(); flashMat.dispose();
       rock.geometry.dispose(); (rock.material as THREE.Material).dispose();
+      ejGeom.dispose(); ejMat.dispose(); ejecta.dispose();
       if (audioCtx) void audioCtx.close();
     },
   };

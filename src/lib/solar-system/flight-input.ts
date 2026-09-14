@@ -100,6 +100,7 @@ export function attachDesktopControls(
   };
   const onMouseMove = (e: MouseEvent) => {
     if (!session.active || session.paused) return;
+    if (!document.pointerLockElement && e.target instanceof Element && e.target.closest('button')) return;
     // Right button held: the pointer walks the camera around the hull
     // instead of steering, so the ship can be looked at from any angle.
     if (input.orbiting) {

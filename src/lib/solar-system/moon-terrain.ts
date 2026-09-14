@@ -71,6 +71,8 @@ export interface TerrainHandle {
   normalAt: (x: number, z: number, out: THREE.Vector3) => THREE.Vector3;
   /** Dig a fresh crater and re-light the ground around it. */
   stampCrater: (x: number, z: number, r: number, depth: number) => void;
+  /** Sun direction in view space, updated by the scene each frame. */
+  setSunView: (v: THREE.Vector3) => void;
   dispose: () => void;
 }
 
@@ -212,7 +214,7 @@ export function makeMoonHorizon(terrain: TerrainHandle, lite: boolean): THREE.Me
 }
 
 export function makeMoonTerrain(lite: boolean): TerrainHandle {
-  const N = lite ? 150 : 250;
+  const N = lite ? 160 : 320;
   const size = TERRAIN_SIZE;
   const half = size / 2;
   const cell = size / N;
@@ -240,8 +242,23 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
       const d = Math.hypot(x - c.x, z - c.z);
       if (d < c.r * 1.55) h += craterProfile(d, c);
     }
+    for (const c of small) {
+      const dx = x - c.x; if (dx > 6 || dx < -6) continue;
+      const dz = z - c.z; if (dz > 6 || dz < -6) continue;
+      const d = Math.hypot(dx, dz);
+      if (d < c.r * 1.55) h += craterProfile(d, c);
+    }
     return h;
   };
+  // Small craters — the ground is pocked at every scale.
+  const small: Crater[] = [];
+  for (let i = 0; i < 420; i++) {
+    const r = 0.9 + Math.pow(hash(i, 61, seed), 1.6) * 3.6;
+    const x = (hash(i, 62, seed) - 0.5) * size * 0.96;
+    const z = (hash(i, 63, seed) - 0.5) * size * 0.96;
+    if (Math.hypot(x - PAD_CENTER.x, z - PAD_CENTER.y) < 14) continue;
+    small.push({ x, z, r, depth: r * (0.16 + hash(i, 64, seed) * 0.12) });
+  }
   const padHeight = rawHeight(PAD_CENTER.x, PAD_CENTER.y) * 0.3;
   const heightFn = (x: number, z: number): number => {
     const h = rawHeight(x, z);
@@ -309,6 +326,28 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
     vertexColors: true,
     color: 0xe2e0dc,
   });
+  // Regolith is retro-reflective: it brightens sharply when the Sun is
+  // behind the viewer (the opposition surge — why the ground round your own
+  // shadow glows in Apollo photographs). A second, finer normal sample
+  // breaks the tiling so the same grain never lines up twice.
+  const sunView = { value: new THREE.Vector3(0, 1, 0) };
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uSunView = sunView;
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uSunView;')
+      .replace('#include <normal_fragment_maps>', `
+        vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;
+        vec3 mapN2 = texture2D( normalMap, vNormalMapUv * 6.37 + vec2(0.31, 0.77) ).xyz * 2.0 - 1.0;
+        mapN = normalize( vec3( mapN.xy * normalScale + mapN2.xy * normalScale * 0.55, mapN.z * mapN2.z ) );
+        normal = normalize( tbn * mapN );`)
+      .replace('#include <lights_fragment_begin>', `
+        {
+          vec3 V = normalize( -vViewPosition );
+          float surge = pow( max( dot( V, uSunView ), 0.0 ), 10.0 );
+          diffuseColor.rgb *= 1.0 + 0.42 * surge;
+        }
+        #include <lights_fragment_begin>`);
+  };
   const mesh = new THREE.Mesh(geom, mat);
   mesh.receiveShadow = true;
   mesh.castShadow = false;
@@ -382,6 +421,7 @@ export function makeMoonTerrain(lite: boolean): TerrainHandle {
 
   return {
     mesh, rocks, heightAt, normalAt, stampCrater,
+    setSunView(v) { sunView.value.copy(v); },
     dispose() {
       geom.dispose(); mat.dispose();
       maps.map.dispose(); maps.normal.dispose(); maps.rough.dispose();
