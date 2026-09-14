@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type PointerEvent } from 'react';
-import { Move } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Move } from 'lucide-react';
 
 interface GameStickProps {
   label: string;
@@ -61,6 +61,11 @@ export function GameStick({ label, onMove }: GameStickProps) {
       }}
       onPointerMove={move} onPointerUp={release} onPointerCancel={release} onLostPointerCapture={release}>
       <span className="game-stick__axis" aria-hidden />
+      {/* The four marks: a pad to look at, an analogue stick to use — a
+          press on a chevron is simply a deflection that way. */}
+      <span className="game-stick__pad" aria-hidden>
+        <ChevronUp size={20} /><ChevronRight size={20} /><ChevronDown size={20} /><ChevronLeft size={20} />
+      </span>
       <span className="game-stick__thumb" aria-hidden><Move size={22} /></span>
     </div>
   );

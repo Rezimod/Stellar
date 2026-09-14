@@ -868,38 +868,51 @@
   color: #ffd79a;
 }
 
-/* Explore Mode — the flight deck. The glass is the point: the view keeps the
-   middle of the screen and every instrument is pushed to an edge. Where you
-   are reads top left, the session keys top right, and one dock along the
-   bottom carries the console, the five drive keys and the two sticks — a band
-   about a fifth of a phone screen deep, with the space between the controls
-   left open so the ship is never flown through a wall of buttons. */
+/* Explore Mode — the flight deck. Soft glass on a dark sky: rounded cards,
+   round keys, pill-shaped rails. The view owns the middle of the screen —
+   where you are reads top left, the drive and the standing order card in
+   from the top right, the target rail down the left edge, the camera keys
+   on the right, and one dock along the bottom with the two pads, the flight
+   keys between them and the console bar under all of it. */
 .flight-hud {
-  /* The deck has its own instrument palette: ice blue on near-black glass. */
-  --hud-ink: #eef6ff;
-  --hud-dim: rgba(186, 214, 240, 0.6);
-  --hud-accent: #4db2ff;
-  --hud-line: rgba(120, 180, 235, 0.3);
-  --hud-glass: rgba(6, 14, 28, 0.52);
-  /* The dock is sized by three numbers: a thumb stick, a key and the margin
-     off the screen edge. Every breakpoint sets these and the band follows. */
-  --stick: 118px;
-  --key: 46px;
-  --gutter: 12px;
+  /* The deck's palette: ice on deep navy glass. */
+  --hud-ink: #eaf2fd;
+  --hud-dim: rgba(166, 190, 220, 0.74);
+  --hud-accent: #4da3ff;
+  --hud-line: rgba(122, 162, 216, 0.22);
+  --hud-glass: rgba(10, 18, 33, 0.62);
+  --hud-deep: rgba(8, 14, 27, 0.9);
+  --hud-ok: #46d68a;
+  /* Shapes and sizes; every breakpoint sets these and the rest follows. */
+  --hud-radius: 18px;
+  --hud-round: 44px;
+  --stick: clamp(88px, 26vw, 116px);
+  --key: clamp(42px, 12vw, 48px);
+  --card: clamp(152px, 46vw, 218px);
+  --gutter: 14px;
   position: absolute;
   inset: 0;
   z-index: 18;
   pointer-events: none;
   color: var(--hud-ink);
-  font: 400 12px var(--font-mono), monospace;
+  font-family: var(--font-body);
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 .flight-hud button {
   pointer-events: auto;
-  min-height: 44px;
+  /* Every key here sets its own size; the app's global minimum would
+     otherwise hold the small ones open. */
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--hud-line);
-  border-radius: 4px;
+  border-radius: var(--hud-radius);
   background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   color: var(--hud-ink);
   font: inherit;
   cursor: pointer;
@@ -908,8 +921,8 @@
 }
 .flight-hud button::before { content: none; }
 .flight-hud button:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 3px; }
-.flight-hud button:active { border-color: var(--hud-accent); }
-.flight-hud button:disabled { opacity: 0.45; cursor: default; }
+.flight-hud button:active { border-color: rgba(77, 163, 255, 0.7); }
+.flight-hud button:disabled { opacity: 0.4; cursor: default; }
 .flight-hud__launch {
   position: absolute;
   bottom: calc(76px + env(safe-area-inset-bottom));
@@ -918,42 +931,206 @@
   display: flex;
   gap: 8px;
 }
-.flight-hud__launch button { padding: 0 14px; white-space: nowrap; }
-.flight-hud__explore { display: flex; align-items: center; gap: 8px; }
+.flight-hud__launch button { padding: 0 18px; height: 46px; border-radius: 999px; white-space: nowrap; }
+.flight-hud__explore { gap: 8px; font-weight: 600; }
 .flight-hud__ship { color: var(--hud-dim) !important; }
 
-/* ── Heading block, top left: where you are, how high, how fast. The two
-   readings share one line so the block is three short rows at most. ── */
+/* ── Top left: where you are, how high, how fast ── */
 .flight-hud__head {
   position: absolute;
-  top: max(14px, env(safe-area-inset-top));
-  left: max(14px, env(safe-area-inset-left));
+  top: max(var(--gutter), env(safe-area-inset-top));
+  left: max(var(--gutter), env(safe-area-inset-left));
   display: grid;
-  gap: 5px;
-  padding-left: 10px;
-  border-left: 2px solid var(--hud-accent);
-  max-width: min(360px, calc(100% - 170px));
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  gap: 3px;
+  padding-left: 12px;
+  max-width: min(330px, calc(100% - 130px));
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
 }
-.flight-hud__place { letter-spacing: 0.2em; text-transform: uppercase; line-height: 1.3; }
-.flight-hud__readings { display: flex; flex-wrap: wrap; gap: 2px 16px; }
-.flight-hud__reading { display: flex; align-items: baseline; gap: 6px; }
-.flight-hud__reading > span:first-child { color: var(--hud-dim); text-transform: uppercase; letter-spacing: 0.14em; font-size: 9px; }
-/* Warnings and prompts land here, under the readings — never over the view. */
-.flight-hud__status { color: var(--hud-accent); line-height: 1.45; }
-.flight-hud__status:empty { display: none; }
-
-/* ── Session keys, top right ── */
-.flight-hud__pause {
+/* The accent stroke down the side of the block. */
+.flight-hud__head::before {
+  content: '';
   position: absolute;
-  top: max(12px, env(safe-area-inset-top));
-  right: max(12px, env(safe-area-inset-right));
-  display: flex;
-  gap: 6px;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(var(--hud-accent), rgba(77, 163, 255, 0.1));
 }
-.flight-hud__pause button { width: 40px; min-height: 40px; display: grid; place-items: center; }
+.flight-hud__title { font-size: 21px; font-weight: 600; line-height: 1.2; letter-spacing: 0.01em; }
+.flight-hud__sub { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--hud-dim); }
+.flight-hud__readings { display: grid; gap: 4px; margin-top: 7px; }
+.flight-hud__reading { display: flex; align-items: center; gap: 8px; }
+.flight-hud__reading svg { color: rgba(140, 180, 230, 0.75); flex: none; }
+.flight-hud__reading > span { color: var(--hud-dim); font-size: 11px; }
+.flight-hud__reading > b { font-weight: 500; font-size: 13px; }
+/* Warnings and prompts land under the readings — never over the view. */
+.flight-hud__status { margin-top: 5px; min-height: 1.4em; color: var(--hud-accent); font-size: 11px; line-height: 1.45; }
 
-/* ── Target bracket: four corner ticks and a name, out on the glass ── */
+/* ── Top right: the round session keys ── */
+.flight-hud__top-keys {
+  position: absolute;
+  top: max(var(--gutter), env(safe-area-inset-top));
+  right: max(var(--gutter), env(safe-area-inset-right));
+  display: grid;
+  gap: 9px;
+}
+.flight-hud .flight-hud__round { width: var(--hud-round); height: var(--hud-round); border-radius: 50%; }
+
+/* ── The right column: the cards, then the camera keys ── */
+.flight-hud__side {
+  position: absolute;
+  top: calc(max(var(--gutter), env(safe-area-inset-top)) + (var(--hud-round) + 9px) * 3 + 6px);
+  right: max(var(--gutter), env(safe-area-inset-right));
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+  width: var(--card);
+}
+.flight-hud .flight-hud__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--hud-line);
+  border-radius: var(--hud-radius);
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  text-align: left;
+}
+.flight-hud__card-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(77, 163, 255, 0.14);
+  color: var(--hud-accent);
+}
+.flight-hud__card-text { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.flight-hud__card-label { font-size: 10px; line-height: 1.35; color: var(--hud-dim); }
+.flight-hud__card-value { font-size: 12px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
+.flight-hud__card-go { flex: none; color: var(--hud-dim); }
+/* The state light in the card's corner. */
+.flight-hud__dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hud-ok);
+  box-shadow: 0 0 8px rgba(70, 214, 138, 0.8);
+}
+.flight-drive__jump[data-state='locked'] .flight-hud__dot { background: #f5b545; box-shadow: 0 0 8px rgba(245, 181, 69, 0.8); }
+.flight-drive__jump[data-state='jumping'] .flight-hud__dot { background: var(--hud-accent); box-shadow: 0 0 10px rgba(77, 163, 255, 0.9); }
+.flight-hud .flight-drive__jump[data-state='jumping'] { border-color: rgba(77, 163, 255, 0.6); }
+.flight-drive__jump[data-state='locked'] .flight-hud__card-value { color: var(--hud-dim); }
+.flight-drive__jump-wrap { position: relative; width: 100%; }
+.flight-drive__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  gap: 4px;
+  width: max-content;
+  min-width: 100%;
+  max-width: min(260px, calc(100vw - 32px));
+  padding: 6px;
+  border: 1px solid var(--hud-line);
+  border-radius: var(--hud-radius);
+  background: var(--hud-deep);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: 5;
+}
+.flight-hud .flight-drive__menu button {
+  justify-content: space-between;
+  gap: 14px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 12px;
+}
+.flight-hud .flight-drive__menu button:active { background: rgba(77, 163, 255, 0.16); }
+.flight-drive__ly { color: var(--hud-dim); white-space: nowrap; }
+/* The standing order's progress sits under its value. */
+.flight-hud__order .flight-hud__track { margin-top: 3px; }
+.flight-hud__order[hidden] { display: none; }
+.flight-hud__order[data-done='true'] .flight-hud__card-value { color: var(--hud-ok); }
+.flight-hud__order[data-done='true'] .flight-hud__track { display: none; }
+
+/* ── The target rail down the left edge ── */
+.flight-hud__rail {
+  position: absolute;
+  left: max(var(--gutter), env(safe-area-inset-left));
+  top: calc(max(var(--gutter), env(safe-area-inset-top)) + 158px);
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.flight-hud .flight-hud__rail-key {
+  gap: 9px;
+  height: 40px;
+  padding: 0 14px 0 5px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--hud-ink);
+  max-width: min(180px, 42vw);
+}
+.flight-hud__rail-key > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flight-hud__rail-key[hidden] { display: none; }
+.flight-hud__rail-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(120, 160, 210, 0.14);
+  color: var(--hud-dim);
+}
+.flight-hud .flight-hud__rail-key[data-on='true'] { border-color: rgba(77, 163, 255, 0.75); background: rgba(77, 163, 255, 0.14); }
+.flight-hud__rail-key[data-on='true'] .flight-hud__rail-icon { background: rgba(77, 163, 255, 0.22); color: var(--hud-accent); }
+
+/* ── Right edge: how close the camera rides, and from where ── */
+.flight-hud__cam { display: grid; gap: 10px; justify-items: end; margin-top: 16px; }
+.flight-hud__zoom {
+  display: grid;
+  border: 1px solid var(--hud-line);
+  border-radius: 22px;
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+.flight-hud .flight-hud__zoom button {
+  width: var(--hud-round);
+  height: var(--hud-round);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.flight-hud .flight-hud__zoom button + button { border-top: 1px solid var(--hud-line); }
+.flight-hud .flight-hud__view {
+  width: var(--hud-round);
+  height: var(--hud-round);
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.flight-hud[data-view='cockpit'] .flight-hud__view { border-color: rgba(77, 163, 255, 0.7); color: var(--hud-accent); }
+
+/* ── Target bracket out on the glass ── */
 .flight-hud__marker {
   position: absolute;
   left: 0;
@@ -962,10 +1139,10 @@
   align-items: center;
   gap: 10px;
   margin: -13px 0 0 -13px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-size: 15px;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  font-size: 13px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
 }
 .flight-hud__marker::before {
   content: '';
@@ -985,53 +1162,57 @@
 }
 .flight-hud__marker[hidden] { display: none; }
 
-/* ── Incoming transmission, top centre: header and one line at a time ── */
+/* ── Incoming transmission, top centre ── */
 .flight-hud__comms {
   position: absolute;
-  top: max(14px, env(safe-area-inset-top));
+  top: max(var(--gutter), env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
-  width: min(520px, calc(100% - 300px));
-  padding: 9px 13px;
+  width: min(460px, calc(100% - 2 * (var(--card) + 34px)));
+  padding: 11px 15px;
   border: 1px solid var(--hud-line);
-  border-radius: 4px;
+  border-radius: var(--hud-radius);
   background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   display: grid;
   gap: 5px;
 }
 .flight-hud__comms[hidden] { display: none; }
-.flight-hud__comms-from {
-  font-size: 10px;
-  letter-spacing: 0.16em;
+.flight-hud__comms-from { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
+.flight-hud__comms p { margin: 0; font-size: 12px; line-height: 1.5; }
+
+/* ── Controls card ── */
+.flight-hud__help {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100% - 32px));
+  display: grid;
+  gap: 7px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--hud-line);
+  border-radius: var(--hud-radius);
+  background: var(--hud-deep);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  pointer-events: auto;
+  z-index: 6;
+}
+.flight-hud__help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+  font-size: 11px;
   color: var(--hud-accent);
 }
-.flight-hud__comms p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--hud-ink); }
+.flight-hud .flight-hud__help-head button { width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; color: var(--hud-dim); }
+.flight-hud__help p { margin: 0; font-size: 11px; line-height: 1.55; color: var(--hud-dim); }
 
-/* ── Standing order: a slim chip under the session keys ── */
-.flight-hud__order {
-  position: absolute;
-  top: calc(max(12px, env(safe-area-inset-top)) + 48px);
-  right: max(12px, env(safe-area-inset-right));
-  width: 168px;
-  display: grid;
-  gap: 5px;
-  padding: 6px 9px;
-  border: 1px solid var(--hud-line);
-  border-radius: 4px;
-  background: var(--hud-glass);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  line-height: 1.5;
-  text-transform: uppercase;
-}
-.flight-hud__order[hidden] { display: none; }
-.flight-hud__order[data-done='true'] { color: var(--hud-accent); border-color: var(--hud-accent); }
-.flight-hud__order[data-done='true'] .flight-hud__track { display: none; }
-
-/* ── The dock: one grid along the bottom edge holding the console, the keys
-   and the two sticks. Nothing between them takes pointer traffic, so the
-   gaps stay part of the view. ── */
+/* ── The dock ── */
 .flight-hud__dock {
   position: absolute;
   left: max(var(--gutter), env(safe-area-inset-left));
@@ -1040,7 +1221,7 @@
   display: grid;
   justify-items: center;
   align-items: end;
-  gap: 8px;
+  gap: 10px;
   grid-template-areas: 'land' 'keys' 'console';
 }
 .flight-hud__land { grid-area: land; }
@@ -1048,322 +1229,247 @@
 .flight-hud__keys { grid-area: keys; }
 .flight-hud__move { grid-area: move; }
 .flight-hud__look { grid-area: look; }
+.flight-hud .flight-hud__land {
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  border-color: rgba(255, 179, 71, 0.55);
+  color: #ffd9a0;
+  animation: moon-impact 0.5s ease-out both;
+}
+.flight-hud__land[hidden] { display: none; }
 
-/* ── Console: the compass, then one instrument panel ── */
-.flight-hud__console { display: flex; align-items: center; gap: 10px; max-width: 100%; }
-.flight-hud .flight-hud__radar { flex: none; border: 0; background: transparent; width: 64px; height: 64px; min-height: 0; }
-.flight-hud__radar canvas { width: 100%; height: 100%; }
-/* One instrument panel with cut corners. The 1px "border" is the parent's
-   own fill showing through the inset face, so it follows the diagonals. */
-.flight-hud__panel {
-  position: relative;
+/* ── The console bar: the compass, the range, the dial, the systems ── */
+.flight-hud__console {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.05fr);
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  min-width: 0;
-  background: var(--hud-line);
-  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 16px);
-}
-.flight-hud__panel::before {
-  content: '';
-  position: absolute;
-  inset: 1px;
+  gap: 14px;
+  width: 100%;
+  max-width: 820px;
+  padding: 9px 14px;
+  border: 1px solid var(--hud-line);
+  border-radius: 22px;
   background: var(--hud-glass);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  clip-path: polygon(15px 0, calc(100% - 15px) 0, 100% 15px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 15px);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
-.flight-hud__panel > * { position: relative; }
-.flight-hud__odometer { display: grid; gap: 5px; font-size: 14px; min-width: 0; }
-.flight-hud__odometer > span:first-child { font-size: 9px; color: var(--hud-dim); text-transform: uppercase; letter-spacing: 0.14em; }
-.flight-hud small { font-size: 10px; color: var(--hud-dim); }
-
-/* Speed dial: a ring open at the bottom, filled to the regime's ceiling,
-   with a white index at twelve o'clock. It also names the regime, so the
-   gear key itself needs no words. */
-.flight-hud .flight-hud__speed {
-  border: 0;
+.flight-hud .flight-hud__radar {
+  flex: none;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: transparent;
+  background: rgba(120, 160, 210, 0.1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.flight-hud__radar canvas { width: 100%; height: 100%; }
+.flight-hud__console-label { font-size: 10px; letter-spacing: 0.08em; color: var(--hud-dim); }
+.flight-hud__console-value { font-size: 16px; }
+.flight-hud__range { display: grid; gap: 3px; min-width: 0; }
+.flight-hud small { font-size: 10px; color: var(--hud-dim); }
+/* Speed dial: a ring open at the bottom, filled to the regime's ceiling. */
+.flight-hud__speed {
   position: relative;
-  width: 96px;
-  height: 96px;
-  margin: -16px 0;
+  width: 78px;
+  height: 78px;
+  margin: -8px 0;
+  line-height: 1.1;
   justify-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
 }
-.flight-hud__speed svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(135deg); fill: none; stroke: rgba(120, 180, 235, 0.28); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 245 327; }
-.flight-hud__speed svg .flight-hud__speed-arc { stroke: var(--hud-accent); stroke-width: 5; stroke-dasharray: calc(var(--speed, 0) * 0.75) 1; }
-.flight-hud__speed svg .flight-hud__speed-index { stroke: var(--hud-ink); stroke-width: 2; stroke-dasharray: none; transform: rotate(-135deg); transform-origin: 60px 60px; }
-.flight-hud__mode { color: var(--hud-dim); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap; }
-.flight-hud__speed-value { font-size: 24px; line-height: 1.1; }
-.flight-hud__systems { display: grid; gap: 8px; min-width: 0; }
-.flight-hud__sys { display: grid; grid-template-columns: 14px 1fr 34px; gap: 6px; align-items: center; }
+.flight-hud__speed svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(135deg); fill: none; stroke: rgba(120, 165, 220, 0.22); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 245 327; }
+.flight-hud__speed svg .flight-hud__speed-arc { stroke: var(--hud-accent); stroke-width: 6; stroke-dasharray: calc(var(--speed, 0) * 0.75) 1; }
+.flight-hud__speed-value { font-size: 20px; font-weight: 600; line-height: 1.1; }
+.flight-hud__systems { display: grid; gap: 7px; min-width: 0; }
+.flight-hud__sys { display: grid; grid-template-columns: 16px auto minmax(46px, 1fr); gap: 8px; align-items: center; }
 .flight-hud__sys svg { color: var(--hud-dim); }
-.flight-hud__sys-name { display: none; }
-.flight-hud__track { height: 5px; background: rgba(120, 180, 235, 0.2); overflow: hidden; border-radius: 2px; }
-.flight-hud__track > span { display: block; height: 100%; transform-origin: left; background: var(--hud-accent); }
+.flight-hud__sys-name { font-size: 10px; color: var(--hud-dim); white-space: nowrap; }
+.flight-hud__track { height: 6px; border-radius: 3px; background: rgba(120, 165, 220, 0.18); overflow: hidden; }
+.flight-hud__track > span { display: block; height: 100%; border-radius: 3px; transform-origin: left; background: var(--hud-accent); }
 .flight-hud__sys:first-child .flight-hud__track > span { background: var(--hud-ink); }
-.flight-hud__percent { font-size: 10px; text-align: right; }
 
-/* ── The keys: the drive first, then whatever the hands need. On a pointer
-   they are a labelled row; under a thumb they become a small pad. ── */
-.flight-hud__keys { display: flex; align-items: end; gap: 6px; }
+/* ── The flight keys between the pads ── */
+.flight-hud__keys { display: flex; align-items: center; gap: 8px; }
 .flight-hud .flight-hud__key {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 0 13px;
-  height: 44px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  height: var(--hud-round);
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 11px;
   color: var(--hud-dim);
   white-space: nowrap;
 }
-.flight-hud .flight-hud__key:active { color: var(--hud-ink); background: rgba(77, 178, 255, 0.18); }
-
-/* ── The two sticks: fixed cells in the dock, so the band never reflows
-   when a stick is released or the deck is paused. ── */
-.flight-hud__move, .flight-hud__look { width: var(--stick); height: var(--stick); }
-.flight-hud :is(.flight-hud__move, .flight-hud__look) .game-stick { width: 100%; height: 100%; }
-
-/* ── The way down to the Moon, centred over the console ── */
-.flight-hud__land {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 16px !important;
-  min-height: 40px;
-  white-space: nowrap;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 11px;
-  border-color: rgba(255, 179, 71, 0.6) !important;
-  color: #ffd9a0 !important;
-  animation: moon-impact 0.5s ease-out both;
-}
-.flight-hud__land[hidden] { display: none; }
-
-/* ── Controls card: opens on the first flight, then on the key. Docked to
-   the left edge so it never covers the view ahead. ── */
-.flight-hud__help {
-  position: absolute;
-  top: max(20px, env(safe-area-inset-top));
-  left: max(20px, env(safe-area-inset-left));
-  width: min(330px, calc(100% - 40px));
-  display: grid;
-  gap: 7px;
-  padding: 12px 14px 14px;
-  border: 1px solid var(--hud-line);
-  border-radius: 6px;
-  background: rgba(6, 14, 28, 0.86);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  pointer-events: auto;
-  z-index: 4;
-}
-.flight-hud__help-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--hud-accent);
-}
-.flight-hud__help-head button { min-height: 26px; width: 26px; display: grid; place-items: center; border: 0; background: transparent; color: var(--hud-dim); }
-.flight-hud__help p { margin: 0; font-size: 11px; line-height: 1.5; color: var(--hud-dim); }
-
-/* ── The drive: one gear key that walks cruise → fast → ultra and wraps,
-   and the light-year jump with its destination list. ── */
+.flight-hud .flight-hud__key:active { color: var(--hud-ink); background: rgba(77, 163, 255, 0.2); }
 .flight-hud .flight-drive__gear {
-  display: flex;
-  align-items: center;
   gap: 9px;
-  padding: 0 13px;
-  height: 44px;
-  color: var(--hud-ink);
+  height: var(--hud-round);
+  padding: 0 14px;
+  border-radius: 999px;
 }
 .flight-drive__gear svg { flex: none; color: var(--hud-dim); }
-.flight-drive__mode { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+.flight-drive__mode { font-size: 11px; white-space: nowrap; }
 .flight-drive__pips { display: flex; gap: 3px; flex: none; }
-.flight-drive__pips i { width: 10px; height: 3px; border-radius: 2px; background: var(--hud-line); }
+.flight-drive__pips i { width: 10px; height: 3px; border-radius: 2px; background: rgba(120, 165, 220, 0.35); }
 /* One lit pip per regime, the whole row at light speed. */
 .flight-drive__gear[data-mode='cruise'] .flight-drive__pips i:first-child,
 .flight-drive__gear[data-mode='fast'] .flight-drive__pips i:nth-child(-n + 2),
 .flight-drive__gear:is([data-mode='ultra'], [data-mode='jump']) .flight-drive__pips i { background: var(--hud-accent); }
-.flight-hud .flight-drive__gear:is([data-mode='ultra'], [data-mode='jump']) { border-color: rgba(77, 178, 255, 0.6); }
+.flight-hud .flight-drive__gear:is([data-mode='ultra'], [data-mode='jump']) { border-color: rgba(77, 163, 255, 0.6); }
 .flight-drive__gear[data-mode='ultra'] svg { color: var(--hud-accent); }
 /* Out in the suit there are no regimes to pick. */
-.flight-drive__gear[data-mode='eva'] { opacity: 0.4; }
-.flight-drive__gear kbd, .flight-drive__jump kbd {
+.flight-drive__gear[data-mode='eva'] { opacity: 0.45; }
+.flight-drive__gear kbd {
   font: inherit;
   font-size: 9px;
   line-height: 1;
-  padding: 2px 4px;
+  padding: 3px 5px;
   border: 1px solid var(--hud-line);
-  border-radius: 3px;
+  border-radius: 5px;
   color: var(--hud-dim);
-  letter-spacing: 0;
 }
-.flight-drive__jump-wrap { position: relative; display: flex; }
-.flight-hud .flight-drive__jump {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  max-width: 260px;
-  height: 44px;
-  padding: 0 13px;
-  text-align: left;
-}
-.flight-drive__jump svg { flex: none; color: var(--hud-accent); }
-.flight-drive__jump-text { display: grid; gap: 2px; min-width: 0; }
-.flight-drive__jump-label { display: flex; align-items: center; gap: 8px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
-.flight-drive__dest { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.flight-drive__jump[data-state='locked'] .flight-drive__dest { color: var(--hud-dim); }
-.flight-hud .flight-drive__jump[data-state='jumping'] { border-color: var(--hud-accent); }
-.flight-drive__menu {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: grid;
-  gap: 4px;
-  width: max-content;
-  max-width: min(260px, calc(100vw - 32px));
-  padding: 6px;
-  border: 1px solid var(--hud-line);
-  border-radius: 4px;
-  background: rgba(6, 14, 28, 0.92);
+
+/* ── The two pads ── */
+.flight-hud__move, .flight-hud__look { width: var(--stick); height: var(--stick); }
+.flight-hud :is(.flight-hud__move, .flight-hud__look) .game-stick {
+  width: 100%;
+  height: 100%;
+  border-color: var(--hud-line);
+  background: radial-gradient(circle at 50% 50%, rgba(23, 38, 64, 0.5), rgba(8, 14, 27, 0.32) 72%);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  z-index: 5;
 }
-.flight-hud .flight-drive__menu button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 12px;
-  font-size: 12px;
-  text-align: left;
+.flight-hud .game-stick__axis { display: none; }
+.flight-hud .game-stick__pad { display: block; position: absolute; inset: 0; color: rgba(186, 212, 240, 0.7); }
+.flight-hud .game-stick__pad svg { position: absolute; }
+.flight-hud .game-stick__pad svg:nth-child(1) { top: 7%; left: 50%; transform: translateX(-50%); }
+.flight-hud .game-stick__pad svg:nth-child(2) { right: 7%; top: 50%; transform: translateY(-50%); }
+.flight-hud .game-stick__pad svg:nth-child(3) { bottom: 7%; left: 50%; transform: translateX(-50%); }
+.flight-hud .game-stick__pad svg:nth-child(4) { left: 7%; top: 50%; transform: translateY(-50%); }
+.flight-hud .game-stick__thumb {
+  left: 32%;
+  top: 32%;
+  width: 36%;
+  height: 36%;
+  border-color: rgba(200, 222, 245, 0.55);
+  background: rgba(58, 92, 138, 0.42);
 }
-.flight-drive__ly { color: var(--hud-dim); white-space: nowrap; }
+.flight-hud .game-stick__thumb svg { display: none; }
+.flight-hud .game-stick__thumb::after {
+  content: '';
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: var(--hud-ink);
+}
 
-/* ── Phones: the dock becomes three thin rows — console, then the keypad
-   between the two sticks. Everything is sized off --stick and --key so the
-   whole band fits a 320px screen without a single overflow. ── */
+/* ── Phones: the pads take the corners, the flight keys sit between them
+   and the console bar runs the width underneath. ── */
 @media (max-width: 599px) {
-  .flight-hud { --stick: clamp(84px, 25vw, 104px); --key: clamp(40px, 12vw, 48px); --gutter: 8px; }
-  .flight-hud__head { max-width: calc(100% - 150px); gap: 4px; }
-  .flight-hud__place { letter-spacing: 0.12em; }
-  .flight-hud__order { width: 136px; top: calc(max(12px, env(safe-area-inset-top)) + 46px); }
-  .flight-hud__comms, .flight-hud__help { left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); width: auto; transform: none; top: calc(max(12px, env(safe-area-inset-top)) + 104px); }
-  .flight-hud__help { max-height: calc(100% - 300px); overflow-y: auto; }
-  .flight-hud .flight-hud__radar { width: 46px; height: 46px; }
-  .flight-hud__console { gap: 7px; }
-  .flight-hud__panel { padding: 6px 11px; gap: 9px; }
-  .flight-hud__odometer { font-size: 12px; gap: 3px; }
-  .flight-hud__odometer > span:first-child { font-size: 8px; letter-spacing: 0.08em; }
-  .flight-hud__odometer > span:last-child { display: flex; align-items: baseline; gap: 3px; }
-  .flight-hud .flight-hud__speed { width: 74px; height: 74px; margin: -12px 0; }
-  .flight-hud__speed-value { font-size: 19px; }
-  .flight-hud__mode, .flight-hud small { font-size: 8px; }
-  .flight-hud__sys { grid-template-columns: 13px 1fr; gap: 5px; }
-  .flight-hud__systems { gap: 7px; min-width: 54px; }
-  .flight-hud__percent { display: none; }
+  .flight-hud { --gutter: 10px; --hud-round: 42px; }
+  .flight-hud__title { font-size: 19px; }
+  .flight-hud__head { max-width: calc(100% - 120px); }
+  .flight-hud__rail { top: calc(max(var(--gutter), env(safe-area-inset-top)) + 150px); }
+  /* Under the heading block, clear of the cards on the other side. */
+  .flight-hud__comms { width: calc(100% - 20px); top: calc(max(var(--gutter), env(safe-area-inset-top)) + 150px); }
+  .flight-hud__console { gap: 9px; padding: 8px 11px; border-radius: 20px; }
+  .flight-hud .flight-hud__radar { width: 40px; height: 40px; }
+  .flight-hud__console-value { font-size: 14px; }
+  .flight-hud__console-label { font-size: 9px; }
+  .flight-hud__speed { width: 68px; height: 68px; margin: -6px 0; }
+  .flight-hud__speed-value { font-size: 16px; }
+  .flight-hud__speed svg, .flight-hud__speed svg .flight-hud__speed-arc { stroke-width: 5; }
+  .flight-hud__speed small { font-size: 8px; }
+  .flight-hud__speed .flight-hud__console-label { font-size: 8px; }
+  .flight-hud__sys { grid-template-columns: 15px auto minmax(38px, 1fr); gap: 5px; }
+  .flight-hud__sys-name { font-size: 9px; }
+  .flight-hud__systems { gap: 6px; min-width: 52px; }
+  .flight-hud__keys {
+    display: grid;
+    grid-template-columns: repeat(2, var(--key));
+    grid-auto-rows: var(--key);
+    gap: 7px;
+    justify-content: center;
+  }
+  .flight-hud :is(.flight-hud__key, .flight-drive__gear) { width: var(--key); height: var(--key); padding: 0; border-radius: 50%; }
+  .flight-hud .flight-hud__key span, .flight-hud[data-touch='true'] .flight-drive__mode { display: none; }
+  .flight-hud[data-touch='true'] .flight-drive__gear { flex-direction: column; gap: 4px; }
+  .flight-hud[data-touch='true'] .flight-drive__pips i { width: 8px; }
 }
-@media (max-width: 360px) {
-  .flight-hud { --gutter: 6px; }
-  .flight-hud__dock { gap: 6px 4px; }
-  .flight-hud__console { gap: 5px; }
-  .flight-hud__panel { padding: 6px 8px; gap: 6px; }
+@media (max-width: 380px) {
+  .flight-hud__rail-key > span:last-child { display: none; }
+  .flight-hud .flight-hud__rail-key { padding: 0 5px; }
+  .flight-hud__sys { grid-template-columns: 15px minmax(34px, 1fr); }
+  .flight-hud__sys-name { display: none; }
 }
-
-/* ── Pointer decks: the console has room for its labels, and the keys make
-   one labelled row above it. ── */
 @media (min-width: 600px) {
-  .flight-hud__head { top: max(24px, env(safe-area-inset-top)); left: max(24px, env(safe-area-inset-left)); font-size: 14px; }
-  .flight-hud__dock { gap: 12px; }
-  .flight-hud .flight-hud__radar { width: 84px; height: 84px; }
-  .flight-hud__panel { gap: 20px; padding: 10px 26px; }
-  .flight-hud__sys { grid-template-columns: 16px 58px 1fr 38px; gap: 10px; }
-  .flight-hud__sys-name { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
-  .flight-hud__percent, .flight-hud small, .flight-hud__mode { font-size: 11px; }
-  .flight-hud__odometer { font-size: 19px; }
-  .flight-hud .flight-hud__speed { width: 112px; height: 112px; margin: -22px 0; }
-  .flight-hud__speed-value { font-size: 28px; }
+  .flight-hud { --gutter: 22px; --hud-round: 46px; }
+  .flight-hud__title { font-size: 24px; }
+  .flight-hud__reading > span { font-size: 12px; }
+  .flight-hud__reading > b { font-size: 15px; }
+  .flight-hud__status { font-size: 12px; }
+  .flight-hud__console { gap: 22px; padding: 10px 20px; }
+  .flight-hud .flight-hud__radar { width: 58px; height: 58px; }
+  .flight-hud__speed { width: 86px; height: 86px; margin: -10px 0; }
+  .flight-hud__speed-value { font-size: 23px; }
+  .flight-hud__console-value { font-size: 18px; }
+  .flight-hud__sys { grid-template-columns: 16px 58px minmax(80px, 1fr); }
 }
 
-/* ── Touch ── */
-/* Phones hold the pad between the sticks; anything wider lays the console
-   and one row of keys out in the gap between them. */
+/* ── Touch: the pads flank the keys; wide screens put the console between
+   them instead of under them. ── */
 .flight-hud[data-touch='true'] .flight-hud__dock {
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'land    land    land'
-    'console console console'
-    'move    keys    look';
-}
-@media (max-width: 599px) {
-  .flight-hud[data-touch='true'] .flight-hud__keys {
-    display: grid;
-    grid-template-columns: repeat(3, var(--key));
-    grid-auto-rows: var(--key);
-    gap: 6px;
-    justify-content: center;
-    /* Every key fills its cell — the pad is a pad, not a row of labels. */
-    align-items: stretch;
-  }
-  /* gear · fire · boost over the wide jump key and the brake. */
-  .flight-hud[data-touch='true'] .flight-hud__keys > :nth-child(1) { grid-area: 1 / 1; }
-  .flight-hud[data-touch='true'] .flight-hud__keys > :nth-child(2) { grid-area: 2 / 1 / 3 / 3; }
-  .flight-hud[data-touch='true'] .flight-hud__keys > :nth-child(3) { grid-area: 1 / 2; }
-  .flight-hud[data-touch='true'] .flight-hud__keys > :nth-child(4) { grid-area: 1 / 3; }
-  .flight-hud[data-touch='true'] .flight-hud__keys > :nth-child(5) { grid-area: 2 / 3; }
-  .flight-hud[data-touch='true'] .flight-hud__key,
-  .flight-hud[data-touch='true'] .flight-drive__gear,
-  .flight-hud[data-touch='true'] .flight-drive__jump-wrap,
-  .flight-hud[data-touch='true'] .flight-drive__jump { width: 100%; height: 100%; min-height: 0; padding: 0; justify-content: center; }
-  .flight-hud[data-touch='true'] .flight-hud__key span,
-  .flight-hud[data-touch='true'] .flight-drive__mode { display: none; }
-  .flight-hud[data-touch='true'] .flight-drive__gear { flex-direction: column; gap: 5px; }
-  /* The wide key gives its whole width to the destination; the word on the
-     line above says what it is, so the icon stands down. */
-  .flight-hud[data-touch='true'] .flight-drive__jump { padding: 0 8px; justify-content: flex-start; }
-  .flight-hud[data-touch='true'] .flight-drive__jump svg { display: none; }
-  .flight-hud[data-touch='true'] .flight-drive__jump-label { font-size: 8px; letter-spacing: 0.08em; }
-  .flight-hud[data-touch='true'] .flight-drive__dest { font-size: 9px; letter-spacing: 0; }
+    'land land land'
+    'move keys look'
+    'console console console';
 }
 @media (min-width: 600px) {
   .flight-hud[data-touch='true'] .flight-hud__dock {
     grid-template-areas:
       'land land    land'
-      'move console look'
-      'move keys    look';
-    column-gap: 16px;
+      'move keys    look'
+      'move console look';
+    column-gap: 18px;
   }
-  .flight-hud[data-touch='true'] .flight-hud__key { width: 52px; padding: 0; justify-content: center; }
-  .flight-hud[data-touch='true'] .flight-hud__key span { display: none; }
 }
-/* Landscape: shallow screens give the band less depth, so the sticks and the
-   keys shrink rather than eating the view. */
+/* Landscape: a shallow screen gets a smaller dock rather than less view. */
+/* Short screens: the cards keep to one line each and the camera keys lie
+   down in a row, so the right column always clears the dock. */
+@media (max-height: 640px) {
+  .flight-hud .flight-hud__card { padding: 7px 9px; }
+  .flight-hud__card-label, .flight-hud__card-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .flight-hud__order .flight-hud__track { display: none; }
+  .flight-hud__cam { grid-auto-flow: column; align-items: center; margin-top: 12px; }
+  .flight-hud__zoom { grid-auto-flow: column; }
+  .flight-hud .flight-hud__zoom button + button { border-top: 0; border-left: 1px solid var(--hud-line); }
+}
+@media (max-height: 700px) {
+  .flight-hud__rail { gap: 6px; }
+  .flight-hud .flight-hud__rail-key { height: 36px; padding: 0 4px; }
+  .flight-hud__rail-icon { width: 28px; height: 28px; }
+  .flight-hud__rail-key > span:last-child { display: none; }
+}
 @media (max-height: 500px) {
-  .flight-hud { --stick: 96px; --key: 42px; --gutter: 8px; }
-  .flight-hud__dock { gap: 6px; }
-  .flight-hud .flight-hud__radar { width: 52px; height: 52px; }
-  .flight-hud__panel { padding: 6px 14px; gap: 12px; }
-  .flight-hud__sys { grid-template-columns: 14px 1fr 30px; gap: 5px; }
-  .flight-hud__sys-name { display: none; }
-  .flight-hud .flight-hud__speed { width: 74px; height: 74px; margin: -12px 0; }
-  .flight-hud__speed-value { font-size: 19px; }
-  .flight-hud__odometer { font-size: 13px; }
+  .flight-hud { --stick: 92px; --key: 42px; --hud-round: 42px; --gutter: 12px; --card: 196px; }
+  .flight-hud__top-keys { grid-auto-flow: column; }
+  .flight-hud__side { top: calc(max(var(--gutter), env(safe-area-inset-top)) + var(--hud-round) + 12px); gap: 8px; }
+  .flight-hud .flight-hud__card { padding: 5px 8px; }
+  .flight-hud__card-icon { width: 30px; height: 30px; }
+  .flight-hud__cam { margin-top: 8px; }
+  .flight-hud__dock { gap: 8px; }
+  .flight-hud__speed { width: 66px; height: 66px; margin: -6px 0; }
+  .flight-hud__speed-value { font-size: 18px; }
+  .flight-hud .flight-hud__radar { width: 44px; height: 44px; }
+  .flight-hud__console { padding: 7px 12px; gap: 12px; }
+  /* Laid out along the top instead of down the side. */
+  .flight-hud__rail { grid-auto-flow: column; top: calc(max(var(--gutter), env(safe-area-inset-top)) + 138px); }
 }
 
 /* ──────────────────── planet info chip (opens the facts card) ────────────────────
@@ -1499,12 +1605,12 @@
   }
 }
 
-/* Very small phones: the compass gives up a few pixels, nothing else changes. */
+/* Very small phones: the compass and the dial give up a few pixels. */
 @media (max-width: 380px) {
-  .flight-hud .flight-hud__radar { width: 40px; height: 40px; }
-  .flight-hud__panel { padding: 8px 8px; gap: 6px; }
-  .flight-hud .flight-hud__speed { width: 74px; height: 74px; }
-  .flight-hud__speed-value { font-size: 19px; }
+  .flight-hud .flight-hud__radar { width: 36px; height: 36px; }
+  .flight-hud__console { gap: 7px; padding: 8px 9px; }
+  .flight-hud__speed { width: 58px; height: 58px; }
+  .flight-hud__speed-value { font-size: 16px; }
 }
 
 /* ═══════════════════ Moon Mode: the surface ═══════════════════ */

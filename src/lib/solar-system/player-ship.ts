@@ -249,6 +249,10 @@ export interface FlightInput {
   targetClear: boolean;
   /** One-shot: lock a specific target by id (the HUD's list). */
   targetRequest: string | null;
+  /** One-shot: lock the nearest target of these kinds, then walk them —
+   *  one or more TargetKinds, comma separated, as the HUD's rail sends
+   *  them ("star,blackhole" is one key for anything a system turns on). */
+  targetKind: string | null;
   /** Chase-camera distance multiplier — 1 = the regime's own distance. */
   camZoom: number;
   /** Right button held: the chase camera walks around the hull. */
@@ -420,7 +424,7 @@ export function createFlightSession(): FlightSession {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
       modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false,
-      targetStep: 0, targetClear: false, targetRequest: null,
+      targetStep: 0, targetClear: false, targetRequest: null, targetKind: null,
       camZoom: 1, orbiting: false, orbitYaw: 0, orbitPitch: 0,
     },
     telemetry: {
@@ -1929,6 +1933,12 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
       if (input.targetRequest) {
         navId = input.targetRequest;
         input.targetRequest = null;
+      }
+      if (input.targetKind) {
+        const kinds = input.targetKind.split(',');
+        input.targetKind = null;
+        const pool = candidates.filter((c) => kinds.includes(c.kind));
+        if (pool.length) navId = stepTarget(pool, navId, me.position, 1);
       }
       if (input.targetStep) {
         navId = stepTarget(candidates, navId, me.position, input.targetStep);

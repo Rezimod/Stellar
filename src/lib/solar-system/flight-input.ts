@@ -199,6 +199,7 @@ export function clearFlightInput(input: FlightInput) {
   input.targetStep = 0;
   input.targetClear = false;
   input.targetRequest = null;
+  input.targetKind = null;
   input.camZoom = 1;
   input.orbiting = false;
   input.orbitYaw = 0;

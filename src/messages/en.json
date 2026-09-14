@@ -1183,7 +1183,9 @@
       "ly": "ly",
       "near": "Near",
       "alt": "Altitude",
+      "distance": "Distance",
       "system": "System",
+      "orbit": "Orbit",
       "target": "Target",
       "foils": "Wings",
       "foilsOpen": "Open",
@@ -1248,6 +1250,10 @@
         "mannsPlanet": "Mann's planet",
         "edmundsPlanet": "Edmunds' planet",
         "endurance": "Endurance"
+      },
+      "groups": {
+        "planets": "Planets",
+        "stars": "Stars"
       },
       "launchSub": "Launch sequence",
       "shipRoles": {
@@ -1406,11 +1412,14 @@
         "t5": "Pause — top right",
         "r9": "Right mouse — hold and drag for a 360° look at the ship",
         "r10": "H — light-year jump · J — change destination",
-        "t6": "Jump key — pick a star and cross the light years"
+        "t6": "Jump card, top right — pick a star and cross the light years",
+        "t7": "Rail on the left — lock the Moon, a planet, the ISS, a star",
+        "t8": "+ / − pull the camera; 3D drops you into the cockpit"
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
-      "order": "Order · destroy {body}",
+      "order": "Destroy {body}",
+      "orderTitle": "Standing order",
       "orderDone": "Objective complete",
       "land": "Land on the Moon",
       "jumpLabel": "Light-year jump",
