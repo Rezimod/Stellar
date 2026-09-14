@@ -6,11 +6,12 @@
 
 import * as THREE from 'three';
 import type { FlightInput, FlightSession, SpeedMode } from '@/lib/solar-system/player-ship';
+import { stepDestination } from '@/lib/solar-system/star-routes';
 
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight',
-  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyV', 'KeyC', 'KeyZ', 'KeyT', 'KeyG', 'KeyR',
+  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyJ', 'KeyV', 'KeyC', 'KeyZ', 'KeyT', 'KeyG', 'KeyR',
   'Minus', 'Equal', 'BracketLeft', 'BracketRight',
 ]);
 
@@ -84,6 +85,7 @@ export function attachDesktopControls(
     const mode = modeFor[e.code];
     if (mode) input.modeRequest = mode;
     else if (e.code === 'KeyF') input.foilsToggle = true;
+    else if (e.code === 'KeyJ') session.destination = stepDestination(session.telemetry.systemName, session.destination, e.shiftKey ? -1 : 1);
     else if (e.code === 'KeyV') input.eject = true;
     else if (e.code === 'KeyC') input.viewToggle = true;
     else if (e.code === 'KeyZ') input.assistToggle = true;

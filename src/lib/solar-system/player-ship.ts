@@ -19,7 +19,7 @@ import type { AlienHandle } from '@/lib/solar-system/aliens';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 import { makeFlightAudio } from '@/lib/solar-system/flight-audio';
 import { makeCameraRig, type CameraFrame } from '@/lib/solar-system/flight-camera';
-import { buildCosmonaut, buildKestrel, buildXfoil, type ShipKind, type ShipParts } from '@/lib/solar-system/ship-mesh';
+import { buildCosmonaut, buildEndurance, buildKestrel, buildXfoil, type ShipKind, type ShipParts } from '@/lib/solar-system/ship-mesh';
 import { shapeMouse } from '@/lib/solar-system/flight-input';
 import { makeMissionTracker, type MissionContext } from '@/lib/solar-system/flight-missions';
 import { projectTarget, stepTarget, type TargetCandidate, type TargetKind, type TargetScreen } from '@/lib/solar-system/flight-targeting';
@@ -49,6 +49,7 @@ export type FlightAlert =
   | 'masslock'
   | 'gravity'
   | 'solar'
+  | 'horizon'
   | 'charging'
   | 'jump'
   | 'jumpready'
@@ -359,6 +360,9 @@ export interface FlightSession {
   paused: boolean;
   /** Chosen in the hangar before launch. */
   shipKind: ShipKind;
+  /** The system the hyperdrive is set for; the canvas resolves it against
+   *  the one the ship is in. */
+  destination: string;
   input: FlightInput;
   telemetry: FlightTelemetry;
 }
@@ -366,7 +370,7 @@ export interface FlightSession {
 /** A solid body the ship can orbit, burn up in, or hit. */
 export interface FlightBody {
   id: string;
-  kind: 'star' | 'planet' | 'moon' | 'station';
+  kind: 'star' | 'blackhole' | 'planet' | 'moon' | 'station';
   position: THREE.Vector3;
   radius: number;
   radiusKm: number;
@@ -404,6 +408,7 @@ export function createFlightSession(): FlightSession {
     active: false,
     paused: false,
     shipKind: 'kestrel',
+    destination: 'alphaCentauri',
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
@@ -760,15 +765,25 @@ interface Bolt {
   life: number; // <0 idle
 }
 
-/** The starfighter trades armour for pace: faster, and it turns harder. */
+/** The starfighter trades armour for pace: faster, and it turns harder. The
+ *  Endurance is a long-haul explorer: slower off the mark, slow to turn. */
 function shipRegimes(kind: ShipKind): Record<Exclude<SpeedMode, 'jump'>, Regime> {
-  if (kind !== 'xfoil') return REGIMES;
-  const tune = (r: Regime): Regime => ({ ...r, max: r.max * 1.2, boost: r.boost * 1.2, accel: r.accel * 1.3, turn: r.turn * 1.15 });
+  if (kind === 'kestrel') return REGIMES;
+  const k = kind === 'xfoil' ? { speed: 1.2, accel: 1.3, turn: 1.15 } : { speed: 0.9, accel: 0.8, turn: 0.75 };
+  const tune = (r: Regime): Regime => ({ ...r, max: r.max * k.speed, boost: r.boost * k.speed, accel: r.accel * k.accel, turn: r.turn * k.turn });
   return { cruise: tune(REGIMES.cruise), fast: tune(REGIMES.fast) };
 }
 
+// The Endurance's ring faces the chase camera square on, so it is built a
+// size down to sit in the frame the way the winged hulls do.
+const BUILDERS: Record<ShipKind, (h: number) => ShipParts> = {
+  kestrel: buildKestrel,
+  xfoil: buildXfoil,
+  endurance: (h) => buildEndurance(h * 0.6),
+};
+
 export function createPlayerShip(session: FlightSession): PlayerShipHandle {
-  const shipParts: ShipParts = session.shipKind === 'xfoil' ? buildXfoil(H) : buildKestrel(H);
+  const shipParts = BUILDERS[session.shipKind](H);
   const evaParts = buildCosmonaut(E);
   const { group, cannonTips } = shipParts;
   const evaG = evaParts.group;
@@ -1665,7 +1680,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
             atmo = 1 - nearD / atmoTop;
             heatTarget = atmo * THREE.MathUtils.clamp(speed / (0.5 * U), 0, 1.4);
             heatTarget = Math.min(1, heatTarget);
-            alert = near.kind === 'star' ? 'solar' : 'entry';
+            alert = near.kind === 'star' ? 'solar' : near.kind === 'blackhole' ? 'horizon' : 'entry';
           } else if (nearD < near.radius * 1.5) {
             tmp.copy(near.position).sub(me.position).normalize();
             if (vel.dot(tmp) > 0.3 * U) alert = 'proximity';
@@ -1750,6 +1765,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         Math.sin(timeSec * 53 + 1) * shiver,
         0,
       );
+      if (shipParts.spinner) shipParts.spinner.rotation.z += dt * 0.5;
       const beat = timeSec % 1.4;
       const flashing = beat < 0.07 || (beat > 0.18 && beat < 0.25);
       shipParts.strobeMat.color.setScalar(flashing ? 2.4 : 0.05);

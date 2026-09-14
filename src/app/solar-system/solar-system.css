@@ -1001,7 +1001,7 @@
 /* ── Standing order, top right under the pause keys ── */
 .flight-hud__order {
   position: absolute;
-  top: calc(max(16px, env(safe-area-inset-top)) + 56px);
+  top: calc(max(16px, env(safe-area-inset-top)) + 116px);
   right: max(16px, env(safe-area-inset-right));
   width: 190px;
   display: grid;
@@ -1674,4 +1674,116 @@
   .moon-hud__suit { top: 76px; left: auto; right: 16px; display: grid; grid-template-columns: 1fr 1fr; }
   .moon-hud__foot { bottom: 20px; width: calc(100% - 320px); }
   .moon-hud__head { gap: 3px; top: 12px; }
+}
+
+/* ── Drive: slower / faster through the regimes, and the light-year jump ── */
+.flight-drive {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(20px, env(safe-area-inset-bottom)) + 124px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.flight-hud .flight-drive__step { position: relative; width: 52px; display: grid; place-items: center; }
+.flight-drive kbd, .flight-drive__jump kbd {
+  font: inherit;
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 4px;
+  border: 1px solid var(--hud-line);
+  border-radius: 3px;
+  color: var(--hud-dim);
+  letter-spacing: 0;
+}
+.flight-drive__step kbd { position: absolute; top: 3px; right: 5px; }
+.flight-drive__gear {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
+  min-width: 92px;
+  padding: 0 10px;
+  border: 1px solid var(--hud-line);
+  border-radius: 4px;
+  background: var(--hud-glass);
+}
+.flight-drive__mode { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
+.flight-drive__pips { display: flex; gap: 4px; }
+.flight-drive__pips i { width: 18px; height: 3px; border-radius: 2px; background: var(--hud-line); }
+.flight-drive[data-mode='cruise'] .flight-drive__pips i:first-child,
+.flight-drive:is([data-mode='fast'], [data-mode='jump']) .flight-drive__pips i { background: var(--hud-accent); }
+.flight-drive[data-mode='cruise'] .flight-drive__step:first-child,
+.flight-drive[data-mode='fast'] .flight-drive__step:last-child,
+.flight-drive[data-mode='jump'] .flight-drive__step { color: var(--hud-dim); border-color: rgba(120, 180, 235, 0.14); }
+.flight-drive[data-mode='eva'] { visibility: hidden; }
+
+.flight-drive__jump-wrap {
+  position: absolute;
+  top: calc(max(16px, env(safe-area-inset-top)) + 56px);
+  right: max(16px, env(safe-area-inset-right));
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  z-index: 3;
+}
+.flight-hud .flight-drive__jump {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 240px;
+  padding: 5px 12px 5px 10px;
+  text-align: left;
+}
+.flight-drive__jump svg { flex: none; color: var(--hud-accent); }
+.flight-drive__jump-text { display: grid; gap: 2px; min-width: 0; }
+.flight-drive__jump-label { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-accent); }
+.flight-drive__dest { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flight-drive__jump[data-state='locked'] .flight-drive__dest { color: var(--hud-dim); }
+.flight-hud .flight-drive__jump[data-state='jumping'] { border-color: var(--hud-accent); }
+.flight-drive__menu {
+  display: grid;
+  gap: 4px;
+  min-width: 230px;
+  padding: 6px;
+  border: 1px solid var(--hud-line);
+  border-radius: 4px;
+  background: rgba(6, 14, 28, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.flight-hud .flight-drive__menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 12px;
+  font-size: 12px;
+  text-align: left;
+}
+.flight-drive__ly { color: var(--hud-dim); white-space: nowrap; }
+
+/* Touch: the gears sit over the left stick, mirroring the action keys on the right. */
+.flight-hud[data-touch='true'] .flight-drive {
+  left: max(16px, env(safe-area-inset-left));
+  bottom: calc(268px + env(safe-area-inset-bottom));
+  transform: none;
+  gap: 4px;
+}
+.flight-hud[data-touch='true'] .flight-drive__step { width: 48px; }
+.flight-hud[data-touch='true'] .flight-drive__gear { min-width: 56px; padding: 0 6px; }
+.flight-hud[data-touch='true'] .flight-drive__mode { font-size: 11px; letter-spacing: 0.06em; }
+@media (max-width: 599px) {
+  .flight-hud__head { max-width: calc(100% - 216px); }
+  .flight-hud .flight-drive__jump { max-width: 176px; }
+  /* Narrow: the destination wraps rather than hiding its distance. */
+  .flight-drive__dest { white-space: normal; line-height: 1.35; }
+  .flight-hud__order { top: calc(max(16px, env(safe-area-inset-top)) + 136px); }
+}
+@media (max-width: 599px) and (min-height: 501px) {
+  .flight-hud[data-touch='true'] :is(.flight-hud__comms, .flight-hud__help) { top: 196px; }
+}
+@media (max-height: 500px) {
+  .flight-hud[data-touch='true'] .flight-drive { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 116px); }
 }

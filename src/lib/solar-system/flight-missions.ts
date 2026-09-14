@@ -56,6 +56,8 @@ export const DISCOVERIES: Discovery[] = [
   { id: 'alphaCentauri', body: 'alphaCenA', when: (c) => c.systemName === 'alphaCentauri' },
   { id: 'centauriPrime', body: 'centauriPrime', when: (c) => c.nearId === 'centauriPrime' && c.altRadii < 2.5 },
   { id: 'proximaB', body: 'proximaB', when: (c) => c.nearId === 'proximaB' && c.altRadii < 2.5 },
+  { id: 'gargantua', body: 'gargantua', when: (c) => c.systemName === 'gargantua' },
+  { id: 'millersPlanet', body: 'millersPlanet', when: (c) => c.nearId === 'millersPlanet' && c.altRadii < 2.5 },
 ];
 
 const STORE_KEY = 'stellar_expedition_log';

@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { softSpriteTexture } from '@/lib/solar-system/soft-sprite';
 
-export type ShipKind = 'kestrel' | 'xfoil';
+export type ShipKind = 'kestrel' | 'xfoil' | 'endurance';
 
 /** A reaction-control jet: a sprite on the hull whose brightness answers
  *  the control inputs it opposes. Weights are signed: a jet with yaw +1
@@ -61,6 +61,8 @@ export interface ShipParts {
   owned: THREE.Material[];
   /** Hull length, for the camera and collision maths. */
   length: number;
+  /** Turned about the flight axis every frame — the Endurance's gravity ring. */
+  spinner: THREE.Group | null;
 }
 
 interface Palette {
@@ -260,10 +262,14 @@ function bakeStatic(root: THREE.Object3D) {
   });
 }
 
-function finish(b: Builder, wings: WingPivot[], cannonTips: THREE.Object3D[], strobeMat: THREE.MeshBasicMaterial, length: number, plasmaZ: number): ShipParts {
+function finish(
+  b: Builder, wings: WingPivot[], cannonTips: THREE.Object3D[], strobeMat: THREE.MeshBasicMaterial,
+  length: number, plasmaZ: number, spinner: THREE.Group | null = null,
+): ShipParts {
   const H = b.H;
   bakeStatic(b.hull);
   for (const w of wings) bakeStatic(w.pivot);
+  if (spinner) bakeStatic(spinner);
   b.owned.push(strobeMat);
   const plasmaMat = new THREE.SpriteMaterial({
     map: b.glowTex, color: 0xff8a3a, transparent: true, opacity: 0,
@@ -292,6 +298,7 @@ function finish(b: Builder, wings: WingPivot[], cannonTips: THREE.Object3D[], st
     rcs: b.rcs,
     owned: b.owned,
     length,
+    spinner,
   };
 }
 
@@ -501,6 +508,88 @@ export function buildXfoil(H: number): ShipParts {
 }
 
 /**
+ * Endurance — after the ship in Interstellar: twelve modules on a ring that
+ * spins for gravity, joined by short pressurised links and four spokes to a
+ * long central hub with gold foil wraps and a docking collar forward. The
+ * drives sit on the aft faces of four ring modules. Forward is +Z; the ring
+ * lies in the XY plane and turns about the flight axis.
+ */
+export function buildEndurance(H: number): ShipParts {
+  const pal = palette(0xc9a44c, 0x9fd4ff);
+  const b = builder(H, pal);
+  const RING = 4.1 * H;
+  const MODULES = 12;
+
+  // ── Hub: the axis of the ship, foil-wrapped, a window band and the collar. ──
+  const hub = mesh(b, new THREE.CylinderGeometry(0.5 * H, 0.5 * H, 2.8 * H, 16), pal.panel, 0, 0, 0);
+  hub.rotation.x = Math.PI / 2;
+  const foilGeom = new THREE.CylinderGeometry(0.53 * H, 0.53 * H, 0.35 * H, 16);
+  for (const z of [-0.9 * H, 0.45 * H]) {
+    const foil = mesh(b, foilGeom, pal.accent, 0, 0, z);
+    foil.rotation.x = Math.PI / 2;
+  }
+  const band = mesh(b, new THREE.CylinderGeometry(0.51 * H, 0.51 * H, 0.14 * H, 16), pal.glass, 0, 0, 1.0 * H);
+  band.rotation.x = Math.PI / 2;
+  mesh(b, new THREE.TorusGeometry(0.62 * H, 0.09 * H, 10, 24), pal.titanium, 0, 0, 1.45 * H);
+  const nose = mesh(b, new THREE.CylinderGeometry(0.28 * H, 0.45 * H, 0.4 * H, 16), pal.dark, 0, 0, 1.6 * H);
+  nose.rotation.x = Math.PI / 2;
+  const aft = mesh(b, new THREE.CylinderGeometry(0.42 * H, 0.3 * H, 0.5 * H, 16), pal.graphite, 0, 0, -1.6 * H);
+  aft.rotation.x = Math.PI / 2;
+
+  // ── Two short barrels under the collar. ──
+  const cannonTips: THREE.Object3D[] = [];
+  const cannonGeom = new THREE.CylinderGeometry(0.05 * H, 0.06 * H, 1.0 * H, 8);
+  for (const s of [1, -1]) {
+    const barrel = mesh(b, cannonGeom, pal.dark, s * 0.32 * H, -0.46 * H, 1.3 * H);
+    barrel.rotation.x = Math.PI / 2;
+    const tip = new THREE.Object3D();
+    tip.position.set(s * 0.32 * H, -0.46 * H, 1.85 * H);
+    b.hull.add(tip);
+    cannonTips.push(tip);
+  }
+
+  // ── The ring, on its own group so the flight model can spin it. ──
+  const spinner = new THREE.Group();
+  b.hull.add(spinner);
+  const moduleGeom = new THREE.BoxGeometry(1.25 * H, 0.8 * H, 1.1 * H);
+  const windowGeom = new THREE.BoxGeometry(0.9 * H, 0.05 * H, 0.42 * H);
+  const linkGeom = new THREE.CylinderGeometry(0.13 * H, 0.13 * H, 1.0 * H, 8);
+  for (let i = 0; i < MODULES; i++) {
+    const a = (i / MODULES) * Math.PI * 2;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    // Box x along the tangent, y along the radius.
+    const mod = mesh(b, moduleGeom, i % 2 ? pal.panel : pal.titanium, c * RING, s * RING, 0, spinner);
+    mod.rotation.z = a - Math.PI / 2;
+    const win = mesh(b, windowGeom, pal.dark, c * (RING + 0.42 * H), s * (RING + 0.42 * H), 0, spinner);
+    win.rotation.z = a - Math.PI / 2;
+    const la = a + Math.PI / MODULES;
+    const link = mesh(b, linkGeom, pal.graphite, Math.cos(la) * RING, Math.sin(la) * RING, 0, spinner);
+    link.rotation.z = la;
+  }
+  const inner = 0.5 * H;
+  const outer = RING - 0.4 * H;
+  const spokeGeom = new THREE.BoxGeometry(0.14 * H, outer - inner, 0.14 * H);
+  for (let k = 0; k < 4; k++) {
+    const a = (k * Math.PI) / 2;
+    const r = (inner + outer) / 2;
+    const spoke = mesh(b, spokeGeom, pal.titanium, Math.cos(a) * r, Math.sin(a) * r, 0, spinner);
+    spoke.rotation.z = a - Math.PI / 2;
+  }
+  for (let k = 0; k < 4; k++) {
+    const a = Math.PI / 6 + (k * Math.PI) / 2;
+    engine(b, Math.cos(a) * RING, Math.sin(a) * RING, -0.75 * H, 0.26 * H, 2.4 * H, spinner);
+  }
+  navLight(b, RING + 0.5 * H, 0, 0, 0xff3b30, 0.08 * H, spinner);
+  navLight(b, -RING - 0.5 * H, 0, 0, 0x30ff6a, 0.08 * H, spinner);
+
+  standardRcs(b, 1.1 * H, -1.1 * H, 0.55 * H);
+  const strobeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  mesh(b, new THREE.SphereGeometry(0.07 * H, 8, 8), strobeMat, 0, 0.56 * H, -1.3 * H);
+  return finish(b, [], cannonTips, strobeMat, 8.4 * H, 1.8 * H, spinner);
+}
+
+/**
  * The suit: a white hard-upper-torso EVA suit with a gold visor, the life
  * support pack on the back, red mission stripes, a chest display and the
  * SAFER jet pack whose nozzles glow when it fires. Head is +Y, forward +Z.
@@ -599,6 +688,6 @@ export function buildCosmonaut(E: number): ShipParts {
   hull.add(plasma);
   return {
     group, hull, wings: [], cannonTips: [], skinMat, engineMat, bellMat, glowMats, glowSprites,
-    plumes: [], plumeMat: null, plasmaMat, plasma, strobeMat, navMats: [], rcs: [], owned, length: 2.6 * E,
+    plumes: [], plumeMat: null, plasmaMat, plasma, strobeMat, navMats: [], rcs: [], owned, length: 2.6 * E, spinner: null,
   };
 }

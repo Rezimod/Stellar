@@ -1156,7 +1156,8 @@
       "hangar": "Hangar",
       "ships": {
         "kestrel": "Kestrel",
-        "xfoil": "X-foil"
+        "xfoil": "X-foil",
+        "endurance": "Endurance"
       },
       "eject": "Eject",
       "board": "Board",
@@ -1202,13 +1203,15 @@
         "shielddown": "Shields down",
         "hullcritical": "Hull critical",
         "docked": "Docked — hull, shields and banks restored",
-        "undocked": "Released — you have the con"
+        "undocked": "Released — you have the con",
+        "horizon": "Event horizon — tidal forces rising"
       },
       "hullLost": "Hull lost",
       "respawn": "Respawn in {n}",
       "systems": {
         "sol": "Solar System",
-        "alphaCentauri": "Alpha Centauri"
+        "alphaCentauri": "Alpha Centauri",
+        "gargantua": "Gargantua"
       },
       "bodies": {
         "alphaCenA": "Alpha Centauri A",
@@ -1238,12 +1241,18 @@
         "voyager2": "Voyager 2",
         "pioneer10": "Pioneer 10",
         "pioneer11": "Pioneer 11",
-        "newHorizons": "New Horizons"
+        "newHorizons": "New Horizons",
+        "gargantua": "Gargantua",
+        "millersPlanet": "Miller's planet",
+        "mannsPlanet": "Mann's planet",
+        "edmundsPlanet": "Edmunds' planet",
+        "endurance": "Endurance"
       },
       "launchSub": "Launch sequence",
       "shipRoles": {
         "kestrel": "Survey ship",
-        "xfoil": "Starfighter"
+        "xfoil": "Starfighter",
+        "endurance": "Interstellar explorer"
       },
       "assistOn": "Assist on",
       "assistOff": "Assist off",
@@ -1269,7 +1278,8 @@
         "station": "Station",
         "probe": "Probe",
         "contact": "Contact",
-        "jump": "Jump"
+        "jump": "Jump",
+        "blackhole": "Black hole"
       },
       "discoveries": {
         "moonPass": {
@@ -1367,6 +1377,14 @@
         "proximaB": {
           "title": "Proxima b",
           "fact": "A rocky world in Proxima's habitable zone, found in 2016."
+        },
+        "gargantua": {
+          "title": "Gargantua",
+          "fact": "In Interstellar, an hour on Miller's planet cost seven years on Earth."
+        },
+        "millersPlanet": {
+          "title": "Miller's planet",
+          "fact": "So close to Gargantua that its tides raise waves a kilometre high."
         }
       },
       "help": "Controls",
@@ -1377,21 +1395,28 @@
         "r3": "Mouse — steer",
         "r4": "Q / E — roll",
         "r5": "Shift — boost · Space — fire",
-        "r6": "1 2 3 or the dial — cruise, fast, light speed",
+        "r6": "1 / 2 or the arrows above the deck — slower, faster",
         "r7": "T — next target · G — hold to align",
         "r8": "F — wings · C — cockpit · Esc — pause",
         "t1": "Left stick — thrust and turn; release to coast",
         "t2": "Right stick — aim; right keys — fire, boost, brake",
-        "t3": "Tap the dial — cruise, fast, light speed",
+        "t3": "Arrows on the left — slower, faster",
         "t4": "Tap the compass — next target",
         "t5": "Pause — top right",
-        "r9": "Right mouse — hold and drag for a 360° look at the ship"
+        "r9": "Right mouse — hold and drag for a 360° look at the ship",
+        "r10": "H — light-year jump · J — change destination",
+        "t6": "Light-year jump, top right — pick a star and go"
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
       "order": "Order · destroy {body}",
       "orderDone": "Objective complete",
-      "land": "Land on the Moon"
+      "land": "Land on the Moon",
+      "slower": "Slower",
+      "faster": "Faster",
+      "jumpLabel": "Light-year jump",
+      "jumpMenu": "Choose a destination",
+      "lyLeft": "ly to go"
     },
     "moon": {
       "place": "Stellar Base · Moon",

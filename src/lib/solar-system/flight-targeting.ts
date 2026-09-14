@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 
-export type TargetKind = 'star' | 'planet' | 'moon' | 'station' | 'probe' | 'contact' | 'jump';
+export type TargetKind = 'star' | 'blackhole' | 'planet' | 'moon' | 'station' | 'probe' | 'contact' | 'jump';
 
 export interface TargetCandidate {
   id: string;

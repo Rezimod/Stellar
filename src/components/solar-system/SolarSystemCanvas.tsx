@@ -67,6 +67,8 @@ import {
   type PlayerShipHandle,
 } from '@/lib/solar-system/player-ship';
 import { makeAlphaCentauri } from '@/lib/solar-system/star-systems';
+import { makeGargantua } from '@/lib/solar-system/black-hole';
+import { lightYearsBetween, resolveDestination } from '@/lib/solar-system/star-routes';
 import { makeSmallBodies } from '@/lib/solar-system/small-bodies';
 import { makeAlienEncounters, type AlienHandle } from '@/lib/solar-system/aliens';
 import { makeDeepSpaceProbes } from '@/lib/solar-system/probes';
@@ -492,6 +494,10 @@ export function SolarSystemCanvas({
     const alphaCen = makeAlphaCentauri(sunSurface.material, lite);
     alphaCen.group.visible = false;
     scene.add(alphaCen.group);
+    // Gargantua, the black hole a galaxy away — also only while flying.
+    const gargantua = makeGargantua(lite);
+    gargantua.group.visible = false;
+    scene.add(gargantua.group);
     // Ceres and Vesta — small worlds in the belt, always on their orbits.
     const smallBodies = makeSmallBodies(lite);
     scene.add(smallBodies.group);
@@ -1038,6 +1044,7 @@ export function SolarSystemCanvas({
       ship = null;
       delete window.__stellarFlight;
       alphaCen.group.visible = false;
+      gargantua.group.visible = false;
       // The follow camera rolls its up vector, widens the lens and pulls the
       // clipping planes in around the ship; the orbit camera needs them back.
       camera.up.set(0, 1, 0);
@@ -1128,18 +1135,29 @@ export function SolarSystemCanvas({
         world.bodies.push(iss);
       }
       for (const b of alphaCen.bodies) world.bodies.push(b);
+      for (const b of gargantua.bodies) world.bodies.push(b);
       world.pois = probes.targets;
-      const atSol = !shipPos || shipPos.length() < shipPos.distanceTo(alphaCen.center);
-      world.systemName = atSol ? 'sol' : 'alphaCentauri';
-      if (atSol) {
-        solAnchor(earth, world.home);
-        copyAnchor(alphaCen.arrival, world.jump);
-        world.jump.name = 'alphaCentauri';
-      } else {
-        copyAnchor(alphaCen.arrival, world.home);
-        solAnchor(earth, world.jump);
-        world.jump.name = 'sol';
+      // The ship is in whichever system's centre is nearest; the drive points
+      // at the system the pilot picked, or the default hop if that is here.
+      let current = 'sol';
+      if (shipPos) {
+        let best = shipPos.length();
+        if (shipPos.distanceTo(alphaCen.center) < best) {
+          best = shipPos.distanceTo(alphaCen.center);
+          current = 'alphaCentauri';
+        }
+        if (shipPos.distanceTo(gargantua.center) < best) current = 'gargantua';
       }
+      const arrivalOf = (name: string, out: FlightAnchor) => {
+        if (name === 'sol') solAnchor(earth, out);
+        else copyAnchor(name === 'gargantua' ? gargantua.arrival : alphaCen.arrival, out);
+      };
+      const dest = resolveDestination(current, flightRef.current?.destination ?? '');
+      world.systemName = current;
+      arrivalOf(current, world.home);
+      arrivalOf(dest, world.jump);
+      world.jump.name = dest;
+      world.jump.distanceLy = lightYearsBetween(current, dest);
     };
     /** Screen brackets for what is worth naming out of the canopy: bodies
      *  ahead of the ship, close enough to matter, and small enough on screen
@@ -1246,6 +1264,7 @@ export function SolarSystemCanvas({
           scene.add(ship.boltGroup);
           scene.add(ship.fxGroup);
           alphaCen.group.visible = true;
+          gargantua.group.visible = true;
           // A ship is a fraction of a planet's radius across and the camera
           // rides just behind it, so the near plane comes in. Nothing beyond
           // the star shell is drawn in flight, so the far plane comes in too.
@@ -1267,6 +1286,7 @@ export function SolarSystemCanvas({
         syncWorld(ship.group.position, earthPos, now);
         ship.update(dtSec, (now - t0) / 1000, camera, aliens, world);
         alphaCen.update(session?.paused ? 0 : dtSec, camera.position, camera);
+        gargantua.update(session?.paused ? 0 : dtSec, camera.position, camera);
         markTargets(session!.telemetry, world, camera);
         // Exposure adapts against the Sun: the closer and the more the nose
         // is on it, the further the iris closes, so the disc keeps a
@@ -1472,6 +1492,8 @@ export function SolarSystemCanvas({
       sunExtras.dispose();
       scene.remove(alphaCen.group);
       alphaCen.dispose();
+      scene.remove(gargantua.group);
+      gargantua.dispose();
       scene.remove(smallBodies.group);
       smallBodies.dispose();
       sunSurface.dispose();

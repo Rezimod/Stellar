@@ -5,6 +5,7 @@ import { ArrowDownToLine, ChevronsUp, Crosshair, HelpCircle, Pause, Play, Rocket
 import { useTranslations } from 'next-intl';
 import { attachDesktopControls, clearFlightInput } from '@/lib/solar-system/flight-input';
 import { type FlightSession, type ShipKind } from '@/lib/solar-system/player-ship';
+import { FlightDrive } from './FlightDrive';
 import { GameStick } from './GameStick';
 
 interface PlayerShipProps {
@@ -15,13 +16,14 @@ interface PlayerShipProps {
   /** Moon Mode has the screen; the deck stays paused underneath. */
   landed: boolean;
 }
+const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't4', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r7', 'r8', 'r9'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't6', 't4', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
 const SOLAR_IDS = new Set(['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
-const fmt = (n: number) => n >= 1e6 ? `${(n / 1e6).toFixed(1)} M` : n >= 1e4 ? `${Math.round(n / 1000)} K` : n >= 100 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
+const fmt = (n: number) => n >= 1e9 ? `${(n / 1e9).toFixed(1)} B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} M` : n >= 1e4 ? `${Math.round(n / 1000)} K` : n >= 100 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
 
 export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
@@ -37,6 +39,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
   const altRef = useRef<HTMLSpanElement>(null);
   const velRef = useRef<HTMLSpanElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
+  const unitRef = useRef<HTMLElement>(null);
   const modeRef = useRef<HTMLSpanElement>(null);
   const odoRef = useRef<HTMLSpanElement>(null);
   const statusRef = useRef<HTMLSpanElement>(null);
@@ -158,7 +161,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
       text(placeRef.current, tel.nearId ? t('orbitOf', { body: name(tel.nearId) }) : t(`systems.${tel.systemName}`));
       text(altRef.current, tel.nearId ? `${fmt(tel.nearAltKm)} km` : '—');
       text(velRef.current, `${fmt(tel.speedKmS)} ${t('kmS')}`);
-      text(speedRef.current, fmt(tel.speedKmS));
+      // In the jump the dial counts down the light years still to go.
+      const jumping = tel.jumpPhase === 'travel';
+      text(speedRef.current, fmt(jumping ? tel.targetLy * (1 - tel.jumpT) : tel.speedKmS));
+      text(unitRef.current, jumping ? t('lyLeft') : t('kmS'));
       text(modeRef.current, t(`modes.${tel.pilot === 'eva' ? 'eva' : tel.mode}`));
       text(odoRef.current, fmt(tel.odometerKm));
       root?.style.setProperty('--speed', String(Math.min(1, tel.speedFrac)));
@@ -271,7 +277,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
     <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} hidden={landed}>
       {!active ? (
         <div className="flight-hud__launch">
-          <button type="button" className="flight-hud__ship" onClick={() => setShipKind(shipKind === 'kestrel' ? 'xfoil' : 'kestrel')} aria-label={t('hangar')}>
+          <button type="button" className="flight-hud__ship" onClick={() => setShipKind(SHIPS[(SHIPS.indexOf(shipKind) + 1) % SHIPS.length])} aria-label={t('hangar')}>
             {t(`ships.${shipKind}`)}
           </button>
           <button type="button" className="flight-hud__explore" onClick={enter}><Rocket size={16} aria-hidden />{t('explore')}</button>
@@ -314,21 +320,22 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             <span ref={orderTextRef} />
             <span className="flight-hud__track"><span ref={orderBarRef} /></span>
           </div>
+          <FlightDrive session={session} paused={paused} touch={touch} />
           <div className="flight-hud__console">
             <button type="button" className="flight-hud__radar" aria-label={t('target')} onClick={() => { session.input.targetStep = 1; }} disabled={paused}>
               <canvas ref={radarRef} aria-hidden />
             </button>
             <div className="flight-hud__panel">
               <div className="flight-hud__odometer"><span>{t('odometer')}</span><span><span ref={odoRef}>0</span> <small>km</small></span></div>
-              <button type="button" className="flight-hud__speed" aria-label={t('speedMode')} disabled={paused} onClick={() => { session.input.modeRequest = session.telemetry.mode === 'cruise' ? 'fast' : session.telemetry.mode === 'fast' ? 'jump' : 'cruise'; }}>
+              <div className="flight-hud__speed">
                 <svg viewBox="0 0 120 120" aria-hidden>
                   <circle cx="60" cy="60" r="52" />
                   <circle className="flight-hud__speed-arc" cx="60" cy="60" r="52" pathLength="1" />
                   <line className="flight-hud__speed-index" x1="60" y1="4" x2="60" y2="14" />
                 </svg>
                 <span ref={modeRef} className="flight-hud__mode" />
-                <span ref={speedRef} className="flight-hud__speed-value">0</span><small>{t('kmS')}</small>
-              </button>
+                <span ref={speedRef} className="flight-hud__speed-value">0</span><small ref={unitRef}>{t('kmS')}</small>
+              </div>
               <div className="flight-hud__systems">
                 {BARS.map((key, i) => { const Icon = ICONS[i]; return <div key={key} className="flight-hud__sys" aria-label={t(key)}>
                   <Icon size={14} aria-hidden /><span className="flight-hud__sys-name">{t(key)}</span>
