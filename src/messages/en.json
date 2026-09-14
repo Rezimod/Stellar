@@ -1414,7 +1414,10 @@
         "r10": "H — light-year jump · J — change destination",
         "t6": "Jump card, top right — pick a star and cross the light years",
         "t7": "Rail on the left — lock the Moon, a planet, the ISS, a star",
-        "t8": "+ / − pull the camera; 3D drops you into the cockpit"
+        "t8": "+ / − pull the camera; 3D drops you into the cockpit",
+        "t9": "Eye key — the deck goes, the view stays; the pads still steer where they were",
+        "t10": "Phone key — turn the whole deck to landscape and back",
+        "r11": "I — hide the deck for the view alone"
       },
       "dockedAt": "Docked at {body} — W to release",
       "supplying": "Taking on fuel and stores",
@@ -1425,7 +1428,11 @@
       "jumpLabel": "Light-year jump",
       "jumpShort": "Jump",
       "jumpMenu": "Choose a destination",
-      "lyLeft": "ly to go"
+      "lyLeft": "ly to go",
+      "hudHide": "Hide the deck",
+      "hudShow": "Show the deck",
+      "landscape": "Turn to landscape",
+      "portrait": "Turn to portrait"
     },
     "moon": {
       "place": "Stellar Base · Moon",

@@ -252,12 +252,15 @@ export function makeGargantua(lite: boolean): StarSystemHandle {
   // Edmunds' planet: dry, rust-coloured, a thin breathable air.
   const texEdmunds = crateredTexture(239, [176, 128, 90], 50);
   textures.push(texMiller, texMann, texEdmunds);
+  // The orbits turn, but slowly: a world's speed along its track is kept
+  // under a third of the cruise ceiling, so a ship that has dropped to
+  // cruise in its well can still run it down and hold station.
   addWorld('millersPlanet', 1.1 * R_EARTH_KM, 12.7, 1.15,
-    new THREE.MeshStandardMaterial({ map: texMiller, roughness: 0.35, metalness: 0.1 }), 0x9ec3d6, 5.6, 0.05, 2.2);
+    new THREE.MeshStandardMaterial({ map: texMiller, roughness: 0.35, metalness: 0.1 }), 0x9ec3d6, 5.6, 0.0002, 2.2);
   addWorld('mannsPlanet', 0.9 * R_EARTH_KM, 8, 1.1,
-    new THREE.MeshStandardMaterial({ map: texMann, bumpMap: texMann, bumpScale: 0.002, roughness: 0.85, metalness: 0.02 }), 0xdfe8f0, 8.4, 0.028, 4.1);
+    new THREE.MeshStandardMaterial({ map: texMann, bumpMap: texMann, bumpScale: 0.002, roughness: 0.85, metalness: 0.02 }), 0xdfe8f0, 8.4, 0.00013, 4.1);
   addWorld('edmundsPlanet', 1.05 * R_EARTH_KM, 9.2, 1.2,
-    new THREE.MeshStandardMaterial({ map: texEdmunds, bumpMap: texEdmunds, bumpScale: 0.003, roughness: 0.95, metalness: 0.02 }), 0xe8b27a, 11.8, 0.018, 0.9);
+    new THREE.MeshStandardMaterial({ map: texEdmunds, bumpMap: texEdmunds, bumpScale: 0.003, roughness: 0.95, metalness: 0.02 }), 0xe8b27a, 11.8, 0.00009, 0.9);
 
   // The Endurance, holding a high orbit over Miller's planet, ring turning.
   const endurance = buildEndurance(ENDURANCE_H);
@@ -312,8 +315,9 @@ export function makeGargantua(lite: boolean): StarSystemHandle {
         }
       }
       endurance.group.visible = !station.destroyed;
+      // The station idles round Miller's planet slowly enough to be docked with.
       const m = orbiters[0].mesh.position;
-      const a = clock * 0.2;
+      const a = clock * 0.004;
       endurance.group.position.set(m.x + Math.cos(a) * STATION_ORBIT, m.y + Math.sin(a) * STATION_ORBIT * 0.25, m.z + Math.sin(a) * STATION_ORBIT);
       frame.localToWorld(station.position.copy(endurance.group.position));
       frame.localToWorld(tmp.set(

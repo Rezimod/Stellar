@@ -933,7 +933,7 @@ export function SolarSystemCanvas({
     };
 
     const onTouchStart = (e: TouchEvent) => {
-      if (flying()) return;
+      if (flying()) { e.preventDefault(); return; }
       if (e.touches.length === 2) {
         pinchActive = true;
         lastPinchDist = touchDist(e.touches);
@@ -951,7 +951,7 @@ export function SolarSystemCanvas({
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (flying()) return;
+      if (flying()) { e.preventDefault(); return; }
       if (e.touches.length >= 2) {
         const d = touchDist(e.touches);
         if (lastPinchDist > 4 && d > 4) {

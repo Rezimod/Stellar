@@ -27,6 +27,7 @@ export default function SolarSystemExplorer() {
   const [speedIdx, setSpeedIdx] = useState(2);
   const [flightActive, setFlightActive] = useState(false);
   const [landed, setLanded] = useState(false);
+  const [landscape, setLandscape] = useState(false);
   const [zoomTo, setZoomTo] = useState<number | null>(null);
   const flightRef = useRef<FlightSession | null>(null);
   if (!flightRef.current) flightRef.current = createFlightSession();
@@ -37,6 +38,11 @@ export default function SolarSystemExplorer() {
     document.body.setAttribute('data-solar-immersive', '1');
     return () => document.body.removeAttribute('data-solar-immersive');
   }, []);
+  // The turned viewport has new sides; the renderer refits on the resize it
+  // would otherwise never hear about.
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, [landscape]);
   useEffect(() => {
     if (!playing || flightActive) return;
     let last = performance.now();
@@ -52,7 +58,7 @@ export default function SolarSystemExplorer() {
   }, [playing, speedIdx, flightActive]);
 
   return (
-    <div className="solar-system solar-system--immersive" onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()}>
+    <div className="solar-system solar-system--immersive" data-flying={flightActive} onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()} onSelect={(e) => e.preventDefault()}>
       {!flightActive && <div className="solar-system__chrome-float">
         <button type="button" className="solar-system__fab solar-system__fab--close" onClick={() => router.push('/sky')} aria-label={t('immersive.exit')}>
           <X size={20} aria-hidden />
@@ -61,10 +67,11 @@ export default function SolarSystemExplorer() {
           {selectedId ? t(`bodies.${selectedId}.name`) : format.dateTime(new Date(epochMs), { month: 'short', day: 'numeric' })}
         </span>
       </div>}
-      <div className="solar-system__viewport solar-system__viewport--fill">
+      <div className="solar-system__viewport solar-system__viewport--fill" data-rotate={landscape && flightActive ? 'cw' : undefined}>
         <SolarSystemCanvas epochMs={epochMs} scaleMode="orrery" includePluto selectedId={selectedId} focusBodyId={selectedId}
           onSelect={setSelectedId} onZoomToSun={zoomToSun} zoomTo={zoomTo} onZoomToConsumed={consumeZoom} flight={flightRef.current} suspended={landed} />
-        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={() => setLanded(true)} landed={landed} />
+        <PlayerShip session={flightRef.current} onActiveChange={setFlightActive} onLand={() => { setLandscape(false); setLanded(true); }} landed={landed}
+          landscape={landscape} onLandscape={setLandscape} />
         {landed && <MoonSurface onReturn={() => setLanded(false)} />}
       </div>
       {!flightActive && <div className="solar-system__dockbar" role="group" aria-label={t('time.title')}>

@@ -419,6 +419,32 @@
   min-height: 0;
   position: relative;
   z-index: 2;
+  /* The deck's breakpoints read this box, not the window. */
+  container: viewport / size;
+}
+/* In flight the canvas is only glass under the deck — no gesture of the
+   browser's own may start on it. */
+.solar-system[data-flying='true'] .solar-system__canvas { touch-action: none; }
+/* Landscape on a phone that will not turn: the whole viewport — canvas and
+   deck — is drawn a quarter turn clockwise and sized to the screen's other
+   way round. The deck's container queries then lay it out as landscape,
+   and its four edges swap to keep clear of the notch and the home bar. */
+.solar-system__viewport--fill[data-rotate='cw'] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vh;
+  height: 100vw;
+  width: 100dvh;
+  height: 100dvw;
+  transform-origin: top left;
+  transform: rotate(90deg) translateY(-100%);
+}
+.solar-system__viewport--fill[data-rotate='cw'] .flight-hud {
+  --edge-top: max(var(--gutter), env(safe-area-inset-right));
+  --edge-right: max(var(--gutter), env(safe-area-inset-bottom));
+  --edge-bottom: max(var(--gutter), env(safe-area-inset-left));
+  --edge-left: max(var(--gutter), env(safe-area-inset-top));
 }
 
 .solar-system__viewport-hint--compact {
@@ -886,10 +912,16 @@
   /* Shapes and sizes; every breakpoint sets these and the rest follows. */
   --hud-radius: 18px;
   --hud-round: 44px;
-  --stick: clamp(88px, 26vw, 116px);
-  --key: clamp(42px, 12vw, 48px);
-  --card: clamp(152px, 46vw, 218px);
+  --stick: clamp(88px, 26cqw, 116px);
+  --key: clamp(42px, 12cqw, 48px);
+  --card: clamp(152px, 46cqw, 218px);
   --gutter: 14px;
+  /* The four edges, each held off the phone's own hardware — swapped round
+     when the viewport is turned (see [data-rotate]). */
+  --edge-top: max(var(--gutter), env(safe-area-inset-top));
+  --edge-right: max(var(--gutter), env(safe-area-inset-right));
+  --edge-bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  --edge-left: max(var(--gutter), env(safe-area-inset-left));
   position: absolute;
   inset: 0;
   z-index: 18;
@@ -938,8 +970,8 @@
 /* ── Top left: where you are, how high, how fast ── */
 .flight-hud__head {
   position: absolute;
-  top: max(var(--gutter), env(safe-area-inset-top));
-  left: max(var(--gutter), env(safe-area-inset-left));
+  top: var(--edge-top);
+  left: var(--edge-left);
   display: grid;
   gap: 3px;
   padding-left: 12px;
@@ -967,11 +999,21 @@
 /* Warnings and prompts land under the readings — never over the view. */
 .flight-hud__status { margin-top: 5px; min-height: 1.4em; color: var(--hud-accent); font-size: 11px; line-height: 1.45; }
 
+/* ── The immersive view: only the eye is drawn; the pads stay live but
+   unseen, so the view is the whole screen and the ship still answers. ── */
+.flight-hud__unhide { position: absolute; top: var(--edge-top); right: var(--edge-right); display: none; }
+.flight-hud[data-immersive='true'] .flight-hud__unhide { display: flex; opacity: 0.55; }
+.flight-hud[data-immersive='true'] > :not(.flight-hud__unhide, .flight-hud__dock, .flight-hud__help) { display: none; }
+.flight-hud[data-immersive='true'] .flight-hud__dock > :not(.flight-hud__move, .flight-hud__look) { visibility: hidden; }
+.flight-hud[data-immersive='true'] :is(.flight-hud__move, .flight-hud__look) { opacity: 0; }
+.flight-hud__turn[data-on='true'] svg { transform: rotate(90deg); }
+.flight-hud .flight-hud__turn[data-on='true'] { border-color: rgba(77, 163, 255, 0.7); color: var(--hud-accent); }
+
 /* ── Top right: the round session keys ── */
 .flight-hud__top-keys {
   position: absolute;
-  top: max(var(--gutter), env(safe-area-inset-top));
-  right: max(var(--gutter), env(safe-area-inset-right));
+  top: var(--edge-top);
+  right: var(--edge-right);
   display: grid;
   gap: 9px;
 }
@@ -980,8 +1022,8 @@
 /* ── The right column: the cards, then the camera keys ── */
 .flight-hud__side {
   position: absolute;
-  top: calc(max(var(--gutter), env(safe-area-inset-top)) + (var(--hud-round) + 9px) * 3 + 6px);
-  right: max(var(--gutter), env(safe-area-inset-right));
+  top: calc(var(--edge-top) + (var(--hud-round) + 9px) * 3 + 6px);
+  right: var(--edge-right);
   display: grid;
   gap: 10px;
   justify-items: end;
@@ -1069,8 +1111,8 @@
 /* ── The target rail down the left edge ── */
 .flight-hud__rail {
   position: absolute;
-  left: max(var(--gutter), env(safe-area-inset-left));
-  top: calc(max(var(--gutter), env(safe-area-inset-top)) + 158px);
+  left: var(--edge-left);
+  top: calc(var(--edge-top) + 158px);
   display: grid;
   gap: 8px;
   justify-items: start;
@@ -1082,7 +1124,7 @@
   border-radius: 999px;
   font-size: 12px;
   color: var(--hud-ink);
-  max-width: min(180px, 42vw);
+  max-width: min(180px, 42cqw);
 }
 .flight-hud__rail-key > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .flight-hud__rail-key[hidden] { display: none; }
@@ -1165,7 +1207,7 @@
 /* ── Incoming transmission, top centre ── */
 .flight-hud__comms {
   position: absolute;
-  top: max(var(--gutter), env(safe-area-inset-top));
+  top: var(--edge-top);
   left: 50%;
   transform: translateX(-50%);
   width: min(460px, calc(100% - 2 * (var(--card) + 34px)));
@@ -1215,9 +1257,9 @@
 /* ── The dock ── */
 .flight-hud__dock {
   position: absolute;
-  left: max(var(--gutter), env(safe-area-inset-left));
-  right: max(var(--gutter), env(safe-area-inset-right));
-  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  left: var(--edge-left);
+  right: var(--edge-right);
+  bottom: var(--edge-bottom);
   display: grid;
   justify-items: center;
   align-items: end;
@@ -1360,6 +1402,8 @@
   background: rgba(58, 92, 138, 0.42);
 }
 .flight-hud .game-stick__thumb svg { display: none; }
+/* Under the thumb the knob is direct; let go and it glides home. */
+.flight-hud .game-stick:not([data-active='true']) .game-stick__thumb { transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1); }
 .flight-hud .game-stick__thumb::after {
   content: '';
   width: 22%;
@@ -1370,13 +1414,13 @@
 
 /* ── Phones: the pads take the corners, the flight keys sit between them
    and the console bar runs the width underneath. ── */
-@media (max-width: 599px) {
+@container viewport (max-width: 599px) {
   .flight-hud { --gutter: 10px; --hud-round: 42px; }
   .flight-hud__title { font-size: 19px; }
   .flight-hud__head { max-width: calc(100% - 120px); }
-  .flight-hud__rail { top: calc(max(var(--gutter), env(safe-area-inset-top)) + 150px); }
+  .flight-hud__rail { top: calc(var(--edge-top) + 150px); }
   /* Under the heading block, clear of the cards on the other side. */
-  .flight-hud__comms { width: calc(100% - 20px); top: calc(max(var(--gutter), env(safe-area-inset-top)) + 150px); }
+  .flight-hud__comms { width: calc(100% - 20px); top: calc(var(--edge-top) + 150px); }
   .flight-hud__console { gap: 9px; padding: 8px 11px; border-radius: 20px; }
   .flight-hud .flight-hud__radar { width: 40px; height: 40px; }
   .flight-hud__console-value { font-size: 14px; }
@@ -1401,13 +1445,13 @@
   .flight-hud[data-touch='true'] .flight-drive__gear { flex-direction: column; gap: 4px; }
   .flight-hud[data-touch='true'] .flight-drive__pips i { width: 8px; }
 }
-@media (max-width: 380px) {
+@container viewport (max-width: 380px) {
   .flight-hud__rail-key > span:last-child { display: none; }
   .flight-hud .flight-hud__rail-key { padding: 0 5px; }
   .flight-hud__sys { grid-template-columns: 15px minmax(34px, 1fr); }
   .flight-hud__sys-name { display: none; }
 }
-@media (min-width: 600px) {
+@container viewport (min-width: 600px) {
   .flight-hud { --gutter: 22px; --hud-round: 46px; }
   .flight-hud__title { font-size: 24px; }
   .flight-hud__reading > span { font-size: 12px; }
@@ -1430,7 +1474,7 @@
     'move keys look'
     'console console console';
 }
-@media (min-width: 600px) {
+@container viewport (min-width: 600px) {
   .flight-hud[data-touch='true'] .flight-hud__dock {
     grid-template-areas:
       'land land    land'
@@ -1442,7 +1486,7 @@
 /* Landscape: a shallow screen gets a smaller dock rather than less view. */
 /* Short screens: the cards keep to one line each and the camera keys lie
    down in a row, so the right column always clears the dock. */
-@media (max-height: 640px) {
+@container viewport (max-height: 640px) {
   .flight-hud .flight-hud__card { padding: 7px 9px; }
   .flight-hud__card-label, .flight-hud__card-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .flight-hud__order .flight-hud__track { display: none; }
@@ -1450,16 +1494,16 @@
   .flight-hud__zoom { grid-auto-flow: column; }
   .flight-hud .flight-hud__zoom button + button { border-top: 0; border-left: 1px solid var(--hud-line); }
 }
-@media (max-height: 700px) {
+@container viewport (max-height: 700px) {
   .flight-hud__rail { gap: 6px; }
   .flight-hud .flight-hud__rail-key { height: 36px; padding: 0 4px; }
   .flight-hud__rail-icon { width: 28px; height: 28px; }
   .flight-hud__rail-key > span:last-child { display: none; }
 }
-@media (max-height: 500px) {
+@container viewport (max-height: 500px) {
   .flight-hud { --stick: 92px; --key: 42px; --hud-round: 42px; --gutter: 12px; --card: 196px; }
   .flight-hud__top-keys { grid-auto-flow: column; }
-  .flight-hud__side { top: calc(max(var(--gutter), env(safe-area-inset-top)) + var(--hud-round) + 12px); gap: 8px; }
+  .flight-hud__side { top: calc(var(--edge-top) + var(--hud-round) + 12px); gap: 8px; }
   .flight-hud .flight-hud__card { padding: 5px 8px; }
   .flight-hud__card-icon { width: 30px; height: 30px; }
   .flight-hud__cam { margin-top: 8px; }
@@ -1469,7 +1513,7 @@
   .flight-hud .flight-hud__radar { width: 44px; height: 44px; }
   .flight-hud__console { padding: 7px 12px; gap: 12px; }
   /* Laid out along the top instead of down the side. */
-  .flight-hud__rail { grid-auto-flow: column; top: calc(max(var(--gutter), env(safe-area-inset-top)) + 138px); }
+  .flight-hud__rail { grid-auto-flow: column; top: calc(var(--edge-top) + 138px); }
 }
 
 /* ──────────────────── planet info chip (opens the facts card) ────────────────────

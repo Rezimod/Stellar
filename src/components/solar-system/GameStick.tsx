@@ -6,13 +6,21 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Move } from 'lucide-
 interface GameStickProps {
   label: string;
   onMove: (x: number, y: number) => void;
+  /** The deck is drawn turned a quarter turn clockwise (landscape on a
+   *  phone), so the finger's screen axes are the stick's axes rotated. */
+  rotated?: boolean;
 }
 
-export function GameStick({ label, onMove }: GameStickProps) {
+/** The stick reports the finger at once and zero the instant it lifts; the
+ *  flight model eases what it does with that, and the thumb glides home on
+ *  its own transition. Nothing here is delayed, so a release always stops. */
+export function GameStick({ label, onMove, rotated = false }: GameStickProps) {
   const root = useRef<HTMLDivElement>(null);
   const pointer = useRef<number | null>(null);
   const callback = useRef(onMove);
   callback.current = onMove;
+  const rotatedRef = useRef(rotated);
+  rotatedRef.current = rotated;
 
   const reset = () => {
     pointer.current = null;
@@ -30,18 +38,22 @@ export function GameStick({ label, onMove }: GameStickProps) {
       document.removeEventListener('visibilitychange', hidden);
       reset();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const move = (e: PointerEvent<HTMLDivElement>) => {
     if (pointer.current !== e.pointerId) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const radius = rect.width * 0.32;
-    const dx = (e.clientX - rect.left - rect.width / 2) / radius;
-    const dy = (e.clientY - rect.top - rect.height / 2) / radius;
+    let dx = (e.clientX - rect.left - rect.width / 2) / radius;
+    let dy = (e.clientY - rect.top - rect.height / 2) / radius;
+    // A quarter turn clockwise: the stick's right is the screen's down.
+    if (rotatedRef.current) [dx, dy] = [dy, -dx];
     const length = Math.hypot(dx, dy);
     const scale = length > 1 ? 1 / length : 1;
     e.currentTarget.style.setProperty('--stick-x', `${dx * scale * radius}px`);
     e.currentTarget.style.setProperty('--stick-y', `${dy * scale * radius}px`);
+    // Dead zone, then a soft curve: small corrections stay small.
     const response = length > 0.12 ? Math.pow((Math.min(1, length) - 0.12) / 0.88, 1.4) / length : 0;
     callback.current(dx * response, -dy * response);
   };

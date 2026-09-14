@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ArrowDownToLine, ChevronsUp, Crosshair, Globe, HelpCircle, Minus, Moon, Orbit, Pause, Play,
-  Plus, Radio, Rocket, Ruler, Satellite, Shield, Sparkles, Star, X, Zap,
+  ArrowDownToLine, ChevronsUp, Crosshair, Eye, EyeOff, Globe, HelpCircle, Minus, Moon, Orbit, Pause, Play,
+  Plus, Radio, Rocket, Ruler, Satellite, Shield, Smartphone, Sparkles, Star, X, Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -19,11 +19,14 @@ interface PlayerShipProps {
   onLand: () => void;
   /** Moon Mode has the screen; the deck stays paused underneath. */
   landed: boolean;
+  /** The viewport is drawn a quarter turn clockwise — landscape on a phone. */
+  landscape: boolean;
+  onLandscape: (on: boolean) => void;
 }
 const SHIPS: ShipKind[] = ['kestrel', 'xfoil', 'endurance'];
 const BARS = ['shield', 'energy', 'boost'] as const;
-const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r7', 'r8', 'r9'] as const;
-const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't6', 't8', 't4', 't5'] as const;
+const KEY_ROWS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r10', 'r7', 'r8', 'r11', 'r9'] as const;
+const TOUCH_ROWS = ['t1', 't2', 't3', 't7', 't6', 't8', 't9', 't10', 't4', 't5'] as const;
 const HELP_SEEN = 'stellar_explore_help';
 const ICONS = [Shield, Zap, ChevronsUp];
 /** The quick rail down the left edge: a named world, or a kind to walk
@@ -47,7 +50,7 @@ const RAIL_IDS = new Set(RAIL.map((r) => r.id ?? ''));
 const SOLAR_IDS = new Set(['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 const fmt = (n: number) => n >= 1e9 ? `${(n / 1e9).toFixed(1)} B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} M` : n >= 1e4 ? `${Math.round(n / 1000)} K` : n >= 100 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
 
-export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerShipProps) {
+export function PlayerShip({ session, onActiveChange, onLand, landed, landscape, onLandscape }: PlayerShipProps) {
   const t = useTranslations('solarSystem.flight');
   const tb = useTranslations('solarSystem.bodies');
   const [active, setActive] = useState(false);
@@ -55,6 +58,9 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
   const [touch, setTouch] = useState(false);
   const [shipKind, setShipKind] = useState<ShipKind>(session.shipKind);
   const [help, setHelp] = useState(false);
+  /** The deck hidden for the view alone: only the eye stays, and the pads
+   *  keep working where they were. */
+  const [immersive, setImmersive] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const radarRef = useRef<HTMLCanvasElement>(null);
   const placeRef = useRef<HTMLSpanElement>(null);
@@ -140,6 +146,8 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
     setActive(false);
     setPaused(false);
     setHelp(false);
+    setImmersive(false);
+    onLandscape(false);
     onActiveChange(false);
   };
   useEffect(() => {
@@ -182,6 +190,10 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
       raf = requestAnimationFrame(paint);
       if (now - lastPaint < 33) return;
       lastPaint = now;
+      if (session.input.hudToggle) {
+        session.input.hudToggle = false;
+        setImmersive((v) => !v);
+      }
       const system = t(`systems.${tel.systemName}`);
       // Where you are, big; what that is, small underneath.
       text(placeRef.current, tel.nearId ? name(tel.nearId) : system);
@@ -325,7 +337,7 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
     key === 'earth' ? tb('earth.name') : key === 'planets' || key === 'stars' ? t(`groups.${key}`) : t(`bodies.${key}`);
 
   return (
-    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} hidden={landed}>
+    <div ref={rootRef} className="flight-hud" data-touch={touch} data-phase={active ? 'flying' : 'idle'} data-paused={paused} data-immersive={immersive} hidden={landed}>
       {!active ? (
         <div className="flight-hud__launch">
           <button type="button" className="flight-hud__ship" onClick={() => setShipKind(SHIPS[(SHIPS.indexOf(shipKind) + 1) % SHIPS.length])} aria-label={t('hangar')}>
@@ -345,8 +357,21 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             <span ref={statusRef} className="flight-hud__status" role="status" />
           </div>
 
+          {/* The one key that survives the immersive view: bring the deck back. */}
+          <button type="button" className="flight-hud__round flight-hud__unhide" onClick={() => setImmersive(false)} aria-label={t('hudShow')} title={t('hudShow')}>
+            <Eye size={19} aria-hidden />
+          </button>
+
           {/* Top right: the session keys, round and out of the way. */}
           <div className="flight-hud__top-keys">
+            <button type="button" className="flight-hud__round" onClick={() => setImmersive(true)} aria-label={t('hudHide')} title={t('hudHide')}>
+              <EyeOff size={19} aria-hidden />
+            </button>
+            {touch && (
+              <button type="button" className="flight-hud__round flight-hud__turn" data-on={landscape} onClick={() => onLandscape(!landscape)} aria-pressed={landscape} aria-label={t(landscape ? 'portrait' : 'landscape')} title={t(landscape ? 'portrait' : 'landscape')}>
+                <Smartphone size={19} aria-hidden />
+              </button>
+            )}
             <button type="button" className="flight-hud__round" onClick={() => { session.input.targetStep = 1; }} disabled={paused} aria-label={t('target')} title={t('target')}>
               <Crosshair size={19} aria-hidden />
             </button>
@@ -414,14 +439,14 @@ export function PlayerShip({ session, onActiveChange, onLand, landed }: PlayerSh
             </button>
             {touch && <>
               <div className="flight-hud__move">
-                {!paused && <GameStick label={t('move')} onMove={(x, y) => {
+                {!paused && <GameStick label={t('move')} rotated={landscape} onMove={(x, y) => {
                   thrustRef.current = y;
                   session.input.thrust = brakeRef.current ? -1 : y;
                   session.input.yaw = x;
                 }} />}
               </div>
               <div className="flight-hud__look">
-                {!paused && <GameStick label={t('look')} onMove={(x, y) => {
+                {!paused && <GameStick label={t('look')} rotated={landscape} onMove={(x, y) => {
                   session.input.lookYaw = x;
                   session.input.pitch = y;
                 }} />}

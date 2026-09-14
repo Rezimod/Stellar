@@ -11,7 +11,7 @@ import { stepDestination } from '@/lib/solar-system/star-routes';
 const HANDLED_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'Space',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight',
-  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyJ', 'KeyV', 'KeyC', 'KeyZ', 'KeyT', 'KeyG', 'KeyR',
+  'Digit1', 'Digit2', 'Digit3', 'KeyF', 'KeyH', 'KeyJ', 'KeyV', 'KeyC', 'KeyZ', 'KeyT', 'KeyG', 'KeyR', 'KeyI',
   'Minus', 'Equal', 'BracketLeft', 'BracketRight',
 ]);
 
@@ -90,6 +90,7 @@ export function attachDesktopControls(
     else if (e.code === 'KeyV') input.eject = true;
     else if (e.code === 'KeyC') input.viewToggle = true;
     else if (e.code === 'KeyZ') input.assistToggle = true;
+    else if (e.code === 'KeyI') input.hudToggle = true;
     else if (e.code === 'KeyT') input.targetStep = e.shiftKey ? -1 : 1;
     else if (e.code === 'KeyR') input.targetClear = true;
     else if (e.code === 'Minus' || e.code === 'BracketLeft') zoomFlightCamera(input, 1);
@@ -196,6 +197,7 @@ export function clearFlightInput(input: FlightInput) {
   input.eject = false;
   input.viewToggle = false;
   input.assistToggle = false;
+  input.hudToggle = false;
   input.targetStep = 0;
   input.targetClear = false;
   input.targetRequest = null;

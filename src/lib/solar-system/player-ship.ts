@@ -154,6 +154,11 @@ const DRAG_PER_FRAME = 0.92; // at 60 fps; applied as pow(0.92, dt·60)
 const FREE_DRAG_PER_FRAME = 0.9998;
 const YAW_RATE = 1.15;
 const PITCH_RATE = 1.0;
+/** Steering is read through a short ease (per second) — about a tenth of
+ *  a second from nothing to full — so a thumb sliding out of the dead zone
+ *  is a swell and not a step. Thrust is not: a retro burn must bite at
+ *  once, and the drive's answer to it is what stays smooth. */
+const INPUT_EASE = 11;
 const ROLL_RATE = 1.8;
 /** Assist-off: keys accelerate the rates instead of setting them. */
 const FREE_ANG_ACCEL = 2.4;
@@ -244,6 +249,8 @@ export interface FlightInput {
   viewToggle: boolean;
   /** One-shot: flight assist on ↔ off. */
   assistToggle: boolean;
+  /** One-shot for the deck itself, not the model: hide or show the HUD. */
+  hudToggle: boolean;
   /** One-shot: cycle the navigation target outward (+1) or inward (-1). */
   targetStep: number;
   targetClear: boolean;
@@ -423,7 +430,7 @@ export function createFlightSession(): FlightSession {
     input: {
       thrust: 0, yaw: 0, lookYaw: 0, pitch: 0, roll: 0,
       boost: false, fire: false, align: false, mouseDX: 0, mouseDY: 0,
-      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false,
+      modeRequest: null, foilsToggle: false, eject: false, viewToggle: false, assistToggle: false, hudToggle: false,
       targetStep: 0, targetClear: false, targetRequest: null, targetKind: null,
       camZoom: 1, orbiting: false, orbitYaw: 0, orbitPitch: 0,
     },
@@ -942,6 +949,8 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
   let shield = MAX_SHIELD;
   let sinceHit = 99;
   let camBack = REGIMES.cruise.camBack;
+  /** The eased steering the model actually flies on. */
+  const eased = { yaw: 0, pitch: 0 };
   let bank = 0;
   let foilT = 0;
   let foilsForced: boolean | null = null;
@@ -1039,6 +1048,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     dockHold = 0;
     mode = 'cruise';
     regime = regimes.cruise;
+    eased.yaw = eased.pitch = 0;
     eff.max = regime.max;
     eff.boost = regime.boost;
     eff.accel = regime.accel;
@@ -1068,6 +1078,7 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
     pendYaw = pendPitch = 0;
     mode = 'cruise';
     regime = regimes.cruise;
+    eased.yaw = eased.pitch = 0;
     setAlert('docked', 4);
     rig.snap();
   };
@@ -1498,8 +1509,11 @@ export function createPlayerShip(session: FlightSession): PlayerShipHandle {
         // the rates persist until countered. The mouse commands an angle
         // either way, shaped in flight-input. ──
         const turn = eff.turn;
-        const yawIn = THREE.MathUtils.clamp(input.yaw + input.lookYaw, -1, 1);
-        angTarget.set(-input.pitch * PITCH_RATE * turn, -yawIn * YAW_RATE * turn, input.roll * ROLL_RATE);
+        const ek = 1 - Math.exp(-dt * INPUT_EASE);
+        eased.yaw += (THREE.MathUtils.clamp(input.yaw + input.lookYaw, -1, 1) - eased.yaw) * ek;
+        eased.pitch += (input.pitch - eased.pitch) * ek;
+        const yawIn = eased.yaw;
+        angTarget.set(-eased.pitch * PITCH_RATE * turn, -yawIn * YAW_RATE * turn, input.roll * ROLL_RATE);
         if (assist || pilot === 'eva') {
           angVel.lerp(angTarget, 1 - Math.exp(-dt * 4.2));
         } else {
